@@ -73,7 +73,7 @@ public final class VertexRepairPanel extends JPanel {
         wireActions();
         updateButtons();
 
-        setPreferredSize(new Dimension(600, 600));
+        setPreferredSize(new Dimension(650, 600));
     }
 
     private static boolean edgeStructurallyEqual(Edge a, Edge b, Node x, Node y) {
@@ -144,6 +144,33 @@ public final class VertexRepairPanel extends JPanel {
         double[] x = pvals.stream().mapToDouble(Double::doubleValue).toArray();
         KolmogorovSmirnovTest ks = new KolmogorovSmirnovTest();
         return ks.kolmogorovSmirnovTest(new UniformRealDistribution(0.0, 1.0), x);
+    }
+
+    /**
+     * KS uniformity p-value for the p-values implied by the local Markov facts for a single vertex.
+     * Uses the same p-value cache as the rest of the repair panel.
+     */
+    private double nodeKsPValue(Graph g, Node vertexInOriginalGraph) {
+        if (g == null || vertexInOriginalGraph == null) return Double.NaN;
+
+        // IMPORTANT: g is usually a copy; re-find the vertex by name inside g.
+        Node v = g.getNode(vertexInOriginalGraph.getName());
+        if (v == null) return Double.NaN;
+
+        // Local Markov implied facts for this vertex (under current ConditioningSetType etc.)
+        List<IndependenceFact> facts = baseModel.computeImpliedFactsForVertex(g, v);
+        if (facts == null || facts.isEmpty()) return Double.NaN;
+
+        // Dedup within-node exactly the same way you dedup elsewhere: by factKey
+        Map<String, Double> keyToP = new LinkedHashMap<>();
+        for (IndependenceFact f : facts) {
+            double p = getPValueCached(baseModel.getIndependenceTest(), f);
+            if (Double.isNaN(p)) continue;
+            keyToP.putIfAbsent(factKey(f), p);
+        }
+
+        if (keyToP.isEmpty()) return Double.NaN;
+        return ksUniformPValue(new ArrayList<>(keyToP.values()));
     }
 
     private void resetPvalCacheIfNeeded(IndependenceTest test) {
@@ -292,15 +319,28 @@ public final class VertexRepairPanel extends JPanel {
                     }
                 });
 
+        resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_NKS)
+                .setCellRenderer(new DefaultTableCellRenderer() {
+                    @Override
+                    public void setValue(Object value) {
+                        if (value instanceof Number n) {
+                            double d = n.doubleValue();
+                            setHorizontalAlignment(SwingConstants.RIGHT);
+                            setText(Double.isNaN(d) ? "" : KS_FORMAT.format(d));
+                        } else setText("");
+                    }
+                });
+
 
 //         Column indices assumed; adjust if needed
         TableColumn editIndex = cm.getColumn(0);
         TableColumn baselineIndex = cm.getColumn(1);
         TableColumn afterIndex = cm.getColumn(2);
         TableColumn deltaIndex = cm.getColumn(3);
-        TableColumn kstestIndex = cm.getColumn(4);
-        TableColumn edgesIndex = cm.getColumn(5);
-        TableColumn applyIndex = cm.getColumn(6);
+        TableColumn nodeKsIndex = cm.getColumn(4);
+        TableColumn kstestIndex = cm.getColumn(5);
+        TableColumn edgesIndex = cm.getColumn(6);
+        TableColumn applyIndex = cm.getColumn(7);
 
         // # column: very skinny
         baselineIndex.setPreferredWidth(50);
@@ -316,6 +356,11 @@ public final class VertexRepairPanel extends JPanel {
         deltaIndex.setMinWidth(50);
         afterIndex.setMaxWidth(50);
         deltaIndex.setPreferredWidth(50);
+
+        // node ks delta columns
+        nodeKsIndex.setMinWidth(70);
+        nodeKsIndex.setMaxWidth(70);
+        nodeKsIndex.setPreferredWidth(70);
 
         // ks delta columns
         kstestIndex.setMinWidth(70);
@@ -418,9 +463,16 @@ public final class VertexRepairPanel extends JPanel {
 
             int after = countImpliedViolationsAllNodesCached(g2);
             List<Double> p2 = collectAllImpliedPValuesDedup(g2);
-            double ksAfter = ksUniformPValue(p2);
-            int edgesAfter = g2.getNumEdges();
-            scored.add(new ScoredCandidate(cand, baseline, after, ksAfter, edgesAfter));
+
+            double nodeKsAfter = nodeKsPValue(g2, x); // x is the repaired node from the panel
+            double ksAfter     = ksUniformPValue(collectAllImpliedPValuesDedup(g2));
+            int edgesAfter     = g2.getNumEdges();
+
+            scored.add(new ScoredCandidate(cand, baseline, after, nodeKsAfter, ksAfter, edgesAfter));
+
+//            double ksAfter = ksUniformPValue(p2);
+//            int edgesAfter = g2.getNumEdges();
+//            scored.add(new ScoredCandidate(cand, baseline, after, ksAfter, edgesAfter));
         }
 
         // Sort by improvement (most negative delta first), then by absolute violations
@@ -950,6 +1002,7 @@ public final class VertexRepairPanel extends JPanel {
             CandidateEdit edit,
             int baseline,
             int after,
+            double nodeKsAfter,
             double ksAfter,
             int edgesAfter
     ) {
@@ -973,15 +1026,18 @@ public final class VertexRepairPanel extends JPanel {
     }
 
     private static final class CandidateTableModel extends AbstractTableModel {
-        static final int COL_DESC  = 0;
-        static final int COL_BASE  = 1;
-        static final int COL_AFTER = 2;
-        static final int COL_DELTA = 3;
-        static final int COL_KS    = 4;
-        static final int COL_EDGES = 5;
-        static final int COL_APPLY = 6;
+        private static final int COL_EDIT  = 0;
+        private static final int COL_BASE  = 1;
+        private static final int COL_AFTER = 2;
+        private static final int COL_DELTA = 3;
+        private static final int COL_NKS   = 4;   // NEW: node KS
+        private static final int COL_KS    = 5;   // model KS
+        private static final int COL_EDGES = 6;
+        private static final int COL_APPLY = 7;
 
-        private final String[] cols = {"Edit", "Baseline", "After", "Δ", "Mod-KS", "Edges", "Apply"};
+        private final String[] cols = {
+                "Edit", "Baseline", "After", "Δ", "N-KS", "M-KS", "Edges", "Apply"
+        };
 
         private List<ScoredCandidate> rows = List.of();
 
@@ -1013,10 +1069,11 @@ public final class VertexRepairPanel extends JPanel {
         public Object getValueAt(int rowIndex, int columnIndex) {
             ScoredCandidate r = rows.get(rowIndex);
             return switch (columnIndex) {
-                case COL_DESC -> r.edit().description();
+                case COL_EDIT -> r.edit().description();
                 case COL_BASE -> r.baseline();
                 case COL_AFTER -> r.violationsAfter();
                 case COL_DELTA -> r.delta();
+                case COL_NKS -> r.nodeKsAfter();
                 case COL_KS -> r.ksAfter();
                 case COL_EDGES -> r.edgesAfter();
                 case COL_APPLY -> r.edit().isNoOp() ? "" : "Accept";
@@ -1027,10 +1084,11 @@ public final class VertexRepairPanel extends JPanel {
         @Override
         public Class<?> getColumnClass(int col) {
             return switch (col) {
-                case COL_DESC -> String.class;
-                case COL_BASE -> Double.class;
-                case COL_AFTER -> Double.class;
-                case COL_DELTA -> Double.class;
+                case COL_EDIT -> String.class;
+                case COL_BASE -> Integer.class;
+                case COL_AFTER -> Integer.class;
+                case COL_DELTA -> Integer.class;
+                case COL_NKS -> Double.class;
                 case COL_KS -> Double.class;
                 case COL_EDGES -> Integer.class;
                 case COL_APPLY -> Object.class;
