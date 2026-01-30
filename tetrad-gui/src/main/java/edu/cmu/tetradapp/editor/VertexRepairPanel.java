@@ -19,7 +19,7 @@ import java.util.List;
 
 
 /**
- * Panel that suggests local edits around a selected vertex x to reduce
+ * Panel that suggests local edits around a selected node x to reduce
  * VertexChecker "implied independence but judged dependent" violations.
  * <p>
  * Intended usage:
@@ -38,7 +38,7 @@ public final class VertexRepairPanel extends JPanel {
     // UI
     private final JComboBox<RepairGraphType> graphTypeCombo = new JComboBox<>(RepairGraphType.values());
     private final JButton searchButton = new JButton("Search for best node adjustments about x");
-    private final JButton backButton = new JButton("Go Back to Previous Graph");
+    private final JButton backButton = new JButton("Undo");
     private final JButton showGraphButton = new JButton("Show Graph");
 
     private final JLabel statusLabel = new JLabel(" ");
@@ -518,8 +518,8 @@ public final class VertexRepairPanel extends JPanel {
 
         // --- Tabs ---
         JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Text", textScroll);
         tabs.addTab("Graph", renderScroll);
+        tabs.addTab("Text", textScroll);
 
         JOptionPane.showMessageDialog(
                 this,

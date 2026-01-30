@@ -425,7 +425,7 @@ public class VertexCheckEditor extends JPanel {
         Box labelBox = Box.createHorizontalBox();
 
         JLabel instructionLabel = new JLabel(
-                "Click a row in the table to compute and view results for that vertex."
+                "Click a row in the table to compute and view results for that node."
         );
         instructionLabel.setFont(instructionLabel.getFont().deriveFont(Font.ITALIC));
         instructionLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
@@ -547,7 +547,7 @@ public class VertexCheckEditor extends JPanel {
 
         TableColumnModel ocm = overviewTable.getColumnModel();
 
-        ocm.getColumn(0).setPreferredWidth(80);   // Vertex
+        ocm.getColumn(0).setPreferredWidth(80);   // Node
         ocm.getColumn(1).setPreferredWidth(45);   // CS
 
         ocm.getColumn(2).setPreferredWidth(45);   // #t
@@ -650,7 +650,7 @@ public class VertexCheckEditor extends JPanel {
         showIndepsForRow.addActionListener(e -> showIndependenciesForSelectedRow());
 
         JPanel factsPane = new JPanel(new BorderLayout(6, 6));
-        factsPane.setBorder(BorderFactory.createTitledBorder("Tests implied for selected vertex"));
+        factsPane.setBorder(BorderFactory.createTitledBorder("Tests implied for selected node"));
         factsPane.add(factsScroll, BorderLayout.CENTER);
 
         JPanel factsButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
@@ -708,7 +708,7 @@ public class VertexCheckEditor extends JPanel {
                         overviewModel.fireTableRowsUpdated(mr, mr);
                     }
 
-                    // Only refresh details for whichever vertex is currently "active"
+                    // Only refresh details for whichever node is currently "active"
                     String stillActive = getActiveSelectedVertexName();
                     if (stillActive != null) {
                         refreshDetails(stillActive);
@@ -1100,7 +1100,7 @@ public class VertexCheckEditor extends JPanel {
 
         JDialog dialog = new JDialog(
                 SwingUtilities.getWindowAncestor(this),
-                "Repair Node: " + x.getName(),
+                "Repair Vertex: " + x.getName(),
                 Dialog.ModalityType.APPLICATION_MODAL
         );
 
@@ -1599,8 +1599,8 @@ public class VertexCheckEditor extends JPanel {
 
         // --- Tabs ---
         JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Text", textScroll);
         tabs.addTab("Graph", renderScroll);
+        tabs.addTab("Text", textScroll);
 
         JOptionPane.showMessageDialog(
                 this,
