@@ -55,12 +55,68 @@ import static edu.cmu.tetradapp.editor.VertexRepairPanel.factKey;
 import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
 
 /**
- * Swing editor for the Vertex Checker (per-vertex local Markov check).
+ * Swing editor for the Vertex Checker: an interactive tool for diagnosing and
+ * exploring violations of the local Markov property on a per-vertex basis.
+ *
  * <p>
- * Layout:
- * - Top controls: Independence Test, Conditioning Set Type, Alpha, Run
- * - Left: overview table (one row per vertex)
- * - Right: details for selected vertex (CS(X)/MB(X) list, tested facts table, histogram)
+ * Given a graph, data set, and independence test, this editor evaluates
+ * conditional independencies implied by the chosen conditioning rule
+ * (e.g., parents, parents-and-neighbors, Markov blanket, or ordered local Markov
+ * for MAGs) and compares them to the results of statistical independence tests.
+ * </p>
+ *
+ * <p>
+ * The editor presents results at multiple levels:
+ * <ul>
+ *   <li><b>Overview table (left)</b>: one row per vertex, summarizing
+ *       the number of implied tests, p-values used, and multiple distributional
+ *       diagnostics (e.g., KS, Anderson–Darling, Fisher, binomial, min/median p);</li>
+ *   <li><b>Details panel (right)</b>: for the currently selected vertex,
+ *       a table of individual implied conditional independence tests and their
+ *       outcomes, along with a histogram of the corresponding p-values.</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * The editor supports incremental, selection-driven computation:
+ * results are computed lazily for selected vertices and reused where possible.
+ * Users may run checks for individual vertices or explicitly recompute all
+ * vertices using the {@code Run All} action.
+ * </p>
+ *
+ * <p>
+ * Integrated with this editor is the {@link VertexRepairPanel}, which allows
+ * users to explore local graph modifications when Markov violations are present.
+ * Accepted repairs update the underlying graph, trigger recomputation of affected
+ * results, and preserve table selections where possible.
+ * </p>
+ *
+ * <p>
+ * Additional features include:
+ * <ul>
+ *   <li>Selection-stable updates when the graph changes;</li>
+ *   <li>Undo and graph-display actions for navigating graph space;</li>
+ *   <li>Support for multiple independence tests and parameter settings;</li>
+ *   <li>Visualization of p-value distributions to diagnose systematic deviations
+ *       from uniformity.</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * The Vertex Checker is intended as a diagnostic and exploratory aid.
+ * It does not assume score equivalence, nor does it restrict the user to
+ * equivalence classes of graphs. Instead, it provides detailed local feedback
+ * to support informed navigation of graph space.
+ * </p>
+ *
+ * <p><b>Layout:</b></p>
+ * <ul>
+ *   <li><b>Top controls:</b> Independence test selection, conditioning set type,
+ *       parameter access, verbosity, and run controls;</li>
+ *   <li><b>Left:</b> Overview table with one row per vertex;</li>
+ *   <li><b>Right:</b> Detailed results for the active vertex, including test results
+ *       and a p-value histogram.</li>
+ * </ul>
  */
 public class VertexCheckEditor extends JPanel {
 

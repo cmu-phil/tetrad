@@ -19,13 +19,57 @@ import java.util.List;
 
 
 /**
- * Panel that suggests local edits around a selected node x to reduce
- * VertexChecker "implied independence but judged dependent" violations.
+ * Interactive panel for locally repairing a causal graph around a selected node {@code x}
+ * using feedback from the Vertex Checker.
+ *
  * <p>
- * Intended usage:
+ * The panel enumerates a conservative set of candidate edge edits involving {@code x}
+ * (edge additions, removals, and replacements consistent with the chosen graph type),
+ * applies each candidate to a copy of the current graph, and scores the result using
+ * Markov-checker diagnostics derived from conditional independence tests.
+ * </p>
+ *
+ * <p>
+ * For each candidate edit, the panel reports:
+ * <ul>
+ *   <li><b>Baseline</b> and <b>After</b>: the number of implied conditional independencies
+ *       (deduplicated across vertices) that are judged dependent by the data;</li>
+ *   <li><b>Δ</b>: the change in the number of such violations relative to the baseline;</li>
+ *   <li><b>N-KS</b>: a Kolmogorov–Smirnov uniformity p-value for the collection of
+ *       p-values implied by the local Markov properties of the repaired node {@code x};</li>
+ *   <li><b>M-KS</b>: a Kolmogorov–Smirnov uniformity p-value computed over all implied
+ *       conditional independence p-values in the model (deduplicated);</li>
+ *   <li><b>Edges</b>: the total number of edges in the candidate graph.</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * Independence test results are cached and reused across candidates to ensure that
+ * scoring is efficient even when many candidate edits are evaluated.
+ * Graph legality (DAG, CPDAG, MAG, or PAG) is enforced after each edit, and illegal
+ * candidates are discarded.
+ * </p>
+ *
+ * <p>
+ * The panel maintains an internal edit history, allowing the user to step backward
+ * through previously accepted candidate graphs during an interactive repair session.
+ * The graph returned by {@link #getGraph()} reflects the final state when the dialog
+ * is closed.
+ * </p>
+ *
+ * <p><b>Intended usage:</b></p>
+ * <pre>{@code
  * VertexRepairPanel p = new VertexRepairPanel(vertexCheckEditor, x);
- * show modal dialog containing p;
- * Graph newGraph = p.getGraph();
+ * // show p in a modal dialog
+ * Graph repaired = p.getGraph();
+ * }</pre>
+ *
+ * <p>
+ * This component is intended as an interactive diagnostic and repair aid.
+ * It does not attempt to enforce global optimality or score equivalence,
+ * and is most effective when used to explore local modifications suggested
+ * by Markov-checker feedback.
+ * </p>
  */
 public final class VertexRepairPanel extends JPanel {
 
@@ -47,7 +91,7 @@ public final class VertexRepairPanel extends JPanel {
 
     private final JPanel resultsCard = new JPanel(new CardLayout());
     // Cache of CI test results for (X,Y|Z) queries.
-// Key is canonicalized by variable names (X,Y unordered; Z sorted).
+    // Key is canonicalized by variable names (X,Y unordered; Z sorted).
     private final Map<String, Boolean> indepCache = new HashMap<>();
     // Replace indepCache with:
     private final Map<String, Double> pvalCache = new HashMap<>();
