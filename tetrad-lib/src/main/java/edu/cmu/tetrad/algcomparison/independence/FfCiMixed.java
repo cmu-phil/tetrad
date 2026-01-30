@@ -82,6 +82,7 @@ public class FfCiMixed implements IndependenceWrapper {
         edu.cmu.tetrad.search.test.FfCi.FeatureType[] values
                 = edu.cmu.tetrad.search.test.FfCi.FeatureType.values();
         test.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
+
 //        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
         return test;

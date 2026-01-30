@@ -2,8 +2,8 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
@@ -76,33 +76,21 @@ public final class VertexRepairPanel extends JPanel {
 
     private static final String CARD_TABLE = "table";
     private static final String CARD_NONE = "none";
+    private static final DecimalFormat KS_FORMAT = new DecimalFormat("0.0000");
     private final VertexCheckIndTestModel baseModel;
     private final Node x;
     private final Deque<Graph> history = new ArrayDeque<>();
-
     // UI
     private final JComboBox<RepairGraphType> graphTypeCombo = new JComboBox<>(RepairGraphType.values());
     private final JButton searchButton = new JButton("Search for best node adjustments about x");
     private final JButton backButton = new JButton("Undo");
     private final JButton showGraphButton = new JButton("Show Graph");
-
     private final JLabel statusLabel = new JLabel(" ");
     private final JTable resultsTable = new JTable();
     private final CandidateTableModel resultsModel = new CandidateTableModel();
-
     private final JPanel resultsCard = new JPanel(new CardLayout());
-    // Cache of CI test results for (X,Y|Z) queries.
-    // Key is canonicalized by variable names (X,Y unordered; Z sorted).
-    private final Map<String, Boolean> indepCache = new HashMap<>();
-    // Replace indepCache with:
-    private final Map<String, Double> pvalCache = new HashMap<>();
-    private IndependenceTest pvalCacheOwner = null;
-
+    CachedIndependenceQueries Q;
     private Graph workingGraph;
-    private IndependenceTest indepCacheOwner = null;
-
-    private static final DecimalFormat KS_FORMAT = new DecimalFormat("0.0000");
-
     private Knowledge knowledge = new Knowledge();
 
     public VertexRepairPanel(VertexCheckEditor editor, Node x) {
@@ -110,6 +98,7 @@ public final class VertexRepairPanel extends JPanel {
         this.x = Objects.requireNonNull(x, "x");
 
         this.baseModel = Objects.requireNonNull(editor.getIndTestModel(), "editor.getIndTestModel()");
+        this.Q = Objects.requireNonNull(editor.getCachedQueries(), "editor.getCachedQueries()");
         this.workingGraph = safeCopy(baseModel.getGraph());
 
         // ADD THIS LINE:
@@ -184,6 +173,21 @@ public final class VertexRepairPanel extends JPanel {
         return a + "|" + b + "|" + String.join(",", z);
     }
 
+    private static TableCellRenderer ksRenderer() {
+        return new DefaultTableCellRenderer() {
+            @Override
+            public void setValue(Object value) {
+                if (value instanceof Number n) {
+                    double d = n.doubleValue();
+                    setText(Double.isNaN(d) ? "" : KS_FORMAT.format(d));
+                    setHorizontalAlignment(SwingConstants.RIGHT);
+                } else {
+                    setText("");
+                }
+            }
+        };
+    }
+
     private double ksUniformPValue(List<Double> pvals) {
         if (pvals == null || pvals.size() < 2) return Double.NaN;
 
@@ -196,21 +200,42 @@ public final class VertexRepairPanel extends JPanel {
      * KS uniformity p-value for the p-values implied by the local Markov facts for a single vertex.
      * Uses the same p-value cache as the rest of the repair panel.
      */
+//    private double nodeKsPValue(Graph g, Node vertexInOriginalGraph) {
+//        if (g == null || vertexInOriginalGraph == null) return Double.NaN;
+//
+//        // IMPORTANT: g is usually a copy; re-find the vertex by name inside g.
+//        Node v = g.getNode(vertexInOriginalGraph.getName());
+//        if (v == null) return Double.NaN;
+//
+//        // Local Markov implied facts for this vertex (under current ConditioningSetType etc.)
+//        List<IndependenceFact> facts = baseModel.computeImpliedFactsForVertex(g, v);
+//        if (facts == null || facts.isEmpty()) return Double.NaN;
+//
+//        // Dedup within-node exactly the same way you dedup elsewhere: by factKey
+//        Map<String, Double> keyToP = new LinkedHashMap<>();
+//        for (IndependenceFact f : facts) {
+//            double p = getPValueCached(baseModel.getIndependenceTest(), f);
+//            if (Double.isNaN(p)) continue;
+//            keyToP.putIfAbsent(factKey(f), p);
+//        }
+//
+//        if (keyToP.isEmpty()) return Double.NaN;
+//        return ksUniformPValue(new ArrayList<>(keyToP.values()));
+//    }
     private double nodeKsPValue(Graph g, Node vertexInOriginalGraph) {
         if (g == null || vertexInOriginalGraph == null) return Double.NaN;
 
-        // IMPORTANT: g is usually a copy; re-find the vertex by name inside g.
+        // Re-find by name inside g (since g is often a copy).
         Node v = g.getNode(vertexInOriginalGraph.getName());
         if (v == null) return Double.NaN;
 
-        // Local Markov implied facts for this vertex (under current ConditioningSetType etc.)
         List<IndependenceFact> facts = baseModel.computeImpliedFactsForVertex(g, v);
         if (facts == null || facts.isEmpty()) return Double.NaN;
 
-        // Dedup within-node exactly the same way you dedup elsewhere: by factKey
         Map<String, Double> keyToP = new LinkedHashMap<>();
         for (IndependenceFact f : facts) {
-            double p = getPValueCached(baseModel.getIndependenceTest(), f);
+            if (f == null) continue;
+            double p = pValueOf(f);
             if (Double.isNaN(p)) continue;
             keyToP.putIfAbsent(factKey(f), p);
         }
@@ -219,71 +244,22 @@ public final class VertexRepairPanel extends JPanel {
         return ksUniformPValue(new ArrayList<>(keyToP.values()));
     }
 
-    private void resetPvalCacheIfNeeded(IndependenceTest test) {
-        if (test == null) {
-            pvalCache.clear();
-            pvalCacheOwner = null;
-            return;
-        }
-        if (pvalCacheOwner != test) {
-            pvalCache.clear();
-            pvalCacheOwner = test;
-        }
-    }
-
-    private double getPValueCached(IndependenceTest test, IndependenceFact fact) {
-        String qKey = queryKey(fact);
-
-        Double cached = pvalCache.get(qKey);
-        if (cached != null) return cached;
-
-        double p;
-        try {
-            Node X = test.getVariable(fact.getX().getName());
-            Node Y = test.getVariable(fact.getY().getName());
-            if (X == null || Y == null) {
-                p = Double.NaN;
-            } else {
-                Set<Node> Z = new HashSet<>();
-                for (Node z : fact.getZ()) {
-                    Node zz = test.getVariable(z.getName());
-                    if (zz != null) Z.add(zz);
-                }
-                IndependenceResult r = test.checkIndependence(X, Y, Z);
-                p = r.getPValue();
-            }
-        } catch (Throwable t) {
-            p = Double.NaN; // match your current “ignore errors” policy
-        }
-
-        pvalCache.put(qKey, p);
-        return p;
-
-    }
-
     private List<Double> collectAllImpliedPValuesDedup(Graph g) {
-        IndependenceTest test = baseModel.getIndependenceTest();
-        if (test == null) return List.of();
+        if (g == null) return List.of();
 
-        resetPvalCacheIfNeeded(test);
+        List<IndependenceFact> facts = baseModel.computeAllImpliedFacts(g);
+        if (facts == null || facts.isEmpty()) return List.of();
 
-        List<Double> pvals = new ArrayList<>();
-        Set<String> seenFacts = new HashSet<>();
+        Map<String, Double> keyToP = new LinkedHashMap<>();
 
-        for (Node v : g.getNodes()) {
-            List<IndependenceFact> implied = baseModel.computeImpliedFactsForVertex(g, v);
-
-            for (IndependenceFact fact : implied) {
-                String fk = factKey(fact);
-                if (!seenFacts.add(fk)) continue;
-
-                double p = getPValueCached(test, fact);
-                if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
-                    pvals.add(p);
-                }
-            }
+        for (IndependenceFact f : facts) {
+            if (f == null) continue;
+            double p = pValueOf(f);
+            if (Double.isNaN(p)) continue;
+            keyToP.putIfAbsent(factKey(f), p);
         }
-        return pvals;
+
+        return new ArrayList<>(keyToP.values());
     }
 
     /**
@@ -520,7 +496,7 @@ public final class VertexRepairPanel extends JPanel {
                 if (g2 == null) continue;
             }
             try {
-                if (!isLegalGraphType(g2, gt)) continue;
+                if (gt != null && !isLegalGraphType(g2, gt)) continue;
             } catch (Exception e) {
                 continue;
             }
@@ -528,8 +504,8 @@ public final class VertexRepairPanel extends JPanel {
             int after = countImpliedViolationsAllNodesCached(g2);
 
             double nodeKsAfter = nodeKsPValue(g2, x); // x is the repaired node from the panel
-            double ksAfter     = ksUniformPValue(collectAllImpliedPValuesDedup(g2));
-            int edgesAfter     = g2.getNumEdges();
+            double ksAfter = ksUniformPValue(collectAllImpliedPValuesDedup(g2));
+            int edgesAfter = g2.getNumEdges();
 
             scored.add(new ScoredCandidate(cand, baseline, after, nodeKsAfter, ksAfter, edgesAfter));
         }
@@ -549,11 +525,11 @@ public final class VertexRepairPanel extends JPanel {
             statusLabel.setText("No legal candidate edits found.");
             ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_NONE);
         } else {
-            int best = scored.get(0).violationsAfter();
+            int best = scored.getFirst().violationsAfter();
             statusLabel.setText(
                     "Baseline violations: " + baseline +
                             " | Best: " + best +
-                            " | KS(all): " + fmt.format(baselineKs) + " → " + fmt.format(scored.get(0).ksAfter())
+                            " | KS(all): " + fmt.format(baselineKs) + " → " + fmt.format(scored.getFirst().ksAfter())
             );
             ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_TABLE);
         }
@@ -725,6 +701,8 @@ public final class VertexRepairPanel extends JPanel {
         return variants;
     }
 
+    // ---------------- data model classes ----------------
+
     /**
      * For ADD candidates: keep it *even more conservative* than replacement.
      * In particular: for CPDAG, prefer undirected addition; for MAG, prefer -> and <->
@@ -759,17 +737,15 @@ public final class VertexRepairPanel extends JPanel {
                 adds.add(new Edge(y, x, Endpoint.CIRCLE, Endpoint.ARROW));  // y o-> x  (x <-o y)
 
                 // Optional: include definite orientations too.
-                 adds.add(new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW));    // x->y
-                 adds.add(new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW));    // y->x
-                 adds.add(new Edge(x, y, Endpoint.ARROW, Endpoint.ARROW));   // x<->y
-                 adds.add(new Edge(x, y, Endpoint.TAIL, Endpoint.TAIL));     // x---y
+                adds.add(new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW));    // x->y
+                adds.add(new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW));    // y->x
+                adds.add(new Edge(x, y, Endpoint.ARROW, Endpoint.ARROW));   // x<->y
+                adds.add(new Edge(x, y, Endpoint.TAIL, Endpoint.TAIL));     // x---y
             }
         }
 
         return adds;
     }
-
-    // ---------------- data model classes ----------------
 
     private Graph canonicalizeToCpdagOrNull(Graph h) {
         try {
@@ -833,18 +809,6 @@ public final class VertexRepairPanel extends JPanel {
         graphTypeCombo.setSelectedIndex(0);
     }
 
-    private void resetIndepCacheIfNeeded(IndependenceTest test) {
-        if (test == null) {
-            indepCache.clear();
-            indepCacheOwner = null;
-            return;
-        }
-        if (indepCacheOwner != test) {
-            indepCache.clear();
-            indepCacheOwner = test;
-        }
-    }
-
     /**
      * Counts implied-independence violations across ALL nodes, caching CI test results so
      * repeated scoring across candidates doesn't re-run the same checkIndependence(X,Y|Z).
@@ -854,63 +818,26 @@ public final class VertexRepairPanel extends JPanel {
      * NOTE: Cache key is by variable NAMES. This assumes stable variable naming.
      */
     private int countImpliedViolationsAllNodesCached(Graph g) {
-        IndependenceTest test = baseModel.getIndependenceTest();
-        if (test == null) return 0;
+        if (g == null) return 0;
 
-        resetIndepCacheIfNeeded(test);
+        // Collect all implied facts, dedup by the same key used elsewhere.
+        List<IndependenceFact> facts = baseModel.computeAllImpliedFacts(g);
+        if (facts == null || facts.isEmpty()) return 0;
 
-        int violations = 0;
-        Set<String> seenFacts = new HashSet<>();
-
-        for (Node x : g.getNodes()) {
-            List<IndependenceFact> implied = baseModel.computeImpliedFactsForVertex(g, x);
-
-            for (IndependenceFact fact : implied) {
-                // De-dupe the implied fact (so we don't even do cache lookups repeatedly)
-                String factKey = factKey(fact);
-                if (!seenFacts.add(factKey)) continue;
-
-                // Cached CI query: returns true if independent, false if dependent (or error-policy dependent)
-                boolean independent = isIndependentCached(test, fact);
-                if (!independent) violations++;
-            }
+        Map<String, IndependenceFact> dedup = new LinkedHashMap<>();
+        for (IndependenceFact f : facts) {
+            if (f == null) continue;
+            dedup.putIfAbsent(factKey(f), f);
         }
 
-        return violations;
-    }
-
-    /**
-     * Cached CI query; returns true if independent, false if dependent (errors are treated as independent here).
-     */
-    private boolean isIndependentCached(IndependenceTest test, IndependenceFact fact) {
-        String qKey = queryKey(fact);
-
-        Boolean cached = indepCache.get(qKey);
-        if (cached != null) return cached;
-
-        boolean independent;
-        try {
-            Node X = test.getVariable(fact.getX().getName());
-            Node Y = test.getVariable(fact.getY().getName());
-            if (X == null || Y == null) {
-                independent = true; // treat missing vars as non-violations
-            } else {
-                Set<Node> Z = new HashSet<>();
-                for (Node z : fact.getZ()) {
-                    Node zz = test.getVariable(z.getName());
-                    if (zz != null) Z.add(zz);
-                }
-                IndependenceResult r = test.checkIndependence(X, Y, Z);
-                independent = r.isIndependent();
+        int numReject = 0;
+        for (IndependenceFact f : dedup.values()) {
+            // “Violation” = implied independent but judged dependent by test
+            if (!independentOf(f)) {
+                numReject++;
             }
-        } catch (Throwable t) {
-            // Match your existing policy: ignore errors (do not count as violations).
-            independent = true;
-            // If you want conservative: independent = false;
         }
-
-        indepCache.put(qKey, independent);
-        return independent;
+        return numReject;
     }
 
     /**
@@ -924,6 +851,24 @@ public final class VertexRepairPanel extends JPanel {
         }
 
         this.knowledge = knowledge;
+    }
+
+    private IndependenceResult check(IndependenceFact f) {
+        if (f == null || Q == null) return null;
+
+        // Use the cached query engine; it should canonicalize / align internally as needed.
+        Set<Node> z = new LinkedHashSet<>(f.getZ());
+        return Q.checkIndependence(f.getX(), f.getY(), z);
+    }
+
+    private double pValueOf(IndependenceFact f) {
+        IndependenceResult r = check(f);
+        return (r == null ? Double.NaN : r.getPValue());
+    }
+
+    private boolean independentOf(IndependenceFact f) {
+        IndependenceResult r = check(f);
+        return r != null && r.isIndependent();
     }
 
     /**
@@ -1061,32 +1006,22 @@ public final class VertexRepairPanel extends JPanel {
             double ksAfter,
             int edgesAfter
     ) {
-        int violationsAfter() { return after; }
-        int delta() { return after - baseline; }
-    }
+        int violationsAfter() {
+            return after;
+        }
 
-    private static TableCellRenderer ksRenderer() {
-        return new DefaultTableCellRenderer() {
-            @Override
-            public void setValue(Object value) {
-                if (value instanceof Number n) {
-                    double d = n.doubleValue();
-                    setText(Double.isNaN(d) ? "" : KS_FORMAT.format(d));
-                    setHorizontalAlignment(SwingConstants.RIGHT);
-                } else {
-                    setText("");
-                }
-            }
-        };
+        int delta() {
+            return after - baseline;
+        }
     }
 
     private static final class CandidateTableModel extends AbstractTableModel {
-        private static final int COL_EDIT  = 0;
-        private static final int COL_BASE  = 1;
+        private static final int COL_EDIT = 0;
+        private static final int COL_BASE = 1;
         private static final int COL_AFTER = 2;
         private static final int COL_DELTA = 3;
-        private static final int COL_NKS   = 4;   // NEW: node KS
-        private static final int COL_KS    = 5;   // model KS
+        private static final int COL_NKS = 4;   // NEW: node KS
+        private static final int COL_KS = 5;   // model KS
         private static final int COL_EDGES = 6;
         private static final int COL_APPLY = 7;
 
@@ -1175,12 +1110,10 @@ public final class VertexRepairPanel extends JPanel {
 
     private static final class ButtonEditor extends DefaultCellEditor {
         private final JButton button = new JButton();
-        private final RowAction onClick;
         private int editingRow = -1;
 
         ButtonEditor(RowAction onClick) {
             super(new JTextField());
-            this.onClick = onClick;
 
             button.setBackground(Color.WHITE);
 

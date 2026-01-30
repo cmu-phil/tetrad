@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.ConditioningSetType;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.*;
@@ -149,9 +150,13 @@ public class VertexCheckEditor extends JPanel {
 
     private Knowledge knowledge;
 
+    CachedIndependenceQueries Q;
+
+
     public VertexCheckEditor(VertexCheckIndTestModel model) {
         if (model == null) throw new NullPointerException("Expecting a model.");
         this.model = model;
+        Q = model.getCachedQueries();
 
         this.knowledge = model.getKnowledge() == null ? new Knowledge() : model.getKnowledge().copy();
 
@@ -1008,8 +1013,21 @@ public class VertexCheckEditor extends JPanel {
     // "Show Independencies For Row" feature
     // ---------------------------------------------------------------------
 
+//    private Node nodeInTestByName(String name) {
+//        IndependenceTest test = model.getIndependenceTest();
+//        if (test == null) return null;
+//
+//        for (Node n : test.getVariables()) {
+//            if (n != null && Objects.equals(n.getName(), name)) return n;
+//        }
+//        return null;
+//    }
+
     private Node nodeInTestByName(String name) {
-        IndependenceTest test = model.getIndependenceTest();
+        if (name == null) return null;
+
+        IndependenceTest test = (Q != null ? Q.getTest() : null);
+        if (test == null) test = model.getIndependenceTest();
         if (test == null) return null;
 
         for (Node n : test.getVariables()) {
@@ -1018,7 +1036,7 @@ public class VertexCheckEditor extends JPanel {
         return null;
     }
 
-    private List<IndependenceResult>    findIndependencies(Node x, Node y, PoolChoice poolChoice, int maxSetSize) {
+    private List<IndependenceResult> findIndependencies(Node x, Node y, PoolChoice poolChoice, int maxSetSize) {
         IndependenceTest test = model.getIndependenceTest();
         if (test == null) return Collections.emptyList();
 
@@ -1063,15 +1081,28 @@ public class VertexCheckEditor extends JPanel {
                 if (found.size() >= limit) return false;
 
                 Set<Node> z = new LinkedHashSet<>(subset);
-                IndependenceResult r = null;
+//                IndependenceResult r = null;
+//                try {
+//                    r = test.checkIndependence(x, y, z);
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
+//                if (r != null && r.isIndependent()) {
+//                    found.add(r);
+//                }
+
                 try {
-                    r = test.checkIndependence(x, y, z);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                    IndependenceResult r = (Q != null)
+                            ? Q.checkIndependence(x, y, z)          // cached path
+                            : test.checkIndependence(x, y, z);      // fallback
+
+                    if (r != null && r.isIndependent()) {
+                        found.add(r);
+                    }
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
                 }
-                if (r != null && r.isIndependent()) {
-                    found.add(r);
-                }
+
                 return true;
             });
         }
@@ -1526,6 +1557,15 @@ public class VertexCheckEditor extends JPanel {
         String name = model.getVertexNames().get(m);     // <-- WRONG LIST
         List<IndependenceResult> rs = model.getResultsForVertex(name);
         return rs.get(m).getFact();
+    }
+
+
+    /**
+     * Shared cache of CI queries used by both VertexCheckEditor and VertexRepairPanel.
+     * VertexRepairPanel can call editor.getCachedQueries() to reuse the same cache.
+     */
+    public CachedIndependenceQueries getCachedQueries() {
+        return Q;
     }
 
     private void reselectOverviewVerticesByName(Set<String> names) {
