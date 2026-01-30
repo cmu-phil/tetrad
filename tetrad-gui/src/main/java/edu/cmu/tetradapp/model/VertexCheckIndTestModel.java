@@ -66,7 +66,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     private String name = "";
     private transient IndependenceTest independenceTest;
     private ConditioningSetType conditioningSetType = ConditioningSetType.MARKOV_BLANKET;
-    private Knowledge knowledge;
+    private Knowledge knowledge = new Knowledge();
     private List<String> vertexNames = new ArrayList<>();
     private boolean verbose = false;
     // For RECURSIVE_MSEP-like options (optional; default -1 means no limit)
@@ -172,7 +172,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = (knowledge == null) ? null : knowledge.copy();
+        this.knowledge = (knowledge == null) ? new Knowledge() : knowledge.copy();
     }
 
     public boolean isVerbose() {

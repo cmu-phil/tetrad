@@ -41,7 +41,12 @@ public class PagLegalityCheck {
             }
         }
 
-        Graph mag = GraphTransforms.zhangMagFromPag(pag);
+        Graph mag = null;
+        try {
+            mag = GraphTransforms.zhangMagFromPag(pag);
+        } catch (Exception e) {
+            return new LegalPagRet(false, "PAG to MAG failed");
+        }
         LegalMagRet legalMag = isLegalMag(mag, selection);
 
         if (!legalMag.isLegalMag()) {

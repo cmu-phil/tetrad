@@ -147,9 +147,17 @@ public class VertexCheckEditor extends JPanel {
 
     private boolean applyingGraphProgrammatically = false; // prevents history double-push
 
+    private Knowledge knowledge;
+
     public VertexCheckEditor(VertexCheckIndTestModel model) {
         if (model == null) throw new NullPointerException("Expecting a model.");
         this.model = model;
+
+        this.knowledge = model.getKnowledge() == null ? new Knowledge() : model.getKnowledge().copy();
+
+        if (this.knowledge.isViolatedBy(model.getGraph())) {
+            throw new IllegalArgumentException("Knowledge conflicts with current graph structure.");
+        }
 
         setPreferredSize(new Dimension(1100, 650));
         setLayout(new BorderLayout(10, 10));
@@ -550,7 +558,7 @@ public class VertexCheckEditor extends JPanel {
         // Overview table
         overviewModel = new AbstractTableModel() {
             private final String[] cols = new String[]{
-                    "Vertex", "CS", "#t", "#p", "KS", "AD", "Fish", "Bin", "frac≤q", "min", "med"
+                    "Vertex", "CS", "#p", "KS", "AD", "Fish", "Bin", "frac≤q", "min", "med"
             };
 
             @Override
@@ -584,15 +592,15 @@ public class VertexCheckEditor extends JPanel {
                         yield min + "-" + max;
                     }
 
-                    case 2 -> (s == null ? "" : s.numFactsTotal());
-                    case 3 -> (s == null ? "" : s.numPValuesUsed());
-                    case 4 -> (s == null ? "" : fmt(s.ksPValue()));
-                    case 5 -> (s == null ? "" : fmt(s.asP()));      // your AD p
-                    case 6 -> (s == null ? "" : fmt(s.fishP()));
-                    case 7 -> (s == null ? "" : fmt(s.binP()));
-                    case 8 -> (s == null ? "" : fmt(s.fractionReject())); // rename in UI to frac≤q
-                    case 9 -> (s == null ? "" : fmt(s.minP()));
-                    case 10 -> (s == null ? "" : fmt(s.medianP()));
+//                    case 2 -> (s == null ? "" : s.numFactsTotal());
+                    case 2 -> (s == null ? "" : s.numPValuesUsed());
+                    case 3 -> (s == null ? "" : fmt(s.ksPValue()));
+                    case 4 -> (s == null ? "" : fmt(s.asP()));      // your AD p
+                    case 5 -> (s == null ? "" : fmt(s.fishP()));
+                    case 6 -> (s == null ? "" : fmt(s.binP()));
+                    case 7 -> (s == null ? "" : fmt(s.fractionReject())); // rename in UI to frac≤q
+                    case 8 -> (s == null ? "" : fmt(s.minP()));
+                    case 9 -> (s == null ? "" : fmt(s.medianP()));
                     default -> "";
                 };
             }
@@ -606,16 +614,15 @@ public class VertexCheckEditor extends JPanel {
         ocm.getColumn(0).setPreferredWidth(80);   // Node
         ocm.getColumn(1).setPreferredWidth(45);   // CS
 
-        ocm.getColumn(2).setPreferredWidth(45);   // #t
-        ocm.getColumn(3).setPreferredWidth(45);   // #p
+//        ocm.getColumn(2).setPreferredWidth(45);   // #t
+        ocm.getColumn(2).setPreferredWidth(45);   // #p
 
-        for (int c : new int[]{4, 5, 6, 7, 8, 9, 10}) {
+        for (int c : new int[]{3, 4, 5, 6, 7, 8, 9}) {
             ocm.getColumn(c).setPreferredWidth(70);  // KS, AD, Fish, frac≤q, min, med
         }
 
         overviewTable.setRowSorter(new TableRowSorter<>(overviewModel));
         overviewTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-
         overviewTable.getSelectionModel().addListSelectionListener(this::overviewSelectionChanged);
 
         JScrollPane overviewScroll = new JScrollPane(overviewTable);
@@ -760,8 +767,12 @@ public class VertexCheckEditor extends JPanel {
 
                 SwingUtilities.invokeLater(() -> {
                     // Update all rows that were selected (cheap + keeps table accurate)
-                    for (int mr : sel.modelRows()) {
-                        overviewModel.fireTableRowsUpdated(mr, mr);
+                    try {
+                        for (int mr : sel.modelRows()) {
+                            overviewModel.fireTableRowsUpdated(mr, mr);
+                        }
+                    } catch (Exception ex) {
+                        return;
                     }
 
                     // Only refresh details for whichever node is currently "active"
@@ -1153,6 +1164,7 @@ public class VertexCheckEditor extends JPanel {
         if (x == null) return;
 
         VertexRepairPanel panel = new VertexRepairPanel(this, x);
+        panel.setKnowledge(knowledge);
 
         JDialog dialog = new JDialog(
                 SwingUtilities.getWindowAncestor(this),

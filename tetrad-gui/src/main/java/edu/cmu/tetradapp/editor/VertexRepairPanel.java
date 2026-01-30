@@ -1,5 +1,6 @@
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -102,6 +103,7 @@ public final class VertexRepairPanel extends JPanel {
 
     private static final DecimalFormat KS_FORMAT = new DecimalFormat("0.0000");
 
+    private Knowledge knowledge = new Knowledge();
 
     public VertexRepairPanel(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
@@ -313,11 +315,12 @@ public final class VertexRepairPanel extends JPanel {
         c.gridwidth = 2;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 1;
-        controls.add(searchButton, c);
+//        controls.add(searchButton, c);
 
         JPanel topButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         topButtons.add(backButton);
         topButtons.add(showGraphButton);
+        topButtons.add(searchButton);
 
         JPanel north = new JPanel(new BorderLayout());
         north.add(controls, BorderLayout.CENTER);
@@ -469,13 +472,26 @@ public final class VertexRepairPanel extends JPanel {
         RepairGraphType gt = (RepairGraphType) graphTypeCombo.getSelectedItem();
         Graph base = safeCopy(workingGraph);
 
-        if (gt == RepairGraphType.CPDAG) {
+        if (gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG) {
             base = canonicalizeToCpdagOrNull(base);
             if (base == null) {
                 statusLabel.setText("Current graph has no consistent CPDAG extension.");
                 ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_NONE);
                 return;
             }
+        } else if (gt == RepairGraphType.PAG) {
+            base = canonicalizeToPagOrNull(base);
+            if (base == null) {
+                statusLabel.setText("Current graph has no consistent PAG extension.");
+                ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_NONE);
+                return;
+            }
+        }
+
+        if (knowledge.isViolatedBy(base)) {
+            statusLabel.setText("Current graph violates the knowledge base.");
+            ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_NONE);
+            return;
         }
 
         // 1) enumerate candidate edits around x
@@ -503,20 +519,19 @@ public final class VertexRepairPanel extends JPanel {
                 g2 = canonicalizeToCpdagOrNull(g2);
                 if (g2 == null) continue;
             }
-            if (!isLegalGraphType(g2, gt)) continue;
+            try {
+                if (!isLegalGraphType(g2, gt)) continue;
+            } catch (Exception e) {
+                continue;
+            }
 
             int after = countImpliedViolationsAllNodesCached(g2);
-            List<Double> p2 = collectAllImpliedPValuesDedup(g2);
 
             double nodeKsAfter = nodeKsPValue(g2, x); // x is the repaired node from the panel
             double ksAfter     = ksUniformPValue(collectAllImpliedPValuesDedup(g2));
             int edgesAfter     = g2.getNumEdges();
 
             scored.add(new ScoredCandidate(cand, baseline, after, nodeKsAfter, ksAfter, edgesAfter));
-
-//            double ksAfter = ksUniformPValue(p2);
-//            int edgesAfter = g2.getNumEdges();
-//            scored.add(new ScoredCandidate(cand, baseline, after, ksAfter, edgesAfter));
         }
 
         // Sort by improvement (most negative delta first), then by absolute violations
@@ -680,7 +695,7 @@ public final class VertexRepairPanel extends JPanel {
                 variants.add(new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW)); // x->y
                 variants.add(new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW)); // y->x
             }
-            case CPDAG -> {
+            case CPDAG, PDAG -> {
                 // Directed or undirected.
                 variants.add(new Edge(x, y, Endpoint.TAIL, Endpoint.TAIL));  // x---y
                 variants.add(new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW)); // x->y
@@ -744,10 +759,10 @@ public final class VertexRepairPanel extends JPanel {
                 adds.add(new Edge(y, x, Endpoint.CIRCLE, Endpoint.ARROW));  // y o-> x  (x <-o y)
 
                 // Optional: include definite orientations too.
-                // adds.add(edge(x, y, Endpoint.TAIL, Endpoint.ARROW));    // x->y
-                // adds.add(edge(y, x, Endpoint.TAIL, Endpoint.ARROW));    // y->x
-                // adds.add(edge(x, y, Endpoint.ARROW, Endpoint.ARROW));   // x<->y
-                // adds.add(edge(x, y, Endpoint.TAIL, Endpoint.TAIL));     // x---y
+                 adds.add(new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW));    // x->y
+                 adds.add(new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW));    // y->x
+                 adds.add(new Edge(x, y, Endpoint.ARROW, Endpoint.ARROW));   // x<->y
+                 adds.add(new Edge(x, y, Endpoint.TAIL, Endpoint.TAIL));     // x---y
             }
         }
 
@@ -766,10 +781,26 @@ public final class VertexRepairPanel extends JPanel {
         }
     }
 
+    private Graph canonicalizeToPagOrNull(Graph h) {
+        try {
+            Graph h2 = new EdgeListGraph(h);
+            Graph mag = GraphTransforms.zhangMagFromPag(h2);
+
+            if (!mag.paths().isLegalMag()) {
+                return null;
+            }
+
+            return GraphTransforms.magToPag(mag, false);
+        } catch (Throwable t) {
+            return null; // no consistent extension => can't be a CPDAG candidate
+        }
+    }
+
     private boolean isLegalGraphType(Graph g, RepairGraphType gt) {
         return switch (gt) {
             case DAG -> g.paths().isLegalDag();
             case CPDAG -> g.paths().isLegalCpdag();
+            case PDAG -> g.paths().isLegalPdag();
             case MAG -> g.paths().isLegalMag();
             case PAG -> g.paths().isLegalPag();
         };
@@ -882,44 +913,24 @@ public final class VertexRepairPanel extends JPanel {
         return independent;
     }
 
-    private int countViolationsOnFixedFactSet(Graph g, List<IndependenceFact> fixedFacts) {
-        IndependenceTest test = baseModel.getIndependenceTest();
-        resetIndepCacheIfNeeded(test);
-
-        int violations = 0;
-        for (IndependenceFact f : fixedFacts) {
-            if (!isIndependentCached(test, f)) violations++;
+    /**
+     * Sets the knowledge object for the VertexRepairPanel.
+     *
+     * @param knowledge the new Knowledge object to be assigned to the panel
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        if (knowledge.isViolatedBy(workingGraph)) {
+            throw new IllegalArgumentException("The given Knowledge object is violated by the current graph.");
         }
-        return violations;
-    }
 
-    private Set<String> baselineViolatedKeys(Graph base) {
-        IndependenceTest test = baseModel.getIndependenceTest();
-        resetIndepCacheIfNeeded(test);
-
-        Set<String> violated = new HashSet<>();
-        Set<String> seen = new HashSet<>();
-
-        for (Node v : base.getNodes()) {
-            List<IndependenceFact> implied = baseModel.computeImpliedFactsForVertex(base, v);
-
-            for (IndependenceFact f : implied) {
-                String k = factKey(f);
-                if (!seen.add(k)) continue;
-
-                if (!isIndependentCached(test, f)) {
-                    violated.add(k);
-                }
-            }
-        }
-        return violated;
+        this.knowledge = knowledge;
     }
 
     /**
      * IMPORTANT: do NOT name this GraphType, since edu.cmu.tetrad.graph.GraphType exists.
      * Keeping this local avoids accidental import/name clashes.
      */
-    public enum RepairGraphType {DAG, CPDAG, MAG, PAG}
+    public enum RepairGraphType {DAG, CPDAG, PDAG, MAG, PAG}
 
     public interface CandidateEdit {
 
