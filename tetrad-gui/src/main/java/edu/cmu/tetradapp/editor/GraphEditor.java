@@ -362,6 +362,13 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
         tabbedPane.addTab("Edges", edgeTableBox);
 
+        JTextArea ta = new JTextArea(String.valueOf(graph));
+        ta.setEditable(false);
+        ta.setCaretPosition(0);
+        JScrollPane textScroll = new JScrollPane(ta);
+
+        tabbedPane.addTab("Text", textScroll);
+
         updateBootstrapTable(graph);
         this.edgeTypeTable.update(graph);
 

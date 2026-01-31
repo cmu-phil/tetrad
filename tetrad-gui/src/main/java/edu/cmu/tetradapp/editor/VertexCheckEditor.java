@@ -1619,18 +1619,18 @@ public class VertexCheckEditor extends JPanel {
     private void showGraphDialog() {
         Graph graph = model.getGraph();
 
-        // --- Tab 1: Text ---
+        // --- Tab 1: Render ---
+        GraphWorkbench workbench = new GraphWorkbench(graph);
+        workbench.setEnableEditing(false);
+        JScrollPane renderScroll = new JScrollPane(workbench);
+        renderScroll.setPreferredSize(new Dimension(820, 520));
+
+        // --- Tab 2: Text ---
         JTextArea ta = new JTextArea(String.valueOf(graph));
         ta.setEditable(false);
         ta.setCaretPosition(0);
         JScrollPane textScroll = new JScrollPane(ta);
         textScroll.setPreferredSize(new Dimension(820, 520));
-
-        // --- Tab 2: Render ---
-        GraphWorkbench workbench = new GraphWorkbench(graph);
-        workbench.setEnableEditing(false);
-        JScrollPane renderScroll = new JScrollPane(workbench);
-        renderScroll.setPreferredSize(new Dimension(820, 520));
 
         // --- Tabs ---
         JTabbedPane tabs = new JTabbedPane();
