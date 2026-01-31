@@ -5,6 +5,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
+import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
@@ -606,6 +607,12 @@ public final class VertexRepairPanel extends JPanel {
         tabs.addTab("Graph", renderScroll);
         tabs.addTab("Text", textScroll);
         tabs.setTabPlacement(JTabbedPane.RIGHT);
+
+//        EditorWindow editorWindow = new EditorWindow(tabs, "Graph", "OK", false, this);
+//
+//        DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+//        editorWindow.pack();
+//        editorWindow.setVisible(true);
 
         JOptionPane.showMessageDialog(
                 this,

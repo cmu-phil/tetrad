@@ -563,7 +563,6 @@ public class VertexCheckEditor extends JPanel {
     private void buildMainPanels() {
         // Overview table
         overviewModel = new AbstractTableModel() {
-            private List<String> vertexNames = model.getVertexNames();
 
             private final String[] cols = new String[]{
                     "Vertex", "CS", "#p", "KS", "AD", "Fish", "Bin", "frac≤q", "min", "med"
@@ -571,7 +570,7 @@ public class VertexCheckEditor extends JPanel {
 
             @Override
             public int getRowCount() {
-                return vertexNames.size();
+                return model.getVertexNames().size();
             }
 
             @Override
@@ -586,7 +585,7 @@ public class VertexCheckEditor extends JPanel {
 
             @Override
             public Object getValueAt(int rowIndex, int columnIndex) {
-                String v = vertexNames.get(rowIndex);
+                String v = model.getVertexNames().get(rowIndex);
                 VertexCheckIndTestModel.VertexSummary s = model.getSummary(v);
 
                 return switch (columnIndex) {
@@ -1639,12 +1638,18 @@ public class VertexCheckEditor extends JPanel {
         tabs.addTab("Text", textScroll);
         tabs.setTabPlacement(JTabbedPane.RIGHT);
 
-        JOptionPane.showMessageDialog(
-                this,
-                tabs,
-                "Current Graph",
-                JOptionPane.INFORMATION_MESSAGE
-        );
+        EditorWindow editorWindow = new EditorWindow(tabs, "Current Graph", "OK", false, this);
+
+        DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+        editorWindow.pack();
+        editorWindow.setVisible(true);
+
+//        JOptionPane.showMessageDialog(
+//                this,
+//                tabs,
+//                "Current Graph",
+//                JOptionPane.INFORMATION_MESSAGE
+//        );
     }
 
     private void updateUndoButtonEnabled() {
