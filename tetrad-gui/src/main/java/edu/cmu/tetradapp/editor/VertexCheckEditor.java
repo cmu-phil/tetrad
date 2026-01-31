@@ -477,6 +477,7 @@ public class VertexCheckEditor extends JPanel {
         conditioningCombo.addItem("Parents(X)");
         conditioningCombo.addItem("Parents(X) and Neighbors(X)");
         conditioningCombo.addItem("Ordered Local Markov (MAG)");
+        conditioningCombo.addItem("Recursive Blocking");
         conditioningCombo.setPreferredSize(new Dimension(220, 24));
         controls.add(conditioningCombo);
 
@@ -562,13 +563,15 @@ public class VertexCheckEditor extends JPanel {
     private void buildMainPanels() {
         // Overview table
         overviewModel = new AbstractTableModel() {
+            private List<String> vertexNames = model.getVertexNames();
+
             private final String[] cols = new String[]{
                     "Vertex", "CS", "#p", "KS", "AD", "Fish", "Bin", "frac≤q", "min", "med"
             };
 
             @Override
             public int getRowCount() {
-                return model.getVertexNames().size();
+                return vertexNames.size();
             }
 
             @Override
@@ -583,7 +586,7 @@ public class VertexCheckEditor extends JPanel {
 
             @Override
             public Object getValueAt(int rowIndex, int columnIndex) {
-                String v = model.getVertexNames().get(rowIndex);
+                String v = vertexNames.get(rowIndex);
                 VertexCheckIndTestModel.VertexSummary s = model.getSummary(v);
 
                 return switch (columnIndex) {
@@ -927,6 +930,7 @@ public class VertexCheckEditor extends JPanel {
             case "Parents(X) and Neighbors(X)" -> ConditioningSetType.PARENTS_AND_NEIGHBORS;
             case "MarkovBlanket(X)" -> ConditioningSetType.MARKOV_BLANKET;
             case "Ordered Local Markov (MAG)" -> ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG;
+            case "Recursive Blocking" -> ConditioningSetType.RECURSIVE_BLOCKING;
             default -> ConditioningSetType.MARKOV_BLANKET;
         };
     }
@@ -1633,6 +1637,7 @@ public class VertexCheckEditor extends JPanel {
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Graph", renderScroll);
         tabs.addTab("Text", textScroll);
+        tabs.setTabPlacement(JTabbedPane.RIGHT);
 
         JOptionPane.showMessageDialog(
                 this,

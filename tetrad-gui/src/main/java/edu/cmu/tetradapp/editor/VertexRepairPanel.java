@@ -533,8 +533,6 @@ public final class VertexRepairPanel extends JPanel {
             );
             ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_TABLE);
         }
-
-
     }
 
     private void applyCandidate(CandidateEdit cand) {
@@ -607,6 +605,7 @@ public final class VertexRepairPanel extends JPanel {
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Graph", renderScroll);
         tabs.addTab("Text", textScroll);
+        tabs.setTabPlacement(JTabbedPane.RIGHT);
 
         JOptionPane.showMessageDialog(
                 this,

@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.OrderedLocalMarkovProperty;
+import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -583,6 +584,24 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
                 return new ArrayList<>(raw);
             }
 
+            case RECURSIVE_BLOCKING:
+                Set<IndependenceFact> facts = new HashSet<>();
+                for (Node w : alignedGraph.getNodes()) {
+                    if (x == w) continue;
+                    if (alignedGraph.isAdjacentTo(w, x)) continue;
+
+                    try {
+                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(alignedGraph, x, w, Set.of(), Set.of(), -1);
+
+                        if (blocking != null) {
+                            facts.add(new IndependenceFact(x, w, blocking));
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                return new ArrayList<>(facts);
+
             default:
                 throw new IllegalArgumentException(
                         "Unsupported conditioning set type for VertexCheck: " + conditioningSetType
@@ -635,6 +654,24 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
                 Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModelForNode(mag, _x);
                 facts.addAll(raw);
+            } else if (conditioningSetType == ConditioningSetType.RECURSIVE_BLOCKING) {
+                Set<IndependenceFact> _facts = new HashSet<>();
+                for (Node w : alignedGraph.getNodes()) {
+                    if (x == w) continue;
+                    if (alignedGraph.isAdjacentTo(w, x)) continue;
+
+                    try {
+                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(alignedGraph, x, w, Set.of(), Set.of(), -1);
+
+                        if (blocking != null) {
+                            _facts.add(new IndependenceFact(x, w, blocking));
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                facts.addAll(_facts);
             } else {
                 throw new IllegalArgumentException(
                         "Unsupported conditioning set type for VertexCheck: " + conditioningSetType
@@ -668,12 +705,58 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public List<String> getVertexNames() {
         if (vertexNames == null || vertexNames.isEmpty()) {
             if (independenceTest == null) return List.of();
-            vertexNames = independenceTest.getVariables().stream()
+
+            List<Node> variables = independenceTest.getVariables();
+
+            vertexNames = variables.stream()
                     .map(Node::getName)
-                    .sorted()
                     .toList();
         }
-        return vertexNames;
+
+        List<String> _vertexNames = new ArrayList<>(vertexNames);
+        _vertexNames.sort(NATURAL_NAME_COMPARATOR);
+        return _vertexNames;
+    }
+
+    public static final Comparator<String> NATURAL_NAME_COMPARATOR =
+            Comparator.comparing(
+                    NaturalKey::from
+            );
+
+    private static final class NaturalKey implements Comparable<NaturalKey> {
+        final String prefix;
+        final Integer suffix;   // null if no numeric suffix
+
+        private NaturalKey(String prefix, Integer suffix) {
+            this.prefix = prefix;
+            this.suffix = suffix;
+        }
+
+        static NaturalKey from(String s) {
+            int i = s.length();
+            while (i > 0 && Character.isDigit(s.charAt(i - 1))) {
+                i--;
+            }
+
+            String prefix = s.substring(0, i);
+            Integer suffix = (i < s.length())
+                    ? Integer.parseInt(s.substring(i))
+                    : null;
+
+            return new NaturalKey(prefix, suffix);
+        }
+
+        @Override
+        public int compareTo(NaturalKey o) {
+            int c = this.prefix.compareTo(o.prefix);
+            if (c != 0) return c;
+
+            if (this.suffix == null && o.suffix == null) return 0;
+            if (this.suffix == null) return -1;  // "X" before "X1"
+            if (o.suffix == null) return 1;
+
+            return Integer.compare(this.suffix, o.suffix);
+        }
     }
 
     public boolean isVertexComputed(String vertexName) {
