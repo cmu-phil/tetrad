@@ -5,7 +5,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
-import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
@@ -90,9 +89,14 @@ public final class VertexRepairPanel extends JPanel {
     private final JTable resultsTable = new JTable();
     private final CandidateTableModel resultsModel = new CandidateTableModel();
     private final JPanel resultsCard = new JPanel(new CardLayout());
+    // Sorting/filtering UI
+    private final JCheckBox markovAlphaFilter = new JCheckBox("Hide rows with M-KS < α");
+    private final JTextField alphaField = new JTextField("0.01", 6);
     CachedIndependenceQueries Q;
     private Graph workingGraph;
     private Knowledge knowledge = new Knowledge();
+    // Keep a handle to the sorter so we can change filter/sort dynamically
+    private TableRowSorter<CandidateTableModel> resultsSorter;
 
     public VertexRepairPanel(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
@@ -187,6 +191,16 @@ public final class VertexRepairPanel extends JPanel {
                 }
             }
         };
+    }
+
+    private static double parseAlpha(String s, double fallback) {
+        try {
+            double a = Double.parseDouble(s.trim());
+            if (Double.isNaN(a) || a <= 0 || a >= 1) return fallback;
+            return a;
+        } catch (Exception ignored) {
+            return fallback;
+        }
     }
 
     private double ksUniformPValue(List<Double> pvals) {
@@ -286,13 +300,31 @@ public final class VertexRepairPanel extends JPanel {
         c.weightx = 1;
         controls.add(graphTypeCombo, c);
 
+        // Row 2: Markov alpha filter
+        c.gridx = 0;
+        c.gridy = 1;
+        c.gridwidth = 1;
+        c.fill = GridBagConstraints.NONE;
+        c.weightx = 0;
+        controls.add(markovAlphaFilter, c);
+
+        c.gridx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1;
+
+        JPanel alphaPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        alphaPanel.add(new JLabel("α:"));
+        alphaPanel.add(alphaField);
+        controls.add(alphaPanel, c);
+
         // Search button now directly under graph type row
         c.gridx = 0;
         c.gridy = 1;
         c.gridwidth = 2;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 1;
-//        controls.add(searchButton, c);
+
+        c.gridy = 2;
 
         JPanel topButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         topButtons.add(backButton);
@@ -404,7 +436,31 @@ public final class VertexRepairPanel extends JPanel {
         editIndex.setPreferredWidth(1000);
         // no max width → absorbs remaining space
 
-        resultsTable.setRowSorter(new TableRowSorter<>(resultsModel));
+//        resultsTable.setRowSorter(new TableRowSorter<>(resultsModel));
+
+        resultsSorter = new TableRowSorter<>(resultsModel);
+        resultsTable.setRowSorter(resultsSorter);
+
+        // Ensure numeric columns sort numerically (defensive if model ever returns Strings)
+        resultsSorter.setComparator(CandidateTableModel.COL_KS, Comparator.comparingDouble(a -> ((Number) a).doubleValue()));
+        resultsSorter.setComparator(CandidateTableModel.COL_NKS, Comparator.comparingDouble(a -> ((Number) a).doubleValue()));
+        resultsSorter.setComparator(CandidateTableModel.COL_EDGES, Comparator.comparingInt(a -> ((Number) a).intValue()));
+        resultsSorter.setComparator(CandidateTableModel.COL_AFTER, Comparator.comparingInt(a -> ((Number) a).intValue()));
+        resultsSorter.setComparator(CandidateTableModel.COL_DELTA, Comparator.comparingInt(a -> ((Number) a).intValue()));
+
+//        resultsSorter.setSortKeys(List.of(
+//                new RowSorter.SortKey(CandidateTableModel.COL_EDGES, SortOrder.ASCENDING)
+//        ));
+
+        resultsSorter.setSortKeys(List.of(
+                new RowSorter.SortKey(CandidateTableModel.COL_EDGES, SortOrder.ASCENDING), // <-- first
+                new RowSorter.SortKey(CandidateTableModel.COL_KS, SortOrder.DESCENDING),  // then M-KS
+                new RowSorter.SortKey(CandidateTableModel.COL_AFTER, SortOrder.ASCENDING),
+                new RowSorter.SortKey(CandidateTableModel.COL_DELTA, SortOrder.ASCENDING)
+        ));
+
+        // Default multi-key sort: M-KS desc, Edges asc, After asc (tweak as you like)
+        applySortAndFilter();
 
         JPanel tablePanel = new JPanel(new BorderLayout());
         tablePanel.add(new JScrollPane(resultsTable), BorderLayout.CENTER);
@@ -419,6 +475,36 @@ public final class VertexRepairPanel extends JPanel {
         ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_NONE);
 
         add(resultsCard, BorderLayout.CENTER);
+    }
+
+    private void applySortAndFilter() {
+        if (resultsSorter == null) return;
+
+        // 1) Filter (optional)
+        if (markovAlphaFilter.isSelected()) {
+            double alpha = parseAlpha(alphaField.getText(), 0.01);
+            resultsSorter.setRowFilter(new RowFilter<>() {
+                @Override
+                public boolean include(Entry<? extends CandidateTableModel, ? extends Integer> e) {
+                    Object v = e.getValue(CandidateTableModel.COL_KS); // M-KS column
+                    if (!(v instanceof Number n)) return false;
+                    double p = n.doubleValue();
+                    return !Double.isNaN(p) && p >= alpha;
+                }
+            });
+        } else {
+            resultsSorter.setRowFilter(null);
+        }
+
+        // 2) Sort keys (lexicographic)
+        resultsSorter.setSortKeys(List.of(
+                new RowSorter.SortKey(CandidateTableModel.COL_EDGES, SortOrder.ASCENDING), // fewer edges
+                new RowSorter.SortKey(CandidateTableModel.COL_KS, SortOrder.DESCENDING),   // M-KS high first
+                new RowSorter.SortKey(CandidateTableModel.COL_AFTER, SortOrder.ASCENDING), // fewer violations
+                new RowSorter.SortKey(CandidateTableModel.COL_DELTA, SortOrder.ASCENDING)  // more improvement (more negative)
+        ));
+
+        resultsSorter.sort();
     }
 
     private void wireActions() {
@@ -438,6 +524,28 @@ public final class VertexRepairPanel extends JPanel {
                     updateButtons();
                 }
             });
+        });
+
+        markovAlphaFilter.addActionListener(e -> applySortAndFilter());
+        markovAlphaFilter.setSelected(true);
+
+        alphaField.addActionListener(e -> applySortAndFilter()); // Enter key
+
+        alphaField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                applySortAndFilter();
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                applySortAndFilter();
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                applySortAndFilter();
+            }
         });
     }
 
@@ -482,6 +590,7 @@ public final class VertexRepairPanel extends JPanel {
 
         // 3) score candidates
         List<ScoredCandidate> scored = new ArrayList<>();
+        resultsModel.set(scored);
 
         int baseline = countImpliedViolationsAllNodesCached(base);
 
@@ -511,14 +620,16 @@ public final class VertexRepairPanel extends JPanel {
             scored.add(new ScoredCandidate(cand, baseline, after, nodeKsAfter, ksAfter, edgesAfter));
         }
 
-        // Sort by improvement (most negative delta first), then by absolute violations
-        scored.sort(Comparator
-                .comparingInt(ScoredCandidate::violationsAfter)          // lower better
-                .thenComparing(Comparator.comparingDouble(ScoredCandidate::ksAfter).reversed()) // higher better
-                .thenComparingInt(ScoredCandidate::edgesAfter)           // lower better
-        );
+//        // Sort by improvement (most negative delta first), then by absolute violations
+//        scored.sort(Comparator
+//                .comparingInt(ScoredCandidate::violationsAfter)          // lower better
+//                .thenComparing(Comparator.comparingDouble(ScoredCandidate::ksAfter).reversed()) // higher better
+//                .thenComparingInt(ScoredCandidate::edgesAfter)           // lower better
+//        );
 
         resultsModel.set(scored);
+
+        applySortAndFilter();
 
         NumberFormat fmt = new DecimalFormat("0.0000");
 
