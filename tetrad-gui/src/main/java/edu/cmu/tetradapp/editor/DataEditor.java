@@ -46,7 +46,7 @@ import java.util.Set;
  * @version $Id: $Id
  */
 public final class DataEditor extends JPanel implements KnowledgeEditable,
-        PropertyChangeListener {
+        PropertyChangeListener, ISelectedModel {
 
     /**
      * The parameters for the data editor.

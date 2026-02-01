@@ -44,7 +44,7 @@ class QQPlotAction extends AbstractAction {
     /**
      * The data edtitor that action is attached to.
      */
-    private final DataEditor dataEditor;
+    private final ISelectedModel dataEditor;
 
 
     /**
@@ -52,7 +52,7 @@ class QQPlotAction extends AbstractAction {
      *
      * @param editor a {@link edu.cmu.tetradapp.editor.DataEditor} object
      */
-    public QQPlotAction(DataEditor editor) {
+    public QQPlotAction(ISelectedModel editor) {
         super("Q-Q Plots...");
         this.dataEditor = editor;
     }
@@ -85,7 +85,7 @@ class QQPlotAction extends AbstractAction {
                 JPanel dialog = createQQPlotDialog(dataSet.getVariable(index));
 
                 EditorWindow editorWindow =
-                        new EditorWindow(dialog, "QQPlot", "Save", true, this.dataEditor);
+                        new EditorWindow(dialog, "QQPlot", "Save", true, (JComponent) this.dataEditor);
 
                 DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                 editorWindow.pack();
@@ -97,7 +97,8 @@ class QQPlotAction extends AbstractAction {
             JPanel dialog = createQQPlotDialog(null);
 
             EditorWindow editorWindow =
-                    new EditorWindow(dialog, "QQPlot", "Save", true, this.dataEditor);
+                    new EditorWindow(dialog, "QQPlot", "Save", true,
+                            (JComponent) this.dataEditor);
 
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
             editorWindow.pack();
@@ -150,7 +151,7 @@ class QQPlotAction extends AbstractAction {
 
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
-                JFrame.class, this.dataEditor);
+                JFrame.class, (JComponent) this.dataEditor);
     }
 
     //================================= Inner Class ======================================//

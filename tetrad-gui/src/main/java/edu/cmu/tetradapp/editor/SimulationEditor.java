@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -21,6 +21,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
@@ -54,7 +55,8 @@ import java.util.prefs.Preferences;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  * @version $Id: $Id
  */
-public final class SimulationEditor extends JPanel implements KnowledgeEditable, PropertyChangeListener {
+public final class SimulationEditor extends JPanel implements KnowledgeEditable, PropertyChangeListener,
+        ISelectedModel {
 
     @Serial
     private static final long serialVersionUID = -8424284512836439370L;
@@ -118,7 +120,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             this.tabbedPane.setEnabledAt(1, false);
             this.tabbedPane.setEnabledAt(2, false);
         } else {
-            if (this.simulation.getDataModelList().size() > 0) {
+            if (!this.simulation.getDataModelList().isEmpty()) {
                 this.tabbedPane.setEnabledAt(0, true);
                 this.tabbedPane.setEnabledAt(1, true);
                 this.tabbedPane.setEnabledAt(2, true);
@@ -174,6 +176,15 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(file);
+
+        JMenu tools = new JMenu("Data-Tools");
+
+        tools.add(new PlotMatrixAction(this));
+        tools.add(new DescriptiveStatsAction(this));
+        tools.add(new QQPlotAction(this));
+        tools.add(new NonlinearityChecksAction(this));
+        menuBar.add(tools);
+
 
         return menuBar;
     }
@@ -257,5 +268,9 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         return null;
     }
 
+    @Override
+    public DataModel getSelectedDataModel() {
+        return this.dataEditor.getSelectedDataModel();
+    }
 }
 
