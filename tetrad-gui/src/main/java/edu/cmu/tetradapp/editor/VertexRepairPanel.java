@@ -18,6 +18,9 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
 
+import java.util.prefs.Preferences;
+import javax.swing.Timer;
+
 
 /**
  * Interactive panel for locally repairing a causal graph around a selected node {@code x}
@@ -101,6 +104,20 @@ public final class VertexRepairPanel extends JPanel {
     private final JTextField ksTopKField = new JTextField(String.valueOf(DEFAULT_KS_TOP_K), 5);
     private volatile int ksTopK = DEFAULT_KS_TOP_K;
 
+    // ---- Preferences (persist α and KS top-K) ----
+    private static final Preferences PREFS = Preferences.userRoot().node("edu/cmu/tetradapp/editor/VertexRepairPanel");
+
+    // keys
+    private static final String PREF_ALPHA = "markovAlpha";
+    private static final String PREF_KS_TOP_K = "ksTopK";
+
+    // defaults (keep these aligned with UI defaults)
+    private static final double DEFAULT_ALPHA = 0.01;
+
+    // debounce timers so we don’t write prefs on every keystroke
+    private final Timer alphaSaveTimer = new Timer(350, e -> saveAlphaPref());
+    private final Timer topKSaveTimer  = new Timer(350, e -> saveTopKPref());
+
     public VertexRepairPanel(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
         this.x = Objects.requireNonNull(x, "x");
@@ -113,6 +130,13 @@ public final class VertexRepairPanel extends JPanel {
         initGraphTypeComboFromGraph(this.workingGraph);
 
         buildUI();
+
+        initPrefTimers();
+        loadPrefsIntoUi();
+
+        wireActions();
+        updateButtons();
+
         wireActions();
         updateButtons();
 
@@ -553,34 +577,67 @@ public final class VertexRepairPanel extends JPanel {
         markovAlphaFilter.addActionListener(e -> applySortAndFilter());
         markovAlphaFilter.setSelected(true);
 
-        alphaField.addActionListener(e -> applySortAndFilter()); // Enter key
+//        alphaField.addActionListener(e -> applySortAndFilter());
+//        // Enter key
+//
+//        alphaField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+//            @Override
+//            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+//                applySortAndFilter();
+//            }
+//
+//            @Override
+//            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+//                applySortAndFilter();
+//            }
+//
+//            @Override
+//            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+//                applySortAndFilter();
+//            }
+//        });
+
+        alphaField.addActionListener(e -> {
+            applySortAndFilter();
+            saveAlphaPref(); // Enter key = commit immediately
+        });
 
         alphaField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            @Override
-            public void insertUpdate(javax.swing.event.DocumentEvent e) {
-                applySortAndFilter();
-            }
-
-            @Override
-            public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                applySortAndFilter();
-            }
-
-            @Override
-            public void changedUpdate(javax.swing.event.DocumentEvent e) {
-                applySortAndFilter();
-            }
+            @Override public void insertUpdate(javax.swing.event.DocumentEvent e) { applySortAndFilter(); alphaSaveTimer.restart(); }
+            @Override public void removeUpdate(javax.swing.event.DocumentEvent e) { applySortAndFilter(); alphaSaveTimer.restart(); }
+            @Override public void changedUpdate(javax.swing.event.DocumentEvent e) { applySortAndFilter(); alphaSaveTimer.restart(); }
         });
+
+//        ksTopKField.addActionListener(e -> {
+//            ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
+//            applySortAndFilter(); // optional; mostly for consistency
+//        });
+//
+//        ksTopKField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+//            @Override public void insertUpdate(javax.swing.event.DocumentEvent e) { ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K); }
+//            @Override public void removeUpdate(javax.swing.event.DocumentEvent e) { ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K); }
+//            @Override public void changedUpdate(javax.swing.event.DocumentEvent e) { ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K); }
+//        });
 
         ksTopKField.addActionListener(e -> {
             ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
-            applySortAndFilter(); // optional; mostly for consistency
+            applySortAndFilter();
+            saveTopKPref();                 // <-- add this (Enter commits immediately)
         });
 
         ksTopKField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            @Override public void insertUpdate(javax.swing.event.DocumentEvent e) { ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K); }
-            @Override public void removeUpdate(javax.swing.event.DocumentEvent e) { ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K); }
-            @Override public void changedUpdate(javax.swing.event.DocumentEvent e) { ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K); }
+            @Override public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
+                topKSaveTimer.restart();     // <-- add this
+            }
+            @Override public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
+                topKSaveTimer.restart();     // <-- add this
+            }
+            @Override public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
+                topKSaveTimer.restart();     // <-- add this
+            }
         });
     }
 
@@ -1639,4 +1696,32 @@ public final class VertexRepairPanel extends JPanel {
     private record GlobalEvalCache(
             Map<String, VertexContribution> contribByVertexName
     ) { }
+
+    private void loadPrefsIntoUi() {
+        double a = PREFS.getDouble(PREF_ALPHA, DEFAULT_ALPHA);
+        int k = PREFS.getInt(PREF_KS_TOP_K, DEFAULT_KS_TOP_K);
+
+        // sanitize
+        if (!(a > 0.0 && a < 1.0)) a = DEFAULT_ALPHA;
+        if (k <= 0) k = DEFAULT_KS_TOP_K;
+
+        alphaField.setText(String.valueOf(a));
+        ksTopKField.setText(String.valueOf(k));
+        ksTopK = k;
+    }
+
+    private void initPrefTimers() {
+        alphaSaveTimer.setRepeats(false);
+        topKSaveTimer.setRepeats(false);
+    }
+
+    private void saveAlphaPref() {
+        double a = parseAlpha(alphaField.getText(), DEFAULT_ALPHA);
+        PREFS.putDouble(PREF_ALPHA, a);
+    }
+
+    private void saveTopKPref() {
+        int k = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
+        PREFS.putInt(PREF_KS_TOP_K, k);
+    }
 }
