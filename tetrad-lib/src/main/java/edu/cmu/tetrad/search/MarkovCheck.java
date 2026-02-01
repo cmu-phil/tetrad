@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -1065,6 +1065,30 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 }
 
                 allIndependenceFacts = OrderedLocalMarkovProperty.getModel(mag);
+            } else if (setType == ConditioningSetType.RECURSIVE_BLOCKING) {
+                if (graph.paths().existsDirectedCycle()) {
+                    return;
+                }
+
+                Set<IndependenceFact> facts = new HashSet<>();
+                for (Node x : graph.getNodes()) {
+                    for (Node w : graph.getNodes()) {
+                        if (x == w) continue;
+                        if (graph.isAdjacentTo(w, x)) continue;
+
+                        try {
+                            Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, x, w, Set.of(), Set.of(), -1);
+
+                            if (blocking != null) {
+                                facts.add(new IndependenceFact(x, w, blocking));
+                            }
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        allIndependenceFacts = facts;
+                    }
+                }
             } else {
                 for (int i = 0; i < nodes.size(); i++) {
                     for (int j = 0; j < nodes.size(); j++) {
@@ -1117,17 +1141,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                             case MARKOV_BLANKET:
                                 z = GraphUtils.markovBlanket(x, graph);
                                 break;
-//                            case RECURSIVE_MSEP:
-////                                try {
-////                                    z = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), maxLength);
-////
-//                                    List<Set<Node>> Blist = new RecursiveAdjustment(graph)
-//                                            .adjustmentSetsRB(x, y, "PDAG", 1, 10, 1, 10, false, Set.of(), Set.of() );
-//                                    z = Blist.getFirst();
-////                                } catch (InterruptedException e) {
-////                                    throw new RuntimeException(e);
-////                                }
-//                                break;
                             default:
                                 throw new IllegalArgumentException("Unknown separation set type: " + setType);
                         }
