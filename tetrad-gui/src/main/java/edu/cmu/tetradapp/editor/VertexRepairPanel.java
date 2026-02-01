@@ -6,10 +6,9 @@ import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-import org.apache.commons.math3.distribution.UniformRealDistribution;
-import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.*;
 import java.awt.*;
@@ -17,12 +16,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
-
-import java.util.prefs.Preferences;
-import javax.swing.Timer;
-
 import java.util.concurrent.CancellationException;
-import java.util.function.BooleanSupplier;
+import java.util.prefs.Preferences;
 
 
 /**
@@ -83,6 +78,14 @@ public final class VertexRepairPanel extends JPanel {
     private static final String CARD_TABLE = "table";
     private static final String CARD_NONE = "none";
     private static final DecimalFormat KS_FORMAT = new DecimalFormat("0.0000");
+    private static final int DEFAULT_KS_TOP_K = 25;
+    // ---- Preferences (persist α and KS top-K) ----
+    private static final Preferences PREFS = Preferences.userRoot().node("edu/cmu/tetradapp/editor/VertexRepairPanel");
+    // keys
+    private static final String PREF_ALPHA = "markovAlpha";
+    private static final String PREF_KS_TOP_K = "ksTopK";
+    // defaults (keep these aligned with UI defaults)
+    private static final double DEFAULT_ALPHA = 0.01;
     private final VertexCheckIndTestModel baseModel;
     private final Node x;
     private final Deque<Graph> history = new ArrayDeque<>();
@@ -98,29 +101,16 @@ public final class VertexRepairPanel extends JPanel {
     // Sorting/filtering UI
     private final JCheckBox markovAlphaFilter = new JCheckBox("Hide rows with M-KS < α");
     private final JTextField alphaField = new JTextField("0.01", 6);
+    private final JTextField ksTopKField = new JTextField(String.valueOf(DEFAULT_KS_TOP_K), 5);
+    // debounce timers so we don’t write prefs on every keystroke
+    private final Timer alphaSaveTimer = new Timer(350, e -> saveAlphaPref());
+    private final Timer topKSaveTimer = new Timer(350, e -> saveTopKPref());
     CachedIndependenceQueries Q;
     private Graph workingGraph;
     private Knowledge knowledge = new Knowledge();
     // Keep a handle to the sorter so we can change filter/sort dynamically
     private TableRowSorter<CandidateTableModel> resultsSorter;
-    private static final int DEFAULT_KS_TOP_K = 25;
-    private final JTextField ksTopKField = new JTextField(String.valueOf(DEFAULT_KS_TOP_K), 5);
     private volatile int ksTopK = DEFAULT_KS_TOP_K;
-
-    // ---- Preferences (persist α and KS top-K) ----
-    private static final Preferences PREFS = Preferences.userRoot().node("edu/cmu/tetradapp/editor/VertexRepairPanel");
-
-    // keys
-    private static final String PREF_ALPHA = "markovAlpha";
-    private static final String PREF_KS_TOP_K = "ksTopK";
-
-    // defaults (keep these aligned with UI defaults)
-    private static final double DEFAULT_ALPHA = 0.01;
-
-    // debounce timers so we don’t write prefs on every keystroke
-    private final Timer alphaSaveTimer = new Timer(350, e -> saveAlphaPref());
-    private final Timer topKSaveTimer  = new Timer(350, e -> saveTopKPref());
-
     // --- Watch dialog state (one at a time) ---
     private volatile SwingWorker<?, ?> activeWorker;
     private volatile JDialog watchDialog;
@@ -237,12 +227,21 @@ public final class VertexRepairPanel extends JPanel {
         }
     }
 
-    private double ksUniformPValue(List<Double> pvals) {
-        if (pvals == null || pvals.size() < 2) return Double.NaN;
+//    private double ksUniformPValue(List<Double> pvals) {
+//        if (pvals == null || pvals.size() < 2) return Double.NaN;
+//
+//        double[] x = pvals.stream().mapToDouble(Double::doubleValue).toArray();
+//        KolmogorovSmirnovTest ks = new KolmogorovSmirnovTest();
+//        return ks.kolmogorovSmirnovTest(new UniformRealDistribution(0.0, 1.0), x);
+//    }
 
-        double[] x = pvals.stream().mapToDouble(Double::doubleValue).toArray();
-        KolmogorovSmirnovTest ks = new KolmogorovSmirnovTest();
-        return ks.kolmogorovSmirnovTest(new UniformRealDistribution(0.0, 1.0), x);
+    private static int parseTopK(String s, int fallback) {
+        try {
+            int k = Integer.parseInt(s.trim());
+            return (k <= 0 ? fallback : k);
+        } catch (Exception ignored) {
+            return fallback;
+        }
     }
 
     /**
@@ -290,7 +289,7 @@ public final class VertexRepairPanel extends JPanel {
         }
 
         if (keyToP.isEmpty()) return Double.NaN;
-        return ksUniformPValue(new ArrayList<>(keyToP.values()));
+        return VertexCheckIndTestModel.ksUniformPValue(new ArrayList<>(keyToP.values()));
     }
 
     private List<Double> collectAllImpliedPValuesDedup(Graph g) {
@@ -620,9 +619,23 @@ public final class VertexRepairPanel extends JPanel {
         });
 
         alphaField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            @Override public void insertUpdate(javax.swing.event.DocumentEvent e) { applySortAndFilter(); alphaSaveTimer.restart(); }
-            @Override public void removeUpdate(javax.swing.event.DocumentEvent e) { applySortAndFilter(); alphaSaveTimer.restart(); }
-            @Override public void changedUpdate(javax.swing.event.DocumentEvent e) { applySortAndFilter(); alphaSaveTimer.restart(); }
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                applySortAndFilter();
+                alphaSaveTimer.restart();
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                applySortAndFilter();
+                alphaSaveTimer.restart();
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                applySortAndFilter();
+                alphaSaveTimer.restart();
+            }
         });
 
 //        ksTopKField.addActionListener(e -> {
@@ -643,15 +656,20 @@ public final class VertexRepairPanel extends JPanel {
         });
 
         ksTopKField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            @Override public void insertUpdate(javax.swing.event.DocumentEvent e) {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
                 ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
                 topKSaveTimer.restart();     // <-- add this
             }
-            @Override public void removeUpdate(javax.swing.event.DocumentEvent e) {
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
                 ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
                 topKSaveTimer.restart();     // <-- add this
             }
-            @Override public void changedUpdate(javax.swing.event.DocumentEvent e) {
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
                 ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
                 topKSaveTimer.restart();     // <-- add this
             }
@@ -718,7 +736,7 @@ public final class VertexRepairPanel extends JPanel {
             Graph g2 = candGraphByKey.computeIfAbsent(cand.key(), k -> buildCandidateGraph(finalBase, cand, gt));
             if (g2 == null) continue;
 
-            boolean useLocality = (gt == RepairGraphType.DAG || gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG);
+            boolean useLocality = false;// (gt == RepairGraphType.DAG || gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG);
 
 //            int after = evalViolationsOnly(g2);     // cheap-ish pass
 
@@ -766,10 +784,10 @@ public final class VertexRepairPanel extends JPanel {
                 if (g2 == null) continue;
 
                 // Expensive part: global M-KS
-//                double ksAfter = evalGraphOnce(g2).ksP();
+                double ksAfter = evalGraphOnce(g2).ksP();
 
-                Set<String> affected = affectedVertices(base, cand, x, g2);
-                double ksAfter = evalGraphLocality(base, baseCache, g2, affected, true).ksP();
+//                Set<String> affected = affectedVertices(base, cand, x, g2);
+//                double ksAfter = evalGraphLocality(base, baseCache, g2, affected, true).ksP();
 
                 ksByEditKey.put(cand.key(), ksAfter);
             }
@@ -921,7 +939,9 @@ public final class VertexRepairPanel extends JPanel {
                 if (g2 == null) continue;
 
                 Set<String> affected = affectedVertices(base, cand, x, g2);
-                double ksAfter = evalGraphLocality(base, baseCache, g2, affected, true).ksP();
+//                double ksAfter = evalGraphLocality(base, baseCache, g2, affected, true).ksP();
+                double ksAfter = evalGraphOnce(g2).ksP();
+
                 ksByEditKey.put(cand.key(), ksAfter);
             }
 
@@ -959,6 +979,25 @@ public final class VertexRepairPanel extends JPanel {
         });
     }
 
+//    private void goBack() {
+//        if (history.isEmpty()) return;
+//        workingGraph = history.pop();
+//        statusLabel.setText("Reverted to previous graph.");
+//        updateButtons();
+//        searchButton.setEnabled(false);
+//        statusLabel.setText("Searching...");
+//
+//        // NOTE: first-shot: run on EDT (simple). If it becomes slow, replace with SwingWorker.
+//        SwingUtilities.invokeLater(() -> {
+//            try {
+//                runSearch();
+//            } finally {
+//                searchButton.setEnabled(true);
+//                updateButtons();
+//            }
+//        });
+//    }
+
     private void applyCandidate(CandidateEdit cand) {
         history.push(safeCopy(workingGraph));
 
@@ -989,25 +1028,6 @@ public final class VertexRepairPanel extends JPanel {
 
         updateButtons();
     }
-
-//    private void goBack() {
-//        if (history.isEmpty()) return;
-//        workingGraph = history.pop();
-//        statusLabel.setText("Reverted to previous graph.");
-//        updateButtons();
-//        searchButton.setEnabled(false);
-//        statusLabel.setText("Searching...");
-//
-//        // NOTE: first-shot: run on EDT (simple). If it becomes slow, replace with SwingWorker.
-//        SwingUtilities.invokeLater(() -> {
-//            try {
-//                runSearch();
-//            } finally {
-//                searchButton.setEnabled(true);
-//                updateButtons();
-//            }
-//        });
-//    }
 
     private void goBack() {
         if (history.isEmpty()) return;
@@ -1095,6 +1115,8 @@ public final class VertexRepairPanel extends JPanel {
         return dedupCandidateEdits(out);
     }
 
+    // ---------------- data model classes ----------------
+
     /**
      * Endpoint/orientation variants you’re willing to consider for an existing adjacency x—y.
      * For replacement edits, it’s fine if some variants are “nonsense” for the graph type—
@@ -1138,8 +1160,6 @@ public final class VertexRepairPanel extends JPanel {
 
         return variants;
     }
-
-    // ---------------- data model classes ----------------
 
     /**
      * For ADD candidates: keep it *even more conservative* than replacement.
@@ -1230,6 +1250,37 @@ public final class VertexRepairPanel extends JPanel {
         }
     }
 
+//    /**
+//     * Counts implied-independence violations across ALL nodes, caching CI test results so
+//     * repeated scoring across candidates doesn't re-run the same checkIndependence(X,Y|Z).
+//     * <p>
+//     * - De-duplicates facts across vertices (each unique (X,Y|Z) evaluated once).
+//     * <p>
+//     * NOTE: Cache key is by variable NAMES. This assumes stable variable naming.
+//     */
+//    private int countImpliedViolationsAllNodesCached(Graph g) {
+//        if (g == null) return 0;
+//
+//        // Collect all implied facts, dedup by the same key used elsewhere.
+//        List<IndependenceFact> facts = baseModel.computeAllImpliedFacts(g);
+//        if (facts == null || facts.isEmpty()) return 0;
+//
+//        Map<String, IndependenceFact> dedup = new LinkedHashMap<>();
+//        for (IndependenceFact f : facts) {
+//            if (f == null) continue;
+//            dedup.putIfAbsent(factKey(f), f);
+//        }
+//
+//        int numReject = 0;
+//        for (IndependenceFact f : dedup.values()) {
+//            // “Violation” = implied independent but judged dependent by test
+//            if (!independentOf(f)) {
+//                numReject++;
+//            }
+//        }
+//        return numReject;
+//    }
+
     private void initGraphTypeComboFromGraph(Graph g) {
         List<RepairGraphType> plausible = new ArrayList<>();
         for (RepairGraphType gt : RepairGraphType.values()) {
@@ -1247,36 +1298,13 @@ public final class VertexRepairPanel extends JPanel {
         graphTypeCombo.setSelectedIndex(0);
     }
 
-    /**
-     * Counts implied-independence violations across ALL nodes, caching CI test results so
-     * repeated scoring across candidates doesn't re-run the same checkIndependence(X,Y|Z).
-     * <p>
-     * - De-duplicates facts across vertices (each unique (X,Y|Z) evaluated once).
-     * <p>
-     * NOTE: Cache key is by variable NAMES. This assumes stable variable naming.
-     */
-    private int countImpliedViolationsAllNodesCached(Graph g) {
-        if (g == null) return 0;
-
-        // Collect all implied facts, dedup by the same key used elsewhere.
-        List<IndependenceFact> facts = baseModel.computeAllImpliedFacts(g);
-        if (facts == null || facts.isEmpty()) return 0;
-
-        Map<String, IndependenceFact> dedup = new LinkedHashMap<>();
-        for (IndependenceFact f : facts) {
-            if (f == null) continue;
-            dedup.putIfAbsent(factKey(f), f);
-        }
-
-        int numReject = 0;
-        for (IndependenceFact f : dedup.values()) {
-            // “Violation” = implied independent but judged dependent by test
-            if (!independentOf(f)) {
-                numReject++;
-            }
-        }
-        return numReject;
-    }
+//    private IndependenceResult check(IndependenceFact f) {
+//        if (f == null || Q == null) return null;
+//
+//        // Use the cached query engine; it should canonicalize / align internally as needed.
+//        Set<Node> z = new LinkedHashSet<>(f.getZ());
+//        return Q.checkIndependence(f.getX(), f.getY(), z);
+//    }
 
     /**
      * Sets the knowledge object for the VertexRepairPanel.
@@ -1290,14 +1318,6 @@ public final class VertexRepairPanel extends JPanel {
 
         this.knowledge = knowledge;
     }
-
-//    private IndependenceResult check(IndependenceFact f) {
-//        if (f == null || Q == null) return null;
-//
-//        // Use the cached query engine; it should canonicalize / align internally as needed.
-//        Set<Node> z = new LinkedHashSet<>(f.getZ());
-//        return Q.checkIndependence(f.getX(), f.getY(), z);
-//    }
 
     private IndependenceResult check(IndependenceFact f) {
         if (stopRequested()) return null;   // <-- add this line
@@ -1315,6 +1335,375 @@ public final class VertexRepairPanel extends JPanel {
     private boolean independentOf(IndependenceFact f) {
         IndependenceResult r = check(f);
         return r != null && r.isIndependent();
+    }
+
+    private GraphEval evalGraphOnce(Graph g) {
+        if (g == null) return new GraphEval(0, Double.NaN, 0);
+
+        List<IndependenceFact> facts = baseModel.computeAllImpliedFacts(g);
+        if (facts == null || facts.isEmpty()) return new GraphEval(0, Double.NaN, 0);
+
+        // Dedup by the same key you already use
+        Map<String, IndependenceFact> dedup = new LinkedHashMap<>();
+        for (IndependenceFact f : facts) {
+            if (f == null) continue;
+            dedup.putIfAbsent(factKey(f), f);
+        }
+
+        int violations = 0;
+        List<Double> pvals = new ArrayList<>(dedup.size());
+
+        for (IndependenceFact f : dedup.values()) {
+            IndependenceResult r = check(f);   // uses Q cache
+            if (r == null) continue;
+
+            if (!r.isIndependent()) violations++;
+
+            double p = r.getPValue();
+            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
+                pvals.add(p);
+            }
+        }
+
+        double ks = VertexCheckIndTestModel.ksUniformPValue(pvals);
+        return new GraphEval(violations, ks, dedup.size());
+    }
+
+    private GlobalEvalCache buildBaselineCache(Graph g) {
+        if (g == null) return new GlobalEvalCache(Map.of());
+
+        Map<String, VertexContribution> out = new HashMap<>();
+
+        for (Node v : g.getNodes()) {
+            if (v == null) continue;
+            out.put(v.getName(), evalVertexContribution(g, v));
+        }
+
+        return new GlobalEvalCache(out);
+    }
+
+    private VertexContribution evalVertexContribution(Graph g, Node vInGraph) {
+        if (g == null || vInGraph == null) return new VertexContribution(Map.of(), Map.of());
+
+        // IMPORTANT: baseModel.computeImpliedFactsForVertex expects Node that exists in g.
+        Node v = g.getNode(vInGraph.getName());
+        if (v == null) return new VertexContribution(Map.of(), Map.of());
+
+        List<IndependenceFact> facts = baseModel.computeImpliedFactsForVertex(g, v);
+        if (facts == null || facts.isEmpty()) return new VertexContribution(Map.of(), Map.of());
+
+        Map<String, Boolean> viol = new HashMap<>();
+        Map<String, Double> pByKey = new HashMap<>();
+
+        for (IndependenceFact f : facts) {
+            if (f == null) continue;
+
+            String key = factKey(f);
+
+            // de-dup within vertex: first wins
+            if (viol.containsKey(key)) continue;
+
+            IndependenceResult r = check(f);  // uses Q cache
+            if (r == null) continue;
+
+            boolean isViolation = !r.isIndependent();
+            viol.put(key, isViolation);
+
+            double p = r.getPValue();
+            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
+                pByKey.put(key, p);
+            }
+        }
+
+        return new VertexContribution(viol, pByKey);
+    }
+
+    private GraphEval evalGraphLocality(Graph baseGraph,
+                                        GlobalEvalCache baseCache,
+                                        Graph candidateGraph,
+                                        Set<String> affectedVertexNames,
+                                        boolean computeKs) {
+        if (candidateGraph == null) return new GraphEval(0, Double.NaN, 0);
+
+        // 1) Start from baseline vertex contributions (shallow copy map)
+        Map<String, VertexContribution> contrib = new HashMap<>();
+        if (baseCache != null && baseCache.contribByVertexName() != null) {
+            contrib.putAll(baseCache.contribByVertexName());
+        }
+
+        // 2) Overwrite affected vertices with freshly evaluated contributions under candidateGraph
+        if (affectedVertexNames != null) {
+            for (String name : affectedVertexNames) {
+                if (name == null) continue;
+                Node v = candidateGraph.getNode(name);
+                if (v == null) {
+                    // Vertex missing shouldn't happen, but be defensive.
+                    contrib.remove(name);
+                    continue;
+                }
+                contrib.put(name, evalVertexContribution(candidateGraph, v));
+            }
+        }
+
+        // 3) Merge to global dedup by factKey
+        Map<String, Boolean> globalViolationByKey = new HashMap<>();
+        Map<String, Double> globalPByKey = computeKs ? new HashMap<>() : null;
+
+//        for (VertexContribution vc : contrib.values()) {
+
+        List<String> names = new ArrayList<>(contrib.keySet());
+        Collections.sort(names);
+
+        for (String name : names) {
+            VertexContribution vc = contrib.get(name);
+            if (vc == null) continue;
+
+            // violations
+            for (Map.Entry<String, Boolean> e : vc.violationByKey().entrySet()) {
+                String key = e.getKey();
+                if (key == null) continue;
+                globalViolationByKey.putIfAbsent(key, e.getValue());
+            }
+
+            // p-values only needed if computing KS
+            if (computeKs) {
+                for (Map.Entry<String, Double> e : vc.pByKey().entrySet()) {
+                    String key = e.getKey();
+                    if (key == null) continue;
+                    globalPByKey.putIfAbsent(key, e.getValue());
+                }
+            }
+        }
+
+        int violations = 0;
+        for (boolean isViol : globalViolationByKey.values()) {
+            if (isViol) violations++;
+        }
+
+        double ks = Double.NaN;
+        if (computeKs && globalPByKey != null && globalPByKey.size() >= 2) {
+            // Optional top-K downselect: keep largest p-values? smallest? (You probably want "most informative":
+            // easiest is: use them all but if huge, trim to ksTopK by random or by closeness to 0.5. Here we do random stable.)
+            List<Double> pvals = new ArrayList<>(globalPByKey.values());
+
+            if (ksTopK > 0 && pvals.size() > ksTopK) {
+                // deterministic shuffle so UI doesn't flicker
+                pvals.sort(Double::compareTo);
+                // take evenly spaced sample across [0,1]
+                List<Double> sampled = new ArrayList<>(ksTopK);
+                for (int i = 0; i < ksTopK; i++) {
+                    int idx = (int) Math.floor((i + 0.5) * pvals.size() / ksTopK);
+                    idx = Math.min(Math.max(idx, 0), pvals.size() - 1);
+                    sampled.add(pvals.get(idx));
+                }
+                pvals = sampled;
+            }
+
+            ks = VertexCheckIndTestModel.ksUniformPValue(pvals);
+        }
+
+        return new GraphEval(violations, ks, globalViolationByKey.size());
+    }
+
+    private int evalViolationsOnly(Graph g) {
+        if (g == null) return 0;
+
+        List<IndependenceFact> facts = baseModel.computeAllImpliedFacts(g);
+        if (facts == null || facts.isEmpty()) return 0;
+
+        Map<String, IndependenceFact> dedup = new LinkedHashMap<>();
+        for (IndependenceFact f : facts) {
+            if (f == null) continue;
+            dedup.putIfAbsent(factKey(f), f);
+        }
+
+        int violations = 0;
+        for (IndependenceFact f : dedup.values()) {
+            IndependenceResult r = check(f); // uses Q cache
+            if (r == null) continue;
+            if (!r.isIndependent()) violations++;
+        }
+
+        return violations;
+    }
+
+    /**
+     * Build + canonicalize + legality-check a candidate graph, returning null if illegal.
+     * IMPORTANT: this is used in BOTH passes so the result is consistent.
+     */
+    private Graph buildCandidateGraph(Graph base, CandidateEdit cand, RepairGraphType gt) {
+        if (base == null || cand == null) return null;
+
+        Graph g2 = cand.applyTo(safeCopy(base));
+        if (g2 == null) return null;
+
+        if (gt == RepairGraphType.CPDAG) {
+            g2 = canonicalizeToCpdagOrNull(g2);
+            if (g2 == null) return null;
+
+            // Optional: skip “no-change” candidates (except no-op) after canonicalization.
+            if (!cand.isNoOp() && g2.equals(base)) return null;
+        } else if (gt == RepairGraphType.PAG) {
+            // You only canonicalize PAG for base currently; keep candidate as-is unless you want to do more.
+            // If you DO want canonicalization here too, add it (but it may be expensive).
+        }
+
+        try {
+            if (gt != null && !isLegalGraphType(g2, gt)) return null;
+        } catch (Exception ignored) {
+            return null;
+        }
+
+        return g2;
+    }
+
+    private Set<String> affectedVertices(Graph base, CandidateEdit cand, Node x, Graph candidate) {
+        // Conservative and safe:
+        // - always recompute x
+        // - recompute any node whose adjacency to x changed (before vs after)
+        Set<String> affected = new LinkedHashSet<>();
+        if (x != null) affected.add(x.getName());
+
+        if (base == null || candidate == null || x == null) return affected;
+
+        Node xb = base.getNode(x.getName());
+        Node xc = candidate.getNode(x.getName());
+        if (xb == null || xc == null) return affected;
+
+        Set<String> nb = new HashSet<>();
+        for (Node n : base.getAdjacentNodes(xb)) nb.add(n.getName());
+
+        Set<String> nc = new HashSet<>();
+        for (Node n : candidate.getAdjacentNodes(xc)) nc.add(n.getName());
+
+        // symmetric difference
+        for (String name : nb) if (!nc.contains(name)) affected.add(name);
+        for (String name : nc) if (!nb.contains(name)) affected.add(name);
+
+        // ALSO recompute current neighbors of x (optional but often worth it; comment out if too expensive)
+        affected.addAll(nc);
+
+        return affected;
+    }
+
+    private void loadPrefsIntoUi() {
+        double a = PREFS.getDouble(PREF_ALPHA, DEFAULT_ALPHA);
+        int k = PREFS.getInt(PREF_KS_TOP_K, DEFAULT_KS_TOP_K);
+
+        // sanitize
+        if (!(a > 0.0 && a < 1.0)) a = DEFAULT_ALPHA;
+        if (k <= 0) k = DEFAULT_KS_TOP_K;
+
+        alphaField.setText(String.valueOf(a));
+        ksTopKField.setText(String.valueOf(k));
+        ksTopK = k;
+    }
+
+    private void initPrefTimers() {
+        alphaSaveTimer.setRepeats(false);
+        topKSaveTimer.setRepeats(false);
+    }
+
+    private void saveAlphaPref() {
+        double a = parseAlpha(alphaField.getText(), DEFAULT_ALPHA);
+        PREFS.putDouble(PREF_ALPHA, a);
+    }
+
+    private void saveTopKPref() {
+        int k = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
+        PREFS.putInt(PREF_KS_TOP_K, k);
+    }
+
+    private void startWatched(String title, Runnable backgroundWork, Runnable onDoneEdt) {
+        // Prevent parallel runs.
+        if (activeWorker != null) return;
+
+        SwingWorker<Void, String> worker = new SwingWorker<>() {
+            @Override
+            protected Void doInBackground() {
+                backgroundWork.run();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    // triggers exception if cancelled / failed
+                    get();
+                    if (onDoneEdt != null) onDoneEdt.run();
+                } catch (CancellationException ce) {
+                    statusLabel.setText("Cancelled.");
+                } catch (Exception ex) {
+                    // Preserve something visible but don't explode the UI
+                    statusLabel.setText("Error: " + (ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage()));
+                } finally {
+                    closeWatchDialog();
+                    activeWorker = null;
+                    searchButton.setEnabled(true);
+                    updateButtons();
+                }
+            }
+        };
+
+        this.activeWorker = worker;
+        searchButton.setEnabled(false);
+        statusLabel.setText(title + "...");
+
+        showWatchDialog(title, worker);
+        worker.execute();
+    }
+
+    private void showWatchDialog(String title, SwingWorker<?, ?> worker) {
+        closeWatchDialog();
+
+        Window owner = SwingUtilities.getWindowAncestor(this);
+        JDialog dlg = new JDialog(owner, title, Dialog.ModalityType.MODELESS);
+        dlg.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+        JPanel p = new JPanel(new BorderLayout(10, 10));
+        p.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+
+        JLabel msg = new JLabel("Running. Click Cancel to stop (may stop between tests).");
+        JProgressBar bar = new JProgressBar();
+        bar.setIndeterminate(true);
+
+        JButton cancel = new JButton("Cancel");
+        cancel.addActionListener(e -> {
+            // cancel(true) interrupts the worker thread
+            worker.cancel(true);
+            statusLabel.setText("Cancelling...");
+            cancel.setEnabled(false);
+        });
+
+        JPanel south = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        south.add(cancel);
+
+        p.add(msg, BorderLayout.NORTH);
+        p.add(bar, BorderLayout.CENTER);
+        p.add(south, BorderLayout.SOUTH);
+
+        dlg.setContentPane(p);
+        dlg.pack();
+        dlg.setLocationRelativeTo(this);
+        dlg.setVisible(true);
+
+        this.watchDialog = dlg;
+    }
+
+    private void closeWatchDialog() {
+        JDialog dlg = this.watchDialog;
+        this.watchDialog = null;
+        if (dlg != null) dlg.dispose();
+    }
+
+    // ---------- Locality-based global evaluation ----------
+
+    /**
+     * Convenience: treat either SwingWorker cancel or interrupt as "stop requested".
+     */
+    private boolean stopRequested() {
+        SwingWorker<?, ?> w = activeWorker;
+        return (w != null && w.isCancelled()) || Thread.currentThread().isInterrupted();
     }
 
     /**
@@ -1591,267 +1980,8 @@ public final class VertexRepairPanel extends JPanel {
         }
     }
 
-    private record GraphEval(int violations, double ksP, int nFacts) { }
-
-    private GraphEval evalGraphOnce(Graph g) {
-        if (g == null) return new GraphEval(0, Double.NaN, 0);
-
-        List<IndependenceFact> facts = baseModel.computeAllImpliedFacts(g);
-        if (facts == null || facts.isEmpty()) return new GraphEval(0, Double.NaN, 0);
-
-        // Dedup by the same key you already use
-        Map<String, IndependenceFact> dedup = new LinkedHashMap<>();
-        for (IndependenceFact f : facts) {
-            if (f == null) continue;
-            dedup.putIfAbsent(factKey(f), f);
-        }
-
-        int violations = 0;
-        List<Double> pvals = new ArrayList<>(dedup.size());
-
-        for (IndependenceFact f : dedup.values()) {
-            IndependenceResult r = check(f);   // uses Q cache
-            if (r == null) continue;
-
-            if (!r.isIndependent()) violations++;
-
-            double p = r.getPValue();
-            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
-                pvals.add(p);
-            }
-        }
-
-        double ks = ksUniformPValue(pvals);
-        return new GraphEval(violations, ks, dedup.size());
+    private record GraphEval(int violations, double ksP, int nFacts) {
     }
-
-    private GlobalEvalCache buildBaselineCache(Graph g) {
-        if (g == null) return new GlobalEvalCache(Map.of());
-
-        Map<String, VertexContribution> out = new HashMap<>();
-
-        for (Node v : g.getNodes()) {
-            if (v == null) continue;
-            out.put(v.getName(), evalVertexContribution(g, v));
-        }
-
-        return new GlobalEvalCache(out);
-    }
-
-    private VertexContribution evalVertexContribution(Graph g, Node vInGraph) {
-        if (g == null || vInGraph == null) return new VertexContribution(Map.of(), Map.of());
-
-        // IMPORTANT: baseModel.computeImpliedFactsForVertex expects Node that exists in g.
-        Node v = g.getNode(vInGraph.getName());
-        if (v == null) return new VertexContribution(Map.of(), Map.of());
-
-        List<IndependenceFact> facts = baseModel.computeImpliedFactsForVertex(g, v);
-        if (facts == null || facts.isEmpty()) return new VertexContribution(Map.of(), Map.of());
-
-        Map<String, Boolean> viol = new HashMap<>();
-        Map<String, Double> pByKey = new HashMap<>();
-
-        for (IndependenceFact f : facts) {
-            if (f == null) continue;
-
-            String key = factKey(f);
-
-            // de-dup within vertex: first wins
-            if (viol.containsKey(key)) continue;
-
-            IndependenceResult r = check(f);  // uses Q cache
-            if (r == null) continue;
-
-            boolean isViolation = !r.isIndependent();
-            viol.put(key, isViolation);
-
-            double p = r.getPValue();
-            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
-                pByKey.put(key, p);
-            }
-        }
-
-        return new VertexContribution(viol, pByKey);
-    }
-
-    private GraphEval evalGraphLocality(Graph baseGraph,
-                                        GlobalEvalCache baseCache,
-                                        Graph candidateGraph,
-                                        Set<String> affectedVertexNames,
-                                        boolean computeKs) {
-        if (candidateGraph == null) return new GraphEval(0, Double.NaN, 0);
-
-        // 1) Start from baseline vertex contributions (shallow copy map)
-        Map<String, VertexContribution> contrib = new HashMap<>();
-        if (baseCache != null && baseCache.contribByVertexName() != null) {
-            contrib.putAll(baseCache.contribByVertexName());
-        }
-
-        // 2) Overwrite affected vertices with freshly evaluated contributions under candidateGraph
-        if (affectedVertexNames != null) {
-            for (String name : affectedVertexNames) {
-                if (name == null) continue;
-                Node v = candidateGraph.getNode(name);
-                if (v == null) {
-                    // Vertex missing shouldn't happen, but be defensive.
-                    contrib.remove(name);
-                    continue;
-                }
-                contrib.put(name, evalVertexContribution(candidateGraph, v));
-            }
-        }
-
-        // 3) Merge to global dedup by factKey
-        Map<String, Boolean> globalViolationByKey = new HashMap<>();
-        Map<String, Double> globalPByKey = computeKs ? new HashMap<>() : null;
-
-//        for (VertexContribution vc : contrib.values()) {
-
-        List<String> names = new ArrayList<>(contrib.keySet());
-        Collections.sort(names);
-
-        for (String name : names) {
-            VertexContribution vc = contrib.get(name);
-            if (vc == null) continue;
-
-            // violations
-            for (Map.Entry<String, Boolean> e : vc.violationByKey().entrySet()) {
-                String key = e.getKey();
-                if (key == null) continue;
-                globalViolationByKey.putIfAbsent(key, e.getValue());
-            }
-
-            // p-values only needed if computing KS
-            if (computeKs) {
-                for (Map.Entry<String, Double> e : vc.pByKey().entrySet()) {
-                    String key = e.getKey();
-                    if (key == null) continue;
-                    globalPByKey.putIfAbsent(key, e.getValue());
-                }
-            }
-        }
-
-        int violations = 0;
-        for (boolean isViol : globalViolationByKey.values()) {
-            if (isViol) violations++;
-        }
-
-        double ks = Double.NaN;
-        if (computeKs && globalPByKey != null && globalPByKey.size() >= 2) {
-            // Optional top-K downselect: keep largest p-values? smallest? (You probably want "most informative":
-            // easiest is: use them all but if huge, trim to ksTopK by random or by closeness to 0.5. Here we do random stable.)
-            List<Double> pvals = new ArrayList<>(globalPByKey.values());
-
-            if (ksTopK > 0 && pvals.size() > ksTopK) {
-                // deterministic shuffle so UI doesn't flicker
-                pvals.sort(Double::compareTo);
-                // take evenly spaced sample across [0,1]
-                List<Double> sampled = new ArrayList<>(ksTopK);
-                for (int i = 0; i < ksTopK; i++) {
-                    int idx = (int) Math.floor((i + 0.5) * pvals.size() / ksTopK);
-                    idx = Math.min(Math.max(idx, 0), pvals.size() - 1);
-                    sampled.add(pvals.get(idx));
-                }
-                pvals = sampled;
-            }
-
-            ks = ksUniformPValue(pvals);
-        }
-
-        return new GraphEval(violations, ks, globalViolationByKey.size());
-    }
-
-    private int evalViolationsOnly(Graph g) {
-        if (g == null) return 0;
-
-        List<IndependenceFact> facts = baseModel.computeAllImpliedFacts(g);
-        if (facts == null || facts.isEmpty()) return 0;
-
-        Map<String, IndependenceFact> dedup = new LinkedHashMap<>();
-        for (IndependenceFact f : facts) {
-            if (f == null) continue;
-            dedup.putIfAbsent(factKey(f), f);
-        }
-
-        int violations = 0;
-        for (IndependenceFact f : dedup.values()) {
-            IndependenceResult r = check(f); // uses Q cache
-            if (r == null) continue;
-            if (!r.isIndependent()) violations++;
-        }
-
-        return violations;
-    }
-
-    /**
-     * Build + canonicalize + legality-check a candidate graph, returning null if illegal.
-     * IMPORTANT: this is used in BOTH passes so the result is consistent.
-     */
-    private Graph buildCandidateGraph(Graph base, CandidateEdit cand, RepairGraphType gt) {
-        if (base == null || cand == null) return null;
-
-        Graph g2 = cand.applyTo(safeCopy(base));
-        if (g2 == null) return null;
-
-        if (gt == RepairGraphType.CPDAG) {
-            g2 = canonicalizeToCpdagOrNull(g2);
-            if (g2 == null) return null;
-
-            // Optional: skip “no-change” candidates (except no-op) after canonicalization.
-            if (!cand.isNoOp() && g2.equals(base)) return null;
-        } else if (gt == RepairGraphType.PAG) {
-            // You only canonicalize PAG for base currently; keep candidate as-is unless you want to do more.
-            // If you DO want canonicalization here too, add it (but it may be expensive).
-        }
-
-        try {
-            if (gt != null && !isLegalGraphType(g2, gt)) return null;
-        } catch (Exception ignored) {
-            return null;
-        }
-
-        return g2;
-    }
-
-    private Set<String> affectedVertices(Graph base, CandidateEdit cand, Node x, Graph candidate) {
-        // Conservative and safe:
-        // - always recompute x
-        // - recompute any node whose adjacency to x changed (before vs after)
-        Set<String> affected = new LinkedHashSet<>();
-        if (x != null) affected.add(x.getName());
-
-        if (base == null || candidate == null || x == null) return affected;
-
-        Node xb = base.getNode(x.getName());
-        Node xc = candidate.getNode(x.getName());
-        if (xb == null || xc == null) return affected;
-
-        Set<String> nb = new HashSet<>();
-        for (Node n : base.getAdjacentNodes(xb)) nb.add(n.getName());
-
-        Set<String> nc = new HashSet<>();
-        for (Node n : candidate.getAdjacentNodes(xc)) nc.add(n.getName());
-
-        // symmetric difference
-        for (String name : nb) if (!nc.contains(name)) affected.add(name);
-        for (String name : nc) if (!nb.contains(name)) affected.add(name);
-
-        // ALSO recompute current neighbors of x (optional but often worth it; comment out if too expensive)
-        affected.addAll(nc);
-
-        return affected;
-    }
-
-    private static int parseTopK(String s, int fallback) {
-        try {
-            int k = Integer.parseInt(s.trim());
-            return (k <= 0 ? fallback : k);
-        } catch (Exception ignored) {
-            return fallback;
-        }
-    }
-
-    // ---------- Locality-based global evaluation ----------
 
     /**
      * Per-vertex evaluated contribution:
@@ -1861,127 +1991,11 @@ public final class VertexRepairPanel extends JPanel {
     private record VertexContribution(
             Map<String, Boolean> violationByKey,
             Map<String, Double> pByKey
-    ) { }
+    ) {
+    }
 
     private record GlobalEvalCache(
             Map<String, VertexContribution> contribByVertexName
-    ) { }
-
-    private void loadPrefsIntoUi() {
-        double a = PREFS.getDouble(PREF_ALPHA, DEFAULT_ALPHA);
-        int k = PREFS.getInt(PREF_KS_TOP_K, DEFAULT_KS_TOP_K);
-
-        // sanitize
-        if (!(a > 0.0 && a < 1.0)) a = DEFAULT_ALPHA;
-        if (k <= 0) k = DEFAULT_KS_TOP_K;
-
-        alphaField.setText(String.valueOf(a));
-        ksTopKField.setText(String.valueOf(k));
-        ksTopK = k;
-    }
-
-    private void initPrefTimers() {
-        alphaSaveTimer.setRepeats(false);
-        topKSaveTimer.setRepeats(false);
-    }
-
-    private void saveAlphaPref() {
-        double a = parseAlpha(alphaField.getText(), DEFAULT_ALPHA);
-        PREFS.putDouble(PREF_ALPHA, a);
-    }
-
-    private void saveTopKPref() {
-        int k = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
-        PREFS.putInt(PREF_KS_TOP_K, k);
-    }
-
-    private void startWatched(String title, Runnable backgroundWork, Runnable onDoneEdt) {
-        // Prevent parallel runs.
-        if (activeWorker != null) return;
-
-        SwingWorker<Void, String> worker = new SwingWorker<>() {
-            @Override
-            protected Void doInBackground() {
-                backgroundWork.run();
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    // triggers exception if cancelled / failed
-                    get();
-                    if (onDoneEdt != null) onDoneEdt.run();
-                } catch (CancellationException ce) {
-                    statusLabel.setText("Cancelled.");
-                } catch (Exception ex) {
-                    // Preserve something visible but don't explode the UI
-                    statusLabel.setText("Error: " + (ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage()));
-                } finally {
-                    closeWatchDialog();
-                    activeWorker = null;
-                    searchButton.setEnabled(true);
-                    updateButtons();
-                }
-            }
-        };
-
-        this.activeWorker = worker;
-        searchButton.setEnabled(false);
-        statusLabel.setText(title + "...");
-
-        showWatchDialog(title, worker);
-        worker.execute();
-    }
-
-    private void showWatchDialog(String title, SwingWorker<?, ?> worker) {
-        closeWatchDialog();
-
-        Window owner = SwingUtilities.getWindowAncestor(this);
-        JDialog dlg = new JDialog(owner, title, Dialog.ModalityType.MODELESS);
-        dlg.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-
-        JPanel p = new JPanel(new BorderLayout(10, 10));
-        p.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
-
-        JLabel msg = new JLabel("Running. Click Cancel to stop (may stop between tests).");
-        JProgressBar bar = new JProgressBar();
-        bar.setIndeterminate(true);
-
-        JButton cancel = new JButton("Cancel");
-        cancel.addActionListener(e -> {
-            // cancel(true) interrupts the worker thread
-            worker.cancel(true);
-            statusLabel.setText("Cancelling...");
-            cancel.setEnabled(false);
-        });
-
-        JPanel south = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        south.add(cancel);
-
-        p.add(msg, BorderLayout.NORTH);
-        p.add(bar, BorderLayout.CENTER);
-        p.add(south, BorderLayout.SOUTH);
-
-        dlg.setContentPane(p);
-        dlg.pack();
-        dlg.setLocationRelativeTo(this);
-        dlg.setVisible(true);
-
-        this.watchDialog = dlg;
-    }
-
-    private void closeWatchDialog() {
-        JDialog dlg = this.watchDialog;
-        this.watchDialog = null;
-        if (dlg != null) dlg.dispose();
-    }
-
-    /**
-     * Convenience: treat either SwingWorker cancel or interrupt as "stop requested".
-     */
-    private boolean stopRequested() {
-        SwingWorker<?, ?> w = activeWorker;
-        return (w != null && w.isCancelled()) || Thread.currentThread().isInterrupted();
+    ) {
     }
 }

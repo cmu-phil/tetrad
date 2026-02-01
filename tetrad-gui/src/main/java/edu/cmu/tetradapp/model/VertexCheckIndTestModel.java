@@ -35,6 +35,7 @@ import edu.cmu.tetradapp.session.SessionModel;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
+import org.jetbrains.annotations.NotNull;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -359,14 +360,23 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
                 Z.add(independenceTest.getVariable(_z.getName()));
             }
 
-//            try {
-//                IndependenceResult r = independenceTest.checkIndependence(X, Y, Z);
-            IndependenceResult r = cachedQueries.checkIndependence(X, Y, Z);
-            double p = r.getPValue();
-            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) ok++;
-//            } catch (Exception ex) {
-//                TetradLogger.getInstance().log("VertexCheck: exception for " + fact + " : " + ex);
-//            }
+////            try {
+////                IndependenceResult r = independenceTest.checkIndependence(X, Y, Z);
+//            IndependenceResult r = cachedQueries.checkIndependence(X, Y, Z);
+//            double p = r.getPValue();
+//            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) ok++;
+////            } catch (Exception ex) {
+////                TetradLogger.getInstance().log("VertexCheck: exception for " + fact + " : " + ex);
+////            }
+
+            IndependenceResult r;
+            try {
+                r = (cachedQueries != null)
+                        ? cachedQueries.checkIndependence(X, Y, Z)
+                        : independenceTest.checkIndependence(X, Y, Z);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         TetradLogger.getInstance().log("VertexCheck: x=" + x.getName() + " tried=" + tried + " okP=" + ok);
@@ -894,24 +904,33 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public ModelSummary getModelSummary() {
         if (modelSummary != null) return modelSummary;
 
-        List<Double> pvals = new ArrayList<>();
-        for (String v : getVertexNames()) {
-            VertexSummary s = getSummary(v);
-            if (s == null) continue;
-            // better: pull raw p-values from stored results
-            for (IndependenceResult r : getResultsForVertex(v)) {
-                double p = r.getPValue();
-                if (!Double.isNaN(p) && p >= 0 && p <= 1) pvals.add(p);
-            }
-        }
-        if (pvals.isEmpty()) return null;
+        List<Double> pvals = getDedupedPvalues();
 
         double ksP = ksUniformPValue(pvals);
         modelSummary = new ModelSummary(pvals.size(), ksP);
         return modelSummary;
     }
 
-    private double ksUniformPValue(List<Double> pvals) {
+    private @NotNull List<Double> getDedupedPvalues() {
+        Map<IndependenceFact, Double> map = new HashMap<>();
+
+        for (String v : getVertexNames()) {
+            VertexSummary s = getSummary(v);
+            if (s == null) continue;
+            // better: pull raw p-values from stored results
+            for (IndependenceResult r : getResultsForVertex(v)) {
+                double p = r.getPValue();
+                if (!Double.isNaN(p) && p >= 0 && p <= 1){
+                    map.put(r.getFact(), r.getPValue());
+                }
+            }
+        }
+
+        List<Double> pvals = new ArrayList<>(map.values());
+        return pvals;
+    }
+
+    public static double ksUniformPValue(List<Double> pvals) {
         if (pvals == null || pvals.size() < 2) return Double.NaN;
 
         double[] x = pvals.stream().mapToDouble(Double::doubleValue).toArray();
