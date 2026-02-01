@@ -148,6 +148,9 @@ public class VertexCheckEditor extends JPanel {
 
     private boolean applyingGraphProgrammatically = false; // prevents history double-push
 
+    private final JLabel modelKsLabel = new JLabel("Model KS: (not computed)");
+    private final JLabel modelNpLabel = new JLabel("Model Np: -");
+
     private Knowledge knowledge;
 
     CachedIndependenceQueries Q;
@@ -550,10 +553,17 @@ public class VertexCheckEditor extends JPanel {
             public void watch() {
                 String selectedVertex = getSelectedVertexName();
                 model.runAllVertices(true);
+//                SwingUtilities.invokeLater(() -> {
+//                    overviewModel.fireTableDataChanged();
+//                    restoreOverviewSelection(selectedVertex);
+////                    selectFirstRowIfAny();
+//
+//                });
+
                 SwingUtilities.invokeLater(() -> {
                     overviewModel.fireTableDataChanged();
+                    refreshModelDiagnostics();
                     restoreOverviewSelection(selectedVertex);
-//                    selectFirstRowIfAny();
                 });
 
             }
@@ -634,6 +644,15 @@ public class VertexCheckEditor extends JPanel {
 
         JScrollPane overviewScroll = new JScrollPane(overviewTable);
         overviewScroll.setPreferredSize(new Dimension(520, 500));
+
+        JPanel modelPanel = new JPanel(new GridLayout(0, 1, 0, 2));
+        modelPanel.setBorder(BorderFactory.createTitledBorder("Model diagnostics"));
+        modelPanel.add(modelNpLabel);
+        modelPanel.add(modelKsLabel);
+
+        JPanel left = new JPanel(new BorderLayout(6, 6));
+        left.add(overviewScroll, BorderLayout.CENTER);
+        left.add(modelPanel, BorderLayout.SOUTH);
 
         factsModel = new AbstractTableModel() {
             private final String[] cols = new String[]{"#", "Fact", "Result", "p-value"};
@@ -737,7 +756,8 @@ public class VertexCheckEditor extends JPanel {
         rightTop.add(factsPane, BorderLayout.CENTER);
         rightTop.add(histogramPanel, BorderLayout.SOUTH);
 
-        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, overviewScroll, rightTop);
+//        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, overviewScroll, rightTop);
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, left, rightTop);
         split.setResizeWeight(0.45);
 
         add(split, BorderLayout.CENTER);
@@ -781,6 +801,8 @@ public class VertexCheckEditor extends JPanel {
                     } catch (Exception ex) {
                         return;
                     }
+
+                    refreshModelDiagnostics();
 
                     // Only refresh details for whichever node is currently "active"
                     String stillActive = getActiveSelectedVertexName();
@@ -1515,7 +1537,10 @@ public class VertexCheckEditor extends JPanel {
         var selectedFactKeys    = getSelectedFactsKeys();
 
         // Graph changed => cached per-vertex results are stale.
+//        model.clearResults();
+
         model.clearResults();
+        refreshModelDiagnostics();
 
         // Recompute only what’s visible/selected (or compute nothing and let selection triggers do it)
         for (String v : selectedVertexNames) {
@@ -1673,5 +1698,17 @@ public class VertexCheckEditor extends JPanel {
             applyingGraphProgrammatically = false;
             updateUndoButtonEnabled();
         }
+    }
+
+    private void refreshModelDiagnostics() {
+        // You decide semantics: either only valid after Run All, or “over computed so far”.
+        VertexCheckIndTestModel.ModelSummary ms = model.getModelSummary(); // you add this
+        if (ms == null) {
+            modelNpLabel.setText("Model Np: -");
+            modelKsLabel.setText("Model KS: (not computed)");
+            return;
+        }
+        modelNpLabel.setText("Model Np: " + ms.numPValues());
+        modelKsLabel.setText("Model KS: " + fmt(ms.ksPValue()));
     }
 }

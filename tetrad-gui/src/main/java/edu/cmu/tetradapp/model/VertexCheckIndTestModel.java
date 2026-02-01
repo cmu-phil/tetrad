@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.session.SessionModel;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
+import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -219,6 +220,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         summariesByVertex.clear();
         resultsByVertex.clear();
 //        conditioningSetByVertex.clear();
+        modelSummary = null;
     }
 
     // --- Implementation -------------------------------------------------------------------------
@@ -884,5 +886,36 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
                                 double medianP) implements TetradSerializable {
         @Serial
         private static final long serialVersionUID = 1L;
+    }
+    public static record ModelSummary(int numPValues, double ksPValue) {}
+
+    private ModelSummary modelSummary; // cached
+
+    public ModelSummary getModelSummary() {
+        if (modelSummary != null) return modelSummary;
+
+        List<Double> pvals = new ArrayList<>();
+        for (String v : getVertexNames()) {
+            VertexSummary s = getSummary(v);
+            if (s == null) continue;
+            // better: pull raw p-values from stored results
+            for (IndependenceResult r : getResultsForVertex(v)) {
+                double p = r.getPValue();
+                if (!Double.isNaN(p) && p >= 0 && p <= 1) pvals.add(p);
+            }
+        }
+        if (pvals.isEmpty()) return null;
+
+        double ksP = ksUniformPValue(pvals);
+        modelSummary = new ModelSummary(pvals.size(), ksP);
+        return modelSummary;
+    }
+
+    private double ksUniformPValue(List<Double> pvals) {
+        if (pvals == null || pvals.size() < 2) return Double.NaN;
+
+        double[] x = pvals.stream().mapToDouble(Double::doubleValue).toArray();
+        KolmogorovSmirnovTest ks = new KolmogorovSmirnovTest();
+        return ks.kolmogorovSmirnovTest(new UniformRealDistribution(0.0, 1.0), x);
     }
 }
