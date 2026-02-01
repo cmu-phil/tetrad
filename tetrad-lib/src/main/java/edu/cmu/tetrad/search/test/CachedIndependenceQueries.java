@@ -10,74 +10,65 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Shared cache + utilities for independence testing keyed by (X,Y|Z) using variable NAMES.
+ * Shared cache + utilities for independence testing keyed by (X,Y|Z) using variable NAMES
+ * for mapping into the test, but using a structured int-ID cache key for speed/GC reduction.
  *
- * Goals:
- *  - One canonical keying scheme across UI components.
- *  - Cache slow IndependenceTest.checkIndependence(X, Y, Z) calls.
- *  - Provide helpers to list p-values nodewise or globally with consistent dedup rules.
+ * Key properties:
+ *  - X,Y treated as unordered for caching (minId,maxId)
+ *  - Z represented as sorted int[] of variable IDs
+ *  - No String key construction or String.join in the hot path
  *
  * Thread-safety:
  *  - Safe for concurrent reads/writes (ConcurrentHashMap + computeIfAbsent).
- *
- * Notes:
- *  - Keys are based on names: X,Y unordered, Z sorted by name.
- *  - Node identity differences between Graph copies do not matter as long as names match.
  */
 public final class CachedIndependenceQueries implements TetradSerializable {
 
     @SuppressWarnings("unused")
     private static final long serialVersionUID = 23L;
 
-    /**
-     * Policy for how to treat errors thrown during testing.
-     */
+    // ------------------------ policies ------------------------
+
     public enum ErrorPolicy {
-        /** If a test throws, treat as independent (i.e., not a violation). */
         TREAT_AS_INDEPENDENT,
-        /** If a test throws, treat as dependent (conservative). */
         TREAT_AS_DEPENDENT,
-        /** If a test throws, rethrow as a RuntimeException. */
         RETHROW
     }
 
-    /**
-     * Dedup policy when collecting p-values/results.
-     */
     public enum Dedup {
-        /** Dedup within the collection you pass in (typical nodewise). */
         WITHIN_INPUT,
-        /** Dedup across all calls via the global cache key (typical global/model). */
         BY_CACHE_KEY
     }
 
-    /**
-     * Small immutable view of a cached test evaluation.
-     * (We store only what we need for Markov-checking displays/KS tests.)
-     */
     public record Eval(boolean independent, double pValue) implements TetradSerializable {
         @Serial
         private static final long serialVersionUID = 23L;
     }
 
-    /**
-     * Provides implied facts for a vertex, without binding this class to app-layer models.
-     * VertexCheckIndTestModel already knows how to do this; you pass a lambda.
-     */
     @FunctionalInterface
     public interface ImpliedFactProvider {
         List<IndependenceFact> impliedFactsForVertex(Node vertex);
     }
 
+    // ------------------------ state ------------------------
+
     private transient volatile IndependenceTest test;
-    private transient volatile Map<String, Node> testVarByName = Map.of(); // rebuilt on setTest()
 
-    // Keyed by canonical queryKey(X,Y,Z) -> cached Eval
-    private final ConcurrentMap<String, Eval> evalCache = new ConcurrentHashMap<>();
+    /**
+     * Map name -> Node instance used by the test (rebuilt on setTest()).
+     * Used to rebind facts that come from graph copies.
+     */
+    private transient volatile Map<String, Node> testVarByName = Map.of();
 
-    // Optional: cache canonical keys for facts to avoid recomputing them when listing
-    // (not strictly necessary; cheap)
-    // private final ConcurrentMap<IndependenceFact, String> factKeyCache = new ConcurrentHashMap<>();
+    /**
+     * Map name -> small int id (rebuilt on setTest()).
+     * Used only for fast cache keys.
+     */
+    private transient volatile Map<String, Integer> idByName = Map.of();
+
+    /**
+     * Cache keyed by structured QueryKey.
+     */
+    private final ConcurrentMap<QueryKey, Eval> evalCache = new ConcurrentHashMap<>();
 
     private volatile ErrorPolicy errorPolicy = ErrorPolicy.TREAT_AS_INDEPENDENT;
 
@@ -87,29 +78,26 @@ public final class CachedIndependenceQueries implements TetradSerializable {
         this.errorPolicy = Objects.requireNonNull(errorPolicy, "errorPolicy");
     }
 
+    // ------------------------ lifecycle ------------------------
+
     /**
      * Set/replace the underlying IndependenceTest. Clears all cached evaluations.
      * Call this whenever the user changes the test or its parameters.
      */
     public synchronized void setTest(IndependenceTest test) {
         this.test = test;
-        rebuildNameMap(test);
+        rebuildMaps(test);
         clearCaches();
     }
 
-    /**
-     * Clears caches (but does not unset the test).
-     */
     public void clearCaches() {
         evalCache.clear();
     }
 
-    /**
-     * Unset the test (clears caches too).
-     */
     public synchronized void clearTest() {
         this.test = null;
         this.testVarByName = Map.of();
+        this.idByName = Map.of();
         clearCaches();
     }
 
@@ -125,64 +113,50 @@ public final class CachedIndependenceQueries implements TetradSerializable {
         return errorPolicy;
     }
 
-    /**
-     * Canonical key for caching (X,Y unordered; Z sorted).
-     */
-    public static String queryKey(IndependenceFact f) {
-        String a = f.getX().getName();
-        String b = f.getY().getName();
-
-        if (a.compareTo(b) > 0) {
-            String t = a;
-            a = b;
-            b = t;
-        }
-
-        List<String> z = new ArrayList<>();
-        for (Node n : f.getZ()) z.add(n.getName());
-        Collections.sort(z);
-
-        return a + "|" + b + "|" + String.join(",", z);
-    }
+    // ------------------------ core API ------------------------
 
     /**
      * Evaluate a single IndependenceFact, using the cache.
-     * Result keying is by names; we map to the test's Node objects by name.
+     * Facts may contain Nodes from graph copies; we key by name->id and rebind to test variables.
      */
     public Eval eval(IndependenceFact fact) {
         IndependenceTest local = this.test;
         if (local == null || fact == null) {
-            // No test => treat as independent with NaN p-value.
             return new Eval(true, Double.NaN);
         }
 
-        final String key = queryKey(fact);
+        // Build a fast structured key using ids.
+        QueryKey key = keyOf(fact);
+        if (key == null) {
+            // Missing vars => treat as independent; don't cache under a null key.
+            return new Eval(true, Double.NaN);
+        }
 
         return evalCache.computeIfAbsent(key, k -> computeEval(local, fact));
     }
 
-
+    /**
+     * Compatibility method used by UI code: returns an IndependenceResult.
+     * NOTE: This method still does the "rebind to test variables by name" to avoid identity issues.
+     */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (test == null) throw new IllegalStateException("Independence test not set.");
 
-        // Rebind to the test's variable instances (prevents identity mismatches).
-        Node X = test.getVariable(x.getName());
-        Node Y = test.getVariable(y.getName());
+        Node X = mapToTestNode(x);
+        Node Y = mapToTestNode(y);
 
         Set<Node> Z = new LinkedHashSet<>();
         if (z != null) {
             for (Node zi : z) {
-                if (zi == null) continue;
-                Node ZZ = test.getVariable(zi.getName());
+                Node ZZ = mapToTestNode(zi);
                 if (ZZ != null) Z.add(ZZ);
             }
         }
 
-        // If variables aren't found, treat as independent with a negative score (no evidence of dependence).
         if (X == null || Y == null) {
             IndependenceFact fact = new IndependenceFact(x, y, z == null ? Set.of() : z);
             double alpha = test.getAlpha();
-            double score = -alpha; // negative => "independent-ish"
+            double score = -alpha;
             return new IndependenceResult(fact, true, Double.NaN, score);
         }
 
@@ -191,47 +165,33 @@ public final class CachedIndependenceQueries implements TetradSerializable {
 
         double p = eval.pValue();
         double alpha = test.getAlpha();
-
-        // Robust scoring: score = alpha - p, but if p is NaN treat as "no evidence of dependence".
         double score = Double.isNaN(p) ? -alpha : (alpha - p);
 
         return new IndependenceResult(fact, eval.independent(), p, score);
     }
 
-    /**
-     * Convenience: isIndependent for a fact.
-     */
     public boolean isIndependent(IndependenceFact fact) {
         return eval(fact).independent();
     }
 
-    /**
-     * Convenience: pValue for a fact.
-     */
     public double pValue(IndependenceFact fact) {
         return eval(fact).pValue();
     }
 
-    /**
-     * Collect evaluations for a given list of facts with dedup policy.
-     *
-     * Dedup.WITHIN_INPUT: de-dups repeated facts within this input list only (typical nodewise).
-     * Dedup.BY_CACHE_KEY: uses cache key dedup; in practice identical, but makes intent explicit.
-     */
     public List<Eval> evalAll(Collection<IndependenceFact> facts, Dedup dedup) {
         if (facts == null || facts.isEmpty()) return List.of();
 
-        Set<String> seen = new HashSet<>();
+        // Dedup in this list by cache key.
+        Set<QueryKey> seen = new HashSet<>();
         List<Eval> out = new ArrayList<>(facts.size());
 
         for (IndependenceFact f : facts) {
             if (f == null) continue;
 
-            String k = queryKey(f);
-            if (dedup == Dedup.WITHIN_INPUT) {
-                if (!seen.add(k)) continue;
-            } else {
-                // BY_CACHE_KEY: still skip duplicates in this list, but key is same anyway.
+            QueryKey k = keyOf(f);
+            if (k == null) continue;
+
+            if (dedup == Dedup.WITHIN_INPUT || dedup == Dedup.BY_CACHE_KEY) {
                 if (!seen.add(k)) continue;
             }
 
@@ -241,10 +201,6 @@ public final class CachedIndependenceQueries implements TetradSerializable {
         return out;
     }
 
-    /**
-     * Collect p-values for a list of facts, with a dedup policy and a validity filter.
-     * By default, filters to [0,1] and excludes NaN.
-     */
     public List<Double> pValuesForFacts(Collection<IndependenceFact> facts, Dedup dedup) {
         List<Eval> evals = evalAll(facts, dedup);
         List<Double> p = new ArrayList<>(evals.size());
@@ -257,24 +213,16 @@ public final class CachedIndependenceQueries implements TetradSerializable {
         return p;
     }
 
-    /**
-     * Nodewise: obtain implied facts for a vertex via provider, and return p-values (dedup within vertex).
-     */
     public List<Double> pValuesForVertex(ImpliedFactProvider provider, Node vertex) {
         if (provider == null || vertex == null) return List.of();
         List<IndependenceFact> facts = provider.impliedFactsForVertex(vertex);
         return pValuesForFacts(facts, Dedup.WITHIN_INPUT);
     }
 
-    /**
-     * Model/global: collect p-values across many vertices, with global dedup by key.
-     * This is ideal for "M-KS".
-     */
     public List<Double> pValuesForAllVertices(Collection<Node> vertices, ImpliedFactProvider provider) {
         if (vertices == null || vertices.isEmpty() || provider == null) return List.of();
 
-        // Global dedup across vertices by cache key.
-        Set<String> seen = new HashSet<>();
+        Set<QueryKey> seen = new HashSet<>();
         List<Double> pvals = new ArrayList<>();
 
         for (Node v : vertices) {
@@ -284,7 +232,9 @@ public final class CachedIndependenceQueries implements TetradSerializable {
 
             for (IndependenceFact f : facts) {
                 if (f == null) continue;
-                String k = queryKey(f);
+
+                QueryKey k = keyOf(f);
+                if (k == null) continue;
                 if (!seen.add(k)) continue;
 
                 double p = pValue(f);
@@ -297,28 +247,112 @@ public final class CachedIndependenceQueries implements TetradSerializable {
         return pvals;
     }
 
-    // ------------------------------------------------------------------
+    // ------------------------ keying ------------------------
 
-    private void rebuildNameMap(IndependenceTest test) {
-        if (test == null) {
-            this.testVarByName = Map.of();
-            return;
+    /**
+     * Structured key for (X,Y|Z) with X,Y unordered and Z sorted.
+     * Immutable and safe for use as a CHM key. Hash is precomputed.
+     */
+    private static final class QueryKey implements TetradSerializable {
+
+        @Serial
+        private static final long serialVersionUID = 23L;
+
+        final int a;        // min(xId,yId)
+        final int b;        // max(xId,yId)
+        final int[] z;      // sorted
+        final int hash;     // precomputed
+
+        QueryKey(int a, int b, int[] z) {
+            this.a = a;
+            this.b = b;
+            this.z = (z == null || z.length == 0) ? new int[0] : z;
+            this.hash = computeHash(a, b, this.z);
         }
 
-        Map<String, Node> map = new HashMap<>();
-        try {
-            for (Node n : test.getVariables()) {
-                if (n != null && n.getName() != null) {
-                    map.put(n.getName(), n);
-                }
+        private static int computeHash(int a, int b, int[] z) {
+            int h = 31 * a + b;
+            h = 31 * h + z.length;
+            for (int v : z) {
+                h = 31 * h + v;
             }
-        } catch (Throwable t) {
-            // If getVariables() misbehaves, fall back to empty mapping.
-            map.clear();
+            return h;
         }
 
-        this.testVarByName = Collections.unmodifiableMap(map);
+        @Override
+        public int hashCode() {
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof QueryKey other)) return false;
+            if (a != other.a || b != other.b) return false;
+            return Arrays.equals(z, other.z);
+        }
     }
+
+    /**
+     * Build a cache key from a fact.
+     * Returns null if any variable name is missing from the current id map.
+     */
+    private QueryKey keyOf(IndependenceFact f) {
+        if (f == null) return null;
+
+        Integer ix = idOfName(f.getX());
+        Integer iy = idOfName(f.getY());
+        if (ix == null || iy == null) return null;
+
+        int a = Math.min(ix, iy);
+        int b = Math.max(ix, iy);
+
+        Set<Node> zset = f.getZ();
+        if (zset == null || zset.isEmpty()) {
+            return new QueryKey(a, b, new int[0]);
+        }
+
+        // Collect Z ids; drop any unknowns.
+        int[] tmp = new int[zset.size()];
+        int k = 0;
+        for (Node zn : zset) {
+            Integer id = idOfName(zn);
+            if (id != null) tmp[k++] = id;
+        }
+
+        if (k == 0) {
+            return new QueryKey(a, b, new int[0]);
+        }
+
+        int[] z = (k == tmp.length) ? tmp : Arrays.copyOf(tmp, k);
+        Arrays.sort(z);
+
+        // Optional: remove duplicates in Z (rare but safe).
+        int uniq = 1;
+        for (int i = 1; i < z.length; i++) {
+            if (z[i] != z[i - 1]) uniq++;
+        }
+        if (uniq != z.length) {
+            int[] zd = new int[uniq];
+            zd[0] = z[0];
+            int j = 1;
+            for (int i = 1; i < z.length; i++) {
+                if (z[i] != z[i - 1]) zd[j++] = z[i];
+            }
+            z = zd;
+        }
+
+        return new QueryKey(a, b, z);
+    }
+
+    private Integer idOfName(Node n) {
+        if (n == null) return null;
+        String name = n.getName();
+        if (name == null) return null;
+        return idByName.get(name);
+    }
+
+    // ------------------------ evaluation ------------------------
 
     private Eval computeEval(IndependenceTest local, IndependenceFact fact) {
         try {
@@ -326,7 +360,6 @@ public final class CachedIndependenceQueries implements TetradSerializable {
             Node Y = mapToTestNode(fact.getY());
 
             if (X == null || Y == null) {
-                // Missing vars: treat as independent, p unknown.
                 return new Eval(true, Double.NaN);
             }
 
@@ -339,8 +372,6 @@ public final class CachedIndependenceQueries implements TetradSerializable {
             IndependenceResult r = local.checkIndependence(X, Y, Z);
 
             if (r == null) return new Eval(true, Double.NaN);
-
-            // Cache only "what we need":
             return new Eval(r.isIndependent(), r.getPValue());
 
         } catch (InterruptedException ie) {
@@ -359,10 +390,47 @@ public final class CachedIndependenceQueries implements TetradSerializable {
         }
     }
 
+    /**
+     * Map an arbitrary Node (often from a graph copy) to the IndependenceTest's Node instance.
+     * If the Node is already the test's instance, returns it immediately.
+     */
     private Node mapToTestNode(Node n) {
         if (n == null) return null;
         String name = n.getName();
         if (name == null) return null;
-        return testVarByName.get(name);
+
+        // Fast path: if the test can resolve by name, that's our canonical instance.
+        Node mapped = testVarByName.get(name);
+        return mapped;
+    }
+
+    // ------------------------ map rebuild ------------------------
+
+    private void rebuildMaps(IndependenceTest test) {
+        if (test == null) {
+            this.testVarByName = Map.of();
+            this.idByName = Map.of();
+            return;
+        }
+
+        Map<String, Node> nameToNode = new HashMap<>();
+        Map<String, Integer> nameToId = new HashMap<>();
+
+        int i = 0;
+        try {
+            for (Node n : test.getVariables()) {
+                if (n == null) continue;
+                String nm = n.getName();
+                if (nm == null) continue;
+                nameToNode.put(nm, n);
+                nameToId.put(nm, i++);
+            }
+        } catch (Throwable t) {
+            nameToNode.clear();
+            nameToId.clear();
+        }
+
+        this.testVarByName = Collections.unmodifiableMap(nameToNode);
+        this.idByName = Collections.unmodifiableMap(nameToId);
     }
 }

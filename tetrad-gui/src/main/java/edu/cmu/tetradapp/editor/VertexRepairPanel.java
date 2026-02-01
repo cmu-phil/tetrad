@@ -97,6 +97,9 @@ public final class VertexRepairPanel extends JPanel {
     private Knowledge knowledge = new Knowledge();
     // Keep a handle to the sorter so we can change filter/sort dynamically
     private TableRowSorter<CandidateTableModel> resultsSorter;
+    private static final int DEFAULT_KS_TOP_K = 25;
+    private final JTextField ksTopKField = new JTextField(String.valueOf(DEFAULT_KS_TOP_K), 5);
+    private volatile int ksTopK = DEFAULT_KS_TOP_K;
 
     public VertexRepairPanel(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
@@ -315,6 +318,10 @@ public final class VertexRepairPanel extends JPanel {
         JPanel alphaPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         alphaPanel.add(new JLabel("α:"));
         alphaPanel.add(alphaField);
+
+        alphaPanel.add(new JLabel("KS top-K:"));
+        alphaPanel.add(ksTopKField);
+
         controls.add(alphaPanel, c);
 
         // Search button now directly under graph type row
@@ -442,7 +449,23 @@ public final class VertexRepairPanel extends JPanel {
         resultsTable.setRowSorter(resultsSorter);
 
         // Ensure numeric columns sort numerically (defensive if model ever returns Strings)
-        resultsSorter.setComparator(CandidateTableModel.COL_KS, Comparator.comparingDouble(a -> ((Number) a).doubleValue()));
+//        resultsSorter.setComparator(CandidateTableModel.COL_KS, Comparator.comparingDouble(a -> ((Number) a).doubleValue()));
+
+
+        resultsSorter.setComparator(CandidateTableModel.COL_KS, (a, b) -> {
+            double da = (a instanceof Number na) ? na.doubleValue() : Double.NaN;
+            double db = (b instanceof Number nb) ? nb.doubleValue() : Double.NaN;
+
+            boolean aNaN = Double.isNaN(da);
+            boolean bNaN = Double.isNaN(db);
+
+            if (aNaN && bNaN) return 0;
+            if (aNaN) return 1;   // NaN last
+            if (bNaN) return -1;  // NaN last
+
+            return Double.compare(da, db);
+        });
+
         resultsSorter.setComparator(CandidateTableModel.COL_NKS, Comparator.comparingDouble(a -> ((Number) a).doubleValue()));
         resultsSorter.setComparator(CandidateTableModel.COL_EDGES, Comparator.comparingInt(a -> ((Number) a).intValue()));
         resultsSorter.setComparator(CandidateTableModel.COL_AFTER, Comparator.comparingInt(a -> ((Number) a).intValue()));
@@ -489,7 +512,8 @@ public final class VertexRepairPanel extends JPanel {
                     Object v = e.getValue(CandidateTableModel.COL_KS); // M-KS column
                     if (!(v instanceof Number n)) return false;
                     double p = n.doubleValue();
-                    return !Double.isNaN(p) && p >= alpha;
+//                    return !Double.isNaN(p) && p >= alpha;
+                    return Double.isNaN(p) || p >= alpha;
                 }
             });
         } else {
@@ -547,6 +571,17 @@ public final class VertexRepairPanel extends JPanel {
                 applySortAndFilter();
             }
         });
+
+        ksTopKField.addActionListener(e -> {
+            ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
+            applySortAndFilter(); // optional; mostly for consistency
+        });
+
+        ksTopKField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override public void insertUpdate(javax.swing.event.DocumentEvent e) { ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K); }
+            @Override public void removeUpdate(javax.swing.event.DocumentEvent e) { ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K); }
+            @Override public void changedUpdate(javax.swing.event.DocumentEvent e) { ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K); }
+        });
     }
 
     private void updateButtons() {
@@ -592,33 +627,99 @@ public final class VertexRepairPanel extends JPanel {
         List<ScoredCandidate> scored = new ArrayList<>();
         resultsModel.set(scored);
 
-        int baseline = countImpliedViolationsAllNodesCached(base);
+        GlobalEvalCache baseCache = buildBaselineCache(base);
 
-        List<Double> baseP = collectAllImpliedPValuesDedup(base);
-        double baselineKs = ksUniformPValue(baseP);
+        GraphEval baseEval = evalGraphLocality(base, baseCache, base, Set.of(), true);
+        int baseline = baseEval.violations();
+        double baselineKs = baseEval.ksP();
 
+        Map<String, Graph> candGraphByKey = new HashMap<>();
+
+        // ------------------------------
+        // PASS 1: compute After + N-KS + edges for ALL candidates, but do NOT compute global M-KS yet
+        // ------------------------------
         for (CandidateEdit cand : candidates) {
-            Graph g2 = cand.applyTo(safeCopy(base));
+//            Graph g2 = buildCandidateGraph(base, cand, gt);
+            Graph finalBase = base;
+            Graph g2 = candGraphByKey.computeIfAbsent(cand.key(), k -> buildCandidateGraph(finalBase, cand, gt));
             if (g2 == null) continue;
 
-            if (gt == RepairGraphType.CPDAG) {
-                g2 = canonicalizeToCpdagOrNull(g2);
-                if (g2 == null) continue;
-                if (!cand.isNoOp() && g2.equals(base)) continue;
-            }
-            try {
-                if (gt != null && !isLegalGraphType(g2, gt)) continue;
-            } catch (Exception e) {
-                continue;
-            }
+            boolean useLocality = (gt == RepairGraphType.DAG || gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG);
 
-            int after = countImpliedViolationsAllNodesCached(g2);
+//            int after = evalViolationsOnly(g2);     // cheap-ish pass
 
-            double nodeKsAfter = nodeKsPValue(g2, x); // x is the repaired node from the panel
-            double ksAfter = ksUniformPValue(collectAllImpliedPValuesDedup(g2));
+            Set<String> affected = affectedVertices(base, cand, x, g2);
+//            int after = evalGraphLocality(base, baseCache, g2, affected, false).violations();
+
+            int after = useLocality
+                    ? evalGraphLocality(base, baseCache, g2, affected, false).violations()
+                    : evalViolationsOnly(g2);
+
+            double nodeKsAfter = nodeKsPValue(g2, x); // local only
             int edgesAfter = g2.getNumEdges();
 
-            scored.add(new ScoredCandidate(cand, baseline, after, nodeKsAfter, ksAfter, edgesAfter));
+            // M-KS intentionally left as NaN for now; we’ll fill it in for top K only
+            scored.add(new ScoredCandidate(cand, baseline, after, nodeKsAfter, Double.NaN, edgesAfter));
+        }
+
+        // ------------------------------
+        // PASS 2: compute global M-KS only for top K candidates
+        // ------------------------------
+        if (!scored.isEmpty()) {
+            // Provisional ranking to choose which candidates deserve expensive global M-KS.
+            // Tune this comparator if you want different “top K” semantics.
+            List<ScoredCandidate> ranked = new ArrayList<>(scored);
+            ranked.sort(Comparator
+                    .comparingInt(ScoredCandidate::violationsAfter)                  // fewer violations first
+                    .thenComparingInt(ScoredCandidate::edgesAfter)                   // fewer edges next
+                    .thenComparing(Comparator.comparingDouble(ScoredCandidate::nodeKsAfter).reversed()) // higher N-KS better
+                    .thenComparingInt(ScoredCandidate::delta)                        // more improvement (more negative) earlier
+            );
+
+            int k = Math.min(ksTopK, ranked.size());
+
+            // Compute KS for top K only; key by CandidateEdit.key() so we can patch back into the main list.
+            Map<String, Double> ksByEditKey = new HashMap<>(k * 2);
+
+            for (int i = 0; i < k; i++) {
+                ScoredCandidate sc = ranked.get(i);
+                CandidateEdit cand = sc.edit();
+
+//                Graph g2 = buildCandidateGraph(base, cand, gt);
+//                if (g2 == null) continue;
+
+                Graph g2 = candGraphByKey.get(sc.edit().key());
+                if (g2 == null) continue;
+
+                // Expensive part: global M-KS
+//                double ksAfter = evalGraphOnce(g2).ksP();
+
+                Set<String> affected = affectedVertices(base, cand, x, g2);
+                double ksAfter = evalGraphLocality(base, baseCache, g2, affected, true).ksP();
+
+                ksByEditKey.put(cand.key(), ksAfter);
+            }
+
+            // Patch M-KS back into the full scored list by rebuilding list with updated ksAfter where available.
+            if (!ksByEditKey.isEmpty()) {
+                List<ScoredCandidate> patched = new ArrayList<>(scored.size());
+                for (ScoredCandidate sc : scored) {
+                    Double ks = ksByEditKey.get(sc.edit().key());
+                    if (ks == null) {
+                        patched.add(sc);
+                    } else {
+                        patched.add(new ScoredCandidate(
+                                sc.edit(),
+                                sc.baseline(),
+                                sc.after(),
+                                sc.nodeKsAfter(),
+                                ks,
+                                sc.edgesAfter()
+                        ));
+                    }
+                }
+                scored = patched;
+            }
         }
 
 //        // Sort by improvement (most negative delta first), then by absolute violations
@@ -1262,4 +1363,280 @@ public final class VertexRepairPanel extends JPanel {
             void run(int row);
         }
     }
+
+    private record GraphEval(int violations, double ksP, int nFacts) { }
+
+    private GraphEval evalGraphOnce(Graph g) {
+        if (g == null) return new GraphEval(0, Double.NaN, 0);
+
+        List<IndependenceFact> facts = baseModel.computeAllImpliedFacts(g);
+        if (facts == null || facts.isEmpty()) return new GraphEval(0, Double.NaN, 0);
+
+        // Dedup by the same key you already use
+        Map<String, IndependenceFact> dedup = new LinkedHashMap<>();
+        for (IndependenceFact f : facts) {
+            if (f == null) continue;
+            dedup.putIfAbsent(factKey(f), f);
+        }
+
+        int violations = 0;
+        List<Double> pvals = new ArrayList<>(dedup.size());
+
+        for (IndependenceFact f : dedup.values()) {
+            IndependenceResult r = check(f);   // uses Q cache
+            if (r == null) continue;
+
+            if (!r.isIndependent()) violations++;
+
+            double p = r.getPValue();
+            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
+                pvals.add(p);
+            }
+        }
+
+        double ks = ksUniformPValue(pvals);
+        return new GraphEval(violations, ks, dedup.size());
+    }
+
+    private GlobalEvalCache buildBaselineCache(Graph g) {
+        if (g == null) return new GlobalEvalCache(Map.of());
+
+        Map<String, VertexContribution> out = new HashMap<>();
+
+        for (Node v : g.getNodes()) {
+            if (v == null) continue;
+            out.put(v.getName(), evalVertexContribution(g, v));
+        }
+
+        return new GlobalEvalCache(out);
+    }
+
+    private VertexContribution evalVertexContribution(Graph g, Node vInGraph) {
+        if (g == null || vInGraph == null) return new VertexContribution(Map.of(), Map.of());
+
+        // IMPORTANT: baseModel.computeImpliedFactsForVertex expects Node that exists in g.
+        Node v = g.getNode(vInGraph.getName());
+        if (v == null) return new VertexContribution(Map.of(), Map.of());
+
+        List<IndependenceFact> facts = baseModel.computeImpliedFactsForVertex(g, v);
+        if (facts == null || facts.isEmpty()) return new VertexContribution(Map.of(), Map.of());
+
+        Map<String, Boolean> viol = new HashMap<>();
+        Map<String, Double> pByKey = new HashMap<>();
+
+        for (IndependenceFact f : facts) {
+            if (f == null) continue;
+
+            String key = factKey(f);
+
+            // de-dup within vertex: first wins
+            if (viol.containsKey(key)) continue;
+
+            IndependenceResult r = check(f);  // uses Q cache
+            if (r == null) continue;
+
+            boolean isViolation = !r.isIndependent();
+            viol.put(key, isViolation);
+
+            double p = r.getPValue();
+            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
+                pByKey.put(key, p);
+            }
+        }
+
+        return new VertexContribution(viol, pByKey);
+    }
+
+    private GraphEval evalGraphLocality(Graph baseGraph,
+                                        GlobalEvalCache baseCache,
+                                        Graph candidateGraph,
+                                        Set<String> affectedVertexNames,
+                                        boolean computeKs) {
+        if (candidateGraph == null) return new GraphEval(0, Double.NaN, 0);
+
+        // 1) Start from baseline vertex contributions (shallow copy map)
+        Map<String, VertexContribution> contrib = new HashMap<>();
+        if (baseCache != null && baseCache.contribByVertexName() != null) {
+            contrib.putAll(baseCache.contribByVertexName());
+        }
+
+        // 2) Overwrite affected vertices with freshly evaluated contributions under candidateGraph
+        if (affectedVertexNames != null) {
+            for (String name : affectedVertexNames) {
+                if (name == null) continue;
+                Node v = candidateGraph.getNode(name);
+                if (v == null) {
+                    // Vertex missing shouldn't happen, but be defensive.
+                    contrib.remove(name);
+                    continue;
+                }
+                contrib.put(name, evalVertexContribution(candidateGraph, v));
+            }
+        }
+
+        // 3) Merge to global dedup by factKey
+        Map<String, Boolean> globalViolationByKey = new HashMap<>();
+        Map<String, Double> globalPByKey = computeKs ? new HashMap<>() : null;
+
+//        for (VertexContribution vc : contrib.values()) {
+
+        List<String> names = new ArrayList<>(contrib.keySet());
+        Collections.sort(names);
+
+        for (String name : names) {
+            VertexContribution vc = contrib.get(name);
+            if (vc == null) continue;
+
+            // violations
+            for (Map.Entry<String, Boolean> e : vc.violationByKey().entrySet()) {
+                String key = e.getKey();
+                if (key == null) continue;
+                globalViolationByKey.putIfAbsent(key, e.getValue());
+            }
+
+            // p-values only needed if computing KS
+            if (computeKs) {
+                for (Map.Entry<String, Double> e : vc.pByKey().entrySet()) {
+                    String key = e.getKey();
+                    if (key == null) continue;
+                    globalPByKey.putIfAbsent(key, e.getValue());
+                }
+            }
+        }
+
+        int violations = 0;
+        for (boolean isViol : globalViolationByKey.values()) {
+            if (isViol) violations++;
+        }
+
+        double ks = Double.NaN;
+        if (computeKs && globalPByKey != null && globalPByKey.size() >= 2) {
+            // Optional top-K downselect: keep largest p-values? smallest? (You probably want "most informative":
+            // easiest is: use them all but if huge, trim to ksTopK by random or by closeness to 0.5. Here we do random stable.)
+            List<Double> pvals = new ArrayList<>(globalPByKey.values());
+
+            if (ksTopK > 0 && pvals.size() > ksTopK) {
+                // deterministic shuffle so UI doesn't flicker
+                pvals.sort(Double::compareTo);
+                // take evenly spaced sample across [0,1]
+                List<Double> sampled = new ArrayList<>(ksTopK);
+                for (int i = 0; i < ksTopK; i++) {
+                    int idx = (int) Math.floor((i + 0.5) * pvals.size() / ksTopK);
+                    idx = Math.min(Math.max(idx, 0), pvals.size() - 1);
+                    sampled.add(pvals.get(idx));
+                }
+                pvals = sampled;
+            }
+
+            ks = ksUniformPValue(pvals);
+        }
+
+        return new GraphEval(violations, ks, globalViolationByKey.size());
+    }
+
+    private int evalViolationsOnly(Graph g) {
+        if (g == null) return 0;
+
+        List<IndependenceFact> facts = baseModel.computeAllImpliedFacts(g);
+        if (facts == null || facts.isEmpty()) return 0;
+
+        Map<String, IndependenceFact> dedup = new LinkedHashMap<>();
+        for (IndependenceFact f : facts) {
+            if (f == null) continue;
+            dedup.putIfAbsent(factKey(f), f);
+        }
+
+        int violations = 0;
+        for (IndependenceFact f : dedup.values()) {
+            IndependenceResult r = check(f); // uses Q cache
+            if (r == null) continue;
+            if (!r.isIndependent()) violations++;
+        }
+
+        return violations;
+    }
+
+    /**
+     * Build + canonicalize + legality-check a candidate graph, returning null if illegal.
+     * IMPORTANT: this is used in BOTH passes so the result is consistent.
+     */
+    private Graph buildCandidateGraph(Graph base, CandidateEdit cand, RepairGraphType gt) {
+        if (base == null || cand == null) return null;
+
+        Graph g2 = cand.applyTo(safeCopy(base));
+        if (g2 == null) return null;
+
+        if (gt == RepairGraphType.CPDAG) {
+            g2 = canonicalizeToCpdagOrNull(g2);
+            if (g2 == null) return null;
+
+            // Optional: skip “no-change” candidates (except no-op) after canonicalization.
+            if (!cand.isNoOp() && g2.equals(base)) return null;
+        } else if (gt == RepairGraphType.PAG) {
+            // You only canonicalize PAG for base currently; keep candidate as-is unless you want to do more.
+            // If you DO want canonicalization here too, add it (but it may be expensive).
+        }
+
+        try {
+            if (gt != null && !isLegalGraphType(g2, gt)) return null;
+        } catch (Exception ignored) {
+            return null;
+        }
+
+        return g2;
+    }
+
+    private Set<String> affectedVertices(Graph base, CandidateEdit cand, Node x, Graph candidate) {
+        // Conservative and safe:
+        // - always recompute x
+        // - recompute any node whose adjacency to x changed (before vs after)
+        Set<String> affected = new LinkedHashSet<>();
+        if (x != null) affected.add(x.getName());
+
+        if (base == null || candidate == null || x == null) return affected;
+
+        Node xb = base.getNode(x.getName());
+        Node xc = candidate.getNode(x.getName());
+        if (xb == null || xc == null) return affected;
+
+        Set<String> nb = new HashSet<>();
+        for (Node n : base.getAdjacentNodes(xb)) nb.add(n.getName());
+
+        Set<String> nc = new HashSet<>();
+        for (Node n : candidate.getAdjacentNodes(xc)) nc.add(n.getName());
+
+        // symmetric difference
+        for (String name : nb) if (!nc.contains(name)) affected.add(name);
+        for (String name : nc) if (!nb.contains(name)) affected.add(name);
+
+        // ALSO recompute current neighbors of x (optional but often worth it; comment out if too expensive)
+        affected.addAll(nc);
+
+        return affected;
+    }
+
+    private static int parseTopK(String s, int fallback) {
+        try {
+            int k = Integer.parseInt(s.trim());
+            return (k <= 0 ? fallback : k);
+        } catch (Exception ignored) {
+            return fallback;
+        }
+    }
+
+    // ---------- Locality-based global evaluation ----------
+
+    /**
+     * Per-vertex evaluated contribution:
+     * - dedup facts by factKey within the vertex
+     * - keep for each fact key: (isViolation, pValue)
+     */
+    private record VertexContribution(
+            Map<String, Boolean> violationByKey,
+            Map<String, Double> pByKey
+    ) { }
+
+    private record GlobalEvalCache(
+            Map<String, VertexContribution> contribByVertexName
+    ) { }
 }
