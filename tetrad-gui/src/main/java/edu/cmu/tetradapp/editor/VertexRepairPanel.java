@@ -604,6 +604,7 @@ public final class VertexRepairPanel extends JPanel {
             if (gt == RepairGraphType.CPDAG) {
                 g2 = canonicalizeToCpdagOrNull(g2);
                 if (g2 == null) continue;
+                if (!cand.isNoOp() && g2.equals(base)) continue;
             }
             try {
                 if (gt != null && !isLegalGraphType(g2, gt)) continue;
