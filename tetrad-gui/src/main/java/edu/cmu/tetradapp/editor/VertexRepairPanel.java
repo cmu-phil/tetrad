@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.Timer;
 
+import java.util.concurrent.CancellationException;
+import java.util.function.BooleanSupplier;
+
 
 /**
  * Interactive panel for locally repairing a causal graph around a selected node {@code x}
@@ -117,6 +120,10 @@ public final class VertexRepairPanel extends JPanel {
     // debounce timers so we don’t write prefs on every keystroke
     private final Timer alphaSaveTimer = new Timer(350, e -> saveAlphaPref());
     private final Timer topKSaveTimer  = new Timer(350, e -> saveTopKPref());
+
+    // --- Watch dialog state (one at a time) ---
+    private volatile SwingWorker<?, ?> activeWorker;
+    private volatile JDialog watchDialog;
 
     public VertexRepairPanel(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
@@ -380,8 +387,10 @@ public final class VertexRepairPanel extends JPanel {
                     if (row < 0) return;
                     int modelRow = resultsTable.convertRowIndexToModel(row);
                     CandidateEdit cand = resultsModel.getCandidate(modelRow);
+//                    applyCandidate(cand);
+//                    runSearch();
                     applyCandidate(cand);
-                    runSearch();
+                    startWatched("Searching", this::runSearchWatched, null);
                 }));
 
         resultsTable.setTransferHandler(new DefaultTableTransferHandler(0));
@@ -559,18 +568,26 @@ public final class VertexRepairPanel extends JPanel {
         backButton.addActionListener(e -> goBack());
         showGraphButton.addActionListener(e -> showGraphDialog());
 
-        searchButton.addActionListener(e -> {
-            searchButton.setEnabled(false);
-            statusLabel.setText("Searching...");
+//        searchButton.addActionListener(e -> {
+//            searchButton.setEnabled(false);
+//            statusLabel.setText("Searching...");
+//
+//            // NOTE: first-shot: run on EDT (simple). If it becomes slow, replace with SwingWorker.
+//            SwingUtilities.invokeLater(() -> {
+//                try {
+//                    runSearch();
+//                } finally {
+//                    searchButton.setEnabled(true);
+//                    updateButtons();
+//                }
+//            });
+//        });
 
-            // NOTE: first-shot: run on EDT (simple). If it becomes slow, replace with SwingWorker.
-            SwingUtilities.invokeLater(() -> {
-                try {
-                    runSearch();
-                } finally {
-                    searchButton.setEnabled(true);
-                    updateButtons();
-                }
+        searchButton.addActionListener(e -> {
+            startWatched("Searching", () -> {
+                runSearchWatched();   // new method below
+            }, () -> {
+                // nothing extra; runSearchWatched updates the table itself (on EDT via invokeLater inside)
             });
         });
 
@@ -806,6 +823,142 @@ public final class VertexRepairPanel extends JPanel {
         }
     }
 
+    private void runSearchWatched() {
+        // IMPORTANT: do NOT touch Swing components from background thread.
+        // We'll compute in the background and then apply results on EDT.
+
+        RepairGraphType gt = (RepairGraphType) graphTypeCombo.getSelectedItem();
+        Graph base = safeCopy(workingGraph);
+
+        if (stopRequested()) return;
+
+        if (gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG) {
+            base = canonicalizeToCpdagOrNull(base);
+            if (base == null) {
+                SwingUtilities.invokeLater(() -> {
+                    statusLabel.setText("Current graph has no consistent CPDAG extension.");
+                    ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_NONE);
+                });
+                return;
+            }
+        } else if (gt == RepairGraphType.PAG) {
+            base = canonicalizeToPagOrNull(base);
+            if (base == null) {
+                SwingUtilities.invokeLater(() -> {
+                    statusLabel.setText("Current graph has no consistent PAG extension.");
+                    ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_NONE);
+                });
+                return;
+            }
+        }
+
+        if (knowledge.isViolatedBy(base)) {
+            SwingUtilities.invokeLater(() -> {
+                statusLabel.setText("Current graph violates the knowledge base.");
+                ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_NONE);
+            });
+            return;
+        }
+
+        List<CandidateEdit> candidates = enumerateCandidates(base, x, gt);
+        candidates = new ArrayList<>(candidates);
+        if (candidates.stream().noneMatch(CandidateEdit::isNoOp)) candidates.addFirst(CandidateEdit.noOp());
+
+        if (stopRequested()) return;
+
+        GlobalEvalCache baseCache = buildBaselineCache(base);
+        GraphEval baseEval = evalGraphLocality(base, baseCache, base, Set.of(), true);
+
+        int baseline = baseEval.violations();
+        double baselineKs = baseEval.ksP();
+
+        Map<String, Graph> candGraphByKey = new HashMap<>();
+        List<ScoredCandidate> scored = new ArrayList<>();
+
+        // PASS 1
+        for (CandidateEdit cand : candidates) {
+            if (stopRequested()) return;
+
+            Graph finalBase = base;
+            Graph g2 = candGraphByKey.computeIfAbsent(cand.key(), k -> buildCandidateGraph(finalBase, cand, gt));
+            if (g2 == null) continue;
+
+            boolean useLocality = (gt == RepairGraphType.DAG || gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG);
+            Set<String> affected = affectedVertices(base, cand, x, g2);
+
+            int after = useLocality
+                    ? evalGraphLocality(base, baseCache, g2, affected, false).violations()
+                    : evalViolationsOnly(g2);
+
+            double nodeKsAfter = nodeKsPValue(g2, x);
+            int edgesAfter = g2.getNumEdges();
+
+            scored.add(new ScoredCandidate(cand, baseline, after, nodeKsAfter, Double.NaN, edgesAfter));
+        }
+
+        if (stopRequested()) return;
+
+        // PASS 2 (top-K KS)
+        if (!scored.isEmpty()) {
+            List<ScoredCandidate> ranked = new ArrayList<>(scored);
+            ranked.sort(Comparator
+                    .comparingInt(ScoredCandidate::violationsAfter)
+                    .thenComparingInt(ScoredCandidate::edgesAfter)
+                    .thenComparing(Comparator.comparingDouble(ScoredCandidate::nodeKsAfter).reversed())
+                    .thenComparingInt(ScoredCandidate::delta)
+            );
+
+            int k = Math.min(ksTopK, ranked.size());
+            Map<String, Double> ksByEditKey = new HashMap<>(k * 2);
+
+            for (int i = 0; i < k; i++) {
+                if (stopRequested()) return;
+
+                ScoredCandidate sc = ranked.get(i);
+                CandidateEdit cand = sc.edit();
+
+                Graph g2 = candGraphByKey.get(cand.key());
+                if (g2 == null) continue;
+
+                Set<String> affected = affectedVertices(base, cand, x, g2);
+                double ksAfter = evalGraphLocality(base, baseCache, g2, affected, true).ksP();
+                ksByEditKey.put(cand.key(), ksAfter);
+            }
+
+            if (!ksByEditKey.isEmpty()) {
+                List<ScoredCandidate> patched = new ArrayList<>(scored.size());
+                for (ScoredCandidate sc : scored) {
+                    Double ks = ksByEditKey.get(sc.edit().key());
+                    patched.add(ks == null ? sc : new ScoredCandidate(
+                            sc.edit(), sc.baseline(), sc.after(), sc.nodeKsAfter(), ks, sc.edgesAfter()
+                    ));
+                }
+                scored = patched;
+            }
+        }
+
+        // Now apply to Swing on EDT
+        List<ScoredCandidate> finalScored = scored;
+        SwingUtilities.invokeLater(() -> {
+            resultsModel.set(finalScored);
+            applySortAndFilter();
+
+            NumberFormat fmt = new DecimalFormat("0.0000");
+            if (finalScored.isEmpty()) {
+                statusLabel.setText("No legal candidate edits found.");
+                ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_NONE);
+            } else {
+                int best = finalScored.getFirst().violationsAfter();
+                statusLabel.setText(
+                        "Baseline violations: " + baseline +
+                                " | Best: " + best +
+                                " | KS(all): " + fmt.format(baselineKs) + " → " + fmt.format(finalScored.getFirst().ksAfter())
+                );
+                ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_TABLE);
+            }
+        });
+    }
+
     private void applyCandidate(CandidateEdit cand) {
         history.push(safeCopy(workingGraph));
 
@@ -837,23 +990,32 @@ public final class VertexRepairPanel extends JPanel {
         updateButtons();
     }
 
+//    private void goBack() {
+//        if (history.isEmpty()) return;
+//        workingGraph = history.pop();
+//        statusLabel.setText("Reverted to previous graph.");
+//        updateButtons();
+//        searchButton.setEnabled(false);
+//        statusLabel.setText("Searching...");
+//
+//        // NOTE: first-shot: run on EDT (simple). If it becomes slow, replace with SwingWorker.
+//        SwingUtilities.invokeLater(() -> {
+//            try {
+//                runSearch();
+//            } finally {
+//                searchButton.setEnabled(true);
+//                updateButtons();
+//            }
+//        });
+//    }
+
     private void goBack() {
         if (history.isEmpty()) return;
         workingGraph = history.pop();
         statusLabel.setText("Reverted to previous graph.");
         updateButtons();
-        searchButton.setEnabled(false);
-        statusLabel.setText("Searching...");
 
-        // NOTE: first-shot: run on EDT (simple). If it becomes slow, replace with SwingWorker.
-        SwingUtilities.invokeLater(() -> {
-            try {
-                runSearch();
-            } finally {
-                searchButton.setEnabled(true);
-                updateButtons();
-            }
-        });
+        startWatched("Searching", this::runSearchWatched, null);
     }
 
     private void showGraphDialog() {
@@ -1129,10 +1291,18 @@ public final class VertexRepairPanel extends JPanel {
         this.knowledge = knowledge;
     }
 
+//    private IndependenceResult check(IndependenceFact f) {
+//        if (f == null || Q == null) return null;
+//
+//        // Use the cached query engine; it should canonicalize / align internally as needed.
+//        Set<Node> z = new LinkedHashSet<>(f.getZ());
+//        return Q.checkIndependence(f.getX(), f.getY(), z);
+//    }
+
     private IndependenceResult check(IndependenceFact f) {
+        if (stopRequested()) return null;   // <-- add this line
         if (f == null || Q == null) return null;
 
-        // Use the cached query engine; it should canonicalize / align internally as needed.
         Set<Node> z = new LinkedHashSet<>(f.getZ());
         return Q.checkIndependence(f.getX(), f.getY(), z);
     }
@@ -1723,5 +1893,95 @@ public final class VertexRepairPanel extends JPanel {
     private void saveTopKPref() {
         int k = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
         PREFS.putInt(PREF_KS_TOP_K, k);
+    }
+
+    private void startWatched(String title, Runnable backgroundWork, Runnable onDoneEdt) {
+        // Prevent parallel runs.
+        if (activeWorker != null) return;
+
+        SwingWorker<Void, String> worker = new SwingWorker<>() {
+            @Override
+            protected Void doInBackground() {
+                backgroundWork.run();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    // triggers exception if cancelled / failed
+                    get();
+                    if (onDoneEdt != null) onDoneEdt.run();
+                } catch (CancellationException ce) {
+                    statusLabel.setText("Cancelled.");
+                } catch (Exception ex) {
+                    // Preserve something visible but don't explode the UI
+                    statusLabel.setText("Error: " + (ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage()));
+                } finally {
+                    closeWatchDialog();
+                    activeWorker = null;
+                    searchButton.setEnabled(true);
+                    updateButtons();
+                }
+            }
+        };
+
+        this.activeWorker = worker;
+        searchButton.setEnabled(false);
+        statusLabel.setText(title + "...");
+
+        showWatchDialog(title, worker);
+        worker.execute();
+    }
+
+    private void showWatchDialog(String title, SwingWorker<?, ?> worker) {
+        closeWatchDialog();
+
+        Window owner = SwingUtilities.getWindowAncestor(this);
+        JDialog dlg = new JDialog(owner, title, Dialog.ModalityType.MODELESS);
+        dlg.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+        JPanel p = new JPanel(new BorderLayout(10, 10));
+        p.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+
+        JLabel msg = new JLabel("Running. Click Cancel to stop (may stop between tests).");
+        JProgressBar bar = new JProgressBar();
+        bar.setIndeterminate(true);
+
+        JButton cancel = new JButton("Cancel");
+        cancel.addActionListener(e -> {
+            // cancel(true) interrupts the worker thread
+            worker.cancel(true);
+            statusLabel.setText("Cancelling...");
+            cancel.setEnabled(false);
+        });
+
+        JPanel south = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        south.add(cancel);
+
+        p.add(msg, BorderLayout.NORTH);
+        p.add(bar, BorderLayout.CENTER);
+        p.add(south, BorderLayout.SOUTH);
+
+        dlg.setContentPane(p);
+        dlg.pack();
+        dlg.setLocationRelativeTo(this);
+        dlg.setVisible(true);
+
+        this.watchDialog = dlg;
+    }
+
+    private void closeWatchDialog() {
+        JDialog dlg = this.watchDialog;
+        this.watchDialog = null;
+        if (dlg != null) dlg.dispose();
+    }
+
+    /**
+     * Convenience: treat either SwingWorker cancel or interrupt as "stop requested".
+     */
+    private boolean stopRequested() {
+        SwingWorker<?, ?> w = activeWorker;
+        return (w != null && w.isCancelled()) || Thread.currentThread().isInterrupted();
     }
 }
