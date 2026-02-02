@@ -68,6 +68,8 @@ import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
  *
  * <p>
  * The editor presents results at multiple levels:
+ * </p>
+ *
  * <ul>
  *   <li><b>Overview table (left)</b>: one row per vertex, summarizing
  *       the number of implied tests, p-values used, and multiple distributional
@@ -76,7 +78,6 @@ import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
  *       a table of individual implied conditional independence tests and their
  *       outcomes, along with a histogram of the corresponding p-values.</li>
  * </ul>
- * </p>
  *
  * <p>
  * The editor supports incremental, selection-driven computation:
@@ -94,6 +95,8 @@ import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
  *
  * <p>
  * Additional features include:
+ * </p>
+ *
  * <ul>
  *   <li>Selection-stable updates when the graph changes;</li>
  *   <li>Undo and graph-display actions for navigating graph space;</li>
@@ -101,7 +104,6 @@ import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
  *   <li>Visualization of p-value distributions to diagnose systematic deviations
  *       from uniformity.</li>
  * </ul>
- * </p>
  *
  * <p>
  * The Vertex Checker is intended as a diagnostic and exploratory aid.
@@ -132,6 +134,13 @@ public class VertexCheckEditor extends JPanel {
     private final JCheckBox verbose = new JCheckBox("Verbose");
     private final JButton showIndepsForRow = new JButton("Independencies");
     private final JButton repairNodeButton = new JButton("Repair Node");
+    // --- Graph UX ---
+    private final JButton undoGraphButton = new JButton("Undo");
+    private final JButton showGraphButton = new JButton("Graph");
+    private final Deque<Graph> graphHistory = new ArrayDeque<>();
+    private final JLabel modelKsLabel = new JLabel("Model KS: (not computed)");
+    private final JLabel modelNpLabel = new JLabel("Model Np: -");
+    CachedIndependenceQueries Q;
     private JTable overviewTable;
     private JTable factsTable;
     private AbstractTableModel overviewModel;
@@ -140,20 +149,8 @@ public class VertexCheckEditor extends JPanel {
     private JButton runAll = new JButton("Run All");
     private IndependenceWrapper independenceWrapper;
     private boolean initializing;
-
-    // --- Graph UX ---
-    private final JButton undoGraphButton = new JButton("Undo");
-    private final JButton showGraphButton = new JButton("Graph");
-    private final Deque<Graph> graphHistory = new ArrayDeque<>();
-
     private boolean applyingGraphProgrammatically = false; // prevents history double-push
-
-    private final JLabel modelKsLabel = new JLabel("Model KS: (not computed)");
-    private final JLabel modelNpLabel = new JLabel("Model Np: -");
-
     private Knowledge knowledge;
-
-    CachedIndependenceQueries Q;
 
 
     public VertexCheckEditor(VertexCheckIndTestModel model) {
@@ -1229,17 +1226,24 @@ public class VertexCheckEditor extends JPanel {
         );
 
         // explicit accept/cancel behavior
-        final boolean[] accepted = { false };
+        final boolean[] accepted = {false};
 
         JButton ok = new JButton("OK");
         JButton cancel = new JButton("Cancel");
 
-        ok.addActionListener(e -> { accepted[0] = true; dialog.dispose(); });
-        cancel.addActionListener(e -> { accepted[0] = false; dialog.dispose(); });
+        ok.addActionListener(e -> {
+            accepted[0] = true;
+            dialog.dispose();
+        });
+        cancel.addActionListener(e -> {
+            accepted[0] = false;
+            dialog.dispose();
+        });
 
         dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override public void windowClosing(java.awt.event.WindowEvent e) {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
                 // red close button = cancel
                 accepted[0] = false;
                 dialog.dispose();
@@ -1329,6 +1333,188 @@ public class VertexCheckEditor extends JPanel {
                 return;
             }
         }
+    }
+
+    private void onModelGraphChanged() {
+        var selectedVertexNames = getSelectedOverviewVertexNames();
+        var selectedFactKeys = getSelectedFactsKeys();
+
+        // Graph changed => cached per-vertex results are stale.
+//        model.clearResults();
+
+        model.clearResults();
+        refreshModelDiagnostics();
+
+        // Recompute only what’s visible/selected (or compute nothing and let selection triggers do it)
+        for (String v : selectedVertexNames) {
+            model.ensureVertexComputed(v);
+        }
+
+        overviewModel.fireTableDataChanged();
+        factsModel.fireTableDataChanged();
+
+        reselectOverviewVerticesByName(selectedVertexNames);
+        reselectFactsByKey(selectedFactKeys);
+
+        // Update right-side details for the active vertex (histogram + repair button)
+        String active = getActiveSelectedVertexName();
+        if (active != null) refreshDetails(active);
+    }
+
+    private Set<String> getSelectedOverviewVertexNames() {
+        Set<String> names = new HashSet<>();
+        int[] rows = overviewTable.getSelectedRows();
+        for (int r : rows) {
+            int m = overviewTable.convertRowIndexToModel(r);
+            Node v = model.getGraph().getNode(model.getVertexNames().get(m));
+            if (v != null) {
+                names.add(v.getName());
+            }
+        }
+        return names;
+    }
+
+    private Set<String> getSelectedFactsKeys() {
+        Set<String> keys = new HashSet<>();
+        for (int vr : factsTable.getSelectedRows()) {
+            IndependenceFact f = getIndependenceFactFromFactsRow(vr);
+            if (f != null) keys.add(factKey(f));
+        }
+        return keys;
+    }
+
+    private IndependenceFact getIndependenceFact(int r) {
+        int m = factsTable.convertRowIndexToModel(r);
+        String name = model.getVertexNames().get(m);     // <-- WRONG LIST
+        List<IndependenceResult> rs = model.getResultsForVertex(name);
+        return rs.get(m).getFact();
+    }
+
+    /**
+     * Shared cache of CI queries used by both VertexCheckEditor and VertexRepairPanel.
+     * VertexRepairPanel can call editor.getCachedQueries() to reuse the same cache.
+     */
+    public CachedIndependenceQueries getCachedQueries() {
+        return Q;
+    }
+
+    private void reselectOverviewVerticesByName(Set<String> names) {
+        ListSelectionModel sel = overviewTable.getSelectionModel();
+        sel.clearSelection();
+
+        for (int mr = 0; mr < model.getVertexNames().size(); mr++) {
+            String name = model.getVertexNames().get(mr);
+            if (names.contains(name)) {
+                int vr = overviewTable.convertRowIndexToView(mr);
+                sel.addSelectionInterval(vr, vr);
+            }
+        }
+    }
+
+    private void reselectFactsByKey(Set<String> keys) {
+        ListSelectionModel sel = factsTable.getSelectionModel();
+        sel.clearSelection();
+
+        String v = getActiveSelectedVertexName();
+        if (v == null) return;
+
+        List<IndependenceResult> rs = model.getResultsForVertex(v);
+        if (rs == null) return;
+
+        for (int modelRow = 0; modelRow < rs.size(); modelRow++) {
+            IndependenceFact f = rs.get(modelRow).getFact();
+            if (f != null && keys.contains(factKey(f))) {
+                int viewRow = factsTable.convertRowIndexToView(modelRow);
+                sel.addSelectionInterval(viewRow, viewRow);
+            }
+        }
+    }
+
+    private IndependenceFact getIndependenceFactFromFactsRow(int factsViewRow) {
+        String v = getActiveSelectedVertexName();
+        if (v == null) return null;
+
+        int factsModelRow = factsTable.convertRowIndexToModel(factsViewRow);
+
+        List<IndependenceResult> rs = model.getResultsForVertex(v);
+        if (rs == null || factsModelRow < 0 || factsModelRow >= rs.size()) return null;
+
+        IndependenceResult r = rs.get(factsModelRow);
+        return (r == null ? null : r.getFact());
+    }
+
+    private void showGraphDialog() {
+        Graph graph = model.getGraph();
+
+        // --- Tab 1: Render ---
+        GraphWorkbench workbench = new GraphWorkbench(graph);
+        workbench.setEnableEditing(false);
+        JScrollPane renderScroll = new JScrollPane(workbench);
+        renderScroll.setPreferredSize(new Dimension(820, 520));
+
+        // --- Tab 2: Text ---
+        JTextArea ta = new JTextArea(String.valueOf(graph));
+        ta.setEditable(false);
+        ta.setCaretPosition(0);
+        JScrollPane textScroll = new JScrollPane(ta);
+        textScroll.setPreferredSize(new Dimension(820, 520));
+
+        // --- Tabs ---
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("Graph", renderScroll);
+        tabs.addTab("Text", textScroll);
+        tabs.setTabPlacement(JTabbedPane.RIGHT);
+
+        EditorWindow editorWindow = new EditorWindow(tabs, "Current Graph", "OK", false, this);
+
+        DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+        editorWindow.pack();
+        editorWindow.setVisible(true);
+
+//        JOptionPane.showMessageDialog(
+//                this,
+//                tabs,
+//                "Current Graph",
+//                JOptionPane.INFORMATION_MESSAGE
+//        );
+    }
+
+    private void updateUndoButtonEnabled() {
+        undoGraphButton.setEnabled(!graphHistory.isEmpty());
+    }
+
+    private Graph safeCopy(Graph g) {
+        if (g == null) return null;
+        try {
+            return g.copy();
+        } catch (Throwable t) {
+            return new EdgeListGraph(g);
+        }
+    }
+
+    private void undoGraph() {
+        if (graphHistory.isEmpty()) return;
+
+        Graph prev = graphHistory.pop();
+        applyingGraphProgrammatically = true;
+        try {
+            model.setGraph(prev);
+        } finally {
+            applyingGraphProgrammatically = false;
+            updateUndoButtonEnabled();
+        }
+    }
+
+    private void refreshModelDiagnostics() {
+        // You decide semantics: either only valid after Run All, or “over computed so far”.
+        VertexCheckIndTestModel.ModelSummary ms = model.getModelSummary(); // you add this
+        if (ms == null) {
+            modelNpLabel.setText("Model Np: -");
+            modelKsLabel.setText("Model KS: (not computed)");
+            return;
+        }
+        modelNpLabel.setText("Model Np: " + ms.numPValues());
+        modelKsLabel.setText("Model KS: " + fmt(ms.ksPValue()));
     }
 
     private enum PoolChoice {
@@ -1530,185 +1716,5 @@ public class VertexCheckEditor extends JPanel {
                 default -> "";
             };
         }
-    }
-
-    private void onModelGraphChanged() {
-        var selectedVertexNames = getSelectedOverviewVertexNames();
-        var selectedFactKeys    = getSelectedFactsKeys();
-
-        // Graph changed => cached per-vertex results are stale.
-//        model.clearResults();
-
-        model.clearResults();
-        refreshModelDiagnostics();
-
-        // Recompute only what’s visible/selected (or compute nothing and let selection triggers do it)
-        for (String v : selectedVertexNames) {
-            model.ensureVertexComputed(v);
-        }
-
-        overviewModel.fireTableDataChanged();
-        factsModel.fireTableDataChanged();
-
-        reselectOverviewVerticesByName(selectedVertexNames);
-        reselectFactsByKey(selectedFactKeys);
-
-        // Update right-side details for the active vertex (histogram + repair button)
-        String active = getActiveSelectedVertexName();
-        if (active != null) refreshDetails(active);
-    }
-
-    private Set<String> getSelectedOverviewVertexNames() {
-        Set<String> names = new HashSet<>();
-        int[] rows = overviewTable.getSelectedRows();
-        for (int r : rows) {
-            int m = overviewTable.convertRowIndexToModel(r);
-            Node v = model.getGraph().getNode(model.getVertexNames().get(m));
-            if (v != null) {
-                names.add(v.getName());
-            }
-        }
-        return names;
-    }
-
-    private Set<String> getSelectedFactsKeys() {
-        Set<String> keys = new HashSet<>();
-        for (int vr : factsTable.getSelectedRows()) {
-            IndependenceFact f = getIndependenceFactFromFactsRow(vr);
-            if (f != null) keys.add(factKey(f));
-        }
-        return keys;
-    }
-
-    private IndependenceFact getIndependenceFact(int r) {
-        int m = factsTable.convertRowIndexToModel(r);
-        String name = model.getVertexNames().get(m);     // <-- WRONG LIST
-        List<IndependenceResult> rs = model.getResultsForVertex(name);
-        return rs.get(m).getFact();
-    }
-
-
-    /**
-     * Shared cache of CI queries used by both VertexCheckEditor and VertexRepairPanel.
-     * VertexRepairPanel can call editor.getCachedQueries() to reuse the same cache.
-     */
-    public CachedIndependenceQueries getCachedQueries() {
-        return Q;
-    }
-
-    private void reselectOverviewVerticesByName(Set<String> names) {
-        ListSelectionModel sel = overviewTable.getSelectionModel();
-        sel.clearSelection();
-
-        for (int mr = 0; mr < model.getVertexNames().size(); mr++) {
-            String name = model.getVertexNames().get(mr);
-            if (names.contains(name)) {
-                int vr = overviewTable.convertRowIndexToView(mr);
-                sel.addSelectionInterval(vr, vr);
-            }
-        }
-    }
-
-    private void reselectFactsByKey(Set<String> keys) {
-        ListSelectionModel sel = factsTable.getSelectionModel();
-        sel.clearSelection();
-
-        String v = getActiveSelectedVertexName();
-        if (v == null) return;
-
-        List<IndependenceResult> rs = model.getResultsForVertex(v);
-        if (rs == null) return;
-
-        for (int modelRow = 0; modelRow < rs.size(); modelRow++) {
-            IndependenceFact f = rs.get(modelRow).getFact();
-            if (f != null && keys.contains(factKey(f))) {
-                int viewRow = factsTable.convertRowIndexToView(modelRow);
-                sel.addSelectionInterval(viewRow, viewRow);
-            }
-        }
-    }
-
-    private IndependenceFact getIndependenceFactFromFactsRow(int factsViewRow) {
-        String v = getActiveSelectedVertexName();
-        if (v == null) return null;
-
-        int factsModelRow = factsTable.convertRowIndexToModel(factsViewRow);
-
-        List<IndependenceResult> rs = model.getResultsForVertex(v);
-        if (rs == null || factsModelRow < 0 || factsModelRow >= rs.size()) return null;
-
-        IndependenceResult r = rs.get(factsModelRow);
-        return (r == null ? null : r.getFact());
-    }
-
-    private void showGraphDialog() {
-        Graph graph = model.getGraph();
-
-        // --- Tab 1: Render ---
-        GraphWorkbench workbench = new GraphWorkbench(graph);
-        workbench.setEnableEditing(false);
-        JScrollPane renderScroll = new JScrollPane(workbench);
-        renderScroll.setPreferredSize(new Dimension(820, 520));
-
-        // --- Tab 2: Text ---
-        JTextArea ta = new JTextArea(String.valueOf(graph));
-        ta.setEditable(false);
-        ta.setCaretPosition(0);
-        JScrollPane textScroll = new JScrollPane(ta);
-        textScroll.setPreferredSize(new Dimension(820, 520));
-
-        // --- Tabs ---
-        JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Graph", renderScroll);
-        tabs.addTab("Text", textScroll);
-        tabs.setTabPlacement(JTabbedPane.RIGHT);
-
-        EditorWindow editorWindow = new EditorWindow(tabs, "Current Graph", "OK", false, this);
-
-        DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
-        editorWindow.pack();
-        editorWindow.setVisible(true);
-
-//        JOptionPane.showMessageDialog(
-//                this,
-//                tabs,
-//                "Current Graph",
-//                JOptionPane.INFORMATION_MESSAGE
-//        );
-    }
-
-    private void updateUndoButtonEnabled() {
-        undoGraphButton.setEnabled(!graphHistory.isEmpty());
-    }
-
-    private Graph safeCopy(Graph g) {
-        if (g == null) return null;
-        try { return g.copy(); }
-        catch (Throwable t) { return new EdgeListGraph(g); }
-    }
-
-    private void undoGraph() {
-        if (graphHistory.isEmpty()) return;
-
-        Graph prev = graphHistory.pop();
-        applyingGraphProgrammatically = true;
-        try {
-            model.setGraph(prev);
-        } finally {
-            applyingGraphProgrammatically = false;
-            updateUndoButtonEnabled();
-        }
-    }
-
-    private void refreshModelDiagnostics() {
-        // You decide semantics: either only valid after Run All, or “over computed so far”.
-        VertexCheckIndTestModel.ModelSummary ms = model.getModelSummary(); // you add this
-        if (ms == null) {
-            modelNpLabel.setText("Model Np: -");
-            modelKsLabel.setText("Model KS: (not computed)");
-            return;
-        }
-        modelNpLabel.setText("Model Np: " + ms.numPValues());
-        modelKsLabel.setText("Model KS: " + fmt(ms.ksPValue()));
     }
 }

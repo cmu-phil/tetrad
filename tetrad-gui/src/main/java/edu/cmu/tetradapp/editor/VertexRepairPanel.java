@@ -33,6 +33,8 @@ import java.util.prefs.Preferences;
  *
  * <p>
  * For each candidate edit, the panel reports:
+ * </p>
+ *
  * <ul>
  *   <li><b>Baseline</b> and <b>After</b>: the number of implied conditional independencies
  *       (deduplicated across vertices) that are judged dependent by the data;</li>
@@ -43,7 +45,6 @@ import java.util.prefs.Preferences;
  *       conditional independence p-values in the model (deduplicated);</li>
  *   <li><b>Edges</b>: the total number of edges in the candidate graph.</li>
  * </ul>
- * </p>
  *
  * <p>
  * Independence test results are cached and reused across candidates to ensure that
