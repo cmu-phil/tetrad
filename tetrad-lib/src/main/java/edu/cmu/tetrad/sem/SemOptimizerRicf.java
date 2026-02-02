@@ -1,160 +1,113 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-//                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
-// and Richard Scheines.                                                     //
-//                                                                           //
-// This program is free software: you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation, either version 3 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.SemGraph;
+import edu.cmu.tetrad.search.RicfEjml;   // <-- new
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.ejml.simple.SimpleMatrix;
 
 import java.io.Serial;
+import java.util.List;
 
 /**
- * Optimizes a SEM using RICF (see that class).
- *
- * @author josephramsey
- * @version $Id: $Id
+ * Optimizes a SEM using RICF for ADMGs (no selection bias).
  */
 public class SemOptimizerRicf implements SemOptimizer {
     @Serial
     private static final long serialVersionUID = 23L;
 
-    /**
-     * The number of restarts to use.
-     */
     private int numRestarts = 1;
 
-    /**
-     * Blank constructor.
-     */
-    public SemOptimizerRicf() {
-    }
+    /** RICF tolerance. */
+    private double tolerance = 1e-3;
 
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @return a {@link edu.cmu.tetrad.sem.SemOptimizerRicf} object
-     */
+    /** Max RICF iterations. */
+    private int maxIters = 2000;
+
+    public SemOptimizerRicf() { }
+
     public static SemOptimizerRicf serializableInstance() {
         return new SemOptimizerRicf();
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Optimizes the fitting function of the given Sem using the Powell method from Numerical Recipes by adjusting the
-     * freeParameters of the Sem.
-     */
+    @Override
     public void optimize(SemIm semIm) {
         if (this.numRestarts < 1) this.numRestarts = 1;
-
         if (this.numRestarts != 1) {
             throw new IllegalArgumentException("Number of restarts must be 1 for this method.");
         }
 
         Matrix sampleCovar = semIm.getSampleCovar();
-
-        if (sampleCovar == null) {
-            throw new NullPointerException("Sample covar has not been set.");
-        }
-
+        if (sampleCovar == null) throw new NullPointerException("Sample covar has not been set.");
         if (DataUtils.containsMissingValue(sampleCovar)) {
             throw new IllegalArgumentException("Please remove or impute missing values.");
         }
 
-        if (DataUtils.containsMissingValue(sampleCovar)) {
-            throw new IllegalArgumentException("Please remove or impute missing values.");
-        }
-
-        TetradLogger.getInstance().log("Trying EM...");
-        //        new SemOptimizerEm().optimize(semIm);
-
-        CovarianceMatrix cov = new CovarianceMatrix(semIm.getMeasuredNodes(),
-                sampleCovar, semIm.getSampleSize());
+        CovarianceMatrix cov = new CovarianceMatrix(
+                semIm.getMeasuredNodes(),
+                sampleCovar,
+                semIm.getSampleSize()
+        );
 
         SemGraph graph = semIm.getSemPm().getGraph();
-        Ricf.RicfResult result = new Ricf().ricf(graph, cov, 0.001);
 
-        Matrix bHat = new Matrix(result.getBhat().toArray());
-        Matrix lHat = new Matrix(result.getLhat().toArray());
-        Matrix oHat = new Matrix(result.getOhat().toArray());
+        TetradLogger.getInstance().log("Running RICF (EJML, ADMG/no-selection-bias) ...");
+
+        RicfEjml.RicfResult r = new RicfEjml().ricf(graph, cov, tolerance, maxIters);
+
+        // B = I - Beta, so Beta(j <- i) = -B(j,i) for i -> j
+        // Omega is the error covariance (bidirected structure) in the observed-variable order.
+        Matrix bHat = new Matrix(SimpleMatrix.wrap(r.getBhat()));
+        Matrix omegaHat = new Matrix(SimpleMatrix.wrap(r.getOmegahat()));
+
+        List<Node> vars = semIm.getSemPm().getVariableNodes();
 
         for (Parameter param : semIm.getFreeParameters()) {
+            Node A = param.getNodeA();
+            Node B = param.getNodeB();
+
+            int i = vars.indexOf(A);
+            int j = (B == null ? -1 : vars.indexOf(B));
+
+            if (i < 0) continue;
             if (param.getType() == ParamType.COEF) {
-                int i = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeA());
-                int j = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeB());
-                semIm.setEdgeCoef(param.getNodeA(), param.getNodeB(), -bHat.get(j, i));
+                if (j < 0) continue;
+                // edge A -> B, coefficient = Beta(B <- A) = -Bhat(B, A)
+                double beta = -bHat.get(j, i);
+                semIm.setEdgeCoef(A, B, beta);
             }
-
-            if (param.getType() == ParamType.VAR) {
-                int i = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeA());
-                if (lHat.get(i, i) != 0) {
-                    semIm.setErrVar(param.getNodeA(), lHat.get(i, i));
-                } else if (oHat.get(i, i) != 0) {
-                    semIm.setErrVar(param.getNodeA(), oHat.get(i, i));
-                }
+            else if (param.getType() == ParamType.VAR) {
+                double v = omegaHat.get(i, i);
+                if (v > 0.0) semIm.setErrVar(A, v);
             }
-
-            if (param.getType() == ParamType.COVAR) {
-                int i = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeA());
-                int j = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeB());
-                if (lHat.get(i, i) != 0) {
-                    semIm.setErrCovar(param.getNodeA(), param.getNodeB(), lHat.get(j, i));
-                } else if (oHat.get(i, i) != 0) {
-                    semIm.setErrCovar(param.getNodeA(), param.getNodeB(), oHat.get(j, i));
-                }
+            else if (param.getType() == ParamType.COVAR) {
+                if (j < 0) continue;
+                double c = omegaHat.get(j, i);
+                semIm.setErrCovar(A, B, c);
             }
         }
 
-        System.out.println(result);
-        System.out.println(semIm);
+        TetradLogger.getInstance().log("RICF done: iters=" + r.getIters() + " diff=" + r.getDiff());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int getNumRestarts() {
         return this.numRestarts;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void setNumRestarts(int numRestarts) {
         this.numRestarts = numRestarts;
     }
 
-    /**
-     * <p>toString.</p>
-     *
-     * @return a {@link java.lang.String} object
-     */
+    public void setTolerance(double tolerance) { this.tolerance = tolerance; }
+    public void setMaxIters(int maxIters) { this.maxIters = maxIters; }
+
+    @Override
     public String toString() {
-        return "Sem Optimizer RICF";
+        return "Sem Optimizer RICF (EJML, ADMG)";
     }
 }
-
-
-
-

@@ -734,6 +734,10 @@ public interface Graph extends TetradSerializable {
     default boolean isDescendentOf(Node n, Node x) {
         return paths().existsDirectedPath(x, n);
     }
+
+    default boolean isBidirected(Node v, Node u) {
+        return Edges.isBidirectedEdge(getEdge(v, u));
+    }
 }
 
 
