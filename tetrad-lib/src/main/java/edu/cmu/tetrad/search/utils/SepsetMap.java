@@ -233,6 +233,10 @@ public final class SepsetMap implements TetradSerializable {
     public Set<Set<Node>> keySet() {
         return this.sepsets.keySet();
     }
+
+    public void clear() {
+        this.sepsets.clear();
+    }
 }
 
 

@@ -898,6 +898,7 @@ public class Pc implements IGraphSearch {
 
             // Run full Meek to closure on the current graph to discover what it *wants* to change
             MeekRules meekRules = new MeekRules();
+            meekRules.setMeekPreventCycles(true);
             meekRules.setKnowledge(knowledge);
             meekRules.orientImplied(g);
 

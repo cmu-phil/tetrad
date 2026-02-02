@@ -61,7 +61,7 @@ public class MeekRules {
      * True if cycles are to be prevented. Default is true. If true, cycles are prevented adding arbitrary new
      * unshielded colliders to the graph.
      */
-    private boolean meekPreventCycles = false;
+    private boolean meekPreventCycles = true;
     /**
      * Whether verbose output should be generated. True if verbose output should be printed.
      */
@@ -93,7 +93,7 @@ public class MeekRules {
      */
     public Set<Node> orientImplied(Graph graph) {
 
-        // If the meekPreventCycles flag is set to tru, eheck that the graph contains only directed or undirected
+        // If meekPreventCycles is true, check that the graph contains only directed or undirected
         // edges (i.e., is a mixed graph). For instance, if the graph contains bidirected edges, which
         // PC can possibly orient with one choice of collider conflict policy, then the graph is not a mixed
         // graph and the meekPreventCycles flag should be set to false. Also, if the graph contains a cycle, then
@@ -341,6 +341,47 @@ public class MeekRules {
      * @param visited The set of visited nodes.
      * @return True if the edge was directed.
      */
+//    private boolean direct(Node a, Node c, Graph graph, Set<Node> visited) {
+//        // Must be allowed to place an arrowhead at c coming from a, i.e., a -> c.
+//        if (!MeekRules.isArrowheadAllowed(a, c, this.knowledge)) return false;
+//
+//        Edge e = graph.getEdge(a, c);
+//        if (e == null) return false;
+//        if (!Edges.isUndirectedEdge(e)) return false;
+//
+//        Edge before = e;
+//        graph.removeEdge(before);
+//
+//        // If asked to prevent cycles, and a -> c would create a directed cycle (c => a),
+//        // we DO NOT "flip" to c -> a unless knowledge allows it.
+//        if (meekPreventCycles && graph.paths().existsDirectedPath(c, a)) {
+//
+//            // If we cannot legally orient c -> a, restore the undirected edge and do nothing.
+//            if (!MeekRules.isArrowheadAllowed(c, a, this.knowledge)) {
+//                graph.addEdge(before);
+//                return false;
+//            }
+//
+//            // Otherwise, orient c -> a (cycle-safe) and record as a change.
+//            Edge after = Edges.directedEdge(c, a);
+//
+//            visited.add(a);
+//            visited.add(c);
+//
+//            graph.addEdge(after);
+//            return true;
+//        }
+//
+//        // Normal case: orient a -> c
+//        Edge after = Edges.directedEdge(a, c);
+//
+//        visited.add(a);
+//        visited.add(c);
+//
+//        graph.addEdge(after);
+//        return true;
+//    }
+
     private boolean direct(Node a, Node c, Graph graph, Set<Node> visited) {
         // Must be allowed to place an arrowhead at c coming from a, i.e., a -> c.
         if (!MeekRules.isArrowheadAllowed(a, c, this.knowledge)) return false;
@@ -350,29 +391,15 @@ public class MeekRules {
         if (!Edges.isUndirectedEdge(e)) return false;
 
         Edge before = e;
-        graph.removeEdge(before);
 
         // If asked to prevent cycles, and a -> c would create a directed cycle (c => a),
-        // we DO NOT "flip" to c -> a unless knowledge allows it.
+        // then DO NOTHING (leave it undirected). Do NOT flip.
         if (meekPreventCycles && graph.paths().existsDirectedPath(c, a)) {
-
-            // If we cannot legally orient c -> a, restore the undirected edge and do nothing.
-            if (!MeekRules.isArrowheadAllowed(c, a, this.knowledge)) {
-                graph.addEdge(before);
-                return false;
-            }
-
-            // Otherwise, orient c -> a (cycle-safe) and record as a change.
-            Edge after = Edges.directedEdge(c, a);
-
-            visited.add(a);
-            visited.add(c);
-
-            graph.addEdge(after);
-            return true;
+            return false;
         }
 
         // Normal case: orient a -> c
+        graph.removeEdge(before);
         Edge after = Edges.directedEdge(a, c);
 
         visited.add(a);
@@ -467,33 +494,58 @@ public class MeekRules {
             // 1) If knowledge REQUIRES a direction, enforce it if possible.
             // ------------------------------------------------------------------
             if (reqAtoB && !reqBtoA) {
-                // Enforce a -> b
-                if (!Edges.isDirectedEdge(e) || !e.pointsTowards(b)) {
-                    // Remove whatever is there and add required direction, unless forbidden blocks it.
-                    if (!forbAtoB) {
-                        graph.removeEdge(e);
-                        graph.addEdge(Edges.directedEdge(a, b));
-                        visited.add(a);
-                        visited.add(b);
+                // Enforce a -> b if possible
+                if (Edges.isUndirectedEdge(e)) {
+                    if (direct(a, b, graph, visited)) {
                         changed = true;
                     }
+                } else if (Edges.isDirectedEdge(e) && !e.pointsTowards(b)) {
+                    // Already directed the wrong way: don't "flip" it here (that can break CPDAG legality).
+                    // Leave it; Meek+knowledge can’t both be satisfied without violating current structure.
+                    // (Alternatively: you can throw if you consider this an inconsistent-knowledge situation.)
                 }
                 continue;
             }
 
             if (reqBtoA && !reqAtoB) {
-                // Enforce b -> a
-                if (!Edges.isDirectedEdge(e) || !e.pointsTowards(a)) {
-                    if (!forbBtoA) {
-                        graph.removeEdge(e);
-                        graph.addEdge(Edges.directedEdge(b, a));
-                        visited.add(a);
-                        visited.add(b);
+                if (Edges.isUndirectedEdge(e)) {
+                    if (direct(b, a, graph, visited)) {
                         changed = true;
                     }
+                } else if (Edges.isDirectedEdge(e) && !e.pointsTowards(a)) {
+                    // same comment as above
                 }
                 continue;
             }
+
+//            if (reqAtoB && !reqBtoA) {
+//                // Enforce a -> b
+//                if (!Edges.isDirectedEdge(e) || !e.pointsTowards(b)) {
+//                    // Remove whatever is there and add required direction, unless forbidden blocks it.
+//                    if (!forbAtoB) {
+//                        graph.removeEdge(e);
+//                        graph.addEdge(Edges.directedEdge(a, b));
+//                        visited.add(a);
+//                        visited.add(b);
+//                        changed = true;
+//                    }
+//                }
+//                continue;
+//            }
+//
+//            if (reqBtoA && !reqAtoB) {
+//                // Enforce b -> a
+//                if (!Edges.isDirectedEdge(e) || !e.pointsTowards(a)) {
+//                    if (!forbBtoA) {
+//                        graph.removeEdge(e);
+//                        graph.addEdge(Edges.directedEdge(b, a));
+//                        visited.add(a);
+//                        visited.add(b);
+//                        changed = true;
+//                    }
+//                }
+//                continue;
+//            }
 
             // If both directions are "required" (shouldn't happen, but defensively), do nothing.
             if (reqAtoB && reqBtoA) continue;
@@ -504,8 +556,11 @@ public class MeekRules {
             // ------------------------------------------------------------------
             if (!Edges.isUndirectedEdge(e)) continue;
 
-            boolean a_to_b_ok = !forbAtoB; // arrowhead at b allowed
-            boolean b_to_a_ok = !forbBtoA; // arrowhead at a allowed
+//            boolean a_to_b_ok = !forbAtoB; // arrowhead at b allowed
+//            boolean b_to_a_ok = !forbBtoA; // arrowhead at a allowed
+
+            boolean a_to_b_ok = isArrowheadAllowed(a, b, knowledge);
+            boolean b_to_a_ok = isArrowheadAllowed(b, a, knowledge);
 
             if (a_to_b_ok && !b_to_a_ok) {
                 if (direct(a, b, graph, visited)) changed = true;
