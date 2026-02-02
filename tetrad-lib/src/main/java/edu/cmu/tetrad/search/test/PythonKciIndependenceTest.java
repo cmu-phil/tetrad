@@ -9,7 +9,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.*;
 
-// Not working yet.
 public final class PythonKciIndependenceTest implements IndependenceTest, Closeable {
 
     private final DataSet data;
