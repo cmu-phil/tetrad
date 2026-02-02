@@ -237,8 +237,45 @@ public class Pc implements IGraphSearch {
 
     private static boolean isArrowheadAllowed(Node from, Node to, Knowledge knowledge) {
         if (knowledge.isEmpty()) return true;
-        return !knowledge.isRequired(to.toString(), from.toString())
-                && !knowledge.isForbidden(from.toString(), to.toString());
+        String f = from.getName();
+        String t = to.getName();
+        return !knowledge.isRequired(t, f)   // disallow f->t if t->f is required
+                && !knowledge.isForbidden(f, t); // disallow f->t if f->t is forbidden
+    }
+
+    private static void orientEdgesFromKnowledge(Graph g, Knowledge knowledge) {
+        if (knowledge == null || knowledge.isEmpty()) return;
+
+        List<Edge> edges = new ArrayList<>(g.getEdges());
+        for (Edge e : edges) {
+            Node a = e.getNode1();
+            Node b = e.getNode2();
+            String A = a.getName();
+            String B = b.getName();
+
+            // If A->B required OR B->A forbidden, force A->B (if possible)
+            boolean forceAToB = knowledge.isRequired(A, B) || knowledge.isForbidden(B, A);
+            boolean forceBToA = knowledge.isRequired(B, A) || knowledge.isForbidden(A, B);
+
+            // If both force in opposite directions, it's inconsistent knowledge; skip or log.
+            if (forceAToB && forceBToA) {
+                // optional: log inconsistency
+                continue;
+            }
+
+            if (forceAToB) {
+                // only if edge exists and is not already oriented the other way
+                if (g.isAdjacentTo(a, b) && !g.isParentOf(b, a)) {
+                    g.removeEdge(g.getEdge(a, b));
+                    g.addDirectedEdge(a, b);
+                }
+            } else if (forceBToA) {
+                if (g.isAdjacentTo(a, b) && !g.isParentOf(a, b)) {
+                    g.removeEdge(g.getEdge(a, b));
+                    g.addDirectedEdge(b, a);
+                }
+            }
+        }
     }
 
     // ----- Configuration setters -----
@@ -411,6 +448,7 @@ public class Pc implements IGraphSearch {
         fas.setVerbose(verbose);
 
         Graph g = fas.search(nodes);
+
         SepsetMap sepsets = fas.getSepsets();
 
         // 2) Orient colliders

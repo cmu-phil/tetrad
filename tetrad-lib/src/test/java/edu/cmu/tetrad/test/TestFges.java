@@ -536,7 +536,7 @@ public class TestFges {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", "A---D,B---A,B-->C,C---A,C-->D",
+        checkWithKnowledge("A-->B,C-->B,B-->D", "A-->D,B---A,B-->C,C---A,C-->D",
                 knowledge);
     }
 

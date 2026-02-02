@@ -80,7 +80,9 @@ public class MeekRules {
 
     private static boolean isArrowheadAllowed(Node from, Node to, Knowledge knowledge) {
         if (knowledge.isEmpty()) return true;
-        return !knowledge.isRequired(to.toString(), from.toString()) && !knowledge.isForbidden(from.toString(), to.toString());
+        String f = from.getName();
+        String t = to.getName();
+        return !knowledge.isRequired(t, f) && !knowledge.isForbidden(f, t);
     }
 
     /**
@@ -149,6 +151,7 @@ public class MeekRules {
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
+        this.useRule4 = !this.knowledge.isEmpty();
     }
 
     /**
@@ -339,46 +342,46 @@ public class MeekRules {
      * @return True if the edge was directed.
      */
     private boolean direct(Node a, Node c, Graph graph, Set<Node> visited) {
+        // Must be allowed to place an arrowhead at c coming from a, i.e., a -> c.
         if (!MeekRules.isArrowheadAllowed(a, c, this.knowledge)) return false;
-        if (!Edges.isUndirectedEdge(graph.getEdge(a, c))) return false;
 
-        Edge before = graph.getEdge(a, c);
+        Edge e = graph.getEdge(a, c);
+        if (e == null) return false;
+        if (!Edges.isUndirectedEdge(e)) return false;
+
+        Edge before = e;
         graph.removeEdge(before);
 
-        // We prevent new cycles in the graph by adding arbitrary unshielded colliders to prevent cycles.
-        // The user can turn this off if they want to by setting the Meek prevent cycles flag to false.
+        // If asked to prevent cycles, and a -> c would create a directed cycle (c => a),
+        // we DO NOT "flip" to c -> a unless knowledge allows it.
         if (meekPreventCycles && graph.paths().existsDirectedPath(c, a)) {
 
-            // Log this before adding a <-- c back so that we don't accidentally say we added c --> a <--c
-            // as an unshielded collider.
-            if (verbose) {
-                graph.getNodesInTo(a, Endpoint.ARROW).forEach(node -> {
-                    if (!graph.isAdjacentTo(node, c)) {
-                        TetradLogger.getInstance().log("Meek: Prevented cycle by orienting " + a + "---" + c + " as " + a + "<--" + c + " creating new unshielded collider " + node + " --> " + a + " <-- " + c);
-                    }
-                });
+            // If we cannot legally orient c -> a, restore the undirected edge and do nothing.
+            if (!MeekRules.isArrowheadAllowed(c, a, this.knowledge)) {
+                graph.addEdge(before);
+                return false;
             }
 
-//            graph.addEdge(before);
-//            return false;
-
-            graph.addEdge(Edges.directedEdge(c, a));
+            // Otherwise, orient c -> a (cycle-safe) and record as a change.
+            Edge after = Edges.directedEdge(c, a);
 
             visited.add(a);
             visited.add(c);
 
+            graph.addEdge(after);
             return true;
         }
 
+        // Normal case: orient a -> c
         Edge after = Edges.directedEdge(a, c);
 
         visited.add(a);
         visited.add(c);
 
         graph.addEdge(after);
-
         return true;
     }
+
 
     /**
      * Reverts edges not in unshielded colliders to undirected edges.
@@ -446,22 +449,71 @@ public class MeekRules {
     // In MeekRules
     private boolean orientByKnowledge(Graph graph, Set<Node> visited) {
         boolean changed = false;
-        for (Edge e : new ArrayList<>(graph.getEdges())) {
-            if (!Edges.isUndirectedEdge(e)) continue;
 
+        for (Edge e : new ArrayList<>(graph.getEdges())) {
             Node a = e.getNode1();
             Node b = e.getNode2();
 
-            boolean a_to_b_ok = isArrowheadAllowed(a, b, this.knowledge);
-            boolean b_to_a_ok = isArrowheadAllowed(b, a, this.knowledge);
+            String an = a.getName();
+            String bn = b.getName();
 
-            // Exactly one direction permitted by knowledge ⇒ orient that way
+            boolean reqAtoB = knowledge.isRequired(an, bn);
+            boolean reqBtoA = knowledge.isRequired(bn, an);
+
+            boolean forbAtoB = knowledge.isForbidden(an, bn);
+            boolean forbBtoA = knowledge.isForbidden(bn, an);
+
+            // ------------------------------------------------------------------
+            // 1) If knowledge REQUIRES a direction, enforce it if possible.
+            // ------------------------------------------------------------------
+            if (reqAtoB && !reqBtoA) {
+                // Enforce a -> b
+                if (!Edges.isDirectedEdge(e) || !e.pointsTowards(b)) {
+                    // Remove whatever is there and add required direction, unless forbidden blocks it.
+                    if (!forbAtoB) {
+                        graph.removeEdge(e);
+                        graph.addEdge(Edges.directedEdge(a, b));
+                        visited.add(a);
+                        visited.add(b);
+                        changed = true;
+                    }
+                }
+                continue;
+            }
+
+            if (reqBtoA && !reqAtoB) {
+                // Enforce b -> a
+                if (!Edges.isDirectedEdge(e) || !e.pointsTowards(a)) {
+                    if (!forbBtoA) {
+                        graph.removeEdge(e);
+                        graph.addEdge(Edges.directedEdge(b, a));
+                        visited.add(a);
+                        visited.add(b);
+                        changed = true;
+                    }
+                }
+                continue;
+            }
+
+            // If both directions are "required" (shouldn't happen, but defensively), do nothing.
+            if (reqAtoB && reqBtoA) continue;
+
+            // ------------------------------------------------------------------
+            // 2) Otherwise, for UNDIRECTED edges only: if exactly one direction is
+            //    permitted by knowledge, orient it.
+            // ------------------------------------------------------------------
+            if (!Edges.isUndirectedEdge(e)) continue;
+
+            boolean a_to_b_ok = !forbAtoB; // arrowhead at b allowed
+            boolean b_to_a_ok = !forbBtoA; // arrowhead at a allowed
+
             if (a_to_b_ok && !b_to_a_ok) {
                 if (direct(a, b, graph, visited)) changed = true;
             } else if (b_to_a_ok && !a_to_b_ok) {
                 if (direct(b, a, graph, visited)) changed = true;
             }
         }
+
         return changed;
     }
 }
