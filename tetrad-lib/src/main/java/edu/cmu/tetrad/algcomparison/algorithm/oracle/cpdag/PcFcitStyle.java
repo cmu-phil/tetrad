@@ -55,7 +55,7 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
  */
 //@edu.cmu.tetrad.annotation.Algorithm(
 //        name = "PC-FCIT-Style",
-//        command = "pc_fcit_style",
+//        command =k "pc_fcit_style",
 //        algoType = AlgType.forbid_latent_common_causes
 //)
 //@Bootstrapping
