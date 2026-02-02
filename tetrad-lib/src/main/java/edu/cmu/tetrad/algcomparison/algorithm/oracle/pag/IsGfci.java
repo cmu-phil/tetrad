@@ -37,6 +37,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.is.IsBDeuScore2;
 import edu.cmu.tetrad.search.is.IsScore;
@@ -194,6 +195,7 @@ public class IsGfci extends AbstractBootstrapAlgorithm implements Algorithm, Has
 
         // Independence test on the training data
         IndependenceTest independenceTest = this.test.getTest(dataModel, parameters);
+        independenceTest = new CachedIndependenceQueries(independenceTest);
 
         // IGFCI driver (constructor signature must match your work_in_progress IGFci)
         IsGFci search =

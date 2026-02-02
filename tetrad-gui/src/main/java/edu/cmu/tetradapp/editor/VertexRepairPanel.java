@@ -968,7 +968,11 @@ public final class VertexRepairPanel extends JPanel {
         if (f == null || Q == null) return null;
 
         Set<Node> z = new LinkedHashSet<>(f.getZ());
-        return Q.checkIndependence(f.getX(), f.getY(), z);
+        try {
+            return Q.checkIndependence(f.getX(), f.getY(), z);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private double nodeKsPValue(Graph g, Node vertexInOriginalGraph) {

@@ -33,6 +33,8 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -107,7 +109,9 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
             knowledge = timeSeries.getKnowledge();
         }
 
-        edu.cmu.tetrad.search.FciMax search = new edu.cmu.tetrad.search.FciMax(this.test.getTest(dataModel, parameters));
+        IndependenceTest test1 = this.test.getTest(dataModel, parameters);
+        test1 = new CachedIndependenceQueries(test1);
+        edu.cmu.tetrad.search.FciMax search = new edu.cmu.tetrad.search.FciMax(test1);
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setKnowledge(this.knowledge);
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));

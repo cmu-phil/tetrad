@@ -35,6 +35,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
@@ -114,6 +115,7 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         }
 
         IndependenceTest test = this.test.getTest(dataModel, parameters);
+        test = new CachedIndependenceQueries(test);
 
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
         edu.cmu.tetrad.search.DmPc search = new edu.cmu.tetrad.search.DmPc(test);

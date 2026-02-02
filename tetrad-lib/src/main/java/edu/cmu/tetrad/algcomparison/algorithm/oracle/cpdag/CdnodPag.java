@@ -20,6 +20,7 @@ import edu.cmu.tetrad.search.Fcit;
 import edu.cmu.tetrad.search.cdnod_pag.CgLrtChangeTest;
 import edu.cmu.tetrad.search.cdnod_pag.ChangeTest;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.PagLegalityCheck;
@@ -98,7 +99,9 @@ public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, H
                     default -> throw new IllegalArgumentException("Invalid collider orientation style");
                 };
 
-        R0R4Strategy strategy = new R0R4StrategyTestBased(test.getTest(data, parameters));
+        IndependenceTest test1 = test.getTest(data, parameters);
+        test1 = new CachedIndependenceQueries(test1);
+        R0R4Strategy strategy = new R0R4StrategyTestBased(test1);
         FciOrient fciOrient = new FciOrient(strategy);
 
         // Configure core search. We pass the dataset that ALREADY has C as the last column.
@@ -106,6 +109,7 @@ public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, H
         edu.cmu.tetrad.search.cdnod_pag.CdnodPag.PagBuilder pagBuilder = (DataSet dataWithoutEnv) -> {
             Score _score = score.getScore(dataWithoutEnv, parameters);
             IndependenceTest _test = test.getTest(dataWithoutEnv, parameters);
+            _test = new CachedIndependenceQueries(_test);
 
             Fcit fcit = new Fcit(_test, _score);
             fcit.setKnowledge(knowledge);

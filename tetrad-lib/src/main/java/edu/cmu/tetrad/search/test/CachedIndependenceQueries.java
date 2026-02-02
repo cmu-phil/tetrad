@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search.test;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
@@ -19,12 +20,35 @@ import java.util.concurrent.ConcurrentMap;
  *  - No String key construction or String.join in the hot path
  *
  * Thread-safety:
- *  - Safe for concurrent reads/writes (ConcurrentHashMap + computeIfAbsent).
+ *  - Safe for concurrent reads/writes (ConcurrentHashMap + putIfAbsent pattern).
+ *
+ * NOTE:
+ *  We intentionally do NOT use ConcurrentHashMap.computeIfAbsent here because it can throw
+ *  IllegalStateException("Recursive update") if the mapping function re-enters the map for the
+ *  same key (which can happen if the wrapped test delegates back into this cache layer).
  */
-public final class CachedIndependenceQueries implements TetradSerializable {
+public final class CachedIndependenceQueries implements IndependenceTest, TetradSerializable {
 
     @SuppressWarnings("unused")
     private static final long serialVersionUID = 23L;
+
+    public void setVerbose(boolean verbose) {
+        if (this.test != null) this.test.setVerbose(verbose);
+    }
+
+    public List<Node> getVariables() {
+        return test == null ? List.of() : test.getVariables();
+    }
+
+    @Override
+    public DataModel getData() {
+        return test == null ? null : test.getData();
+    }
+
+    @Override
+    public boolean isVerbose() {
+        return false;
+    }
 
     // ------------------------ policies ------------------------
 
@@ -74,6 +98,10 @@ public final class CachedIndependenceQueries implements TetradSerializable {
 
     public CachedIndependenceQueries() { }
 
+    public CachedIndependenceQueries(IndependenceTest test) {
+        setTest(test);
+    }
+
     public CachedIndependenceQueries(ErrorPolicy errorPolicy) {
         this.errorPolicy = Objects.requireNonNull(errorPolicy, "errorPolicy");
     }
@@ -85,6 +113,27 @@ public final class CachedIndependenceQueries implements TetradSerializable {
      * Call this whenever the user changes the test or its parameters.
      */
     public synchronized void setTest(IndependenceTest test) {
+        if (test == null) {
+            clearTest();
+            return;
+        }
+
+        // Defend against accidental self-wrapping / wrapping-a-wrapper.
+        // (This is a common way to create re-entrancy that trips CHM.computeIfAbsent.)
+        if (test == this) {
+            throw new IllegalArgumentException("Cannot setTest(this) for CachedIndependenceQueries.");
+        }
+        if (test instanceof CachedIndependenceQueries other) {
+            IndependenceTest inner = other.getTest();
+            if (inner == null) {
+                throw new IllegalArgumentException("Cannot setTest(CachedIndependenceQueries) with null inner test.");
+            }
+            if (inner == this) {
+                throw new IllegalArgumentException("Cannot setTest: would create a cycle in wrapper chain.");
+            }
+            test = inner;
+        }
+
         this.test = test;
         rebuildMaps(test);
         clearCaches();
@@ -132,14 +181,22 @@ public final class CachedIndependenceQueries implements TetradSerializable {
             return new Eval(true, Double.NaN);
         }
 
-        return evalCache.computeIfAbsent(key, k -> computeEval(local, fact));
+        // IMPORTANT: avoid computeIfAbsent (can throw "Recursive update" under re-entrancy).
+        Eval cached = evalCache.get(key);
+        if (cached != null) return cached;
+
+        Eval computed = computeEval(local, fact);
+
+        Eval raced = evalCache.putIfAbsent(key, computed);
+        return raced != null ? raced : computed;
     }
 
     /**
-     * Compatibility method used by UI code: returns an IndependenceResult.
+     * IndependenceTest API: returns an IndependenceResult.
      * NOTE: This method still does the "rebind to test variables by name" to avoid identity issues.
      */
-    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+    @Override
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
         if (test == null) throw new IllegalStateException("Independence test not set.");
 
         Node X = mapToTestNode(x);
@@ -153,11 +210,14 @@ public final class CachedIndependenceQueries implements TetradSerializable {
             }
         }
 
+        // If we can't map nodes, treat as "can't test"; choose a conservative default.
         if (X == null || Y == null) {
-            IndependenceFact fact = new IndependenceFact(x, y, z == null ? Set.of() : z);
-            double alpha = test.getAlpha();
-            double score = -alpha;
-            return new IndependenceResult(fact, true, Double.NaN, score);
+            IndependenceFact fact0 = new IndependenceFact(x, y, z == null ? Set.of() : z);
+            double alpha0 = test.getAlpha();
+            double p0 = Double.NaN;
+            boolean independent0 = true; // keep your previous behavior
+            double score0 = -alpha0;
+            return new IndependenceResult(fact0, independent0, p0, score0);
         }
 
         IndependenceFact fact = new IndependenceFact(X, Y, Z);
@@ -165,9 +225,12 @@ public final class CachedIndependenceQueries implements TetradSerializable {
 
         double p = eval.pValue();
         double alpha = test.getAlpha();
-        double score = Double.isNaN(p) ? -alpha : (alpha - p);
 
-        return new IndependenceResult(fact, eval.independent(), p, score);
+        // Decision must be computed now, from the current alpha.
+        boolean independent = !Double.isNaN(p) && p > alpha;
+
+        double score = Double.isNaN(p) ? -alpha : (alpha - p);
+        return new IndependenceResult(fact, independent, p, score);
     }
 
     public boolean isIndependent(IndependenceFact fact) {
@@ -392,16 +455,12 @@ public final class CachedIndependenceQueries implements TetradSerializable {
 
     /**
      * Map an arbitrary Node (often from a graph copy) to the IndependenceTest's Node instance.
-     * If the Node is already the test's instance, returns it immediately.
      */
     private Node mapToTestNode(Node n) {
         if (n == null) return null;
         String name = n.getName();
         if (name == null) return null;
-
-        // Fast path: if the test can resolve by name, that's our canonical instance.
-        Node mapped = testVarByName.get(name);
-        return mapped;
+        return testVarByName.get(name);
     }
 
     // ------------------------ map rebuild ------------------------

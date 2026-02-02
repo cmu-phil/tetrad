@@ -140,7 +140,7 @@ public class VertexCheckEditor extends JPanel {
     private final Deque<Graph> graphHistory = new ArrayDeque<>();
     private final JLabel modelKsLabel = new JLabel("Model KS: (not computed)");
     private final JLabel modelNpLabel = new JLabel("Model Np: -");
-    CachedIndependenceQueries Q;
+    private CachedIndependenceQueries Q;
     private JTable overviewTable;
     private JTable factsTable;
     private AbstractTableModel overviewModel;
