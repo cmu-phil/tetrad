@@ -138,8 +138,8 @@ public class VertexCheckEditor extends JPanel {
     private final JButton undoGraphButton = new JButton("Undo");
     private final JButton showGraphButton = new JButton("Graph");
     private final Deque<Graph> graphHistory = new ArrayDeque<>();
-    private final JLabel modelKsLabel = new JLabel("Model KS: (not computed)");
-    private final JLabel modelNpLabel = new JLabel("Model Np: -");
+    private final JLabel modelPLabel = new JLabel("Model P: (not computed)");
+    private final JLabel modelNpLabel = new JLabel("# p-values (not computed): -");
     private CachedIndependenceQueries Q;
     private JTable overviewTable;
     private JTable factsTable;
@@ -608,7 +608,7 @@ public class VertexCheckEditor extends JPanel {
 
 //                    case 2 -> (s == null ? "" : s.numFactsTotal());
                     case 2 -> (s == null ? "" : s.numPValuesUsed());
-                    case 3 -> (s == null ? "" : fmt(s.ksPValue()));
+                    case 3 -> (s == null ? "" : fmt(s.modelP()));
                     case 4 -> (s == null ? "" : fmt(s.asP()));      // your AD p
                     case 5 -> (s == null ? "" : fmt(s.fishP()));
                     case 6 -> (s == null ? "" : fmt(s.binP()));
@@ -645,7 +645,7 @@ public class VertexCheckEditor extends JPanel {
         JPanel modelPanel = new JPanel(new GridLayout(0, 1, 0, 2));
         modelPanel.setBorder(BorderFactory.createTitledBorder("Model diagnostics"));
         modelPanel.add(modelNpLabel);
-        modelPanel.add(modelKsLabel);
+        modelPanel.add(modelPLabel);
 
         JPanel left = new JPanel(new BorderLayout(6, 6));
         left.add(overviewScroll, BorderLayout.CENTER);
@@ -1509,12 +1509,12 @@ public class VertexCheckEditor extends JPanel {
         // You decide semantics: either only valid after Run All, or “over computed so far”.
         VertexCheckIndTestModel.ModelSummary ms = model.getModelSummary(); // you add this
         if (ms == null) {
-            modelNpLabel.setText("Model Np: -");
-            modelKsLabel.setText("Model KS: (not computed)");
+            modelNpLabel.setText("Model P: (not computed)");
+            modelPLabel.setText("# p-values: (not computed)");
             return;
         }
-        modelNpLabel.setText("Model Np: " + ms.numPValues());
-        modelKsLabel.setText("Model KS: " + fmt(ms.ksPValue()));
+        modelNpLabel.setText("# P-values: " + ms.numPValues());
+        modelPLabel.setText("Model P: " + fmt(ms.modelP()));
     }
 
     private enum PoolChoice {

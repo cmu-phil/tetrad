@@ -48,8 +48,8 @@ import java.util.stream.Collectors;
  * <p>
  * For each vertex X, constructs a conditioning set CS(X) (e.g., Markov blanket, parents, etc.),
  * and tests all claims Ind(X, Y | CS(X)) for Y not in CS(X) (and Y != X) using the chosen
- * IndependenceTest. The resulting p-values are then tested for Uniform(0,1) using KS,
- * producing a per-vertex KS p-value and summary diagnostics.
+ * IndependenceTest. The resulting p-values are then tested for Uniform(0,1) using Anderson-Darling
+ * or Kolomogorov-Smirnov.
  * <p>
  * This is designed to support a Tetrad interface tool that highlights locally reliable regions
  * of an estimated graph relative to data.
@@ -81,7 +81,8 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     private boolean verbose = false;
     // For RECURSIVE_MSEP-like options (optional; default -1 means no limit)
     private int maxLength = -1;
-    private ModelSummary modelSummary; // cached
+    private ModelSummary modelSummary;
+    private boolean useAndersonDarling = true;
 
     public VertexCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, Parameters parameters) {
         this(dataModel, graphSource, null, parameters);
@@ -140,13 +141,17 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return out;
     }
 
-    public static double ksUniformPValue(List<Double> pvals) {
+    public double getUniformityP(List<Double> pvals) {
         if (pvals == null || pvals.size() < 2) return Double.NaN;
 
-        if (true) {
+        if (useAndersonDarling) {
             return getAndersonDarlingP(pvals);
+        } else {
+            return getKolomogorovP(pvals);
         }
+    }
 
+    private static double getKolomogorovP(List<Double> pvals) {
         double[] x = pvals.stream().mapToDouble(Double::doubleValue).toArray();
         KolmogorovSmirnovTest ks = new KolmogorovSmirnovTest();
         return ks.kolmogorovSmirnovTest(new UniformRealDistribution(0.0, 1.0), x);
@@ -233,52 +238,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     // --- Implementation -------------------------------------------------------------------------
-
-//    public List<String> getConditioningSetForVertex(String vertexName) {
-//        return conditioningSetByVertex.getOrDefault(vertexName, List.of());
-//    }
-
-//    private void runVertex(Graph alignedGraph, Node x) {
-//        Set<Node> cs = computeConditioningSet(alignedGraph, x);
-//        List<String> csNames = cs.stream().map(Node::getName).sorted().collect(Collectors.toList());
-//        conditioningSetByVertex.put(x.getName(), csNames);
-//
-//        List<IndependenceResult> results = new ArrayList<>();
-//        List<Double> pvals = new ArrayList<>();
-//
-//        for (Node y : alignedGraph.getNodes()) {
-//            if (y.equals(x)) continue;
-//            if (cs.contains(y)) continue;
-//
-//            try {
-//                IndependenceResult r = independenceTest.checkIndependence(x, y, cs);
-//
-//                // Only keep well-formed p-values for uniformity testing.
-//                double p = r.getPValue();
-//                if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
-//                    results.add(new IndependenceResult(new IndependenceFact(x, y, cs), r.isIndependent(), p, r.getScore()));
-//                    pvals.add(p);
-//                } else {
-//                    // Still record it as an IndependenceResult with whatever p is (editor can show it),
-//                    // but skip for uniformity.
-//                    results.add(new IndependenceResult(new IndependenceFact(x, y, cs), r.isIndependent(), p, r.getScore()));
-//                }
-//
-//                if (verbose) {
-//                    TetradLogger.getInstance().log("VertexCheck: " + x.getName() + " vs " + y.getName()
-//                            + " | CS=" + csNames + "  p=" + p);
-//                }
-//            } catch (Exception ex) {
-//                TetradLogger.getInstance().log("VertexCheck: error checking " + x.getName() + " _||_ " + y.getName()
-//                        + " | CS(X): " + ex.getMessage());
-//            }
-//        }
-//
-//        // Compute summary stats
-//        VertexSummary summary = summarizeVertex(x.getName(), cs.size(), results, pvals);
-//        summariesByVertex.put(x.getName(), summary);
-//        resultsByVertex.put(x.getName(), results);
-//    }
 
     @Override
     public String getName() {
@@ -457,24 +416,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return resultsByVertex.getOrDefault(vertexName, List.of());
     }
 
-    /// /        VertexSummary summary = summarizeVertex(
-    /// /                x.getName(),
-    /// /                conditioningSetSizeForSummary(impliedFacts),
-    /// /                results,
-    /// /                pvals
-    /// /        );
-    /// /        summariesByVertex.put(x.getName(), summary);
-//
-//        VertexSummary summary = summarizeVertex(
-//                x.getName(),
-//                /* csSize */ -1, // or conditioningSetSizeForSummary(impliedFacts) if you still want it
-//                results,
-//                pvals
-//        );
-//        summariesByVertex.put(x.getName(), summary);
-//        resultsByVertex.put(x.getName(), results);
-//
-//    }
     private void runVertex(Graph alignedGraph, Node x) {
         List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x);
 
@@ -534,19 +475,12 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         double adP = Double.NaN;
         double binP = Double.NaN;
         double fishP = Double.NaN;
-        double aSquared = Double.NaN;
-        double aSquaredStar = Double.NaN;
-
-
-        GeneralAndersonDarlingTest _generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pvals, new UniformRealDistribution(0, 1));
 
         if (n >= 2) {
-            aSquared = _generalAndersonDarlingTest.getASquared();
-            aSquaredStar = _generalAndersonDarlingTest.getASquaredStar();
-            adP = 1. - _generalAndersonDarlingTest.getProbTail(pvals.size(), aSquaredStar);
-            ksP = UniformityTest.getKsPValue(pvals, 0, 1);
-            fishP = getFisherCombinedPValue(pvals);
-            binP = getBinomialPValue(pvals);
+            adP = getAndersonDarlingP(pvals);
+            ksP = getKolomogorovP(pvals);
+            fishP = getFisherCombinedP(pvals);
+            binP = getBinomialP(pvals);
         }
 
         double alpha = independenceTest.getAlpha();
@@ -556,7 +490,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         double minP = pvals.stream().min(Double::compare).orElse(Double.NaN);
         double medianP = median(pvals);
 
-        return new VertexSummary(vertexName, csSize, results.size(), n, ksP, adP, binP, fishP, aSquared, aSquaredStar,
+        return new VertexSummary(vertexName, csSize, results.size(), n, ksP, adP, binP, fishP,
                 fracReject, numReject, minP, medianP);
     }
 
@@ -567,7 +501,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
      * @param pvals a list of p-values from independence tests
      * @return the combined p-value. If the inputs are invalid or computation fails, returns Double.NaN.
      */
-    public double getFisherCombinedPValue(List<Double> pvals) {
+    public double getFisherCombinedP(List<Double> pvals) {
 
         double sum = 0.0;
 
@@ -597,7 +531,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
      * @param pValues The p-values.
      * @return The Binomial p-value for non-uniformity.
      */
-    private double getBinomialPValue(List<Double> pValues) {
+    private double getBinomialP(List<Double> pValues) {
         int n = pValues.size();
         double q = independenceTest.getAlpha();
         int k = (int) pValues.stream().filter(p -> p <= q).count();
@@ -924,8 +858,8 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
         List<Double> pvals = getDedupedPvalues();
 
-        double ksP = ksUniformPValue(pvals);
-        modelSummary = new ModelSummary(pvals.size(), ksP);
+        double modelP = getUniformityP(pvals);
+        modelSummary = new ModelSummary(pvals.size(), modelP);
         return modelSummary;
     }
 
@@ -967,6 +901,10 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
             if (v != null) out.add(v);
         }
         return out;
+    }
+
+    public void setUseAndersonDarling(boolean useAndersonDarling) {
+        this.useAndersonDarling = useAndersonDarling;
     }
 
     private static final class NaturalKey implements Comparable<NaturalKey> {
@@ -1013,15 +951,14 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
      * @param numPValuesUsed p in [0,1]
      */
     public record VertexSummary(String vertex, int conditioningSetSize, int numFactsTotal, int numPValuesUsed,
-                                double ksPValue, double asP, double binP, double fishP, double aSquared,
-                                double aSquaredStar,
+                                double modelP, double asP, double binP, double fishP,
                                 double fractionReject, long numReject, double minP,
                                 double medianP) implements TetradSerializable {
         @Serial
         private static final long serialVersionUID = 1L;
     }
 
-    public record ModelSummary(int numPValues, double ksPValue) implements TetradSerializable {
+    public record ModelSummary(int numPValues, double modelP) implements TetradSerializable {
         @Serial
         private static final long serialVersionUID = 23L;
     }

@@ -39,9 +39,9 @@ import java.util.prefs.Preferences;
  *   <li><b>Baseline</b> and <b>After</b>: the number of implied conditional independencies
  *       (deduplicated across vertices) that are judged dependent by the data;</li>
  *   <li><b>Δ</b>: the change in the number of such violations relative to the baseline;</li>
- *   <li><b>N-KS</b>: a Kolmogorov–Smirnov uniformity p-value for the collection of
+ *   <li><b>Node-P</b>: a uniformity p-value for the collection of
  *       p-values implied by the local Markov properties of the repaired node {@code x};</li>
- *   <li><b>M-KS</b>: a Kolmogorov–Smirnov uniformity p-value computed over all implied
+ *   <li><b>Model-P</b>: a uniformity p-value computed over all implied
  *       conditional independence p-values in the model (deduplicated);</li>
  *   <li><b>Edges</b>: the total number of edges in the candidate graph.</li>
  * </ul>
@@ -78,14 +78,14 @@ public final class VertexRepairPanel extends JPanel {
 
     private static final String CARD_TABLE = "table";
     private static final String CARD_NONE = "none";
-    private static final DecimalFormat KS_FORMAT = new DecimalFormat("0.0000");
-    private static final int DEFAULT_KS_TOP_K = 25;
+    private static final DecimalFormat MODEL_P_FORMAT = new DecimalFormat("0.0000");
+    private static final int DEFAULT_MODELP_TOP_K = 25;
 
-    // ---- Preferences (persist α and KS top-K) ----
+    // ---- Preferences (persist α and model-P top-K) ----
     private static final Preferences PREFS = Preferences.userRoot().node("edu/cmu/tetradapp/editor/VertexRepairPanel");
     // keys
     private static final String PREF_ALPHA = "markovAlpha";
-    private static final String PREF_KS_TOP_K = "ksTopK";
+    private static final String PREF_MODEL_P_TOP_K = "modelPTopK";
     // defaults (keep these aligned with UI defaults)
     private static final double DEFAULT_ALPHA = 0.01;
 
@@ -104,22 +104,24 @@ public final class VertexRepairPanel extends JPanel {
     private final JPanel resultsCard = new JPanel(new CardLayout());
 
     // Sorting/filtering UI
-    private final JCheckBox markovAlphaFilter = new JCheckBox("Hide rows with M-KS and N-KS < α");
+    private final JCheckBox markovAlphaFilter =
+            new JCheckBox("Hide rows with Model-P or Node-P < α");
     private final JTextField alphaField = new JTextField("0.01", 6);
-    private final JTextField ksTopKField = new JTextField(String.valueOf(DEFAULT_KS_TOP_K), 5);
+    private final JTextField modelPTopKField = new JTextField(String.valueOf(DEFAULT_MODELP_TOP_K), 5);
 
     // debounce timers so we don’t write prefs on every keystroke
     private final Timer alphaSaveTimer = new Timer(350, e -> saveAlphaPref());
-    private final Timer topKSaveTimer = new Timer(350, e -> saveTopKPref());
+    private final Timer topModelPaveTimer = new Timer(350, e -> saveTopKPref());
 
     private final CachedIndependenceQueries Q;
+    private final VertexCheckIndTestModel model;
     private Graph workingGraph;
     private Knowledge knowledge = new Knowledge();
 
     // Keep a handle to the sorter so we can change filter/sort dynamically
     private TableRowSorter<CandidateTableModel> resultsSorter;
 
-    private volatile int ksTopK = DEFAULT_KS_TOP_K;
+    private volatile int modelPTopK = DEFAULT_MODELP_TOP_K;
 
     // --- Watch dialog state (one at a time) ---
     private volatile SwingWorker<?, ?> activeWorker;
@@ -132,6 +134,7 @@ public final class VertexRepairPanel extends JPanel {
         this.baseModel = Objects.requireNonNull(editor.getIndTestModel(), "editor.getIndTestModel()");
         this.Q = Objects.requireNonNull(editor.getCachedQueries(), "editor.getCachedQueries()");
         this.workingGraph = safeCopy(baseModel.getGraph());
+        this.model = editor.getIndTestModel();
 
         // Initialize graph type combo options from graph legality
         initGraphTypeComboFromGraph(this.workingGraph);
@@ -217,13 +220,13 @@ public final class VertexRepairPanel extends JPanel {
         return new ArrayList<>(seen.values());
     }
 
-    private static TableCellRenderer ksRenderer() {
+    private static TableCellRenderer modelPRenderer() {
         return new DefaultTableCellRenderer() {
             @Override
             public void setValue(Object value) {
                 if (value instanceof Number n) {
                     double d = n.doubleValue();
-                    setText(Double.isNaN(d) ? "" : KS_FORMAT.format(d));
+                    setText(Double.isNaN(d) ? "" : MODEL_P_FORMAT.format(d));
                     setHorizontalAlignment(SwingConstants.RIGHT);
                 } else {
                     setText("");
@@ -294,8 +297,8 @@ public final class VertexRepairPanel extends JPanel {
         alphaPanel.add(new JLabel("α:"));
         alphaPanel.add(alphaField);
 
-        alphaPanel.add(new JLabel("KS top-K:"));
-        alphaPanel.add(ksTopKField);
+        alphaPanel.add(new JLabel("Model-P top-K:"));
+        alphaPanel.add(modelPTopKField);
 
         controls.add(alphaPanel, c);
 
@@ -331,19 +334,19 @@ public final class VertexRepairPanel extends JPanel {
 
         TableColumnModel cm = resultsTable.getColumnModel();
 
-        TableColumn ksCol = resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_KS);
-        ksCol.setCellRenderer(ksRenderer());
+        TableColumn modelPCol = resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_MODEL_P);
+        modelPCol.setCellRenderer(modelPRenderer());
 
-        resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_KS).setCellRenderer(ksRenderer());
-        resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_NKS).setCellRenderer(ksRenderer());
+        resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_MODEL_P).setCellRenderer(modelPRenderer());
+        resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_NODE_P).setCellRenderer(modelPRenderer());
 
         // Column indices assumed; adjust if needed
         TableColumn editIndex = cm.getColumn(0);
         TableColumn baselineIndex = cm.getColumn(1);
         TableColumn afterIndex = cm.getColumn(2);
         TableColumn deltaIndex = cm.getColumn(3);
-        TableColumn nodeKsIndex = cm.getColumn(4);
-        TableColumn kstestIndex = cm.getColumn(5);
+        TableColumn nodePIndex = cm.getColumn(4);
+        TableColumn modelPIndex = cm.getColumn(5);
         TableColumn edgesIndex = cm.getColumn(6);
         TableColumn applyIndex = cm.getColumn(7);
 
@@ -360,13 +363,13 @@ public final class VertexRepairPanel extends JPanel {
         deltaIndex.setMaxWidth(50);
         deltaIndex.setPreferredWidth(50);
 
-        nodeKsIndex.setMinWidth(70);
-        nodeKsIndex.setMaxWidth(70);
-        nodeKsIndex.setPreferredWidth(70);
+        nodePIndex.setMinWidth(70);
+        nodePIndex.setMaxWidth(70);
+        nodePIndex.setPreferredWidth(70);
 
-        kstestIndex.setMinWidth(70);
-        kstestIndex.setMaxWidth(70);
-        kstestIndex.setPreferredWidth(70);
+        modelPIndex.setMinWidth(70);
+        modelPIndex.setMaxWidth(70);
+        modelPIndex.setPreferredWidth(70);
 
         edgesIndex.setMinWidth(50);
         edgesIndex.setMaxWidth(50);
@@ -380,8 +383,8 @@ public final class VertexRepairPanel extends JPanel {
         resultsSorter = new TableRowSorter<>(resultsModel);
         resultsTable.setRowSorter(resultsSorter);
 
-        // M-KS comparator with NaN last
-        resultsSorter.setComparator(CandidateTableModel.COL_KS, (a, b) -> {
+        // Model-P comparator with NaN last
+        resultsSorter.setComparator(CandidateTableModel.COL_MODEL_P, (a, b) -> {
             double da = (a instanceof Number na) ? na.doubleValue() : Double.NaN;
             double db = (b instanceof Number nb) ? nb.doubleValue() : Double.NaN;
 
@@ -395,7 +398,7 @@ public final class VertexRepairPanel extends JPanel {
             return Double.compare(da, db);
         });
 
-        resultsSorter.setComparator(CandidateTableModel.COL_NKS, (a, b) -> {
+        resultsSorter.setComparator(CandidateTableModel.COL_NODE_P, (a, b) -> {
             double da = (a instanceof Number na) ? na.doubleValue() : Double.NaN;
             double db = (b instanceof Number nb) ? nb.doubleValue() : Double.NaN;
             boolean aNaN = Double.isNaN(da);
@@ -438,20 +441,12 @@ public final class VertexRepairPanel extends JPanel {
                 @Override
                 public boolean include(Entry<? extends CandidateTableModel, ? extends Integer> e) {
 
-                    Object mObj = e.getValue(CandidateTableModel.COL_KS); // <-- M-KS column index
-                    Object nObj = e.getValue(CandidateTableModel.COL_NKS); // <-- N-KS column index
+                    double modelP = ((Double) e.getValue(CandidateTableModel.COL_MODEL_P)).doubleValue();
+                    double nodeP  = ((Double) e.getValue(CandidateTableModel.COL_NODE_P)).doubleValue();
 
-                    if (!(mObj instanceof Number mNum)) return false;
-                    if (!(nObj instanceof Number nNum)) return false;
-
-                    double m = mNum.doubleValue();
-                    double n = nNum.doubleValue();
-
-                    // Keep rows where either test wasn't computed (NaN).
-                    if (Double.isNaN(m) || Double.isNaN(n)) return true;
-
-                    // Otherwise keep only if BOTH are >= alpha.
-                    return m >= alpha && n >= alpha;
+                    // Keep if either wasn't computed (NaN); otherwise require BOTH >= alpha.
+                    return (Double.isNaN(modelP) || modelP >= alpha)
+                            && (Double.isNaN(nodeP)  || nodeP  >= alpha);
                 }
             });
         } else {
@@ -461,7 +456,7 @@ public final class VertexRepairPanel extends JPanel {
         // 2) Sort keys (lexicographic)
         resultsSorter.setSortKeys(List.of(
                 new RowSorter.SortKey(CandidateTableModel.COL_EDGES, SortOrder.ASCENDING),
-                new RowSorter.SortKey(CandidateTableModel.COL_KS, SortOrder.DESCENDING),
+                new RowSorter.SortKey(CandidateTableModel.COL_MODEL_P, SortOrder.DESCENDING),
                 new RowSorter.SortKey(CandidateTableModel.COL_AFTER, SortOrder.ASCENDING),
                 new RowSorter.SortKey(CandidateTableModel.COL_DELTA, SortOrder.ASCENDING)
         ));
@@ -503,29 +498,29 @@ public final class VertexRepairPanel extends JPanel {
             }
         });
 
-        ksTopKField.addActionListener(e -> {
-            ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
+        modelPTopKField.addActionListener(e -> {
+            modelPTopK = parseTopK(modelPTopKField.getText(), DEFAULT_MODELP_TOP_K);
             applySortAndFilter();
             saveTopKPref();
         });
 
-        ksTopKField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+        modelPTopKField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             @Override
             public void insertUpdate(javax.swing.event.DocumentEvent e) {
-                ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
-                topKSaveTimer.restart();
+                modelPTopK = parseTopK(modelPTopKField.getText(), DEFAULT_MODELP_TOP_K);
+                topModelPaveTimer.restart();
             }
 
             @Override
             public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
-                topKSaveTimer.restart();
+                modelPTopK = parseTopK(modelPTopKField.getText(), DEFAULT_MODELP_TOP_K);
+                topModelPaveTimer.restart();
             }
 
             @Override
             public void changedUpdate(javax.swing.event.DocumentEvent e) {
-                ksTopK = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
-                topKSaveTimer.restart();
+                modelPTopK = parseTopK(modelPTopKField.getText(), DEFAULT_MODELP_TOP_K);
+                topModelPaveTimer.restart();
             }
         });
     }
@@ -587,12 +582,12 @@ public final class VertexRepairPanel extends JPanel {
         GraphEval baseEval = evalGraphLocality(base, baseCache, base, Set.of(), true);
 
         int baseline = baseEval.violations();
-        double baselineKs = baseEval.ksP();
+        double baselineModelP = baseEval.modelP();
 
         Map<String, Graph> candGraphByKey = new HashMap<>();
         List<ScoredCandidate> scored = new ArrayList<>();
 
-        // PASS 1: after + N-KS + edges for all candidates
+        // PASS 1: after + Node-P + edges for all candidates
         for (CandidateEdit cand : candidates) {
             if (stopRequested()) return;
 
@@ -607,26 +602,26 @@ public final class VertexRepairPanel extends JPanel {
                     ? evalGraphLocality(base, baseCache, g2, affected, false).violations()
                     : evalViolationsOnly(g2);
 
-            double nodeKsAfter = nodeKsPValue(g2, x);
+            double nodePAfter = nodePValue(g2, x);
             int edgesAfter = g2.getNumEdges();
 
-            scored.add(new ScoredCandidate(cand, baseline, after, nodeKsAfter, Double.NaN, edgesAfter));
+            scored.add(new ScoredCandidate(cand, baseline, after, nodePAfter, Double.NaN, edgesAfter));
         }
 
         if (stopRequested()) return;
 
-        // PASS 2: compute M-KS for top-K only
+        // PASS 2: compute Model-P for top-K only
         List<ScoredCandidate> rankedForTopK = new ArrayList<>(scored);
         rankedForTopK.sort(Comparator
                 .comparingInt(ScoredCandidate::violationsAfter)
                 .thenComparingInt(ScoredCandidate::edgesAfter)
-                .thenComparing(Comparator.comparingDouble(ScoredCandidate::nodeKsAfter).reversed())
+                .thenComparing(Comparator.comparingDouble(ScoredCandidate::nodePAfter).reversed())
                 .thenComparingInt(ScoredCandidate::delta)
         );
 
         if (!rankedForTopK.isEmpty()) {
-            int k = Math.min(ksTopK, rankedForTopK.size());
-            Map<String, Double> ksByEditKey = new HashMap<>(k * 2);
+            int k = Math.min(modelPTopK, rankedForTopK.size());
+            Map<String, Double> modelPByEditKey = new HashMap<>(k * 2);
 
             for (int i = 0; i < k; i++) {
                 if (stopRequested()) return;
@@ -637,16 +632,16 @@ public final class VertexRepairPanel extends JPanel {
                 Graph g2 = candGraphByKey.get(cand.key());
                 if (g2 == null) continue;
 
-                double ksAfter = evalGraphOnce(g2).ksP();
-                ksByEditKey.put(cand.key(), ksAfter);
+                double modelPAfter = evalGraphOnce(g2).modelP();
+                modelPByEditKey.put(cand.key(), modelPAfter);
             }
 
-            if (!ksByEditKey.isEmpty()) {
+            if (!modelPByEditKey.isEmpty()) {
                 List<ScoredCandidate> patched = new ArrayList<>(scored.size());
                 for (ScoredCandidate sc : scored) {
-                    Double ks = ksByEditKey.get(sc.edit().key());
-                    patched.add(ks == null ? sc : new ScoredCandidate(
-                            sc.edit(), sc.baseline(), sc.after(), sc.nodeKsAfter(), ks, sc.edgesAfter()
+                    Double modelP = modelPByEditKey.get(sc.edit().key());
+                    patched.add(modelP == null ? sc : new ScoredCandidate(
+                            sc.edit(), sc.baseline(), sc.after(), sc.nodePAfter(), modelP, sc.edgesAfter()
                     ));
                 }
                 scored = patched;
@@ -658,7 +653,7 @@ public final class VertexRepairPanel extends JPanel {
         rankedForStatus.sort(Comparator
                 .comparingInt(ScoredCandidate::violationsAfter)
                 .thenComparingInt(ScoredCandidate::edgesAfter)
-                .thenComparing(Comparator.comparingDouble(ScoredCandidate::nodeKsAfter).reversed())
+                .thenComparing(Comparator.comparingDouble(ScoredCandidate::nodePAfter).reversed())
                 .thenComparingInt(ScoredCandidate::delta)
         );
 
@@ -677,14 +672,14 @@ public final class VertexRepairPanel extends JPanel {
                 ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_NONE);
             } else {
                 int best = (finalBest == null) ? baseline : finalBest.violationsAfter();
-                String ksBestStr = (finalBest == null || Double.isNaN(finalBest.ksAfter()))
+                String modelPBestStr = (finalBest == null || Double.isNaN(finalBest.modelPAfter()))
                         ? "n/a"
-                        : fmt.format(finalBest.ksAfter());
+                        : fmt.format(finalBest.modelPAfter());
 
                 statusLabel.setText(
                         "Baseline violations: " + baseline +
                                 " | Best: " + best +
-                                " | KS(all): " + fmt.format(baselineKs) + " → " + ksBestStr
+                                " | Model-P: " + fmt.format(baselineModelP) + " → " + modelPBestStr
                 );
                 ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_TABLE);
             }
@@ -986,7 +981,7 @@ public final class VertexRepairPanel extends JPanel {
         }
     }
 
-    private double nodeKsPValue(Graph g, Node vertexInOriginalGraph) {
+    private double nodePValue(Graph g, Node vertexInOriginalGraph) {
         if (g == null || vertexInOriginalGraph == null) return Double.NaN;
 
         Node v = g.getNode(vertexInOriginalGraph.getName());
@@ -996,7 +991,7 @@ public final class VertexRepairPanel extends JPanel {
         if (facts == null || facts.isEmpty()) return Double.NaN;
 
         List<Double> pvals = Q.pValuesForFacts(facts, CachedIndependenceQueries.Dedup.WITHIN_INPUT);
-        return VertexCheckIndTestModel.ksUniformPValue(pvals);
+        return model.getUniformityP(pvals);
     }
 
     // ---------------------------------------------------------------------
@@ -1021,8 +1016,8 @@ public final class VertexRepairPanel extends JPanel {
             if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) pvals.add(p);
         }
 
-        double ks = VertexCheckIndTestModel.ksUniformPValue(pvals);
-        return new GraphEval(violations, ks, evals.size());
+        double p = model.getUniformityP(pvals);
+        return new GraphEval(violations, p, evals.size());
     }
 
     private int evalViolationsOnly(Graph g) {
@@ -1095,7 +1090,7 @@ public final class VertexRepairPanel extends JPanel {
                                         GlobalEvalCache baseCache,
                                         Graph candidateGraph,
                                         Set<String> affectedVertexNames,
-                                        boolean computeKs) {
+                                        boolean computeModelP) {
         if (candidateGraph == null) return new GraphEval(0, Double.NaN, 0);
 
         // 1) Start from baseline vertex contributions (shallow copy map)
@@ -1119,7 +1114,7 @@ public final class VertexRepairPanel extends JPanel {
 
         // 3) Merge to global dedup by factKey (stable traversal for repeatability)
         Map<String, Boolean> globalViolationByKey = new HashMap<>();
-        Map<String, Double> globalPByKey = computeKs ? new HashMap<>() : null;
+        Map<String, Double> globalPByKey = computeModelP ? new HashMap<>() : null;
 
         List<String> names = new ArrayList<>(contrib.keySet());
         Collections.sort(names);
@@ -1134,7 +1129,7 @@ public final class VertexRepairPanel extends JPanel {
                 globalViolationByKey.putIfAbsent(key, e.getValue());
             }
 
-            if (computeKs) {
+            if (computeModelP) {
                 for (Map.Entry<String, Double> e : vc.pByKey().entrySet()) {
                     String key = e.getKey();
                     if (key == null) continue;
@@ -1148,26 +1143,26 @@ public final class VertexRepairPanel extends JPanel {
             if (isViol) violations++;
         }
 
-        double ks = Double.NaN;
-        if (computeKs && globalPByKey != null && globalPByKey.size() >= 2) {
+        double modelP = Double.NaN;
+        if (computeModelP && globalPByKey != null && globalPByKey.size() >= 2) {
             List<Double> pvals = new ArrayList<>(globalPByKey.values());
 
-            // Optional top-K downselect for KS computation inside locality mode
-            if (ksTopK > 0 && pvals.size() > ksTopK) {
+            // Optional top-K downselect for model-p computation inside locality mode
+            if (modelPTopK > 0 && pvals.size() > modelPTopK) {
                 pvals.sort(Double::compareTo);
-                List<Double> sampled = new ArrayList<>(ksTopK);
-                for (int i = 0; i < ksTopK; i++) {
-                    int idx = (int) Math.floor((i + 0.5) * pvals.size() / ksTopK);
+                List<Double> sampled = new ArrayList<>(modelPTopK);
+                for (int i = 0; i < modelPTopK; i++) {
+                    int idx = (int) Math.floor((i + 0.5) * pvals.size() / modelPTopK);
                     idx = Math.min(Math.max(idx, 0), pvals.size() - 1);
                     sampled.add(pvals.get(idx));
                 }
                 pvals = sampled;
             }
 
-            ks = VertexCheckIndTestModel.ksUniformPValue(pvals);
+            modelP = model.getUniformityP(pvals);
         }
 
-        return new GraphEval(violations, ks, globalViolationByKey.size());
+        return new GraphEval(violations, modelP, globalViolationByKey.size());
     }
 
     /**
@@ -1231,19 +1226,19 @@ public final class VertexRepairPanel extends JPanel {
 
     private void loadPrefsIntoUi() {
         double a = PREFS.getDouble(PREF_ALPHA, DEFAULT_ALPHA);
-        int k = PREFS.getInt(PREF_KS_TOP_K, DEFAULT_KS_TOP_K);
+        int k = PREFS.getInt(PREF_MODEL_P_TOP_K, DEFAULT_MODELP_TOP_K);
 
         if (!(a > 0.0 && a < 1.0)) a = DEFAULT_ALPHA;
-        if (k <= 0) k = DEFAULT_KS_TOP_K;
+        if (k <= 0) k = DEFAULT_MODELP_TOP_K;
 
         alphaField.setText(String.valueOf(a));
-        ksTopKField.setText(String.valueOf(k));
-        ksTopK = k;
+        modelPTopKField.setText(String.valueOf(k));
+        modelPTopK = k;
     }
 
     private void initPrefTimers() {
         alphaSaveTimer.setRepeats(false);
-        topKSaveTimer.setRepeats(false);
+        topModelPaveTimer.setRepeats(false);
     }
 
     private void saveAlphaPref() {
@@ -1252,8 +1247,8 @@ public final class VertexRepairPanel extends JPanel {
     }
 
     private void saveTopKPref() {
-        int k = parseTopK(ksTopKField.getText(), DEFAULT_KS_TOP_K);
-        PREFS.putInt(PREF_KS_TOP_K, k);
+        int k = parseTopK(modelPTopKField.getText(), DEFAULT_MODELP_TOP_K);
+        PREFS.putInt(PREF_MODEL_P_TOP_K, k);
     }
 
     // ---------------------------------------------------------------------
@@ -1490,8 +1485,8 @@ public final class VertexRepairPanel extends JPanel {
             CandidateEdit edit,
             int baseline,
             int after,
-            double nodeKsAfter,
-            double ksAfter,
+            double nodePAfter,
+            double modelPAfter,
             int edgesAfter
     ) {
         int violationsAfter() {
@@ -1508,13 +1503,13 @@ public final class VertexRepairPanel extends JPanel {
         private static final int COL_BASE = 1;
         private static final int COL_AFTER = 2;
         private static final int COL_DELTA = 3;
-        private static final int COL_NKS = 4;   // node KS
-        private static final int COL_KS = 5;    // model KS
+        private static final int COL_NODE_P = 4;   // node p
+        private static final int COL_MODEL_P = 5;    // model p
         private static final int COL_EDGES = 6;
         private static final int COL_APPLY = 7;
 
         private final String[] cols = {
-                "Edit", "Baseline", "After", "Δ", "N-KS", "M-KS", "Edges", "Apply"
+                "Edit", "Baseline", "After", "Δ", "Node-P", "Model-P", "Edges", "Apply"
         };
 
         private List<ScoredCandidate> rows = List.of();
@@ -1551,8 +1546,8 @@ public final class VertexRepairPanel extends JPanel {
                 case COL_BASE -> r.baseline();
                 case COL_AFTER -> r.violationsAfter();
                 case COL_DELTA -> r.delta();
-                case COL_NKS -> r.nodeKsAfter();
-                case COL_KS -> r.ksAfter();
+                case COL_NODE_P -> r.nodePAfter();
+                case COL_MODEL_P -> r.modelPAfter();
                 case COL_EDGES -> r.edgesAfter();
                 case COL_APPLY -> r.edit().isNoOp() ? "" : "Accept";
                 default -> "";
@@ -1566,8 +1561,8 @@ public final class VertexRepairPanel extends JPanel {
                 case COL_BASE -> Integer.class;
                 case COL_AFTER -> Integer.class;
                 case COL_DELTA -> Integer.class;
-                case COL_NKS -> Double.class;
-                case COL_KS -> Double.class;
+                case COL_NODE_P -> Double.class;
+                case COL_MODEL_P -> Double.class;
                 case COL_EDGES -> Integer.class;
                 case COL_APPLY -> Object.class;
                 default -> Object.class;
@@ -1631,7 +1626,7 @@ public final class VertexRepairPanel extends JPanel {
         }
     }
 
-    private record GraphEval(int violations, double ksP, int nFacts) {
+    private record GraphEval(int violations, double modelP, int nFacts) {
     }
 
     /**
