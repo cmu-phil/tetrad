@@ -1,23 +1,3 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-//                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
-// and Richard Scheines.                                                     //
-//                                                                           //
-// This program is free software: you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation, either version 3 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
@@ -33,7 +13,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -46,10 +25,7 @@ import java.util.List;
 import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
 
 /**
- * FCIT-style PC:
- * - starts from complete undirected pattern
- * - FAS-style removals by depth
- * - after each removal: orient colliders + Meek + CPDAG legality gate
+ * PC-Test
  *
  * @author josephramsey
  */
@@ -65,13 +41,11 @@ public class PcTest extends AbstractBootstrapAlgorithm implements Algorithm, Has
     @Serial
     private static final long serialVersionUID = 1L;
 
-    /** Independence test wrapper. */
     private IndependenceWrapper test;
-
-    /** Background knowledge. */
     private Knowledge knowledge = new Knowledge();
 
-    public PcTest() {}
+    public PcTest() {
+    }
 
     public PcTest(IndependenceWrapper test) {
         this.test = test;
@@ -79,84 +53,62 @@ public class PcTest extends AbstractBootstrapAlgorithm implements Algorithm, Has
 
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
+        DataModel dm = dataModel;
+        Knowledge k = new Knowledge(this.knowledge);
+
         // Time series lagging support (matches the PC wrapper pattern).
-        if (parameters.getInt(Params.TIME_LAG) > 0) {
-            if (!(dataModel instanceof DataSet dataSet)) {
-                throw new IllegalArgumentException("Expecting a data set for time lagging.");
+        int lag = parameters.getInt(Params.TIME_LAG);
+        if (lag > 0) {
+            if (!(dm instanceof DataSet ds)) {
+                throw new IllegalArgumentException("Expecting a DataSet for time lagging.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-            if (dataSet.getName() != null) {
-                timeSeries.setName(dataSet.getName());
-            }
+            DataSet lagged = TsUtils.createLagData(ds, lag);
+            if (ds.getName() != null) lagged.setName(ds.getName());
 
-            dataModel = timeSeries;
-            knowledge = timeSeries.getKnowledge();
+            dm = lagged;
+            k = lagged.getKnowledge();
         }
 
-        IndependenceTest indTest = getIndependenceWrapper().getTest(dataModel, parameters);
+        IndependenceTest indTest = test.getTest(dm, parameters);
 
-        // Cache all CI queries (optional but usually beneficial here too).
-        indTest = new CachedIndependenceQueries(indTest);
-
-        // Build and configure the FCIT-style PC search.
         edu.cmu.tetrad.search.PcTest search = new edu.cmu.tetrad.search.PcTest(indTest);
-
-        search.setKnowledge(this.knowledge);
+        search.setKnowledge(k);
         search.setDepth(parameters.getInt(Params.DEPTH));
-//        search.setStable(parameters.getBoolean(Params.STABLE_FAS));
-//        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-        // Existing Params includes ALLOW_BIDIRECTED; wire it (default false in your search).
-//        search.setAllowBidirected(parameters.getBoolean(Params.ALLOW_BIDIRECTED));
-
-        // Keep the conservative default (cycle guard on). If you later add a Params key,
-        // just wire it here:
-        // search.setForbidDirectedCycles(parameters.getBoolean(Params.FORBID_DIRECTED_CYCLES));
-        // search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
 
         Graph graph = search.search();
-
-        stampWithBic(graph, dataModel);
+        stampWithBic(graph, dm);
 
         return graph;
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        Graph dag = new EdgeListGraph(graph);
-        return GraphTransforms.dagToCpdag(dag);
+        return GraphTransforms.dagToCpdag(new EdgeListGraph(graph));
     }
 
     @Override
     public String getDescription() {
-        return "PC-Test using " + this.test.getDescription();
+        return "PC-Test using " + test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return this.test.getDataType();
+        return test.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.add(Params.STABLE_FAS);          // used as "stable" in this algorithm
-        parameters.add(Params.ALLOW_BIDIRECTED);    // optional collider gate behavior
-        parameters.add(Params.DEPTH);
-        parameters.add(Params.TIME_LAG);
-        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH); // kept for UI consistency; used by TsUtils workflow
-        parameters.add(Params.VERBOSE);
-
-        // Not used (on purpose): COLLIDER_ORIENTATION_STYLE, FDR_Q, etc.
-        // This algorithm always does sepset-style colliders after each move.
-
-        return parameters;
+        List<String> params = new ArrayList<>();
+        params.add(Params.DEPTH);
+        params.add(Params.TIME_LAG);
+        params.add(Params.TIME_LAG_REPLICATING_GRAPH);
+        return params;
     }
 
     @Override
     public Knowledge getKnowledge() {
-        return this.knowledge;
+        return new Knowledge(this.knowledge);
     }
 
     @Override
