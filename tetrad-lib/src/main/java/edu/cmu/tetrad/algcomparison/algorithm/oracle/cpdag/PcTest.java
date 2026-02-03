@@ -54,12 +54,12 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "PC-FCIT-Style",
-        command = "pc_fcit_style",
+        name = "PC-Test",
+        command = "pc_test",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class PcFcitStyle extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+public class PcTest extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
@@ -71,9 +71,9 @@ public class PcFcitStyle extends AbstractBootstrapAlgorithm implements Algorithm
     /** Background knowledge. */
     private Knowledge knowledge = new Knowledge();
 
-    public PcFcitStyle() {}
+    public PcTest() {}
 
-    public PcFcitStyle(IndependenceWrapper test) {
+    public PcTest(IndependenceWrapper test) {
         this.test = test;
     }
 
@@ -100,12 +100,12 @@ public class PcFcitStyle extends AbstractBootstrapAlgorithm implements Algorithm
         indTest = new CachedIndependenceQueries(indTest);
 
         // Build and configure the FCIT-style PC search.
-        edu.cmu.tetrad.search.PcFcitStyle search = new edu.cmu.tetrad.search.PcFcitStyle(indTest);
+        edu.cmu.tetrad.search.PcTest search = new edu.cmu.tetrad.search.PcTest(indTest);
 
         search.setKnowledge(this.knowledge);
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setStable(parameters.getBoolean(Params.STABLE_FAS));
-        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+//        search.setStable(parameters.getBoolean(Params.STABLE_FAS));
+//        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         // Existing Params includes ALLOW_BIDIRECTED; wire it (default false in your search).
 //        search.setAllowBidirected(parameters.getBoolean(Params.ALLOW_BIDIRECTED));
@@ -130,7 +130,7 @@ public class PcFcitStyle extends AbstractBootstrapAlgorithm implements Algorithm
 
     @Override
     public String getDescription() {
-        return "PC-FCIT-Style using " + this.test.getDescription();
+        return "PC-Test using " + this.test.getDescription();
     }
 
     @Override

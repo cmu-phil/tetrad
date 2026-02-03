@@ -104,7 +104,7 @@ public final class VertexRepairPanel extends JPanel {
     private final JPanel resultsCard = new JPanel(new CardLayout());
 
     // Sorting/filtering UI
-    private final JCheckBox markovAlphaFilter = new JCheckBox("Hide rows with M-KS < α");
+    private final JCheckBox markovAlphaFilter = new JCheckBox("Hide rows with M-KS and N-KS < α");
     private final JTextField alphaField = new JTextField("0.01", 6);
     private final JTextField ksTopKField = new JTextField(String.valueOf(DEFAULT_KS_TOP_K), 5);
 
@@ -433,14 +433,25 @@ public final class VertexRepairPanel extends JPanel {
         // 1) Filter (optional)
         if (markovAlphaFilter.isSelected()) {
             double alpha = parseAlpha(alphaField.getText(), DEFAULT_ALPHA);
-            resultsSorter.setRowFilter(new RowFilter<>() {
+
+            resultsSorter.setRowFilter(new RowFilter<CandidateTableModel, Integer>() {
                 @Override
                 public boolean include(Entry<? extends CandidateTableModel, ? extends Integer> e) {
-                    Object v = e.getValue(CandidateTableModel.COL_KS); // M-KS column
-                    if (!(v instanceof Number n)) return false;
-                    double p = n.doubleValue();
-                    // Keep NaN rows (not computed due to top-K) visible; these aren’t "M-KS < α".
-                    return Double.isNaN(p) || p >= alpha;
+
+                    Object mObj = e.getValue(CandidateTableModel.COL_KS); // <-- M-KS column index
+                    Object nObj = e.getValue(CandidateTableModel.COL_NKS); // <-- N-KS column index
+
+                    if (!(mObj instanceof Number mNum)) return false;
+                    if (!(nObj instanceof Number nNum)) return false;
+
+                    double m = mNum.doubleValue();
+                    double n = nNum.doubleValue();
+
+                    // Keep rows where either test wasn't computed (NaN).
+                    if (Double.isNaN(m) || Double.isNaN(n)) return true;
+
+                    // Otherwise keep only if BOTH are >= alpha.
+                    return m >= alpha && n >= alpha;
                 }
             });
         } else {
@@ -906,7 +917,7 @@ public final class VertexRepairPanel extends JPanel {
     private boolean isLegalGraphType(Graph g, RepairGraphType gt) {
         return switch (gt) {
             case DAG -> g.paths().isLegalDag();
-            case CPDAG -> g.paths().isLegalCpdag();
+            case CPDAG -> g.paths().isLegalCpdag() || g.paths().isLegalPdag();
             case PDAG -> g.paths().isLegalPdag();
             case MAG -> g.paths().isLegalMag();
             case PAG -> g.paths().isLegalPag();

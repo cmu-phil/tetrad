@@ -143,9 +143,24 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public static double ksUniformPValue(List<Double> pvals) {
         if (pvals == null || pvals.size() < 2) return Double.NaN;
 
+        if (true) {
+            return getAndersonDarlingP(pvals);
+        }
+
         double[] x = pvals.stream().mapToDouble(Double::doubleValue).toArray();
         KolmogorovSmirnovTest ks = new KolmogorovSmirnovTest();
         return ks.kolmogorovSmirnovTest(new UniformRealDistribution(0.0, 1.0), x);
+    }
+
+    /**
+     * Tests a list of p-values against the Anderson-Darling Test.
+     *
+     * @param pValues the list of p-values to be tested
+     * @return the p-value obtained from the Anderson-Darling Test
+     */
+    public static double getAndersonDarlingP(List<Double> pValues) {
+        GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
+        return generalAndersonDarlingTest.getP();
     }
 
     public CachedIndependenceQueries getCachedQueries() {
