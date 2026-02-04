@@ -1959,7 +1959,7 @@ public final class VertexRepairPanel extends JPanel {
             if (g2 == null) return null;
 
             Edge edge = cand.getEdge();
-            if (!cand.isNoOp() && (g2.equals(base) || (edge != null && !g2.containsEdge(edge)))) return null;
+            if (!cand.isNoOp() && (g2.equals(base))) return null;// || (edge != null && !g2.containsEdge(edge)))) return null;
         } else if (gt == RepairGraphType.PAG) {
             // keep as-is
         } else if (gt == RepairGraphType.PDAG) {
