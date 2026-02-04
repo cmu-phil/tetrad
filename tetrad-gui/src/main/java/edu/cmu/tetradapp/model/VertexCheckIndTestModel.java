@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ConditioningSetType;
+import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.OrderedLocalMarkovProperty;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
@@ -130,16 +131,16 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return -1;
     }
 
-    private static List<IndependenceFact> factsForUniformZ(Graph g, Node x, Set<Node> z) {
-        List<IndependenceFact> out = new ArrayList<>();
-        for (Node y : g.getNodes()) {
-            if (y.equals(x)) continue;
-            if (z.contains(y)) continue;
-            if (g.isAdjacentTo(x, y)) continue;   // <-- NEW LINE
-            out.add(new IndependenceFact(x, y, z));
-        }
-        return out;
-    }
+//    private static List<IndependenceFact> factsForUniformZ(Graph g, Node x, Set<Node> z) {
+//        List<IndependenceFact> out = new ArrayList<>();
+//        for (Node y : g.getNodes()) {
+//            if (y.equals(x)) continue;
+//            if (z.contains(y)) continue;
+//            if (g.isAdjacentTo(x, y)) continue;   // <-- NEW LINE
+//            out.add(new IndependenceFact(x, y, z));
+//        }
+//        return out;
+//    }
 
     public double getUniformityP(List<Double> pvals) {
         if (pvals == null || pvals.size() < 2) return Double.NaN;
@@ -417,7 +418,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     private void runVertex(Graph alignedGraph, Node x) {
-        List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x);
+        List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x, conditioningSetType);
 
         List<IndependenceResult> results = new ArrayList<>(impliedFacts.size());
         List<Double> pvals = new ArrayList<>();
@@ -545,166 +546,168 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return pValue;
     }
 
-    public List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x) {
-        switch (conditioningSetType) {
+    public static List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x, ConditioningSetType conditioningSetType) {
+        return MarkovCheck.computeImpliedFactsForVertex(alignedGraph, x, conditioningSetType);
 
-            // ---------------- uniform-Z families ----------------
-
-            case LOCAL_MARKOV: {
-                Set<Node> z = new HashSet<>();
-                for (Node w : alignedGraph.getAdjacentNodes(x)) {
-                    if (alignedGraph.isParentOf(w, x)) z.add(w);
-                }
-                return factsForUniformZ(alignedGraph, x, z);
-            }
-
-            case PARENTS_AND_NEIGHBORS: {
-                Set<Node> z = new HashSet<>();
-                for (Node w : alignedGraph.getAdjacentNodes(x)) {
-                    Edge e = alignedGraph.getEdge(w, x);
-                    if (e != null && Edges.isUndirectedEdge(e)) z.add(w);
-                    if (alignedGraph.isParentOf(w, x)) z.add(w);
-                }
-                return factsForUniformZ(alignedGraph, x, z);
-            }
-
-            case MARKOV_BLANKET: {
-                Set<Node> z = GraphUtils.markovBlanket(x, alignedGraph);
-                return factsForUniformZ(alignedGraph, x, z);
-            }
-
-            case ORDERED_LOCAL_MARKOV_MAG: {
-                Graph mag;
-
-                if (alignedGraph.paths().isLegalDag()) {
-                    mag = GraphTransforms.dagToMag(alignedGraph);
-                } else if (alignedGraph.paths().isLegalCpdag() || alignedGraph.paths().isLegalPdag()) {
-                    Graph dag = GraphTransforms.dagFromCpdag(alignedGraph);
-                    mag = GraphTransforms.dagToMag(dag);
-                } else if (alignedGraph.paths().isLegalMag()) {
-                    mag = alignedGraph;
-                } else if (alignedGraph.paths().isLegalPag()) {
-                    mag = GraphTransforms.zhangMagFromPag(alignedGraph);
-                } else {
-                    boolean hasCircle = false;
-
-                    for (Edge e : alignedGraph.getEdges()) {
-                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
-                            hasCircle = true;
-                            break;
-                        }
-                    }
-
-                    if (hasCircle) {
-                        mag = GraphTransforms.zhangMagFromPag(alignedGraph);
-                    } else {
-                        mag = alignedGraph;
-                    }
-                }
-
-                Node _x = mag.getNode(x.getName());
-
-                Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModelForNode(mag, _x);
-                return new ArrayList<>(raw);
-            }
-
-            case RECURSIVE_BLOCKING:
-                Set<IndependenceFact> facts = new HashSet<>();
-                for (Node w : alignedGraph.getNodes()) {
-                    if (x == w) continue;
-                    if (alignedGraph.isAdjacentTo(w, x)) continue;
-
-                    try {
-                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(alignedGraph, x, w, Set.of(), Set.of(), -1);
-
-                        if (blocking != null) {
-                            facts.add(new IndependenceFact(x, w, blocking));
-                        }
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                return new ArrayList<>(facts);
-
-            default:
-                throw new IllegalArgumentException(
-                        "Unsupported conditioning set type for VertexCheck: " + conditioningSetType
-                );
-        }
+//        switch (conditioningSetType) {
+//
+//            // ---------------- uniform-Z families ----------------
+//
+//            case LOCAL_MARKOV: {
+//                Set<Node> z = new HashSet<>();
+//                for (Node w : alignedGraph.getAdjacentNodes(x)) {
+//                    if (alignedGraph.isParentOf(w, x)) z.add(w);
+//                }
+//                return factsForUniformZ(alignedGraph, x, z);
+//            }
+//
+//            case PARENTS_AND_NEIGHBORS: {
+//                Set<Node> z = new HashSet<>();
+//                for (Node w : alignedGraph.getAdjacentNodes(x)) {
+//                    Edge e = alignedGraph.getEdge(w, x);
+//                    if (e != null && Edges.isUndirectedEdge(e)) z.add(w);
+//                    if (alignedGraph.isParentOf(w, x)) z.add(w);
+//                }
+//                return factsForUniformZ(alignedGraph, x, z);
+//            }
+//
+//            case MARKOV_BLANKET: {
+//                Set<Node> z = GraphUtils.markovBlanket(x, alignedGraph);
+//                return factsForUniformZ(alignedGraph, x, z);
+//            }
+//
+//            case ORDERED_LOCAL_MARKOV_MAG: {
+//                Graph mag;
+//
+//                if (alignedGraph.paths().isLegalDag()) {
+//                    mag = GraphTransforms.dagToMag(alignedGraph);
+//                } else if (alignedGraph.paths().isLegalCpdag() || alignedGraph.paths().isLegalPdag()) {
+//                    Graph dag = GraphTransforms.dagFromCpdag(alignedGraph);
+//                    mag = GraphTransforms.dagToMag(dag);
+//                } else if (alignedGraph.paths().isLegalMag()) {
+//                    mag = alignedGraph;
+//                } else if (alignedGraph.paths().isLegalPag()) {
+//                    mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+//                } else {
+//                    boolean hasCircle = false;
+//
+//                    for (Edge e : alignedGraph.getEdges()) {
+//                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
+//                            hasCircle = true;
+//                            break;
+//                        }
+//                    }
+//
+//                    if (hasCircle) {
+//                        mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+//                    } else {
+//                        mag = alignedGraph;
+//                    }
+//                }
+//
+//                Node _x = mag.getNode(x.getName());
+//
+//                Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModelForNode(mag, _x);
+//                return new ArrayList<>(raw);
+//            }
+//
+//            case RECURSIVE_BLOCKING:
+//                Set<IndependenceFact> facts = new HashSet<>();
+//                for (Node w : alignedGraph.getNodes()) {
+//                    if (x == w) continue;
+//                    if (alignedGraph.isAdjacentTo(w, x)) continue;
+//
+//                    try {
+//                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(alignedGraph, x, w, Set.of(), Set.of(), -1);
+//
+//                        if (blocking != null) {
+//                            facts.add(new IndependenceFact(x, w, blocking));
+//                        }
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                }
+//                return new ArrayList<>(facts);
+//
+//            default:
+//                throw new IllegalArgumentException(
+//                        "Unsupported conditioning set type for VertexCheck: " + conditioningSetType
+//                );
+//        }
     }
 
-    public List<IndependenceFact> computeAllImpliedFacts(Graph alignedGraph) {
-        Set<IndependenceFact> facts = new HashSet<>();
-
-        for (Node x : alignedGraph.getNodes()) {
-
-            // ---------------- uniform-Z families ----------------
-            if (Objects.requireNonNull(conditioningSetType) == ConditioningSetType.LOCAL_MARKOV) {
-                Set<Node> z = new HashSet<>();
-                for (Node w : alignedGraph.getAdjacentNodes(x)) {
-                    if (alignedGraph.isParentOf(w, x)) z.add(w);
-                }
-                facts.addAll(factsForUniformZ(alignedGraph, x, z));
-            } else if (conditioningSetType == ConditioningSetType.PARENTS_AND_NEIGHBORS) {
-                Set<Node> z = new HashSet<>();
-                for (Node w : alignedGraph.getAdjacentNodes(x)) {
-                    Edge e = alignedGraph.getEdge(w, x);
-                    if (e != null && Edges.isUndirectedEdge(e)) z.add(w);
-                    if (alignedGraph.isParentOf(w, x)) z.add(w);
-                }
-                facts.addAll(factsForUniformZ(alignedGraph, x, z));
-            } else if (conditioningSetType == ConditioningSetType.MARKOV_BLANKET) {
-                Set<Node> z = GraphUtils.markovBlanket(x, alignedGraph);
-                facts.addAll(factsForUniformZ(alignedGraph, x, z));
-            } else if (conditioningSetType == ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG) {
-                Graph mag;
-
-                if (alignedGraph.paths().isLegalDag()) {
-                    mag = GraphTransforms.dagToMag(alignedGraph);
-                } else if (alignedGraph.paths().isLegalCpdag()) {
-                    Graph dag = GraphTransforms.dagFromCpdag(alignedGraph);
-                    mag = GraphTransforms.dagToMag(dag);
-                } else if (alignedGraph.paths().isLegalMag()) {
-                    mag = alignedGraph;
-                } else if (alignedGraph.paths().isLegalPag()) {
-                    mag = GraphTransforms.zhangMagFromPag(alignedGraph);
-                } else {
-                    throw new IllegalArgumentException(
-                            "Ordered Local Markov requires a DAG, CPDAG, MAG, or PAG."
-                    );
-                }
-
-                Node _x = mag.getNode(x.getName());
-
-                Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModelForNode(mag, _x);
-                facts.addAll(raw);
-            } else if (conditioningSetType == ConditioningSetType.RECURSIVE_BLOCKING) {
-                Set<IndependenceFact> _facts = new HashSet<>();
-                for (Node w : alignedGraph.getNodes()) {
-                    if (x == w) continue;
-                    if (alignedGraph.isAdjacentTo(w, x)) continue;
-
-                    try {
-                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(alignedGraph, x, w, Set.of(), Set.of(), -1);
-
-                        if (blocking != null) {
-                            _facts.add(new IndependenceFact(x, w, blocking));
-                        }
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-
-                facts.addAll(_facts);
-            } else {
-                throw new IllegalArgumentException(
-                        "Unsupported conditioning set type for VertexCheck: " + conditioningSetType
-                );
-            }
-        }
-
-        return new ArrayList<>(facts);
-    }
+//    public List<IndependenceFact> computeAllImpliedFacts(Graph alignedGraph) {
+//        Set<IndependenceFact> facts = new HashSet<>();
+//
+//        for (Node x : alignedGraph.getNodes()) {
+//
+//            // ---------------- uniform-Z families ----------------
+//            if (Objects.requireNonNull(conditioningSetType) == ConditioningSetType.LOCAL_MARKOV) {
+//                Set<Node> z = new HashSet<>();
+//                for (Node w : alignedGraph.getAdjacentNodes(x)) {
+//                    if (alignedGraph.isParentOf(w, x)) z.add(w);
+//                }
+//                facts.addAll(factsForUniformZ(alignedGraph, x, z));
+//            } else if (conditioningSetType == ConditioningSetType.PARENTS_AND_NEIGHBORS) {
+//                Set<Node> z = new HashSet<>();
+//                for (Node w : alignedGraph.getAdjacentNodes(x)) {
+//                    Edge e = alignedGraph.getEdge(w, x);
+//                    if (e != null && Edges.isUndirectedEdge(e)) z.add(w);
+//                    if (alignedGraph.isParentOf(w, x)) z.add(w);
+//                }
+//                facts.addAll(factsForUniformZ(alignedGraph, x, z));
+//            } else if (conditioningSetType == ConditioningSetType.MARKOV_BLANKET) {
+//                Set<Node> z = GraphUtils.markovBlanket(x, alignedGraph);
+//                facts.addAll(factsForUniformZ(alignedGraph, x, z));
+//            } else if (conditioningSetType == ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG) {
+//                Graph mag;
+//
+//                if (alignedGraph.paths().isLegalDag()) {
+//                    mag = GraphTransforms.dagToMag(alignedGraph);
+//                } else if (alignedGraph.paths().isLegalCpdag()) {
+//                    Graph dag = GraphTransforms.dagFromCpdag(alignedGraph);
+//                    mag = GraphTransforms.dagToMag(dag);
+//                } else if (alignedGraph.paths().isLegalMag()) {
+//                    mag = alignedGraph;
+//                } else if (alignedGraph.paths().isLegalPag()) {
+//                    mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+//                } else {
+//                    throw new IllegalArgumentException(
+//                            "Ordered Local Markov requires a DAG, CPDAG, MAG, or PAG."
+//                    );
+//                }
+//
+//                Node _x = mag.getNode(x.getName());
+//
+//                Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModelForNode(mag, _x);
+//                facts.addAll(raw);
+//            } else if (conditioningSetType == ConditioningSetType.RECURSIVE_BLOCKING) {
+//                Set<IndependenceFact> _facts = new HashSet<>();
+//                for (Node w : alignedGraph.getNodes()) {
+//                    if (x == w) continue;
+//                    if (alignedGraph.isAdjacentTo(w, x)) continue;
+//
+//                    try {
+//                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(alignedGraph, x, w, Set.of(), Set.of(), -1);
+//
+//                        if (blocking != null) {
+//                            _facts.add(new IndependenceFact(x, w, blocking));
+//                        }
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                }
+//
+//                facts.addAll(_facts);
+//            } else {
+//                throw new IllegalArgumentException(
+//                        "Unsupported conditioning set type for VertexCheck: " + conditioningSetType
+//                );
+//            }
+//        }
+//
+//        return new ArrayList<>(facts);
+//    }
 
     @Override
     public Graph getSourceGraph() {
@@ -801,7 +804,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         Node x = alignedGraph.getNode(vertexName);
         if (x == null) return new ConditioningSetSizeRange(-1, -1);
 
-        List<IndependenceFact> facts = computeImpliedFactsForVertex(alignedGraph, x);
+        List<IndependenceFact> facts = computeImpliedFactsForVertex(alignedGraph, x, conditioningSetType);
         if (facts.isEmpty()) return new ConditioningSetSizeRange(0, 0);
 
         int min = Integer.MAX_VALUE;

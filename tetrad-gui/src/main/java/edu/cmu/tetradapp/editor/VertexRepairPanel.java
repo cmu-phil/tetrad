@@ -2,10 +2,11 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.ConditioningSetType;
+import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
-import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -82,7 +83,7 @@ public final class VertexRepairPanel extends JPanel {
     // --- Watch dialog state (one at a time) ---
     private volatile SwingWorker<?, ?> activeWorker;
 
-//    public VertexRepairPanel(VertexCheckEditor editor, Node x) {
+    //    public VertexRepairPanel(VertexCheckEditor editor, Node x) {
 //        super(new BorderLayout());
 //        this.x = Objects.requireNonNull(x, "x");
 //
@@ -577,7 +578,7 @@ public final class VertexRepairPanel extends JPanel {
                 new RowSorter.SortKey(CandidateTableModel.COL_DELTA, SortOrder.ASCENDING),
                 new RowSorter.SortKey(CandidateTableModel.COL_EDGES, SortOrder.ASCENDING),
                 new RowSorter.SortKey(CandidateTableModel.COL_MODEL_P, SortOrder.ASCENDING),
-                new RowSorter.SortKey(CandidateTableModel.COL_NODE_P, SortOrder.ASCENDING)
+                new RowSorter.SortKey(CandidateTableModel.COL_NODE_P, SortOrder.DESCENDING)
         ));
 
         resultsSorter.sort();
@@ -686,7 +687,7 @@ public final class VertexRepairPanel extends JPanel {
 
         if (stopRequested()) return;
 
-        if (gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG) {
+        if (gt == RepairGraphType.CPDAG) {// || gt == RepairGraphType.PDAG) {
             base = canonicalizeToCpdagOrNull(base);
             if (base == null) {
                 SwingUtilities.invokeLater(() -> {
@@ -1763,7 +1764,9 @@ public final class VertexRepairPanel extends JPanel {
         Node v = g.getNode(vertexInOriginalGraph.getName());
         if (v == null) return Double.NaN;
 
-        List<IndependenceFact> facts = baseModel.computeImpliedFactsForVertex(g, v);
+        ConditioningSetType type = baseModel.getConditioningSetType();
+
+        List<IndependenceFact> facts = MarkovCheck.computeImpliedFactsForVertex(g, v, type);
         if (facts == null || facts.isEmpty()) return Double.NaN;
 
         List<Double> pvals = Q.pValuesForFacts(facts, CachedIndependenceQueries.Dedup.WITHIN_INPUT);
@@ -1773,7 +1776,9 @@ public final class VertexRepairPanel extends JPanel {
     private GraphEval evalGraphOnce(Graph g) {
         if (g == null) return new GraphEval(0, Double.NaN, 0);
 
-        List<IndependenceFact> facts = baseModel.computeAllImpliedFacts(g);
+        ConditioningSetType type = baseModel.getConditioningSetType();
+
+        List<IndependenceFact> facts = MarkovCheck.computeAllImpliedFacts(g, type);
         if (facts == null || facts.isEmpty()) return new GraphEval(0, Double.NaN, 0);
 
         List<CachedIndependenceQueries.Eval> evals =
@@ -1795,7 +1800,9 @@ public final class VertexRepairPanel extends JPanel {
     private int evalViolationsOnly(Graph g) {
         if (g == null) return 0;
 
-        List<IndependenceFact> facts = baseModel.computeAllImpliedFacts(g);
+        ConditioningSetType type = baseModel.getConditioningSetType();
+
+        List<IndependenceFact> facts = MarkovCheck.computeAllImpliedFacts(g, type);
         if (facts == null || facts.isEmpty()) return 0;
 
         List<CachedIndependenceQueries.Eval> evals =
@@ -1827,7 +1834,9 @@ public final class VertexRepairPanel extends JPanel {
         Node v = g.getNode(vInGraph.getName());
         if (v == null) return new VertexContribution(Map.of(), Map.of());
 
-        List<IndependenceFact> facts = baseModel.computeImpliedFactsForVertex(g, v);
+        ConditioningSetType type = baseModel.getConditioningSetType();
+
+        List<IndependenceFact> facts = MarkovCheck.computeImpliedFactsForVertex(g, v, type);
         if (facts == null || facts.isEmpty()) return new VertexContribution(Map.of(), Map.of());
 
         Map<String, Boolean> viol = new HashMap<>();
