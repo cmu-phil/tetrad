@@ -735,6 +735,13 @@ public interface Graph extends TetradSerializable {
         return paths().existsDirectedPath(x, n);
     }
 
+    /**
+     * Determines if the edge between two nodes is bidirected.
+     *
+     * @param v the first node of the edge.
+     * @param u the second node of the edge.
+     * @return {@code true} if the edge between the specified nodes is bidirected, {@code false} otherwise.
+     */
     default boolean isBidirected(Node v, Node u) {
         return Edges.isBidirectedEdge(getEdge(v, u));
     }

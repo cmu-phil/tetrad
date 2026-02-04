@@ -209,6 +209,13 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         this.conditioningNodes = new ArrayList<>(independenceTest.getVariables());
     }
 
+    /**
+     * Computes all implied independence facts for the given graph based on the specified conditioning set type.
+     *
+     * @param g the graph for which implied independence facts will be computed
+     * @param setType the type of conditioning set to be used for inferring independence facts
+     * @return a list of all implied independence facts derived from the graph
+     */
     public static List<IndependenceFact> computeAllImpliedFacts(Graph g, ConditioningSetType setType) {
        Set<IndependenceFact> allImpliedFacts = new HashSet<>();
 
@@ -1207,6 +1214,22 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         return allIndependenceFacts;
     }
 
+    /**
+     * Computes the implied independence facts for a given vertex within the specified graph
+     * based on the provided conditioning set type.
+     *
+     * @param alignedGraph The graph within which the independence facts are computed.
+     *                     Must be a valid representation of a causal graph or related structure.
+     * @param x            The vertex (node) for which independence facts are to be computed.
+     * @param conditioningSetType The type of conditioning set to be used when computing the
+     *                            facts, which determines the strategy and context (e.g., Local Markov,
+     *                            Parents and Neighbors, Markov Blanket, etc.).
+     * @return A list of {@code IndependenceFact} objects representing the computed
+     *         independence facts for the given vertex and configuration. Each fact contains
+     *         information about the independence relationships implied by the specified conditioning.
+     * @throws IllegalArgumentException If the provided {@code conditioningSetType} is not supported.
+     * @throws RuntimeException If a computation is interrupted during recursive blocking.
+     */
     public static List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x, ConditioningSetType conditioningSetType) {
         switch (conditioningSetType) {
 
@@ -1295,6 +1318,17 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         }
     }
 
+    /**
+     * Generates a list of independence facts for a given node with respect to a given graph and a conditioning set.
+     * The method identifies all nodes in the graph that are neither the target node, part of the conditioning set,
+     * nor directly adjacent to the target node, and creates independence facts for these nodes.
+     *
+     * @param g The graph in which the nodes and edges are defined.
+     * @param x The target node for which independence facts are being generated.
+     * @param z The conditioning set of nodes that should be excluded from the independence facts.
+     * @return A list of independence facts specifying which nodes are conditionally independent
+     *         of the target node given the conditioning set.
+     */
     public static List<IndependenceFact> factsForUniformZ(Graph g, Node x, Set<Node> z) {
         List<IndependenceFact> out = new ArrayList<>();
         for (Node y : g.getNodes()) {

@@ -49,9 +49,29 @@ public class ClKciPython implements IndependenceWrapper {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Default constructor for the ClKciPython class.
+     *
+     * This constructor initializes an instance of the ClKciPython class, which serves
+     * as a wrapper for the Kernel-based Conditional Independence (KCI) test implemented
+     * using causal-learn in Python. This test is specifically designed to work with
+     * continuous data.
+     */
     public ClKciPython() {
     }
 
+    /**
+     * Creates and returns an independence test based on the Kernel-based Conditional Independence
+     * (KCI) test implemented in Python using the causal-learn library.
+     *
+     * @param dataModel    The data model to be used with the independence test. Must be an
+     *                     instance of {@code DataSet} containing continuous data.
+     * @param parameters   The parameters to configure the independence test, such as the
+     *                     significance level (alpha). Can be {@code null}.
+     * @return             An instance of {@code IndependenceTest} setup for the KCI method.
+     * @throws IllegalArgumentException If the provided {@code dataModel} is not an instance of
+     *                                  {@code DataSet}.
+     */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
         if (!(dataModel instanceof DataSet dataSet)) {
@@ -82,16 +102,34 @@ public class ClKciPython implements IndependenceWrapper {
         return test;
     }
 
+    /**
+     * Provides a textual description of the KCI-CL (Kernel-based Conditional Independence
+     * with Causal-Learn in Python) method.
+     *
+     * @return A string representation of the method description, specifically "KCI-CL (Python)".
+     */
     @Override
     public String getDescription() {
         return "KCI-CL (Python)";
     }
 
+    /**
+     * Returns the type of data handled by this method, which is continuous.
+     *
+     * @return The data type, represented as {@code DataType.Continuous}.
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * Retrieves the list of parameters used by the KCI-CL (Kernel-based Conditional Independence
+     * with Causal-Learn in Python) method.
+     *
+     * @return A list of parameter names required by this method, specifically including
+     *         the alpha parameter for configuring the significance level.
+     */
     @Override
     public List<String> getParameters() {
         // Use the standard alpha parameter, so algcomparison UI + scripts can set it.

@@ -26,6 +26,19 @@ import java.util.*;
  */
 public final class RicfEjml {
 
+    /**
+     * Constructs an instance of the {@code RicfEjml} class.
+     *
+     * This class contains implementations for the Residual Iterative Conditional Fitting (RICF)
+     * algorithm, which is used for parameter estimation in additive directed mixed graphs (ADMGs).
+     */
+    public RicfEjml() {}
+
+    /**
+     * Represents the result of the Residual Iterative Conditional Fitting (RICF) algorithm
+     * for additive directed mixed graphs (ADMGs). This class encapsulates the estimated
+     * structural parameters, the number of iterations performed, and a convergence metric.
+     */
     public static final class RicfResult {
         private final DMatrixRMaj sigmaHat;   // implied covariance
         private final DMatrixRMaj bHat;       // B = I - Beta
@@ -33,6 +46,15 @@ public final class RicfEjml {
         private final int iters;
         private final double diff;
 
+        /**
+         * Constructs a RicfResult object that contains the results of the Ricf algorithm.
+         *
+         * @param sigmaHat The implied covariance matrix.
+         * @param bHat The matrix representing B = I - Beta.
+         * @param omegaHat The residual or error covariance matrix, which includes bidirected structure.
+         * @param iters The number of iterations performed by the algorithm.
+         * @param diff The difference or convergence metric from the algorithm.
+         */
         public RicfResult(DMatrixRMaj sigmaHat, DMatrixRMaj bHat, DMatrixRMaj omegaHat, int iters, double diff) {
             this.sigmaHat = sigmaHat;
             this.bHat = bHat;
@@ -41,18 +63,71 @@ public final class RicfEjml {
             this.diff = diff;
         }
 
+        /**
+         * Retrieves the implied covariance matrix (sigmaHat) resulting from the Ricf algorithm.
+         *
+         * @return The implied covariance matrix represented as a DMatrixRMaj object.
+         */
         public DMatrixRMaj getSigmaHat() { return sigmaHat; }
+
+        /**
+         * Retrieves the matrix representing B = I - Beta resulting from the Ricf algorithm.
+         *
+         * @return The matrix B = I - Beta, represented as a DMatrixRMaj object.
+         */
         public DMatrixRMaj getBhat()     { return bHat; }
+
+        /**
+         * Retrieves the residual or error covariance matrix (omegaHat), which includes bidirected structure,
+         * resulting from the Ricf algorithm.
+         *
+         * @return The residual or error covariance matrix represented as a DMatrixRMaj object.
+         */
         public DMatrixRMaj getOmegahat() { return omegaHat; }
+
+        /**
+         * Retrieves the number of iterations performed by the algorithm.
+         *
+         * @return The number of iterations as an integer.
+         */
         public int getIters()            { return iters; }
+
+        /**
+         * Retrieves the difference or convergence metric resulting from the Ricf algorithm.
+         *
+         * @return The difference or convergence metric as a double.
+         */
         public double getDiff()          { return diff; }
 
+        /**
+         * Returns a string representation of the RicfResult object.
+         * The string includes the number of iterations performed and the
+         * convergence difference metric resulting from the Ricf algorithm.
+         *
+         * @return A string representation of the object.
+         */
         @Override public String toString() {
             return "RicfResult{iters=" + iters + ", diff=" + diff + "}";
         }
     }
 
-    /** Main entry point. */
+    /**
+     * Implements the Residual Iterative Conditional Fitting (RICF) algorithm for additive directed mixed graphs (ADMGs).
+     * The method estimates the structural parameters (e.g., regression coefficients and variances) of a model defined on the ADMG.
+     *
+     * @param admg       An instance of the {@code Graph} class representing the ADMG. It must not be {@code null}.
+     *                   Each variable in the covariance matrix must correspond to a node in this graph.
+     * @param covMatrix  An instance of the {@code ICovarianceMatrix} interface representing the sample covariance matrix.
+     *                   The dimensions of the covariance matrix must match the number of variables in the graph.
+     * @param tol        A positive threshold for the stopping criterion. The algorithm terminates when the maximum absolute difference
+     *                   in estimated parameters across successive iterations is less than this value.
+     * @param maxIters   The maximum number of iterations to perform. The algorithm terminates if this limit is reached before convergence.
+     * @return           A {@code RicfResult} containing the estimated regression coefficients, variances, covariance matrix,
+     *                   total iterations performed, and the final difference measure for the stopping criterion.
+     * @throws NullPointerException     If either {@code admg} or {@code covMatrix} is {@code null}.
+     * @throws IllegalArgumentException If the dimensions of the covariance matrix do not match the variables in the graph,
+     *                                   or if the graph is missing variables specified in the covariance matrix.
+     */
     public RicfResult ricf(Graph admg, ICovarianceMatrix covMatrix, double tol, int maxIters) {
         Objects.requireNonNull(admg, "admg");
         Objects.requireNonNull(covMatrix, "covMatrix");
