@@ -30,49 +30,6 @@ import java.util.prefs.Preferences;
  * applies each candidate to a copy of the current graph, and scores the result using
  * Markov-checker diagnostics derived from conditional independence tests.
  * </p>
- *
- * <p>
- * For each candidate edit, the panel reports:
- * </p>
- *
- * <ul>
- *   <li><b>Baseline</b> and <b>After</b>: the number of implied conditional independencies
- *       (deduplicated across vertices) that are judged dependent by the data;</li>
- *   <li><b>Δ</b>: the change in the number of such violations relative to the baseline;</li>
- *   <li><b>Node-P</b>: a uniformity p-value for the collection of
- *       p-values implied by the local Markov properties of the repaired node {@code x};</li>
- *   <li><b>Model-P</b>: a uniformity p-value computed over all implied
- *       conditional independence p-values in the model (deduplicated);</li>
- *   <li><b>Edges</b>: the total number of edges in the candidate graph.</li>
- * </ul>
- *
- * <p>
- * Independence test results are cached and reused across candidates to ensure that
- * scoring is efficient even when many candidate edits are evaluated.
- * Graph legality (DAG, CPDAG, MAG, or PAG) is enforced after each edit, and illegal
- * candidates are discarded.
- * </p>
- *
- * <p>
- * The panel maintains an internal edit history, allowing the user to step backward
- * through previously accepted candidate graphs during an interactive repair session.
- * The graph returned by {@link #getGraph()} reflects the final state when the dialog
- * is closed.
- * </p>
- *
- * <p><b>Intended usage:</b></p>
- * <pre>{@code
- * VertexRepairPanel p = new VertexRepairPanel(vertexCheckEditor, x);
- * // show p in a modal dialog
- * Graph repaired = p.getGraph();
- * }</pre>
- *
- * <p>
- * This component is intended as an interactive diagnostic and repair aid.
- * It does not attempt to enforce global optimality or score equivalence,
- * and is most effective when used to explore local modifications suggested
- * by Markov-checker feedback.
- * </p>
  */
 public final class VertexRepairPanel extends JPanel {
 
@@ -83,10 +40,8 @@ public final class VertexRepairPanel extends JPanel {
 
     // ---- Preferences (persist α and model-P top-K) ----
     private static final Preferences PREFS = Preferences.userRoot().node("edu/cmu/tetradapp/editor/VertexRepairPanel");
-    // keys
     private static final String PREF_ALPHA = "markovAlpha";
     private static final String PREF_MODEL_P_TOP_K = "modelPTopK";
-    // defaults (keep these aligned with UI defaults)
     private static final double DEFAULT_ALPHA = 0.01;
 
     private final VertexCheckIndTestModel baseModel;
@@ -95,9 +50,10 @@ public final class VertexRepairPanel extends JPanel {
 
     // UI
     private final JComboBox<RepairGraphType> graphTypeCombo = new JComboBox<>(RepairGraphType.values());
-    private final JButton searchButton = new JButton("Search for best node adjustments about x");
+    private final JButton searchButton = new JButton();              // label set after x is known
+    private final JButton modelBestButton = new JButton("Do your model best!");
     private final JButton backButton = new JButton("Undo");
-    private final JButton showGraphButton = new JButton("Show Graph");
+    private final JButton showGraphButton = new JButton("Graph");
     private final JLabel statusLabel = new JLabel(" ");
     private final JTable resultsTable = new JTable();
     private final CandidateTableModel resultsModel = new CandidateTableModel();
@@ -135,6 +91,9 @@ public final class VertexRepairPanel extends JPanel {
         this.Q = Objects.requireNonNull(editor.getCachedQueries(), "editor.getCachedQueries()");
         this.workingGraph = safeCopy(baseModel.getGraph());
         this.model = editor.getIndTestModel();
+
+        // Label buttons now that x is known
+        this.searchButton.setText("Adjust " + x.getName());
 
         // Initialize graph type combo options from graph legality
         initGraphTypeComboFromGraph(this.workingGraph);
@@ -307,6 +266,7 @@ public final class VertexRepairPanel extends JPanel {
         topButtons.add(backButton);
         topButtons.add(showGraphButton);
         topButtons.add(searchButton);
+        topButtons.add(modelBestButton);
 
         JPanel north = new JPanel(new BorderLayout());
         north.add(controls, BorderLayout.CENTER);
@@ -333,9 +293,6 @@ public final class VertexRepairPanel extends JPanel {
         resultsTable.setTransferHandler(new DefaultTableTransferHandler(0));
 
         TableColumnModel cm = resultsTable.getColumnModel();
-
-        TableColumn modelPCol = resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_MODEL_P);
-        modelPCol.setCellRenderer(modelPRenderer());
 
         resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_MODEL_P).setCellRenderer(modelPRenderer());
         resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_NODE_P).setCellRenderer(modelPRenderer());
@@ -437,7 +394,7 @@ public final class VertexRepairPanel extends JPanel {
         if (markovAlphaFilter.isSelected()) {
             double alpha = parseAlpha(alphaField.getText(), DEFAULT_ALPHA);
 
-            resultsSorter.setRowFilter(new RowFilter<CandidateTableModel, Integer>() {
+            resultsSorter.setRowFilter(new RowFilter<>() {
                 @Override
                 public boolean include(Entry<? extends CandidateTableModel, ? extends Integer> e) {
 
@@ -468,7 +425,11 @@ public final class VertexRepairPanel extends JPanel {
         backButton.addActionListener(e -> goBack());
         showGraphButton.addActionListener(e -> showGraphDialog());
 
+        // Adjust selected node x (the panel’s focus node)
         searchButton.addActionListener(e -> startWatched("Searching", this::runSearchWatched, null));
+
+        // Auto model best
+        modelBestButton.addActionListener(e -> startWatched("Auto-repairing", this::runModelBestWatched, null));
 
         markovAlphaFilter.addActionListener(e -> applySortAndFilter());
         markovAlphaFilter.setSelected(true);
@@ -527,6 +488,9 @@ public final class VertexRepairPanel extends JPanel {
 
     private void updateButtons() {
         backButton.setEnabled(!history.isEmpty());
+        boolean busy = (activeWorker != null);
+        searchButton.setEnabled(!busy);
+        modelBestButton.setEnabled(!busy);
     }
 
     // ---------------------------------------------------------------------
@@ -534,9 +498,6 @@ public final class VertexRepairPanel extends JPanel {
     // ---------------------------------------------------------------------
 
     private void runSearchWatched() {
-        // IMPORTANT: do NOT touch Swing components from background thread.
-        // We'll compute in the background and then apply results on EDT.
-
         RepairGraphType gt = (RepairGraphType) graphTypeCombo.getSelectedItem();
         Graph base = safeCopy(workingGraph);
 
@@ -610,14 +571,10 @@ public final class VertexRepairPanel extends JPanel {
 
         if (stopRequested()) return;
 
-        // PASS 2: compute Model-P for top-K only
+        // PASS 2: compute Model-P for the top-K rows *as the table would surface them*
+        // when Model-P is mostly unknown (i.e., table order ignoring Model-P).
         List<ScoredCandidate> rankedForTopK = new ArrayList<>(scored);
-        rankedForTopK.sort(Comparator
-                .comparingInt(ScoredCandidate::violationsAfter)
-                .thenComparingInt(ScoredCandidate::edgesAfter)
-                .thenComparing(Comparator.comparingDouble(ScoredCandidate::nodePAfter).reversed())
-                .thenComparingInt(ScoredCandidate::delta)
-        );
+        rankedForTopK.sort(tableOrderIgnoringModelP());
 
         if (!rankedForTopK.isEmpty()) {
             int k = Math.min(modelPTopK, rankedForTopK.size());
@@ -639,27 +596,20 @@ public final class VertexRepairPanel extends JPanel {
             if (!modelPByEditKey.isEmpty()) {
                 List<ScoredCandidate> patched = new ArrayList<>(scored.size());
                 for (ScoredCandidate sc : scored) {
-                    Double modelP = modelPByEditKey.get(sc.edit().key());
-                    patched.add(modelP == null ? sc : new ScoredCandidate(
-                            sc.edit(), sc.baseline(), sc.after(), sc.nodePAfter(), modelP, sc.edgesAfter()
+                    Double mp = modelPByEditKey.get(sc.edit().key());
+                    patched.add(mp == null ? sc : new ScoredCandidate(
+                            sc.edit(), sc.baseline(), sc.after(), sc.nodePAfter(), mp, sc.edgesAfter()
                     ));
                 }
                 scored = patched;
             }
         }
 
-        // For status line: choose "best" by the same comparator we used to select top-K
         List<ScoredCandidate> rankedForStatus = new ArrayList<>(scored);
-        rankedForStatus.sort(Comparator
-                .comparingInt(ScoredCandidate::violationsAfter)
-                .thenComparingInt(ScoredCandidate::edgesAfter)
-                .thenComparing(Comparator.comparingDouble(ScoredCandidate::nodePAfter).reversed())
-                .thenComparingInt(ScoredCandidate::delta)
-        );
-
+//        rankedForStatus.sort(candidateRankingForTopK());
+        rankedForStatus.sort(tableOrderFull());
         ScoredCandidate bestCand = rankedForStatus.isEmpty() ? null : rankedForStatus.get(0);
 
-        // Apply to Swing on EDT
         List<ScoredCandidate> finalScored = scored;
         ScoredCandidate finalBest = bestCand;
         SwingUtilities.invokeLater(() -> {
@@ -686,39 +636,709 @@ public final class VertexRepairPanel extends JPanel {
         });
     }
 
+    private Comparator<ScoredCandidate> candidateRankingForTopK() {
+        // Keep exactly your existing “rankedForTopK” behavior:
+        return Comparator
+                .comparingInt(ScoredCandidate::violationsAfter)
+                .thenComparingInt(ScoredCandidate::edgesAfter)
+                .thenComparing(Comparator.comparingDouble(ScoredCandidate::nodePAfter).reversed())
+                .thenComparingInt(ScoredCandidate::delta);
+    }
+
+    // ---------------------------------------------------------------------
+    // Auto model best
+    // ---------------------------------------------------------------------
+
+    private void runModelBestWatched() {
+        // Single-undo checkpoint for the whole run
+        Graph checkpoint = safeCopy(workingGraph);
+
+        final double alpha = parseAlpha(alphaField.getText(), DEFAULT_ALPHA);
+        final RepairGraphType gt = (RepairGraphType) graphTypeCombo.getSelectedItem();
+
+        int editsApplied = 0;
+        final int MAX_EDITS = 500;            // global safety cap
+        final int MAX_STEPS_PER_NODE = 200;   // per-node safety cap
+
+        vlog("==================================================");
+        vlog("AUTO-REPAIR (single sweep) (alpha=%.4g, type=%s)", alpha, String.valueOf(gt));
+        vlog("==================================================");
+
+        // One sweep only
+        List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
+        nodes.sort(Comparator.comparing(Node::getName, Comparator.nullsLast(String::compareTo)));
+
+        for (Node v0 : nodes) {
+            if (stopRequested()) return;
+            if (editsApplied >= MAX_EDITS) break;
+
+            Node center = (v0 == null || v0.getName() == null) ? null : workingGraph.getNode(v0.getName());
+            if (center == null) continue;
+
+            // Rule 0: if it's not broke, don't fix it
+            if (nodeLooksOk(workingGraph, center, alpha)) {
+                vlog("Skipping node %s (nodeP >= alpha in current graph).", center.getName());
+                continue;
+            }
+
+            vlog("--------------------------------------------------");
+            vlog("Editing node: %s", center.getName());
+
+            // Per-node loop: keep making moves until rule says stop
+            Set<String> seenSignatures = new HashSet<>();
+            int nodeSteps = 0;
+
+            while (editsApplied < MAX_EDITS) {
+                if (stopRequested()) return;
+
+                nodeSteps++;
+                if (nodeSteps > MAX_STEPS_PER_NODE) {
+                    vlog("STOP node %s: hit MAX_STEPS_PER_NODE=%d", center.getName(), MAX_STEPS_PER_NODE);
+                    break;
+                }
+
+                // Prevent infinite oscillation on a single node
+                String sig = graphSignature(workingGraph);
+                if (!seenSignatures.add(sig)) {
+                    vlog("STOP node %s: detected cycle (graph signature repeated).", center.getName());
+                    break;
+                }
+
+                SearchPack pack = computeCandidatesForNode(workingGraph, center, gt);
+                if (pack == null || pack.scored == null || pack.scored.isEmpty()) {
+                    vlog("No candidates for node %s", center.getName());
+                    break;
+                }
+
+                // 1) Alpha-filtered presorted list (table order)
+                List<ScoredCandidate> alphaList = alphaFilteredPresortedList(pack, alpha);
+
+                vlog("Alpha-filtered rows for %s: %d", center.getName(), alphaList.size());
+
+                if (!alphaList.isEmpty()) {
+
+                    // Only accept alpha-filtered moves that don't worsen violations.
+                    // Prefer strict improvement first; otherwise allow tie-with-sparser if you want.
+                    ScoredCandidate chosen = pickBestNonWorsening(alphaList);
+
+                    if (chosen == null) {
+                        vlog("STOP node %s: alpha-filtered rows exist but none are non-worsening (delta<=0).", center.getName());
+                        break;
+                    }
+
+                    vlog("Chosen filtered move: %s | after=%d delta=%d edges=%d nodeP=%.4g modelP=%.4g",
+                            chosen.edit().description(),
+                            chosen.after(),
+                            chosen.delta(),
+                            chosen.edgesAfter(),
+                            chosen.nodePAfter(),
+                            chosen.modelPAfter());
+
+//                    boolean ok = applyCandidateInternal(chosen.edit(), false, false);
+
+                    boolean ok = tryMoveWithGuards(workingGraph, center, chosen.edit(), gt, alpha);
+
+                    if (!ok) {
+                        vlog("STOP node %s: chosen filtered move did NOT change graph.", center.getName());
+                        break;
+                    }
+
+                    editsApplied++;
+                    int finalEditsApplied = editsApplied;
+                    SwingUtilities.invokeLater(() ->
+                            statusLabel.setText("Auto-repair: applied " + finalEditsApplied + " edits..."));
+
+                    vlog("APPLIED. Recomputing table for %s...", center.getName());
+                    continue;
+                }
+
+                // 2) If filtered list empty, do fallback loop:
+                // (1) min delta (if <0) apply
+                // (2) max nodeP (if >0) apply
+                // (3) max modelP (if >0) apply
+                // Repeat until max nodeP>0 AND max modelP>0 OR no move possible.
+
+                boolean moved = false;
+
+                ScoredCandidate minDelta = pickMinDelta(pack);
+                if (minDelta != null) {
+                    vlog("Fallback min-delta candidate: %s | delta=%d nodeP=%s modelP=%s",
+                            minDelta.edit().description(),
+                            minDelta.delta(),
+                            fmtP(minDelta.nodePAfter()),
+                            fmtP(minDelta.modelPAfter()));
+
+                    if (minDelta.delta() < 0) {
+//                        boolean ok = applyCandidateInternal(minDelta.edit(), false, false);
+
+                        boolean ok = tryMoveWithGuards(workingGraph, center, minDelta.edit(), gt, alpha);
+
+                        if (ok) {
+                            moved = true;
+                            editsApplied++;
+                            vlog("APPLIED fallback delta<0 move.");
+                        } else {
+                            vlog("Rejected fallback delta<0 move (no change).");
+                        }
+                    }
+                }
+
+                boolean allowPChasing = false; // start false; you can add a UI toggle later
+
+                if (!moved && allowPChasing) {
+                    ScoredCandidate maxNodeP = pickMaxNodeP(pack);
+                    if (maxNodeP != null) {
+                        vlog("Fallback max-nodeP candidate: %s | nodeP=%s",
+                                maxNodeP.edit().description(),
+                                fmtP(maxNodeP.nodePAfter()));
+
+                        // NaN does NOT qualify as > 0
+                        if (isUsableP(maxNodeP.nodePAfter(), alpha)) {
+                            boolean ok = applyCandidateInternal(maxNodeP.edit(), false, false);
+                            if (ok) {
+                                moved = true;
+                                editsApplied++;
+                                vlog("APPLIED fallback nodeP>0 move.");
+                            } else {
+                                vlog("Rejected fallback nodeP>0 move (no change).");
+                            }
+                        }
+                    }
+                }
+
+                if (!moved) {
+                    ScoredCandidate maxModelP = pickMaxModelP(pack);
+                    if (maxModelP != null) {
+                        vlog("Fallback max-modelP candidate: %s | modelP=%s",
+                                maxModelP.edit().description(),
+                                fmtP(maxModelP.modelPAfter()));
+
+                        if (isUsableP(maxModelP.modelPAfter(), alpha)) {
+                            boolean ok = applyCandidateInternal(maxModelP.edit(), false, false);
+                            if (ok) {
+                                moved = true;
+                                editsApplied++;
+                                vlog("APPLIED fallback modelP>0 move.");
+                            } else {
+                                vlog("Rejected fallback modelP>0 move (no change).");
+                            }
+                        }
+                    }
+                }
+
+                if (!moved) {
+                    vlog("STOP node %s: no fallback move possible.", center.getName());
+                    break;
+                }
+
+                // After a fallback move, check fallback stop condition
+                SearchPack pack2 = computeCandidatesForNode(workingGraph, center, gt);
+                if (pack2 == null || pack2.scored == null || pack2.scored.isEmpty()) {
+                    vlog("STOP node %s after fallback: no candidates after move.", center.getName());
+                    break;
+                }
+
+                double maxNode = maxNodePValue(pack2);
+                double maxModel = maxModelPValue(pack2);
+
+                vlog("After fallback move, maxima: maxNodeP=%.4g maxModelP=%.4g", maxNode, maxModel);
+
+                // Stop fallback once either criterion is “usable” under alpha,
+                // or if you simply can’t apply any further fallback move.
+                if (isUsableP(maxNode, alpha) && isUsableP(maxModel, alpha)) {
+                    vlog("STOP fallback for node %s: both maxNodeP>=alpha and maxModelP>=alpha.", center.getName());
+                    break;
+                }
+
+                vlog("Continuing fallback loop for node %s...", center.getName());
+            }
+
+            vlog("Finished node: %s", center.getName());
+        }
+
+        final int finalEdits = editsApplied;
+        SwingUtilities.invokeLater(() -> {
+            history.clear();
+            history.push(checkpoint);
+            updateButtons();
+            statusLabel.setText("Auto-repair applied " + finalEdits + " edits.");
+            // Refresh panel table for the panel's x (nice UX)
+            startWatched("Searching", this::runSearchWatched, null);
+        });
+    }
+
+    private ScoredCandidate pickBestNonWorsening(List<ScoredCandidate> list) {
+        if (list == null || list.isEmpty()) return null;
+
+        // Prefer delta < 0 moves; otherwise allow delta == 0 with fewer edges.
+        List<ScoredCandidate> improving = new ArrayList<>();
+        List<ScoredCandidate> tie = new ArrayList<>();
+
+        for (ScoredCandidate sc : list) {
+            if (sc == null || sc.edit().isNoOp()) continue;
+            if (sc.delta() < 0) improving.add(sc);
+            else if (sc.delta() == 0) tie.add(sc);
+        }
+
+        Comparator<ScoredCandidate> cmp =
+                Comparator.comparingInt(ScoredCandidate::violationsAfter)   // after ASC
+                        .thenComparingInt(ScoredCandidate::edgesAfter)    // edges ASC
+                        .thenComparing((a,b) -> compareModelPDescNaNLast(a.modelPAfter(), b.modelPAfter()))
+                        .thenComparingInt(ScoredCandidate::delta);
+
+        if (!improving.isEmpty()) {
+            improving.sort(cmp);
+            return improving.get(0);
+        }
+
+        if (!tie.isEmpty()) {
+            tie.sort(cmp);
+            return tie.get(0);
+        }
+
+        return null;
+    }
+
+    private static boolean isUsableP(double p, double alpha) {
+        return !Double.isNaN(p) && p >= alpha;
+    }
+
+    // Helpers used above (if you don't already have them)
+    private static String graphSignature(Graph g) {
+        if (g == null) return "null";
+        List<String> es = new ArrayList<>();
+        for (Edge e : g.getEdges()) {
+            Node a = e.getNode1(), b = e.getNode2();
+            String an = (a == null || a.getName() == null) ? "?" : a.getName();
+            String bn = (b == null || b.getName() == null) ? "?" : b.getName();
+            es.add(an + ":" + e.getEndpoint1() + "--" + e.getEndpoint2() + ":" + bn);
+        }
+        Collections.sort(es);
+        return String.join("|", es);
+    }
+
+    private static String fmtP(double p) {
+        if (Double.isNaN(p)) return "NaN";
+        return String.format("%.4g", p);
+    }
+//    /** Stable-ish graph signature for cheap cycle detection in auto-repair loops. */
+//    private static String graphSignature(Graph g) {
+//        if (g == null) return "null";
+//        List<String> es = new ArrayList<>();
+//        for (Edge e : g.getEdges()) {
+//            Node a = e.getNode1(), b = e.getNode2();
+//            String an = (a == null || a.getName() == null) ? "?" : a.getName();
+//            String bn = (b == null || b.getName() == null) ? "?" : b.getName();
+//            es.add(an + ":" + e.getEndpoint1() + "--" + e.getEndpoint2() + ":" + bn);
+//        }
+//        Collections.sort(es);
+//        return String.join("|", es);
+//    }
+
+    private List<ScoredCandidate> alphaFilteredPresortedList(SearchPack pack, double alpha) {
+        List<ScoredCandidate> out = new ArrayList<>();
+        for (ScoredCandidate sc : pack.scored) {
+            if (sc == null) continue;
+            if (sc.edit() == null || sc.edit().isNoOp()) continue;
+            if (survivesAlphaFilter(sc, alpha)) out.add(sc);
+        }
+        out.sort(tableSortComparator());
+        return out;
+    }
+
+    private ScoredCandidate pickMinDelta(SearchPack pack) {
+        ScoredCandidate best = null;
+        for (ScoredCandidate sc : pack.scored) {
+            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
+            if (best == null || sc.delta() < best.delta()) best = sc;
+        }
+        return best;
+    }
+
+    private ScoredCandidate pickMaxNodeP(SearchPack pack) {
+        ScoredCandidate best = null;
+        for (ScoredCandidate sc : pack.scored) {
+            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
+            double p = sc.nodePAfter();
+            if (Double.isNaN(p)) continue;
+            if (best == null || p > best.nodePAfter()) best = sc;
+        }
+        return best;
+    }
+
+    private ScoredCandidate pickMaxModelP(SearchPack pack) {
+        ScoredCandidate best = null;
+        for (ScoredCandidate sc : pack.scored) {
+            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
+            double p = sc.modelPAfter();
+            if (Double.isNaN(p)) continue;
+            if (best == null || p > best.modelPAfter()) best = sc;
+        }
+        return best;
+    }
+
+    private double maxNodePValue(SearchPack pack) {
+        double best = Double.NEGATIVE_INFINITY;
+        boolean any = false;
+        for (ScoredCandidate sc : pack.scored) {
+            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
+            double p = sc.nodePAfter();
+            if (Double.isNaN(p)) continue;
+            any = true;
+            if (p > best) best = p;
+        }
+        return any ? best : Double.NaN;
+    }
+
+    private double maxModelPValue(SearchPack pack) {
+        double best = Double.NEGATIVE_INFINITY;
+        boolean any = false;
+        for (ScoredCandidate sc : pack.scored) {
+            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
+            double p = sc.modelPAfter();
+            if (Double.isNaN(p)) continue;
+            any = true;
+            if (p > best) best = p;
+        }
+        return any ? best : Double.NaN;
+    }
+
+    /**
+     * Compute candidates for a *given* node center (like the panel does for x),
+     * but returned as a SearchPack for auto-selection.
+     *
+     * This intentionally mirrors the panel’s 2-pass approach:
+     * - pass 1: After + Node-P for all
+     * - pass 2: Model-P for top-K only (so NaNs behave the same as the UI)
+     */
+    private SearchPack computeCandidatesForNode(Graph g, Node center, RepairGraphType gt) {
+        if (g == null || center == null) return null;
+
+        Graph base = safeCopy(g);
+
+        if (stopRequested()) return null;
+
+        if (gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG) {
+            base = canonicalizeToCpdagOrNull(base);
+            if (base == null) return null;
+        } else if (gt == RepairGraphType.PAG) {
+            base = canonicalizeToPagOrNull(base);
+            if (base == null) return null;
+        }
+
+        if (knowledge != null && knowledge.isViolatedBy(base)) {
+            return null;
+        }
+
+        List<CandidateEdit> candidates = enumerateCandidates(base, center, gt);
+        candidates = new ArrayList<>(candidates);
+        if (candidates.stream().noneMatch(CandidateEdit::isNoOp)) {
+            candidates.add(0, CandidateEdit.noOp());
+        }
+
+        GlobalEvalCache baseCache = buildBaselineCache(base);
+        GraphEval baseEval = evalGraphLocality(base, baseCache, base, Set.of(), true);
+
+        int baseline = baseEval.violations();
+
+        Map<String, Graph> candGraphByKey = new HashMap<>();
+        List<ScoredCandidate> scored = new ArrayList<>();
+
+        // PASS 1: after + nodeP + edges
+        for (CandidateEdit cand : candidates) {
+            if (stopRequested()) return null;
+
+            Graph finalBase = base;
+            Graph g2 = candGraphByKey.computeIfAbsent(cand.key(), k -> buildCandidateGraph(finalBase, cand, gt));
+            if (g2 == null) continue;
+
+            boolean useLocality = (gt == RepairGraphType.DAG || gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG);
+            Set<String> affected = affectedVertices(base, cand, center, g2);
+
+            int after = useLocality
+                    ? evalGraphLocality(base, baseCache, g2, affected, false).violations()
+                    : evalViolationsOnly(g2);
+
+            double nodePAfter = nodePValue(g2, center);
+            int edgesAfter = g2.getNumEdges();
+
+            scored.add(new ScoredCandidate(cand, baseline, after, nodePAfter, Double.NaN, edgesAfter));
+        }
+
+        if (stopRequested()) return null;
+
+        // PASS 2: compute Model-P for top-K only (same as UI behavior)
+//        List<ScoredCandidate> ranked = new ArrayList<>(scored);
+//        ranked.sort(candidateRankingForTopK());
+
+        List<ScoredCandidate> ranked = new ArrayList<>(scored);
+        ranked.sort(tableOrderIgnoringModelP());
+
+        int k = Math.min(modelPTopK, ranked.size());
+        Map<String, Double> modelPByKey = new HashMap<>(k * 2);
+
+        for (int i = 0; i < k; i++) {
+            if (stopRequested()) return null;
+
+            ScoredCandidate sc = ranked.get(i);
+            Graph g2 = candGraphByKey.get(sc.edit().key());
+            if (g2 == null) continue;
+
+            double mp = evalGraphOnce(g2).modelP();
+            modelPByKey.put(sc.edit().key(), mp);
+        }
+
+        if (!modelPByKey.isEmpty()) {
+            List<ScoredCandidate> patched = new ArrayList<>(scored.size());
+            for (ScoredCandidate sc : scored) {
+                Double mp = modelPByKey.get(sc.edit().key());
+                patched.add(mp == null ? sc : new ScoredCandidate(
+                        sc.edit(), sc.baseline(), sc.after(), sc.nodePAfter(), mp, sc.edgesAfter()
+                ));
+            }
+            scored = patched;
+        }
+
+        return new SearchPack(center.getName(), baseline, scored);
+    }
+
+    /**
+     * Choose a move using the exact priority you described.
+     */
+    private CandidateEdit chooseMoveForNode(SearchPack pack, double alpha, boolean useAlphaFilter) {
+        if (pack == null || pack.scored == null || pack.scored.isEmpty()) return null;
+
+        // 1) If there are moves that are NOT filtered out, choose the top move
+        // by the same ordering the table uses (Edges ASC, Model-P DESC (NaN last), After ASC, Δ ASC).
+        List<ScoredCandidate> filteredIn = new ArrayList<>();
+        for (ScoredCandidate sc : pack.scored) {
+            if (sc == null) continue;
+            if (!useAlphaFilter || survivesAlphaFilter(sc, alpha)) {
+                filteredIn.add(sc);
+            }
+        }
+
+        Comparator<ScoredCandidate> tableOrder = tableSortComparator();
+
+        if (!filteredIn.isEmpty()) {
+            filteredIn.sort(tableOrder);
+            for (ScoredCandidate sc : filteredIn) {
+                if (sc != null && !sc.edit().isNoOp()) {
+                    return sc.edit();
+                }
+            }
+            // If only No-Op survives, don’t waste an edit
+            return null;
+        }
+
+        // 2) If no such moves, choose a move that maximizes model p (if possible)
+        ScoredCandidate bestModelP = null;
+        for (ScoredCandidate sc : pack.scored) {
+            if (sc == null || sc.edit().isNoOp()) continue;
+            if (Double.isNaN(sc.modelPAfter())) continue; // “not possible” per your spec
+            if (bestModelP == null) {
+                bestModelP = sc;
+            } else {
+                int cmp = compareByModelPThenSparsity(sc, bestModelP);
+                if (cmp < 0) bestModelP = sc;
+            }
+        }
+        if (bestModelP != null) return bestModelP.edit();
+
+        // 3) If that is not possible, choose a move that maximizes node p (if possible)
+        ScoredCandidate bestNodeP = null;
+        for (ScoredCandidate sc : pack.scored) {
+            if (sc == null || sc.edit().isNoOp()) continue;
+            if (Double.isNaN(sc.nodePAfter())) continue;
+            if (bestNodeP == null) {
+                bestNodeP = sc;
+            } else {
+                int cmp = compareByNodePThenSparsity(sc, bestNodeP);
+                if (cmp < 0) bestNodeP = sc;
+            }
+        }
+        if (bestNodeP != null) return bestNodeP.edit();
+
+        // 4) If that is not possible, choose a move with delta < 0 (most negative)
+        ScoredCandidate bestDeltaNeg = null;
+        for (ScoredCandidate sc : pack.scored) {
+            if (sc == null || sc.edit().isNoOp()) continue;
+            if (sc.delta() >= 0) continue;
+            if (bestDeltaNeg == null) {
+                bestDeltaNeg = sc;
+            } else {
+                int cmp = compareByDeltaThenSparsity(sc, bestDeltaNeg);
+                if (cmp < 0) bestDeltaNeg = sc;
+            }
+        }
+        if (bestDeltaNeg != null) return bestDeltaNeg.edit();
+
+        // 5) otherwise, move on
+        return null;
+    }
+
+//    private boolean survivesAlphaFilter(ScoredCandidate sc, double alpha) {
+//        double modelP = sc.modelPAfter();
+//        double nodeP = sc.nodePAfter();
+//        return (Double.isNaN(modelP) || modelP >= alpha)
+//                && (Double.isNaN(nodeP)  || nodeP  >= alpha);
+//    }
+
+    private boolean survivesAlphaFilter(ScoredCandidate sc, double alpha) {
+        double modelP = sc.modelPAfter();
+        double nodeP  = sc.nodePAfter();
+        // Require both computed and >= alpha:
+        return !Double.isNaN(modelP) && modelP >= alpha
+                && !Double.isNaN(nodeP)  && nodeP  >= alpha;
+    }
+
+    private Comparator<ScoredCandidate> tableSortComparator() {
+        // Must match applySortAndFilter’s keys:
+        // Edges ASC, Model-P DESC (NaN last), After ASC, Δ ASC
+        return (a, b) -> {
+            if (a == null && b == null) return 0;
+            if (a == null) return 1;
+            if (b == null) return -1;
+
+            int c;
+
+            c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+            if (c != 0) return c;
+
+            c = compareModelPDescNaNLast(a.modelPAfter(), b.modelPAfter());
+            if (c != 0) return c;
+
+            c = Integer.compare(a.violationsAfter(), b.violationsAfter());
+            if (c != 0) return c;
+
+            return Integer.compare(a.delta(), b.delta());
+        };
+    }
+
+    private int compareModelPDescNaNLast(double pa, double pb) {
+        boolean aNaN = Double.isNaN(pa);
+        boolean bNaN = Double.isNaN(pb);
+        if (aNaN && bNaN) return 0;
+        if (aNaN) return 1;   // NaN last
+        if (bNaN) return -1;
+        // DESC:
+        return -Double.compare(pa, pb);
+    }
+
+    private int compareByModelPThenSparsity(ScoredCandidate a, ScoredCandidate b) {
+        // prefer higher modelP; tie-break toward sparsity and fewer violations
+        double pa = a.modelPAfter();
+        double pb = b.modelPAfter();
+        int c = -Double.compare(pa, pb); // DESC
+        if (c != 0) return c;
+        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+        if (c != 0) return c;
+        c = Integer.compare(a.violationsAfter(), b.violationsAfter());
+        if (c != 0) return c;
+        return Integer.compare(a.delta(), b.delta());
+    }
+
+    private int compareByNodePThenSparsity(ScoredCandidate a, ScoredCandidate b) {
+        double pa = a.nodePAfter();
+        double pb = b.nodePAfter();
+        int c = -Double.compare(pa, pb); // DESC
+        if (c != 0) return c;
+        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+        if (c != 0) return c;
+        c = Integer.compare(a.violationsAfter(), b.violationsAfter());
+        if (c != 0) return c;
+        return Integer.compare(a.delta(), b.delta());
+    }
+
+    private int compareByDeltaThenSparsity(ScoredCandidate a, ScoredCandidate b) {
+        // prefer more negative delta (smaller), then fewer edges
+        int c = Integer.compare(a.delta(), b.delta()); // ASC (more negative first)
+        if (c != 0) return c;
+        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+        if (c != 0) return c;
+        c = Integer.compare(a.violationsAfter(), b.violationsAfter());
+        if (c != 0) return c;
+        return compareModelPDescNaNLast(a.modelPAfter(), b.modelPAfter());
+    }
+
     // ---------------------------------------------------------------------
     // Apply / undo / graph view
     // ---------------------------------------------------------------------
 
     private void applyCandidate(CandidateEdit cand) {
-        history.push(safeCopy(workingGraph));
+        applyCandidateInternal(cand, true, true);
+        updateButtons();
+    }
+
+    /**
+     * Internal apply that lets auto-repair avoid per-step history pushes.
+     */
+    private boolean applyCandidateInternal(CandidateEdit cand, boolean pushHistory, boolean updateStatus) {
+        if (cand == null) return false;
+        if (cand.isNoOp()) return false;
+
+        vlog("Attempting move: %s", cand.description());
+
+        if (pushHistory) {
+            history.push(safeCopy(workingGraph));
+        }
 
         RepairGraphType gt = (RepairGraphType) graphTypeCombo.getSelectedItem();
 
         Graph base = safeCopy(workingGraph);
+
+        // Canonicalize base if needed (same as you already do)
         if (gt == RepairGraphType.CPDAG) {
             base = canonicalizeToCpdagOrNull(base);
             if (base == null) {
-                statusLabel.setText("Current graph has no consistent CPDAG extension.");
-                if (!history.isEmpty()) history.pop();
-                return;
+                if (updateStatus) statusLabel.setText("Current graph has no consistent CPDAG extension.");
+                if (pushHistory && !history.isEmpty()) history.pop();
+                return false;
+            }
+        } else if (gt == RepairGraphType.PAG) {
+            base = canonicalizeToPagOrNull(base);
+            if (base == null) {
+                if (updateStatus) statusLabel.setText("Current graph has no consistent PAG extension.");
+                if (pushHistory && !history.isEmpty()) history.pop();
+                return false;
             }
         }
 
         Graph g2 = cand.applyTo(base);
-        if (g2 != null && gt == RepairGraphType.CPDAG) {
+        if (g2 == null) {
+            if (updateStatus) statusLabel.setText("Failed to apply: " + cand.description());
+            if (pushHistory && !history.isEmpty()) history.pop();
+            return false;
+        }
+
+        // Canonicalize result if needed
+        if (gt == RepairGraphType.CPDAG) {
             g2 = canonicalizeToCpdagOrNull(g2);
+            if (g2 == null) {
+                if (updateStatus) statusLabel.setText("Failed to apply (CPDAG canonicalization): " + cand.description());
+                if (pushHistory && !history.isEmpty()) history.pop();
+                return false;
+            }
+        } else if (gt == RepairGraphType.PAG) {
+            // you currently “keep as-is” for PAG; that’s fine if your edits always produce legal PAGs
+            // otherwise you might want to canonicalize here too.
         }
 
-        if (g2 != null) {
-            workingGraph = g2;
-            statusLabel.setText("Applied: " + cand.description());
-        } else {
-            statusLabel.setText("Failed to apply: " + cand.description());
-            if (!history.isEmpty()) history.pop();
+        // **CRITICAL**: if the move does not change the graph, treat it as “no move”
+        if (g2.equals(base)) {
+            vlog("REJECTED (no graph change after canonicalization)");
+            if (updateStatus) statusLabel.setText("No-op after canonicalization: " + cand.description());
+            if (pushHistory && !history.isEmpty()) history.pop();
+            return false;
         }
 
-        updateButtons();
+        // Commit
+        workingGraph = g2;
+
+        vlog("APPLIED successfully");
+
+        if (updateStatus) statusLabel.setText("Applied: " + cand.description());
+        return true;
     }
 
     private void goBack() {
@@ -803,11 +1423,6 @@ public final class VertexRepairPanel extends JPanel {
         return dedupCandidateEdits(out);
     }
 
-    /**
-     * Endpoint/orientation variants you’re willing to consider for an existing adjacency x—y.
-     * For replacement edits, it’s fine if some variants are “nonsense” for the graph type—
-     * legality filtering later can reject them—but keep the menu small.
-     */
     private List<Edge> edgeMenuForPair(Node x, Node y, RepairGraphType gt) {
         List<Edge> variants = new ArrayList<>();
 
@@ -833,16 +1448,13 @@ public final class VertexRepairPanel extends JPanel {
                 variants.add(new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW));    // x->y
                 variants.add(new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW));    // y->x
                 variants.add(new Edge(x, y, Endpoint.ARROW, Endpoint.ARROW));   // x<->y
-                variants.add(new Edge(x, y, Endpoint.TAIL, Endpoint.TAIL));     // x---y (selection-bias adjacency, if you use it)
+                variants.add(new Edge(x, y, Endpoint.TAIL, Endpoint.TAIL));     // x---y
             }
         }
 
         return variants;
     }
 
-    /**
-     * For ADD candidates: keep it conservative.
-     */
     private List<Edge> addMenuForPair(Node x, Node y, RepairGraphType gt) {
         List<Edge> adds = new ArrayList<>();
 
@@ -952,11 +1564,6 @@ public final class VertexRepairPanel extends JPanel {
     // Knowledge
     // ---------------------------------------------------------------------
 
-    /**
-     * Sets the knowledge object for the VertexRepairPanel.
-     *
-     * @param knowledge the new Knowledge object to be assigned to the panel (null treated as empty Knowledge)
-     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = (knowledge == null) ? new Knowledge() : knowledge;
 
@@ -1035,8 +1642,6 @@ public final class VertexRepairPanel extends JPanel {
         }
         return violations;
     }
-
-    // ---------- Locality-based global evaluation ----------
 
     private GlobalEvalCache buildBaselineCache(Graph g) {
         if (g == null) return new GlobalEvalCache(Map.of());
@@ -1165,10 +1770,6 @@ public final class VertexRepairPanel extends JPanel {
         return new GraphEval(violations, modelP, globalViolationByKey.size());
     }
 
-    /**
-     * Build + canonicalize + legality-check a candidate graph, returning null if illegal.
-     * IMPORTANT: this is used in BOTH passes so the result is consistent.
-     */
     private Graph buildCandidateGraph(Graph base, CandidateEdit cand, RepairGraphType gt) {
         if (base == null || cand == null) return null;
 
@@ -1181,9 +1782,9 @@ public final class VertexRepairPanel extends JPanel {
 
             if (!cand.isNoOp() && g2.equals(base)) return null;
         } else if (gt == RepairGraphType.PAG) {
-            // keep as-is (no candidate canonicalization by default)
+            // keep as-is
         } else if (gt == RepairGraphType.PDAG) {
-            // keep as-is (you may optionally canonicalize here too)
+            // keep as-is
         }
 
         try {
@@ -1214,9 +1815,7 @@ public final class VertexRepairPanel extends JPanel {
         for (String name : nb) if (!nc.contains(name)) affected.add(name);
         for (String name : nc) if (!nb.contains(name)) affected.add(name);
 
-        // also recompute current neighbors (optional)
         affected.addAll(nc);
-
         return affected;
     }
 
@@ -1256,7 +1855,6 @@ public final class VertexRepairPanel extends JPanel {
     // ---------------------------------------------------------------------
 
     private void startWatched(String title, Runnable backgroundWork, Runnable onDoneEdt) {
-        // Prevent parallel runs.
         if (activeWorker != null) return;
 
         SwingWorker<Void, String> worker = new SwingWorker<>() {
@@ -1278,14 +1876,13 @@ public final class VertexRepairPanel extends JPanel {
                 } finally {
                     closeWatchDialog();
                     activeWorker = null;
-                    searchButton.setEnabled(true);
                     updateButtons();
                 }
             }
         };
 
         this.activeWorker = worker;
-        searchButton.setEnabled(false);
+        updateButtons();
         statusLabel.setText(title + "...");
 
         showWatchDialog(title, worker);
@@ -1334,9 +1931,6 @@ public final class VertexRepairPanel extends JPanel {
         if (dlg != null) dlg.dispose();
     }
 
-    /**
-     * Convenience: treat either SwingWorker cancel or interrupt as "stop requested".
-     */
     private boolean stopRequested() {
         SwingWorker<?, ?> w = activeWorker;
         return (w != null && w.isCancelled()) || Thread.currentThread().isInterrupted();
@@ -1346,9 +1940,6 @@ public final class VertexRepairPanel extends JPanel {
     // Types
     // ---------------------------------------------------------------------
 
-    /**
-     * IMPORTANT: do NOT name this GraphType, since edu.cmu.tetrad.graph.GraphType exists.
-     */
     public enum RepairGraphType {DAG, CPDAG, PDAG, MAG, PAG}
 
     public interface CandidateEdit {
@@ -1362,7 +1953,6 @@ public final class VertexRepairPanel extends JPanel {
 
                 @Override
                 public Graph applyTo(Graph g) {
-                    // return a defensive copy so later mutations can't surprise you
                     return (g == null) ? null : new EdgeListGraph(g);
                 }
 
@@ -1448,23 +2038,14 @@ public final class VertexRepairPanel extends JPanel {
             };
         }
 
-        // ---- factories ----
-
         String description();
 
-        /**
-         * Apply this edit to the given graph and return the modified graph.
-         * Implementations should NOT mutate the input graph.
-         */
         Graph applyTo(Graph g);
 
         default boolean isNoOp() {
             return false;
         }
 
-        /**
-         * Optional key for de-dup.
-         */
         default String key() {
             return description();
         }
@@ -1503,8 +2084,8 @@ public final class VertexRepairPanel extends JPanel {
         private static final int COL_BASE = 1;
         private static final int COL_AFTER = 2;
         private static final int COL_DELTA = 3;
-        private static final int COL_NODE_P = 4;   // node p
-        private static final int COL_MODEL_P = 5;    // model p
+        private static final int COL_NODE_P = 4;
+        private static final int COL_MODEL_P = 5;
         private static final int COL_EDGES = 6;
         private static final int COL_APPLY = 7;
 
@@ -1629,11 +2210,6 @@ public final class VertexRepairPanel extends JPanel {
     private record GraphEval(int violations, double modelP, int nFacts) {
     }
 
-    /**
-     * Per-vertex evaluated contribution:
-     * - dedup facts by factKey within the vertex
-     * - keep for each fact key: (isViolation, pValue)
-     */
     private record VertexContribution(
             Map<String, Boolean> violationByKey,
             Map<String, Double> pByKey
@@ -1643,5 +2219,284 @@ public final class VertexRepairPanel extends JPanel {
     private record GlobalEvalCache(
             Map<String, VertexContribution> contribByVertexName
     ) {
+    }
+
+    /**
+     * Lightweight container for per-node auto selection.
+     */
+    private static final class SearchPack {
+        final String centerName;
+        final int baseline;
+        final List<ScoredCandidate> scored;
+
+        SearchPack(String centerName, int baseline, List<ScoredCandidate> scored) {
+            this.centerName = centerName;
+            this.baseline = baseline;
+            this.scored = scored;
+        }
+    }
+
+    // ---------------------------------------------------------------------
+// Table-order aware comparators (match the JTable ordering)
+// ---------------------------------------------------------------------
+
+    /**
+     * Comparator that matches the table's sort keys, BUT treats Model-P as "unknown"
+     * (i.e., ignores it). This is what you want for deciding which rows are worth
+     * computing Model-P for.
+     *
+     * The table is: Edges ASC, Model-P DESC, After ASC, Δ ASC.
+     * If Model-P is unknown for most rows, then the practical order is:
+     * Edges ASC, After ASC, Δ ASC.
+     */
+    private Comparator<ScoredCandidate> tableOrderIgnoringModelP() {
+        return Comparator
+                .comparingInt(ScoredCandidate::edgesAfter)
+                .thenComparingInt(ScoredCandidate::violationsAfter)
+                .thenComparingInt(ScoredCandidate::delta);
+    }
+
+    /**
+     * Comparator that matches the table sort fully:
+     * Edges ASC, Model-P DESC (NaN last), After ASC, Δ ASC.
+     */
+    private Comparator<ScoredCandidate> tableOrderFull() {
+        return (a, b) -> {
+            if (a == null && b == null) return 0;
+            if (a == null) return 1;
+            if (b == null) return -1;
+
+            int c;
+
+            c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+            if (c != 0) return c;
+
+            c = compareModelPDescNaNLast(a.modelPAfter(), b.modelPAfter());
+            if (c != 0) return c;
+
+            c = Integer.compare(a.violationsAfter(), b.violationsAfter());
+            if (c != 0) return c;
+
+            return Integer.compare(a.delta(), b.delta());
+        };
+    }
+
+//    private CandidateEdit chooseMoveExactlyLikeYou(Node center, SearchPack pack, double alpha) {
+//        // 0) We only ever consider the same rows the table would show:
+//        //    pack.scored corresponds to enumerateCandidates() + scoring, just like the table.
+//
+//        // A) First, act as if alpha filter is ON and we sort exactly like the table
+//        List<ScoredCandidate> filtered = new ArrayList<>();
+//        for (ScoredCandidate sc : pack.scored) {
+//            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
+//            if (survivesAlphaFilter(sc, alpha)) filtered.add(sc);
+//        }
+//
+//        // IMPORTANT: "top move that would be listed in the node repair table"
+//        // This comparator MUST match your applySortAndFilter() sort keys:
+//        //   Edges ASC, Model-P DESC (NaN last), After ASC, Δ ASC
+//        Comparator<ScoredCandidate> tableOrder = tableSortComparator();
+//
+//        if (!filtered.isEmpty()) {
+//            filtered.sort(tableOrder);
+//
+//            ScoredCandidate top = filtered.get(0);
+//            return top.edit();
+//        }
+//
+//        // B) If no filtered rows, consider unfiltered rows and:
+//        //    1) max Model-P (if max != 0)
+//        ScoredCandidate bestMp = null;
+//        for (ScoredCandidate sc : pack.scored) {
+//            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
+//            double mp = sc.modelPAfter();
+//            if (Double.isNaN(mp)) continue;
+//            if (bestMp == null || mp > bestMp.modelPAfter()) bestMp = sc;
+//        }
+//        if (bestMp != null && bestMp.modelPAfter() != 0.0) return bestMp.edit();
+//
+//        //    2) max Node-P (if max != 0)
+//        ScoredCandidate bestNp = null;
+//        for (ScoredCandidate sc : pack.scored) {
+//            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
+//            double np = sc.nodePAfter();
+//            if (Double.isNaN(np)) continue;
+//            if (bestNp == null || np > bestNp.nodePAfter()) bestNp = sc;
+//        }
+//        if (bestNp != null && bestNp.nodePAfter() != 0.0) return bestNp.edit();
+//
+//        //    3) min delta (if min < 0)
+//        ScoredCandidate bestDelta = null;
+//        for (ScoredCandidate sc : pack.scored) {
+//            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
+//            int d = sc.delta();
+//            if (bestDelta == null || d < bestDelta.delta()) bestDelta = sc;
+//        }
+//        if (bestDelta != null && bestDelta.delta() < 0) return bestDelta.edit();
+//
+//        return null;
+//    }
+
+    private CandidateEdit chooseMoveExactlyLikeYou(
+            Node center, SearchPack pack, double alpha) {
+
+        vlog("Selecting move for node %s (alpha=%.4g)", center.getName(), alpha);
+
+        Comparator<ScoredCandidate> tableOrder = tableSortComparator();
+
+        // A) alpha-filtered, table-sorted
+        List<ScoredCandidate> filtered = new ArrayList<>();
+        for (ScoredCandidate sc : pack.scored) {
+            if (sc == null || sc.edit().isNoOp()) continue;
+            if (survivesAlphaFilter(sc, alpha)) filtered.add(sc);
+        }
+
+        if (!filtered.isEmpty()) {
+            filtered.sort(tableOrder);
+            ScoredCandidate top = filtered.get(0);
+            vlog("→ Using ALPHA-FILTERED TOP ROW: %s", top.edit().description());
+            return top.edit();
+        }
+
+        vlog("No rows survive alpha filter");
+
+        // B1) max model-P
+        ScoredCandidate bestMp = null;
+        for (ScoredCandidate sc : pack.scored) {
+            if (sc == null || sc.edit().isNoOp()) continue;
+            if (Double.isNaN(sc.modelPAfter())) continue;
+            if (bestMp == null || sc.modelPAfter() > bestMp.modelPAfter()) {
+                bestMp = sc;
+            }
+        }
+        if (bestMp != null && bestMp.modelPAfter() != 0.0) {
+            vlog("→ Using MAX MODEL-P: %s (%.4g)",
+                    bestMp.edit().description(), bestMp.modelPAfter());
+            return bestMp.edit();
+        }
+
+        // B2) max node-P
+        ScoredCandidate bestNp = null;
+        for (ScoredCandidate sc : pack.scored) {
+            if (sc == null || sc.edit().isNoOp()) continue;
+            if (Double.isNaN(sc.nodePAfter())) continue;
+            if (bestNp == null || sc.nodePAfter() > bestNp.nodePAfter()) {
+                bestNp = sc;
+            }
+        }
+        if (bestNp != null && bestNp.nodePAfter() != 0.0) {
+            vlog("→ Using MAX NODE-P: %s (%.4g)",
+                    bestNp.edit().description(), bestNp.nodePAfter());
+            return bestNp.edit();
+        }
+
+        // B3) min delta < 0
+        ScoredCandidate bestDelta = null;
+        for (ScoredCandidate sc : pack.scored) {
+            if (sc == null || sc.edit().isNoOp()) continue;
+            if (bestDelta == null || sc.delta() < bestDelta.delta()) {
+                bestDelta = sc;
+            }
+        }
+        if (bestDelta != null && bestDelta.delta() < 0) {
+            vlog("→ Using NEGATIVE DELTA: %s (delta=%d)",
+                    bestDelta.edit().description(), bestDelta.delta());
+            return bestDelta.edit();
+        }
+
+        vlog("→ No legal move found for node %s", center.getName());
+        return null;
+    }
+
+    private static void vlog(String fmt, Object... args) {
+        System.out.println("[VertexAutoRepair] " + String.format(fmt, args));
+    }
+
+    private static final double EPS_NODEP = 1e-6;
+
+    // "If it's not broke, don't fix it" check for a node
+    private boolean nodeLooksOk(Graph g, Node v, double alpha) {
+        double p = nodePValue(g, v);
+        return !Double.isNaN(p) && p >= alpha;
+    }
+
+    // Compute nodeP map for a set of vertex names in a graph
+    private Map<String, Double> nodePMap(Graph g, Set<String> vertexNames) {
+        Map<String, Double> out = new HashMap<>();
+        if (g == null || vertexNames == null) return out;
+
+        for (String name : vertexNames) {
+            if (name == null) continue;
+            Node v = g.getNode(name);
+            if (v == null) continue;
+            double p = nodePValue(g, v);
+            out.put(name, p);
+        }
+        return out;
+    }
+
+    // Do-no-harm: for all vertices where both old/new are finite, forbid degradation
+    private boolean respectsDoNoHarm(Map<String, Double> before, Map<String, Double> after, String centerName) {
+        for (Map.Entry<String, Double> e : before.entrySet()) {
+            String name = e.getKey();
+            double p0 = e.getValue();
+            Double p1Obj = after.get(name);
+            if (p1Obj == null) continue;
+            double p1 = p1Obj;
+
+            if (Double.isNaN(p0) || Double.isNaN(p1)) continue; // can't compare
+
+            // Strictest on center, slightly looser on neighbors (optional)
+            double eps = (name != null && name.equals(centerName)) ? EPS_NODEP : EPS_NODEP;
+            if (p1 < p0 - eps) return false;
+        }
+        return true;
+    }
+
+    // Progress gate: must improve violations, or tie violations and reduce edges
+    private boolean isProgress(int baselineViol, int afterViol, int currentEdges, int afterEdges) {
+        if (afterViol < baselineViol) return true;
+        return afterViol == baselineViol && afterEdges < currentEdges;
+    }
+
+    private boolean tryMoveWithGuards(Graph base, Node center, CandidateEdit edit, RepairGraphType gt, double alpha) {
+        if (edit == null || edit.isNoOp()) return false;
+
+        int currentEdges = base.getNumEdges();
+
+        // Build candidate graph exactly the same way as candidate evaluation does
+        Graph cand = buildCandidateGraph(base, edit, gt);
+        if (cand == null) {
+            vlog("Rejected: buildCandidateGraph returned null.");
+            return false;
+        }
+
+        // Use the same baseline notion you're using in pack
+        int baselineViol = evalViolationsOnly(base);
+        int afterViol = evalViolationsOnly(cand);
+        int afterEdges = cand.getNumEdges();
+
+        // Progress gate
+        if (!isProgress(baselineViol, afterViol, currentEdges, afterEdges)) {
+            vlog("Rejected: not progress (baseline=%d after=%d edges %d->%d).",
+                    baselineViol, afterViol, currentEdges, afterEdges);
+            return false;
+        }
+
+        // Do-no-harm on affected vertices
+        Set<String> affected = affectedVertices(base, edit, center, cand);
+        Map<String, Double> pBefore = nodePMap(base, affected);
+        Map<String, Double> pAfter  = nodePMap(cand, affected);
+
+        if (!respectsDoNoHarm(pBefore, pAfter, center.getName())) {
+            vlog("Rejected: violates do-no-harm on affected nodes %s.", affected);
+            return false;
+        }
+
+        // Actually apply to workingGraph using your normal applier (so Graph button / editor sees it)
+        vlog("Attempting guarded move: %s", edit.description());
+        boolean ok = applyCandidateInternal(edit, false, false);
+        vlog(ok ? "APPLIED successfully" : "Rejected (no change)");
+        return ok;
     }
 }
