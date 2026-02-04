@@ -45,7 +45,7 @@ public final class VertexRepairPanel extends JPanel {
     private static final double DEFAULT_ALPHA = 0.01;
 
     private final VertexCheckIndTestModel baseModel;
-    private final Node x;
+    private Node x; // selected node (changes via dropdown)
     private final Deque<Graph> history = new ArrayDeque<>();
 
     // UI
@@ -83,30 +83,79 @@ public final class VertexRepairPanel extends JPanel {
     private volatile SwingWorker<?, ?> activeWorker;
     private volatile JDialog watchDialog;
 
+    // Node dropdown (replaces "Adjust Node" button)
+    private final JComboBox<Node> nodeCombo = new JComboBox<>();
+
+//    public VertexRepairPanel(VertexCheckEditor editor, Node x) {
+//        super(new BorderLayout());
+//        this.x = Objects.requireNonNull(x, "x");
+//
+//        this.baseModel = Objects.requireNonNull(editor.getIndTestModel(), "editor.getIndTestModel()");
+//        this.Q = Objects.requireNonNull(editor.getCachedQueries(), "editor.getCachedQueries()");
+//        this.workingGraph = safeCopy(baseModel.getGraph());
+//        this.model = editor.getIndTestModel();
+//
+//        // Label buttons now that x is known
+//        this.searchButton.setText("Adjust " + x.getName());
+//
+//        // Initialize graph type combo options from graph legality
+//        initGraphTypeComboFromGraph(this.workingGraph);
+//
+//        buildUI();
+//
+//        initPrefTimers();
+//        loadPrefsIntoUi();
+//
+//        wireActions();
+//        updateButtons();
+//
+//        setPreferredSize(new Dimension(650, 600));
+//    }
+
     public VertexRepairPanel(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
-        this.x = Objects.requireNonNull(x, "x");
 
         this.baseModel = Objects.requireNonNull(editor.getIndTestModel(), "editor.getIndTestModel()");
         this.Q = Objects.requireNonNull(editor.getCachedQueries(), "editor.getCachedQueries()");
-        this.workingGraph = safeCopy(baseModel.getGraph());
         this.model = editor.getIndTestModel();
 
+        // Working graph
+        this.workingGraph = safeCopy(baseModel.getGraph());
+
+        // --- choose initial x ---
+        this.x = resolveInitialNode(this.workingGraph, x);
+
         // Label buttons now that x is known
-        this.searchButton.setText("Adjust " + x.getName());
+        this.searchButton.setText("Adjust " + this.x.getName());  // you may rename later if desired
 
         // Initialize graph type combo options from graph legality
         initGraphTypeComboFromGraph(this.workingGraph);
 
-        buildUI();
-
+        buildUI();          // will populate nodeCombo based on workingGraph + x
         initPrefTimers();
         loadPrefsIntoUi();
 
         wireActions();
         updateButtons();
 
+        // Auto-populate table for initially selected node
+        SwingUtilities.invokeLater(() -> startWatched("Searching", this::runSearchWatched, null));
+
         setPreferredSize(new Dimension(650, 600));
+    }
+
+    private Node resolveInitialNode(Graph g, Node requested) {
+        if (g == null) return requested; // nothing better we can do
+        List<Node> nodes = new ArrayList<>(g.getNodes());
+        nodes.sort(Comparator.comparing(Node::getName, Comparator.nullsLast(String::compareTo)));
+
+        if (nodes.isEmpty()) return requested;
+
+        // if null or not in graph, choose first node
+        if (requested == null || requested.getName() == null) return nodes.get(0);
+
+        Node inGraph = g.getNode(requested.getName());
+        return (inGraph != null) ? inGraph : nodes.get(0);
     }
 
     // ---------------------------------------------------------------------
@@ -226,23 +275,78 @@ public final class VertexRepairPanel extends JPanel {
 
     private void buildUI() {
         JPanel controls = new JPanel(new GridBagLayout());
-        controls.setBorder(new TitledBorder("Repair Node: " + x.getName()));
+//        controls.setBorder(new TitledBorder("Repair Node: " + x.getName()));
+        controls.setBorder(new TitledBorder("Repair Model"));
         GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(4, 4, 4, 4);
-        c.gridx = 0;
-        c.gridy = 0;
-        c.anchor = GridBagConstraints.WEST;
+//        c.gridx = 0;
+//        c.gridy = 0;
+//        c.anchor = GridBagConstraints.WEST;
+//
+//        controls.add(new JLabel("Graph type:"), c);
+//
+//        c.gridx = 1;
+//        c.fill = GridBagConstraints.HORIZONTAL;
+//        c.weightx = 1;
+//        controls.add(graphTypeCombo, c);
 
-        controls.add(new JLabel("Graph type:"), c);
+//        // Row: Node Dropdown
+//        c.gridx = 0;
+//        c.gridy = 1;
+//        c.gridwidth = 1;
+//        c.fill = GridBagConstraints.NONE;
+//        c.weightx = 0;
+//        controls.add(new JLabel("Node:"), c);
+//
+//        c.gridx = 1;
+//        c.fill = GridBagConstraints.HORIZONTAL;
+//        c.weightx = 1;
+//        populateNodeCombo();     // fills nodeCombo and selects this.x if present
+//        controls.add(nodeCombo, c);
+//
+//        // Row 2: Markov alpha filter
+//        c.gridx = 0;
+//        c.gridy = 1;
+//        c.gridwidth = 1;
+//        c.fill = GridBagConstraints.NONE;
+//        c.weightx = 0;
+//        controls.add(markovAlphaFilter, c);
+//
+//        c.gridx = 1;
+//        c.fill = GridBagConstraints.HORIZONTAL;
+//        c.weightx = 1;
+//
+//        JPanel alphaPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+//        alphaPanel.add(new JLabel("α:"));
+//        alphaPanel.add(alphaField);
+//
+//        alphaPanel.add(new JLabel("Model-P top-K:"));
+//        alphaPanel.add(modelPTopKField);
+//
+//        controls.add(alphaPanel, c);
+
+        // Row 1: Node Dropdown
+        c.gridx = 0;
+        c.gridy = 1;
+        c.gridwidth = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 0;
+        controls.add(new JLabel("Node:"), c);
 
         c.gridx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1;
+        populateNodeCombo();     // fills nodeCombo and selects this.x if present
+        controls.add(nodeCombo, c);
+
+        c.gridx = 2;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 1;
         controls.add(graphTypeCombo, c);
 
         // Row 2: Markov alpha filter
         c.gridx = 0;
-        c.gridy = 1;
+        c.gridy = 2;             // <-- FIX: was 1
         c.gridwidth = 1;
         c.fill = GridBagConstraints.NONE;
         c.weightx = 0;
@@ -251,14 +355,11 @@ public final class VertexRepairPanel extends JPanel {
         c.gridx = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 1;
-
         JPanel alphaPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         alphaPanel.add(new JLabel("α:"));
         alphaPanel.add(alphaField);
-
         alphaPanel.add(new JLabel("Model-P top-K:"));
         alphaPanel.add(modelPTopKField);
-
         controls.add(alphaPanel, c);
 
         // Buttons row
@@ -387,6 +488,34 @@ public final class VertexRepairPanel extends JPanel {
         add(resultsCard, BorderLayout.CENTER);
     }
 
+    private void populateNodeCombo() {
+        DefaultComboBoxModel<Node> m = new DefaultComboBoxModel<>();
+
+        if (workingGraph != null) {
+            List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
+            nodes.sort(Comparator.comparing(Node::getName, Comparator.nullsLast(String::compareTo)));
+            for (Node n : nodes) m.addElement(n);
+        }
+
+        nodeCombo.setModel(m);
+
+        // select x if possible
+        if (x != null && x.getName() != null && workingGraph != null) {
+            Node inGraph = workingGraph.getNode(x.getName());
+            if (inGraph != null) nodeCombo.setSelectedItem(inGraph);
+            else if (m.getSize() > 0) nodeCombo.setSelectedIndex(0);
+        } else if (m.getSize() > 0) {
+            nodeCombo.setSelectedIndex(0);
+        }
+
+        // keep x in sync
+        Object sel = nodeCombo.getSelectedItem();
+        if (sel instanceof Node n) {
+            x = n;
+            searchButton.setText("Adjust " + x.getName());
+        }
+    }
+
     private void applySortAndFilter() {
         if (resultsSorter == null) return;
 
@@ -427,6 +556,31 @@ public final class VertexRepairPanel extends JPanel {
 
         // Adjust selected node x (the panel’s focus node)
         searchButton.addActionListener(e -> startWatched("Searching", this::runSearchWatched, null));
+
+        nodeCombo.addActionListener(e -> {
+            Object sel = nodeCombo.getSelectedItem();
+            if (!(sel instanceof Node n)) return;
+
+            // Resolve to node in current workingGraph (important after edits/canonicalization)
+            Node inGraph = (workingGraph != null && n.getName() != null)
+                    ? workingGraph.getNode(n.getName())
+                    : null;
+
+            if (inGraph == null) {
+                // fallback: pick first node
+                x = resolveInitialNode(workingGraph, null);
+                populateNodeCombo(); // sync UI
+            } else {
+                x = inGraph;
+            }
+
+            searchButton.setText("Adjust " + x.getName());
+
+            // Auto-recompute table whenever node changes
+            if (activeWorker == null) {
+                startWatched("Searching", this::runSearchWatched, null);
+            }
+        });
 
         // Auto model best
         modelBestButton.addActionListener(e -> startWatched("Auto-repairing", this::runModelBestWatched, null));
@@ -1334,6 +1488,14 @@ public final class VertexRepairPanel extends JPanel {
 
         // Commit
         workingGraph = g2;
+
+        // resync selected node object to the instance in the updated graph
+        if (x != null && x.getName() != null) {
+            Node inGraph = workingGraph.getNode(x.getName());
+            if (inGraph != null) x = inGraph;
+            else x = resolveInitialNode(workingGraph, null);
+            SwingUtilities.invokeLater(this::populateNodeCombo);
+        }
 
         vlog("APPLIED successfully");
 

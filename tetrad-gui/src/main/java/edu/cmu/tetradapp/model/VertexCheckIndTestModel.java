@@ -82,7 +82,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     // For RECURSIVE_MSEP-like options (optional; default -1 means no limit)
     private int maxLength = -1;
     private ModelSummary modelSummary;
-    private boolean useAndersonDarling = true;
+    private boolean useAndersonDarling = false;
 
     public VertexCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, Parameters parameters) {
         this(dataModel, graphSource, null, parameters);

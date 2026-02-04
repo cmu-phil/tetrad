@@ -133,7 +133,7 @@ public class VertexCheckEditor extends JPanel {
     private final JComboBox<String> conditioningCombo = new JComboBox<>();
     private final JCheckBox verbose = new JCheckBox("Verbose");
     private final JButton showIndepsForRow = new JButton("Independencies");
-    private final JButton repairNodeButton = new JButton("Repair Node");
+    private final JButton repairModelButton = new JButton("Repair Model");
     // --- Graph UX ---
     private final JButton undoGraphButton = new JButton("Undo");
     private final JButton showGraphButton = new JButton("Graph");
@@ -179,9 +179,9 @@ public class VertexCheckEditor extends JPanel {
 
         setTestFromCombo();
 
-        repairNodeButton.setEnabled(true);
+        repairModelButton.setEnabled(true);
 
-        repairNodeButton.addActionListener(e -> showRepairNodeDialog());
+        repairModelButton.addActionListener(e -> showRepairModelDialog());
 
         undoGraphButton.addActionListener(e -> undoGraph());
         showGraphButton.addActionListener(e -> showGraphDialog());
@@ -741,7 +741,7 @@ public class VertexCheckEditor extends JPanel {
 
         JPanel factsButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         factsButtons.add(showIndepsForRow);
-        factsButtons.add(repairNodeButton);
+        factsButtons.add(repairModelButton);
         factsButtons.add(undoGraphButton);
         factsButtons.add(showGraphButton);
 
@@ -1209,10 +1209,10 @@ public class VertexCheckEditor extends JPanel {
             enable = rs != null && !rs.isEmpty() && rs.stream().anyMatch(r -> r != null && !r.isIndependent());
         }
 
-        repairNodeButton.setEnabled(true);
+        repairModelButton.setEnabled(true);
     }
 
-    private void showRepairNodeDialog() {
+    private void showRepairModelDialog() {
         Node x = getSelectedVertex();
         if (x == null) return;
 
@@ -1316,7 +1316,7 @@ public class VertexCheckEditor extends JPanel {
             }
         }
 
-        throw new IllegalStateException("Selected vertex not found in graph");
+        return model.getGraph().getNodes().getFirst();
     }
 
     private void restoreOverviewSelection(String vertexName) {
