@@ -138,7 +138,7 @@
         private final JButton undoGraphButton = new JButton("Undo");
         private final JButton showGraphButton = new JButton("Graph");
         private final Deque<Graph> graphHistory = new ArrayDeque<>();
-        private final JLabel modelPLabel = new JLabel("Model P: (not computed)");
+        private final JLabel modelPLabel = new JLabel("Model Uniformity P: (not computed)");
         private final JLabel modelNpLabel = new JLabel("# p-values (not computed): -");
         private CachedIndependenceQueries Q;
         private JTable overviewTable;
@@ -1293,31 +1293,31 @@
             }
         }
 
-        private Graph rebindGraphToModelNodesByName(Graph repaired) {
-            if (repaired == null) return null;
-
-            Graph base = (model != null ? model.getGraph() : null);
-            if (base == null) return repaired;
-
-            Map<String, Node> nameToNode = new HashMap<>();
-            for (Node n : base.getNodes()) nameToNode.put(n.getName(), n);
-
-            Graph out = new EdgeListGraph();
-            // Use the model's node instances
-            for (Node n : base.getNodes()) out.addNode(n);
-
-            // Recreate edges using the model's node instances, preserving endpoints
-            for (Edge e : repaired.getEdges()) {
-                Node a = nameToNode.get(e.getNode1().getName());
-                Node b = nameToNode.get(e.getNode2().getName());
-                if (a == null || b == null) continue;
-
-                Edge e2 = new Edge(a, b, e.getEndpoint1(), e.getEndpoint2());
-                out.addEdge(e2);
-            }
-
-            return out;
-        }
+//        private Graph rebindGraphToModelNodesByName(Graph repaired) {
+//            if (repaired == null) return null;
+//
+//            Graph base = (model != null ? model.getGraph() : null);
+//            if (base == null) return repaired;
+//
+//            Map<String, Node> nameToNode = new HashMap<>();
+//            for (Node n : base.getNodes()) nameToNode.put(n.getName(), n);
+//
+//            Graph out = new EdgeListGraph();
+//            // Use the model's node instances
+//            for (Node n : base.getNodes()) out.addNode(n);
+//
+//            // Recreate edges using the model's node instances, preserving endpoints
+//            for (Edge e : repaired.getEdges()) {
+//                Node a = nameToNode.get(e.getNode1().getName());
+//                Node b = nameToNode.get(e.getNode2().getName());
+//                if (a == null || b == null) continue;
+//
+//                Edge e2 = new Edge(a, b, e.getEndpoint1(), e.getEndpoint2());
+//                out.addEdge(e2);
+//            }
+//
+//            return out;
+//        }
 
         public Node getSelectedVertex() {
             List<Node> nodes = model.getGraph().getNodes();
@@ -1417,12 +1417,12 @@
             return keys;
         }
 
-        private IndependenceFact getIndependenceFact(int r) {
-            int m = factsTable.convertRowIndexToModel(r);
-            String name = model.getVertexNames().get(m);     // <-- WRONG LIST
-            List<IndependenceResult> rs = model.getResultsForVertex(name);
-            return rs.get(m).getFact();
-        }
+//        private IndependenceFact getIndependenceFact(int r) {
+//            int m = factsTable.convertRowIndexToModel(r);
+//            String name = model.getVertexNames().get(m);     // <-- WRONG LIST
+//            List<IndependenceResult> rs = model.getResultsForVertex(name);
+//            return rs.get(m).getFact();
+//        }
 
         /**
          * Shared cache of CI queries used by both VertexCheckEditor and VertexRepairPanel.
@@ -1543,12 +1543,12 @@
             // You decide semantics: either only valid after Run All, or “over computed so far”.
             VertexCheckIndTestModel.ModelSummary ms = model.getModelSummary(); // you add this
             if (ms == null) {
-                modelNpLabel.setText("Model P: (not computed)");
+                modelNpLabel.setText("Model Uniformity P: (not computed)");
                 modelPLabel.setText("# p-values: (not computed)");
                 return;
             }
             modelNpLabel.setText("# P-values: " + ms.numPValues());
-            modelPLabel.setText("Model P: " + fmt(ms.modelP()));
+            modelPLabel.setText("Model Uniformity P: " + fmt(ms.modelP()));
         }
 
         private enum PoolChoice {
@@ -1721,14 +1721,35 @@
                     try {
                         model.runAllVertices(true);
                     } finally {
+//                        SwingUtilities.invokeLater(() -> {
+//                            overviewModel.fireTableDataChanged();
+//                            refreshModelDiagnostics();
+//
+//                            if (preferredVertexToReselect != null) {
+//                                restoreOverviewSelection(preferredVertexToReselect);
+//                            } else {
+//                                selectFirstRowIfAny();
+//                            }
+//
+//                            runAll.setEnabled(true);
+//                            runningAll = false;
+//                        });
+
                         SwingUtilities.invokeLater(() -> {
                             overviewModel.fireTableDataChanged();
                             refreshModelDiagnostics();
 
+                            String active;
                             if (preferredVertexToReselect != null) {
                                 restoreOverviewSelection(preferredVertexToReselect);
+                                active = preferredVertexToReselect;
                             } else {
                                 selectFirstRowIfAny();
+                                active = getActiveSelectedVertexName(); // now points at row 0
+                            }
+
+                            if (active != null) {
+                                refreshDetails(active);   // <-- this makes facts/histogram appear immediately
                             }
 
                             runAll.setEnabled(true);
