@@ -83,7 +83,6 @@ public class MarkovCheckEditor extends JPanel {
      * the application's configuration or storage system.
      */
     private static final String PREF_KEY_TEST = "markovCheckerIndependenceTest";
-    private static boolean flipEscapes = true;
     /**
      * The model for the Markov check.
      */
@@ -221,15 +220,6 @@ public class MarkovCheckEditor extends JPanel {
      * The histogram panel.
      */
     private JPanel histogramPanelDep;
-    /**
-     * A checkbox for the independence tab to flip escapes for some regexes.
-     */
-    private JCheckBox flipEscapesIndep;
-    /**
-     * A checkbox for the dependence tab to flip escapes for some regexes.
-     */
-    private JCheckBox flipEscapesDep;
-
 
     /**
      * Constructs a new editor for the given model.
@@ -388,7 +378,6 @@ public class MarkovCheckEditor extends JPanel {
         model.setVars(graph.getNodeNames());
 
         JButton params = new JButton("Params");
-//        JButton sample = new JButton("Sample");
         JButton sample = new JButton("Run");
         JButton addSample = new JButton("Add Sample");
 
@@ -542,83 +531,6 @@ public class MarkovCheckEditor extends JPanel {
         view.setMinimumSize(new Dimension(300, 200));
         view.setMaximumSize(new Dimension(300, 200));
         return view;
-    }
-
-    @NotNull
-    private static DocumentListener getFilterListener(JTextField filterText, TableRowSorter<AbstractTableModel> sorter) {
-        return new DocumentListener() {
-
-            /**
-             * Filters the table based on the text in the text field.
-             */
-            private void filter() {
-                String text = filterText.getText();
-                if (text.trim().isEmpty()) {
-                    sorter.setRowFilter(null);
-                } else {
-                    String[] textParts = text.split(";+");
-                    List<RowFilter<Object, Object>> filters = new ArrayList<>(textParts.length);
-                    for (String part : textParts) {
-                        try {
-
-                            String trim = part.trim();
-
-                            if (isFlipEscapes()) {
-                                // Swap escapes for parentheses and pipes
-                                trim = trim.replace("\\(", "<+++<");
-                                trim = trim.replace("\\)", ">+++>");
-                                trim = trim.replace("\\|", "|+++|");
-                                trim = trim.replace("(", "\\(");
-                                trim = trim.replace(")", "\\)");
-                                trim = trim.replace("|", "\\|");
-                                trim = trim.replace("<+++<", "(");
-                                trim = trim.replace(">+++>", ")");
-                                trim = trim.replace("|+++|", "|");
-                            }
-
-                            filters.add(RowFilter.regexFilter(trim));
-                        } catch (PatternSyntaxException e) {
-                            // ignore
-                        }
-                    }
-                    sorter.setRowFilter(RowFilter.orFilter(filters));
-                }
-            }
-
-            /**
-             * Inserts text into the text field.
-             *
-             * @param e the document event.
-             */
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                filter();
-            }
-
-            /**
-             * Removes text from the text field.
-             *
-             * @param e the document event.
-             */
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                filter();
-            }
-
-            /**
-             * Changes text in the text field.
-             *
-             * @param e the document event.
-             */
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                // this method won't be called for plain text fields
-            }
-        };
-    }
-
-    private static boolean isFlipEscapes() {
-        return flipEscapes;
     }
 
     /**
@@ -1114,14 +1026,7 @@ public class MarkovCheckEditor extends JPanel {
             }
         });
 
-        flipEscapesIndep = new JCheckBox("Flip escapes ()|");
-        flipEscapesIndep.setSelected(flipEscapes);
-        flipEscapesIndep.addActionListener(e -> {
-            flipEscapes = flipEscapesIndep.isSelected();
-            flipEscapesDep.setSelected(isFlipEscapes());
-        });
-
-        addFilterPanel(model, tableModelIndep, tableIndep, tableBox, flipEscapesIndep);
+        addFilterPanel(model, tableModelIndep, tableIndep, tableBox);
 
         Box b10 = Box.createHorizontalBox();
         b10.add(Box.createHorizontalGlue());
@@ -1146,12 +1051,10 @@ public class MarkovCheckEditor extends JPanel {
 
         Box a4a = Box.createHorizontalBox();
         JLabel summaryTitle = new JLabel("Uniformity of p-values under H0");
-//        summaryTitle.setFont(summaryTitle.getFont().deriveFont(Font.BOLD));
         a4a.add(Box.createHorizontalGlue());
         a4a.add(summaryTitle);
         a4a.add(Box.createHorizontalGlue());
         a4.add(a4a);
-
 
         histogramPanelIndep = new JPanel();
         histogramPanelIndep.setLayout(new BorderLayout());
@@ -1198,75 +1101,61 @@ public class MarkovCheckEditor extends JPanel {
         return checkMarkovPanel;
     }
 
-    private void addFilterPanel(MarkovCheckIndTestModel model, AbstractTableModel tableModel, JTable table,
-                                Box panel, JCheckBox flipEscapes) {
+    private void addFilterPanel(MarkovCheckIndTestModel model,
+                                AbstractTableModel tableModel,
+                                JTable table,
+                                Box panel) {
+
         TableRowSorter<AbstractTableModel> sorter = new TableRowSorter<>(tableModel);
         table.setRowSorter(sorter);
 
+        // --- Node selection UI ---
         Box nodeSelectionBox = Box.createHorizontalBox();
-        nodeSelectionBox.add(new JLabel("Node Selection:"));
+        nodeSelectionBox.add(new JLabel("Node Selection: "));
+
         JComboBox<String> nodeSelection = new JComboBox<>();
         nodeSelection.addItem("All");
 
-        List<String> names = new ArrayList<>();
+        List<String> names = model.getGraph().getNodes().stream()
+                .map(Node::getName)
+                .sorted()  // or your natural sort comparator
+                .toList();
 
-        for (Node node : model.getGraph().getNodes()) {
-            names.add(node.getName());
-        }
-
-        names.sort((o1, o2) -> {
-            String[] split1 = o1.split("(?<=\\D)(?=\\d)");
-            String[] split2 = o2.split("(?<=\\D)(?=\\d)");
-
-            boolean o1HasIntegerSuffix = split1.length == 2 && split1[1].matches("\\d+");
-            boolean o2HasIntegerSuffix = split2.length == 2 && split2[1].matches("\\d+");
-
-            if (o1HasIntegerSuffix && o2HasIntegerSuffix) {
-                String prefix1 = split1[0];
-                String prefix2 = split2[0];
-
-                if (prefix1.equals(prefix2)) {
-                    return Integer.compare(Integer.parseInt(split1[1]), Integer.parseInt(split2[1]));
-                } else {
-                    return prefix1.compareTo(prefix2);
-                }
-            } else if (o1HasIntegerSuffix) {
-                return -1;
-            } else if (o2HasIntegerSuffix) {
-                return 1;
-            } else {
-                return o1.compareTo(o2);
-            }
-        });
-
-
-        for (String name : names) {
-            nodeSelection.addItem(name);
-        }
+        for (String name : names) nodeSelection.addItem(name);
 
         nodeSelection.addActionListener(e -> {
             String selectedNode = (String) nodeSelection.getSelectedItem();
-            if ("All".equals(selectedNode)) {
+            if (selectedNode == null || "All".equals(selectedNode)) {
                 sorter.setRowFilter(null);
             } else {
-                String a = selectedNode;
-                String regex = String.format("(\\(%s,)|(, %s \\|)|(, %s\\)^)", a, a, a);
-                sorter.setRowFilter(RowFilter.regexFilter(regex));
+                final String needle = selectedNode;
+
+                // Filter on "Graphical Prediction" column (model index 1)
+                sorter.setRowFilter(new RowFilter<>() {
+                    @Override
+                    public boolean include(Entry<? extends AbstractTableModel, ? extends Integer> entry) {
+                        Object v = entry.getValue(1);
+                        if (v == null) return false;
+                        String s = v.toString();
+
+                        // very simple containment check:
+                        // matches X, Y, or anything in Z list
+                        // Example string: "Ind(X1, X2 | X3, X4)"
+                        return s.contains("(" + needle + ",")
+                                || s.contains(", " + needle + " |")
+                                || s.contains(", " + needle + ")")
+                                || s.contains("| " + needle + ",")
+                                || s.contains("| " + needle + ")");
+                    }
+                });
             }
+
+            // Make bottom stats/histograms reflect what's visible
+            updateTables(model, tableIndep, tableDep);
         });
 
         nodeSelectionBox.add(nodeSelection);
         nodeSelectionBox.add(Box.createHorizontalGlue());
-
-
-        // Create the text field
-        JLabel regexLabel = new JLabel("Regexes (semicolon separated):");
-        JTextField filterText = new JTextField(15);
-        filterText.setMaximumSize(new Dimension(600, 20));
-        regexLabel.setLabelFor(filterText);
-
-        // Create a listener for the text field that will update the table's row sort
-        filterText.getDocument().addDocumentListener(getFilterListener(filterText, sorter));
 
         sorter.addRowSorterListener(e -> {
             if (e.getType() == RowSorterEvent.Type.SORTED) {
@@ -1278,9 +1167,7 @@ public class MarkovCheckEditor extends JPanel {
         scroll.setPreferredSize(new Dimension(850, 400));
         scroll.setMaximumSize(new Dimension(850, 400));
 
-        Box filterBox = Box.createHorizontalBox();
-        filterBox.add(nodeSelectionBox);
-        panel.add(filterBox);
+        panel.add(nodeSelectionBox);
         panel.add(scroll);
     }
 
@@ -1503,14 +1390,7 @@ public class MarkovCheckEditor extends JPanel {
             }
         });
 
-        flipEscapesDep = new JCheckBox("Flip escapes ()|");
-        flipEscapesDep.setSelected(flipEscapes);
-        flipEscapesDep.addActionListener(e -> {
-            flipEscapes = flipEscapesDep.isSelected();
-            flipEscapesDep.setSelected(isFlipEscapes());
-        });
-
-        addFilterPanel(model, tableModelDep, tableDep, tableBox, flipEscapesDep);
+        addFilterPanel(model, tableModelDep, tableDep, tableBox);
 
         Box b10 = Box.createHorizontalBox();
         b10.add(Box.createHorizontalGlue());
