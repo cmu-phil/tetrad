@@ -209,6 +209,15 @@ public interface IndependenceTest {
     default List<DataSet> getDataSets() {
         throw new UnsupportedOperationException("The getDataSets() method is not implemented for this test.");
     }
+
+    /**
+     * Indicates whether the test supports subsampling.
+     *
+     * @return {@code true} if the test can be subsampled; {@code false} otherwise.
+     */
+    default boolean canBeSubsampled() {
+        return this instanceof RowsSettable;
+    }
 }
 
 

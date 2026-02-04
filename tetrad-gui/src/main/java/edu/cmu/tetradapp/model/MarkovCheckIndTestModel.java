@@ -250,49 +250,35 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the source graph.
-     */
     @Override
     public Graph getSourceGraph() {
-        return null;
+        return graph;
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the result graph.
-     */
     @Override
     public Graph getResultGraph() {
-        return null;
+        return graph;
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the variables.
-     */
     @Override
     public List<Node> getVariables() {
-        return null;
+        // Prefer the data model variables if available; otherwise fall back to graph nodes.
+        if (dataModel != null && dataModel.getVariables() != null) {
+            return dataModel.getVariables();
+        }
+        return graph.getNodes();
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the variable names.
-     */
     @Override
     public List<String> getVariableNames() {
-        return null;
+        return getVariables().stream().map(Node::getName).toList();
     }
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-        this.getMarkovCheck().setVerbose(verbose);
+        if (this.markovCheck != null) {
+            this.markovCheck.setVerbose(verbose);
+        }
     }
 }
 

@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentMap;
  *  IllegalStateException("Recursive update") if the mapping function re-enters the map for the
  *  same key (which can happen if the wrapped test delegates back into this cache layer).
  */
-public final class CachedIndependenceQueries implements IndependenceTest, TetradSerializable {
+public final class CachedIndependenceQueries implements IndependenceTest, RowsSettable, TetradSerializable {
 
     @SuppressWarnings("unused")
     private static final long serialVersionUID = 23L;
@@ -48,6 +48,18 @@ public final class CachedIndependenceQueries implements IndependenceTest, Tetrad
     @Override
     public boolean isVerbose() {
         return false;
+    }
+
+    @Override
+    public List<Integer> getRows() {
+        if (test instanceof RowsSettable rs) return rs.getRows();
+        else throw new UnsupportedOperationException("Wrapped test does not support getRows()");
+    }
+
+    @Override
+    public void setRows(List<Integer> rows) {
+        if (test instanceof RowsSettable rs) rs.setRows(rows);
+        else throw new UnsupportedOperationException("Wrapped test does not support setRows()");
     }
 
     // ------------------------ policies ------------------------
@@ -99,11 +111,18 @@ public final class CachedIndependenceQueries implements IndependenceTest, Tetrad
     public CachedIndependenceQueries() { }
 
     public CachedIndependenceQueries(IndependenceTest test) {
-        setTest(test);
+        if (this.test != test) {
+            setTest(test);
+        }
     }
 
     public CachedIndependenceQueries(ErrorPolicy errorPolicy) {
         this.errorPolicy = Objects.requireNonNull(errorPolicy, "errorPolicy");
+    }
+
+    @Override
+    public boolean canBeSubsampled() {
+        return test.canBeSubsampled();
     }
 
     // ------------------------ lifecycle ------------------------
@@ -160,6 +179,10 @@ public final class CachedIndependenceQueries implements IndependenceTest, Tetrad
 
     public ErrorPolicy getErrorPolicy() {
         return errorPolicy;
+    }
+
+    public double getAlpha() {
+        return test == null ? Double.NaN : test.getAlpha();
     }
 
     // ------------------------ core API ------------------------
