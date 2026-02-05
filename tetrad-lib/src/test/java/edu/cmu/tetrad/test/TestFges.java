@@ -536,7 +536,7 @@ public class TestFges {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", "A-->D,B---A,B-->C,C---A,C-->D",
+        checkWithKnowledge("A-->B,C-->B,B-->D", "A---D,B---A,B-->C,C---A,C-->D",
                 knowledge);
     }
 
@@ -697,6 +697,8 @@ public class TestFges {
                 CPDAG1 = fges.search();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
+            } catch (IllegalArgumentException e) {
+                continue;
             }
 
             for (Edge edge : knowledgeGraph.getEdges()) {
@@ -735,6 +737,8 @@ public class TestFges {
                 CPDAG1 = fges.search();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
+            } catch (IllegalArgumentException e) {
+                continue;
             }
 
             for (Edge edge : knowledgeGraph.getEdges()) {

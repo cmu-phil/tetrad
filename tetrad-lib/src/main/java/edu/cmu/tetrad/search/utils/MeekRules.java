@@ -309,7 +309,7 @@ public class MeekRules {
     }
 
 //    /**
-//     * Meek's rule R4. If a--b, b--c, a--d, c not adj to d, then a-->c.
+//     * Meek's rule R4. If a--b, a--c, a--d, c->b, d->b, c not adj to d, then a-->b.
 //     */
 //    private boolean meekR4(Node a, Node b, Graph graph, Set<Node> visited) {
 //        if (!this.useRule4) {
@@ -338,62 +338,107 @@ public class MeekRules {
 //    }
 
     /**
-     * Meek's rule R4 (PC/CPDAG form).
-     *
-     * One common, CPDAG-safe statement is:
-     *   If a --- b, and there exist nodes c and d such that
-     *     a --- c, a --- d,
-     *     c -> b, d -> b,
-     *     and c is not adjacent to d,
-     *   then orient a -> b.
-     *
-     * (This is the “two nonadjacent parents into b with undirected ties to a” pattern.)
+     * Meek's rule R4. If a--b, a--c, a--d, c->b, d->b, c not adj to d, then a-->b.
      */
     private boolean meekR4(Node a, Node b, Graph graph, Set<Node> visited) {
         if (!this.useRule4) return false;
 
         Edge ab = graph.getEdge(a, b);
-        if (ab == null || !Edges.isUndirectedEdge(ab)) return false;
+        if (ab == null || !Edges.isUndirectedEdge(ab)) return false;   // require a--b
 
-        // Candidates c that are adjacent to a (undirected a---c) and are parents of b (c -> b).
+        // candidates c: a--c and c->b
         List<Node> cand = new ArrayList<>();
         for (Node c : graph.getAdjacentNodes(a)) {
             if (c == b) continue;
 
             Edge ac = graph.getEdge(a, c);
-            if (ac == null || !Edges.isUndirectedEdge(ac)) continue;
+            if (ac == null || !Edges.isUndirectedEdge(ac)) continue;   // require a--c
+            if (!graph.isParentOf(c, b)) continue;                     // require c->b
 
-            // Require c -> b (i.e., c is a parent of b).
-            if (!graph.isParentOf(c, b)) continue;
-
-            // Respect knowledge: need arrowhead at b from c to already be allowed/realized;
-            // (graph already has it if isParentOf is true)
             cand.add(c);
         }
 
         if (cand.size() < 2) return false;
 
-        // Find a pair (c, d) of such candidates that are nonadjacent.
+        // need two nonadjacent candidates c,d (c not adj d)
         for (int i = 0; i < cand.size(); i++) {
             Node c = cand.get(i);
-
             for (int j = i + 1; j < cand.size(); j++) {
                 Node d = cand.get(j);
 
-                if (graph.isAdjacentTo(c, d)) continue;  // must be unshielded at {c,d}
+                // also implies a--d since d is in cand, and d->b by construction
+                if (graph.isAdjacentTo(c, d)) continue;                // require c not adj d
 
-                // Pattern satisfied: a---b, a---c, a---d, c->b, d->b, and c not adj d
                 if (direct(a, b, graph, visited)) {
                     log(LogUtilsSearch.edgeOrientedMsg(
                             "Meek R4 (" + c + "->" + b + ", " + d + "->" + b + ", " + a + "---" + c + ", " + a + "---" + d + ")",
                             graph.getEdge(a, b)));
                     return true;
                 }
+                return false; // direct() refused => can't apply for this (a,b)
             }
         }
 
         return false;
     }
+
+//    /**
+//     * Meek's rule R4 (PC/CPDAG form).
+//     *
+//     * One common, CPDAG-safe statement is:
+//     *   If a --- b, and there exist nodes c and d such that
+//     *     a --- c, a --- d,
+//     *     c -> b, d -> b,
+//     *     and c is not adjacent to d,
+//     *   then orient a -> b.
+//     *
+//     * (This is the “two nonadjacent parents into b with undirected ties to a” pattern.)
+//     */
+//    private boolean meekR4(Node a, Node b, Graph graph, Set<Node> visited) {
+//        if (!this.useRule4) return false;
+//
+//        Edge ab = graph.getEdge(a, b);
+//        if (ab == null || !Edges.isUndirectedEdge(ab)) return false;
+//
+//        // Candidates c that are adjacent to a (undirected a---c) and are parents of b (c -> b).
+//        List<Node> cand = new ArrayList<>();
+//        for (Node c : graph.getAdjacentNodes(a)) {
+//            if (c == b) continue;
+//
+//            Edge ac = graph.getEdge(a, c);
+//            if (ac == null || !Edges.isUndirectedEdge(ac)) continue;
+//
+//            // Require c -> b (i.e., c is a parent of b).
+//            if (!graph.isParentOf(c, b)) continue;
+//
+//            // Respect knowledge: need arrowhead at b from c to already be allowed/realized;
+//            // (graph already has it if isParentOf is true)
+//            cand.add(c);
+//        }
+//
+//        if (cand.size() < 2) return false;
+//
+//        // Find a pair (c, d) of such candidates that are nonadjacent.
+//        for (int i = 0; i < cand.size(); i++) {
+//            Node c = cand.get(i);
+//
+//            for (int j = i + 1; j < cand.size(); j++) {
+//                Node d = cand.get(j);
+//
+//                if (graph.isAdjacentTo(c, d)) continue;  // must be unshielded at {c,d}
+//
+//                // Pattern satisfied: a---b, a---c, a---d, c->b, d->b, and c not adj d
+//                if (direct(a, b, graph, visited)) {
+//                    log(LogUtilsSearch.edgeOrientedMsg(
+//                            "Meek R4 (" + c + "->" + b + ", " + d + "->" + b + ", " + a + "---" + c + ", " + a + "---" + d + ")",
+//                            graph.getEdge(a, b)));
+//                    return true;
+//                }
+//            }
+//        }
+//
+//        return false;
+//    }
 
     /**
      * Directs an edge from a to c in the graph, if the edge is allowed by the knowledge and the edge is undirected.
