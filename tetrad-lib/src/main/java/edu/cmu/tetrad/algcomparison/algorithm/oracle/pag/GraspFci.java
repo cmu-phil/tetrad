@@ -35,6 +35,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -119,6 +120,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
         }
 
         IndependenceTest test = this.test.getTest(dataModel, parameters);
+        test = new CachedIndependenceQueries(test);
         Score score = this.score.getScore(dataModel, parameters);
 
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));

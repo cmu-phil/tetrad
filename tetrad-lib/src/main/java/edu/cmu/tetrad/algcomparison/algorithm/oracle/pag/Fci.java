@@ -33,7 +33,9 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -114,7 +116,9 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
             default -> throw new IllegalArgumentException("Invalid collider orientation style");
         };
 
-        edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(this.test.getTest(dataModel, parameters));
+        IndependenceTest test1 = this.test.getTest(dataModel, parameters);
+        test1 = new CachedIndependenceQueries(test1);
+        edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test1);
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setR0ColliderRule(colliderOrientationStyle);

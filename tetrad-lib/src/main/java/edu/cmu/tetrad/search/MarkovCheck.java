@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -31,6 +31,7 @@ import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -200,10 +201,29 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     public MarkovCheck(Graph graph, IndependenceTest independenceTest, ConditioningSetType setType) {
         this.graph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
         this.isPdag = graph.paths().isLegalPdag();
-        this.independenceTest = independenceTest;
+
+        this.independenceTest = new CachedIndependenceQueries(independenceTest);
+
         this.setType = setType;
         this.independenceNodes = new ArrayList<>(independenceTest.getVariables());
         this.conditioningNodes = new ArrayList<>(independenceTest.getVariables());
+    }
+
+    /**
+     * Computes all implied independence facts for the given graph based on the specified conditioning set type.
+     *
+     * @param g the graph for which implied independence facts will be computed
+     * @param setType the type of conditioning set to be used for inferring independence facts
+     * @return a list of all implied independence facts derived from the graph
+     */
+    public static List<IndependenceFact> computeAllImpliedFacts(Graph g, ConditioningSetType setType) {
+       Set<IndependenceFact> allImpliedFacts = new HashSet<>();
+
+       for (Node x : g.getNodes()) {
+           allImpliedFacts.addAll(computeImpliedFactsForVertex (g, x, setType));
+       }
+
+       return new ArrayList<>(allImpliedFacts);
     }
 
     /**
@@ -1021,7 +1041,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         if (setType == ConditioningSetType.GLOBAL_MARKOV) {
             AllSubsetsIndependenceFacts result = getAllSubsetsIndependenceFacts();
             generateResultsAllSubsets(result.msep, result.mconn);
-//            generateResultsAllSubsets(result.msep, result.mconn);
         } else {
             List<Node> variables = getVariables(graph.getNodes(), independenceNodes, conditioningNodes);
             List<Node> nodes = new ArrayList<>(variables);
@@ -1043,112 +1062,13 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 }
             }
 
-            Set<IndependenceFact> allIndependenceFacts = new HashSet<>();
+            Set<IndependenceFact> allIndependenceFacts = getAllIndependenceFacts(order);
+            if (allIndependenceFacts == null) return;
+
+            this.allIndependenceFacts = allIndependenceFacts;
+
             Set<IndependenceFact> msep = new HashSet<>();
             Set<IndependenceFact> mconn = new HashSet<>();
-
-            if (setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG) {
-                Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
-
-                if (graph.paths().isLegalDag()) {
-                    mag = graph;
-                } else if (graph.paths().isLegalCpdag()) {
-                    mag = GraphTransforms.dagFromCpdag(graph);
-                } else if (graph.paths().isLegalMag()) {
-                    mag = graph;
-                } else {
-                    mag = GraphTransforms.zhangMagFromPag(graph);
-                }
-
-                if (mag.paths().existsDirectedCycle()) {
-                    return;
-                }
-
-                allIndependenceFacts = OrderedLocalMarkovProperty.getModel(mag);
-            } else {
-                for (int i = 0; i < nodes.size(); i++) {
-                    for (int j = 0; j < nodes.size(); j++) {
-                        if (i == j) continue;
-                        Node x = nodes.get(i);
-                        Node y = nodes.get(j);
-
-                        Set<Node> z;
-
-                        switch (setType) {
-                            case LOCAL_MARKOV:
-                                z = new HashSet<>();
-
-                                for (Node w : graph.getAdjacentNodes(x)) {
-                                    if (graph.isParentOf(w, x)) {
-                                        z.add(w);
-                                    }
-                                }
-
-                                break;
-                            case PARENTS_AND_NEIGHBORS:
-                                z = new HashSet<>();
-
-                                for (Node w : graph.getAdjacentNodes(x)) {
-                                    if (Edges.isUndirectedEdge(graph.getEdge(w, x))) {
-                                        z.add(w);
-                                    }
-
-                                    if (graph.isParentOf(w, x)) {
-                                        z.add(w);
-                                    }
-                                }
-
-                                break;
-                            case ORDERED_LOCAL_MARKOV:
-                                if (order == null) throw new IllegalArgumentException("No valid order found.");
-                                z = new HashSet<>(graph.getAdjacentNodes(x));
-
-                                // Keep only the parents in Prefix(x)--i.e., nodes adjacent to x that are in Prefix(X)
-                                for (Node w : new ArrayList<>(z)) {
-                                    int i1 = order.indexOf(x);
-                                    int i2 = order.indexOf(w);
-
-                                    if (i2 >= i1) {
-                                        z.remove(w);
-                                    }
-                                }
-
-                                break;
-                            case MARKOV_BLANKET:
-                                z = GraphUtils.markovBlanket(x, graph);
-                                break;
-//                            case RECURSIVE_MSEP:
-////                                try {
-////                                    z = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), maxLength);
-////
-//                                    List<Set<Node>> Blist = new RecursiveAdjustment(graph)
-//                                            .adjustmentSetsRB(x, y, "PDAG", 1, 10, 1, 10, false, Set.of(), Set.of() );
-//                                    z = Blist.getFirst();
-////                                } catch (InterruptedException e) {
-////                                    throw new RuntimeException(e);
-////                                }
-//                                break;
-                            default:
-                                throw new IllegalArgumentException("Unknown separation set type: " + setType);
-                        }
-
-                        if (x == y || z.contains(x) || z.contains(y)) continue;
-
-                        if (findSmallestSubset && graph.paths().isMSeparatedFrom(x, y, z, false)) {
-//                        z = removeExtraneousVariables(z, x, y, !isPdag);
-                            z = SepsetFinder.getSmallestSubset(x, y, z, new HashSet<>(), graph, !isPdag);
-                        }
-
-                        if (!checkNodeIndependenceAndConditioning(x, y, z)) {
-                            continue;
-                        }
-
-                        IndependenceFact fact = new IndependenceFact(x, y, z);
-                        allIndependenceFacts.add(fact);
-                    }
-                }
-            }
-            this.allIndependenceFacts = allIndependenceFacts;
 
             try {
                 generateMseps(new ArrayList<>(allIndependenceFacts), msep, mconn, new MsepTest(graph));
@@ -1165,6 +1085,262 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
         calcStats(indep);
     }
+
+    private @Nullable Set<IndependenceFact> getAllIndependenceFacts(List<Node> order) {
+        Set<IndependenceFact> allIndependenceFacts = new HashSet<>();
+
+        if (setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG) {
+            Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
+
+            if (graph.paths().isLegalDag()) {
+                mag = graph;
+            } else if (graph.paths().isLegalCpdag()) {
+                mag = GraphTransforms.dagFromCpdag(graph);
+            } else if (graph.paths().isLegalMag()) {
+                mag = graph;
+            } else {
+                mag = GraphTransforms.zhangMagFromPag(graph);
+            }
+
+            if (mag.paths().existsDirectedCycle()) {
+                return null;
+            }
+
+            allIndependenceFacts = OrderedLocalMarkovProperty.getModel(mag);
+        } else if (setType == ConditioningSetType.RECURSIVE_BLOCKING) {
+            if (graph.paths().existsDirectedCycle()) {
+                return null;
+            }
+
+            Set<IndependenceFact> facts = new HashSet<>();
+            for (Node x : graph.getNodes()) {
+                for (Node w : graph.getNodes()) {
+                    if (x == w) continue;
+                    if (graph.isAdjacentTo(w, x)) continue;
+
+                    try {
+                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, x, w, Set.of(), Set.of(), -1);
+
+                        if (blocking != null) {
+                            facts.add(new IndependenceFact(x, w, blocking));
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    allIndependenceFacts = facts;
+                }
+            }
+        } else {
+            allIndependenceFacts = getUniformIndependenceFacts(graph.getNodes(), order);
+        }
+        return allIndependenceFacts;
+    }
+
+    private Set<IndependenceFact> getUniformIndependenceFacts(List<Node> nodes, List<Node> order) {
+        Set<IndependenceFact> allIndependenceFacts = new HashSet<>();
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = 0; j < nodes.size(); j++) {
+                if (i == j) continue;
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                Set<Node> z;
+
+                switch (setType) {
+                    case LOCAL_MARKOV:
+                        z = new HashSet<>();
+
+                        for (Node w : graph.getAdjacentNodes(x)) {
+                            if (graph.isParentOf(w, x)) {
+                                z.add(w);
+                            }
+                        }
+
+                        break;
+                    case PARENTS_AND_NEIGHBORS:
+                        z = new HashSet<>();
+
+                        for (Node w : graph.getAdjacentNodes(x)) {
+                            if (Edges.isUndirectedEdge(graph.getEdge(w, x))) {
+                                z.add(w);
+                            }
+
+                            if (graph.isParentOf(w, x)) {
+                                z.add(w);
+                            }
+                        }
+
+                        break;
+                    case ORDERED_LOCAL_MARKOV:
+                        if (order == null) throw new IllegalArgumentException("No valid order found.");
+                        z = new HashSet<>(graph.getAdjacentNodes(x));
+
+                        // Keep only the parents in Prefix(x)--i.e., nodes adjacent to x that are in Prefix(X)
+                        for (Node w : new ArrayList<>(z)) {
+                            int i1 = order.indexOf(x);
+                            int i2 = order.indexOf(w);
+
+                            if (i2 >= i1) {
+                                z.remove(w);
+                            }
+                        }
+
+                        break;
+                    case MARKOV_BLANKET:
+                        z = GraphUtils.markovBlanket(x, graph);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unknown separation set type: " + setType);
+                }
+
+                if (x == y || z.contains(x) || z.contains(y)) continue;
+
+                if (findSmallestSubset && graph.paths().isMSeparatedFrom(x, y, z, false)) {
+//                        z = removeExtraneousVariables(z, x, y, !isPdag);
+                    z = SepsetFinder.getSmallestSubset(x, y, z, new HashSet<>(), graph, !isPdag);
+                }
+
+                if (!checkNodeIndependenceAndConditioning(x, y, z)) {
+                    continue;
+                }
+
+                IndependenceFact fact = new IndependenceFact(x, y, z);
+                allIndependenceFacts.add(fact);
+            }
+        }
+
+        return allIndependenceFacts;
+    }
+
+    /**
+     * Computes the implied independence facts for a given vertex within the specified graph
+     * based on the provided conditioning set type.
+     *
+     * @param alignedGraph The graph within which the independence facts are computed.
+     *                     Must be a valid representation of a causal graph or related structure.
+     * @param x            The vertex (node) for which independence facts are to be computed.
+     * @param conditioningSetType The type of conditioning set to be used when computing the
+     *                            facts, which determines the strategy and context (e.g., Local Markov,
+     *                            Parents and Neighbors, Markov Blanket, etc.).
+     * @return A list of {@code IndependenceFact} objects representing the computed
+     *         independence facts for the given vertex and configuration. Each fact contains
+     *         information about the independence relationships implied by the specified conditioning.
+     * @throws IllegalArgumentException If the provided {@code conditioningSetType} is not supported.
+     * @throws RuntimeException If a computation is interrupted during recursive blocking.
+     */
+    public static List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x, ConditioningSetType conditioningSetType) {
+        switch (conditioningSetType) {
+
+            // ---------------- uniform-Z families ----------------
+
+            case LOCAL_MARKOV: {
+                Set<Node> z = new HashSet<>();
+                for (Node w : alignedGraph.getAdjacentNodes(x)) {
+                    if (alignedGraph.isParentOf(w, x)) z.add(w);
+                }
+                return factsForUniformZ(alignedGraph, x, z);
+            }
+
+            case PARENTS_AND_NEIGHBORS: {
+                Set<Node> z = new HashSet<>();
+                for (Node w : alignedGraph.getAdjacentNodes(x)) {
+                    Edge e = alignedGraph.getEdge(w, x);
+                    if (e != null && Edges.isUndirectedEdge(e)) z.add(w);
+                    if (alignedGraph.isParentOf(w, x)) z.add(w);
+                }
+                return factsForUniformZ(alignedGraph, x, z);
+            }
+
+            case MARKOV_BLANKET: {
+                Set<Node> z = GraphUtils.markovBlanket(x, alignedGraph);
+                return factsForUniformZ(alignedGraph, x, z);
+            }
+
+            case ORDERED_LOCAL_MARKOV_MAG: {
+                Graph mag;
+
+                if (alignedGraph.paths().isLegalDag()) {
+                    mag = GraphTransforms.dagToMag(alignedGraph);
+                } else if (alignedGraph.paths().isLegalCpdag() || alignedGraph.paths().isLegalPdag()) {
+                    Graph dag = GraphTransforms.dagFromCpdag(alignedGraph);
+                    mag = GraphTransforms.dagToMag(dag);
+                } else if (alignedGraph.paths().isLegalMag()) {
+                    mag = alignedGraph;
+                } else if (alignedGraph.paths().isLegalPag()) {
+                    mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+                } else {
+                    boolean hasCircle = false;
+
+                    for (Edge e : alignedGraph.getEdges()) {
+                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
+                            hasCircle = true;
+                            break;
+                        }
+                    }
+
+                    if (hasCircle) {
+                        mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+                    } else {
+                        mag = alignedGraph;
+                    }
+                }
+
+                Node _x = mag.getNode(x.getName());
+
+                Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModelForNode(mag, _x);
+                return new ArrayList<>(raw);
+            }
+
+            case RECURSIVE_BLOCKING:
+                Set<IndependenceFact> facts = new HashSet<>();
+                for (Node w : alignedGraph.getNodes()) {
+                    if (x == w) continue;
+                    if (alignedGraph.isAdjacentTo(w, x)) continue;
+
+                    try {
+                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(alignedGraph, x, w, Set.of(), Set.of(), -1);
+
+                        if (blocking != null) {
+                            facts.add(new IndependenceFact(x, w, blocking));
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                return new ArrayList<>(facts);
+
+            default:
+                throw new IllegalArgumentException(
+                        "Unsupported conditioning set type for VertexCheck: " + conditioningSetType
+                );
+        }
+    }
+
+    /**
+     * Generates a list of independence facts for a given node with respect to a given graph and a conditioning set.
+     * The method identifies all nodes in the graph that are neither the target node, part of the conditioning set,
+     * nor directly adjacent to the target node, and creates independence facts for these nodes.
+     *
+     * @param g The graph in which the nodes and edges are defined.
+     * @param x The target node for which independence facts are being generated.
+     * @param z The conditioning set of nodes that should be excluded from the independence facts.
+     * @return A list of independence facts specifying which nodes are conditionally independent
+     *         of the target node given the conditioning set.
+     */
+    public static List<IndependenceFact> factsForUniformZ(Graph g, Node x, Set<Node> z) {
+        List<IndependenceFact> out = new ArrayList<>();
+        for (Node y : g.getNodes()) {
+            if (y.equals(x)) continue;
+            if (z.contains(y)) continue;
+            if (g.isAdjacentTo(x, y)) continue;   // <-- NEW LINE
+            out.add(new IndependenceFact(x, y, z));
+        }
+        return out;
+    }
+
+
 
 //    private @NotNull Set<Node> removeExtraneousVariables(Set<Node> z, Node x, Node y, boolean isPdag) {
 //        Set<Node> _z = new HashSet<>(z);
@@ -1401,7 +1577,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             throw new IllegalArgumentException("Independence test cannot be null.");
         }
 
-        this.independenceTest = test;
+        this.independenceTest = new CachedIndependenceQueries(test);
     }
 
     /**

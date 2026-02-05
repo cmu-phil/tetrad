@@ -25,15 +25,21 @@ import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ConditioningSetType;
+import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.OrderedLocalMarkovProperty;
+import edu.cmu.tetrad.search.RecursiveBlocking;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.session.SessionModel;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
-import org.apache.commons.math3.stat.inference.BinomialTest;
+import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
+import org.jetbrains.annotations.NotNull;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.Serial;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,32 +49,41 @@ import java.util.stream.Collectors;
  * <p>
  * For each vertex X, constructs a conditioning set CS(X) (e.g., Markov blanket, parents, etc.),
  * and tests all claims Ind(X, Y | CS(X)) for Y not in CS(X) (and Y != X) using the chosen
- * IndependenceTest. The resulting p-values are then tested for Uniform(0,1) using KS,
- * producing a per-vertex KS p-value and summary diagnostics.
+ * IndependenceTest. The resulting p-values are then tested for Uniform(0,1) using Anderson-Darling
+ * or Kolomogorov-Smirnov.
  * <p>
  * This is designed to support a Tetrad interface tool that highlights locally reliable regions
  * of an estimated graph relative to data.
  */
 public class VertexCheckIndTestModel implements SessionModel, GraphSource, KnowledgeBoxInput {
 
+    public static final String PROP_GRAPH = "graph";
+    public static final Comparator<String> NATURAL_NAME_COMPARATOR =
+            Comparator.comparing(
+                    NaturalKey::from
+            );
     @Serial
     private static final long serialVersionUID = 1L;
-
     private final DataModel dataModel;
-    private Graph graph;
     private final Parameters parameters;
     // Results
     private final Map<String, VertexSummary> summariesByVertex = new LinkedHashMap<>();
     private final Map<String, List<IndependenceResult>> resultsByVertex = new LinkedHashMap<>();
+    private final CachedIndependenceQueries cachedQueries =
+            new CachedIndependenceQueries(CachedIndependenceQueries.ErrorPolicy.TREAT_AS_INDEPENDENT);
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private Graph graph;
     //    private final Map<String, List<String>> conditioningSetByVertex = new LinkedHashMap<>();
     private String name = "";
     private transient IndependenceTest independenceTest;
     private ConditioningSetType conditioningSetType = ConditioningSetType.MARKOV_BLANKET;
-    private Knowledge knowledge;
+    private Knowledge knowledge = new Knowledge();
     private List<String> vertexNames = new ArrayList<>();
     private boolean verbose = false;
     // For RECURSIVE_MSEP-like options (optional; default -1 means no limit)
     private int maxLength = -1;
+    private ModelSummary modelSummary;
+    private boolean useAndersonDarling = false;
 
     public VertexCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, Parameters parameters) {
         this(dataModel, graphSource, null, parameters);
@@ -116,20 +131,58 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return -1;
     }
 
-    private static List<IndependenceFact> factsForUniformZ(Graph g, Node x, Set<Node> z) {
-        List<IndependenceFact> out = new ArrayList<>();
-        for (Node y : g.getNodes()) {
-            if (y.equals(x)) continue;
-            if (z.contains(y)) continue;
-            if (g.isAdjacentTo(x, y)) continue;   // <-- NEW LINE
-            out.add(new IndependenceFact(x, y, z));
+//    private static List<IndependenceFact> factsForUniformZ(Graph g, Node x, Set<Node> z) {
+//        List<IndependenceFact> out = new ArrayList<>();
+//        for (Node y : g.getNodes()) {
+//            if (y.equals(x)) continue;
+//            if (z.contains(y)) continue;
+//            if (g.isAdjacentTo(x, y)) continue;   // <-- NEW LINE
+//            out.add(new IndependenceFact(x, y, z));
+//        }
+//        return out;
+//    }
+
+    public double getUniformityP(List<Double> pvals) {
+        if (pvals == null || pvals.size() < 2) return Double.NaN;
+
+        if (useAndersonDarling) {
+            return getAndersonDarlingP(pvals);
+        } else {
+            return getKolomogorovP(pvals);
         }
-        return out;
+    }
+
+    private static double getKolomogorovP(List<Double> pvals) {
+        double[] x = pvals.stream().mapToDouble(Double::doubleValue).toArray();
+        KolmogorovSmirnovTest ks = new KolmogorovSmirnovTest();
+        return ks.kolmogorovSmirnovTest(new UniformRealDistribution(0.0, 1.0), x);
+    }
+
+    /**
+     * Tests a list of p-values against the Anderson-Darling Test.
+     *
+     * @param pValues the list of p-values to be tested
+     * @return the p-value obtained from the Anderson-Darling Test
+     */
+    public static double getAndersonDarlingP(List<Double> pValues) {
+        GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
+        return generalAndersonDarlingTest.getP();
+    }
+
+    public CachedIndependenceQueries getCachedQueries() {
+        return cachedQueries;
     }
 
     @Override
     public Graph getGraph() {
         return graph;
+    }
+
+    public void setGraph(Graph g) {
+        Graph old = this.graph;
+        this.graph = g;
+//        clearResults(); // strongly recommended since cached results are now invalid
+        pcs.firePropertyChange(PROP_GRAPH, old, g);
     }
 
     public DataModel getDataModel() {
@@ -146,12 +199,16 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     public void setIndependenceTest(IndependenceTest test) {
         this.independenceTest = test;
-        this.vertexNames = new ArrayList<>(); // invalidate
+        cachedQueries.setTest(test);  // clears caches, rebuilds mapping
+        clearResults();
+        // fire property change if you already do
     }
 
     public ConditioningSetType getConditioningSetType() {
         return conditioningSetType;
     }
+
+    // --- Core API used by the editor ------------------------------------------------------------
 
     public void setConditioningSetType(ConditioningSetType conditioningSetType) {
         this.conditioningSetType = conditioningSetType;
@@ -170,23 +227,33 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = (knowledge == null) ? null : knowledge.copy();
+        this.knowledge = (knowledge == null) ? new Knowledge() : knowledge.copy();
     }
 
     public boolean isVerbose() {
         return verbose;
     }
 
-    // --- Core API used by the editor ------------------------------------------------------------
-
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
+    // --- Implementation -------------------------------------------------------------------------
 
     @Override
     public String getName() {
         return name;
     }
+
+//    private void storeConditioningSetSummary(String xName, List<IndependenceFact> impliedFacts) {
+//        // If all facts share the same Z, store it; else store empty.
+//        Set<Set<Node>> distinct = impliedFacts.stream()
+//                .map(IndependenceFact::getZ)
+//                .collect(Collectors.toCollection(LinkedHashSet::new));
+//
+//        if (distinct.size() == 1) {
+//            Set<Node> z = distinct.iterator().next();
+//            List<String> names = z.stream().map(Node::getName).sorted().toList();
 
     @Override
     public void setName(String name) {
@@ -200,6 +267,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         summariesByVertex.clear();
         resultsByVertex.clear();
 //        conditioningSetByVertex.clear();
+        modelSummary = null;
     }
 
     /**
@@ -246,83 +314,116 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         runVertex(alignedGraph, x);
     }
 
-    public List<VertexSummary> getSummaries() {
-        return new ArrayList<>(summariesByVertex.values());
-    }
-
-    // --- Implementation -------------------------------------------------------------------------
-
-//    public List<String> getConditioningSetForVertex(String vertexName) {
-//        return conditioningSetByVertex.getOrDefault(vertexName, List.of());
-//    }
-
 //    private void runVertex(Graph alignedGraph, Node x) {
-//        Set<Node> cs = computeConditioningSet(alignedGraph, x);
-//        List<String> csNames = cs.stream().map(Node::getName).sorted().collect(Collectors.toList());
-//        conditioningSetByVertex.put(x.getName(), csNames);
+//        List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x);
+//
+////        List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x);
+//        TetradLogger.getInstance().log("VertexCheck: x=" + x.getName() + " g impliedFacts=" + impliedFacts.size());
+//
+//        int tried = 0;
+//        int ok = 0;
+//
+//        for (IndependenceFact fact : impliedFacts) {
+//            tried++;
+//
+//            Node X = independenceTest.getVariable(fact.getX().getName());
+//            Node Y = independenceTest.getVariable(fact.getY().getName());
+//
+//            Set<Node> Z = new HashSet<>();
+//            for (Node _z : fact.getZ()) {
+//                Z.add(independenceTest.getVariable(_z.getName()));
+//            }
+//
+//////            try {
+//////                IndependenceResult r = independenceTest.checkIndependence(X, Y, Z);
+////            IndependenceResult r = cachedQueries.checkIndependence(X, Y, Z);
+////            double p = r.getPValue();
+////            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) ok++;
+//////            } catch (Exception ex) {
+//////                TetradLogger.getInstance().log("VertexCheck: exception for " + fact + " : " + ex);
+//////            }
+//
+//            IndependenceResult r;
+//            try {
+//                r = (cachedQueries != null)
+//                        ? cachedQueries.checkIndependence(X, Y, Z)
+//                        : independenceTest.checkIndependence(X, Y, Z);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+//
+//        TetradLogger.getInstance().log("VertexCheck: x=" + x.getName() + " tried=" + tried + " okP=" + ok);
+//
+//        // Conditioning-set “summary” for UI purposes only:
+//        // - If uniform-Z, store that Z.
+//        // - If varying-Z (e.g. OLMP), store empty and let the facts table carry Z.
+////        storeConditioningSetSummary(x.getName(), impliedFacts);
 //
 //        List<IndependenceResult> results = new ArrayList<>();
 //        List<Double> pvals = new ArrayList<>();
 //
-//        for (Node y : alignedGraph.getNodes()) {
-//            if (y.equals(x)) continue;
-//            if (cs.contains(y)) continue;
+//        for (IndependenceFact fact : impliedFacts) {
+//            Node y = fact.getY();
+//            Set<Node> z = fact.getZ();
 //
 //            try {
-//                IndependenceResult r = independenceTest.checkIndependence(x, y, cs);
+//                Node X = independenceTest.getVariable(fact.getX().getName());
+//                Node Y = independenceTest.getVariable(y.getName());
 //
-//                // Only keep well-formed p-values for uniformity testing.
+//                Set<Node> Z = new HashSet<>();
+//                for (Node _z : z) {
+//                    Z.add(independenceTest.getVariable(_z.getName()));
+//                }
+//
+//
+//                IndependenceResult r = independenceTest.checkIndependence(X, Y, Z);
+//
 //                double p = r.getPValue();
+//                IndependenceResult stored = new IndependenceResult(
+//                        fact,
+//                        r.isIndependent(),
+//                        p,
+//                        r.getScore()
+//                );
+//                results.add(stored);
+//
 //                if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
-//                    results.add(new IndependenceResult(new IndependenceFact(x, y, cs), r.isIndependent(), p, r.getScore()));
 //                    pvals.add(p);
-//                } else {
-//                    // Still record it as an IndependenceResult with whatever p is (editor can show it),
-//                    // but skip for uniformity.
-//                    results.add(new IndependenceResult(new IndependenceFact(x, y, cs), r.isIndependent(), p, r.getScore()));
 //                }
 //
 //                if (verbose) {
-//                    TetradLogger.getInstance().log("VertexCheck: " + x.getName() + " vs " + y.getName()
-//                            + " | CS=" + csNames + "  p=" + p);
+//                    TetradLogger.getInstance().log("VertexCheck: " + fact + "  p=" + p);
 //                }
 //            } catch (Exception ex) {
-//                TetradLogger.getInstance().log("VertexCheck: error checking " + x.getName() + " _||_ " + y.getName()
-//                        + " | CS(X): " + ex.getMessage());
+//                TetradLogger.getInstance().log("VertexCheck: error checking " + fact + ": " + ex.getMessage());
 //            }
 //        }
 //
-//        // Compute summary stats
-//        VertexSummary summary = summarizeVertex(x.getName(), cs.size(), results, pvals);
-//        summariesByVertex.put(x.getName(), summary);
-//        resultsByVertex.put(x.getName(), results);
-//    }
+
+    public List<VertexSummary> getSummaries() {
+        return new ArrayList<>(summariesByVertex.values());
+    }
 
     public VertexSummary getSummary(String vertexName) {
         return summariesByVertex.get(vertexName);
     }
 
-//    private void storeConditioningSetSummary(String xName, List<IndependenceFact> impliedFacts) {
-//        // If all facts share the same Z, store it; else store empty.
-//        Set<Set<Node>> distinct = impliedFacts.stream()
-//                .map(IndependenceFact::getZ)
-//                .collect(Collectors.toCollection(LinkedHashSet::new));
-//
-//        if (distinct.size() == 1) {
-//            Set<Node> z = distinct.iterator().next();
-//            List<String> names = z.stream().map(Node::getName).sorted().toList();
-////            conditioningSetByVertex.put(xName, names);
-//        } else {
+    // --- Required by KnowledgeBoxInput / GraphSource (kept consistent with MarkovCheckIndTestModel) ----
 
+    /// /            conditioningSetByVertex.put(xName, names);
+//        } else {
     public List<IndependenceResult> getResultsForVertex(String vertexName) {
         return resultsByVertex.getOrDefault(vertexName, List.of());
     }
 
     private void runVertex(Graph alignedGraph, Node x) {
-        List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x);
+        List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x, conditioningSetType);
 
-//        List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x);
-        TetradLogger.getInstance().log("VertexCheck: x=" + x.getName() + " g impliedFacts=" + impliedFacts.size());
+        List<IndependenceResult> results = new ArrayList<>(impliedFacts.size());
+        List<Double> pvals = new ArrayList<>();
+
+        double alpha = independenceTest.getAlpha(); // for score convention you’re using
 
         int tried = 0;
         int ok = 0;
@@ -330,87 +431,40 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         for (IndependenceFact fact : impliedFacts) {
             tried++;
 
-            Node X = independenceTest.getVariable(fact.getX().getName());
-            Node Y = independenceTest.getVariable(fact.getY().getName());
+            // Cached eval keyed by (X,Y|Z) via name->id maps; rebinding handled internally.
+            CachedIndependenceQueries.Eval e = cachedQueries.eval(fact);
 
-            Set<Node> Z = new HashSet<>();
-            for (Node _z : fact.getZ()) {
-                Z.add(independenceTest.getVariable(_z.getName()));
+            double p = e.pValue();
+            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
+                ok++;
+                pvals.add(p);
             }
 
-            try {
-                IndependenceResult r = independenceTest.checkIndependence(X, Y, Z);
-                double p = r.getPValue();
-                if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) ok++;
-            } catch (Exception ex) {
-                TetradLogger.getInstance().log("VertexCheck: exception for " + fact + " : " + ex);
-            }
-        }
+            // Keep your implied fact for display (graph semantics), not the rebinding fact.
+            double score = Double.isNaN(p) ? -alpha : (alpha - p);  // matches CachedIndependenceQueries.checkIndependence()
+            results.add(new IndependenceResult(fact, e.independent(), p, score));
 
-        TetradLogger.getInstance().log("VertexCheck: x=" + x.getName() + " tried=" + tried + " okP=" + ok);
-
-        // Conditioning-set “summary” for UI purposes only:
-        // - If uniform-Z, store that Z.
-        // - If varying-Z (e.g. OLMP), store empty and let the facts table carry Z.
-//        storeConditioningSetSummary(x.getName(), impliedFacts);
-
-        List<IndependenceResult> results = new ArrayList<>();
-        List<Double> pvals = new ArrayList<>();
-
-        for (IndependenceFact fact : impliedFacts) {
-            Node y = fact.getY();
-            Set<Node> z = fact.getZ();
-
-            try {
-                Node X = independenceTest.getVariable(fact.getX().getName());
-                Node Y = independenceTest.getVariable(y.getName());
-
-                Set<Node> Z = new HashSet<>();
-                for (Node _z : z) {
-                    Z.add(independenceTest.getVariable(_z.getName()));
-                }
-
-
-                IndependenceResult r = independenceTest.checkIndependence(X, Y, Z);
-
-                double p = r.getPValue();
-                IndependenceResult stored = new IndependenceResult(
-                        fact,
-                        r.isIndependent(),
-                        p,
-                        r.getScore()
-                );
-                results.add(stored);
-
-                if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
-                    pvals.add(p);
-                }
-
-                if (verbose) {
-                    TetradLogger.getInstance().log("VertexCheck: " + fact + "  p=" + p);
-                }
-            } catch (Exception ex) {
-                TetradLogger.getInstance().log("VertexCheck: error checking " + fact + ": " + ex.getMessage());
+            if (verbose) {
+                TetradLogger.getInstance().log("VertexCheck: " + fact + "  p=" + p);
             }
         }
 
-//        VertexSummary summary = summarizeVertex(
-//                x.getName(),
-//                conditioningSetSizeForSummary(impliedFacts),
-//                results,
-//                pvals
-//        );
-//        summariesByVertex.put(x.getName(), summary);
+        if (verbose) {
+            TetradLogger.getInstance().log("VertexCheck: x=" + x.getName() + " tried=" + tried + " okP=" + ok);
+        }
 
         VertexSummary summary = summarizeVertex(
                 x.getName(),
-                /* csSize */ -1, // or conditioningSetSizeForSummary(impliedFacts) if you still want it
+                /* csSize */ -1, // or conditioningSetSizeForSummary(impliedFacts)
                 results,
                 pvals
         );
+
         summariesByVertex.put(x.getName(), summary);
         resultsByVertex.put(x.getName(), results);
 
+        // model-level cached summary is now stale
+        modelSummary = null;
     }
 
     private VertexSummary summarizeVertex(String vertexName, int csSize,
@@ -422,19 +476,12 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         double adP = Double.NaN;
         double binP = Double.NaN;
         double fishP = Double.NaN;
-        double aSquared = Double.NaN;
-        double aSquaredStar = Double.NaN;
-
-
-        GeneralAndersonDarlingTest _generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pvals, new UniformRealDistribution(0, 1));
 
         if (n >= 2) {
-            aSquared = _generalAndersonDarlingTest.getASquared();
-            aSquaredStar = _generalAndersonDarlingTest.getASquaredStar();
-            adP = 1. - _generalAndersonDarlingTest.getProbTail(pvals.size(), aSquaredStar);
-            ksP = UniformityTest.getKsPValue(pvals, 0, 1);
-            fishP = getFisherCombinedPValue(pvals);
-            binP = getBinomialPValue(pvals);
+            adP = getAndersonDarlingP(pvals);
+            ksP = getKolomogorovP(pvals);
+            fishP = getFisherCombinedP(pvals);
+            binP = getBinomialP(pvals);
         }
 
         double alpha = independenceTest.getAlpha();
@@ -444,7 +491,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         double minP = pvals.stream().min(Double::compare).orElse(Double.NaN);
         double medianP = median(pvals);
 
-        return new VertexSummary(vertexName, csSize, results.size(), n, ksP, adP, binP, fishP, aSquared, aSquaredStar,
+        return new VertexSummary(vertexName, csSize, results.size(), n, ksP, adP, binP, fishP,
                 fracReject, numReject, minP, medianP);
     }
 
@@ -455,7 +502,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
      * @param pvals a list of p-values from independence tests
      * @return the combined p-value. If the inputs are invalid or computation fails, returns Double.NaN.
      */
-    public double getFisherCombinedPValue(List<Double> pvals) {
+    public double getFisherCombinedP(List<Double> pvals) {
 
         double sum = 0.0;
 
@@ -485,7 +532,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
      * @param pValues The p-values.
      * @return The Binomial p-value for non-uniformity.
      */
-    private double getBinomialPValue(List<Double> pValues) {
+    private double getBinomialP(List<Double> pValues) {
         int n = pValues.size();
         double q = independenceTest.getAlpha();
         int k = (int) pValues.stream().filter(p -> p <= q).count();
@@ -499,60 +546,168 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return pValue;
     }
 
-    public List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x) {
-        switch (conditioningSetType) {
+    public static List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x, ConditioningSetType conditioningSetType) {
+        return MarkovCheck.computeImpliedFactsForVertex(alignedGraph, x, conditioningSetType);
 
-            // ---------------- uniform-Z families ----------------
-
-            case LOCAL_MARKOV: {
-                Set<Node> z = new HashSet<>();
-                for (Node w : alignedGraph.getAdjacentNodes(x)) {
-                    if (alignedGraph.isParentOf(w, x)) z.add(w);
-                }
-                return factsForUniformZ(alignedGraph, x, z);
-            }
-
-            case PARENTS_AND_NEIGHBORS: {
-                Set<Node> z = new HashSet<>();
-                for (Node w : alignedGraph.getAdjacentNodes(x)) {
-                    Edge e = alignedGraph.getEdge(w, x);
-                    if (e != null && Edges.isUndirectedEdge(e)) z.add(w);
-                    if (alignedGraph.isParentOf(w, x)) z.add(w);
-                }
-                return factsForUniformZ(alignedGraph, x, z);
-            }
-
-            case MARKOV_BLANKET: {
-                Set<Node> z = GraphUtils.markovBlanket(x, alignedGraph);
-                return factsForUniformZ(alignedGraph, x, z);
-            }
-
-            case ORDERED_LOCAL_MARKOV_MAG: {
-                Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
-
-                if (graph.paths().isLegalDag()) {
-                    mag = graph;
-                } else if (graph.paths().isLegalCpdag()) {
-                    mag = GraphTransforms.dagFromCpdag(graph);
-                } else if (graph.paths().isLegalMag()) {
-                    mag = graph;
-                } else {
-                    mag = GraphTransforms.zhangMagFromPag(graph);
-                }
-
-                Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModelForNode(mag, x);
-
-                return new ArrayList<>(raw);
-            }
-
-            default:
-                throw new IllegalArgumentException(
-                        "Unsupported conditioning set type for VertexCheck: " + conditioningSetType
-                );
-        }
+//        switch (conditioningSetType) {
+//
+//            // ---------------- uniform-Z families ----------------
+//
+//            case LOCAL_MARKOV: {
+//                Set<Node> z = new HashSet<>();
+//                for (Node w : alignedGraph.getAdjacentNodes(x)) {
+//                    if (alignedGraph.isParentOf(w, x)) z.add(w);
+//                }
+//                return factsForUniformZ(alignedGraph, x, z);
+//            }
+//
+//            case PARENTS_AND_NEIGHBORS: {
+//                Set<Node> z = new HashSet<>();
+//                for (Node w : alignedGraph.getAdjacentNodes(x)) {
+//                    Edge e = alignedGraph.getEdge(w, x);
+//                    if (e != null && Edges.isUndirectedEdge(e)) z.add(w);
+//                    if (alignedGraph.isParentOf(w, x)) z.add(w);
+//                }
+//                return factsForUniformZ(alignedGraph, x, z);
+//            }
+//
+//            case MARKOV_BLANKET: {
+//                Set<Node> z = GraphUtils.markovBlanket(x, alignedGraph);
+//                return factsForUniformZ(alignedGraph, x, z);
+//            }
+//
+//            case ORDERED_LOCAL_MARKOV_MAG: {
+//                Graph mag;
+//
+//                if (alignedGraph.paths().isLegalDag()) {
+//                    mag = GraphTransforms.dagToMag(alignedGraph);
+//                } else if (alignedGraph.paths().isLegalCpdag() || alignedGraph.paths().isLegalPdag()) {
+//                    Graph dag = GraphTransforms.dagFromCpdag(alignedGraph);
+//                    mag = GraphTransforms.dagToMag(dag);
+//                } else if (alignedGraph.paths().isLegalMag()) {
+//                    mag = alignedGraph;
+//                } else if (alignedGraph.paths().isLegalPag()) {
+//                    mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+//                } else {
+//                    boolean hasCircle = false;
+//
+//                    for (Edge e : alignedGraph.getEdges()) {
+//                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
+//                            hasCircle = true;
+//                            break;
+//                        }
+//                    }
+//
+//                    if (hasCircle) {
+//                        mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+//                    } else {
+//                        mag = alignedGraph;
+//                    }
+//                }
+//
+//                Node _x = mag.getNode(x.getName());
+//
+//                Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModelForNode(mag, _x);
+//                return new ArrayList<>(raw);
+//            }
+//
+//            case RECURSIVE_BLOCKING:
+//                Set<IndependenceFact> facts = new HashSet<>();
+//                for (Node w : alignedGraph.getNodes()) {
+//                    if (x == w) continue;
+//                    if (alignedGraph.isAdjacentTo(w, x)) continue;
+//
+//                    try {
+//                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(alignedGraph, x, w, Set.of(), Set.of(), -1);
+//
+//                        if (blocking != null) {
+//                            facts.add(new IndependenceFact(x, w, blocking));
+//                        }
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                }
+//                return new ArrayList<>(facts);
+//
+//            default:
+//                throw new IllegalArgumentException(
+//                        "Unsupported conditioning set type for VertexCheck: " + conditioningSetType
+//                );
+//        }
     }
 
-    // --- Required by KnowledgeBoxInput / GraphSource (kept consistent with MarkovCheckIndTestModel) ----
+//    public List<IndependenceFact> computeAllImpliedFacts(Graph alignedGraph) {
+//        Set<IndependenceFact> facts = new HashSet<>();
+//
+//        for (Node x : alignedGraph.getNodes()) {
+//
+//            // ---------------- uniform-Z families ----------------
+//            if (Objects.requireNonNull(conditioningSetType) == ConditioningSetType.LOCAL_MARKOV) {
+//                Set<Node> z = new HashSet<>();
+//                for (Node w : alignedGraph.getAdjacentNodes(x)) {
+//                    if (alignedGraph.isParentOf(w, x)) z.add(w);
+//                }
+//                facts.addAll(factsForUniformZ(alignedGraph, x, z));
+//            } else if (conditioningSetType == ConditioningSetType.PARENTS_AND_NEIGHBORS) {
+//                Set<Node> z = new HashSet<>();
+//                for (Node w : alignedGraph.getAdjacentNodes(x)) {
+//                    Edge e = alignedGraph.getEdge(w, x);
+//                    if (e != null && Edges.isUndirectedEdge(e)) z.add(w);
+//                    if (alignedGraph.isParentOf(w, x)) z.add(w);
+//                }
+//                facts.addAll(factsForUniformZ(alignedGraph, x, z));
+//            } else if (conditioningSetType == ConditioningSetType.MARKOV_BLANKET) {
+//                Set<Node> z = GraphUtils.markovBlanket(x, alignedGraph);
+//                facts.addAll(factsForUniformZ(alignedGraph, x, z));
+//            } else if (conditioningSetType == ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG) {
+//                Graph mag;
+//
+//                if (alignedGraph.paths().isLegalDag()) {
+//                    mag = GraphTransforms.dagToMag(alignedGraph);
+//                } else if (alignedGraph.paths().isLegalCpdag()) {
+//                    Graph dag = GraphTransforms.dagFromCpdag(alignedGraph);
+//                    mag = GraphTransforms.dagToMag(dag);
+//                } else if (alignedGraph.paths().isLegalMag()) {
+//                    mag = alignedGraph;
+//                } else if (alignedGraph.paths().isLegalPag()) {
+//                    mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+//                } else {
+//                    throw new IllegalArgumentException(
+//                            "Ordered Local Markov requires a DAG, CPDAG, MAG, or PAG."
+//                    );
+//                }
+//
+//                Node _x = mag.getNode(x.getName());
+//
+//                Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModelForNode(mag, _x);
+//                facts.addAll(raw);
+//            } else if (conditioningSetType == ConditioningSetType.RECURSIVE_BLOCKING) {
+//                Set<IndependenceFact> _facts = new HashSet<>();
+//                for (Node w : alignedGraph.getNodes()) {
+//                    if (x == w) continue;
+//                    if (alignedGraph.isAdjacentTo(w, x)) continue;
+//
+//                    try {
+//                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(alignedGraph, x, w, Set.of(), Set.of(), -1);
+//
+//                        if (blocking != null) {
+//                            _facts.add(new IndependenceFact(x, w, blocking));
+//                        }
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                }
+//
+//                facts.addAll(_facts);
+//            } else {
+//                throw new IllegalArgumentException(
+//                        "Unsupported conditioning set type for VertexCheck: " + conditioningSetType
+//                );
+//            }
+//        }
+//
+//        return new ArrayList<>(facts);
+//    }
 
     @Override
     public Graph getSourceGraph() {
@@ -577,17 +732,26 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public List<String> getVertexNames() {
         if (vertexNames == null || vertexNames.isEmpty()) {
             if (independenceTest == null) return List.of();
-            vertexNames = independenceTest.getVariables().stream()
+
+            List<Node> variables = independenceTest.getVariables();
+
+            vertexNames = variables.stream()
                     .map(Node::getName)
-                    .sorted()
                     .toList();
         }
-        return vertexNames;
+
+        List<String> _vertexNames = new ArrayList<>(vertexNames);
+        _vertexNames.sort(NATURAL_NAME_COMPARATOR);
+        return _vertexNames;
     }
 
     public boolean isVertexComputed(String vertexName) {
         return summariesByVertex.containsKey(vertexName);
     }
+
+//    public void setGraph(Graph graph) {
+//        this.graph = graph;
+//    }
 
     public void ensureVertexComputed(String vertexName) {
         if (independenceTest == null) {
@@ -606,6 +770,9 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         ConditioningSetSizeRange r = getConditioningSetSizeRangeFast(vertexName);
         return r.min();
     }
+
+
+    // --- Summary record ----------------------------------------------------------------------------
 
     public int getMaxConditioningSetSizeFast(String vertexName) {
         ConditioningSetSizeRange r = getConditioningSetSizeRangeFast(vertexName);
@@ -637,7 +804,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         Node x = alignedGraph.getNode(vertexName);
         if (x == null) return new ConditioningSetSizeRange(-1, -1);
 
-        List<IndependenceFact> facts = computeImpliedFactsForVertex(alignedGraph, x);
+        List<IndependenceFact> facts = computeImpliedFactsForVertex(alignedGraph, x, conditioningSetType);
         if (facts.isEmpty()) return new ConditioningSetSizeRange(0, 0);
 
         int min = Integer.MAX_VALUE;
@@ -652,25 +819,150 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return new ConditioningSetSizeRange(min, max);
     }
 
-    public void setGraph(Graph graph) {
-        this.graph = graph;
+    public boolean hasViolationsForVertex(Node x) {
+        if (x == null || graph == null || independenceTest == null) {
+            return false;
+        }
+
+        String name = x.getName();
+
+        // Only compute if needed
+        if (!isVertexComputed(name)) {
+            Graph aligned = alignGraphToTest(graph);
+
+            Node ax = aligned.getNode(name);
+            if (ax == null) {
+                return false; // should not happen, but safe
+            }
+
+            runVertex(aligned, ax);
+        }
+
+        VertexSummary s = summariesByVertex.get(name);
+        return s != null && s.numReject > 0;
+    }
+
+    private Graph alignGraphToTest(Graph g) {
+        IndependenceTest test = this.independenceTest;
+        if (g == null || test == null) return g;
+        return GraphUtils.replaceNodes(g, test.getVariables());
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+
+    public ModelSummary getModelSummary() {
+        if (modelSummary != null) return modelSummary;
+
+        List<Double> pvals = getDedupedPvalues();
+
+        double modelP = getUniformityP(pvals);
+        modelSummary = new ModelSummary(pvals.size(), modelP);
+        return modelSummary;
+    }
+
+    private @NotNull List<Double> getDedupedPvalues() {
+        Map<IndependenceFact, Double> map = new HashMap<>();
+
+        for (String v : getVertexNames()) {
+            VertexSummary s = getSummary(v);
+            if (s == null) continue;
+            // better: pull raw p-values from stored results
+            for (IndependenceResult r : getResultsForVertex(v)) {
+                double p = r.getPValue();
+                if (!Double.isNaN(p) && p >= 0 && p <= 1) {
+                    map.put(r.getFact(), r.getPValue());
+                }
+            }
+        }
+
+        List<Double> pvals = new ArrayList<>(map.values());
+        return pvals;
+    }
+
+    private Node var(String name) {
+        if (name == null) return null;
+
+        // prefer cachedQueries' test if set, else fall back
+        IndependenceTest t = cachedQueries.getTest();
+        if (t == null) t = independenceTest;
+        if (t == null) return null;
+
+        return t.getVariable(name);
+    }
+
+    private Set<Node> varSet(Set<Node> z) {
+        if (z == null || z.isEmpty()) return Set.of();
+        Set<Node> out = new LinkedHashSet<>(z.size());
+        for (Node n : z) {
+            Node v = var(n.getName());
+            if (v != null) out.add(v);
+        }
+        return out;
+    }
+
+    public void setUseAndersonDarling(boolean useAndersonDarling) {
+        this.useAndersonDarling = useAndersonDarling;
+    }
+
+    private static final class NaturalKey implements Comparable<NaturalKey> {
+        final String prefix;
+        final Integer suffix;   // null if no numeric suffix
+
+        private NaturalKey(String prefix, Integer suffix) {
+            this.prefix = prefix;
+            this.suffix = suffix;
+        }
+
+        static NaturalKey from(String s) {
+            int i = s.length();
+            while (i > 0 && Character.isDigit(s.charAt(i - 1))) {
+                i--;
+            }
+
+            String prefix = s.substring(0, i);
+            Integer suffix = (i < s.length())
+                    ? Integer.parseInt(s.substring(i))
+                    : null;
+
+            return new NaturalKey(prefix, suffix);
+        }
+
+        @Override
+        public int compareTo(NaturalKey o) {
+            int c = this.prefix.compareTo(o.prefix);
+            if (c != 0) return c;
+
+            if (this.suffix == null && o.suffix == null) return 0;
+            if (this.suffix == null) return -1;  // "X" before "X1"
+            if (o.suffix == null) return 1;
+
+            return Integer.compare(this.suffix, o.suffix);
+        }
     }
 
     private record ConditioningSetSizeRange(int min, int max) {
     }
-
-
-    // --- Summary record ----------------------------------------------------------------------------
 
     /**
      * @param numFactsTotal  includes weird p-values too
      * @param numPValuesUsed p in [0,1]
      */
     public record VertexSummary(String vertex, int conditioningSetSize, int numFactsTotal, int numPValuesUsed,
-                                double ksPValue, double asP, double binP, double fishP, double aSquared, double aSquaredStar,
+                                double modelP, double asP, double binP, double fishP,
                                 double fractionReject, long numReject, double minP,
                                 double medianP) implements TetradSerializable {
-            @Serial
-            private static final long serialVersionUID = 1L;
+        @Serial
+        private static final long serialVersionUID = 1L;
+    }
+
+    public record ModelSummary(int numPValues, double modelP) implements TetradSerializable {
+        @Serial
+        private static final long serialVersionUID = 23L;
     }
 }

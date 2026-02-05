@@ -33,6 +33,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
@@ -116,6 +117,7 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
 
         Graph graph;
 
+        test = new CachedIndependenceQueries(test);
         edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(test);
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setDepth(parameters.getInt(Params.DEPTH));

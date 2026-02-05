@@ -376,6 +376,7 @@ public class Simulation extends DataWrapper implements
         this.parameters = parameters;
         this.fixedGraph = true;
         this.fixedSimulation = false;
+        createSimulation();
     }
 
     /**

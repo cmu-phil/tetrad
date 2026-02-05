@@ -29,7 +29,9 @@ import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fask;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -170,7 +172,9 @@ public class FciCyclicPw extends AbstractBootstrapAlgorithm implements Algorithm
             default -> throw new IllegalArgumentException("Invalid collider orientation style");
         };
 
-        edu.cmu.tetrad.search.Fci fci = new edu.cmu.tetrad.search.Fci(this.test.getTest(dataModel, parameters));
+        IndependenceTest test1 = this.test.getTest(dataModel, parameters);
+        test1 = new CachedIndependenceQueries(test1);
+        edu.cmu.tetrad.search.Fci fci = new edu.cmu.tetrad.search.Fci(test1);
         fci.setDepth(parameters.getInt(Params.DEPTH));
         fci.setR0ColliderRule(colliderOrientationStyle);
         fci.setKnowledge(internalKnowledge);

@@ -40,7 +40,7 @@ class PlotMatrixAction extends AbstractAction {
     /**
      * The data editor that action is attached to.
      */
-    private final DataEditor dataEditor;
+    private final ISelectedModel dataEditor;
 
 
     /**
@@ -48,8 +48,13 @@ class PlotMatrixAction extends AbstractAction {
      *
      * @param editor a {@link edu.cmu.tetradapp.editor.DataEditor} object
      */
-    public PlotMatrixAction(DataEditor editor) {
+    public PlotMatrixAction(ISelectedModel editor) {
         super("Plot Matrix...");
+
+        if (!(editor instanceof JComponent)) {
+            throw new IllegalArgumentException("Editor must be a JComponent");
+        }
+
         this.dataEditor = editor;
     }
 
@@ -65,7 +70,8 @@ class PlotMatrixAction extends AbstractAction {
         }
 
         JPanel panel = new PlotMatrix(dataSet);
-        EditorWindow editorWindow = new EditorWindow(panel, "Plot Matrix", "Save", true, this.dataEditor);
+        EditorWindow editorWindow = new EditorWindow(panel, "Plot Matrix", "Save", true,
+                (JComponent) this.dataEditor);
 
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
         editorWindow.pack();
@@ -76,7 +82,7 @@ class PlotMatrixAction extends AbstractAction {
 
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
-                JFrame.class, this.dataEditor);
+                JFrame.class, (JComponent) this.dataEditor);
     }
 }
 

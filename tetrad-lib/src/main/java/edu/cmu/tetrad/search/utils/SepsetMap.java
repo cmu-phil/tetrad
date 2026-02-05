@@ -233,6 +233,14 @@ public final class SepsetMap implements TetradSerializable {
     public Set<Set<Node>> keySet() {
         return this.sepsets.keySet();
     }
+
+    /**
+     * Clears all entries from the internal sepset mapping.
+     * This method removes all previously stored sepset associations.
+     */
+    public void clear() {
+        this.sepsets.clear();
+    }
 }
 
 

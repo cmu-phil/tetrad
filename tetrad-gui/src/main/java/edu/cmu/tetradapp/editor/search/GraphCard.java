@@ -138,12 +138,17 @@ public class GraphCard extends JPanel {
 
                 Graph graph = this.algorithmRunner.getGraphs().get(i);
 
+                JTextArea ta = new JTextArea(String.valueOf(graph));
+                ta.setEditable(false);
+                ta.setCaretPosition(0);
+                JScrollPane textScroll = new JScrollPane(ta);
 
                 EdgeTypeTable edgePanel = createEdgeTypeTable(g);
 
                 JTabbedPane inner = new JTabbedPane(SwingConstants.RIGHT);
                 inner.addTab("Graph", graphPanel);
                 inner.addTab("Edges", edgePanel);
+                inner.addTab("Text", textScroll);
                 inner.addChangeListener(ev -> {
                     if (inner.getSelectedComponent() == edgePanel) {
                         Graph wbGraph = this.workbench.getGraph();
@@ -167,9 +172,16 @@ public class GraphCard extends JPanel {
             PaddingPanel graphPanel = new PaddingPanel(createGraphPanel(graph));
             EdgeTypeTable edgePanel = createEdgeTypeTable(graph);
 
+            JTextArea ta = new JTextArea(String.valueOf(graph));
+            ta.setEditable(false);
+            ta.setCaretPosition(0);
+            JScrollPane textScroll = new JScrollPane(ta);
+
             JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.RIGHT);
             tabbedPane.addTab("Graph", graphPanel);
             tabbedPane.addTab("Edges", edgePanel);
+            tabbedPane.addTab("Text", textScroll);
+
             tabbedPane.addChangeListener(event -> {
                 if (tabbedPane.getSelectedComponent() == edgePanel) {
                     Graph wbGraph = this.workbench.getGraph();

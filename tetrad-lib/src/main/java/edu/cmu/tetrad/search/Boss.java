@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -192,6 +192,7 @@ public class Boss implements SuborderSearch {
         boolean improved;
 
         this.pool = new ForkJoinPool(this.numThreads);
+        double prev = Double.NEGATIVE_INFINITY;
 
         for (int i = 0; i < this.numStarts; i++) {
 
@@ -212,18 +213,20 @@ public class Boss implements SuborderSearch {
             do {
                 improved = false;
                 for (Node x : new ArrayList<>(suborder)) {
-
                     if (this.verbose && (suborder.size() > 1)) System.out.println(x);
 
                     if (this.numThreads == 1) improved |= betterMutation(prefix, suborder, x);
                     else {
-                        try {
-                            improved |= betterMutationAsync(prefix, suborder, x);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
+                        improved |= betterMutationAsync(prefix, suborder, x);
                     }
                 }
+
+                double cur = update(prefix, suborder);
+
+                // If no real progress in objective, stop (prevents oscillation)
+                final double EPS = 1e-10;
+                if (cur <= prev + EPS) break;
+                prev = cur;
 
                 if (this.verbose && (suborder.size() > 1)) {
                     System.out.printf("\nScore: %.3f\n\n", update(prefix, suborder));

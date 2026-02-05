@@ -36,6 +36,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
@@ -150,6 +151,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
             }
         }
 
+        test = new CachedIndependenceQueries(test);
         edu.cmu.tetrad.search.Fcit search = new edu.cmu.tetrad.search.Fcit(test, score);
 
         // BOSS
