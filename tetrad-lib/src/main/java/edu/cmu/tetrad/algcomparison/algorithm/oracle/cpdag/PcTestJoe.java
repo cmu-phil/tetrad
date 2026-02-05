@@ -25,7 +25,7 @@ import java.util.List;
 import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
 
 /**
- * PC-Test-Joe
+ * PC-Test
  *
  * @author josephramsey
  */

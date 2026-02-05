@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.statistic.LegalCpdag;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
@@ -57,7 +58,6 @@ public class PcTestJoe implements IGraphSearch {
     public Graph search() throws InterruptedException {
         return search(this.test.getVariables());
     }
-
 
     public Graph search(List<Node> nodes) throws InterruptedException {
 
@@ -180,9 +180,7 @@ public class PcTestJoe implements IGraphSearch {
         return g;
     }
 
-    public IndependenceTest getTest() {
-        return this.test;
-    }
+    public IndependenceTest getTest() { return this.test; }
 
     public void setTest(IndependenceTest test) {
         List<Node> nodes = this.test.getVariables();
