@@ -497,18 +497,18 @@
             controlBox.add(Box.createHorizontalGlue());
 
             layout.add(controlBox);
-            Box labelBox = Box.createHorizontalBox();
+//            Box labelBox = Box.createHorizontalBox();
 
-            JLabel instructionLabel = new JLabel(
-                    "Click a row in the table to compute and view results for that node."
-            );
-            instructionLabel.setFont(instructionLabel.getFont().deriveFont(Font.ITALIC));
-            instructionLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
+//            JLabel instructionLabel = new JLabel(
+//                    "Click a row in the table to compute and view results for that node."
+//            );
+//            instructionLabel.setFont(instructionLabel.getFont().deriveFont(Font.ITALIC));
+//            instructionLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
 
-            labelBox.add(Box.createHorizontalGlue());
-            labelBox.add(instructionLabel);
-            labelBox.add(Box.createHorizontalGlue());
-            layout.add(labelBox);
+//            labelBox.add(Box.createHorizontalGlue());
+//            labelBox.add(instructionLabel);
+//            labelBox.add(Box.createHorizontalGlue());
+//            layout.add(labelBox);
             add(layout, BorderLayout.NORTH);
 
             // Wiring

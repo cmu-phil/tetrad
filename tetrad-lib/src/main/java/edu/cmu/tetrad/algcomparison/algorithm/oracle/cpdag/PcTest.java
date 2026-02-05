@@ -132,6 +132,7 @@ public class PcTest extends AbstractBootstrapAlgorithm implements Algorithm, Has
         edu.cmu.tetrad.search.PcTest search = new edu.cmu.tetrad.search.PcTest(indTest);
         search.setKnowledge(k);
         search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         Graph graph = search.search();
         stampWithBic(graph, dm);
@@ -191,6 +192,7 @@ public class PcTest extends AbstractBootstrapAlgorithm implements Algorithm, Has
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.TIME_LAG_REPLICATING_GRAPH);
+        params.add(Params.VERBOSE);
         return params;
     }
 
