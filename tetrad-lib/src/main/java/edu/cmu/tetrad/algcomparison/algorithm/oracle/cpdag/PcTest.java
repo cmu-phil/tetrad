@@ -13,6 +13,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.PcTestJoe;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -129,7 +130,7 @@ public class PcTest extends AbstractBootstrapAlgorithm implements Algorithm, Has
 
         IndependenceTest indTest = test.getTest(dm, parameters);
 
-        edu.cmu.tetrad.search.PcTest search = new edu.cmu.tetrad.search.PcTest(indTest);
+        PcTestJoe search = new PcTestJoe(indTest);
         search.setKnowledge(k);
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
