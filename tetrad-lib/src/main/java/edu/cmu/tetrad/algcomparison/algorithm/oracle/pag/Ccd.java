@@ -31,6 +31,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
@@ -94,6 +95,7 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         IndependenceTest _test = test.getTest(dataModel, parameters);
+        _test = new CachedIndependenceQueries(_test);
         edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(_test);
         search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));

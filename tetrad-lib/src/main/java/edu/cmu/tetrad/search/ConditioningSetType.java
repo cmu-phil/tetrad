@@ -63,7 +63,7 @@ public enum ConditioningSetType {
      * Conditioning on variables in the recursive order of a depth-first M-separation search. Some independence facts
      * obtained in this way may be for implied dependencies.
      */
-    RECURSIVE_MSEP,
+    RECURSIVE_BLOCKING,
 
     /**
      * Conditioning on noncolliders only. Some independence facts obtained in this way may be for implied dependencies.

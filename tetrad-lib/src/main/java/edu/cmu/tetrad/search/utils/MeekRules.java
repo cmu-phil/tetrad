@@ -48,7 +48,7 @@ public class MeekRules {
     /**
      * The logger to use.
      */
-    private final Map<Edge, Edge> changedEdges = new HashMap<>();
+    private final Map<Pair<Node, Node>, Pair<Edge, Edge>> changedEdges = new HashMap<>();
     /**
      * If knowledge is available.
      */
@@ -61,7 +61,7 @@ public class MeekRules {
      * True if cycles are to be prevented. Default is true. If true, cycles are prevented adding arbitrary new
      * unshielded colliders to the graph.
      */
-    private boolean meekPreventCycles = false;
+    private boolean meekPreventCycles = true;
     /**
      * Whether verbose output should be generated. True if verbose output should be printed.
      */
@@ -80,7 +80,9 @@ public class MeekRules {
 
     private static boolean isArrowheadAllowed(Node from, Node to, Knowledge knowledge) {
         if (knowledge.isEmpty()) return true;
-        return !knowledge.isRequired(to.toString(), from.toString()) && !knowledge.isForbidden(from.toString(), to.toString());
+        String f = from.getName();
+        String t = to.getName();
+        return !knowledge.isRequired(t, f) && !knowledge.isForbidden(f, t);
     }
 
     /**
@@ -91,13 +93,6 @@ public class MeekRules {
      */
     public Set<Node> orientImplied(Graph graph) {
 
-        // If the meekPreventCycles flag is set to tru, eheck that the graph contains only directed or undirected
-        // edges (i.e., is a mixed graph). For instance, if the graph contains bidirected edges, which
-        // PC can possibly orient with one choice of collider conflict policy, then the graph is not a mixed
-        // graph and the meekPreventCycles flag should be set to false. Also, if the graph contains a cycle, then
-        // the meekPreventCycles flag should be set to false; otherwise, a model will be output that contains
-        // a cycle. Also, this method cannot be applied to, say, PAGs, that contain edges other than directed
-        // or undirected edges.
         if (meekPreventCycles) {
             for (Edge edge : graph.getEdges()) {
                 if (!(Edges.isDirectedEdge(edge) || Edges.isUndirectedEdge(edge))) {
@@ -121,11 +116,15 @@ public class MeekRules {
 
             if (orientByKnowledge(graph, visited)) oriented = true;
 
-            for (Edge edge : graph.getEdges()) {
-                if (!Edges.isUndirectedEdge(edge)) continue;
+            List<Edge> undirected = new ArrayList<>();
+            for (Edge e : graph.getEdges()) if (Edges.isUndirectedEdge(e)) undirected.add(e);
 
+            for (Edge edge : undirected) {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
+
+                Edge cur = graph.getEdge(x, y);
+                if (cur == null || !Edges.isUndirectedEdge(cur)) continue;
 
                 if (meekR1(x, y, graph, visited)) oriented = true;
                 else if (meekR1(y, x, graph, visited)) oriented = true;
@@ -149,12 +148,13 @@ public class MeekRules {
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
+        this.useRule4 = !this.knowledge.isEmpty();
     }
 
     /**
      * Sets whether cycles should be prevented by cycle checking. Default is true. If true, cycles are prevented by
-     * adding arbitrary new unshielded colliders to the graph. This behavior was adjusted 2024-6-24, as a way to allow
-     * the PC algorithm to always output a CPDAG.
+     * refusing orientations that create cycles. This behavior was adjusted 2026-2-4, as a way to allow
+     * the PC algorithm to more reliably output a CPDAG.
      *
      * @param meekPreventCycles True, if so.
      */
@@ -169,8 +169,16 @@ public class MeekRules {
      *
      * @return This map.
      */
+//    public Map<Edge, Edge> getChangedEdges() {
+//        return this.changedEdges;
+//    }
+
     public Map<Edge, Edge> getChangedEdges() {
-        return this.changedEdges;
+        Map<Edge, Edge> out = new HashMap<>();
+        for (Pair<Edge, Edge> p : changedEdges.values()) {
+            out.put(p.getLeft(), p.getRight());
+        }
+        return out;
     }
 
     /**
@@ -301,34 +309,52 @@ public class MeekRules {
     }
 
     /**
-     * Meek's rule R4. If a--b, b--c, a--d, c not adj to d, then a-->c.
+     * Meek's rule R4. If a--b, a--c, a--d, c->b, d->b, c not adj to d, then a-->b.
      */
     private boolean meekR4(Node a, Node b, Graph graph, Set<Node> visited) {
-        if (!this.useRule4) {
-            return false;
+        if (!this.useRule4) return false;
+
+        Edge ab = graph.getEdge(a, b);
+        if (ab == null || !Edges.isUndirectedEdge(ab)) return false;   // require a--b
+
+        // candidates c: a--c and c->b
+        List<Node> cand = new ArrayList<>();
+        for (Node c : graph.getAdjacentNodes(a)) {
+            if (c == b) continue;
+
+            Edge ac = graph.getEdge(a, c);
+            if (ac == null || !Edges.isUndirectedEdge(ac)) continue;   // require a--c
+            if (!graph.isParentOf(c, b)) continue;                     // require c->b
+
+            cand.add(c);
         }
 
-        boolean oriented = false;
+        if (cand.size() < 2) return false;
 
-        for (Node c : graph.getParents(b)) {
-            Set<Node> adj = getCommonAdjacents(a, c, graph);
-            adj.remove(b);
+        // need two nonadjacent candidates c,d (c not adj d)
+        for (int i = 0; i < cand.size(); i++) {
+            Node c = cand.get(i);
+            for (int j = i + 1; j < cand.size(); j++) {
+                Node d = cand.get(j);
 
-            for (Node d : adj) {
-                if (graph.isAdjacentTo(b, d)) continue;
-                Edge dc = graph.getEdge(d, c);
-                if (!dc.pointsTowards(c)) continue;
-                if (graph.getEdge(a, d).isDirected()) continue;
+                if (graph.isAdjacentTo(c, d)) continue; // require c not adj d
+
+                // Pattern satisfied: try to orient a->b.
+                // If direct() refuses (knowledge/cycle), keep searching other pairs.
                 if (direct(a, b, graph, visited)) {
-                    log(LogUtilsSearch.edgeOrientedMsg("Meek R4 using " + c + ", " + d, graph.getEdge(a, b)));
-                    oriented = true;
+                    log(LogUtilsSearch.edgeOrientedMsg(
+                            "Meek R4 (" + c + "->" + b + ", " + d + "->" + b
+                                    + ", " + a + "---" + c + ", " + a + "---" + d + ")",
+                            graph.getEdge(a, b)));
+                    return true;
                 }
             }
         }
 
-        return oriented;
+        // If the pattern never occurred, R4 doesn't apply; if it occurred but direct() refused for all
+        // witnessing pairs, also return false.
+        return false;
     }
-
     /**
      * Directs an edge from a to c in the graph, if the edge is allowed by the knowledge and the edge is undirected.
      *
@@ -340,36 +366,18 @@ public class MeekRules {
      */
     private boolean direct(Node a, Node c, Graph graph, Set<Node> visited) {
         if (!MeekRules.isArrowheadAllowed(a, c, this.knowledge)) return false;
-        if (!Edges.isUndirectedEdge(graph.getEdge(a, c))) return false;
 
-        Edge before = graph.getEdge(a, c);
-        graph.removeEdge(before);
+        Edge e = graph.getEdge(a, c);
+        if (e == null) return false;
+        if (!Edges.isUndirectedEdge(e)) return false;
 
-        // We prevent new cycles in the graph by adding arbitrary unshielded colliders to prevent cycles.
-        // The user can turn this off if they want to by setting the Meek prevent cycles flag to false.
+        Edge before = e;
+
         if (meekPreventCycles && graph.paths().existsDirectedPath(c, a)) {
-
-            // Log this before adding a <-- c back so that we don't accidentally say we added c --> a <--c
-            // as an unshielded collider.
-            if (verbose) {
-                graph.getNodesInTo(a, Endpoint.ARROW).forEach(node -> {
-                    if (!graph.isAdjacentTo(node, c)) {
-                        TetradLogger.getInstance().log("Meek: Prevented cycle by orienting " + a + "---" + c + " as " + a + "<--" + c + " creating new unshielded collider " + node + " --> " + a + " <-- " + c);
-                    }
-                });
-            }
-
-//            graph.addEdge(before);
-//            return false;
-
-            graph.addEdge(Edges.directedEdge(c, a));
-
-            visited.add(a);
-            visited.add(c);
-
-            return true;
+            return false;
         }
 
+        graph.removeEdge(before);
         Edge after = Edges.directedEdge(a, c);
 
         visited.add(a);
@@ -377,8 +385,12 @@ public class MeekRules {
 
         graph.addEdge(after);
 
+        // NEW: record the change
+        recordChange(before, after);
+
         return true;
     }
+
 
     /**
      * Reverts edges not in unshielded colliders to undirected edges.
@@ -409,8 +421,13 @@ public class MeekRules {
                 if (this.knowledge.isForbidden(y.getName(), z.getName()) || this.knowledge.isRequired(z.getName(), y.getName()))
                     continue;
 
+                Edge before = graph.getEdge(z, y);
+
                 graph.removeEdge(z, y);
                 graph.addUndirectedEdge(z, y);
+
+                Edge after = graph.getEdge(z, y);
+                recordChange(before, after);
 
                 visited.add(z);
                 visited.add(y);
@@ -446,23 +463,83 @@ public class MeekRules {
     // In MeekRules
     private boolean orientByKnowledge(Graph graph, Set<Node> visited) {
         boolean changed = false;
-        for (Edge e : new ArrayList<>(graph.getEdges())) {
-            if (!Edges.isUndirectedEdge(e)) continue;
 
+        for (Edge e : new ArrayList<>(graph.getEdges())) {
             Node a = e.getNode1();
             Node b = e.getNode2();
 
-            boolean a_to_b_ok = isArrowheadAllowed(a, b, this.knowledge);
-            boolean b_to_a_ok = isArrowheadAllowed(b, a, this.knowledge);
+            String an = a.getName();
+            String bn = b.getName();
 
-            // Exactly one direction permitted by knowledge ⇒ orient that way
+            boolean reqAtoB = knowledge.isRequired(an, bn);
+            boolean reqBtoA = knowledge.isRequired(bn, an);
+
+            boolean forbAtoB = knowledge.isForbidden(an, bn);
+            boolean forbBtoA = knowledge.isForbidden(bn, an);
+
+            // ------------------------------------------------------------------
+            // 1) If knowledge REQUIRES a direction, enforce it if possible.
+            // ------------------------------------------------------------------
+            if (reqAtoB && !reqBtoA) {
+                // Enforce a -> b if possible
+                if (Edges.isUndirectedEdge(e)) {
+                    if (direct(a, b, graph, visited)) {
+                        changed = true;
+                    }
+                } else if (Edges.isDirectedEdge(e) && !e.pointsTowards(b)) {
+                    // Already directed the wrong way: don't "flip" it here (that can break CPDAG legality).
+                    // Leave it; Meek+knowledge can’t both be satisfied without violating current structure.
+                    // (Alternatively: you can throw if you consider this an inconsistent-knowledge situation.)
+                }
+                continue;
+            }
+
+            if (reqBtoA && !reqAtoB) {
+                if (Edges.isUndirectedEdge(e)) {
+                    if (direct(b, a, graph, visited)) {
+                        changed = true;
+                    }
+                } else if (Edges.isDirectedEdge(e) && !e.pointsTowards(a)) {
+                    // same comment as above
+                }
+                continue;
+            }
+
+            // If both directions are "required" (shouldn't happen, but defensively), do nothing.
+            if (reqAtoB && reqBtoA) continue;
+
+            // ------------------------------------------------------------------
+            // 2) Otherwise, for UNDIRECTED edges only: if exactly one direction is
+            //    permitted by knowledge, orient it.
+            // ------------------------------------------------------------------
+            if (!Edges.isUndirectedEdge(e)) continue;
+
+            boolean a_to_b_ok = isArrowheadAllowed(a, b, knowledge);
+            boolean b_to_a_ok = isArrowheadAllowed(b, a, knowledge);
+
             if (a_to_b_ok && !b_to_a_ok) {
                 if (direct(a, b, graph, visited)) changed = true;
             } else if (b_to_a_ok && !a_to_b_ok) {
                 if (direct(b, a, graph, visited)) changed = true;
             }
         }
+
         return changed;
+    }
+
+    private static Pair<Node, Node> pairKey(Node u, Node v) {
+        // canonicalize order so (u,v) and (v,u) are the same key
+        return (u.getName().compareTo(v.getName()) <= 0) ? Pair.of(u, v) : Pair.of(v, u);
+    }
+
+    private void recordChange(Edge before, Edge after) {
+        if (before == null || after == null) return;
+
+        Pair<Node, Node> key = pairKey(before.getNode1(), before.getNode2());
+        Pair<Edge, Edge> cur = changedEdges.get(key);
+
+        Edge firstBefore = (cur == null) ? before : cur.getLeft();
+        changedEdges.put(key, Pair.of(firstBefore, after));
     }
 }
 

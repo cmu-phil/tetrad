@@ -40,6 +40,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fcit;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -343,6 +344,7 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         }
 
         IndependenceTest test = this.test.getTest(dataModel, parameters);
+        test = new CachedIndependenceQueries(test);
         Score score = this.score.getScore(dataModel, parameters);
 
         if (test instanceof MsepTest) {

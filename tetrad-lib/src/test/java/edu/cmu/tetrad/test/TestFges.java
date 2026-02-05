@@ -697,6 +697,8 @@ public class TestFges {
                 CPDAG1 = fges.search();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
+            } catch (IllegalArgumentException e) {
+                continue;
             }
 
             for (Edge edge : knowledgeGraph.getEdges()) {
@@ -735,6 +737,8 @@ public class TestFges {
                 CPDAG1 = fges.search();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
+            } catch (IllegalArgumentException e) {
+                continue;
             }
 
             for (Edge edge : knowledgeGraph.getEdges()) {

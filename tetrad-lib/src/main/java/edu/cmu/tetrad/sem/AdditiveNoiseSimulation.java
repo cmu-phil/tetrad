@@ -31,7 +31,6 @@ public class AdditiveNoiseSimulation {
     private final Graph graph;
     private final int numSamples;
     private final RealDistribution noiseDistribution;
-//    private final double rescaleMin, rescaleMax;
     private final int[] hiddenDimensions;
     private final double inputScale;
     private final Function<Double, Double> activationFunction;
@@ -46,8 +45,6 @@ public class AdditiveNoiseSimulation {
      * @param graph              The causal graph representing the structural relationships.
      * @param numSamples         The number of data samples to generate.
      * @param noiseDistribution  The distribution for additive noise.
-//     * @param rescaleMin         The minimum value for data rescaling.
-//     * @param rescaleMax         The maximum value for data rescaling.
      * @param hiddenDimensions   The dimensions of hidden layers in the MLP.
      * @param inputScale         The scaling factor for input data.
      * @param activationFunction The activation function for the MLP.
@@ -55,14 +52,11 @@ public class AdditiveNoiseSimulation {
     public AdditiveNoiseSimulation(Graph graph,
                                    int numSamples,
                                    RealDistribution noiseDistribution,
-//                                   double rescaleMin,
-//                                   double rescaleMax,
                                    int[] hiddenDimensions,
                                    double inputScale,
                                    Function<Double, Double> activationFunction) {
         if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycles.");
         if (numSamples < 1) throw new IllegalArgumentException("numSamples must be positive.");
-//        if (rescaleMin > rescaleMax) throw new IllegalArgumentException("rescaleMin > rescaleMax");
         Objects.requireNonNull(noiseDistribution, "noiseDistribution");
         Objects.requireNonNull(hiddenDimensions, "hiddenDimensions");
         Objects.requireNonNull(activationFunction, "activationFunction");
@@ -72,8 +66,6 @@ public class AdditiveNoiseSimulation {
         this.graph = graph;
         this.numSamples = numSamples;
         this.noiseDistribution = noiseDistribution;
-//        this.rescaleMin = rescaleMin;
-//        this.rescaleMax = rescaleMax;
         this.hiddenDimensions = hiddenDimensions.clone();
         this.inputScale = inputScale;
         this.activationFunction = activationFunction;
@@ -191,8 +183,16 @@ public class AdditiveNoiseSimulation {
                     for (int i = 0; i < N; i++, k += Din) A.data[k] = raw[i][col];
                 }
 
-                // Random MLP for this node: f_j(Pa)
+                // copy parents into A (existing code)
+
+                // NEW: stabilize parent scale
+                zScoreColumnsInPlace(A);
+
+                // Random MLP for this node
                 RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale, seeder);
+
+//                // Random MLP for this node: f_j(Pa)
+//                RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale, seeder);
 
                 // signal = f_j(Pa)
                 Y = mlp.forward(A, Z, Y, activationFunction, useFastTanh);
@@ -200,58 +200,6 @@ public class AdditiveNoiseSimulation {
                 // Additive noise: X_j = signal + noise
                 for (int i = 0; i < N; i++) raw[i][j] = Y.data[i] + noise[i];
             }
-
-//            // Optional per-column rescale to [rescaleMin, rescaleMax]
-//            if (rescaleMax > rescaleMin) {
-//                double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
-//                for (int i = 0; i < N; i++) {
-//                    double v = raw[i][j];
-//                    if (v < min) min = v;
-//                    if (v > max) max = v;
-//                }
-//                if (max > min) {
-//                    double inR = (max - min), outR = (rescaleMax - rescaleMin);
-//                    for (int i = 0; i < N; i++) raw[i][j] = rescaleMin + outR * (raw[i][j] - min) / inR;
-//                }
-//            }
-
-            // Optional per-column *robust* rescale to [rescaleMin, rescaleMax]
-            // (percentile clip + linear map). Much less sensitive to outliers than min/max.
-//            if (rescaleMax > rescaleMin) {
-//                final double qLo = 0.01;
-//                final double qHi = 0.99;
-//
-//                double lo = quantileOfColumn(raw, j, qLo);
-//                double hi = quantileOfColumn(raw, j, qHi);
-//
-//                // Fallback: if degenerate (or tiny N), fall back to min/max
-//                if (!(hi > lo)) {
-//                    double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
-//                    for (int i = 0; i < N; i++) {
-//                        double v = raw[i][j];
-//                        if (v < min) min = v;
-//                        if (v > max) max = v;
-//                    }
-//                    lo = min;
-//                    hi = max;
-//                }
-//
-//                if (hi > lo) {
-//                    final double outR = (rescaleMax - rescaleMin);
-//                    final double inR = (hi - lo);
-//
-//                    for (int i = 0; i < N; i++) {
-//                        double v = raw[i][j];
-//
-//                        // clip
-//                        if (v < lo) v = lo;
-//                        else if (v > hi) v = hi;
-//
-//                        // map
-//                        raw[i][j] = rescaleMin + outR * (v - lo) / inR;
-//                    }
-//                }
-//            }
         }
 
         return new BoxDataSet(new DoubleDataBox(raw), new ArrayList<>(topo));
@@ -275,17 +223,29 @@ public class AdditiveNoiseSimulation {
             for (int l = 0; l < H.length; l++) {
                 W[l] = new DMatrixRMaj(H[l], prev);
                 b[l] = new double[H[l]];
-                heInit(W[l], r, inputScale);
+//                heInit(W[l], r, inputScale);
+                heInit(W[l], r, inputScale, true);  // tanh-friendly
                 prev = H[l];
             }
             W[L - 1] = new DMatrixRMaj(Dout, prev);
             b[L - 1] = new double[Dout];
-            heInit(W[L - 1], r, inputScale * 0.5);
+//            heInit(W[L - 1], r, inputScale * 0.5);
+            heInit(W[L - 1], r, inputScale * 0.5, true);
+
         }
 
-        private static void heInit(DMatrixRMaj W, Random r, double scale) {
-            double s = scale * Math.sqrt(2.0 / Math.max(1, W.numCols));
-            for (int i = 0, n = W.getNumElements(); i < n; i++) W.data[i] = r.nextGaussian() * s;
+//        private static void heInit(DMatrixRMaj W, Random r, double scale) {
+//            double s = scale * Math.sqrt(2.0 / Math.max(1, W.numCols));
+//            for (int i = 0, n = W.getNumElements(); i < n; i++) W.data[i] = r.nextGaussian() * s;
+//        }
+
+        private static void heInit(DMatrixRMaj W, Random r, double scale, boolean tanhLike) {
+            // tanh prefers sqrt(1 / fan_in), ReLU prefers sqrt(2 / fan_in)
+            double base = tanhLike ? 1.0 : 2.0;
+            double s = scale * Math.sqrt(base / Math.max(1, W.numCols));
+            for (int i = 0, n = W.getNumElements(); i < n; i++) {
+                W.data[i] = r.nextGaussian() * s;
+            }
         }
 
         /**
@@ -323,6 +283,41 @@ public class AdditiveNoiseSimulation {
             CommonOps_DDRM.multTransB(cur, W[W.length - 1], out);
             addBiasRowsInPlace(out, b[b.length - 1]);
             return out;
+        }
+    }
+
+    /**
+     * Z-score each column of A in place: mean 0, sd 1.
+     * Columns with ~0 variance are left unchanged.
+     */
+    private static void zScoreColumnsInPlace(DMatrixRMaj A) {
+        final int N = A.numRows;
+        final int D = A.numCols;
+
+        for (int j = 0; j < D; j++) {
+            // column j is at offsets j, j+D, j+2D, ...
+            double mean = 0.0;
+            int k = j;
+            for (int i = 0; i < N; i++, k += D) {
+                mean += A.data[k];
+            }
+            mean /= N;
+
+            double var = 0.0;
+            k = j;
+            for (int i = 0; i < N; i++, k += D) {
+                double d = A.data[k] - mean;
+                var += d * d;
+            }
+            var /= N;
+
+            if (var < 1e-12) continue; // avoid division by ~0
+
+            double invSd = 1.0 / Math.sqrt(var);
+            k = j;
+            for (int i = 0; i < N; i++, k += D) {
+                A.data[k] = (A.data[k] - mean) * invSd;
+            }
         }
     }
 }

@@ -98,7 +98,9 @@ public class TrainedDagModel implements Simulation, TakesData {
         this.dataSets = new ArrayList<>();
         this.graphs = new ArrayList<>();
 
-        for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
+        int numRuns = parameters.getInt(Params.NUM_RUNS);
+
+        for (int i = 0; i < numRuns; i++) {
             Graph graph = randomGraph.createGraph(parameters);
 
             graph = GraphUtils.replaceNodes(graph, data.getVariables());
@@ -124,6 +126,18 @@ public class TrainedDagModel implements Simulation, TakesData {
             int anInt = parameters.getInt(Params.SAMPLE_SIZE);
             edu.cmu.tetrad.sem.TrainedDagSimulatorGNM.SimResult result = simulator.simulate(anInt);
             DataSet dataSet = result.toDataSet();
+
+            if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
+                dataSet = DataTransforms.shuffleColumns(dataSet);
+            }
+
+            if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
+                double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
+                dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
+            }
+
+            dataSet = DataTransforms.restrictToMeasured(dataSet);
+
             this.dataSets.add(dataSet);
         }
     }
@@ -165,8 +179,7 @@ public class TrainedDagModel implements Simulation, TakesData {
      */
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.addAll(randomGraph.getParameters());
+        List<String> parameters = new ArrayList<>(randomGraph.getParameters());
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.SAMPLE_SIZE);
         return parameters;

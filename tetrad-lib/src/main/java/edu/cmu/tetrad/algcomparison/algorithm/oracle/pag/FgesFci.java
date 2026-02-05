@@ -32,6 +32,8 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -108,7 +110,9 @@ public class FgesFci extends AbstractBootstrapAlgorithm implements Algorithm, Ha
             knowledge = timeSeries.getKnowledge();
         }
 
-        edu.cmu.tetrad.search.FgesFci search = new edu.cmu.tetrad.search.FgesFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+        IndependenceTest test1 = this.test.getTest(dataModel, parameters);
+        test1 = new CachedIndependenceQueries(test1);
+        edu.cmu.tetrad.search.FgesFci search = new edu.cmu.tetrad.search.FgesFci(test1, this.score.getScore(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
         search.setKnowledge(this.knowledge);
