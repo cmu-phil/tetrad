@@ -27,7 +27,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.test.MinimaxBinningTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -42,12 +41,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "Minimax Binning Test (Neykov et al.)",
-        command = "minimax-binning-test",
+        name = "Minimax CI Test",
+        command = "minimax-ci-test",
         dataType = DataType.Continuous
 )
 @General
-public class MinimaxTest implements IndependenceWrapper {
+public class MinimaxConditionalIndependenceTest implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -55,7 +54,7 @@ public class MinimaxTest implements IndependenceWrapper {
     /**
      * Constructor.
      */
-    public MinimaxTest() {
+    public MinimaxConditionalIndependenceTest() {
 
     }
 
@@ -67,7 +66,7 @@ public class MinimaxTest implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
 
-        MinimaxBinningTest gcm = new MinimaxBinningTest((DataSet) dataSet, 0.01);
+        edu.cmu.tetrad.search.test.MinimaxConditionalIndependenceTest gcm = new edu.cmu.tetrad.search.test.MinimaxConditionalIndependenceTest((DataSet) dataSet, 0.01);
         gcm.setVerbose(false);
         gcm.setRidge(1e-2);
         gcm.setRffFeatures(400);   // try 100, 200, 400
@@ -83,7 +82,7 @@ public class MinimaxTest implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Minimax Binning Test (Neykov et al.)";
+        return "Minimax CI Test";
     }
 
     /**

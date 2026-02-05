@@ -107,7 +107,7 @@ import static java.lang.Math.*;
  *   </li>
  * </ul>
  */
-public final class MinimaxBinningTest implements IndependenceTest {
+public final class MinimaxConditionalIndependenceTest implements IndependenceTest {
     private final DataSet data;
     private final List<Node> variables;
     private final Map<String, Integer> indexMap;
@@ -146,7 +146,7 @@ public final class MinimaxBinningTest implements IndependenceTest {
      *              in statistical tests.
      * @throws IllegalArgumentException if the provided dataset is not continuous.
      */
-    public MinimaxBinningTest(DataSet data, double alpha) {
+    public MinimaxConditionalIndependenceTest(DataSet data, double alpha) {
         if (!data.isContinuous()) throw new IllegalArgumentException("GCM test currently requires continuous DataSet.");
         this.data = data;
         this.variables = Collections.unmodifiableList(new ArrayList<>(data.getVariables()));
@@ -169,7 +169,7 @@ public final class MinimaxBinningTest implements IndependenceTest {
     public IndependenceTest indTestSubset(List<Node> vars) {
         // Simple (safe) implementation: keep the same dataset, just restrict variable list.
         // If you prefer true sub-DataSet, you can build one, but this keeps overhead low.
-        MinimaxBinningTest t = new MinimaxBinningTest(this.data, this.alpha);
+        MinimaxConditionalIndependenceTest t = new MinimaxConditionalIndependenceTest(this.data, this.alpha);
         t.setVerbose(this.verbose);
         t.setRows(this.rows);
         t.setRegressorType(this.regressorType);
@@ -1135,7 +1135,7 @@ public final class MinimaxBinningTest implements IndependenceTest {
     private static final class GroupCache {
         private final ConcurrentHashMap<Key, int[][]> cache = new ConcurrentHashMap<>();
 
-        int[][] getGroups(MinimaxBinningTest owner, int[] zIdx, List<Integer> rows) {
+        int[][] getGroups(MinimaxConditionalIndependenceTest owner, int[] zIdx, List<Integer> rows) {
             long rowsSig = rowsSignature(rows);
             Key key = new Key(zIdx, rowsSig, owner.binsPerDim, owner.minBinSize);
             return cache.computeIfAbsent(key, k -> owner.computeGroups(zIdx, rows));
