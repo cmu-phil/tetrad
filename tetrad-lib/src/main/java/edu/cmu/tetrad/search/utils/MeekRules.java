@@ -48,7 +48,6 @@ public class MeekRules {
     /**
      * The logger to use.
      */
-//    private final Map<Edge, Edge> changedEdges = new HashMap<>();
     private final Map<Pair<Node, Node>, Pair<Edge, Edge>> changedEdges = new HashMap<>();
     /**
      * If knowledge is available.
