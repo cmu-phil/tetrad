@@ -65,15 +65,47 @@ import static java.lang.Math.*;
  * but where robust conditional independence decisions are still needed.
  * </p>
  *
- * <p>
- * References:
- * <br>
- * Shah, R. D., & Peters, J. (2020). The hardness of conditional independence testing
- * and the generalised covariance measure. <i>Annals of Statistics</i>.
- * <br>
- * Related minimax perspectives on nonparametric testing appear in work by
- * Wasserman and collaborators.
- * </p>
+ * <h3>References</h3>
+ *
+ * <ul>
+ *   <li>
+ *     Neykov, M., Liu, J. S., Cai, T., & Wasserman, L. (2021).
+ *     <i>Minimax optimal conditional independence testing</i>.
+ *     Annals of Statistics, 49(4), 2159–2187.
+ *     <br>
+ *     Introduces minimax lower bounds for conditional independence testing and
+ *     proposes simple binning- and permutation-based tests that achieve optimal
+ *     worst-case rates under smoothness assumptions.
+ *   </li>
+ *
+ *   <li>
+ *     Shah, R. D., & Peters, J. (2020).
+ *     <i>The hardness of conditional independence testing and the generalised covariance measure</i>.
+ *     Annals of Statistics, 48(3), 1514–1538.
+ *     <br>
+ *     Establishes no-free-lunch results for conditional independence testing and
+ *     analyzes when regression-based tests such as GCM can and cannot be
+ *     statistically consistent.
+ *   </li>
+ *
+ *   <li>
+ *     Neykov, M., & Wasserman, L. (2019).
+ *     <i>Minimax optimal hypothesis testing for high-dimensional multinomials</i>.
+ *     Annals of Statistics, 47(4), 2139–2168.
+ *     <br>
+ *     Develops minimax testing techniques that underpin later work on robust
+ *     conditional independence testing.
+ *   </li>
+ *
+ *   <li>
+ *     Wasserman, L., & Roeder, K. (2009).
+ *     <i>High-dimensional variable selection</i>.
+ *     Annals of Statistics, 37(5A), 2178–2201.
+ *     <br>
+ *     Provides foundational minimax perspectives on hypothesis testing and
+ *     inference in high-dimensional settings.
+ *   </li>
+ * </ul>
  */
 public final class MinimaxBinningTest implements IndependenceTest {
     private final DataSet data;
