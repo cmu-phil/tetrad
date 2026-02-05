@@ -5,6 +5,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.MinimaxBinning;
+import edu.cmu.tetrad.search.utils.MinimaxBinningConfig;
 import edu.cmu.tetrad.search.utils.MinimaxGroupCache;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -132,6 +133,9 @@ public final class MinimaxCITest implements IndependenceTest {
     private int minBinSize = 3;
     private long permSeed = 1L;
 
+//    private final MinimaxGroupCache groupCache = new MinimaxGroupCache();
+    // in MinimaxConditionalIndependenceTest fields
+    private MinimaxBinningConfig binningCfg = new MinimaxBinningConfig(4, 3);
     private final MinimaxGroupCache groupCache = new MinimaxGroupCache();
 
     /**
@@ -270,7 +274,10 @@ public final class MinimaxCITest implements IndependenceTest {
             return permuteWithinGroupsPValue(xArr, yArr, new int[][]{range(n)}, permutations, permSeed ^ ix ^ (iy * 1315423911L));
         }
 
-        int[][] groups = groupCache.getGroups(data, iz, useRows, binsPerDim, minBinSize);
+//        int[][] groups = groupCache.getGroups(data, iz, useRows, binsPerDim, minBinSize);
+
+        // in getPValue(...)
+        int[][] groups = groupCache.getGroups(data, iz, useRows, binningCfg);
 
         // If binning produced no usable groups, be conservative (dependent)
         if (groups.length == 0) return 0.0;
@@ -402,12 +409,29 @@ public final class MinimaxCITest implements IndependenceTest {
         cache.clear();
     }
 
-    /**
-     * Sets the number of bins per dimension for discretization.
-     *
-     * @param b the number of bins per dimension; must be greater than or equal to 2
-     */
-    public void setBinsPerDim(int b) { this.binsPerDim = Math.max(2, b); groupCache.clear(); }
+//    /**
+//     * Sets the number of bins per dimension for discretization.
+//     *
+//     * @param b the number of bins per dimension; must be greater than or equal to 2
+//     */
+//    public void setBinsPerDim(int b) { this.binsPerDim = Math.max(2, b); groupCache.clear(); }
+
+    // setters (preserve your current behavior)
+    public void setBinsPerDim(int b) {
+        this.binningCfg = new MinimaxBinningConfig(Math.max(2, b), binningCfg.minBinSize());
+        groupCache.clear();
+    }
+
+    public void setMinBinSize(int m) {
+        this.binningCfg = new MinimaxBinningConfig(binningCfg.binsPerDim(), Math.max(3, m));
+        groupCache.clear();
+    }
+
+    // optional convenience:
+    public void setBinningConfig(MinimaxBinningConfig cfg) {
+        this.binningCfg = java.util.Objects.requireNonNull(cfg, "cfg");
+        groupCache.clear();
+    }
 
     /**
      * Sets the number of permutations to the specified value, ensuring it is not less than 50.
@@ -416,12 +440,12 @@ public final class MinimaxCITest implements IndependenceTest {
      */
     public void setPermutations(int B) { this.permutations = Math.max(50, B); }
 
-    /**
-     * Sets the minimum number of samples per bin.
-     *
-     * @param m the minimum number of samples per bin; must be greater than or equal to 3
-     */
-    public void setMinBinSize(int m) { this.minBinSize = Math.max(3, m); groupCache.clear(); }
+//    /**
+//     * Sets the minimum number of samples per bin.
+//     *
+//     * @param m the minimum number of samples per bin; must be greater than or equal to 3
+//     */
+//    public void setMinBinSize(int m) { this.minBinSize = Math.max(3, m); groupCache.clear(); }
 
     /**
      * Sets the seed for random number generation.

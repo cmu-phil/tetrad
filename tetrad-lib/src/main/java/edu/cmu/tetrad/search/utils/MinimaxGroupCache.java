@@ -29,6 +29,17 @@ public final class MinimaxGroupCache {
     /**
      * Returns cached groups if present; otherwise computes them and caches the result.
      */
+    // in MinimaxGroupCache
+    public int[][] getGroups(
+            DataSet data,
+            int[] zIdx,
+            List<Integer> useRows,
+            MinimaxBinningConfig cfg
+    ) {
+        Objects.requireNonNull(cfg, "cfg");
+        return getGroups(data, zIdx, useRows, cfg.binsPerDim(), cfg.minBinSize());
+    }
+
     public int[][] getGroups(
             DataSet data,
             int[] zIdx,
