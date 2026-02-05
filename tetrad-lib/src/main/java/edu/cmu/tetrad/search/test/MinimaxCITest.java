@@ -4,6 +4,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.search.utils.MinimaxBinning;
+import edu.cmu.tetrad.search.utils.MinimaxGroupCache;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -107,7 +109,7 @@ import static java.lang.Math.*;
  *   </li>
  * </ul>
  */
-public final class MinimaxConditionalIndependenceTest implements IndependenceTest {
+public final class MinimaxCITest implements IndependenceTest {
     private final DataSet data;
     private final List<Node> variables;
     private final Map<String, Integer> indexMap;
@@ -130,8 +132,7 @@ public final class MinimaxConditionalIndependenceTest implements IndependenceTes
     private int minBinSize = 3;
     private long permSeed = 1L;
 
-    // Cache groups keyed by (zIdx, rowsSig, binsPerDim, minBinSize)
-    private final GroupCache groupCache = new GroupCache();
+    private final MinimaxGroupCache groupCache = new MinimaxGroupCache();
 
     /**
      * Constructs a MinimaxTest object with the specified dataset and significance level.
@@ -146,7 +147,7 @@ public final class MinimaxConditionalIndependenceTest implements IndependenceTes
      *              in statistical tests.
      * @throws IllegalArgumentException if the provided dataset is not continuous.
      */
-    public MinimaxConditionalIndependenceTest(DataSet data, double alpha) {
+    public MinimaxCITest(DataSet data, double alpha) {
         if (!data.isContinuous()) throw new IllegalArgumentException("GCM test currently requires continuous DataSet.");
         this.data = data;
         this.variables = Collections.unmodifiableList(new ArrayList<>(data.getVariables()));
@@ -169,7 +170,7 @@ public final class MinimaxConditionalIndependenceTest implements IndependenceTes
     public IndependenceTest indTestSubset(List<Node> vars) {
         // Simple (safe) implementation: keep the same dataset, just restrict variable list.
         // If you prefer true sub-DataSet, you can build one, but this keeps overhead low.
-        MinimaxConditionalIndependenceTest t = new MinimaxConditionalIndependenceTest(this.data, this.alpha);
+        MinimaxCITest t = new MinimaxCITest(this.data, this.alpha);
         t.setVerbose(this.verbose);
         t.setRows(this.rows);
         t.setRegressorType(this.regressorType);
@@ -269,7 +270,7 @@ public final class MinimaxConditionalIndependenceTest implements IndependenceTes
             return permuteWithinGroupsPValue(xArr, yArr, new int[][]{range(n)}, permutations, permSeed ^ ix ^ (iy * 1315423911L));
         }
 
-        int[][] groups = groupCache.getGroups(this, iz, useRows);
+        int[][] groups = groupCache.getGroups(data, iz, useRows, binsPerDim, minBinSize);
 
         // If binning produced no usable groups, be conservative (dependent)
         if (groups.length == 0) return 0.0;
@@ -528,56 +529,7 @@ public final class MinimaxConditionalIndependenceTest implements IndependenceTes
     }
 
     private int[][] computeGroups(int[] zIdx, List<Integer> useRows) {
-        int n = useRows.size();
-        int d = zIdx.length;
-
-        // Pull Z into a local array Z[n][d] (faster than repeated data.getDouble)
-        double[][] Z = new double[n][d];
-        for (int i = 0; i < n; i++) {
-            int r = useRows.get(i);
-            for (int j = 0; j < d; j++) Z[i][j] = data.getDouble(r, zIdx[j]);
-        }
-
-        // Quantile edges per dim: edges[j][k] for k=1..binsPerDim-1
-        double[][] edges = new double[d][binsPerDim - 1];
-        for (int j = 0; j < d; j++) {
-            double[] col = new double[n];
-            for (int i = 0; i < n; i++) col[i] = Z[i][j];
-            Arrays.sort(col);
-            for (int k = 1; k < binsPerDim; k++) {
-                int q = (int) Math.floor((k * (n - 1.0)) / binsPerDim);
-                edges[j][k - 1] = col[q];
-            }
-        }
-
-        // Assign bin ids using mixed radix
-        int[] binId = new int[n];
-        int radix = binsPerDim;
-        for (int i = 0; i < n; i++) {
-            int id = 0;
-            int mult = 1;
-            for (int j = 0; j < d; j++) {
-                double v = Z[i][j];
-                double[] ej = edges[j];
-                int b = upperBound(ej, v); // 0..binsPerDim-1
-                id += b * mult;
-                mult *= radix;
-            }
-            binId[i] = id;
-        }
-
-        // Group indices by binId
-        Map<Integer, IntArrayList> map = new HashMap<>();
-        for (int i = 0; i < n; i++) {
-            map.computeIfAbsent(binId[i], k -> new IntArrayList()).add(i);
-        }
-
-        ArrayList<int[]> groups = new ArrayList<>();
-        for (IntArrayList g : map.values()) {
-            if (g.size() >= minBinSize) groups.add(g.toArray());
-        }
-
-        return groups.toArray(new int[0][]);
+        return MinimaxBinning.computeGroups(data, zIdx, useRows, binsPerDim, minBinSize);
     }
 
     private static double statCorrSq(double[] x, double[] y, int[][] groups) {
@@ -1129,47 +1081,6 @@ public final class MinimaxConditionalIndependenceTest implements IndependenceTes
 
             double[] beta = solveSymmetric(A, b);
             return new FittedLinRidge(meanX, meany, beta);
-        }
-    }
-
-    private static final class GroupCache {
-        private final ConcurrentHashMap<Key, int[][]> cache = new ConcurrentHashMap<>();
-
-        int[][] getGroups(MinimaxConditionalIndependenceTest owner, int[] zIdx, List<Integer> rows) {
-            long rowsSig = rowsSignature(rows);
-            Key key = new Key(zIdx, rowsSig, owner.binsPerDim, owner.minBinSize);
-            return cache.computeIfAbsent(key, k -> owner.computeGroups(zIdx, rows));
-        }
-
-        void clear() { cache.clear(); }
-
-        private static long rowsSignature(List<Integer> rows) {
-            long h = 1469598103934665603L; // FNV-1a 64
-            for (int r : rows) {
-                h ^= (r * 0x9E3779B97F4A7C15L);
-                h *= 1099511628211L;
-            }
-            h ^= rows.size();
-            h *= 1099511628211L;
-            return h;
-        }
-
-        private record Key(int[] z, long rowsSig, int binsPerDim, int minBinSize) {
-            Key { z = (z == null ? new int[0] : Arrays.copyOf(z, z.length)); }
-            @Override public int hashCode() {
-                int h = Arrays.hashCode(z);
-                h = 31 * h + Long.hashCode(rowsSig);
-                h = 31 * h + Integer.hashCode(binsPerDim);
-                h = 31 * h + Integer.hashCode(minBinSize);
-                return h;
-            }
-            @Override public boolean equals(Object o) {
-                if (!(o instanceof Key k)) return false;
-                return rowsSig == k.rowsSig
-                        && binsPerDim == k.binsPerDim
-                        && minBinSize == k.minBinSize
-                        && Arrays.equals(z, k.z);
-            }
         }
     }
 }

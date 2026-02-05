@@ -46,7 +46,7 @@ import java.util.List;
         dataType = DataType.Continuous
 )
 @General
-public class MinimaxConditionalIndependenceTest implements IndependenceWrapper {
+public class MinimaxCITest implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -54,7 +54,7 @@ public class MinimaxConditionalIndependenceTest implements IndependenceWrapper {
     /**
      * Constructor.
      */
-    public MinimaxConditionalIndependenceTest() {
+    public MinimaxCITest() {
 
     }
 
@@ -66,7 +66,7 @@ public class MinimaxConditionalIndependenceTest implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
 
-        edu.cmu.tetrad.search.test.MinimaxConditionalIndependenceTest gcm = new edu.cmu.tetrad.search.test.MinimaxConditionalIndependenceTest((DataSet) dataSet, 0.01);
+        edu.cmu.tetrad.search.test.MinimaxCITest gcm = new edu.cmu.tetrad.search.test.MinimaxCITest((DataSet) dataSet, 0.01);
         gcm.setVerbose(false);
         gcm.setRidge(1e-2);
         gcm.setRffFeatures(400);   // try 100, 200, 400
