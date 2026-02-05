@@ -13,7 +13,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.PcTestJoe;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -26,17 +25,17 @@ import java.util.List;
 import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
 
 /**
- * PC-Test
+ * PC-Test-Joe
  *
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "PC-Test",
-        command = "pc_test",
+        name = "PC-Test-Joe",
+        command = "pc_test-joe",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class PcTest extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+public class PcTestJoe extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
@@ -76,7 +75,7 @@ public class PcTest extends AbstractBootstrapAlgorithm implements Algorithm, Has
      * ensure that the required parameters and dependencies (e.g., independence test,
      * knowledge) are set.
      */
-    public PcTest() {
+    public PcTestJoe() {
     }
 
     /**
@@ -92,7 +91,7 @@ public class PcTest extends AbstractBootstrapAlgorithm implements Algorithm, Has
      * @param test An implementation of the {@code IndependenceWrapper} interface
      *             used to perform independence tests for the algorithm.
      */
-    public PcTest(IndependenceWrapper test) {
+    public PcTestJoe(IndependenceWrapper test) {
         this.test = test;
     }
 
@@ -130,7 +129,7 @@ public class PcTest extends AbstractBootstrapAlgorithm implements Algorithm, Has
 
         IndependenceTest indTest = test.getTest(dm, parameters);
 
-        PcTestJoe search = new PcTestJoe(indTest);
+        edu.cmu.tetrad.search.PcTestJoe search = new edu.cmu.tetrad.search.PcTestJoe(indTest);
         search.setKnowledge(k);
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -165,7 +164,7 @@ public class PcTest extends AbstractBootstrapAlgorithm implements Algorithm, Has
      */
     @Override
     public String getDescription() {
-        return "PC-Test using " + test.getDescription();
+        return "PC-Test-Joe using " + test.getDescription();
     }
 
     /**
