@@ -363,11 +363,18 @@ public class ParameterTab extends JPanel {
             simOptBox.add(Box.createVerticalStrut(10));
         }
 
-        String[] simulationItems = getSimulationItems();
-        Arrays.stream(simulationItems).forEach(this.simulationsDropdown::addItem);
+        if (simulation.getSimulation() instanceof TrainedDagModel) {
+            this.simulationsDropdown.addItem(SimulationTypes.TRAINED_DAG_SIMULATION);
+            this.simulationsDropdown.setSelectedItem(SimulationTypes.TRAINED_DAG_SIMULATION);
+        } else {
+            String[] simulationItems = getSimulationItems();
+            Arrays.stream(simulationItems).forEach(this.simulationsDropdown::addItem);
+            this.simulationsDropdown.setSelectedItem(
+                    this.simulation.getParams().getString("simulationsDropdownPreference", simulationItems[0]));
+
+        }
+
         this.simulationsDropdown.setMaximumSize(this.simulationsDropdown.getPreferredSize());
-        this.simulationsDropdown.setSelectedItem(
-                this.simulation.getParams().getString("simulationsDropdownPreference", simulationItems[0]));
         this.simulationsDropdown.addActionListener(e -> refreshParameters());
 
         simOptBox.add(createLabeledComponent("Type of Simulation: ", this.simulationsDropdown));

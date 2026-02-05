@@ -45,7 +45,7 @@ class DescriptiveStatsAction extends AbstractAction {
     /**
      * The data editor that action is attached to.
      */
-    private final DataEditor dataEditor;
+    private final ISelectedModel dataEditor;
 
 
     /**
@@ -53,7 +53,7 @@ class DescriptiveStatsAction extends AbstractAction {
      *
      * @param editor a {@link edu.cmu.tetradapp.editor.DataEditor} object
      */
-    public DescriptiveStatsAction(DataEditor editor) {
+    public DescriptiveStatsAction(ISelectedModel editor) {
         super("Descriptive Statistics...");
         this.dataEditor = editor;
     }
@@ -75,7 +75,7 @@ class DescriptiveStatsAction extends AbstractAction {
         Box panel = createDescriptiveStatsDialog();
 
         EditorWindow window = new EditorWindow(panel,
-                "Descriptive Statistics", "Close", false, this.dataEditor);
+                "Descriptive Statistics", "Close", false, (JComponent) this.dataEditor);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
@@ -148,7 +148,7 @@ class DescriptiveStatsAction extends AbstractAction {
 
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
-                JFrame.class, this.dataEditor);
+                JFrame.class, (JComponent) this.dataEditor);
     }
 }
 

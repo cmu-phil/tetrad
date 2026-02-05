@@ -2,6 +2,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetradapp.util.DesktopController;
+import org.apache.commons.text.similarity.JaccardDistance;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -11,13 +12,13 @@ import java.awt.event.ActionEvent;
  */
 class NonlinearityChecksAction extends AbstractAction {
 
-    private final DataEditor dataEditor;
+    private final ISelectedModel dataEditor;
 
     /**
      * Constructor for NonlinearityChecksAction.
      * @param editor The DataEditor instance to associate with this action.
      */
-    public NonlinearityChecksAction(DataEditor editor) {
+    public NonlinearityChecksAction(ISelectedModel editor) {
         super("Nonlinearity Checks...");
         this.dataEditor = editor;
     }
@@ -36,7 +37,8 @@ class NonlinearityChecksAction extends AbstractAction {
         }
 
         JPanel panel = new NonlinearityChecks(dataSet);
-        EditorWindow editorWindow = new EditorWindow(panel, "Nonlinearity Checks", "Save", true, this.dataEditor);
+        EditorWindow editorWindow = new EditorWindow(panel, "Nonlinearity Checks", "Save",
+                true, (JComponent) this.dataEditor);
 
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
         editorWindow.pack();
@@ -44,6 +46,7 @@ class NonlinearityChecksAction extends AbstractAction {
     }
 
     private JFrame findOwner() {
-        return (JFrame) SwingUtilities.getAncestorOfClass(JFrame.class, this.dataEditor);
+        return (JFrame) SwingUtilities.getAncestorOfClass(JFrame.class,
+                (JComponent) this.dataEditor);
     }
 }
