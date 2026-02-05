@@ -122,8 +122,8 @@ public final class MinimaxCITest implements IndependenceTest {
     private int rffFeatures = 200;     // D
     private double rffSigma = 1.0;     // lengthscale-ish; affects random freq scale
     private long rffSeed = 1L;
-    private double lastT = Double.NaN;
-    private double lastP = Double.NaN;
+    private final double lastT = Double.NaN;
+    private final double lastP = Double.NaN;
     private boolean crossFit = true;   // turn on to debias residuals
     private int crossFitFolds = 2;     // start with 2-fold (cheap). Try 5 later.
     private long crossFitSeed = 12345L;
@@ -410,9 +410,9 @@ public final class MinimaxCITest implements IndependenceTest {
     public void setBinsPerDim(int b) { this.binsPerDim = Math.max(2, b); groupCache.clear(); }
 
     /**
-     * Sets the minimum number of samples per bin.
+     * Sets the number of permutations to the specified value, ensuring it is not less than 50.
      *
-     * @param m the minimum number of samples per bin; must be greater than or equal to 3
+     * @param B the desired number of permutations. If the value is less than 50, it defaults to 50.
      */
     public void setPermutations(int B) { this.permutations = Math.max(50, B); }
 
