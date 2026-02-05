@@ -308,35 +308,6 @@ public class MeekRules {
         return false;
     }
 
-//    /**
-//     * Meek's rule R4. If a--b, a--c, a--d, c->b, d->b, c not adj to d, then a-->b.
-//     */
-//    private boolean meekR4(Node a, Node b, Graph graph, Set<Node> visited) {
-//        if (!this.useRule4) {
-//            return false;
-//        }
-//
-//        boolean oriented = false;
-//
-//        for (Node c : graph.getParents(b)) {
-//            Set<Node> adj = getCommonAdjacents(a, c, graph);
-//            adj.remove(b);
-//
-//            for (Node d : adj) {
-//                if (graph.isAdjacentTo(b, d)) continue;
-//                Edge dc = graph.getEdge(d, c);
-//                if (!dc.pointsTowards(c)) continue;
-//                if (graph.getEdge(a, d).isDirected()) continue;
-//                if (direct(a, b, graph, visited)) {
-//                    log(LogUtilsSearch.edgeOrientedMsg("Meek R4 using " + c + ", " + d, graph.getEdge(a, b)));
-//                    oriented = true;
-//                }
-//            }
-//        }
-//
-//        return oriented;
-//    }
-
     /**
      * Meek's rule R4. If a--b, a--c, a--d, c->b, d->b, c not adj to d, then a-->b.
      */
@@ -366,80 +337,24 @@ public class MeekRules {
             for (int j = i + 1; j < cand.size(); j++) {
                 Node d = cand.get(j);
 
-                // also implies a--d since d is in cand, and d->b by construction
-                if (graph.isAdjacentTo(c, d)) continue;                // require c not adj d
+                if (graph.isAdjacentTo(c, d)) continue; // require c not adj d
 
+                // Pattern satisfied: try to orient a->b.
+                // If direct() refuses (knowledge/cycle), keep searching other pairs.
                 if (direct(a, b, graph, visited)) {
                     log(LogUtilsSearch.edgeOrientedMsg(
-                            "Meek R4 (" + c + "->" + b + ", " + d + "->" + b + ", " + a + "---" + c + ", " + a + "---" + d + ")",
+                            "Meek R4 (" + c + "->" + b + ", " + d + "->" + b
+                                    + ", " + a + "---" + c + ", " + a + "---" + d + ")",
                             graph.getEdge(a, b)));
                     return true;
                 }
-                return false; // direct() refused => can't apply for this (a,b)
             }
         }
 
+        // If the pattern never occurred, R4 doesn't apply; if it occurred but direct() refused for all
+        // witnessing pairs, also return false.
         return false;
     }
-
-//    /**
-//     * Meek's rule R4 (PC/CPDAG form).
-//     *
-//     * One common, CPDAG-safe statement is:
-//     *   If a --- b, and there exist nodes c and d such that
-//     *     a --- c, a --- d,
-//     *     c -> b, d -> b,
-//     *     and c is not adjacent to d,
-//     *   then orient a -> b.
-//     *
-//     * (This is the “two nonadjacent parents into b with undirected ties to a” pattern.)
-//     */
-//    private boolean meekR4(Node a, Node b, Graph graph, Set<Node> visited) {
-//        if (!this.useRule4) return false;
-//
-//        Edge ab = graph.getEdge(a, b);
-//        if (ab == null || !Edges.isUndirectedEdge(ab)) return false;
-//
-//        // Candidates c that are adjacent to a (undirected a---c) and are parents of b (c -> b).
-//        List<Node> cand = new ArrayList<>();
-//        for (Node c : graph.getAdjacentNodes(a)) {
-//            if (c == b) continue;
-//
-//            Edge ac = graph.getEdge(a, c);
-//            if (ac == null || !Edges.isUndirectedEdge(ac)) continue;
-//
-//            // Require c -> b (i.e., c is a parent of b).
-//            if (!graph.isParentOf(c, b)) continue;
-//
-//            // Respect knowledge: need arrowhead at b from c to already be allowed/realized;
-//            // (graph already has it if isParentOf is true)
-//            cand.add(c);
-//        }
-//
-//        if (cand.size() < 2) return false;
-//
-//        // Find a pair (c, d) of such candidates that are nonadjacent.
-//        for (int i = 0; i < cand.size(); i++) {
-//            Node c = cand.get(i);
-//
-//            for (int j = i + 1; j < cand.size(); j++) {
-//                Node d = cand.get(j);
-//
-//                if (graph.isAdjacentTo(c, d)) continue;  // must be unshielded at {c,d}
-//
-//                // Pattern satisfied: a---b, a---c, a---d, c->b, d->b, and c not adj d
-//                if (direct(a, b, graph, visited)) {
-//                    log(LogUtilsSearch.edgeOrientedMsg(
-//                            "Meek R4 (" + c + "->" + b + ", " + d + "->" + b + ", " + a + "---" + c + ", " + a + "---" + d + ")",
-//                            graph.getEdge(a, b)));
-//                    return true;
-//                }
-//            }
-//        }
-//
-//        return false;
-//    }
-
     /**
      * Directs an edge from a to c in the graph, if the edge is allowed by the knowledge and the edge is undirected.
      *
