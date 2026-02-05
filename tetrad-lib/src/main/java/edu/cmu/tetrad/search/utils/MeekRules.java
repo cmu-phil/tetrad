@@ -121,10 +121,11 @@ public class MeekRules {
             for (Edge e : graph.getEdges()) if (Edges.isUndirectedEdge(e)) undirected.add(e);
 
             for (Edge edge : undirected) {
-                if (!Edges.isUndirectedEdge(edge)) continue;
-
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
+
+                Edge cur = graph.getEdge(x, y);
+                if (cur == null || !Edges.isUndirectedEdge(cur)) continue;
 
                 if (meekR1(x, y, graph, visited)) oriented = true;
                 else if (meekR1(y, x, graph, visited)) oriented = true;
