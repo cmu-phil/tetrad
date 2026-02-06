@@ -67,7 +67,8 @@ public class Gcm implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
 
-        GcmIndependenceTest gcm = new GcmIndependenceTest((DataSet) dataSet, 0.01);
+        GcmIndependenceTest gcm = new GcmIndependenceTest((DataSet) dataSet,
+                parameters.getDouble(Params.ALPHA));
         // start with something modest:
         gcm.setVerbose(false);
         gcm.setRegressorType(GcmIndependenceTest.RegressorType.RFF_RIDGE);
@@ -108,14 +109,14 @@ public class Gcm implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
-        params.add(Params.KCI_USE_APPROXIMATION);
+//        params.add(Params.KCI_USE_APPROXIMATION);
         params.add(Params.ALPHA);
-        params.add(Params.SCALING_FACTOR);
-        params.add(Params.KCI_NUM_BOOTSTRAPS);
-        params.add(Params.KCI_EPSILON);
-        params.add(Params.KERNEL_TYPE);
-        params.add(Params.POLYNOMIAL_DEGREE);
-        params.add(Params.POLYNOMIAL_CONSTANT);
+//        params.add(Params.SCALING_FACTOR);
+//        params.add(Params.KCI_NUM_BOOTSTRAPS);
+//        params.add(Params.KCI_EPSILON);
+//        params.add(Params.KERNEL_TYPE);
+//        params.add(Params.POLYNOMIAL_DEGREE);
+//        params.add(Params.POLYNOMIAL_CONSTANT);
         return params;
     }
 }

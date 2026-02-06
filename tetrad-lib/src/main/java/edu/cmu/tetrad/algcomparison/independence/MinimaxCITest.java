@@ -27,7 +27,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.MinimaxBinningConfig;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -42,7 +41,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "Minimax CI Test",
+        name = "Minimax Conditional Independence Test",
         command = "minimax-ci-test",
         dataType = DataType.Mixed
 )
@@ -67,9 +66,7 @@ public class MinimaxCITest implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
 
-//        edu.cmu.tetrad.search.test.MinimaxCITest gcm = new edu.cmu.tetrad.search.test.MinimaxCITest((DataSet) dataSet,
-//                parameters.getDouble(Params.ALPHA));
-        edu.cmu.tetrad.search.test.GoldMinimaxCITest gcm = new edu.cmu.tetrad.search.test.GoldMinimaxCITest((DataSet) dataSet,
+        edu.cmu.tetrad.search.test.MinimaxCITest gcm = new edu.cmu.tetrad.search.test.MinimaxCITest((DataSet) dataSet,
                 parameters.getDouble(Params.ALPHA));
         gcm.setVerbose(false);
 
@@ -97,7 +94,7 @@ public class MinimaxCITest implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Minimax CI Test";
+        return "Minimax Conditional Independence Test";
     }
 
     /**

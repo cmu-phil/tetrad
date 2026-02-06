@@ -41,13 +41,13 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Minimax Histogram Score",
-        command = "minimax-hist-score",
+        name = "Minimax Score",
+        command = "minimax-score",
         dataType = {DataType.Mixed}
 )
 @General
 @Experimental
-public class MinimaxHistogramScore implements ScoreWrapper {
+public class MinimaxScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -60,7 +60,7 @@ public class MinimaxHistogramScore implements ScoreWrapper {
     /**
      * Constructs a new instance of the SemBicScore.
      */
-    public MinimaxHistogramScore() {
+    public MinimaxScore() {
     }
 
     /**
@@ -105,7 +105,7 @@ public class MinimaxHistogramScore implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "Minimax Histogram Score";
+        return "Minimax Score";
     }
 
     /**
