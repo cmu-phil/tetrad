@@ -10,7 +10,10 @@ import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -84,46 +87,57 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
 
     // -------------------- config knobs --------------------
 
-    /** Student-t degrees of freedom (continuous child). */
-    private volatile double nu = 5.0;
-
-    /** Student-t scale (continuous child). If globally z-scored, 1.0 is reasonable. */
-    private volatile double scale = 1.0;
-
-    /** Ridge penalty (>0). Applies to both continuous and discrete child fits. */
-    private volatile double ridge = 1e-3;
-
-    /** Number of RFF features (D) for continuous-parent subvector. */
-    private volatile int rffFeatures = 256;
-
-    /** RFF sigma (lengthscale-ish). Frequencies ~ N(0, 1/sigma^2). */
-    private volatile double rffSigma = 1.0;
-
-    /** Deterministic base seed for features. */
-    private volatile long rffSeed = 1L;
-
-    /** IRLS iterations (both models). */
-    private volatile int irlsIters = 8;
-
-    /** IRLS stopping tolerance. */
-    private volatile double irlsTol = 1e-6;
-
-    /** If true, compute row subsets when missing exists. */
+    /**
+     * If true, compute row subsets when missing exists.
+     */
     private final boolean calculateRowSubsets;
-
-    // -------------------- data --------------------
-
     private final DataSet dataSet;
     private final List<Node> variables;
     private final int sampleSize;
-    private volatile int nEff;
-
-    /** Continuous columns z-scored globally, NaNs preserved. For discrete vars, column is all NaN. */
+    /**
+     * Continuous columns z-scored globally, NaNs preserved. For discrete vars, column is all NaN.
+     */
     private final double[][] zCols;
-
-    /** Cache key -> score. */
+    /**
+     * Cache key -> score.
+     */
     private final AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
+    /**
+     * Student-t degrees of freedom (continuous child).
+     */
+    private volatile double nu = 5.0;
+    /**
+     * Student-t scale (continuous child). If globally z-scored, 1.0 is reasonable.
+     */
+    private volatile double scale = 1.0;
+    /**
+     * Ridge penalty (>0). Applies to both continuous and discrete child fits.
+     */
+    private volatile double ridge = 1e-3;
+
+    // -------------------- data --------------------
+    /**
+     * Number of RFF features (D) for continuous-parent subvector.
+     */
+    private volatile int rffFeatures = 256;
+    /**
+     * RFF sigma (lengthscale-ish). Frequencies ~ N(0, 1/sigma^2).
+     */
+    private volatile double rffSigma = 1.0;
+    /**
+     * Deterministic base seed for features.
+     */
+    private volatile long rffSeed = 1L;
+    /**
+     * IRLS iterations (both models).
+     */
+    private volatile int irlsIters = 8;
+    /**
+     * IRLS stopping tolerance.
+     */
+    private volatile double irlsTol = 1e-6;
+    private volatile int nEff;
 
     public MinimaxTRffBicScore(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
@@ -157,6 +171,153 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
     }
 
     // -------------------- Score interface --------------------
+
+    private static double multinomialInterceptOnlyLogLik(int[] y, int K) {
+        int n = y.length;
+        int[] counts = new int[K];
+        for (int v : y) {
+            if (v < 0 || v >= K) return Double.NaN;
+            counts[v]++;
+        }
+        double ll = 0.0;
+        for (int k = 0; k < K; k++) {
+            if (counts[k] == 0) continue;
+            double pk = counts[k] / (double) n;
+            ll += counts[k] * log(pk);
+        }
+        return ll;
+    }
+
+    private static void centerInPlace(double[] y) {
+        double m = 0.0;
+        for (double v : y) m += v;
+        m /= y.length;
+        for (int i = 0; i < y.length; i++) y[i] -= m;
+    }
+
+    private static void zscoreColumnPreserveNaN(double[] in, double[] out) {
+        double sum = 0.0, sum2 = 0.0;
+        int n = 0;
+        for (double v : in) {
+            if (Double.isNaN(v)) continue;
+            sum += v;
+            sum2 += v * v;
+            n++;
+        }
+        if (n < 2) {
+            System.arraycopy(in, 0, out, 0, in.length);
+            return;
+        }
+        double mean = sum / n;
+        double var = (sum2 - n * mean * mean) / (n - 1.0);
+        double sd = sqrt(max(1e-12, var));
+        for (int i = 0; i < in.length; i++) {
+            double v = in[i];
+            out[i] = Double.isNaN(v) ? Double.NaN : (v - mean) / sd;
+        }
+    }
+
+    private static double studentTLogLik(double[] y, double[] yhat, double nu, double scale) {
+        int n = y.length;
+        double c = logGamma(0.5 * (nu + 1.0)) - logGamma(0.5 * nu)
+                - 0.5 * log(nu * PI) - log(scale);
+
+        double sum = 0.0;
+        double inv = 1.0 / (nu * scale * scale);
+
+        for (int i = 0; i < n; i++) {
+            double r = y[i] - yhat[i];
+            double v = 1.0 + (r * r) * inv;
+            sum += c - 0.5 * (nu + 1.0) * log(v);
+        }
+        return sum;
+    }
+
+    private static double logGamma(double x) {
+        double[] p = {
+                676.5203681218851,
+                -1259.1392167224028,
+                771.32342877765313,
+                -176.61502916214059,
+                12.507343278686905,
+                -0.13857109526572012,
+                9.9843695780195716e-6,
+                1.5056327351493116e-7
+        };
+        int g = 7;
+
+        if (x < 0.5) {
+            return log(PI) - log(sin(PI * x)) - logGamma(1.0 - x);
+        }
+
+        x -= 1.0;
+        double a = 0.99999999999980993;
+        for (int i = 0; i < p.length; i++) a += p[i] / (x + i + 1.0);
+
+        double t = x + g + 0.5;
+        return 0.5 * log(2.0 * PI) + (x + 0.5) * log(t) - t + log(a);
+    }
+
+    private static double[] solveFromCholeskyLower(DMatrixRMaj L, double[] b) {
+        int n = b.length;
+        double[] x = Arrays.copyOf(b, n);
+
+        // forward solve L u = b
+        for (int i = 0; i < n; i++) {
+            double sum = x[i];
+            for (int j = 0; j < i; j++) sum -= L.get(i, j) * x[j];
+            x[i] = sum / L.get(i, i);
+        }
+
+        // back solve L^T x = u
+        for (int i = n - 1; i >= 0; i--) {
+            double sum = x[i];
+            for (int j = i + 1; j < n; j++) sum -= L.get(j, i) * x[j];
+            x[i] = sum / L.get(i, i);
+        }
+        return x;
+    }
+
+    private static double traceInvFromCholeskyLower(DMatrixRMaj L) {
+        int n = L.numRows;
+        double tr = 0.0;
+        double[] v = new double[n];
+
+        for (int col = 0; col < n; col++) {
+            Arrays.fill(v, 0.0);
+            v[col] = 1.0;
+
+            // solve L u = e_col
+            for (int i = 0; i < n; i++) {
+                double sum = v[i];
+                for (int j = 0; j < i; j++) sum -= L.get(i, j) * v[j];
+                v[i] = sum / L.get(i, i);
+            }
+
+            double ss = 0.0;
+            for (int i = 0; i < n; i++) ss += v[i] * v[i];
+            tr += ss;
+        }
+
+        return tr;
+    }
+
+    private static int[] concat(int i, int[] parents) {
+        int[] all = new int[parents.length + 1];
+        all[0] = i;
+        System.arraycopy(parents, 0, all, 1, parents.length);
+        return all;
+    }
+
+    // -------------------- public knobs --------------------
+
+    private static long cacheKey(int i, int[] parents, long knobsSig) {
+        long h = 1469598103934665603L;
+        h = (h ^ i) * 1099511628211L;
+        for (int p : parents) h = (h ^ p) * 1099511628211L;
+        h = (h ^ knobsSig) * 1099511628211L;
+        return h;
+    }
 
     @Override
     public double localScore(int i, int... parents) {
@@ -253,13 +414,17 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return nEff;
     }
 
+    // -------------------- fitting results --------------------
+
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = (nEff < 0) ? this.sampleSize : nEff;
         resetCache();
     }
 
-    // -------------------- public knobs --------------------
+    // ============================================================================================
+    // Continuous child: Student-t IRLS ridge on features [RFF(Z_cont), OneHot(Z_disc)]
+    // ============================================================================================
 
     public void setNu(double nu) {
         if (!(nu > 2) || !Double.isFinite(nu)) throw new IllegalArgumentException("nu must be finite and > 2");
@@ -272,6 +437,11 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         this.scale = scale;
         resetCache();
     }
+
+    // ============================================================================================
+    // Discrete child: multinomial logistic ridge on features [RFF(Z_cont), OneHot(Z_disc)]
+    // Reference class 0, parameters for classes 1..K-1
+    // ============================================================================================
 
     public void setRidge(double ridge) {
         if (!(ridge > 0) || !Double.isFinite(ridge)) throw new IllegalArgumentException("ridge must be finite and > 0");
@@ -286,7 +456,8 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
     }
 
     public void setRffSigma(double sigma) {
-        if (!(sigma > 0) || !Double.isFinite(sigma)) throw new IllegalArgumentException("rffSigma must be finite and > 0");
+        if (!(sigma > 0) || !Double.isFinite(sigma))
+            throw new IllegalArgumentException("rffSigma must be finite and > 0");
         this.rffSigma = sigma;
         resetCache();
     }
@@ -301,18 +472,12 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         resetCache();
     }
 
+    // -------------------- one-hot spec --------------------
+
     public void setIrlsTol(double tol) {
         this.irlsTol = Math.max(0.0, tol);
         resetCache();
     }
-
-    // -------------------- fitting results --------------------
-
-    private record FitResult(double logLik, double edf) {}
-
-    // ============================================================================================
-    // Continuous child: Student-t IRLS ridge on features [RFF(Z_cont), OneHot(Z_disc)]
-    // ============================================================================================
 
     private FitResult fitStudentTRffRidgeMixed(double[] yCentered, int[] parentIdx, int[] rows, int n, long seed) {
         // split parents
@@ -469,10 +634,7 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         }
     }
 
-    // ============================================================================================
-    // Discrete child: multinomial logistic ridge on features [RFF(Z_cont), OneHot(Z_disc)]
-    // Reference class 0, parameters for classes 1..K-1
-    // ============================================================================================
+    // -------------------- missingness row selection --------------------
 
     private FitResult fitMultinomialLogitMixed(int[] y, int K, int[] parentIdx, int[] rows, int n, long seed) {
         int[] cont = filterContinuous(parentIdx);
@@ -602,6 +764,8 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return new FitResult(ll, edf);
     }
 
+    // -------------------- extraction --------------------
+
     private void buildXRowMixed(double[] out, int i,
                                 double[][] Zc, int dCont,
                                 double[][] W, double[] phase, double phiScale,
@@ -704,35 +868,6 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return ll;
     }
 
-    private static double multinomialInterceptOnlyLogLik(int[] y, int K) {
-        int n = y.length;
-        int[] counts = new int[K];
-        for (int v : y) {
-            if (v < 0 || v >= K) return Double.NaN;
-            counts[v]++;
-        }
-        double ll = 0.0;
-        for (int k = 0; k < K; k++) {
-            if (counts[k] == 0) continue;
-            double pk = counts[k] / (double) n;
-            ll += counts[k] * log(pk);
-        }
-        return ll;
-    }
-
-    // -------------------- one-hot spec --------------------
-
-    private static final class OneHotSpec {
-        final int[] sizes;     // num categories per disc parent
-        final int[] offsets;   // offsets into the one-hot block (baseline dropped)
-        final int totalCols;
-        OneHotSpec(int[] sizes, int[] offsets, int totalCols) {
-            this.sizes = sizes;
-            this.offsets = offsets;
-            this.totalCols = totalCols;
-        }
-    }
-
     private OneHotSpec buildOneHotSpec(int[] discParents) {
         int m = discParents.length;
         int[] sizes = new int[m];
@@ -749,13 +884,13 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return new OneHotSpec(sizes, offsets, off);
     }
 
+    // -------------------- Student-t loglik + gamma --------------------
+
     private int numCategories(int varIndex) {
         Node v = variables.get(varIndex);
         if (!(v instanceof DiscreteVariable dv)) return 0;
         return dv.getNumCategories();
     }
-
-    // -------------------- missingness row selection --------------------
 
     private int[] validRows(int[] vars) {
         int n = sampleSize;
@@ -778,7 +913,7 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return Arrays.copyOf(tmp, m);
     }
 
-    // -------------------- extraction --------------------
+    // -------------------- linear algebra helpers --------------------
 
     private double[] extractContinuousChild(int varIndex, int[] rows, int n) {
         double[] y = new double[n];
@@ -798,124 +933,6 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
             for (int r = 0; r < n; r++) y[r] = dataSet.getInt(rows[r], varIndex);
         }
         return y;
-    }
-
-    private static void centerInPlace(double[] y) {
-        double m = 0.0;
-        for (double v : y) m += v;
-        m /= y.length;
-        for (int i = 0; i < y.length; i++) y[i] -= m;
-    }
-
-    private static void zscoreColumnPreserveNaN(double[] in, double[] out) {
-        double sum = 0.0, sum2 = 0.0;
-        int n = 0;
-        for (double v : in) {
-            if (Double.isNaN(v)) continue;
-            sum += v;
-            sum2 += v * v;
-            n++;
-        }
-        if (n < 2) {
-            System.arraycopy(in, 0, out, 0, in.length);
-            return;
-        }
-        double mean = sum / n;
-        double var = (sum2 - n * mean * mean) / (n - 1.0);
-        double sd = sqrt(max(1e-12, var));
-        for (int i = 0; i < in.length; i++) {
-            double v = in[i];
-            out[i] = Double.isNaN(v) ? Double.NaN : (v - mean) / sd;
-        }
-    }
-
-    // -------------------- Student-t loglik + gamma --------------------
-
-    private static double studentTLogLik(double[] y, double[] yhat, double nu, double scale) {
-        int n = y.length;
-        double c = logGamma(0.5 * (nu + 1.0)) - logGamma(0.5 * nu)
-                - 0.5 * log(nu * PI) - log(scale);
-
-        double sum = 0.0;
-        double inv = 1.0 / (nu * scale * scale);
-
-        for (int i = 0; i < n; i++) {
-            double r = y[i] - yhat[i];
-            double v = 1.0 + (r * r) * inv;
-            sum += c - 0.5 * (nu + 1.0) * log(v);
-        }
-        return sum;
-    }
-
-    private static double logGamma(double x) {
-        double[] p = {
-                676.5203681218851,
-                -1259.1392167224028,
-                771.32342877765313,
-                -176.61502916214059,
-                12.507343278686905,
-                -0.13857109526572012,
-                9.9843695780195716e-6,
-                1.5056327351493116e-7
-        };
-        int g = 7;
-
-        if (x < 0.5) {
-            return log(PI) - log(sin(PI * x)) - logGamma(1.0 - x);
-        }
-
-        x -= 1.0;
-        double a = 0.99999999999980993;
-        for (int i = 0; i < p.length; i++) a += p[i] / (x + i + 1.0);
-
-        double t = x + g + 0.5;
-        return 0.5 * log(2.0 * PI) + (x + 0.5) * log(t) - t + log(a);
-    }
-
-    // -------------------- linear algebra helpers --------------------
-
-    private static double[] solveFromCholeskyLower(DMatrixRMaj L, double[] b) {
-        int n = b.length;
-        double[] x = Arrays.copyOf(b, n);
-
-        // forward solve L u = b
-        for (int i = 0; i < n; i++) {
-            double sum = x[i];
-            for (int j = 0; j < i; j++) sum -= L.get(i, j) * x[j];
-            x[i] = sum / L.get(i, i);
-        }
-
-        // back solve L^T x = u
-        for (int i = n - 1; i >= 0; i--) {
-            double sum = x[i];
-            for (int j = i + 1; j < n; j++) sum -= L.get(j, i) * x[j];
-            x[i] = sum / L.get(i, i);
-        }
-        return x;
-    }
-
-    private static double traceInvFromCholeskyLower(DMatrixRMaj L) {
-        int n = L.numRows;
-        double tr = 0.0;
-        double[] v = new double[n];
-
-        for (int col = 0; col < n; col++) {
-            Arrays.fill(v, 0.0);
-            v[col] = 1.0;
-
-            // solve L u = e_col
-            for (int i = 0; i < n; i++) {
-                double sum = v[i];
-                for (int j = 0; j < i; j++) sum -= L.get(i, j) * v[j];
-                v[i] = sum / L.get(i, i);
-            }
-
-            double ss = 0.0;
-            for (int i = 0; i < n; i++) ss += v[i] * v[i];
-            tr += ss;
-        }
-
-        return tr;
     }
 
     // -------------------- type utilities --------------------
@@ -961,24 +978,24 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return h;
     }
 
-    private static int[] concat(int i, int[] parents) {
-        int[] all = new int[parents.length + 1];
-        all[0] = i;
-        System.arraycopy(parents, 0, all, 1, parents.length);
-        return all;
-    }
-
-    private static long cacheKey(int i, int[] parents, long knobsSig) {
-        long h = 1469598103934665603L;
-        h = (h ^ i) * 1099511628211L;
-        for (int p : parents) h = (h ^ p) * 1099511628211L;
-        h = (h ^ knobsSig) * 1099511628211L;
-        return h;
-    }
-
     public int[] append(int[] z, int x) {
         int[] out = Arrays.copyOf(z, z.length + 1);
         out[z.length] = x;
         return out;
+    }
+
+    private record FitResult(double logLik, double edf) {
+    }
+
+    private static final class OneHotSpec {
+        final int[] sizes;     // num categories per disc parent
+        final int[] offsets;   // offsets into the one-hot block (baseline dropped)
+        final int totalCols;
+
+        OneHotSpec(int[] sizes, int[] offsets, int totalCols) {
+            this.sizes = sizes;
+            this.offsets = offsets;
+            this.totalCols = totalCols;
+        }
     }
 }
