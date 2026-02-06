@@ -170,7 +170,7 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
     @Override
     public void setRows(List<Integer> rows) {
         if (test instanceof RowsSettable rs) rs.setRows(rows);
-        else throw new UnsupportedOperationException("Wrapped test does not support setRows()");
+//        else throw new UnsupportedOperationException("Wrapped test does not support setRows()");
     }
 
     /**

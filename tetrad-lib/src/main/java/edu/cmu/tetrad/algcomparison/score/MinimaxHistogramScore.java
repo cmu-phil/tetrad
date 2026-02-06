@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.algcomparison.score;
 
@@ -43,7 +43,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Score(
         name = "Minimax Histogram Score",
         command = "minimax-hist-score",
-        dataType = {DataType.Continuous}
+        dataType = {DataType.Mixed}
 )
 @General
 @Experimental
@@ -70,18 +70,25 @@ public class MinimaxHistogramScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.score.MinimaxHistogramScore score;
+        edu.cmu.tetrad.search.score.MinimaxTRffBicScore score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.score.MinimaxHistogramScore((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.MinimaxTRffBicScore((DataSet) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
 
+        score.setNu(15);
+        score.setScale(1.0);
+        score.setRidge(1e-1);
+        score.setRffFeatures(Math.min(200, (int) (4 * Math.sqrt(((DataSet) dataSet).getNumRows()))));
+        score.setRffSigma(1.0);
+        score.setIrlsIters(8);
+
 //        score.setLambda(parameters.getDouble(Params.KML_LAMBDA));
 //        score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
 //        score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
-        score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+//        score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
 
 //        score.setNumFeatures(parameters.getInt(Params.KML_NUM_FEATURES));
 //        edu.cmu.tetrad.search.score.FfMl.FeatureType[] values
@@ -108,7 +115,7 @@ public class MinimaxHistogramScore implements ScoreWrapper {
      */
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return DataType. Mixed;
     }
 
     /**
@@ -128,7 +135,8 @@ public class MinimaxHistogramScore implements ScoreWrapper {
         return parameters;
     }
 
-    /**d
+    /**
+     * d
      * Retrieves the variable with the given name from the data set.
      *
      * @param name the name of the variable

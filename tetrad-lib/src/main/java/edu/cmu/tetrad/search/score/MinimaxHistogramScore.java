@@ -1,152 +1,160 @@
 package edu.cmu.tetrad.search.score;
 
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static java.lang.Math.*;
 
 /**
- * <p><b>Minimax-Histogram Score (piecewise-constant conditional mean, continuous)</b></p>
+ * <h2>Minimax Histogram Score (Student-t, shared scale)</h2>
  *
  * <p>
- * Local score for Y given Pa(Y)=Z using a minimax-style histogram (quantile grid) approximation:
- * partition the parent space into bins where Z is approximately constant, then fit a constant mean
- * for Y within each bin. The score is a Gaussian pseudo-log-likelihood with a BIC-like penalty
- * for bin complexity.
+ * Local score for structure learning based on a "minimax-style" conditioning idea:
+ * given candidate parents Z for target Y, we condition on Z by quantile-binning the
+ * rows in Z-space (so Z is approximately constant within each bin), then model
+ * Y within each bin using a robust Student-t location model.
  * </p>
  *
- * <p><b>Model (pseudo)</b>:</p>
- * <pre>
- * For each bin g:  Y | (Z in bin g) ~ N(mu_g, sigma_g^2)
- * </pre>
+ * <p>
+ * <b>Model.</b> Let groups (bins) be formed from Z; each bin b has its own mean μ_b,
+ * but all bins share a common scale s. With fixed degrees of freedom ν, the local
+ * log-likelihood is:
+ * </p>
  *
- * <p><b>Local score (up to additive constants)</b>:</p>
  * <pre>
- * score(Y | Z) = -0.5 * sum_g m_g * log(s_g^2)  - 0.5 * k * log(n)
+ *   ℓ = Σ_b Σ_{i∈b} log t_ν( (y_i - μ_b) / s ) - n log s
  * </pre>
- * where s_g^2 is the within-bin sample variance of Y, m_g is bin size, and k is the number of
- * free parameters (by default 2 per used bin: mean + variance).
  *
  * <p>
- * Practical: this is fast, robust, and “minimax flavored” (histogram estimator is classical for
- * Hölder-smooth regression), but it’s a pseudo-likelihood score—useful for search even when the
- * true errors are not Gaussian.
+ * μ_b and s are fit by a fast IRLS/EM-style iteration (weights w_i).
+ * The returned score is BIC-style:
+ * </p>
+ *
+ * <pre>
+ *   score = ℓ - 0.5 * k * log(n),   k = (#bins) + 1
+ * </pre>
+ *
+ * <p>
+ * Notes:
+ * <ul>
+ *   <li>Continuous data only (uses {@link DataSet#getDouble(int, int)}).</li>
+ *   <li>Missing values are handled by testwise deletion at the local-score level:
+ *       only rows where Y and all Z columns are observed are used.</li>
+ *   <li>Designed for repeated calls inside score-based searches; caches groupings and scores.</li>
+ * </ul>
  * </p>
  */
-public final class MinimaxHistogramScore implements Score, EffectiveSampleSizeSettable {
+public final class MinimaxHistogramScore implements Score {
 
     // -------------------- data --------------------
+
     private final DataSet data;
     private final List<Node> variables;
+    private final Map<String, Integer> indexMap;
     private final int sampleSize;
 
-    // Missing handling: if any missing exists, score each parent set on complete-case rows for {Y ∪ Pa(Y)}.
-    private final boolean calculateRowSubsets;
+    // -------------------- configuration knobs --------------------
 
-    // effective sample size
-    private volatile int nEff;
+    /** Number of quantile bins per parent dimension. */
+    private volatile int binsPerDim = 4;
 
-    // -------------------- binning knobs --------------------
-    private volatile int binsPerDim = 4;     // >=2
-    private volatile int minBinSize = 3;     // >=3
+    /** Minimum bin size to be considered usable. */
+    private volatile int minBinSize = 5;
 
-    // penalty knobs
-    private volatile double penaltyMultiplier = 1.0; // 1.0 = BIC-ish
-    private volatile boolean countVarianceParam = true; // if false: 1 param per bin (mean only), else 2
+    /** Student-t degrees of freedom (fixed). Smaller => heavier tails. */
+    private volatile double nu = 5.0;
 
-    // caches
-    private final AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
-            new AtomicReference<>(new ConcurrentHashMap<>());
+    /** Max IRLS iterations for (μ_b, shared s). */
+    private volatile int maxIters = 7;
 
+    /** Absolute minimum scale floor (applied after robust initialization too). */
+    private volatile double sMin = 1e-8;
+
+    /** Optional: restrict to a specified set of rows; null => all rows. */
+    private volatile List<Integer> rows = null;
+
+    /** If true, log some failures. */
+    private volatile boolean verbose = false;
+
+    // -------------------- caches --------------------
+
+    /** Cache groups keyed by (parents, rowsSig, binsPerDim, minBinSize). */
     private final GroupCache groupCache = new GroupCache();
+
+    /** Cache local scores keyed by (target, parents, rowsSig, all tuning knobs). */
+    private final ConcurrentHashMap<ScoreKey, Double> localScoreCache = new ConcurrentHashMap<>();
+
+    // -------------------- ctor --------------------
 
     public MinimaxHistogramScore(DataSet data) {
         if (data == null) throw new NullPointerException("data");
-        if (!data.isContinuous()) throw new IllegalArgumentException("MinimaxHistogramScore requires continuous DataSet.");
-
+        if (!data.isContinuous()) {
+            throw new IllegalArgumentException("MinimaxHistogramScore currently requires a continuous DataSet.");
+        }
         this.data = data;
-        this.variables = data.getVariables();
+        this.variables = Collections.unmodifiableList(new ArrayList<>(data.getVariables()));
+        this.indexMap = indexMap(this.variables);
         this.sampleSize = data.getNumRows();
-        this.calculateRowSubsets = data.existsMissingValue();
-        setEffectiveSampleSize(-1);
     }
 
     // -------------------- Score interface --------------------
 
     @Override
-    public double localScoreDiff(int x, int y, int[] z) {
-        return localScore(y, append(z, x)) - localScore(y, z);
-    }
+    public double localScore(int node, int... parents) {
+        if (node < 0 || node >= variables.size()) return Double.NaN;
 
-    @Override
-    public double localScore(int target, int... parents) {
-        Arrays.sort(parents);
+        int[] zIdx = (parents == null) ? new int[0] : Arrays.copyOf(parents, parents.length);
+        Arrays.sort(zIdx);
 
-        long key = cacheKey(target, parents,
+        List<Integer> baseRows = listRows();
+        List<Integer> useRows = rowsCompleteFor(node, zIdx, baseRows);
+        final int n = useRows.size();
+        if (n < 10) return Double.NaN;
+
+        long rowsSig = GroupCache.rowsSignature(useRows);
+
+        ScoreKey key = new ScoreKey(
+                node, zIdx, rowsSig,
                 binsPerDim, minBinSize,
-                penaltyMultiplier, countVarianceParam,
-                nEff);
+                nu, maxIters, sMin
+        );
 
-        final ConcurrentHashMap<Long, Double> cache = localScoreCacheRef.get();
-        return cache.computeIfAbsent(key, k -> {
+        return localScoreCache.computeIfAbsent(key, k -> {
             try {
-                int[] all = concat(target, parents);
+                // Extract y aligned to 0..n-1 index space
+                double[] y = new double[n];
+                for (int i = 0; i < n; i++) y[i] = data.getDouble(useRows.get(i), node);
 
-                // row selection (complete-case for target+parents), if missing exists
-                int[] rows = calculateRowSubsets ? validRows(all) : null;
-                int n = (rows == null) ? nEff : rows.length;
-                if (n < 10) return Double.NaN;
-
-                // extract Y (in the index-space of the chosen rows)
-                double[] y = extract1D(target, rows, n);
-
-                // no parents => single bin over all rows
-                if (parents.length == 0) {
-                    double v = sampleVariance(y);
-                    if (!(v > 0) || !Double.isFinite(v)) v = 1e-12;
-                    // score = -0.5 * n * log(v)  - 0.5 * k log n
-                    int binsUsed = 1;
-                    int kParams = binsUsed * (countVarianceParam ? 2 : 1);
-                    return -0.5 * n * log(v) - 0.5 * penaltyMultiplier * kParams * log(n);
+                // No parents: one group with all rows => Student-t location + shared scale reduces to single-mean t fit
+                int[][] groups;
+                if (zIdx.length == 0) {
+                    groups = new int[][]{range(n)};
+                } else {
+                    groups = groupCache.getGroups(this, zIdx, useRows);
                 }
 
-                // build groups for Z = parents
-                int[][] groups = groupCache.getGroups(this, parents, rows, n);
-
-                // if no usable bins, be conservative
                 if (groups.length == 0) return Double.NaN;
 
-                double ll = 0.0;
-                int binsUsed = 0;
+                Fit fit = fitStudentTSharedScale(y, groups, nu, maxIters, sMin);
+                if (!Double.isFinite(fit.s) || !(fit.s > 0)) return Double.NaN;
 
-                for (int[] g : groups) {
-                    int m = g.length;
-                    if (m < minBinSize) continue;
+                double ll = studentTLogLikSharedScale(y, groups, fit.muByGroup, fit.s, nu);
 
-                    // variance within bin
-                    double v = sampleVarianceOnIndexSet(y, g);
-                    if (!(v > 0) || !Double.isFinite(v)) v = 1e-12;
+                // BIC-like penalty: k = (#bins means) + (shared scale)
+                int B = groups.length;
+                int kParams = B + 1;
+                double penalty = 0.5 * kParams * Math.log(n);
 
-                    ll += -0.5 * m * log(v);
-                    binsUsed++;
-                }
-
-                if (binsUsed == 0) return Double.NaN;
-
-                int kParams = binsUsed * (countVarianceParam ? 2 : 1);
-                double pen = 0.5 * penaltyMultiplier * kParams * log(n);
-
-                return ll - pen;
+                double score = ll - penalty;
+                if (!Double.isFinite(score)) return Double.NaN;
+                return score;
 
             } catch (RuntimeException e) {
-                TetradLogger.getInstance().log(e.getMessage());
+                if (verbose) TetradLogger.getInstance().log(e.getMessage());
                 return Double.NaN;
             }
         });
@@ -154,189 +162,367 @@ public final class MinimaxHistogramScore implements Score, EffectiveSampleSizeSe
 
     @Override
     public List<Node> getVariables() {
-        return new ArrayList<>(variables);
+        return variables;
     }
 
     @Override
     public int getSampleSize() {
-        return data.getNumRows();
-    }
-
-    @Override
-    public int getMaxDegree() {
-        return (int) Math.ceil(Math.log(Math.max(5, nEff)));
-    }
-
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        int i = variables.indexOf(y);
-        int[] parents = new int[z.size()];
-        for (int t = 0; t < z.size(); t++) parents[t] = variables.indexOf(z.get(t));
-        double s = localScore(i, parents);
-        return Double.isNaN(s) || Double.isInfinite(s);
-    }
-
-    @Override
-    public boolean isEffectEdge(double bump) {
-        return bump > 0;
-    }
-
-    public DataModel getDataModel() {
-        return data;
-    }
-
-    @Override
-    public int getEffectiveSampleSize() {
-        return nEff;
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int nEff) {
-        this.nEff = (nEff < 0) ? this.sampleSize : nEff;
-        resetCache();
+        return sampleSize;
     }
 
     @Override
     public String toString() {
-        return "Minimax Histogram Score (piecewise-constant, continuous)";
+        return "Minimax Histogram Score (Student-t, shared scale)";
     }
 
-    // -------------------- tuning knobs --------------------
+    // -------------------- knobs --------------------
 
     public void setBinsPerDim(int b) {
         this.binsPerDim = Math.max(2, b);
-        resetCache();
-        groupCache.clear();
+        clearCaches();
     }
 
     public void setMinBinSize(int m) {
         this.minBinSize = Math.max(3, m);
-        resetCache();
+        clearCaches();
+    }
+
+    public void setNu(double nu) {
+        if (!(nu > 2.0) || !Double.isFinite(nu)) { // >2 gives finite variance; you can relax if you want
+            throw new IllegalArgumentException("nu must be finite and > 2");
+        }
+        this.nu = nu;
+        localScoreCache.clear();
+    }
+
+    public void setMaxIters(int iters) {
+        this.maxIters = Math.max(1, iters);
+        localScoreCache.clear();
+    }
+
+    public void setScaleFloor(double sMin) {
+        if (!(sMin > 0) || !Double.isFinite(sMin)) throw new IllegalArgumentException("sMin must be finite and > 0");
+        this.sMin = sMin;
+        localScoreCache.clear();
+    }
+
+    public void setRows(List<Integer> rows) {
+        this.rows = rows;
+        clearCaches();
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    private void clearCaches() {
         groupCache.clear();
+        localScoreCache.clear();
     }
 
-    /** 1.0 ~ BIC-ish. Larger => stronger penalty => sparser graphs. */
-    public void setPenaltyMultiplier(double c) {
-        if (!(c > 0) || !Double.isFinite(c)) throw new IllegalArgumentException("penaltyMultiplier must be > 0");
-        this.penaltyMultiplier = c;
-        resetCache();
-    }
+    // -------------------- fitting: Student-t with bin means + shared scale --------------------
 
-    /** If false: penalize 1 param/bin (mean). If true: 2 params/bin (mean+variance). */
-    public void setCountVarianceParam(boolean on) {
-        this.countVarianceParam = on;
-        resetCache();
-    }
+    private record Fit(double[] muByGroup, double s) {}
 
-    // -------------------- internals --------------------
+    /**
+     * Fits μ_b per group and a shared scale s using an IRLS/EM-style iteration.
+     * We use weights w_i = (ν+1)/(ν + (r_i/s)^2).
+     */
+    private static Fit fitStudentTSharedScale(double[] y, int[][] groups, double nu, int maxIters, double sMinAbs) {
+        final int n = y.length;
+        final int B = groups.length;
 
-    private void resetCache() {
-        localScoreCacheRef.set(new ConcurrentHashMap<>());
-    }
+        // init mu per group as mean, and pooled scale as robust-ish (MAD of residuals)
+        double[] mu = new double[B];
+        for (int b = 0; b < B; b++) {
+            int[] g = groups[b];
+            double m = 0.0;
+            for (int idx : g) m += y[idx];
+            mu[b] = m / g.length;
+        }
 
-    private static long cacheKey(int target, int[] parents,
-                                 int binsPerDim, int minBinSize,
-                                 double penaltyMultiplier, boolean countVar,
-                                 int nEff) {
-        long h = 1469598103934665603L;
-        h = (h ^ target) * 1099511628211L;
-        for (int p : parents) h = (h ^ p) * 1099511628211L;
-        h = (h ^ binsPerDim) * 1099511628211L;
-        h = (h ^ minBinSize) * 1099511628211L;
-        h = (h ^ Double.doubleToLongBits(penaltyMultiplier)) * 1099511628211L;
-        h = (h ^ (countVar ? 1L : 0L)) * 1099511628211L;
-        h = (h ^ nEff) * 1099511628211L;
-        return h;
-    }
+        double s = initialPooledScale(y, groups, mu);
+        s = Math.max(s, sMinAbs);
 
-    private int[] validRows(int[] vars) {
-        int n = sampleSize;
-        int[] tmp = new int[n];
-        int m = 0;
+        // iterate
+        double[] w = new double[n];
+        for (int iter = 0; iter < maxIters; iter++) {
 
-        outer:
-        for (int r = 0; r < n; r++) {
-            for (int v : vars) {
-                double val = data.getDouble(r, v);
-                if (Double.isNaN(val)) continue outer;
+            // E-step weights
+            for (int b = 0; b < B; b++) {
+                int[] g = groups[b];
+                double mub = mu[b];
+                for (int idx : g) {
+                    double r = y[idx] - mub;
+                    double u = r / s;
+                    double denom = nu + u * u;
+                    w[idx] = (nu + 1.0) / denom;
+                }
             }
-            tmp[m++] = r;
+
+            // M-step: update mu_b as weighted mean
+            for (int b = 0; b < B; b++) {
+                int[] g = groups[b];
+                double num = 0.0, den = 0.0;
+                for (int idx : g) {
+                    double wi = w[idx];
+                    num += wi * y[idx];
+                    den += wi;
+                }
+                if (den > 0) mu[b] = num / den;
+            }
+
+            // update shared scale (pooled)
+            double ss = 0.0;
+            for (int b = 0; b < B; b++) {
+                int[] g = groups[b];
+                double mub = mu[b];
+                for (int idx : g) {
+                    double r = y[idx] - mub;
+                    ss += w[idx] * r * r;
+                }
+            }
+            double sNew = Math.sqrt(Math.max(ss / Math.max(1, n), 0.0));
+            sNew = Math.max(sNew, sMinAbs);
+
+            // convergence check (cheap)
+            if (Math.abs(sNew - s) <= 1e-6 * (s + 1.0)) {
+                s = sNew;
+                break;
+            }
+            s = sNew;
         }
-        return Arrays.copyOf(tmp, m);
+
+        return new Fit(mu, s);
     }
 
-    private double[] extract1D(int varIndex, int[] rows, int n) {
-        double[] x = new double[n];
-        if (rows == null) {
-            for (int r = 0; r < n; r++) x[r] = data.getDouble(r, varIndex);
-        } else {
-            for (int i = 0; i < n; i++) x[i] = data.getDouble(rows[i], varIndex);
-        }
-        return x;
-    }
-
-    private static double sampleVariance(double[] y) {
+    private static double initialPooledScale(double[] y, int[][] groups, double[] muByGroup) {
+        // pooled MAD of residuals across all bins
         int n = y.length;
-        double mean = 0.0;
-        for (double v : y) mean += v;
-        mean /= n;
-
-        double ss = 0.0;
-        for (double v : y) {
-            double d = v - mean;
-            ss += d * d;
+        double[] r = new double[n];
+        for (int b = 0; b < groups.length; b++) {
+            int[] g = groups[b];
+            double mu = muByGroup[b];
+            for (int idx : g) r[idx] = y[idx] - mu;
         }
-        return ss / Math.max(1, (n - 1));
+        // MAD around median
+        double med = medianCopy(r);
+        for (int i = 0; i < n; i++) r[i] = Math.abs(r[i] - med);
+        double mad = medianCopy(r);
+        // 1.4826 converts MAD -> sigma for Normal; still a decent robust scale init
+        double s = 1.4826 * mad;
+        if (!Double.isFinite(s) || !(s > 0)) {
+            // fallback to pooled sd
+            double mean = 0.0;
+            for (double v : y) mean += v;
+            mean /= n;
+            double ss = 0.0;
+            for (double v : y) {
+                double d = v - mean;
+                ss += d * d;
+            }
+            s = Math.sqrt(ss / Math.max(1, n - 1));
+        }
+        return s;
     }
 
-    private static double sampleVarianceOnIndexSet(double[] y, int[] idx) {
-        int n = idx.length;
-        double mean = 0.0;
-        for (int i : idx) mean += y[i];
-        mean /= n;
+    private static double studentTLogLikSharedScale(
+            double[] y, int[][] groups, double[] muByGroup, double s, double nu
+    ) {
+        final int n = y.length;
+        if (!(s > 0) || !Double.isFinite(s)) return Double.NaN;
 
-        double ss = 0.0;
-        for (int i : idx) {
-            double d = y[i] - mean;
-            ss += d * d;
+        // constant term per observation
+        double c = logGamma((nu + 1.0) / 2.0) - logGamma(nu / 2.0) - 0.5 * Math.log(nu * Math.PI);
+
+        double ll = 0.0;
+        double logS = Math.log(s);
+
+        for (int b = 0; b < groups.length; b++) {
+            int[] g = groups[b];
+            double mu = muByGroup[b];
+            for (int idx : g) {
+                double u = (y[idx] - mu) / s;
+                double term = 1.0 + (u * u) / nu;
+                ll += c - logS - 0.5 * (nu + 1.0) * Math.log(term);
+            }
         }
-        return ss / Math.max(1, (n - 1));
+
+        if (!Double.isFinite(ll)) return Double.NaN;
+        return ll;
     }
 
-    public int[] append(int[] z, int x) {
-        int[] out = Arrays.copyOf(z, z.length + 1);
-        out[z.length] = x;
+    // -------------------- grouping: quantile binning --------------------
+
+    private int[][] computeGroups(int[] zIdx, List<Integer> useRows) {
+        int n = useRows.size();
+        int d = zIdx.length;
+        if (d == 0) return new int[][]{range(n)};
+
+        // Pull Z into local array Z[n][d]
+        double[][] Z = new double[n][d];
+        for (int i = 0; i < n; i++) {
+            int r = useRows.get(i);
+            for (int j = 0; j < d; j++) Z[i][j] = data.getDouble(r, zIdx[j]);
+        }
+
+        // Quantile edges per dim: edges[j][k] for k=1..binsPerDim-1
+        double[][] edges = new double[d][binsPerDim - 1];
+        for (int j = 0; j < d; j++) {
+            double[] col = new double[n];
+            for (int i = 0; i < n; i++) col[i] = Z[i][j];
+            Arrays.sort(col);
+            for (int k = 1; k < binsPerDim; k++) {
+                int q = (int) Math.floor((k * (n - 1.0)) / binsPerDim);
+                edges[j][k - 1] = col[q];
+            }
+        }
+
+        // Assign bin ids using mixed radix
+        int[] binId = new int[n];
+        int radix = binsPerDim;
+
+        for (int i = 0; i < n; i++) {
+            int id = 0;
+            int mult = 1;
+            for (int j = 0; j < d; j++) {
+                double v = Z[i][j];
+                double[] ej = edges[j];
+                int b = upperBound(ej, v); // 0..binsPerDim-1
+                id += b * mult;
+                mult *= radix;
+            }
+            binId[i] = id;
+        }
+
+        // Group indices by binId
+        Map<Integer, IntArrayList> map = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            map.computeIfAbsent(binId[i], k -> new IntArrayList()).add(i);
+        }
+
+        ArrayList<int[]> groups = new ArrayList<>();
+        for (IntArrayList g : map.values()) {
+            if (g.size() >= minBinSize) groups.add(g.toArray());
+        }
+
+        return groups.toArray(new int[0][]);
+    }
+
+    // -------------------- missingness row selection --------------------
+
+    private List<Integer> rowsCompleteFor(int yIdx, int[] zIdx, List<Integer> baseRows) {
+        List<Integer> out = new ArrayList<>(baseRows.size());
+        for (int r : baseRows) {
+            double vy = data.getDouble(r, yIdx);
+            if (Double.isNaN(vy)) continue;
+
+            boolean ok = true;
+            for (int j : zIdx) {
+                double vz = data.getDouble(r, j);
+                if (Double.isNaN(vz)) { ok = false; break; }
+            }
+            if (ok) out.add(r);
+        }
         return out;
     }
 
-    private static int[] concat(int i, int[] parents) {
-        int[] all = new int[parents.length + 1];
-        all[0] = i;
-        System.arraycopy(parents, 0, all, 1, parents.length);
-        return all;
+    private List<Integer> listRows() {
+        if (rows != null) return rows;
+        int n = data.getNumRows();
+        List<Integer> r = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) r.add(i);
+        return r;
     }
 
-    // -------------------- group cache + grouping (quantile grid) --------------------
+    // -------------------- utilities --------------------
+
+    private static Map<String, Integer> indexMap(List<Node> vars) {
+        Map<String, Integer> m = new HashMap<>();
+        for (int i = 0; i < vars.size(); i++) m.put(vars.get(i).getName(), i);
+        return m;
+    }
+
+    private static int upperBound(double[] edges, double v) {
+        int lo = 0, hi = edges.length;
+        while (lo < hi) {
+            int mid = (lo + hi) >>> 1;
+            if (v > edges[mid]) lo = mid + 1;
+            else hi = mid;
+        }
+        return lo;
+    }
+
+    private static int[] range(int n) {
+        int[] r = new int[n];
+        for (int i = 0; i < n; i++) r[i] = i;
+        return r;
+    }
+
+    // helper list
+    private static final class IntArrayList {
+        private int[] a = new int[16];
+        private int n = 0;
+        void add(int v) { if (n == a.length) a = Arrays.copyOf(a, a.length * 2); a[n++] = v; }
+        int size() { return n; }
+        int[] toArray() { return Arrays.copyOf(a, n); }
+    }
+
+    // -------------------- logGamma (Lanczos) --------------------
+
+    private static double logGamma(double x) {
+        // Lanczos approximation, good enough for stats usage
+        double[] p = {
+                676.5203681218851,
+                -1259.1392167224028,
+                771.32342877765313,
+                -176.61502916214059,
+                12.507343278686905,
+                -0.13857109526572012,
+                9.9843695780195716e-6,
+                1.5056327351493116e-7
+        };
+        if (x < 0.5) {
+            // reflection
+            return Math.log(Math.PI) - Math.log(Math.sin(Math.PI * x)) - logGamma(1.0 - x);
+        }
+        x -= 1.0;
+        double a = 0.99999999999980993;
+        for (int i = 0; i < p.length; i++) a += p[i] / (x + i + 1.0);
+        double t = x + p.length - 0.5;
+        return 0.5 * Math.log(2.0 * Math.PI) + (x + 0.5) * Math.log(t) - t + Math.log(a);
+    }
+
+    // median of a copy
+    private static double medianCopy(double[] x) {
+        double[] a = Arrays.copyOf(x, x.length);
+        Arrays.sort(a);
+        int n = a.length;
+        if (n == 0) return Double.NaN;
+        if ((n & 1) == 1) return a[n / 2];
+        return 0.5 * (a[n / 2 - 1] + a[n / 2]);
+    }
+
+    // -------------------- caches --------------------
 
     private static final class GroupCache {
         private final ConcurrentHashMap<Key, int[][]> cache = new ConcurrentHashMap<>();
 
-        int[][] getGroups(MinimaxHistogramScore owner, int[] zIdx, int[] rows, int n) {
-            long rowsSig = rowsSignature(rows, n);
+        int[][] getGroups(MinimaxHistogramScore owner, int[] zIdx, List<Integer> rows) {
+            long rowsSig = rowsSignature(rows);
             Key key = new Key(zIdx, rowsSig, owner.binsPerDim, owner.minBinSize);
-            return cache.computeIfAbsent(key, k -> computeGroups(owner.data, zIdx, rows, n, owner.binsPerDim, owner.minBinSize));
+            return cache.computeIfAbsent(key, k -> owner.computeGroups(zIdx, rows));
         }
 
         void clear() { cache.clear(); }
 
-        private static long rowsSignature(int[] rows, int n) {
-            if (rows == null) return 0xCAFEBABEL ^ n;
-            long h = 1469598103934665603L;
+        static long rowsSignature(List<Integer> rows) {
+            long h = 1469598103934665603L; // FNV-1a 64
             for (int r : rows) {
                 h ^= (r * 0x9E3779B97F4A7C15L);
                 h *= 1099511628211L;
             }
-            h ^= rows.length;
+            h ^= rows.size();
             h *= 1099511628211L;
             return h;
         }
@@ -358,76 +544,39 @@ public final class MinimaxHistogramScore implements Score, EffectiveSampleSizeSe
                         && Arrays.equals(z, k.z);
             }
         }
+    }
 
-        private static int[][] computeGroups(
-                DataSet data, int[] zIdx, int[] rows, int n,
-                int binsPerDim, int minBinSize
-        ) {
-            int d = zIdx.length;
-
-            // Pull Z into local array Z[n][d]
-            double[][] Z = new double[n][d];
-            for (int i = 0; i < n; i++) {
-                int r = (rows == null) ? i : rows[i];
-                for (int j = 0; j < d; j++) Z[i][j] = data.getDouble(r, zIdx[j]);
-            }
-
-            // quantile edges per dim
-            double[][] edges = new double[d][binsPerDim - 1];
-            for (int j = 0; j < d; j++) {
-                double[] col = new double[n];
-                for (int i = 0; i < n; i++) col[i] = Z[i][j];
-                Arrays.sort(col);
-                for (int k = 1; k < binsPerDim; k++) {
-                    int q = (int) floor((k * (n - 1.0)) / binsPerDim);
-                    edges[j][k - 1] = col[q];
-                }
-            }
-
-            int[] binId = new int[n];
-            int radix = binsPerDim;
-
-            for (int i = 0; i < n; i++) {
-                int id = 0;
-                int mult = 1;
-                for (int j = 0; j < d; j++) {
-                    double v = Z[i][j];
-                    int b = upperBound(edges[j], v); // 0..binsPerDim-1
-                    id += b * mult;
-                    mult *= radix;
-                }
-                binId[i] = id;
-            }
-
-            Map<Integer, IntArrayList> map = new HashMap<>();
-            for (int i = 0; i < n; i++) {
-                map.computeIfAbsent(binId[i], kk -> new IntArrayList()).add(i);
-            }
-
-            ArrayList<int[]> groups = new ArrayList<>();
-            for (IntArrayList g : map.values()) {
-                if (g.size() >= minBinSize) groups.add(g.toArray());
-            }
-
-            return groups.toArray(new int[0][]);
+    private record ScoreKey(
+            int target, int[] z, long rowsSig,
+            int binsPerDim, int minBinSize,
+            double nu, int maxIters, double sMin
+    ) {
+        ScoreKey {
+            z = (z == null ? new int[0] : Arrays.copyOf(z, z.length));
         }
 
-        private static int upperBound(double[] edges, double v) {
-            int lo = 0, hi = edges.length;
-            while (lo < hi) {
-                int mid = (lo + hi) >>> 1;
-                if (v > edges[mid]) lo = mid + 1;
-                else hi = mid;
-            }
-            return lo;
+        @Override public int hashCode() {
+            int h = Integer.hashCode(target);
+            h = 31 * h + Arrays.hashCode(z);
+            h = 31 * h + Long.hashCode(rowsSig);
+            h = 31 * h + Integer.hashCode(binsPerDim);
+            h = 31 * h + Integer.hashCode(minBinSize);
+            h = 31 * h + Double.hashCode(nu);
+            h = 31 * h + Integer.hashCode(maxIters);
+            h = 31 * h + Double.hashCode(sMin);
+            return h;
         }
 
-        private static final class IntArrayList {
-            private int[] a = new int[16];
-            private int n = 0;
-            void add(int v) { if (n == a.length) a = Arrays.copyOf(a, a.length * 2); a[n++] = v; }
-            int size() { return n; }
-            int[] toArray() { return Arrays.copyOf(a, n); }
+        @Override public boolean equals(Object o) {
+            if (!(o instanceof ScoreKey k)) return false;
+            return target == k.target
+                    && rowsSig == k.rowsSig
+                    && binsPerDim == k.binsPerDim
+                    && minBinSize == k.minBinSize
+                    && Double.compare(nu, k.nu) == 0
+                    && maxIters == k.maxIters
+                    && Double.compare(sMin, k.sMin) == 0
+                    && Arrays.equals(z, k.z);
         }
     }
 }

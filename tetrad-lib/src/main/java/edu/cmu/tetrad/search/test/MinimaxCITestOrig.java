@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *  - tests dependence in bins via sum (m-1) r^2
  *  - calibrates by within-bin permutation of Y
  */
-public final class MinimaxCITest implements IndependenceTest, RowsSettable {
+public final class MinimaxCITestOrig implements IndependenceTest, RowsSettable {
     private final DataSet data;
     private final List<Node> variables;
     private final Map<String, Integer> indexMap;
@@ -48,7 +48,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
     private MinimaxBinningConfig binningCfg = new MinimaxBinningConfig(4, 3);
     private final MinimaxGroupCache groupCache = new MinimaxGroupCache();
 
-    public MinimaxCITest(DataSet data, double alpha) {
+    public MinimaxCITestOrig(DataSet data, double alpha) {
         if (!data.isContinuous()) throw new IllegalArgumentException("MinimaxCITest currently requires continuous DataSet.");
         this.data = data;
         this.variables = Collections.unmodifiableList(new ArrayList<>(data.getVariables()));

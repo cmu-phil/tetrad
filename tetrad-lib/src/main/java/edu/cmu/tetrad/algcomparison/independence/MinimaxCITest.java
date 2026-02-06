@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.MinimaxBinningConfig;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -43,7 +44,7 @@ import java.util.List;
 @TestOfIndependence(
         name = "Minimax CI Test",
         command = "minimax-ci-test",
-        dataType = DataType.Continuous
+        dataType = DataType.Mixed
 )
 @General
 public class MinimaxCITest implements IndependenceWrapper {
@@ -66,11 +67,25 @@ public class MinimaxCITest implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
 
-        edu.cmu.tetrad.search.test.MinimaxCITest gcm = new edu.cmu.tetrad.search.test.MinimaxCITest((DataSet) dataSet, 0.01);
+//        edu.cmu.tetrad.search.test.MinimaxCITest gcm = new edu.cmu.tetrad.search.test.MinimaxCITest((DataSet) dataSet,
+//                parameters.getDouble(Params.ALPHA));
+        edu.cmu.tetrad.search.test.GoldMinimaxCITest gcm = new edu.cmu.tetrad.search.test.GoldMinimaxCITest((DataSet) dataSet,
+                parameters.getDouble(Params.ALPHA));
         gcm.setVerbose(false);
-        gcm.setRidge(1e-2);
-        gcm.setRffFeatures(400);   // try 100, 200, 400
-        gcm.setRffSigma(2);      // try 0.5, 1.0, 2.0
+
+//        gcm.setBinsPerContZ(4);
+//        gcm.setMinStratumSize(6);
+
+                //	•	binsPerContZ (default 4)
+        //	•	minStratumSize (default 6 or 8)
+
+//        gcm.setPermutations(500);
+//        gcm.setPermSeed(12345);
+//        gcm.setRidge(1e-2);
+//        gcm.setRffFeatures((int) (4 * Math.sqrt(((DataSet) dataSet).getNumRows())));
+//        gcm.setRffFeatures(200);   // try 100, 200, 400
+//        gcm.setRffSigma(2);      // try 0.5, 1.0, 2.0
+        gcm.setAlpha(parameters.getDouble(Params.ALPHA));
 
         return new CachedIndependenceQueries(gcm);
     }
@@ -94,7 +109,7 @@ public class MinimaxCITest implements IndependenceWrapper {
      */
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return DataType.Mixed;
     }
 
     /**
@@ -105,14 +120,14 @@ public class MinimaxCITest implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
-        params.add(Params.KCI_USE_APPROXIMATION);
+//        params.add(Params.KCI_USE_APPROXIMATION);
         params.add(Params.ALPHA);
-        params.add(Params.SCALING_FACTOR);
-        params.add(Params.KCI_NUM_BOOTSTRAPS);
-        params.add(Params.KCI_EPSILON);
-        params.add(Params.KERNEL_TYPE);
-        params.add(Params.POLYNOMIAL_DEGREE);
-        params.add(Params.POLYNOMIAL_CONSTANT);
+//        params.add(Params.SCALING_FACTOR);
+//        params.add(Params.KCI_NUM_BOOTSTRAPS);
+//        params.add(Params.KCI_EPSILON);
+//        params.add(Params.KERNEL_TYPE);
+//        params.add(Params.POLYNOMIAL_DEGREE);
+//        params.add(Params.POLYNOMIAL_CONSTANT);
         return params;
     }
 }
