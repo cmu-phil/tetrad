@@ -71,12 +71,14 @@ public class MinimaxCITest implements IndependenceWrapper {
 
         test.setPermutations(500);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
-//        test.setBinsPerContXY(Params.BINS_PER_CONT_XY);
-//        test.setBinsPerContZ(Params.BINS_PER_CONT_Z);
-//        test.setMaxCellsPerStratum(Params.MAX_CELLS_PER_STRATUM);
-//        test.setMaxObservedLevelsPerVar(Params.MAX_OBSERVED_LEVELS_PER_VAR);
-//        test.setMinStratumSize(Params.MIN_STRATUM_SIZE);
-        test.setUseMaxAcrossStrata(false);
+
+
+        test.setBinsPerContXY(parameters.getInt(Params.BINS_PER_CONT_XY));
+        test.setBinsPerContZ(parameters.getInt(Params.BINS_PER_CONT_Z));
+        test.setMaxCellsPerStratum(parameters.getInt(Params.MAX_CELLS_PER_STRATUM));
+        test.setMaxObservedLevelsPerVar(parameters.getInt(Params.MAX_OBSERVED_LEVELS_PER_VAR));
+        test.setMinStratumSize(parameters.getInt(Params.MIN_STRATUM_SIZE));
+        test.setUseMaxAcrossStrata(parameters.getBoolean(Params.USE_MAX_ACROSS_STRATA));
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
 //        test.setBinsPerContZ(4);
@@ -124,12 +126,12 @@ public class MinimaxCITest implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
         params.add(Params.VERBOSE);
-//        params.add(Params.BINS_PER_CONT_XY);
-//        params.add(Params.BINS_PER_CONT_Z);
-//        params.add(Params.MAX_CELLS_PER_STRATUM);
-//        params.add(Params.MAX_OBSERVED_LEVELS_PER_VAR);
-//        params.add(Params.MIN_STRATUM_SIZE);
-//        params.add(Params.USE_MAX_ACROSS_STRATA);
+        params.add(Params.BINS_PER_CONT_XY);
+        params.add(Params.BINS_PER_CONT_Z);
+        params.add(Params.MAX_CELLS_PER_STRATUM);
+        params.add(Params.MAX_OBSERVED_LEVELS_PER_VAR);
+        params.add(Params.MIN_STRATUM_SIZE);
+        params.add(Params.USE_MAX_ACROSS_STRATA);
         return params;
     }
 }

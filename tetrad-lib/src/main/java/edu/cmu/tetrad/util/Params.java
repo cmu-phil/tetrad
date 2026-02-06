@@ -1206,6 +1206,31 @@ public final class Params {
      * Constant <code>EXCLUDE_SELECTION_BIAS="excludeSelectionBias"</code>
      */
     public static final String EXCLUDE_SELECTION_BIAS = "excludeSelectionBias";
+    /**
+     * Constant <code>BINS_PER_CONT_XY="binsPerContXY"</code>
+     */
+    public static final String BINS_PER_CONT_XY = "binsPerContXY";
+    /**
+     * Constant <code>BINS_PER_CONT_Z="binsPerContZ"</code>
+     */
+    public static final String BINS_PER_CONT_Z = "binsPerContZ";
+    /**
+     * Constant <code>MAX_CELLS_PER_STRATUM="maxCellsPerStratum"</code>
+     */
+    public static final String MAX_CELLS_PER_STRATUM = "maxCellsPerStratum";
+    /**
+     * Constant <code>MAX_OBSERVED_LEVELS_PER_VAR="maxObservedLevelsPerVar"</code>
+     */
+    public static final String MAX_OBSERVED_LEVELS_PER_VAR = "maxObservedLevelsPerVar";
+    /**
+     * Constant <code>MIN_STRATUM_SIZE="minStratumSize"</code>
+     */
+    public static final String MIN_STRATUM_SIZE = "minStratumSize";
+    /**
+     * Constant <code>USE_MAX_ACROSS_STRATA="useMaxAcrossStrata"</code>
+     */
+    public static final String USE_MAX_ACROSS_STRATA = "useMaxAcrossStrata";
+
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

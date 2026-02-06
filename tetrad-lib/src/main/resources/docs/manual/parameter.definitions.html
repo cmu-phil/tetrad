@@ -5791,3 +5791,169 @@ Source:
     </ul>
 
 
+    === binsPerContXY ===
+    <h3 class="parameter_description" id="binsPerContXY">binsPerContXY</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="binsPerContXY_short_desc">Bins per continuous X/Y variable</span>
+        </li>
+        <li>Long Description:
+            <span id="binsPerContXY_long_desc">
+            Number of quantile bins used to discretize continuous X and Y variables
+            within each conditioning stratum. Larger values increase sensitivity to
+            nonlinear dependence but require more data per stratum.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="binsPerContXY_default_value">4</span>
+        </li>
+        <li>Lower Bound:
+            <span id="binsPerContXY_lower_bound">2</span>
+        </li>
+        <li>Upper Bound:
+            <span id="binsPerContXY_upper_bound">20</span>
+        </li>
+        <li>Value Type:
+            <span id="binsPerContXY_value_type">Integer</span>
+        </li>
+    </ul>
+
+    === binsPerContZ ===
+    <h3 class="parameter_description" id="binsPerContZ">binsPerContZ</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="binsPerContZ_short_desc">Bins per continuous Z variable</span>
+        </li>
+        <li>Long Description:
+            <span id="binsPerContZ_long_desc">
+            Number of quantile bins used to discretize continuous conditioning (Z)
+            variables when forming strata. Increasing this value yields finer
+            conditioning but increases the number of strata and data requirements.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="binsPerContZ_default_value">3</span>
+        </li>
+        <li>Lower Bound:
+            <span id="binsPerContZ_lower_bound">2</span>
+        </li>
+        <li>Upper Bound:
+            <span id="binsPerContZ_upper_bound">10</span>
+        </li>
+        <li>Value Type:
+            <span id="binsPerContZ_value_type">Integer</span>
+        </li>
+    </ul>
+
+    === maxCellsPerStratum ===
+    <h3 class="parameter_description" id="maxCellsPerStratum">maxCellsPerStratum</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="maxCellsPerStratum_short_desc">Maximum contingency cells per stratum</span>
+        </li>
+        <li>Long Description:
+            <span id="maxCellsPerStratum_long_desc">
+            Upper bound on the number of cells allowed in a contingency table
+            for a single stratum. Strata producing larger tables are skipped
+            to avoid sparse or unstable likelihood-ratio statistics.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="maxCellsPerStratum_default_value">100</span>
+        </li>
+        <li>Lower Bound:
+            <span id="maxCellsPerStratum_lower_bound">4</span>
+        </li>
+        <li>Upper Bound:
+            <span id="maxCellsPerStratum_upper_bound">1000</span>
+        </li>
+        <li>Value Type:
+            <span id="maxCellsPerStratum_value_type">Integer</span>
+        </li>
+    </ul>
+
+
+    === maxObservedLevelsPerVar ===
+    <h3 class="parameter_description" id="maxObservedLevelsPerVar">maxObservedLevelsPerVar</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="maxObservedLevelsPerVar_short_desc">Maximum observed levels per variable</span>
+        </li>
+        <li>Long Description:
+            <span id="maxObservedLevelsPerVar_long_desc">
+            Maximum number of distinct observed levels retained for a discrete
+            variable within a stratum. Variables with more levels are compressed
+            to the most frequent levels to control table size.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="maxObservedLevelsPerVar_default_value">10</span>
+        </li>
+        <li>Lower Bound:
+            <span id="maxObservedLevelsPerVar_lower_bound">2</span>
+        </li>
+        <li>Upper Bound:
+            <span id="maxObservedLevelsPerVar_upper_bound">1000</span>
+        </li>
+        <li>Value Type:
+            <span id="maxObservedLevelsPerVar_value_type">Integer</span>
+        </li>
+    </ul>
+
+
+
+    === minStratumSize ===
+    <h3 class="parameter_description" id="minStratumSize">minStratumSize</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minStratumSize_short_desc">Minimum stratum size</span>
+        </li>
+        <li>Long Description:
+            <span id="minStratumSize_long_desc">
+            Minimum number of samples required for a conditioning stratum to be
+            included in the test. Smaller strata are discarded to ensure stable
+            estimation of contingency-table statistics.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minStratumSize_default_value">20</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minStratumSize_lower_bound">1</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minStratumSize_upper_bound">1000</span>
+        </li>
+        <li>Value Type:
+            <span id="minStratumSize_value_type">Integer</span>
+        </li>
+    </ul>
+
+
+    === useMaxAcrossStrata ===
+    <h3 class="parameter_description" id="useMaxAcrossStrata">useMaxAcrossStrata</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="useMaxAcrossStrata_short_desc">Use maximum across strata</span>
+        </li>
+        <li>Long Description:
+            <span id="useMaxAcrossStrata_long_desc">
+            If enabled, the overall test statistic is computed as the maximum
+            dependence statistic across all strata (minimax aggregation).
+            If disabled, statistics are aggregated more conservatively
+            across strata.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="useMaxAcrossStrata_default_value">true</span>
+        </li>
+        <li>Lower Bound:
+            <span id="useMaxAcrossStrata_lower_bound"></span>
+        </li>
+        <li>Upper Bound:
+            <span id="useMaxAcrossStrata_upper_bound"></span>
+        </li>
+        <li>Value Type:
+            <span id="useMaxAcrossStrata_value_type">Boolean</span>
+        </li>
+    </ul>
