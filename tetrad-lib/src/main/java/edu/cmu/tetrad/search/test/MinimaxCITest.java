@@ -13,26 +13,74 @@ import java.util.concurrent.ConcurrentHashMap;
 import static java.lang.Math.*;
 
 /**
- * "Gold standard fallback" conditional independence test for mixed data (continuous + discrete).
- * <p>
- * Core idea (robust + nonparametric):
- * - Stratify on Z (exact match for discrete Z, quantile bins for continuous Z).
- * - Within each stratum, discretize X and Y locally:
- * * discrete vars: use observed levels (compressed)
- * * continuous vars: quantile bins within the stratum
- * - Compute a per-stratum dependence statistic using a contingency-table G-test (likelihood ratio).
- * - Aggregate by minimax: T = max_s T_s across strata (worst-case conditional dependence).
- * - Obtain p-value by within-stratum permutation of X (shuffling X within each stratum).
- * <p>
- * Why this is a great fallback:
- * - No regression, no optimization, no convergence knobs.
- * - Works under wild nonlinearities/general noise.
- * - Permutation gives finite-sample calibration under the stratified null.
- * <p>
- * Notes:
- * - If Z is empty, there is a single stratum containing all rows.
- * - Strata that are too small are dropped.
- * - Rows with missing values in {X,Y,Z} are dropped automatically per test.
+ * Minimax CI test: a robust, nonparametric conditional independence test for mixed data
+ * (continuous and discrete), intended as a reliable fallback when model-based or
+ * kernel-based tests are unreliable or unavailable.
+ *
+ * <p><b>High-level idea.</b>
+ * To test X ⟂⟂ Y | Z, the data are stratified on Z and dependence between X and Y is
+ * assessed separately within each stratum. The final test statistic is the
+ * <em>worst-case</em> (maximum) dependence observed across strata, yielding a conservative
+ * but highly robust conditional independence test.</p>
+ *
+ * <p><b>Algorithm.</b>
+ * <ol>
+ *   <li><b>Stratification on Z.</b>
+ *     <ul>
+ *       <li>Discrete conditioning variables: exact matching on levels.</li>
+ *       <li>Continuous conditioning variables: quantile binning.</li>
+ *     </ul>
+ *   </li>
+ *   <li><b>Local discretization of X and Y within each stratum.</b>
+ *     <ul>
+ *       <li>Discrete variables: observed levels (with level compression).</li>
+ *       <li>Continuous variables: quantile bins computed <em>within the stratum</em>.</li>
+ *     </ul>
+ *   </li>
+ *   <li><b>Per-stratum dependence test.</b>
+ *     For each stratum, compute a contingency-table likelihood-ratio statistic (G-test)
+ *     measuring dependence between X and Y.</li>
+ *   <li><b>Minimax aggregation.</b>
+ *     The overall test statistic is
+ *     <pre>
+ *       T = max_s T_s
+ *     </pre>
+ *     where T_s is the dependence statistic in stratum s. This targets the strongest
+ *     remaining conditional dependence.</li>
+ *   <li><b>Permutation calibration.</b>
+ *     A p-value is obtained by permuting X <em>within each stratum</em>, recomputing the
+ *     minimax statistic, and comparing to the observed value.</li>
+ * </ol>
+ *
+ * <p><b>Statistical properties.</b>
+ * <ul>
+ *   <li>Fully nonparametric: no regression models, kernels, or smoothness assumptions.</li>
+ *   <li>Finite-sample validity via permutation under the stratified null.</li>
+ *   <li>Conservative by design: detects conditional dependence whenever it persists in
+ *       at least one sufficiently large stratum.</li>
+ * </ul>
+ *
+ * <p><b>Practical behavior.</b>
+ * <ul>
+ *   <li>If Z is empty, all rows form a single stratum and the test reduces to an
+ *       unconditional minimax G-test.</li>
+ *   <li>Strata smaller than a minimum size are discarded to avoid unstable statistics.</li>
+ *   <li>Rows with missing values in any of {X, Y, Z} are dropped automatically for the test.</li>
+ * </ul>
+ *
+ * <p><b>Related references (minimax conditional independence testing).</b>
+ * <ul>
+ *   <li>
+ *     M. Neykov, S. Balakrishnan, and L. Wasserman (2021).
+ *     <i>Minimax Optimal Conditional Independence Testing.</i>
+ *     The Annals of Statistics, 49(4), 2151–2177.
+ *   </li>
+ *   <li>
+ *     L. Wasserman (2006).
+ *     <i>All of Nonparametric Statistics.</i>
+ *     Springer.
+ *   </li>
+ * </ul>
  */
 public final class MinimaxCITest implements IndependenceTest, RowsSettable {
 
@@ -230,6 +278,35 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         return x;
     }
 
+    private static double statCorrSq(double[] x, double[] y) {
+        int n = x.length;
+        if (n < 3) return Double.NaN;
+
+        double sx = 0, sy = 0;
+        for (int i = 0; i < n; i++) {
+            sx += x[i];
+            sy += y[i];
+        }
+        double mx = sx / n, my = sy / n;
+
+        double sxx = 0, syy = 0, sxy = 0;
+        for (int i = 0; i < n; i++) {
+            double dx = x[i] - mx;
+            double dy = y[i] - my;
+            sxx += dx * dx;
+            syy += dy * dy;
+            sxy += dx * dy;
+        }
+
+        if (sxx <= 0 || syy <= 0) return 0.0;
+        double r = sxy / sqrt(sxx * syy);
+        return r * r;
+    }
+
+    // =========================================================
+    // Contingency-table G-test
+    // =========================================================
+
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         double p = getPValue(x, y, z);
@@ -247,10 +324,6 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         }
         return r;
     }
-
-    // =========================================================
-    // Contingency-table G-test
-    // =========================================================
 
     public double getPValue(Node x, Node y, Set<Node> z) {
         Objects.requireNonNull(x);
@@ -319,6 +392,10 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         return (ge + 1.0) / (valid + 1.0);
     }
 
+    // =========================================================
+    // Z-strata
+    // =========================================================
+
     /**
      * If permMap != null, X is read from permuted row indices within useRows-space.
      * Y is always read from the unpermuted row i.
@@ -354,10 +431,6 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         }
     }
 
-    // =========================================================
-    // Z-strata
-    // =========================================================
-
     private double stratumStatistic(int xIdx, int yIdx,
                                     List<Integer> useRows,
                                     int[] groupUseRowsSpace,
@@ -379,6 +452,10 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
                     : gTestContinuousContinuous(xIdx, yIdx, useRows, groupUseRowsSpace, permMap);
         }
     }
+
+    // =========================================================
+    // Missingness / row filtering
+    // =========================================================
 
     private double gTestDiscreteDiscrete(int xIdx, int yIdx,
                                          List<Integer> useRows, int[] g, int[] permMap) {
@@ -440,10 +517,6 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
 
         return gTestFromCounts(counts, rowS, colS, sum(rowS));
     }
-
-    // =========================================================
-    // Missingness / row filtering
-    // =========================================================
 
     private double gTestDiscreteContinuous(int xDiscIdx, int yContIdx,
                                            List<Integer> useRows, int[] g, int[] permMap) {
@@ -510,6 +583,10 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         return gTestFromCounts(counts, rowS, colS, sum(rowS));
     }
 
+    // =========================================================
+    // Public setters / interface
+    // =========================================================
+
     private double gTestContinuousDiscrete(int xContIdx, int yDiscIdx,
                                            List<Integer> useRows, int[] g, int[] permMap) {
         // X is continuous (possibly permuted): collect X values with permutation applied
@@ -573,9 +650,36 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         return gTestFromCounts(counts, rowS, colS, sum(rowS));
     }
 
-    // =========================================================
-    // Public setters / interface
-    // =========================================================
+//    private double gTestContinuousContinuous(int xContIdx, int yContIdx,
+//                                             List<Integer> useRows, int[] g, int[] permMap) {
+//        // Use z-scored columns for stability (matches original).
+//        int m = g.length;
+//        if (m < minStratumSize) return Double.NaN;
+//
+//        double[] x = new double[m];
+//        double[] y = new double[m];
+//        int k = 0;
+//
+//        for (int ii : g) {
+//            int rowY = useRows.get(ii);
+//            int rowX = rowY;
+//            if (permMap != null) rowX = useRows.get(permMap[ii]);
+//
+//            double xv = zCols[xContIdx][rowX];
+//            double yv = zCols[yContIdx][rowY];
+//            if (Double.isNaN(xv) || Double.isNaN(yv)) continue; // should be rare due to useRows filtering
+//
+//            x[k] = xv;
+//            y[k] = yv;
+//            k++;
+//        }
+//
+//        if (k < minStratumSize) return Double.NaN;
+//        if (k != m) { x = Arrays.copyOf(x, k); y = Arrays.copyOf(y, k); }
+//
+//        // correlation^2 is your original “sweet spot” on general noise
+//        return statCorrSq(x, y);
+//    }
 
     private double gTestContinuousContinuous(int xContIdx, int yContIdx,
                                              List<Integer> useRows, int[] g, int[] permMap) {
@@ -619,59 +723,6 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
 
         if (n < minStratumSize) return Double.NaN;
         return gTestFromCounts(counts, rowS, colS, n);
-    }
-
-//    private double gTestContinuousContinuous(int xContIdx, int yContIdx,
-//                                             List<Integer> useRows, int[] g, int[] permMap) {
-//        // Use z-scored columns for stability (matches original).
-//        int m = g.length;
-//        if (m < minStratumSize) return Double.NaN;
-//
-//        double[] x = new double[m];
-//        double[] y = new double[m];
-//        int k = 0;
-//
-//        for (int ii : g) {
-//            int rowY = useRows.get(ii);
-//            int rowX = rowY;
-//            if (permMap != null) rowX = useRows.get(permMap[ii]);
-//
-//            double xv = zCols[xContIdx][rowX];
-//            double yv = zCols[yContIdx][rowY];
-//            if (Double.isNaN(xv) || Double.isNaN(yv)) continue; // should be rare due to useRows filtering
-//
-//            x[k] = xv;
-//            y[k] = yv;
-//            k++;
-//        }
-//
-//        if (k < minStratumSize) return Double.NaN;
-//        if (k != m) { x = Arrays.copyOf(x, k); y = Arrays.copyOf(y, k); }
-//
-//        // correlation^2 is your original “sweet spot” on general noise
-//        return statCorrSq(x, y);
-//    }
-
-    private static double statCorrSq(double[] x, double[] y) {
-        int n = x.length;
-        if (n < 3) return Double.NaN;
-
-        double sx = 0, sy = 0;
-        for (int i = 0; i < n; i++) { sx += x[i]; sy += y[i]; }
-        double mx = sx / n, my = sy / n;
-
-        double sxx = 0, syy = 0, sxy = 0;
-        for (int i = 0; i < n; i++) {
-            double dx = x[i] - mx;
-            double dy = y[i] - my;
-            sxx += dx * dx;
-            syy += dy * dy;
-            sxy += dx * dy;
-        }
-
-        if (sxx <= 0 || syy <= 0) return 0.0;
-        double r = sxy / sqrt(sxx * syy);
-        return r * r;
     }
 
     private double gTestHashedDiscreteDiscrete(int xIdx, int yIdx,

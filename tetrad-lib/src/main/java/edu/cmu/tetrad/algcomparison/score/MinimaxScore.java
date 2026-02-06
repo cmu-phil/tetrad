@@ -126,12 +126,6 @@ public class MinimaxScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.KML_LAMBDA);
-        parameters.add(Params.KML_BANDWIDTH_MULTIPLIER);
-        parameters.add(Params.KML_BW_MAX_ROWS);
-        parameters.add(Params.KML_NUM_FEATURES);
-        parameters.add(Params.KML_FEATURE_TYPE);
-        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
 

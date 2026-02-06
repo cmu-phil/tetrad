@@ -20,23 +20,64 @@ import static java.lang.Math.*;
  * <p><b>Minimax-t RFF BIC score (mixed)</b></p>
  *
  * <p>
- * Local score for structure learning using:
- * <ul>
- *   <li><b>Continuous child Y</b>: Student-t location model with RFF on continuous parents + one-hot on discrete parents,
- *       fit via IRLS (iteratively reweighted ridge).</li>
- *   <li><b>Discrete child Y</b>: Multinomial logistic (softmax) conditional model with ridge penalty, fit via IRLS.</li>
- * </ul>
- *
- * <p>
- * BIC-style local score:
- * {@code score = logLik_hat - 0.5 * edf * log(n)}.
- * For multinomial logistic, edf is approximated by summing ridge edf’s of K-1 one-vs-reference blocks
- * using final IRLS weights.
+ * Local Bayesian Information Criterion (BIC)–style score for structure learning with
+ * mixed continuous and discrete variables. The score is designed to be robust to
+ * heavy-tailed noise, nonlinear effects, and heterogeneous parent sets, while remaining
+ * computationally stable and fully local.
  * </p>
  *
- * <p><b>Missing values</b>:
- * continuous: NaN; discrete: DiscreteVariable.MISSING_VALUE.
- * Rows are filtered per local family (child + parents) when missing exists.
+ * <p><b>Local conditional models.</b>
+ * For each candidate parent set Pa(Y), the conditional distribution of Y is modeled as:
+ * <ul>
+ *   <li><b>Continuous child Y</b>:
+ *     Student-t location model with additive structure.
+ *     Continuous parents enter through Random Fourier Features (RFF);
+ *     discrete parents enter via one-hot encoding.
+ *     Parameters are estimated by iteratively reweighted ridge regression (IRLS),
+ *     yielding robustness to heavy-tailed residuals.</li>
+ *   <li><b>Discrete child Y</b>:
+ *     Multinomial logistic (softmax) regression with ridge regularization.
+ *     Continuous parents are represented via RFF; discrete parents via one-hot encoding.
+ *     Fitting is performed using IRLS.</li>
+ * </ul>
+ * </p>
+ *
+ * <p><b>Score definition.</b>
+ * The local score takes the BIC form
+ * <pre>
+ *   score(Y | Pa(Y)) = logLik_hat − 0.5 · edf · log(n),
+ * </pre>
+ * where {@code logLik_hat} is the maximized (penalized) log-likelihood,
+ * {@code n} is the effective sample size for the local family, and {@code edf}
+ * is the effective degrees of freedom induced by ridge regularization.
+ * </p>
+ *
+ * <p>
+ * For multinomial logistic models, the effective degrees of freedom are approximated
+ * by summing the ridge edf contributions of the {@code K − 1} one-vs-reference
+ * logistic blocks using the final IRLS weights.
+ * </p>
+ *
+ * <p><b>Minimax-t robustness.</b>
+ * The Student-t likelihood induces a reweighting of residuals that downweights extreme
+ * observations, yielding a conservative, worst-case–oriented local score that is
+ * less sensitive to outliers and model misspecification than Gaussian BIC variants.
+ * </p>
+ *
+ * <p><b>Missing data handling.</b>
+ * Missing values are represented as:
+ * <ul>
+ *   <li>continuous variables: {@code NaN}</li>
+ *   <li>discrete variables: {@code DiscreteVariable.MISSING_VALUE}</li>
+ * </ul>
+ * Rows with missing values in the local family
+ * {@code {Y} ∪ Pa(Y)} are excluded on a per-score basis.
+ * </p>
+ *
+ * <p><b>Intended use.</b>
+ * This score is intended for robust causal structure learning in mixed-type data,
+ * particularly as a conservative alternative to Gaussian or purely kernel-based
+ * scores when noise distributions are heavy-tailed or nonlinear effects are present.
  * </p>
  */
 public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSettable {

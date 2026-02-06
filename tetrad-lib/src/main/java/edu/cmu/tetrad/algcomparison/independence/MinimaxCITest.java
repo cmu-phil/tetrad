@@ -66,25 +66,30 @@ public class MinimaxCITest implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
 
-        edu.cmu.tetrad.search.test.MinimaxCITest gcm = new edu.cmu.tetrad.search.test.MinimaxCITest((DataSet) dataSet,
+        edu.cmu.tetrad.search.test.MinimaxCITest test = new edu.cmu.tetrad.search.test.MinimaxCITest((DataSet) dataSet,
                 parameters.getDouble(Params.ALPHA));
-        gcm.setVerbose(false);
 
-//        gcm.setBinsPerContZ(4);
-//        gcm.setMinStratumSize(6);
+        test.setPermutations(500);
+        test.setAlpha(parameters.getDouble(Params.ALPHA));
+//        test.setBinsPerContXY(Params.BINS_PER_CONT_XY);
+//        test.setBinsPerContZ(Params.BINS_PER_CONT_Z);
+//        test.setMaxCellsPerStratum(Params.MAX_CELLS_PER_STRATUM);
+//        test.setMaxObservedLevelsPerVar(Params.MAX_OBSERVED_LEVELS_PER_VAR);
+//        test.setMinStratumSize(Params.MIN_STRATUM_SIZE);
+        test.setUseMaxAcrossStrata(false);
+        test.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
+//        test.setBinsPerContZ(4);
+//        test.setMinStratumSize(6);
 
                 //	•	binsPerContZ (default 4)
         //	•	minStratumSize (default 6 or 8)
 
-//        gcm.setPermutations(500);
-//        gcm.setPermSeed(12345);
-//        gcm.setRidge(1e-2);
-//        gcm.setRffFeatures((int) (4 * Math.sqrt(((DataSet) dataSet).getNumRows())));
-//        gcm.setRffFeatures(200);   // try 100, 200, 400
-//        gcm.setRffSigma(2);      // try 0.5, 1.0, 2.0
-        gcm.setAlpha(parameters.getDouble(Params.ALPHA));
+        test.setPermutations(500);
+        test.setPermSeed(12345);
+        test.setAlpha(parameters.getDouble(Params.ALPHA));
 
-        return new CachedIndependenceQueries(gcm);
+        return new CachedIndependenceQueries(test);
     }
 
     /**
@@ -117,14 +122,14 @@ public class MinimaxCITest implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
-//        params.add(Params.KCI_USE_APPROXIMATION);
         params.add(Params.ALPHA);
-//        params.add(Params.SCALING_FACTOR);
-//        params.add(Params.KCI_NUM_BOOTSTRAPS);
-//        params.add(Params.KCI_EPSILON);
-//        params.add(Params.KERNEL_TYPE);
-//        params.add(Params.POLYNOMIAL_DEGREE);
-//        params.add(Params.POLYNOMIAL_CONSTANT);
+        params.add(Params.VERBOSE);
+//        params.add(Params.BINS_PER_CONT_XY);
+//        params.add(Params.BINS_PER_CONT_Z);
+//        params.add(Params.MAX_CELLS_PER_STRATUM);
+//        params.add(Params.MAX_OBSERVED_LEVELS_PER_VAR);
+//        params.add(Params.MIN_STRATUM_SIZE);
+//        params.add(Params.USE_MAX_ACROSS_STRATA);
         return params;
     }
 }
