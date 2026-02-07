@@ -39,7 +39,7 @@ import static java.lang.Math.*;
  *   <li>Strata smaller than {@code minStratumSize} are discarded.</li>
  * </ul>
  */
-public final class MinimaxCITest implements IndependenceTest, RowsSettable {
+public final class MinimaxCITest2 implements IndependenceTest, RowsSettable {
 
     // ---------------- data ----------------
     private final DataSet data;
@@ -80,50 +80,6 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
     // optional row restriction
     private List<Integer> rows = null;
 
-    // NEW: soften minimax by using a high quantile across strata (q=1.0 recovers minimax-max)
-    private double qMinimax = 0.90;   // default: 90th percentile
-
-//    public void setQMinimax(double q) {
-//        this.qMinimax = Math.max(0.0, Math.min(1.0, q));
-//    }
-
-    public void setQMinimax(double q) {
-        // Keep it in a “soft-max” regime. Below 0.5 can get very liberal.
-        this.qMinimax = Math.max(0.50, Math.min(1.0, q));
-    }
-
-    private double aggregateQuantile(GroupPlan[] plans, SplittableRandom rng, double q) {
-        // Compute one statistic per stratum, then return quantile_q of those statistics.
-        // This is “soft minimax”: q=1.0 is max, q=0.5 is median, etc.
-
-        double[] stats = new double[plans.length];
-        int m = 0;
-
-        for (GroupPlan gp : plans) {
-            double ts = gp.statistic(rng);   // observed if rng==null; permuted if rng!=null
-            if (!Double.isFinite(ts)) continue;
-            stats[m++] = ts;
-        }
-
-        if (m == 0) return Double.NaN;
-        if (m < stats.length) stats = Arrays.copyOf(stats, m);
-
-        return quantile(stats, q);
-    }
-
-    private static double quantile(double[] a, double q) {
-        // a is modified in-place in this pseudocode; copy first if you need to preserve it
-        int n = a.length;
-        if (n == 0) return Double.NaN;
-        if (n == 1) return a[0];
-
-        q = Math.max(0.0, Math.min(1.0, q));
-        int k = (int) Math.floor(q * (n - 1));  // 0..n-1
-        // Use QuickSelect (nth_element) in real code; sort is fine for pseudocode clarity
-        Arrays.sort(a);
-        return a[k];
-    }
-
     /**
      * Constructs a MinimaxCITest instance for performing conditional independence tests
      * using the minimax criterion on the provided data set and significance level.
@@ -132,7 +88,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
      * @param alpha the significance level (alpha) for the test, with typical values in the range (0, 1]
      * @throws NullPointerException if the provided data is null
      */
-    public MinimaxCITest(DataSet data, double alpha) {
+    public MinimaxCITest2(DataSet data, double alpha) {
         if (data == null) throw new NullPointerException("data");
         this.data = data;
         this.variables = Collections.unmodifiableList(new ArrayList<>(data.getVariables()));
@@ -276,6 +232,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
 
         final int n = useRows.size();
 
+        // Build x,y arrays in useRows-space (z-scored is fine; r is affine-invariant)
         double[] xArr = new double[n];
         double[] yArr = new double[n];
         for (int i = 0; i < n; i++) {
@@ -284,8 +241,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
             yArr[i] = zCols[iy][r];
         }
 
-        // observed: softened aggregation across strata
-        double obs = statCorrSqGroupsQuantile(xArr, yArr, strata, qMinimax);
+        double obs = statCorrSqGroups(xArr, yArr, strata);
 
         SplittableRandom rng = new SplittableRandom(seed);
         double[] yPerm = Arrays.copyOf(yArr, n);
@@ -296,7 +252,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         for (int b = 0; b < BB; b++) {
             System.arraycopy(yArr, 0, yPerm, 0, n);
 
-            // shuffle Y within each stratum
+            // shuffle Y within each stratum (Orig does Y; we do the same here)
             for (int[] g : strata) {
                 for (int i = g.length - 1; i > 0; i--) {
                     int j = rng.nextInt(i + 1);
@@ -307,11 +263,11 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
                 }
             }
 
-            // permutation: must match the same softened aggregation
-            double t = statCorrSqGroupsQuantile(xArr, yPerm, strata, qMinimax);
+            double t = statCorrSqGroups(xArr, yPerm, strata);
             if (t >= obs) ge++;
         }
 
+        // smoothing (Orig)
         return (ge + 1.0) / (BB + 1.0);
     }
 
@@ -323,11 +279,11 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
                                     List<Integer> useRows, int[][] strata,
                                     int B, long seed) {
 
+        // Precompute per-stratum discretizations once (critical for speed)
         GroupPlan[] plans = buildPlans(ix, iy, useRows, strata);
         if (plans.length == 0) return 0.0;
 
-        // OBSERVED: quantile across strata
-        double tObs = aggregateQuantile(plans, null, qMinimax);
+        double tObs = aggregate(plans, null);
         if (!Double.isFinite(tObs)) return 1.0;
 
         SplittableRandom rng = new SplittableRandom(seed);
@@ -337,158 +293,13 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         int valid = 0;
 
         for (int b = 0; b < BB; b++) {
-            double tPerm = aggregateQuantile(plans, rng, qMinimax);
-            if (!Double.isFinite(tPerm)) continue;
+            double t = aggregate(plans, rng);
+            if (!Double.isFinite(t)) continue;
             valid++;
-            if (tPerm >= tObs) ge++;
+            if (t >= tObs) ge++;
         }
 
         return (ge + 1.0) / (valid + 1.0);
-    }
-
-    /**
-     * Quantile-aggregated version of the original minimax correlation statistic.
-     *
-     * For each stratum g:
-     *   T_g = (|g| - 1) * r_g^2
-     *
-     * These per-stratum statistics are then aggregated by taking the q-quantile
-     * (e.g. q = 0.75 or 0.8) rather than a hard sum (q=1) or max (q≈1).
-     *
-     * @param xArr   X values in useRows-space
-     * @param yArr   Y values in useRows-space
-     * @param groups strata as indices into xArr/yArr
-     * @param q      quantile in (0,1], e.g. 0.75; q=1.0 reproduces max
-     */
-//    private static double statCorrSqGroupsQuantile(double[] xArr,
-//                                                   double[] yArr,
-//                                                   int[][] groups,
-//                                                   double q) {
-//
-//        if (groups.length == 0) return 0.0;
-//
-//        // Collect per-stratum stats
-//        double[] stats = new double[groups.length];
-//        int k = 0;
-//
-//        for (int[] g : groups) {
-//            int m = g.length;
-//            if (m < 3) continue;
-//
-//            double mx = 0.0, my = 0.0;
-//            for (int idx : g) {
-//                mx += xArr[idx];
-//                my += yArr[idx];
-//            }
-//            mx /= m;
-//            my /= m;
-//
-//            double sxx = 0.0, syy = 0.0, sxy = 0.0;
-//            for (int idx : g) {
-//                double dx = xArr[idx] - mx;
-//                double dy = yArr[idx] - my;
-//                sxx += dx * dx;
-//                syy += dy * dy;
-//                sxy += dx * dy;
-//            }
-//
-//            if (sxx <= 0 || syy <= 0) continue;
-//
-//            double r = sxy / Math.sqrt(sxx * syy);
-//            double T = (m - 1.0) * r * r;
-//
-//            if (Double.isFinite(T)) {
-//                stats[k++] = T;
-//            }
-//        }
-//
-//        if (k == 0) return 0.0;
-//        if (k == 1) return stats[0];
-//
-//        Arrays.sort(stats, 0, k);
-//
-//        // Quantile index
-//        double qq = Math.min(1.0, Math.max(0.0, q));
-//        int idx = (int) Math.floor(qq * (k - 1));
-//
-//        return stats[idx];
-//    }
-
-    private static double statCorrSqGroupsQuantile(double[] xArr,
-                                                   double[] yArr,
-                                                   int[][] groups,
-                                                   double q) {
-
-        if (groups.length == 0) return 0.0;
-
-        // Collect per-stratum stats
-        double[] stats = new double[groups.length];
-        int k = 0;
-
-        for (int[] g : groups) {
-            int m = g.length;
-            if (m < 3) continue;
-
-            double mx = 0.0, my = 0.0;
-            for (int idx : g) { mx += xArr[idx]; my += yArr[idx]; }
-            mx /= m; my /= m;
-
-            double sxx = 0.0, syy = 0.0, sxy = 0.0;
-            for (int idx : g) {
-                double dx = xArr[idx] - mx;
-                double dy = yArr[idx] - my;
-                sxx += dx * dx;
-                syy += dy * dy;
-                sxy += dx * dy;
-            }
-            if (sxx <= 0 || syy <= 0) continue;
-
-            double r = sxy / Math.sqrt(sxx * syy);
-            double T = (m - 1.0) * r * r;
-            if (Double.isFinite(T)) stats[k++] = T;
-        }
-
-        if (k == 0) return 0.0;
-        if (k == 1) return stats[0];
-
-        double qq = Math.min(1.0, Math.max(0.0, q));
-        int idx = (int) Math.floor(qq * (k - 1));
-
-        // nth-element (QuickSelect) instead of sorting all
-        return quickSelect(stats, 0, k - 1, idx);
-    }
-
-    private static double quickSelect(double[] a, int left, int right, int k) {
-        while (true) {
-            if (left == right) return a[left];
-
-            int pivotIndex = partition(a, left, right, (left + right) >>> 1);
-
-            if (k == pivotIndex) return a[k];
-            if (k < pivotIndex) right = pivotIndex - 1;
-            else left = pivotIndex + 1;
-        }
-    }
-
-    private static int partition(double[] a, int left, int right, int pivotIndex) {
-        double pivotValue = a[pivotIndex];
-        swap(a, pivotIndex, right);
-        int storeIndex = left;
-
-        for (int i = left; i < right; i++) {
-            if (a[i] < pivotValue) {
-                swap(a, storeIndex, i);
-                storeIndex++;
-            }
-        }
-        swap(a, right, storeIndex);
-        return storeIndex;
-    }
-
-    private static void swap(double[] a, int i, int j) {
-        double tmp = a[i];
-        a[i] = a[j];
-        a[j] = tmp;
     }
 
     /**
@@ -587,7 +398,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
 
     private Cat buildCategories(int varIdx, List<Integer> useRows, int[] g, int effBinsXY) {
         if (isDiscrete(varIdx)) {
-            // Collect observed levels for this stratum
+            // Collect levels
             int[] lev = new int[g.length];
             int n = 0;
             for (int ii : g) {
@@ -599,89 +410,42 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
             if (n < minStratumSize) return null;
             if (n != lev.length) lev = Arrays.copyOf(lev, n);
 
-            // Count unique once
+            // If too many unique levels, hash to effBinsXY (small & stable)
             int unique = approxUniqueCount(lev, maxObservedLevelsPerVar + 1);
-
-            // Policy: if too many levels, prefer Top-(L-1)+OTHER (more stable than hashing),
-            // and only hash if you want a hard cap tied to effBinsXY.
             if (unique > maxObservedLevelsPerVar) {
-                // Option A (recommended): Top-(L-1)+OTHER, exactly maxObservedLevelsPerVar categories
-                int K = Math.max(2, maxObservedLevelsPerVar);
-                int[] codes = compressTopLPlusOther(lev, K);
+                int K = Math.max(2, effBinsXY);
+                int[] codes = new int[lev.length];
+                for (int i = 0; i < lev.length; i++) codes[i] = floorMod(mix32(lev[i]), K);
                 return new Cat(codes, K);
-
-                // Option B (alternative): Hash down to effBinsXY (smaller K, but more random behavior)
-                // int K = Math.max(2, effBinsXY);
-                // int[] codes = new int[lev.length];
-                // for (int i = 0; i < lev.length; i++) codes[i] = floorMod(mix32(lev[i]), K);
-                // return new Cat(codes, K);
             }
 
-            // Compress to 0..K-1 in encounter order (deterministic)
-            HashMap<Integer, Integer> map = new HashMap<>(unique * 2);
-            int next = 0;
-            int[] codes = new int[lev.length];
-            for (int i = 0; i < lev.length; i++) {
-                Integer idx = map.get(lev[i]);
-                if (idx == null) {
-                    idx = next++;
-                    map.put(lev[i], idx);
+            // Otherwise compress deterministically, with Top-L + OTHER if needed.
+            int[] codes;
+            int K;
+
+            if (approxUniqueCount(lev, maxObservedLevelsPerVar + 1) > maxObservedLevelsPerVar) {
+                // Top-(L-1) + OTHER
+                K = Math.max(2, maxObservedLevelsPerVar);
+                codes = compressTopLPlusOther(lev, K);
+                // compressTopLPlusOther returns exactly K categories when compression happens
+            } else {
+                // Compress to 0..K-1 in encounter order
+                HashMap<Integer, Integer> map = new HashMap<>();
+                int next = 0;
+                codes = new int[lev.length];
+                for (int i = 0; i < lev.length; i++) {
+                    Integer idx = map.get(lev[i]);
+                    if (idx == null) {
+                        idx = next++;
+                        map.put(lev[i], idx);
+                    }
+                    codes[i] = idx;
                 }
-                codes[i] = idx;
+                K = next;
             }
-            return new Cat(codes, next);
-        }
 
-//        if (isDiscrete(varIdx)) {
-//            // Collect levels
-//            int[] lev = new int[g.length];
-//            int n = 0;
-//            for (int ii : g) {
-//                int row = useRows.get(ii);
-//                int v = data.getInt(row, varIdx);
-//                if (v == DiscreteVariable.MISSING_VALUE) continue; // should not happen after filtering
-//                lev[n++] = v;
-//            }
-//            if (n < minStratumSize) return null;
-//            if (n != lev.length) lev = Arrays.copyOf(lev, n);
-//
-//            // If too many unique levels, hash to effBinsXY (small & stable)
-//            int unique = approxUniqueCount(lev, maxObservedLevelsPerVar + 1);
-//            if (unique > maxObservedLevelsPerVar) {
-//                int K = Math.max(2, effBinsXY);
-//                int[] codes = new int[lev.length];
-//                for (int i = 0; i < lev.length; i++) codes[i] = floorMod(mix32(lev[i]), K);
-//                return new Cat(codes, K);
-//            }
-//
-//            // Otherwise compress deterministically, with Top-L + OTHER if needed.
-//            int[] codes;
-//            int K;
-//
-//            if (approxUniqueCount(lev, maxObservedLevelsPerVar + 1) > maxObservedLevelsPerVar) {
-//                // Top-(L-1) + OTHER
-//                K = Math.max(2, maxObservedLevelsPerVar);
-//                codes = compressTopLPlusOther(lev, K);
-//                // compressTopLPlusOther returns exactly K categories when compression happens
-//            } else {
-//                // Compress to 0..K-1 in encounter order
-//                HashMap<Integer, Integer> map = new HashMap<>();
-//                int next = 0;
-//                codes = new int[lev.length];
-//                for (int i = 0; i < lev.length; i++) {
-//                    Integer idx = map.get(lev[i]);
-//                    if (idx == null) {
-//                        idx = next++;
-//                        map.put(lev[i], idx);
-//                    }
-//                    codes[i] = idx;
-//                }
-//                K = next;
-//            }
-//
-//            return new Cat(codes, K);
-//        }
-        else {
+            return new Cat(codes, K);
+        } else {
             // Continuous: quantile binning within this stratum (observed, fixed edges)
             double[] vals = new double[g.length];
             int n = 0;
@@ -803,41 +567,18 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
 
             final int n = xObs.length;
 
-//            // Choose X codes: observed or permuted within-stratum
-//            if (rng == null) {
-//                System.arraycopy(xObs, 0, xPerm, 0, n);
-//            } else {
-//                System.arraycopy(xObs, 0, xPerm, 0, n);
-//                // Fisher–Yates shuffle xPerm (within this group)
-//                for (int i = n - 1; i > 0; i--) {
-//                    int j = rng.nextInt(i + 1);
-//                    int tmp = xPerm[i];
-//                    xPerm[i] = xPerm[j];
-//                    xPerm[j] = tmp;
-//                }
-//            }
-
-
-            // Choose Y codes: observed or permuted within-stratum
+            // Choose X codes: observed or permuted within-stratum
             if (rng == null) {
-                System.arraycopy(yObs, 0, xPerm, 0, n); // reuse xPerm as yPerm scratch
+                System.arraycopy(xObs, 0, xPerm, 0, n);
             } else {
-                System.arraycopy(yObs, 0, xPerm, 0, n);
+                System.arraycopy(xObs, 0, xPerm, 0, n);
+                // Fisher–Yates shuffle xPerm (within this group)
                 for (int i = n - 1; i > 0; i--) {
                     int j = rng.nextInt(i + 1);
                     int tmp = xPerm[i];
                     xPerm[i] = xPerm[j];
                     xPerm[j] = tmp;
                 }
-            }
-
-            // Fill contingency using xObs and permutedY
-            for (int i = 0; i < n; i++) {
-                int xi = xObs[i];
-                int yi = xPerm[i]; // permuted y
-                counts[xi][yi]++;
-                rowS[xi]++;
-                colS[yi]++;
             }
 
             // Reset margins/counts
@@ -1288,50 +1029,20 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         return lo;
     }
 
-//    private static double[] quantileEdges(double[] x, int bins) {
-//        bins = max(2, bins);
-//        double[] a = Arrays.copyOf(x, x.length);
-//        Arrays.sort(a);
-//
-//        double[] edges = new double[bins - 1];
-//        int n = a.length;
-//
-//        for (int b = 1; b < bins; b++) {
-//            double q = b / (double) bins;
-//            int idx = (int) floor(q * (n - 1));
-//            idx = min(max(0, idx), n - 1);
-//            edges[b - 1] = a[idx];
-//        }
-//        return edges;
-//    }
-
     private static double[] quantileEdges(double[] x, int bins) {
-        bins = Math.max(2, bins);
+        bins = max(2, bins);
         double[] a = Arrays.copyOf(x, x.length);
         Arrays.sort(a);
 
-        int n = a.length;
         double[] edges = new double[bins - 1];
+        int n = a.length;
 
-        double last = Double.NEGATIVE_INFINITY;
         for (int b = 1; b < bins; b++) {
             double q = b / (double) bins;
-            int idx = (int) Math.floor(q * (n - 1));
-            idx = Math.min(Math.max(0, idx), n - 1);
-
-            double e = a[idx];
-
-            // Ensure edges are nondecreasing and try to “nudge” forward on ties
-            if (e <= last) {
-                int j = idx;
-                while (j + 1 < n && a[j] <= last) j++;
-                e = a[j];
-            }
-
-            edges[b - 1] = e;
-            last = e;
+            int idx = (int) floor(q * (n - 1));
+            idx = min(max(0, idx), n - 1);
+            edges[b - 1] = a[idx];
         }
-
         return edges;
     }
 
