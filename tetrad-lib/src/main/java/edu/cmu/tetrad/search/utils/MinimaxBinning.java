@@ -102,8 +102,13 @@ public final class MinimaxBinning {
     }
 
     /**
-     * Returns smallest idx such that v &lt;= edges[idx] (i.e. number of edges &lt; v),
-     * yielding a bin index in 0..edges.length (== binsPerDim-1).
+     * Finds the smallest index in the sorted array {@code edges} such that the value
+     * at that index is greater than or equal to {@code v}.
+     *
+     * @param edges a sorted array of doubles representing boundaries or thresholds
+     * @param v     the value to compare against the elements in {@code edges}
+     * @return the smallest index {@code lo} such that {@code edges[lo] >= v},
+     *         or {@code edges.length} if no such index exists
      */
     public static int upperBound(double[] edges, double v) {
         int lo = 0, hi = edges.length;

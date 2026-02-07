@@ -80,6 +80,14 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
     // optional row restriction
     private List<Integer> rows = null;
 
+    /**
+     * Constructs a MinimaxCITest instance for performing conditional independence tests
+     * using the minimax criterion on the provided data set and significance level.
+     *
+     * @param data the data set to be analyzed; must not be null
+     * @param alpha the significance level (alpha) for the test, with typical values in the range (0, 1]
+     * @throws NullPointerException if the provided data is null
+     */
     public MinimaxCITest(DataSet data, double alpha) {
         if (data == null) throw new NullPointerException("data");
         this.data = data;
@@ -110,6 +118,17 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
     // IndependenceTest
     // =========================================================
 
+    /**
+     * Performs a conditional independence test to determine if two variables, {@code x} and {@code y},
+     * are independent given a set of conditioning variables {@code z}. The test computes a p-value and
+     * compares it to the significance level {@code alpha} to decide independence.
+     *
+     * @param x the first variable being tested for independence; must not be null
+     * @param y the second variable being tested for independence; must not be null
+     * @param z the set of conditioning variables; may be empty but must not be null
+     * @return an {@code IndependenceResult} containing the independence determination, the p-value,
+     *         and additional information about the test
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         double p = getPValue(x, y, z);
@@ -128,6 +147,17 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         return r;
     }
 
+    /**
+     * Calculates the p-value for testing the statistical independence of two nodes
+     * conditioned on a set of nodes in a dataset.
+     *
+     * @param x the first variable (node) to test for independence; must not be null.
+     * @param y the second variable (node) to test for independence; must not be null.
+     * @param z the set of conditioning variables (nodes); must not be null.
+     * @return the p-value indicating the statistical independence between x and y
+     *         conditioned on z. A value closer to 0 indicates stronger evidence
+     *         against independence, while a value closer to 1 supports independence.
+     */
     public double getPValue(Node x, Node y, Set<Node> z) {
         Objects.requireNonNull(x);
         Objects.requireNonNull(y);
@@ -663,85 +693,206 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
     // Public API / setters / interface
     // =========================================================
 
+    /**
+     * Retrieves the list of variable nodes managed by this instance.
+     * These variables typically represent elements or features involved
+     * in statistical or algorithmic processes.
+     *
+     * @return a {@code List<Node>} containing the variable nodes
+     */
     @Override
     public List<Node> getVariables() {
         return variables;
     }
 
+    /**
+     * Retrieves the underlying dataset associated with this instance.
+     * The dataset is used for performing conditional independence tests
+     * and other statistical analyses.
+     *
+     * @return the {@code DataSet} object containing the data managed by this instance
+     */
     @Override
     public DataSet getData() {
         return data;
     }
 
+    /**
+     * Retrieves the list of datasets associated with this instance.
+     * This method returns a list containing the primary dataset used for
+     * conditional independence tests and other statistical analyses.
+     *
+     * @return a {@code List<DataSet>} containing the dataset managed by this instance
+     */
     @Override
     public List<DataSet> getDataSets() {
         return List.of(data);
     }
 
+    /**
+     * Retrieves the significance level (alpha) used for conditional independence tests.
+     * This value represents the threshold for determining statistical significance.
+     *
+     * @return the significance level (alpha) as a {@code double}
+     */
     @Override
     public double getAlpha() {
         return alpha;
     }
 
+    /**
+     * Sets the significance level (alpha) for conditional independence tests.
+     * This value represents the threshold for determining statistical significance.
+     *
+     * @param alpha the significance level (alpha) to set, must be in the range [0,1]
+     */
     public void setAlpha(double alpha) {
         if (alpha < 0 || alpha > 1) throw new IllegalArgumentException("alpha must be in [0,1]");
         this.alpha = alpha;
     }
 
+    /**
+     * Retrieves the sample size of the dataset associated with this instance.
+     * The sample size is equivalent to the number of rows present in the dataset.
+     *
+     * @return the sample size as an {@code int}.
+     */
     @Override
     public int getSampleSize() {
         return data.getNumRows();
     }
 
+    /**
+     * Retrieves the verbosity setting for this instance.
+     * When set to true, the instance will provide detailed output during operations.
+     *
+     * @return the verbosity setting as a {@code boolean}
+     */
     @Override
     public boolean isVerbose() {
         return verbose;
     }
 
+    /**
+     * Sets the verbosity level for this instance.
+     * When verbosity is enabled, detailed information about the
+     * execution process may be logged or displayed.
+     *
+     * @param verbose true to enable verbose output, false to disable it
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets the number of permutations to be used in conditional independence tests.
+     * This value determines the number of random permutations performed to assess statistical significance.
+     *
+     * @param B the number of permutations, must be at least 50
+     */
     public void setPermutations(int B) {
         this.permutations = Math.max(50, B);
     }
 
+    /**
+     * Sets the permutation seed value used for randomization or related operations.
+     *
+     * @param s the seed value to set for permSeed
+     */
     public void setPermSeed(long s) {
         this.permSeed = s;
     }
 
+    /**
+     * Sets the number of bins to be used per container along the Z-axis.
+     * Ensures that the value is at least 2 to maintain valid binning.
+     * Clears the strata cache to refresh any dependent data.
+     *
+     * @param b the desired number of bins per container along the Z-axis;
+     *          must be 2 or more. If a value less than 2 is provided, it
+     *          will default to 2.
+     */
     public void setBinsPerContZ(int b) {
         this.binsPerContZ = Math.max(2, b);
         strataCache.clear();
     }
 
+    /**
+     * Sets the minimum stratum size used in the computation.
+     * The minimum value is constrained to be at least 2.
+     * Updates to this value will clear the existing stratum cache.
+     *
+     * @param m the requested minimum stratum size. If the given value is less than 2,
+     *          the minimum stratum size will default to 2.
+     */
     public void setMinStratumSize(int m) {
         this.minStratumSize = Math.max(2, m);
         strataCache.clear();
     }
 
+    /**
+     * Sets the number of bins per container along the X and Y axes.
+     * Ensures that the value is at least 2.
+     *
+     * @param b the desired number of bins per container. If the value is less than 2, it defaults to 2.
+     */
     public void setBinsPerContXY(int b) {
         this.binsPerContXY = Math.max(2, b);
     }
 
+    /**
+     * Sets the maximum number of observed levels allowed per variable.
+     * Ensures that the value is at least 4.
+     *
+     * @param m the proposed maximum number of observed levels per variable. If the
+     *          provided value is less than 4, the method will set it to 4.
+     */
     public void setMaxObservedLevelsPerVar(int m) {
         this.maxObservedLevelsPerVar = Math.max(4, m);
     }
 
+    /**
+     * Sets the maximum number of cells allowed per stratum. The provided value
+     * is constrained to be no less than 64.
+     *
+     * @param m the proposed maximum number of cells per stratum. If the
+     *          provided value is less than 64, the method will set it to 64.
+     */
     public void setMaxCellsPerStratum(int m) {
         this.maxCellsPerStratum = Math.max(64, m);
     }
 
+    /**
+     * Sets whether the maximum value across strata should be used.
+     *
+     * @param useMaxAcrossStrata true to use the maximum value across strata, false otherwise
+     */
     public void setUseMaxAcrossStrata(boolean useMaxAcrossStrata) {
         this.useMaxAcrossStrata = useMaxAcrossStrata;
     }
 
-    // RowsSettable
+    /**
+     * Retrieves the list of row indices.
+     *
+     * @return a list of integers representing the row indices
+     */
     @Override
     public List<Integer> getRows() {
         return rows;
     }
 
+    /**
+     * Sets the rows to be used in the current operation. Validates each row
+     * to ensure it meets the required conditions and updates the internal
+     * state accordingly.
+     *
+     * @param rows a list of integers representing the rows. Each row must be:
+     *             non-null, non-negative, and within the bounds of available data rows.
+     *             If the input list is null, the rows will be set to null and the
+     *             cache will be cleared.
+     * @throws NullPointerException if any row in the list is null.
+     * @throws IllegalArgumentException if any row is negative or out of bounds.
+     */
     @Override
     public void setRows(List<Integer> rows) {
         if (rows == null) {
@@ -759,6 +910,12 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         strataCache.clear();
     }
 
+    /**
+     * Performs an independence test on a subset of variables.
+     *
+     * @param vars a list of variables (nodes) representing the subset to test for independence.
+     * @return an IndependenceTest instance representing the result or state of the independence test for the specified subset.
+     */
     @Override
     public IndependenceTest indTestSubset(List<Node> vars) {
         // Same behavior as prior version (safe fallback)

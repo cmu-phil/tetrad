@@ -31,6 +31,7 @@ import static java.lang.Math.*;
  *
  * <p><b>Local conditional models.</b>
  * For each candidate parent set Pa(Y), the conditional distribution of Y is modeled as:
+ * </p>
  * <ul>
  *   <li><b>Continuous child Y</b>:
  *     Student-t location model with additive structure.
@@ -43,17 +44,17 @@ import static java.lang.Math.*;
  *     Continuous parents are represented via RFF; discrete parents via one-hot encoding.
  *     Fitting is performed using IRLS.</li>
  * </ul>
- * </p>
  *
  * <p><b>Score definition.</b>
  * The local score takes the BIC form
+ * </p>
  * <pre>
  *   score(Y | Pa(Y)) = logLik_hat − 0.5 · edf · log(n),
  * </pre>
  * where {@code logLik_hat} is the maximized (penalized) log-likelihood,
  * {@code n} is the effective sample size for the local family, and {@code edf}
  * is the effective degrees of freedom induced by ridge regularization.
- * </p>
+ *
  *
  * <p>
  * For multinomial logistic models, the effective degrees of freedom are approximated
@@ -69,13 +70,13 @@ import static java.lang.Math.*;
  *
  * <p><b>Missing data handling.</b>
  * Missing values are represented as:
+ * </p>
  * <ul>
  *   <li>continuous variables: {@code NaN}</li>
  *   <li>discrete variables: {@code DiscreteVariable.MISSING_VALUE}</li>
  * </ul>
  * Rows with missing values in the local family
  * {@code {Y} ∪ Pa(Y)} are excluded on a per-score basis.
- * </p>
  *
  * <p><b>Intended use.</b>
  * This score is intended for robust causal structure learning in mixed-type data,
@@ -328,14 +329,77 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return h;
     }
 
+    private static double[][] softmaxProbsFromPhi(int[] y, int K, int n,
+                                                  double[][] beta,
+                                                  double[][] Phi,
+                                                  double[] logitsScratch) {
+        final int C = K - 1;
+        final double[][] p = new double[n][K];
+
+        for (int i = 0; i < n; i++) {
+            final double[] phi = Phi[i];
+
+            logitsScratch[0] = 0.0;
+            double maxLog = 0.0;
+
+            for (int c = 0; c < C; c++) {
+                double s = 0.0;
+                for (int a = 0; a < phi.length; a++) s += phi[a] * beta[a][c];
+                logitsScratch[c + 1] = s;
+                if (s > maxLog) maxLog = s;
+            }
+
+            double sum = 0.0;
+            for (int k = 0; k < K; k++) {
+                final double e = Math.exp(logitsScratch[k] - maxLog);
+                p[i][k] = e;
+                sum += e;
+            }
+
+            final double inv = 1.0 / sum;
+            for (int k = 0; k < K; k++) p[i][k] *= inv;
+        }
+
+        return p;
+    }
+
+    private static double multinomialLogLikFromPhi(int[] y, int K, int n,
+                                                   double[][] beta,
+                                                   double[][] Phi,
+                                                   double[] logitsScratch) {
+        final int C = K - 1;
+        double ll = 0.0;
+
+        for (int i = 0; i < n; i++) {
+            final double[] phi = Phi[i];
+
+            logitsScratch[0] = 0.0;
+            double maxLog = 0.0;
+
+            for (int c = 0; c < C; c++) {
+                double s = 0.0;
+                for (int a = 0; a < phi.length; a++) s += phi[a] * beta[a][c];
+                logitsScratch[c + 1] = s;
+                if (s > maxLog) maxLog = s;
+            }
+
+            double sum = 0.0;
+            for (int k = 0; k < K; k++) sum += Math.exp(logitsScratch[k] - maxLog);
+
+            ll += (logitsScratch[y[i]] - maxLog) - Math.log(sum);
+        }
+
+        return ll;
+    }
+
     /**
      * Computes the local score for a given variable and its parents based on specific scoring criteria.
      *
-     * @param i        The index of the target variable for which the local score is being computed.
-     * @param parents  An array representing the indices of the parent variables of the target variable.
-     *                 This array may be empty if the target variable has no parents.
-     * @return         The computed local score for the given variable and its parents. Returns
-     *                 {@code Double.NaN} if the computation is invalid or cannot be performed.
+     * @param i       The index of the target variable for which the local score is being computed.
+     * @param parents An array representing the indices of the parent variables of the target variable.
+     *                This array may be empty if the target variable has no parents.
+     * @return The computed local score for the given variable and its parents. Returns
+     * {@code Double.NaN} if the computation is invalid or cannot be performed.
      */
     @Override
     public double localScore(int i, int... parents) {
@@ -412,7 +476,7 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
      * @param y The index of the target variable for which the score difference is being computed.
      * @param z An array representing the indices of the parent variables of the target variable before the addition of {@code x}.
      * @return The difference in local scores after adding {@code x} to the parent set of {@code y}.
-     *         Returns {@code Double.NaN} if the computation is invalid or cannot be performed.
+     * Returns {@code Double.NaN} if the computation is invalid or cannot be performed.
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -425,7 +489,7 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
      * variable data to ensure immutability of the original dataset.
      *
      * @return A list of {@code Node} objects representing the variables. If no
-     *         variables are present, an empty list is returned.
+     * variables are present, an empty list is returned.
      */
     @Override
     public List<Node> getVariables() {
@@ -447,7 +511,7 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
      * The returned string provides a concise description of the scoring method.
      *
      * @return A string that indicates the scoring method used, specifically
-     *         "Minimax-t RFF BIC score (mixed)".
+     * "Minimax-t RFF BIC score (mixed)".
      */
     @Override
     public String toString() {
@@ -458,12 +522,16 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
      * Retrieves the dataset associated with this instance.
      *
      * @return The {@code DataModel} object representing the dataset used in the context
-     *         of this instance. The returned dataset provides access to the underlying
-     *         data used for computations and analyses.
+     * of this instance. The returned dataset provides access to the underlying
+     * data used for computations and analyses.
      */
     public DataModel getDataModel() {
         return dataSet;
     }
+
+    // ============================================================================================
+    // Continuous child: Student-t IRLS ridge on features [RFF(Z_cont), OneHot(Z_disc)]
+    // ============================================================================================
 
     /**
      * Retrieves the effective sample size used in the context of this instance.
@@ -492,7 +560,8 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
     }
 
     // ============================================================================================
-    // Continuous child: Student-t IRLS ridge on features [RFF(Z_cont), OneHot(Z_disc)]
+    // Discrete child: multinomial logistic ridge on features [RFF(Z_cont), OneHot(Z_disc)]
+    // Reference class 0, parameters for classes 1..K-1
     // ============================================================================================
 
     /**
@@ -521,11 +590,6 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         this.scale = scale;
         resetCache();
     }
-
-    // ============================================================================================
-    // Discrete child: multinomial logistic ridge on features [RFF(Z_cont), OneHot(Z_disc)]
-    // Reference class 0, parameters for classes 1..K-1
-    // ============================================================================================
 
     /**
      * Sets the ridge parameter used in the computation. The ridge parameter must
@@ -570,6 +634,8 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         resetCache();
     }
 
+    // -------------------- one-hot spec --------------------
+
     /**
      * Sets the random Fourier feature (RFF) seed used for generating random projections.
      * This seed ensures reproducibility of the random projections generated internally.
@@ -592,8 +658,6 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         this.irlsIters = Math.max(1, iters);
         resetCache();
     }
-
-    // -------------------- one-hot spec --------------------
 
     /**
      * Sets the tolerance value for the IRLS (Iterative Reweighted Least Squares) algorithm.
@@ -905,69 +969,6 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         }
 
         return new FitResult(ll, edf);
-    }
-
-    private static double[][] softmaxProbsFromPhi(int[] y, int K, int n,
-                                                  double[][] beta,
-                                                  double[][] Phi,
-                                                  double[] logitsScratch) {
-        final int C = K - 1;
-        final double[][] p = new double[n][K];
-
-        for (int i = 0; i < n; i++) {
-            final double[] phi = Phi[i];
-
-            logitsScratch[0] = 0.0;
-            double maxLog = 0.0;
-
-            for (int c = 0; c < C; c++) {
-                double s = 0.0;
-                for (int a = 0; a < phi.length; a++) s += phi[a] * beta[a][c];
-                logitsScratch[c + 1] = s;
-                if (s > maxLog) maxLog = s;
-            }
-
-            double sum = 0.0;
-            for (int k = 0; k < K; k++) {
-                final double e = Math.exp(logitsScratch[k] - maxLog);
-                p[i][k] = e;
-                sum += e;
-            }
-
-            final double inv = 1.0 / sum;
-            for (int k = 0; k < K; k++) p[i][k] *= inv;
-        }
-
-        return p;
-    }
-
-    private static double multinomialLogLikFromPhi(int[] y, int K, int n,
-                                                   double[][] beta,
-                                                   double[][] Phi,
-                                                   double[] logitsScratch) {
-        final int C = K - 1;
-        double ll = 0.0;
-
-        for (int i = 0; i < n; i++) {
-            final double[] phi = Phi[i];
-
-            logitsScratch[0] = 0.0;
-            double maxLog = 0.0;
-
-            for (int c = 0; c < C; c++) {
-                double s = 0.0;
-                for (int a = 0; a < phi.length; a++) s += phi[a] * beta[a][c];
-                logitsScratch[c + 1] = s;
-                if (s > maxLog) maxLog = s;
-            }
-
-            double sum = 0.0;
-            for (int k = 0; k < K; k++) sum += Math.exp(logitsScratch[k] - maxLog);
-
-            ll += (logitsScratch[y[i]] - maxLog) - Math.log(sum);
-        }
-
-        return ll;
     }
 
     // -------------------- extraction --------------------

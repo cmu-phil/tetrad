@@ -98,11 +98,19 @@ public final class Gcm implements IndependenceTest {
     private int crossFitFolds = 2;     // start with 2-fold (cheap). Try 5 later.
     private long crossFitSeed = 12345L;
 
-    public void setCrossFitSeed(long seed) {
-        this.crossFitSeed = seed;
-        cache.clear();
-    }
-
+    /**
+     * Constructs a new instance of the Gcm class using the provided continuous data set
+     * and the specified alpha value. The alpha value is used as the significance level
+     * for statistical tests. This constructor validates that the input data set is
+     * continuous; otherwise, an exception is thrown.
+     *
+     * @param data the {@code DataSet} object representing the data to be analyzed.
+     *             Must be continuous; otherwise, an {@code IllegalArgumentException}
+     *             is thrown.
+     * @param alpha the significance level for statistical tests, expressed as a
+     *              double. This value must be in the range (0, 1).
+     * @throws IllegalArgumentException if the provided data set is not continuous.
+     */
     public Gcm(DataSet data, double alpha) {
         if (!data.isContinuous()) throw new IllegalArgumentException("GCM test currently requires continuous DataSet.");
         this.data = data;
@@ -313,11 +321,33 @@ public final class Gcm implements IndependenceTest {
         return data.getNumRows();
     }
 
+    /**
+     * Enables or disables cross-fitting in the model. Cross-fitting is a
+     * statistical technique used to mitigate overfitting by splitting
+     * the data into folds for training and testing. When this method
+     * is called, the internal cache is cleared to ensure consistency
+     * with the updated setting.
+     *
+     * @param crossFit a boolean value indicating whether cross-fitting
+     *                 should be enabled ({@code true}) or disabled ({@code false}).
+     */
     public void setCrossFit(boolean crossFit) {
         this.crossFit = crossFit;
         cache.clear();
     }
 
+    /**
+     * Sets the number of folds to be used in the cross-fitting process. Cross-fitting is a
+     * statistical technique for reducing overfitting by splitting data into multiple folds
+     * for training and testing. The value must be at least 2, as fewer folds are not valid
+     * for this method.
+     *
+     * Changing the number of folds will clear the internal cache to ensure that the settings
+     * are applied consistently.
+     *
+     * @param k the number of folds for cross-fitting; must be greater than or equal to 2.
+     * @throws IllegalArgumentException if the provided value is less than 2.
+     */
     public void setCrossFitFolds(int k) {
         if (k < 2) throw new IllegalArgumentException("crossFitFolds must be >= 2");
         this.crossFitFolds = k;
@@ -326,15 +356,40 @@ public final class Gcm implements IndependenceTest {
 
     // -------------------- rows --------------------
 
+    /**
+     * Retrieves a list of data sets associated with the current instance.
+     *
+     * @return a {@code List} of {@code DataSet} objects representing the data sets.
+     */
     @Override
     public List<DataSet> getDataSets() {
         return List.of(data);
     }
 
+    /**
+     * Sets the list of row indices and clears the associated cache to ensure consistency.
+     *
+     * @param rows a list of integers representing the row indices to be set
+     */
     public void setRows(List<Integer> rows) {
         this.rows = rows;
         cache.clear(); // rows changes => invalidate cache
     }
+
+    /**
+     * Sets the seed for the cross-fitting process used in the model. The seed ensures
+     * reproducibility in the random number generation process associated with cross-fitting.
+     * Changing the seed will clear the internal cache to ensure consistency with the updated
+     * settings.
+     *
+     * @param seed the seed value for random number generation in cross-fitting; must be
+     *             a valid long value.
+     */
+    public void setCrossFitSeed(long seed) {
+        this.crossFitSeed = seed;
+        cache.clear();
+    }
+
 
     // -------------------- regressor config --------------------
 
@@ -346,40 +401,100 @@ public final class Gcm implements IndependenceTest {
         return r;
     }
 
+    /**
+     * Sets the type of regressor to be used in the model. If the provided regressor type
+     * is null, it defaults to {@code RegressorType.LINEAR_RIDGE}. The method also clears
+     * the associated cache to ensure that the changes take effect immediately.
+     *
+     * @param t the {@code RegressorType} to be applied. Acceptable values include:
+     *          {@code RegressorType.LINEAR_RIDGE} for regularized linear ridge regression, or
+     *          {@code RegressorType.RFF_RIDGE} for random Fourier features ridge regression.
+     */
     public void setRegressorType(RegressorType t) {
         this.regressorType = (t == null ? RegressorType.LINEAR_RIDGE : t);
         cache.clear();
     }
 
+    /**
+     * Sets the ridge parameter for regularization in the regression model.
+     * The ridge parameter must be a non-negative value. Setting this parameter
+     * modifies the model's behavior by applying ridge regularization, which helps
+     * prevent overfitting. The method also clears the cache to ensure that the changes
+     * take effect immediately.
+     *
+     * @param ridge the ridge regularization parameter to be set; must be greater than or equal to 0.
+     *              A value of 0 corresponds to no regularization, while larger values increase
+     *              the regularization strength.
+     * @throws IllegalArgumentException if the provided ridge parameter is negative.
+     */
     public void setRidge(double ridge) {
         if (ridge < 0) throw new IllegalArgumentException("ridge must be >= 0");
         this.ridge = ridge;
         cache.clear();
     }
 
+    /**
+     * Sets the number of random Fourier features (RFF) to be used in the model.
+     * The number of features must be a positive integer greater than or equal to 1.
+     * This parameter controls the dimensionality of the random feature space and
+     * directly influences the model's capacity and accuracy.
+     *
+     * Updates to this parameter clear the internal cache to ensure consistency
+     * with the new settings.
+     *
+     * @param d the number of random Fourier features to be set; must be >= 1.
+     * @throws IllegalArgumentException if the provided value is less than 1.
+     */
     public void setRffFeatures(int d) {
         if (d < 1) throw new IllegalArgumentException("rffFeatures must be >= 1");
         this.rffFeatures = d;
         cache.clear();
     }
 
+    /**
+     * Sets the bandwidth parameter (sigma) for random Fourier features (RFF).
+     * The sigma parameter defines the scale of the RFF Gaussian kernel and must be a positive value.
+     * Updating this parameter also clears the associated cache to ensure consistency with the new settings.
+     *
+     * @param sigma the bandwidth parameter for RFF; must be greater than 0.
+     * @throws IllegalArgumentException if the provided sigma value is not greater than 0.
+     */
     public void setRffSigma(double sigma) {
         if (!(sigma > 0)) throw new IllegalArgumentException("rffSigma must be > 0");
         this.rffSigma = sigma;
         cache.clear();
     }
 
+    /**
+     * Sets the seed value for the random Fourier features (RFF) used in the model.
+     * The seed ensures reproducibility in the random number generation process
+     * associated with RFF. Changing this seed modifies the randomness underlying
+     * the RFF transformations and clears the associated cache to ensure consistency
+     * of the updated model behavior.
+     *
+     * @param seed the seed value for random number generation in RFF; must be a valid long value.
+     */
     public void setRffSeed(long seed) {
         this.rffSeed = seed;
         cache.clear();
     }
 
+    /**
+     * Retrieves the value of the last computed test statistic (T) in the model.
+     *
+     * @return the last computed test statistic as a double value.
+     */
     public double getLastT() {
         return lastT;
     }
 
     // -------------------- internals --------------------
 
+    /**
+     * Retrieves the p-value from the most recently performed independence test.
+     *
+     * @return the last computed p-value as a double.
+     */
     public double getLastP() {
         return lastP;
     }
@@ -512,7 +627,32 @@ public final class Gcm implements IndependenceTest {
     // ==================== regression + residualization ====================
 
     // -------------------- public API knobs --------------------
-    public enum RegressorType {LINEAR_RIDGE, RFF_RIDGE}
+
+    /**
+     * Represents the type of regressor to be used in a statistical or machine learning model.
+     * This enum provides options for different regression methods used in data analysis.
+     *
+     * Available regressor types:
+     * - LINEAR_RIDGE: Indicates regularized linear ridge regression.
+     * - RFF_RIDGE: Represents random Fourier features ridge regression, which is used
+     *   to approximate kernel methods efficiently.
+     */
+    public enum RegressorType {
+
+        /**
+         * Indicates regularized linear ridge regression.
+         * This regression method applies L2 regularization to reduce overfitting
+         * by penalizing large coefficients, striking a balance between bias and variance.
+         */
+        LINEAR_RIDGE,
+
+        /**
+         * Represents random Fourier features ridge regression.
+         * This regression method utilizes random Fourier features to approximate kernel
+         * functions, enabling efficient large-scale regression modeling. It combines
+         * the benefits of kernel methods and ridge regression while improving scalability.
+         */
+        RFF_RIDGE}
 
     // ==================== Regressors ====================
 
