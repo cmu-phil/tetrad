@@ -1216,6 +1216,8 @@ public final class VertexRepairPanel extends JPanel {
             Graph g2 = candGraphByKey.computeIfAbsent(cand.key(), k -> buildCandidateGraph(finalBase, cand, gt));
             if (g2 == null) continue;
 
+            if (knowledge != null && knowledge.isViolatedBy(g2)) continue;
+
             boolean useLocality = (gt == RepairGraphType.DAG || gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG);
             Set<String> affected = affectedVertices(base, cand, center, g2);
 
