@@ -25,7 +25,7 @@ import static java.lang.Math.*;
  * - This is only as good as your regressors for E[·|Z].
  * - For speed in search, MUST cache residuals by (target, Z, rows).
  */
-public final class GcmIndependenceTest implements IndependenceTest {
+public final class Gcm implements IndependenceTest {
 
     private final DataSet data;
     private final List<Node> variables;
@@ -61,7 +61,7 @@ public final class GcmIndependenceTest implements IndependenceTest {
         cache.clear();
     }
 
-    public GcmIndependenceTest(DataSet data, double alpha) {
+    public Gcm(DataSet data, double alpha) {
         if (!data.isContinuous()) throw new IllegalArgumentException("GCM test currently requires continuous DataSet.");
         this.data = data;
         this.variables = Collections.unmodifiableList(new ArrayList<>(data.getVariables()));
@@ -118,12 +118,11 @@ public final class GcmIndependenceTest implements IndependenceTest {
     public IndependenceTest indTestSubset(List<Node> vars) {
         // Simple (safe) implementation: keep the same dataset, just restrict variable list.
         // If you prefer true sub-DataSet, you can build one, but this keeps overhead low.
-        GcmIndependenceTest t = new GcmIndependenceTest(this.data, this.alpha);
+        Gcm t = new Gcm(this.data, this.alpha);
         t.setVerbose(this.verbose);
         t.setRows(this.rows);
         t.setRegressorType(this.regressorType);
         t.setRidge(this.ridge);
-//        t.setRffFeatures(this.rffFeatures);
         t.setRffFeatures(autoRffFeatures(this.data.getNumRows(), vars.size()));
         t.setRffSigma(this.rffSigma);
         t.setRffSeed(this.rffSeed);
@@ -163,9 +162,6 @@ public final class GcmIndependenceTest implements IndependenceTest {
         Objects.requireNonNull(z);
 
         if (x.equals(y)) return 1.0;
-
-//        List<Integer> useRows = listRows();
-//        int n = useRows.size();
 
         int ix = idx(x);
         int iy = idx(y);
@@ -362,44 +358,6 @@ public final class GcmIndependenceTest implements IndependenceTest {
 
     // ==================== Residual Cache ====================
 
-//    private double[] fitAndResidualize(int targetIdx, int[] zIdx, List<Integer> rows) {
-//        int n = rows.size();
-//        double[] y = new double[n];
-//        for (int i = 0; i < n; i++) y[i] = data.getDouble(rows.get(i), targetIdx);
-//
-//        if (zIdx.length == 0) {
-//            // residualize by mean only
-//            double mean = 0.0;
-//            for (double v : y) mean += v;
-//            mean /= n;
-//
-//            double[] r = new double[n];
-//            for (int i = 0; i < n; i++) r[i] = y[i] - mean;
-//            return r;
-//        }
-//
-//        // Build Z matrix (n x p)
-//        int p = zIdx.length;
-//        double[][] Z = new double[n][p];
-//        for (int i = 0; i < n; i++) {
-//            int row = rows.get(i);
-//            for (int j = 0; j < p; j++) {
-//                Z[i][j] = data.getDouble(row, zIdx[j]);
-//            }
-//        }
-//
-//        Regressor reg = switch (regressorType) {
-//            case LINEAR_RIDGE -> new LinearRidgeRegressor(ridge);
-//            case RFF_RIDGE ->
-//                    new RffRidgeRegressor(ridge, rffFeatures, rffSigma, rffSeed ^ targetIdx ^ Arrays.hashCode(zIdx));
-//        };
-//
-//        double[] yhat = reg.fitPredict(Z, y);
-//        double[] r = new double[n];
-//        for (int i = 0; i < n; i++) r[i] = y[i] - yhat[i];
-//        return r;
-//    }
-
     private double[] fitAndResidualize(int targetIdx, int[] zIdx, List<Integer> rows) {
         int n = rows.size();
         double[] y = new double[n];
@@ -516,14 +474,6 @@ public final class GcmIndependenceTest implements IndependenceTest {
 
     // ==================== Regressors ====================
 
-//    private interface Regressor {
-//        /**
-//         * Fit on (Z,y) and return in-sample predictions yhat (same length as y).
-//         * For speed we keep it in-sample; if you later want cross-fitting, wrap at a higher level.
-//         */
-//        double[] fitPredict(double[][] Z, double[] y);
-//    }
-
     private static final class ResidualCache {
         private final ConcurrentHashMap<Key, double[]> cache = new ConcurrentHashMap<>();
 
@@ -538,7 +488,7 @@ public final class GcmIndependenceTest implements IndependenceTest {
             return h;
         }
 
-        double[] getResiduals(GcmIndependenceTest owner, int targetIdx, int[] zIdx, List<Integer> rows) {
+        double[] getResiduals(Gcm owner, int targetIdx, int[] zIdx, List<Integer> rows) {
 //            Key key = new Key(targetIdx, zIdx, rowsSignature(rows));
             Key key = new Key(
                     targetIdx,
@@ -560,27 +510,6 @@ public final class GcmIndependenceTest implements IndependenceTest {
         void clear() {
             cache.clear();
         }
-
-//        private record Key(int target, int[] z, long rowsSig) {
-//            Key {
-//                // defensive copy so key is immutable
-//                z = (z == null ? new int[0] : Arrays.copyOf(z, z.length));
-//            }
-//
-//            @Override
-//            public int hashCode() {
-//                int h = Integer.hashCode(target);
-//                h = 31 * h + Arrays.hashCode(z);
-//                h = 31 * h + Long.hashCode(rowsSig);
-//                return h;
-//            }
-//
-//            @Override
-//            public boolean equals(Object o) {
-//                if (!(o instanceof Key k)) return false;
-//                return target == k.target && rowsSig == k.rowsSig && Arrays.equals(z, k.z);
-//            }
-//        }
 
         private record Key(int target, int[] z, long rowsSig,
                            boolean crossFit, int kFolds, long cfSeed,
@@ -624,201 +553,7 @@ public final class GcmIndependenceTest implements IndependenceTest {
         }
     }
 
-//    /**
-//     * Linear ridge regression with intercept:
-//     * minimize ||y - (b0 + Zb)||^2 + ridge * ||b||^2
-//     * <p>
-//     * Uses normal equations; OK for small-ish |Z|.
-//     */
-//    private static final class LinearRidgeRegressor implements Regressor {
-//        private final double ridge;
-//
-//        LinearRidgeRegressor(double ridge) {
-//            this.ridge = ridge;
-//        }
-//
-//        @Override
-//        public double[] fitPredict(double[][] Z, double[] y) {
-//            int n = y.length;
-//            int p = Z[0].length;
-//
-//            // center columns and y (intercept handled by centering)
-//            double[] meanZ = new double[p];
-//            for (int j = 0; j < p; j++) {
-//                double s = 0;
-//                for (int i = 0; i < n; i++) s += Z[i][j];
-//                meanZ[j] = s / n;
-//            }
-//            double meany = 0;
-//            for (double v : y) meany += v;
-//            meany /= n;
-//
-//            double[][] X = new double[n][p];
-//            double[] yc = new double[n];
-//            for (int i = 0; i < n; i++) {
-//                yc[i] = y[i] - meany;
-//                for (int j = 0; j < p; j++) X[i][j] = Z[i][j] - meanZ[j];
-//            }
-//
-//            // Compute XtX + ridge*I and Xty
-//            double[][] A = new double[p][p];
-//            double[] b = new double[p];
-//
-//            for (int i = 0; i < n; i++) {
-//                double yi = yc[i];
-//                for (int j = 0; j < p; j++) {
-//                    double xij = X[i][j];
-//                    b[j] += xij * yi;
-//                    for (int k = j; k < p; k++) {
-//                        A[j][k] += xij * X[i][k];
-//                    }
-//                }
-//            }
-//            for (int j = 0; j < p; j++) {
-//                A[j][j] += ridge;
-//                for (int k = j + 1; k < p; k++) A[k][j] = A[j][k];
-//            }
-//
-//            double[] beta = solveSymmetric(A, b);
-//
-//            // predict: yhat = meany + (Z-meanZ)beta
-//            double[] yhat = new double[n];
-//            for (int i = 0; i < n; i++) {
-//                double s = meany;
-//                for (int j = 0; j < p; j++) s += (Z[i][j] - meanZ[j]) * beta[j];
-//                yhat[i] = s;
-//            }
-//            return yhat;
-//        }
-//    }
-
-    // ==================== tiny symmetric solver ====================
-    // Cholesky for SPD; ridge makes it SPD in practice unless you have NaNs/inf or extreme collinearity.
-
-//    /**
-//     * Random Fourier Features + ridge regression.
-//     * Features: phi(z) = sqrt(2/D) * cos(W z + b)
-//     * Then ridge on phi(z) (with intercept handled by centering).
-//     * <p>
-//     * This is a cheap nonlinear conditional mean model.
-//     */
-//    private static final class RffRidgeRegressor implements Regressor {
-//        private final double ridge;
-//        private final int D;
-//        private final double sigma;
-//        private final long seed;
-//
-//        RffRidgeRegressor(double ridge, int D, double sigma, long seed) {
-//            this.ridge = ridge;
-//            this.D = D;
-//            this.sigma = sigma;
-//            this.seed = seed;
-//        }
-//
-//        private static double[] ridgeFitPredictCentered(double[][] X, double[] y, double ridge) {
-//            int n = y.length;
-//            int d = X[0].length;
-//
-//            // center X columns and y
-//            double[] meanX = new double[d];
-//            for (int j = 0; j < d; j++) {
-//                double s = 0;
-//                for (int i = 0; i < n; i++) s += X[i][j];
-//                meanX[j] = s / n;
-//            }
-//            double meany = 0;
-//            for (double v : y) meany += v;
-//            meany /= n;
-//
-//            double[][] Xc = new double[n][d];
-//            double[] yc = new double[n];
-//            for (int i = 0; i < n; i++) {
-//                yc[i] = y[i] - meany;
-//                for (int j = 0; j < d; j++) Xc[i][j] = X[i][j] - meanX[j];
-//            }
-//
-//            double[][] A = new double[d][d];
-//            double[] b = new double[d];
-//
-//            for (int i = 0; i < n; i++) {
-//                double yi = yc[i];
-//                for (int j = 0; j < d; j++) {
-//                    double xij = Xc[i][j];
-//                    b[j] += xij * yi;
-//                    for (int k = j; k < d; k++) {
-//                        A[j][k] += xij * Xc[i][k];
-//                    }
-//                }
-//            }
-//            for (int j = 0; j < d; j++) {
-//                A[j][j] += ridge;
-//                for (int k = j + 1; k < d; k++) A[k][j] = A[j][k];
-//            }
-//
-//            double[] beta = solveSymmetric(A, b);
-//
-//            double[] yhat = new double[n];
-//            for (int i = 0; i < n; i++) {
-//                double s = meany;
-//                for (int j = 0; j < d; j++) s += (X[i][j] - meanX[j]) * beta[j];
-//                yhat[i] = s;
-//            }
-//            return yhat;
-//        }
-//
-//        @Override
-//        public double[] fitPredict(double[][] Z, double[] y) {
-//            int n = y.length;
-//            int p = Z[0].length;
-//
-//            // standardize Z columns (important for RFF stability)
-//            double[] mean = new double[p];
-//            double[] sd = new double[p];
-//            for (int j = 0; j < p; j++) {
-//                double s = 0;
-//                for (int i = 0; i < n; i++) s += Z[i][j];
-//                mean[j] = s / n;
-//                double v = 0;
-//                for (int i = 0; i < n; i++) {
-//                    double d = Z[i][j] - mean[j];
-//                    v += d * d;
-//                }
-//                sd[j] = sqrt(v / max(1, n - 1));
-//                if (!(sd[j] > 0)) sd[j] = 1.0;
-//            }
-//
-//            Random rng = new Random(seed);
-//            // W: D x p with N(0, 1/sigma^2)
-//            double[][] W = new double[D][p];
-//            for (int k = 0; k < D; k++) {
-//                for (int j = 0; j < p; j++) {
-//                    W[k][j] = rng.nextGaussian() / sigma;
-//                }
-//            }
-//            // b: D uniform [0, 2pi)
-//            double[] phase = new double[D];
-//            for (int k = 0; k < D; k++) phase[k] = 2.0 * PI * rng.nextDouble();
-//
-//            double scale = sqrt(2.0 / D);
-//
-//            // Build Phi (n x D)
-//            double[][] Phi = new double[n][D];
-//            for (int i = 0; i < n; i++) {
-//                for (int k = 0; k < D; k++) {
-//                    double dot = 0;
-//                    for (int j = 0; j < p; j++) {
-//                        dot += W[k][j] * ((Z[i][j] - mean[j]) / sd[j]);
-//                    }
-//                    Phi[i][k] = scale * cos(dot + phase[k]);
-//                }
-//            }
-//
-//            // Now ridge regression Phi -> y (reuse linear ridge solver)
-//            return ridgeFitPredictCentered(Phi, y, ridge);
-//        }
-//    }
-
-// ==================== Regressors ====================
+    // ==================== Regressors ====================
 
     private interface Regressor {
         Fitted fit(double[][] Ztrain, double[] yTrain);

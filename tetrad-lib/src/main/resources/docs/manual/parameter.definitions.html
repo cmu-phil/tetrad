@@ -5957,3 +5957,210 @@ Source:
             <span id="useMaxAcrossStrata_value_type">Boolean</span>
         </li>
     </ul>
+
+    === minimaxMaxNu ===
+    <h3 class="parameter_description" id="minimaxMaxNu">minimaxMaxNu</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="minimaxMaxNu_short_desc">Maximum Student-t degrees of freedom (nu)</span></li>
+        <li>Long Description: <span id="minimaxMaxNu_long_desc">
+        Upper bound on the Student-t degrees of freedom parameter used by the Minimax-t model for continuous children.
+        Smaller nu yields heavier tails (more robust to outliers); larger nu approaches a Gaussian.
+        This parameter caps nu to prevent the fit from drifting to effectively Gaussian behavior.
+    </span></li>
+        <li>Default Value: <span id="minimaxMaxNu_default_value">30</span></li>
+        <li>Lower Bound: <span id="minimaxMaxNu_lower_bound">2</span></li>
+        <li>Upper Bound: <span id="minimaxMaxNu_upper_bound">1000</span></li>
+        <li>Value Type: <span id="minimaxMaxNu_value_type">Double</span></li>
+    </ul>
+
+
+    === minimaxScale ===
+    <h3 class="parameter_description" id="minimaxScale">minimaxScale</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="minimaxScale_short_desc">Scale for random Fourier features (RFF)</span></li>
+        <li>Long Description: <span id="minimaxScale_long_desc">
+        Sets the scale used for constructing Random Fourier Features (RFF) for continuous parents in the Minimax score.
+        Larger values produce smoother features (longer length-scale); smaller values allow more rapid variation.
+        This controls the effective complexity of the nonlinear parent representation.
+    </span></li>
+        <li>Default Value: <span id="minimaxScale_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="minimaxScale_lower_bound">1e-6</span></li>
+        <li>Upper Bound: <span id="minimaxScale_upper_bound">1.0e6</span></li>
+        <li>Value Type: <span id="minimaxScale_value_type">Double</span></li>
+    </ul>
+
+
+    === minimaxRidge ===
+    <h3 class="parameter_description" id="minimaxRidge">minimaxRidge</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="minimaxRidge_short_desc">Ridge penalty (L2) for Minimax regression/IRLS</span></li>
+        <li>Long Description: <span id="minimaxRidge_long_desc">
+        Ridge (L2) regularization strength used when fitting Minimax local conditional models.
+        Larger values shrink coefficients more aggressively (more conservative, more stable, smaller edf);
+        smaller values fit more closely to the data but may overfit and be numerically less stable.
+    </span></li>
+        <li>Default Value: <span id="minimaxRidge_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="minimaxRidge_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="minimaxRidge_upper_bound">1.0e12</span></li>
+        <li>Value Type: <span id="minimaxRidge_value_type">Double</span></li>
+    </ul>
+
+
+    === minimaxRffFeatures ===
+    <h3 class="parameter_description" id="minimaxRffFeatures">minimaxRffFeatures</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="minimaxRffFeatures_short_desc">Number of random Fourier features (RFF)</span></li>
+        <li>Long Description: <span id="minimaxRffFeatures_long_desc">
+        Number of random Fourier features used to represent nonlinear effects of continuous parents in the Minimax score.
+        Larger values increase flexibility and runtime/memory cost; smaller values are faster but less expressive.
+    </span></li>
+        <li>Default Value: <span id="minimaxRffFeatures_default_value">200</span></li>
+        <li>Lower Bound: <span id="minimaxRffFeatures_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="minimaxRffFeatures_upper_bound">1000000</span></li>
+        <li>Value Type: <span id="minimaxRffFeatures_value_type">Integer</span></li>
+    </ul>
+
+
+    === minimaxRffSigma ===
+    <h3 class="parameter_description" id="minimaxRffSigma">minimaxRffSigma</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="minimaxRffSigma_short_desc">RFF kernel bandwidth (sigma)</span></li>
+        <li>Long Description: <span id="minimaxRffSigma_long_desc">
+        Bandwidth parameter (sigma) for the random Fourier feature construction used on continuous parents.
+        Smaller sigma yields higher-frequency features (more local variation); larger sigma yields smoother features.
+        This interacts with data scaling, so it is typically tuned relative to standardized inputs.
+    </span></li>
+        <li>Default Value: <span id="minimaxRffSigma_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="minimaxRffSigma_lower_bound">1e-6</span></li>
+        <li>Upper Bound: <span id="minimaxRffSigma_upper_bound">1.0e6</span></li>
+        <li>Value Type: <span id="minimaxRffSigma_value_type">Double</span></li>
+    </ul>
+
+
+    === minimaxIrlsIters ===
+    <h3 class="parameter_description" id="minimaxIrlsIters">minimaxIrlsIters</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="minimaxIrlsIters_short_desc">Maximum IRLS iterations</span></li>
+        <li>Long Description: <span id="minimaxIrlsIters_long_desc">
+        Maximum number of IRLS (iteratively reweighted least squares) iterations used to fit Minimax local models.
+        Increasing this may improve convergence for difficult problems but increases runtime.
+    </span></li>
+        <li>Default Value: <span id="minimaxIrlsIters_default_value">50</span></li>
+        <li>Lower Bound: <span id="minimaxIrlsIters_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="minimaxIrlsIters_upper_bound">10000</span></li>
+        <li>Value Type: <span id="minimaxIrlsIters_value_type">Integer</span></li>
+    </ul>
+
+
+    === gcmRegressorType ===
+    <h3 class="parameter_description" id="gcmRegressorType">gcmRegressorType</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="gcmRegressorType_short_desc">1 = Linear Ridge, 2 = RFF Ridge</span>
+        </li>
+        <li>Long Description:
+            <span id="gcmRegressorType_long_desc">
+            Selects the regression model used by the GCM conditional independence test.
+            The regressor type determines how the conditional mean of each variable
+            is modeled given the conditioning set, ranging from linear to nonlinear
+            (RFF-based) regressors.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="gcmRegressorType_default_value">2</span>
+        </li>
+        <li>Lower Bound:
+            <span id="gcmRegressorType_lower_bound">1</span>
+        </li>
+        <li>Upper Bound:
+            <span id="gcmRegressorType_upper_bound">2</span>
+        </li>
+        <li>Value Type:
+            <span id="gcmRegressorType_value_type">Integer</span>
+        </li>
+    </ul>
+
+
+    === gcmRidge ===
+    <h3 class="parameter_description" id="gcmRidge">gcmRidge</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="gcmRidge_short_desc">Ridge regularization strength</span>
+        </li>
+        <li>Long Description:
+            <span id="gcmRidge_long_desc">
+            Ridge (L2) regularization strength used when fitting regression
+            models within the GCM test. Larger values increase shrinkage
+            and numerical stability; smaller values allow more flexible fits.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="gcmRidge_default_value">1.0</span>
+        </li>
+        <li>Lower Bound:
+            <span id="gcmRidge_lower_bound">0.0</span>
+        </li>
+        <li>Upper Bound:
+            <span id="gcmRidge_upper_bound">1.0e12</span>
+        </li>
+        <li>Value Type:
+            <span id="gcmRidge_value_type">Double</span>
+        </li>
+    </ul>
+
+
+    === gcmRffFeatures ===
+    <h3 class="parameter_description" id="gcmRffFeatures">gcmRffFeatures</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="gcmRffFeatures_short_desc">Number of random Fourier features</span>
+        </li>
+        <li>Long Description:
+            <span id="gcmRffFeatures_long_desc">
+            Number of random Fourier features (RFF) used to represent nonlinear
+            relationships in the GCM regression models.
+            Larger values increase expressiveness and runtime cost.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="gcmRffFeatures_default_value">200</span>
+        </li>
+        <li>Lower Bound:
+            <span id="gcmRffFeatures_lower_bound">0</span>
+        </li>
+        <li>Upper Bound:
+            <span id="gcmRffFeatures_upper_bound">1000000</span>
+        </li>
+        <li>Value Type:
+            <span id="gcmRffFeatures_value_type">Integer</span>
+        </li>
+    </ul>
+
+
+    === gcmRffSigma ===
+    <h3 class="parameter_description" id="gcmRffSigma">gcmRffSigma</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="gcmRffSigma_short_desc">RFF kernel bandwidth (sigma)</span>
+        </li>
+        <li>Long Description:
+            <span id="gcmRffSigma_long_desc">
+            Bandwidth parameter (sigma) for the random Fourier feature
+            construction used in the GCM test.
+            Smaller values produce higher-frequency features; larger values
+            produce smoother features.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="gcmRffSigma_default_value">1.0</span>
+        </li>
+        <li>Lower Bound:
+            <span id="gcmRffSigma_lower_bound">1e-6</span>
+        </li>
+        <li>Upper Bound:
+            <span id="gcmRffSigma_upper_bound">1.0e6</span>
+        </li>
+        <li>Value Type:
+            <span id="gcmRffSigma_value_type">Double</span>
+        </li>
+    </ul>

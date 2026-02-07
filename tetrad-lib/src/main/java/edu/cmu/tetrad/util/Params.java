@@ -1230,6 +1230,46 @@ public final class Params {
      * Constant <code>USE_MAX_ACROSS_STRATA="useMaxAcrossStrata"</code>
      */
     public static final String USE_MAX_ACROSS_STRATA = "useMaxAcrossStrata";
+    /**
+     * Constant <code>MINIMAX_NU="minimaxMaxNu"</code>
+     */
+    public static final String MINIMAX_NU = "minimaxMaxNu";
+    /**
+     * Constant <code>MINIMAX_SCALE="minimaxScale"</code>
+     */
+    public static final String MINIMAX_SCALE = "minimaxScale";
+    /**
+     * Constant <code>MINIMAX_RIDGE="minimaxRidge"</code>
+     */
+    public static final String MINIMAX_RIDGE = "minimaxRidge";
+    /**
+     * Constant <code>MINIMAX_RFF_FEATURES="minimaxRffFeatures"</code>
+     */
+    public static final String MINIMAX_RFF_FEATURES = "minimaxRffFeatures";
+    /**
+     * Constant <code>MINIMAX_RFF_SIGMA="minimaxRffSigma"</code>
+     */
+    public static final String MINIMAX_RFF_SIGMA = "minimaxRffSigma";
+    /**
+     * Constant <code>MINIMAX_IRLS_ITERS="minimaxIrlsIters"</code>
+     */
+    public static final String MINIMAX_IRLS_ITERS = "minimaxIrlsIters";
+    /**
+     * Constant <code>MINIMAX_MAX_ITERATIONS="minimaxMaxIterations"</code>
+     */
+    public static final String GCM_REGRESSOR_TYPE = "gcmRegressorType";
+    /**
+     * Constant <code>MINIMAX_MAX_ITERATIONS="minimaxMaxIterations"</code>
+     */
+    public static final String GCM_RIDGE = "gcmRidge";
+    /**
+     * Constant <code>MINIMAX_MAX_ITERATIONS="minimaxMaxIterations"</code>
+     */
+    public static final String GCM_RFF_FEATURES = "gcmRffFeatures";
+    /**
+     * Constant <code>MINIMAX_MAX_ITERATIONS="minimaxMaxIterations"</code>
+     */
+    public static final String GCM_RFF_SIGMA = "gcmRffSigma";
 
 
     // All parameters that are found in HTML manual documentation

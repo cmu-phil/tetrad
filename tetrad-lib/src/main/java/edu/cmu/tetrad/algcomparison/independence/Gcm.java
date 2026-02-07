@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
-import edu.cmu.tetrad.search.test.GcmIndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -67,14 +66,22 @@ public class Gcm implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
 
-        GcmIndependenceTest gcm = new GcmIndependenceTest((DataSet) dataSet,
+        edu.cmu.tetrad.search.test.Gcm gcm = new edu.cmu.tetrad.search.test.Gcm((DataSet) dataSet,
                 parameters.getDouble(Params.ALPHA));
         // start with something modest:
-        gcm.setVerbose(false);
-        gcm.setRegressorType(GcmIndependenceTest.RegressorType.RFF_RIDGE);
-        gcm.setRidge(1e-2);
-        gcm.setRffFeatures(400);   // try 100, 200, 400
-        gcm.setRffSigma(2);      // try 0.5, 1.0, 2.0
+        gcm.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        edu.cmu.tetrad.search.test.Gcm.RegressorType[] types = edu.cmu.tetrad.search.test.Gcm.RegressorType.values();
+        gcm.setRegressorType(types[parameters.getInt(Params.GCM_REGRESSOR_TYPE) - 1]);
+        gcm.setRidge(parameters.getDouble(Params.GCM_RIDGE));
+        gcm.setRffFeatures(parameters.getInt(Params.GCM_RFF_FEATURES));   // try 100, 200, 400
+        gcm.setRffSigma(parameters.getDouble(Params.GCM_RFF_SIGMA));
+
+//        t.setVerbose(this.verbose);
+//        t.setRegressorType(this.regressorType);
+//        t.setRidge(this.ridge);
+//        t.setRffFeatures(autoRffFeatures(this.data.getNumRows(), vars.size()));
+//        t.setRffSigma(this.rffSigma);
+//        t.setRffSeed(this.rffSeed);// try 0.5, 1.0, 2.0
 
         return new CachedIndependenceQueries(gcm);
     }
@@ -109,14 +116,11 @@ public class Gcm implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
-//        params.add(Params.KCI_USE_APPROXIMATION);
         params.add(Params.ALPHA);
-//        params.add(Params.SCALING_FACTOR);
-//        params.add(Params.KCI_NUM_BOOTSTRAPS);
-//        params.add(Params.KCI_EPSILON);
-//        params.add(Params.KERNEL_TYPE);
-//        params.add(Params.POLYNOMIAL_DEGREE);
-//        params.add(Params.POLYNOMIAL_CONSTANT);
+        params.add(Params.GCM_REGRESSOR_TYPE);
+        params.add(Params.GCM_RIDGE);
+        params.add(Params.GCM_RFF_FEATURES);
+        params.add(Params.GCM_RFF_SIGMA);
         return params;
     }
 }

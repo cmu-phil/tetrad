@@ -78,22 +78,19 @@ public class MinimaxScore implements ScoreWrapper {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
 
-        score.setNu(15);
-        score.setScale(1.0);
-        score.setRidge(1e-1);
-        score.setRffFeatures(Math.min(200, (int) (4 * Math.sqrt(((DataSet) dataSet).getNumRows()))));
-        score.setRffSigma(1.0);
-        score.setIrlsIters(8);
+//        score.setNu(15);
+//        score.setScale(1.0);
+//        score.setRidge(1e-1);
+//        score.setRffFeatures(Math.min(200, (int) (4 * Math.sqrt(((DataSet) dataSet).getNumRows()))));
+//        score.setRffSigma(1.0);
+//        score.setIrlsIters(8);
 
-//        score.setLambda(parameters.getDouble(Params.KML_LAMBDA));
-//        score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
-//        score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
-//        score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
-
-//        score.setNumFeatures(parameters.getInt(Params.KML_NUM_FEATURES));
-//        edu.cmu.tetrad.search.score.FfMl.FeatureType[] values
-//                = edu.cmu.tetrad.search.score.FfMl.FeatureType.values();
-//        score.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
+        score.setNu(parameters.getDouble(Params.MINIMAX_NU));
+        score.setScale(parameters.getDouble(Params.MINIMAX_SCALE));
+        score.setRidge(parameters.getDouble(Params.MINIMAX_RIDGE));
+        score.setRffFeatures(parameters.getInt(Params.MINIMAX_RFF_FEATURES));
+        score.setRffSigma(parameters.getDouble(Params.MINIMAX_RFF_SIGMA));
+        score.setIrlsIters(parameters.getInt(Params.MINIMAX_IRLS_ITERS));
 
         return score;
     }
@@ -126,6 +123,12 @@ public class MinimaxScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
+        parameters.add(Params.MINIMAX_NU);
+        parameters.add(Params.MINIMAX_SCALE);
+        parameters.add(Params.MINIMAX_RIDGE);
+        parameters.add(Params.MINIMAX_RFF_FEATURES);
+        parameters.add(Params.MINIMAX_RFF_SIGMA);
+        parameters.add(Params.MINIMAX_IRLS_ITERS);
         return parameters;
     }
 
