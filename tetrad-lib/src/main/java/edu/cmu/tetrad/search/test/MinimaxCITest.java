@@ -14,72 +14,29 @@ import static java.lang.Math.*;
 
 /**
  * Minimax CI test: a robust, nonparametric conditional independence test for mixed data
- * (continuous and discrete), intended as a reliable fallback when model-based or
- * kernel-based tests are unreliable or unavailable.
+ * (continuous + discrete), intended as a reliable “gold fallback” when model-based or
+ * kernel-based tests are unavailable or brittle.
  *
- * <p><b>High-level idea.</b>
- * To test X ⟂⟂ Y | Z, the data are stratified on Z and dependence between X and Y is
- * assessed separately within each stratum. The final test statistic is the
- * <em>worst-case</em> (maximum) dependence observed across strata, yielding a conservative
- * but highly robust conditional independence test.</p>
+ * <p><b>Key design goal.</b> For the continuous–continuous case, this implementation
+ * follows the original “no-frills” minimax procedure (as in {@code MinimaxCITestOrig})
+ * for speed and behavior parity:
  *
- * <p><b>Algorithm.</b>
- * <ol>
- *   <li><b>Stratification on Z.</b>
- *     <ul>
- *       <li>Discrete conditioning variables: exact matching on levels.</li>
- *       <li>Continuous conditioning variables: quantile binning.</li>
- *     </ul>
- *   </li>
- *   <li><b>Local discretization of X and Y within each stratum.</b>
- *     <ul>
- *       <li>Discrete variables: observed levels (with level compression).</li>
- *       <li>Continuous variables: quantile bins computed <em>within the stratum</em>.</li>
- *     </ul>
- *   </li>
- *   <li><b>Per-stratum dependence test.</b>
- *     For each stratum, compute a contingency-table likelihood-ratio statistic (G-test)
- *     measuring dependence between X and Y.</li>
- *   <li><b>Minimax aggregation.</b>
- *     The overall test statistic is
- *     <pre>
- *       T = max_s T_s
- *     </pre>
- *     where T_s is the dependence statistic in stratum s. This targets the strongest
- *     remaining conditional dependence.</li>
- *   <li><b>Permutation calibration.</b>
- *     A p-value is obtained by permuting X <em>within each stratum</em>, recomputing the
- *     minimax statistic, and comparing to the observed value.</li>
- * </ol>
- *
- * <p><b>Statistical properties.</b>
  * <ul>
- *   <li>Fully nonparametric: no regression models, kernels, or smoothness assumptions.</li>
- *   <li>Finite-sample validity via permutation under the stratified null.</li>
- *   <li>Conservative by design: detects conditional dependence whenever it persists in
- *       at least one sufficiently large stratum.</li>
+ *   <li>Stratify on Z by quantile-binning continuous Z and exact-matching discrete Z.</li>
+ *   <li>Within each stratum, measure dependence via {@code (m-1) r^2} (Pearson correlation).</li>
+ *   <li>Aggregate across strata by summation.</li>
+ *   <li>Calibrate by within-stratum permutation (shuffle Y within each stratum).</li>
  * </ul>
  *
- * <p><b>Practical behavior.</b>
- * <ul>
- *   <li>If Z is empty, all rows form a single stratum and the test reduces to an
- *       unconditional minimax G-test.</li>
- *   <li>Strata smaller than a minimum size are discarded to avoid unstable statistics.</li>
- *   <li>Rows with missing values in any of {X, Y, Z} are dropped automatically for the test.</li>
- * </ul>
+ * <p>When discrete variables are involved (in X, Y, or Z), the test uses a stratified
+ * contingency-table likelihood ratio (G-test) with within-stratum permutation, while
+ * preserving the same stratification mechanism on Z.</p>
  *
- * <p><b>Related references (minimax conditional independence testing).</b>
+ * <p><b>Practical notes.</b></p>
  * <ul>
- *   <li>
- *     M. Neykov, S. Balakrishnan, and L. Wasserman (2021).
- *     <i>Minimax Optimal Conditional Independence Testing.</i>
- *     The Annals of Statistics, 49(4), 2151–2177.
- *   </li>
- *   <li>
- *     L. Wasserman (2006).
- *     <i>All of Nonparametric Statistics.</i>
- *     Springer.
- *   </li>
+ *   <li>If Z is empty, there is a single stratum containing all usable rows.</li>
+ *   <li>Rows with missing values in any of {X, Y, Z} are dropped per test.</li>
+ *   <li>Strata smaller than {@code minStratumSize} are discarded.</li>
  * </ul>
  */
 public final class MinimaxCITest implements IndependenceTest, RowsSettable {
@@ -106,12 +63,15 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
     private int binsPerContZ = 6;
     private int minStratumSize = 6;
 
-    // local discretization of X,Y within a stratum
+    // local discretization of X,Y within a stratum (mixed case)
     private int binsPerContXY = 6;
 
-    // safety bounds (avoid pathological huge contingency tables from high-cardinality discrete vars)
-    private int maxObservedLevelsPerVar = 32;   // per stratum; beyond this, we down-bin discrete by hashing
-    private int maxCellsPerStratum = 1024;      // cap Kx * Ky (post-compression)
+    // safety bounds (avoid pathological huge contingency tables)
+    private int maxObservedLevelsPerVar = 32;
+    private int maxCellsPerStratum = 1024;
+
+    // aggregation for mixed-case G-test (kept for compatibility)
+    // NOTE: continuous-continuous always uses SUM across strata (Orig behavior).
     private boolean useMaxAcrossStrata = false;
 
     // behavior
@@ -150,163 +110,6 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
     // IndependenceTest
     // =========================================================
 
-    private static double gTestFromCounts(int[][] counts, int[] rowS, int[] colS, int n) {
-        if (n <= 0) return Double.NaN;
-
-        double llr = 0.0;
-        int Kx = counts.length;
-        int Ky = counts[0].length;
-
-        for (int i = 0; i < Kx; i++) {
-            int ri = rowS[i];
-            if (ri == 0) continue;
-
-            for (int j = 0; j < Ky; j++) {
-                int nij = counts[i][j];
-                if (nij == 0) continue;
-
-                int cj = colS[j];
-                if (cj == 0) continue;
-
-                double e = (ri * (double) cj) / (double) n;
-                if (e <= 0) continue;
-
-                llr += nij * log(nij / e);
-            }
-        }
-
-        return 2.0 * llr;
-    }
-
-    private static int sum(int[] a) {
-        int s = 0;
-        for (int v : a) s += v;
-        return s;
-    }
-
-    // =========================================================
-    // Minimax statistic: max over strata of per-stratum G-test
-    // =========================================================
-
-    private static Map<String, Integer> indexMap(List<Node> vars) {
-        Map<String, Integer> m = new HashMap<>();
-        for (int i = 0; i < vars.size(); i++) m.put(vars.get(i).getName(), i);
-        return m;
-    }
-
-    private static int[] identity(int n) {
-        int[] p = new int[n];
-        for (int i = 0; i < n; i++) p[i] = i;
-        return p;
-    }
-
-    // ---------------- per-case G-tests ----------------
-
-    private static int[] range(int n) {
-        int[] r = new int[n];
-        for (int i = 0; i < n; i++) r[i] = i;
-        return r;
-    }
-
-    private static long signature(List<Integer> rows) {
-        long h = 1469598103934665603L;
-        for (int r : rows) {
-            h ^= r;
-            h *= 1099511628211L;
-        }
-        return h;
-    }
-
-    private static int binIndex(double[] edges, double v) {
-        int lo = 0, hi = edges.length;
-        while (lo < hi) {
-            int mid = (lo + hi) >>> 1;
-            if (v > edges[mid]) lo = mid + 1;
-            else hi = mid;
-        }
-        return lo;
-    }
-
-    private static double[] quantileEdges(double[] x, int bins) {
-        bins = max(2, bins);
-        double[] a = Arrays.copyOf(x, x.length);
-        Arrays.sort(a);
-
-        double[] edges = new double[bins - 1];
-        int n = a.length;
-
-        for (int b = 1; b < bins; b++) {
-            double q = b / (double) bins;
-            int idx = (int) floor(q * (n - 1));
-            idx = min(max(0, idx), n - 1);
-            edges[b - 1] = a[idx];
-        }
-        return edges;
-    }
-
-    // ---------------- fallback hashed down-binning for high-cardinality discrete ----------------
-
-    private static void zscoreColumnPreserveNaN(double[] in, double[] out) {
-        double sum = 0.0, sum2 = 0.0;
-        int n = 0;
-        for (double v : in) {
-            if (Double.isNaN(v)) continue;
-            sum += v;
-            sum2 += v * v;
-            n++;
-        }
-        if (n < 2) {
-            System.arraycopy(in, 0, out, 0, in.length);
-            return;
-        }
-        double mean = sum / n;
-        double var = (sum2 - n * mean * mean) / (n - 1.0);
-        double sd = sqrt(max(1e-12, var));
-        for (int i = 0; i < in.length; i++) {
-            double v = in[i];
-            out[i] = Double.isNaN(v) ? Double.NaN : (v - mean) / sd;
-        }
-    }
-
-    // fast-ish mixing for hashing discrete levels
-    private static int mix32(int x) {
-        x ^= (x >>> 16);
-        x *= 0x7feb352d;
-        x ^= (x >>> 15);
-        x *= 0x846ca68b;
-        x ^= (x >>> 16);
-        return x;
-    }
-
-    private static double statCorrSq(double[] x, double[] y) {
-        int n = x.length;
-        if (n < 3) return Double.NaN;
-
-        double sx = 0, sy = 0;
-        for (int i = 0; i < n; i++) {
-            sx += x[i];
-            sy += y[i];
-        }
-        double mx = sx / n, my = sy / n;
-
-        double sxx = 0, syy = 0, sxy = 0;
-        for (int i = 0; i < n; i++) {
-            double dx = x[i] - mx;
-            double dy = y[i] - my;
-            sxx += dx * dx;
-            syy += dy * dy;
-            sxy += dx * dy;
-        }
-
-        if (sxx <= 0 || syy <= 0) return 0.0;
-        double r = sxy / sqrt(sxx * syy);
-        return r * r;
-    }
-
-    // =========================================================
-    // Contingency-table G-test
-    // =========================================================
-
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         double p = getPValue(x, y, z);
@@ -335,508 +138,442 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         int iy = idx(y);
         int[] iz = idxSorted(z);
 
-        // drop rows with missing in {X,Y,Z}
+        // Drop rows with missing in {X,Y,Z}
         List<Integer> baseRows = listRows();
         List<Integer> useRows = rowsCompleteFor(ix, iy, iz, baseRows);
-
         int n = useRows.size();
-        if (n < 20) return 0.0; // too little data: treat as dependent (conservative)
+
+        if (n < 20) return 0.0; // conservative guard
 
         int[][] strata = getStrata(iz, useRows);
         if (strata.length == 0) return 0.0;
 
-        // observed statistic (minimax over strata)
-        double tObs = minimaxStatistic(ix, iy, iz, useRows, strata, null);
-        if (!Double.isFinite(tObs)) return 1.0;
+        // Fast path: continuous-continuous with continuous-only conditioning:
+        // EXACTLY the Orig-style stat + permutation.
+        if (isContContContZ(ix, iy, iz)) {
+            return pValueContContOrig(ix, iy, useRows, strata, permutations,
+                    permSeed ^ ix ^ (iy * 1315423911L) ^ Arrays.hashCode(iz));
+        }
 
-        // permutation: shuffle X within each stratum
-        SplittableRandom rng = new SplittableRandom(
-                permSeed ^ (ix * 1315423911L) ^ (iy * 2654435761L) ^ Arrays.hashCode(iz));
+        // Mixed/general path: stratified G-test with within-stratum permutation
+        return pValueMixedGTest(ix, iy, useRows, strata, permutations,
+                permSeed ^ ix ^ (iy * 1315423911L) ^ Arrays.hashCode(iz));
+    }
 
-        int B = Math.max(50, permutations);
+    // =========================================================
+    // Continuous-continuous case: Orig behavior (speed + parity)
+    // =========================================================
+
+    private boolean isContContContZ(int ix, int iy, int[] iz) {
+        if (isDiscrete(ix) || isDiscrete(iy)) return false;
+        for (int j : iz) if (isDiscrete(j)) return false;
+        return true;
+    }
+
+    private static double statCorrSqGroups(double[] x, double[] y, int[][] groups) {
+        double T = 0.0;
+        for (int[] g : groups) {
+            int m = g.length;
+            if (m < 3) continue;
+
+            double mx = 0, my = 0;
+            for (int idx : g) { mx += x[idx]; my += y[idx]; }
+            mx /= m; my /= m;
+
+            double sxx = 0, syy = 0, sxy = 0;
+            for (int idx : g) {
+                double dx = x[idx] - mx;
+                double dy = y[idx] - my;
+                sxx += dx * dx;
+                syy += dy * dy;
+                sxy += dx * dy;
+            }
+            if (sxx <= 0 || syy <= 0) continue;
+
+            double r = sxy / sqrt(sxx * syy);
+            T += (m - 1.0) * r * r;
+        }
+        return T;
+    }
+
+    private double pValueContContOrig(int ix, int iy,
+                                      List<Integer> useRows, int[][] strata,
+                                      int B, long seed) {
+
+        final int n = useRows.size();
+
+        // Build x,y arrays in useRows-space (z-scored is fine; r is affine-invariant)
+        double[] xArr = new double[n];
+        double[] yArr = new double[n];
+        for (int i = 0; i < n; i++) {
+            int r = useRows.get(i);
+            xArr[i] = zCols[ix][r];
+            yArr[i] = zCols[iy][r];
+        }
+
+        double obs = statCorrSqGroups(xArr, yArr, strata);
+
+        SplittableRandom rng = new SplittableRandom(seed);
+        double[] yPerm = Arrays.copyOf(yArr, n);
+
         int ge = 0;
-        int valid = 0;
+        int BB = Math.max(50, B);
 
-        int[] permMap = identity(n);
+        for (int b = 0; b < BB; b++) {
+            System.arraycopy(yArr, 0, yPerm, 0, n);
 
-        for (int b = 0; b < B; b++) {
-            // reset identity
-            for (int i = 0; i < n; i++) permMap[i] = i;
-
-            // shuffle within each stratum (indices are in useRows-space)
+            // shuffle Y within each stratum (Orig does Y; we do the same here)
             for (int[] g : strata) {
                 for (int i = g.length - 1; i > 0; i--) {
                     int j = rng.nextInt(i + 1);
                     int ii = g[i], jj = g[j];
-                    int tmp = permMap[ii];
-                    permMap[ii] = permMap[jj];
-                    permMap[jj] = tmp;
+                    double tmp = yPerm[ii];
+                    yPerm[ii] = yPerm[jj];
+                    yPerm[jj] = tmp;
                 }
             }
 
-            double t = minimaxStatistic(ix, iy, iz, useRows, strata, permMap);
-            if (!Double.isFinite(t)) continue;
+            double t = statCorrSqGroups(xArr, yPerm, strata);
+            if (t >= obs) ge++;
+        }
 
+        // smoothing (Orig)
+        return (ge + 1.0) / (BB + 1.0);
+    }
+
+    // =========================================================
+    // Mixed/general case: stratified G-test with cached plans
+    // =========================================================
+
+    private double pValueMixedGTest(int ix, int iy,
+                                    List<Integer> useRows, int[][] strata,
+                                    int B, long seed) {
+
+        // Precompute per-stratum discretizations once (critical for speed)
+        GroupPlan[] plans = buildPlans(ix, iy, useRows, strata);
+        if (plans.length == 0) return 0.0;
+
+        double tObs = aggregate(plans, null);
+        if (!Double.isFinite(tObs)) return 1.0;
+
+        SplittableRandom rng = new SplittableRandom(seed);
+        int BB = Math.max(50, B);
+
+        int ge = 0;
+        int valid = 0;
+
+        for (int b = 0; b < BB; b++) {
+            double t = aggregate(plans, rng);
+            if (!Double.isFinite(t)) continue;
             valid++;
             if (t >= tObs) ge++;
-
-            // light early-stop (optional but helpful)
-            if (valid >= 25) {
-                double pLower = (ge + 1.0) / (valid + 1.0);
-                double pUpper = (ge + (B - valid) + 1.0) / (B + 1.0);
-                if (pLower > alpha) break;
-                if (pUpper <= alpha) break;
-            }
         }
 
         return (ge + 1.0) / (valid + 1.0);
     }
 
-    // =========================================================
-    // Z-strata
-    // =========================================================
-
     /**
-     * If permMap != null, X is read from permuted row indices within useRows-space.
-     * Y is always read from the unpermuted row i.
+     * If rng != null, for each plan we shuffle X categories within the stratum before computing.
      */
-    private double minimaxStatistic(int xIdx, int yIdx, int[] zIdx,
-                                    List<Integer> useRows, int[][] strata,
-                                    int[] permMap) {
-
+    private double aggregate(GroupPlan[] plans, SplittableRandom rng) {
         if (useMaxAcrossStrata) {
             double maxT = 0.0;
-
-            for (int[] g : strata) {
-                double ts = stratumStatistic(xIdx, yIdx, useRows, g, permMap);
+            for (GroupPlan gp : plans) {
+                double ts = gp.statistic(rng);
                 if (!Double.isFinite(ts)) continue;
                 if (ts > maxT) maxT = ts;
             }
-
             return maxT;
         } else {
             double sumT = 0.0;
-
-            for (int[] g : strata) {
-                double ts = stratumStatistic(xIdx, yIdx, useRows, g, permMap);
+            for (GroupPlan gp : plans) {
+                double ts = gp.statistic(rng);
                 if (!Double.isFinite(ts)) continue;
-
-                // Optional mild weighting by stratum size (helps match “accumulate evidence” feel):
-                // sumT += (g.length - 1.0) * ts;
-                // If you don’t want weighting, just:
                 sumT += ts;
             }
-
             return sumT;
         }
     }
 
-    private double stratumStatistic(int xIdx, int yIdx,
-                                    List<Integer> useRows,
-                                    int[] groupUseRowsSpace,
-                                    int[] permMap) {
-        // Build (possibly permuted) paired samples within this stratum:
-        // i indexes useRows-space.
-        final int m = groupUseRowsSpace.length;
-        if (m < minStratumSize) return Double.NaN;
+    private GroupPlan[] buildPlans(int ix, int iy, List<Integer> useRows, int[][] strata) {
+        ArrayList<GroupPlan> out = new ArrayList<>(strata.length);
 
-        // Gather X and Y values for this stratum (with missing checks).
-        // We will discretize locally.
-        if (isDiscrete(xIdx)) {
-            return isDiscrete(yIdx)
-                    ? gTestDiscreteDiscrete(xIdx, yIdx, useRows, groupUseRowsSpace, permMap)
-                    : gTestDiscreteContinuous(xIdx, yIdx, useRows, groupUseRowsSpace, permMap);
+        for (int[] g : strata) {
+            if (g.length < minStratumSize) continue;
+            GroupPlan gp = buildGroupPlan(ix, iy, useRows, g);
+            if (gp != null) out.add(gp);
+        }
+
+        return out.toArray(new GroupPlan[0]);
+    }
+
+    private GroupPlan buildGroupPlan(int ix, int iy, List<Integer> useRows, int[] g) {
+        final int m = g.length;
+        if (m < minStratumSize) return null;
+
+        // Adaptive bins for continuous X/Y: min(global, floor(sqrt(m))) with a floor of 2.
+        int binsXY = Math.max(2, Math.min(binsPerContXY, (int) Math.floor(Math.sqrt(m))));
+
+        // Also enforce maxCellsPerStratum for contingency tables
+        int maxBinsByCells = Math.max(2, (int) Math.floor(Math.sqrt(maxCellsPerStratum)));
+        binsXY = Math.min(binsXY, maxBinsByCells);
+
+        Cat xCat = buildCategories(ix, useRows, g, binsXY);
+        Cat yCat = buildCategories(iy, useRows, g, binsXY);
+        if (xCat == null || yCat == null) return null;
+
+        if (xCat.K < 2 || yCat.K < 2) {
+            return new GroupPlan(xCat.codes, yCat.codes, xCat.K, yCat.K, true);
+        }
+
+        long cells = (long) xCat.K * (long) yCat.K;
+        if (cells > maxCellsPerStratum) {
+            // Prefer structured reductions over hashing:
+            // - If continuous bins got us here, shrink bins further.
+            // - Otherwise, fall back to a small shared K via deterministic down-binning.
+            int K = Math.max(2, (int) Math.floor(Math.sqrt(maxCellsPerStratum)));
+
+            int[] x = (xCat.K > K) ? downBinDeterministic(xCat.codes, xCat.K, K) : xCat.codes;
+            int[] y = (yCat.K > K) ? downBinDeterministic(yCat.codes, yCat.K, K) : yCat.codes;
+
+            return new GroupPlan(x, y, Math.min(xCat.K, K), Math.min(yCat.K, K), false);
+        }
+
+        return new GroupPlan(xCat.codes, yCat.codes, xCat.K, yCat.K, false);
+    }
+
+    /**
+     * Deterministically down-bin categorical codes in 0..oldK-1 to 0..newK-1 by grouping
+     * adjacent codes. This assumes codes are already "ordered" in a meaningful way for
+     * continuous (quantile) bins; for arbitrary discrete codes it's a reasonable fallback.
+     */
+    private static int[] downBinDeterministic(int[] codes, int oldK, int newK) {
+        if (newK >= oldK) return codes;
+        int[] out = new int[codes.length];
+        for (int i = 0; i < codes.length; i++) {
+            int c = codes[i];
+            // map [0..oldK-1] -> [0..newK-1]
+            int b = (int) ((long) c * (long) newK / (long) oldK);
+            if (b >= newK) b = newK - 1;
+            out[i] = b;
+        }
+        return out;
+    }
+
+    private static int[] hashDown(int[] codes, int K) {
+        int[] out = new int[codes.length];
+        for (int i = 0; i < codes.length; i++) out[i] = floorMod(mix32(codes[i]), K);
+        return out;
+    }
+
+    private Cat buildCategories(int varIdx, List<Integer> useRows, int[] g, int effBinsXY) {
+        if (isDiscrete(varIdx)) {
+            // Collect levels
+            int[] lev = new int[g.length];
+            int n = 0;
+            for (int ii : g) {
+                int row = useRows.get(ii);
+                int v = data.getInt(row, varIdx);
+                if (v == DiscreteVariable.MISSING_VALUE) continue; // should not happen after filtering
+                lev[n++] = v;
+            }
+            if (n < minStratumSize) return null;
+            if (n != lev.length) lev = Arrays.copyOf(lev, n);
+
+            // If too many unique levels, hash to effBinsXY (small & stable)
+            int unique = approxUniqueCount(lev, maxObservedLevelsPerVar + 1);
+            if (unique > maxObservedLevelsPerVar) {
+                int K = Math.max(2, effBinsXY);
+                int[] codes = new int[lev.length];
+                for (int i = 0; i < lev.length; i++) codes[i] = floorMod(mix32(lev[i]), K);
+                return new Cat(codes, K);
+            }
+
+            // Otherwise compress deterministically, with Top-L + OTHER if needed.
+            int[] codes;
+            int K;
+
+            if (approxUniqueCount(lev, maxObservedLevelsPerVar + 1) > maxObservedLevelsPerVar) {
+                // Top-(L-1) + OTHER
+                K = Math.max(2, maxObservedLevelsPerVar);
+                codes = compressTopLPlusOther(lev, K);
+                // compressTopLPlusOther returns exactly K categories when compression happens
+            } else {
+                // Compress to 0..K-1 in encounter order
+                HashMap<Integer, Integer> map = new HashMap<>();
+                int next = 0;
+                codes = new int[lev.length];
+                for (int i = 0; i < lev.length; i++) {
+                    Integer idx = map.get(lev[i]);
+                    if (idx == null) {
+                        idx = next++;
+                        map.put(lev[i], idx);
+                    }
+                    codes[i] = idx;
+                }
+                K = next;
+            }
+
+            return new Cat(codes, K);
         } else {
-            return isDiscrete(yIdx)
-                    ? gTestContinuousDiscrete(xIdx, yIdx, useRows, groupUseRowsSpace, permMap)
-                    : gTestContinuousContinuous(xIdx, yIdx, useRows, groupUseRowsSpace, permMap);
+            // Continuous: quantile binning within this stratum (observed, fixed edges)
+            double[] vals = new double[g.length];
+            int n = 0;
+            for (int ii : g) {
+                int row = useRows.get(ii);
+                double v = data.getDouble(row, varIdx);
+                if (Double.isNaN(v)) continue; // should not happen after filtering
+                vals[n++] = v;
+            }
+            if (n < minStratumSize) return null;
+            if (n != vals.length) vals = Arrays.copyOf(vals, n);
+
+            int bins = Math.max(2, effBinsXY);
+            double[] edges = quantileEdges(vals, bins);
+
+            int[] codes = new int[vals.length];
+            for (int i = 0; i < vals.length; i++) codes[i] = binIndex(edges, vals[i]);
+            return new Cat(codes, bins);
+        }
+    }
+
+    /**
+     * Compress observed discrete levels to at most {@code maxLevels} categories by keeping
+     * the top-(maxLevels-1) most frequent levels and mapping all others to a single OTHER bucket.
+     *
+     * Returns codes in 0..K-1 where K <= maxLevels.
+     */
+    private static int[] compressTopLPlusOther(int[] levels, int maxLevels) {
+        if (maxLevels < 2) throw new IllegalArgumentException("maxLevels must be >= 2");
+
+        // Count frequencies
+        HashMap<Integer, Integer> freq = new HashMap<>();
+        for (int v : levels) freq.merge(v, 1, Integer::sum);
+
+        // If already small enough, just compress deterministically (encounter order)
+        if (freq.size() <= maxLevels) {
+            HashMap<Integer, Integer> map = new HashMap<>(freq.size() * 2);
+            int next = 0;
+            int[] codes = new int[levels.length];
+            for (int i = 0; i < levels.length; i++) {
+                Integer idx = map.get(levels[i]);
+                if (idx == null) {
+                    idx = next++;
+                    map.put(levels[i], idx);
+                }
+                codes[i] = idx;
+            }
+            return codes; // categories = next
+        }
+
+        // Keep top-(maxLevels-1) as distinct; last category is OTHER
+        int keep = maxLevels - 1;
+
+        // Select top levels by frequency
+        ArrayList<Map.Entry<Integer, Integer>> entries = new ArrayList<>(freq.entrySet());
+        entries.sort((a, b) -> Integer.compare(b.getValue(), a.getValue())); // descending freq
+
+        HashMap<Integer, Integer> map = new HashMap<>(maxLevels * 2);
+        for (int i = 0; i < keep; i++) {
+            map.put(entries.get(i).getKey(), i);
+        }
+        final int OTHER = keep;
+
+        int[] codes = new int[levels.length];
+        for (int i = 0; i < levels.length; i++) {
+            Integer idx = map.get(levels[i]);
+            codes[i] = (idx == null) ? OTHER : idx;
+        }
+        return codes; // categories = maxLevels (exactly)
+    }
+
+    private static int approxUniqueCount(int[] a, int stopAfter) {
+        // cheap-ish unique counter with early stop
+        HashSet<Integer> s = new HashSet<>();
+        for (int v : a) {
+            s.add(v);
+            if (s.size() >= stopAfter) return s.size();
+        }
+        return s.size();
+    }
+
+    private static final class Cat {
+        final int[] codes; // 0..K-1
+        final int K;
+        Cat(int[] codes, int K) { this.codes = codes; this.K = K; }
+    }
+
+    /**
+     * Per-stratum plan: fixed observed categories for X,Y; permutation shuffles X categories.
+     */
+    private static final class GroupPlan {
+        final int[] xObs;     // observed codes
+        final int[] yObs;     // observed codes
+        final int Kx, Ky;
+        final boolean constant; // if either side is constant
+
+        // scratch buffers for permutation (allocated once)
+        final int[] xPerm;
+        final int[][] counts;
+        final int[] rowS;
+        final int[] colS;
+
+        GroupPlan(int[] xObs, int[] yObs, int Kx, int Ky, boolean constant) {
+            this.xObs = xObs;
+            this.yObs = yObs;
+            this.Kx = Kx;
+            this.Ky = Ky;
+            this.constant = constant;
+
+            this.xPerm = new int[xObs.length];
+
+            this.counts = new int[Kx][Ky];
+            this.rowS = new int[Kx];
+            this.colS = new int[Ky];
+        }
+
+        double statistic(SplittableRandom rng) {
+            if (constant) return 0.0;
+
+            final int n = xObs.length;
+
+            // Choose X codes: observed or permuted within-stratum
+            if (rng == null) {
+                System.arraycopy(xObs, 0, xPerm, 0, n);
+            } else {
+                System.arraycopy(xObs, 0, xPerm, 0, n);
+                // Fisher–Yates shuffle xPerm (within this group)
+                for (int i = n - 1; i > 0; i--) {
+                    int j = rng.nextInt(i + 1);
+                    int tmp = xPerm[i];
+                    xPerm[i] = xPerm[j];
+                    xPerm[j] = tmp;
+                }
+            }
+
+            // Reset margins/counts
+            for (int i = 0; i < Kx; i++) {
+                Arrays.fill(counts[i], 0);
+                rowS[i] = 0;
+            }
+            Arrays.fill(colS, 0);
+
+            // Fill contingency
+            for (int i = 0; i < n; i++) {
+                int xi = xPerm[i];
+                int yi = yObs[i];
+                counts[xi][yi]++;
+                rowS[xi]++;
+                colS[yi]++;
+            }
+
+            return gTestFromCounts(counts, rowS, colS, n);
         }
     }
 
     // =========================================================
-    // Missingness / row filtering
+    // Z-strata (same mechanism as before)
     // =========================================================
-
-    private double gTestDiscreteDiscrete(int xIdx, int yIdx,
-                                         List<Integer> useRows, int[] g, int[] permMap) {
-        // compress observed discrete levels within this stratum
-        LevelMap xm = new LevelMap(maxObservedLevelsPerVar);
-        LevelMap ym = new LevelMap(maxObservedLevelsPerVar);
-
-        // First pass: map levels
-        int n = 0;
-        for (int ii : g) {
-            int rowY = useRows.get(ii);
-
-            int rowX = rowY;
-            if (permMap != null) rowX = useRows.get(permMap[ii]);
-
-            int xLev = data.getInt(rowX, xIdx);
-            int yLev = data.getInt(rowY, yIdx);
-            if (xLev == DiscreteVariable.MISSING_VALUE) continue;
-            if (yLev == DiscreteVariable.MISSING_VALUE) continue;
-
-            xm.put(xLev);
-            ym.put(yLev);
-            n++;
-        }
-        if (n < minStratumSize) return Double.NaN;
-
-        int Kx = xm.size();
-        int Ky = ym.size();
-        if (Kx < 2 || Ky < 2) return 0.0;
-
-        // Cap table size
-        if ((long) Kx * (long) Ky > maxCellsPerStratum) {
-            // down-bin by hashing to binsPerContXY (small) to keep robustness
-            return gTestHashedDiscreteDiscrete(xIdx, yIdx, useRows, g, permMap, binsPerContXY);
-        }
-
-        int[][] counts = new int[Kx][Ky];
-        int[] rowS = new int[Kx];
-        int[] colS = new int[Ky];
-
-        for (int ii : g) {
-            int rowY = useRows.get(ii);
-            int rowX = rowY;
-            if (permMap != null) rowX = useRows.get(permMap[ii]);
-
-            int xLev = data.getInt(rowX, xIdx);
-            int yLev = data.getInt(rowY, yIdx);
-            if (xLev == DiscreteVariable.MISSING_VALUE) continue;
-            if (yLev == DiscreteVariable.MISSING_VALUE) continue;
-
-            int xi = xm.getIndex(xLev);
-            int yi = ym.getIndex(yLev);
-            if (xi < 0 || yi < 0) continue;
-
-            counts[xi][yi]++;
-            rowS[xi]++;
-            colS[yi]++;
-        }
-
-        return gTestFromCounts(counts, rowS, colS, sum(rowS));
-    }
-
-    private double gTestDiscreteContinuous(int xDiscIdx, int yContIdx,
-                                           List<Integer> useRows, int[] g, int[] permMap) {
-        // Y is continuous: build local bins for Y within this stratum.
-        double[] yVals = collectCont(yContIdx, useRows, g, null);
-        if (yVals.length < minStratumSize) return Double.NaN;
-        double[] yEdges = quantileEdges(yVals, binsPerContXY);
-
-        LevelMap xm = new LevelMap(maxObservedLevelsPerVar);
-        int n = 0;
-
-        // First pass: collect observed X levels (X may be permuted, but that's fine;
-        // it just changes which X pairs with each Y under permutation).
-        for (int ii : g) {
-            int rowY = useRows.get(ii);
-            int rowX = rowY;
-            if (permMap != null) rowX = useRows.get(permMap[ii]);
-
-            int xLev = data.getInt(rowX, xDiscIdx);
-            if (xLev == DiscreteVariable.MISSING_VALUE) continue;
-
-            double yv = data.getDouble(rowY, yContIdx);
-            if (Double.isNaN(yv)) continue;
-
-            xm.put(xLev);
-            n++;
-        }
-        if (n < minStratumSize) return Double.NaN;
-
-        int Kx = xm.size();
-        int Ky = binsPerContXY;
-
-        if (Kx < 2) return 0.0;
-
-        if ((long) Kx * (long) Ky > maxCellsPerStratum) {
-            return gTestHashedDiscreteContinuous(xDiscIdx, yContIdx, useRows, g, permMap, binsPerContXY);
-        }
-
-        int[][] counts = new int[Kx][Ky];
-        int[] rowS = new int[Kx];
-        int[] colS = new int[Ky];
-
-        for (int ii : g) {
-            int rowY = useRows.get(ii);
-            int rowX = rowY;
-            if (permMap != null) rowX = useRows.get(permMap[ii]);
-
-            int xLev = data.getInt(rowX, xDiscIdx);
-            if (xLev == DiscreteVariable.MISSING_VALUE) continue;
-
-            double yv = data.getDouble(rowY, yContIdx);
-            if (Double.isNaN(yv)) continue;
-
-            int xi = xm.getIndex(xLev);
-            if (xi < 0) continue;
-
-            int yi = binIndex(yEdges, yv);
-
-            counts[xi][yi]++;
-            rowS[xi]++;
-            colS[yi]++;
-        }
-
-        return gTestFromCounts(counts, rowS, colS, sum(rowS));
-    }
-
-    // =========================================================
-    // Public setters / interface
-    // =========================================================
-
-    private double gTestContinuousDiscrete(int xContIdx, int yDiscIdx,
-                                           List<Integer> useRows, int[] g, int[] permMap) {
-        // X is continuous (possibly permuted): collect X values with permutation applied
-//        double[] xVals = collectContPermuted(xContIdx, useRows, g, permMap);
-//        if (xVals.length < minStratumSize) return Double.NaN;
-//        double[] xEdges = quantileEdges(xVals, binsPerContXY);
-
-        double[] xValsObs = collectContPermuted(xContIdx, useRows, g, null); // OBSERVED, not permuted
-        if (xValsObs.length < minStratumSize) return Double.NaN;
-        double[] xEdges = quantileEdges(xValsObs, binsPerContXY);
-
-        LevelMap ym = new LevelMap(maxObservedLevelsPerVar);
-        int n = 0;
-        for (int ii : g) {
-            int rowY = useRows.get(ii);
-            int yLev = data.getInt(rowY, yDiscIdx);
-            if (yLev == DiscreteVariable.MISSING_VALUE) continue;
-
-            int rowX = rowY;
-            if (permMap != null) rowX = useRows.get(permMap[ii]);
-            double xv = data.getDouble(rowX, xContIdx);
-            if (Double.isNaN(xv)) continue;
-
-            ym.put(yLev);
-            n++;
-        }
-        if (n < minStratumSize) return Double.NaN;
-
-        int Kx = binsPerContXY;
-        int Ky = ym.size();
-
-        if ((long) Kx * (long) Ky > maxCellsPerStratum) {
-            return gTestHashedContinuousDiscrete(xContIdx, yDiscIdx, useRows, g, permMap, binsPerContXY);
-        }
-
-        int[][] counts = new int[Kx][Ky];
-        int[] rowS = new int[Kx];
-        int[] colS = new int[Ky];
-
-        for (int ii : g) {
-            int rowY = useRows.get(ii);
-
-            int rowX = rowY;
-            if (permMap != null) rowX = useRows.get(permMap[ii]);
-
-            double xv = data.getDouble(rowX, xContIdx);
-            if (Double.isNaN(xv)) continue;
-
-            int yLev = data.getInt(rowY, yDiscIdx);
-            if (yLev == DiscreteVariable.MISSING_VALUE) continue;
-
-            int xi = binIndex(xEdges, xv);
-            int yi = ym.getIndex(yLev);
-            if (yi < 0) continue;
-
-            counts[xi][yi]++;
-            rowS[xi]++;
-            colS[yi]++;
-        }
-
-        return gTestFromCounts(counts, rowS, colS, sum(rowS));
-    }
-
-//    private double gTestContinuousContinuous(int xContIdx, int yContIdx,
-//                                             List<Integer> useRows, int[] g, int[] permMap) {
-//        // Use z-scored columns for stability (matches original).
-//        int m = g.length;
-//        if (m < minStratumSize) return Double.NaN;
-//
-//        double[] x = new double[m];
-//        double[] y = new double[m];
-//        int k = 0;
-//
-//        for (int ii : g) {
-//            int rowY = useRows.get(ii);
-//            int rowX = rowY;
-//            if (permMap != null) rowX = useRows.get(permMap[ii]);
-//
-//            double xv = zCols[xContIdx][rowX];
-//            double yv = zCols[yContIdx][rowY];
-//            if (Double.isNaN(xv) || Double.isNaN(yv)) continue; // should be rare due to useRows filtering
-//
-//            x[k] = xv;
-//            y[k] = yv;
-//            k++;
-//        }
-//
-//        if (k < minStratumSize) return Double.NaN;
-//        if (k != m) { x = Arrays.copyOf(x, k); y = Arrays.copyOf(y, k); }
-//
-//        // correlation^2 is your original “sweet spot” on general noise
-//        return statCorrSq(x, y);
-//    }
-
-    private double gTestContinuousContinuous(int xContIdx, int yContIdx,
-                                             List<Integer> useRows, int[] g, int[] permMap) {
-        // IMPORTANT:
-        //  - X bin edges must be computed from OBSERVED X within stratum (permMap == null),
-        //    otherwise permutations re-define bins and inflate p-values.
-        //  - Y edges are always from observed Y (since Y is not permuted).
-
-        double[] xValsObs = collectContPermuted(xContIdx, useRows, g, null); // OBSERVED
-        double[] yVals = collectCont(yContIdx, useRows, g, null);
-        if (xValsObs.length < minStratumSize || yVals.length < minStratumSize) return Double.NaN;
-
-        double[] xEdges = quantileEdges(xValsObs, binsPerContXY);
-        double[] yEdges = quantileEdges(yVals, binsPerContXY);
-
-        int Kx = binsPerContXY;
-        int Ky = binsPerContXY;
-
-        int[][] counts = new int[Kx][Ky];
-        int[] rowS = new int[Kx];
-        int[] colS = new int[Ky];
-
-        int n = 0;
-        for (int ii : g) {
-            int rowY = useRows.get(ii);
-            int rowX = rowY;
-            if (permMap != null) rowX = useRows.get(permMap[ii]);
-
-            double xv = data.getDouble(rowX, xContIdx);
-            double yv = data.getDouble(rowY, yContIdx);
-            if (Double.isNaN(xv) || Double.isNaN(yv)) continue;
-
-            int xi = binIndex(xEdges, xv);
-            int yi = binIndex(yEdges, yv);
-
-            counts[xi][yi]++;
-            rowS[xi]++;
-            colS[yi]++;
-            n++;
-        }
-
-        if (n < minStratumSize) return Double.NaN;
-        return gTestFromCounts(counts, rowS, colS, n);
-    }
-
-    private double gTestHashedDiscreteDiscrete(int xIdx, int yIdx,
-                                               List<Integer> useRows, int[] g, int[] permMap,
-                                               int bins) {
-        int Kx = bins;
-        int Ky = bins;
-
-        int[][] counts = new int[Kx][Ky];
-        int[] rowS = new int[Kx];
-        int[] colS = new int[Ky];
-
-        int n = 0;
-        for (int ii : g) {
-            int rowY = useRows.get(ii);
-            int rowX = rowY;
-            if (permMap != null) rowX = useRows.get(permMap[ii]);
-
-            int xLev = data.getInt(rowX, xIdx);
-            int yLev = data.getInt(rowY, yIdx);
-            if (xLev == DiscreteVariable.MISSING_VALUE) continue;
-            if (yLev == DiscreteVariable.MISSING_VALUE) continue;
-
-            int xi = floorMod(mix32(xLev), Kx);
-            int yi = floorMod(mix32(yLev), Ky);
-
-            counts[xi][yi]++;
-            rowS[xi]++;
-            colS[yi]++;
-            n++;
-        }
-        if (n < minStratumSize) return Double.NaN;
-        return gTestFromCounts(counts, rowS, colS, n);
-    }
-
-    private double gTestHashedDiscreteContinuous(int xDiscIdx, int yContIdx,
-                                                 List<Integer> useRows, int[] g, int[] permMap,
-                                                 int binsY) {
-        double[] yVals = collectCont(yContIdx, useRows, g, null);
-        if (yVals.length < minStratumSize) return Double.NaN;
-        double[] yEdges = quantileEdges(yVals, binsY);
-
-        int Kx = binsPerContXY; // hash discrete to small
-        int Ky = binsY;
-
-        int[][] counts = new int[Kx][Ky];
-        int[] rowS = new int[Kx];
-        int[] colS = new int[Ky];
-
-        int n = 0;
-        for (int ii : g) {
-            int rowY = useRows.get(ii);
-            int rowX = rowY;
-            if (permMap != null) rowX = useRows.get(permMap[ii]);
-
-            int xLev = data.getInt(rowX, xDiscIdx);
-            if (xLev == DiscreteVariable.MISSING_VALUE) continue;
-
-            double yv = data.getDouble(rowY, yContIdx);
-            if (Double.isNaN(yv)) continue;
-
-            int xi = floorMod(mix32(xLev), Kx);
-            int yi = binIndex(yEdges, yv);
-
-            counts[xi][yi]++;
-            rowS[xi]++;
-            colS[yi]++;
-            n++;
-        }
-        if (n < minStratumSize) return Double.NaN;
-        return gTestFromCounts(counts, rowS, colS, n);
-    }
-
-    private double gTestHashedContinuousDiscrete(int xContIdx, int yDiscIdx,
-                                                 List<Integer> useRows, int[] g, int[] permMap,
-                                                 int binsX) {
-//        double[] xVals = collectContPermuted(xContIdx, useRows, g, permMap);
-//        if (xVals.length < minStratumSize) return Double.NaN;
-//        double[] xEdges = quantileEdges(xVals, binsX);
-
-        double[] xValsObs = collectContPermuted(xContIdx, useRows, g, null); // OBSERVED
-        if (xValsObs.length < minStratumSize) return Double.NaN;
-        double[] xEdges = quantileEdges(xValsObs, binsX);
-
-        int Kx = binsX;
-        int Ky = binsPerContXY; // hash discrete
-
-        int[][] counts = new int[Kx][Ky];
-        int[] rowS = new int[Kx];
-        int[] colS = new int[Ky];
-
-        int n = 0;
-        for (int ii : g) {
-            int rowY = useRows.get(ii);
-            int rowX = rowY;
-            if (permMap != null) rowX = useRows.get(permMap[ii]);
-
-            double xv = data.getDouble(rowX, xContIdx);
-            if (Double.isNaN(xv)) continue;
-
-            int yLev = data.getInt(rowY, yDiscIdx);
-            if (yLev == DiscreteVariable.MISSING_VALUE) continue;
-
-            int xi = binIndex(xEdges, xv);
-            int yi = floorMod(mix32(yLev), Ky);
-
-            counts[xi][yi]++;
-            rowS[xi]++;
-            colS[yi]++;
-            n++;
-        }
-        if (n < minStratumSize) return Double.NaN;
-        return gTestFromCounts(counts, rowS, colS, n);
-    }
 
     private int[][] getStrata(int[] zIdx, List<Integer> useRows) {
         if (zIdx.length == 0) return new int[][]{range(useRows.size())};
@@ -892,6 +629,10 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         return groups.toArray(new int[0][]);
     }
 
+    // =========================================================
+    // Missingness / row filtering (mixed-aware)
+    // =========================================================
+
     private List<Integer> rowsCompleteFor(int ix, int iy, int[] iz, List<Integer> baseRows) {
         List<Integer> out = new ArrayList<>(baseRows.size());
         for (int r : baseRows) {
@@ -917,6 +658,10 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
             return !Double.isNaN(data.getDouble(row, col));
         }
     }
+
+    // =========================================================
+    // Public API / setters / interface
+    // =========================================================
 
     @Override
     public List<Node> getVariables() {
@@ -965,10 +710,6 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         this.permSeed = s;
     }
 
-    // =========================================================
-    // Helpers
-    // =========================================================
-
     public void setBinsPerContZ(int b) {
         this.binsPerContZ = Math.max(2, b);
         strataCache.clear();
@@ -989,6 +730,10 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
 
     public void setMaxCellsPerStratum(int m) {
         this.maxCellsPerStratum = Math.max(64, m);
+    }
+
+    public void setUseMaxAcrossStrata(boolean useMaxAcrossStrata) {
+        this.useMaxAcrossStrata = useMaxAcrossStrata;
     }
 
     // RowsSettable
@@ -1014,10 +759,48 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         strataCache.clear();
     }
 
-    // Subset: safe fallback behavior (same as your earlier pattern)
     @Override
     public IndependenceTest indTestSubset(List<Node> vars) {
+        // Same behavior as prior version (safe fallback)
         return this;
+    }
+
+    // =========================================================
+    // Core math utilities
+    // =========================================================
+
+    private static double gTestFromCounts(int[][] counts, int[] rowS, int[] colS, int n) {
+        if (n <= 0) return Double.NaN;
+
+        double llr = 0.0;
+        int Kx = counts.length;
+        int Ky = counts[0].length;
+
+        for (int i = 0; i < Kx; i++) {
+            int ri = rowS[i];
+            if (ri == 0) continue;
+
+            for (int j = 0; j < Ky; j++) {
+                int nij = counts[i][j];
+                if (nij == 0) continue;
+
+                int cj = colS[j];
+                if (cj == 0) continue;
+
+                double e = (ri * (double) cj) / (double) n;
+                if (e <= 0) continue;
+
+                llr += nij * log(nij / e);
+            }
+        }
+
+        return 2.0 * llr;
+    }
+
+    private static Map<String, Integer> indexMap(List<Node> vars) {
+        Map<String, Integer> m = new HashMap<>();
+        for (int i = 0; i < vars.size(); i++) m.put(vars.get(i).getName(), i);
+        return m;
     }
 
     private int idx(Node v) {
@@ -1064,73 +847,83 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         return out;
     }
 
-    // Collect continuous values for a variable within a stratum (no permutation).
-    private double[] collectCont(int var, List<Integer> useRows, int[] g, int[] permMapUnused) {
-        double[] tmp = new double[g.length];
-        int n = 0;
-        for (int ii : g) {
-            int row = useRows.get(ii);
-            double v = data.getDouble(row, var);
-            if (Double.isNaN(v)) continue;
-            tmp[n++] = v;
-        }
-        return Arrays.copyOf(tmp, n);
+    private static int[] range(int n) {
+        int[] r = new int[n];
+        for (int i = 0; i < n; i++) r[i] = i;
+        return r;
     }
 
-    // Collect continuous values for X within a stratum with permutation applied to X if permMap != null.
-    private double[] collectContPermuted(int var, List<Integer> useRows, int[] g, int[] permMap) {
-        double[] tmp = new double[g.length];
-        int n = 0;
-        for (int ii : g) {
-            int row = useRows.get(ii);
-            if (permMap != null) row = useRows.get(permMap[ii]); // X permuted
-            double v = data.getDouble(row, var);
-            if (Double.isNaN(v)) continue;
-            tmp[n++] = v;
+    private static long signature(List<Integer> rows) {
+        long h = 1469598103934665603L;
+        for (int r : rows) {
+            h ^= r;
+            h *= 1099511628211L;
         }
-        return Arrays.copyOf(tmp, n);
+        return h;
     }
 
-    public void setUseMaxAcrossStrata(boolean useMaxAcrossStrata) {
-        this.useMaxAcrossStrata = useMaxAcrossStrata;
+    private static int binIndex(double[] edges, double v) {
+        int lo = 0, hi = edges.length;
+        while (lo < hi) {
+            int mid = (lo + hi) >>> 1;
+            if (v > edges[mid]) lo = mid + 1;
+            else hi = mid;
+        }
+        return lo;
+    }
+
+    private static double[] quantileEdges(double[] x, int bins) {
+        bins = max(2, bins);
+        double[] a = Arrays.copyOf(x, x.length);
+        Arrays.sort(a);
+
+        double[] edges = new double[bins - 1];
+        int n = a.length;
+
+        for (int b = 1; b < bins; b++) {
+            double q = b / (double) bins;
+            int idx = (int) floor(q * (n - 1));
+            idx = min(max(0, idx), n - 1);
+            edges[b - 1] = a[idx];
+        }
+        return edges;
+    }
+
+    private static void zscoreColumnPreserveNaN(double[] in, double[] out) {
+        double sum = 0.0, sum2 = 0.0;
+        int n = 0;
+        for (double v : in) {
+            if (Double.isNaN(v)) continue;
+            sum += v;
+            sum2 += v * v;
+            n++;
+        }
+        if (n < 2) {
+            System.arraycopy(in, 0, out, 0, in.length);
+            return;
+        }
+        double mean = sum / n;
+        double var = (sum2 - n * mean * mean) / (n - 1.0);
+        double sd = sqrt(max(1e-12, var));
+        for (int i = 0; i < in.length; i++) {
+            double v = in[i];
+            out[i] = Double.isNaN(v) ? Double.NaN : (v - mean) / sd;
+        }
+    }
+
+    // fast-ish mixing for hashing discrete levels
+    private static int mix32(int x) {
+        x ^= (x >>> 16);
+        x *= 0x7feb352d;
+        x ^= (x >>> 15);
+        x *= 0x846ca68b;
+        x ^= (x >>> 16);
+        return x;
     }
 
     // =========================================================
-    // Small utility classes
+    // Small utility classes (strata cache)
     // =========================================================
-
-    /**
-     * Compress observed levels to 0..K-1, with optional hashing fallback when unique levels get large.
-     */
-    private static final class LevelMap {
-        private final int cap;
-        private final HashMap<Integer, Integer> map = new HashMap<>();
-        private int n = 0;
-
-        LevelMap(int cap) {
-            this.cap = Math.max(4, cap);
-        }
-
-        void put(int level) {
-            if (map.containsKey(level)) return;
-            if (n < cap) {
-                map.put(level, n++);
-            } else {
-                // once we exceed cap, we keep n fixed and rely on hashed fallbacks upstream
-                // (we still store a few more to avoid oscillation)
-                map.put(level, n++);
-            }
-        }
-
-        int getIndex(int level) {
-            Integer i = map.get(level);
-            return i == null ? -1 : i;
-        }
-
-        int size() {
-            return map.size();
-        }
-    }
 
     private record StrataKey(int[] zIdx, long rowsSig, int bins, int minSize) {
         StrataKey {
