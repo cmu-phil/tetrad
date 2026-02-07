@@ -13,17 +13,59 @@ import java.util.concurrent.ConcurrentHashMap;
 import static java.lang.Math.*;
 
 /**
- * Generalized Covariance Measure (GCM) conditional independence test:
+ * Generalized Covariance Measure (GCM) conditional independence test.
+ *
  * <p>
- * Test X ⟂ Y | Z by:
- * - fit xhat(z) ~ E[X|Z], yhat(z) ~ E[Y|Z]
- * - residuals rx = x - xhat, ry = y - yhat
- * - u = rx * ry
- * - T = sqrt(n) * mean(u) / sd(u)  ~ approx N(0,1) under H0 (with mild conditions)
- * <p>
- * Practical notes:
- * - This is only as good as your regressors for E[·|Z].
- * - For speed in search, MUST cache residuals by (target, Z, rows).
+ * Tests conditional independence of X and Y given Z by measuring residual
+ * dependence after regressing out the effect of Z from each variable.
+ * The test follows the generalized covariance framework of Shah and Peters
+ * and is suitable for nonlinear regression models when good predictors
+ * of conditional means are available.
+ * </p>
+ *
+ * <p><b>Test construction.</b>
+ * To test {@code X ⟂⟂ Y | Z}:
+ * <ol>
+ *   <li>Fit regression models
+ *       {@code x̂(Z) ≈ E[X | Z]} and {@code ŷ(Z) ≈ E[Y | Z]}.</li>
+ *   <li>Compute residuals
+ *       {@code rX = X − x̂(Z)} and {@code rY = Y − ŷ(Z)}.</li>
+ *   <li>Form the elementwise product {@code u = rX · rY}.</li>
+ *   <li>Compute the test statistic
+ *       <pre>
+ *         T = sqrt(n) · mean(u) / sd(u),
+ *       </pre>
+ *       which is asymptotically standard normal under the null hypothesis,
+ *       given mild regularity conditions.</li>
+ * </ol>
+ * </p>
+ *
+ * <p><b>Interpretation.</b>
+ * Under {@code X ⟂⟂ Y | Z}, the residuals {@code rX} and {@code rY} are
+ * uncorrelated, so {@code E[rX · rY] = 0}. Systematic deviation from zero
+ * indicates conditional dependence.</p>
+ *
+ * <p><b>Regression models.</b>
+ * The power and validity of the test depend critically on the quality of the
+ * regressors used to approximate {@code E[X | Z]} and {@code E[Y | Z]}.
+ * In this implementation, regression options include linear and nonlinear
+ * models (e.g., ridge regression with random Fourier features).</p>
+ *
+ * <p><b>Practical considerations.</b>
+ * <ul>
+ *   <li>The test is only as reliable as the underlying regression fits.</li>
+ *   <li>Performance in causal search depends strongly on caching:
+ *       residuals should be cached by {@code (target, conditioning set Z, rows)}
+ *       to avoid repeated regression during search.</li>
+ *   <li>The test is fast and scalable when regressions are reused,
+ *       making it suitable for constraint-based structure learning.</li>
+ * </ul>
+ *
+ * <p><b>Intended use.</b>
+ * GCM is well-suited for conditional independence testing in nonlinear settings
+ * when approximate conditional mean models are available, and serves as a
+ * computationally efficient alternative to fully nonparametric kernel-based tests.
+ * </p>
  */
 public final class Gcm implements IndependenceTest {
 

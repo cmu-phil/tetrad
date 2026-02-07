@@ -76,13 +76,6 @@ public class Gcm implements IndependenceWrapper {
         gcm.setRffFeatures(parameters.getInt(Params.GCM_RFF_FEATURES));   // try 100, 200, 400
         gcm.setRffSigma(parameters.getDouble(Params.GCM_RFF_SIGMA));
 
-//        t.setVerbose(this.verbose);
-//        t.setRegressorType(this.regressorType);
-//        t.setRidge(this.ridge);
-//        t.setRffFeatures(autoRffFeatures(this.data.getNumRows(), vars.size()));
-//        t.setRffSigma(this.rffSigma);
-//        t.setRffSeed(this.rffSeed);// try 0.5, 1.0, 2.0
-
         return new CachedIndependenceQueries(gcm);
     }
 
