@@ -25,6 +25,7 @@ import static java.lang.Math.*;
  *
  * <p><b>Test construction.</b>
  * To test {@code X ⟂⟂ Y | Z}:
+ * </p>
  * <ol>
  *   <li>Fit regression models
  *       {@code x̂(Z) ≈ E[X | Z]} and {@code ŷ(Z) ≈ E[Y | Z]}.</li>
@@ -38,7 +39,6 @@ import static java.lang.Math.*;
  *       which is asymptotically standard normal under the null hypothesis,
  *       given mild regularity conditions.</li>
  * </ol>
- * </p>
  *
  * <p><b>Interpretation.</b>
  * Under {@code X ⟂⟂ Y | Z}, the residuals {@code rX} and {@code rY} are

@@ -139,6 +139,15 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
     private volatile double irlsTol = 1e-6;
     private volatile int nEff;
 
+    /**
+     * Constructs an instance of MinimaxTRffBicScore using the provided dataset.
+     * This constructor initializes various internal fields, processes the dataset to evaluate
+     * the presence of missing values, and computes scaled and z-scored versions of continuous
+     * variables.
+     *
+     * @param dataSet The dataset to be used for constructing this instance.
+     *                Must be non-null. If null, a {@code NullPointerException} will be thrown.
+     */
     public MinimaxTRffBicScore(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
 
@@ -319,6 +328,15 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return h;
     }
 
+    /**
+     * Computes the local score for a given variable and its parents based on specific scoring criteria.
+     *
+     * @param i        The index of the target variable for which the local score is being computed.
+     * @param parents  An array representing the indices of the parent variables of the target variable.
+     *                 This array may be empty if the target variable has no parents.
+     * @return         The computed local score for the given variable and its parents. Returns
+     *                 {@code Double.NaN} if the computation is invalid or cannot be performed.
+     */
     @Override
     public double localScore(int i, int... parents) {
         Arrays.sort(parents);
@@ -385,37 +403,88 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         });
     }
 
+    /**
+     * Computes the difference in local scores when a variable is added to the set of parent variables
+     * for a target variable. The method evaluates how the local score of a target variable changes
+     * by appending a given variable to its parent set.
+     *
+     * @param x The index of the variable being added to the parent set of the target variable.
+     * @param y The index of the target variable for which the score difference is being computed.
+     * @param z An array representing the indices of the parent variables of the target variable before the addition of {@code x}.
+     * @return The difference in local scores after adding {@code x} to the parent set of {@code y}.
+     *         Returns {@code Double.NaN} if the computation is invalid or cannot be performed.
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
+    /**
+     * Retrieves a list of nodes representing the variables used in the context
+     * of this scoring method. The returned list contains copies of the internal
+     * variable data to ensure immutability of the original dataset.
+     *
+     * @return A list of {@code Node} objects representing the variables. If no
+     *         variables are present, an empty list is returned.
+     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(variables);
     }
 
+    /**
+     * Retrieves the sample size of the dataset associated with this instance.
+     *
+     * @return The number of rows in the dataset, representing the sample size.
+     */
     @Override
     public int getSampleSize() {
         return dataSet.getNumRows();
     }
 
+    /**
+     * Returns a string representation of this MinimaxTRffBicScore instance.
+     * The returned string provides a concise description of the scoring method.
+     *
+     * @return A string that indicates the scoring method used, specifically
+     *         "Minimax-t RFF BIC score (mixed)".
+     */
     @Override
     public String toString() {
         return "Minimax-t RFF BIC score (mixed)";
     }
 
+    /**
+     * Retrieves the dataset associated with this instance.
+     *
+     * @return The {@code DataModel} object representing the dataset used in the context
+     *         of this instance. The returned dataset provides access to the underlying
+     *         data used for computations and analyses.
+     */
     public DataModel getDataModel() {
         return dataSet;
     }
 
+    /**
+     * Retrieves the effective sample size used in the context of this instance.
+     * The effective sample size represents a statistical measure that accounts for
+     * the influence of data characteristics such as weighting or dependencies within the dataset.
+     *
+     * @return The effective sample size as an integer value.
+     */
     @Override
     public int getEffectiveSampleSize() {
         return nEff;
     }
 
-    // -------------------- fitting results --------------------
-
+    /**
+     * Sets the effective sample size for the current instance. If the provided value is
+     * negative, the effective sample size will be set to the actual sample size of the dataset.
+     * This method also resets any cached values that depend on the effective sample size.
+     *
+     * @param nEff The effective sample size to be set. If this value is negative, the sample
+     *             size of the dataset will be used instead.
+     */
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = (nEff < 0) ? this.sampleSize : nEff;
@@ -426,12 +495,27 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
     // Continuous child: Student-t IRLS ridge on features [RFF(Z_cont), OneHot(Z_disc)]
     // ============================================================================================
 
+    /**
+     * Sets the value of nu, which must be a finite number greater than 2.
+     * If the provided value does not meet these criteria, an IllegalArgumentException is thrown.
+     * This method also resets the associated cache after updating the value.
+     *
+     * @param nu the new value to set for nu; must be finite and greater than 2
+     * @throws IllegalArgumentException if nu is not finite or less than or equal to 2
+     */
     public void setNu(double nu) {
         if (!(nu > 2) || !Double.isFinite(nu)) throw new IllegalArgumentException("nu must be finite and > 2");
         this.nu = nu;
         resetCache();
     }
 
+    /**
+     * Sets the scale factor for the object. The scale determines the proportion
+     * by which the object's size or measurement is adjusted.
+     *
+     * @param scale the new scale factor; it must be a positive finite value greater than 0
+     * @throws IllegalArgumentException if the scale is not greater than 0 or is not a finite value
+     */
     public void setScale(double scale) {
         if (!(scale > 0) || !Double.isFinite(scale)) throw new IllegalArgumentException("scale must be finite and > 0");
         this.scale = scale;
@@ -443,18 +527,42 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
     // Reference class 0, parameters for classes 1..K-1
     // ============================================================================================
 
+    /**
+     * Sets the ridge parameter used in the computation. The ridge parameter must
+     * be a positive, finite value. An exception will be thrown if the provided
+     * value does not meet these criteria.
+     *
+     * @param ridge the ridge parameter to set; must be a positive and finite value
+     * @throws IllegalArgumentException if the ridge value is not greater than 0
+     *                                  or is not finite
+     */
     public void setRidge(double ridge) {
         if (!(ridge > 0) || !Double.isFinite(ridge)) throw new IllegalArgumentException("ridge must be finite and > 0");
         this.ridge = ridge;
         resetCache();
     }
 
+    /**
+     * Sets the number of Random Fourier Features (RFF) to be used.
+     * This value determines the dimensionality of the transformed feature space utilized for approximation.
+     *
+     * @param d the number of RFF to set, must be greater than or equal to 16
+     * @throws IllegalArgumentException if the provided value is less than 16
+     */
     public void setRffFeatures(int d) {
         if (d < 16) throw new IllegalArgumentException("rffFeatures should be >= 16");
         this.rffFeatures = d;
         resetCache();
     }
 
+    /**
+     * Sets the value of the RFF (Random Fourier Features) sigma parameter.
+     * This parameter must be a positive finite number. If an invalid value is provided,
+     * an {@link IllegalArgumentException} is thrown.
+     *
+     * @param sigma the sigma value for Random Fourier Features. Must be greater than zero and finite.
+     * @throws IllegalArgumentException if sigma is not greater than zero or is not finite.
+     */
     public void setRffSigma(double sigma) {
         if (!(sigma > 0) || !Double.isFinite(sigma))
             throw new IllegalArgumentException("rffSigma must be finite and > 0");
@@ -462,11 +570,24 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         resetCache();
     }
 
+    /**
+     * Sets the random Fourier feature (RFF) seed used for generating random projections.
+     * This seed ensures reproducibility of the random projections generated internally.
+     * Changing the seed will reset the internal cache.
+     *
+     * @param seed the seed value to set for the random Fourier feature generator.
+     */
     public void setRffSeed(long seed) {
         this.rffSeed = seed;
         resetCache();
     }
 
+    /**
+     * Sets the number of iterations for the IRLS (Iteratively Reweighted Least Squares) algorithm.
+     * The value is constrained to a minimum of 1.
+     *
+     * @param iters the desired number of IRLS iterations; if less than 1, it will be set to 1
+     */
     public void setIrlsIters(int iters) {
         this.irlsIters = Math.max(1, iters);
         resetCache();
@@ -474,6 +595,13 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
 
     // -------------------- one-hot spec --------------------
 
+    /**
+     * Sets the tolerance value for the IRLS (Iterative Reweighted Least Squares) algorithm.
+     * The tolerance must be non-negative, and values less than 0 will be clamped to 0.
+     * This method also resets any cached data related to IRLS computations.
+     *
+     * @param tol the tolerance value to be used for the IRLS algorithm. Must be a non-negative value.
+     */
     public void setIrlsTol(double tol) {
         this.irlsTol = Math.max(0.0, tol);
         resetCache();
@@ -643,132 +771,203 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
     }
 
     private FitResult fitMultinomialLogitMixed(int[] y, int K, int[] parentIdx, int[] rows, int n, long seed) {
-        int[] cont = filterContinuous(parentIdx);
-        int[] disc = filterDiscrete(parentIdx);
-
-        OneHotSpec oh = buildOneHotSpec(disc);
+        final int[] cont = filterContinuous(parentIdx);
+        final int[] disc = filterDiscrete(parentIdx);
+        final OneHotSpec oh = buildOneHotSpec(disc);
 
         final int D = rffFeatures;
         final int Q = oh.totalCols;
         final int M = 1 + D + Q;  // +1 intercept
         final int C = K - 1;
 
-        // Extract cont parents
-        double[][] Zc = new double[n][cont.length];
+        // Extract continuous parents
+        final double[][] Zc = new double[n][cont.length];
         for (int r = 0; r < n; r++) {
-            int row = (rows == null) ? r : rows[r];
+            final int row = (rows == null) ? r : rows[r];
             for (int j = 0; j < cont.length; j++) Zc[r][j] = zCols[cont[j]][row];
         }
 
         // RFF params
-        Random rng = new Random(seed);
-        double[][] W = new double[D][max(1, cont.length)];
+        final Random rng = new Random(seed);
+        final double[][] W = new double[D][Math.max(1, cont.length)];
         for (int k = 0; k < D; k++) for (int j = 0; j < W[k].length; j++) W[k][j] = rng.nextGaussian() / rffSigma;
-        double[] phase = new double[D];
-        for (int k = 0; k < D; k++) phase[k] = 2.0 * PI * rng.nextDouble();
-        final double phiScale = sqrt(2.0 / D);
+        final double[] phase = new double[D];
+        for (int k = 0; k < D; k++) phase[k] = 2.0 * Math.PI * rng.nextDouble();
+        final double phiScale = Math.sqrt(2.0 / D);
+
+        // ----------------------------
+        // Precompute Phi (design rows)
+        // ----------------------------
+        final double[][] Phi = new double[n][M];
+        final double[] xRow = new double[M];
+        for (int i = 0; i < n; i++) {
+            buildXRowMixed_Intercept(xRow, i, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
+            System.arraycopy(xRow, 0, Phi[i], 0, M);
+        }
 
         // beta: M x C
-        double[][] beta = new double[M][C]; // init 0
+        final double[][] beta = new double[M][C];
+
         double prevObj = Double.POSITIVE_INFINITY;
 
-        double[] xRow = new double[M];
+        // Scratch for probs computation (avoid per-row allocations)
+        final double[] logits = new double[K];
 
         // IRLS
         for (int iter = 0; iter < irlsIters; iter++) {
 
-            // We do blockwise Newton for each class k=1..K-1 using weights p_k*(1-p_k)
-            // with the shared softmax probabilities from current beta.
-            // This is an approximation to the full multinomial Hessian (which has cross-class coupling),
-            // but works well as a practical ridge-IRLS in scoring.
+            // 1) probs computed ONCE per iter from CURRENT beta (snapshot)
+            final double[][] probs = softmaxProbsFromPhi(y, K, n, beta, Phi, logits);
 
-            double[][] probs = softmaxProbs(y, K, n, beta, xRow, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
-
-            double obj = 0.0;
-
-            // update each class block independently
+            // 2) update each class block using frozen probs
             for (int c = 0; c < C; c++) {
-                // Build XtWX and XtWz where z is working response
-                DMatrixRMaj G = new DMatrixRMaj(M, M);
-                double[] v = new double[M];
+                final DMatrixRMaj G = new DMatrixRMaj(M, M);
+                final double[] v = new double[M];
 
                 for (int i = 0; i < n; i++) {
-                    buildXRowMixed_Intercept(xRow, i, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
+                    final double[] phi = Phi[i];
 
-                    double pc = probs[i][c + 1]; // class c+1 prob
+                    final double pc = probs[i][c + 1];
                     double wc = pc * (1.0 - pc);
-                    wc = max(wc, 1e-10);
+                    wc = Math.max(wc, 1e-10);
 
-                    // linear predictor for class c+1
+                    // eta = phi^T beta_c
                     double eta = 0.0;
-                    for (int a = 0; a < M; a++) eta += xRow[a] * beta[a][c];
+                    for (int a = 0; a < M; a++) eta += phi[a] * beta[a][c];
 
-                    // working response
-                    double yc = (y[i] == (c + 1)) ? 1.0 : 0.0;
-                    double z = eta + (yc - pc) / wc;
+                    final double yc = (y[i] == (c + 1)) ? 1.0 : 0.0;
+                    final double z = eta + (yc - pc) / wc;
 
-                    for (int a = 0; a < M; a++) v[a] += wc * xRow[a] * z;
+                    // v += wc * phi * z
+                    final double wz = wc * z;
+                    for (int a = 0; a < M; a++) v[a] += wz * phi[a];
 
+                    // G += wc * phi * phi^T
                     for (int a = 0; a < M; a++) {
-                        double pa = wc * xRow[a];
-                        for (int b = 0; b <= a; b++) G.add(a, b, pa * xRow[b]);
+                        final double pa = wc * phi[a];
+                        for (int b = 0; b <= a; b++) G.add(a, b, pa * phi[b]);
                     }
                 }
 
+                // sym + ridge (no intercept penalty)
                 for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) G.set(b, a, G.get(a, b));
-                for (int a = 1; a < M; a++) G.add(a, a, ridge); // do NOT penalize intercept
+                for (int a = 1; a < M; a++) G.add(a, a, ridge);
 
-                CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+                final CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
                 if (!chol.decompose(G)) return new FitResult(Double.NaN, Double.NaN);
-                DMatrixRMaj L = chol.getT(null);
+                final DMatrixRMaj L = chol.getT(null);
 
-                double[] bc = solveFromCholeskyLower(L, v);
+                final double[] bc = solveFromCholeskyLower(L, v);
                 for (int a = 0; a < M; a++) beta[a][c] = bc[a];
             }
 
-            // compute (negative) log-lik as convergence monitor
-            double ll = multinomialLogLik(y, K, n, beta, xRow, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
-            obj = -ll;
+            // 3) compute ll for convergence (after updates), same as your code
+            final double ll = multinomialLogLikFromPhi(y, K, n, beta, Phi, logits);
+            final double obj = -ll;
 
-            if (abs(prevObj - obj) <= irlsTol * (1.0 + abs(prevObj))) break;
+            if (Math.abs(prevObj - obj) <= irlsTol * (1.0 + Math.abs(prevObj))) break;
             prevObj = obj;
         }
 
-        // final log-lik
-        double ll = multinomialLogLik(y, K, n, beta, xRow, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
+        final double ll = multinomialLogLikFromPhi(y, K, n, beta, Phi, logits);
 
-        // edf approximation: sum over class blocks of ridge edf using final weights p(1-p)
+        // EDF: same idea, but compute probs once from final beta
+        final double[][] probsFinal = softmaxProbsFromPhi(y, K, n, beta, Phi, logits);
+
         double edf = 0.0;
-        double[][] probs = softmaxProbs(y, K, n, beta, xRow, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
-
         for (int c = 0; c < C; c++) {
-            DMatrixRMaj G = new DMatrixRMaj(M, M);
+            final DMatrixRMaj G = new DMatrixRMaj(M, M);
+
             for (int i = 0; i < n; i++) {
-                buildXRowMixedStudentT_Intercept(xRow, i, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
-                double pc = probs[i][c + 1];
+                final double[] phi = Phi[i];
+
+                final double pc = probsFinal[i][c + 1];
                 double wc = pc * (1.0 - pc);
-                wc = max(wc, 1e-10);
+                wc = Math.max(wc, 1e-10);
 
                 for (int a = 0; a < M; a++) {
-                    double pa = wc * xRow[a];
-                    for (int b = 0; b <= a; b++) G.add(a, b, pa * xRow[b]);
+                    final double pa = wc * phi[a];
+                    for (int b = 0; b <= a; b++) G.add(a, b, pa * phi[b]);
                 }
             }
+
             for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) G.set(b, a, G.get(a, b));
-            for (int a = 1; a < M; a++) G.add(a, a, ridge); // do NOT penalize intercept
+            for (int a = 1; a < M; a++) G.add(a, a, ridge);
 
-
-            CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+            final CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
             if (!chol.decompose(G)) return new FitResult(Double.NaN, Double.NaN);
-            DMatrixRMaj L = chol.getT(null);
+            final DMatrixRMaj L = chol.getT(null);
 
-            double trInv = traceInvFromCholeskyLower(L);
+            final double trInv = traceInvFromCholeskyLower(L);
             double edfC = M - ridge * trInv;
             if (!(edfC >= 0) || !Double.isFinite(edfC)) edfC = M;
             edf += edfC;
         }
 
         return new FitResult(ll, edf);
+    }
+
+    private static double[][] softmaxProbsFromPhi(int[] y, int K, int n,
+                                                  double[][] beta,
+                                                  double[][] Phi,
+                                                  double[] logitsScratch) {
+        final int C = K - 1;
+        final double[][] p = new double[n][K];
+
+        for (int i = 0; i < n; i++) {
+            final double[] phi = Phi[i];
+
+            logitsScratch[0] = 0.0;
+            double maxLog = 0.0;
+
+            for (int c = 0; c < C; c++) {
+                double s = 0.0;
+                for (int a = 0; a < phi.length; a++) s += phi[a] * beta[a][c];
+                logitsScratch[c + 1] = s;
+                if (s > maxLog) maxLog = s;
+            }
+
+            double sum = 0.0;
+            for (int k = 0; k < K; k++) {
+                final double e = Math.exp(logitsScratch[k] - maxLog);
+                p[i][k] = e;
+                sum += e;
+            }
+
+            final double inv = 1.0 / sum;
+            for (int k = 0; k < K; k++) p[i][k] *= inv;
+        }
+
+        return p;
+    }
+
+    private static double multinomialLogLikFromPhi(int[] y, int K, int n,
+                                                   double[][] beta,
+                                                   double[][] Phi,
+                                                   double[] logitsScratch) {
+        final int C = K - 1;
+        double ll = 0.0;
+
+        for (int i = 0; i < n; i++) {
+            final double[] phi = Phi[i];
+
+            logitsScratch[0] = 0.0;
+            double maxLog = 0.0;
+
+            for (int c = 0; c < C; c++) {
+                double s = 0.0;
+                for (int a = 0; a < phi.length; a++) s += phi[a] * beta[a][c];
+                logitsScratch[c + 1] = s;
+                if (s > maxLog) maxLog = s;
+            }
+
+            double sum = 0.0;
+            for (int k = 0; k < K; k++) sum += Math.exp(logitsScratch[k] - maxLog);
+
+            ll += (logitsScratch[y[i]] - maxLog) - Math.log(sum);
+        }
+
+        return ll;
     }
 
     // -------------------- extraction --------------------
@@ -813,75 +1012,6 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
                 out[ohOff + col] = 1.0;
             }
         }
-    }
-
-    private double[][] softmaxProbs(int[] y, int K, int n,
-                                    double[][] beta, double[] xRow,
-                                    double[][] Zc, int dCont,
-                                    double[][] W, double[] phase, double phiScale,
-                                    OneHotSpec oh, int[] disc, int[] rows) {
-
-        int C = K - 1;
-        double[][] p = new double[n][K];
-
-        for (int i = 0; i < n; i++) {
-//            buildXRowMixed(xRow, i, Zc, dCont, W, phase, phiScale, oh, disc, rows);
-            buildXRowMixed_Intercept(xRow, i, Zc, dCont, W, phase, phiScale, oh, disc, rows);
-
-            // logits: class0 = 0, class k>0 = x^T beta_k
-            double maxLog = 0.0;
-            double[] logit = new double[K];
-            logit[0] = 0.0;
-
-            for (int c = 0; c < C; c++) {
-                double s = 0.0;
-                for (int a = 0; a < xRow.length; a++) s += xRow[a] * beta[a][c];
-                logit[c + 1] = s;
-                if (s > maxLog) maxLog = s;
-            }
-
-            double sum = 0.0;
-            for (int k = 0; k < K; k++) {
-                double e = exp(logit[k] - maxLog);
-                p[i][k] = e;
-                sum += e;
-            }
-            double inv = 1.0 / sum;
-            for (int k = 0; k < K; k++) p[i][k] *= inv;
-        }
-
-        return p;
-    }
-
-    private double multinomialLogLik(int[] y, int K, int n,
-                                     double[][] beta, double[] xRow,
-                                     double[][] Zc, int dCont,
-                                     double[][] W, double[] phase, double phiScale,
-                                     OneHotSpec oh, int[] disc, int[] rows) {
-        double ll = 0.0;
-        int C = K - 1;
-
-        for (int i = 0; i < n; i++) {
-            buildXRowMixed_Intercept(xRow, i, Zc, dCont, W, phase, phiScale, oh, disc, rows);
-
-            double[] logit = new double[K];
-            logit[0] = 0.0;
-            double maxLog = 0.0;
-
-            for (int c = 0; c < C; c++) {
-                double s = 0.0;
-                for (int a = 0; a < xRow.length; a++) s += xRow[a] * beta[a][c];
-                logit[c + 1] = s;
-                if (s > maxLog) maxLog = s;
-            }
-
-            double sum = 0.0;
-            for (int k = 0; k < K; k++) sum += exp(logit[k] - maxLog);
-
-            ll += (logit[y[i]] - maxLog) - log(sum);
-        }
-
-        return ll;
     }
 
     private OneHotSpec buildOneHotSpec(int[] discParents) {
