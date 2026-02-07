@@ -25,8 +25,8 @@ import java.util.*;
  * add Context -> Y edges when they improve the local score of Y given its current parents.
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "CDNOD-BOSS",
-        command = "cdnod-boss",
+        name = "CD-NOD-BOSS",
+        command = "cd-nod-boss",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping

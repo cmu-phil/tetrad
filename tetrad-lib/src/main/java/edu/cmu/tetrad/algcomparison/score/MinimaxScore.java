@@ -70,22 +70,15 @@ public class MinimaxScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.score.MinimaxTRffBicScore score;
+        edu.cmu.tetrad.search.score.MinimaxTRffBicScoreSlowButAccurate score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.score.MinimaxTRffBicScore((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.MinimaxTRffBicScoreSlowButAccurate((DataSet) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
 
-//        score.setNu(15);
-//        score.setScale(1.0);
-//        score.setRidge(1e-1);
-//        score.setRffFeatures(Math.min(200, (int) (4 * Math.sqrt(((DataSet) dataSet).getNumRows()))));
-//        score.setRffSigma(1.0);
-//        score.setIrlsIters(8);
-
-        score.setNu(parameters.getDouble(Params.MINIMAX_NU));
+            score.setNu(parameters.getDouble(Params.MINIMAX_NU));
         score.setScale(parameters.getDouble(Params.MINIMAX_SCALE));
         score.setRidge(parameters.getDouble(Params.MINIMAX_RIDGE));
         score.setRffFeatures(parameters.getInt(Params.MINIMAX_RFF_FEATURES));

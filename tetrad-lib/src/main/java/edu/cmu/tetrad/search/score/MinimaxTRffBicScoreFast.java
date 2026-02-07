@@ -83,7 +83,7 @@ import static java.lang.Math.*;
  * scores when noise distributions are heavy-tailed or nonlinear effects are present.
  * </p>
  */
-public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSettable {
+public final class MinimaxTRffBicScoreFast implements Score, EffectiveSampleSizeSettable {
 
     // -------------------- config knobs --------------------
 
@@ -139,7 +139,7 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
     private volatile double irlsTol = 1e-6;
     private volatile int nEff;
 
-    public MinimaxTRffBicScore(DataSet dataSet) {
+    public MinimaxTRffBicScoreFast(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
 
         this.dataSet = dataSet;
@@ -643,126 +643,137 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
     }
 
     private FitResult fitMultinomialLogitMixed(int[] y, int K, int[] parentIdx, int[] rows, int n, long seed) {
-        int[] cont = filterContinuous(parentIdx);
-        int[] disc = filterDiscrete(parentIdx);
-
-        OneHotSpec oh = buildOneHotSpec(disc);
+        final int[] cont = filterContinuous(parentIdx);
+        final int[] disc = filterDiscrete(parentIdx);
+        final OneHotSpec oh = buildOneHotSpec(disc);
 
         final int D = rffFeatures;
         final int Q = oh.totalCols;
-        final int M = 1 + D + Q;  // +1 intercept
-        final int C = K - 1;
+        final int M = 1 + D + Q; // intercept + RFF + one-hot
+        final int C = K - 1;     // reference class 0
 
-        // Extract cont parents
-        double[][] Zc = new double[n][cont.length];
+        // Extract continuous parents (z-scored)
+        final double[][] Zc = new double[n][cont.length];
         for (int r = 0; r < n; r++) {
-            int row = (rows == null) ? r : rows[r];
+            final int row = (rows == null) ? r : rows[r];
             for (int j = 0; j < cont.length; j++) Zc[r][j] = zCols[cont[j]][row];
         }
 
-        // RFF params
-        Random rng = new Random(seed);
-        double[][] W = new double[D][max(1, cont.length)];
+        // RFF params (deterministic)
+        final Random rng = new Random(seed);
+        final double[][] W = new double[D][Math.max(1, cont.length)];
         for (int k = 0; k < D; k++) for (int j = 0; j < W[k].length; j++) W[k][j] = rng.nextGaussian() / rffSigma;
-        double[] phase = new double[D];
-        for (int k = 0; k < D; k++) phase[k] = 2.0 * PI * rng.nextDouble();
-        final double phiScale = sqrt(2.0 / D);
+
+        final double[] phase = new double[D];
+        for (int k = 0; k < D; k++) phase[k] = 2.0 * Math.PI * rng.nextDouble();
+        final double phiScale = Math.sqrt(2.0 / D);
+
+        // ----------------------------
+        // Precompute design matrix Phi
+        // ----------------------------
+        // Phi[i] is length M: [1, RFF..., one-hot...]
+        final double[][] Phi = new double[n][M];
+        final double[] xRow = new double[M];
+        for (int i = 0; i < n; i++) {
+            buildXRowMixed_Intercept(xRow, i, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
+            System.arraycopy(xRow, 0, Phi[i], 0, M);
+        }
 
         // beta: M x C
-        double[][] beta = new double[M][C]; // init 0
-        double prevObj = Double.POSITIVE_INFINITY;
+        final double[][] beta = new double[M][C]; // init 0
 
-        double[] xRow = new double[M];
+        // scratch
+        final double[] logit = new double[K];      // logits per row (class 0..K-1)
+        final double[] etaC = new double[C];       // eta for classes 1..K-1 (optional cache per row)
+
+        double prevObj = Double.POSITIVE_INFINITY;
 
         // IRLS
         for (int iter = 0; iter < irlsIters; iter++) {
 
-            // We do blockwise Newton for each class k=1..K-1 using weights p_k*(1-p_k)
-            // with the shared softmax probabilities from current beta.
-            // This is an approximation to the full multinomial Hessian (which has cross-class coupling),
-            // but works well as a practical ridge-IRLS in scoring.
-
-            double[][] probs = softmaxProbs(y, K, n, beta, xRow, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
-
-            double obj = 0.0;
-
-            // update each class block independently
+            // Update each class block independently (same approximation you had)
             for (int c = 0; c < C; c++) {
-                // Build XtWX and XtWz where z is working response
-                DMatrixRMaj G = new DMatrixRMaj(M, M);
-                double[] v = new double[M];
+                final DMatrixRMaj G = new DMatrixRMaj(M, M);
+                final double[] v = new double[M];
 
                 for (int i = 0; i < n; i++) {
-                    buildXRowMixed_Intercept(xRow, i, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
+                    final double[] phi = Phi[i];
 
-                    double pc = probs[i][c + 1]; // class c+1 prob
+                    // Compute logits and pc = P(Y=c+1 | x) under current beta
+                    final double pc = softmaxProbForClass(phi, beta, K, c + 1, logit, etaC);
                     double wc = pc * (1.0 - pc);
-                    wc = max(wc, 1e-10);
+                    wc = Math.max(wc, 1e-10);
 
-                    // linear predictor for class c+1
+                    // eta for class c+1 under *its* block beta
+                    // (You computed eta separately; we do it directly to preserve exact behavior)
                     double eta = 0.0;
-                    for (int a = 0; a < M; a++) eta += xRow[a] * beta[a][c];
+                    for (int a = 0; a < M; a++) eta += phi[a] * beta[a][c];
 
                     // working response
-                    double yc = (y[i] == (c + 1)) ? 1.0 : 0.0;
-                    double z = eta + (yc - pc) / wc;
+                    final double yc = (y[i] == (c + 1)) ? 1.0 : 0.0;
+                    final double z = eta + (yc - pc) / wc;
 
-                    for (int a = 0; a < M; a++) v[a] += wc * xRow[a] * z;
+                    // v += wc * phi * z
+                    final double wz = wc * z;
+                    for (int a = 0; a < M; a++) v[a] += wz * phi[a];
 
+                    // G += wc * phi * phi^T  (lower triangle)
                     for (int a = 0; a < M; a++) {
-                        double pa = wc * xRow[a];
-                        for (int b = 0; b <= a; b++) G.add(a, b, pa * xRow[b]);
+                        final double pa = wc * phi[a];
+                        for (int b = 0; b <= a; b++) G.add(a, b, pa * phi[b]);
                     }
                 }
 
+                // symmetrize + ridge (no intercept penalty)
                 for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) G.set(b, a, G.get(a, b));
-                for (int a = 1; a < M; a++) G.add(a, a, ridge); // do NOT penalize intercept
+                for (int a = 1; a < M; a++) G.add(a, a, ridge);
 
-                CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+                final CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
                 if (!chol.decompose(G)) return new FitResult(Double.NaN, Double.NaN);
-                DMatrixRMaj L = chol.getT(null);
+                final DMatrixRMaj L = chol.getT(null);
 
-                double[] bc = solveFromCholeskyLower(L, v);
+                final double[] bc = solveFromCholeskyLower(L, v);
                 for (int a = 0; a < M; a++) beta[a][c] = bc[a];
             }
 
-            // compute (negative) log-lik as convergence monitor
-            double ll = multinomialLogLik(y, K, n, beta, xRow, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
-            obj = -ll;
+            // convergence monitor: negative log-lik
+            final double ll = multinomialLogLikFast(y, K, n, beta, Phi, logit, etaC);
+            final double obj = -ll;
 
-            if (abs(prevObj - obj) <= irlsTol * (1.0 + abs(prevObj))) break;
+            if (Math.abs(prevObj - obj) <= irlsTol * (1.0 + Math.abs(prevObj))) break;
             prevObj = obj;
         }
 
         // final log-lik
-        double ll = multinomialLogLik(y, K, n, beta, xRow, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
+        final double ll = multinomialLogLikFast(y, K, n, beta, Phi, logit, etaC);
 
-        // edf approximation: sum over class blocks of ridge edf using final weights p(1-p)
+        // edf approximation: sum ridge edf’s of (K-1) one-vs-reference blocks using final softmax probs
         double edf = 0.0;
-        double[][] probs = softmaxProbs(y, K, n, beta, xRow, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
 
         for (int c = 0; c < C; c++) {
-            DMatrixRMaj G = new DMatrixRMaj(M, M);
+            final DMatrixRMaj G = new DMatrixRMaj(M, M);
+
             for (int i = 0; i < n; i++) {
-                buildXRowMixedStudentT_Intercept(xRow, i, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
-                double pc = probs[i][c + 1];
+                final double[] phi = Phi[i];
+
+                final double pc = softmaxProbForClass(phi, beta, K, c + 1, logit, etaC);
                 double wc = pc * (1.0 - pc);
-                wc = max(wc, 1e-10);
+                wc = Math.max(wc, 1e-10);
 
                 for (int a = 0; a < M; a++) {
-                    double pa = wc * xRow[a];
-                    for (int b = 0; b <= a; b++) G.add(a, b, pa * xRow[b]);
+                    final double pa = wc * phi[a];
+                    for (int b = 0; b <= a; b++) G.add(a, b, pa * phi[b]);
                 }
             }
+
             for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) G.set(b, a, G.get(a, b));
-            for (int a = 1; a < M; a++) G.add(a, a, ridge); // do NOT penalize intercept
+            for (int a = 1; a < M; a++) G.add(a, a, ridge);
 
-
-            CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+            final CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
             if (!chol.decompose(G)) return new FitResult(Double.NaN, Double.NaN);
-            DMatrixRMaj L = chol.getT(null);
+            final DMatrixRMaj L = chol.getT(null);
 
-            double trInv = traceInvFromCholeskyLower(L);
+            final double trInv = traceInvFromCholeskyLower(L);
             double edfC = M - ridge * trInv;
             if (!(edfC >= 0) || !Double.isFinite(edfC)) edfC = M;
             edf += edfC;
@@ -770,6 +781,204 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
 
         return new FitResult(ll, edf);
     }
+
+    /**
+     * Returns P(Y = targetClass | phi) under the multinomial model with reference class 0,
+     * where beta is M x (K-1) for classes 1..K-1.
+     *
+     * This computes logits with numerical stabilization and returns only the requested class prob.
+     * Scratch arrays logit[K] and etaC[K-1] are reused to avoid allocations.
+     */
+    private static double softmaxProbForClass(double[] phi, double[][] beta, int K, int targetClass,
+                                              double[] logitScratch, double[] etaScratch) {
+        final int C = K - 1;
+
+        // class 0 logit = 0
+        logitScratch[0] = 0.0;
+
+        double maxLog = 0.0;
+
+        // logits for classes 1..K-1
+        for (int c = 0; c < C; c++) {
+            double s = 0.0;
+            // beta[:,c] corresponds to class (c+1)
+            for (int a = 0; a < phi.length; a++) s += phi[a] * beta[a][c];
+            etaScratch[c] = s;
+            logitScratch[c + 1] = s;
+            if (s > maxLog) maxLog = s;
+        }
+
+        // denom
+        double sum = Math.exp(logitScratch[0] - maxLog);
+        for (int k = 1; k < K; k++) sum += Math.exp(logitScratch[k] - maxLog);
+
+        // target prob
+        return Math.exp(logitScratch[targetClass] - maxLog) / sum;
+    }
+
+    /**
+     * Fast multinomial log-likelihood using precomputed Phi.
+     * Keeps the same definition you had: ll += (logit[y[i]] - maxLog) - log(sum exp(logit-maxLog)).
+     */
+    private static double multinomialLogLikFast(int[] y, int K, int n,
+                                                double[][] beta,
+                                                double[][] Phi,
+                                                double[] logitScratch,
+                                                double[] etaScratch) {
+        final int C = K - 1;
+        double ll = 0.0;
+
+        for (int i = 0; i < n; i++) {
+            final double[] phi = Phi[i];
+
+            logitScratch[0] = 0.0;
+            double maxLog = 0.0;
+
+            for (int c = 0; c < C; c++) {
+                double s = 0.0;
+                for (int a = 0; a < phi.length; a++) s += phi[a] * beta[a][c];
+                etaScratch[c] = s;
+                logitScratch[c + 1] = s;
+                if (s > maxLog) maxLog = s;
+            }
+
+            double sum = 0.0;
+            for (int k = 0; k < K; k++) sum += Math.exp(logitScratch[k] - maxLog);
+
+            ll += (logitScratch[y[i]] - maxLog) - Math.log(sum);
+        }
+
+        return ll;
+    }
+
+//    private FitResult fitMultinomialLogitMixed(int[] y, int K, int[] parentIdx, int[] rows, int n, long seed) {
+//        int[] cont = filterContinuous(parentIdx);
+//        int[] disc = filterDiscrete(parentIdx);
+//
+//        OneHotSpec oh = buildOneHotSpec(disc);
+//
+//        final int D = rffFeatures;
+//        final int Q = oh.totalCols;
+//        final int M = 1 + D + Q;  // +1 intercept
+//        final int C = K - 1;
+//
+//        // Extract cont parents
+//        double[][] Zc = new double[n][cont.length];
+//        for (int r = 0; r < n; r++) {
+//            int row = (rows == null) ? r : rows[r];
+//            for (int j = 0; j < cont.length; j++) Zc[r][j] = zCols[cont[j]][row];
+//        }
+//
+//        // RFF params
+//        Random rng = new Random(seed);
+//        double[][] W = new double[D][max(1, cont.length)];
+//        for (int k = 0; k < D; k++) for (int j = 0; j < W[k].length; j++) W[k][j] = rng.nextGaussian() / rffSigma;
+//        double[] phase = new double[D];
+//        for (int k = 0; k < D; k++) phase[k] = 2.0 * PI * rng.nextDouble();
+//        final double phiScale = sqrt(2.0 / D);
+//
+//        // beta: M x C
+//        double[][] beta = new double[M][C]; // init 0
+//        double prevObj = Double.POSITIVE_INFINITY;
+//
+//        double[] xRow = new double[M];
+//
+//        // IRLS
+//        for (int iter = 0; iter < irlsIters; iter++) {
+//
+//            // We do blockwise Newton for each class k=1..K-1 using weights p_k*(1-p_k)
+//            // with the shared softmax probabilities from current beta.
+//            // This is an approximation to the full multinomial Hessian (which has cross-class coupling),
+//            // but works well as a practical ridge-IRLS in scoring.
+//
+//            double[][] probs = softmaxProbs(y, K, n, beta, xRow, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
+//
+//            double obj = 0.0;
+//
+//            // update each class block independently
+//            for (int c = 0; c < C; c++) {
+//                // Build XtWX and XtWz where z is working response
+//                DMatrixRMaj G = new DMatrixRMaj(M, M);
+//                double[] v = new double[M];
+//
+//                for (int i = 0; i < n; i++) {
+//                    buildXRowMixed_Intercept(xRow, i, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
+//
+//                    double pc = probs[i][c + 1]; // class c+1 prob
+//                    double wc = pc * (1.0 - pc);
+//                    wc = max(wc, 1e-10);
+//
+//                    // linear predictor for class c+1
+//                    double eta = 0.0;
+//                    for (int a = 0; a < M; a++) eta += xRow[a] * beta[a][c];
+//
+//                    // working response
+//                    double yc = (y[i] == (c + 1)) ? 1.0 : 0.0;
+//                    double z = eta + (yc - pc) / wc;
+//
+//                    for (int a = 0; a < M; a++) v[a] += wc * xRow[a] * z;
+//
+//                    for (int a = 0; a < M; a++) {
+//                        double pa = wc * xRow[a];
+//                        for (int b = 0; b <= a; b++) G.add(a, b, pa * xRow[b]);
+//                    }
+//                }
+//
+//                for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) G.set(b, a, G.get(a, b));
+//                for (int a = 1; a < M; a++) G.add(a, a, ridge); // do NOT penalize intercept
+//
+//                CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+//                if (!chol.decompose(G)) return new FitResult(Double.NaN, Double.NaN);
+//                DMatrixRMaj L = chol.getT(null);
+//
+//                double[] bc = solveFromCholeskyLower(L, v);
+//                for (int a = 0; a < M; a++) beta[a][c] = bc[a];
+//            }
+//
+//            // compute (negative) log-lik as convergence monitor
+//            double ll = multinomialLogLik(y, K, n, beta, xRow, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
+//            obj = -ll;
+//
+//            if (abs(prevObj - obj) <= irlsTol * (1.0 + abs(prevObj))) break;
+//            prevObj = obj;
+//        }
+//
+//        // final log-lik
+//        double ll = multinomialLogLik(y, K, n, beta, xRow, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
+//
+//        // edf approximation: sum over class blocks of ridge edf using final weights p(1-p)
+//        double edf = 0.0;
+//        double[][] probs = softmaxProbs(y, K, n, beta, xRow, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
+//
+//        for (int c = 0; c < C; c++) {
+//            DMatrixRMaj G = new DMatrixRMaj(M, M);
+//            for (int i = 0; i < n; i++) {
+//                buildXRowMixedStudentT_Intercept(xRow, i, Zc, cont.length, W, phase, phiScale, oh, disc, rows);
+//                double pc = probs[i][c + 1];
+//                double wc = pc * (1.0 - pc);
+//                wc = max(wc, 1e-10);
+//
+//                for (int a = 0; a < M; a++) {
+//                    double pa = wc * xRow[a];
+//                    for (int b = 0; b <= a; b++) G.add(a, b, pa * xRow[b]);
+//                }
+//            }
+//            for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) G.set(b, a, G.get(a, b));
+//            for (int a = 1; a < M; a++) G.add(a, a, ridge); // do NOT penalize intercept
+//
+//
+//            CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+//            if (!chol.decompose(G)) return new FitResult(Double.NaN, Double.NaN);
+//            DMatrixRMaj L = chol.getT(null);
+//
+//            double trInv = traceInvFromCholeskyLower(L);
+//            double edfC = M - ridge * trInv;
+//            if (!(edfC >= 0) || !Double.isFinite(edfC)) edfC = M;
+//            edf += edfC;
+//        }
+//
+//        return new FitResult(ll, edf);
+//    }
 
     // -------------------- extraction --------------------
 
@@ -815,74 +1024,74 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         }
     }
 
-    private double[][] softmaxProbs(int[] y, int K, int n,
-                                    double[][] beta, double[] xRow,
-                                    double[][] Zc, int dCont,
-                                    double[][] W, double[] phase, double phiScale,
-                                    OneHotSpec oh, int[] disc, int[] rows) {
+//    private double[][] softmaxProbs(int[] y, int K, int n,
+//                                    double[][] beta, double[] xRow,
+//                                    double[][] Zc, int dCont,
+//                                    double[][] W, double[] phase, double phiScale,
+//                                    OneHotSpec oh, int[] disc, int[] rows) {
+//
+//        int C = K - 1;
+//        double[][] p = new double[n][K];
+//
+//        for (int i = 0; i < n; i++) {
+////            buildXRowMixed(xRow, i, Zc, dCont, W, phase, phiScale, oh, disc, rows);
+//            buildXRowMixed_Intercept(xRow, i, Zc, dCont, W, phase, phiScale, oh, disc, rows);
+//
+//            // logits: class0 = 0, class k>0 = x^T beta_k
+//            double maxLog = 0.0;
+//            double[] logit = new double[K];
+//            logit[0] = 0.0;
+//
+//            for (int c = 0; c < C; c++) {
+//                double s = 0.0;
+//                for (int a = 0; a < xRow.length; a++) s += xRow[a] * beta[a][c];
+//                logit[c + 1] = s;
+//                if (s > maxLog) maxLog = s;
+//            }
+//
+//            double sum = 0.0;
+//            for (int k = 0; k < K; k++) {
+//                double e = exp(logit[k] - maxLog);
+//                p[i][k] = e;
+//                sum += e;
+//            }
+//            double inv = 1.0 / sum;
+//            for (int k = 0; k < K; k++) p[i][k] *= inv;
+//        }
+//
+//        return p;
+//    }
 
-        int C = K - 1;
-        double[][] p = new double[n][K];
-
-        for (int i = 0; i < n; i++) {
-//            buildXRowMixed(xRow, i, Zc, dCont, W, phase, phiScale, oh, disc, rows);
-            buildXRowMixed_Intercept(xRow, i, Zc, dCont, W, phase, phiScale, oh, disc, rows);
-
-            // logits: class0 = 0, class k>0 = x^T beta_k
-            double maxLog = 0.0;
-            double[] logit = new double[K];
-            logit[0] = 0.0;
-
-            for (int c = 0; c < C; c++) {
-                double s = 0.0;
-                for (int a = 0; a < xRow.length; a++) s += xRow[a] * beta[a][c];
-                logit[c + 1] = s;
-                if (s > maxLog) maxLog = s;
-            }
-
-            double sum = 0.0;
-            for (int k = 0; k < K; k++) {
-                double e = exp(logit[k] - maxLog);
-                p[i][k] = e;
-                sum += e;
-            }
-            double inv = 1.0 / sum;
-            for (int k = 0; k < K; k++) p[i][k] *= inv;
-        }
-
-        return p;
-    }
-
-    private double multinomialLogLik(int[] y, int K, int n,
-                                     double[][] beta, double[] xRow,
-                                     double[][] Zc, int dCont,
-                                     double[][] W, double[] phase, double phiScale,
-                                     OneHotSpec oh, int[] disc, int[] rows) {
-        double ll = 0.0;
-        int C = K - 1;
-
-        for (int i = 0; i < n; i++) {
-            buildXRowMixed_Intercept(xRow, i, Zc, dCont, W, phase, phiScale, oh, disc, rows);
-
-            double[] logit = new double[K];
-            logit[0] = 0.0;
-            double maxLog = 0.0;
-
-            for (int c = 0; c < C; c++) {
-                double s = 0.0;
-                for (int a = 0; a < xRow.length; a++) s += xRow[a] * beta[a][c];
-                logit[c + 1] = s;
-                if (s > maxLog) maxLog = s;
-            }
-
-            double sum = 0.0;
-            for (int k = 0; k < K; k++) sum += exp(logit[k] - maxLog);
-
-            ll += (logit[y[i]] - maxLog) - log(sum);
-        }
-
-        return ll;
-    }
+//    private double multinomialLogLik(int[] y, int K, int n,
+//                                     double[][] beta, double[] xRow,
+//                                     double[][] Zc, int dCont,
+//                                     double[][] W, double[] phase, double phiScale,
+//                                     OneHotSpec oh, int[] disc, int[] rows) {
+//        double ll = 0.0;
+//        int C = K - 1;
+//
+//        for (int i = 0; i < n; i++) {
+//            buildXRowMixed_Intercept(xRow, i, Zc, dCont, W, phase, phiScale, oh, disc, rows);
+//
+//            double[] logit = new double[K];
+//            logit[0] = 0.0;
+//            double maxLog = 0.0;
+//
+//            for (int c = 0; c < C; c++) {
+//                double s = 0.0;
+//                for (int a = 0; a < xRow.length; a++) s += xRow[a] * beta[a][c];
+//                logit[c + 1] = s;
+//                if (s > maxLog) maxLog = s;
+//            }
+//
+//            double sum = 0.0;
+//            for (int k = 0; k < K; k++) sum += exp(logit[k] - maxLog);
+//
+//            ll += (logit[y[i]] - maxLog) - log(sum);
+//        }
+//
+//        return ll;
+//    }
 
     private OneHotSpec buildOneHotSpec(int[] discParents) {
         int m = discParents.length;
