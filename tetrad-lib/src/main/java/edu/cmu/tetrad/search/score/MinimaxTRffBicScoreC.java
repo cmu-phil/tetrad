@@ -84,7 +84,7 @@ import static java.lang.Math.*;
  * scores when noise distributions are heavy-tailed or nonlinear effects are present.
  * </p>
  */
-public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSettable {
+public final class MinimaxTRffBicScoreC implements Score, EffectiveSampleSizeSettable {
 
     // -------------------- config knobs --------------------
 
@@ -158,7 +158,7 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
      * @param dataSet The dataset to be used for constructing this instance.
      *                Must be non-null. If null, a {@code NullPointerException} will be thrown.
      */
-    public MinimaxTRffBicScore(DataSet dataSet) {
+    public MinimaxTRffBicScoreC(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
 
         this.dataSet = dataSet;

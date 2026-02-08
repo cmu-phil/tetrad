@@ -66,21 +66,21 @@ public class MinimaxCITest implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
 
-        edu.cmu.tetrad.search.test.MinimaxCITest test = new edu.cmu.tetrad.search.test.MinimaxCITest((DataSet) dataSet,
+        var test = new edu.cmu.tetrad.search.test.MinimaxCITest((DataSet) dataSet,
                 parameters.getDouble(Params.ALPHA));
 
-        test.setPermutations(500);
-        test.setAlpha(parameters.getDouble(Params.ALPHA));
+//        test.setPermutations(500);
+//        test.setAlpha(parameters.getDouble(Params.ALPHA));
 
-        test.setBinsPerContXY(parameters.getInt(Params.BINS_PER_CONT_XY));
-        test.setBinsPerContZ(parameters.getInt(Params.BINS_PER_CONT_Z));
-        test.setMaxCellsPerStratum(parameters.getInt(Params.MAX_CELLS_PER_STRATUM));
-        test.setMaxObservedLevelsPerVar(parameters.getInt(Params.MAX_OBSERVED_LEVELS_PER_VAR));
-        test.setMinStratumSize(parameters.getInt(Params.MIN_STRATUM_SIZE));
-        test.setUseMaxAcrossStrata(parameters.getBoolean(Params.USE_MAX_ACROSS_STRATA));
+//        test.setBinsPerContXY(parameters.getInt(Params.BINS_PER_CONT_XY));
+//        test.setBinsPerContZ(parameters.getInt(Params.BINS_PER_CONT_Z));
+//        test.setMaxCellsPerStratum(parameters.getInt(Params.MAX_CELLS_PER_STRATUM));
+//        test.setMaxObservedLevelsPerVar(parameters.getInt(Params.MAX_OBSERVED_LEVELS_PER_VAR));
+//        test.setMinStratumSize(parameters.getInt(Params.MIN_STRATUM_SIZE));
+//        test.setUseMaxAcrossStrata(parameters.getBoolean(Params.USE_MAX_ACROSS_STRATA));
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        test.setPermutations(500);
-        test.setPermSeed(12345);
+//        test.setPermutations(500);s
+//        test.setPermSeed(12345);
 
         test.setAlpha(parameters.getDouble(Params.ALPHA));
 

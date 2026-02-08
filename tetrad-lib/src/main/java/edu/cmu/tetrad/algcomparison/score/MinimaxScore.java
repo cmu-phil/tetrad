@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.MinimaxTRffBicScore;
+import edu.cmu.tetrad.search.score.MinimaxTRffBicScoreA;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -71,15 +72,15 @@ public class MinimaxScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        MinimaxTRffBicScore score;
+        MinimaxTRffBicScoreA score;
 
         if (dataSet instanceof DataSet) {
-            score = new MinimaxTRffBicScore((DataSet) this.dataSet);
+            score = new MinimaxTRffBicScoreA((DataSet) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
 
-            score.setNu(parameters.getDouble(Params.MINIMAX_NU));
+        score.setNu(parameters.getDouble(Params.MINIMAX_NU));
         score.setScale(parameters.getDouble(Params.MINIMAX_SCALE));
         score.setRidge(parameters.getDouble(Params.MINIMAX_RIDGE));
         score.setRffFeatures(parameters.getInt(Params.MINIMAX_RFF_FEATURES));
@@ -106,7 +107,7 @@ public class MinimaxScore implements ScoreWrapper {
      */
     @Override
     public DataType getDataType() {
-        return DataType. Mixed;
+        return DataType.Mixed;
     }
 
     /**

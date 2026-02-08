@@ -210,25 +210,60 @@ public class Boss implements SuborderSearch {
 
             makeValidKnowledgeOrder(suborder);
 
+//            do {
+//                improved = false;
+//                for (Node x : new ArrayList<>(suborder)) {
+//                    if (this.verbose && (suborder.size() > 1)) System.out.println(x);
+//
+//                    if (this.numThreads == 1) improved |= betterMutation(prefix, suborder, x);
+//                    else {
+//                        improved |= betterMutationAsync(prefix, suborder, x);
+//                    }
+//                }
+//
+////                double cur = update(prefix, suborder);
+////
+////                // If no real progress in objective, stop (prevents oscillation)
+////                final double EPS = 1e-10;
+////                if (cur <= prev + EPS) break;
+////                prev = cur;
+//
+//                if (this.verbose && (suborder.size() > 1)) {
+//                    System.out.printf("\nScore: %.3f\n\n", update(prefix, suborder));
+//                }
+//
+//            } while (improved);
+
+            // near top of each restart:
+            final java.util.HashSet<Long> seenOrders = new java.util.HashSet<>();
+            final int MAX_ROUNDS = Math.max(50, 5 * suborder.size()); // conservative
+
+            int rounds = 0;
             do {
                 improved = false;
-                for (Node x : new ArrayList<>(suborder)) {
-                    if (this.verbose && (suborder.size() > 1)) System.out.println(x);
 
-                    if (this.numThreads == 1) improved |= betterMutation(prefix, suborder, x);
-                    else {
-                        improved |= betterMutationAsync(prefix, suborder, x);
-                    }
+                // cycle check at top of round (before applying moves)
+                long sig = orderSignature(suborder);
+                if (!seenOrders.add(sig)) {
+                    if (verbose) System.out.println("Breaking: repeated suborder (cycle detected).");
+                    break;
                 }
 
-                double cur = update(prefix, suborder);
+                System.out.println("Rounds = " + rounds);
 
-                // If no real progress in objective, stop (prevents oscillation)
-                final double EPS = 1e-10;
-                if (cur <= prev + EPS) break;
-                prev = cur;
+                if (++rounds > MAX_ROUNDS) {
+                    if (verbose) System.out.println("Breaking: max rounds reached.");
+                    break;
+                }
 
-                if (this.verbose && (suborder.size() > 1)) {
+                for (Node x : new ArrayList<>(suborder)) {
+                    if (verbose && suborder.size() > 1) System.out.println(x);
+                    improved |= (numThreads == 1)
+                            ? betterMutation(prefix, suborder, x)
+                            : betterMutationAsync(prefix, suborder, x);
+                }
+
+                if (verbose && suborder.size() > 1) {
                     System.out.printf("\nScore: %.3f\n\n", update(prefix, suborder));
                 }
 
@@ -262,6 +297,16 @@ public class Boss implements SuborderSearch {
         }
 
         update(prefix, suborder);
+    }
+
+    private long orderSignature(List<Node> order) {
+        long h = 1469598103934665603L; // FNV-1a
+        for (Node n : order) {
+            // Prefer a stable int index if you have one; otherwise name hash.
+            h ^= (long) n.getName().hashCode();
+            h *= 1099511628211L;
+        }
+        return h;
     }
 
     /**
