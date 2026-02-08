@@ -249,8 +249,6 @@ public class Boss implements SuborderSearch {
                     break;
                 }
 
-                System.out.println("Rounds = " + rounds);
-
                 if (++rounds > MAX_ROUNDS) {
                     if (verbose) System.out.println("Breaking: max rounds reached.");
                     break;
