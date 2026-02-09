@@ -164,6 +164,14 @@ public final class Gcm implements IndependenceTest {
         return x;
     }
 
+    /**
+     * Generates a subset independence test that is restricted to the provided variables.
+     * The dataset remains the same, but the list of variables is restricted to the subset.
+     * This ensures low overhead while allowing for operations on the desired subset.
+     *
+     * @param vars the list of variables defining the subset for the independence test
+     * @return an IndependenceTest instance configured to operate on the specified subset of variables
+     */
     @Override
     public IndependenceTest indTestSubset(List<Node> vars) {
         // Simple (safe) implementation: keep the same dataset, just restrict variable list.
@@ -188,6 +196,15 @@ public final class Gcm implements IndependenceTest {
         return d;
     }
 
+    /**
+     * Checks the independence between two nodes given a conditioning set of nodes.
+     *
+     * @param x the first node whose independence is being evaluated
+     * @param y the second node whose independence is being evaluated
+     * @param z the set of nodes conditioned upon during the independence test
+     * @return an IndependenceResult containing the independence fact, the determination of independence,
+     *         the p-value of the test, and the difference between the test threshold and the p-value
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         double p = getPValue(x, y, z);
