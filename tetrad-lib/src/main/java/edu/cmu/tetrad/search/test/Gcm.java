@@ -206,6 +206,17 @@ public final class Gcm implements IndependenceTest {
         return result;
     }
 
+    /**
+     * Calculates the p-value for testing conditional independence between two variables
+     * given a set of conditioning variables in the context of a statistical model.
+     *
+     * @param x the first node (variable) being tested for independence.
+     * @param y the second node (variable) being tested for independence.
+     * @param z the set of nodes (variables) that condition the independence test.
+     * @return the p-value indicating the likelihood that the null hypothesis of independence holds.
+     *         A smaller value suggests a stronger evidence of dependence.
+     * @throws NullPointerException if either x, y, or z is null.
+     */
     public double getPValue(Node x, Node y, Set<Node> z) {
         Objects.requireNonNull(x);
         Objects.requireNonNull(y);
