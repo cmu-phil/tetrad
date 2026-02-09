@@ -13,7 +13,7 @@ import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
+import java.util.SplittableRandom;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -104,19 +104,16 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
      */
     private final AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
-    // Total number of variables (columns) in the dataset.
-    private final int p;
-    // One RFF basis per child variable i: (W_i, phase_i), where W_i is D x p.
-// We only *use* columns corresponding to continuous parents, but sampling over full p
-// lets any parent subset share the same basis for child i.
-    private final AtomicReference<ConcurrentHashMap<Integer, RffParams>> rffParamsByChildRef =
-            new AtomicReference<>(new ConcurrentHashMap<>());
+
+    // RFF coupling caches:
+    // - per (child i, cont-parent var j): omega vector length D
+    // - per child i: phase vector length D
+    private final ConcurrentHashMap<Long, double[]> omegaCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, double[]> phaseCache = new ConcurrentHashMap<>();
     /**
      * Student-t degrees of freedom (continuous child).
      */
     private volatile double nu = 5.0;
-
-    // -------------------- data --------------------
     /**
      * Student-t scale (continuous child). If globally z-scored, 1.0 is reasonable.
      */
@@ -125,6 +122,8 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
      * Ridge penalty (>0). Applies to both continuous and discrete child fits.
      */
     private volatile double ridge = 1e-3;
+
+    // -------------------- data --------------------
     /**
      * Number of RFF features (D) for continuous-parent subvector.
      */
@@ -145,8 +144,6 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
      * IRLS stopping tolerance.
      */
     private volatile double irlsTol = 1e-6;
-
-    // -------------------- Score interface --------------------
     private volatile int nEff;
 
     /**
@@ -163,7 +160,6 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
 
         this.dataSet = dataSet;
         this.variables = new ArrayList<>(dataSet.getVariables());
-        this.p = variables.size();
         this.sampleSize = dataSet.getNumRows();
         setEffectiveSampleSize(-1);
 
@@ -189,6 +185,8 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
             }
         }
     }
+
+    // -------------------- Score interface --------------------
 
     private static double multinomialInterceptOnlyLogLik(int[] y, int K) {
         int n = y.length;
@@ -296,8 +294,6 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return x;
     }
 
-    // -------------------- public knobs --------------------
-
     private static double traceInvFromCholeskyLower(DMatrixRMaj L) {
         int n = L.numRows;
         double tr = 0.0;
@@ -329,12 +325,53 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return all;
     }
 
+    // -------------------- public knobs --------------------
+
     private static long cacheKey(int i, int[] parents, long knobsSig) {
         long h = 1469598103934665603L;
         h = (h ^ i) * 1099511628211L;
         for (int p : parents) h = (h ^ p) * 1099511628211L;
         h = (h ^ knobsSig) * 1099511628211L;
         return h;
+    }
+
+    // 64-bit mix for stable keys/seeds.
+    private static long mix64(long z) {
+        z = (z ^ (z >>> 33)) * 0xff51afd7ed558ccdL;
+        z = (z ^ (z >>> 33)) * 0xc4ceb9fe1a85ec53L;
+        return z ^ (z >>> 33);
+    }
+
+    private static void fillSoftmaxProbsFromPhi(int K, int n,
+                                                double[][] beta,
+                                                double[][] Phi,
+                                                double[] logitsScratch,
+                                                double[][] outProbs) {
+        final int C = K - 1;
+
+        for (int i = 0; i < n; i++) {
+            final double[] phi = Phi[i];
+
+            logitsScratch[0] = 0.0;
+            double maxLog = 0.0;
+
+            for (int c = 0; c < C; c++) {
+                double s = 0.0;
+                for (int a = 0; a < phi.length; a++) s += phi[a] * beta[a][c];
+                logitsScratch[c + 1] = s;
+                if (s > maxLog) maxLog = s;
+            }
+
+            double sum = 0.0;
+            for (int k = 0; k < K; k++) {
+                final double e = Math.exp(logitsScratch[k] - maxLog);
+                outProbs[i][k] = e;
+                sum += e;
+            }
+
+            final double inv = 1.0 / sum;
+            for (int k = 0; k < K; k++) outProbs[i][k] *= inv;
+        }
     }
 
     private static double[][] softmaxProbsFromPhi(int[] y, int K, int n,
@@ -400,11 +437,54 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return ll;
     }
 
-    // SplitMix64-ish mixer for stable long hashing.
-    private static long mix64(long z) {
-        z = (z ^ (z >>> 33)) * 0xff51afd7ed558ccdL;
-        z = (z ^ (z >>> 33)) * 0xc4ceb9fe1a85ec53L;
-        return z ^ (z >>> 33);
+    private static double traceInvPenalizedBlockFromG(DMatrixRMaj Gfull) {
+        // Gfull is MxM. Intercept is at 0 and is NOT ridge-penalized.
+        // We want trace(inv(Gpen)), where Gpen is (M-1)x(M-1) block on indices 1..M-1.
+        final int M = Gfull.numRows;
+        if (M <= 1) return 0.0;
+
+        final int Mp = M - 1;
+        final DMatrixRMaj Gp = new DMatrixRMaj(Mp, Mp);
+
+        for (int a = 0; a < Mp; a++) {
+            for (int b = 0; b <= a; b++) {
+                Gp.set(a, b, Gfull.get(a + 1, b + 1));
+            }
+        }
+        // mirror
+        for (int a = 0; a < Mp; a++) for (int b = 0; b < a; b++) Gp.set(b, a, Gp.get(a, b));
+
+        final CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+        if (!chol.decompose(Gp)) return Double.NaN;
+        final DMatrixRMaj L = chol.getT(null);
+
+        return traceInvFromCholeskyLower(L);
+    }
+
+    private long omegaKey(int child, int parent) {
+        // pack child+parent into a stable key
+        return (((long) child) << 32) ^ (parent & 0xffffffffL);
+    }
+
+    private double[] getOmega(int child, int parent, int D) {
+        // omega_k ~ N(0, 1/sigma^2). Return length D.
+        long key = omegaKey(child, parent);
+        return omegaCache.computeIfAbsent(key, kk -> {
+            SplittableRandom rng = new SplittableRandom(mix64(rffSeed ^ kk));
+            double[] w = new double[D];
+            double invSigma = 1.0 / rffSigma;
+            for (int k = 0; k < D; k++) w[k] = rng.nextGaussian() * invSigma;
+            return w;
+        });
+    }
+
+    private double[] getPhase(int child, int D) {
+        return phaseCache.computeIfAbsent(child, cc -> {
+            SplittableRandom rng = new SplittableRandom(mix64(rffSeed ^ (long) cc * 0x9E3779B97F4A7C15L));
+            double[] phase = new double[D];
+            for (int k = 0; k < D; k++) phase[k] = 2.0 * Math.PI * rng.nextDouble();
+            return phase;
+        });
     }
 
     /**
@@ -434,20 +514,28 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
 
                 // child type dispatch
                 if (isDiscrete(i)) {
+                    // -------- discrete child: multinomial logistic ridge --------
                     int[] y = extractDiscreteChild(i, rows, n);
                     int K = numCategories(i);
                     if (K < 2) return Double.NaN;
 
                     if (parents.length == 0) {
+                        // intercept-only multinomial (just class proportions)
                         double ll = multinomialInterceptOnlyLogLik(y, K);
-                        return ll - 0.5 * (K - 1.0) * log(n);
+                        // edf = K-1 intercepts
+                        double bic = ll - 0.5 * (K - 1.0) * log(n);
+                        return bic;
                     }
+
+                    long seed = rffSeed ^ (long) i * 0x9E3779B97F4A7C15L ^ Arrays.hashCode(parents);
 
                     FitResult fit = fitMultinomialLogitMixed(i, y, K, parents, rows, n);
                     if (!Double.isFinite(fit.logLik)) return Double.NaN;
+
                     return fit.logLik - 0.5 * fit.edf * log(n);
 
                 } else {
+                    // -------- continuous child: Student-t RFF ridge (+ one-hot discrete parents) --------
                     if (!(nu > 2) || !Double.isFinite(nu)) return Double.NaN;
                     if (!(scale > 0) || !Double.isFinite(scale)) return Double.NaN;
 
@@ -456,13 +544,18 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
 
                     if (parents.length == 0) {
                         double ll = studentTLogLik(y, new double[n], nu, scale);
-                        return ll;
+                        return ll; // edf=0 after centering
                     }
 
+                    long seed = rffSeed ^ (long) i * 0x9E3779B97F4A7C15L ^ Arrays.hashCode(parents);
+
+//                        FitResult fit = fitStudentTRffRidgeMixed(y, parents, rows, n, seed);
                     FitResult fit = fitStudentTRffRidgeMixed(i, y, parents, rows, n);
                     if (!Double.isFinite(fit.logLik)) return Double.NaN;
+
                     return fit.logLik - 0.5 * fit.edf * log(n);
                 }
+
             } catch (RuntimeException e) {
                 TetradLogger.getInstance().log(e.getMessage());
                 return Double.NaN;
@@ -499,10 +592,6 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return new ArrayList<>(variables);
     }
 
-    // ============================================================================================
-    // Continuous child: Student-t IRLS ridge on features [RFF(Z_cont), OneHot(Z_disc)]
-    // ============================================================================================
-
     /**
      * Retrieves the sample size of the dataset associated with this instance.
      *
@@ -512,6 +601,10 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
     public int getSampleSize() {
         return dataSet.getNumRows();
     }
+
+    // ============================================================================================
+    // Continuous child: Student-t IRLS ridge on features [RFF(Z_cont), OneHot(Z_disc)]
+    // ============================================================================================
 
     /**
      * Returns a string representation of this MinimaxTRffBicScore instance.
@@ -525,11 +618,6 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return "Minimax-t RFF BIC score (mixed)";
     }
 
-    // ============================================================================================
-    // Discrete child: multinomial logistic ridge on features [RFF(Z_cont), OneHot(Z_disc)]
-    // Reference class 0, parameters for classes 1..K-1
-    // ============================================================================================
-
     /**
      * Retrieves the dataset associated with this instance.
      *
@@ -540,6 +628,11 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
     public DataModel getDataModel() {
         return dataSet;
     }
+
+    // ============================================================================================
+    // Discrete child: multinomial logistic ridge on features [RFF(Z_cont), OneHot(Z_disc)]
+    // Reference class 0, parameters for classes 1..K-1
+    // ============================================================================================
 
     /**
      * Retrieves the effective sample size used in the context of this instance.
@@ -594,8 +687,6 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         resetCache();
     }
 
-    // -------------------- one-hot spec --------------------
-
     /**
      * Sets the ridge parameter used in the computation. The ridge parameter must
      * be a positive, finite value. An exception will be thrown if the provided
@@ -610,6 +701,8 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         this.ridge = ridge;
         resetCache();
     }
+
+    // -------------------- one-hot spec --------------------
 
     /**
      * Sets the number of Random Fourier Features (RFF) to be used.
@@ -674,174 +767,249 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         resetCache();
     }
 
-    // -------------------- extraction --------------------
+    // Continuous child: Student-t IRLS ridge on features [RFF(cont parents), OneHot(disc parents)]
+// CHANGE: profile/estimate scale per (child, parent set) via IRLS residuals so variance reduction is rewarded.
+    private FitResult fitStudentTRffRidgeMixed(int child,
+                                               double[] yCentered,
+                                               int[] parentIdx,
+                                               int[] rows,
+                                               int n) {
 
-    private FitResult fitStudentTRffRidgeMixed(int childIndex, double[] yCentered,
-                                               int[] parentIdx, int[] rows, int n) {       // split parents
-        int[] cont = filterContinuous(parentIdx);
-        int[] disc = filterDiscrete(parentIdx);
+        final int[] cont = filterContinuous(parentIdx);
+        final int[] disc = filterDiscrete(parentIdx);
 
-        // build one-hot mapping for discrete parents (drop baseline level 0)
-        OneHotSpec oh = buildOneHotSpec(disc);
+        final OneHotSpec oh = buildOneHotSpec(disc);
 
         final int D = rffFeatures;
-        final int Q = oh.totalCols;          // total one-hot cols across discrete parents
-        final int M = 1 + D + Q;             // +1 for intercept at col 0
+        final int Q = oh.totalCols;
+        final int M = 1 + D + Q;
 
-        // extract continuous parent rows (standardized)
-        double[][] Zc = new double[n][cont.length];
-        for (int r = 0; r < n; r++) {
-            int row = (rows == null) ? r : rows[r];
-            for (int j = 0; j < cont.length; j++) Zc[r][j] = zCols[cont[j]][row];
+        // Extract continuous parents (z-scored) into dense n x dCont
+        final double[][] Zc = new double[n][cont.length];
+        for (int i = 0; i < n; i++) {
+            final int row = (rows == null) ? i : rows[i];
+            for (int j = 0; j < cont.length; j++) Zc[i][j] = zCols[cont[j]][row];
         }
 
-        // draw RFF params for cont part only
-//        Random rng = new Random(seed);
-//        double[][] W = new double[D][max(1, cont.length)];
-//        for (int k = 0; k < D; k++) {
-//            for (int j = 0; j < W[k].length; j++) W[k][j] = rng.nextGaussian() / rffSigma;
-//        }
-//        double[] phase = new double[D];
-//        for (int k = 0; k < D; k++) phase[k] = 2.0 * PI * rng.nextDouble();
-//        final double phiScale = sqrt(2.0 / D);
+        // ----------- Coupled RFF: omega per (child,parent), phase per child -----------
+        // omegaByParent[j] is length D for parent cont[j]
+        final double[][] omegaByParent = new double[cont.length][];
+        for (int j = 0; j < cont.length; j++) {
+            omegaByParent[j] = getOmega(child, cont[j], D); // MUST return length D
+        }
+        final double[] phase = getPhase(child, D);          // MUST return length D
+        final double phiScale = Math.sqrt(2.0 / D);
 
-        // cached RFF basis for this child
-        final RffParams rff = rffParamsForChild(childIndex);
-        final double[][] W = rff.W();
-        final double[] phase = rff.phase();
-        final double phiScale = sqrt(2.0 / rffFeatures);
-
-        double[] w = new double[n];
+        // IRLS weights for Student-t
+        final double[] w = new double[n];
         Arrays.fill(w, 1.0);
 
         double[] beta = new double[M];
         double prevObj = Double.POSITIVE_INFINITY;
 
-        double[] xRow = new double[M];
+        // IMPORTANT: profile scale per family (start from knob, update each iter)
+        double scaleHat = this.scale;
+
+        // Scratch
+        final double[] xRow = new double[M];
 
         for (int iter = 0; iter < irlsIters; iter++) {
 
-            DMatrixRMaj G = new DMatrixRMaj(M, M);
-            double[] v = new double[M];
+            final DMatrixRMaj G = new DMatrixRMaj(M, M);
+            final double[] v = new double[M];
 
+            // Build normal equations (weighted ridge)
             for (int i = 0; i < n; i++) {
-                buildXRowMixedStudentT_Intercept(xRow, i, Zc, cont, W, phase, phiScale, oh, disc, rows);
+                buildXRowMixedStudentT_Intercept_Coupled(
+                        xRow, i, Zc, omegaByParent, phase, phiScale, oh, disc, rows);
 
-                double wi = w[i];
-                double yi = yCentered[i];
+                final double wi = w[i];
+                final double yi = yCentered[i];
 
                 for (int a = 0; a < M; a++) v[a] += wi * xRow[a] * yi;
 
                 for (int a = 0; a < M; a++) {
-                    double pa = wi * xRow[a];
+                    final double pa = wi * xRow[a];
                     for (int b = 0; b <= a; b++) G.add(a, b, pa * xRow[b]);
                 }
             }
 
-            // mirror
+            // symmetrize
             for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) G.set(b, a, G.get(a, b));
-            for (int a = 1; a < M; a++) G.add(a, a, ridge); // do NOT penalize intercept
+            // ridge (intercept unpenalized)
+            for (int a = 1; a < M; a++) G.add(a, a, ridge);
 
-            CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+            final CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
             if (!chol.decompose(G)) return new FitResult(Double.NaN, Double.NaN);
+            final DMatrixRMaj L = chol.getT(null);
 
-            DMatrixRMaj L = chol.getT(null);
             beta = solveFromCholeskyLower(L, v);
 
-            // update weights and objective
+            // Update weights + profiled scale
             double obj = 0.0;
+            double wsum = 0.0;
+            double wrss = 0.0;
 
             for (int i = 0; i < n; i++) {
-                buildXRowMixedStudentT_Intercept(xRow, i, Zc, cont, W, phase, phiScale, oh, disc, rows);
+                buildXRowMixedStudentT_Intercept_Coupled(
+                        xRow, i, Zc, omegaByParent, phase, phiScale, oh, disc, rows);
+
                 double yhat = 0.0;
                 for (int a = 0; a < M; a++) yhat += xRow[a] * beta[a];
 
-                double r = yCentered[i] - yhat;
-                double u2 = (r / scale) * (r / scale);
+                final double r = yCentered[i] - yhat;
 
-                w[i] = (nu + 1.0) / (nu + u2);
-                obj += 0.5 * (nu + 1.0) * log1p(u2 / nu);
+                // Student-t weight uses current scaleHat
+                final double u2 = (r / scaleHat) * (r / scaleHat);
+                final double wi = (nu + 1.0) / (nu + u2);
+                w[i] = wi;
+
+                obj += 0.5 * (nu + 1.0) * Math.log1p(u2 / nu);
+
+                wsum += wi;
+                wrss += wi * r * r;
             }
 
-            if (abs(prevObj - obj) <= irlsTol * (1.0 + abs(prevObj))) break;
+            // Profile / estimate scale for this family (clamp away from 0)
+            if (wsum > 0.0) {
+                final double s2 = wrss / wsum;
+                scaleHat = Math.sqrt(Math.max(1e-12, s2));
+            }
+
+            if (Math.abs(prevObj - obj) <= irlsTol * (1.0 + Math.abs(prevObj))) break;
             prevObj = obj;
         }
 
-        // final predictions
-        double[] yhat = new double[n];
+        // Final predictions
+        final double[] yhat = new double[n];
         for (int i = 0; i < n; i++) {
-            buildXRowMixedStudentT_Intercept(xRow, i, Zc, cont, W, phase, phiScale, oh, disc, rows);
+            buildXRowMixedStudentT_Intercept_Coupled(
+                    xRow, i, Zc, omegaByParent, phase, phiScale, oh, disc, rows);
+
             double yh = 0.0;
             for (int a = 0; a < M; a++) yh += xRow[a] * beta[a];
             yhat[i] = yh;
         }
-        double ll = studentTLogLik(yCentered, yhat, nu, scale);
 
-        // edf: D+Q - ridge * tr(inv(G_with_ridge)) using last weights
-        DMatrixRMaj Gfinal = new DMatrixRMaj(M, M);
+        // Likelihood uses profiled scaleHat (NOT the global knob)
+        final double ll = studentTLogLik(yCentered, yhat, nu, scaleHat);
+
+        // EDF using last weights
+        final DMatrixRMaj Gfinal = new DMatrixRMaj(M, M);
         for (int i = 0; i < n; i++) {
-            buildXRowMixedStudentT_Intercept(xRow, i, Zc, cont, W, phase, phiScale, oh, disc, rows);
-            double wi = w[i];
+            buildXRowMixedStudentT_Intercept_Coupled(
+                    xRow, i, Zc, omegaByParent, phase, phiScale, oh, disc, rows);
+
+            final double wi = w[i];
             for (int a = 0; a < M; a++) {
-                double pa = wi * xRow[a];
+                final double pa = wi * xRow[a];
                 for (int b = 0; b <= a; b++) Gfinal.add(a, b, pa * xRow[b]);
             }
         }
         for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) Gfinal.set(b, a, Gfinal.get(a, b));
         for (int a = 1; a < M; a++) Gfinal.add(a, a, ridge);
 
-        CholeskyDecomposition_F64<DMatrixRMaj> chol2 = DecompositionFactory_DDRM.chol(true);
-        if (!chol2.decompose(Gfinal)) return new FitResult(Double.NaN, Double.NaN);
-        DMatrixRMaj Lfinal = chol2.getT(null);
+        final double trInvPen = traceInvPenalizedBlockFromG(Gfinal);
+        if (!Double.isFinite(trInvPen)) return new FitResult(Double.NaN, Double.NaN);
 
-        double trInv = traceInvFromCholeskyLower(Lfinal);
-        double edf = M - ridge * trInv;
-        if (!(edf >= 0) || !Double.isFinite(edf)) edf = M;
+        final int Mp = M - 1;
+        double edf = 1.0 + (Mp - ridge * trInvPen);
+        if (!(edf >= 0) || !Double.isFinite(edf)) edf = 1.0 + Mp;
 
         return new FitResult(ll, edf);
     }
 
+    /**
+     * Coupled-feature version of the Student-t design row builder:
+     * - intercept
+     * - RFF features computed as cos( sum_j omega_j[k] * Zc[i][j] + phase[k] )
+     * - one-hot for discrete parents (baseline dropped)
+     * <p>
+     * Note: omegaByParent is indexed by cont-parent position (0..dCont-1), each array length D.
+     * Zc is n x dCont, with columns aligned to cont[].
+     */
+    private void buildXRowMixedStudentT_Intercept_Coupled(double[] out,
+                                                          int i,
+                                                          double[][] Zc,
+                                                          double[][] omegaByParent,
+                                                          double[] phase,
+                                                          double phiScale,
+                                                          OneHotSpec oh,
+                                                          int[] discParents,
+                                                          int[] rows) {
+
+        // intercept
+        out[0] = 1.0;
+
+        // RFF block [1 .. 1 + D - 1]
+        final int D = rffFeatures;
+        final int rffOff = 1;
+
+        final int dCont = (Zc == null) ? 0 : Zc[i].length;
+        if (dCont == 0) {
+            Arrays.fill(out, rffOff, rffOff + D, 0.0);
+        } else {
+            for (int k = 0; k < D; k++) {
+                double dot = 0.0;
+                // dot = sum_j omega_j[k] * z_j
+                for (int j = 0; j < dCont; j++) dot += omegaByParent[j][k] * Zc[i][j];
+                out[rffOff + k] = phiScale * Math.cos(dot + phase[k]);
+            }
+        }
+
+        // one-hot block [1 + D .. M-1]
+        final int ohOff = 1 + D;
+        Arrays.fill(out, ohOff, out.length, 0.0);
+
+        if (discParents.length == 0) return;
+
+        final int row = (rows == null) ? i : rows[i];
+        for (int t = 0; t < discParents.length; t++) {
+            final int var = discParents[t];
+            final int lev = dataSet.getInt(row, var);
+            if (lev == DiscreteVariable.MISSING_VALUE) continue;
+
+            // baseline level 0 dropped
+            if (lev <= 0) continue;
+
+            final int col = oh.offsets[t] + (lev - 1);
+            if (col >= oh.offsets[t] && col < oh.offsets[t] + oh.sizes[t] - 1) {
+                out[ohOff + col] = 1.0;
+            }
+        }
+    }
+
     private void buildXRowMixedStudentT_Intercept(double[] out, int i,
-                                                  double[][] Zc, int[] contParents,
-                                                  double[][] W, double[] phase, double phiScale,
+                                                  double[][] Zc, int dCont,
+                                                  double[][] omegaByParent, double[] phase, double phiScale,
                                                   OneHotSpec oh, int[] discParents, int[] rows) {
 
         // intercept
         out[0] = 1.0;
 
         // RFF part occupies [1 .. 1 + D - 1]
-        final int rffOff = 1;
-//        if (dCont == 0) {
-//            Arrays.fill(out, rffOff, rffOff + rffFeatures, 0.0);
-//        } else {
-//            final int dCont = contParents.length;
+//            final int rffOff = 1;
 //            if (dCont == 0) {
 //                Arrays.fill(out, rffOff, rffOff + rffFeatures, 0.0);
 //            } else {
 //                for (int k = 0; k < rffFeatures; k++) {
 //                    double dot = 0.0;
-//                    // W is indexed by ORIGINAL variable index (0..p-1)
-//                    for (int j = 0; j < dCont; j++) {
-//                        int var = contParents[j];
-//                        dot += W[k][var] * Zc[i][j];
-//                    }
+//                    double[] wk = W[k];
+//                    for (int j = 0; j < dCont; j++) dot += wk[j] * Zc[i][j];
 //                    out[rffOff + k] = phiScale * cos(dot + phase[k]);
 //                }
 //            }
-//        }
 
-        final int dCont = contParents.length;
+        final int rffOff = 1;
         if (dCont == 0) {
             Arrays.fill(out, rffOff, rffOff + rffFeatures, 0.0);
         } else {
             for (int k = 0; k < rffFeatures; k++) {
                 double dot = 0.0;
-                // W is indexed by ORIGINAL variable index (0..p-1)
                 for (int j = 0; j < dCont; j++) {
-                    int var = contParents[j];
-                    dot += W[k][var] * Zc[i][j];
+                    dot += omegaByParent[j][k] * Zc[i][j];
                 }
-                out[rffOff + k] = phiScale * cos(dot + phase[k]);
+                out[rffOff + k] = phiScale * Math.cos(dot + phase[k]);
             }
         }
 
@@ -867,18 +1035,20 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         }
     }
 
-    // -------------------- Student-t loglik + gamma --------------------
+    // -------------------- extraction --------------------
 
-    private FitResult fitMultinomialLogitMixed(int childIndex, int[] y, int K,
-                                               int[] parentIdx, int[] rows, int n) {
+    private FitResult fitMultinomialLogitMixed(int child,
+                                               int[] y, int K,
+                                               int[] parentIdx,
+                                               int[] rows, int n) {
         final int[] cont = filterContinuous(parentIdx);
         final int[] disc = filterDiscrete(parentIdx);
         final OneHotSpec oh = buildOneHotSpec(disc);
 
         final int D = rffFeatures;
         final int Q = oh.totalCols;
-        final int M = 1 + D + Q;  // +1 intercept
-        final int C = K - 1;
+        final int M = 1 + D + Q;     // intercept + features
+        final int C = K - 1;         // classes 1..K-1 vs ref 0
 
         // Extract continuous parents
         final double[][] Zc = new double[n][cont.length];
@@ -887,26 +1057,25 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
             for (int j = 0; j < cont.length; j++) Zc[r][j] = zCols[cont[j]][row];
         }
 
-        // RFF params
-//        final Random rng = new Random(seed);
-//        final double[][] W = new double[D][Math.max(1, cont.length)];
-//        for (int k = 0; k < D; k++) for (int j = 0; j < W[k].length; j++) W[k][j] = rng.nextGaussian() / rffSigma;
-//        final double[] phase = new double[D];
-//        for (int k = 0; k < D; k++) phase[k] = 2.0 * Math.PI * rng.nextDouble();
-//        final double phiScale = Math.sqrt(2.0 / D);
+        final double phiScale = Math.sqrt(2.0 / D);
 
-        final RffParams rff = rffParamsForChild(childIndex);
-        final double[][] W = rff.W();
-        final double[] phase = rff.phase();
-        final double phiScale = Math.sqrt(2.0 / rffFeatures);
+        // Coupled: omega per (child,parent), and phase per child.
+        final double[][] omegaByParent = new double[cont.length][];
+        for (int j = 0; j < cont.length; j++) {
+            omegaByParent[j] = getOmega(child, cont[j], D); // length D
+        }
+        final double[] phase = getPhase(child, D); // length D
 
-        // ----------------------------
-        // Precompute Phi (design rows)
-        // ----------------------------
+        // Precompute Phi
         final double[][] Phi = new double[n][M];
         final double[] xRow = new double[M];
         for (int i = 0; i < n; i++) {
-            buildXRowMixed_Intercept(xRow, i, Zc, cont, W, phase, phiScale, oh, disc, rows);
+            buildXRowMixed_Intercept(
+                    xRow, i,
+                    Zc, cont.length,
+                    omegaByParent, phase, phiScale,
+                    oh, disc, rows
+            );
             System.arraycopy(xRow, 0, Phi[i], 0, M);
         }
 
@@ -915,16 +1084,17 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
 
         double prevObj = Double.POSITIVE_INFINITY;
 
-        // Scratch for probs computation (avoid per-row allocations)
+        // Scratch
         final double[] logits = new double[K];
+        final double[][] probs = new double[n][K];  // allocate once
 
         // IRLS
         for (int iter = 0; iter < irlsIters; iter++) {
 
-            // 1) probs computed ONCE per iter from CURRENT beta (snapshot)
-            final double[][] probs = softmaxProbsFromPhi(y, K, n, beta, Phi, logits);
+            // fill probs from current beta
+            fillSoftmaxProbsFromPhi(K, n, beta, Phi, logits, probs);
 
-            // 2) update each class block using frozen probs
+            // update each class block using frozen probs
             for (int c = 0; c < C; c++) {
                 final DMatrixRMaj G = new DMatrixRMaj(M, M);
                 final double[] v = new double[M];
@@ -936,27 +1106,23 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
                     double wc = pc * (1.0 - pc);
                     wc = Math.max(wc, 1e-10);
 
-                    // eta = phi^T beta_c
                     double eta = 0.0;
                     for (int a = 0; a < M; a++) eta += phi[a] * beta[a][c];
 
                     final double yc = (y[i] == (c + 1)) ? 1.0 : 0.0;
                     final double z = eta + (yc - pc) / wc;
 
-                    // v += wc * phi * z
                     final double wz = wc * z;
                     for (int a = 0; a < M; a++) v[a] += wz * phi[a];
 
-                    // G += wc * phi * phi^T
                     for (int a = 0; a < M; a++) {
                         final double pa = wc * phi[a];
                         for (int b = 0; b <= a; b++) G.add(a, b, pa * phi[b]);
                     }
                 }
 
-                // sym + ridge (no intercept penalty)
                 for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) G.set(b, a, G.get(a, b));
-                for (int a = 1; a < M; a++) G.add(a, a, ridge);
+                for (int a = 1; a < M; a++) G.add(a, a, ridge); // intercept unpenalized
 
                 final CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
                 if (!chol.decompose(G)) return new FitResult(Double.NaN, Double.NaN);
@@ -966,9 +1132,8 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
                 for (int a = 0; a < M; a++) beta[a][c] = bc[a];
             }
 
-            // 3) compute ll for convergence (after updates), same as your code
-            final double ll = multinomialLogLikFromPhi(y, K, n, beta, Phi, logits);
-            final double obj = -ll;
+            final double llIter = multinomialLogLikFromPhi(y, K, n, beta, Phi, logits);
+            final double obj = -llIter;
 
             if (Math.abs(prevObj - obj) <= irlsTol * (1.0 + Math.abs(prevObj))) break;
             prevObj = obj;
@@ -976,17 +1141,18 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
 
         final double ll = multinomialLogLikFromPhi(y, K, n, beta, Phi, logits);
 
-        // EDF: same idea, but compute probs once from final beta
-        final double[][] probsFinal = softmaxProbsFromPhi(y, K, n, beta, Phi, logits);
+        // EDF: recompute probs once from final beta
+        fillSoftmaxProbsFromPhi(K, n, beta, Phi, logits, probs);
 
         double edf = 0.0;
+        final int Mp = M - 1; // penalized features per class
         for (int c = 0; c < C; c++) {
             final DMatrixRMaj G = new DMatrixRMaj(M, M);
 
             for (int i = 0; i < n; i++) {
                 final double[] phi = Phi[i];
 
-                final double pc = probsFinal[i][c + 1];
+                final double pc = probs[i][c + 1];
                 double wc = pc * (1.0 - pc);
                 wc = Math.max(wc, 1e-10);
 
@@ -999,13 +1165,12 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
             for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) G.set(b, a, G.get(a, b));
             for (int a = 1; a < M; a++) G.add(a, a, ridge);
 
-            final CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
-            if (!chol.decompose(G)) return new FitResult(Double.NaN, Double.NaN);
-            final DMatrixRMaj L = chol.getT(null);
+            double trInvPen = traceInvPenalizedBlockFromG(G);
+            if (!Double.isFinite(trInvPen)) return new FitResult(Double.NaN, Double.NaN);
 
-            final double trInv = traceInvFromCholeskyLower(L);
-            double edfC = M - ridge * trInv;
-            if (!(edfC >= 0) || !Double.isFinite(edfC)) edfC = M;
+            double edfC = 1.0 + (Mp - ridge * trInvPen); // +1 intercept (unpenalized)
+            if (!(edfC >= 0) || !Double.isFinite(edfC)) edfC = 1.0 + Mp;
+
             edf += edfC;
         }
 
@@ -1013,8 +1178,8 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
     }
 
     private void buildXRowMixed_Intercept(double[] out, int i,
-                                          double[][] Zc, int[] contParents,
-                                          double[][] W, double[] phase, double phiScale,
+                                          double[][] Zc, int dCont,
+                                          double[][] omegaByParent, double[] phase, double phiScale,
                                           OneHotSpec oh, int[] discParents, int[] rows) {
 
         // intercept
@@ -1022,17 +1187,15 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
 
         // RFF part at [1 .. 1 + D - 1]
         final int rffOff = 1;
-        final int dCont = contParents.length;
         if (dCont == 0) {
             Arrays.fill(out, rffOff, rffOff + rffFeatures, 0.0);
         } else {
             for (int k = 0; k < rffFeatures; k++) {
                 double dot = 0.0;
                 for (int j = 0; j < dCont; j++) {
-                    int var = contParents[j];
-                    dot += W[k][var] * Zc[i][j];
+                    dot += omegaByParent[j][k] * Zc[i][j];
                 }
-                out[rffOff + k] = phiScale * cos(dot + phase[k]);
+                out[rffOff + k] = phiScale * Math.cos(dot + phase[k]);
             }
         }
 
@@ -1057,7 +1220,7 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         }
     }
 
-    // -------------------- linear algebra helpers --------------------
+    // -------------------- Student-t loglik + gamma --------------------
 
     private OneHotSpec buildOneHotSpec(int[] discParents) {
         int m = discParents.length;
@@ -1081,7 +1244,7 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return dv.getNumCategories();
     }
 
-    // -------------------- type utilities --------------------
+    // -------------------- linear algebra helpers --------------------
 
     private int[] validRows(int[] vars) {
         int n = sampleSize;
@@ -1114,6 +1277,8 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return y;
     }
 
+    // -------------------- type utilities --------------------
+
     private int[] extractDiscreteChild(int varIndex, int[] rows, int n) {
         int[] y = new int[n];
         if (rows == null) {
@@ -1123,8 +1288,6 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         }
         return y;
     }
-
-    // -------------------- cache utils --------------------
 
     private boolean isDiscrete(int col) {
         return variables.get(col) instanceof DiscreteVariable;
@@ -1139,6 +1302,12 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return out;
     }
 
+    // -------------------- cache utils --------------------
+
+//        private void resetCache() {
+//            localScoreCacheRef.set(new ConcurrentHashMap<>());
+//        }
+
     private int[] filterDiscrete(int[] cols) {
         int c = 0;
         for (int v : cols) if (isDiscrete(v)) c++;
@@ -1150,7 +1319,8 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
 
     private void resetCache() {
         localScoreCacheRef.set(new ConcurrentHashMap<>());
-        rffParamsByChildRef.set(new ConcurrentHashMap<>());
+        omegaCache.clear();
+        phaseCache.clear();
     }
 
     private long knobsSignature() {
@@ -1166,35 +1336,10 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return h;
     }
 
-    // -------------------- RFF basis cache (per child) --------------------
-
     public int[] append(int[] z, int x) {
         int[] out = Arrays.copyOf(z, z.length + 1);
         out[z.length] = x;
         return out;
-    }
-
-    // Create/get cached params for a given child index i.
-    private RffParams rffParamsForChild(int childIndex) {
-        final ConcurrentHashMap<Integer, RffParams> map = rffParamsByChildRef.get();
-        return map.computeIfAbsent(childIndex, idx -> {
-            final int D = rffFeatures;
-            final double[][] W = new double[D][p];
-            final double[] phase = new double[D];
-
-            // Deterministic per-child seed (only depends on knobs + child index).
-            final long seed = mix64(rffSeed ^ (long) idx * 0x9E3779B97F4A7C15L);
-            final Random rng = new Random(seed);
-
-            // Frequencies ~ N(0, 1/sigma^2) per coordinate.
-            for (int k = 0; k < D; k++) {
-                for (int j = 0; j < p; j++) {
-                    W[k][j] = rng.nextGaussian() / rffSigma;
-                }
-                phase[k] = 2.0 * PI * rng.nextDouble();
-            }
-            return new RffParams(W, phase);
-        });
     }
 
     private record FitResult(double logLik, double edf) {
@@ -1210,8 +1355,5 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
             this.offsets = offsets;
             this.totalCols = totalCols;
         }
-    }
-
-    private record RffParams(double[][] W, double[] phase) {
     }
 }

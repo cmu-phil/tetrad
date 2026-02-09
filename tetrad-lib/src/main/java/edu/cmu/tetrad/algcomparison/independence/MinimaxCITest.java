@@ -69,18 +69,15 @@ public class MinimaxCITest implements IndependenceWrapper {
         var test = new edu.cmu.tetrad.search.test.MinimaxCITest((DataSet) dataSet,
                 parameters.getDouble(Params.ALPHA));
 
-//        test.setPermutations(500);
-//        test.setAlpha(parameters.getDouble(Params.ALPHA));
-
-//        test.setBinsPerContXY(parameters.getInt(Params.BINS_PER_CONT_XY));
-//        test.setBinsPerContZ(parameters.getInt(Params.BINS_PER_CONT_Z));
-//        test.setMaxCellsPerStratum(parameters.getInt(Params.MAX_CELLS_PER_STRATUM));
-//        test.setMaxObservedLevelsPerVar(parameters.getInt(Params.MAX_OBSERVED_LEVELS_PER_VAR));
-//        test.setMinStratumSize(parameters.getInt(Params.MIN_STRATUM_SIZE));
-//        test.setUseMaxAcrossStrata(parameters.getBoolean(Params.USE_MAX_ACROSS_STRATA));
+        test.setBinsPerContXY(parameters.getInt(Params.BINS_PER_CONT_XY));
+        test.setBinsPerContZ(parameters.getInt(Params.BINS_PER_CONT_Z));
+        test.setMaxCellsPerStratum(parameters.getInt(Params.MAX_CELLS_PER_STRATUM));
+        test.setMaxObservedLevelsPerVar(parameters.getInt(Params.MAX_OBSERVED_LEVELS_PER_VAR));
+        test.setMinStratumSize(parameters.getInt(Params.MIN_STRATUM_SIZE));
+        test.setUseMaxAcrossStrata(parameters.getBoolean(Params.USE_MAX_ACROSS_STRATA));
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-//        test.setPermutations(parameters.getInt(Params.GIN_PERMUTATIONS));
-//        test.setPermSeed(12345);
+        test.setPermutations(parameters.getInt(Params.GIN_PERMUTATIONS));
+        test.setPermSeed(12345);
 
         test.setAlpha(parameters.getDouble(Params.ALPHA));
 
@@ -125,7 +122,7 @@ public class MinimaxCITest implements IndependenceWrapper {
         params.add(Params.MAX_OBSERVED_LEVELS_PER_VAR);
         params.add(Params.MIN_STRATUM_SIZE);
         params.add(Params.USE_MAX_ACROSS_STRATA);
-//        params.add(Params.GIN_PERMUTATIONS);
+        params.add(Params.MINIMAX_PERMUTATIONS);
         return params;
     }
 }

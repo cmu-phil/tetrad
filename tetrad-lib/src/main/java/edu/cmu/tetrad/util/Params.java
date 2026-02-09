@@ -1231,6 +1231,10 @@ public final class Params {
      */
     public static final String USE_MAX_ACROSS_STRATA = "useMaxAcrossStrata";
     /**
+     * Constant <code>MINIMAX_PERMUTATIONS="miniMaxPermutations"</code>
+     */
+    public static final String MINIMAX_PERMUTATIONS = "minimaxPermutations";
+    /**
      * Constant <code>MINIMAX_NU="minimaxMaxNu"</code>
      */
     public static final String MINIMAX_NU = "minimaxMaxNu";

@@ -2520,7 +2520,7 @@ Source:
         <li>Long Description: <span id="kmlLambda_long_desc">
                     Ridge lambda, default = 1
         </span></li>
-        <li>Default Value: <span id="kmlLambda_default_value">1</span></li>
+        <li>Default Value: <span id="kmlLambda_default_value">2</span></li>
         <li>Lower Bound: <span id="kmlLambda_lower_bound">0</span></li>
         <li>Upper Bound: <span id="kmlLambda_upper_bound">Infinity</span></li>
         <li>Value Type: <span id="kmlLambda_value_type">Double</span></li>
@@ -2580,7 +2580,7 @@ Source:
         <li>Long Description: <span id="kmlNumFeatures_long_desc">
                     The number of random features used for kernel approximations
         </span></li>
-        <li>Default Value: <span id="kmlNumFeatures_default_value">100</span></li>
+        <li>Default Value: <span id="kmlNumFeatures_default_value">200</span></li>
         <li>Lower Bound: <span id="kmlNumFeatures_lower_bound">1</span></li>
         <li>Upper Bound: <span id="kmlNumFeatures_upper_bound">2147483647</span></li>
         <li>Value Type: <span id="kmlNumFeatures_value_type">Integer</span></li>
@@ -2595,7 +2595,7 @@ Source:
         <li>Long Description: <span id="kmlFeatureType_long_desc">
                     Type type of random features: 1 = RFF or 2 = ORF
         </span></li>
-        <li>Default Value: <span id="kmlFeatureType_default_value">1</span></li>
+        <li>Default Value: <span id="kmlFeatureType_default_value">2</span></li>
         <li>Lower Bound: <span id="kmlFeatureType_lower_bound">1</span></li>
         <li>Upper Bound: <span id="kmlFeatureType_upper_bound">2</span></li>
         <li>Value Type: <span id="kmlFeatureType_value_type">Integer</span></li>
@@ -4479,9 +4479,8 @@ Source:
         <li>Long
             Description: <span id="sampleStyle_long_desc">
             Sample style: 1 = Subsample 2 = Bootstrap
-        /span></li>
-        <li>Default
-            Value: <span id="sampleStyle_default_value">1</span></li>
+        </span>
+        <li>Default Value: <span id="sampleStyle_default_value">1</span></li>
         <li>Lower
             Bound: <span id="sampleStyle_lower_bound">1</span></li>
         <li>Upper
@@ -5901,7 +5900,6 @@ Source:
     </ul>
 
 
-
     === minStratumSize ===
     <h3 class="parameter_description" id="minStratumSize">minStratumSize</h3>
     <ul class="parameter_description_list">
@@ -5958,6 +5956,47 @@ Source:
         </li>
     </ul>
 
+
+    === minimaxPermutations ===
+    <h3 class="parameter_description" id="minimaxPermutations">minimaxPermutations</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minimaxPermutations_short_desc">
+            Number of permutations for the Minimax score
+        </span>
+        </li>
+        f
+        <li>Long Description:
+            <span id="minimaxPermutations_long_desc">
+            Specifies the number of random permutations used to approximate
+            the null distribution in the Minimax permutation procedure.
+            This parameter applies both to the Minimax conditional independence
+            test and to Minimax-based scores.
+            <br><br>
+            Larger values yield more stable and accurate p-value or score
+            estimates, especially for small significance levels, at the cost
+            of increased computation time. Smaller values improve speed but
+            may introduce Monte Carlo variability.
+            <br><br>
+            Internally, a small minimum number of permutations may be enforced
+            to ensure numerical stability of the resulting p-values.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minimaxPermutations_default_value">500</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minimaxPermutations_lower_bound">1</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minimaxPermutations_upper_bound">100000</span>
+        </li>
+        <li>Value Type:
+            <span id="minimaxPermutations_value_type">Integer</span>
+        </li>
+    </ul>
+
+
     === minimaxMaxNu ===
     <h3 class="parameter_description" id="minimaxMaxNu">minimaxMaxNu</h3>
     <ul class="parameter_description_list">
@@ -5993,7 +6032,8 @@ Source:
     === minimaxRidge ===
     <h3 class="parameter_description" id="minimaxRidge">minimaxRidge</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="minimaxRidge_short_desc">Ridge penalty (L2) for Minimax regression/IRLS</span></li>
+        <li>Short Description: <span id="minimaxRidge_short_desc">Ridge penalty (L2) for Minimax regression/IRLS</span>
+        </li>
         <li>Long Description: <span id="minimaxRidge_long_desc">
         Ridge (L2) regularization strength used when fitting Minimax local conditional models.
         Larger values shrink coefficients more aggressively (more conservative, more stable, smaller edf);
@@ -6009,7 +6049,8 @@ Source:
     === minimaxRffFeatures ===
     <h3 class="parameter_description" id="minimaxRffFeatures">minimaxRffFeatures</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="minimaxRffFeatures_short_desc">Number of random Fourier features (RFF)</span></li>
+        <li>Short Description: <span id="minimaxRffFeatures_short_desc">Number of random Fourier features (RFF)</span>
+        </li>
         <li>Long Description: <span id="minimaxRffFeatures_long_desc">
         Number of random Fourier features used to represent nonlinear effects of continuous parents in the Minimax score.
         Larger values increase flexibility and runtime/memory cost; smaller values are faster but less expressive.
@@ -6164,3 +6205,4 @@ Source:
             <span id="gcmRffSigma_value_type">Double</span>
         </li>
     </ul>
+</div>
