@@ -106,6 +106,14 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
             if (isDiscrete(j)) Arrays.fill(zCols[j], Double.NaN);
             else zscoreColumnPreserveNaN(raw[j], zCols[j]);
         }
+
+//        this.permutations = 500;
+//        this.binsPerContZ = 8;
+//        this.minStratumSize = 25;
+//        this.binsPerContXY = 8;
+//        this.qMinimax = 0.8;
+//        this.maxObservedLevelsPerVar = 16;
+//        this.maxCellsPerStratum = 1024;
     }
 
     // =========================================================
@@ -192,7 +200,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         double[] yPerm = Arrays.copyOf(yArr, n);
 
         int ge = 0;
-        int BB = Math.max(50, B);
+        int BB =  Math.max(50, B);
 
         for (int b = 0; b < BB; b++) {
             System.arraycopy(yArr, 0, yPerm, 0, n);

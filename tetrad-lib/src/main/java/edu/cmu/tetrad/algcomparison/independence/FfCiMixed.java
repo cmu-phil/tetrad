@@ -53,7 +53,7 @@ public class FfCiMixed implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
-     * `Kci` constructor.
+     * `FF-CI-Mixed` constructor.
      */
     public FfCiMixed() {
 

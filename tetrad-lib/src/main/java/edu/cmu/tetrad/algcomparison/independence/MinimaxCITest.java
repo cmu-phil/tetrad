@@ -79,7 +79,7 @@ public class MinimaxCITest implements IndependenceWrapper {
 //        test.setMinStratumSize(parameters.getInt(Params.MIN_STRATUM_SIZE));
 //        test.setUseMaxAcrossStrata(parameters.getBoolean(Params.USE_MAX_ACROSS_STRATA));
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-//        test.setPermutations(500);s
+//        test.setPermutations(parameters.getInt(Params.GIN_PERMUTATIONS));
 //        test.setPermSeed(12345);
 
         test.setAlpha(parameters.getDouble(Params.ALPHA));
@@ -125,6 +125,7 @@ public class MinimaxCITest implements IndependenceWrapper {
         params.add(Params.MAX_OBSERVED_LEVELS_PER_VAR);
         params.add(Params.MIN_STRATUM_SIZE);
         params.add(Params.USE_MAX_ACROSS_STRATA);
+//        params.add(Params.GIN_PERMUTATIONS);
         return params;
     }
 }
