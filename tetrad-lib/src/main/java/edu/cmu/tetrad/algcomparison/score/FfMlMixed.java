@@ -42,8 +42,8 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "FF-ML-Mixed Score",
-        command = "ff-ml-mixed-score",
+        name = "FFML-Mixed Score",
+        command = "ffml-mixed-score",
         dataType = {DataType.Mixed}
 )
 @General
@@ -100,7 +100,7 @@ public class FfMlMixed implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "FF-ML-Mixed Score";
+        return "FFML-Mixed Score";
     }
 
     /**

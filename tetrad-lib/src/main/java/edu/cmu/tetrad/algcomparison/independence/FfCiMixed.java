@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for FF-CI-Mixed test.
+ * Wrapper for FFCI-Mixed test.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -95,7 +95,7 @@ public class FfCiMixed implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "FF-CI-Mixed";
+        return "FFCI-Mixed";
     }
 
     /**
