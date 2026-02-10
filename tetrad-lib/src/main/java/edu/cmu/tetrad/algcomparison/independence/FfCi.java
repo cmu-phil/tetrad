@@ -41,8 +41,8 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "FF-CI (Fourier Features Conditional Independence)",
-        command = "ff-ci",
+        name = "FFCI (Fourier Features Conditional Independence)",
+        command = "ffci",
         dataType = DataType.Mixed
 )
 @General
