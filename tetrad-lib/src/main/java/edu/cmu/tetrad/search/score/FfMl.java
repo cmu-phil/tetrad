@@ -238,11 +238,189 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
     // -------------------- Score interface --------------------
 
+    private static DMatrixRMaj buildSigmaOnlyC(int n, double sigma2) {
+        if (n <= 0) throw new IllegalArgumentException("n must be > 0");
+        if (!(sigma2 > 0) || !Double.isFinite(sigma2)) {
+            throw new IllegalArgumentException("sigma2 must be finite and > 0");
+        }
+
+        DMatrixRMaj C = new DMatrixRMaj(n, n);
+        for (int i = 0; i < n; i++) {
+            C.set(i, i, sigma2);
+        }
+        return C;
+    }
+
     // same mix64 you used elsewhere (or paste this one)
     private static long mix64(long z) {
         z = (z ^ (z >>> 33)) * 0xff51afd7ed558ccdL;
         z = (z ^ (z >>> 33)) * 0xc4ceb9fe1a85ec53L;
         return z ^ (z >>> 33);
+    }
+
+    private static final class SigmaEval {
+        final double sigma2;
+        final double logLik;
+        final double dlds;     // derivative w.r.t log(sigma2)
+        final double logDetB;
+        final double vTBInvV;
+        final double trBInv;   // optional if you compute it
+        SigmaEval(double sigma2, double logLik, double dlds, double logDetB, double vTBInvV, double trBInv) {
+            this.sigma2 = sigma2; this.logLik = logLik; this.dlds = dlds;
+            this.logDetB = logDetB; this.vTBInvV = vTBInvV; this.trBInv = trBInv;
+        }
+    }
+
+    private SigmaEval evalSigma2(
+            double sigma2,
+            int n,
+            int m,
+            double yTy,
+            DMatrixRMaj G,
+            double[] v
+    ) {
+        sigma2 = Math.max(1e-10, sigma2);
+        if (!Double.isFinite(sigma2)) return null;
+
+        // B = G + sigma2 I
+        DMatrixRMaj B = G.copy();
+        for (int k = 0; k < m; k++) B.add(k, k, sigma2);
+
+        CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+        if (!chol.decompose(B)) return null;
+        DMatrixRMaj L = chol.getT(null);
+
+        // logdet(B)
+        double ld = 0.0;
+        for (int k = 0; k < m; k++) {
+            double di = L.get(k, k);
+            if (!(di > 0) || !Double.isFinite(di)) return null;
+            ld += Math.log(di);
+        }
+        double logDetB = 2.0 * ld;
+
+        // t = B^{-1} v via two triangular solves (reuse your code style)
+        double[] t = Arrays.copyOf(v, m);
+        // forward
+        for (int i = 0; i < m; i++) {
+            double sum = t[i];
+            for (int j = 0; j < i; j++) sum -= L.get(i, j) * t[j];
+            t[i] = sum / L.get(i, i);
+        }
+        // back
+        for (int i = m - 1; i >= 0; i--) {
+            double sum = t[i];
+            for (int j = i + 1; j < m; j++) sum -= L.get(j, i) * t[j];
+            t[i] = sum / L.get(i, i);
+        }
+
+        double vTBInvV = 0.0;
+        for (int k = 0; k < m; k++) vTBInvV += v[k] * t[k];
+
+        // quad + logdetC
+        double invSig = 1.0 / sigma2;
+        double quad = invSig * yTy - (invSig * invSig) * vTBInvV;
+        double logDetC = (n - m) * Math.log(sigma2) + logDetB;
+        double ll = -0.5 * quad - 0.5 * logDetC;
+
+        // ---- derivative dℓ/d log(sigma2) ----
+        // compute t^T G t
+        double[] Gt = new double[m];
+        for (int i = 0; i < m; i++) {
+            double s = 0.0;
+            for (int j = 0; j < m; j++) s += G.get(i, j) * t[j];
+            Gt[i] = s;
+        }
+        double tTGt = 0.0;
+        for (int i = 0; i < m; i++) tTGt += t[i] * Gt[i];
+
+        double a = invSig;
+        double b = invSig * invSig;
+
+        // y^T C^{-2} y = a^2 yTy - 2 a b v^T t + b^2 t^T G t
+        double yTCm2y = (a * a) * yTy - 2.0 * (a * b) * vTBInvV + (b * b) * tTGt;
+
+        // tr(B^{-1}) exact (m triangular solves). With m=256 and only ~2 evals this is usually fine.
+        double trBInv = traceInvFromCholeskyLower(L);
+
+        // tr(C^{-1}) = n/sigma2 - (1/sigma2^2) * (m - sigma2*tr(B^{-1}))
+        double trGBInv = m - sigma2 * trBInv;
+        double trCInv = (n * invSig) - (invSig * invSig) * trGBInv;
+
+        double dldSigma2 = 0.5 * (yTCm2y - trCInv);
+        double dlds = sigma2 * dldSigma2;
+
+        return new SigmaEval(sigma2, ll, dlds, logDetB, vTBInvV, trBInv);
+    }
+
+    private static double traceInvFromCholeskyLower(DMatrixRMaj L) {
+        // Exact trace(inv(A)) where A = L L^T and L is lower-triangular.
+        // Compute columns of inv(A) via solves A x = e_i, sum diag = sum_i e_i^T x.
+        int n = L.numRows;
+        double tr = 0.0;
+        double[] x = new double[n];
+
+        for (int col = 0; col < n; col++) {
+            Arrays.fill(x, 0.0);
+            x[col] = 1.0;
+
+            // forward solve: L u = e_col (u stored in x)
+            for (int i = 0; i < n; i++) {
+                double sum = x[i];
+                for (int j = 0; j < i; j++) sum -= L.get(i, j) * x[j];
+                x[i] = sum / L.get(i, i);
+            }
+
+            // diag element of inv(A) at (col,col) is ||u||^2 because inv(A)=L^{-T}L^{-1}
+            double ss = 0.0;
+            for (int i = 0; i < n; i++) ss += x[i] * x[i];
+            tr += ss;
+        }
+
+        return tr;
+    }
+
+    private double profileSigma2Secant(
+            double sigma2Init,
+            int n,
+            int m,
+            double yTy,
+            DMatrixRMaj G,
+            double[] v
+    ) {
+        double s0 = Math.log(Math.max(1e-10, sigma2Init));
+        // a nearby second point for secant
+        double s1 = s0 + 0.25;
+
+        SigmaEval e0 = evalSigma2(Math.exp(s0), n, m, yTy, G, v);
+        SigmaEval e1 = evalSigma2(Math.exp(s1), n, m, yTy, G, v);
+        if (e0 == null) return sigma2Init;
+        if (e1 == null) return e0.sigma2;
+
+        // 2 secant steps for root of dℓ/ds = 0
+        for (int it = 0; it < 2; it++) {
+            double f0 = e0.dlds;
+            double f1 = e1.dlds;
+
+            double denom = (f1 - f0);
+            if (Math.abs(denom) < 1e-12) break;
+
+            double s2 = s1 - f1 * (s1 - s0) / denom;
+
+            // clamp to sane range so we don’t explode
+            s2 = Math.max(Math.log(1e-10), Math.min(Math.log(1e6), s2));
+
+            SigmaEval e2 = evalSigma2(Math.exp(s2), n, m, yTy, G, v);
+            if (e2 == null) break;
+
+            // shift
+            s0 = s1; e0 = e1;
+            s1 = s2; e1 = e2;
+
+            if (Math.abs(e1.dlds) < 1e-3) break;
+        }
+
+        return e1.sigma2;
     }
 
     /**
@@ -859,6 +1037,17 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
     // -------------------- missingness row selection --------------------
 
+// Drop-in replacement for your gpLogMarginalLikelihoodRFF_profiledNested(...)
+// Changes vs your version:
+//  (1) keeps the same nested/coupled features and single-pass accumulation of G, v, yTy
+//  (2) replaces the "rssLike/n" sigma2 update with 2-step secant root-finding on dℓ/dlog(sigma2)
+//      using exact GP marginal-likelihood derivatives computed in feature space.
+//
+// Requirements:
+//  - uses your existing: getPhaseForChild(seedBase,m), getBaseOmegaForParent(parent,m), zCols[]
+//  - uses EJML Cholesky (same as your code)
+//  - includes a local traceInvFromCholeskyLower(L) helper below (exact trace(B^{-1})).
+
     private double gpLogMarginalLikelihoodRFF_profiledNested(
             double[] yCentered,          // length n
             int[] parentIdx,             // d parents
@@ -875,19 +1064,16 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
         if (!(bw2Child > 0) || !Double.isFinite(bw2Child)) bw2Child = 1.0;
 
-        // Build nested features:
-        // phi_k(x) = sqrt(2/m) cos( sum_{j in parents} omega_parent[j][k] * z_j + phase_child[k] )
-        // with omega_parent[j][k] = wStd * baseOmega(parent)[k], baseOmega ~ N(0,1)
+        // Nested features:
+        // phi_k(x) = sqrt(2/m) cos( sum_j (wStd * omega_j[k]) * z_j + phase[k] )
         final double wStd = Math.sqrt(2.0 / bw2Child);
         final double scale = Math.sqrt(2.0 / mFeatures);
 
-        // child phases b[k]
         final double[] phase = getPhaseForChild(seedBase, mFeatures);
 
-        // per-parent base omegas (standard normals), scaled by wStd
         final double[][] omegaByParent = new double[d][];
         for (int j = 0; j < d; j++) {
-            omegaByParent[j] = getBaseOmegaForParent(parentIdx[j], mFeatures);
+            omegaByParent[j] = getBaseOmegaForParent(parentIdx[j], mFeatures); // length mFeatures
         }
 
         // Accumulate G = Phi^T Phi and v = Phi^T y ONCE (independent of sigma2)
@@ -900,11 +1086,9 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         for (int ii = 0; ii < n; ii++) {
             final int row = (rows == null) ? ii : rows[ii];
 
-            // Build all m features for this row
             for (int k = 0; k < mFeatures; k++) {
                 double dot = 0.0;
                 for (int j = 0; j < d; j++) {
-                    // omega = wStd * baseOmega
                     dot += (wStd * omegaByParent[j][k]) * zCols[parentIdx[j]][row];
                 }
                 phi[k] = scale * Math.cos(dot + phase[k]);
@@ -917,6 +1101,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 v[k] += phi[k] * yi;
             }
 
+            // lower triangle
             for (int a = 0; a < mFeatures; a++) {
                 final double pa = phi[a];
                 for (int b = 0; b <= a; b++) {
@@ -932,81 +1117,14 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             }
         }
 
-        // Profile sigma2 with 1–3 fixed-point iterations, reusing G and v
-        double sigma2 = sigma2Init;
-        if (!(sigma2 > 0) || !Double.isFinite(sigma2)) sigma2 = 1.0;
+        // ---- Profile sigma2 by 2-step secant on dℓ/dlog(sigma2) ----
+        double sigma2Hat = profileSigma2Secant(sigma2Init, n, mFeatures, yTy, G, v);
+        if (!(sigma2Hat > 0) || !Double.isFinite(sigma2Hat)) return Double.NaN;
 
-        final double minSigma2 = 1e-10;
+        SigmaEval eval = evalSigma2(sigma2Hat, n, mFeatures, yTy, G, v);
+        if (eval == null) return Double.NaN;
 
-        double logDetB = Double.NaN;
-        double vTBInvV = Double.NaN;
-
-        for (int it = 0; it < 3; it++) {
-            // B = G + sigma2 I
-            DMatrixRMaj B = G.copy();
-            for (int k = 0; k < mFeatures; k++) B.add(k, k, sigma2);
-
-            CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
-            if (!chol.decompose(B)) return Double.NaN;
-
-            DMatrixRMaj L = chol.getT(null);
-
-            // logdet(B)
-            double ld = 0.0;
-            for (int k = 0; k < mFeatures; k++) {
-                double di = L.get(k, k);
-                if (!(di > 0) || !Double.isFinite(di)) return Double.NaN;
-                ld += Math.log(di);
-            }
-            logDetB = 2.0 * ld;
-
-            // Solve B^{-1} v
-            double[] u = Arrays.copyOf(v, mFeatures);
-
-            // forward: L u = v
-            for (int i = 0; i < mFeatures; i++) {
-                double sum = u[i];
-                for (int j = 0; j < i; j++) sum -= L.get(i, j) * u[j];
-                u[i] = sum / L.get(i, i);
-            }
-            // back: L^T u = u
-            for (int i = mFeatures - 1; i >= 0; i--) {
-                double sum = u[i];
-                for (int j = i + 1; j < mFeatures; j++) sum -= L.get(j, i) * u[j];
-                u[i] = sum / L.get(i, i);
-            }
-
-            // v^T B^{-1} v
-            double vt = 0.0;
-            for (int k = 0; k < mFeatures; k++) vt += v[k] * u[k];
-            vTBInvV = vt;
-
-            // Fixed-point "profile" update:
-            // This mirrors the regression-style "sigma2 = RSS/n" update in feature space,
-            // with RSS-like term = y^T y - v^T B^{-1} v.
-            double rssLike = yTy - vTBInvV;
-            double sigma2New = rssLike / Math.max(1, n);
-
-            if (!(sigma2New > 0) || !Double.isFinite(sigma2New)) sigma2New = sigma2;
-            sigma2New = Math.max(minSigma2, sigma2New);
-
-            double rel = Math.abs(sigma2New - sigma2) / (1.0 + sigma2);
-            sigma2 = sigma2New;
-
-            if (rel < 1e-3) break;
-        }
-
-        if (!Double.isFinite(logDetB) || !Double.isFinite(vTBInvV)) return Double.NaN;
-
-        // Now compute GP log ML using Woodbury form with final sigma2
-        double invSig = 1.0 / sigma2;
-        double quad = invSig * yTy - (invSig * invSig) * vTBInvV;
-
-        double logDetC = (n - mFeatures) * Math.log(sigma2) + logDetB;
-
-        if (!Double.isFinite(quad) || !Double.isFinite(logDetC)) return Double.NaN;
-
-        return -0.5 * quad - 0.5 * logDetC;
+        return eval.logLik;
     }
 
     // -------------------- extraction + preprocessing --------------------
