@@ -41,8 +41,8 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "FF-ML Score",
-        command = "ff-ml-score",
+        name = "FFML Score",
+        command = "ffml-score",
         dataType = {DataType.Continuous}
 )
 @General
@@ -98,7 +98,7 @@ public class FfMl implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "FF-ML Score";
+        return "FFML Score";
     }
 
     /**

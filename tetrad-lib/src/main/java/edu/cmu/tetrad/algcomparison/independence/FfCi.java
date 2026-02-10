@@ -40,8 +40,8 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "FF-CI (Fourier Features Conditional Independence)",
-        command = "ff-ci",
+        name = "FFCI (Fourier Features Conditional Independence)",
+        command = "ffci",
         dataType = DataType.Continuous
 )
 @General
@@ -94,7 +94,7 @@ public class FfCi implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "FF-CI";
+        return "FFCI";
     }
 
     /**
