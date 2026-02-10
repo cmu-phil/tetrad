@@ -23,6 +23,8 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.GraphWrapper;
+import edu.cmu.tetradapp.ui.PaddingPanel;
+import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
@@ -166,7 +168,19 @@ public final class SimulationGraphEditor extends JPanel {
         GraphEditor graphEditor = new GraphEditor(new GraphWrapper(graph));
         graphEditor.setEnableEditing(false);
 
-        return graphEditor.getWorkbench();
+        GraphWorkbench workbench = graphEditor.getWorkbench();
+
+        JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.RIGHT);
+        tabbedPane.addTab("Graph", new JScrollPane(workbench));
+
+        JTextArea ta = new JTextArea(String.valueOf(graph));
+        ta.setEditable(false);
+        ta.setCaretPosition(0);
+        JScrollPane textScroll = new JScrollPane(ta);
+
+        tabbedPane.addTab("Text", textScroll);
+
+        return new PaddingPanel(tabbedPane);
     }
 
     private JTabbedPane tabbedPane() {
