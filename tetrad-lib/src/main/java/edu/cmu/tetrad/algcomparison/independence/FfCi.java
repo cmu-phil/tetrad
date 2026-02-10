@@ -1,4 +1,4 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.annotation.General;
+import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -34,24 +35,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for FF-CI test.
+ * Wrapper for FFCI test.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "FFCI (Fourier Features Conditional Independence)",
-        command = "ffci",
-        dataType = DataType.Continuous
+        name = "FF-CI (Fourier Features Conditional Independence)",
+        command = "ff-ci",
+        dataType = DataType.Mixed
 )
 @General
+@Mixed
 public class FfCi implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * `Kci` constructor.
+     * `FF-CI-Mixed` constructor.
      */
     public FfCi() {
 
@@ -64,23 +66,22 @@ public class FfCi implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.test.FfCi test = new edu.cmu.tetrad.search.test.FfCi((DataSet) dataSet);
+        edu.cmu.tetrad.search.test.FfCiMixed test = new edu.cmu.tetrad.search.test.FfCiMixed((DataSet) dataSet);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
-        test.setNumFeatXY(parameters.getInt(Params.RCIT_NUM_FEATURES_XY));
-        test.setNumFeatZ(parameters.getInt(Params.RCIT_NUM_FEATURES_Z));
+        test.setNumFeaturesXY(parameters.getInt(Params.RCIT_NUM_FEATURES_XY));
+        test.setNumFeaturesZ(parameters.getInt(Params.RCIT_NUM_FEATURES_Z));
         test.setPermutations(parameters.getInt(Params.RCIT_PERMUTATIONS));
 //        test.setCenterFeatures(parameters.getBoolean(Params.RCIT_CENTER_FEATURES));
-//        test.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
+        test.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
         test.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         test.setLambda(parameters.getDouble(Params.KML_LAMBDA));
-
-        edu.cmu.tetrad.search.test.FfCi.FeatureType[] values
-                = edu.cmu.tetrad.search.test.FfCi.FeatureType.values();
-        test.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
-
         edu.cmu.tetrad.search.test.FfCi.Approx[] approxes
                 = edu.cmu.tetrad.search.test.FfCi.Approx.values();
         test.setApproximation(approxes[parameters.getInt(Params.RCIT_APPROX) - 1]);
+        test.setCatRho(parameters.getDouble(Params.KML_CAT_RHO));
+        edu.cmu.tetrad.search.test.FfCi.FeatureType[] values
+                = edu.cmu.tetrad.search.test.FfCi.FeatureType.values();
+        test.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
 
 //        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -106,7 +107,7 @@ public class FfCi implements IndependenceWrapper {
      */
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return DataType.Mixed;
     }
 
     /**
@@ -121,14 +122,15 @@ public class FfCi implements IndependenceWrapper {
         params.add(Params.ALPHA);
         params.add(Params.KML_LAMBDA);
         params.add(Params.RCIT_PERMUTATIONS);
-//        params.add(Params.KML_BANDWIDTH_MULTIPLIER);
+        params.add(Params.KML_BANDWIDTH_MULTIPLIER);
         params.add(Params.KML_BW_MAX_ROWS);
         params.add(Params.RCIT_APPROX);
 //        params.add(Params.RCIT_CENTER_FEATURES);
         params.add(Params.RCIT_NUM_FEATURES_XY);
         params.add(Params.RCIT_NUM_FEATURES_Z);
         params.add(Params.KML_FEATURE_TYPE);
-//        params.add(Params.RCIT_MODE);
+        params.add(Params.KML_CAT_RHO);
+        params.add(Params.RCIT_MODE);
         params.add(Params.VERBOSE);
         return params;
     }

@@ -22,7 +22,6 @@ package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.General;
-import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -35,21 +34,20 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Wrapper for FF-ML MIxed Marginal Likelihood Score.
- *
- * @author josephramsey
- * @version $Id: $Id
- */
-@edu.cmu.tetrad.annotation.Score(
-        name = "FFML-Mixed Score",
-        command = "ffml-mixed-score",
-        dataType = {DataType.Mixed}
-)
-@General
-@Mixed
-@Experimental
-public class FfMlMixed implements ScoreWrapper {
+///**
+// * Wrapper for FF Marginal Likelihood Score.
+// *
+// * @author josephramsey
+// * @version $Id: $Id
+// */
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "FFML-Unmixed Score",
+//        command = "ffml-unmixed-score",
+//        dataType = {DataType.Continuous}
+//)
+//@General
+//@Experimental
+public class FfMlUnmixed implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -62,7 +60,7 @@ public class FfMlMixed implements ScoreWrapper {
     /**
      * Constructs a new instance of the SemBicScore.
      */
-    public FfMlMixed() {
+    public FfMlUnmixed() {
     }
 
     /**
@@ -72,10 +70,10 @@ public class FfMlMixed implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.score.FfMlMixed score;
+        edu.cmu.tetrad.search.score.FfMl score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.score.FfMlMixed((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.FfMl((DataSet) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
@@ -84,11 +82,11 @@ public class FfMlMixed implements ScoreWrapper {
         score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
         score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+
         score.setNumFeatures(parameters.getInt(Params.KML_NUM_FEATURES));
-        edu.cmu.tetrad.search.score.FfMlMixed.FeatureType[] values
-                = edu.cmu.tetrad.search.score.FfMlMixed.FeatureType.values();
+        edu.cmu.tetrad.search.score.FfMl.FeatureType[] values
+                = edu.cmu.tetrad.search.score.FfMl.FeatureType.values();
         score.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
-        score.setCatRho(parameters.getDouble(Params.KML_CAT_RHO));
 
         return score;
     }
@@ -100,7 +98,7 @@ public class FfMlMixed implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "FFML-Mixed Score";
+        return "FFML-Unmixed Score";
     }
 
     /**
@@ -110,7 +108,7 @@ public class FfMlMixed implements ScoreWrapper {
      */
     @Override
     public DataType getDataType() {
-        return DataType.Mixed;
+        return DataType.Continuous;
     }
 
     /**
@@ -126,7 +124,6 @@ public class FfMlMixed implements ScoreWrapper {
         parameters.add(Params.KML_BW_MAX_ROWS);
         parameters.add(Params.KML_NUM_FEATURES);
         parameters.add(Params.KML_FEATURE_TYPE);
-        parameters.add(Params.KML_CAT_RHO);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
