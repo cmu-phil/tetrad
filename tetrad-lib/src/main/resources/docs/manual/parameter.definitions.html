@@ -2590,7 +2590,7 @@ Source:
     <h3 class="parameter_description" id="kmlFeatureType">kmlFeatureType</h3>
     <ul class="parameter_description_list">
         <li>Short Description: <span id="kmlFeatureType_short_desc">
-                    Type type of random features: 1 = RFF or 2 = ORF
+                    Type type of features: 1 = Random FFs or 2 = Orthogonal Random FFs
                     </span></li>
         <li>Long Description: <span id="kmlFeatureType_long_desc">
                     Type type of random features: 1 = RFF or 2 = ORF
@@ -6016,9 +6016,9 @@ Source:
     === minimaxScale ===
     <h3 class="parameter_description" id="minimaxScale">minimaxScale</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="minimaxScale_short_desc">Scale for random Fourier features (RFF)</span></li>
+        <li>Short Description: <span id="minimaxScale_short_desc">Scale for Fourier features (FF)</span></li>
         <li>Long Description: <span id="minimaxScale_long_desc">
-        Sets the scale used for constructing Random Fourier Features (RFF) for continuous parents in the Minimax score.
+        Sets the scale used for constructing Fourier Features (FF) for continuous parents in the Minimax score.
         Larger values produce smoother features (longer length-scale); smaller values allow more rapid variation.
         This controls the effective complexity of the nonlinear parent representation.
     </span></li>
@@ -6030,7 +6030,7 @@ Source:
 
 
     === minimaxRidge ===
-    <h3 class="parameter_description" id="minimaxRidge">minimaxRidge</h3>
+    <h3 class="parameter_description" id="minimaxRidge">minimaxRidge</h3>minimaxRidge
     <ul class="parameter_description_list">
         <li>Short Description: <span id="minimaxRidge_short_desc">Ridge penalty (L2) for Minimax regression/IRLS</span>
         </li>
@@ -6049,10 +6049,10 @@ Source:
     === minimaxFfFeatures ===
     <h3 class="parameter_description" id="minimaxFfFeatures">minimaxFfFeatures</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="minimaxFfFeatures_short_desc">Number of random Fourier features (RFF)</span>
+        <li>Short Description: <span id="minimaxFfFeatures_short_desc">Number of Fourier features (FF)</span>
         </li>
         <li>Long Description: <span id="minimaxFfFeatures_long_desc">
-        Number of random Fourier features used to represent nonlinear effects of continuous parents in the Minimax score.
+        Number of Fourier features used to represent nonlinear effects of continuous parents in the Minimax score.
         Larger values increase flexibility and runtime/memory cost; smaller values are faster but less expressive.
     </span></li>
         <li>Default Value: <span id="minimaxFfFeatures_default_value">200</span></li>

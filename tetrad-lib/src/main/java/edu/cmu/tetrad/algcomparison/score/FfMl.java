@@ -84,7 +84,7 @@ public class FfMl implements ScoreWrapper {
         score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
         score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
-        score.setNumFeatures(parameters.getInt(Params.KML_NUM_FEATURES));
+        score.setNumFeatures(parameters.getInt(Params.MINIMAX_FF_FEATURES));
         edu.cmu.tetrad.search.score.FfMlMixed.FeatureType[] values
                 = edu.cmu.tetrad.search.score.FfMlMixed.FeatureType.values();
         score.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
@@ -124,7 +124,7 @@ public class FfMl implements ScoreWrapper {
         parameters.add(Params.KML_LAMBDA);
         parameters.add(Params.KML_BANDWIDTH_MULTIPLIER);
         parameters.add(Params.KML_BW_MAX_ROWS);
-        parameters.add(Params.KML_NUM_FEATURES);
+        parameters.add(Params.MINIMAX_FF_FEATURES);
         parameters.add(Params.KML_FEATURE_TYPE);
         parameters.add(Params.KML_CAT_RHO);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
