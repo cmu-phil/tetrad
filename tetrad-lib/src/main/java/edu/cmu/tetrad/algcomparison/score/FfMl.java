@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.FfMlUnmixed;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -72,10 +73,10 @@ public class FfMl implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.score.FfMlMixed score;
+        edu.cmu.tetrad.search.score.FfMl score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.score.FfMlMixed((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.FfMl((DataSet) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
@@ -85,10 +86,10 @@ public class FfMl implements ScoreWrapper {
         score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         score.setNumFeatures(parameters.getInt(Params.MINIMAX_FF_FEATURES));
-        edu.cmu.tetrad.search.score.FfMlMixed.FeatureType[] values
-                = edu.cmu.tetrad.search.score.FfMlMixed.FeatureType.values();
-        score.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
-        score.setCatRho(parameters.getDouble(Params.KML_CAT_RHO));
+        edu.cmu.tetrad.search.score.FfMl.FeatureType[] values
+                = edu.cmu.tetrad.search.score.FfMl.FeatureType.values();
+//        score.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
+//        score.setCatRho(parameters.getDouble(Params.KML_CAT_RHO));
 
         return score;
     }

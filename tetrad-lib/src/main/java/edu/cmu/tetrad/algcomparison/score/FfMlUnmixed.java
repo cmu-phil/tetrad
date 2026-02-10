@@ -20,8 +20,6 @@
 
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.annotation.Experimental;
-import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -70,10 +68,10 @@ public class FfMlUnmixed implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.score.FfMl score;
+        edu.cmu.tetrad.search.score.FfMlUnmixed score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.score.FfMl((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.FfMlUnmixed((DataSet) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
@@ -84,8 +82,8 @@ public class FfMlUnmixed implements ScoreWrapper {
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
 
         score.setNumFeatures(parameters.getInt(Params.KML_NUM_FEATURES));
-        edu.cmu.tetrad.search.score.FfMl.FeatureType[] values
-                = edu.cmu.tetrad.search.score.FfMl.FeatureType.values();
+        edu.cmu.tetrad.search.score.FfMlUnmixed.FeatureType[] values
+                = edu.cmu.tetrad.search.score.FfMlUnmixed.FeatureType.values();
         score.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
 
         return score;

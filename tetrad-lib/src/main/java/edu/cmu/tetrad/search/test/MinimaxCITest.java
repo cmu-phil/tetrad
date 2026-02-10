@@ -10,6 +10,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.lang.Double.NaN;
 import static java.lang.Math.*;
 
 /**
@@ -103,7 +104,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         double[][] raw = new double[p][n];
         for (int j = 0; j < p; j++) {
             if (isDiscrete(j)) {
-                Arrays.fill(raw[j], Double.NaN);
+                Arrays.fill(raw[j], NaN);
             } else {
                 for (int r = 0; r < n; r++) raw[j][r] = data.getDouble(r, j);
             }
@@ -111,7 +112,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
 
         this.zCols = new double[p][n];
         for (int j = 0; j < p; j++) {
-            if (isDiscrete(j)) Arrays.fill(zCols[j], Double.NaN);
+            if (isDiscrete(j)) Arrays.fill(zCols[j], NaN);
             else zscoreColumnPreserveNaN(raw[j], zCols[j]);
         }
 
@@ -187,10 +188,10 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         List<Integer> useRows = rowsCompleteFor(ix, iy, iz, baseRows);
         int n = useRows.size();
 
-        if (n < 20) return 0.0; // conservative guard
+        if (n < 20) return NaN; // conservative guard
 
         int[][] strata = getStrata(iz, useRows);
-        if (strata.length == 0) return 0.0;
+        if (strata.length == 0) return NaN;
 
         long seed = permSeed ^ ix ^ (iy * 1315423911L) ^ Arrays.hashCode(iz);
 
@@ -346,7 +347,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
                                     int B, long seed) {
 
         GroupPlan[] plans = buildPlans(ix, iy, useRows, strata);
-        if (plans.length == 0) return 0.0;
+        if (plans.length == 0) return NaN;
 
         // Observed statistic: quantile across strata (soft minimax)
         double tObs = aggregateQuantile(plans, null, qMinimax);
@@ -365,7 +366,18 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
             if (tPerm >= tObs) ge++;
         }
 
+//        if (valid == 0) {
+//            TetradLogger.getInstance().log(
+//                    "MinimaxCITest: valid==0 in permutation test for (" +
+//                            variables.get(ix).getName() + " _||_ " + variables.get(iy).getName() +
+//                            " | Z=" + Arrays.toString(strataSummaryOrZIdxHere) + "). Returning 1.0"
+//            );
+//        }
+
+        if (valid == 0) return Double.NaN;
         return (ge + 1.0) / (valid + 1.0);
+
+//        return (ge + 1.0) / (valid + 1.0);
     }
 
     private double aggregateQuantile(GroupPlan[] plans, SplittableRandom rng, double q) {
@@ -378,7 +390,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
             stats[m++] = ts;
         }
 
-        if (m == 0) return Double.NaN;
+        if (m == 0) return NaN;
         if (m < stats.length) stats = Arrays.copyOf(stats, m);
 
         return quantile(stats, q);
@@ -386,7 +398,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
 
     private static double quantile(double[] a, double q) {
         int n = a.length;
-        if (n == 0) return Double.NaN;
+        if (n == 0) return NaN;
         if (n == 1) return a[0];
 
         q = Math.max(0.0, Math.min(1.0, q));
@@ -838,7 +850,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
     // =========================================================
 
     private static double gTestFromCounts(int[][] counts, int[] rowS, int[] colS, int n) {
-        if (n <= 0) return Double.NaN;
+        if (n <= 0) return NaN;
 
         double llr = 0.0;
         int Kx = counts.length;
@@ -883,7 +895,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         double sd = sqrt(max(1e-12, var));
         for (int i = 0; i < in.length; i++) {
             double v = in[i];
-            out[i] = Double.isNaN(v) ? Double.NaN : (v - mean) / sd;
+            out[i] = Double.isNaN(v) ? NaN : (v - mean) / sd;
         }
     }
 
