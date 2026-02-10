@@ -26,6 +26,7 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.search.test.FfCiUnmixed;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -66,7 +67,7 @@ public class FfCi implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.test.FfCiMixed test = new edu.cmu.tetrad.search.test.FfCiMixed((DataSet) dataSet);
+        edu.cmu.tetrad.search.test.FfCi test = new edu.cmu.tetrad.search.test.FfCi((DataSet) dataSet);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setNumFeaturesXY(parameters.getInt(Params.RCIT_NUM_FEATURES_XY));
         test.setNumFeaturesZ(parameters.getInt(Params.RCIT_NUM_FEATURES_Z));
@@ -75,12 +76,12 @@ public class FfCi implements IndependenceWrapper {
         test.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
         test.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         test.setLambda(parameters.getDouble(Params.KML_LAMBDA));
-        edu.cmu.tetrad.search.test.FfCi.Approx[] approxes
-                = edu.cmu.tetrad.search.test.FfCi.Approx.values();
+        FfCiUnmixed.Approx[] approxes
+                = FfCiUnmixed.Approx.values();
         test.setApproximation(approxes[parameters.getInt(Params.RCIT_APPROX) - 1]);
         test.setCatRho(parameters.getDouble(Params.KML_CAT_RHO));
-        edu.cmu.tetrad.search.test.FfCi.FeatureType[] values
-                = edu.cmu.tetrad.search.test.FfCi.FeatureType.values();
+        FfCiUnmixed.FeatureType[] values
+                = FfCiUnmixed.FeatureType.values();
         test.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
 
 //        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));

@@ -62,7 +62,7 @@ public class FfCiUnmixed implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.test.FfCi test = new edu.cmu.tetrad.search.test.FfCi((DataSet) dataSet);
+        edu.cmu.tetrad.search.test.FfCiUnmixed test = new edu.cmu.tetrad.search.test.FfCiUnmixed((DataSet) dataSet);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setNumFeatXY(parameters.getInt(Params.RCIT_NUM_FEATURES_XY));
         test.setNumFeatZ(parameters.getInt(Params.RCIT_NUM_FEATURES_Z));
@@ -72,12 +72,12 @@ public class FfCiUnmixed implements IndependenceWrapper {
         test.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         test.setLambda(parameters.getDouble(Params.KML_LAMBDA));
 
-        edu.cmu.tetrad.search.test.FfCi.FeatureType[] values
-                = edu.cmu.tetrad.search.test.FfCi.FeatureType.values();
+        edu.cmu.tetrad.search.test.FfCiUnmixed.FeatureType[] values
+                = edu.cmu.tetrad.search.test.FfCiUnmixed.FeatureType.values();
         test.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
 
-        edu.cmu.tetrad.search.test.FfCi.Approx[] approxes
-                = edu.cmu.tetrad.search.test.FfCi.Approx.values();
+        edu.cmu.tetrad.search.test.FfCiUnmixed.Approx[] approxes
+                = edu.cmu.tetrad.search.test.FfCiUnmixed.Approx.values();
         test.setApproximation(approxes[parameters.getInt(Params.RCIT_APPROX) - 1]);
 
 //        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
