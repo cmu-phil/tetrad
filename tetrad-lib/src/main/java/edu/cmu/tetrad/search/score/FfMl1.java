@@ -75,85 +75,69 @@ import java.util.concurrent.atomic.AtomicReference;
  *   <li>Results can be sensitive to {@code numFeatures} and bandwidth selection; these control the speed/accuracy tradeoff.</li>
  * </ul>
  */
-public final class FfMl implements Score, EffectiveSampleSizeSettable {
+public final class FfMl1 implements Score, EffectiveSampleSizeSettable {
+
+    /**
+     * Represents the types of features that can be used in random feature mappings.
+     * This enumeration is utilized to distinguish between different methods for
+     * generating random features in machine learning or statistical models.
+     */
+    public enum FeatureType {
+
+        /**
+         * Denotes the type of Random Fourier Features (RFF) used in random feature
+         * mappings for machine learning or statistical models.
+         * RFF is a method to approximate kernel functions through random projections,
+         * enabling scalable computation for high-dimensional data.
+         * It is primarily used to facilitate efficient data transformations in non-linear models.
+         */
+        RFF,
+
+        /**
+         * Denotes the type of Orthogonal Random Features (ORF) used in random feature
+         * mappings for machine learning or statistical models.
+         * ORF is a variation of Random Fourier Features that ensures orthogonality
+         * in the generated random projections, improving numerical stability,
+         * reducing redundancy, and enhancing the quality of feature representations
+         * in high-dimensional data transformations.
+         */
+        ORF}
+
+    // -------------------- configuration knobs --------------------
+
+    /**
+     * Base ridge/noise knob. Used to form sigma^2. Must be > 0.
+     */
+    private volatile double lambda = 1.0;
 
     /**
      * If true, use valid row subsets when missing exists.
      */
     private final boolean calculateRowSubsets;
 
-    // -------------------- configuration knobs --------------------
-    /**
-     * The dataset containing the observations or measurements used for
-     * computations in the KffMarginalLikelihoodScore class.
-     * This dataset is central to various scoring and statistical
-     * methods implemented in this class, serving as the underlying
-     * data source for evaluating marginal likelihoods, determining
-     * conditional dependencies, and other related operations.
-     */
-    private final DataSet dataSet;
-    // Cached per-child phases b_child[k], length mFeatures.
-    private final AtomicReference<ConcurrentHashMap<Long, double[]>> phaseCacheRef =
-            new AtomicReference<>(new ConcurrentHashMap<>());
-    // Cached per-parent base omegas g_parent[k] ~ N(0,1), length mFeatures.
-// We later scale by wStd = sqrt(2/bw2Child).
-    private final AtomicReference<ConcurrentHashMap<Long, double[]>> omegaCacheRef =
-            new AtomicReference<>(new ConcurrentHashMap<>());
-    /**
-     * A list of variables represented as {@code Node} objects. These variables
-     * are used in the context of scoring and computations within the
-     * {@code KffMarginalLikelihoodScore} class.
-     * <p>
-     * The {@code variables} list typically holds the nodes or features that form
-     * the underlying structure of the dataset being analyzed. It is a fundamental
-     * component utilized for various methods and calculations within the class,
-     * such as determining local scores, effective sample size, and evaluating
-     * dependencies.
-     */
-    private final List<Node> variables;
-    /**
-     * Represents the total number of data points (or observations) used in the computations for this instance.
-     * This value is fixed for the lifetime of the object and is initialized during object construction.
-     * <p>
-     * The sample size is an essential parameter in statistical modeling and influences the calculations
-     * of marginal likelihood scores and other statistical measures within this class.
-     */
-    private final int sampleSize;
-    /**
-     * Standardized columns (z-scored globally, NaNs preserved). zCols[p][n].
-     */
-    private final double[][] zCols;
-    /**
-     * Cache: (target i, sorted parents) -> score.
-     */
-    private final AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
-            new AtomicReference<>(new ConcurrentHashMap<>());
-    /**
-     * Base ridge/noise knob. Used to form sigma^2. Must be > 0.
-     */
-    private volatile double lambda = 1.0;
-
-    // -------------------- new caches for nested RFF --------------------
     /**
      * Bandwidth multiplier on the median heuristic.
      * 1.0 is default; try 0.5 or 2.0 if things feel too smooth/too spiky.
      */
     private volatile double bandwidthMultiplier = 1.0;
+
     /**
      * Max rows used to estimate median bandwidth (subsample for speed).
      * Kernel itself still uses all rows.
      */
     private volatile int bwMaxRows = 400;
+
     /**
      * Represents the number of random features used for certain kernel approximations
      * like Random Fourier Features (RFF) or Orthogonal Random Features (ORF).
      * The value of this variable may impact the accuracy and computational
      * efficiency of approximate methods for evaluating kernel-based models.
-     * <p>
+     *
      * This variable is volatile to ensure thread-safe read and write
      * operations in a concurrent environment.
      */
     private volatile int numFeatures = 256;
+
     /**
      * Represents the effective sample size, which is a measure of the
      * equivalent number of independent observations in a statistical model.
@@ -168,6 +152,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * read and write operations in a concurrent environment.
      */
     private volatile int nEff;
+
     /**
      * The feature type utilized in the current instance for random feature mapping.
      * This variable determines the specific method applied for generating random features
@@ -183,8 +168,49 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * The default value is set to {@code FeatureType.ORF}, indicating the use of Orthogonal Random Features.
      */
     private FeatureType featureType = FeatureType.ORF;
-    // Cached per-child bandwidth^2 (computed once per child from "all other variables").
-    private final double[] childBw2Cache;  // length p, lazily filled with NaNs
+
+    /**
+     * The dataset containing the observations or measurements used for
+     * computations in the KffMarginalLikelihoodScore class.
+     * This dataset is central to various scoring and statistical
+     * methods implemented in this class, serving as the underlying
+     * data source for evaluating marginal likelihoods, determining
+     * conditional dependencies, and other related operations.
+     */
+    private final DataSet dataSet;
+
+    /**
+     * A list of variables represented as {@code Node} objects. These variables
+     * are used in the context of scoring and computations within the
+     * {@code KffMarginalLikelihoodScore} class.
+     * <p>
+     * The {@code variables} list typically holds the nodes or features that form
+     * the underlying structure of the dataset being analyzed. It is a fundamental
+     * component utilized for various methods and calculations within the class,
+     * such as determining local scores, effective sample size, and evaluating
+     * dependencies.
+     */
+    private final List<Node> variables;
+
+    /**
+     * Represents the total number of data points (or observations) used in the computations for this instance.
+     * This value is fixed for the lifetime of the object and is initialized during object construction.
+     * <p>
+     * The sample size is an essential parameter in statistical modeling and influences the calculations
+     * of marginal likelihood scores and other statistical measures within this class.
+     */
+    private final int sampleSize;
+
+    /**
+     * Standardized columns (z-scored globally, NaNs preserved). zCols[p][n].
+     */
+    private final double[][] zCols;
+
+    /**
+     * Cache: (target i, sorted parents) -> score.
+     */
+    private final AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
+            new AtomicReference<>(new ConcurrentHashMap<>());
 
     /**
      * Constructs a KffMl instance for performing kernel-based statistical analysis on the given dataset.
@@ -192,9 +218,10 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * @param dataSet The input dataset on which the kernel-based methods will operate.
      *                Must not be null, and is expected to contain variables and rows with numeric data.
      *                If any missing values exist in the dataset, the class will appropriately flag it during instantiation.
+     *
      * @throws NullPointerException If the provided {@code dataSet} is null.
      */
-    public FfMl(DataSet dataSet) {
+    public FfMl1(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
@@ -214,211 +241,9 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         for (int j = 0; j < p; j++) {
             zscoreColumnPreserveNaN(cols[j], zCols[j]);
         }
-
-        this.childBw2Cache = new double[p];
-        Arrays.fill(this.childBw2Cache, Double.NaN);
-    }
-
-    /**
-     * Exact sigma-only case: C = sigma2 I.
-     */
-    private static double gpLogMarginalLikelihoodSigmaOnly(double[] yCentered, double sigma2) {
-        int n = yCentered.length;
-        if (n == 0) return Double.NaN;
-        if (!(sigma2 > 0) || !Double.isFinite(sigma2)) return Double.NaN;
-
-        double yTy = 0.0;
-        for (double v : yCentered) yTy += v * v;
-
-        double quad = yTy / sigma2;
-        double logDet = n * Math.log(sigma2);
-
-        return -0.5 * quad - 0.5 * logDet;
     }
 
     // -------------------- Score interface --------------------
-
-    // same mix64 you used elsewhere (or paste this one)
-    private static long mix64(long z) {
-        z = (z ^ (z >>> 33)) * 0xff51afd7ed558ccdL;
-        z = (z ^ (z >>> 33)) * 0xc4ceb9fe1a85ec53L;
-        return z ^ (z >>> 33);
-    }
-
-    /**
-     * Orthogonal Random Features (ORF) weights for RBF kernel.
-     * <p>
-     * Produces W with (block-)orthogonal rows:
-     * W_row = (wStd * r) * q_row
-     * where q_row are orthonormal directions and r ~ chi(d).
-     * <p>
-     * If mFeatures > d, rows are generated in blocks of size d; orthogonality holds within each block.
-     */
-    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd, SplittableRandom rng) {
-        double[][] W = new double[mFeatures][d];
-        if (d <= 0) return W;
-
-        int filled = 0;
-
-        // Generate in blocks of size d (or remaining rows).
-        while (filled < mFeatures) {
-            int block = Math.min(d, mFeatures - filled);
-
-            // Step 1: Gaussian block G (block x d)
-            double[][] Q = new double[block][d];
-            for (int i = 0; i < block; i++) {
-                for (int j = 0; j < d; j++) {
-                    Q[i][j] = nextGaussian(rng);
-                }
-            }
-
-            // Step 2: Orthonormalize rows of Q (Gram-Schmidt on rows)
-            for (int i = 0; i < block; i++) {
-                // subtract projections on previous rows
-                for (int k = 0; k < i; k++) {
-                    double dot = 0.0;
-                    for (int j = 0; j < d; j++) dot += Q[i][j] * Q[k][j];
-                    for (int j = 0; j < d; j++) Q[i][j] -= dot * Q[k][j];
-                }
-                // normalize
-                double norm2 = 0.0;
-                for (int j = 0; j < d; j++) norm2 += Q[i][j] * Q[i][j];
-                double norm = Math.sqrt(Math.max(1e-18, norm2));
-                for (int j = 0; j < d; j++) Q[i][j] /= norm;
-            }
-
-            // Step 3: scale each row by chi(d) radius (approximate Gaussian row norm)
-            for (int i = 0; i < block; i++) {
-                double r = chiRadius(d, rng);     // ~ ||N(0,I_d)||
-
-                double s = wStd * r;
-                int outRow = filled + i;
-                for (int j = 0; j < d; j++) {
-                    W[outRow][j] = s * Q[i][j];
-                }
-            }
-
-            filled += block;
-        }
-
-        return W;
-    }
-
-    /**
-     * Radius r ~ chi(d) via sqrt(sum_k g_k^2), g_k ~ N(0,1).
-     */
-    private static double chiRadius(int d, SplittableRandom rng) {
-        double ss = 0.0;
-        for (int k = 0; k < d; k++) {
-            double g = nextGaussian(rng);
-            ss += g * g;
-        }
-        return Math.sqrt(Math.max(1e-18, ss));
-    }
-
-    // Box–Muller-ish gaussian from SplittableRandom (fast enough)
-    private static double nextGaussian(SplittableRandom rng) {
-        // Use Marsaglia polar
-        double u, v, s;
-        do {
-            u = 2.0 * rng.nextDouble() - 1.0;
-            v = 2.0 * rng.nextDouble() - 1.0;
-            s = u * u + v * v;
-        } while (s >= 1.0 || s == 0.0);
-        return u * Math.sqrt(-2.0 * Math.log(s) / s);
-    }
-
-    private static void centerInPlace(double[] y) {
-        double m = 0.0;
-        for (double v : y) m += v;
-        m /= y.length;
-        for (int i = 0; i < y.length; i++) y[i] -= m;
-    }
-
-    private static void zscoreColumnPreserveNaN(double[] in, double[] out) {
-        double sum = 0.0, sum2 = 0.0;
-        int n = 0;
-        for (double v : in) {
-            if (Double.isNaN(v)) continue;
-            sum += v;
-            sum2 += v * v;
-            n++;
-        }
-        if (n < 2) {
-            System.arraycopy(in, 0, out, 0, in.length);
-            return;
-        }
-        double mean = sum / n;
-        double var = (sum2 - n * mean * mean) / (n - 1.0);
-        double sd = Math.sqrt(Math.max(1e-12, var));
-
-        for (int i = 0; i < in.length; i++) {
-            double v = in[i];
-            out[i] = Double.isNaN(v) ? Double.NaN : (v - mean) / sd;
-        }
-    }
-
-    private static void addDiagonalInPlace(DMatrixRMaj M, double v) {
-        int n = Math.min(M.numRows, M.numCols);
-        for (int i = 0; i < n; i++) M.add(i, i, v);
-    }
-
-    // Median of ||zi-zj||^2 using a subsample of rows for speed.
-    private static double medianDistanceSquaredND(double[][] Z, int maxRows) {
-        int n = Z.length;
-        int d = Z[0].length;
-        if (n < 3) return 1.0;
-
-        int m = Math.min(n, maxRows);
-
-        // Take evenly spaced rows (deterministic, no RNG).
-        int[] idx = new int[m];
-        if (m == n) {
-            for (int i = 0; i < m; i++) idx[i] = i;
-        } else {
-            for (int i = 0; i < m; i++) idx[i] = (int) Math.floor((i * (long) (n - 1)) / (double) (m - 1));
-        }
-
-        int cnt = m * (m - 1) / 2;
-        double[] d2 = new double[cnt];
-        int t = 0;
-
-        for (int a = 1; a < m; a++) {
-            int i = idx[a];
-            for (int b = 0; b < a; b++) {
-                int j = idx[b];
-                double dist2 = 0.0;
-                for (int k = 0; k < d; k++) {
-                    double diff = Z[i][k] - Z[j][k];
-                    dist2 += diff * diff;
-                }
-                d2[t++] = dist2;
-            }
-        }
-
-        Arrays.sort(d2, 0, t);
-
-        int firstPos = 0;
-        while (firstPos < t && d2[firstPos] <= 0) firstPos++;
-        if (firstPos >= t) return 1.0;
-
-        int mid = firstPos + (t - firstPos) / 2;
-        return d2[mid];
-    }
-
-    private static int[] concat(int i, int[] parents) {
-        int[] all = new int[parents.length + 1];
-        all[0] = i;
-        System.arraycopy(parents, 0, all, 1, parents.length);
-        return all;
-    }
-
-    private static long cacheKey(int i, int[] parents) {
-        long h = 1469598103934665603L;
-        h = (h ^ i) * 1099511628211L;
-        for (int p : parents) h = (h ^ p) * 1099511628211L;
-        return h;
-    }
 
     /**
      * Calculates the difference in local scores between two configurations of variables.
@@ -438,10 +263,10 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     /**
      * Computes the local score for a given variable and its parent set in a Bayesian network.
      *
-     * @param i       The index of the target variable for which the local score is to be computed.
+     * @param i The index of the target variable for which the local score is to be computed.
      * @param parents The indices of the parent variables of the target variable.
      * @return The computed local score as a double value. If the score cannot be computed due to invalid input
-     * or other issues, returns Double.NaN.
+     *         or other issues, returns Double.NaN.
      */
     @Override
     public double localScore(int i, int... parents) {
@@ -478,15 +303,15 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                     }
                 }
 
-                double bw2 = getChildBandwidth2(i);
+                double bw2 = medianDistanceSquaredND(Z, Math.min(n, bwMaxRows));
+                if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
                 bw2 *= (bandwidthMultiplier * bandwidthMultiplier);
 
                 // Deterministic seed per (target, parent set).
                 long seed = key ^ 0x9E3779B97F4A7C15L;
 
-                return gpLogMarginalLikelihoodRFF_profiledNested(
-                        y, parents, rows, n, numFeatures,
-                        bw2, /*sigma2Init=*/ lambda, seed
+                return gpLogMarginalLikelihoodRFF(
+                        y, parents, rows, n, numFeatures, bw2, sigma2, seed
                 );
 
             } catch (RuntimeException e) {
@@ -496,14 +321,39 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         });
     }
 
-    private void resetCache() {
-        localScoreCacheRef.set(new ConcurrentHashMap<>());
-        phaseCacheRef.set(new ConcurrentHashMap<>());
-        omegaCacheRef.set(new ConcurrentHashMap<>());
-        // keep childBw2Cache; it's dataset-derived and stable unless you want to reset on knob changes
+    /**
+     * Exact sigma-only case: C = sigma2 I.
+     */
+    private static double gpLogMarginalLikelihoodSigmaOnly(double[] yCentered, double sigma2) {
+        int n = yCentered.length;
+        if (n == 0) return Double.NaN;
+        if (!(sigma2 > 0) || !Double.isFinite(sigma2)) return Double.NaN;
+
+        double yTy = 0.0;
+        for (double v : yCentered) yTy += v * v;
+
+        double quad = yTy / sigma2;
+        double logDet = n * Math.log(sigma2);
+
+        return -0.5 * quad - 0.5 * logDet;
     }
 
-    // -------------------- public tuning knobs --------------------
+    private static DMatrixRMaj buildSigmaOnlyC(int n, double sigma2) {
+        if (n <= 0) throw new IllegalArgumentException("n must be > 0");
+        if (!(sigma2 > 0) || !Double.isFinite(sigma2)) {
+            throw new IllegalArgumentException("sigma2 must be finite and > 0");
+        }
+
+        DMatrixRMaj C = new DMatrixRMaj(n, n);
+        for (int i = 0; i < n; i++) {
+            C.set(i, i, sigma2);
+        }
+        return C;
+    }
+
+    private void resetCache() {
+        localScoreCacheRef.set(new ConcurrentHashMap<>());
+    }
 
     /**
      * Retrieves the list of variables in the current instance.
@@ -532,7 +382,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * between 5 and the effective sample size {@code nEff}.
      *
      * @return the maximum degree as an integer, calculated as the ceiling
-     * of the logarithm of the larger value between 5 and {@code nEff}.
+     *         of the logarithm of the larger value between 5 and {@code nEff}.
      */
     @Override
     public int getMaxDegree() {
@@ -546,7 +396,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * @param z a list of nodes representing the conditional set.
      * @param y the node whose conditional independence is being evaluated.
      * @return true if the local score calculation results in NaN or infinity, indicating
-     * that the conditional independence cannot be determined reliably; false otherwise.
+     *         that the conditional independence cannot be determined reliably; false otherwise.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {
@@ -557,8 +407,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         double s = localScore(i, parents);
         return Double.isNaN(s) || Double.isInfinite(s);
     }
-
-    // -------------------- GP marginal likelihood core --------------------
 
     /**
      * Determines if the given bump value represents an "effect edge."
@@ -615,6 +463,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return "Huang Kernel Marginal Score (GP form, continuous)";
     }
 
+    // -------------------- public tuning knobs --------------------
+
     /**
      * Sets the value of the lambda parameter in the current instance. Lambda is
      * a positive scalar value that influences specific scoring computations.
@@ -624,7 +474,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * @param lambda the new value to be set for the lambda parameter. Must be
      *               greater than zero.
      * @throws IllegalArgumentException if the input lambda is less than or
-     *                                  equal to zero.
+     *                                   equal to zero.
      */
     public void setLambda(double lambda) {
         if (lambda <= 0) throw new IllegalArgumentException("lambda must be > 0");
@@ -670,19 +520,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         this.numFeatures = numFeatures;
     }
 
-    /**
-     * Retrieves the feature type for the current instance.
-     * The feature type determines the type of random feature mapping being utilized.
-     *
-     * @return an integer representing the feature type:
-     * <ul>
-     *    <li>1: if the feature type to {@code FeatureType.RFF} (Random Fourier Features).</li>
-     *    <li>2: if the feature type to {@code FeatureType.ORF} (Orthogonal Random Features).</li>
-     * </ul>
-     */
-    public FeatureType getFeatureType() {
-        return featureType;
-    }
+    // -------------------- GP marginal likelihood core --------------------
 
     /**
      * Sets the feature type for the current instance based on the provided integer value.
@@ -704,7 +542,19 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         this.featureType = featureType;
     }
 
-    // -------------------- kernels --------------------
+    /**
+     * Retrieves the feature type for the current instance.
+     * The feature type determines the type of random feature mapping being utilized.
+     *
+     * @return an integer representing the feature type:
+     * <ul>
+     *    <li>1: if the feature type to {@code FeatureType.RFF} (Random Fourier Features).</li>
+     *    <li>2: if the feature type to {@code FeatureType.ORF} (Orthogonal Random Features).</li>
+     * </ul>
+     */
+    public FeatureType getFeatureType() {
+        return featureType;
+    }
 
     private double gpLogMarginalLikelihoodRFF(
             double[] yCentered,          // length n
@@ -857,220 +707,90 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return -0.5 * quad - 0.5 * logDetC;
     }
 
-    // -------------------- missingness row selection --------------------
+    /**
+     * Orthogonal Random Features (ORF) weights for RBF kernel.
+     * <p>
+     * Produces W with (block-)orthogonal rows:
+     * W_row = (wStd * r) * q_row
+     * where q_row are orthonormal directions and r ~ chi(d).
+     * <p>
+     * If mFeatures > d, rows are generated in blocks of size d; orthogonality holds within each block.
+     */
+    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd, SplittableRandom rng) {
+        double[][] W = new double[mFeatures][d];
+        if (d <= 0) return W;
 
-    private double gpLogMarginalLikelihoodRFF_profiledNested(
-            double[] yCentered,          // length n
-            int[] parentIdx,             // d parents
-            int[] rows,                  // null or length n
-            int n,
-            int mFeatures,               // m
-            double bw2Child,             // stable bw2 for this child (already includes multiplier^2)
-            double sigma2Init,
-            long seedBase                // derived from cache key
-    ) {
-        final int d = parentIdx.length;
-        if (n < 5) return Double.NaN;
-        if (d <= 0) return Double.NaN;
+        int filled = 0;
 
-        if (!(bw2Child > 0) || !Double.isFinite(bw2Child)) bw2Child = 1.0;
+        // Generate in blocks of size d (or remaining rows).
+        while (filled < mFeatures) {
+            int block = Math.min(d, mFeatures - filled);
 
-        // Build nested features:
-        // phi_k(x) = sqrt(2/m) cos( sum_{j in parents} omega_parent[j][k] * z_j + phase_child[k] )
-        // with omega_parent[j][k] = wStd * baseOmega(parent)[k], baseOmega ~ N(0,1)
-        final double wStd = Math.sqrt(2.0 / bw2Child);
-        final double scale = Math.sqrt(2.0 / mFeatures);
-
-        // child phases b[k]
-        final double[] phase = getPhaseForChild(seedBase, mFeatures);
-
-        // per-parent base omegas (standard normals), scaled by wStd
-        final double[][] omegaByParent = new double[d][];
-        for (int j = 0; j < d; j++) {
-            omegaByParent[j] = getBaseOmegaForParent(parentIdx[j], mFeatures);
-        }
-
-        // Accumulate G = Phi^T Phi and v = Phi^T y ONCE (independent of sigma2)
-        final DMatrixRMaj G = new DMatrixRMaj(mFeatures, mFeatures);
-        final double[] v = new double[mFeatures];
-
-        double yTy = 0.0;
-        final double[] phi = new double[mFeatures];
-
-        for (int ii = 0; ii < n; ii++) {
-            final int row = (rows == null) ? ii : rows[ii];
-
-            // Build all m features for this row
-            for (int k = 0; k < mFeatures; k++) {
-                double dot = 0.0;
+            // Step 1: Gaussian block G (block x d)
+            double[][] Q = new double[block][d];
+            for (int i = 0; i < block; i++) {
                 for (int j = 0; j < d; j++) {
-                    // omega = wStd * baseOmega
-                    dot += (wStd * omegaByParent[j][k]) * zCols[parentIdx[j]][row];
-                }
-                phi[k] = scale * Math.cos(dot + phase[k]);
-            }
-
-            final double yi = yCentered[ii];
-            yTy += yi * yi;
-
-            for (int k = 0; k < mFeatures; k++) {
-                v[k] += phi[k] * yi;
-            }
-
-            for (int a = 0; a < mFeatures; a++) {
-                final double pa = phi[a];
-                for (int b = 0; b <= a; b++) {
-                    G.add(a, b, pa * phi[b]);
+                    Q[i][j] = nextGaussian(rng);
                 }
             }
+
+            // Step 2: Orthonormalize rows of Q (Gram-Schmidt on rows)
+            for (int i = 0; i < block; i++) {
+                // subtract projections on previous rows
+                for (int k = 0; k < i; k++) {
+                    double dot = 0.0;
+                    for (int j = 0; j < d; j++) dot += Q[i][j] * Q[k][j];
+                    for (int j = 0; j < d; j++) Q[i][j] -= dot * Q[k][j];
+                }
+                // normalize
+                double norm2 = 0.0;
+                for (int j = 0; j < d; j++) norm2 += Q[i][j] * Q[i][j];
+                double norm = Math.sqrt(Math.max(1e-18, norm2));
+                for (int j = 0; j < d; j++) Q[i][j] /= norm;
+            }
+
+            // Step 3: scale each row by chi(d) radius (approximate Gaussian row norm)
+            for (int i = 0; i < block; i++) {
+                double r = chiRadius(d, rng);     // ~ ||N(0,I_d)||
+
+                double s = wStd * r;
+                int outRow = filled + i;
+                for (int j = 0; j < d; j++) {
+                    W[outRow][j] = s * Q[i][j];
+                }
+            }
+
+            filled += block;
         }
 
-        // Symmetrize G
-        for (int a = 0; a < mFeatures; a++) {
-            for (int b = 0; b < a; b++) {
-                G.set(b, a, G.get(a, b));
-            }
-        }
-
-        // Profile sigma2 with 1–3 fixed-point iterations, reusing G and v
-        double sigma2 = sigma2Init;
-        if (!(sigma2 > 0) || !Double.isFinite(sigma2)) sigma2 = 1.0;
-
-        final double minSigma2 = 1e-10;
-
-        double logDetB = Double.NaN;
-        double vTBInvV = Double.NaN;
-
-        for (int it = 0; it < 3; it++) {
-            // B = G + sigma2 I
-            DMatrixRMaj B = G.copy();
-            for (int k = 0; k < mFeatures; k++) B.add(k, k, sigma2);
-
-            CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
-            if (!chol.decompose(B)) return Double.NaN;
-
-            DMatrixRMaj L = chol.getT(null);
-
-            // logdet(B)
-            double ld = 0.0;
-            for (int k = 0; k < mFeatures; k++) {
-                double di = L.get(k, k);
-                if (!(di > 0) || !Double.isFinite(di)) return Double.NaN;
-                ld += Math.log(di);
-            }
-            logDetB = 2.0 * ld;
-
-            // Solve B^{-1} v
-            double[] u = Arrays.copyOf(v, mFeatures);
-
-            // forward: L u = v
-            for (int i = 0; i < mFeatures; i++) {
-                double sum = u[i];
-                for (int j = 0; j < i; j++) sum -= L.get(i, j) * u[j];
-                u[i] = sum / L.get(i, i);
-            }
-            // back: L^T u = u
-            for (int i = mFeatures - 1; i >= 0; i--) {
-                double sum = u[i];
-                for (int j = i + 1; j < mFeatures; j++) sum -= L.get(j, i) * u[j];
-                u[i] = sum / L.get(i, i);
-            }
-
-            // v^T B^{-1} v
-            double vt = 0.0;
-            for (int k = 0; k < mFeatures; k++) vt += v[k] * u[k];
-            vTBInvV = vt;
-
-            // Fixed-point "profile" update:
-            // This mirrors the regression-style "sigma2 = RSS/n" update in feature space,
-            // with RSS-like term = y^T y - v^T B^{-1} v.
-            double rssLike = yTy - vTBInvV;
-            double sigma2New = rssLike / Math.max(1, n);
-
-            if (!(sigma2New > 0) || !Double.isFinite(sigma2New)) sigma2New = sigma2;
-            sigma2New = Math.max(minSigma2, sigma2New);
-
-            double rel = Math.abs(sigma2New - sigma2) / (1.0 + sigma2);
-            sigma2 = sigma2New;
-
-            if (rel < 1e-3) break;
-        }
-
-        if (!Double.isFinite(logDetB) || !Double.isFinite(vTBInvV)) return Double.NaN;
-
-        // Now compute GP log ML using Woodbury form with final sigma2
-        double invSig = 1.0 / sigma2;
-        double quad = invSig * yTy - (invSig * invSig) * vTBInvV;
-
-        double logDetC = (n - mFeatures) * Math.log(sigma2) + logDetB;
-
-        if (!Double.isFinite(quad) || !Double.isFinite(logDetC)) return Double.NaN;
-
-        return -0.5 * quad - 0.5 * logDetC;
+        return W;
     }
 
-    // -------------------- extraction + preprocessing --------------------
-
-    private double[] getPhaseForChild(long seedBase, int mFeatures) {
-        // Key only depends on child (encoded in seedBase) + mFeatures.
-        // If you want it strictly per-child, incorporate child index explicitly instead.
-        final long key = mix64(seedBase ^ 0xD1B54A32D192ED03L) ^ ((long) mFeatures << 1);
-
-        final ConcurrentHashMap<Long, double[]> cache = phaseCacheRef.get();
-        return cache.computeIfAbsent(key, k -> {
-            SplittableRandom rng = new SplittableRandom(k);
-            double[] b = new double[mFeatures];
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * Math.PI * rng.nextDouble();
-            return b;
-        });
-    }
-
-    private double[] getBaseOmegaForParent(int parentVar, int mFeatures) {
-        final long key = (((long) parentVar) << 32) ^ (mFeatures & 0xffffffffL) ^ 0x9E3779B97F4A7C15L;
-        final ConcurrentHashMap<Long, double[]> cache = omegaCacheRef.get();
-
-        return cache.computeIfAbsent(key, k -> {
-            SplittableRandom rng = new SplittableRandom(mix64(k));
-            double[] g = new double[mFeatures];
-            for (int j = 0; j < mFeatures; j++) g[j] = nextGaussian(rng); // N(0,1)
-            return g;
-        });
-    }
-
-    private double getChildBandwidth2(int child) {
-        double bw2 = childBw2Cache[child];
-        if (bw2 > 0 && Double.isFinite(bw2)) return bw2;
-
-        // Build a design matrix using ALL other variables as candidate inputs, on up to bwMaxRows rows.
-        // This is computed once per child and reused across parent sets => stable nesting.
-        int p = variables.size();
-        int d = p - 1;
-        if (d <= 0) {
-            childBw2Cache[child] = 1.0;
-            return 1.0;
+    /**
+     * Radius r ~ chi(d) via sqrt(sum_k g_k^2), g_k ~ N(0,1).
+     */
+    private static double chiRadius(int d, SplittableRandom rng) {
+        double ss = 0.0;
+        for (int k = 0; k < d; k++) {
+            double g = nextGaussian(rng);
+            ss += g * g;
         }
-
-        // Use first m rows (or all if smaller) for bandwidth estimation; deterministic.
-        int m = Math.min(nEff, bwMaxRows);
-        m = Math.max(5, m);
-
-        double[][] Z = new double[m][d];
-
-        int col = 0;
-        for (int v = 0; v < p; v++) {
-            if (v == child) continue;
-            for (int r = 0; r < m; r++) {
-                Z[r][col] = zCols[v][r]; // assumes no missing; if missing-heavy, you can add a local validRows subset here
-            }
-            col++;
-        }
-
-        bw2 = medianDistanceSquaredND(Z, m);
-        if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
-
-        childBw2Cache[child] = bw2;
-        return bw2;
+        return Math.sqrt(Math.max(1e-18, ss));
     }
+
+    // Box–Muller-ish gaussian from SplittableRandom (fast enough)
+    private static double nextGaussian(SplittableRandom rng) {
+        // Use Marsaglia polar
+        double u, v, s;
+        do {
+            u = 2.0 * rng.nextDouble() - 1.0;
+            v = 2.0 * rng.nextDouble() - 1.0;
+            s = u * u + v * v;
+        } while (s >= 1.0 || s == 0.0);
+        return u * Math.sqrt(-2.0 * Math.log(s) / s);
+    }
+
+    // -------------------- kernels --------------------
 
     /**
      * RBF kernel Gram matrix on standardized parents:
@@ -1113,6 +833,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return K;
     }
 
+    // -------------------- missingness row selection --------------------
+
     private int[] validRows(int[] vars) {
         int n = sampleSize;
         int[] tmp = new int[n];
@@ -1129,7 +851,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return Arrays.copyOf(tmp, m);
     }
 
-    // -------------------- small utilities --------------------
+    // -------------------- extraction + preprocessing --------------------
 
     private double[] extract1D(int varIndex, int[] rows, int n) {
         double[] x = new double[n];
@@ -1141,36 +863,103 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return x;
     }
 
+    private static void centerInPlace(double[] y) {
+        double m = 0.0;
+        for (double v : y) m += v;
+        m /= y.length;
+        for (int i = 0; i < y.length; i++) y[i] -= m;
+    }
+
+    private static void zscoreColumnPreserveNaN(double[] in, double[] out) {
+        double sum = 0.0, sum2 = 0.0;
+        int n = 0;
+        for (double v : in) {
+            if (Double.isNaN(v)) continue;
+            sum += v;
+            sum2 += v * v;
+            n++;
+        }
+        if (n < 2) {
+            System.arraycopy(in, 0, out, 0, in.length);
+            return;
+        }
+        double mean = sum / n;
+        double var = (sum2 - n * mean * mean) / (n - 1.0);
+        double sd = Math.sqrt(Math.max(1e-12, var));
+
+        for (int i = 0; i < in.length; i++) {
+            double v = in[i];
+            out[i] = Double.isNaN(v) ? Double.NaN : (v - mean) / sd;
+        }
+    }
+
+    private static void addDiagonalInPlace(DMatrixRMaj M, double v) {
+        int n = Math.min(M.numRows, M.numCols);
+        for (int i = 0; i < n; i++) M.add(i, i, v);
+    }
+
+    // Median of ||zi-zj||^2 using a subsample of rows for speed.
+    private static double medianDistanceSquaredND(double[][] Z, int maxRows) {
+        int n = Z.length;
+        int d = Z[0].length;
+        if (n < 3) return 1.0;
+
+        int m = Math.min(n, maxRows);
+
+        // Take evenly spaced rows (deterministic, no RNG).
+        int[] idx = new int[m];
+        if (m == n) {
+            for (int i = 0; i < m; i++) idx[i] = i;
+        } else {
+            for (int i = 0; i < m; i++) idx[i] = (int) Math.floor((i * (long) (n - 1)) / (double) (m - 1));
+        }
+
+        int cnt = m * (m - 1) / 2;
+        double[] d2 = new double[cnt];
+        int t = 0;
+
+        for (int a = 1; a < m; a++) {
+            int i = idx[a];
+            for (int b = 0; b < a; b++) {
+                int j = idx[b];
+                double dist2 = 0.0;
+                for (int k = 0; k < d; k++) {
+                    double diff = Z[i][k] - Z[j][k];
+                    dist2 += diff * diff;
+                }
+                d2[t++] = dist2;
+            }
+        }
+
+        Arrays.sort(d2, 0, t);
+
+        int firstPos = 0;
+        while (firstPos < t && d2[firstPos] <= 0) firstPos++;
+        if (firstPos >= t) return 1.0;
+
+        int mid = firstPos + (t - firstPos) / 2;
+        return d2[mid];
+    }
+
+    // -------------------- small utilities --------------------
+
     public int[] append(int[] z, int x) {
         int[] out = Arrays.copyOf(z, z.length + 1);
         out[z.length] = x;
         return out;
     }
 
-    /**
-     * Represents the types of features that can be used in random feature mappings.
-     * This enumeration is utilized to distinguish between different methods for
-     * generating random features in machine learning or statistical models.
-     */
-    public enum FeatureType {
+    private static int[] concat(int i, int[] parents) {
+        int[] all = new int[parents.length + 1];
+        all[0] = i;
+        System.arraycopy(parents, 0, all, 1, parents.length);
+        return all;
+    }
 
-        /**
-         * Denotes the type of Random Fourier Features (RFF) used in random feature
-         * mappings for machine learning or statistical models.
-         * RFF is a method to approximate kernel functions through random projections,
-         * enabling scalable computation for high-dimensional data.
-         * It is primarily used to facilitate efficient data transformations in non-linear models.
-         */
-        RFF,
-
-        /**
-         * Denotes the type of Orthogonal Random Features (ORF) used in random feature
-         * mappings for machine learning or statistical models.
-         * ORF is a variation of Random Fourier Features that ensures orthogonality
-         * in the generated random projections, improving numerical stability,
-         * reducing redundancy, and enhancing the quality of feature representations
-         * in high-dimensional data transformations.
-         */
-        ORF
+    private static long cacheKey(int i, int[] parents) {
+        long h = 1469598103934665603L;
+        h = (h ^ i) * 1099511628211L;
+        for (int p : parents) h = (h ^ p) * 1099511628211L;
+        return h;
     }
 }
