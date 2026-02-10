@@ -1249,11 +1249,11 @@ public final class Params {
     /**
      * Constant <code>MINIMAX_RFF_FEATURES="minimaxRffFeatures"</code>
      */
-    public static final String MINIMAX_RFF_FEATURES = "minimaxRffFeatures";
+    public static final String MINIMAX_FF_FEATURES = "minimaxFfFeatures";
     /**
      * Constant <code>MINIMAX_RFF_SIGMA="minimaxRffSigma"</code>
      */
-    public static final String MINIMAX_RFF_SIGMA = "minimaxRffSigma";
+    public static final String MINIMAX_FF_SIGMA = "minimaxFfSigma";
     /**
      * Constant <code>MINIMAX_IRLS_ITERS="minimaxIrlsIters"</code>
      */

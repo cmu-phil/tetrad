@@ -82,8 +82,8 @@ public class MinimaxScore implements ScoreWrapper {
         score.setNu(parameters.getDouble(Params.MINIMAX_NU));
         score.setScale(parameters.getDouble(Params.MINIMAX_SCALE));
         score.setRidge(parameters.getDouble(Params.MINIMAX_RIDGE));
-        score.setRffFeatures(parameters.getInt(Params.MINIMAX_RFF_FEATURES));
-        score.setRffSigma(parameters.getDouble(Params.MINIMAX_RFF_SIGMA));
+        score.setRffFeatures(parameters.getInt(Params.MINIMAX_FF_FEATURES));
+        score.setRffSigma(parameters.getDouble(Params.MINIMAX_FF_SIGMA));
         score.setIrlsIters(parameters.getInt(Params.MINIMAX_IRLS_ITERS));
 
         return score;
@@ -120,8 +120,8 @@ public class MinimaxScore implements ScoreWrapper {
         parameters.add(Params.MINIMAX_NU);
         parameters.add(Params.MINIMAX_SCALE);
         parameters.add(Params.MINIMAX_RIDGE);
-        parameters.add(Params.MINIMAX_RFF_FEATURES);
-        parameters.add(Params.MINIMAX_RFF_SIGMA);
+        parameters.add(Params.MINIMAX_FF_FEATURES);
+        parameters.add(Params.MINIMAX_FF_SIGMA);
         parameters.add(Params.MINIMAX_IRLS_ITERS);
         return parameters;
     }
