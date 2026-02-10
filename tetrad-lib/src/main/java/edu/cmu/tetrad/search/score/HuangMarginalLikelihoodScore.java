@@ -109,7 +109,7 @@ import java.util.*;
  * </p>
  *
  * @see edu.cmu.tetrad.search.score.KernelMarginalLikelihoodScore
- * @see FfMlUnmixed
+ * @see FfMlContinuous
  */
 public final class HuangMarginalLikelihoodScore implements Score, EffectiveSampleSizeSettable {
 

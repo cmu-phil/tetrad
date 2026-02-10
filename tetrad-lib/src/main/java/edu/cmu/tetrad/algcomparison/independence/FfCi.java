@@ -26,7 +26,7 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.search.test.FfCiUnmixed;
+import edu.cmu.tetrad.search.test.FfCiContinuous;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -76,12 +76,12 @@ public class FfCi implements IndependenceWrapper {
         test.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
         test.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         test.setLambda(parameters.getDouble(Params.KML_LAMBDA));
-        FfCiUnmixed.Approx[] approxes
-                = FfCiUnmixed.Approx.values();
+        FfCiContinuous.Approx[] approxes
+                = FfCiContinuous.Approx.values();
         test.setApproximation(approxes[parameters.getInt(Params.RCIT_APPROX) - 1]);
         test.setCatRho(parameters.getDouble(Params.KML_CAT_RHO));
-        FfCiUnmixed.FeatureType[] values
-                = FfCiUnmixed.FeatureType.values();
+        FfCiContinuous.FeatureType[] values
+                = FfCiContinuous.FeatureType.values();
         test.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
 
 //        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));

@@ -39,13 +39,13 @@ import java.util.List;
 // * @version $Id: $Id
 // */
 //@edu.cmu.tetrad.annotation.Score(
-//        name = "FFML-Unmixed Score",
-//        command = "ffml-unmixed-score",
+//        name = "FFML-Continuous Score",
+//        command = "ffml-continuous-score",
 //        dataType = {DataType.Continuous}
 //)
 //@General
 //@Experimental
-public class FfMlUnmixed implements ScoreWrapper {
+public class FfMlContinuous implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -58,7 +58,7 @@ public class FfMlUnmixed implements ScoreWrapper {
     /**
      * Constructs a new instance of the SemBicScore.
      */
-    public FfMlUnmixed() {
+    public FfMlContinuous() {
     }
 
     /**
@@ -68,10 +68,10 @@ public class FfMlUnmixed implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.score.FfMlUnmixed score;
+        edu.cmu.tetrad.search.score.FfMlContinuous score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.score.FfMlUnmixed((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.FfMlContinuous((DataSet) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
@@ -82,8 +82,8 @@ public class FfMlUnmixed implements ScoreWrapper {
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
 
         score.setNumFeatures(parameters.getInt(Params.KML_NUM_FEATURES));
-        edu.cmu.tetrad.search.score.FfMlUnmixed.FeatureType[] values
-                = edu.cmu.tetrad.search.score.FfMlUnmixed.FeatureType.values();
+        edu.cmu.tetrad.search.score.FfMlContinuous.FeatureType[] values
+                = edu.cmu.tetrad.search.score.FfMlContinuous.FeatureType.values();
         score.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
 
         return score;
@@ -96,7 +96,7 @@ public class FfMlUnmixed implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "FFML-Unmixed Score";
+        return "FFML-Continuous Score";
     }
 
     /**

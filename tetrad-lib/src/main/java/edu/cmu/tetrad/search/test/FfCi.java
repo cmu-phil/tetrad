@@ -71,12 +71,12 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     private double lambda = 1.0;
     private boolean centerFeatures = true;
 
-    private FfCiUnmixed.Approx pValueMethod = FfCiUnmixed.Approx.GAMMA; // same enum as IndTestFfCi
+    private FfCiContinuous.Approx pValueMethod = FfCiContinuous.Approx.GAMMA; // same enum as IndTestFfCi
 
     // Mixed-only knobs
     private double bandwidthMultiplier = 1.0;
     private int bwMaxRows = 500;
-    private FfCiUnmixed.FeatureType featureType = FfCiUnmixed.FeatureType.RFF;
+    private FfCiContinuous.FeatureType featureType = FfCiContinuous.FeatureType.RFF;
     private double catRho = 0.0; // 0 => one-hot
 
     // ---------------- IndependenceTest state ----------------
@@ -92,7 +92,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
     // ---------------- Continuous delegate ----------------
     private final boolean dataHasAnyDiscrete;
-    private final FfCiUnmixed continuousDelegate;
+    private final FfCiContinuous continuousDelegate;
 
     // ---------------- ctor ----------------
 
@@ -128,7 +128,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         this.dataHasAnyDiscrete = anyDisc;
 
         // Delegate (FF-CI continuous implementation)
-        this.continuousDelegate = new FfCiUnmixed(this.data);
+        this.continuousDelegate = new FfCiContinuous(this.data);
 
         // Seed: respect rcit.seed if present; otherwise stable default.
         long seed = params.getLong("rcit.seed", 1729L);
@@ -273,7 +273,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      *
      * @param method the approximation method to set; must not be null
      */
-    public void setApproximation(FfCiUnmixed.Approx method) {
+    public void setApproximation(FfCiContinuous.Approx method) {
         this.pValueMethod = Objects.requireNonNull(method, "method");
         invalidateCaches();
         this.continuousDelegate.setApproximation(method);
@@ -319,7 +319,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      * @param featureType the feature type to set; must not be null
      * @throws NullPointerException if the provided featureType is null
      */
-    public void setFeatureType(FfCiUnmixed.FeatureType featureType) {
+    public void setFeatureType(FfCiContinuous.FeatureType featureType) {
         this.featureType = Objects.requireNonNull(featureType, "featureType");
         this.continuousDelegate.setFeatureType(featureType);
         this.featCache.clear();
@@ -330,7 +330,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      *
      * @return the feature type currently set for the mixed independence test
      */
-    public FfCiUnmixed.FeatureType getFeatureType() { return featureType; }
+    public FfCiContinuous.FeatureType getFeatureType() { return featureType; }
 
     /**
      * Sets the categorical feature correlation coefficient (catRho) for the mixed independence test.
@@ -785,7 +785,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         double[][] W;
         double[] b = new double[mFeatures];
 
-        if (featureType == FfCiUnmixed.FeatureType.RFF) {
+        if (featureType == FfCiContinuous.FeatureType.RFF) {
             W = new double[mFeatures][d];
             for (int j = 0; j < mFeatures; j++) {
                 for (int k = 0; k < d; k++) W[j][k] = wStd * nextGaussian(rng);
@@ -1000,7 +1000,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
     private double pValueFromMethod(double stat, double[] eig, SimpleMatrix rX, SimpleMatrix rY, SimpleMatrix ignored) {
         // Permutation (if requested and available)
-        if (pValueMethod == FfCiUnmixed.Approx.PERMUTATION && permutations > 0) {
+        if (pValueMethod == FfCiContinuous.Approx.PERMUTATION && permutations > 0) {
             int greater = 0;
             for (int b = 0; b < permutations; b++) {
                 int[] perm = randomPermutation(rY.getNumRows(), rng);

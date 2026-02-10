@@ -75,7 +75,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *   <li>Results can be sensitive to {@code numFeatures} and bandwidth selection; these control the speed/accuracy tradeoff.</li>
  * </ul>
  */
-public final class FfMlUnmixed implements Score, EffectiveSampleSizeSettable {
+public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable {
 
     /**
      * If true, use valid row subsets when missing exists.
@@ -194,7 +194,7 @@ public final class FfMlUnmixed implements Score, EffectiveSampleSizeSettable {
      *                If any missing values exist in the dataset, the class will appropriately flag it during instantiation.
      * @throws NullPointerException If the provided {@code dataSet} is null.
      */
-    public FfMlUnmixed(DataSet dataSet) {
+    public FfMlContinuous(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();

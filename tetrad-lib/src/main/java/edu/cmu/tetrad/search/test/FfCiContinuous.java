@@ -20,7 +20,7 @@ import static java.lang.Double.NaN;
  * <p>
  * External behavior and API are unchanged.
  */
-public final class FfCiUnmixed implements IndependenceTest, RowsSettable {
+public final class FfCiContinuous implements IndependenceTest, RowsSettable {
 
     // ---------------- core data ----------------
     private final DataSet data;
@@ -55,7 +55,7 @@ public final class FfCiUnmixed implements IndependenceTest, RowsSettable {
      *
      * @param dataSet the dataset to be analyzed; must not be null
      */
-    public FfCiUnmixed(DataSet dataSet) {
+    public FfCiContinuous(DataSet dataSet) {
         this.data = Objects.requireNonNull(dataSet, "data");
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
         this.n = getActiveRowCount();

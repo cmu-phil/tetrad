@@ -32,18 +32,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 ///**
-// * Wrapper for FF-CI-Unmixed test.
+// * Wrapper for FF-CI-Continuous test.
 // *
 // * @author josephramsey
 // * @version $Id: $Id
 // */
 //@TestOfIndependence(
-//        name = "FFCI-Unmixed (Fourier Features Conditional Independence)",
-//        command = "ffci-unmixed",
+//        name = "FFCI-Continuous (Fourier Features Conditional Independence)",
+//        command = "ffci-continuous",
 //        dataType = DataType.Continuous
 //)
 //@General
-public class FfCiUnmixed implements IndependenceWrapper {
+public class FfCiContinuous implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -51,7 +51,7 @@ public class FfCiUnmixed implements IndependenceWrapper {
     /**
      * `Kci` constructor.
      */
-    public FfCiUnmixed() {
+    public FfCiContinuous() {
 
     }
 
@@ -62,7 +62,7 @@ public class FfCiUnmixed implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.test.FfCiUnmixed test = new edu.cmu.tetrad.search.test.FfCiUnmixed((DataSet) dataSet);
+        edu.cmu.tetrad.search.test.FfCiContinuous test = new edu.cmu.tetrad.search.test.FfCiContinuous((DataSet) dataSet);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setNumFeatXY(parameters.getInt(Params.RCIT_NUM_FEATURES_XY));
         test.setNumFeatZ(parameters.getInt(Params.RCIT_NUM_FEATURES_Z));
@@ -72,12 +72,12 @@ public class FfCiUnmixed implements IndependenceWrapper {
         test.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         test.setLambda(parameters.getDouble(Params.KML_LAMBDA));
 
-        edu.cmu.tetrad.search.test.FfCiUnmixed.FeatureType[] values
-                = edu.cmu.tetrad.search.test.FfCiUnmixed.FeatureType.values();
+        edu.cmu.tetrad.search.test.FfCiContinuous.FeatureType[] values
+                = edu.cmu.tetrad.search.test.FfCiContinuous.FeatureType.values();
         test.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
 
-        edu.cmu.tetrad.search.test.FfCiUnmixed.Approx[] approxes
-                = edu.cmu.tetrad.search.test.FfCiUnmixed.Approx.values();
+        edu.cmu.tetrad.search.test.FfCiContinuous.Approx[] approxes
+                = edu.cmu.tetrad.search.test.FfCiContinuous.Approx.values();
         test.setApproximation(approxes[parameters.getInt(Params.RCIT_APPROX) - 1]);
 
 //        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
@@ -92,7 +92,7 @@ public class FfCiUnmixed implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "FFCI-Unmixed";
+        return "FFCI-Continuous";
     }
 
     /**

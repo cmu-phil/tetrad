@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.FfMlUnmixed;
+import edu.cmu.tetrad.search.score.FfMlContinuous;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -84,8 +84,8 @@ public class HuangMarginalLikelihoodScore implements ScoreWrapper {
         score.setJitter(parameters.getDouble(Params.KML_JITTER));
         score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
 
-        FfMlUnmixed.FeatureType[] values
-                = FfMlUnmixed.FeatureType.values();
+        FfMlContinuous.FeatureType[] values
+                = FfMlContinuous.FeatureType.values();
 
 
         return score;
