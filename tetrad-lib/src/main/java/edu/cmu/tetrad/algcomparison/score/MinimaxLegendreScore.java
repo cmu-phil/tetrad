@@ -7,7 +7,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.MinimaxScoreLegendre;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -55,7 +54,7 @@ public class MinimaxLegendreScore implements ScoreWrapper {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
 
-        MinimaxScoreLegendre score = new MinimaxScoreLegendre(ds);
+        edu.cmu.tetrad.search.score.MinimaxLegendreScore score = new edu.cmu.tetrad.search.score.MinimaxLegendreScore(ds);
 
         // ---- Degree (t): features per continuous parent ----
         int degree = parameters.getInt(Params.MINIMAX_LEGENDRE_DEGREE);

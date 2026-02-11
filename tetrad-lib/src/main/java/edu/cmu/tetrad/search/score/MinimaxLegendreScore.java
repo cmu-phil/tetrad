@@ -37,12 +37,12 @@ import static java.lang.Math.*;
  * <p><b>Missing data:</b> Rows with missing in {Y} ∪ Pa(Y) are dropped locally.</p>
  *
  * <p><b>Score:</b> score = logLik_hat - 0.5 * edf * log(n)</p>
- *
+ * <p>
  * Notes:
  * - This is additive in continuous parents (no cross terms) to control feature growth.
  * - Legendre polynomials are evaluated by stable recurrence.
  */
-public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSettable {
+public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSettable {
 
     // -------------------- data --------------------
 
@@ -51,25 +51,37 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
     private final List<Node> variables;
     private final int sampleSize;
 
-    /** Continuous columns z-scored globally (NaNs preserved). Discrete cols are all NaN. */
+    /**
+     * Continuous columns z-scored globally (NaNs preserved). Discrete cols are all NaN.
+     */
     private final double[][] zCols;
 
-    /** Cache key -> score. */
+    /**
+     * Cache key -> score.
+     */
     private final AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
 
     // -------------------- knobs --------------------
 
-    /** Student-t df for continuous child. Must be > 2. */
+    /**
+     * Student-t df for continuous child. Must be > 2.
+     */
     private volatile double nu = 5.0;
 
-    /** Initial scale for Student-t IRLS; also used if profiled scale can't be estimated. */
+    /**
+     * Initial scale for Student-t IRLS; also used if profiled scale can't be estimated.
+     */
     private volatile double scale = 1.0;
 
-    /** Ridge penalty (>0). Intercept is not penalized. */
+    /**
+     * Ridge penalty (>0). Intercept is not penalized.
+     */
     private volatile double ridge = 1e-3;
 
-    /** Legendre truncation t (>=1). Features per continuous parent = t. */
+    /**
+     * Legendre truncation t (>=1). Features per continuous parent = t.
+     */
     private volatile int legendreDegree = 8;
 
     /**
@@ -78,19 +90,25 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
      */
     private volatile double legendreClip = 3.0;
 
-    /** IRLS iterations. */
+    /**
+     * IRLS iterations.
+     */
     private volatile int irlsIters = 8;
 
-    /** IRLS stopping tolerance. */
+    /**
+     * IRLS stopping tolerance.
+     */
     private volatile double irlsTol = 1e-6;
 
-    /** Effective sample size. */
+    /**
+     * Effective sample size.
+     */
     private volatile int nEff;
     private double penaltyDiscount = 1.0;
 
     // -------------------- ctor --------------------
 
-    public MinimaxScoreLegendre(DataSet dataSet) {
+    public MinimaxLegendreScore(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
 
         this.dataSet = dataSet;
@@ -120,11 +138,242 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
         }
     }
 
-    public DataModel getDataModel() {
-        return dataSet;
+    private static void centerInPlace(double[] y) {
+        double m = 0.0;
+        for (double v : y) m += v;
+        m /= y.length;
+        for (int i = 0; i < y.length; i++) y[i] -= m;
     }
 
     // -------------------- Score interface --------------------
+
+    private static void zscoreColumnPreserveNaN(double[] in, double[] out) {
+        double sum = 0.0, sum2 = 0.0;
+        int n = 0;
+        for (double v : in) {
+            if (Double.isNaN(v)) continue;
+            sum += v;
+            sum2 += v * v;
+            n++;
+        }
+        if (n < 2) {
+            System.arraycopy(in, 0, out, 0, in.length);
+            return;
+        }
+        double mean = sum / n;
+        double var = (sum2 - n * mean * mean) / (n - 1.0);
+        double sd = sqrt(max(1e-12, var));
+        for (int i = 0; i < in.length; i++) {
+            double v = in[i];
+            out[i] = Double.isNaN(v) ? Double.NaN : (v - mean) / sd;
+        }
+    }
+
+    private static double studentTLogLik(double[] y, double[] yhat, double nu, double scale) {
+        int n = y.length;
+        double c = logGamma(0.5 * (nu + 1.0)) - logGamma(0.5 * nu)
+                - 0.5 * log(nu * PI) - log(scale);
+
+        double sum = 0.0;
+        double inv = 1.0 / (nu * scale * scale);
+
+        for (int i = 0; i < n; i++) {
+            double r = y[i] - yhat[i];
+            double v = 1.0 + (r * r) * inv;
+            sum += c - 0.5 * (nu + 1.0) * log(v);
+        }
+        return sum;
+    }
+
+    private static double logGamma(double x) {
+        double[] p = {
+                676.5203681218851,
+                -1259.1392167224028,
+                771.32342877765313,
+                -176.61502916214059,
+                12.507343278686905,
+                -0.13857109526572012,
+                9.9843695780195716e-6,
+                1.5056327351493116e-7
+        };
+        int g = 7;
+
+        if (x < 0.5) {
+            return log(PI) - log(sin(PI * x)) - logGamma(1.0 - x);
+        }
+
+        x -= 1.0;
+        double a = 0.99999999999980993;
+        for (int i = 0; i < p.length; i++) a += p[i] / (x + i + 1.0);
+
+        double t = x + g + 0.5;
+        return 0.5 * log(2.0 * PI) + (x + 0.5) * log(t) - t + log(a);
+    }
+
+    private static double[] solveFromCholeskyLower(DMatrixRMaj L, double[] b) {
+        int n = b.length;
+        double[] x = Arrays.copyOf(b, n);
+
+        // forward solve L u = b
+        for (int i = 0; i < n; i++) {
+            double sum = x[i];
+            for (int j = 0; j < i; j++) sum -= L.get(i, j) * x[j];
+            x[i] = sum / L.get(i, i);
+        }
+
+        // back solve L^T x = u
+        for (int i = n - 1; i >= 0; i--) {
+            double sum = x[i];
+            for (int j = i + 1; j < n; j++) sum -= L.get(j, i) * x[j];
+            x[i] = sum / L.get(i, i);
+        }
+        return x;
+    }
+
+    private static double traceInvFromCholeskyLower(DMatrixRMaj L) {
+        int n = L.numRows;
+        double tr = 0.0;
+        double[] v = new double[n];
+
+        for (int col = 0; col < n; col++) {
+            Arrays.fill(v, 0.0);
+            v[col] = 1.0;
+
+            // solve L u = e_col
+            for (int i = 0; i < n; i++) {
+                double sum = v[i];
+                for (int j = 0; j < i; j++) sum -= L.get(i, j) * v[j];
+                v[i] = sum / L.get(i, i);
+            }
+
+            double ss = 0.0;
+            for (int i = 0; i < n; i++) ss += v[i] * v[i];
+            tr += ss;
+        }
+
+        return tr;
+    }
+
+    // -------------------- EffectiveSampleSizeSettable --------------------
+
+    private static double traceInvPenalizedBlockFromG(DMatrixRMaj Gfull) {
+        final int M = Gfull.numRows;
+        if (M <= 1) return 0.0;
+
+        final int Mp = M - 1;
+        final DMatrixRMaj Gp = new DMatrixRMaj(Mp, Mp);
+
+        for (int a = 0; a < Mp; a++) {
+            for (int b = 0; b <= a; b++) {
+                Gp.set(a, b, Gfull.get(a + 1, b + 1));
+            }
+        }
+        for (int a = 0; a < Mp; a++) for (int b = 0; b < a; b++) Gp.set(b, a, Gp.get(a, b));
+
+        final CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+        if (!chol.decompose(Gp)) return Double.NaN;
+        final DMatrixRMaj L = chol.getT(null);
+
+        return traceInvFromCholeskyLower(L);
+    }
+
+    private static double multinomialInterceptOnlyLogLik(int[] y, int K) {
+        int n = y.length;
+        int[] counts = new int[K];
+        for (int v : y) {
+            if (v < 0 || v >= K) return Double.NaN;
+            counts[v]++;
+        }
+        double ll = 0.0;
+        for (int k = 0; k < K; k++) {
+            if (counts[k] == 0) continue;
+            double pk = counts[k] / (double) n;
+            ll += counts[k] * log(pk);
+        }
+        return ll;
+    }
+
+    // -------------------- knobs setters --------------------
+
+    private static void fillSoftmaxProbsFromPhi(int K, int n,
+                                                double[][] beta,
+                                                double[][] Phi,
+                                                double[] logitsScratch,
+                                                double[][] outProbs) {
+        final int C = K - 1;
+
+        for (int i = 0; i < n; i++) {
+            final double[] phi = Phi[i];
+
+            logitsScratch[0] = 0.0;
+            double maxLog = 0.0;
+
+            for (int c = 0; c < C; c++) {
+                double s = 0.0;
+                for (int a = 0; a < phi.length; a++) s += phi[a] * beta[a][c];
+                logitsScratch[c + 1] = s;
+                if (s > maxLog) maxLog = s;
+            }
+
+            double sum = 0.0;
+            for (int k = 0; k < K; k++) {
+                final double e = Math.exp(logitsScratch[k] - maxLog);
+                outProbs[i][k] = e;
+                sum += e;
+            }
+
+            final double inv = 1.0 / sum;
+            for (int k = 0; k < K; k++) outProbs[i][k] *= inv;
+        }
+    }
+
+    private static double multinomialLogLikFromPhi(int[] y, int K, int n,
+                                                   double[][] beta,
+                                                   double[][] Phi,
+                                                   double[] logitsScratch) {
+        final int C = K - 1;
+        double ll = 0.0;
+
+        for (int i = 0; i < n; i++) {
+            final double[] phi = Phi[i];
+
+            logitsScratch[0] = 0.0;
+            double maxLog = 0.0;
+
+            for (int c = 0; c < C; c++) {
+                double s = 0.0;
+                for (int a = 0; a < phi.length; a++) s += phi[a] * beta[a][c];
+                logitsScratch[c + 1] = s;
+                if (s > maxLog) maxLog = s;
+            }
+
+            double sum = 0.0;
+            for (int k = 0; k < K; k++) sum += Math.exp(logitsScratch[k] - maxLog);
+
+            ll += (logitsScratch[y[i]] - maxLog) - Math.log(sum);
+        }
+
+        return ll;
+    }
+
+    private static long cacheKey(int i, int[] parents, long knobsSig) {
+        long h = 1469598103934665603L;
+        h = (h ^ i) * 1099511628211L;
+        for (int p : parents) h = (h ^ p) * 1099511628211L;
+        h = (h ^ knobsSig) * 1099511628211L;
+        return h;
+    }
+
+    private static int[] concat(int i, int[] parents) {
+        int[] all = new int[parents.length + 1];
+        all[0] = i;
+        System.arraycopy(parents, 0, all, 1, parents.length);
+        return all;
+    }
+
+    public DataModel getDataModel() {
+        return dataSet;
+    }
 
     @Override
     public double localScore(int i, int... parents) {
@@ -164,12 +413,7 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
                     if (!(scale > 0) || !Double.isFinite(scale)) return Double.NaN;
 
                     double[] y = extractContinuousChild(i, rows, n);
-                    centerInPlace(y);
-
-//                    if (parents.length == 0) {
-//                        double ll = studentTLogLik(y, new double[n], nu, scale);
-//                        return ll; // edf=0 after centering (intercept absorbed by centering)
-//                    }
+//                    centerInPlace(y); // let's turn this centering of y off...
 
                     if (parents.length == 0) {
                         // profile scale for intercept-only so it’s comparable with parent models
@@ -193,12 +437,16 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
                             if (wsum > 0.0) scaleHat = Math.sqrt(Math.max(1e-12, wrss / wsum));
                         }
 
-                        return studentTLogLik(y, new double[n], nu, scaleHat);
+                        double ll0 = studentTLogLik(y, new double[n], nu, scaleHat);
+                        double edf0 = 1.0; // if you're counting intercept (even though y is centered)
+                        return ll0 - 0.5 * penaltyDiscount * edf0 * log(n);
                     }
 
                     FitResult fit = fitStudentTLegendreRidgeMixed(y, parents, rows, n);
                     if (!Double.isFinite(fit.logLik)) return Double.NaN;
                     double v = fit.logLik - 0.5 * penaltyDiscount * fit.edf * log(n);
+//                    double parentBonus = 1e-4 * log(n); // Try?
+//                    v += parentBonus * parents.length;
                     return v;
                 }
 
@@ -214,6 +462,10 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
+    // ============================================================================================
+    // Continuous child: Student-t IRLS ridge on features [Legendre(cont parents), OneHot(disc parents)]
+    // ============================================================================================
+
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(variables);
@@ -224,25 +476,29 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
         return dataSet.getNumRows();
     }
 
+    // ============================================================================================
+    // Discrete child: multinomial logistic ridge on features [Legendre(cont parents), OneHot(disc parents)]
+    // ============================================================================================
+
     @Override
     public String toString() {
         return "Minimax-t Legendre BIC score (mixed)";
     }
-
-    // -------------------- EffectiveSampleSizeSettable --------------------
 
     @Override
     public int getEffectiveSampleSize() {
         return nEff;
     }
 
+    // ============================================================================================
+    // Helpers
+    // ============================================================================================
+
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = (nEff < 0) ? this.sampleSize : nEff;
         resetCache();
     }
-
-    // -------------------- knobs setters --------------------
 
     public void setNu(double nu) {
         if (!(nu > 2) || !Double.isFinite(nu)) throw new IllegalArgumentException("nu must be finite and > 2");
@@ -269,7 +525,8 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
     }
 
     public void setLegendreClip(double clip) {
-        if (!(clip > 0) || !Double.isFinite(clip)) throw new IllegalArgumentException("legendreClip must be finite and > 0");
+        if (!(clip > 0) || !Double.isFinite(clip))
+            throw new IllegalArgumentException("legendreClip must be finite and > 0");
         this.legendreClip = clip;
         resetCache();
     }
@@ -283,10 +540,6 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
         this.irlsTol = Math.max(0.0, tol);
         resetCache();
     }
-
-    // ============================================================================================
-    // Continuous child: Student-t IRLS ridge on features [Legendre(cont parents), OneHot(disc parents)]
-    // ============================================================================================
 
     private FitResult fitStudentTLegendreRidgeMixed(double[] yCentered,
                                                     int[] parentIdx,
@@ -434,6 +687,7 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
 
         return new FitResult(ll, edf);
     }
+
     /**
      * Student-t design row:
      * - intercept
@@ -456,38 +710,33 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
         final int legOff = 1;
 
         // Fill Legendre block
-//        if (dCont == 0) {
-////            Arrays.fill(out, legOff, legOff, 0.0);
-//            Arrays.fill(out, 1, 1 + dCont * t, 0.0); // works for dCont==0 too
-//        } else {
-            int pos = legOff;
-            final double invClip = 1.0 / legendreClip;
+        int pos = legOff;
+        final double invClip = 1.0 / legendreClip;
 
-            for (int j = 0; j < dCont; j++) {
-                double z = Zc[i][j];
-                // map to [-1,1]
-                double x = z * invClip;
-                if (x > 1.0) x = 1.0;
-                else if (x < -1.0) x = -1.0;
+        for (int j = 0; j < dCont; j++) {
+            double z = Zc[i][j];
+            // map to [-1,1]
+            double x = z * invClip;
+            if (x > 1.0) x = 1.0;
+            else if (x < -1.0) x = -1.0;
 
-                // Legendre recurrence:
-                // P0=1, P1=x, Pn = ((2n-1)x P_{n-1} - (n-1)P_{n-2})/n
-                double Pnm2 = 1.0;   // P0
-                double Pnm1 = x;     // P1
+            // Legendre recurrence:
+            // P0=1, P1=x, Pn = ((2n-1)x P_{n-1} - (n-1)P_{n-2})/n
+            double Pnm2 = 1.0;   // P0
+            double Pnm1 = x;     // P1
 
-                for (int deg = 1; deg <= t; deg++) {
-                    final double Pd;
-                    if (deg == 1) {
-                        Pd = Pnm1;
-                    } else {
-                        Pd = ((2.0 * deg - 1.0) * x * Pnm1 - (deg - 1.0) * Pnm2) / deg;
-                        Pnm2 = Pnm1;
-                        Pnm1 = Pd;
-                    }
-                    out[pos++] = Pd;
+            for (int deg = 1; deg <= t; deg++) {
+                final double Pd;
+                if (deg == 1) {
+                    Pd = Pnm1;
+                } else {
+                    Pd = ((2.0 * deg - 1.0) * x * Pnm1 - (deg - 1.0) * Pnm2) / deg;
+                    Pnm2 = Pnm1;
+                    Pnm1 = Pd;
                 }
+                out[pos++] = Pd;
             }
-//        }
+        }
 
         // one-hot block
         final int ohOff = 1 + dCont * t;
@@ -509,9 +758,7 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
         }
     }
 
-    // ============================================================================================
-    // Discrete child: multinomial logistic ridge on features [Legendre(cont parents), OneHot(disc parents)]
-    // ============================================================================================
+    // -------------------- missing rows & extraction --------------------
 
     private FitResult fitMultinomialLogitMixed(int child,
                                                int[] y, int K,
@@ -650,224 +897,6 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
         buildXRowStudentT_Intercept_Legendre(out, i, Zc, dCont, t, oh, discParents, rows);
     }
 
-    // ============================================================================================
-    // Helpers
-    // ============================================================================================
-
-    private static void centerInPlace(double[] y) {
-        double m = 0.0;
-        for (double v : y) m += v;
-        m /= y.length;
-        for (int i = 0; i < y.length; i++) y[i] -= m;
-    }
-
-    private static void zscoreColumnPreserveNaN(double[] in, double[] out) {
-        double sum = 0.0, sum2 = 0.0;
-        int n = 0;
-        for (double v : in) {
-            if (Double.isNaN(v)) continue;
-            sum += v;
-            sum2 += v * v;
-            n++;
-        }
-        if (n < 2) {
-            System.arraycopy(in, 0, out, 0, in.length);
-            return;
-        }
-        double mean = sum / n;
-        double var = (sum2 - n * mean * mean) / (n - 1.0);
-        double sd = sqrt(max(1e-12, var));
-        for (int i = 0; i < in.length; i++) {
-            double v = in[i];
-            out[i] = Double.isNaN(v) ? Double.NaN : (v - mean) / sd;
-        }
-    }
-
-    private static double studentTLogLik(double[] y, double[] yhat, double nu, double scale) {
-        int n = y.length;
-        double c = logGamma(0.5 * (nu + 1.0)) - logGamma(0.5 * nu)
-                - 0.5 * log(nu * PI) - log(scale);
-
-        double sum = 0.0;
-        double inv = 1.0 / (nu * scale * scale);
-
-        for (int i = 0; i < n; i++) {
-            double r = y[i] - yhat[i];
-            double v = 1.0 + (r * r) * inv;
-            sum += c - 0.5 * (nu + 1.0) * log(v);
-        }
-        return sum;
-    }
-
-    private static double logGamma(double x) {
-        double[] p = {
-                676.5203681218851,
-                -1259.1392167224028,
-                771.32342877765313,
-                -176.61502916214059,
-                12.507343278686905,
-                -0.13857109526572012,
-                9.9843695780195716e-6,
-                1.5056327351493116e-7
-        };
-        int g = 7;
-
-        if (x < 0.5) {
-            return log(PI) - log(sin(PI * x)) - logGamma(1.0 - x);
-        }
-
-        x -= 1.0;
-        double a = 0.99999999999980993;
-        for (int i = 0; i < p.length; i++) a += p[i] / (x + i + 1.0);
-
-        double t = x + g + 0.5;
-        return 0.5 * log(2.0 * PI) + (x + 0.5) * log(t) - t + log(a);
-    }
-
-    private static double[] solveFromCholeskyLower(DMatrixRMaj L, double[] b) {
-        int n = b.length;
-        double[] x = Arrays.copyOf(b, n);
-
-        // forward solve L u = b
-        for (int i = 0; i < n; i++) {
-            double sum = x[i];
-            for (int j = 0; j < i; j++) sum -= L.get(i, j) * x[j];
-            x[i] = sum / L.get(i, i);
-        }
-
-        // back solve L^T x = u
-        for (int i = n - 1; i >= 0; i--) {
-            double sum = x[i];
-            for (int j = i + 1; j < n; j++) sum -= L.get(j, i) * x[j];
-            x[i] = sum / L.get(i, i);
-        }
-        return x;
-    }
-
-    private static double traceInvFromCholeskyLower(DMatrixRMaj L) {
-        int n = L.numRows;
-        double tr = 0.0;
-        double[] v = new double[n];
-
-        for (int col = 0; col < n; col++) {
-            Arrays.fill(v, 0.0);
-            v[col] = 1.0;
-
-            // solve L u = e_col
-            for (int i = 0; i < n; i++) {
-                double sum = v[i];
-                for (int j = 0; j < i; j++) sum -= L.get(i, j) * v[j];
-                v[i] = sum / L.get(i, i);
-            }
-
-            double ss = 0.0;
-            for (int i = 0; i < n; i++) ss += v[i] * v[i];
-            tr += ss;
-        }
-
-        return tr;
-    }
-
-    private static double traceInvPenalizedBlockFromG(DMatrixRMaj Gfull) {
-        final int M = Gfull.numRows;
-        if (M <= 1) return 0.0;
-
-        final int Mp = M - 1;
-        final DMatrixRMaj Gp = new DMatrixRMaj(Mp, Mp);
-
-        for (int a = 0; a < Mp; a++) {
-            for (int b = 0; b <= a; b++) {
-                Gp.set(a, b, Gfull.get(a + 1, b + 1));
-            }
-        }
-        for (int a = 0; a < Mp; a++) for (int b = 0; b < a; b++) Gp.set(b, a, Gp.get(a, b));
-
-        final CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
-        if (!chol.decompose(Gp)) return Double.NaN;
-        final DMatrixRMaj L = chol.getT(null);
-
-        return traceInvFromCholeskyLower(L);
-    }
-
-    private static double multinomialInterceptOnlyLogLik(int[] y, int K) {
-        int n = y.length;
-        int[] counts = new int[K];
-        for (int v : y) {
-            if (v < 0 || v >= K) return Double.NaN;
-            counts[v]++;
-        }
-        double ll = 0.0;
-        for (int k = 0; k < K; k++) {
-            if (counts[k] == 0) continue;
-            double pk = counts[k] / (double) n;
-            ll += counts[k] * log(pk);
-        }
-        return ll;
-    }
-
-    private static void fillSoftmaxProbsFromPhi(int K, int n,
-                                                double[][] beta,
-                                                double[][] Phi,
-                                                double[] logitsScratch,
-                                                double[][] outProbs) {
-        final int C = K - 1;
-
-        for (int i = 0; i < n; i++) {
-            final double[] phi = Phi[i];
-
-            logitsScratch[0] = 0.0;
-            double maxLog = 0.0;
-
-            for (int c = 0; c < C; c++) {
-                double s = 0.0;
-                for (int a = 0; a < phi.length; a++) s += phi[a] * beta[a][c];
-                logitsScratch[c + 1] = s;
-                if (s > maxLog) maxLog = s;
-            }
-
-            double sum = 0.0;
-            for (int k = 0; k < K; k++) {
-                final double e = Math.exp(logitsScratch[k] - maxLog);
-                outProbs[i][k] = e;
-                sum += e;
-            }
-
-            final double inv = 1.0 / sum;
-            for (int k = 0; k < K; k++) outProbs[i][k] *= inv;
-        }
-    }
-
-    private static double multinomialLogLikFromPhi(int[] y, int K, int n,
-                                                   double[][] beta,
-                                                   double[][] Phi,
-                                                   double[] logitsScratch) {
-        final int C = K - 1;
-        double ll = 0.0;
-
-        for (int i = 0; i < n; i++) {
-            final double[] phi = Phi[i];
-
-            logitsScratch[0] = 0.0;
-            double maxLog = 0.0;
-
-            for (int c = 0; c < C; c++) {
-                double s = 0.0;
-                for (int a = 0; a < phi.length; a++) s += phi[a] * beta[a][c];
-                logitsScratch[c + 1] = s;
-                if (s > maxLog) maxLog = s;
-            }
-
-            double sum = 0.0;
-            for (int k = 0; k < K; k++) sum += Math.exp(logitsScratch[k] - maxLog);
-
-            ll += (logitsScratch[y[i]] - maxLog) - Math.log(sum);
-        }
-
-        return ll;
-    }
-
-    // -------------------- missing rows & extraction --------------------
-
     private int[] validRows(int[] vars) {
         int n = sampleSize;
         int[] tmp = new int[n];
@@ -889,6 +918,8 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
         return Arrays.copyOf(tmp, m);
     }
 
+    // -------------------- type utils --------------------
+
     private double[] extractContinuousChild(int varIndex, int[] rows, int n) {
         double[] y = new double[n];
         if (rows == null) {
@@ -909,8 +940,6 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
         return y;
     }
 
-    // -------------------- type utils --------------------
-
     private boolean isDiscrete(int col) {
         return variables.get(col) instanceof DiscreteVariable;
     }
@@ -923,6 +952,8 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
         for (int v : cols) if (!isDiscrete(v)) out[k++] = v;
         return out;
     }
+
+    // -------------------- one-hot spec --------------------
 
     private int[] filterDiscrete(int[] cols) {
         int c = 0;
@@ -939,8 +970,6 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
         return dv.getNumCategories();
     }
 
-    // -------------------- one-hot spec --------------------
-
     private OneHotSpec buildOneHotSpec(int[] discParents) {
         int m = discParents.length;
         int[] sizes = new int[m];
@@ -956,6 +985,8 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
         return new OneHotSpec(sizes, offsets, off);
     }
 
+    // -------------------- cache & hashing --------------------
+
     public void setPenaltyDiscount(double penaltyDiscount) {
         if (!(penaltyDiscount > 0.0) || !Double.isFinite(penaltyDiscount))
             throw new IllegalArgumentException("Penalty discount must be finite and > 0");
@@ -963,20 +994,6 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
         this.penaltyDiscount = penaltyDiscount;
         resetCache();
     }
-
-    private static final class OneHotSpec {
-        final int[] sizes;
-        final int[] offsets;
-        final int totalCols;
-
-        OneHotSpec(int[] sizes, int[] offsets, int totalCols) {
-            this.sizes = sizes;
-            this.offsets = offsets;
-            this.totalCols = totalCols;
-        }
-    }
-
-    // -------------------- cache & hashing --------------------
 
     private void resetCache() {
         localScoreCacheRef.set(new ConcurrentHashMap<>());
@@ -995,26 +1012,24 @@ public final class MinimaxScoreLegendre implements Score, EffectiveSampleSizeSet
         return h;
     }
 
-    private static long cacheKey(int i, int[] parents, long knobsSig) {
-        long h = 1469598103934665603L;
-        h = (h ^ i) * 1099511628211L;
-        for (int p : parents) h = (h ^ p) * 1099511628211L;
-        h = (h ^ knobsSig) * 1099511628211L;
-        return h;
-    }
-
-    private static int[] concat(int i, int[] parents) {
-        int[] all = new int[parents.length + 1];
-        all[0] = i;
-        System.arraycopy(parents, 0, all, 1, parents.length);
-        return all;
-    }
-
     public int[] append(int[] z, int x) {
         int[] out = Arrays.copyOf(z, z.length + 1);
         out[z.length] = x;
         return out;
     }
 
-    private record FitResult(double logLik, double edf) {}
+    private static final class OneHotSpec {
+        final int[] sizes;
+        final int[] offsets;
+        final int totalCols;
+
+        OneHotSpec(int[] sizes, int[] offsets, int totalCols) {
+            this.sizes = sizes;
+            this.offsets = offsets;
+            this.totalCols = totalCols;
+        }
+    }
+
+    private record FitResult(double logLik, double edf) {
+    }
 }
