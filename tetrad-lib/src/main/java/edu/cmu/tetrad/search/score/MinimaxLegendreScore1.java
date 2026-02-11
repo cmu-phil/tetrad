@@ -42,7 +42,7 @@ import static java.lang.Math.*;
  * - This is additive in continuous parents (no cross terms) to control feature growth.
  * - Legendre polynomials are evaluated by stable recurrence.
  */
-public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSettable {
+public final class MinimaxLegendreScore1 implements Score, EffectiveSampleSizeSettable {
 
     // -------------------- data --------------------
 
@@ -106,15 +106,9 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
     private volatile int nEff;
     private double penaltyDiscount = 1.0;
 
-    /** Add pairwise interactions using only P1(x)=x for continuous parents. */
-    private volatile boolean useInteractions = true;
-
-    /** Only the first K continuous parents (in parentIdx order) participate in interactions. */
-    private volatile int interactionMaxParents = 4;  // 0/1 => none; 4 => up to 6 interaction cols
-
     // -------------------- ctor --------------------
 
-    public MinimaxLegendreScore(DataSet dataSet) {
+    public MinimaxLegendreScore1(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
 
         this.dataSet = dataSet;
@@ -547,16 +541,6 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
         resetCache();
     }
 
-    public void setUseInteractions(boolean useInteractions) {
-        this.useInteractions = useInteractions;
-        resetCache();
-    }
-
-    public void setInteractionMaxParents(int k) {
-        this.interactionMaxParents = Math.max(0, k);
-        resetCache();
-    }
-
     private FitResult fitStudentTLegendreRidgeMixed(double[] yCentered,
                                                     int[] parentIdx,
                                                     int[] rows,
@@ -568,18 +552,9 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
         final OneHotSpec oh = buildOneHotSpec(disc);
 
         final int t = legendreDegree;
-
-//        final int D = cont.length * t;          // additive Legendre: t per cont parent
-//        final int Q = oh.totalCols;
-//        final int M = 1 + D + Q;               // intercept + legendre + one-hot
-
-        final int D = cont.length * t;
-
-        final int kInt = (useInteractions ? Math.min(cont.length, interactionMaxParents) : 0);
-        final int I = (kInt >= 2) ? (kInt * (kInt - 1)) / 2 : 0;
-
+        final int D = cont.length * t;          // additive Legendre: t per cont parent
         final int Q = oh.totalCols;
-        final int M = 1 + D + I + Q;
+        final int M = 1 + D + Q;               // intercept + legendre + one-hot
 
         // Extract continuous parents (z-scored) into dense n x dCont
         final double[][] Zc = new double[n][cont.length];
@@ -719,13 +694,6 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
      * - Legendre block: for each continuous parent j, P1..Pt of mapped value
      * - one-hot block for discrete parents (baseline dropped)
      */
-    /**
-     * Student-t design row:
-     * - intercept
-     * - Legendre block: for each continuous parent j, P1..Pt of mapped value
-     * - (optional) interaction block: x_a * x_b for first-degree mapped values
-     * - one-hot block for discrete parents (baseline dropped)
-     */
     private void buildXRowStudentT_Intercept_Legendre(double[] out,
                                                       int i,
                                                       double[][] Zc,
@@ -738,38 +706,24 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
         // intercept
         out[0] = 1.0;
 
+        // Legendre block starts at 1
         final int legOff = 1;
-
-        // How many continuous parents participate in interactions?
-        final int kInt = (useInteractions ? Math.min(dCont, interactionMaxParents) : 0);
-        final int nInt = (kInt >= 2) ? (kInt * (kInt - 1)) / 2 : 0;
-
-        // Interaction block starts right after Legendre block
-        final int intOff = legOff + dCont * t;
-
-        // one-hot block starts after interactions
-        final int ohOff = intOff + nInt;
-
-        // Defensive: zero out whole row except intercept (cheap + safe)
-        Arrays.fill(out, 1, out.length, 0.0);
-
-        // Precompute mapped x values (only need first kInt, but compute all is fine)
-        final double invClip = 1.0 / legendreClip;
-        final double[] xMap = (kInt > 0) ? new double[kInt] : null;
 
         // Fill Legendre block
         int pos = legOff;
+        final double invClip = 1.0 / legendreClip;
+
         for (int j = 0; j < dCont; j++) {
             double z = Zc[i][j];
+            // map to [-1,1]
             double x = z * invClip;
             if (x > 1.0) x = 1.0;
             else if (x < -1.0) x = -1.0;
 
-            if (j < kInt) xMap[j] = x;
-
             // Legendre recurrence:
-            double Pnm2 = 1.0; // P0
-            double Pnm1 = x;   // P1
+            // P0=1, P1=x, Pn = ((2n-1)x P_{n-1} - (n-1)P_{n-2})/n
+            double Pnm2 = 1.0;   // P0
+            double Pnm1 = x;     // P1
 
             for (int deg = 1; deg <= t; deg++) {
                 final double Pd;
@@ -784,18 +738,10 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
             }
         }
 
-        // Fill interaction block (x_a * x_b using mapped x = P1)
-        if (nInt > 0) {
-            int ipos = intOff;
-            for (int a = 0; a < kInt; a++) {
-                final double xa = xMap[a];
-                for (int b = 0; b < a; b++) {
-                    out[ipos++] = xa * xMap[b];
-                }
-            }
-        }
+        // one-hot block
+        final int ohOff = 1 + dCont * t;
+        Arrays.fill(out, ohOff, out.length, 0.0);
 
-        // one-hot block (baseline dropped)
         if (discParents.length == 0) return;
 
         final int row = (rows == null) ? i : rows[i];
@@ -803,7 +749,7 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
             final int var = discParents[parentPos];
             final int lev = dataSet.getInt(row, var);
             if (lev == DiscreteVariable.MISSING_VALUE) continue;
-            if (lev <= 0) continue;
+            if (lev <= 0) continue; // baseline dropped
 
             final int col = oh.offsets[parentPos] + (lev - 1);
             if (col >= oh.offsets[parentPos] && col < oh.offsets[parentPos] + oh.sizes[parentPos] - 1) {
@@ -824,19 +770,9 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
         final OneHotSpec oh = buildOneHotSpec(disc);
 
         final int t = legendreDegree;
-
-//        final int D = cont.length * t;
-//        final int Q = oh.totalCols;
-//        final int M = 1 + D + Q;
-
         final int D = cont.length * t;
-
-        final int kInt = (useInteractions ? Math.min(cont.length, interactionMaxParents) : 0);
-        final int I = (kInt >= 2) ? (kInt * (kInt - 1)) / 2 : 0;
-
         final int Q = oh.totalCols;
-        final int M = 1 + D + I + Q;
-
+        final int M = 1 + D + Q;
         final int C = K - 1;
 
         // Extract continuous parents
@@ -1073,8 +1009,6 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
         h = (h ^ irlsIters) * 1099511628211L;
         h = (h ^ Double.doubleToLongBits(irlsTol)) * 1099511628211L;
         h = (h ^ nEff) * 1099511628211L;
-        h = (h ^ (useInteractions ? 1L : 0L)) * 1099511628211L;
-        h = (h ^ interactionMaxParents) * 1099511628211L;
         return h;
     }
 
