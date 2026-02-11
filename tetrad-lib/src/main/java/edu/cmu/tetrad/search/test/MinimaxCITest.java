@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -647,9 +648,27 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
      *
      * @param alpha This level.
      */
+//    public void setAlpha(double alpha) {
+//        if (alpha < 0 || alpha > 1) throw new IllegalArgumentException("alpha must be in [0,1]");
+//        this.alpha = alpha;
+//    }
+
     public void setAlpha(double alpha) {
         if (alpha < 0 || alpha > 1) throw new IllegalArgumentException("alpha must be in [0,1]");
         this.alpha = alpha;
+
+        int minB = (alpha > 0.0) ? ((int) Math.ceil(1.0 / alpha) - 1) : Integer.MAX_VALUE;
+        NumberFormat nf = NumberFormat.getNumberInstance();
+
+        if (this.permutations < minB) {
+            int oldB = this.permutations;
+            this.permutations = minB;
+
+            TetradLogger.getInstance().log(
+                    "MinimaxCITest: increased permutations from " + oldB + " to " + this.permutations +
+                            " so alpha=" + nf.format(alpha) + " is attainable (p-floor=1/(B+1))."
+            );
+        }
     }
 
     /**
@@ -692,8 +711,29 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
      *          If B is less than 50, the permutations will be set to 50.
      *          Otherwise, it will be set to the value of B.
      */
+//    public void setPermutations(int B) {
+//        this.permutations = Math.max(50, B);
+//    }
+
     public void setPermutations(int B) {
-        this.permutations = Math.max(50, B);
+        // keep your existing floor
+        int requested = Math.max(50, B);
+
+        // enforce p-value resolution for current alpha
+        int minB = (alpha > 0.0) ? ((int) Math.ceil(1.0 / alpha) - 1) : Integer.MAX_VALUE;
+        NumberFormat nf = NumberFormat.getNumberInstance();
+
+        if (requested < minB) {
+            int old = requested;
+            requested = minB;
+
+            TetradLogger.getInstance().log(
+                    "MinimaxCITest: increased permutations from " + old + " to " + requested +
+                            " so alpha=" + nf.format(alpha) + " is attainable (p-floor=1/(B+1))."
+            );
+        }
+
+        this.permutations = requested;
     }
 
     /**

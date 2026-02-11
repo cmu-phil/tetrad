@@ -29,8 +29,11 @@ import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 
+import javax.swing.*;
 import java.io.Serial;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,8 +79,23 @@ public class MinimaxCITest implements IndependenceWrapper {
         test.setMinStratumSize(parameters.getInt(Params.MIN_STRATUM_SIZE));
         test.setUseMaxAcrossStrata(parameters.getBoolean(Params.USE_MAX_ACROSS_STRATA));
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        test.setPermutations(parameters.getInt(Params.GIN_PERMUTATIONS));
+        test.setPermutations(parameters.getInt(Params.MINIMAX_PERMUTATIONS));
         test.setPermSeed(12345);
+
+        double pFloor = 1.0 / (parameters.getDouble(Params.MINIMAX_PERMUTATIONS) + 1.0);
+
+//        NumberFormat nf = NumberFormat.getNumberInstance();
+//
+//        if (parameters.getDouble(Params.ALPHA) < pFloor) {
+//            String message = "Warning: alpha = " + nf.format(parameters.getDouble(Params.ALPHA)) +
+//                    " is below permutation resolution floor " + nf.format(pFloor) +
+//                    " (B = " + parameters.getInt(Params.MINIMAX_PERMUTATIONS) + "). " +
+//                    "Test cannot reject at this level.";
+////            TetradLogger.getInstance().log(message);
+//            throw new RuntimeException(message);
+//
+////            JOptionPane.showMessageDialog(null, message);
+//        }
 
         test.setAlpha(parameters.getDouble(Params.ALPHA));
 

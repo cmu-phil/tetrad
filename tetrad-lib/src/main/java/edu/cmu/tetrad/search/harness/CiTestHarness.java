@@ -11,13 +11,16 @@ import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.sem.GeneralNoiseSimulation;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.UniformityTest;
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.function.Function;
 
@@ -88,8 +91,10 @@ public final class CiTestHarness {
     // ===================== Output helpers =====================
 
     private static String formatDouble(double x) {
-        if (!Double.isFinite(x)) return "";
-        return String.format(Locale.US, "%.8g", x);
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        return nf.format(x);
+//        if (!Double.isFinite(x)) return "";
+//        return String.format(Locale.US, "%.8g", x);
     }
 
     public static void main(String[] args) throws Exception {
@@ -102,13 +107,16 @@ public final class CiTestHarness {
         tests.add(new Gcm());
         tests.add(new FfCi());
         tests.add(new MinimaxCITest());
-        tests.add(new ClKciPython());
+//        tests.add(new ClKciPython());
         tests.add(new Rcit());
-        tests.add(new Kci());
+//        tests.add(new Kci());
         tests.add(new BasisFunctionBlocksIndTest());
 
         int numVars = 100;
         int numSamples = 1000;
+
+        Parameters params = new Parameters();
+        params.set(Params.MINIMAX_PERMUTATIONS, 500);
 
         CiTestHarness harness = new CiTestHarness();
 
@@ -128,13 +136,11 @@ public final class CiTestHarness {
                 5, activation);
         DataSet dataSet = sim.generateData();
 
-        Parameters params = new Parameters();
-
         double[] alphas = {0.01, 0.05};
 
         Config config = new Config(
                 1, 4,
-                200,
+                1000,
                 100,
                 5233L,
                 alphas,
@@ -190,6 +196,12 @@ public final class CiTestHarness {
 
         trueGraph = GraphUtils.replaceNodes(trueGraph, data.getVariables());
 
+        List<IndependenceTest> _tests = new ArrayList<>();
+
+        for (IndependenceWrapper test : tests) {
+            _tests.add(test.getTest(data, params));
+        }
+
         Objects.requireNonNull(trueGraph, "trueGraph");
         Objects.requireNonNull(data, "data");
         Objects.requireNonNull(tests, "tests");
@@ -224,10 +236,7 @@ public final class CiTestHarness {
             List<Node> Z = nodesOf(vars, fact.z);
 
             for (int t = 0; t < T; t++) {
-                IndependenceWrapper independenceWrapper = tests.get(t);
-                IndependenceTest test = independenceWrapper.getTest(data, new Parameters());
-
-                double pv = pValueOf(test, X, Y, Z);
+                double pv = pValueOf(_tests.get(t), X, Y, Z);
                 pvals[f][t] = pv;
                 pvalsByTest.get(t).add(pv);
 
