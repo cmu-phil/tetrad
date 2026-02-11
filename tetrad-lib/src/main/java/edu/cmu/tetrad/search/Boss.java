@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -210,61 +210,20 @@ public class Boss implements SuborderSearch {
 
             makeValidKnowledgeOrder(suborder);
 
-//            do {
-//                improved = false;
-//                for (Node x : new ArrayList<>(suborder)) {
-//                    if (this.verbose && (suborder.size() > 1)) System.out.println(x);
-//
-//                    if (this.numThreads == 1) improved |= betterMutation(prefix, suborder, x);
-//                    else {
-//                        improved |= betterMutationAsync(prefix, suborder, x);
-//                    }
-//                }
-//
-////                double cur = update(prefix, suborder);
-////
-////                // If no real progress in objective, stop (prevents oscillation)
-////                final double EPS = 1e-10;
-////                if (cur <= prev + EPS) break;
-////                prev = cur;
-//
-//                if (this.verbose && (suborder.size() > 1)) {
-//                    System.out.printf("\nScore: %.3f\n\n", update(prefix, suborder));
-//                }
-//
-//            } while (improved);
-
-            // near top of each restart:
-            final java.util.HashSet<Long> seenOrders = new java.util.HashSet<>();
-            final int MAX_ROUNDS = Math.max(50, 5 * suborder.size()); // conservative
-
-            int rounds = 0;
             do {
                 improved = false;
-
-                // cycle check at top of round (before applying moves)
-                long sig = orderSignature(suborder);
-                if (!seenOrders.add(sig)) {
-                    if (verbose) System.out.println("Breaking: repeated suborder (cycle detected).");
-                    break;
-                }
-
-                if (++rounds > MAX_ROUNDS) {
-                    if (verbose) System.out.println("Breaking: max rounds reached.");
-                    break;
-                }
-
                 for (Node x : new ArrayList<>(suborder)) {
-                    if (verbose && suborder.size() > 1) System.out.println(x);
-                    improved |= (numThreads == 1)
-                            ? betterMutation(prefix, suborder, x)
-                            : betterMutationAsync(prefix, suborder, x);
+                    if (this.verbose && (suborder.size() > 1)) System.out.println(x);
+
+                    if (this.numThreads == 1) improved |= betterMutation(prefix, suborder, x);
+                    else {
+                        improved |= betterMutationAsync(prefix, suborder, x);
+                    }
                 }
 
-                if (verbose && suborder.size() > 1) {
+                if (this.verbose && (suborder.size() > 1)) {
                     System.out.printf("\nScore: %.3f\n\n", update(prefix, suborder));
                 }
-
             } while (improved);
 
             if (this.bes != null) bes(prefix, suborder);
@@ -502,14 +461,14 @@ public class Boss implements SuborderSearch {
 
         for (i = scores.length - 1; i >= 0; i--) {
             if (this.knowledge.isRequired(suborder.get(i).getName(), x.getName())) break;
-            if (scores[i] + 1e-6 > scores[best]) best = i;
+            if (scores[i] > scores[best] + 1e-6) best = i;
         }
 
         if (scores[best] == Double.POSITIVE_INFINITY) {
             throw new IllegalStateException("Determination detected.");
         }
 
-        if (scores[curr] + 1e-6 > scores[best]) return false;
+        if (scores[curr] < scores[best] + 1e-6) return false;
         suborder.remove(x);
         suborder.add(best, x);
 
