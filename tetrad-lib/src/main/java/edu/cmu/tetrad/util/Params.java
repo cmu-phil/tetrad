@@ -1385,6 +1385,15 @@ public final class Params {
      */
     public static String TIME_LAG_REPLICATING_GRAPH = "timeLagReplicatingGraph";
 
+    // ---- Minimax Legendre score (mixed) ----
+    public static final String MINIMAX_LEGENDRE_DEGREE = "minimaxLegendreDegree";
+    public static final String MINIMAX_LEGENDRE_CLIP = "minimaxLegendreClip";
+    public static final String MINIMAX_LEGENDRE_RIDGE = "minimaxLegendreRidge";
+    public static final String MINIMAX_LEGENDRE_NU = "minimaxLegendreNu";
+    public static final String MINIMAX_LEGENDRE_IRLS_ITERS = "minimaxLegendreIrlsIters";
+    public static final String MINIMAX_LEGENDRE_IRLS_TOL = "minimaxLegendreIrlsTol";
+    public static final String MINIMAX_LEGENDRE_INIT_SCALE = "minimaxLegendreInitScale";
+
     private Params() {
     }
 

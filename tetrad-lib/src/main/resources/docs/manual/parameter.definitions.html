@@ -6207,4 +6207,215 @@ Source:
             <span id="gcmRffSigma_value_type">Double</span>
         </li>
     </ul>
+
+    === minimaxLegendreDegree ===
+    <h3 class="parameter_description" id="minimaxLegendreDegree">minimaxLegendreDegree</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minimaxLegendreDegree_short_desc">
+            Legendre truncation degree (t)
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="minimaxLegendreDegree_long_desc">
+        Number of Legendre polynomial basis functions used per continuous parent
+        in the Minimax Legendre score.
+        For each continuous parent X, the model includes P₁(x), …, P_t(x),
+        where x is the globally z-scored variable mapped to [-1,1].
+        Larger values increase nonlinear flexibility but also increase model
+        complexity and effective degrees of freedom.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minimaxLegendreDegree_default_value">8</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minimaxLegendreDegree_lower_bound">1</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minimaxLegendreDegree_upper_bound">50</span>
+        </li>
+        <li>Value Type:
+            <span id="minimaxLegendreDegree_value_type">Integer</span>
+        </li>
+    </ul>
+
+    === minimaxLegendreClip ===
+    <h3 class="parameter_description" id="minimaxLegendreClip">minimaxLegendreClip</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minimaxLegendreClip_short_desc">
+            Z-score clipping for Legendre mapping
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="minimaxLegendreClip_long_desc">
+        Continuous variables are globally z-scored and mapped to [-1,1] via
+        x = clamp(z / clip).
+        This parameter controls the clipping threshold.
+        Smaller values cause stronger saturation at ±1; larger values
+        preserve more linear behavior.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minimaxLegendreClip_default_value">3.0</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minimaxLegendreClip_lower_bound">1e-3</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minimaxLegendreClip_upper_bound">1.0e6</span>
+        </li>
+        <li>Value Type:
+            <span id="minimaxLegendreClip_value_type">Double</span>
+        </li>
+    </ul>
+
+    === minimaxLegendreRidge ===
+    <h3 class="parameter_description" id="minimaxLegendreRidge">minimaxLegendreRidge</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minimaxLegendreRidge_short_desc">
+            Ridge regularization strength
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="minimaxLegendreRidge_long_desc">
+        ℓ₂ (ridge) regularization applied to all non-intercept coefficients
+        in both the Student-t regression and multinomial logistic models.
+        Larger values shrink coefficients more strongly and reduce effective
+        degrees of freedom.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minimaxLegendreRidge_default_value">1e-3</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minimaxLegendreRidge_lower_bound">1e-12</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minimaxLegendreRidge_upper_bound">1.0e6</span>
+        </li>
+        <li>Value Type:
+            <span id="minimaxLegendreRidge_value_type">Double</span>
+        </li>
+    </ul>
+
+    === minimaxLegendreNu ===
+    <h3 class="parameter_description" id="minimaxLegendreNu">minimaxLegendreNu</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minimaxLegendreNu_short_desc">
+            Student-t degrees of freedom (ν)
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="minimaxLegendreNu_long_desc">
+        Degrees of freedom parameter ν for the Student-t likelihood used
+        for continuous children.
+        Smaller values produce heavier tails (more robustness to outliers).
+        As ν → ∞, the model approaches Gaussian regression.
+        Must be greater than 2.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minimaxLegendreNu_default_value">5.0</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minimaxLegendreNu_lower_bound">2.01</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minimaxLegendreNu_upper_bound">1.0e6</span>
+        </li>
+        <li>Value Type:
+            <span id="minimaxLegendreNu_value_type">Double</span>
+        </li>
+    </ul>
+
+    === minimaxLegendreInitScale ===
+    <h3 class="parameter_description" id="minimaxLegendreInitScale">minimaxLegendreInitScale</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minimaxLegendreInitScale_short_desc">
+            Initial scale for Student-t IRLS
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="minimaxLegendreInitScale_long_desc">
+        Initial scale parameter used in the iterative reweighted least
+        squares (IRLS) procedure for Student-t regression.
+        The scale is subsequently profiled during fitting.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minimaxLegendreInitScale_default_value">1.0</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minimaxLegendreInitScale_lower_bound">1e-6</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minimaxLegendreInitScale_upper_bound">1.0e6</span>
+        </li>
+        <li>Value Type:
+            <span id="minimaxLegendreInitScale_value_type">Double</span>
+        </li>
+    </ul>
+
+    === minimaxLegendreIrlsIters ===
+    <h3 class="parameter_description" id="minimaxLegendreIrlsIters">minimaxLegendreIrlsIters</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minimaxLegendreIrlsIters_short_desc">
+            IRLS iterations
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="minimaxLegendreIrlsIters_long_desc">
+        Maximum number of IRLS iterations used for fitting both
+        Student-t and multinomial logistic models.
+        Larger values may improve convergence but increase runtime.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minimaxLegendreIrlsIters_default_value">8</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minimaxLegendreIrlsIters_lower_bound">1</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minimaxLegendreIrlsIters_upper_bound">200</span>
+        </li>
+        <li>Value Type:
+            <span id="minimaxLegendreIrlsIters_value_type">Integer</span>
+        </li>
+    </ul>
+
+    === minimaxLegendreIrlsTol ===
+    <h3 class="parameter_description" id="minimaxLegendreIrlsTol">minimaxLegendreIrlsTol</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minimaxLegendreIrlsTol_short_desc">
+            IRLS convergence tolerance
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="minimaxLegendreIrlsTol_long_desc">
+        Convergence tolerance for the IRLS procedure.
+        Iterations stop when successive objective values change by less than
+        this relative threshold.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minimaxLegendreIrlsTol_default_value">1e-6</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minimaxLegendreIrlsTol_lower_bound">0.0</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minimaxLegendreIrlsTol_upper_bound">1.0</span>
+        </li>
+        <li>Value Type:
+            <span id="minimaxLegendreIrlsTol_value_type">Double</span>
+        </li>
+    </ul>
 </div>
