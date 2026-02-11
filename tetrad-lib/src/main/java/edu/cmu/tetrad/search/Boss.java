@@ -192,7 +192,6 @@ public class Boss implements SuborderSearch {
         boolean improved;
 
         this.pool = new ForkJoinPool(this.numThreads);
-        double prev = Double.NEGATIVE_INFINITY;
 
         for (int i = 0; i < this.numStarts; i++) {
 
@@ -213,6 +212,7 @@ public class Boss implements SuborderSearch {
             do {
                 improved = false;
                 for (Node x : new ArrayList<>(suborder)) {
+
                     if (this.verbose && (suborder.size() > 1)) System.out.println(x);
 
                     if (this.numThreads == 1) improved |= betterMutation(prefix, suborder, x);
@@ -224,6 +224,7 @@ public class Boss implements SuborderSearch {
                 if (this.verbose && (suborder.size() > 1)) {
                     System.out.printf("\nScore: %.3f\n\n", update(prefix, suborder));
                 }
+
             } while (improved);
 
             if (this.bes != null) bes(prefix, suborder);
@@ -254,16 +255,6 @@ public class Boss implements SuborderSearch {
         }
 
         update(prefix, suborder);
-    }
-
-    private long orderSignature(List<Node> order) {
-        long h = 1469598103934665603L; // FNV-1a
-        for (Node n : order) {
-            // Prefer a stable int index if you have one; otherwise name hash.
-            h ^= (long) n.getName().hashCode();
-            h *= 1099511628211L;
-        }
-        return h;
     }
 
     /**
@@ -403,26 +394,142 @@ public class Boss implements SuborderSearch {
      * @return true if the suborder was modified, false otherwise.
      * @throws InterruptedException if any
      */
-    private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x) throws InterruptedException {
+//    private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x) throws InterruptedException {
+//        List<Callable<Void>> tasks = new ArrayList<>();
+//
+//        double[] scores = new double[suborder.size()];
+//        double[] with = new double[suborder.size() - 1];
+//        double[] without = new double[suborder.size() - 1];
+//
+//        Set<Node> Z = new HashSet<>(prefix);
+//        int i = 0, curr = 0;
+//
+//        tasks.add(new Trace(this.gsts.get(x), this.all, Z, scores, i));
+//
+//        for (Node z : suborder) {
+//            if (Thread.currentThread().isInterrupted()) {
+//                pool.shutdownNow();
+//                Thread.currentThread().interrupt();
+//                throw new InterruptedException("Interrupted");
+//            }
+//            if (this.knowledge.isRequired(x.getName(), z.getName())) break;
+//            if (x == z) {
+//                curr = i;
+//                continue;
+//            }
+//
+//            Z.add(x);
+//            tasks.add(new Trace(this.gsts.get(z), this.all, Z, with, i));
+//            Z.remove(x);
+//            tasks.add(new Trace(this.gsts.get(z), this.all, Z, without, i));
+//            Z.add(z);
+//            tasks.add(new Trace(this.gsts.get(x), this.all, Z, scores, ++i));
+//        }
+//
+//        shuffle(tasks);
+//        try {
+//            pool.invokeAll(tasks);
+//        } catch (Exception e) {
+//            Thread.currentThread().interrupt();
+//            throw e;
+//        }
+//        if (this.resetAfterBM) this.gsts.get(x).reset();
+//        double runningScore = 0;
+//
+//        for (i = with.length - 1; i >= 0; i--) {
+//            runningScore += with[i];
+//            scores[i] += runningScore;
+//        }
+//
+//        runningScore = 0;
+//
+//        for (i = 0; i < without.length; i++) {
+//            runningScore += without[i];
+//            scores[i + 1] += runningScore;
+//        }
+//
+//        int best = curr;
+//
+////        for (i = scores.length - 1; i >= 0; i--) {
+////            if (this.knowledge.isRequired(suborder.get(i).getName(), x.getName())) break;
+////            if (scores[i] + 1e-6 > scores[best]) best = i;
+////        }
+//
+//        for (i = scores.length - 1; i >= 0; i--) {
+//
+//            // Determine which node is immediately to the right of slot i
+//            Node boundary = null;
+//
+//            if (i < suborder.size()) {
+//                boundary = suborder.get(i);
+//            }
+//
+//            if (boundary != null &&
+//                    this.knowledge.isRequired(boundary.getName(), x.getName())) {
+//                break;
+//            }
+//
+//            if (scores[i] + 1e-6 > scores[best]) best = i;
+//        }
+//
+////        if (scores[best] == Double.POSITIVE_INFINITY) {
+//        if (!Double.isFinite(scores[best])) {
+//            throw new IllegalStateException("Determination detected.");
+//        }
+//
+////        if (scores[curr] + 1e-6 > scores[best]) return false;
+////        if (best > curr) best--;
+////        suborder.remove(x);
+////        suborder.add(best, x);
+////
+////        return true;
+//
+//        if (scores[curr] + 1e-6 > scores[best]) return false;
+//
+//        if (best > curr) best--;
+//
+//        suborder.remove(x);
+//        suborder.add(best, x);
+//        return true;
+//    }
+
+    private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x)
+            throws InterruptedException {
+
         List<Callable<Void>> tasks = new ArrayList<>();
 
-        double[] scores = new double[suborder.size()];
-        double[] with = new double[suborder.size() - 1];
-        double[] without = new double[suborder.size() - 1];
+        int n = suborder.size();
+        if (n <= 1) return false;
+
+        double[] scores = new double[n + 1];
+        double[] with = new double[n];
+        double[] without = new double[n];
 
         Set<Node> Z = new HashSet<>(prefix);
-        int i = 0, curr = 0;
+
+        int i = 0;
+        int curr = 0;
+
+        // ---- Forward scan: IDENTICAL logic to sequential version ----
+        ListIterator<Node> itr = suborder.listIterator();
 
         tasks.add(new Trace(this.gsts.get(x), this.all, Z, scores, i));
 
-        for (Node z : suborder) {
+        while (itr.hasNext()) {
+
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
-                Thread.currentThread().interrupt();
-                throw new RuntimeException("Interrupted");
+                throw new InterruptedException();
             }
-            if (this.knowledge.isRequired(x.getName(), z.getName())) break;
-            if (x == z) {
+
+            Node z = itr.next();
+
+            if (this.knowledge.isRequired(x.getName(), z.getName())) {
+                itr.previous(); // <-- critical rewind to match sequential behavior
+                break;
+            }
+
+            if (z == x) {
                 curr = i;
                 continue;
             }
@@ -430,45 +537,57 @@ public class Boss implements SuborderSearch {
             Z.add(x);
             tasks.add(new Trace(this.gsts.get(z), this.all, Z, with, i));
             Z.remove(x);
+
             tasks.add(new Trace(this.gsts.get(z), this.all, Z, without, i));
+
             Z.add(z);
             tasks.add(new Trace(this.gsts.get(x), this.all, Z, scores, ++i));
         }
 
-        shuffle(tasks);
+        int lastIndex = i;
+
+        // ---- Run tasks ----
         try {
             pool.invokeAll(tasks);
         } catch (Exception e) {
             Thread.currentThread().interrupt();
             throw e;
         }
+
         if (this.resetAfterBM) this.gsts.get(x).reset();
-        double runningScore = 0;
 
-        for (i = with.length - 1; i >= 0; i--) {
-            runningScore += with[i];
-            scores[i] += runningScore;
+        // ---- Accumulate from right (with) ----
+        double runningScore = 0.0;
+        for (int j = lastIndex - 1; j >= 0; j--) {
+            runningScore += with[j];
+            scores[j] += runningScore;
         }
 
-        runningScore = 0;
-
-        for (i = 0; i < without.length; i++) {
-            runningScore += without[i];
-            scores[i + 1] += runningScore;
+        // ---- Accumulate from left (without) ----
+        runningScore = 0.0;
+        for (int j = 0; j < lastIndex; j++) {
+            runningScore += without[j];
+            scores[j + 1] += runningScore;
         }
 
+        // ---- Backward constraint scan (same logic as sequential) ----
         int best = curr;
 
-        for (i = scores.length - 1; i >= 0; i--) {
-            if (this.knowledge.isRequired(suborder.get(i).getName(), x.getName())) break;
-            if (scores[i] > scores[best] + 1e-6) best = i;
+        for (int j = lastIndex; j >= 0; j--) {
+
+            // Only check required(z → x) for real boundary nodes
+            if (j < suborder.size()) {
+                Node z = suborder.get(j);
+                if (this.knowledge.isRequired(z.getName(), x.getName())) break;
+            }
+
+            if (scores[j] + 1e-6 > scores[best]) best = j;
         }
 
-        if (scores[best] == Double.POSITIVE_INFINITY) {
-            throw new IllegalStateException("Determination detected.");
-        }
+        if (scores[curr] + 1e-6 > scores[best]) return false;
 
-        if (scores[curr] < scores[best] + 1e-6) return false;
+        if (best > curr) best--;
+
         suborder.remove(x);
         suborder.add(best, x);
 
@@ -483,7 +602,7 @@ public class Boss implements SuborderSearch {
      * @param x        The node to be moved in the suborder.
      * @return true if the suborder was modified, false otherwise.
      */
-    private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
+    private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) throws InterruptedException {
         ListIterator<Node> itr = suborder.listIterator();
         double[] scores = new double[suborder.size() + 1];
         Set<Node> Z = new HashSet<>(prefix);
@@ -496,7 +615,7 @@ public class Boss implements SuborderSearch {
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
                 Thread.currentThread().interrupt();
-                throw new RuntimeException("Interrupted");
+                throw new InterruptedException("Interrupted");
             }
 
             Node z = itr.next();
