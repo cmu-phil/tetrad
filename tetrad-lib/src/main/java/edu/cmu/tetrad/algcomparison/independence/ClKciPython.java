@@ -110,7 +110,7 @@ public class ClKciPython implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "KCI-CL (Python)";
+        return "KCI-CL";
     }
 
     /**

@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.search.harness;
 
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
@@ -98,12 +97,24 @@ public final class CiTestHarness {
         // Left here as a “how to wire it” sketch.
         System.out.println("CiTestHarness loaded.");
 
-        CiTestHarness harness = new CiTestHarness();
+        List<IndependenceWrapper> tests = new ArrayList<>();
+        tests.add(new FisherZ());
+        tests.add(new Gcm());
+        tests.add(new FfCi());
+        tests.add(new MinimaxCITest());
+        tests.add(new ClKciPython());
+        tests.add(new Rcit());
+        tests.add(new Kci());
+        tests.add(new BlocksIndTestTs());
 
+        int numVars = 100;
         int numSamples = 1000;
 
+        CiTestHarness harness = new CiTestHarness();
+
         List<Node> vars = new ArrayList<>();
-        for (int i = 0; i < 100; i++) {
+
+        for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
         }
 
@@ -117,22 +128,49 @@ public final class CiTestHarness {
                 5, activation);
         DataSet dataSet = sim.generateData();
 
-        List<IndependenceWrapper> tests = new ArrayList<>();
-        tests.add(new FisherZ());
-
         Parameters params = new Parameters();
+
+        double[] alphas = {0.01, 0.05};
 
         Config config = new Config(
                 0, 0,
                 100,
                 100,
                 5233L,
-                new double[]{0.01, 0.05},
+                alphas,
                 25   // progressEvery (pick whatever)
         );
 
+        List<String> testNames = new ArrayList<>();
+        for (IndependenceWrapper test : tests) {
+            testNames.add(test. getDescription());
+        }
 
         Result result = harness.run(trueGraph, dataSet, tests, params, config);
+
+        harness.writeDecisionsCsv(
+                new File("ci_test_decisions.csv"),
+                testNames,
+                alphas,
+                result.facts,
+                result.decisions
+                );
+
+        harness.writePValuesCsv(
+                new File("ci_test_pvalues.csv"),
+                testNames,
+                result.facts,
+                result.pvals
+        );
+
+        harness.writeSummaryReport(
+                new File("ci_test_summary.csv"),
+                testNames,
+                alphas,
+                result.pvals,
+                result.decisions,
+                result.uniformity
+        );
     }
 
     /**

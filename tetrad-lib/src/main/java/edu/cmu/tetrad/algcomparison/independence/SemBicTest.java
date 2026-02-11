@@ -89,7 +89,7 @@ public class SemBicTest implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "SEM BIC Test";
+        return "SEM-BIC-Test";
     }
 
     /**

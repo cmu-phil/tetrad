@@ -75,7 +75,7 @@ public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "BF Blocks Test";
+        return "BF-Blocks";
     }
 
     /**

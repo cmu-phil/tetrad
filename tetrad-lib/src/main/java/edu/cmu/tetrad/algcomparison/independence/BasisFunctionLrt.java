@@ -78,7 +78,7 @@ public class BasisFunctionLrt implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Basis Function Likelihood Ratio Test";
+        return "BF-LRT";
     }
 
     /**

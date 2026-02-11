@@ -91,7 +91,7 @@ public class MinimaxCITest implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Minimax Conditional Independence Test";
+        return "Minimax-Test";
     }
 
     /**

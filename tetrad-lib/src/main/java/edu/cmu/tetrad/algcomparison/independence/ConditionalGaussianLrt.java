@@ -77,7 +77,7 @@ public class ConditionalGaussianLrt implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Conditional Gaussian Likelihood Ratio Test";
+        return "CG-LRT";
     }
 
     /**

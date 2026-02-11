@@ -86,7 +86,7 @@ public class ChiSquare implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Chi Square Test";
+        return "Chi-Square";
     }
 
     /**
