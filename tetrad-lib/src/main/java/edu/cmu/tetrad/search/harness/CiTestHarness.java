@@ -1,6 +1,10 @@
 package edu.cmu.tetrad.search.harness;
 
+import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
@@ -106,42 +110,55 @@ public final class CiTestHarness {
         tests.add(new Gcm());
         tests.add(new FfCi());
         tests.add(new MinimaxCITest());
-//        tests.add(new ClKciPython());
+        tests.add(new ClKciPython());
         tests.add(new Rcit());
 //        tests.add(new Kci());
         tests.add(new BasisFunctionBlocksIndTest());
 
-        int numVars = 30;
-        int numSamples = 1000;
-
         Parameters params = new Parameters();
         params.set(Params.MINIMAX_PERMUTATIONS, 500);
+        params.set(Params.NUM_MEASURES, 50);
+        params.set(Params.SAMPLE_SIZE, 1000);
+        params.set(Params.AVG_DEGREE, 2);
+        params.set(Params.HIDDEN_DIMENSIONS, "100,100,100,100,100");
+        params.set(Params.AM_BETA_ALPHA, 2.0);
+        params.set(Params.AM_BETA_BETA, 5.0);
+        params.set(Params.INPUT_SCALE, 5.0);
+        params.set(Params.STANDARDIZE, false);
+        params.set(Params.NUM_RUNS, 1);
+        params.set(Params.MEASUREMENT_VARIANCE, 0.0);
+        params.set(Params.RANDOMIZE_COLUMNS, false);
+        params.set(Params.PROB_REMOVE_COLUMN, 0.0);
 
         CiTestHarness harness = new CiTestHarness();
 
         List<Node> vars = new ArrayList<>();
 
-        for (int i = 0; i < numVars; i++) {
+        for (int i = 0; i < params.getInt(Params.NUM_MEASURES); i++) {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        Graph trueGraph = RandomGraph.randomGraph(vars, 0, 100,
+        Graph trueGraph = RandomGraph.randomGraph(vars, 0, params.getInt(Params.NUM_MEASURES),
                 100, 100, 100, false);
 
         Function<Double, Double> activation = Math::tanh;
 
-        GeneralNoiseSimulation sim = new GeneralNoiseSimulation(trueGraph, numSamples,
+        GeneralNoiseSimulation sim = new GeneralNoiseSimulation(trueGraph, params.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(2, 5), new int[]{100, 100, 100, 100, 100},
                 5, activation);
-        DataSet dataSet = sim.generateData();
+        DataSet dataSet1 = sim.generateData();
 
-        double[] alphas = {0.01, 0.05};
+        Simulation simulation = new edu.cmu.tetrad.algcomparison.simulation.GeneralNoiseSimulation(new SingleGraph(trueGraph));
+        simulation.createData(params, true);
+        DataSet dataSet2 = (DataSet) simulation.getDataModel(0);
+
+        double[] alphas = {0.001, 0.01, 0.05};
 
         Config config = new Config(
                 1, 4,
-                1000,   // nFactsIndep
-                1000,   // nFactsDep  (or 0 to default to nFactsIndep)
-                100,
+                200,   // nFactsIndep
+                200,   // nFactsDep  (or 0 to default to nFactsIndep)
+                200,
                 5233L,
                 alphas,
                 25
@@ -152,7 +169,7 @@ public final class CiTestHarness {
             testNames.add(test.getDescription());
         }
 
-        Result result = harness.run(trueGraph, dataSet, tests, params, config);
+        Result result = harness.run(trueGraph, dataSet2, tests, params, config);
 
         harness.writePValues(new File("ci_test_pvalues_indep.txt"), testNames, result.indepFacts, result.indepPvals);
         harness.writePValues(new File("ci_test_pvalues_dep.txt"),   testNames, result.depFacts,   result.depPvals);
@@ -367,9 +384,13 @@ public final class CiTestHarness {
                     }
                     double typeII = (F1 == 0) ? Double.NaN : (failReject1 / (double) F1);
 
+                    // Power = P(reject | truth dependent) = 1 - Type II
+                    double power = Double.isNaN(typeII) ? Double.NaN : (1.0 - typeII);
+
                     pw.println("  alpha=" + alphas[ai]
                             + "  Type I: " + formatDouble(typeI)
-                            + "  Type II: " + formatDouble(typeII));
+                            + "  Type II: " + formatDouble(typeII)
+                            + "  Power: " + formatDouble(power));
                 }
 
                 Uniformity u = r.uniformity[t];
@@ -391,108 +412,108 @@ public final class CiTestHarness {
 
     // ===================== CI test evaluation =====================
 
-    /**
-     * Sample CI facts that are implied independent by MsepTest (Type I setting).
-     * <p>
-     * Strategy:
-     * - Rejection sample:
-     * choose unordered (x,y),
-     * choose k in [kMin,kMax],
-     * sample Z of size k from V \ {x,y},
-     * keep if implied independent.
-     */
-    private List<CiFact> sampleImpliedIndependentFacts(MsepTest implied, int p, Config cfg) {
-        SplittableRandom rng = new SplittableRandom(cfg.seed);
-        List<CiFact> out = new ArrayList<>(cfg.nFactsIndep);
+//    /**
+//     * Sample CI facts that are implied independent by MsepTest (Type I setting).
+//     * <p>
+//     * Strategy:
+//     * - Rejection sample:
+//     * choose unordered (x,y),
+//     * choose k in [kMin,kMax],
+//     * sample Z of size k from V \ {x,y},
+//     * keep if implied independent.
+//     */
+//    private List<CiFact> sampleImpliedIndependentFacts(MsepTest implied, int p, Config cfg) {
+//        SplittableRandom rng = new SplittableRandom(cfg.seed);
+//        List<CiFact> out = new ArrayList<>(cfg.nFactsIndep);
+//
+//        // prevent duplicates (optional but helpful)
+//        HashSet<String> seen = new HashSet<>(cfg.nFactsIndep * 2);
+//
+//        for (int f = 0; f < cfg.nFactsIndep; f++) {
+//            CiFact fact = null;
+//
+//            for (int attempt = 0; attempt < cfg.maxAttemptsPerFact; attempt++) {
+//                int x = rng.nextInt(p);
+//                int y = rng.nextInt(p - 1);
+//                if (y >= x) y++;
+//                if (x > y) {
+//                    int tmp = x;
+//                    x = y;
+//                    y = tmp;
+//                } // unordered
+//
+//                int k = (cfg.kMin == cfg.kMax) ? cfg.kMin : (cfg.kMin + rng.nextInt(cfg.kMax - cfg.kMin + 1));
+//                int[] z = sampleConditioningSet(rng, p, x, y, k);
+//
+//                // implied independence?
+//                if (isImpliedIndependent(implied, x, y, z)) {
+//                    String key = canonicalKey(x, y, z);
+//                    if (seen.add(key)) {
+//                        fact = new CiFact(x, y, z);
+//                        break;
+//                    }
+//                }
+//            }
+//
+//            if (fact == null) {
+//                throw new IllegalStateException("Failed to find implied-independent fact after "
+//                        + cfg.maxAttemptsPerFact + " attempts at f=" + f
+//                        + " (try increasing maxAttemptsPerFact or loosening k-range).");
+//            }
+//
+//            out.add(fact);
+//        }
+//
+//        return out;
+//    }
 
-        // prevent duplicates (optional but helpful)
-        HashSet<String> seen = new HashSet<>(cfg.nFactsIndep * 2);
-
-        for (int f = 0; f < cfg.nFactsIndep; f++) {
-            CiFact fact = null;
-
-            for (int attempt = 0; attempt < cfg.maxAttemptsPerFact; attempt++) {
-                int x = rng.nextInt(p);
-                int y = rng.nextInt(p - 1);
-                if (y >= x) y++;
-                if (x > y) {
-                    int tmp = x;
-                    x = y;
-                    y = tmp;
-                } // unordered
-
-                int k = (cfg.kMin == cfg.kMax) ? cfg.kMin : (cfg.kMin + rng.nextInt(cfg.kMax - cfg.kMin + 1));
-                int[] z = sampleConditioningSet(rng, p, x, y, k);
-
-                // implied independence?
-                if (isImpliedIndependent(implied, x, y, z)) {
-                    String key = canonicalKey(x, y, z);
-                    if (seen.add(key)) {
-                        fact = new CiFact(x, y, z);
-                        break;
-                    }
-                }
-            }
-
-            if (fact == null) {
-                throw new IllegalStateException("Failed to find implied-independent fact after "
-                        + cfg.maxAttemptsPerFact + " attempts at f=" + f
-                        + " (try increasing maxAttemptsPerFact or loosening k-range).");
-            }
-
-            out.add(fact);
-        }
-
-        return out;
-    }
-
-    /**
-     * Sample CI facts that are implied DEPENDENT by MsepTest (Type II setting).
-     * i.e., facts where Msep says NOT independent.
-     */
-    private List<CiFact> sampleImpliedDependentFacts(MsepTest implied, int p, Config cfg) {
-        SplittableRandom rng = new SplittableRandom(cfg.seed ^ 0x9E3779B97F4A7C15L);
-        List<CiFact> out = new ArrayList<>(cfg.nFactsDep);
-
-        HashSet<String> seen = new HashSet<>(cfg.nFactsDep * 2);
-
-        for (int f = 0; f < cfg.nFactsDep; f++) {
-            CiFact fact = null;
-
-            for (int attempt = 0; attempt < cfg.maxAttemptsPerFact; attempt++) {
-                int x = rng.nextInt(p);
-                int y = rng.nextInt(p - 1);
-                if (y >= x) y++;
-                if (x > y) {
-                    int tmp = x;
-                    x = y;
-                    y = tmp;
-                }
-
-                int k = (cfg.kMin == cfg.kMax) ? cfg.kMin : (cfg.kMin + rng.nextInt(cfg.kMax - cfg.kMin + 1));
-                int[] z = sampleConditioningSet(rng, p, x, y, k);
-
-                // implied dependence?
-                if (!isImpliedIndependent(implied, x, y, z)) {
-                    String key = canonicalKey(x, y, z);
-                    if (seen.add(key)) {
-                        fact = new CiFact(x, y, z);
-                        break;
-                    }
-                }
-            }
-
-            if (fact == null) {
-                throw new IllegalStateException("Failed to find implied-dependent fact after "
-                        + cfg.maxAttemptsPerFact + " attempts at f=" + f
-                        + " (try increasing maxAttemptsPerFact or loosening k-range).");
-            }
-
-            out.add(fact);
-        }
-
-        return out;
-    }
+//    /**
+//     * Sample CI facts that are implied DEPENDENT by MsepTest (Type II setting).
+//     * i.e., facts where Msep says NOT independent.
+//     */
+//    private List<CiFact> sampleImpliedDependentFacts(MsepTest implied, int p, Config cfg) {
+//        SplittableRandom rng = new SplittableRandom(cfg.seed ^ 0x9E3779B97F4A7C15L);
+//        List<CiFact> out = new ArrayList<>(cfg.nFactsDep);
+//
+//        HashSet<String> seen = new HashSet<>(cfg.nFactsDep * 2);
+//
+//        for (int f = 0; f < cfg.nFactsDep; f++) {
+//            CiFact fact = null;
+//
+//            for (int attempt = 0; attempt < cfg.maxAttemptsPerFact; attempt++) {
+//                int x = rng.nextInt(p);
+//                int y = rng.nextInt(p - 1);
+//                if (y >= x) y++;
+//                if (x > y) {
+//                    int tmp = x;
+//                    x = y;
+//                    y = tmp;
+//                }
+//
+//                int k = (cfg.kMin == cfg.kMax) ? cfg.kMin : (cfg.kMin + rng.nextInt(cfg.kMax - cfg.kMin + 1));
+//                int[] z = sampleConditioningSet(rng, p, x, y, k);
+//
+//                // implied dependence?
+//                if (!isImpliedIndependent(implied, x, y, z)) {
+//                    String key = canonicalKey(x, y, z);
+//                    if (seen.add(key)) {
+//                        fact = new CiFact(x, y, z);
+//                        break;
+//                    }
+//                }
+//            }
+//
+//            if (fact == null) {
+//                throw new IllegalStateException("Failed to find implied-dependent fact after "
+//                        + cfg.maxAttemptsPerFact + " attempts at f=" + f
+//                        + " (try increasing maxAttemptsPerFact or loosening k-range).");
+//            }
+//
+//            out.add(fact);
+//        }
+//
+//        return out;
+//    }
 
     /**
      * Sampling conditioning set Z uniformly without replacement from V \ {x,y}.
@@ -655,7 +676,7 @@ public final class CiTestHarness {
         SplittableRandom rng = new SplittableRandom(cfg.seed);
 
         int targetIndep = cfg.nFactsIndep;
-        int targetDep   = (cfg.nFactsDep <= 0) ? cfg.nFactsIndep : cfg.nFactsDep;
+        int targetDep   = cfg.nFactsDep;// (cfg.nFactsDep <= 0) ? cfg.nFactsIndep : cfg.nFactsDep;
 
         ArrayList<CiFact> indep = new ArrayList<>(targetIndep);
         ArrayList<CiFact> dep   = new ArrayList<>(targetDep);

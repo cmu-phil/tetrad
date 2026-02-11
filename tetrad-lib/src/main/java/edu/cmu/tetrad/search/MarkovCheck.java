@@ -202,7 +202,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         this.graph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
         this.isPdag = graph.paths().isLegalPdag();
 
-        this.independenceTest = new CachedIndependenceQueries(independenceTest);
+        this.independenceTest = independenceTest;// new CachedIndependenceQueries(independenceTest);
 
         this.setType = setType;
         this.independenceNodes = new ArrayList<>(independenceTest.getVariables());
@@ -1071,7 +1071,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             Set<IndependenceFact> mconn = new HashSet<>();
 
             try {
-                generateMseps(new ArrayList<>(allIndependenceFacts), msep, mconn, new MsepTest(graph));
+                    generateMseps(new ArrayList<>(allIndependenceFacts), msep, mconn, new MsepTest(graph));
 
                 if (indep) {
                     generateResults(msep, true);
@@ -1116,7 +1116,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             for (Node x : graph.getNodes()) {
                 for (Node w : graph.getNodes()) {
                     if (x == w) continue;
-                    if (graph.isAdjacentTo(w, x)) continue;
+//                    if (graph.isAdjacentTo(w, x)) continue;
 
                     try {
                         Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, x, w, Set.of(), Set.of(), -1);

@@ -23,10 +23,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.LayoutUtil;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -135,9 +132,13 @@ public class GeneralNoiseSimulation implements Simulation {
             List<Node> continuousVars = new ArrayList<>();
 
             for (Node node : graph.getNodes()) {
-                ContinuousVariable var = new ContinuousVariable(node.getName());
-                var.setNodeType(node.getNodeType());
-                continuousVars.add(var);
+                if (!(node instanceof ContinuousVariable)) {
+                    ContinuousVariable var = new ContinuousVariable(node.getName());
+                    var.setNodeType(node.getNodeType());
+                    continuousVars.add(var);
+                } else {
+                    continuousVars.add(node);
+                }
             }
 
             graph = GraphUtils.replaceNodes(graph, continuousVars);
@@ -299,5 +300,13 @@ public class GeneralNoiseSimulation implements Simulation {
 
         return generator.generateData();
     }
+
+//    private DataSet runModel(Graph graph, Parameters parameters) {
+//        Function<Double, Double> activation = Math::tanh;// x -> Math.max(0.1 * x, x);
+//        edu.cmu.tetrad.sem.GeneralNoiseSimulation sim = new edu.cmu.tetrad.sem.GeneralNoiseSimulation(graph, parameters.getInt(Params.SAMPLE_SIZE),
+//                new BetaDistribution(2, 5), new int[]{100, 100, 100, 100, 100},
+//                5, activation);
+//        return sim.generateData();
+//    }
 }
 
