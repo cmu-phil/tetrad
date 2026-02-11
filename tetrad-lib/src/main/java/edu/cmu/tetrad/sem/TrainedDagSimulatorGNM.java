@@ -6,6 +6,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.MixedDataBox;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 
 import java.io.*;
@@ -101,7 +102,13 @@ public final class TrainedDagSimulatorGNM {
     public TrainedDagSimulatorGNM(DataSet data, Graph dag, Params params) {
         if (data == null) throw new NullPointerException("data");
         if (dag == null) throw new NullPointerException("dag");
-        if (!dag.paths().isAcyclic()) throw new IllegalArgumentException("DAG contains cycles.");
+        if (!dag.paths().isLegalDag()) throw new IllegalArgumentException("The supplied graph is not a DAG.");
+
+        dag = GraphUtils.replaceNodes(dag, data.getVariables());
+
+        if (!new HashSet<>(data.getVariables()).containsAll(new HashSet<>(dag.getNodes()))) {
+            throw new IllegalArgumentException("The supplied dataset does not contain all variables from the DAG.");
+        }
 
         this.data = data;
         this.dag = dag;
