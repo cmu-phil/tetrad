@@ -29,7 +29,6 @@ import java.util.function.Function;
  * <p>
  * Core idea:
  * - Sample CI facts (X ⟂ Y | Z) with |Z| in [kMin, kMax].
- * - Keep only facts implied independent by the true graph (via MsepTest).
  * - Evaluate a list of IndependenceTest instances on the SAME set of facts.
  * - Output:
  * (1) CSV of p-values: rows=facts, cols=tests
@@ -112,7 +111,7 @@ public final class CiTestHarness {
 //        tests.add(new Kci());
         tests.add(new BasisFunctionBlocksIndTest());
 
-        int numVars = 100;
+        int numVars = 30;
         int numSamples = 1000;
 
         Parameters params = new Parameters();
@@ -140,42 +139,32 @@ public final class CiTestHarness {
 
         Config config = new Config(
                 1, 4,
-                1000,
+                1000,   // nFactsIndep
+                1000,   // nFactsDep  (or 0 to default to nFactsIndep)
                 100,
                 5233L,
                 alphas,
-                25   // progressEvery (pick whatever)
+                25
         );
 
         List<String> testNames = new ArrayList<>();
         for (IndependenceWrapper test : tests) {
-            testNames.add(test. getDescription());
+            testNames.add(test.getDescription());
         }
 
         Result result = harness.run(trueGraph, dataSet, tests, params, config);
 
-        harness.writeDecisions(
-                new File("ci_test_decisions.txt"),
-                testNames,
-                alphas,
-                result.facts,
-                result.decisions
-                );
+        harness.writePValues(new File("ci_test_pvalues_indep.txt"), testNames, result.indepFacts, result.indepPvals);
+        harness.writePValues(new File("ci_test_pvalues_dep.txt"),   testNames, result.depFacts,   result.depPvals);
 
-        harness.writePValues(
-                new File("ci_test_pvalues.txt"),
-                testNames,
-                result.facts,
-                result.pvals
-        );
+        harness.writeDecisions(new File("ci_test_decisions_indep.txt"), testNames, alphas, result.indepFacts, result.indepDecisions);
+        harness.writeDecisions(new File("ci_test_decisions_dep.txt"),   testNames, alphas, result.depFacts,   result.depDecisions);
 
         harness.writeSummaryReport(
                 new File("ci_test_summary.txt"),
                 testNames,
                 alphas,
-                result.pvals,
-                result.decisions,
-                result.uniformity
+                result
         );
     }
 
@@ -197,69 +186,100 @@ public final class CiTestHarness {
         trueGraph = GraphUtils.replaceNodes(trueGraph, data.getVariables());
 
         List<IndependenceTest> _tests = new ArrayList<>();
-
-        for (IndependenceWrapper test : tests) {
-            _tests.add(test.getTest(data, params));
-        }
+        for (IndependenceWrapper test : tests) _tests.add(test.getTest(data, params));
 
         Objects.requireNonNull(trueGraph, "trueGraph");
         Objects.requireNonNull(data, "data");
         Objects.requireNonNull(tests, "tests");
         Objects.requireNonNull(cfg, "cfg");
-
         if (tests.isEmpty()) throw new IllegalArgumentException("tests must be non-empty");
 
         List<Node> vars = data.getVariables();
         int p = vars.size();
 
-        // 1) Build separation oracle from trueGraph (works for DAG/CPDAG/MAG/PAG)
+        // 1) Truth oracle
         MsepTest implied = makeMsepTest(trueGraph);
 
-        // 2) Sample implied-independent facts (Type I setting)
-        List<CiFact> facts = sampleImpliedIndependentFacts(implied, p, cfg);
+        // 2) Sample both pools
+//        List<CiFact> indepFacts = sampleImpliedIndependentFacts(implied, p, cfg);
+//        List<CiFact> depFacts = sampleImpliedDependentFacts(implied, p, cfg);
 
-        // 3) Evaluate each test on each fact
+        // 2) Sample a single pool then bucket by truth (m-sep)
+        Buckets buckets = sampleAndBucketFacts(implied, p, cfg);
+        List<CiFact> indepFacts = buckets.indepFacts;
+        List<CiFact> depFacts   = buckets.depFacts;
+
+        HashSet<String> s = new HashSet<>();
+        for (CiFact f : indepFacts) if (!s.add(canonicalKey(f.x, f.y, f.z))) throw new AssertionError();
+        for (CiFact f : depFacts)   if (!s.add(canonicalKey(f.x, f.y, f.z))) throw new AssertionError();
+
+        // 3) Evaluate
         int T = tests.size();
-        int F = facts.size();
-        double[][] pvals = new double[F][T];
         int A = cfg.alphas.length;
-        int[][][] decisions = new int[A][F][T];
 
-        // per-test p-value collectors for uniformity diagnostics
-        List<List<Double>> pvalsByTest = new ArrayList<>(T);
-        for (int t = 0; t < T; t++) pvalsByTest.add(new ArrayList<>(F));
+        double[][] indepPvals = new double[indepFacts.size()][T];
+        int[][][] indepDecisions = new int[A][indepFacts.size()][T];
 
-        for (int f = 0; f < F; f++) {
-            CiFact fact = facts.get(f);
+        double[][] depPvals = new double[depFacts.size()][T];
+        int[][][] depDecisions = new int[A][depFacts.size()][T];
+
+        // uniformity diagnostics are meaningful for the *independent* pool
+        List<List<Double>> pvalsByTestIndep = new ArrayList<>(T);
+        for (int t = 0; t < T; t++) pvalsByTestIndep.add(new ArrayList<>(indepFacts.size()));
+
+        // --- indep pool ---
+        for (int f = 0; f < indepFacts.size(); f++) {
+            CiFact fact = indepFacts.get(f);
             Node X = vars.get(fact.x);
             Node Y = vars.get(fact.y);
             List<Node> Z = nodesOf(vars, fact.z);
 
             for (int t = 0; t < T; t++) {
                 double pv = pValueOf(_tests.get(t), X, Y, Z);
-                pvals[f][t] = pv;
-                pvalsByTest.get(t).add(pv);
+                indepPvals[f][t] = pv;
+                pvalsByTestIndep.get(t).add(pv);
 
                 for (int a = 0; a < A; a++) {
-                    decisions[a][f][t] = decisionOf(pv, cfg.alphas[a]);
+                    indepDecisions[a][f][t] = decisionOf(pv, cfg.alphas[a]); // 1 = reject (dependent)
                 }
             }
 
             if ((f + 1) % cfg.progressEvery == 0) {
-                System.out.println("[Harness] evaluated facts: " + (f + 1) + "/" + F);
-                // Optional: uncomment to print running KS/AD for each test
-                // printRunningDiagnostics(testNames, pvalsByTest);
+                System.out.println("[Harness] evaluated INDEP facts: " + (f + 1) + "/" + indepFacts.size());
             }
         }
 
-        // 4) Final uniformity p-values per test
+        // --- dep pool ---
+        for (int f = 0; f < depFacts.size(); f++) {
+            CiFact fact = depFacts.get(f);
+            Node X = vars.get(fact.x);
+            Node Y = vars.get(fact.y);
+            List<Node> Z = nodesOf(vars, fact.z);
+
+            for (int t = 0; t < T; t++) {
+                double pv = pValueOf(_tests.get(t), X, Y, Z);
+                depPvals[f][t] = pv;
+
+                for (int a = 0; a < A; a++) {
+                    depDecisions[a][f][t] = decisionOf(pv, cfg.alphas[a]); // 1 = reject (dependent)
+                }
+            }
+
+            if ((f + 1) % cfg.progressEvery == 0) {
+                System.out.println("[Harness] evaluated DEP facts: " + (f + 1) + "/" + depFacts.size());
+            }
+        }
+
+        // 4) Final uniformity on indep pool p-values
         Uniformity[] uni = new Uniformity[T];
         for (int t = 0; t < T; t++) {
-            double[] ps = sanitizePValues(pvalsByTest.get(t));
+            double[] ps = sanitizePValues(pvalsByTestIndep.get(t));
             uni[t] = new Uniformity(ksUniformPValue(ps), adUniformPValue(ps));
         }
 
-        return new Result(facts, pvals, decisions, uni);
+        return new Result(indepFacts, indepPvals, indepDecisions,
+                depFacts, depPvals, depDecisions,
+                uni);
     }
 
     // ===================== Core sampling logic =====================
@@ -318,32 +338,43 @@ public final class CiTestHarness {
     public void writeSummaryReport(File out,
                                    List<String> testNames,
                                    double[] alphas,
-                                   double[][] pvals,
-                                   int[][][] decisions,
-                                   Uniformity[] uniformity) throws IOException {
+                                   Result r) throws IOException {
 
-        int F = pvals.length;
         int T = testNames.size();
+        int F0 = r.indepPvals.length; // truth independent
+        int F1 = r.depPvals.length;   // truth dependent
 
         try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(out), StandardCharsets.UTF_8))) {
             pw.println("CI Test Harness Summary");
-            pw.println("Facts tested (implied independent): " + F);
+            pw.println("Facts tested (truth independent): " + F0);
+            pw.println("Facts tested (truth dependent):   " + F1);
             pw.println();
 
             for (int t = 0; t < T; t++) {
                 pw.println("Test: " + testNames.get(t));
 
-                // Type I error rate: Type I error = declared dependent when truth is independent
                 for (int ai = 0; ai < alphas.length; ai++) {
-                    int dep = 0;
-                    for (int f = 0; f < F; f++) dep += decisions[ai][f][t];
-                    double rate = (F == 0) ? Double.NaN : (dep / (double) F);
-                    pw.println("  alpha=" + alphas[ai] + "  Type I error rate: " + formatDouble(rate));
+                    // Type I error: reject when truth is independent
+                    int reject0 = 0;
+                    for (int f = 0; f < F0; f++) reject0 += r.indepDecisions[ai][f][t]; // 1=reject
+                    double typeI = (F0 == 0) ? Double.NaN : (reject0 / (double) F0);
+
+                    // Type II error: fail-to-reject when truth is dependent
+                    int failReject1 = 0;
+                    for (int f = 0; f < F1; f++) {
+                        int rej = r.depDecisions[ai][f][t]; // 1=reject
+                        if (rej == 0) failReject1++;
+                    }
+                    double typeII = (F1 == 0) ? Double.NaN : (failReject1 / (double) F1);
+
+                    pw.println("  alpha=" + alphas[ai]
+                            + "  Type I: " + formatDouble(typeI)
+                            + "  Type II: " + formatDouble(typeII));
                 }
 
-                Uniformity u = uniformity[t];
-                pw.println("  KS uniformity p-value: " + formatDouble(u.ksPValue()));
-                pw.println("  AD uniformity p-value: " + formatDouble(u.adPValue()));
+                Uniformity u = r.uniformity[t];
+                pw.println("  KS uniformity p-value (indep pool): " + formatDouble(u.ksPValue()));
+                pw.println("  AD uniformity p-value (indep pool): " + formatDouble(u.adPValue()));
                 pw.println();
             }
         }
@@ -372,12 +403,12 @@ public final class CiTestHarness {
      */
     private List<CiFact> sampleImpliedIndependentFacts(MsepTest implied, int p, Config cfg) {
         SplittableRandom rng = new SplittableRandom(cfg.seed);
-        List<CiFact> out = new ArrayList<>(cfg.nFacts);
+        List<CiFact> out = new ArrayList<>(cfg.nFactsIndep);
 
         // prevent duplicates (optional but helpful)
-        HashSet<String> seen = new HashSet<>(cfg.nFacts * 2);
+        HashSet<String> seen = new HashSet<>(cfg.nFactsIndep * 2);
 
-        for (int f = 0; f < cfg.nFacts; f++) {
+        for (int f = 0; f < cfg.nFactsIndep; f++) {
             CiFact fact = null;
 
             for (int attempt = 0; attempt < cfg.maxAttemptsPerFact; attempt++) {
@@ -405,6 +436,54 @@ public final class CiTestHarness {
 
             if (fact == null) {
                 throw new IllegalStateException("Failed to find implied-independent fact after "
+                        + cfg.maxAttemptsPerFact + " attempts at f=" + f
+                        + " (try increasing maxAttemptsPerFact or loosening k-range).");
+            }
+
+            out.add(fact);
+        }
+
+        return out;
+    }
+
+    /**
+     * Sample CI facts that are implied DEPENDENT by MsepTest (Type II setting).
+     * i.e., facts where Msep says NOT independent.
+     */
+    private List<CiFact> sampleImpliedDependentFacts(MsepTest implied, int p, Config cfg) {
+        SplittableRandom rng = new SplittableRandom(cfg.seed ^ 0x9E3779B97F4A7C15L);
+        List<CiFact> out = new ArrayList<>(cfg.nFactsDep);
+
+        HashSet<String> seen = new HashSet<>(cfg.nFactsDep * 2);
+
+        for (int f = 0; f < cfg.nFactsDep; f++) {
+            CiFact fact = null;
+
+            for (int attempt = 0; attempt < cfg.maxAttemptsPerFact; attempt++) {
+                int x = rng.nextInt(p);
+                int y = rng.nextInt(p - 1);
+                if (y >= x) y++;
+                if (x > y) {
+                    int tmp = x;
+                    x = y;
+                    y = tmp;
+                }
+
+                int k = (cfg.kMin == cfg.kMax) ? cfg.kMin : (cfg.kMin + rng.nextInt(cfg.kMax - cfg.kMin + 1));
+                int[] z = sampleConditioningSet(rng, p, x, y, k);
+
+                // implied dependence?
+                if (!isImpliedIndependent(implied, x, y, z)) {
+                    String key = canonicalKey(x, y, z);
+                    if (seen.add(key)) {
+                        fact = new CiFact(x, y, z);
+                        break;
+                    }
+                }
+            }
+
+            if (fact == null) {
+                throw new IllegalStateException("Failed to find implied-dependent fact after "
                         + cfg.maxAttemptsPerFact + " attempts at f=" + f
                         + " (try increasing maxAttemptsPerFact or loosening k-range).");
             }
@@ -541,7 +620,8 @@ public final class CiTestHarness {
     public record Config(
             int kMin,
             int kMax,
-            int nFacts,
+            int nFactsIndep,          // facts implied independent (Type I)
+            int nFactsDep,            // facts implied dependent (Type II)
             int maxAttemptsPerFact,
             long seed,
             double[] alphas,
@@ -549,7 +629,8 @@ public final class CiTestHarness {
     ) {
         public Config {
             if (kMin < 0 || kMax < kMin) throw new IllegalArgumentException("Bad kMin/kMax");
-            if (nFacts <= 0) throw new IllegalArgumentException("nFacts must be > 0");
+            if (nFactsIndep <= 0) throw new IllegalArgumentException("nFactsIndep must be > 0");
+            if (nFactsDep <= 0) nFactsDep = nFactsIndep; // default
             if (maxAttemptsPerFact <= 0) throw new IllegalArgumentException("maxAttemptsPerFact must be > 0");
             if (alphas == null || alphas.length == 0) throw new IllegalArgumentException("alphas must be non-empty");
             if (progressEvery <= 0) progressEvery = 50;
@@ -563,16 +644,92 @@ public final class CiTestHarness {
         }
     }
 
-    public static final class Result {
-        public final List<CiFact> facts;          // size = nFacts
-        public final double[][] pvals;            // [fact][test]
-        public final int[][][] decisions;         // [alphaIndex][fact][test]  (0=indep, 1=dep)
-        public final Uniformity[] uniformity;     // per test (final)
+    /**
+     * Sample facts once, dedupe, then bucket into implied-independent vs implied-dependent
+     * using the Msep oracle. No rejection sampling per bucket.
+     *
+     * We keep sampling until we have nFactsIndep and nFactsDep (or until we hit maxAttemptsPerFact,
+     * interpreted here as "max attempts per requested fact" across both buckets).
+     */
+    private Buckets sampleAndBucketFacts(MsepTest implied, int p, Config cfg) {
+        SplittableRandom rng = new SplittableRandom(cfg.seed);
 
-        public Result(List<CiFact> facts, double[][] pvals, int[][][] decisions, Uniformity[] uniformity) {
-            this.facts = facts;
-            this.pvals = pvals;
-            this.decisions = decisions;
+        int targetIndep = cfg.nFactsIndep;
+        int targetDep   = (cfg.nFactsDep <= 0) ? cfg.nFactsIndep : cfg.nFactsDep;
+
+        ArrayList<CiFact> indep = new ArrayList<>(targetIndep);
+        ArrayList<CiFact> dep   = new ArrayList<>(targetDep);
+
+        // Dedup across *all* facts so the pools are disjoint and you don't waste evaluation.
+        HashSet<String> seen = new HashSet<>((targetIndep + targetDep) * 2);
+
+        // Total attempts budget: interpret maxAttemptsPerFact as per-target-fact attempts.
+        long maxAttempts = (long) cfg.maxAttemptsPerFact * (targetIndep + targetDep);
+        long attempts = 0;
+
+        while ((indep.size() < targetIndep || dep.size() < targetDep) && attempts < maxAttempts) {
+            attempts++;
+
+            int x = rng.nextInt(p);
+            int y = rng.nextInt(p - 1);
+            if (y >= x) y++;
+            if (x > y) { int tmp = x; x = y; y = tmp; }
+
+            int k = (cfg.kMin == cfg.kMax) ? cfg.kMin : (cfg.kMin + rng.nextInt(cfg.kMax - cfg.kMin + 1));
+            int[] z = sampleConditioningSet(rng, p, x, y, k);
+
+            String key = canonicalKey(x, y, z);
+            if (!seen.add(key)) continue;
+
+            CiFact fact = new CiFact(x, y, z);
+
+            boolean truthIndep = isImpliedIndependent(implied, x, y, z);
+
+            if (truthIndep) {
+                if (indep.size() < targetIndep) indep.add(fact);
+            } else {
+                if (dep.size() < targetDep) dep.add(fact);
+            }
+        }
+
+        if (indep.size() < targetIndep || dep.size() < targetDep) {
+            throw new IllegalStateException(
+                    "Failed to fill buckets within attempt budget. "
+                            + "needed indep=" + targetIndep + ", got " + indep.size()
+                            + "; needed dep=" + targetDep + ", got " + dep.size()
+                            + "; attempts=" + attempts + "/" + maxAttempts
+                            + ". Try increasing maxAttemptsPerFact, widening k-range, "
+                            + "or increasing p / changing the true graph density."
+            );
+        }
+
+        return new Buckets(indep, dep);
+    }
+
+    public static final class Result {
+        public final List<CiFact> indepFacts;      // truth = independent
+        public final double[][] indepPvals;        // [fact][test]
+        public final int[][][] indepDecisions;     // [alpha][fact][test], 1=reject(dep), 0=accept(indep)
+
+        public final List<CiFact> depFacts;        // truth = dependent
+        public final double[][] depPvals;          // [fact][test]
+        public final int[][][] depDecisions;       // [alpha][fact][test], 1=reject(dep), 0=accept(indep)
+
+        public final Uniformity[] uniformity;      // computed on indep-pool p-values (as before)
+
+        public Result(List<CiFact> indepFacts,
+                      double[][] indepPvals,
+                      int[][][] indepDecisions,
+                      List<CiFact> depFacts,
+                      double[][] depPvals,
+                      int[][][] depDecisions,
+                      Uniformity[] uniformity) {
+            this.indepFacts = indepFacts;
+            this.indepPvals = indepPvals;
+            this.indepDecisions = indepDecisions;
+            this.depFacts = depFacts;
+            this.depPvals = depPvals;
+            this.depDecisions = depDecisions;
             this.uniformity = uniformity;
         }
     }
@@ -581,4 +738,6 @@ public final class CiTestHarness {
 
     public record Uniformity(double ksPValue, double adPValue) {
     }
+
+    private record Buckets(List<CiFact> indepFacts, List<CiFact> depFacts) {}
 }
