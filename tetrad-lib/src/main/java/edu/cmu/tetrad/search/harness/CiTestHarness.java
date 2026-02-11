@@ -105,7 +105,7 @@ public final class CiTestHarness {
         tests.add(new ClKciPython());
         tests.add(new Rcit());
         tests.add(new Kci());
-        tests.add(new BlocksIndTestTs());
+        tests.add(new BasisFunctionBlocksIndTest());
 
         int numVars = 100;
         int numSamples = 1000;
@@ -133,8 +133,8 @@ public final class CiTestHarness {
         double[] alphas = {0.01, 0.05};
 
         Config config = new Config(
-                0, 0,
-                100,
+                1, 4,
+                200,
                 100,
                 5233L,
                 alphas,
@@ -148,23 +148,23 @@ public final class CiTestHarness {
 
         Result result = harness.run(trueGraph, dataSet, tests, params, config);
 
-        harness.writeDecisionsCsv(
-                new File("ci_test_decisions.csv"),
+        harness.writeDecisions(
+                new File("ci_test_decisions.txt"),
                 testNames,
                 alphas,
                 result.facts,
                 result.decisions
                 );
 
-        harness.writePValuesCsv(
-                new File("ci_test_pvalues.csv"),
+        harness.writePValues(
+                new File("ci_test_pvalues.txt"),
                 testNames,
                 result.facts,
                 result.pvals
         );
 
         harness.writeSummaryReport(
-                new File("ci_test_summary.csv"),
+                new File("ci_test_summary.txt"),
                 testNames,
                 alphas,
                 result.pvals,
@@ -255,7 +255,7 @@ public final class CiTestHarness {
 
     // ===================== Core sampling logic =====================
 
-    public void writePValuesCsv(File out, List<String> testNames, List<CiFact> facts, double[][] pvals) throws IOException {
+    public void writePValues(File out, List<String> testNames, List<CiFact> facts, double[][] pvals) throws IOException {
         try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(out), StandardCharsets.UTF_8))) {
             pw.print("fact,x,y,z");
             for (String name : testNames) pw.print("," + csv(name));
@@ -275,11 +275,11 @@ public final class CiTestHarness {
         }
     }
 
-    public void writeDecisionsCsv(File out,
-                                  List<String> testNames,
-                                  double[] alphas,
-                                  List<CiFact> facts,
-                                  int[][][] decisions) throws IOException {
+    public void writeDecisions(File out,
+                               List<String> testNames,
+                               double[] alphas,
+                               List<CiFact> facts,
+                               int[][][] decisions) throws IOException {
         try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(out), StandardCharsets.UTF_8))) {
             pw.print("fact,x,y,z");
             for (double a : alphas) {
