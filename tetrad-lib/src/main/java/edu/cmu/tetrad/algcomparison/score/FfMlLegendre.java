@@ -36,26 +36,26 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Wrapper for FF-ML-Legendre (Legendre feature expansion + categorical product-kernel) score.
- *
- * Notes:
- * - Continuous parents use Legendre P1..Pt features (t = LEGENDRE_DEGREE) with degree discount alpha.
- * - Discrete parents use categorical kernel with similarity rho.
- * - Score uses n×n GP marginal likelihood (up to constants), and discrete targets are scored
- *   via centered one-hot Gaussian surrogate summed across levels.
- *
- * @author josephramsey
- * @version $Id: $Id
- */
-@edu.cmu.tetrad.annotation.Score(
-        name = "FFML-Legendre Score",
-        command = "ffml-legendre-score",
-        dataType = {DataType.Mixed}
-)
-@General
-@Mixed
-@Experimental
+///**
+// * Wrapper for FF-ML-Legendre (Legendre feature expansion + categorical product-kernel) score.
+// *
+// * Notes:
+// * - Continuous parents use Legendre P1..Pt features (t = LEGENDRE_DEGREE) with degree discount alpha.
+// * - Discrete parents use categorical kernel with similarity rho.
+// * - Score uses n×n GP marginal likelihood (up to constants), and discrete targets are scored
+// *   via centered one-hot Gaussian surrogate summed across levels.
+// *
+// * @author josephramsey
+// * @version $Id: $Id
+// */
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "FFML-Legendre Score",
+//        command = "ffml-legendre-score",
+//        dataType = {DataType.Mixed}
+//)
+//@General
+//@Mixed
+//@Experimental
 public class FfMlLegendre implements ScoreWrapper {
 
     @Serial

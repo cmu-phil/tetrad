@@ -36,18 +36,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Huang Marginal Likelihood Score.
- *
- * @author josephramsey
- * @version $Id: $Id
- */
-@edu.cmu.tetrad.annotation.Score(
-        name = "Huang ML Score",
-        command = "huang-ml-score",
-        dataType = {DataType.Continuous}
-)
-@General
-@Experimental
+// * Wrapper for Huang Marginal Likelihood Score.
+// *
+// * @author josephramsey
+// * @version $Id: $Id
+// */
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "Huang ML Score",
+//        command = "huang-ml-score",
+//        dataType = {DataType.Continuous}
+//)
+//@General
+//@Experimental
 public class HuangMarginalLikelihoodScore implements ScoreWrapper {
 
     @Serial

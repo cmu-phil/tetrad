@@ -35,19 +35,19 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Wrapper for linear, Gaussian SEM BIC score.
- *
- * @author josephramsey
- * @version $Id: $Id
- */
-@edu.cmu.tetrad.annotation.Score(
-        name = "KCV BIC Score",
-        command = "kcv-bic-score",
-        dataType = {DataType.Continuous}
-)
-@Experimental
-@General
+///**
+// * Wrapper for KVC BIC score.
+// *
+// * @author josephramsey
+// * @version $Id: $Id
+// */
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "KCV BIC Score",
+//        command = "kcv-bic-score",
+//        dataType = {DataType.Continuous}
+//)
+//@Experimental
+//@General
 public class KcvBicScore implements ScoreWrapper {
 
     @Serial
