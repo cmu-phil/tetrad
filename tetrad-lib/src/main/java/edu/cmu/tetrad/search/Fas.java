@@ -279,7 +279,8 @@ public class Fas implements IFas {
             ConcurrentLinkedQueue<EdgeRemoval> removals = new ConcurrentLinkedQueue<>();
             List<Node> nodes = checkAdj.getNodes();
 
-            nodes.parallelStream().forEach(x -> {
+            nodes.forEach(x -> {
+//                nodes.parallelStream().forEach(x -> {
                 for (Node y : checkAdj.getAdjacentNodes(x)) {
                     // Process each unordered pair once (canonical order x<y).
                     if (x.getName().compareTo(y.getName()) >= 0) continue;
