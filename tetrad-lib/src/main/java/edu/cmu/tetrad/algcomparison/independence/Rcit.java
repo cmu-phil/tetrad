@@ -71,7 +71,7 @@ public class Rcit implements IndependenceWrapper {
         test.setNumFeaturesXY(parameters.getInt(Params.RCIT_NUM_FEATURES_XY));
         test.setNumFeaturesZ(parameters.getInt(Params.RCIT_NUM_FEATURES_Z));
         test.setPermutations(parameters.getInt(Params.RCIT_PERMUTATIONS));
-        test.setCenterFeatures(parameters.getBoolean(Params.RCIT_CENTER_FEATURES));
+//        test.setCenterFeatures(parameters.getBoolean(Params.RCIT_CENTER_FEATURES));
         test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
         edu.cmu.tetrad.search.test.Rcit.Approx[] approxes
                 = edu.cmu.tetrad.search.test.Rcit.Approx.values();
@@ -115,7 +115,7 @@ public class Rcit implements IndependenceWrapper {
         params.add(Params.RCIT_LAMBDA);
         params.add(Params.RCIT_MODE);
         params.add(Params.RCIT_APPROX);
-        params.add(Params.RCIT_CENTER_FEATURES);
+//        params.add(Params.RCIT_CENTER_FEATURES);
         params.add(Params.RCIT_NUM_FEATURES_XY);
         params.add(Params.RCIT_NUM_FEATURES_Z);
         return params;
