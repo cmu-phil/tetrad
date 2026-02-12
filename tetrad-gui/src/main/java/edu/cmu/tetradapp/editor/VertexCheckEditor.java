@@ -1540,15 +1540,17 @@
         }
 
         private void refreshModelDiagnostics() {
+            String type = model.getUseAndersonDarling() ? "Anderson-Darling" : "Kolmogorov-Smirnov";
+
             // You decide semantics: either only valid after Run All, or “over computed so far”.
             VertexCheckIndTestModel.ModelSummary ms = model.getModelSummary(); // you add this
             if (ms == null) {
-                modelNpLabel.setText("Model Uniformity P: (not computed)");
+                modelNpLabel.setText(type + " Model Uniformity P: (not computed)");
                 modelPLabel.setText("# p-values: (not computed)");
                 return;
             }
             modelNpLabel.setText("# P-values: " + ms.numPValues());
-            modelPLabel.setText("Model Uniformity P: " + fmt(ms.modelP()));
+            modelPLabel.setText(type + " Model Uniformity P: " + fmt(ms.modelP()));
         }
 
         private enum PoolChoice {

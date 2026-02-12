@@ -40,6 +40,8 @@ import static java.lang.Math.*;
  *   <li>Rows with missing values in any of {X, Y, Z} are dropped per test.</li>
  *   <li>Strata smaller than {@code minStratumSize} are discarded.</li>
  * </ul>
+ *
+ * Neykov, M., Balakrishnan, S., &amp; Wasserman, L. (2021). Minimax optimal conditional independence testing. The Annals of Statistics, 49(4), 2151-2177.
  */
 public final class MinimaxCITest implements IndependenceTest, RowsSettable {
 
@@ -116,14 +118,6 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
             if (isDiscrete(j)) Arrays.fill(zCols[j], NaN);
             else zscoreColumnPreserveNaN(raw[j], zCols[j]);
         }
-
-//        this.permutations = 500;
-//        this.binsPerContZ = 8;
-//        this.minStratumSize = 25;
-//        this.binsPerContXY = 8;
-//        this.qMinimax = 0.8;
-//        this.maxObservedLevelsPerVar = 16;
-//        this.maxCellsPerStratum = 1024;
     }
 
     // =========================================================

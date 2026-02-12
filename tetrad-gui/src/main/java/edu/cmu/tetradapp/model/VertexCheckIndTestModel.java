@@ -910,6 +910,10 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         this.useAndersonDarling = useAndersonDarling;
     }
 
+    public boolean getUseAndersonDarling() {
+        return useAndersonDarling;
+    }
+
     private static final class NaturalKey implements Comparable<NaturalKey> {
         final String prefix;
         final Integer suffix;   // null if no numeric suffix

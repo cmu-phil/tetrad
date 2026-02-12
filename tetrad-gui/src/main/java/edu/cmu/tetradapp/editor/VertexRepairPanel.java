@@ -577,7 +577,7 @@ public final class VertexRepairPanel extends JPanel {
         resultsSorter.setSortKeys(List.of(
                 new RowSorter.SortKey(CandidateTableModel.COL_DELTA, SortOrder.ASCENDING),
                 new RowSorter.SortKey(CandidateTableModel.COL_EDGES, SortOrder.ASCENDING),
-                new RowSorter.SortKey(CandidateTableModel.COL_MODEL_P, SortOrder.ASCENDING),
+                new RowSorter.SortKey(CandidateTableModel.COL_MODEL_P, SortOrder.DESCENDING),
                 new RowSorter.SortKey(CandidateTableModel.COL_NODE_P, SortOrder.DESCENDING)
         ));
 
@@ -2579,13 +2579,15 @@ public final class VertexRepairPanel extends JPanel {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             ScoredCandidate r = rows.get(rowIndex);
+            double alpha = PREFS.getDouble(PREF_ALPHA, 0.01);
+
             return switch (columnIndex) {
                 case COL_EDIT -> r.edit().description();
                 case COL_BASE -> r.baseline();
                 case COL_AFTER -> r.violationsAfter();
                 case COL_DELTA -> r.delta();
                 case COL_NODE_P -> r.nodePAfter();
-                case COL_MODEL_P -> r.modelPAfter();
+                case COL_MODEL_P -> r.modelPAfter() > alpha ? 1.0 : 0.0;
                 case COL_EDGES -> r.edgesAfter();
                 case COL_APPLY -> r.edit().isNoOp() ? "" : "Accept";
                 default -> "";
