@@ -18,15 +18,18 @@ import java.util.List;
 /**
  * Wrapper for Minimax-t Legendre BIC score (mixed).
  *
- * Exposed parameters:
+ * Exposed parameters (pared down):
  * - minimaxLegendreDegree (int, default 8)
- * - minimaxLegendreClip (double, default 3.0)
- * - minimaxLegendreRidge (double, default 1e-3)
- * - minimaxLegendreNu (double, default 5.0)
- * - minimaxLegendreInitScale (double, default 1.0)
- * - minimaxLegendreIrlsIters (int, default 8)
- * - minimaxLegendreIrlsTol (double, default 1e-6)
- * - effectiveSampleSize (int, optional; if <= 0, uses dataset n)
+ * - minimaxLegendreClip   (double, default 3.0)   [optional but practical]
+ * - minimaxLegendreRidge  (double, default 1e-3)
+ * - penaltyDiscount       (double)
+ * - effectiveSampleSize   (int, optional; if <= 0, uses dataset n)
+ *
+ * Hidden/internal:
+ * - minimaxLegendreNu (default 5.0)
+ * - minimaxLegendreInitScale (default 1.0)
+ * - minimaxLegendreIrlsIters (default 8)
+ * - minimaxLegendreIrlsTol   (default 1e-6)
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "Minimax Legendre Score",
@@ -54,46 +57,35 @@ public class MinimaxLegendreScore implements ScoreWrapper {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
 
-        edu.cmu.tetrad.search.score.MinimaxLegendreScore score = new edu.cmu.tetrad.search.score.MinimaxLegendreScore(ds);
+        edu.cmu.tetrad.search.score.MinimaxLegendreScore score =
+                new edu.cmu.tetrad.search.score.MinimaxLegendreScore(ds);
 
-        // ---- Degree (t): features per continuous parent ----
+        // ---- Keep exposed: Degree (t) ----
         int degree = parameters.getInt(Params.MINIMAX_LEGENDRE_DEGREE);
         if (degree <= 0) degree = 8;
         score.setLegendreDegree(degree);
 
-        // ---- Clip: maps z to [-1,1] via clamp(z/clip) ----
+        // ---- Keep exposed (optional but practical): Clip ----
         double clip = parameters.getDouble(Params.MINIMAX_LEGENDRE_CLIP);
         if (!(clip > 0.0) || !Double.isFinite(clip)) clip = 3.0;
         score.setLegendreClip(clip);
 
-        // ---- Ridge ----
+        // ---- Keep exposed: Ridge ----
         double ridge = parameters.getDouble(Params.MINIMAX_LEGENDRE_RIDGE);
         if (!(ridge > 0.0) || !Double.isFinite(ridge)) ridge = 1e-3;
         score.setRidge(ridge);
 
-        // ---- Student-t df (nu) ----
-        double nu = parameters.getDouble(Params.MINIMAX_LEGENDRE_NU);
-        if (!(nu > 2.0) || !Double.isFinite(nu)) nu = 5.0;
-        score.setNu(nu);
-
-        // ---- Initial scale guess (used inside IRLS) ----
-        double initScale = parameters.getDouble(Params.MINIMAX_LEGENDRE_INIT_SCALE);
-        if (!(initScale > 0.0) || !Double.isFinite(initScale)) initScale = 1.0;
-        score.setScale(initScale);
-
-        // ---- IRLS controls ----
-        int iters = parameters.getInt(Params.MINIMAX_LEGENDRE_IRLS_ITERS);
-        if (iters <= 0) iters = 8;
-        score.setIrlsIters(iters);
-
-        double tol = parameters.getDouble(Params.MINIMAX_LEGENDRE_IRLS_TOL);
-        if (!(tol >= 0.0) || !Double.isFinite(tol)) tol = 1e-6;
-        score.setIrlsTol(tol);
+        // ---- Hidden/internal defaults ----
+        score.setNu(5.0);          // Student-t df
+        score.setScale(1.0);       // init scale
+        score.setIrlsIters(8);     // IRLS
+        score.setIrlsTol(1e-6);
 
         // ---- Effective sample size (optional) ----
         int nEff = parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE);
         if (nEff > 0) score.setEffectiveSampleSize(nEff);
 
+        // ---- Keep exposed ----
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
         return score;
@@ -112,18 +104,11 @@ public class MinimaxLegendreScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> p = new ArrayList<>();
-
         p.add(Params.MINIMAX_LEGENDRE_DEGREE);
         p.add(Params.MINIMAX_LEGENDRE_CLIP);
         p.add(Params.MINIMAX_LEGENDRE_RIDGE);
-        p.add(Params.MINIMAX_LEGENDRE_NU);
-        p.add(Params.MINIMAX_LEGENDRE_INIT_SCALE);
-        p.add(Params.MINIMAX_LEGENDRE_IRLS_ITERS);
-        p.add(Params.MINIMAX_LEGENDRE_IRLS_TOL);
         p.add(Params.PENALTY_DISCOUNT);
-
         p.add(Params.EFFECTIVE_SAMPLE_SIZE);
-
         return p;
     }
 

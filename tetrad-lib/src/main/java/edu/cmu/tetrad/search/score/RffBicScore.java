@@ -130,6 +130,8 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
             this.sigmaPerVar[j] = medianPairwiseDistance1D(j, null, Math.min(sampleSize, maxBandwidthRows));
             if (!(sigmaPerVar[j] > 0) || !Double.isFinite(sigmaPerVar[j])) sigmaPerVar[j] = 1.0;
         }
+
+        lambda = 1.0 / dataSet.getNumRows();
     }
 
     // -------------------- Score interface --------------------
@@ -467,7 +469,9 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
 
         for (int e = 0; e < E; e++) {
             // Build Phi(Z): n x m
-            int m = numFeatZ;
+//            int m = numFeatZ;
+            int m = Math.min(numFeatZ, 20 * d);
+//            int m = baseFeatPerParent * d;
             DMatrixRMaj Phi = rffFeaturesStable(
                     Z, n, d, m, sigma,
                     localRng(target, parents, e),

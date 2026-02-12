@@ -34,25 +34,25 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Wrapper for GIN (Generalized Independent Noise) residual-independence test.
- *
- * By default uses OLS(ridge=1e-8) for residualization and dCor backend with
- * an *approximate* p-value unless permutations > 0 is specified.
- *
- * Exposed parameters (proposed; add to Params as needed):
- *  - Params.ALPHA
- *  - Params.GIN_BACKEND           // "dcor" (default) or "pearson"
- *  - Params.GIN_PERMUTATIONS      // int, default 0 (use approx p for dCor)
- *  - Params.GIN_RIDGE             // double, default 1e-8
- *  - Params.SEED                  // (optional; included for consistency)
- */
-@TestOfIndependence(
-        name = "GIN (Residual Independence)",
-        command = "gin-test",
-        dataType = DataType.Continuous
-)
-@General
+///**
+// * Wrapper for GIN (Generalized Independent Noise) residual-independence test.
+// *
+// * By default uses OLS(ridge=1e-8) for residualization and dCor backend with
+// * an *approximate* p-value unless permutations > 0 is specified.
+// *
+// * Exposed parameters (proposed; add to Params as needed):
+// *  - Params.ALPHA
+// *  - Params.GIN_BACKEND           // "dcor" (default) or "pearson"
+// *  - Params.GIN_PERMUTATIONS      // int, default 0 (use approx p for dCor)
+// *  - Params.GIN_RIDGE             // double, default 1e-8
+// *  - Params.SEED                  // (optional; included for consistency)
+// */
+//@TestOfIndependence(
+//        name = "GIN (Residual Independence)",
+//        command = "gin-test",
+//        dataType = DataType.Continuous
+//)
+//@General
 public class Gin implements IndependenceWrapper {
 
     @Serial
