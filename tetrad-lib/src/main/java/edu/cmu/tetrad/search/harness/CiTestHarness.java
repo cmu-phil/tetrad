@@ -31,7 +31,7 @@ import java.util.function.Function;
 /**
  * CI Test Harness for Type I error + p-value uniformity diagnostics.
  * <p>
- * Core idea:
+ * Core idea:x
  * - Sample CI facts (X ⟂ Y | Z) with |Z| in [kMin, kMax].
  * - Evaluate a list of IndependenceTest instances on the SAME set of facts.
  * - Output:

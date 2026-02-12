@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Double.NaN;
+import static java.lang.Math.sqrt;
 
 /**
  * RCIT (Randomized Conditional Independence Test) / RCoT (if doRcit=false).
@@ -40,7 +41,7 @@ import static java.lang.Double.NaN;
  *   <li>seed: RNG seed</li>
  * </ul>
  */
-public final class IndTestRcit implements IndependenceTest, RowsSettable {
+public final class Rcit implements IndependenceTest, RowsSettable {
 
     // ---------------- core data ----------------
     private final DataSet data;
@@ -62,6 +63,9 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
     private boolean centerFeatures = true;
     // ---------------- IndependenceTest state ----------------
     private double alpha = 0.05;
+    private int numFeatYAug = 50; // try 25–200; depends on speed budget
+//    private double wScale = 1.0; // try sqrt(2) ~ 1.414 or 2.0
+    private double wScale = sqrt(2);// or 2.0
     private double lastP = NaN;
     private List<Integer> rows = null;  // null => all rows
     private boolean verbose = false;
@@ -72,7 +76,7 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
      *
      * @param dataSet the data set used for the independence test; must not be null
      */
-    public IndTestRcit(DataSet dataSet) {
+    public Rcit(DataSet dataSet) {
         this(dataSet, new Parameters());
     }
 
@@ -85,7 +89,7 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
      * @param params  the parameters used to configure the test, including random seed, number of features,
      *                approximation method, and other RCIT-specific settings; must not be null
      */
-    public IndTestRcit(DataSet dataSet, Parameters params) {
+    public Rcit(DataSet dataSet, Parameters params) {
         this.data = Objects.requireNonNull(dataSet, "data");
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
         this.n = getActiveRowCount();
@@ -93,21 +97,6 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         long seed = params.getLong("rcit.seed", 1729L);
         this.masterSeed = seed;
         this.rng = new Random(seed);
-
-//        // legacy names (won’t override later setter calls from wrapper)
-//        this.numFeatZ = Math.max(1, params.getInt("rcit.numF", 100));
-//        this.numFeatXY = Math.max(1, params.getInt("rcit.numF2", 5));
-//        this.permutations = Math.max(0, params.getInt("rcit.permutations", 0));
-//        this.doRcit = params.getBoolean("rcit.rcit", true);
-
-//        String approxStr = params.getString("rcit.approx", "gamma");
-//        setApproximationFromInt(switch (approxStr.toLowerCase(Locale.ROOT)) {
-//            case "perm", "permutation" -> 5;
-//            case "chi2", "chi-sq", "chisq" -> 4;
-//            case "hbe" -> 2;
-//            case "lpb4", "lpd4" -> 1;
-//            default -> 3; // gamma
-//        });
 
         this.lambda = Math.max(1e-12, params.getDouble("rcit.lambda", this.lambda));
         this.centerFeatures = params.getBoolean("rcit.centerFeatures", true);
@@ -130,7 +119,7 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
             }
             double mean = sum / n;
             double var = (sumsq - n * mean * mean) / (n - 1);
-            double sd = (var > 0) ? Math.sqrt(var) : 1.0;
+            double sd = (var > 0) ? sqrt(var) : 1.0;
             for (int i = 0; i < n; i++) M.set(i, j, (M.get(i, j) - mean) / sd);
         }
     }
@@ -146,14 +135,6 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
     /**
      * Frobenius norm squared.
      */
-//    private static double frob2(SimpleMatrix M) {
-//        double s = 0.0;
-//        for (int i = 0; i < M.getNumElements(); i++) {
-//            double v = M.get(i);
-//            s += v * v;
-//        }
-//        return s;
-//    }
     private static double frob2(SimpleMatrix M) {
         double s = 0.0;
         double[] a = M.getDDRM().data;
@@ -175,11 +156,12 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
     /**
      * Random Fourier Features for RBF: sqrt(2)*cos(W X^T + b), with W ~ N(0, 1/σ).
      */
-    private static SimpleMatrix rff(SimpleMatrix X, int numF, double sigma, Random rng) {
+    private SimpleMatrix rff(SimpleMatrix X, int numF, double sigma, Random rng) {
         int n = X.getNumRows(), d = X.getNumCols();
         if (sigma <= 0 || !Double.isFinite(sigma)) sigma = 1.0;
 
-        double invSigma = 1.0 / sigma;
+//        double invSigma = 1.0 / sigma;
+        double invSigma = wScale / sigma;
         double[] b = new double[numF];
         double twoPi = 2.0 * Math.PI;
         for (int i = 0; i < numF; i++) b[i] = rng.nextDouble() * twoPi;
@@ -194,7 +176,7 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         }
 
         SimpleMatrix feat = new SimpleMatrix(n, numF);
-        double scale = Math.sqrt(2.0 / numF);
+        double scale = sqrt(2.0 / numF);
 
         for (int r = 0; r < n; r++) {
             for (int f = 0; f < numF; f++) {
@@ -224,7 +206,7 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
                     double diff = A.get(i, k) - A.get(j, k);
                     ss += diff * diff;
                 }
-                double dist = Math.sqrt(ss);
+                double dist = sqrt(ss);
                 if (dist > 0 && Double.isFinite(dist)) dists.add(dist);
             }
         }
@@ -255,7 +237,7 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
                 double diff = A.get(i, k) - A.get(j, k);
                 ss += diff * diff;
             }
-            double dd = Math.sqrt(ss);
+            double dd = sqrt(ss);
             if (dd > 0 && Double.isFinite(dd)) dist[filled++] = dd;
         }
 
@@ -336,7 +318,7 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         double var = 2.0 * s2;
         if (var <= 0) return (stat <= 1e-12) ? 1.0 : 0.0;
 
-        double sigma = Math.sqrt(var);
+        double sigma = sqrt(var);
         double t = (stat - mu) / sigma;
 
         double gamma1 = (8.0 * s3) / Math.pow(var, 1.5);   // skew
@@ -431,7 +413,7 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
                 }
                 if (i == j) {
                     if (sum <= 1e-18) sum = 1e-18; // guard; ridge should prevent this anyway
-                    L.set(i, j, Math.sqrt(sum));
+                    L.set(i, j, sqrt(sum));
                 } else {
                     L.set(i, j, sum / L.get(j, j));
                 }
@@ -474,22 +456,6 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         out.addAll(Z);
         return out;
     }
-
-//    /**
-//     * 1=LPB4, 2=HBE, 3=GAMMA, 4=CHI2, 5=PERMUTATION
-//     *
-//     * @param approxCode The code.
-//     */
-//    public void setApproximationFromInt(int approxCode) {
-//        switch (approxCode) {
-//            case 1 -> this.approx = Approx.LPB4;
-//            case 2 -> this.approx = Approx.HBE;
-//            case 3 -> this.approx = Approx.GAMMA;
-//            case 4 -> this.approx = Approx.CHI2;
-//            case 5 -> this.approx = Approx.PERMUTATION;
-//            default -> this.approx = Approx.GAMMA;
-//        }
-//    }
 
     private static SimpleMatrix covWithPermutedB(SimpleMatrix A, SimpleMatrix B, int[] perm) {
         int n = A.getNumRows();
@@ -603,6 +569,10 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         this.numFeatZ = Math.max(1, d);
     }
 
+    public void setNumFeaturesYAug(int d) { this.numFeatYAug = Math.max(1, d); }
+
+    public void setWScale(double s) { this.wScale = s; }
+
     /**
      * RNG seed.
      *
@@ -644,10 +614,10 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
             return new IndependenceResult(new IndependenceFact(x, y, new HashSet<>(Z)), false, p_, alpha - p_, false);
         }
         if (n < 5) {
-            if (verbose) TetradLogger.getInstance().log(new IndependenceFact(x, y, new HashSet<>(Z)) + " n < 5");
+            IndependenceFact fact = new IndependenceFact(x, y, new HashSet<>(Z));
+            if (verbose) TetradLogger.getInstance().log(fact + " n < 5");
             lastP = 1.0;
-            double p_ = 0.0;
-            return new IndependenceResult(new IndependenceFact(x, y, new HashSet<>(Z)), true, p_, alpha - p_, false);
+            return new IndependenceResult(fact, true, lastP, alpha - lastP, false);
         }
 
         SimpleMatrix X = cols(data, Collections.singletonList(x));
@@ -684,7 +654,10 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         SimpleMatrix fX = rffCached("fX", X, Collections.singletonList(x), numFeatXY, sigX, centerFeatures, seedX);
 
         List<Node> yKeyVars = (doRcit && !Z.isEmpty()) ? hstackVarList(y, Z) : Collections.singletonList(y);
-        SimpleMatrix fY = rffCached("fY", Yaug, yKeyVars, numFeatXY, sigY, centerFeatures, seedY);
+
+        int mY = (doRcit && Zm.getNumCols() > 0) ? numFeatYAug : numFeatXY;
+        SimpleMatrix fY = rffCached("fY", Yaug, yKeyVars, mY, sigY, centerFeatures, seedY);
+//        SimpleMatrix fY = rffCached("fY", Yaug, yKeyVars, numFeatXY, sigY, centerFeatures, seedY);
 
         SimpleMatrix fZ = (Zm.getNumCols() == 0) ? null
                 : rffCached("fZ", Zm, Z, numFeatZ, sigZ, centerFeatures, seedZ);
@@ -713,9 +686,6 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
                         for (int b = 0; b < permutations; b++) {
                             Random prng = new Random(basePermSeed + 0x9E3779B97F4A7C15L * b);
                             int[] perm = randomPermutation(n, prng);
-
-//                            SimpleMatrix fYp = permuteRows(fY, perm);
-//                            double s = n * frob2(cov(fX, fYp));
 
                             SimpleMatrix C = covWithPermutedB(fX, fY, perm);
                             double s = n * frob2(C);
