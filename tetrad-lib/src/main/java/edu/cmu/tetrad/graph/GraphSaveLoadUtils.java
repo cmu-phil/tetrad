@@ -20,6 +20,8 @@
 
 package edu.cmu.tetrad.graph;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.util.*;
@@ -1237,6 +1239,11 @@ public class GraphSaveLoadUtils {
             case TAIL   -> 3;
             default     -> 0; // NULL or anything else
         };
+    }
+
+    public static String graphToJson(Graph graph) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return gson.toJson(graph);
     }
 
     /**

@@ -145,6 +145,7 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
      */
     private volatile double irlsTol = 1e-6;
     private volatile int nEff;
+    private double penaltyDiscount = 1.0;
 
     /**
      * Constructs an instance of MinimaxTRffBicScore using the provided dataset.
@@ -532,7 +533,7 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
                     FitResult fit = fitMultinomialLogitMixed(i, y, K, parents, rows, n);
                     if (!Double.isFinite(fit.logLik)) return Double.NaN;
 
-                    return fit.logLik - 0.5 * fit.edf * log(n);
+                    return fit.logLik - 0.5 * penaltyDiscount * fit.edf * log(n);
 
                 } else {
                     // -------- continuous child: Student-t RFF ridge (+ one-hot discrete parents) --------
@@ -553,7 +554,7 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
                     FitResult fit = fitStudentTRffRidgeMixed(i, y, parents, rows, n);
                     if (!Double.isFinite(fit.logLik)) return Double.NaN;
 
-                    return fit.logLik - 0.5 * fit.edf * log(n);
+                    return fit.logLik - 0.5 * penaltyDiscount * fit.edf * log(n);
                 }
 
             } catch (RuntimeException e) {
@@ -1340,6 +1341,10 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         int[] out = Arrays.copyOf(z, z.length + 1);
         out[z.length] = x;
         return out;
+    }
+
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
     }
 
     private record FitResult(double logLik, double edf) {

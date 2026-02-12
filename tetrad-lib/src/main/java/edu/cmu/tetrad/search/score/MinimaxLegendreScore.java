@@ -762,8 +762,7 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
         for (int j = 0; j < dCont; j++) {
             double z = Zc[i][j];
             double x = z * invClip;
-            if (x > 1.0) x = 1.0;
-            else if (x < -1.0) x = -1.0;
+            x = clamp(x);
 
             if (j < kInt) xMap[j] = x;
 
@@ -810,6 +809,13 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
                 out[ohOff + col] = 1.0;
             }
         }
+    }
+
+    private static double clamp(double x) {
+//        return tanh(x);
+        if (x > 1.0) x = 1.0;
+        else if (x < -1.0) x = -1.0;
+        return x;
     }
 
     // -------------------- missing rows & extraction --------------------
