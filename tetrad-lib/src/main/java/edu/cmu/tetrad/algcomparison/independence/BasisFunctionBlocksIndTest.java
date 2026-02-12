@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
@@ -47,6 +48,7 @@ import java.util.List;
         dataType = DataType.Mixed
 )
 @Mixed
+@General
 public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
 
     @Serial

@@ -105,10 +105,10 @@ public final class CiTestHarness {
 
         List<IndependenceWrapper> tests = new ArrayList<>();
         tests.add(new FisherZ());
-        tests.add(new Gcm());
         tests.add(new FfCi());
-        tests.add(new MinimaxCITest());
+        tests.add(new Gcm());
         tests.add(new ClKciPython());
+        tests.add(new MinimaxCITest());
         tests.add(new Rcit());
 //        tests.add(new Kci());
         tests.add(new BasisFunctionBlocksIndTest());
@@ -172,16 +172,31 @@ public final class CiTestHarness {
         harness.writePValues(new File("ci_test_pvalues_indep." + config.kMin + "." + config.kMax + ".txt"), testNames, result.indepFacts, result.indepPvals);
         harness.writePValues(new File("ci_test_pvalues_dep." + config.kMin + "." + config.kMax + ".txt"), testNames, result.depFacts, result.depPvals);
 
-        harness.writeDecisions(new File("ci_test_decisions_indep."+ config.kMin + "." + config.kMax + ".txt"), testNames, alphas, result.indepFacts, result.indepDecisions);
-        harness.writeDecisions(new File("ci_test_decisions_dep."+ config.kMin + "." + config.kMax + ".txt"), testNames, alphas, result.depFacts, result.depDecisions);
+        harness.writeDecisions(new File("ci_test_decisions_indep." + config.kMin + "." + config.kMax + ".txt"), testNames, alphas, result.indepFacts, result.indepDecisions);
+        harness.writeDecisions(new File("ci_test_decisions_dep." + config.kMin + "." + config.kMax + ".txt"), testNames, alphas, result.depFacts, result.depDecisions);
 
         harness.writeSummaryReport(
-                new File("ci_test_summary"+ config.kMin + "." + config.kMax + ".txt"),
+                new File("ci_test_summary" + config.kMin + "." + config.kMax + ".txt"),
                 testNames,
                 alphas,
                 result
         );
     }
+
+    private static void writeConfig(PrintWriter pw, Config cfg) {
+        pw.println("Config");
+        pw.println("  kMin: " + cfg.kMin());
+        pw.println("  kMax: " + cfg.kMax());
+        pw.println("  nFactsIndep: " + cfg.nFactsIndep());
+        pw.println("  nFactsDep: " + cfg.nFactsDep());
+        pw.println("  maxAttemptsPerFact: " + cfg.maxAttemptsPerFact());
+        pw.println("  seed: " + cfg.seed());
+        pw.println("  alphas: " + Arrays.toString(cfg.alphas()));
+        pw.println("  progressEvery: " + cfg.progressEvery());
+        pw.println();
+    }
+
+    // ===================== Core sampling logic =====================
 
     /**
      * Main entry: run harness on given true graph, dataset, and CI tests.
@@ -298,8 +313,6 @@ public final class CiTestHarness {
                 uni);
     }
 
-    // ===================== Core sampling logic =====================
-
     public void writePValues(File out, List<String> testNames, List<CiFact> facts, double[][] pvals) throws IOException {
         try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(out), StandardCharsets.UTF_8))) {
             pw.print("fact,x,y,z");
@@ -402,6 +415,8 @@ public final class CiTestHarness {
         }
     }
 
+    // ===================== CI test evaluation =====================
+
     /**
      * Builds an MsepTest over the provided variable list. This is the “truth oracle” for implied independences.
      * Isolating here makes it easy to tweak later if you want different separation semantics.
@@ -411,7 +426,7 @@ public final class CiTestHarness {
         return new MsepTest(trueGraph);
     }
 
-    // ===================== CI test evaluation =====================
+    // ===================== Uniformity diagnostics (KS + AD) =====================
 
     /**
      * Sampling conditioning set Z uniformly without replacement from V \ {x,y}.
@@ -441,8 +456,6 @@ public final class CiTestHarness {
         return z;
     }
 
-    // ===================== Uniformity diagnostics (KS + AD) =====================
-
     /**
      * True if implied independence holds in the true graph.
      * Isolated so you can adjust details (e.g., exclude adjacencies, require minimality, etc.).
@@ -459,6 +472,8 @@ public final class CiTestHarness {
             throw new RuntimeException(e);
         }
     }
+
+    // ===================== (Optional) true DAG creation hook =====================
 
     /**
      * Returns the p-value for X _||_ Y | Z for the given test.
@@ -477,7 +492,7 @@ public final class CiTestHarness {
         }
     }
 
-    // ===================== (Optional) true DAG creation hook =====================
+    // ===================== Small utilities =====================
 
     /**
      * Decision encoding:
@@ -488,8 +503,6 @@ public final class CiTestHarness {
         if (!Double.isFinite(pValue)) return 0; // treat NaN as “don’t reject”
         return (pValue <= alpha) ? 1 : 0;
     }
-
-    // ===================== Small utilities =====================
 
     /**
      * KS test p-value for Uniform(0,1). Uses asymptotic approximation (good once n is moderately large).
@@ -600,19 +613,6 @@ public final class CiTestHarness {
         }
 
         return new Buckets(indep, dep);
-    }
-
-    private static void writeConfig(PrintWriter pw, Config cfg) {
-        pw.println("Config");
-        pw.println("  kMin: " + cfg.kMin());
-        pw.println("  kMax: " + cfg.kMax());
-        pw.println("  nFactsIndep: " + cfg.nFactsIndep());
-        pw.println("  nFactsDep: " + cfg.nFactsDep());
-        pw.println("  maxAttemptsPerFact: " + cfg.maxAttemptsPerFact());
-        pw.println("  seed: " + cfg.seed());
-        pw.println("  alphas: " + Arrays.toString(cfg.alphas()));
-        pw.println("  progressEvery: " + cfg.progressEvery());
-        pw.println();
     }
 
     public record Config(

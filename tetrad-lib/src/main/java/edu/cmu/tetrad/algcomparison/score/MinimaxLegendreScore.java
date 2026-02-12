@@ -38,7 +38,7 @@ import java.util.List;
 )
 @General
 @Mixed
-@Experimental
+//@Experimental
 public class MinimaxLegendreScore implements ScoreWrapper {
 
     @Serial

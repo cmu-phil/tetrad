@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.General;
+import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -20,7 +21,8 @@ import java.util.List;
         dataType = {DataType.Mixed}
 )
 @General
-@Experimental
+@Mixed
+//@Experimental
 public class MinimaxTRffBicScore implements ScoreWrapper {
 
     @Serial
