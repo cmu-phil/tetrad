@@ -108,9 +108,9 @@ public final class CiTestHarness {
         tests.add(new FfCi());
         tests.add(new Gcm());
         tests.add(new ClKciPython());
+        tests.add(new Kci());
         tests.add(new MinimaxCITest());
         tests.add(new Rcit());
-//        tests.add(new Kci());
         tests.add(new BasisFunctionBlocksIndTest());
 
         Parameters params = new Parameters();

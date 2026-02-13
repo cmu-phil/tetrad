@@ -78,7 +78,7 @@ public class FfCi implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "FFCI (Simple)";
+        return "FFCI";
     }
 
     @Override
