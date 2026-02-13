@@ -327,7 +327,7 @@ public final class VertexRepairPanel extends JPanel {
     }
 
     // ---------------------------------------------------------------------
-    // Auto model best (v2): "do no harm" sweep that greedily takes the TOP
+    // Auto model best: "do no harm" sweep that greedily takes the TOP
     // table row for each node until the TOP row becomes NO-OP, then moves on.
     // One sweep only.
     // ---------------------------------------------------------------------
@@ -451,7 +451,7 @@ public final class VertexRepairPanel extends JPanel {
 
         TableColumnModel cm = resultsTable.getColumnModel();
 
-        resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_MODEL_PASSES).setCellRenderer(modelPRenderer());
+        resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_MODEL_P).setCellRenderer(modelPRenderer());
         resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_NODE_P).setCellRenderer(modelPRenderer());
 
         // Column indices assumed; adjust if needed
@@ -498,7 +498,7 @@ public final class VertexRepairPanel extends JPanel {
         resultsTable.setRowSorter(resultsSorter);
 
         // Model-P comparator with NaN last
-        resultsSorter.setComparator(CandidateTableModel.COL_MODEL_PASSES, (a, b) -> {
+        resultsSorter.setComparator(CandidateTableModel.COL_MODEL_P, (a, b) -> {
             double da = (a instanceof Number na) ? na.doubleValue() : Double.NaN;
             double db = (b instanceof Number nb) ? nb.doubleValue() : Double.NaN;
 
@@ -576,7 +576,7 @@ public final class VertexRepairPanel extends JPanel {
         if (resultsSorter == null) return;
 
         resultsSorter.setSortKeys(List.of(
-                new RowSorter.SortKey(CandidateTableModel.COL_MODEL_PASSES, SortOrder.DESCENDING),
+                new RowSorter.SortKey(CandidateTableModel.COL_MODEL_P, SortOrder.DESCENDING),
                 new RowSorter.SortKey(CandidateTableModel.COL_DELTA, SortOrder.ASCENDING),
                 new RowSorter.SortKey(CandidateTableModel.COL_EDGES, SortOrder.ASCENDING),
                 new RowSorter.SortKey(CandidateTableModel.COL_NODE_P, SortOrder.DESCENDING)
@@ -995,7 +995,7 @@ public final class VertexRepairPanel extends JPanel {
                         editsApplied++;
                         int finalEditsApplied = editsApplied;
                         SwingUtilities.invokeLater(() ->
-                                statusLabel.setText("Auto-repair v2: applied " + finalEditsApplied + " edits..."));
+                                statusLabel.setText("Auto-repair: applied " + finalEditsApplied + " edits..."));
 
                         vlog("APPLIED move for node %s: %s", center.getName(), sc.edit().description());
                         moved = true;
@@ -1011,7 +1011,7 @@ public final class VertexRepairPanel extends JPanel {
                 }
             }
 
-            vlog("Finished node (v2): %s", v0.getName());
+            vlog("Finished node: %s", v0.getName());
         }
 
         vlog("Checkpoint signature: %s", graphSignature(checkpoint));
@@ -1021,7 +1021,7 @@ public final class VertexRepairPanel extends JPanel {
             history.clear();
             history.push(checkpoint);
             updateButtons();
-            statusLabel.setText("Auto-repair v2 applied " + finalEdits + " edits.");
+            statusLabel.setText("Auto-repair applied " + finalEdits + " edits.");
             startWatched("Searching", this::runSearchWatched, null);
         });
     }
@@ -1360,8 +1360,6 @@ public final class VertexRepairPanel extends JPanel {
                             List.of(exy, exz),
                             List.of(yToX, zToX)
                     ));
-
-                    System.out.println("Proposed collider fix: " + label);
                 }
 
                 // Case B: collider already (two arrows at X). Propose orient away: X->Y and X->Z.
@@ -1375,8 +1373,6 @@ public final class VertexRepairPanel extends JPanel {
                             List.of(exy, exz),
                             List.of(xToY, xToZ)
                     ));
-
-                    System.out.println("Proposed collider fix: " + label);
                 }
             }
         }
@@ -2340,12 +2336,12 @@ public final class VertexRepairPanel extends JPanel {
         private static final int COL_AFTER = 2;
         private static final int COL_DELTA = 3;
         private static final int COL_NODE_P = 4;
-        private static final int COL_MODEL_PASSES = 5;
+        private static final int COL_MODEL_P = 5;
         private static final int COL_EDGES = 6;
         private static final int COL_APPLY = 7;
 
         private final String[] cols = {
-                "Edit", "Baseline", "After", "Δ", "Node-P", "Passes", "Edges", "Apply"
+                "Edit", "Baseline", "After", "Δ", "Node-P", "Model-P", "Edges", "Apply"
         };
 
         private List<ScoredCandidate> rows = List.of();
@@ -2385,7 +2381,7 @@ public final class VertexRepairPanel extends JPanel {
                 case COL_AFTER -> r.violationsAfter();
                 case COL_DELTA -> r.delta();
                 case COL_NODE_P -> r.nodePAfter();// > alpha ? 1.0 : 0.0;
-                case COL_MODEL_PASSES -> r.modelPAfter();// > alpha ? 1.0 : 0.0;
+                case COL_MODEL_P -> r.modelPAfter();// > alpha ? 1.0 : 0.0;
                 case COL_EDGES -> r.edgesAfter();
                 case COL_APPLY -> r.edit().isNoOp() ? "" : "Accept";
                 default -> "";
@@ -2399,7 +2395,7 @@ public final class VertexRepairPanel extends JPanel {
                 case COL_AFTER -> Integer.class;
                 case COL_DELTA -> Integer.class;
                 case COL_NODE_P -> Double.class;
-                case COL_MODEL_PASSES -> Double.class;
+                case COL_MODEL_P -> Double.class;
                 case COL_EDGES -> Integer.class;
                 case COL_APPLY -> Object.class;
                 default -> Object.class;
