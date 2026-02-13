@@ -6,7 +6,9 @@ import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
+import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -61,9 +63,9 @@ public final class VertexRepairPanel extends JPanel {
     private final JPanel resultsCard = new JPanel(new CardLayout());
 
     // Sorting/filtering UI
-    private final JCheckBox markovAlphaFilter =
-            new JCheckBox("Hide rows with Model-P or Node-P < α");
-    private final JTextField alphaField = new JTextField("0.01", 6);
+//    private final JCheckBox markovAlphaFilter =
+//            new JCheckBox("Hide rows with Model-P or Node-P < α");
+    private final DoubleTextField alphaField = new DoubleTextField(0.01, 6, NumberFormatUtil.getInstance().getNumberFormat());
     private final JTextField modelPTopKField = new JTextField(String.valueOf(DEFAULT_MODELP_TOP_K), 5);
 
     // debounce timers so we don’t write prefs on every keystroke
@@ -83,31 +85,6 @@ public final class VertexRepairPanel extends JPanel {
     // --- Watch dialog state (one at a time) ---
     private volatile SwingWorker<?, ?> activeWorker;
 
-    //    public VertexRepairPanel(VertexCheckEditor editor, Node x) {
-//        super(new BorderLayout());
-//        this.x = Objects.requireNonNull(x, "x");
-//
-//        this.baseModel = Objects.requireNonNull(editor.getIndTestModel(), "editor.getIndTestModel()");
-//        this.Q = Objects.requireNonNull(editor.getCachedQueries(), "editor.getCachedQueries()");
-//        this.workingGraph = safeCopy(baseModel.getGraph());
-//        this.model = editor.getIndTestModel();
-//
-//        // Label buttons now that x is known
-//        this.searchButton.setText("Adjust " + x.getName());
-//
-//        // Initialize graph type combo options from graph legality
-//        initGraphTypeComboFromGraph(this.workingGraph);
-//
-//        buildUI();
-//
-//        initPrefTimers();
-//        loadPrefsIntoUi();
-//
-//        wireActions();
-//        updateButtons();
-//
-//        setPreferredSize(new Dimension(650, 600));
-//    }
     private volatile JDialog watchDialog;
 
     public VertexRepairPanel(VertexCheckEditor editor, Node x) {
@@ -166,11 +143,10 @@ public final class VertexRepairPanel extends JPanel {
         }
 
         List<String> z = new ArrayList<>();
-        if (f.getZ() != null) {
-            for (Node n : f.getZ()) {
-                if (n != null && n.getName() != null) z.add(n.getName());
-            }
+        for (Node n : f.getZ()) {
+            if (n != null && n.getName() != null) z.add(n.getName());
         }
+
         Collections.sort(z);
 
         return a + "|" + b + "|" + String.join(",", z);
@@ -246,10 +222,6 @@ public final class VertexRepairPanel extends JPanel {
         }
     }
 
-    private static boolean isUsableP(double p, double alpha) {
-        return !Double.isNaN(p) && p >= alpha;
-    }
-
     // ---------------------------------------------------------------------
     // UI
     // ---------------------------------------------------------------------
@@ -277,6 +249,52 @@ public final class VertexRepairPanel extends JPanel {
         System.out.println("[VertexAutoRepair] " + String.format(fmt, args));
     }
 
+    private static Endpoint endpointAt(Edge e, Node n) {
+        if (e == null || n == null) return null;
+        return e.getEndpoint(n);
+    }
+
+    private static Edge rebindEdgeToGraph(Graph g, Edge e) {
+        if (g == null || e == null) return null;
+
+        Node a0 = e.getNode1();
+        Node b0 = e.getNode2();
+        if (a0 == null || b0 == null) return null;
+
+        String an = a0.getName();
+        String bn = b0.getName();
+        if (an == null || bn == null) return null;
+
+        Node a = g.getNode(an);
+        Node b = g.getNode(bn);
+        if (a == null || b == null) return null;
+
+        // Preserve endpoint-at-node semantics, regardless of node order
+        Endpoint ea = e.getEndpoint(a0);
+        Endpoint eb = e.getEndpoint(b0);
+
+        // If the Edge stores endpoints by position, safer:
+        // Endpoint ea = e.getEndpoint1();
+        // Endpoint eb = e.getEndpoint2();
+        // but only if node1/node2 align by name.
+        return new Edge(a, b, ea, eb);
+    }
+
+    // ---------------------------------------------------------------------
+    // Search logic (watched, background)
+    // ---------------------------------------------------------------------
+
+    private static Edge getEdgeByNames(Graph g, Edge e) {
+        if (g == null || e == null) return null;
+        String a = e.getNode1() == null ? null : e.getNode1().getName();
+        String b = e.getNode2() == null ? null : e.getNode2().getName();
+        if (a == null || b == null) return null;
+        Node ga = g.getNode(a);
+        Node gb = g.getNode(b);
+        if (ga == null || gb == null) return null;
+        return g.getEdge(ga, gb);
+    }
+
     private Node resolveInitialNode(Graph g, Node requested) {
         if (g == null) return requested; // nothing better we can do
         List<Node> nodes = new ArrayList<>(g.getNodes());
@@ -285,11 +303,15 @@ public final class VertexRepairPanel extends JPanel {
         if (nodes.isEmpty()) return requested;
 
         // if null or not in graph, choose first node
-        if (requested == null || requested.getName() == null) return nodes.get(0);
+        if (requested == null || requested.getName() == null) return nodes.getFirst();
 
         Node inGraph = g.getNode(requested.getName());
-        return (inGraph != null) ? inGraph : nodes.get(0);
+        return (inGraph != null) ? inGraph : nodes.getFirst();
     }
+
+    // ---------------------------------------------------------------------
+    // Auto model best
+    // ---------------------------------------------------------------------
 
     /**
      * Caller reads this after dialog closes.
@@ -298,61 +320,12 @@ public final class VertexRepairPanel extends JPanel {
         return workingGraph;
     }
 
-    // ---------------------------------------------------------------------
-    // Search logic (watched, background)
-    // ---------------------------------------------------------------------
-
     private void buildUI() {
         JPanel controls = new JPanel(new GridBagLayout());
 //        controls.setBorder(new TitledBorder("Repair Node: " + x.getName()));
         controls.setBorder(new TitledBorder("Repair Model"));
         GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(4, 4, 4, 4);
-//        c.gridx = 0;
-//        c.gridy = 0;
-//        c.anchor = GridBagConstraints.WEST;
-//
-//        controls.add(new JLabel("Graph type:"), c);
-//
-//        c.gridx = 1;
-//        c.fill = GridBagConstraints.HORIZONTAL;
-//        c.weightx = 1;
-//        controls.add(graphTypeCombo, c);
-
-//        // Row: Node Dropdown
-//        c.gridx = 0;
-//        c.gridy = 1;
-//        c.gridwidth = 1;
-//        c.fill = GridBagConstraints.NONE;
-//        c.weightx = 0;
-//        controls.add(new JLabel("Node:"), c);
-//
-//        c.gridx = 1;
-//        c.fill = GridBagConstraints.HORIZONTAL;
-//        c.weightx = 1;
-//        populateNodeCombo();     // fills nodeCombo and selects this.x if present
-//        controls.add(nodeCombo, c);
-//
-//        // Row 2: Markov alpha filter
-//        c.gridx = 0;
-//        c.gridy = 1;
-//        c.gridwidth = 1;
-//        c.fill = GridBagConstraints.NONE;
-//        c.weightx = 0;
-//        controls.add(markovAlphaFilter, c);
-//
-//        c.gridx = 1;
-//        c.fill = GridBagConstraints.HORIZONTAL;
-//        c.weightx = 1;
-//
-//        JPanel alphaPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-//        alphaPanel.add(new JLabel("α:"));
-//        alphaPanel.add(alphaField);
-//
-//        alphaPanel.add(new JLabel("Model-P top-K:"));
-//        alphaPanel.add(modelPTopKField);
-//
-//        controls.add(alphaPanel, c);
 
         // Row 1: Node Dropdown
         c.gridx = 0;
@@ -375,13 +348,9 @@ public final class VertexRepairPanel extends JPanel {
 
         // Row 2: Markov alpha filter
         c.gridx = 0;
-        c.gridy = 2;             // <-- FIX: was 1
+        c.gridy = 2;
         c.gridwidth = 1;
-        c.fill = GridBagConstraints.NONE;
-        c.weightx = 0;
-        controls.add(markovAlphaFilter, c);
 
-        c.gridx = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 1;
         JPanel alphaPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
@@ -417,14 +386,14 @@ public final class VertexRepairPanel extends JPanel {
                     int modelRow = resultsTable.convertRowIndexToModel(row);
                     CandidateEdit cand = resultsModel.getCandidate(modelRow);
                     applyCandidate(cand);
-                    startWatched("Searching", this::runSearchWatched, null);
+//                    startWatched("Searching", this::runSearchWatched, null);
                 }));
 
         resultsTable.setTransferHandler(new DefaultTableTransferHandler(0));
 
         TableColumnModel cm = resultsTable.getColumnModel();
 
-        resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_MODEL_P).setCellRenderer(modelPRenderer());
+        resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_MODEL_PASSES).setCellRenderer(modelPRenderer());
         resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_NODE_P).setCellRenderer(modelPRenderer());
 
         // Column indices assumed; adjust if needed
@@ -471,7 +440,7 @@ public final class VertexRepairPanel extends JPanel {
         resultsTable.setRowSorter(resultsSorter);
 
         // Model-P comparator with NaN last
-        resultsSorter.setComparator(CandidateTableModel.COL_MODEL_P, (a, b) -> {
+        resultsSorter.setComparator(CandidateTableModel.COL_MODEL_PASSES, (a, b) -> {
             double da = (a instanceof Number na) ? na.doubleValue() : Double.NaN;
             double db = (b instanceof Number nb) ? nb.doubleValue() : Double.NaN;
 
@@ -522,7 +491,6 @@ public final class VertexRepairPanel extends JPanel {
 
         if (workingGraph != null) {
             List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
-//            nodes.sort(Comparator.comparing(Node::getName, Comparator.nullsLast(String::compareTo)));
             nodes.sort(Comparator.comparing(Node::getName, VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR));
             for (Node n : nodes) m.addElement(n);
         }
@@ -546,38 +514,13 @@ public final class VertexRepairPanel extends JPanel {
         }
     }
 
-    // ---------------------------------------------------------------------
-    // Auto model best
-    // ---------------------------------------------------------------------
-
     private void applySortAndFilter() {
         if (resultsSorter == null) return;
 
-        // 1) Filter (optional)
-        if (markovAlphaFilter.isSelected()) {
-            double alpha = parseAlpha(alphaField.getText(), DEFAULT_ALPHA);
-
-            resultsSorter.setRowFilter(new RowFilter<>() {
-                @Override
-                public boolean include(Entry<? extends CandidateTableModel, ? extends Integer> e) {
-
-                    double modelP = ((Double) e.getValue(CandidateTableModel.COL_MODEL_P)).doubleValue();
-                    double nodeP = ((Double) e.getValue(CandidateTableModel.COL_NODE_P)).doubleValue();
-
-                    // Keep if either wasn't computed (NaN); otherwise require BOTH >= alpha.
-                    return (Double.isNaN(modelP) || modelP >= alpha)
-                            && (Double.isNaN(nodeP) || nodeP >= alpha);
-                }
-            });
-        } else {
-            resultsSorter.setRowFilter(null);
-        }
-
-        // 2) Sort keys (lexicographic)
         resultsSorter.setSortKeys(List.of(
+                new RowSorter.SortKey(CandidateTableModel.COL_MODEL_PASSES, SortOrder.DESCENDING),
                 new RowSorter.SortKey(CandidateTableModel.COL_DELTA, SortOrder.ASCENDING),
                 new RowSorter.SortKey(CandidateTableModel.COL_EDGES, SortOrder.ASCENDING),
-                new RowSorter.SortKey(CandidateTableModel.COL_MODEL_P, SortOrder.DESCENDING),
                 new RowSorter.SortKey(CandidateTableModel.COL_NODE_P, SortOrder.DESCENDING)
         ));
 
@@ -617,14 +560,18 @@ public final class VertexRepairPanel extends JPanel {
         });
 
         // Auto model best
-        modelBestButton.addActionListener(e -> startWatched("Auto-repairing", this::runModelBestWatched, null));
+        modelBestButton.addActionListener(e ->
+                startWatched("Auto-repairing", this::runModelBestWatched2,
+                        () -> startWatched("Searching", this::runSearchWatched, null)));
 
-        markovAlphaFilter.addActionListener(e -> applySortAndFilter());
-        markovAlphaFilter.setSelected(true);
-
-        alphaField.addActionListener(e -> {
-            applySortAndFilter();
-            saveAlphaPref();
+        alphaField.setFilter((value, oldValue) -> {
+            try {
+                applySortAndFilter();
+                saveAlphaPref();
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
+            }
         });
 
         alphaField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
@@ -681,6 +628,23 @@ public final class VertexRepairPanel extends JPanel {
         modelBestButton.setEnabled(!busy);
     }
 
+    // ---------------------------------------------------------------------
+    // Auto model best (v2): "do no harm" sweep that greedily takes the TOP
+    // table row for each node until the TOP row becomes NO-OP, then moves on.
+    // One sweep only.
+    // ---------------------------------------------------------------------
+
+    /**
+     * One sweep over nodes. For each node, repeatedly:
+     * - compute the candidate table for that node (same 2-pass scoring behavior as UI),
+     * - sort exactly like the JTable,
+     * - take the top row,
+     * - apply it (guarded: progress + do-no-harm),
+     * until the top row is "No change" (or no applicable move), then advance to next node.
+     * <p>
+     * Stops after one pass through the nodes (no outer repetition).
+     */
+
     private void runSearchWatched() {
         RepairGraphType gt = (RepairGraphType) graphTypeCombo.getSelectedItem();
         Graph base = safeCopy(workingGraph);
@@ -718,13 +682,13 @@ public final class VertexRepairPanel extends JPanel {
         List<CandidateEdit> candidates = enumerateCandidates(base, x, gt);
         candidates = new ArrayList<>(candidates);
         if (candidates.stream().noneMatch(CandidateEdit::isNoOp)) {
-            candidates.add(0, CandidateEdit.noOp());
+            candidates.addFirst(CandidateEdit.noOp());
         }
 
         if (stopRequested()) return;
 
         GlobalEvalCache baseCache = buildBaselineCache(base);
-        GraphEval baseEval = evalGraphLocality(base, baseCache, base, Set.of(), true);
+        GraphEval baseEval = evalGraphLocality(baseCache, base, Set.of(), true);
 
         int baseline = baseEval.violations();
         double baselineModelP = baseEval.modelP();
@@ -741,10 +705,10 @@ public final class VertexRepairPanel extends JPanel {
             if (g2 == null) continue;
 
             boolean useLocality = (gt == RepairGraphType.DAG || gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG);
-            Set<String> affected = affectedVertices(base, cand, x, g2);
+            Set<String> affected = affectedVertices(base, x, g2);
 
             int after = useLocality
-                    ? evalGraphLocality(base, baseCache, g2, affected, false).violations()
+                    ? evalGraphLocality(baseCache, g2, affected, false).violations()
                     : evalViolationsOnly(g2);
 
             double nodePAfter = nodePValue(g2, x);
@@ -792,10 +756,9 @@ public final class VertexRepairPanel extends JPanel {
         List<ScoredCandidate> rankedForStatus = new ArrayList<>(scored);
 //        rankedForStatus.sort(candidateRankingForTopK());
         rankedForStatus.sort(tableOrderFull());
-        ScoredCandidate bestCand = rankedForStatus.isEmpty() ? null : rankedForStatus.get(0);
+        ScoredCandidate bestCand = rankedForStatus.isEmpty() ? null : rankedForStatus.getFirst();
 
         List<ScoredCandidate> finalScored = scored;
-        ScoredCandidate finalBest = bestCand;
         SwingUtilities.invokeLater(() -> {
             resultsModel.set(finalScored);
             applySortAndFilter();
@@ -805,10 +768,10 @@ public final class VertexRepairPanel extends JPanel {
                 statusLabel.setText("No legal candidate edits found.");
                 ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_NONE);
             } else {
-                int best = (finalBest == null) ? baseline : finalBest.violationsAfter();
-                String modelPBestStr = (finalBest == null || Double.isNaN(finalBest.modelPAfter()))
+                int best = (bestCand == null) ? baseline : bestCand.violationsAfter();
+                String modelPBestStr = (bestCand == null || Double.isNaN(bestCand.modelPAfter()))
                         ? "n/a"
-                        : fmt.format(finalBest.modelPAfter());
+                        : fmt.format(bestCand.modelPAfter());
 
                 statusLabel.setText(
                         "Baseline violations: " + baseline +
@@ -820,29 +783,16 @@ public final class VertexRepairPanel extends JPanel {
         });
     }
 
-    private Comparator<ScoredCandidate> candidateRankingForTopK() {
-        // Keep exactly your existing “rankedForTopK” behavior:
-        return Comparator
-                .comparingInt(ScoredCandidate::violationsAfter)
-                .thenComparingInt(ScoredCandidate::edgesAfter)
-                .thenComparing(Comparator.comparingDouble(ScoredCandidate::nodePAfter).reversed())
-                .thenComparingInt(ScoredCandidate::delta);
-    }
-//    /** Stable-ish graph signature for cheap cycle detection in auto-repair loops. */
-//    private static String graphSignature(Graph g) {
-//        if (g == null) return "null";
-//        List<String> es = new ArrayList<>();
-//        for (Edge e : g.getEdges()) {
-//            Node a = e.getNode1(), b = e.getNode2();
-//            String an = (a == null || a.getName() == null) ? "?" : a.getName();
-//            String bn = (b == null || b.getName() == null) ? "?" : b.getName();
-//            es.add(an + ":" + e.getEndpoint1() + "--" + e.getEndpoint2() + ":" + bn);
-//        }
-//        Collections.sort(es);
-//        return String.join("|", es);
-//    }
-
-    private void runModelBestWatched() {
+    /**
+     * One sweep over nodes. For each node, repeatedly:
+     * - compute the candidate table for that node (same 2-pass scoring behavior as UI),
+     * - sort exactly like the JTable (i.e., by the *table values*),
+     * - try the ranked rows in order until one passes guards,
+     * until the top row becomes NO-OP (or nothing passes guards), then advance to next node.
+     * <p>
+     * Stops after one pass through the nodes (no outer repetition).
+     */
+    private void runModelBestWatched2() {
         // Single-undo checkpoint for the whole run
         Graph checkpoint = safeCopy(workingGraph);
 
@@ -850,34 +800,71 @@ public final class VertexRepairPanel extends JPanel {
         final RepairGraphType gt = (RepairGraphType) graphTypeCombo.getSelectedItem();
 
         int editsApplied = 0;
-        final int MAX_EDITS = 500;            // global safety cap
-        final int MAX_STEPS_PER_NODE = 200;   // per-node safety cap
+        final int MAX_EDITS = 500;           // global safety cap
+        final int MAX_STEPS_PER_NODE = 200;  // per-node safety cap
 
         vlog("==================================================");
-        vlog("AUTO-REPAIR (single sweep) (alpha=%.4g, type=%s)", alpha, String.valueOf(gt));
+        vlog("AUTO-REPAIR v2 (greedy table-order, one sweep) (alpha=%.4g, type=%s)", alpha, String.valueOf(gt));
         vlog("==================================================");
 
-        // One sweep only
+        // One sweep only (use the same natural name ordering you use elsewhere)
         List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
-        nodes.sort(Comparator.comparing(Node::getName, Comparator.nullsLast(String::compareTo)));
+        nodes.sort(Comparator.comparing(Node::getName, VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR));
+
+        // Comparator that matches the *effective* JTable ordering given your current table model:
+        // Sort keys (applySortAndFilter):
+        //   Δ ASC, Edges ASC, Model-P DESC, Node-P DESC
+        // BUT Model-P column is rendered as a 0/1 "pass" flag in getValueAt(),
+        // so we must sort by that same flag here (NOT raw modelPAfter()).
+        final Comparator<ScoredCandidate> tableOrder = (a, b) -> {
+            if (a == null && b == null) return 0;
+            if (a == null) return 1;
+            if (b == null) return -1;
+
+            int c;
+
+            // Δ ASC
+            c = Integer.compare(a.delta(), b.delta());
+            if (c != 0) return c;
+
+            // Edges ASC
+            c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+            if (c != 0) return c;
+
+            // Model-P "pass" flag DESC (1 before 0); NaN => 0
+            int passA = (!Double.isNaN(a.modelPAfter()) && a.modelPAfter() > alpha) ? 1 : 0;
+            int passB = (!Double.isNaN(b.modelPAfter()) && b.modelPAfter() > alpha) ? 1 : 0;
+            c = Integer.compare(passB, passA);
+            if (c != 0) return c;
+
+            // Node-P DESC (NaN last)
+            boolean aNaN = Double.isNaN(a.nodePAfter());
+            boolean bNaN = Double.isNaN(b.nodePAfter());
+            if (aNaN && bNaN) return 0;
+            if (aNaN) return 1;
+            if (bNaN) return -1;
+            c = -Double.compare(a.nodePAfter(), b.nodePAfter());
+            if (c != 0) return c;
+
+            // Stable tiebreak
+            String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
+            String kb = (b.edit() == null || b.edit().key() == null) ? "" : b.edit().key();
+            return ka.compareTo(kb);
+        };
 
         for (Node v0 : nodes) {
             if (stopRequested()) return;
             if (editsApplied >= MAX_EDITS) break;
 
-            Node center = (v0 == null || v0.getName() == null) ? null : workingGraph.getNode(v0.getName());
+            if (v0 == null || v0.getName() == null) continue;
+
+            // Re-resolve each time from current workingGraph (edits/canonicalization can replace node objects)
+            Node center = workingGraph.getNode(v0.getName());
             if (center == null) continue;
 
-            // Rule 0: if it's not broke, don't fix it
-            if (nodeLooksOk(workingGraph, center, alpha)) {
-                vlog("Skipping node %s (nodeP >= alpha in current graph).", center.getName());
-                continue;
-            }
-
             vlog("--------------------------------------------------");
-            vlog("Editing node: %s", center.getName());
+            vlog("Editing node (v2): %s", center.getName());
 
-            // Per-node loop: keep making moves until rule says stop
             Set<String> seenSignatures = new HashSet<>();
             int nodeSteps = 0;
 
@@ -890,7 +877,13 @@ public final class VertexRepairPanel extends JPanel {
                     break;
                 }
 
-                // Prevent infinite oscillation on a single node
+                // Refresh center in case the graph swapped node instances
+                center = workingGraph.getNode(center.getName());
+                if (center == null) {
+                    vlog("STOP node %s: center vanished from graph.", v0.getName());
+                    break;
+                }
+
                 String sig = graphSignature(workingGraph);
                 if (!seenSignatures.add(sig)) {
                     vlog("STOP node %s: detected cycle (graph signature repeated).", center.getName());
@@ -899,273 +892,71 @@ public final class VertexRepairPanel extends JPanel {
 
                 SearchPack pack = computeCandidatesForNode(workingGraph, center, gt);
                 if (pack == null || pack.scored == null || pack.scored.isEmpty()) {
-                    vlog("No candidates for node %s", center.getName());
+                    vlog("STOP node %s: no candidates.", center.getName());
                     break;
                 }
 
-                // 1) Alpha-filtered presorted list (table order)
-                List<ScoredCandidate> alphaList = alphaFilteredPresortedList(pack, alpha);
+                // Rank exactly like the JTable (given current table model)
+                List<ScoredCandidate> ranked = new ArrayList<>(pack.scored);
+                ranked.sort(tableOrder);
 
-                vlog("Alpha-filtered rows for %s: %d", center.getName(), alphaList.size());
-
-                if (!alphaList.isEmpty()) {
-
-                    // Only accept alpha-filtered moves that don't worsen violations.
-                    // Prefer strict improvement first; otherwise allow tie-with-sparser if you want.
-                    ScoredCandidate chosen = pickBestNonWorsening(alphaList);
-
-                    if (chosen == null) {
-                        vlog("STOP node %s: alpha-filtered rows exist but none are non-worsening (delta<=0).", center.getName());
-                        break;
-                    }
-
-                    vlog("Chosen filtered move: %s | after=%d delta=%d edges=%d nodeP=%.4g modelP=%.4g",
-                            chosen.edit().description(),
-                            chosen.after(),
-                            chosen.delta(),
-                            chosen.edgesAfter(),
-                            chosen.nodePAfter(),
-                            chosen.modelPAfter());
-
-//                    boolean ok = applyCandidateInternal(chosen.edit(), false, false);
-
-                    boolean ok = tryMoveWithGuards(workingGraph, center, chosen.edit(), gt, alpha);
-
-                    if (!ok) {
-                        vlog("STOP node %s: chosen filtered move did NOT change graph.", center.getName());
-                        break;
-                    }
-
-                    editsApplied++;
-                    int finalEditsApplied = editsApplied;
-                    SwingUtilities.invokeLater(() ->
-                            statusLabel.setText("Auto-repair: applied " + finalEditsApplied + " edits..."));
-
-                    vlog("APPLIED. Recomputing table for %s...", center.getName());
-                    continue;
+                // If the top row is NO-OP, we're done with this node.
+                ScoredCandidate top = ranked.getFirst();
+                if (top == null || top.edit() == null || top.edit().isNoOp()) {
+                    vlog("STOP node %s: top row is NO-OP.", center.getName());
+                    break;
                 }
 
-                // 2) If filtered list empty, do fallback loop:
-                // (1) min delta (if <0) apply
-                // (2) max nodeP (if >0) apply
-                // (3) max modelP (if >0) apply
-                // Repeat until max nodeP>0 AND max modelP>0 OR no move possible.
-
+                // Try rows in ranked order until one passes guards; if none do, stop this node.
                 boolean moved = false;
 
-                ScoredCandidate minDelta = pickMinDelta(pack);
-                if (minDelta != null) {
-                    vlog("Fallback min-delta candidate: %s | delta=%d nodeP=%s modelP=%s",
-                            minDelta.edit().description(),
-                            minDelta.delta(),
-                            fmtP(minDelta.nodePAfter()),
-                            fmtP(minDelta.modelPAfter()));
+                for (ScoredCandidate sc : ranked) {
+                    if (sc == null || sc.edit() == null) continue;
+                    if (sc.edit().isNoOp()) break; // once we hit NO-OP, nothing below it matters
 
-                    if (minDelta.delta() < 0) {
-//                        boolean ok = applyCandidateInternal(minDelta.edit(), false, false);
+                    vlog("Consider move: %s | base=%d after=%d delta=%d edges=%d nodeP=%s modelP=%s",
+                            sc.edit().description(),
+                            sc.baseline(),
+                            sc.violationsAfter(),
+                            sc.delta(),
+                            sc.edgesAfter(),
+                            fmtP(sc.nodePAfter()),
+                            fmtP(sc.modelPAfter()));
 
-                        boolean ok = tryMoveWithGuards(workingGraph, center, minDelta.edit(), gt, alpha);
+                    if (tryMoveWithGuards(workingGraph, center, sc.edit(), gt)) {
+                        editsApplied++;
+                        int finalEditsApplied = editsApplied;
+                        SwingUtilities.invokeLater(() ->
+                                statusLabel.setText("Auto-repair v2: applied " + finalEditsApplied + " edits..."));
 
-                        if (ok) {
-                            moved = true;
-                            editsApplied++;
-                            vlog("APPLIED fallback delta<0 move.");
-                        } else {
-                            vlog("Rejected fallback delta<0 move (no change).");
-                        }
-                    }
-                }
-
-                boolean allowPChasing = false; // start false; you can add a UI toggle later
-
-                if (!moved && allowPChasing) {
-                    ScoredCandidate maxNodeP = pickMaxNodeP(pack);
-                    if (maxNodeP != null) {
-                        vlog("Fallback max-nodeP candidate: %s | nodeP=%s",
-                                maxNodeP.edit().description(),
-                                fmtP(maxNodeP.nodePAfter()));
-
-                        // NaN does NOT qualify as > 0
-                        if (isUsableP(maxNodeP.nodePAfter(), alpha)) {
-                            boolean ok = applyCandidateInternal(maxNodeP.edit(), false, false);
-                            if (ok) {
-                                moved = true;
-                                editsApplied++;
-                                vlog("APPLIED fallback nodeP>0 move.");
-                            } else {
-                                vlog("Rejected fallback nodeP>0 move (no change).");
-                            }
-                        }
+                        vlog("APPLIED move for node %s: %s", center.getName(), sc.edit().description());
+                        moved = true;
+                        break; // recompute pack for same node
+                    } else {
+                        vlog("Rejected by guards: %s", sc.edit().description());
                     }
                 }
 
                 if (!moved) {
-                    ScoredCandidate maxModelP = pickMaxModelP(pack);
-                    if (maxModelP != null) {
-                        vlog("Fallback max-modelP candidate: %s | modelP=%s",
-                                maxModelP.edit().description(),
-                                fmtP(maxModelP.modelPAfter()));
-
-                        if (isUsableP(maxModelP.modelPAfter(), alpha)) {
-                            boolean ok = applyCandidateInternal(maxModelP.edit(), false, false);
-                            if (ok) {
-                                moved = true;
-                                editsApplied++;
-                                vlog("APPLIED fallback modelP>0 move.");
-                            } else {
-                                vlog("Rejected fallback modelP>0 move (no change).");
-                            }
-                        }
-                    }
-                }
-
-                if (!moved) {
-                    vlog("STOP node %s: no fallback move possible.", center.getName());
+                    vlog("STOP node %s: no ranked move passed guards.", center.getName());
                     break;
                 }
-
-                // After a fallback move, check fallback stop condition
-                SearchPack pack2 = computeCandidatesForNode(workingGraph, center, gt);
-                if (pack2 == null || pack2.scored == null || pack2.scored.isEmpty()) {
-                    vlog("STOP node %s after fallback: no candidates after move.", center.getName());
-                    break;
-                }
-
-                double maxNode = maxNodePValue(pack2);
-                double maxModel = maxModelPValue(pack2);
-
-                vlog("After fallback move, maxima: maxNodeP=%.4g maxModelP=%.4g", maxNode, maxModel);
-
-                // Stop fallback once either criterion is “usable” under alpha,
-                // or if you simply can’t apply any further fallback move.
-                if (isUsableP(maxNode, alpha) && isUsableP(maxModel, alpha)) {
-                    vlog("STOP fallback for node %s: both maxNodeP>=alpha and maxModelP>=alpha.", center.getName());
-                    break;
-                }
-
-                vlog("Continuing fallback loop for node %s...", center.getName());
             }
 
-            vlog("Finished node: %s", center.getName());
+            vlog("Finished node (v2): %s", v0.getName());
         }
+
+        vlog("Checkpoint signature: %s", graphSignature(checkpoint));
 
         final int finalEdits = editsApplied;
         SwingUtilities.invokeLater(() -> {
             history.clear();
             history.push(checkpoint);
             updateButtons();
-            statusLabel.setText("Auto-repair applied " + finalEdits + " edits.");
-            // Refresh panel table for the panel's x (nice UX)
+            statusLabel.setText("Auto-repair v2 applied " + finalEdits + " edits.");
             startWatched("Searching", this::runSearchWatched, null);
         });
     }
-
-    private ScoredCandidate pickBestNonWorsening(List<ScoredCandidate> list) {
-        if (list == null || list.isEmpty()) return null;
-
-        // Prefer delta < 0 moves; otherwise allow delta == 0 with fewer edges.
-        List<ScoredCandidate> improving = new ArrayList<>();
-        List<ScoredCandidate> tie = new ArrayList<>();
-
-        for (ScoredCandidate sc : list) {
-            if (sc == null || sc.edit().isNoOp()) continue;
-            if (sc.delta() < 0) improving.add(sc);
-            else if (sc.delta() == 0) tie.add(sc);
-        }
-
-        Comparator<ScoredCandidate> cmp =
-                Comparator.comparingInt(ScoredCandidate::violationsAfter)   // after ASC
-                        .thenComparingInt(ScoredCandidate::edgesAfter)    // edges ASC
-                        .thenComparing((a, b) -> compareModelPDescNaNLast(a.modelPAfter(), b.modelPAfter()))
-                        .thenComparingInt(ScoredCandidate::delta);
-
-        if (!improving.isEmpty()) {
-            improving.sort(cmp);
-            return improving.get(0);
-        }
-
-        if (!tie.isEmpty()) {
-            tie.sort(cmp);
-            return tie.get(0);
-        }
-
-        return null;
-    }
-
-    private List<ScoredCandidate> alphaFilteredPresortedList(SearchPack pack, double alpha) {
-        List<ScoredCandidate> out = new ArrayList<>();
-        for (ScoredCandidate sc : pack.scored) {
-            if (sc == null) continue;
-            if (sc.edit() == null || sc.edit().isNoOp()) continue;
-            if (survivesAlphaFilter(sc, alpha)) out.add(sc);
-        }
-        out.sort(tableSortComparator());
-        return out;
-    }
-
-    private ScoredCandidate pickMinDelta(SearchPack pack) {
-        ScoredCandidate best = null;
-        for (ScoredCandidate sc : pack.scored) {
-            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
-            if (best == null || sc.delta() < best.delta()) best = sc;
-        }
-        return best;
-    }
-
-    private ScoredCandidate pickMaxNodeP(SearchPack pack) {
-        ScoredCandidate best = null;
-        for (ScoredCandidate sc : pack.scored) {
-            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
-            double p = sc.nodePAfter();
-            if (Double.isNaN(p)) continue;
-            if (best == null || p > best.nodePAfter()) best = sc;
-        }
-        return best;
-    }
-
-    private ScoredCandidate pickMaxModelP(SearchPack pack) {
-        ScoredCandidate best = null;
-        for (ScoredCandidate sc : pack.scored) {
-            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
-            double p = sc.modelPAfter();
-            if (Double.isNaN(p)) continue;
-            if (best == null || p > best.modelPAfter()) best = sc;
-        }
-        return best;
-    }
-
-    private double maxNodePValue(SearchPack pack) {
-        double best = Double.NEGATIVE_INFINITY;
-        boolean any = false;
-        for (ScoredCandidate sc : pack.scored) {
-            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
-            double p = sc.nodePAfter();
-            if (Double.isNaN(p)) continue;
-            any = true;
-            if (p > best) best = p;
-        }
-        return any ? best : Double.NaN;
-    }
-
-    private double maxModelPValue(SearchPack pack) {
-        double best = Double.NEGATIVE_INFINITY;
-        boolean any = false;
-        for (ScoredCandidate sc : pack.scored) {
-            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
-            double p = sc.modelPAfter();
-            if (Double.isNaN(p)) continue;
-            any = true;
-            if (p > best) best = p;
-        }
-        return any ? best : Double.NaN;
-    }
-
-//    private boolean survivesAlphaFilter(ScoredCandidate sc, double alpha) {
-//        double modelP = sc.modelPAfter();
-//        double nodeP = sc.nodePAfter();
-//        return (Double.isNaN(modelP) || modelP >= alpha)
-//                && (Double.isNaN(nodeP)  || nodeP  >= alpha);
-//    }
 
     /**
      * Compute candidates for a *given* node center (like the panel does for x),
@@ -1197,11 +988,11 @@ public final class VertexRepairPanel extends JPanel {
         List<CandidateEdit> candidates = enumerateCandidates(base, center, gt);
         candidates = new ArrayList<>(candidates);
         if (candidates.stream().noneMatch(CandidateEdit::isNoOp)) {
-            candidates.add(0, CandidateEdit.noOp());
+            candidates.addFirst(CandidateEdit.noOp());
         }
 
         GlobalEvalCache baseCache = buildBaselineCache(base);
-        GraphEval baseEval = evalGraphLocality(base, baseCache, base, Set.of(), true);
+        GraphEval baseEval = evalGraphLocality(baseCache, base, Set.of(), true);
 
         int baseline = baseEval.violations();
 
@@ -1219,10 +1010,10 @@ public final class VertexRepairPanel extends JPanel {
             if (knowledge != null && knowledge.isViolatedBy(g2)) continue;
 
             boolean useLocality = (gt == RepairGraphType.DAG || gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG);
-            Set<String> affected = affectedVertices(base, cand, center, g2);
+            Set<String> affected = affectedVertices(base, center, g2);
 
             int after = useLocality
-                    ? evalGraphLocality(base, baseCache, g2, affected, false).violations()
+                    ? evalGraphLocality(baseCache, g2, affected, false).violations()
                     : evalViolationsOnly(g2);
 
             double nodePAfter = nodePValue(g2, center);
@@ -1234,9 +1025,6 @@ public final class VertexRepairPanel extends JPanel {
         if (stopRequested()) return null;
 
         // PASS 2: compute Model-P for top-K only (same as UI behavior)
-//        List<ScoredCandidate> ranked = new ArrayList<>(scored);
-//        ranked.sort(candidateRankingForTopK());
-
         List<ScoredCandidate> ranked = new ArrayList<>(scored);
         ranked.sort(tableOrderIgnoringModelP());
 
@@ -1268,88 +1056,9 @@ public final class VertexRepairPanel extends JPanel {
         return new SearchPack(center.getName(), baseline, scored);
     }
 
-    /**
-     * Choose a move using the exact priority you described.
-     */
-    private CandidateEdit chooseMoveForNode(SearchPack pack, double alpha, boolean useAlphaFilter) {
-        if (pack == null || pack.scored == null || pack.scored.isEmpty()) return null;
-
-        // 1) If there are moves that are NOT filtered out, choose the top move
-        // by the same ordering the table uses (Edges ASC, Model-P DESC (NaN last), After ASC, Δ ASC).
-        List<ScoredCandidate> filteredIn = new ArrayList<>();
-        for (ScoredCandidate sc : pack.scored) {
-            if (sc == null) continue;
-            if (!useAlphaFilter || survivesAlphaFilter(sc, alpha)) {
-                filteredIn.add(sc);
-            }
-        }
-
-        Comparator<ScoredCandidate> tableOrder = tableSortComparator();
-
-        if (!filteredIn.isEmpty()) {
-            filteredIn.sort(tableOrder);
-            for (ScoredCandidate sc : filteredIn) {
-                if (sc != null && !sc.edit().isNoOp()) {
-                    return sc.edit();
-                }
-            }
-            // If only No-Op survives, don’t waste an edit
-            return null;
-        }
-
-        // 2) If no such moves, choose a move that maximizes model p (if possible)
-        ScoredCandidate bestModelP = null;
-        for (ScoredCandidate sc : pack.scored) {
-            if (sc == null || sc.edit().isNoOp()) continue;
-            if (Double.isNaN(sc.modelPAfter())) continue; // “not possible” per your spec
-            if (bestModelP == null) {
-                bestModelP = sc;
-            } else {
-                int cmp = compareByModelPThenSparsity(sc, bestModelP);
-                if (cmp < 0) bestModelP = sc;
-            }
-        }
-        if (bestModelP != null) return bestModelP.edit();
-
-        // 3) If that is not possible, choose a move that maximizes node p (if possible)
-        ScoredCandidate bestNodeP = null;
-        for (ScoredCandidate sc : pack.scored) {
-            if (sc == null || sc.edit().isNoOp()) continue;
-            if (Double.isNaN(sc.nodePAfter())) continue;
-            if (bestNodeP == null) {
-                bestNodeP = sc;
-            } else {
-                int cmp = compareByNodePThenSparsity(sc, bestNodeP);
-                if (cmp < 0) bestNodeP = sc;
-            }
-        }
-        if (bestNodeP != null) return bestNodeP.edit();
-
-        // 4) If that is not possible, choose a move with delta < 0 (most negative)
-        ScoredCandidate bestDeltaNeg = null;
-        for (ScoredCandidate sc : pack.scored) {
-            if (sc == null || sc.edit().isNoOp()) continue;
-            if (sc.delta() >= 0) continue;
-            if (bestDeltaNeg == null) {
-                bestDeltaNeg = sc;
-            } else {
-                int cmp = compareByDeltaThenSparsity(sc, bestDeltaNeg);
-                if (cmp < 0) bestDeltaNeg = sc;
-            }
-        }
-        if (bestDeltaNeg != null) return bestDeltaNeg.edit();
-
-        // 5) otherwise, move on
-        return null;
-    }
-
-    private boolean survivesAlphaFilter(ScoredCandidate sc, double alpha) {
-        double modelP = sc.modelPAfter();
-        double nodeP = sc.nodePAfter();
-        // Require both computed and >= alpha:
-        return !Double.isNaN(modelP) && modelP >= alpha
-                && !Double.isNaN(nodeP) && nodeP >= alpha;
-    }
+    // ---------------------------------------------------------------------
+    // Apply / undo / graph view
+    // ---------------------------------------------------------------------
 
     private Comparator<ScoredCandidate> tableSortComparator() {
         // Must match applySortAndFilter’s keys:
@@ -1382,46 +1091,6 @@ public final class VertexRepairPanel extends JPanel {
         if (bNaN) return -1;
         // DESC:
         return -Double.compare(pa, pb);
-    }
-
-    private int compareByModelPThenSparsity(ScoredCandidate a, ScoredCandidate b) {
-        // prefer higher modelP; tie-break toward sparsity and fewer violations
-        double pa = a.modelPAfter();
-        double pb = b.modelPAfter();
-        int c = -Double.compare(pa, pb); // DESC
-        if (c != 0) return c;
-        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
-        if (c != 0) return c;
-        c = Integer.compare(a.violationsAfter(), b.violationsAfter());
-        if (c != 0) return c;
-        return Integer.compare(a.delta(), b.delta());
-    }
-
-    // ---------------------------------------------------------------------
-    // Apply / undo / graph view
-    // ---------------------------------------------------------------------
-
-    private int compareByNodePThenSparsity(ScoredCandidate a, ScoredCandidate b) {
-        double pa = a.nodePAfter();
-        double pb = b.nodePAfter();
-        int c = -Double.compare(pa, pb); // DESC
-        if (c != 0) return c;
-        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
-        if (c != 0) return c;
-        c = Integer.compare(a.violationsAfter(), b.violationsAfter());
-        if (c != 0) return c;
-        return Integer.compare(a.delta(), b.delta());
-    }
-
-    private int compareByDeltaThenSparsity(ScoredCandidate a, ScoredCandidate b) {
-        // prefer more negative delta (smaller), then fewer edges
-        int c = Integer.compare(a.delta(), b.delta()); // ASC (more negative first)
-        if (c != 0) return c;
-        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
-        if (c != 0) return c;
-        c = Integer.compare(a.violationsAfter(), b.violationsAfter());
-        if (c != 0) return c;
-        return compareModelPDescNaNLast(a.modelPAfter(), b.modelPAfter());
     }
 
     private void applyCandidate(CandidateEdit cand) {
@@ -1509,10 +1178,6 @@ public final class VertexRepairPanel extends JPanel {
         return true;
     }
 
-    // ---------------------------------------------------------------------
-    // Candidate enumeration
-    // ---------------------------------------------------------------------
-
     private void goBack() {
         if (history.isEmpty()) return;
         workingGraph = history.pop();
@@ -1552,6 +1217,10 @@ public final class VertexRepairPanel extends JPanel {
         );
     }
 
+    // ---------------------------------------------------------------------
+    // Canonicalization / legality / copies
+    // ---------------------------------------------------------------------
+
     private List<CandidateEdit> enumerateCandidates(Graph g, Node x, RepairGraphType gt) {
         if (g == null || x == null) return List.of(CandidateEdit.noOp());
 
@@ -1588,12 +1257,76 @@ public final class VertexRepairPanel extends JPanel {
             }
         }
 
+        // 4) CPDAG-only: 2-edge collider fixes (unshielded triples)
+        if (gt == RepairGraphType.CPDAG) {
+            out.addAll(enumerateCpdagColliderPairMoves(g, x));
+        }
+
         return dedupCandidateEdits(out);
     }
 
-    // ---------------------------------------------------------------------
-    // Canonicalization / legality / copies
-    // ---------------------------------------------------------------------
+    private List<CandidateEdit> enumerateCpdagColliderPairMoves(Graph g, Node x) {
+        if (g == null || x == null) return List.of();
+
+        List<CandidateEdit> out = new ArrayList<>();
+
+        List<Node> adj = new ArrayList<>(g.getAdjacentNodes(x));
+        // (optional) stable order for repeatability
+        adj.sort(Comparator.comparing(Node::getName, Comparator.nullsLast(String::compareTo)));
+
+        for (int i = 0; i < adj.size(); i++) {
+            Node y = adj.get(i);
+            if (y == null) continue;
+
+            Edge exy = g.getEdge(x, y);
+            if (exy == null) continue;
+
+            for (int j = i + 1; j < adj.size(); j++) {
+                Node z = adj.get(j);
+                if (z == null) continue;
+
+                if (g.isAdjacentTo(y, z)) continue; // only unshielded triples
+
+                Edge exz = g.getEdge(x, z);
+                if (exz == null) continue;
+
+                Endpoint endXy = endpointAt(exy, x);
+                Endpoint endXz = endpointAt(exz, x);
+
+                // Case A: noncollider y *-* x *-* z. Propose orient into X: Y->X<-Z.
+                if (!(endXy == Endpoint.ARROW && endXz == Endpoint.ARROW)) {
+                    Edge yToX = new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW);
+                    Edge zToX = new Edge(z, x, Endpoint.TAIL, Endpoint.ARROW);
+
+                    String label = "Orient collider " + y.getName() + "->" + x.getName() + "<-" + z.getName();
+                    out.add(CandidateEdit.replaceEdges(
+                            label,
+                            List.of(exy, exz),
+                            List.of(yToX, zToX)
+                    ));
+
+                    System.out.println("Proposed collider fix: " + label);
+                }
+
+                // Case B: collider already (two arrows at X). Propose orient away: X->Y and X->Z.
+                if (endXy == Endpoint.ARROW && endXz == Endpoint.ARROW) {
+                    Edge xToY = new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW);
+                    Edge xToZ = new Edge(x, z, Endpoint.TAIL, Endpoint.ARROW);
+
+                    String label = "Orient away from collider " + y.getName() + "<-" + x.getName() + "->" + z.getName();
+                    out.add(CandidateEdit.replaceEdges(
+                            label,
+                            List.of(exy, exz),
+                            List.of(xToY, xToZ)
+                    ));
+
+                    System.out.println("Proposed collider fix: " + label);
+                }
+            }
+        }
+
+        return out;
+    }
 
     private List<Edge> edgeMenuForPair(Node x, Node y, RepairGraphType gt) {
         List<Edge> variants = new ArrayList<>();
@@ -1674,6 +1407,10 @@ public final class VertexRepairPanel extends JPanel {
         }
     }
 
+    // ---------------------------------------------------------------------
+    // Knowledge
+    // ---------------------------------------------------------------------
+
     private Graph canonicalizeToPagOrNull(Graph h) {
         try {
             Graph h2 = new EdgeListGraph(h);
@@ -1689,6 +1426,10 @@ public final class VertexRepairPanel extends JPanel {
         }
     }
 
+    // ---------------------------------------------------------------------
+    // Cached CI access
+    // ---------------------------------------------------------------------
+
     private boolean isLegalGraphType(Graph g, RepairGraphType gt) {
         return switch (gt) {
             case DAG -> g.paths().isLegalDag();
@@ -1698,10 +1439,6 @@ public final class VertexRepairPanel extends JPanel {
             case PAG -> g.paths().isLegalPag();
         };
     }
-
-    // ---------------------------------------------------------------------
-    // Knowledge
-    // ---------------------------------------------------------------------
 
     private Graph safeCopy(Graph g) {
         if (g == null) return null;
@@ -1713,7 +1450,7 @@ public final class VertexRepairPanel extends JPanel {
     }
 
     // ---------------------------------------------------------------------
-    // Cached CI access
+    // Global evaluation
     // ---------------------------------------------------------------------
 
     private void initGraphTypeComboFromGraph(Graph g) {
@@ -1744,10 +1481,6 @@ public final class VertexRepairPanel extends JPanel {
         }
     }
 
-    // ---------------------------------------------------------------------
-    // Global evaluation
-    // ---------------------------------------------------------------------
-
     private IndependenceResult check(IndependenceFact f) {
         if (stopRequested()) return null;
         if (f == null || Q == null) return null;
@@ -1769,7 +1502,7 @@ public final class VertexRepairPanel extends JPanel {
         ConditioningSetType type = baseModel.getConditioningSetType();
 
         List<IndependenceFact> facts = MarkovCheck.computeImpliedFactsForVertex(g, v, type);
-        if (facts == null || facts.isEmpty()) return Double.NaN;
+        if (facts.isEmpty()) return Double.NaN;
 
         List<Double> pvals = Q.pValuesForFacts(facts, CachedIndependenceQueries.Dedup.WITHIN_INPUT);
         return model.getUniformityP(pvals);
@@ -1781,7 +1514,7 @@ public final class VertexRepairPanel extends JPanel {
         ConditioningSetType type = baseModel.getConditioningSetType();
 
         List<IndependenceFact> facts = MarkovCheck.computeAllImpliedFacts(g, type);
-        if (facts == null || facts.isEmpty()) return new GraphEval(0, Double.NaN, 0);
+        if (facts.isEmpty()) return new GraphEval(0, Double.NaN, 0);
 
         List<CachedIndependenceQueries.Eval> evals =
                 Q.evalAll(facts, CachedIndependenceQueries.Dedup.BY_CACHE_KEY);
@@ -1805,7 +1538,7 @@ public final class VertexRepairPanel extends JPanel {
         ConditioningSetType type = baseModel.getConditioningSetType();
 
         List<IndependenceFact> facts = MarkovCheck.computeAllImpliedFacts(g, type);
-        if (facts == null || facts.isEmpty()) return 0;
+        if (facts.isEmpty()) return 0;
 
         List<CachedIndependenceQueries.Eval> evals =
                 Q.evalAll(facts, CachedIndependenceQueries.Dedup.BY_CACHE_KEY);
@@ -1830,6 +1563,10 @@ public final class VertexRepairPanel extends JPanel {
         return new GlobalEvalCache(out);
     }
 
+    // ---------------------------------------------------------------------
+    // Preferences
+    // ---------------------------------------------------------------------
+
     private VertexContribution evalVertexContribution(Graph g, Node vInGraph) {
         if (g == null || vInGraph == null) return new VertexContribution(Map.of(), Map.of());
 
@@ -1839,7 +1576,7 @@ public final class VertexRepairPanel extends JPanel {
         ConditioningSetType type = baseModel.getConditioningSetType();
 
         List<IndependenceFact> facts = MarkovCheck.computeImpliedFactsForVertex(g, v, type);
-        if (facts == null || facts.isEmpty()) return new VertexContribution(Map.of(), Map.of());
+        if (facts.isEmpty()) return new VertexContribution(Map.of(), Map.of());
 
         Map<String, Boolean> viol = new HashMap<>();
         Map<String, Double> pByKey = new HashMap<>();
@@ -1867,8 +1604,7 @@ public final class VertexRepairPanel extends JPanel {
         return new VertexContribution(viol, pByKey);
     }
 
-    private GraphEval evalGraphLocality(Graph baseGraph,
-                                        GlobalEvalCache baseCache,
+    private GraphEval evalGraphLocality(GlobalEvalCache baseCache,
                                         Graph candidateGraph,
                                         Set<String> affectedVertexNames,
                                         boolean computeModelP) {
@@ -1925,7 +1661,7 @@ public final class VertexRepairPanel extends JPanel {
         }
 
         double modelP = Double.NaN;
-        if (computeModelP && globalPByKey != null && globalPByKey.size() >= 2) {
+        if (computeModelP && globalPByKey.size() >= 2) {
             List<Double> pvals = new ArrayList<>(globalPByKey.values());
 
             // Optional top-K downselect for model-p computation inside locality mode
@@ -1946,10 +1682,6 @@ public final class VertexRepairPanel extends JPanel {
         return new GraphEval(violations, modelP, globalViolationByKey.size());
     }
 
-    // ---------------------------------------------------------------------
-    // Preferences
-    // ---------------------------------------------------------------------
-
     private Graph buildCandidateGraph(Graph base, CandidateEdit cand, RepairGraphType gt) {
         if (base == null || cand == null) return null;
 
@@ -1960,8 +1692,8 @@ public final class VertexRepairPanel extends JPanel {
             g2 = canonicalizeToCpdagOrNull(g2);
             if (g2 == null) return null;
 
-            Edge edge = cand.getEdge();
-            if (!cand.isNoOp() && (g2.equals(base))) return null;// || (edge != null && !g2.containsEdge(edge)))) return null;
+            if (!cand.isNoOp() && (g2.equals(base)))
+                return null;// || (edge != null && !g2.containsEdge(edge)))) return null;
         } else if (gt == RepairGraphType.PAG) {
             // keep as-is
         } else if (gt == RepairGraphType.PDAG) {
@@ -1977,7 +1709,7 @@ public final class VertexRepairPanel extends JPanel {
         return g2;
     }
 
-    private Set<String> affectedVertices(Graph base, CandidateEdit cand, Node x, Graph candidate) {
+    private Set<String> affectedVertices(Graph base, Node x, Graph candidate) {
         Set<String> affected = new LinkedHashSet<>();
         if (x != null) affected.add(x.getName());
 
@@ -2000,6 +1732,10 @@ public final class VertexRepairPanel extends JPanel {
         return affected;
     }
 
+    // ---------------------------------------------------------------------
+    // Worker/watch dialog
+    // ---------------------------------------------------------------------
+
     private void loadPrefsIntoUi() {
         double a = PREFS.getDouble(PREF_ALPHA, DEFAULT_ALPHA);
         int k = PREFS.getInt(PREF_MODEL_P_TOP_K, DEFAULT_MODELP_TOP_K);
@@ -2017,10 +1753,6 @@ public final class VertexRepairPanel extends JPanel {
         topModelPaveTimer.setRepeats(false);
     }
 
-    // ---------------------------------------------------------------------
-    // Worker/watch dialog
-    // ---------------------------------------------------------------------
-
     private void saveAlphaPref() {
         double a = parseAlpha(alphaField.getText(), DEFAULT_ALPHA);
         PREFS.putDouble(PREF_ALPHA, a);
@@ -2030,6 +1762,10 @@ public final class VertexRepairPanel extends JPanel {
         int k = parseTopK(modelPTopKField.getText(), DEFAULT_MODELP_TOP_K);
         PREFS.putInt(PREF_MODEL_P_TOP_K, k);
     }
+
+    // ---------------------------------------------------------------------
+    // Types
+    // ---------------------------------------------------------------------
 
     private void startWatched(String title, Runnable backgroundWork, Runnable onDoneEdt) {
         if (activeWorker != null) return;
@@ -2045,7 +1781,6 @@ public final class VertexRepairPanel extends JPanel {
             protected void done() {
                 try {
                     get();
-                    if (onDoneEdt != null) onDoneEdt.run();
                 } catch (CancellationException ce) {
                     statusLabel.setText("Cancelled.");
                 } catch (Exception ex) {
@@ -2054,6 +1789,9 @@ public final class VertexRepairPanel extends JPanel {
                     closeWatchDialog();
                     activeWorker = null;
                     updateButtons();
+
+                    // ✅ now it's safe; the guard won't block it
+                    if (onDoneEdt != null) SwingUtilities.invokeLater(onDoneEdt);
                 }
             }
         };
@@ -2101,10 +1839,6 @@ public final class VertexRepairPanel extends JPanel {
 
         this.watchDialog = dlg;
     }
-
-    // ---------------------------------------------------------------------
-    // Types
-    // ---------------------------------------------------------------------
 
     private void closeWatchDialog() {
         JDialog dlg = this.watchDialog;
@@ -2158,83 +1892,6 @@ public final class VertexRepairPanel extends JPanel {
         };
     }
 
-    private CandidateEdit chooseMoveExactlyLikeYou(
-            Node center, SearchPack pack, double alpha) {
-
-        vlog("Selecting move for node %s (alpha=%.4g)", center.getName(), alpha);
-
-        Comparator<ScoredCandidate> tableOrder = tableSortComparator();
-
-        // A) alpha-filtered, table-sorted
-        List<ScoredCandidate> filtered = new ArrayList<>();
-        for (ScoredCandidate sc : pack.scored) {
-            if (sc == null || sc.edit().isNoOp()) continue;
-            if (survivesAlphaFilter(sc, alpha)) filtered.add(sc);
-        }
-
-        if (!filtered.isEmpty()) {
-            filtered.sort(tableOrder);
-            ScoredCandidate top = filtered.get(0);
-            vlog("→ Using ALPHA-FILTERED TOP ROW: %s", top.edit().description());
-            return top.edit();
-        }
-
-        vlog("No rows survive alpha filter");
-
-        // B1) max model-P
-        ScoredCandidate bestMp = null;
-        for (ScoredCandidate sc : pack.scored) {
-            if (sc == null || sc.edit().isNoOp()) continue;
-            if (Double.isNaN(sc.modelPAfter())) continue;
-            if (bestMp == null || sc.modelPAfter() > bestMp.modelPAfter()) {
-                bestMp = sc;
-            }
-        }
-        if (bestMp != null && bestMp.modelPAfter() != 0.0) {
-            vlog("→ Using MAX MODEL-P: %s (%.4g)",
-                    bestMp.edit().description(), bestMp.modelPAfter());
-            return bestMp.edit();
-        }
-
-        // B2) max node-P
-        ScoredCandidate bestNp = null;
-        for (ScoredCandidate sc : pack.scored) {
-            if (sc == null || sc.edit().isNoOp()) continue;
-            if (Double.isNaN(sc.nodePAfter())) continue;
-            if (bestNp == null || sc.nodePAfter() > bestNp.nodePAfter()) {
-                bestNp = sc;
-            }
-        }
-        if (bestNp != null && bestNp.nodePAfter() != 0.0) {
-            vlog("→ Using MAX NODE-P: %s (%.4g)",
-                    bestNp.edit().description(), bestNp.nodePAfter());
-            return bestNp.edit();
-        }
-
-        // B3) min delta < 0
-        ScoredCandidate bestDelta = null;
-        for (ScoredCandidate sc : pack.scored) {
-            if (sc == null || sc.edit().isNoOp()) continue;
-            if (bestDelta == null || sc.delta() < bestDelta.delta()) {
-                bestDelta = sc;
-            }
-        }
-        if (bestDelta != null && bestDelta.delta() < 0) {
-            vlog("→ Using NEGATIVE DELTA: %s (delta=%d)",
-                    bestDelta.edit().description(), bestDelta.delta());
-            return bestDelta.edit();
-        }
-
-        vlog("→ No legal move found for node %s", center.getName());
-        return null;
-    }
-
-    // "If it's not broke, don't fix it" check for a node
-    private boolean nodeLooksOk(Graph g, Node v, double alpha) {
-        double p = nodePValue(g, v);
-        return !Double.isNaN(p) && p >= alpha;
-    }
-
     // Compute nodeP map for a set of vertex names in a graph
     private Map<String, Double> nodePMap(Graph g, Set<String> vertexNames) {
         Map<String, Double> out = new HashMap<>();
@@ -2274,7 +1931,7 @@ public final class VertexRepairPanel extends JPanel {
         return afterViol == baselineViol && afterEdges < currentEdges;
     }
 
-    private boolean tryMoveWithGuards(Graph base, Node center, CandidateEdit edit, RepairGraphType gt, double alpha) {
+    private boolean tryMoveWithGuards(Graph base, Node center, CandidateEdit edit, RepairGraphType gt) {
         if (edit == null || edit.isNoOp()) return false;
 
         int currentEdges = base.getNumEdges();
@@ -2299,7 +1956,7 @@ public final class VertexRepairPanel extends JPanel {
         }
 
         // Do-no-harm on affected vertices
-        Set<String> affected = affectedVertices(base, edit, center, cand);
+        Set<String> affected = affectedVertices(base, center, cand);
         Map<String, Double> pBefore = nodePMap(base, affected);
         Map<String, Double> pAfter = nodePMap(cand, affected);
 
@@ -2316,8 +1973,8 @@ public final class VertexRepairPanel extends JPanel {
     }
 
     // ---------------------------------------------------------------------
-// Table-order aware comparators (match the JTable ordering)
-// ---------------------------------------------------------------------
+    // Table-order aware comparators (match the JTable ordering)
+    // ---------------------------------------------------------------------
 
     public enum RepairGraphType {DAG, CPDAG, PDAG, MAG, PAG}
 
@@ -2363,7 +2020,11 @@ public final class VertexRepairPanel extends JPanel {
                 @Override
                 public Graph applyTo(Graph g) {
                     Graph g2 = new EdgeListGraph(g);
-                    g2.addEdge(edgeToAdd);
+
+                    Edge rebound = rebindEdgeToGraph(g2, edgeToAdd);
+                    if (rebound == null) return g2;
+
+                    g2.addEdge(rebound);
                     return g2;
                 }
 
@@ -2390,8 +2051,10 @@ public final class VertexRepairPanel extends JPanel {
                 @Override
                 public Graph applyTo(Graph g) {
                     Graph g2 = new EdgeListGraph(g);
-                    Edge e = g2.getEdge(edgeToRemove.getNode1(), edgeToRemove.getNode2());
+
+                    Edge e = getEdgeByNames(g2, edgeToRemove);
                     if (e != null) g2.removeEdge(e);
+
                     return g2;
                 }
 
@@ -2419,9 +2082,13 @@ public final class VertexRepairPanel extends JPanel {
                 @Override
                 public Graph applyTo(Graph g) {
                     Graph g2 = new EdgeListGraph(g);
-                    Edge e = g2.getEdge(oldEdge.getNode1(), oldEdge.getNode2());
-                    if (e != null) g2.removeEdge(e);
-                    g2.addEdge(newEdge);
+
+                    Edge eOld = getEdgeByNames(g2, oldEdge);
+                    if (eOld != null) g2.removeEdge(eOld);
+
+                    Edge eNew = rebindEdgeToGraph(g2, newEdge);
+                    if (eNew != null) g2.addEdge(eNew);
+
                     return g2;
                 }
 
@@ -2433,6 +2100,65 @@ public final class VertexRepairPanel extends JPanel {
                 @Override
                 public Edge getEdge() {
                     return newEdge;
+                }
+            };
+        }
+
+        /**
+         * Multi-edge replace: removes every old edge’s pair, then adds every new edge.
+         */
+        static CandidateEdit replaceEdges(String label, List<Edge> oldEdges, List<Edge> newEdges) {
+            Objects.requireNonNull(label, "label");
+            Objects.requireNonNull(oldEdges, "oldEdges");
+            Objects.requireNonNull(newEdges, "newEdges");
+
+            // defensively copy for stable key/description
+            List<Edge> olds = List.copyOf(oldEdges);
+            List<Edge> news = List.copyOf(newEdges);
+
+            return new CandidateEdit() {
+                @Override
+                public String description() {
+                    return label;
+                }
+
+                @Override
+                public Graph applyTo(Graph g) {
+                    Graph g2 = new EdgeListGraph(g);
+
+                    // remove (by endpoints) to be robust to edge object identity / ordering
+                    for (Edge oe : olds) {
+                        if (oe == null) continue;
+                        Edge e = g2.getEdge(oe.getNode1(), oe.getNode2());
+                        if (e != null) g2.removeEdge(e);
+                    }
+
+                    for (Edge ne : news) {
+                        if (ne == null) continue;
+                        g2.addEdge(ne);
+                    }
+
+                    return g2;
+                }
+
+                @Override
+                public String key() {
+                    List<String> parts = new ArrayList<>();
+                    for (Edge oe : olds) parts.add("O:" + stableEdgeKey(oe));
+                    for (Edge ne : news) parts.add("N:" + stableEdgeKey(ne));
+                    Collections.sort(parts);
+                    return "MULTI:" + label + ":" + String.join("|", parts);
+                }
+
+                /** For legacy code paths; return first “new” edge if any. */
+                @Override
+                public Edge getEdge() {
+                    return news.isEmpty() ? null : news.getFirst();
+                }
+
+                @Override
+                public List<Edge> getEdges() {
+                    return news;
                 }
             };
         }
@@ -2460,64 +2186,19 @@ public final class VertexRepairPanel extends JPanel {
             return description();
         }
 
+        /**
+         * Legacy single-edge accessor.
+         */
         Edge getEdge();
-    }
 
-//    private CandidateEdit chooseMoveExactlyLikeYou(Node center, SearchPack pack, double alpha) {
-//        // 0) We only ever consider the same rows the table would show:
-//        //    pack.scored corresponds to enumerateCandidates() + scoring, just like the table.
-//
-//        // A) First, act as if alpha filter is ON and we sort exactly like the table
-//        List<ScoredCandidate> filtered = new ArrayList<>();
-//        for (ScoredCandidate sc : pack.scored) {
-//            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
-//            if (survivesAlphaFilter(sc, alpha)) filtered.add(sc);
-//        }
-//
-//        // IMPORTANT: "top move that would be listed in the node repair table"
-//        // This comparator MUST match your applySortAndFilter() sort keys:
-//        //   Edges ASC, Model-P DESC (NaN last), After ASC, Δ ASC
-//        Comparator<ScoredCandidate> tableOrder = tableSortComparator();
-//
-//        if (!filtered.isEmpty()) {
-//            filtered.sort(tableOrder);
-//
-//            ScoredCandidate top = filtered.get(0);
-//            return top.edit();
-//        }
-//
-//        // B) If no filtered rows, consider unfiltered rows and:
-//        //    1) max Model-P (if max != 0)
-//        ScoredCandidate bestMp = null;
-//        for (ScoredCandidate sc : pack.scored) {
-//            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
-//            double mp = sc.modelPAfter();
-//            if (Double.isNaN(mp)) continue;
-//            if (bestMp == null || mp > bestMp.modelPAfter()) bestMp = sc;
-//        }
-//        if (bestMp != null && bestMp.modelPAfter() != 0.0) return bestMp.edit();
-//
-//        //    2) max Node-P (if max != 0)
-//        ScoredCandidate bestNp = null;
-//        for (ScoredCandidate sc : pack.scored) {
-//            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
-//            double np = sc.nodePAfter();
-//            if (Double.isNaN(np)) continue;
-//            if (bestNp == null || np > bestNp.nodePAfter()) bestNp = sc;
-//        }
-//        if (bestNp != null && bestNp.nodePAfter() != 0.0) return bestNp.edit();
-//
-//        //    3) min delta (if min < 0)
-//        ScoredCandidate bestDelta = null;
-//        for (ScoredCandidate sc : pack.scored) {
-//            if (sc == null || sc.edit() == null || sc.edit().isNoOp()) continue;
-//            int d = sc.delta();
-//            if (bestDelta == null || d < bestDelta.delta()) bestDelta = sc;
-//        }
-//        if (bestDelta != null && bestDelta.delta() < 0) return bestDelta.edit();
-//
-//        return null;
-//    }
+        /**
+         * New multi-edge accessor (defaults to singleton or empty).
+         */
+        default List<Edge> getEdges() {
+            Edge e = getEdge();
+            return (e == null) ? List.of() : List.of(e);
+        }
+    }
 
     private record ScoredCandidate(
             CandidateEdit edit,
@@ -2542,12 +2223,12 @@ public final class VertexRepairPanel extends JPanel {
         private static final int COL_AFTER = 2;
         private static final int COL_DELTA = 3;
         private static final int COL_NODE_P = 4;
-        private static final int COL_MODEL_P = 5;
+        private static final int COL_MODEL_PASSES = 5;
         private static final int COL_EDGES = 6;
         private static final int COL_APPLY = 7;
 
         private final String[] cols = {
-                "Edit", "Baseline", "After", "Δ", "Node-P", "Model-P", "Edges", "Apply"
+                "Edit", "Baseline", "After", "Δ", "Node-P", "Passes", "Edges", "Apply"
         };
 
         private List<ScoredCandidate> rows = List.of();
@@ -2587,14 +2268,13 @@ public final class VertexRepairPanel extends JPanel {
                 case COL_AFTER -> r.violationsAfter();
                 case COL_DELTA -> r.delta();
                 case COL_NODE_P -> r.nodePAfter();
-                case COL_MODEL_P -> r.modelPAfter() > alpha ? 1.0 : 0.0;
+                case COL_MODEL_PASSES -> r.modelPAfter() > alpha ? 1.0 : 0.0;
                 case COL_EDGES -> r.edgesAfter();
                 case COL_APPLY -> r.edit().isNoOp() ? "" : "Accept";
                 default -> "";
             };
         }
 
-        @Override
         public Class<?> getColumnClass(int col) {
             return switch (col) {
                 case COL_EDIT -> String.class;
@@ -2602,7 +2282,7 @@ public final class VertexRepairPanel extends JPanel {
                 case COL_AFTER -> Integer.class;
                 case COL_DELTA -> Integer.class;
                 case COL_NODE_P -> Double.class;
-                case COL_MODEL_P -> Double.class;
+                case COL_MODEL_PASSES -> Double.class;
                 case COL_EDGES -> Integer.class;
                 case COL_APPLY -> Object.class;
                 default -> Object.class;
