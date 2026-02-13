@@ -876,9 +876,15 @@ public final class VertexRepairPanel extends JPanel {
             int c;
 
             // Model-P "pass" flag DESC (1 before 0); NaN => 0
-            int passA = (!Double.isNaN(a.modelPAfter()) && a.modelPAfter() > alpha) ? 1 : 0;
-            int passB = (!Double.isNaN(b.modelPAfter()) && b.modelPAfter() > alpha) ? 1 : 0;
-            c = Integer.compare(passB, passA);
+//            int passA = (!Double.isNaN(a.modelPAfter()) && a.modelPAfter() > alpha) ? 1 : 0;
+//            int passB = (!Double.isNaN(b.modelPAfter()) && b.modelPAfter() > alpha) ? 1 : 0;
+//            c = Integer.compare(passB, passA);
+
+            double passA = a.modelPAfter();
+            double passB = b.modelPAfter();
+
+            c = Double.compare(passB, passA);
+
             if (c != 0) return c;
 
             // Δ ASC
@@ -890,9 +896,13 @@ public final class VertexRepairPanel extends JPanel {
             if (c != 0) return c;
 
             // Node-P "pass" flag DESC (1 before 0); NaN => 0
-            int passAn = (!Double.isNaN(a.nodePAfter) && a.nodePAfter > alpha) ? 1 : 0;
-            int passBn = (!Double.isNaN(b.nodePAfter) && b.nodePAfter > alpha) ? 1 : 0;
-            c = Integer.compare(passBn, passAn);
+//            int passAn = (!Double.isNaN(a.nodePAfter) && a.nodePAfter > alpha) ? 1 : 0;
+//            int passBn = (!Double.isNaN(b.nodePAfter) && b.nodePAfter > alpha) ? 1 : 0;
+//            c = Integer.compare(passBn, passAn);
+            double passAn = a.nodePAfter();
+            double passBn = b.nodePAfter();
+            c = Double.compare(passBn, passAn);
+
             if (c != 0) return c;
 
 //            // Node-P DESC (NaN last)
@@ -2374,8 +2384,8 @@ public final class VertexRepairPanel extends JPanel {
                 case COL_BASE -> r.baseline();
                 case COL_AFTER -> r.violationsAfter();
                 case COL_DELTA -> r.delta();
-                case COL_NODE_P -> r.nodePAfter() > alpha ? 1.0 : 0.0;
-                case COL_MODEL_PASSES -> r.modelPAfter() > alpha ? 1.0 : 0.0;
+                case COL_NODE_P -> r.nodePAfter();// > alpha ? 1.0 : 0.0;
+                case COL_MODEL_PASSES -> r.modelPAfter();// > alpha ? 1.0 : 0.0;
                 case COL_EDGES -> r.edgesAfter();
                 case COL_APPLY -> r.edit().isNoOp() ? "" : "Accept";
                 default -> "";
