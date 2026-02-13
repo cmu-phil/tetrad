@@ -6,13 +6,10 @@ import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
-import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
-import javax.swing.Timer;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.*;
 import java.awt.*;
@@ -45,8 +42,8 @@ public final class VertexRepairPanel extends JPanel {
     // ---- Preferences (persist α and model-P top-K) ----
     private static final Preferences PREFS = Preferences.userRoot().node("edu/cmu/tetradapp/editor/VertexRepairPanel");
     private static final String PREF_ALPHA = "markovAlpha";
-    private static final String PREF_MODEL_P_TOP_K = "modelPTopK";
-    private static final double DEFAULT_ALPHA = 0.01;
+//    private static final String PREF_MODEL_P_TOP_K = "modelPTopK";
+    //    private static final double DEFAULT_ALPHA = 0.01;
     private static final double EPS_NODEP = 1e-6;
     private static final double ABS_DROP_LIMIT = 0.01;   // tolerate 0.01 drop
     private static final double REL_DROP_LIMIT = 0.25;   // tolerate 25% relative drop
@@ -69,11 +66,11 @@ public final class VertexRepairPanel extends JPanel {
     // Sorting/filtering UI
 //    private final JCheckBox markovAlphaFilter =
 //            new JCheckBox("Hide rows with Model-P or Node-P < α");
-    private final DoubleTextField alphaField = new DoubleTextField(0.01, 6, NumberFormatUtil.getInstance().getNumberFormat());
-    private final JTextField modelPTopKField = new JTextField(String.valueOf(DEFAULT_MODELP_TOP_K), 5);
+//    private final DoubleTextField alphaField = new DoubleTextField(0.01, 6, NumberFormatUtil.getInstance().getNumberFormat());
+//    private final JTextField modelPTopKField = new JTextField(String.valueOf(DEFAULT_MODELP_TOP_K), 5);
     // debounce timers so we don’t write prefs on every keystroke
-    private final Timer alphaSaveTimer = new Timer(350, e -> saveAlphaPref());
-    private final Timer topModelPaveTimer = new Timer(350, e -> saveTopKPref());
+//    private final Timer alphaSaveTimer = new Timer(350, e -> saveAlphaPref());
+//    private final Timer topModelPaveTimer = new Timer(350, e -> saveTopKPref());
     private final CachedIndependenceQueries Q;
     private final VertexCheckIndTestModel model;
     // Node dropdown (replaces "Adjust Node" button)
@@ -87,7 +84,7 @@ public final class VertexRepairPanel extends JPanel {
     // ---------------------------------------------------------------------
     // Keep a handle to the sorter so we can change filter/sort dynamically
     private TableRowSorter<CandidateTableModel> resultsSorter;
-    private volatile int modelPTopK = DEFAULT_MODELP_TOP_K;
+    //    private volatile int modelPTopK = DEFAULT_MODELP_TOP_K;
     // --- Watch dialog state (one at a time) ---
     private volatile SwingWorker<?, ?> activeWorker;
     private volatile JDialog watchDialog;
@@ -112,7 +109,7 @@ public final class VertexRepairPanel extends JPanel {
         initGraphTypeComboFromGraph(this.workingGraph);
 
         buildUI();          // will populate nodeCombo based on workingGraph + x
-        initPrefTimers();
+//        initPrefTimers();
         loadPrefsIntoUi();
 
         wireActions();
@@ -208,24 +205,24 @@ public final class VertexRepairPanel extends JPanel {
         };
     }
 
-    private static double parseAlpha(String s, double fallback) {
-        try {
-            double a = Double.parseDouble(s.trim());
-            if (Double.isNaN(a) || a <= 0 || a >= 1) return fallback;
-            return a;
-        } catch (Exception ignored) {
-            return fallback;
-        }
-    }
+//    private static double parseAlpha(String s, double fallback) {
+//        try {
+//            double a = Double.parseDouble(s.trim());
+//            if (Double.isNaN(a) || a <= 0 || a >= 1) return fallback;
+//            return a;
+//        } catch (Exception ignored) {
+//            return fallback;
+//        }
+//    }
 
-    private static int parseTopK(String s, int fallback) {
-        try {
-            int k = Integer.parseInt(s.trim());
-            return (k <= 0 ? fallback : k);
-        } catch (Exception ignored) {
-            return fallback;
-        }
-    }
+//    private static int parseTopK(String s, int fallback) {
+//        try {
+//            int k = Integer.parseInt(s.trim());
+//            return (k <= 0 ? fallback : k);
+//        } catch (Exception ignored) {
+//            return fallback;
+//        }
+//    }
 
     // ---------------------------------------------------------------------
     // Search logic (watched, background)
@@ -342,16 +339,16 @@ public final class VertexRepairPanel extends JPanel {
         return true;
     }
 
-    private static boolean acceptableNodePDrop(double p0, double p1) {
-        if (Double.isNaN(p0) || Double.isNaN(p1)) return true; // can't compare
-        if (p1 >= p0) return true;
-
-        double absDrop = p0 - p1;
-        double relDrop = absDrop / Math.max(p0, NODEP_FLOOR_FOR_REL);
-
-        // Accept if the drop is "small" in either absolute OR relative terms
-        return absDrop <= NODEP_ABS_DROP_LIMIT || relDrop <= NODEP_REL_DROP_LIMIT;
-    }
+//    private static boolean acceptableNodePDrop(double p0, double p1) {
+//        if (Double.isNaN(p0) || Double.isNaN(p1)) return true; // can't compare
+//        if (p1 >= p0) return true;
+//
+//        double absDrop = p0 - p1;
+//        double relDrop = absDrop / Math.max(p0, NODEP_FLOOR_FOR_REL);
+//
+//        // Accept if the drop is "small" in either absolute OR relative terms
+//        return absDrop <= NODEP_ABS_DROP_LIMIT || relDrop <= NODEP_REL_DROP_LIMIT;
+//    }
 
     private Node resolveInitialNode(Graph g, Node requested) {
         if (g == null) return requested; // nothing better we can do
@@ -411,12 +408,12 @@ public final class VertexRepairPanel extends JPanel {
 
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 1;
-        JPanel alphaPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-        alphaPanel.add(new JLabel("α:"));
-        alphaPanel.add(alphaField);
-        alphaPanel.add(new JLabel("Model-P top-K:"));
-        alphaPanel.add(modelPTopKField);
-        controls.add(alphaPanel, c);
+//        JPanel alphaPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+//        alphaPanel.add(new JLabel("α:"));
+//        alphaPanel.add(alphaField);
+//        alphaPanel.add(new JLabel("Model-P top-K:"));
+//        alphaPanel.add(modelPTopKField);
+//        controls.add(alphaPanel, c);
 
         // Buttons row
         JPanel topButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
@@ -622,61 +619,61 @@ public final class VertexRepairPanel extends JPanel {
                 startWatched("Auto-repairing", this::runModelBestWatched,
                         () -> startWatched("Searching", this::runSearchWatched, null)));
 
-        alphaField.setFilter((value, oldValue) -> {
-            try {
-                applySortAndFilter();
-                saveAlphaPref();
-                return value;
-            } catch (IllegalArgumentException e) {
-                return oldValue;
-            }
-        });
+//        alphaField.setFilter((value, oldValue) -> {
+//            try {
+//                applySortAndFilter();
+//                saveAlphaPref();
+//                return value;
+//            } catch (IllegalArgumentException e) {
+//                return oldValue;
+//            }
+//        });
 
-        alphaField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            @Override
-            public void insertUpdate(javax.swing.event.DocumentEvent e) {
-                applySortAndFilter();
-                alphaSaveTimer.restart();
-            }
+//        alphaField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+//            @Override
+//            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+//                applySortAndFilter();
+//                alphaSaveTimer.restart();
+//            }
+//
+//            @Override
+//            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+//                applySortAndFilter();
+//                alphaSaveTimer.restart();
+//            }
+//
+//            @Override
+//            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+//                applySortAndFilter();
+//                alphaSaveTimer.restart();
+//            }
+//        });
 
-            @Override
-            public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                applySortAndFilter();
-                alphaSaveTimer.restart();
-            }
+//        modelPTopKField.addActionListener(e -> {
+//            modelPTopK = parseTopK(modelPTopKField.getText(), DEFAULT_MODELP_TOP_K);
+//            applySortAndFilter();
+//            saveTopKPref();
+//        });
 
-            @Override
-            public void changedUpdate(javax.swing.event.DocumentEvent e) {
-                applySortAndFilter();
-                alphaSaveTimer.restart();
-            }
-        });
-
-        modelPTopKField.addActionListener(e -> {
-            modelPTopK = parseTopK(modelPTopKField.getText(), DEFAULT_MODELP_TOP_K);
-            applySortAndFilter();
-            saveTopKPref();
-        });
-
-        modelPTopKField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            @Override
-            public void insertUpdate(javax.swing.event.DocumentEvent e) {
-                modelPTopK = parseTopK(modelPTopKField.getText(), DEFAULT_MODELP_TOP_K);
-                topModelPaveTimer.restart();
-            }
-
-            @Override
-            public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                modelPTopK = parseTopK(modelPTopKField.getText(), DEFAULT_MODELP_TOP_K);
-                topModelPaveTimer.restart();
-            }
-
-            @Override
-            public void changedUpdate(javax.swing.event.DocumentEvent e) {
-                modelPTopK = parseTopK(modelPTopKField.getText(), DEFAULT_MODELP_TOP_K);
-                topModelPaveTimer.restart();
-            }
-        });
+//        modelPTopKField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+//            @Override
+//            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+//                modelPTopK = parseTopK(modelPTopKField.getText(), DEFAULT_MODELP_TOP_K);
+//                topModelPaveTimer.restart();
+//            }
+//
+//            @Override
+//            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+//                modelPTopK = parseTopK(modelPTopKField.getText(), DEFAULT_MODELP_TOP_K);
+//                topModelPaveTimer.restart();
+//            }
+//
+//            @Override
+//            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+//                modelPTopK = parseTopK(modelPTopKField.getText(), DEFAULT_MODELP_TOP_K);
+//                topModelPaveTimer.restart();
+//            }
+//        });
     }
 
     private void updateButtons() {
@@ -777,7 +774,7 @@ public final class VertexRepairPanel extends JPanel {
         rankedForTopK.sort(tableOrderIgnoringModelP());
 
         if (!rankedForTopK.isEmpty()) {
-            int k = Math.min(modelPTopK, rankedForTopK.size());
+            int k = rankedForTopK.size();//Math.min(modelPTopK, rankedForTopK.size());
             Map<String, Double> modelPByEditKey = new HashMap<>(k * 2);
 
             for (int i = 0; i < k; i++) {
@@ -848,7 +845,7 @@ public final class VertexRepairPanel extends JPanel {
         // Single-undo checkpoint for the whole run
         Graph checkpoint = safeCopy(workingGraph);
 
-        final double alpha = parseAlpha(alphaField.getText(), DEFAULT_ALPHA);
+//        final double alpha = parseAlpha(alphaField.getText(), DEFAULT_ALPHA);
         final RepairGraphType gt = (RepairGraphType) graphTypeCombo.getSelectedItem();
 
         int editsApplied = 0;
@@ -856,7 +853,7 @@ public final class VertexRepairPanel extends JPanel {
         final int MAX_STEPS_PER_NODE = 200;  // per-node safety cap
 
         vlog("==================================================");
-        vlog("AUTO-REPAIR (greedy table-order, one sweep) (alpha=%.4g, type=%s)", alpha, String.valueOf(gt));
+        vlog("AUTO-REPAIR (greedy table-order, one sweep) (type=%s)", String.valueOf(gt));
         vlog("==================================================");
 
         // One sweep only (use the same natural name ordering you use elsewhere)
@@ -1100,7 +1097,7 @@ public final class VertexRepairPanel extends JPanel {
         List<ScoredCandidate> ranked = new ArrayList<>(scored);
         ranked.sort(tableOrderIgnoringModelP());
 
-        int k = Math.min(modelPTopK, ranked.size());
+        int k = ranked.size();//Math.min(modelPTopK, ranked.size());
         Map<String, Double> modelPByKey = new HashMap<>(k * 2);
 
         for (int i = 0; i < k; i++) {
@@ -1713,16 +1710,16 @@ public final class VertexRepairPanel extends JPanel {
             List<Double> pvals = new ArrayList<>(globalPByKey.values());
 
             // Optional top-K downselect for model-p computation inside locality mode
-            if (modelPTopK > 0 && pvals.size() > modelPTopK) {
+//            if (modelPTopK > 0 && pvals.size() > modelPTopK) {
                 pvals.sort(Double::compareTo);
-                List<Double> sampled = new ArrayList<>(modelPTopK);
-                for (int i = 0; i < modelPTopK; i++) {
-                    int idx = (int) Math.floor((i + 0.5) * pvals.size() / modelPTopK);
+                List<Double> sampled = new ArrayList<>(pvals.size());
+                for (int i = 0; i < pvals.size(); i++) {
+                    int idx = (int) Math.floor((i + 0.5) * pvals.size() / pvals.size());
                     idx = Math.min(Math.max(idx, 0), pvals.size() - 1);
                     sampled.add(pvals.get(idx));
                 }
-                pvals = sampled;
-            }
+//                pvals = sampled;
+//            }
 
             modelP = model.getUniformityP(pvals);
         }
@@ -1791,31 +1788,31 @@ public final class VertexRepairPanel extends JPanel {
     }
 
     private void loadPrefsIntoUi() {
-        double a = PREFS.getDouble(PREF_ALPHA, DEFAULT_ALPHA);
-        int k = PREFS.getInt(PREF_MODEL_P_TOP_K, DEFAULT_MODELP_TOP_K);
+//        double a = PREFS.getDouble(PREF_ALPHA, DEFAULT_ALPHA);
+//        int k = PREFS.getInt(PREF_MODEL_P_TOP_K, DEFAULT_MODELP_TOP_K);
 
-        if (!(a > 0.0 && a < 1.0)) a = DEFAULT_ALPHA;
-        if (k <= 0) k = DEFAULT_MODELP_TOP_K;
+//        if (!(a > 0.0 && a < 1.0)) a = DEFAULT_ALPHA;
+//        if (k <= 0) k = DEFAULT_MODELP_TOP_K;
 
-        alphaField.setText(String.valueOf(a));
-        modelPTopKField.setText(String.valueOf(k));
-        modelPTopK = k;
+//        alphaField.setText(String.valueOf(a));
+//        modelPTopKField.setText(String.valueOf(k));
+//        modelPTopK = k;
     }
 
-    private void initPrefTimers() {
-        alphaSaveTimer.setRepeats(false);
-        topModelPaveTimer.setRepeats(false);
-    }
+//    private void initPrefTimers() {
+//        alphaSaveTimer.setRepeats(false);
+//        topModelPaveTimer.setRepeats(false);
+//    }
 
-    private void saveAlphaPref() {
-        double a = parseAlpha(alphaField.getText(), DEFAULT_ALPHA);
-        PREFS.putDouble(PREF_ALPHA, a);
-    }
-
-    private void saveTopKPref() {
-        int k = parseTopK(modelPTopKField.getText(), DEFAULT_MODELP_TOP_K);
-        PREFS.putInt(PREF_MODEL_P_TOP_K, k);
-    }
+//    private void saveAlphaPref() {
+//        double a = parseAlpha(alphaField.getText(), DEFAULT_ALPHA);
+//        PREFS.putDouble(PREF_ALPHA, a);
+//    }
+//
+//    private void saveTopKPref() {
+//        int k = parseTopK(modelPTopKField.getText(), DEFAULT_MODELP_TOP_K);
+//        PREFS.putInt(PREF_MODEL_P_TOP_K, k);
+//    }
 
     private void startWatched(String title, Runnable backgroundWork, Runnable onDoneEdt) {
         if (activeWorker != null) return;
@@ -2032,52 +2029,52 @@ public final class VertexRepairPanel extends JPanel {
         return ok;
     }
 
-    private boolean respectsCenterOnly(Map<String, Double> before, Map<String, Double> after, String centerName) {
-        Double p0 = before.get(centerName);
-        Double p1 = after.get(centerName);
-        if (p0 == null || p1 == null) return true;
-        if (Double.isNaN(p0) || Double.isNaN(p1)) return true;
-        return p1 >= p0 - EPS_NODEP;
-    }
+//    private boolean respectsCenterOnly(Map<String, Double> before, Map<String, Double> after, String centerName) {
+//        Double p0 = before.get(centerName);
+//        Double p1 = after.get(centerName);
+//        if (p0 == null || p1 == null) return true;
+//        if (Double.isNaN(p0) || Double.isNaN(p1)) return true;
+//        return p1 >= p0 - EPS_NODEP;
+//    }
 
-    private boolean okDrop(double p0, double p1) {
-        if (Double.isNaN(p0) || Double.isNaN(p1)) return true;
-        if (p1 >= p0) return true;
-        double absDrop = p0 - p1;
-        double relDrop = absDrop / Math.max(p0, 1e-6);
-        return absDrop <= ABS_DROP_LIMIT || relDrop <= REL_DROP_LIMIT;
-    }
+//    private boolean okDrop(double p0, double p1) {
+//        if (Double.isNaN(p0) || Double.isNaN(p1)) return true;
+//        if (p1 >= p0) return true;
+//        double absDrop = p0 - p1;
+//        double relDrop = absDrop / Math.max(p0, 1e-6);
+//        return absDrop <= ABS_DROP_LIMIT || relDrop <= REL_DROP_LIMIT;
+//    }
 
-    /**
-     * Do-no-harm variant with tolerance: rejects only if a node's Node-P drops "too much".
-     * If you want center-only, set neighborsToo=false.
-     */
-    private boolean respectsDoNoHarmWithTolerance(Map<String, Double> before,
-                                                  Map<String, Double> after,
-                                                  String centerName,
-                                                  boolean neighborsToo) {
-        if (before == null || after == null || centerName == null) return true;
-
-        for (Map.Entry<String, Double> e : before.entrySet()) {
-            String name = e.getKey();
-            if (name == null) continue;
-
-            // center-only option
-            if (!neighborsToo && !name.equals(centerName)) continue;
-
-            double p0 = e.getValue();
-            Double p1Obj = after.get(name);
-            if (p1Obj == null) continue;
-
-            double p1 = p1Obj;
-
-            if (!acceptableNodePDrop(p0, p1)) {
-                vlog("Rejected: Node-P drop too large for %s (%.6g -> %.6g).", name, p0, p1);
-                return false;
-            }
-        }
-        return true;
-    }
+//    /**
+//     * Do-no-harm variant with tolerance: rejects only if a node's Node-P drops "too much".
+//     * If you want center-only, set neighborsToo=false.
+//     */
+//    private boolean respectsDoNoHarmWithTolerance(Map<String, Double> before,
+//                                                  Map<String, Double> after,
+//                                                  String centerName,
+//                                                  boolean neighborsToo) {
+//        if (before == null || after == null || centerName == null) return true;
+//
+//        for (Map.Entry<String, Double> e : before.entrySet()) {
+//            String name = e.getKey();
+//            if (name == null) continue;
+//
+//            // center-only option
+//            if (!neighborsToo && !name.equals(centerName)) continue;
+//
+//            double p0 = e.getValue();
+//            Double p1Obj = after.get(name);
+//            if (p1Obj == null) continue;
+//
+//            double p1 = p1Obj;
+//
+//            if (!acceptableNodePDrop(p0, p1)) {
+//                vlog("Rejected: Node-P drop too large for %s (%.6g -> %.6g).", name, p0, p1);
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 
     // ---------------------------------------------------------------------
     // Table-order aware comparators (match the JTable ordering)
