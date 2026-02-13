@@ -1161,6 +1161,13 @@ public final class VertexRepairPanel extends JPanel {
             return false;
         }
 
+        if (requiresEdgePresenceCheck(cand) && !allIntendedNewEdgesPresent(g2, cand)) {
+            vlog("REJECTED (intended new edge(s) not present after apply/canonicalization)");
+            if (updateStatus) statusLabel.setText("Skipped (edge vanished): " + cand.description());
+            if (pushHistory && !history.isEmpty()) history.pop();
+            return false;
+        }
+
         // Commit
         workingGraph = g2;
 
@@ -1175,6 +1182,42 @@ public final class VertexRepairPanel extends JPanel {
         vlog("APPLIED successfully");
 
         if (updateStatus) statusLabel.setText("Applied: " + cand.description());
+        return true;
+    }
+
+    // True iff graph contains an edge between the same named endpoints with the same endpoint types.
+    private static boolean containsStructuralEdge(Graph g, Edge template) {
+        if (g == null || template == null) return false;
+
+        // rebind by names so node identity doesn't matter
+        Edge reb = rebindEdgeToGraph(g, template);
+        if (reb == null) return false;
+
+        Edge inG = g.getEdge(reb.getNode1(), reb.getNode2());
+        if (inG == null) return false;
+
+        // Compare endpoints at each named node (order-independent)
+        Endpoint a1 = inG.getEndpoint(reb.getNode1());
+        Endpoint b1 = inG.getEndpoint(reb.getNode2());
+        return a1 == reb.getEndpoint(reb.getNode1()) && b1 == reb.getEndpoint(reb.getNode2());
+    }
+
+    private static boolean requiresEdgePresenceCheck(CandidateEdit cand) {
+        if (cand == null) return false;
+        if (cand.isNoOp()) return false;
+        if (cand.getEdges().size() >= 2) return false;
+        // Removes don't have a "new edge" to verify.
+        String k = cand.key();
+        return k == null || !(k.startsWith("REM:"));
+    }
+
+    private static boolean allIntendedNewEdgesPresent(Graph g, CandidateEdit cand) {
+        if (g == null || cand == null) return false;
+        List<Edge> intended = cand.getEdges();
+        if (intended == null || intended.isEmpty()) return true; // nothing to verify
+        for (Edge e : intended) {
+            if (!containsStructuralEdge(g, e)) return false;
+        }
         return true;
     }
 
@@ -1682,6 +1725,33 @@ public final class VertexRepairPanel extends JPanel {
         return new GraphEval(violations, modelP, globalViolationByKey.size());
     }
 
+//    private Graph buildCandidateGraph(Graph base, CandidateEdit cand, RepairGraphType gt) {
+//        if (base == null || cand == null) return null;
+//
+//        Graph g2 = cand.applyTo(safeCopy(base));
+//        if (g2 == null) return null;
+//
+//        if (gt == RepairGraphType.CPDAG) {
+//            g2 = canonicalizeToCpdagOrNull(g2);
+//            if (g2 == null) return null;
+//
+//            if (!cand.isNoOp() && (g2.equals(base)))
+//                return null;// || (edge != null && !g2.containsEdge(edge)))) return null;
+//        } else if (gt == RepairGraphType.PAG) {
+//            // keep as-is
+//        } else if (gt == RepairGraphType.PDAG) {
+//            // keep as-is
+//        }
+//
+//        try {
+//            if (gt != null && !isLegalGraphType(g2, gt)) return null;
+//        } catch (Exception ignored) {
+//            return null;
+//        }
+//
+//        return g2;
+//    }
+
     private Graph buildCandidateGraph(Graph base, CandidateEdit cand, RepairGraphType gt) {
         if (base == null || cand == null) return null;
 
@@ -1692,12 +1762,18 @@ public final class VertexRepairPanel extends JPanel {
             g2 = canonicalizeToCpdagOrNull(g2);
             if (g2 == null) return null;
 
-            if (!cand.isNoOp() && (g2.equals(base)))
-                return null;// || (edge != null && !g2.containsEdge(edge)))) return null;
+            if (!cand.isNoOp() && g2.equals(base)) return null;
         } else if (gt == RepairGraphType.PAG) {
             // keep as-is
         } else if (gt == RepairGraphType.PDAG) {
             // keep as-is
+        }
+
+        // ✅ NEW RULE:
+        // If this edit is an add/replace/collider-move, and after apply+canonicalization
+        // the intended "new" edge(s) are not present, skip it.
+        if (requiresEdgePresenceCheck(cand) && !allIntendedNewEdgesPresent(g2, cand)) {
+            return null;
         }
 
         try {
@@ -1960,16 +2036,40 @@ public final class VertexRepairPanel extends JPanel {
         Map<String, Double> pBefore = nodePMap(base, affected);
         Map<String, Double> pAfter = nodePMap(cand, affected);
 
-        if (!respectsDoNoHarm(pBefore, pAfter, center.getName())) {
-            vlog("Rejected: violates do-no-harm on affected nodes %s.", affected);
-            return false;
-        }
+//        if (!respectsDoNoHarm(pBefore, pAfter, center.getName())) {
+//            vlog("Rejected: violates do-no-harm on affected nodes %s.", affected);
+//            return false;
+//        }
+
+//        if (!respectsCenterOnly(pBefore, pAfter, center.getName())) {
+//            vlog("Rejected: center nodeP worsened (%.6g -> %.6g).", pBefore.get(center.getName()), pAfter.get(center.getName()));
+//            return false;
+//        }
 
         // Actually apply to workingGraph using your normal applier (so Graph button / editor sees it)
         vlog("Attempting guarded move: %s", edit.description());
         boolean ok = applyCandidateInternal(edit, false, false);
         vlog(ok ? "APPLIED successfully" : "Rejected (no change)");
         return ok;
+    }
+
+    private boolean respectsCenterOnly(Map<String, Double> before, Map<String, Double> after, String centerName) {
+        Double p0 = before.get(centerName);
+        Double p1 = after.get(centerName);
+        if (p0 == null || p1 == null) return true;
+        if (Double.isNaN(p0) || Double.isNaN(p1)) return true;
+        return p1 >= p0 - EPS_NODEP;
+    }
+
+    private static final double ABS_DROP_LIMIT = 0.01;   // tolerate 0.01 drop
+    private static final double REL_DROP_LIMIT = 0.25;   // tolerate 25% relative drop
+
+    private boolean okDrop(double p0, double p1) {
+        if (Double.isNaN(p0) || Double.isNaN(p1)) return true;
+        if (p1 >= p0) return true;
+        double absDrop = p0 - p1;
+        double relDrop = absDrop / Math.max(p0, 1e-6);
+        return absDrop <= ABS_DROP_LIMIT || relDrop <= REL_DROP_LIMIT;
     }
 
     // ---------------------------------------------------------------------
@@ -2133,9 +2233,15 @@ public final class VertexRepairPanel extends JPanel {
                         if (e != null) g2.removeEdge(e);
                     }
 
+//                    for (Edge ne : news) {
+//                        if (ne == null) continue;
+//                        g2.addEdge(ne);
+//                    }
+
                     for (Edge ne : news) {
                         if (ne == null) continue;
-                        g2.addEdge(ne);
+                        Edge rebound = rebindEdgeToGraph(g2, ne);
+                        if (rebound != null) g2.addEdge(rebound);
                     }
 
                     return g2;
