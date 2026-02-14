@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.Histogram;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.TrainedDagSimulatorGNM;
+import edu.cmu.tetradapp.model.DagFactorizationCompare;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -43,21 +44,23 @@ public final class DagFactorizationComparePanel extends JPanel {
     private final JLabel status = new JLabel(" ");
 
     private final DualPlotMatrix dual;
+    private final DagFactorizationCompare model;
 
     // last simulated (right)
     private DataSet simulated;
 
-    public DagFactorizationComparePanel(DataSet observed, Graph dag) {
+    public DagFactorizationComparePanel(DagFactorizationCompare model) {
         super(new BorderLayout(10, 10));
 
-        this.observed = Objects.requireNonNull(observed, "observed");
-        this.dag = Objects.requireNonNull(dag, "dag");
+        this.observed = Objects.requireNonNull(model.getInputData(), "observed");
+        this.dag = Objects.requireNonNull(model.getGraph(), "dag");
+        this.model = model;
 
         int n0 = Math.max(1, observed.getNumRows());
         this.nSpinner = new JSpinner(new SpinnerNumberModel(n0, 1, 10_000_000, 50));
 
         // initial simulation (same n as observed)
-        this.simulated = simulateWithGNM(observed, dag, n0);
+        this.simulated = model.getSimulatedData();
 
         // UI
         add(buildHeader(), BorderLayout.NORTH);
@@ -108,7 +111,8 @@ public final class DagFactorizationComparePanel extends JPanel {
             SwingUtilities.invokeLater(() -> {
                 try {
                     int n = ((Number) nSpinner.getValue()).intValue();
-                    simulated = simulateWithGNM(observed, dag, n);
+                    model.resimulate(n);
+                    simulated = model.getSimulatedData();
                     dual.setRightData(simulated);
                     status.setText("Resimulated with n = " + n + ".");
                 } catch (Throwable t) {
@@ -118,30 +122,6 @@ public final class DagFactorizationComparePanel extends JPanel {
                 }
             });
         });
-    }
-
-    /**
-     * IMPORTANT: Implement this to call your TrainedDagSimulatorGNM the same way as the Simulation editor.
-     *
-     * Requirements you stated:
-     * - inputs: (DataSet, DAG)
-     * - dataset contains all variables in DAG
-     * - uses TrainedDagSimulatorGNM (GNM) to encode/train then simulate to respect DAG factorization
-     * - resimulate with requested n
-     *
-     * You’ll likely do something like:
-     *   TrainedDagSimulatorGNM sim = new TrainedDagSimulatorGNM();
-     *   sim.setDag(dag); sim.setTrainingData(observed); sim.setSampleSize(n); ...
-     *   return sim.simulateData(); // or sim.simulate(n)
-     */
-    private DataSet simulateWithGNM(DataSet observed, Graph dag, int n) {
-        TrainedDagSimulatorGNM.Params params = new TrainedDagSimulatorGNM.Params();
-        params.seed = System.nanoTime();
-        TrainedDagSimulatorGNM sim = new TrainedDagSimulatorGNM(observed, dag, params);
-        sim.fit();
-        int sampleSize = (int) nSpinner.getValue();
-        edu.cmu.tetrad.sem.TrainedDagSimulatorGNM.SimResult result = sim.simulate(sampleSize);
-        return result.toDataSet();
     }
 
     // =============================================================================================

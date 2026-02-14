@@ -13,9 +13,6 @@ public final class DagFactorizationCompareEditor extends JPanel {
 
     public DagFactorizationCompareEditor(DagFactorizationCompare model) {
         super(new BorderLayout());
-        add(new DagFactorizationComparePanel(
-                model.getInputData(),
-                model.getInputGraph()
-        ), BorderLayout.CENTER);
+        add(new DagFactorizationComparePanel(model), BorderLayout.CENTER);
     }
 }
