@@ -612,10 +612,13 @@ public final class VertexRepairPanel extends JPanel {
         if (stopRequested()) return;
 
         GlobalEvalCache baseCache = buildBaselineCache(base);
-        GraphEval baseEval = evalGraphLocality(baseCache, base, Set.of(), true);
 
+        // For baseline counts: keep locality path (fast + consistent with your locality merges)
+        GraphEval baseEval = evalGraphLocality(baseCache, base, Set.of(), false);
         int baseline = baseEval.violations();
-        double baselineModelP = baseEval.modelP();
+
+        // For baseline Model-P: compute exactly the same way as candidates (evalGraphOnce)
+        double baselineModelP = evalGraphOnce(base).modelP();
 
         Map<String, Graph> candGraphByKey = new HashMap<>();
         List<ScoredCandidate> scored = new ArrayList<>();
@@ -744,11 +747,7 @@ public final class VertexRepairPanel extends JPanel {
 
             int c;
 
-            double passA = a.modelPAfter();
-            double passB = b.modelPAfter();
-
-            c = Double.compare(passB, passA);
-
+            c = comparePDescNaNLast(a.modelPAfter(), b.modelPAfter());
             if (c != 0) return c;
 
             // Δ ASC
@@ -759,11 +758,7 @@ public final class VertexRepairPanel extends JPanel {
             c = Integer.compare(a.edgesAfter(), b.edgesAfter());
             if (c != 0) return c;
 
-            // Node-P "pass" flag DESC (1 before 0); NaN => 0
-            double passAn = a.nodePAfter();
-            double passBn = b.nodePAfter();
-            c = Double.compare(passBn, passAn);
-
+            c = comparePDescNaNLast(a.nodePAfter, b.nodePAfter);
             if (c != 0) return c;
 
             // Stable tiebreak
@@ -878,6 +873,15 @@ public final class VertexRepairPanel extends JPanel {
         });
     }
 
+    private static int comparePDescNaNLast(double pa, double pb) {
+        boolean aNaN = Double.isNaN(pa);
+        boolean bNaN = Double.isNaN(pb);
+        if (aNaN && bNaN) return 0;
+        if (aNaN) return 1;
+        if (bNaN) return -1;
+        return -Double.compare(pa, pb); // DESC
+    }
+
     // ---------------------------------------------------------------------
     // Canonicalization / legality / copies
     // ---------------------------------------------------------------------
@@ -916,9 +920,13 @@ public final class VertexRepairPanel extends JPanel {
         }
 
         GlobalEvalCache baseCache = buildBaselineCache(base);
-        GraphEval baseEval = evalGraphLocality(baseCache, base, Set.of(), true);
 
+        // Baseline violations only via locality
+        GraphEval baseEval = evalGraphLocality(baseCache, base, Set.of(), false);
         int baseline = baseEval.violations();
+
+        // (Optional) if you ever want baseline Model-P in SearchPack, compute it like this:
+        // double baselineModelP = evalGraphOnce(base).modelP();
 
         Map<String, Graph> candGraphByKey = new HashMap<>();
         List<ScoredCandidate> scored = new ArrayList<>();
@@ -1712,19 +1720,36 @@ public final class VertexRepairPanel extends JPanel {
     }
 
     /**
-     * Comparator that matches the table's sort keys, BUT treats Model-P as "unknown"
-     * (i.e., ignores it). This is what you want for deciding which rows are worth
-     * computing Model-P for.
-     * <p>
-     * The table is: Edges ASC, Model-P DESC, After ASC, Δ ASC.
-     * If Model-P is unknown for most rows, then the practical order is:
-     * Edges ASC, After ASC, Δ ASC.
+     * Comparator that matches the JTable's sort order, but ignores Model-P.
+     * JTable order (applySortAndFilter):
+     *   Model-P DESC, Δ ASC, Edges ASC, Node-P DESC
+     * Ignoring Model-P => Δ ASC, Edges ASC, Node-P DESC (NaN last).
      */
     private Comparator<ScoredCandidate> tableOrderIgnoringModelP() {
-        return Comparator
-                .comparingInt(ScoredCandidate::edgesAfter)
-                .thenComparingInt(ScoredCandidate::violationsAfter)
-                .thenComparingInt(ScoredCandidate::delta);
+        return (a, b) -> {
+            if (a == null && b == null) return 0;
+            if (a == null) return 1;
+            if (b == null) return -1;
+
+            int c;
+
+            // Δ ASC
+            c = Integer.compare(a.delta(), b.delta());
+            if (c != 0) return c;
+
+            // Edges ASC
+            c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+            if (c != 0) return c;
+
+            // Node-P DESC, NaN last
+            c = comparePDescNaNLast(a.nodePAfter(), b.nodePAfter());
+            if (c != 0) return c;
+
+            // Stable tiebreak
+            String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
+            String kb = (b.edit() == null || b.edit().key() == null) ? "" : b.edit().key();
+            return ka.compareTo(kb);
+        };
     }
 
     /**
@@ -1986,10 +2011,23 @@ public final class VertexRepairPanel extends JPanel {
                 public Graph applyTo(Graph g) {
                     Graph g2 = new EdgeListGraph(g);
 
-                    // remove (by endpoints) to be robust to edge object identity / ordering
+                    // remove by *names* (node identity differs across graph copies)
                     for (Edge oe : olds) {
                         if (oe == null) continue;
-                        Edge e = g2.getEdge(oe.getNode1(), oe.getNode2());
+
+                        Node a0 = oe.getNode1();
+                        Node b0 = oe.getNode2();
+                        if (a0 == null || b0 == null) continue;
+
+                        String an = a0.getName();
+                        String bn = b0.getName();
+                        if (an == null || bn == null) continue;
+
+                        Node a = g2.getNode(an);
+                        Node b = g2.getNode(bn);
+                        if (a == null || b == null) continue;
+
+                        Edge e = g2.getEdge(a, b);
                         if (e != null) g2.removeEdge(e);
                     }
 
