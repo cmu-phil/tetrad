@@ -18,7 +18,7 @@ import static java.lang.Double.NaN;
  *
  * <p>Core statistic (feature space):
  * <pre>
- *   FX = phi(X),  FY = psi(Y)  (or psi([Y,Z]) if doRcit && Z nonempty),  FZ = eta(Z)
+ *   FX = phi(X),  FY = psi(Y)  (or psi([Y,Z]) if doRcit &amp;&amp; Z nonempty),  FZ = eta(Z)
  *   RX = FX - Proj_Z(FX)   (ridge)
  *   RY = FY - Proj_Z(FY)   (ridge)
  *   stat = n * || cov(RX, RY) ||_F^2
@@ -70,10 +70,21 @@ public final class Rcit implements IndependenceTest, RowsSettable {
     // Construction
     // --------------------------------------------------------------------
 
+    /**
+     * Constructs an instance of the Rcit class using the provided DataSet and default parameters.
+     *
+     * @param dataSet the dataset to be used for initializing the Rcit instance; must not be null.
+     */
     public Rcit(DataSet dataSet) {
         this(dataSet, new Parameters());
     }
 
+    /**
+     * Constructs an instance of the Rcit class using the provided DataSet and Parameters.
+     *
+     * @param dataSet the dataset to be used for initializing the Rcit instance; must not be null.
+     * @param params the set of parameters to configure the behavior of the Rcit instance; must not be null.
+     */
     public Rcit(DataSet dataSet, Parameters params) {
         this.data = Objects.requireNonNull(dataSet, "data");
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
@@ -346,6 +357,18 @@ public final class Rcit implements IndependenceTest, RowsSettable {
     // IndependenceTest
     // --------------------------------------------------------------------
 
+    /**
+     * Checks the statistical independence between two nodes x and y, optionally conditioned on a set of variables z.
+     * The method performs calculations based on specified statistical approaches such as RCoT or RCIT.
+     * It computes a test statistic and assesses its significance against a specified threshold (alpha).
+     *
+     * @param x The first variable (node) under test.
+     * @param y The second variable (node) under test.
+     * @param z An optional set of conditioning variables (nodes). If null, the method assumes no conditioning variables.
+     * @return An {@link IndependenceResult} containing the independence fact, test result (true if independent, false otherwise),
+     *         calculated p-value, and the difference between the significance level and the p-value.
+     * @throws InterruptedException If the thread executing the method is interrupted.
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z)
             throws InterruptedException {
@@ -480,53 +503,136 @@ public final class Rcit implements IndependenceTest, RowsSettable {
     // RCIT / RCoT setters (keep them; don’t drop methods)
     // --------------------------------------------------------------------
 
+    /**
+     * Sets the value indicating whether the RCIT (Randomized Conditional Independence Test) functionality
+     * should be enabled or disabled.
+     *
+     * Enabling or disabling the RCIT functionality affects how the class performs calculations related to
+     * dependency testing. Additionally, this method invalidates the feature cache to ensure consistency in
+     * subsequent calculations.
+     *
+     * @param doRcit A boolean value indicating whether to enable (true) or disable (false) the RCIT functionality.
+     */
     public void setDoRcit(boolean doRcit) {
         this.doRcit = doRcit;
         invalidateFeatureCache();
     }
 
+    /**
+     * Returns the current state of the RCIT (Randomized Conditional Independence Test) functionality.
+     *
+     * This method indicates whether the RCIT functionality is enabled or disabled in the class.
+     * It is used to determine whether RCIT-based calculations should be performed.
+     *
+     * @return true if the RCIT functionality is enabled; false otherwise.
+     */
     public boolean isDoRcit() {
         return doRcit;
     }
 
+    /**
+     * Sets the number of features corresponding to the XY interaction for this instance.
+     * The value is clamped to a minimum of 1 to ensure a valid number of features.
+     * This method also invalidates the feature cache to guarantee the results
+     * reflect the updated configuration.
+     *
+     * @param d The desired number of features for the XY interaction. If the value
+     *          is less than 1, it will be automatically set to 1.
+     */
     public void setNumFeaturesXY(int d) {
         this.numFeatXY = Math.max(1, d);
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the number of features corresponding to the Z interaction for this instance.
+     * The value is clamped to a minimum of 1 to ensure a valid number of features.
+     * This method also invalidates the feature cache to guarantee the results
+     * reflect the updated configuration.
+     *
+     * @param d The desired number of features for the Z interaction. If the value
+     *          is less than 1, it will be automatically set to 1.
+     */
     public void setNumFeaturesZ(int d) {
         this.numFeatZ = Math.max(1, d);
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the number of augmented Y features for this instance.
+     * The value is clamped to a minimum of 1 to ensure a valid number of features.
+     * This method also invalidates the feature cache to ensure the updated
+     * configuration is applied correctly in subsequent calculations.
+     *
+     * @param d The desired number of augmented Y features. If the value
+     *          is less than 1, it will be automatically set to 1.
+     */
     public void setNumFeaturesYAug(int d) {
         this.numFeatYAug = Math.max(1, d);
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the approximation object to be used. This method assigns the provided
+     * {@code Approx} instance to the internal field, ensuring it is not null.
+     *
+     * @param approx the approximation object to set; must not be null
+     * @throws NullPointerException if {@code approx} is null
+     */
     public void setApproximation(Approx approx) {
         this.approx = Objects.requireNonNull(approx, "approx");
     }
 
+    /**
+     * Sets the number of permutations. The value is constrained to be a non-negative integer.
+     *
+     * @param permutations the desired number of permutations. If the provided value is negative, it will be set to 0.
+     */
     public void setPermutations(int permutations) {
         this.permutations = Math.max(0, permutations);
     }
 
+    /**
+     * Sets the value of the lambda parameter and invalidates the feature cache.
+     *
+     * @param lambda the new value to set for the lambda parameter
+     */
     public void setLambda(double lambda) {
         this.lambda = lambda;
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the feature type for this instance and invalidates the feature cache.
+     *
+     * @param featureType the feature type to be set; must not be null
+     * @throws NullPointerException if the provided featureType is null
+     */
     public void setFeatureType(FeatureType featureType) {
         this.featureType = Objects.requireNonNull(featureType, "featureType");
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the maximum number of rows for the bandwidth calculations.
+     * This value determines the upper limit of rows to be considered in relevant operations.
+     *
+     * @param bwMaxRows the maximum number of rows to set, must be a non-negative integer
+     */
     public void setBwMaxRows(int bwMaxRows) {
         this.bwMaxRows = bwMaxRows;
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the bandwidth multiplier, which is used to scale the bandwidth allocation.
+     * The value must be greater than 0 and finite.
+     *
+     * @param bandwidthMultiplier the scaling factor for bandwidth allocation.
+     *                             Must be a positive, finite double value.
+     * @throws IllegalArgumentException if the provided value is not greater than 0
+     *                                  or is not finite.
+     */
     public void setBandwidthMultiplier(double bandwidthMultiplier) {
         if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
             throw new IllegalArgumentException("bandwidthMultiplier must be > 0 and finite");
@@ -535,11 +641,21 @@ public final class Rcit implements IndependenceTest, RowsSettable {
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the seed value for generating random values or reproducible sequences.
+     *
+     * @param seed the seed value to be used for initialization
+     */
     public void setSeed(long seed) {
         this.seed = seed;
         invalidateFeatureCache();
     }
 
+    /**
+     * Retrieves the most recently computed p-value.
+     *
+     * @return the last computed p-value as a double
+     */
     public double getPValue() {
         return lastP;
     }
@@ -770,32 +886,63 @@ public final class Rcit implements IndependenceTest, RowsSettable {
     // IndependenceTest boilerplate
     // --------------------------------------------------------------------
 
+    /**
+     * Retrieves the list of variables represented as Node objects.
+     *
+     * @return a list of Node objects representing the variables.
+     */
     @Override
     public List<Node> getVariables() {
         return vars;
     }
 
+    /**
+     * Retrieves the value of the alpha parameter.
+     *
+     * @return the alpha value as a double
+     */
     @Override
     public double getAlpha() {
         return alpha;
     }
 
+    /**
+     * Sets the value of alpha, which must be within the range (0, 1).
+     * Throws an IllegalArgumentException if the provided value is outside the valid range.
+     *
+     * @param a the new alpha value to be set; must be greater than 0 and less than 1
+     */
     @Override
     public void setAlpha(double a) {
         if (!(a > 0 && a < 1)) throw new IllegalArgumentException("alpha in (0,1)");
         alpha = a;
     }
 
+    /**
+     * Retrieves the dataset associated with this instance.
+     *
+     * @return the dataset (DataSet) associated with this instance
+     */
     @Override
     public DataSet getData() {
         return data;
     }
 
+    /**
+     * Determines whether verbose mode is enabled.
+     *
+     * @return true if verbose mode is enabled, false otherwise
+     */
     @Override
     public boolean isVerbose() {
         return verbose;
     }
 
+    /**
+     * Sets the verbosity level for the current instance.
+     *
+     * @param v a boolean indicating whether verbose mode should be enabled (true) or disabled (false)
+     */
     @Override
     public void setVerbose(boolean v) {
         verbose = v;
@@ -805,15 +952,79 @@ public final class Rcit implements IndependenceTest, RowsSettable {
     // Enums
     // --------------------------------------------------------------------
 
+    /**
+     * An enumeration representing the types of features that can be used for
+     * generating random feature mappings for RBF kernels. The different feature
+     * types are:
+     *
+     * - RFF (Random Fourier Features): A method to approximate shift-invariant
+     *   kernel functions like the RBF kernel using random projections based on
+     *   Fourier transforms.
+     * - ORF (Orthogonal Random Features): A variant of RFF that incorporates
+     *   orthogonality constraints to potentially improve approximation quality.
+     *
+     * This enumeration is used to configure the feature mapping strategy for
+     * algorithms that rely on such kernel approximations.
+     */
     public enum FeatureType {
+
+        /**
+         * Represents the Random Fourier Features (RFF) method for approximating
+         * shift-invariant kernel functions such as the Radial Basis Function (RBF) kernel.
+         * RFF generates random feature mappings based on Fourier transforms to enable
+         * efficient computation of kernel-based algorithms in high-dimensional spaces.
+         * It allows for scalable and efficient approximation of non-linear kernels.
+         */
         RFF,
+
+        /**
+         * Represents the Orthogonal Random Features (ORF) method for approximating
+         * shift-invariant kernel functions, such as the Radial Basis Function (RBF) kernel.
+         * ORF extends the Random Fourier Features (RFF) approach by incorporating orthogonality
+         * constraints on the generated random features. This can potentially improve the
+         * quality of kernel approximation, leading to better performance in kernel-based
+         * machine learning algorithms.
+         */
         ORF
     }
 
+    /**
+     * The Approx enumeration defines the types of approximation methods that can be used
+     * for statistical computations or tests within the Rcit class.
+     *
+     * GAMMA:
+     * Represents the use of the gamma distribution approximation.
+     *
+     * SADDLEPOINT:
+     * Represents the use of the saddlepoint approximation method.
+     *
+     * DAVIES_IMHOF:
+     * Represents the use of the Davies-Imhof algorithm for approximation.
+     *
+     * PERMUTATION:
+     * Represents the use of permutation-based approximation, which typically involves
+     * resampling techniques to generate null distributions.
+     */
     public enum Approx {
+
+        /**
+         * Represents the gamma
+         */
         GAMMA,
+
+        /**
+         * Represents the saddlepoint
+         */
         SADDLEPOINT,
+
+        /**
+         * Represents the Davies-Imhof approximation
+         */
         DAVIES_IMHOF,
+
+        /**
+         * Represents the permutation-based approximation
+         */
         PERMUTATION
     }
 }

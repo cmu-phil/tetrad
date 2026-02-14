@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,9 +20,6 @@
 
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.annotation.General;
-import edu.cmu.tetrad.annotation.Mixed;
-import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -35,12 +32,12 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-///**
-// * Wrapper for Neykov-style minimax optimal conditional independence test.
-// *
-// * @author josephramsey
-// * @version $Id: $Id
-// */
+/**
+ * Wrapper for Neykov-style minimax optimal conditional independence test.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 //@TestOfIndependence(
 //        name = "Neykov Minimax Conditional Independence Test",
 //        command = "neykov-minimax-ci-test",
@@ -48,6 +45,7 @@ import java.util.List;
 //)
 //@General
 //@Mixed
+@Deprecated(since = "7.9", forRemoval = false)
 public class NeykovMinimaxCITest implements IndependenceWrapper {
 
     @Serial
@@ -61,9 +59,12 @@ public class NeykovMinimaxCITest implements IndependenceWrapper {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns a Neykov-style Minimax test.
+     * Creates and returns an independence test configured using the provided dataset and parameters.
+     *
+     * @param dataSet The dataset on which the independence test will be performed.
+     * @param parameters A collection of parameters used to configure the independence test, such as alpha,
+     *                   binning configuration, verbosity, and settings related to Z binning behavior.
+     * @return An instance of the independence test wrapped in a caching layer to optimize query performance.
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
@@ -102,9 +103,9 @@ public class NeykovMinimaxCITest implements IndependenceWrapper {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the name/description of the test.
+     * Provides a description of the Neykov-Minimax test.
+     *
+     * @return A string representing the name of the test, "Neykov-Minimax-Test".
      */
     @Override
     public String getDescription() {
@@ -112,9 +113,10 @@ public class NeykovMinimaxCITest implements IndependenceWrapper {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the data type of the test.
+     * Retrieves the data type associated with the test.
+     *
+     * @return The data type, which can be {@code Continuous}, {@code Discrete}, {@code Mixed}, or other specified
+     * values as defined in the {@code DataType} enum.
      */
     @Override
     public DataType getDataType() {
@@ -122,9 +124,11 @@ public class NeykovMinimaxCITest implements IndependenceWrapper {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the parameters of the test.
+     * Retrieves the list of parameter names required or available for configuring the Neykov-Minimax
+     * independence test. These parameters include options for alpha level, verbosity, binning configurations,
+     * and other constraints related to stratification.
+     *
+     * @return A list of strings representing the names of configurable parameters for the test.
      */
     @Override
     public List<String> getParameters() {

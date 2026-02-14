@@ -43,6 +43,15 @@ import java.util.function.Function;
  */
 public final class CiTestHarness {
 
+    /**
+     * Default constructor for the CiTestHarness class.
+     * Initializes an instance of the harness for running conditional independence tests
+     * on datasets using statistical simulations and configurations specified in other methods.
+     */
+    public CiTestHarness() {
+
+    }
+
     // ===================== Public API =====================
 
     private static List<Node> nodesOf(List<Node> vars, int[] idx) {
@@ -98,6 +107,13 @@ public final class CiTestHarness {
 //        return String.format(Locale.US, "%.8g", x);
     }
 
+    /**
+     * Entry point of the program. Demonstrates the usage of the `CiTestHarness` by setting up
+     * a statistical simulation, running conditional independence tests, and writing outputs to files.
+     *
+     * @param args command-line arguments (not used in this implementation)
+     * @throws Exception if an error occurs during file operations or test execution
+     */
     public static void main(String[] args) throws Exception {
         // You’ll likely call this from your own simulation pipeline instead of main().
         // Left here as a “how to wire it” sketch.
@@ -199,13 +215,20 @@ public final class CiTestHarness {
     // ===================== Core sampling logic =====================
 
     /**
-     * Main entry: run harness on given true graph, dataset, and CI tests.
+     * Executes a series of independence tests on a dataset using a given true graph and configuration,
+     * and evaluates the results against predefined criteria.
      *
-     * @param trueGraph the ground-truth graph used ONLY for implied-independence filtering
-     * @param data      the dataset used by the statistical tests
-     * @param tests     list of CI test wrappers
-     * @param params    parameters for statistical tests
-     * @param cfg       harness configuration
+     * @param trueGraph the ground truth graph, which represents the true dependencies
+     *                  and independencies in the dataset. Must not be null.
+     * @param data      the dataset containing variables and data values to be tested. Must not be null.
+     * @param tests     a list of independence test wrappers to be executed on the dataset. Must be non-empty and not null.
+     * @param params    parameters to configure the setup and behavior of the independence tests. Must not be null.
+     * @param cfg       configuration settings for sampling, evaluation, and progress reporting. Must not be null.
+     * @return a {@link Result} object containing the evaluation results, including calculated p-values,
+     * decisions for both independent and dependent tests, and uniformity diagnostics.
+     * @throws NullPointerException     if any of the input arguments {@code trueGraph}, {@code data}, {@code tests}, or {@code cfg} is null.
+     * @throws IllegalArgumentException if the {@code tests} list is empty.
+     * @throws AssertionError           if duplicate facts are detected in the independent or dependent pools.
      */
     public Result run(Graph trueGraph,
                       DataSet data,
@@ -313,6 +336,20 @@ public final class CiTestHarness {
                 uni);
     }
 
+    /**
+     * Writes a CSV file containing p-values for conditional independence tests.
+     * The output includes headers for the fact description, variables x and y,
+     * conditioning set z, and test names, followed by rows of data corresponding
+     * to each fact and its associated p-values for each test.
+     *
+     * @param out       the file to which the results will be written
+     * @param testNames a list of names of the statistical tests whose p-values are recorded
+     * @param facts     a list of conditional independence facts, where each fact contains
+     *                  information about the variables being tested and the conditioning set
+     * @param pvals     a 2D array of p-values, where each row corresponds to a fact and
+     *                  each column corresponds to a test
+     * @throws IOException if there is an error during file writing
+     */
     public void writePValues(File out, List<String> testNames, List<CiFact> facts, double[][] pvals) throws IOException {
         try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(out), StandardCharsets.UTF_8))) {
             pw.print("fact,x,y,z");
@@ -333,6 +370,24 @@ public final class CiTestHarness {
         }
     }
 
+    /**
+     * Writes a CSV file containing decisions for conditional independence tests.
+     * The output includes headers for fact descriptions, variables x, y, and z,
+     * followed by test names and their corresponding decision values arranged by
+     * test names and alpha levels.
+     *
+     * @param out       the file to which the decisions will be written
+     * @param testNames a list of names of the statistical tests under evaluation
+     * @param alphas    an array of significance levels (alpha values) for which
+     *                  decisions were computed
+     * @param facts     a list of conditional independence facts, where each fact
+     *                  contains information about the variables being tested and the
+     *                  conditioning set
+     * @param decisions a 3D array where decisions[ai][i][t] represents the decision
+     *                  for the i-th fact using the t-th test at the ai-th alpha level.
+     *                  A value of 0 signifies independent, while 1 signifies dependent.
+     * @throws IOException if an error occurs during file writing
+     */
     public void writeDecisions(File out,
                                List<String> testNames,
                                double[] alphas,
@@ -364,6 +419,18 @@ public final class CiTestHarness {
         }
     }
 
+    /**
+     * Generates a summary report of the statistical tests and writes it to the specified output file.
+     * <p>
+     * The report includes the number of facts tested for truth independence and dependence, configuration details,
+     * and per-test summary statistics such as type I error, type II error, power, and uniformity p-values.
+     *
+     * @param out       The file to which the summary report will be written.
+     * @param testNames A list of test names corresponding to the evaluated tests.
+     * @param alphas    An array of significance levels (alpha values) used for the statistical tests.
+     * @param r         A Result object containing statistical test results, decisions, and uniformity measures.
+     * @throws IOException If an I/O error occurs while writing to the output file.
+     */
     public void writeSummaryReport(File out,
                                    List<String> testNames,
                                    double[] alphas,
@@ -418,8 +485,13 @@ public final class CiTestHarness {
     // ===================== CI test evaluation =====================
 
     /**
-     * Builds an MsepTest over the provided variable list. This is the “truth oracle” for implied independences.
-     * Isolating here makes it easy to tweak later if you want different separation semantics.
+     * Creates an instance of MsepTest using the provided true graph.
+     * This method encapsulates the initialization of an MsepTest object,
+     * which is used for determining m-separation properties in a graph.
+     *
+     * @param trueGraph the input graph representing the ground-truth structure
+     *                  upon which m-separation tests are conducted
+     * @return an initialized MsepTest object configured with the provided graph
      */
     private MsepTest makeMsepTest(Graph trueGraph) {
         // MsepTest in Tetrad expects a graph and variables; adjust constructor if your signature differs.
@@ -429,7 +501,16 @@ public final class CiTestHarness {
     // ===================== Uniformity diagnostics (KS + AD) =====================
 
     /**
-     * Sampling conditioning set Z uniformly without replacement from V \ {x,y}.
+     * Generates a pseudo-random sample of integers from a set of eligible indices
+     * based on the input parameters, excluding specified indices.
+     *
+     * @param rng the {@code SplittableRandom} instance used to generate random numbers
+     * @param p   the size of the original set of indices from which sampling is performed
+     * @param x   the index to exclude from the sampling pool
+     * @param y   another index to exclude from the sampling pool
+     * @param k   the number of indices to sample, subject to adjustment if {@code k > p - 2}
+     * @return an array of {@code k} distinct pseudo-randomly sampled, sorted integers
+     * from the eligible indices, or an empty array if {@code k == 0}
      */
     private int[] sampleConditioningSet(SplittableRandom rng, int p, int x, int y, int k) {
         if (k == 0) return new int[0];
@@ -457,8 +538,16 @@ public final class CiTestHarness {
     }
 
     /**
-     * True if implied independence holds in the true graph.
-     * Isolated so you can adjust details (e.g., exclude adjacencies, require minimality, etc.).
+     * Determines whether the given conditional independence test implies independence
+     * between two nodes (x and y) given a set of conditioning nodes (z).
+     *
+     * @param implied The conditional independence test to be evaluated.
+     * @param x       Index of the first node in the independence check.
+     * @param y       Index of the second node in the independence check.
+     * @param z       Array of indices representing the conditioning set of nodes.
+     * @return true if the conditional independence test implies independence,
+     * false otherwise.
+     * @throws RuntimeException if an exception occurs during the independence check process.
      */
     private boolean isImpliedIndependent(MsepTest implied, int x, int y, int[] z) {
         // MsepTest can check with node indices or Nodes; here we’ll use Nodes via implied.getVariables().
@@ -476,8 +565,13 @@ public final class CiTestHarness {
     // ===================== (Optional) true DAG creation hook =====================
 
     /**
-     * Returns the p-value for X _||_ Y | Z for the given test.
-     * Adjust this method if your IndependenceTest API differs.
+     * Calculates the p-value of the independence test for the given nodes.
+     *
+     * @param test the independence test to be used for computation
+     * @param x    the first node in the test
+     * @param y    the second node in the test
+     * @param z    the list of conditioning nodes
+     * @return the computed p-value clamped between 0 and 1, or Double.NaN in case of an error or an invalid result
      */
     private double pValueOf(IndependenceTest test, Node x, Node y, List<Node> z) {
         try {
@@ -495,9 +589,12 @@ public final class CiTestHarness {
     // ===================== Small utilities =====================
 
     /**
-     * Decision encoding:
-     * 0 = declared independent
-     * 1 = declared dependent (Type I error in this harness, since truth is independent)
+     * Determines the decision of a hypothesis test based on the provided p-value and significance level.
+     *
+     * @param pValue the p-value from the statistical test; must be a finite number
+     * @param alpha  the significance level threshold for rejecting the null hypothesis
+     * @return 1 if the p-value is less than or equal to alpha, indicating rejection of the null hypothesis;
+     * 0 if the p-value is greater than alpha, or if the p-value is not finite
      */
     private int decisionOf(double pValue, double alpha) {
         if (!Double.isFinite(pValue)) return 0; // treat NaN as “don’t reject”
@@ -505,7 +602,11 @@ public final class CiTestHarness {
     }
 
     /**
-     * KS test p-value for Uniform(0,1). Uses asymptotic approximation (good once n is moderately large).
+     * Calculates the Kolmogorov-Smirnov (KS) test p-value to evaluate the uniformity
+     * of the given array of p-values within the range [0, 1].
+     *
+     * @param pvals an array of p-values to be tested for uniformity
+     * @return the p-value resulting from the KS test
      */
     private double ksUniformPValue(double[] pvals) {
         List<Double> pValues = new ArrayList<>(pvals.length);
@@ -514,10 +615,13 @@ public final class CiTestHarness {
     }
 
     /**
-     * Anderson–Darling uniformity p-value.
-     * <p>
-     * We compute the AD statistic for U(0,1) and then use a common approximation for the p-value.
-     * If you already have a preferred AD implementation in Tetrad, swap it in here.
+     * Computes the p-value for a set of input p-values using the Anderson-Darling
+     * test for uniformity over the interval [0, 1].
+     *
+     * @param pvals an array of p-values to be tested for uniformity
+     * @return the p-value from the Anderson-Darling test indicating the probability
+     * of observing a test statistic at least as extreme as the one calculated
+     * assuming the null hypothesis of uniformity is true
      */
     private double adUniformPValue(double[] pvals) {
         List<Double> pValues = new ArrayList<>(pvals.length);
@@ -526,16 +630,6 @@ public final class CiTestHarness {
         double _aSquared = _generalAndersonDarlingTest.getASquared();
         double _aSquaredStar = _generalAndersonDarlingTest.getASquaredStar();
         return 1. - _generalAndersonDarlingTest.getProbTail(pValues.size(), _aSquaredStar);
-    }
-
-    /**
-     * Hook for creating a true DAG if you want the harness to also generate graphs.
-     * For now you said “true graph can be a DAG for now” — so you may supply it externally.
-     * <p>
-     * If you want this harness to create DAGs internally, implement this using your preferred Tetrad utilities.
-     */
-    private Graph createTrueDag(List<Node> variables, long seed) {
-        throw new UnsupportedOperationException("Implement if you want harness-created DAGs.");
     }
 
     // Optional: running diagnostics printout
@@ -615,6 +709,21 @@ public final class CiTestHarness {
         return new Buckets(indep, dep);
     }
 
+    /**
+     * Represents a configuration record that encapsulates various parameters
+     * used for the generation and evaluation of facts.
+     *
+     * @param kMin               The minimum value of parameter k. Must be non-negative.
+     *                           Represents the lower bound of a range.
+     * @param kMax               The maximum value of parameter k. Must be greater than or equal to kMin.
+     *                           Represents the upper bound of a range.
+     * @param nFactsIndep        The number of independent facts (Type I). Must be greater than 0.
+     * @param nFactsDep          The number of dependent facts (Type II). Defaults to nFactsIndep if &lt;= 0.
+     * @param maxAttemptsPerFact The maximum number of attempts allowed for generating a single fact. Must be greater than 0.
+     * @param seed               The seed value used for randomization. Ensures deterministic behavior when specified.
+     * @param alphas             An array of alpha values to be used in mathematical computations. Cannot be null or empty.
+     * @param progressEvery      Indicates how often progress should be reported (as a frequency). Defaults to 50 if &lt;= 0.
+     */
     public record Config(
             int kMin,
             int kMax,
@@ -625,6 +734,21 @@ public final class CiTestHarness {
             double[] alphas,
             int progressEvery
     ) {
+        /**
+         * Represents a configuration record that encapsulates various parameters
+         * used for the generation and evaluation of facts.
+         *
+         * @param kMin               The minimum value of parameter k. Must be non-negative.
+         *                           Represents the lower bound of a range.
+         * @param kMax               The maximum value of parameter k. Must be greater than or equal to kMin.
+         *                           Represents the upper bound of a range.
+         * @param nFactsIndep        The number of independent facts (Type I). Must be greater than 0.
+         * @param nFactsDep          The number of dependent facts (Type II). Defaults to nFactsIndep if &lt;= 0.
+         * @param maxAttemptsPerFact The maximum number of attempts allowed for generating a single fact. Must be greater than 0.
+         * @param seed               The seed value used for randomization. Ensures deterministic behavior when specified.
+         * @param alphas             An array of alpha values to be used in mathematical computations. Cannot be null or empty.
+         * @param progressEvery      Indicates how often progress should be reported (as a frequency). Defaults to 50 if &lt;= 0.
+         */
         public Config {
             if (kMin < 0 || kMax < kMin) throw new IllegalArgumentException("Bad kMin/kMax");
             if (nFactsIndep <= 0) throw new IllegalArgumentException("nFactsIndep must be > 0");
@@ -635,6 +759,17 @@ public final class CiTestHarness {
         }
     }
 
+    /**
+     * Immutable data container that represents a CiFact consisting of two integer values and an array of integers.
+     * <p>
+     * This class is implemented as a record, providing a compact and immutable way to manage data.
+     * It includes the overridden toString method that formats the output as a string representation
+     * of the object with specific components (x, y, and z).
+     *
+     * @param x The first
+     * @param y The second
+     * @param z The conditioning
+     */
     public record CiFact(int x, int y, int[] z) {
         @Override
         public String toString() {
@@ -642,18 +777,140 @@ public final class CiTestHarness {
         }
     }
 
+    /**
+     * Represents the result of a computation or analysis process.
+     * <p>
+     * This class encapsulates information such as configuration details,
+     * independent and dependent facts, their respective p-values and decisions,
+     * as well as uniformity statistics.
+     */
     public static final class Result {
-        public final Config cfg;                // <--- add this
+
+        /**
+         * Represents the configuration used for generating and evaluating facts.
+         * This field is immutable and encapsulates parameters that influence
+         * the generation of independent and dependent facts, the number of attempts
+         * allowed for generating facts, the randomization seed, alpha values used
+         * in calculations, and progress reporting frequency.
+         */
+        public final Config cfg;
+
+        /**
+         * A list of independent (Type I) facts generated or analyzed during a computational process.
+         * <p>
+         * Each element in the list is a {@code CiFact} record that encapsulates relevant information
+         * about a specific fact, including its associated values and contextual data.
+         * <p>
+         * This variable can be {@code null} or an empty list if no independent facts are defined
+         * or if the analysis process produces no such outcomes.
+         */
         public final List<CiFact> indepFacts;
+
+        /**
+         * A 2D array representing the p-values corresponding to independent (Type I) facts.
+         * Each element in the matrix is a p-value calculated during an analysis process,
+         * indicating the statistical significance of a hypothesis test applied to the data.
+         * <p>
+         * Characteristics:
+         * - Each row corresponds to a specific independent fact or category.
+         * - Each column represents a distinct hypothesis test or statistical measurement
+         * associated with the corresponding fact.
+         * <p>
+         * The dimensions and interpretation of this array depend on the specific computation
+         * or analysis performed.
+         */
         public final double[][] indepPvals;
+
+        /**
+         * A 3D array representing the decisions or classifications derived from independent facts.
+         * Each entry in the array corresponds to decisions made during the analysis based on
+         * independent (Type I) facts.
+         * <p>
+         * Structure:
+         * - The first dimension typically corresponds to a grouping or classification level.
+         * - The second and third dimensions vary depending on the computational process and represent
+         * the detailed decision data for specific groups or configurations.
+         * <p>
+         * Usage Context:
+         * This variable is populated during the computation or evaluation of independent facts
+         * and is often utilized in contexts where detailed decision-making data must be stored
+         * and analyzed systematically.
+         */
         public final int[][][] indepDecisions;
 
+        /**
+         * A list of dependent (Type II) facts.
+         * This field stores instances of {@link CiFact} that represent contextualized informational facts
+         * identified as dependent during the analysis or computation process.
+         * <p>
+         * Characteristics:
+         * - May be null or empty.
+         * - Each {@link CiFact} in the list encapsulates integer values and associated contextual data.
+         * <p>
+         * Role in Analysis:
+         * Dependent facts (Type II) are derived based on specific dependencies or relationships identified
+         * between data points or variables through computation.
+         */
         public final List<CiFact> depFacts;
+
+        /**
+         * A two-dimensional array representing p-values associated with dependent (Type II) facts.
+         * Each element in the array corresponds to a statistical outcome derived during
+         * the analysis process for specific dependent facts.
+         * <p>
+         * The dimensions and content of this array are determined by the nature of the
+         * computation or analysis performed. Typically, the rows correspond to individual
+         * dependent facts, and the columns represent specific tests, metrics, or
+         * conditions applied during the analysis.
+         * <p>
+         * This field is immutable and initialized during the construction of the {@code Result} object.
+         */
         public final double[][] depPvals;
+
+        /**
+         * A 3D array representing the decisions or classifications derived from dependent facts.
+         * Each element in the array is typically the outcome of a specific computation or analysis
+         * process associated with dependent (Type II) contextualized informational facts.
+         * <p>
+         * - The first dimension corresponds to a grouping such as tests or configurations.
+         * - The second dimension corresponds to the specific dependent facts under consideration.
+         * - The third dimension corresponds to indices or levels of decision granularity.
+         * <p>
+         * The exact structure and semantics of this array are determined by the specific
+         * algorithms or workflows applied during the analysis.
+         */
         public final int[][][] depDecisions;
 
+        /**
+         * An array of uniformity test results represented using the {@link Uniformity} record.
+         * <p>
+         * Each element in the array provides statistical outputs from Kolmogorov-Smirnov (KS)
+         * and Anderson-Darling (AD) tests, used to assess how closely a dataset aligns
+         * with a uniform distribution. These results play a critical role in determining
+         * the uniformity characteristics of the data analyzed in the corresponding {@link Result}.
+         * <p>
+         * This field is immutable and intended to store the outcomes of uniformity analyses
+         * conducted during a computation or evaluation process.
+         */
         public final Uniformity[] uniformity;
 
+        /**
+         * Constructs a new Result instance, representing the outcome of a computation or analysis process.
+         *
+         * @param cfg            The configuration used for generating and evaluating facts. Must not be null.
+         * @param indepFacts     A list of independent (Type I) facts. May be null or empty.
+         * @param indepPvals     A 2D array containing p-values corresponding to independent facts.
+         *                       Its dimensions and content depend on the analysis performed.
+         * @param indepDecisions A 3D array representing the decisions or classifications
+         *                       derived from independent facts. The exact structure depends on the process.
+         * @param depFacts       A list of dependent (Type II) facts. May be null or empty.
+         * @param depPvals       A 2D array containing p-values corresponding to dependent facts.
+         *                       Its dimensions and content depend on the analysis performed.
+         * @param depDecisions   A 3D array representing the decisions or classifications
+         *                       derived from dependent facts. The exact structure depends on the process.
+         * @param uniformity     An array containing uniformity test results (KS and AD tests),
+         *                       representing how closely the data aligns with a uniform distribution.
+         */
         public Result(Config cfg,                              // <--- add this param
                       List<CiFact> indepFacts,
                       double[][] indepPvals,
@@ -675,9 +932,33 @@ public final class CiTestHarness {
 
     // ===================== Example usage (optional) =====================
 
+    /**
+     * Represents the uniformity test results using Kolmogorov-Smirnov (KS) and Anderson-Darling (AD) tests.
+     * <p>
+     * This record encapsulates the p-values obtained from the KS and AD tests,
+     * which are statistical tests used to evaluate whether a given dataset comes
+     * from a uniform distribution.
+     *
+     * @param ksPValue the p-value resulting from the Kolmogorov-Smirnov test.
+     *                 A higher value indicates stronger evidence that the dataset
+     *                 follows a uniform distribution.
+     * @param adPValue the p-value resulting from the Anderson-Darling test.
+     *                 A higher value indicates stronger evidence that the dataset
+     *                 follows a uniform distribution.
+     */
     public record Uniformity(double ksPValue, double adPValue) {
     }
 
+    /**
+     * Represents a container for categorizing CiFact instances into two separate lists:
+     * independent facts and dependent facts.
+     * <p>
+     * This record is immutable and provides a compact, thread-safe data structure
+     * for organizing and accessing categorized facts.
+     *
+     * @param indepFacts the list of independent CiFact instances
+     * @param depFacts   the list of dependent CiFact instances
+     */
     private record Buckets(List<CiFact> indepFacts, List<CiFact> depFacts) {
     }
 }

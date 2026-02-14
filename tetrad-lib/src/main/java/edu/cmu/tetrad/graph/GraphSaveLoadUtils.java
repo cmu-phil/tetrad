@@ -1241,6 +1241,12 @@ public class GraphSaveLoadUtils {
         };
     }
 
+    /**
+     * Converts a graph object to a JSON-formatted string.
+     *
+     * @param graph the graph object to be serialized into JSON
+     * @return a JSON-formatted string representing the graph
+     */
     public static String graphToJson(Graph graph) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.toJson(graph);

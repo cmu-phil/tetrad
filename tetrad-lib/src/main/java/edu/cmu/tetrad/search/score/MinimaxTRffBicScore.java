@@ -980,62 +980,6 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         }
     }
 
-    private void buildXRowMixedStudentT_Intercept(double[] out, int i,
-                                                  double[][] Zc, int dCont,
-                                                  double[][] omegaByParent, double[] phase, double phiScale,
-                                                  OneHotSpec oh, int[] discParents, int[] rows) {
-
-        // intercept
-        out[0] = 1.0;
-
-        // RFF part occupies [1 .. 1 + D - 1]
-//            final int rffOff = 1;
-//            if (dCont == 0) {
-//                Arrays.fill(out, rffOff, rffOff + rffFeatures, 0.0);
-//            } else {
-//                for (int k = 0; k < rffFeatures; k++) {
-//                    double dot = 0.0;
-//                    double[] wk = W[k];
-//                    for (int j = 0; j < dCont; j++) dot += wk[j] * Zc[i][j];
-//                    out[rffOff + k] = phiScale * cos(dot + phase[k]);
-//                }
-//            }
-
-        final int rffOff = 1;
-        if (dCont == 0) {
-            Arrays.fill(out, rffOff, rffOff + rffFeatures, 0.0);
-        } else {
-            for (int k = 0; k < rffFeatures; k++) {
-                double dot = 0.0;
-                for (int j = 0; j < dCont; j++) {
-                    dot += omegaByParent[j][k] * Zc[i][j];
-                }
-                out[rffOff + k] = phiScale * Math.cos(dot + phase[k]);
-            }
-        }
-
-        // one-hot part occupies [1 + D .. M-1]
-        final int ohOff = 1 + rffFeatures;
-        Arrays.fill(out, ohOff, out.length, 0.0);
-
-        if (discParents.length == 0) return;
-
-        int row = (rows == null) ? i : rows[i];
-        for (int t = 0; t < discParents.length; t++) {
-            int var = discParents[t];
-            int lev = dataSet.getInt(row, var);
-            if (lev == DiscreteVariable.MISSING_VALUE) continue;
-
-            // baseline level 0 dropped
-            if (lev <= 0) continue;
-
-            int col = oh.offsets[t] + (lev - 1);
-            if (col >= oh.offsets[t] && col < oh.offsets[t] + oh.sizes[t] - 1) {
-                out[ohOff + col] = 1.0;
-            }
-        }
-    }
-
     // -------------------- extraction --------------------
 
     private FitResult fitMultinomialLogitMixed(int child,
@@ -1337,12 +1281,25 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return h;
     }
 
+    /**
+     * Appends an integer value to the end of an array.
+     *
+     * @param z the original array to which the value will be appended
+     * @param x the integer value to append
+     * @return a new array containing the elements of the original array and the appended value
+     */
     public int[] append(int[] z, int x) {
         int[] out = Arrays.copyOf(z, z.length + 1);
         out[z.length] = x;
         return out;
     }
 
+    /**
+     * Sets the penalty discount factor for the score function.
+     * The penalty discount factor is used to adjust the penalty term in the score calculation.
+     *
+     * @param penaltyDiscount The penalty discount factor, typically between 0 and 1.
+     */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }

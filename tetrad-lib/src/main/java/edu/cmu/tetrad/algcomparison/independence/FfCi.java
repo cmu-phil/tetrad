@@ -48,8 +48,25 @@ public class FfCi implements IndependenceWrapper {
     // Only relevant when categories are present; pick your house default.
     private static final double DEFAULT_CAT_RHO = 0.5;
 
+    /**
+     * Default constructor for the FfCi class.
+     *
+     * Initializes a new instance of the FfCi class with default settings.
+     * This constructor is primarily used to instantiate objects of FfCi and
+     * does not perform additional configuration beyond basic initialization.
+     */
     public FfCi() { }
 
+    /**
+     * Creates and configures an instance of the FfCi independence test with specified parameters
+     * derived from the provided dataset and parameter set.
+     *
+     * @param dataSet    the dataset to be used for the independence test
+     * @param parameters the parameter set containing values such as alpha, permutations,
+     *                   number of features, lambda, bandwidth multiplier, approximation type,
+     *                   and verbosity
+     * @return an instance of {@link IndependenceTest} configured with the specified parameters
+     */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.test.FfCi test = new edu.cmu.tetrad.search.test.FfCi((DataSet) dataSet);
@@ -76,16 +93,31 @@ public class FfCi implements IndependenceWrapper {
         return test;
     }
 
+    /**
+     * Provides a description of the independence test.
+     *
+     * @return a string representing the description of the test
+     */
     @Override
     public String getDescription() {
         return "FFCI";
     }
 
+    /**
+     * Provides the data type of the test.
+     *
+     * @return the data type of the test
+     */
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
     }
 
+    /**
+     * Provides a list of parameters required for configuring the test.
+     *
+     * @return a list of parameter names
+     */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();

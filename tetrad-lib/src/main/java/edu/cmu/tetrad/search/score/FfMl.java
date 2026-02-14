@@ -884,20 +884,43 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         resetCache();
     }
 
+    /**
+     * Sets the base seed value for the random generator or algorithm
+     * and resets any associated cached data.
+     *
+     * @param baseSeed the base seed value to initialize the random generator
+     */
     public void setBaseSeed(long baseSeed) {
         this.baseSeed = baseSeed;
         resetCache();
     }
 
+    /**
+     * Returns the base seed value used for initializing or seeding operations.
+     *
+     * @return the base seed as a long value
+     */
     public long getBaseSeed() {
         return baseSeed;
     }
 
+    /**
+     * Sets the state of the coupleFeaturesByTarget property, which determines whether
+     * features are coupled based on the target.
+     *
+     * @param coupleFeaturesByTarget a boolean indicating whether features should
+     *                                be coupled by target (true) or not (false)
+     */
     public void setCoupleFeaturesByTarget(boolean coupleFeaturesByTarget) {
         this.coupleFeaturesByTarget = coupleFeaturesByTarget;
         resetCache();
     }
 
+    /**
+     * Indicates whether features are coupled by target.
+     *
+     * @return true if features are coupled by target; false otherwise.
+     */
     public boolean isCoupleFeaturesByTarget() {
         return coupleFeaturesByTarget;
     }

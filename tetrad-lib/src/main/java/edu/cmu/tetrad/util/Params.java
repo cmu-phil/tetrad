@@ -1384,14 +1384,36 @@ public final class Params {
      * Constant <code>REPEATING_GRAPH="repeatingGraph"</code> Whether to use a repeating graph for time lag search.
      */
     public static String TIME_LAG_REPLICATING_GRAPH = "timeLagReplicatingGraph";
-
-    // ---- Minimax Legendre score (mixed) ----
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_DEGREE="minimaxLegendreDegree"</code> Degree of the Legendre polynomial used in
+     * the Minimax Legendre scoring methodology.
+     */
     public static final String MINIMAX_LEGENDRE_DEGREE = "minimaxLegendreDegree";
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_CLIP="minimaxLegendreClip"</code> Clip value for the Minimax Legendre scoring
+     * methodology.
+     */
     public static final String MINIMAX_LEGENDRE_CLIP = "minimaxLegendreClip";
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_RIDGE="minimaxLegendreRidge"</code> Ridge parameter for the Minimax Legendre
+     * scoring methodology.
+     */
     public static final String MINIMAX_LEGENDRE_RIDGE = "minimaxLegendreRidge";
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_RFF_FEATURES="minimaxLegendreRffFeatures"</code> Number
+     */
     public static final String MINIMAX_LEGENDRE_NU = "minimaxLegendreNu";
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_RFF_SIGMA="minimaxLegendreRffSigma"</code>
+     */
     public static final String MINIMAX_LEGENDRE_IRLS_ITERS = "minimaxLegendreIrlsIters";
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
+     */
     public static final String MINIMAX_LEGENDRE_IRLS_TOL = "minimaxLegendreIrlsTol";
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
+     */
     public static final String MINIMAX_LEGENDRE_INIT_SCALE = "minimaxLegendreInitScale";
 
     private Params() {

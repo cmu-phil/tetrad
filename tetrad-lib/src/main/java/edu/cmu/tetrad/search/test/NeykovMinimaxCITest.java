@@ -77,6 +77,14 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
     // optional row restriction
     private List<Integer> rows = null;
 
+    /**
+     * Constructs an instance of NeykovMinimaxCITest to perform Neykov's minimax conditional independence test
+     * using the provided dataset and significance level.
+     *
+     * @param data the dataset to be used in the independence test; must not be null
+     * @param alpha the significance level for the test; must be a value between 0 and 1
+     * @throws NullPointerException if the provided dataset is null
+     */
     public NeykovMinimaxCITest(DataSet data, double alpha) {
         if (data == null) throw new NullPointerException("data");
         this.data = data;
@@ -107,6 +115,16 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
     // IndependenceTest
     // =========================================================
 
+    /**
+     * Performs a conditional independence test to determine whether two variables, x and y,
+     * are independent given a set of conditioning variables, z.
+     *
+     * @param x the first variable in the independence test; must not be null
+     * @param y the second variable in the independence test; must not be null
+     * @param z the set of conditioning variables; must not be null but can be empty
+     * @return an {@code IndependenceResult} object containing the result of the independence test,
+     *         including the p-value, independence determination, and statistical details
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         double p = getPValue(x, y, z);
@@ -125,6 +143,18 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
         return r;
     }
 
+    /**
+     * Computes the p-value for a conditional independence test between two nodes, x and y,
+     * given a set of conditioning nodes, z. The p-value reflects the probability of observing
+     * test statistics under the null hypothesis of conditional independence.
+     *
+     * @param x the first node (variable) in the test; must not be null
+     * @param y the second node (variable) in the test; must not be null
+     * @param z the set of conditioning nodes (variables); must not be null but may be empty
+     * @return the computed p-value for the test; a lower p-value suggests stronger evidence
+     *         against the null hypothesis of conditional independence. Returns NaN if there
+     *         is insufficient data for the computation or other preconditions are not met
+     */
     public double getPValue(Node x, Node y, Set<Node> z) {
         Objects.requireNonNull(x);
         Objects.requireNonNull(y);
@@ -359,26 +389,61 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
     // Public API / setters / interface
     // =========================================================
 
+    /**
+     * Retrieves the list of variables associated with this instance.
+     *
+     * @return a {@code List} of {@code Node} objects representing the variables;
+     *         the list may be empty but never null
+     */
     @Override
     public List<Node> getVariables() {
         return variables;
     }
 
+    /**
+     * Retrieves the dataset associated with this instance.
+     *
+     * @return the {@code DataSet} object representing the dataset; never null
+     */
     @Override
     public DataSet getData() {
         return data;
     }
 
+    /**
+     * Retrieves the list of datasets associated with this instance.
+     *
+     * @return a {@code List} of {@code DataSet} objects representing the
+     *         datasets; the list may be empty but is guaranteed to be non-null
+     */
     @Override
     public List<DataSet> getDataSets() {
         return List.of(data);
     }
 
+    /**
+     * Retrieves the significance level (alpha) used for the Neykov minimax conditional independence test.
+     * This value represents the threshold for determining statistical significance and is expected
+     * to be a number between 0 and 1.
+     *
+     * @return the alpha value, which indicates the significance level of the test
+     */
     @Override
     public double getAlpha() {
         return alpha;
     }
 
+    /**
+     * Updates the significance level (alpha) for the Neykov minimax conditional independence test.
+     * The alpha value determines the threshold for statistical significance, where lower values
+     * reflect stricter criteria for rejecting the null hypothesis. The method ensures the provided
+     * alpha is within the valid range [0, 1]. If the current number of permutations is insufficient
+     * to achieve the specified alpha level, the number of permutations is increased. A log message
+     * is generated if the permutations are adjusted.
+     *
+     * @param alpha the desired significance level; must be a value between 0 and 1
+     * @throws IllegalArgumentException if the provided alpha is outside the valid range [0, 1]
+     */
     public void setAlpha(double alpha) {
         if (alpha < 0 || alpha > 1) throw new IllegalArgumentException("alpha must be in [0,1]");
         this.alpha = alpha;
@@ -397,20 +462,50 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
         }
     }
 
+    /**
+     * Retrieves the sample size for the current dataset.
+     *
+     * @return the number of rows in the dataset, representing the sample size.
+     */
     @Override
     public int getSampleSize() {
         return data.getNumRows();
     }
 
+    /**
+     * Determines if verbose output is enabled for the instance. Verbose mode often
+     * provides detailed logging or diagnostic messages to facilitate debugging or
+     * monitoring of the process.
+     *
+     * @return {@code true} if verbose output is enabled, {@code false} otherwise
+     */
     @Override
     public boolean isVerbose() {
         return verbose;
     }
 
+    /**
+     * Sets the verbosity level for the instance. When verbosity is enabled,
+     * detailed logging or diagnostic messages may be output to assist
+     * with debugging or monitoring of the process.
+     *
+     * @param verbose {@code true} to enable verbose output, {@code false} to disable it
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets the number of permutations to be used, ensuring it meets the minimum
+     * required threshold for achieving the specified alpha value. If the provided
+     * number of permutations is below the minimum threshold, it will be increased
+     * to the required value and a log message will be generated indicating the adjustment.
+     *
+     * @param B the number of permutations requested. The method ensures this value
+     *          is at least the greater of 50 or the minimum required based on the
+     *          current alpha value. If the provided value is too low, it is
+     *          automatically adjusted to the required minimum.
+     */
     public void setPermutations(int B) {
         int requested = Math.max(50, B);
 
@@ -430,47 +525,113 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
         this.permutations = requested;
     }
 
+    /**
+     * Sets the permutation seed value.
+     *
+     * @param s the seed value to be set for permutation operations
+     */
     public void setPermSeed(long s) {
         this.permSeed = s;
     }
 
+    /**
+     * Sets whether to use adaptive z-binning for continuous variables.
+     *
+     * @param useAdaptiveZBins flag indicating whether to use adaptive z-binning
+     */
     public void setUseAdaptiveZBins(boolean useAdaptiveZBins) {
         this.useAdaptiveZBins = useAdaptiveZBins;
         strataCache.clear();
     }
 
+    /**
+     * Sets the number of bins to be used per continuous variable along the Z-axis.
+     * The value is constrained to be at least 2 to ensure meaningful binning.
+     * The strata cache is cleared after updating this value to maintain consistency.
+     *
+     * @param b the desired number of bins for the Z-axis; must be 2 or greater. Values less than 2 will default to 2.
+     */
     public void setBinsPerContZ(int b) {
         this.binsPerContZ = Math.max(2, b);
         strataCache.clear();
     }
 
+    /**
+     * Sets the minimum allowable size for a stratum. The value provided
+     * determines the smallest number of elements permitted in a stratum,
+     * with an enforced minimum of 2.
+     *
+     * @param m the desired minimum stratum size. If the provided value is
+     *          less than 2, it will default to 2.
+     */
     public void setMinStratumSize(int m) {
         this.minStratumSize = Math.max(2, m);
         strataCache.clear();
     }
 
+    /**
+     * Sets the number of bins to be used per container along the X and Y dimensions.
+     * Ensures that the value is at least 2.
+     *
+     * @param b the desired number of bins per container along the X and Y dimensions
+     */
     public void setBinsPerContXY(int b) {
         this.binsPerContXY = Math.max(2, b);
     }
 
+    /**
+     * Sets the maximum number of observed levels allowed per variable.
+     * The specified value will be compared to a minimum threshold of 4,
+     * and the larger value will be used.
+     *
+     * @param m The proposed maximum number of observed levels per variable.
+     *          If this value is less than 4, the threshold of 4 will be used instead.
+     */
     public void setMaxObservedLevelsPerVar(int m) {
         this.maxObservedLevelsPerVar = Math.max(4, m);
     }
 
+    /**
+     * Sets the maximum number of cells allowed per stratum. Ensures that the
+     * minimum number of cells is 64.
+     *
+     * @param m the desired maximum number of cells per stratum. If the provided
+     *          value is less than 64, it defaults to 64.
+     */
     public void setMaxCellsPerStratum(int m) {
         this.maxCellsPerStratum = Math.max(64, m);
     }
 
+    /**
+     * Sets the epsilon probability value used in the algorithm.
+     *
+     * @param epsProb the probability value to be set. It must be greater than 0.
+     * @throws IllegalArgumentException if the provided epsProb is not greater than 0.
+     */
     public void setEpsProb(double epsProb) {
         if (!(epsProb > 0)) throw new IllegalArgumentException("epsProb must be > 0");
         this.epsProb = epsProb;
     }
 
+    /**
+     * Retrieves the list of rows.
+     *
+     * @return a list of integers representing the rows
+     */
     @Override
     public List<Integer> getRows() {
         return rows;
     }
 
+    /**
+     * Sets the list of row indices to be used. Clears the associated strata cache after updating the rows.
+     *
+     * @param rows a list of integers representing the row indices to set; must not contain null values,
+     *             negative numbers, or indices out of bounds relative to the data. If null, the rows will
+     *             be reset to null, and the strata cache will be cleared.
+     * @throws NullPointerException if any row in the list is null.
+     * @throws IllegalArgumentException if any row in the list is negative or out of bounds.
+     */
     @Override
     public void setRows(List<Integer> rows) {
         if (rows == null) {
@@ -488,11 +649,24 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
         strataCache.clear();
     }
 
+    /**
+     * Returns the independence test for the provided subset of variables.
+     *
+     * @param vars the list of variables for which the independence test is to be returned
+     * @return the independence test object for the specified subset of variables
+     */
     @Override
     public IndependenceTest indTestSubset(List<Node> vars) {
         return this;
     }
 
+    /**
+     * Provides a string representation of the object, describing its nature
+     * and purpose.
+     *
+     * @return A string representing the object, specifically describing it as
+     *         "Neykov Minimax CI Test (flattened, stratified, permuted)".
+     */
     @Override
     public String toString() {
         return "Neykov Minimax CI Test (flattened, stratified, permuted)";

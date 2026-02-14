@@ -114,6 +114,16 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
 
     // -------------------- ctor --------------------
 
+    /**
+     * Constructs a MinimaxLegendreScore instance by initializing the dataset and performing
+     * preprocessing steps such as handling missing values, calculating z-scores for variables,
+     * and preparing the necessary internal data structures.
+     *
+     * @param dataSet the input dataset containing rows of samples and variables; must not be null.
+     *                Throws a NullPointerException if the dataSet is null. The dataset is used to
+     *                compute z-scores for continuous variables while preserving NaN values and sets up
+     *                necessary metadata such as variables and sample size.
+     */
     public MinimaxLegendreScore(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
 
@@ -377,10 +387,25 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
         return all;
     }
 
+    /**
+     * Retrieves the current DataModel instance.
+     *
+     * @return the DataModel instance representing the current data set
+     */
     public DataModel getDataModel() {
         return dataSet;
     }
 
+    /**
+     * Computes the local score for a given variable and its parent variables
+     * using a caching mechanism to store the computed scores.
+     *
+     * @param i The index of the target variable for which the local score is calculated.
+     * @param parents An optional variable-length argument representing the indices
+     *                of the parent variables of the target variable.
+     * @return A double representing the local score, or {@code Double.NaN} if the
+     *         score cannot be computed due to invalid conditions or parameters.
+     */
     @Override
     public double localScore(int i, int... parents) {
         Arrays.sort(parents);
@@ -450,10 +475,7 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
 
                     FitResult fit = fitStudentTLegendreRidgeMixed(y, parents, rows, n);
                     if (!Double.isFinite(fit.logLik)) return Double.NaN;
-                    double v = fit.logLik - 0.5 * penaltyDiscount * fit.edf * log(n);
-//                    double parentBonus = 1e-4 * log(n); // Try?
-//                    v += parentBonus * parents.length;
-                    return v;
+                    return fit.logLik - 0.5 * penaltyDiscount * fit.edf * log(n);
                 }
 
             } catch (RuntimeException e) {
@@ -463,6 +485,15 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
         });
     }
 
+    /**
+     * Calculates the difference in local scores when a new variable is appended
+     * to the conditioning set.
+     *
+     * @param x The variable being appended to the conditioning set.
+     * @param y The target variable for which the local score is computed.
+     * @param z The current conditioning set of variables.
+     * @return The difference in local scores after appending {@code x} to {@code z}.
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
@@ -472,11 +503,21 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
     // Continuous child: Student-t IRLS ridge on features [Legendre(cont parents), OneHot(disc parents)]
     // ============================================================================================
 
+    /**
+     * Retrieves a list of variables represented as Node objects.
+     *
+     * @return a new List containing the current variables. Modifying the returned list does not affect the original list.
+     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(variables);
     }
 
+    /**
+     * Retrieves the sample size, which corresponds to the number of rows in the dataset.
+     *
+     * @return the number of rows in the dataset as an integer
+     */
     @Override
     public int getSampleSize() {
         return dataSet.getNumRows();
@@ -486,11 +527,26 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
     // Discrete child: multinomial logistic ridge on features [Legendre(cont parents), OneHot(disc parents)]
     // ============================================================================================
 
+    /**
+     * Returns a string representation of the object.
+     *
+     * @return a string indicating the description "Minimax-t Legendre BIC score (mixed)".
+     */
     @Override
     public String toString() {
         return "Minimax-t Legendre BIC score (mixed)";
     }
 
+    /**
+     * Computes and returns the effective sample size.
+     *
+     * The effective sample size is a measure of the amount of independent
+     * information in the data, adjusted for autocorrelation or statistical dependencies
+     * within the sample. It is useful in statistical analyses where independence
+     * of observations is an assumption.
+     *
+     * @return the effective sample size as an integer
+     */
     @Override
     public int getEffectiveSampleSize() {
         return nEff;
@@ -500,36 +556,81 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
     // Helpers
     // ============================================================================================
 
+    /**
+     * Sets the effective sample size for the current instance.
+     * If the provided effective sample size is negative, it defaults to the overall sample size.
+     * After setting the effective sample size, the internal cache is reset.
+     *
+     * @param nEff the effective sample size to be set; if negative, the sample size will be used instead
+     */
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = (nEff < 0) ? this.sampleSize : nEff;
         resetCache();
     }
 
+    /**
+     * Sets the value of nu. The value of nu must be a finite number greater than 2.
+     *
+     * @param nu The new value to assign to nu. It must be a finite number greater than 2.
+     * @throws IllegalArgumentException If the provided value for nu is not finite or is less than or equal to 2.
+     */
     public void setNu(double nu) {
         if (!(nu > 2) || !Double.isFinite(nu)) throw new IllegalArgumentException("nu must be finite and > 2");
         this.nu = nu;
         resetCache();
     }
 
+    /**
+     * Sets the scale factor for this object. The scale must be a finite positive value.
+     * Passing an invalid scale value will result in an IllegalArgumentException.
+     *
+     * @param scale the new scale factor, must be greater than 0 and finite
+     */
     public void setScale(double scale) {
         if (!(scale > 0) || !Double.isFinite(scale)) throw new IllegalArgumentException("scale must be finite and > 0");
         this.scale = scale;
         resetCache();
     }
 
+    /**
+     * Sets the ridge regularization parameter, which is used to stabilize
+     * inverse operations and control overfitting in statistical models.
+     * The ridge value must be a finite positive number.
+     *
+     * @param ridge the ridge regularization parameter; must be greater than 0
+     *              and finite
+     * @throws IllegalArgumentException if {@code ridge} is not finite or is less
+     *                                  than or equal to 0
+     */
     public void setRidge(double ridge) {
         if (!(ridge > 0) || !Double.isFinite(ridge)) throw new IllegalArgumentException("ridge must be finite and > 0");
         this.ridge = ridge;
         resetCache();
     }
 
+    /**
+     * Sets the degree of the Legendre polynomial used in the model.
+     * The Legendre degree must be a positive integer greater than or equal to 1.
+     * This parameter impacts the complexity of the polynomial expansion.
+     *
+     * @param t the degree of the Legendre polynomial; must be >= 1
+     * @throws IllegalArgumentException if {@code t} is less than 1
+     */
     public void setLegendreDegree(int t) {
         if (t < 1) throw new IllegalArgumentException("legendreDegree must be >= 1");
         this.legendreDegree = t;
         resetCache();
     }
 
+    /**
+     * Sets the threshold for Legendre clipping, which is a numerical safeguard used
+     * to constrain values within a finite range. This parameter ensures stability
+     * during numerical operations involving Legendre polynomials.
+     *
+     * @param clip the Legendre clip value; must be a finite positive number greater than 0
+     * @throws IllegalArgumentException if {@code clip} is not finite or is less than or equal to 0
+     */
     public void setLegendreClip(double clip) {
         if (!(clip > 0) || !Double.isFinite(clip))
             throw new IllegalArgumentException("legendreClip must be finite and > 0");
@@ -537,21 +638,63 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
         resetCache();
     }
 
+    /**
+     * Sets the maximum number of iterations to be used in the Iterative Reweighted
+     * Least Squares (IRLS) procedure. The IRLS method is often used in optimization
+     * algorithms for fitting statistical models.
+     *
+     * If the provided number of iterations is less than 1, it defaults to 1.
+     *
+     * This method also triggers a reset of the cached local score data.
+     *
+     * @param iters the number of iterations for the IRLS procedure; must be
+     *              a positive integer
+     */
     public void setIrlsIters(int iters) {
         this.irlsIters = Math.max(1, iters);
         resetCache();
     }
 
+    /**
+     * Sets the convergence tolerance for the Iterative Reweighted Least Squares (IRLS) procedure.
+     * The tolerance specifies the threshold for stopping the IRLS iterations as soon as
+     * the updates in the optimization process become sufficiently small.
+     *
+     * If the provided tolerance is less than 0.0, it is set to 0.0 by default.
+     *
+     * This method also triggers a reset of the cached local score data.
+     *
+     * @param tol the convergence tolerance for the IRLS procedure; must be non-negative
+     */
     public void setIrlsTol(double tol) {
         this.irlsTol = Math.max(0.0, tol);
         resetCache();
     }
 
+    /**
+     * Enables or disables the use of interaction terms in the model. Interaction terms
+     * represent combined effects between variables and can be included to capture
+     * their joint influence on the outcome. When interactions are enabled, the model
+     * considers such terms during calculations.
+     *
+     * Changing this setting triggers a reset of the cached local score data, ensuring
+     * subsequent computations use updated parameters.
+     *
+     * @param useInteractions a boolean indicating whether to enable (true) or disable
+     *                        (false) interaction terms in the model
+     */
     public void setUseInteractions(boolean useInteractions) {
         this.useInteractions = useInteractions;
         resetCache();
     }
 
+    /**
+     * Sets the maximum number of parents that can be considered for interaction terms in the model.
+     * The value is adjusted to ensure it is non-negative, with negative inputs being clamped to zero.
+     * This method also triggers a reset of the cached local score data.
+     *
+     * @param k the maximum number of parents allowed for interactions; must be a non-negative integer
+     */
     public void setInteractionMaxParents(int k) {
         this.interactionMaxParents = Math.max(0, k);
         resetCache();
@@ -1057,6 +1200,12 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
 
     // -------------------- cache & hashing --------------------
 
+    /**
+     * Sets the penalty discount to be applied. The value must be a finite positive number.
+     *
+     * @param penaltyDiscount the penalty discount value to set. Must be greater than 0 and finite.
+     * @throws IllegalArgumentException if the provided penaltyDiscount is not finite or not greater than 0.
+     */
     public void setPenaltyDiscount(double penaltyDiscount) {
         if (!(penaltyDiscount > 0.0) || !Double.isFinite(penaltyDiscount))
             throw new IllegalArgumentException("Penalty discount must be finite and > 0");
@@ -1084,6 +1233,13 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
         return h;
     }
 
+    /**
+     * Appends an integer value to the end of the given array and returns a new array.
+     *
+     * @param z the original array to which the value is to be appended
+     * @param x the integer value to append to the array
+     * @return a new array containing all elements of the original array followed by the appended value
+     */
     public int[] append(int[] z, int x) {
         int[] out = Arrays.copyOf(z, z.length + 1);
         out[z.length] = x;
