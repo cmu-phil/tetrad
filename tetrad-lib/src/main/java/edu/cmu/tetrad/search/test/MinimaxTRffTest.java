@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.MinimaxLegendreScore;
+import edu.cmu.tetrad.search.score.MinimaxTRffBicScore;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -24,19 +25,19 @@ import static java.lang.Float.NaN;
  * <p>
  * V1: forces nesting by disabling interactions during the test (recommended).
  */
-public final class LegendreLrIndependenceTest implements IndependenceTest {
+public final class MinimaxTRffTest implements IndependenceTest {
 
-    private final MinimaxLegendreScore score;
+    private final MinimaxTRffBicScore score;
     private final List<Node> variables;
     private final boolean disableInteractionsForTest;
     private boolean verbose = false;
     private double alpha = 0.01;
 
-    public LegendreLrIndependenceTest(MinimaxLegendreScore score) {
+    public MinimaxTRffTest(MinimaxTRffBicScore score) {
         this(score, true);
     }
 
-    public LegendreLrIndependenceTest(MinimaxLegendreScore score, boolean disableInteractionsForTest) {
+    public MinimaxTRffTest(MinimaxTRffBicScore score, boolean disableInteractionsForTest) {
         if (score == null) throw new NullPointerException("score");
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
@@ -86,9 +87,9 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
         try {
             // Ensure nesting (recommended with your current interaction rule)
             if (disableInteractionsForTest) {
-                prevInteractions = getUseInteractions(score);
-                prevK = getInteractionMaxParents(score);
-                score.setUseInteractions(false);
+//                prevInteractions = getUseInteractions(score);
+//                prevK = getInteractionMaxParents(score);
+//                score.setUseInteractions(false);
                 // (Optional) also force maxParents=0, but useInteractions=false already kills them:
                 // score.setInteractionMaxParents(0);
             }
@@ -103,7 +104,13 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
             int[] rows = score.validRowsForUnion(yi, zPlusX);
             int nUsed = (rows == null) ? score.getEffectiveSampleSize() : rows.length;
             if (nUsed < 10) {
-                return new IndependenceResult(fact, false, Double.NaN, Double.NaN);
+                IndependenceResult independenceResult = new IndependenceResult(fact, false, Double.NaN, Double.NaN);
+
+                if (verbose) {
+                    TetradLogger.getInstance().log("Minimax TRff test result: " + independenceResult);
+                }
+
+                return independenceResult;
             }
 
             // reduced: Y ~ Z  (on common rows)
@@ -114,7 +121,13 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
 
             if (!Double.isFinite(red.logLik()) || !Double.isFinite(full.logLik())
                     || !Double.isFinite(red.edf()) || !Double.isFinite(full.edf())) {
-                return new IndependenceResult(fact, false, Double.NaN, Double.NaN);
+                IndependenceResult independenceResult = new IndependenceResult(fact, false, Double.NaN, Double.NaN);
+
+                if (verbose) {
+                    TetradLogger.getInstance().log("Minimax TRff test result: " + independenceResult);
+                }
+
+                return independenceResult;
             }
 
             double D = 2.0 * (full.logLik() - red.logLik());
@@ -122,7 +135,13 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
 
             double ddf = full.edf() - red.edf();
             if (!Double.isFinite(ddf) || ddf < 1e-8) {
-                return new IndependenceResult(fact, true, NaN, NaN);
+                IndependenceResult independenceResult = new IndependenceResult(fact, true, NaN, NaN);
+
+                if (verbose) {
+                    TetradLogger.getInstance().log("Minimax TRff test result: " + independenceResult);
+                }
+
+                return independenceResult;
             }
 
             ChiSquaredDistribution chi2 = new ChiSquaredDistribution(ddf);
@@ -130,7 +149,13 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
             p = Math.max(0.0, Math.min(1.0, p));
 
             boolean indep = (p > getAlpha());
-            return new IndependenceResult(fact, indep, p, getAlpha() - p);
+            IndependenceResult independenceResult = new IndependenceResult(fact, indep, p, getAlpha() - p);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Minimax TRff test result: " + independenceResult);
+            }
+
+            return independenceResult;
 
         } catch (Exception e) {
             TetradLogger.getInstance().log("Legendre LR test error: " + e.getMessage());
@@ -139,8 +164,8 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
         } finally {
             if (disableInteractionsForTest) {
                 try {
-                    score.setUseInteractions(prevInteractions);
-                    score.setInteractionMaxParents(prevK);
+//                    score.setUseInteractions(prevInteractions);
+//                    score.setInteractionMaxParents(prevK);
                 } catch (Exception ignored) {
                 }
             }

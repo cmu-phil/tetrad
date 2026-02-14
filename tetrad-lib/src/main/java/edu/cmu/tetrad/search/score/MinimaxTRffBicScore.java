@@ -1294,6 +1294,80 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
         return out;
     }
 
+    // ============================================================================================
+// Public fit helpers for CI tests (same-sample reduced/full LRT)
+// ============================================================================================
+
+    public record LocalFit(double logLik, double edf, int nUsed) {}
+
+    /**
+     * Rows valid for {child} ∪ parents (i.e., no missing among these vars).
+     * Returned array is strictly increasing row indices.
+     */
+    public int[] validRowsForUnion(int child, int[] parents) {
+        if (!calculateRowSubsets) return null;
+        int[] vars = new int[(parents == null ? 0 : parents.length) + 1];
+        vars[0] = child;
+        if (parents != null) System.arraycopy(parents, 0, vars, 1, parents.length);
+        // Optional sanity check:
+        // if (IntStream.of(vars).distinct().count() != vars.length) throw new IllegalArgumentException("child in parents?");
+        return validRows(vars);
+    }
+
+    /**
+     * Computes (logLik, edf) for local model Y=child with given parents,
+     * evaluated/fitted on the provided rows (or all rows if rows==null).
+     *
+     * IMPORTANT: This does NOT choose rows; caller controls row selection.
+     * This is what CI tests need to ensure reduced/full use the same sample.
+     */
+    public LocalFit localFitOnRows(int child, int[] parents, int[] rows) {
+        int[] pa = (parents == null) ? new int[0] : Arrays.copyOf(parents, parents.length);
+        Arrays.sort(pa);
+
+        try {
+            if (!(ridge > 0) || !Double.isFinite(ridge)) return new LocalFit(Double.NaN, Double.NaN, 0);
+
+            final int n = (rows == null) ? nEff : rows.length;
+            if (n < 10) return new LocalFit(Double.NaN, Double.NaN, n);
+
+            if (isDiscrete(child)) {
+                int[] y = extractDiscreteChild(child, rows, n);
+                int K = numCategories(child);
+                if (K < 2) return new LocalFit(Double.NaN, Double.NaN, n);
+
+                if (pa.length == 0) {
+                    double ll = multinomialInterceptOnlyLogLik(y, K);
+                    double edf = (K - 1.0);
+                    return new LocalFit(ll, edf, n);
+                }
+
+                FitResult fit = fitMultinomialLogitMixed(child, y, K, pa, rows, n);
+                return new LocalFit(fit.logLik(), fit.edf(), n);
+
+            } else {
+                if (!(nu > 2) || !Double.isFinite(nu)) return new LocalFit(Double.NaN, Double.NaN, n);
+                if (!(scale > 0) || !Double.isFinite(scale)) return new LocalFit(Double.NaN, Double.NaN, n);
+
+                double[] y = extractContinuousChild(child, rows, n);
+                centerInPlace(y);
+
+                if (pa.length == 0) {
+                    double ll0 = studentTLogLik(y, new double[n], nu, scale);
+                    double edf0 = 0.0; // after centering, intercept is effectively removed
+                    return new LocalFit(ll0, edf0, n);
+                }
+
+                FitResult fit = fitStudentTRffRidgeMixed(child, y, pa, rows, n);
+                return new LocalFit(fit.logLik(), fit.edf(), n);
+            }
+
+        } catch (RuntimeException e) {
+            TetradLogger.getInstance().log(e.getMessage());
+            return new LocalFit(Double.NaN, Double.NaN, 0);
+        }
+    }
+
     /**
      * Sets the penalty discount factor for the score function.
      * The penalty discount factor is used to adjust the penalty term in the score calculation.
