@@ -1356,6 +1356,16 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.VertexCheckEditor</editor-class>
             </model>
+            <model name="Dag Factorization Comparison" acronym="DAG Factorization"
+                   help="dag_factorization" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.DagFactorizationCompare
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DagFactorizationCompareEditor</editor-class>
+            </model>
             <!--            <model name="Grid Search" acronym="Grid Search"-->
             <!--                   help="indep_facts" category="Independence Facts Comparison">-->
             <!--                <logger>-->

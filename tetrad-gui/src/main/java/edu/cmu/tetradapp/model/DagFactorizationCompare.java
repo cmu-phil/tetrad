@@ -1,0 +1,153 @@
+package edu.cmu.tetradapp.model;
+
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.sem.TrainedDagSimulatorGNM;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.session.SessionModel;
+
+import java.util.Objects;
+
+/**
+ * Compare-box model:
+ * - Input: (DataWrapper, GraphWrapper, Parameters)
+ * - Output: holds observed data and a resimulated dataset whose joint is trained/factorized by the DAG.
+ * <p>
+ * This is intentionally lightweight compared to Simulation/SimulationModel editors.
+ */
+public final class DagFactorizationCompare implements GraphSource, SessionModel {
+
+    // ---- inputs ----
+    private final Graph inputGraph;
+    private final DataSet inputData;
+    private final Parameters parameters;
+
+    // ---- state/output ----
+    private int sampleSize;
+    private DataSet simulatedData;
+    private String name = "";
+    private DataModelList dataModelList = new DataModelList();
+
+    public DagFactorizationCompare(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters parameters) {
+        Objects.requireNonNull(dataWrapper, "dataWrapper");
+        Objects.requireNonNull(graphWrapper, "graphWrapper");
+        this.parameters = Objects.requireNonNull(parameters, "parameters");
+
+        this.inputGraph = graphWrapper.getGraph();
+        if (this.inputGraph == null) {
+            throw new IllegalArgumentException("No graph provided for DAG factorization compare.");
+        }
+
+        DataModel dm = dataWrapper.getDataModelList().isEmpty() ? null : dataWrapper.getDataModelList().getFirst();
+        if (!(dm instanceof DataSet ds)) {
+            throw new IllegalArgumentException("A DataSet is required for DAG factorization compare.");
+        }
+        this.inputData = ds;
+
+        // Default sample size = observed sample size (as you requested)
+        this.sampleSize = Math.max(1, inputData.getNumRows());
+
+        // Initial simulate
+        this.simulatedData = simulateWithGNM(this.inputData, this.inputGraph, this.sampleSize);
+
+        // Optionally: expose both datasets from this wrapper (handy for downstream tooling)
+        // If your DataWrapper already has a setter, use it; otherwise remove this block.
+        try {
+            DataModelList list = new DataModelList();
+            list.add(inputData);
+            list.add(simulatedData);
+            setDataModelList(list);
+
+//            setDataModelList((edu.cmu.tetrad.data.DataModelList) List.of(inputData, simulatedData));
+        } catch (Throwable ignored) {
+            // If your DataWrapper doesn’t allow setting the list, that’s fine.
+            // The editor can use the explicit accessors below.
+        }
+    }
+
+    private void setDataModelList(DataModelList list) {
+        this.dataModelList = list;
+    }
+
+    // -------------------------
+    // Accessors used by editor
+    // -------------------------
+
+    public Graph getInputGraph() {
+        return inputGraph;
+    }
+
+    public DataSet getInputData() {
+        return inputData;
+    }
+
+    public DataSet getSimulatedData() {
+        return simulatedData;
+    }
+
+    public Parameters getParameters() {
+        return parameters;
+    }
+
+    public int getSampleSize() {
+        return sampleSize;
+    }
+
+    /**
+     * Set desired n (does not resimulate until resimulate() is called).
+     */
+    public void setSampleSize(int n) {
+        this.sampleSize = Math.max(1, n);
+    }
+
+    // -------------------------
+    // GraphSource
+    // -------------------------
+
+    @Override
+    public Graph getGraph() {
+        return inputGraph;
+    }
+
+    /**
+     * Gets the name of the covariance matrix.
+     *
+     * @return a {@link java.lang.String} object
+     */
+    public final String getName() {
+        return this.name;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Sets the name of the covariance matrix.
+     */
+    public final void setName(String name) {
+        this.name = name;
+    }
+
+    // -------------------------
+    // IMPORTANT: wire this to TrainedDagSimulatorGNM
+    // -------------------------
+
+    /**
+     * Train + simulate using the same mechanism as the Simulation editor’s TrainedDagSimulatorGNM path.
+     * <p>
+     * You should replace this stub with your actual TrainedDagSimulatorGNM calls.
+     */
+    private DataSet simulateWithGNM(DataSet observed, Graph dag, int n) {
+        TrainedDagSimulatorGNM.Params params = new TrainedDagSimulatorGNM.Params();
+        TrainedDagSimulatorGNM sim = new TrainedDagSimulatorGNM(observed, dag, params);
+        sim.fit();
+        int sampleSize = observed.getNumRows();
+        edu.cmu.tetrad.sem.TrainedDagSimulatorGNM.SimResult result = sim.simulate(sampleSize);
+        return result.toDataSet();
+    }
+
+    public DataModelList getDataModelList() {
+        return dataModelList;
+    }
+}
