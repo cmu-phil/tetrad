@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
@@ -43,13 +44,14 @@ import java.util.List;
  * @author bryanandrews
  * @version $Id: $Id
  */
-//@TestOfIndependence(
-//        name = "BF-LRT (Basis Function Likelihood Ratio Test)",
-//        command = "bf-lr-test",
-//        dataType = DataType.Mixed
-//)
+@TestOfIndependence(
+        name = "BF-LRT (Basis Function Likelihood Ratio Test)",
+        command = "bf-lr-test",
+        dataType = DataType.Mixed
+)
 @Mixed
-@Deprecated(since = "7.9", forRemoval = false)
+@General
+//@Deprecated(since = "7.9", forRemoval = false)
 public class BasisFunctionLrt implements IndependenceWrapper {
 
     @Serial

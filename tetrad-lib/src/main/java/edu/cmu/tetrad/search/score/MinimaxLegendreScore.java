@@ -406,83 +406,90 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
      * @return A double representing the local score, or {@code Double.NaN} if the
      *         score cannot be computed due to invalid conditions or parameters.
      */
+//    @Override
+//    public double localScore(int i, int... parents) {
+//        Arrays.sort(parents);
+//        long key = cacheKey(i, parents, knobsSignature());
+//        final ConcurrentHashMap<Long, Double> cache = localScoreCacheRef.get();
+//
+//        return cache.computeIfAbsent(key, k -> {
+//            try {
+//                if (!(ridge > 0) || !Double.isFinite(ridge)) return Double.NaN;
+//
+//                int[] all = concat(i, parents);
+//                int[] rows = calculateRowSubsets ? validRows(all) : null;
+//
+//                int n = (rows == null) ? nEff : rows.length;
+//                if (n < 10) return Double.NaN;
+//
+//                if (isDiscrete(i)) {
+//                    // -------- discrete child: multinomial logistic ridge --------
+//                    int[] y = extractDiscreteChild(i, rows, n);
+//                    int K = numCategories(i);
+//                    if (K < 2) return Double.NaN;
+//
+//                    if (parents.length == 0) {
+//                        double ll = multinomialInterceptOnlyLogLik(y, K);
+//                        double bic = ll - 0.5 * (K - 1.0) * log(n);
+//                        return bic;
+//                    }
+//
+//                    FitResult fit = fitMultinomialLogitMixed(i, y, K, parents, rows, n);
+//                    if (!Double.isFinite(fit.logLik)) return Double.NaN;
+//                    return fit.logLik - 0.5 * fit.edf * log(n);
+//
+//                } else {
+//                    // -------- continuous child: Student-t Legendre ridge --------
+//                    if (!(nu > 2) || !Double.isFinite(nu)) return Double.NaN;
+//                    if (!(scale > 0) || !Double.isFinite(scale)) return Double.NaN;
+//
+//                    double[] y = extractContinuousChild(i, rows, n);
+////                    centerInPlace(y); // let's turn this centering of y off...
+//
+//                    if (parents.length == 0) {
+//                        // profile scale for intercept-only so it’s comparable with parent models
+//                        double scaleHat = this.scale;
+//
+//                        // good initial guess: RMS of y (centered already)
+//                        double s2 = 0.0;
+//                        for (double v : y) s2 += v * v;
+//                        scaleHat = Math.sqrt(Math.max(1e-12, s2 / n));
+//
+//                        // 1–2 fixed-point refinements using t-weights (cheap, stabilizes)
+//                        for (int it = 0; it < 2; it++) {
+//                            double wsum = 0.0, wrss = 0.0;
+//                            double invS2 = 1.0 / (scaleHat * scaleHat);
+//                            for (int r = 0; r < n; r++) {
+//                                double u2 = (y[r] * y[r]) * invS2;
+//                                double w = (nu + 1.0) / (nu + u2);
+//                                wsum += w;
+//                                wrss += w * y[r] * y[r];
+//                            }
+//                            if (wsum > 0.0) scaleHat = Math.sqrt(Math.max(1e-12, wrss / wsum));
+//                        }
+//
+//                        double ll0 = studentTLogLik(y, new double[n], nu, scaleHat);
+//                        double edf0 = 1.0; // if you're counting intercept (even though y is centered)
+//                        return ll0 - 0.5 * penaltyDiscount * edf0 * log(n);
+//                    }
+//
+//                    FitResult fit = fitStudentTLegendreRidgeMixed(y, parents, rows, n);
+//                    if (!Double.isFinite(fit.logLik)) return Double.NaN;
+//                    return fit.logLik - 0.5 * penaltyDiscount * fit.edf * log(n);
+//                }
+//
+//            } catch (RuntimeException e) {
+//                TetradLogger.getInstance().log(e.getMessage());
+//                return Double.NaN;
+//            }
+//        });
+//    }
+
     @Override
     public double localScore(int i, int... parents) {
-        Arrays.sort(parents);
-        long key = cacheKey(i, parents, knobsSignature());
-        final ConcurrentHashMap<Long, Double> cache = localScoreCacheRef.get();
-
-        return cache.computeIfAbsent(key, k -> {
-            try {
-                if (!(ridge > 0) || !Double.isFinite(ridge)) return Double.NaN;
-
-                int[] all = concat(i, parents);
-                int[] rows = calculateRowSubsets ? validRows(all) : null;
-
-                int n = (rows == null) ? nEff : rows.length;
-                if (n < 10) return Double.NaN;
-
-                if (isDiscrete(i)) {
-                    // -------- discrete child: multinomial logistic ridge --------
-                    int[] y = extractDiscreteChild(i, rows, n);
-                    int K = numCategories(i);
-                    if (K < 2) return Double.NaN;
-
-                    if (parents.length == 0) {
-                        double ll = multinomialInterceptOnlyLogLik(y, K);
-                        double bic = ll - 0.5 * (K - 1.0) * log(n);
-                        return bic;
-                    }
-
-                    FitResult fit = fitMultinomialLogitMixed(i, y, K, parents, rows, n);
-                    if (!Double.isFinite(fit.logLik)) return Double.NaN;
-                    return fit.logLik - 0.5 * fit.edf * log(n);
-
-                } else {
-                    // -------- continuous child: Student-t Legendre ridge --------
-                    if (!(nu > 2) || !Double.isFinite(nu)) return Double.NaN;
-                    if (!(scale > 0) || !Double.isFinite(scale)) return Double.NaN;
-
-                    double[] y = extractContinuousChild(i, rows, n);
-//                    centerInPlace(y); // let's turn this centering of y off...
-
-                    if (parents.length == 0) {
-                        // profile scale for intercept-only so it’s comparable with parent models
-                        double scaleHat = this.scale;
-
-                        // good initial guess: RMS of y (centered already)
-                        double s2 = 0.0;
-                        for (double v : y) s2 += v * v;
-                        scaleHat = Math.sqrt(Math.max(1e-12, s2 / n));
-
-                        // 1–2 fixed-point refinements using t-weights (cheap, stabilizes)
-                        for (int it = 0; it < 2; it++) {
-                            double wsum = 0.0, wrss = 0.0;
-                            double invS2 = 1.0 / (scaleHat * scaleHat);
-                            for (int r = 0; r < n; r++) {
-                                double u2 = (y[r] * y[r]) * invS2;
-                                double w = (nu + 1.0) / (nu + u2);
-                                wsum += w;
-                                wrss += w * y[r] * y[r];
-                            }
-                            if (wsum > 0.0) scaleHat = Math.sqrt(Math.max(1e-12, wrss / wsum));
-                        }
-
-                        double ll0 = studentTLogLik(y, new double[n], nu, scaleHat);
-                        double edf0 = 1.0; // if you're counting intercept (even though y is centered)
-                        return ll0 - 0.5 * penaltyDiscount * edf0 * log(n);
-                    }
-
-                    FitResult fit = fitStudentTLegendreRidgeMixed(y, parents, rows, n);
-                    if (!Double.isFinite(fit.logLik)) return Double.NaN;
-                    return fit.logLik - 0.5 * penaltyDiscount * fit.edf * log(n);
-                }
-
-            } catch (RuntimeException e) {
-                TetradLogger.getInstance().log(e.getMessage());
-                return Double.NaN;
-            }
-        });
+        LocalFit fit = localFit(i, parents);
+        if (!Double.isFinite(fit.logLik) || !Double.isFinite(fit.edf) || fit.nUsed < 10) return Double.NaN;
+        return fit.logLik - 0.5 * penaltyDiscount * fit.edf * Math.log(fit.nUsed);
     }
 
     /**
@@ -1214,8 +1221,13 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
         resetCache();
     }
 
+//    private void resetCache() {
+//        localScoreCacheRef.set(new ConcurrentHashMap<>());
+//    }
+
     private void resetCache() {
         localScoreCacheRef.set(new ConcurrentHashMap<>());
+        localFitCacheRef.set(new ConcurrentHashMap<>());
     }
 
     private long knobsSignature() {
@@ -1257,6 +1269,164 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
             this.totalCols = totalCols;
         }
     }
+
+    public LocalFit localFit(int i, int... parents) {
+        Arrays.sort(parents);
+        long key = cacheKey(i, parents, knobsSignature());
+        final ConcurrentHashMap<Long, LocalFit> cache = localFitCacheRef.get();
+
+        return cache.computeIfAbsent(key, k -> {
+            try {
+                if (!(ridge > 0) || !Double.isFinite(ridge)) return new LocalFit(Double.NaN, Double.NaN, 0);
+
+                int[] all = concat(i, parents);
+                int[] rows = calculateRowSubsets ? validRows(all) : null;
+
+                int n = (rows == null) ? nEff : rows.length;
+                if (n < 10) return new LocalFit(Double.NaN, Double.NaN, n);
+
+                if (isDiscrete(i)) {
+                    int[] y = extractDiscreteChild(i, rows, n);
+                    int K = numCategories(i);
+                    if (K < 2) return new LocalFit(Double.NaN, Double.NaN, n);
+
+                    if (parents.length == 0) {
+                        double ll = multinomialInterceptOnlyLogLik(y, K);
+                        double edf = (K - 1.0); // parameters for baseline-dropped intercept-only
+                        return new LocalFit(ll, edf, n);
+                    }
+
+                    FitResult fit = fitMultinomialLogitMixed(i, y, K, parents, rows, n);
+                    return new LocalFit(fit.logLik(), fit.edf(), n);
+
+                } else {
+                    if (!(nu > 2) || !Double.isFinite(nu)) return new LocalFit(Double.NaN, Double.NaN, n);
+                    if (!(scale > 0) || !Double.isFinite(scale)) return new LocalFit(Double.NaN, Double.NaN, n);
+
+                    double[] y = extractContinuousChild(i, rows, n);
+
+                    if (parents.length == 0) {
+                        double scaleHat = this.scale;
+
+                        double s2 = 0.0;
+                        for (double v : y) s2 += v * v;
+                        scaleHat = Math.sqrt(Math.max(1e-12, s2 / n));
+
+                        for (int it = 0; it < 2; it++) {
+                            double wsum = 0.0, wrss = 0.0;
+                            double invS2 = 1.0 / (scaleHat * scaleHat);
+                            for (int r = 0; r < n; r++) {
+                                double u2 = (y[r] * y[r]) * invS2;
+                                double w = (nu + 1.0) / (nu + u2);
+                                wsum += w;
+                                wrss += w * y[r] * y[r];
+                            }
+                            if (wsum > 0.0) scaleHat = Math.sqrt(Math.max(1e-12, wrss / wsum));
+                        }
+
+                        double ll0 = studentTLogLik(y, new double[n], nu, scaleHat);
+                        double edf0 = 1.0; // intercept
+                        return new LocalFit(ll0, edf0, n);
+                    }
+
+                    FitResult fit = fitStudentTLegendreRidgeMixed(y, parents, rows, n);
+                    return new LocalFit(fit.logLik(), fit.edf(), n);
+                }
+
+            } catch (RuntimeException e) {
+                TetradLogger.getInstance().log(e.getMessage());
+                return new LocalFit(Double.NaN, Double.NaN, 0);
+            }
+        });
+    }
+
+    /**
+     * Computes (logLik, edf) for local model Y=child with given parents,
+     * evaluated/fitted on the provided rows (or all rows if rows==null).
+     *
+     * IMPORTANT: This does NOT choose rows; caller controls row selection.
+     * This is what CI tests need to ensure reduced/full use the same sample.
+     */
+    public LocalFit localFitOnRows(int child, int[] parents, int[] rows) {
+        Arrays.sort(parents);
+
+        try {
+            if (!(ridge > 0) || !Double.isFinite(ridge)) return new LocalFit(Double.NaN, Double.NaN, 0);
+
+            final int n = (rows == null) ? nEff : rows.length;
+            if (n < 10) return new LocalFit(Double.NaN, Double.NaN, n);
+
+            if (isDiscrete(child)) {
+                int[] y = extractDiscreteChild(child, rows, n);
+                int K = numCategories(child);
+                if (K < 2) return new LocalFit(Double.NaN, Double.NaN, n);
+
+                if (parents.length == 0) {
+                    double ll = multinomialInterceptOnlyLogLik(y, K);
+                    double edf = (K - 1.0);
+                    return new LocalFit(ll, edf, n);
+                }
+
+                FitResult fit = fitMultinomialLogitMixed(child, y, K, parents, rows, n);
+                return new LocalFit(fit.logLik(), fit.edf(), n);
+
+            } else {
+                if (!(nu > 2) || !Double.isFinite(nu)) return new LocalFit(Double.NaN, Double.NaN, n);
+                if (!(scale > 0) || !Double.isFinite(scale)) return new LocalFit(Double.NaN, Double.NaN, n);
+
+                double[] y = extractContinuousChild(child, rows, n);
+
+                if (parents.length == 0) {
+                    // intercept-only: same as your current localFit() code
+                    double scaleHat = this.scale;
+
+                    double s2 = 0.0;
+                    for (double v : y) s2 += v * v;
+                    scaleHat = Math.sqrt(Math.max(1e-12, s2 / n));
+
+                    for (int it = 0; it < 2; it++) {
+                        double wsum = 0.0, wrss = 0.0;
+                        double invS2 = 1.0 / (scaleHat * scaleHat);
+                        for (int r = 0; r < n; r++) {
+                            double u2 = (y[r] * y[r]) * invS2;
+                            double w = (nu + 1.0) / (nu + u2);
+                            wsum += w;
+                            wrss += w * y[r] * y[r];
+                        }
+                        if (wsum > 0.0) scaleHat = Math.sqrt(Math.max(1e-12, wrss / wsum));
+                    }
+
+                    double ll0 = studentTLogLik(y, new double[n], nu, scaleHat);
+                    double edf0 = 1.0;
+                    return new LocalFit(ll0, edf0, n);
+                }
+
+                FitResult fit = fitStudentTLegendreRidgeMixed(y, parents, rows, n);
+                return new LocalFit(fit.logLik(), fit.edf(), n);
+            }
+
+        } catch (RuntimeException e) {
+            TetradLogger.getInstance().log(e.getMessage());
+            return new LocalFit(Double.NaN, Double.NaN, 0);
+        }
+    }
+
+    /**
+     * Rows valid for {child} ∪ parents (i.e., no missing among these vars).
+     * Returned array is strictly increasing row indices.
+     */
+    public int[] validRowsForUnion(int child, int[] parents) {
+        int[] vars = new int[parents.length + 1];
+        vars[0] = child;
+        System.arraycopy(parents, 0, vars, 1, parents.length);
+        Arrays.sort(vars); // <-- add this
+        return calculateRowSubsets ? validRows(vars) : null;
+    }
+
+    public record LocalFit(double logLik, double edf, int nUsed) {}
+
+    private final AtomicReference<ConcurrentHashMap<Long, LocalFit>> localFitCacheRef =
+            new AtomicReference<>(new ConcurrentHashMap<>());
 
     private record FitResult(double logLik, double edf) {
     }

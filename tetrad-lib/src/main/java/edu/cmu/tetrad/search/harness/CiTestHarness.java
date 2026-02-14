@@ -123,11 +123,12 @@ public final class CiTestHarness {
         tests.add(new FisherZ());
         tests.add(new FfCi());
         tests.add(new Gcm());
-        tests.add(new ClKciPython());
-        tests.add(new Kci());
+//        tests.add(new ClKciPython());
+//        tests.add(new Kci());
         tests.add(new MinimaxCITest());
         tests.add(new Rcit());
         tests.add(new BasisFunctionBlocksIndTest());
+        tests.add(new BasisFunctionLrt());
 
         Parameters params = new Parameters();
         params.set(Params.MINIMAX_PERMUTATIONS, 500);
