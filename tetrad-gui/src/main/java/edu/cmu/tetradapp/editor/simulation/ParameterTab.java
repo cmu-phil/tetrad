@@ -215,9 +215,9 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.LG_MNAR_SIMULATION:
                         this.simulation.setSimulation(new LgMnarSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.LINEAR_FISHER_MODEL:
-                        this.simulation.setSimulation(new LinearFisherModel(randomGraph), this.simulation.getParams());
-                        break;
+//                    case SimulationTypes.LINEAR_FISHER_MODEL:
+//                        this.simulation.setSimulation(new LinearFisherModel(randomGraph), this.simulation.getParams());
+//                        break;
                     case SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), this.simulation.getParams());
                         break;
@@ -271,9 +271,9 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.LG_MNAR_SIMULATION:
                         this.simulation.setSimulation(new LgMnarSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.LINEAR_FISHER_MODEL:
-                        this.simulation.setSimulation(new LinearFisherModel(randomGraph), this.simulation.getParams());
-                        break;
+//                    case SimulationTypes.LINEAR_FISHER_MODEL:
+//                        this.simulation.setSimulation(new LinearFisherModel(randomGraph), this.simulation.getParams());
+//                        break;
                     case SimulationTypes.LEE_AND_HASTIE:
                         this.simulation.setSimulation(new LeeHastieSimulation(randomGraph), this.simulation.getParams());
                         break;

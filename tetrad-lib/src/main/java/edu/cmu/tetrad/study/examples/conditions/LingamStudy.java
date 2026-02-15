@@ -31,6 +31,7 @@ import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -86,7 +87,7 @@ public class LingamStudy {
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         Simulations simulations = new Simulations();
-        simulations.add(new LinearFisherModel(new RandomForward()));
+        simulations.add(new SemSimulation(new RandomForward()));
 
         comparison.compareFromSimulations("lingam", simulations, algorithms, statistics, LingamStudy.getParameters());
 

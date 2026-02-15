@@ -29,6 +29,7 @@ import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.statistic.AdjacencyPrecision;
 import edu.cmu.tetrad.algcomparison.statistic.AdjacencyRecall;
@@ -102,7 +103,7 @@ public class TestFges {
             parameters.set(Params.RANDOMIZE_COLUMNS, true);
 
             RandomGraph graph = new RandomForward();
-            LinearFisherModel sim = new LinearFisherModel(graph);
+            LinearFisherModel sim = new SemSimulation(graph);
             sim.createData(parameters, false);
             ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
             Algorithm alg = new Fges(score);
@@ -387,7 +388,7 @@ public class TestFges {
     public void clarkTest() {
         RandomGraph randomGraph = new RandomForward();
 
-        Simulation simulation = new LinearFisherModel(randomGraph);
+        Simulation simulation = new SemSimulation(randomGraph);
 
         Parameters parameters = getParameters();
 
