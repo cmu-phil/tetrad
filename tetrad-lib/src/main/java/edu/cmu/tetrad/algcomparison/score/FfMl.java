@@ -81,7 +81,7 @@ public class FfMl implements ScoreWrapper {
         }
 
         score.setLambda(parameters.getDouble(Params.KML_LAMBDA));
-        score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
+//        score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
         score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         score.setNumFeatures(parameters.getInt(Params.MINIMAX_FF_FEATURES));
@@ -122,7 +122,7 @@ public class FfMl implements ScoreWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.KML_LAMBDA);
-        parameters.add(Params.KML_BANDWIDTH_MULTIPLIER);
+//        parameters.add(Params.KML_BANDWIDTH_MULTIPLIER);
         parameters.add(Params.KML_BW_MAX_ROWS);
         parameters.add(Params.MINIMAX_FF_FEATURES);
         parameters.add(Params.KML_FEATURE_TYPE);

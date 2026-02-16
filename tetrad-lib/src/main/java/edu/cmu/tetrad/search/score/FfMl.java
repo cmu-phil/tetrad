@@ -142,10 +142,10 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     private volatile boolean coupleFeaturesByTarget = true;
 
     // -------------------- data --------------------
-    /**
-     * Bandwidth multiplier on the median heuristic (continuous part only).
-     */
-    private volatile double bandwidthMultiplier = 1.0;
+//    /**
+//     * Bandwidth multiplier on the median heuristic (continuous part only).
+//     */
+//    private volatile double bandwidthMultiplier = 1.0;
     /**
      * Max rows used to estimate median bandwidth (subsample for speed).
      */
@@ -879,21 +879,21 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         resetCache();
     }
 
-    /**
-     * Sets the bandwidth multiplier to adjust the data transfer rate.
-     * The provided value must be greater than 0 and finite.
-     *
-     * @param bandwidthMultiplier the positive finite value to set as the bandwidth multiplier
-     * @throws IllegalArgumentException if the provided bandwidthMultiplier is not greater than 0
-     *                                  or is not a finite value
-     */
-    public void setBandwidthMultiplier(double bandwidthMultiplier) {
-        if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
-            throw new IllegalArgumentException("bandwidthMultiplier must be > 0");
-        }
-        this.bandwidthMultiplier = bandwidthMultiplier;
-        resetCache();
-    }
+//    /**
+//     * Sets the bandwidth multiplier to adjust the data transfer rate.
+//     * The provided value must be greater than 0 and finite.
+//     *
+//     * @param bandwidthMultiplier the positive finite value to set as the bandwidth multiplier
+//     * @throws IllegalArgumentException if the provided bandwidthMultiplier is not greater than 0
+//     *                                  or is not a finite value
+//     */
+//    public void setBandwidthMultiplier(double bandwidthMultiplier) {
+//        if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
+//            throw new IllegalArgumentException("bandwidthMultiplier must be > 0");
+//        }
+//        this.bandwidthMultiplier = bandwidthMultiplier;
+//        resetCache();
+//    }
 
     // -------------------- sigma-only case --------------------
 
