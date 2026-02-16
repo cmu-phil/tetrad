@@ -597,7 +597,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
                 double bw2 = 1.0;
                 if (nc > 0) {
-                    long bwKey = (((long) i) << 32) ^ (long) nc;   // target + nc bucket
+//                    long bwKey = (((long) i) << 32) ^ (long) nc;   // target + nc bucket
+                    long bwKey = cacheKey(i, contParents);   // contParents already sorted
                     int finalNc = nc;
                     int[] finalContParents = contParents;
                     bw2 = bw2Cache.computeIfAbsent(bwKey, kk -> {
