@@ -109,6 +109,11 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     private String jsonResult;
     private BlockSpec blockSpec = null;
 
+    // Adding these fields and using them below to fix an issue where the search is sometimes run a
+    // seconds time for some reason. This is particularly bothersome with slow searches. jdramsey 2026-2-16
+    private final java.util.concurrent.atomic.AtomicBoolean closing = new java.util.concurrent.atomic.AtomicBoolean(false);
+    private final java.util.concurrent.atomic.AtomicBoolean running = new java.util.concurrent.atomic.AtomicBoolean(false);
+
     /**
      * <p>Constructor for GeneralAlgorithmEditor.</p>
      *
@@ -255,33 +260,65 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         cardLayout.last(this);
     }
 
-    private void doSearch() {
-        class MyWatchedProcess extends WatchedProcess {
+//    private void doSearch() {
+//        class MyWatchedProcess extends WatchedProcess {
+//
+//            @Override
+//            public void watch() {
+//                AlgorithmModel algoModel = GeneralAlgorithmEditor.this.algorithmCard.getSelectedAlgorithm();
+//                if (algoModel != null) {
+//                    try {
+//                        GeneralAlgorithmEditor.this.algorithmCard.saveStates();
+//                        GeneralAlgorithmEditor.this.algorithmRunner.execute();
+//
+//                        firePropertyChange("modelChanged", null, null);
+//                        GeneralAlgorithmEditor.this.graphCard.refresh();
+//
+//                        if (!isInterrupted()) {
+//                            showGraphCard();
+//                        }
+//                    } catch (Exception exception) {
+//                        exception.printStackTrace(System.err);
+//
+//                        disposeStopDialog();
+//
+//                        JOptionPane.showMessageDialog(
+//                                getTopLevelAncestor(),
+//                                "Stopped with error:\n"
+//                                + exception.getMessage());
+//                    }
+//                }
+//            }
+//        }
+//
+//        new MyWatchedProcess();
+//    }
 
+    private void doSearch() {
+        if (closing.get()) return;
+        if (!running.compareAndSet(false, true)) return; // don't allow re-entry / double-run
+
+        class MyWatchedProcess extends WatchedProcess {
             @Override
             public void watch() {
-                AlgorithmModel algoModel = GeneralAlgorithmEditor.this.algorithmCard.getSelectedAlgorithm();
-                if (algoModel != null) {
-                    try {
-                        GeneralAlgorithmEditor.this.algorithmCard.saveStates();
-                        GeneralAlgorithmEditor.this.algorithmRunner.execute();
+                try {
+                    AlgorithmModel algoModel = algorithmCard.getSelectedAlgorithm();
+                    if (algoModel == null) return;
 
-                        firePropertyChange("modelChanged", null, null);
-                        GeneralAlgorithmEditor.this.graphCard.refresh();
+                    algorithmCard.saveStates();
+                    algorithmRunner.execute();
 
-                        if (!isInterrupted()) {
-                            showGraphCard();
-                        }
-                    } catch (Exception exception) {
-                        exception.printStackTrace(System.err);
+                    firePropertyChange("modelChanged", null, null);
+                    graphCard.refresh();
 
-                        disposeStopDialog();
-
-                        JOptionPane.showMessageDialog(
-                                getTopLevelAncestor(),
-                                "Stopped with error:\n"
-                                + exception.getMessage());
-                    }
+                    if (!isInterrupted() && !closing.get()) showGraphCard();
+                } catch (Exception exception) {
+                    exception.printStackTrace(System.err);
+                    disposeStopDialog();
+                    JOptionPane.showMessageDialog(getTopLevelAncestor(),
+                            "Stopped with error:\n" + exception.getMessage());
+                } finally {
+                    running.set(false);
                 }
             }
         }
@@ -292,15 +329,31 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     /**
      * {@inheritDoc}
      */
-    @Override
+//    @Override
+//    public boolean finalizeEditor() {
+//        List<Graph> graphs = this.algorithmRunner.getGraphs();
+//        if (graphs == null || graphs.isEmpty()) {
+//            int option = JOptionPane.showConfirmDialog(this, "You have not performed a search. Close anyway?", "Close?",
+//                    JOptionPane.YES_NO_OPTION);
+//            return option == JOptionPane.YES_OPTION;
+//        }
+//
+//        return true;
+//    }
+
+     @Override
     public boolean finalizeEditor() {
+        closing.set(true);
+
+        // (optional) also stop a running WatchedProcess / runner if you have a hook
+
         List<Graph> graphs = this.algorithmRunner.getGraphs();
         if (graphs == null || graphs.isEmpty()) {
-            int option = JOptionPane.showConfirmDialog(this, "You have not performed a search. Close anyway?", "Close?",
+            int option = JOptionPane.showConfirmDialog(this,
+                    "You have not performed a search. Close anyway?", "Close?",
                     JOptionPane.YES_NO_OPTION);
             return option == JOptionPane.YES_OPTION;
         }
-
         return true;
     }
 

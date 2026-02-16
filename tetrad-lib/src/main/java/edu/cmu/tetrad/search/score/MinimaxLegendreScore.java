@@ -911,7 +911,8 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
         int pos = legOff;
         for (int j = 0; j < dCont; j++) {
             double z = Zc[i][j];
-            double x = z * invClip;
+//            double x = z * invClip;
+            double x = Math.tanh(z / legendreClip);
             x = clamp(x);
 
             if (j < kInt) xMap[j] = x;
@@ -962,10 +963,10 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
     }
 
     private static double clamp(double x) {
-//        return tanh(x);
-        if (x > 1.0) x = 1.0;
-        else if (x < -1.0) x = -1.0;
-        return x;
+        return tanh(x);
+//        if (x > 1.0) x = 1.0;
+//        else if (x < -1.0) x = -1.0;
+//        return x;
     }
 
     // -------------------- missing rows & extraction --------------------
