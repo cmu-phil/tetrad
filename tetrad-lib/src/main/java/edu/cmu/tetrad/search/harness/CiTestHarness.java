@@ -128,6 +128,7 @@ public final class CiTestHarness {
         tests.add(new Rcit());
         tests.add(new Gcm());
 
+        // Taking these test out of the interface. jdramsey 2026-2-16
 //        tests.add(new BasisFunctionBlocksIndTest());
 //        tests.add(new BasisFunctionLrt());
 //        tests.add(new MinimaxCITest());
