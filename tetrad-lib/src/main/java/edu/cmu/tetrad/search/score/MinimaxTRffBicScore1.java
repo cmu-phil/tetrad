@@ -84,7 +84,7 @@ import static java.lang.Math.*;
  * scores when noise distributions are heavy-tailed or nonlinear effects are present.
  * </p>
  */
-public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSettable {
+public final class MinimaxTRffBicScore1 implements Score, EffectiveSampleSizeSettable {
 
     // -------------------- config knobs --------------------
 
@@ -156,7 +156,7 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
      * @param dataSet The dataset to be used for constructing this instance.
      *                Must be non-null. If null, a {@code NullPointerException} will be thrown.
      */
-    public MinimaxTRffBicScore(DataSet dataSet) {
+    public MinimaxTRffBicScore1(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
 
         this.dataSet = dataSet;
@@ -543,16 +543,9 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
                     double[] y = extractContinuousChild(i, rows, n);
                     centerInPlace(y);
 
-//                    if (parents.length == 0) {
-//                        double ll = studentTLogLik(y, new double[n], nu, scale);
-//                        return ll; // edf=0 after centering
-//                    }
-
                     if (parents.length == 0) {
-                        // y is already centered in your code.
-                        double scaleHat = profileStudentTScale(y, nu, this.scale, irlsIters, irlsTol);
-                        double ll = studentTLogLik(y, new double[n], nu, scaleHat);
-                        return ll; // edf = 0 after centering, as you already intend
+                        double ll = studentTLogLik(y, new double[n], nu, scale);
+                        return ll; // edf=0 after centering
                     }
 
                     long seed = rffSeed ^ (long) i * 0x9E3779B97F4A7C15L ^ Arrays.hashCode(parents);
@@ -569,43 +562,6 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
                 return Double.NaN;
             }
         });
-    }
-
-    private static double profileStudentTScale(double[] yCentered,
-                                               double nu,
-                                               double initScale,
-                                               int maxIters,
-                                               double tol) {
-        final int n = yCentered.length;
-        double scaleHat = initScale;
-        double prevObj = Double.POSITIVE_INFINITY;
-
-        for (int iter = 0; iter < maxIters; iter++) {
-            double obj = 0.0;
-            double wsum = 0.0;
-            double wrss = 0.0;
-
-            for (int i = 0; i < n; i++) {
-                double r = yCentered[i]; // intercept-only => yhat=0 after centering
-                double u2 = (r / scaleHat) * (r / scaleHat);
-
-                double wi = (nu + 1.0) / (nu + u2);
-
-                obj += 0.5 * (nu + 1.0) * Math.log1p(u2 / nu);
-                wsum += wi;
-                wrss += wi * r * r;
-            }
-
-            if (wsum > 0.0) {
-                double s2 = wrss / wsum;
-                scaleHat = Math.sqrt(Math.max(1e-12, s2));
-            }
-
-            if (Math.abs(prevObj - obj) <= tol * (1.0 + Math.abs(prevObj))) break;
-            prevObj = obj;
-        }
-
-        return scaleHat;
     }
 
     /**
@@ -1397,9 +1353,8 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
                 centerInPlace(y);
 
                 if (pa.length == 0) {
-                    double scaleHat = profileStudentTScale(y, nu, this.scale, irlsIters, irlsTol);
-                    double ll0 = studentTLogLik(y, new double[n], nu, scaleHat);
-                    double edf0 = 0.0;
+                    double ll0 = studentTLogLik(y, new double[n], nu, scale);
+                    double edf0 = 0.0; // after centering, intercept is effectively removed
                     return new LocalFit(ll0, edf0, n);
                 }
 
