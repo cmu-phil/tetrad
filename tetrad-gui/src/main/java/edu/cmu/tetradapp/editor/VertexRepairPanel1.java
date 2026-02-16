@@ -32,7 +32,7 @@ import java.util.prefs.Preferences;
  * Markov-checker diagnostics derived from conditional independence tests.
  * </p>
  */
-public final class VertexRepairPanel extends JPanel {
+public final class VertexRepairPanel1 extends JPanel {
 
     private static final String CARD_TABLE = "table";
     private static final String CARD_NONE = "none";
@@ -65,7 +65,7 @@ public final class VertexRepairPanel extends JPanel {
     private volatile SwingWorker<?, ?> activeWorker;
     private volatile JDialog watchDialog;
 
-    public VertexRepairPanel(VertexCheckEditor editor, Node x) {
+    public VertexRepairPanel1(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
 
         this.baseModel = Objects.requireNonNull(editor.getIndTestModel(), "editor.getIndTestModel()");
@@ -577,17 +577,9 @@ public final class VertexRepairPanel extends JPanel {
 
         if (gt == RepairGraphType.CPDAG) {// || gt == RepairGraphType.PDAG) {
             base = canonicalizeToCpdagOrNull(base);
-//            if (base == null) {
-//                SwingUtilities.invokeLater(() -> {
-//                    statusLabel.setText("Current graph has no consistent CPDAG extension.");
-//                    ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_NONE);
-//                });
-//                return;
-//            }
-
             if (base == null) {
                 SwingUtilities.invokeLater(() -> {
-                    statusLabel.setText("Could not canonicalize to CPDAG (unexpected).");
+                    statusLabel.setText("Current graph has no consistent CPDAG extension.");
                     ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_NONE);
                 });
                 return;
@@ -733,7 +725,7 @@ public final class VertexRepairPanel extends JPanel {
 
         int editsApplied = 0;
         final int MAX_EDITS = 500;           // global safety cap
-        final int MAX_STEPS_PER_NODE = 1;//200;  // per-node safety cap
+        final int MAX_STEPS_PER_NODE = 200;  // per-node safety cap
 
         vlog("==================================================");
         vlog("AUTO-REPAIR (greedy table-order, one sweep) (type=%s)", String.valueOf(gt));
@@ -1320,38 +1312,11 @@ public final class VertexRepairPanel extends JPanel {
         return adds;
     }
 
-//    private Graph canonicalizeToCpdagOrNull(Graph h) {
-//        try {
-//            Graph h2 = new EdgeListGraph(h);
-//            Graph dag = GraphTransforms.dagFromCpdag(h2);
-//            return GraphTransforms.dagToCpdag(dag);
-//        } catch (Throwable t) {
-//            return null;
-//        }
-//    }
-
     private Graph canonicalizeToCpdagOrNull(Graph h) {
-        if (h == null) return null;
-
         try {
             Graph h2 = new EdgeListGraph(h);
-
-            // Case 1: already a legal DAG → project to CPDAG
-            if (h2.paths().isLegalDag()) {
-                return GraphTransforms.dagToCpdag(h2);
-            }
-
-            // Case 2: legal CPDAG/PDAG → pick an extension and project back
-            if (h2.paths().isLegalCpdag() || h2.paths().isLegalPdag()) {
-                Graph dag = GraphTransforms.dagFromCpdag(h2);
-                return GraphTransforms.dagToCpdag(dag);
-            }
-
-            // Case 3: arbitrary / illegal PDAG → seed a DAG from the adjacency skeleton
-            Graph seed = seedDagFromAnyGraph(h2);
-            if (seed == null) return null; // only null if nodes empty or something truly broken
-            return GraphTransforms.dagToCpdag(seed);
-
+            Graph dag = GraphTransforms.dagFromCpdag(h2);
+            return GraphTransforms.dagToCpdag(dag);
         } catch (Throwable t) {
             return null;
         }
@@ -2307,88 +2272,5 @@ public final class VertexRepairPanel extends JPanel {
             this.baseline = baseline;
             this.scored = scored;
         }
-
-        private Graph seedDagFromAnyGraph(Graph g) {
-            if (g == null) return null;
-
-            // 1) Nodes in a stable order
-            List<Node> nodes = new ArrayList<>(g.getNodes());
-            nodes.sort(Comparator.comparing(Node::getName, Comparator.nullsLast(VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR)));
-
-            Map<String, Integer> idx = new HashMap<>();
-            for (int i = 0; i < nodes.size(); i++) idx.put(nodes.get(i).getName(), i);
-
-            // 2) Build a DAG that has exactly the same adjacencies (ignore endpoints)
-            Graph dag = new EdgeListGraph(nodes);
-
-            Set<String> seenPairs = new HashSet<>();
-            for (Edge e : g.getEdges()) {
-                Node a0 = e.getNode1();
-                Node b0 = e.getNode2();
-                if (a0 == null || b0 == null) continue;
-
-                Node a = dag.getNode(a0.getName());
-                Node b = dag.getNode(b0.getName());
-                if (a == null || b == null || a.equals(b)) continue;
-
-                String key = a.getName().compareTo(b.getName()) < 0 ? a.getName()+"|"+b.getName() : b.getName()+"|"+a.getName();
-                if (!seenPairs.add(key)) continue;
-
-                int ia = idx.getOrDefault(a.getName(), 0);
-                int ib = idx.getOrDefault(b.getName(), 0);
-
-                // orient forward in the order => guarantees DAG
-                if (ia <= ib) dag.addEdge(new Edge(a, b, Endpoint.TAIL, Endpoint.ARROW));
-                else dag.addEdge(new Edge(b, a, Endpoint.TAIL, Endpoint.ARROW));
-            }
-
-            return dag.paths().isLegalDag() ? dag : null;
-        }
-    }
-
-    private static Graph seedDagFromAnyGraph(Graph g) {
-        if (g == null) return null;
-
-        // 1) Nodes in a stable order (natural sort)
-        List<Node> nodes = new ArrayList<>(g.getNodes());
-        nodes.sort(Comparator.comparing(Node::getName,
-                Comparator.nullsLast(VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR)));
-
-        if (nodes.isEmpty()) return null;
-
-        Map<String, Integer> idx = new HashMap<>();
-        for (int i = 0; i < nodes.size(); i++) {
-            String name = nodes.get(i).getName();
-            if (name != null) idx.put(name, i);
-        }
-
-        // 2) Build a DAG with the same adjacencies (ignore endpoints), orienting by order
-        Graph dag = new EdgeListGraph(nodes);
-
-        Set<String> seenPairs = new HashSet<>();
-        for (Edge e : g.getEdges()) {
-            Node a0 = e.getNode1();
-            Node b0 = e.getNode2();
-            if (a0 == null || b0 == null) continue;
-
-            String an0 = a0.getName();
-            String bn0 = b0.getName();
-            if (an0 == null || bn0 == null) continue;
-
-            Node a = dag.getNode(an0);
-            Node b = dag.getNode(bn0);
-            if (a == null || b == null || a.equals(b)) continue;
-
-            String key = (an0.compareTo(bn0) <= 0) ? (an0 + "|" + bn0) : (bn0 + "|" + an0);
-            if (!seenPairs.add(key)) continue;
-
-            int ia = idx.getOrDefault(a.getName(), 0);
-            int ib = idx.getOrDefault(b.getName(), 0);
-
-            if (ia <= ib) dag.addEdge(new Edge(a, b, Endpoint.TAIL, Endpoint.ARROW));
-            else dag.addEdge(new Edge(b, a, Endpoint.TAIL, Endpoint.ARROW));
-        }
-
-        return dag.paths().isLegalDag() ? dag : null;
     }
 }
