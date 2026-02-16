@@ -118,6 +118,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             new AtomicReference<>(new ConcurrentHashMap<>());
 
     private final ConcurrentHashMap<Long, Double> bw2Cache = new ConcurrentHashMap<>();
+
+    private final ConcurrentHashMap<Long, Double> bw2OptCache = new ConcurrentHashMap<>();
     /**
      * Base ridge/noise knob. Used as sigma^2. Must be > 0.
      */
@@ -552,7 +554,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     @Override
     public double localScore(int i, int... parents) {
         Arrays.sort(parents);
-        long key = cacheKey(i, parents);
+        final long key = cacheKey(i, parents);
 
         final ConcurrentHashMap<Long, Double> cache = localScoreCacheRef.get();
 
@@ -580,56 +582,45 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 contParents = Arrays.copyOf(contParents, nc);
                 discParents = Arrays.copyOf(discParents, nd);
 
-                // Bandwidth from continuous parents only; if none, default bw2=1.
-//                double bw2 = 1.0;
-//                if (nc > 0) {
-//                    double[][] Zc = new double[n][nc];
-//                    for (int r = 0; r < n; r++) {
-//                        int row = (rows == null) ? r : rows[r];
-//                        for (int j = 0; j < nc; j++) {
-//                            Zc[r][j] = zCols[contParents[j]][row];
-//                        }
-//                    }
-//                    bw2 = medianDistanceSquaredND(Zc, Math.min(n, bwMaxRows));
-//                    if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
-//                    bw2 *= (bandwidthMultiplier * bandwidthMultiplier);
-//                }
-
-                double bw2 = 1.0;
+                // Median bw^2 from continuous parents only; cached by FULL key (rows depend on all vars)
+                double bw2Med = 1.0;
                 if (nc > 0) {
-//                    long bwKey = (((long) i) << 32) ^ (long) nc;   // target + nc bucket
-                    long bwKey = cacheKey(i, contParents);   // contParents already sorted
-                    int finalNc = nc;
-                    int[] finalContParents = contParents;
-                    bw2 = bw2Cache.computeIfAbsent(bwKey, kk -> {
+                    final int finalNc = nc;
+                    final int[] finalContParents = contParents;
+
+                    bw2Med = bw2Cache.computeIfAbsent(key, kk -> {
                         double[][] Zc = new double[n][finalNc];
                         for (int r = 0; r < n; r++) {
                             int row = (rows == null) ? r : rows[r];
-                            for (int j = 0; j < finalNc; j++) Zc[r][j] = zCols[finalContParents[j]][row];
+                            for (int j = 0; j < finalNc; j++) {
+                                Zc[r][j] = zCols[finalContParents[j]][row];
+                            }
                         }
                         double est = medianDistanceSquaredND(Zc, Math.min(n, bwMaxRows));
                         if (!(est > 0) || !Double.isFinite(est)) est = 1.0;
                         return est;
                     });
-                    bw2 *= (bandwidthMultiplier * bandwidthMultiplier);
                 }
 
                 // Deterministic seed per (target, parent set)
-//                long seed = key ^ 0x9E3779B97F4A7C15L;
-//                long seed = mix64(((long) i) ^ 0x9E3779B97F4A7C15L);
                 long seed = seedFor(i, key);
 
                 // ----------------------------
-                // CASE A: continuous target (your existing behavior)
+                // CASE A: continuous target
                 // ----------------------------
                 if (!isDiscrete[i]) {
                     double[] y = extract1DContinuous(i, rows, n);
                     centerInPlace(y);
 
-                    // Exact closed-form for no parents: C = sigma2 I
                     if (parents.length == 0) {
                         return gpLogMarginalLikelihoodSigmaOnly(y, sigma2);
                     }
+
+                    double bw2 = pickBw2ByGridSearch(
+                            key, y,
+                            contParents, discParents, rows, n,
+                            numFeatures, bw2Med, sigma2, seed
+                    );
 
                     return gpLogMarginalLikelihoodRFFMixed(
                             y, contParents, discParents, rows, n,
@@ -638,21 +629,20 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 }
 
                 // ----------------------------
-                // CASE B: discrete target (new)
-                // One-hot encode child, center columns, score each column with GP-ML and sum.
+                // CASE B: discrete target
                 // ----------------------------
-
                 int[] yDisc = extractDiscrete(i, rows, n);
-                double[][] Y = oneHotCentered(yDisc); // n x L, each col centered
-
+                double[][] Y = oneHotCentered(yDisc);
                 if (Y == null || Y[0].length == 0) return Double.NaN;
 
-                // If no parents: sigma-only per column (fast)
                 if (parents.length == 0) {
                     return gpLogMarginalLikelihoodSigmaOnlyMulti(Y, sigma2);
                 }
 
-                // With parents: sum GP-ML across columns
+                // For discrete targets, keep bandwidth simple (median on continuous parents)
+                // (Grid-search here can be much more expensive because of multi-output.)
+                double bw2 = (nc > 0 && Double.isFinite(bw2Med) && bw2Med > 0) ? bw2Med : 1.0;
+
                 return gpLogMarginalLikelihoodRFFMixedMultiOutput(
                         Y, contParents, discParents, rows, n,
                         numFeatures, bw2, sigma2, seed
@@ -663,6 +653,53 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 return Double.NaN;
             }
         });
+    }
+
+    private double pickBw2ByGridSearch(
+            long fullKey,
+            double[] yCentered,
+            int[] contParents,
+            int[] discParents,
+            int[] rows,
+            int n,
+            int mFeatures,
+            double bw2Med,
+            double sigma2,
+            long seed
+    ) {
+        if (contParents.length == 0) return 1.0;  // no continuous inputs
+        if (!(bw2Med > 0) || !Double.isFinite(bw2Med)) bw2Med = 1.0;
+
+        // Cache the best bw2 for this exact (target, full parent set, row subset)
+        Double cached = bw2OptCache.get(fullKey);
+        if (cached != null) return cached;
+
+        // Grid in multiplier space (log-spaced-ish). Interpret as bw2 = bw2Med * mult^2
+        final double[] mult = {0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0};
+
+        double bestBw2 = bw2Med;
+        double best = Double.NEGATIVE_INFINITY;
+
+        for (double m : mult) {
+            double bw2 = bw2Med * (m * m);
+            if (!(bw2 > 0) || !Double.isFinite(bw2)) continue;
+
+            double ll = gpLogMarginalLikelihoodRFFMixed(
+                    yCentered, contParents, discParents, rows, n,
+                    mFeatures, bw2, sigma2, seed
+            );
+
+            if (Double.isFinite(ll) && ll > best) {
+                best = ll;
+                bestBw2 = bw2;
+            }
+        }
+
+        // Fallback safety
+        if (!Double.isFinite(best) || !(bestBw2 > 0) || !Double.isFinite(bestBw2)) bestBw2 = bw2Med;
+
+        bw2OptCache.put(fullKey, bestBw2);
+        return bestBw2;
     }
 
     /**
@@ -1410,9 +1447,15 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 //        localScoreCacheRef.set(new ConcurrentHashMap<>());
 //    }
 
+//    private void resetCache() {
+//        localScoreCacheRef.set(new ConcurrentHashMap<>());
+//        bw2Cache.clear();
+//    }
+
     private void resetCache() {
         localScoreCacheRef.set(new ConcurrentHashMap<>());
         bw2Cache.clear();
+        bw2OptCache.clear();
     }
 
     private long seedFor(int targetIndex, long cacheKey) {
