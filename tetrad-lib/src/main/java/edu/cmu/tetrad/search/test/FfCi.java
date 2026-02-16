@@ -87,12 +87,16 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     private final Random rng;
 
     // ---------------- caches ----------------
-    private final Map<String, SimpleMatrix> featCache = new ConcurrentHashMap<>();
-    private final Map<String, Double> bw2Cache = new ConcurrentHashMap<>();
+    private transient Map<String, SimpleMatrix> featCache = new ConcurrentHashMap<>();
+    private transient Map<String, Double> bw2Cache = new ConcurrentHashMap<>();
 
     // ---------------- Continuous delegate ----------------
     private final boolean dataHasAnyDiscrete;
     private final FfCiContinuous continuousDelegate;
+
+    // Bump this whenever the *values* in `data` change (e.g., resimulate in-place).
+    // Included in cache keys so cached features/bandwidths cannot leak across datasets.
+    private volatile long dataVersion = 0L;
 
     // ---------------- ctor ----------------
 
@@ -103,6 +107,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      */
     public FfCi(DataSet dataSet) {
         this(dataSet, new Parameters());
+        this.dataVersion = System.identityHashCode(dataSet);
     }
 
     /**
@@ -249,8 +254,18 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      * a refresh to ensure correctness.
      */
     private void invalidateCaches() {
-        this.featCache.clear();
-        this.bw2Cache.clear();
+        getFeatureCache().clear();
+        getBw2Cache().clear();
+    }
+
+    private Map<String, Double> getBw2Cache() {
+        if (bw2Cache == null) bw2Cache = new ConcurrentHashMap<>();
+        return bw2Cache;
+    }
+
+    private Map<String, SimpleMatrix> getFeatureCache() {
+        if (featCache == null) featCache = new ConcurrentHashMap<>();
+        return featCache;
     }
 
     /**
@@ -514,7 +529,8 @@ public final class FfCi implements IndependenceTest, RowsSettable {
             SimpleMatrix Cov = kronResCov(resX, resY);
             double[] eig = positiveEigs(Cov);
 
-            p = pValueFromMethod(stat, eig, fX, fY, null);
+//            p = pValueFromMethod(stat, eig, fX, fY, null);
+            p = pValueFromMethod(fact, stat, eig, fX, fY, null);
         } else {
             // -------- Conditional: ridge residualization --------
             final double alphaRidge = Math.max(1e-18, lambda);// / Math.max(1.0, (n - 1.0)));
@@ -535,7 +551,8 @@ public final class FfCi implements IndependenceTest, RowsSettable {
             SimpleMatrix Cov = kronResCov(resX, resY);
             double[] eig = positiveEigs(Cov);
 
-            p = pValueFromMethod(stat, eig, rX, rY, null);
+//            p = pValueFromMethod(stat, eig, rX, rY, null);
+            p = pValueFromMethod(fact, stat, eig, rX, rY, null);
         }
 
         double p_ = clamp01(p);
@@ -687,6 +704,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
         StringBuilder sb = new StringBuilder(140);
         sb.append(tag)
+                .append("|dv=").append(dataVersion)
                 .append("|n=").append(getActiveRowCount())
                 .append("|rows=").append(activeRowsHash())
                 .append("|bwMult=").append(Double.doubleToLongBits(bandwidthMultiplier))
@@ -703,6 +721,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
         StringBuilder sb = new StringBuilder(220);
         sb.append(tag)
+                .append("|dv=").append(dataVersion)
                 .append("|n=").append(getActiveRowCount())
                 .append("|rows=").append(activeRowsHash())
                 .append("|m=").append(mFeatures)
@@ -998,12 +1017,25 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
     // ---------------- p-values ----------------
 
-    private double pValueFromMethod(double stat, double[] eig, SimpleMatrix rX, SimpleMatrix rY, SimpleMatrix ignored) {
-        // Permutation (if requested and available)
+    private double pValueFromMethod(IndependenceFact fact, double stat, double[] eig,
+                                    SimpleMatrix rX, SimpleMatrix rY, SimpleMatrix ignored) {       // Permutation (if requested and available)
         if (pValueMethod == FfCiContinuous.Approx.PERMUTATION && permutations > 0) {
+//            int greater = 0;
+//            for (int b = 0; b < permutations; b++) {
+//                int[] perm = randomPermutation(rY.getNumRows(), rng);
+//                SimpleMatrix rYp = permuteRows(rY, perm);
+//                SimpleMatrix C = covCentered(rX, rYp);
+//                double s = rY.getNumRows() * frob2(C);
+//                if (s >= stat) greater++;
+//            }
+//            return (greater + 1.0) / (permutations + 1.0);
+
+            // IMPORTANT: per-query RNG, NOT shared rng.
+            SplittableRandom prng = new SplittableRandom(seedForPermutation(fact));
+
             int greater = 0;
             for (int b = 0; b < permutations; b++) {
-                int[] perm = randomPermutation(rY.getNumRows(), rng);
+                int[] perm = randomPermutation(rY.getNumRows(), prng);
                 SimpleMatrix rYp = permuteRows(rY, perm);
                 SimpleMatrix C = covCentered(rX, rYp);
                 double s = rY.getNumRows() * frob2(C);
@@ -1133,6 +1165,18 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         return p;
     }
 
+    private static int[] randomPermutation(int n, SplittableRandom rng) {
+        int[] p = new int[n];
+        for (int i = 0; i < n; i++) p[i] = i;
+        for (int i = n - 1; i > 0; i--) {
+            int j = rng.nextInt(i + 1);
+            int t = p[i];
+            p[i] = p[j];
+            p[j] = t;
+        }
+        return p;
+    }
+
     private static SimpleMatrix permuteRows(SimpleMatrix M, int[] perm) {
         SimpleMatrix out = new SimpleMatrix(M.getNumRows(), M.getNumCols());
         for (int i = 0; i < perm.length; i++) {
@@ -1142,4 +1186,59 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     }
 
     private static double clamp01(double v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
+
+
+    /** Call this after any operation that changes the contents of `data` (resimulate, edit, reload, etc.). */
+    public void bumpDataVersion() {
+        dataVersion++;
+        invalidateCaches();
+        // If your continuous delegate also caches anything internally, keep it in sync as well.
+        // (If it doesn't have such a method, just omit this line.)
+//        if (continuousDelegate instanceof DataVersioned dv) {
+//            dv.setDataVersion(dataVersion);
+//        }
+    }
+
+    /** Use this if the caller maintains a run-id or dataset-id; any change forces cache miss. */
+    public void setDataVersion(long newVersion) {
+        this.dataVersion = newVersion;
+        invalidateCaches();
+//        if (continuousDelegate instanceof DataVersioned dv) {
+//            dv.setDataVersion(dataVersion);
+//        }
+    }
+
+    public long getDataVersion() {
+        return dataVersion;
+    }
+
+
+//    /**
+//     * Optional tiny interface you can also implement in the delegate later if you want.
+//     * Safe to leave unused.
+//     */
+//    private interface DataVersioned {
+//        void setDataVersion(long v);
+//    }
+
+    private long seedForPermutation(IndependenceFact fact) {
+        long h = 1469598103934665603L;          // FNV offset
+        h = 1099511628211L * (h ^ "PERM".hashCode());
+
+        // include dataset identity/version + active rows
+        h = 1099511628211L * (h ^ Long.hashCode(dataVersion));
+        h = 1099511628211L * (h ^ Integer.hashCode(getActiveRowCount()));
+        h = 1099511628211L * (h ^ Integer.hashCode(activeRowsHash()));
+
+        // include the actual CI query: X, Y, and conditioning set Z (sorted)
+        h = 1099511628211L * (h ^ fact.getX().getName().hashCode());
+        h = 1099511628211L * (h ^ fact.getY().getName().hashCode());
+
+        ArrayList<String> zNames = new ArrayList<>();
+        for (Node z : fact.getZ()) zNames.add(z.getName());
+        Collections.sort(zNames);
+        for (String s : zNames) h = 1099511628211L * (h ^ s.hashCode());
+
+        return h;
+    }
 }
