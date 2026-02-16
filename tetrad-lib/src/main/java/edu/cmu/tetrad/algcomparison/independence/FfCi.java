@@ -27,8 +27,8 @@ import java.util.List;
  *   - verbose
  */
 @TestOfIndependence(
-        name = "FFCI (Fourier Features Conditional Independence) - Simple",
-        command = "ffci-simple",
+        name = "FFCI (Fourier Features Conditional Independence)",
+        command = "ffci",
         dataType = DataType.Mixed
 )
 @General

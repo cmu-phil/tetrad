@@ -133,7 +133,7 @@ public class AlgorithmCard extends JPanel {
     /**
      * Mixed, discrete, Gaussian radio button.
      */
-    private final JRadioButton mixedRadBtn = new JRadioButton("Mixed Discrete/Gaussian");
+    private final JRadioButton mixedRadBtn = new JRadioButton("Mixed Discrete/Continuous");
 
     /**
      * General radio button.

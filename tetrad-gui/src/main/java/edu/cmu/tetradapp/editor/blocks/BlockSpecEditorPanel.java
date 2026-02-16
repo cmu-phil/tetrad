@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
 
 /**
  * Text-first BlockSpec editor using JTextPane + Highlighter. - Live validation via BlockSpecTextCodec (red=error,
- * orange=warning) - Tooltips for issues - Simple autocomplete for variable names (Cmd/Ctrl+Space) - Undo/Redo
+ * orange=warning) - Tooltips for issues autocomplete for variable names (Cmd/Ctrl+Space) - Undo/Redo
  * (Cmd/Ctrl+Z, Shift+Cmd/Ctrl+Z) - Import/Export buttons - Canonicalize button that preserves comments &amp; line order
  * (rewrites RHS only) - Apply button invokes a user-supplied callback with the current BlockSpec
  */
