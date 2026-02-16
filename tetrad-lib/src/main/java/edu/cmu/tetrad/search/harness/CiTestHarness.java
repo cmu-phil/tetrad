@@ -10,7 +10,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
+import edu.cmu.tetrad.search.score.MinimaxTRffBicScore;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.MinimaxTRffTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.sem.GeneralNoiseSimulation;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -121,15 +123,17 @@ public final class CiTestHarness {
 
         List<IndependenceWrapper> tests = new ArrayList<>();
         tests.add(new FisherZ());
-        tests.add(new FfCi());
-        tests.add(new Gcm());
-        tests.add(new ClKciPython());
         tests.add(new Kci());
-        tests.add(new MinimaxCITest());
+        tests.add(new ClKciPython());
         tests.add(new Rcit());
-        tests.add(new BasisFunctionBlocksIndTest());
-        tests.add(new BasisFunctionLrt());
-        tests.add( new LegendreLrIndTest());
+        tests.add(new Gcm());
+
+//        tests.add(new BasisFunctionBlocksIndTest());
+//        tests.add(new BasisFunctionLrt());
+//        tests.add(new MinimaxCITest());
+//        tests.add(new MinimaxTRffIndTest());
+        tests.add(new FfCi());
+        tests.add(new LegendreLrIndTest());
 
         Parameters params = new Parameters();
         params.set(Params.MINIMAX_PERMUTATIONS, 500);
@@ -145,6 +149,7 @@ public final class CiTestHarness {
         params.set(Params.MEASUREMENT_VARIANCE, 0.0);
         params.set(Params.RANDOMIZE_COLUMNS, false);
         params.set(Params.PROB_REMOVE_COLUMN, 0.0);
+        params.set(Params.RCIT_APPROX, 1);
 
         CiTestHarness harness = new CiTestHarness();
 

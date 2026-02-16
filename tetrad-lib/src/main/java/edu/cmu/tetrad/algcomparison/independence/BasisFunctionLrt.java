@@ -37,20 +37,20 @@ import java.util.List;
 
 // Using the Blocks BIC score version instead.
 
-/**
- * Wrapper for BF-LRT.
- *
- * @author josephramsey
- * @author bryanandrews
- * @version $Id: $Id
- */
-@TestOfIndependence(
-        name = "BF-LRT (Basis Function Likelihood Ratio Test)",
-        command = "bf-lr-test",
-        dataType = DataType.Mixed
-)
-@Mixed
-@General
+///**
+// * Wrapper for BF-LRT.
+// *
+// * @author josephramsey
+// * @author bryanandrews
+// * @version $Id: $Id
+// */
+//@TestOfIndependence(
+//        name = "BF-LRT (Basis Function Likelihood Ratio Test)",
+//        command = "bf-lr-test",
+//        dataType = DataType.Mixed
+//)
+//@Mixed
+//@General
 //@Deprecated(since = "7.9", forRemoval = false)
 public class BasisFunctionLrt implements IndependenceWrapper {
 

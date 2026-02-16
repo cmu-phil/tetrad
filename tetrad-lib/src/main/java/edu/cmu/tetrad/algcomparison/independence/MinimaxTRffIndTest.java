@@ -36,25 +36,25 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Wrapper for the Minimax-t RFF LR CI test built on {@link MinimaxTRffBicScore}.
- *
- * <p>Tests X ⟂ Y | Z by comparing local fits on a common row subset:
- * reduced: child ~ Z
- * full:    child ~ Z ∪ {other}
- * using an LR statistic with a ΔEDF-based df approximation. The test is
- * symmetrized by computing both directions (Y|Z,X) and (X|Z,Y) and taking
- * the more conservative p-value.</p>
- *
- * @author josephramsey
- */
-@TestOfIndependence(
-        name = "Minimax-t-RFF-LR-Test",
-        command = "minimax-t-rff-lr-test",
-        dataType = DataType.Mixed
-)
-@Mixed
-@General
+///**
+// * Wrapper for the Minimax-t RFF LR CI test built on {@link MinimaxTRffBicScore}.
+// *
+// * <p>Tests X ⟂ Y | Z by comparing local fits on a common row subset:
+// * reduced: child ~ Z
+// * full:    child ~ Z ∪ {other}
+// * using an LR statistic with a ΔEDF-based df approximation. The test is
+// * symmetrized by computing both directions (Y|Z,X) and (X|Z,Y) and taking
+// * the more conservative p-value.</p>
+// *
+// * @author josephramsey
+// */
+//@TestOfIndependence(
+//        name = "Minimax-t-RFF-LR-Test",
+//        command = "minimax-t-rff-lr-test",
+//        dataType = DataType.Mixed
+//)
+//@Mixed
+//@General
 public final class MinimaxTRffIndTest implements IndependenceWrapper {
 
     @Serial

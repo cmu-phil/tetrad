@@ -103,7 +103,7 @@ public class TestFges {
             parameters.set(Params.RANDOMIZE_COLUMNS, true);
 
             RandomGraph graph = new RandomForward();
-            LinearFisherModel sim = new SemSimulation(graph);
+            Simulation sim = new SemSimulation(graph);
             sim.createData(parameters, false);
             ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
             Algorithm alg = new Fges(score);

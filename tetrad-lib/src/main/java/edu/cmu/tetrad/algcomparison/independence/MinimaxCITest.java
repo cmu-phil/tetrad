@@ -38,19 +38,19 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Wrapper for Minimax binning test.
- *
- * @author josephramsey
- * @version $Id: $Id
- */
-@TestOfIndependence(
-        name = "Minimax Conditional Independence Test",
-        command = "minimax-ci-test",
-        dataType = DataType.Mixed
-)
-@General
-@Mixed
+///**
+// * Wrapper for Minimax binning test.
+// *
+// * @author josephramsey
+// * @version $Id: $Id
+// */
+//@TestOfIndependence(
+//        name = "Minimax Conditional Independence Test",
+//        command = "minimax-ci-test",
+//        dataType = DataType.Mixed
+//)
+//@General
+//@Mixed
 public class MinimaxCITest implements IndependenceWrapper {
 
     @Serial
