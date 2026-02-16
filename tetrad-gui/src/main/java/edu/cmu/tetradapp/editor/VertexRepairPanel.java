@@ -733,15 +733,54 @@ public final class VertexRepairPanel extends JPanel {
 
         int editsApplied = 0;
         final int MAX_EDITS = 500;           // global safety cap
-        final int MAX_STEPS_PER_NODE = 1;//200;  // per-node safety cap
+        final int MAX_STEPS_PER_NODE = 1; // per-node s  afety cap
 
         vlog("==================================================");
         vlog("AUTO-REPAIR (greedy table-order, one sweep) (type=%s)", String.valueOf(gt));
         vlog("==================================================");
 
         // One sweep only (use the same natural name ordering you use elsewhere)
+//        List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
+//        nodes.sort(Comparator.comparing(Node::getName, VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR));
+
+        // One sweep only, but order nodes by increasing Node-P (NaN last), then by name for stability
         List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
-        nodes.sort(Comparator.comparing(Node::getName, VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR));
+        Map<String, Double> nodePOrder = new HashMap<>();
+
+        for (Node n : nodes) {
+            if (n == null || n.getName() == null) continue;
+            // nodePValue resolves by name inside g, so passing n is fine
+            double p = nodePValue(workingGraph, n);
+            nodePOrder.put(n.getName(), p);
+        }
+
+        nodes.sort((a, b) -> {
+            if (a == null && b == null) return 0;
+            if (a == null) return 1;
+            if (b == null) return -1;
+
+            String an = a.getName();
+            String bn = b.getName();
+
+            double pa = (an == null) ? Double.NaN : nodePOrder.getOrDefault(an, Double.NaN);
+            double pb = (bn == null) ? Double.NaN : nodePOrder.getOrDefault(bn, Double.NaN);
+
+            boolean aNaN = Double.isNaN(pa);
+            boolean bNaN = Double.isNaN(pb);
+
+            // NaN last
+            if (aNaN && bNaN) {
+                return VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR.compare(an, bn);
+            }
+            if (aNaN) return 1;
+            if (bNaN) return -1;
+
+            int c = Double.compare(pa, pb); // ASC (increasing node-p)
+            if (c != 0) return c;
+
+            // stable tiebreak
+            return VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR.compare(an, bn);
+        });
 
         // Comparator that matches the *effective* JTable ordering given your current table model:
         // Sort keys (applySortAndFilter):
