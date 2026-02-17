@@ -36,10 +36,10 @@ public final class SimulationTypes {
      * Constant <code>STRUCTURAL_EQUATION_MODEL="Linear Structural Equation Model"</code>
      */
     public static final String STRUCTURAL_EQUATION_MODEL = "Linear Structural Equation Model";
-    /**
-     * Constant <code>LINEAR_FISHER_MODEL="Linear Fisher Model"</code>
-     */
-    public static final String LINEAR_FISHER_MODEL = "Linear Fisher Model";
+//    /**
+//     * Constant <code>LINEAR_FISHER_MODEL="Linear Fisher Model"</code>
+//     */
+//    public static final String LINEAR_FISHER_MODEL = "Linear Fisher Model";
     /**
      * Constant <code>NON_LINEAR_STRUCTURAL_EQUATION_MODEL="GP Nonlinear Structural Equation Model"</code>
      */

@@ -63,7 +63,7 @@ public class ParameterTab extends JPanel {
     public static final String[] MODEL_TYPE_ITEMS = {
             SimulationTypes.BAYS_NET,
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
-            SimulationTypes.LINEAR_FISHER_MODEL,
+//            SimulationTypes.LINEAR_FISHER_MODEL,
 //            SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.GENERAL_ADDITIVE_MODEL,
             SimulationTypes.GENERAL_NOISE_SEM,

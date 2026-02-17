@@ -20,7 +20,7 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
+//import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -101,10 +101,10 @@ public class SemImWrapper implements SessionModel {
             throw new NullPointerException("No data sets have been simulated.");
         }
 
-        if (_simulation instanceof LinearFisherModel) {
-            throw new IllegalArgumentException("Large SEM simulations cannot be represented "
-                                               + "using a SEM PM or IM box, sorry.");
-        }
+//        if (_simulation instanceof LinearFisherModel) {
+//            throw new IllegalArgumentException("Large SEM simulations cannot be represented "
+//                                               + "using a SEM PM or IM box, sorry.");
+//        }
 
         if (!(_simulation instanceof SemSimulation)) {
             throw new IllegalArgumentException("That was not a linear, Gaussian SEM simulation. Sorry.");
