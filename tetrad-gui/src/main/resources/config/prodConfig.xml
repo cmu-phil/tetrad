@@ -1326,15 +1326,25 @@
                 <editor-class>edu.cmu.tetradapp.editor.GraphIntersectionsEditor
                 </editor-class>
             </model>
+            <!--            <model name="Independence Facts" acronym="Ind Facts"-->
+            <!--                   help="indep_facts" category="Independence Facts Comparison">-->
+            <!--                <logger>-->
+            <!--                    <event id="info" description="Information" default="on"/>-->
+            <!--                    <event id="comparison" description="Comparison" default="on"/>-->
+            <!--                </logger>-->
+            <!--                <model-class>edu.cmu.tetradapp.model.IndTestModel-->
+            <!--                </model-class>-->
+            <!--                <editor-class>edu.cmu.tetradapp.editor.IndependenceFactsEditor</editor-class>-->
+            <!--            </model>-->
             <model name="Independence Facts" acronym="Ind Facts"
                    help="indep_facts" category="Independence Facts Comparison">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.IndTestModel
+                <model-class>edu.cmu.tetradapp.model.IndependenceFactsDslModel
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.IndependenceFactsEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.IndependenceFactsDslEditor</editor-class>
             </model>
             <model name="Markov Check" acronym="Markov Check"
                    help="indep_facts" category="Independence Facts Comparison">
