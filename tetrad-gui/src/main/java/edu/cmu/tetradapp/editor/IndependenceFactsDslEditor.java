@@ -194,6 +194,8 @@ public final class IndependenceFactsDslEditor extends JPanel {
 
         configureResultsTableColumns();
 
+        resultsTable.setTransferHandler(new DefaultTableTransferHandler(0));
+
         // list limit
         int initialLimit = (model != null ? modelGetInt(KEY_LIMIT, 10000) : ROOT_PREFS.getInt(KEY_LIMIT, 10000));
         limitField = new IntTextField(initialLimit, 7);
