@@ -65,15 +65,27 @@ import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
+import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 public final class IndependenceFactsDslEditor extends JPanel {
 
-    // -------------------- prefs --------------------
-    private static final String PREF_KEY_TEST = "indFactsDsl.independenceTest";
-    private static final String PREF_KEY_LIMIT = "indFactsDsl.listLimit";
-    private static final String PREF_KEY_SHOWP = "indFactsDsl.showP";
-    private static final Preferences PREFS =
-            Preferences.userNodeForPackage(IndependenceFactsDslEditor.class);
+    // -------------------- state persistence --------------------
+    private static final String PREF_NODE_PATH = "/edu/cmu/tetradapp/editor/IndependenceFactsDslEditor";
+
+    // when model == null, we persist to userRoot() as requested
+    private static final Preferences ROOT_PREFS =
+            Preferences.userRoot().node(PREF_NODE_PATH);
+
+    private final IndependenceFactsDslModel model; // may be null
+
+    // keys (shared by model + prefs)
+    private static final String KEY_DSL_TEXT = "dslText";
+    private static final String KEY_ENGINE = "engine";     // class name or MSEP_ENGINE_LABEL
+    private static final String KEY_LIMIT = "limit";
+    private static final String KEY_VERBOSE = "dsl.verbose";
+
+    // Keep your existing test key if you like, but KEY_ENGINE replaces the need for PREF_KEY_TEST.
+
     private static final String MSEP_ENGINE_LABEL = "m-separation (current graph)";
     // -------------------- UI --------------------
     private final JComboBox<Object> engineCombo = new JComboBox<>();
@@ -89,6 +101,8 @@ public final class IndependenceFactsDslEditor extends JPanel {
     private final JTable resultsTable;
     private final ResultsTableModel resultsModel = new ResultsTableModel();
     private final IntTextField limitField;
+    private final JCheckBox verboseBox = new JCheckBox("Verbose");
+
     // -------------------- context --------------------
     private final DataModel dataModel;
     private final Graph graph;                    // optional; enables m-sep engine
@@ -109,19 +123,23 @@ public final class IndependenceFactsDslEditor extends JPanel {
     // -------------------- public constructors --------------------
     private List<ParseProblem> lastProblems = List.of();
 
+    private boolean restoring = false;
+
     /**
      * Minimal: data-only. This supports statistical tests only.
      */
     public IndependenceFactsDslEditor(DataModel dataModel, Parameters parameters) {
-        this(dataModel, null, parameters, null);
+        this(null, dataModel, null, parameters, null);
     }
 
     /**
      * Data + graph: enables both statistical tests and m-separation.
      */
+
     public IndependenceFactsDslEditor(DataModel dataModel, Graph graph, Parameters parameters) {
-        this(dataModel, graph, parameters, null);
+        this(null, dataModel, graph, parameters, null);
     }
+
 
     /**
      * Constructs an instance of the {@code IndependenceFactsDslEditor} class using the provided
@@ -133,7 +151,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
      *              parameters, and optional cached queries to be used during initialization
      */
     public IndependenceFactsDslEditor(IndependenceFactsDslModel model) {
-        this(model.getDataModel(), model.getGraph(), model.getParameters(), model.getCachedQueriesOrNull());
+        this(model, model.getDataModel(), model.getGraph(), model.getParameters(), model.getCachedQueriesOrNull());
     }
 
     // -------------------- UI build --------------------
@@ -141,7 +159,8 @@ public final class IndependenceFactsDslEditor extends JPanel {
     /**
      * Data + graph + cached queries (optional): if provided, statistical eval uses cache.
      */
-    public IndependenceFactsDslEditor(DataModel dataModel,
+    public IndependenceFactsDslEditor(IndependenceFactsDslModel model,
+                                      DataModel dataModel,
                                       Graph graph,
                                       Parameters parameters,
                                       CachedIndependenceQueries cachedQueriesOrNull) {
@@ -149,6 +168,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
         if (dataModel == null) throw new NullPointerException("dataModel");
         if (parameters == null) throw new NullPointerException("parameters");
 
+        this.model = model;
         this.dataModel = dataModel;
         this.graph = graph;
         this.parameters = parameters;
@@ -172,38 +192,178 @@ public final class IndependenceFactsDslEditor extends JPanel {
         configureResultsTableColumns();
 
         // list limit
-        int prefLimit = PREFS.getInt(PREF_KEY_LIMIT, 10000);
-        limitField = new IntTextField(prefLimit, 7);
+        int initialLimit = (model != null ? modelGetInt(KEY_LIMIT, 10000) : ROOT_PREFS.getInt(KEY_LIMIT, 10000));
+        limitField = new IntTextField(initialLimit, 7);
+
         limitField.setFilter((value, oldValue) -> {
             if (value < 1) return oldValue;
-            PREFS.putInt(PREF_KEY_LIMIT, value);
+            // let the field update, then persist everything consistently
+            SwingUtilities.invokeLater(this::persistState);
             return value;
         });
 
         buildUI();
         refreshEngines();
-        applySavedEngineSelection();
+        restoreState();              // only restore once
+        getEvaluatorFromSelection(true); // optional: make paramsButton correct for restored engine
 
         // lightweight live parse feedback
         dslPane.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 liveParse();
+                persistState();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
                 liveParse();
+                persistState();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
                 liveParse();
+                persistState();
             }
         });
 
         // initial live parse
         liveParse();
+    }
+
+    @Override
+    public void removeNotify() {
+        // Called when this component is removed from the Swing component hierarchy
+        // (e.g., tab closed, editor swapped out, session window closed).
+        try {
+            persistState();
+        } finally {
+            super.removeNotify();
+        }
+    }
+
+    private static String trimToNull(String s) {
+        if (s == null) return null;
+        s = s.trim();
+        return s.isEmpty() ? null : s;
+    }
+
+    private void restoreState() {
+        restoring = true;
+        try {
+            // Prefer MODEL when we have one; prefs are only a fallback
+            String dsl = (model != null)
+                    ? trimToNull(modelGet(KEY_DSL_TEXT))
+                    : trimToNull(ROOT_PREFS.get(KEY_DSL_TEXT, null));
+
+            String engine = (model != null)
+                    ? trimToNull(modelGet(KEY_ENGINE))
+                    : trimToNull(ROOT_PREFS.get(KEY_ENGINE, null));
+
+            Integer limitPref = (model != null)
+                    ? modelGetInt(KEY_LIMIT, 10000)
+                    : ROOT_PREFS.getInt(KEY_LIMIT, 10000);
+
+            dslPane.setText(dsl != null ? dsl : defaultDslText());
+            limitField.setValue(limitPref);
+
+            restoreEngineSelection(engine);
+
+            int verboseInt;
+
+            if (model != null) {
+                verboseInt = modelGetInt(KEY_VERBOSE, 0);
+            } else {
+                verboseInt = ROOT_PREFS.getInt(KEY_VERBOSE, 0);
+            }
+
+            verboseBox.setSelected(verboseInt == 1);
+
+        } finally {
+            restoring = false;
+        }
+    }
+
+    private void restoreEngineSelection(String engine) {
+        if (engine == null) return;
+
+        if (MSEP_ENGINE_LABEL.equals(engine)) {
+            if (graph != null) engineCombo.setSelectedItem(MSEP_ENGINE_LABEL);
+            return;
+        }
+
+        for (int i = 0; i < engineCombo.getItemCount(); i++) {
+            Object it = engineCombo.getItemAt(i);
+            if (it instanceof IndependenceTestModel m) {
+                String wrapperName = m.getIndependenceTest().clazz().getName();
+                if (engine.equals(wrapperName)) {
+                    engineCombo.setSelectedItem(m);
+                    return;
+                }
+            }
+        }
+    }
+
+    private void persistState() {
+        if (restoring) return;
+
+        String dsl = dslPane.getText();
+
+        Object sel = engineCombo.getSelectedItem();
+        String engine = null;
+
+        if (sel == null) {
+            engine = null;
+        } else if (MSEP_ENGINE_LABEL.equals(sel)) {
+            engine = MSEP_ENGINE_LABEL;
+        } else if (sel instanceof IndependenceTestModel m) {
+            engine = m.getIndependenceTest().clazz().getName();
+        } else {
+            engine = String.valueOf(sel);
+        }
+
+        engine = trimToNull(engine);
+
+        int limit = limitField.getValue();
+
+        if (model != null) {
+            modelPut(KEY_DSL_TEXT, dsl);
+            if (engine != null) modelPut(KEY_ENGINE, engine);     // ✅ don’t write blank
+            modelPutInt(KEY_LIMIT, limit);
+        } else {
+            ROOT_PREFS.put(KEY_DSL_TEXT, dsl);
+            if (engine != null) ROOT_PREFS.put(KEY_ENGINE, engine); // ✅ don’t write blank
+            ROOT_PREFS.putInt(KEY_LIMIT, limit);
+            try { ROOT_PREFS.flush(); } catch (Exception ignored) {}
+        }
+
+        boolean verbose = verboseBox.isSelected();
+
+        if (model != null) {
+            modelPutInt(KEY_VERBOSE, verbose ? 1 : 0);
+        } else {
+            ROOT_PREFS.putInt(KEY_VERBOSE, verbose ? 1 : 0);
+            try { ROOT_PREFS.flush(); } catch (Exception ignored) {}
+        }
+    }
+
+    private String modelGet(String key) {
+        // You implement these in IndependenceFactsDslModel (recommended)
+        // e.g., model.getEditorState().get(key), or direct fields/getters.
+        return model.getEditorStateString(key); // <-- replace with your actual
+    }
+
+    private int modelGetInt(String key, int defaultValue) {
+        return model.getEditorStateInt(key, defaultValue); // <-- replace with your actual
+    }
+
+    private void modelPut(String key, String value) {
+        model.setEditorStateString(key, value); // <-- replace with your actual
+    }
+
+    private void modelPutInt(String key, int value) {
+        model.setEditorStateInt(key, value); // <-- replace with your actual
     }
 
     private static Token parseToken(String s) {
@@ -552,6 +712,8 @@ public final class IndependenceFactsDslEditor extends JPanel {
         row.add(new JLabel("Limit: "));
         row.add(limitField);
         row.add(Box.createHorizontalStrut(12));
+        row.add(verboseBox);
+        row.add(Box.createHorizontalStrut(12));
 
         row.add(Box.createHorizontalGlue());
         row.add(previewButton);
@@ -559,6 +721,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
         row.add(runButton);
         row.add(Box.createHorizontalStrut(6));
         row.add(clearButton);
+
 
         JPanel p = new JPanel(new BorderLayout());
         p.add(row, BorderLayout.CENTER);
@@ -569,6 +732,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
             paramsButton.setEnabled(ev != null && ev.hasParams());
             // reset model; require preview/run
             resultsModel.setRows(List.of());
+            persistState();
         });
 
         paramsButton.addActionListener(e -> {
@@ -594,7 +758,10 @@ public final class IndependenceFactsDslEditor extends JPanel {
             statusLabel.setText("Cleared.");
             warningsLabel.setText(" ");
             clearHighlights();
+            persistState();
         });
+
+        verboseBox.addActionListener(e -> persistState());
 
         return p;
     }
@@ -624,70 +791,29 @@ public final class IndependenceFactsDslEditor extends JPanel {
     }
 
     private void refreshEngines() {
-        engineCombo.removeAllItems();
+        restoring = true;
+        try {
+            engineCombo.removeAllItems();
 
-        DataType dt = guessDataType(dataModel);
+            DataType dt = guessDataType(dataModel);
+            List<IndependenceTestModel> models =
+                    new ArrayList<>(IndependenceTestModels.getInstance().getModels(dt));
 
-        List<IndependenceTestModel> models = new ArrayList<>(IndependenceTestModels.getInstance().getModels(dt));
-
-
-        models.removeFirst();
-        for (IndependenceTestModel m : models) {
-            engineCombo.addItem(m);
-        }
-
-        if (graph != null) {
-            engineCombo.addItem(MSEP_ENGINE_LABEL);
-        }
-
-        engineCombo.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                                                          boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof IndependenceTestModel itm) {
-                    setText(itm.toString());
-                } else {
-                    setText(String.valueOf(value));
-                }
-                return this;
+            models.removeFirst();
+            for (IndependenceTestModel m : models) {
+                engineCombo.addItem(m);
             }
-        });
+
+            if (graph != null) {
+                engineCombo.addItem(MSEP_ENGINE_LABEL);
+            }
+
+        } finally {
+            restoring = false;
+        }
     }
 
     // -------------------- evaluation interface --------------------
-
-    private void applySavedEngineSelection() {
-        String savedClassName = PREFS.get(PREF_KEY_TEST, null);
-
-        // try restore statistical test selection
-        if (savedClassName != null) {
-            for (int i = 0; i < engineCombo.getItemCount(); i++) {
-                Object it = engineCombo.getItemAt(i);
-                if (it instanceof IndependenceTestModel m) {
-                    String wrapperName = m.getIndependenceTest().clazz().getName();
-                    if (savedClassName.equals(wrapperName)) {
-                        engineCombo.setSelectedItem(m);
-                        getEvaluatorFromSelection(true);
-                        return;
-                    }
-                }
-            }
-        }
-
-        // else choose default statistical model if any; else m-sep
-        for (int i = 0; i < engineCombo.getItemCount(); i++) {
-            if (engineCombo.getItemAt(i) instanceof IndependenceTestModel) {
-                engineCombo.setSelectedIndex(i);
-                getEvaluatorFromSelection(true);
-                return;
-            }
-        }
-
-        if (graph != null) {
-            engineCombo.setSelectedItem(MSEP_ENGINE_LABEL);
-        }
-    }
 
     /**
      * Returns an evaluator from current selection.
@@ -719,6 +845,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
 
                 independenceWrapper = clazz.getDeclaredConstructor().newInstance();
                 independenceTest = independenceWrapper.getTest(dataModel, parameters);
+                independenceTest.setVerbose(verboseBox.isSelected());
 
                 // cache path:
                 // If caller supplied a cache, keep it; otherwise, build one if available in your codebase.
@@ -733,8 +860,6 @@ public final class IndependenceFactsDslEditor extends JPanel {
                         Q = null;
                     }
                 }
-
-                PREFS.put(PREF_KEY_TEST, clazz.getName());
 
                 return new StatisticalFactEvaluator(this::nodeInTestByName, this::checkIndependence);
             } catch (InstantiationException | IllegalAccessException |

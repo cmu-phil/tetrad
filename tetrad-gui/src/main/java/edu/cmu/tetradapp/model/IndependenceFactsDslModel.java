@@ -6,14 +6,27 @@ import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.session.SessionModel;
 
+import java.io.Serial;
+import java.util.HashMap;
+import java.util.Map;
+
 public class IndependenceFactsDslModel implements SessionModel {
 
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private final DataModel dataModel;
     private final Graph graph;
     private final Parameters parameters;
-    private final CachedIndependenceQueries cachedQueriesOrNull;
+
+    // ✅ do NOT try to persist caches across sessions
+    private transient CachedIndependenceQueries cachedQueriesOrNull;
+
     private String name = "";
+
+    // ✅ these *are* serializable; good
+    private final Map<String, String> editorStateString = new HashMap<>();
+    private final Map<String, Integer> editorStateInt = new HashMap<>();
 
     /**
      * Minimal: data-only. This supports statistical tests only.
@@ -51,10 +64,6 @@ public class IndependenceFactsDslModel implements SessionModel {
         return parameters;
     }
 
-    public CachedIndependenceQueries getCachedQueriesOrNull() {
-        return cachedQueriesOrNull;
-    }
-
     @Override
     public String getName() {
         return this.name;
@@ -64,5 +73,31 @@ public class IndependenceFactsDslModel implements SessionModel {
     public void setName(String name) {
         if (name == null) throw new IllegalArgumentException("name cannot be null");
         this.name = name;
+    }
+
+    public CachedIndependenceQueries getCachedQueriesOrNull() {
+        return cachedQueriesOrNull;
+    }
+
+    // Optional: rebuild cache lazily if you want
+    public void setCachedQueriesOrNull(CachedIndependenceQueries q) {
+        this.cachedQueriesOrNull = q;
+    }
+
+    public String getEditorStateString(String key) {
+        return editorStateString.get(key);
+    }
+
+    public int getEditorStateInt(String key, int defaultValue) {
+        Integer v = editorStateInt.get(key);
+        return (v == null) ? defaultValue : v;
+    }
+
+    public void setEditorStateString(String key, String value) {
+            editorStateString.put(key, value);
+    }
+
+    public void setEditorStateInt(String key, int value) {
+        editorStateInt.put(key, value);
     }
 }
