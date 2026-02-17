@@ -32,10 +32,27 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
     private boolean verbose = false;
     private double alpha = 0.01;
 
+    /**
+     * Constructs a LegendreLrIndependenceTest instance with the provided scoring method.
+     * The test checks for statistical independence using Legendre's minimax score.
+     *
+     * @param score the scoring mechanism used to evaluate statistical independence.
+     *              Must be an instance of MinimaxLegendreScore.
+     */
     public LegendreLrIndependenceTest(MinimaxLegendreScore score) {
         this(score, true);
     }
 
+    /**
+     * Constructs a LegendreLrIndependenceTest instance with the provided scoring mechanism
+     * and an option to disable interactions during the test.
+     * The test checks for statistical independence using Legendre's minimax score.
+     *
+     * @param score the scoring mechanism used to evaluate statistical independence.
+     *              Must be an instance of MinimaxLegendreScore. Cannot be null.
+     * @param disableInteractionsForTest a boolean indicating whether interactions should be
+     *                                    disabled during the test.
+     */
     public LegendreLrIndependenceTest(MinimaxLegendreScore score, boolean disableInteractionsForTest) {
         if (score == null) throw new NullPointerException("score");
         this.score = score;
@@ -57,6 +74,19 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
         return (int) f.get(s);
     }
 
+    /**
+     * Checks whether two nodes, x and y, are statistically independent given a set of conditioning nodes z.
+     * The method evaluates the independence based on Legendre's minimax scoring function and computes a
+     * p-value using a likelihood ratio test.
+     *
+     * @param x the first node whose independence is to be tested. Must be present in the list of variables.
+     * @param y the second node whose independence is to be tested. Must be present in the list of variables.
+     * @param _z the set of nodes to condition on during the test. All nodes in the set must be present in
+     *           the list of variables.
+     * @return an IndependenceResult object containing the result of the independence test, including
+     *         whether the nodes are independent, the p-value, and additional diagnostic information.
+     * @throws InterruptedException if the independence test is interrupted during execution.
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) throws InterruptedException {
         List<Node> z = new ArrayList<>(_z);
@@ -151,26 +181,59 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
         return p > getAlpha();
     }
 
+    /**
+     * Retrieves the significance level (alpha) used by the independence test.
+     *
+     * @return the significance level (alpha) as a double. This value represents
+     *         the threshold for determining statistical independence in the test.
+     */
     @Override
     public double getAlpha() {
         return alpha;
     }
 
+    /**
+     * Sets the significance level (alpha) used by the independence test.
+     * This value determines the threshold at which the test decides
+     * whether two variables are statistically independent.
+     *
+     * @param alpha the significance level to set, represented as a double.
+     *              Must be a value between 0 and 1.
+     */
     @Override
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
+    /**
+     * Retrieves the list of variables used in the statistical independence test.
+     *
+     * @return a List of Node objects representing the variables included in the test.
+     *         The returned list is a copy, ensuring that modifications to the returned
+     *         list do not affect the original data structure.
+     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(variables);
     }
 
+    /**
+     * Retrieves the current data model associated with the independence test.
+     *
+     * @return the DataModel instance representing the data used in the test.
+     */
     @Override
     public DataModel getData() {
         return score.getDataModel();
     }
 
+    /**
+     * Checks whether verbose output is enabled for the independence test.
+     * Verbose output provides additional diagnostic or logging information
+     * during the execution of the test.
+     *
+     * @return true if verbose output is enabled; false otherwise.
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
@@ -181,11 +244,24 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
     // Prefer adding getters in MinimaxLegendreScore instead.
     // ---------------------------------------------------------------------
 
+    /**
+     * Sets the verbosity level for the independence test. When verbose output is
+     * enabled, additional diagnostic or logging information may be provided during
+     * the execution of the test.
+     *
+     * @param verbose a boolean value indicating whether verbose output should be
+     *                enabled (true) or disabled (false).
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Returns a string representation of the LegendreLrIndependenceTest.
+     *
+     * @return a descriptive string identifying the test as "Legendre LR CI test (MinimaxLegendreScore)".
+     */
     @Override
     public String toString() {
         return "Legendre LR CI test (MinimaxLegendreScore)";

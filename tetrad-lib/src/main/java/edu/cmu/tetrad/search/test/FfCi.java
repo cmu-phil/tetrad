@@ -1192,34 +1192,13 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     public void bumpDataVersion() {
         dataVersion++;
         invalidateCaches();
-        // If your continuous delegate also caches anything internally, keep it in sync as well.
-        // (If it doesn't have such a method, just omit this line.)
-//        if (continuousDelegate instanceof DataVersioned dv) {
-//            dv.setDataVersion(dataVersion);
-//        }
     }
 
     /** Use this if the caller maintains a run-id or dataset-id; any change forces cache miss. */
     public void setDataVersion(long newVersion) {
         this.dataVersion = newVersion;
         invalidateCaches();
-//        if (continuousDelegate instanceof DataVersioned dv) {
-//            dv.setDataVersion(dataVersion);
-//        }
     }
-
-    public long getDataVersion() {
-        return dataVersion;
-    }
-
-
-//    /**
-//     * Optional tiny interface you can also implement in the delegate later if you want.
-//     * Safe to leave unused.
-//     */
-//    private interface DataVersioned {
-//        void setDataVersion(long v);
-//    }
 
     private long seedForPermutation(IndependenceFact fact) {
         long h = 1469598103934665603L;          // FNV offset

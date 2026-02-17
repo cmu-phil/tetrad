@@ -1271,6 +1271,19 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
         }
     }
 
+    /**
+     * Computes a local fit for a variable based on its parents using cached or newly
+     * computed models. The method supports both discrete and continuous cases with
+     * handling for multinomial logistic regression or Student-t regression respectively.
+     * This operation involves extracting subsets of rows, calculating effective data size,
+     * and fitting appropriate models based on the given parameters.
+     *
+     * @param i         The index of the variable for which the local fit is computed.
+     * @param parents   An array of indices representing the parent variables of the target variable.
+     *                  This array may be empty if the variable has no parents.
+     * @return          A {@code LocalFit} object containing the log-likelihood,
+     *                  degrees of freedom, and effective sample size for the computed model.
+     */
     public LocalFit localFit(int i, int... parents) {
         Arrays.sort(parents);
         long key = cacheKey(i, parents, knobsSignature());
@@ -1342,11 +1355,19 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
     }
 
     /**
-     * Computes (logLik, edf) for local model Y=child with given parents,
-     * evaluated/fitted on the provided rows (or all rows if rows==null).
+     * Performs a local fit on rows for a given child node based on its parent nodes
+     * and data rows. Handles both discrete and continuous children, applying
+     * different fitting methods depending on the type of the child and the input parameters.
      *
-     * IMPORTANT: This does NOT choose rows; caller controls row selection.
-     * This is what CI tests need to ensure reduced/full use the same sample.
+     * @param child The index of the child node for which the local fit is computed.
+     * @param parents An array of indices representing the parent nodes of the child node.
+     *                These indices are expected to be sorted internally within the method.
+     * @param rows An array of row indices specifying the subset of data to be used for
+     *             fitting. If null, the full effective number of rows (nEff) is used.
+     * @return A LocalFit object containing the log-likelihood of the fit, the effective
+     *         degrees of freedom (edf), and the number of data points (n) used in the fit.
+     *         Returns NaN values in the LocalFit object if certain criteria are not met
+     *         (e.g., insufficient data points, invalid parameters).
      */
     public LocalFit localFitOnRows(int child, int[] parents, int[] rows) {
         Arrays.sort(parents);
@@ -1413,8 +1434,14 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
     }
 
     /**
-     * Rows valid for {child} ∪ parents (i.e., no missing among these vars).
-     * Returned array is strictly increasing row indices.
+     * Determines the valid rows for a union operation based on the given child
+     * and parent arrays. The child and parent values are combined, sorted, and
+     * processed to compute the valid rows.
+     *
+     * @param child the value representing the child element in the union operation
+     * @param parents an array of values representing the parent elements in the union operation
+     * @return an array of integers representing the valid rows for the union operation,
+     *         or null if row subsets calculation is disabled
      */
     public int[] validRowsForUnion(int child, int[] parents) {
         int[] vars = new int[parents.length + 1];
@@ -1424,6 +1451,17 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
         return calculateRowSubsets ? validRows(vars) : null;
     }
 
+    /**
+     * Represents the result of a localized fit in statistical modeling or estimation processes.
+     * This record encapsulates values related to the fit, including the log-likelihood,
+     * the effective degrees of freedom, and the number of data points used in the computation.
+     *
+     * @param logLik The log-likelihood value of the fit, which indicates the likelihood of the observed data
+     *               given the model parameters. Higher values generally represent a better fit.
+     * @param edf    The effective degrees of freedom, which is a measure of the complexity of the model
+     *               and the amount of smoothing applied to the data.
+     * @param nUsed  The number of data points used in the fitting process.
+     */
     public record LocalFit(double logLik, double edf, int nUsed) {}
 
     private final AtomicReference<ConcurrentHashMap<Long, LocalFit>> localFitCacheRef =

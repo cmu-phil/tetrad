@@ -1342,11 +1342,24 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
 // Public fit helpers for CI tests (same-sample reduced/full LRT)
 // ============================================================================================
 
+    /**
+     * A record that encapsulates the results of a local fit operation, consisting of
+     * the log-likelihood value, the effective degrees of freedom, and the number
+     * of observations used.
+     *
+     * @param logLik The log-likelihood value from the fit.
+     * @param edf The effective degrees of freedom associated with the fit.
+     * @param nUsed The number of observations used in the fitting process.
+     */
     public record LocalFit(double logLik, double edf, int nUsed) {}
 
     /**
-     * Rows valid for {child} ∪ parents (i.e., no missing among these vars).
-     * Returned array is strictly increasing row indices.
+     * Computes and retrieves the valid rows for a union operation based on the given child variable
+     * and an array of parent variables.
+     *
+     * @param child The child variable that participates in the union.
+     * @param parents An array of parent variables included in the union. Can be null if there are no parents.
+     * @return An array containing the valid rows for the union, or null if row subset calculations are disabled.
      */
     public int[] validRowsForUnion(int child, int[] parents) {
         if (!calculateRowSubsets) return null;
@@ -1359,11 +1372,18 @@ public final class MinimaxTRffBicScore implements Score, EffectiveSampleSizeSett
     }
 
     /**
-     * Computes (logLik, edf) for local model Y=child with given parents,
-     * evaluated/fitted on the provided rows (or all rows if rows==null).
+     * Computes the local fit for a specified child variable based on its parent variables
+     * and a subset of rows. This method evaluates both discrete and continuous cases,
+     * handling data as either multinomial or Student's t-distribution.
      *
-     * IMPORTANT: This does NOT choose rows; caller controls row selection.
-     * This is what CI tests need to ensure reduced/full use the same sample.
+     * @param child the index of the child variable for which the local fit is to be computed
+     * @param parents an array of indices representing the parent variables of the child;
+     *                if null, it is treated as an empty array
+     * @param rows an array of indices representing the subset of rows to be considered
+     *             for the computation; if null, all rows are considered
+     * @return a LocalFit object that contains the log-likelihood, effective degrees of freedom,
+     *         and the sample size used in the computation. In case of errors or constraints
+     *         not met, the returned object contains NaN values or appropriately reduced sample size
      */
     public LocalFit localFitOnRows(int child, int[] parents, int[] rows) {
         int[] pa = (parents == null) ? new int[0] : Arrays.copyOf(parents, parents.length);

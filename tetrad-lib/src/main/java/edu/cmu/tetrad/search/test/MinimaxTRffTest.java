@@ -33,10 +33,25 @@ public final class MinimaxTRffTest implements IndependenceTest {
     private boolean verbose = false;
     private double alpha = 0.01;
 
+    /**
+     * Constructs a MinimaxTRffTest instance using the given score and a default configuration
+     * for interaction testing.
+     *
+     * @param score the MinimaxTRffBicScore instance used to evaluate the test.
+     */
     public MinimaxTRffTest(MinimaxTRffBicScore score) {
         this(score, true);
     }
 
+    /**
+     * Constructs a MinimaxTRffTest instance using the given score and a configuration
+     * option to enable or disable interaction testing.
+     *
+     * @param score the MinimaxTRffBicScore instance used to evaluate the test; must not be null.
+     * @param disableInteractionsForTest a boolean flag indicating whether interactions
+     * should be disabled for the test.
+     * @throws NullPointerException if the score parameter is null.
+     */
     public MinimaxTRffTest(MinimaxTRffBicScore score, boolean disableInteractionsForTest) {
         if (score == null) throw new NullPointerException("score");
         this.score = score;
@@ -58,6 +73,19 @@ public final class MinimaxTRffTest implements IndependenceTest {
         return (int) f.get(s);
     }
 
+    /**
+     * Evaluates the statistical independence of two nodes given a conditioning set
+     * using the Minimax TRff test. This method determines if {@code x} and {@code y}
+     * are independent given the set of nodes {@code _z} based on a scoring mechanism.
+     *
+     * @param x the first node to test independence.
+     * @param y the second node to test independence.
+     * @param _z the set of conditioning nodes for the independence test; the nodes in
+     *           this set condition the relationship between {@code x} and {@code y}.
+     * @return an {@code IndependenceResult} containing the independence decision, the p-value,
+     *         and additional metrics derived from the test.
+     * @throws InterruptedException if the operation is interrupted during execution.
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) throws InterruptedException {
         List<Node> z = new ArrayList<>(_z);
@@ -176,26 +204,59 @@ public final class MinimaxTRffTest implements IndependenceTest {
         return p > getAlpha();
     }
 
+    /**
+     * Returns the alpha value, which is typically used as the threshold for
+     * determining statistical significance in the context of independence tests.
+     *
+     * @return the alpha value as a double.
+     */
     @Override
     public double getAlpha() {
         return alpha;
     }
 
+    /**
+     * Sets the significance level (alpha) used in statistical tests for determining
+     * independence. The alpha value is typically used as the threshold for rejecting
+     * the null hypothesis, and it must be a value between 0 and 1.
+     *
+     * @param alpha the significance level to be used in the independence test; must
+     *              be a value in the range [0, 1].
+     */
     @Override
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
+    /**
+     * Retrieves the list of variables involved in the Minimax TRff Test.
+     * This method provides access to the set of nodes that are being considered
+     * in the statistical evaluation of independence.
+     *
+     * @return a list of {@code Node} objects representing the variables in the test.
+     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(variables);
     }
 
+    /**
+     * Retrieves the data model associated with the current Minimax TRff Test instance.
+     * The returned {@code DataModel} provides access to the dataset used for computations
+     * and analyses in the context of this test.
+     *
+     * @return the {@code DataModel} object representing the dataset.
+     */
     @Override
     public DataModel getData() {
         return score.getDataModel();
     }
 
+    /**
+     * Indicates whether verbose mode is enabled for logging or debugging purposes.
+     *
+     * @return {@code true} if verbose mode is enabled; {@code false} otherwise.
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
@@ -206,11 +267,26 @@ public final class MinimaxTRffTest implements IndependenceTest {
     // Prefer adding getters in MinimaxLegendreScore instead.
     // ---------------------------------------------------------------------
 
+    /**
+     * Configures the verbose mode for the MinimaxTRffTest instance.
+     * When verbose mode is enabled, additional logging or debugging information
+     * may be provided during the execution of the test.
+     *
+     * @param verbose a boolean flag indicating whether verbose mode should
+     *                be enabled ({@code true}) or disabled ({@code false}).
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Returns a string representation of the MinimaxTRffTest instance.
+     * This representation provides a human-readable description of the test,
+     * including its name and type.
+     *
+     * @return a string describing the MinimaxTRffTest instance.
+     */
     @Override
     public String toString() {
         return "Legendre LR CI test (MinimaxLegendreScore)";
