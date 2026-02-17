@@ -177,14 +177,20 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(file);
 
-        JMenu tools = new JMenu("Data-Tools");
+        JMenu data = new JMenu("Data");
 
-        tools.add(new PlotMatrixAction(this));
-        tools.add(new DescriptiveStatsAction(this));
-        tools.add(new QQPlotAction(this));
-        tools.add(new NonlinearityChecksAction(this));
-        menuBar.add(tools);
+        data.add(new PlotMatrixAction(this));
+        data.add(new DescriptiveStatsAction(this));
+        data.add(new QQPlotAction(this));
+        data.add(new NonlinearityChecksAction(this));
+        data.add(new CheckIndependenceFacts(this));
+        menuBar.add(data);
 
+        JMenu graph = new JMenu("Graph");
+
+        graph.add(new CheckMSeparationFacts(simulationGraphEditor));
+
+        menuBar.add(graph);
 
         return menuBar;
     }
@@ -271,6 +277,10 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
     @Override
     public DataModel getSelectedDataModel() {
         return this.dataEditor.getSelectedDataModel();
+    }
+
+    public Graph getSelectedGraph(){
+        return this.simulationGraphEditor.getSelectedGraph();
     }
 }
 

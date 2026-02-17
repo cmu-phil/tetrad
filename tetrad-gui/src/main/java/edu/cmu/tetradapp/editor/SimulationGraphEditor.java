@@ -45,7 +45,7 @@ public final class SimulationGraphEditor extends JPanel {
     /**
      * The data wrapper being displayed.
      */
-    private final List<Graph> graphs;
+    private List<Graph> graphs;
 
     /**
      * A tabbed pane containing displays for all data models and displaying 'dataModel' currently.
@@ -104,6 +104,8 @@ public final class SimulationGraphEditor extends JPanel {
 
         this.tabbedPane.validate();
         this.tabbedPane.repaint();
+
+        this.graphs = graphs;
     }
 
     /**
@@ -185,6 +187,10 @@ public final class SimulationGraphEditor extends JPanel {
 
     private JTabbedPane tabbedPane() {
         return this.tabbedPane;
+    }
+
+    public Graph getSelectedGraph(){
+        return this.graphs.get(tabbedPane().getSelectedIndex());
     }
 }
 

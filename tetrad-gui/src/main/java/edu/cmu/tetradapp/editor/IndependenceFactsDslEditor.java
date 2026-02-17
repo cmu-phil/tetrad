@@ -125,6 +125,8 @@ public final class IndependenceFactsDslEditor extends JPanel {
 
     private boolean restoring = false;
 
+    private final boolean msepOnlyFromCache;
+
     /**
      * Minimal: data-only. This supports statistical tests only.
      */
@@ -165,7 +167,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
                                       Parameters parameters,
                                       CachedIndependenceQueries cachedQueriesOrNull) {
 
-        if (dataModel == null) throw new NullPointerException("dataModel");
+//        if (dataModel == null) throw new NullPointerException("dataModel");
         if (parameters == null) throw new NullPointerException("parameters");
 
         this.model = model;
@@ -174,6 +176,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
         this.parameters = parameters;
 
         this.Q = cachedQueriesOrNull;
+        this.msepOnlyFromCache = (this.Q != null && this.Q.getTest() instanceof MsepTest);
 
         setLayout(new BorderLayout(8, 8));
         setBorder(new EmptyBorder(8, 8, 8, 8));
@@ -289,7 +292,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
         if (engine == null) return;
 
         if (MSEP_ENGINE_LABEL.equals(engine)) {
-            if (graph != null) engineCombo.setSelectedItem(MSEP_ENGINE_LABEL);
+            engineCombo.setSelectedItem(MSEP_ENGINE_LABEL);
             return;
         }
 
@@ -795,6 +798,14 @@ public final class IndependenceFactsDslEditor extends JPanel {
         try {
             engineCombo.removeAllItems();
 
+            if (msepOnlyFromCache) {
+                engineCombo.addItem(MSEP_ENGINE_LABEL);
+                engineCombo.setSelectedItem(MSEP_ENGINE_LABEL);
+                engineCombo.setEnabled(false);     // optional, but matches “just msep testing”
+                paramsButton.setEnabled(false);
+                return;
+            }
+
             DataType dt = guessDataType(dataModel);
             List<IndependenceTestModel> models =
                     new ArrayList<>(IndependenceTestModels.getInstance().getModels(dt));
@@ -825,8 +836,42 @@ public final class IndependenceFactsDslEditor extends JPanel {
         if (sel == null) return null;
 
         // m-sep
+//        if (MSEP_ENGINE_LABEL.equals(sel)) {
+//            paramsButton.setEnabled(false);
+//            return new MsepFactEvaluator(graph);
+//        }
+
         if (MSEP_ENGINE_LABEL.equals(sel)) {
             paramsButton.setEnabled(false);
+
+            // If we were handed an MsepTest via CachedIndependenceQueries, use it.
+            if (msepOnlyFromCache) {
+                // use the same machinery as statistical evaluation, but it’s actually m-sep under the hood
+                return new FactEvaluator() {
+                    @Override
+                    public IndependenceResult evaluate(FactSpec spec) throws Exception {
+                        Node x = nodeInTestByName(spec.xName);
+                        Node y = nodeInTestByName(spec.yName);
+                        if (x == null || y == null) {
+                            throw new IllegalArgumentException("Unknown variable in m-sep test: " + spec.xName + " or " + spec.yName);
+                        }
+
+                        Set<Node> z = new LinkedHashSet<>();
+                        for (String zn : spec.zNames) {
+                            Node n = nodeInTestByName(zn);
+                            if (n == null) throw new IllegalArgumentException("Unknown variable in m-sep test: " + zn);
+                            z.add(n);
+                        }
+
+                        return checkIndependence(x, y, z); // hits Q (MsepTest) and returns IndependenceResult
+                    }
+
+                    @Override public boolean hasParams() { return false; }
+                    @Override public String name() { return "m-sep"; }
+                };
+            }
+
+            // Otherwise, the classic “m-sep against current graph” mode:
             return new MsepFactEvaluator(graph);
         }
 
@@ -851,7 +896,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
                 // If caller supplied a cache, keep it; otherwise, build one if available in your codebase.
                 // Many Tetrad editors build CachedIndependenceQueries(test) or similar.
                 // If you have a preferred constructor, swap it in.
-                if (Q == null || forceRebuild) {
+                if (!msepOnlyFromCache && (Q == null || forceRebuild)) {
                     try {
                         Q = new CachedIndependenceQueries(independenceTest);
                     } catch (Throwable t) {
@@ -962,7 +1007,14 @@ public final class IndependenceFactsDslEditor extends JPanel {
         clearHighlights();
 
         String text = dslPane.getText();
-        List<String> varNames = getVariableNames(dataModel);
+
+        List<String> varNames;
+
+        if (msepOnlyFromCache) {
+            varNames = graph.getNodes().stream().map(Node::getName).collect(Collectors.toList());
+        } else {
+            varNames = getVariableNames(dataModel);
+        }
 
         int limit = limitField.getValue();
 

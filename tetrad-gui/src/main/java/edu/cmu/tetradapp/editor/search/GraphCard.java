@@ -228,6 +228,7 @@ public class GraphCard extends JPanel {
         graph.add(GraphUtils.getHighlightMenu(this.workbench));
         graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
         addGraphManipItems(graph, this.workbench);
+        graph.add(new CheckMSeparationFacts(this.workbench));
         graph.addSeparator();
 
         graph.add(GraphUtils.addPagEdgeSpecializationsItems(this.workbench));
