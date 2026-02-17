@@ -1194,12 +1194,6 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         invalidateCaches();
     }
 
-    /** Use this if the caller maintains a run-id or dataset-id; any change forces cache miss. */
-    public void setDataVersion(long newVersion) {
-        this.dataVersion = newVersion;
-        invalidateCaches();
-    }
-
     private long seedForPermutation(IndependenceFact fact) {
         long h = 1469598103934665603L;          // FNV offset
         h = 1099511628211L * (h ^ "PERM".hashCode());
