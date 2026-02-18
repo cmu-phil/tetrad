@@ -79,52 +79,6 @@ public class CptMapCounts implements CptMap {
     }
 
     /**
-     * Constructs a new CptMap based on counts from a given dataset.
-     *
-     * @param data the DataSet object representing the probability matrix
-     * @throws IllegalArgumentException if the data set is null or not discrete
-     */
-    public CptMapCounts(DataSet data) {
-        if (data == null) {
-            throw new IllegalArgumentException("Probability matrix must have at least one row and one column.");
-        }
-
-        if (!data.isDiscrete()) {
-            throw new IllegalArgumentException("Data set must be discrete.");
-
-        }
-
-        numRows = data.getNumRows();
-        numColumns = data.getNumColumns();
-
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numColumns; j++) {
-                int key = i * numColumns + j;
-
-                if (data.getInt(i, j) == -1) {
-                    continue;
-                }
-
-                if (data.getInt(i, j) == 0) {
-                    continue;
-                }
-
-                if (!cellCounts.containsKey(key)) {
-                    cellCounts.put(key, 1);
-                } else {
-                    cellCounts.put(key, cellCounts.get(key) + 1);
-                }
-
-                if (!rowCounts.containsKey(i)) {
-                    rowCounts.put(i, 1);
-                } else {
-                    rowCounts.put(i, rowCounts.get(i) + 1);
-                }
-            }
-        }
-    }
-
-    /**
      * Returns the probability of the node taking on the value specified by the given row and column.
      *
      * @param row    the row of the node

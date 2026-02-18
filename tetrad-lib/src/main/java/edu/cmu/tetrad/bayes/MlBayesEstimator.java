@@ -115,6 +115,8 @@ public final class MlBayesEstimator {
             for (int dim : dims) numRows *= dim;
             int numCols = bayesPm.getNumCategories(node);
 
+            System.out.println("Node: " + node.getName() + " numRows: " + numRows + " numCols: " + numCols);
+
             CptMapCounts counts = new CptMapCounts(numRows, numCols);
             counts.setPriorCount(prior);
 
