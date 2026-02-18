@@ -43,6 +43,41 @@ public final class VertexRepairPanel extends JPanel {
     private static final Preferences PREFS = Preferences.userRoot().node("edu/cmu/tetradapp/editor/VertexRepairPanel");
     private static final String PREF_ALPHA = "markovAlpha";
     private static final double EPS_NODEP = 1e-6;
+    // Alternative canonical ordering: single scalar utility instead of lexicographic keys.
+// Intuition: prioritize (1) fewer Markov violations, (2) higher Model-P and Node-P,
+// (3) simpler graphs (fewer edges). Model-P is still given a *gentle* edge via weighting,
+// but no longer hard-dominates the ordering.
+//
+// TUNING NOTES:
+// - Violations are the primary objective: one fewer violation should usually beat
+//   modest p-value differences.
+// - P-values enter via log-odds to spread out the mid-range and saturate near 0/1.
+// - Edges is a mild complexity penalty.
+// - NaNs are treated as “very bad” (go to the bottom).
+    private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
+        if (a == null && b == null) return 0;
+        if (a == null) return 1;
+        if (b == null) return -1;
+
+        double ua = utility(a);
+        double ub = utility(b);
+
+        // Higher utility first
+        int c = -Double.compare(ua, ub);
+        if (c != 0) return c;
+
+        // Stable tie-breaker (prevents jitter)
+        String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
+        String kb = (b.edit() == null || b.edit().key() == null) ? "" : b.edit().key();
+        c = ka.compareTo(kb);
+        if (c != 0) return c;
+
+        // Last-ditch stable tie-breaker
+        String da = (a.edit() == null) ? "" : a.edit().description();
+        String db = (b.edit() == null) ? "" : b.edit().description();
+        return da.compareTo(db);
+    };
+
     private final VertexCheckIndTestModel baseModel;
     private final Deque<Graph> history = new ArrayDeque<>();
     // UI
@@ -95,6 +130,10 @@ public final class VertexRepairPanel extends JPanel {
         setPreferredSize(new Dimension(650, 600));
     }
 
+    // ---------------------------------------------------------------------
+    // UI
+    // ---------------------------------------------------------------------
+
     /**
      * Canonical key for de-duping implied facts by names: (X,Y unordered; Z sorted).
      * IMPORTANT: This is independent of the CachedIndependenceQueries cache key; it is used
@@ -123,10 +162,6 @@ public final class VertexRepairPanel extends JPanel {
 
         return a + "|" + b + "|" + String.join(",", z);
     }
-
-    // ---------------------------------------------------------------------
-    // UI
-    // ---------------------------------------------------------------------
 
     private static boolean edgeStructurallyEqual(Edge a, Edge b, Node x, Node y) {
         if (a == null || b == null) return false;
@@ -164,6 +199,10 @@ public final class VertexRepairPanel extends JPanel {
         return new ArrayList<>(seen.values());
     }
 
+    // ---------------------------------------------------------------------
+    // Search logic (watched, background)
+    // ---------------------------------------------------------------------
+
     private static TableCellRenderer modelPRenderer() {
         return new DefaultTableCellRenderer() {
             @Override
@@ -179,10 +218,6 @@ public final class VertexRepairPanel extends JPanel {
         };
     }
 
-    // ---------------------------------------------------------------------
-    // Search logic (watched, background)
-    // ---------------------------------------------------------------------
-
     // Helpers used above (if you don't already have them)
     private static String graphSignature(Graph g) {
         if (g == null) return "null";
@@ -197,14 +232,14 @@ public final class VertexRepairPanel extends JPanel {
         return String.join("|", es);
     }
 
+    // ---------------------------------------------------------------------
+    // Auto model best
+    // ---------------------------------------------------------------------
+
     private static String fmtP(double p) {
         if (Double.isNaN(p)) return "NaN";
         return String.format("%.4g", p);
     }
-
-    // ---------------------------------------------------------------------
-    // Auto model best
-    // ---------------------------------------------------------------------
 
     private static void vlog(String fmt, Object... args) {
         System.out.println("[VertexAutoRepair] " + String.format(fmt, args));
@@ -264,6 +299,12 @@ public final class VertexRepairPanel extends JPanel {
         return a1 == reb.getEndpoint(reb.getNode1()) && b1 == reb.getEndpoint(reb.getNode2());
     }
 
+    // ---------------------------------------------------------------------
+    // Auto model best: "do no harm" sweep that greedily takes the TOP
+    // table row for each node until the TOP row becomes NO-OP, then moves on.
+    // One sweep only.
+    // ---------------------------------------------------------------------
+
     private static boolean requiresEdgePresenceCheck(CandidateEdit cand) {
         if (cand == null) return false;
         if (cand.isNoOp()) return false;
@@ -273,12 +314,6 @@ public final class VertexRepairPanel extends JPanel {
         return k == null || !(k.startsWith("REM:"));
     }
 
-    // ---------------------------------------------------------------------
-    // Auto model best: "do no harm" sweep that greedily takes the TOP
-    // table row for each node until the TOP row becomes NO-OP, then moves on.
-    // One sweep only.
-    // ---------------------------------------------------------------------
-
     private static boolean allIntendedNewEdgesPresent(Graph g, CandidateEdit cand) {
         if (g == null || cand == null) return false;
         List<Edge> intended = cand.getEdges();
@@ -287,6 +322,112 @@ public final class VertexRepairPanel extends JPanel {
             if (!containsStructuralEdge(g, e)) return false;
         }
         return true;
+    }
+
+    // ---------------------------------------------------------------------
+    // Apply / undo / graph view
+    // ---------------------------------------------------------------------
+
+    private static Graph seedDagFromAnyGraph(Graph g) {
+        if (g == null) return null;
+
+        // 1) Nodes in a stable order (natural sort)
+        List<Node> nodes = new ArrayList<>(g.getNodes());
+        nodes.sort(Comparator.comparing(Node::getName,
+                Comparator.nullsLast(VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR)));
+
+        if (nodes.isEmpty()) return null;
+
+        Map<String, Integer> idx = new HashMap<>();
+        for (int i = 0; i < nodes.size(); i++) {
+            String name = nodes.get(i).getName();
+            if (name != null) idx.put(name, i);
+        }
+
+        // 2) Build a DAG with the same adjacencies (ignore endpoints), orienting by order
+        Graph dag = new EdgeListGraph(nodes);
+
+        Set<String> seenPairs = new HashSet<>();
+        for (Edge e : g.getEdges()) {
+            Node a0 = e.getNode1();
+            Node b0 = e.getNode2();
+            if (a0 == null || b0 == null) continue;
+
+            String an0 = a0.getName();
+            String bn0 = b0.getName();
+            if (an0 == null || bn0 == null) continue;
+
+            Node a = dag.getNode(an0);
+            Node b = dag.getNode(bn0);
+            if (a == null || b == null || a.equals(b)) continue;
+
+            String key = (an0.compareTo(bn0) <= 0) ? (an0 + "|" + bn0) : (bn0 + "|" + an0);
+            if (!seenPairs.add(key)) continue;
+
+            int ia = idx.getOrDefault(a.getName(), 0);
+            int ib = idx.getOrDefault(b.getName(), 0);
+
+            if (ia <= ib) dag.addEdge(new Edge(a, b, Endpoint.TAIL, Endpoint.ARROW));
+            else dag.addEdge(new Edge(b, a, Endpoint.TAIL, Endpoint.ARROW));
+        }
+
+        return dag.paths().isLegalDag() ? dag : null;
+    }
+
+    private static int comparePDescNaNLast(double a, double b) {
+        boolean aNaN = Double.isNaN(a);
+        boolean bNaN = Double.isNaN(b);
+        if (aNaN && bNaN) return 0;
+        if (aNaN) return 1;     // NaN last
+        if (bNaN) return -1;
+        return -Double.compare(a, b); // DESC
+    }
+
+    private static double utility(ScoredCandidate s) {
+        // We only compare within one pack where baseline is constant,
+        // but we include delta explicitly so the comparator works generally.
+        // Goal: smaller delta (improvement => negative delta) is better.
+        final int delta = s.delta();
+
+        // Handle NaNs as very bad.
+        final double mp = finiteOrDefault(s.modelPAfter(), 0.0);
+        final double np = finiteOrDefault(s.nodePAfter(), 0.0);
+
+        // Transform p-values to log-odds; clamp away from 0/1 to avoid inf.
+        final double mpLogOdds = logOdds(mp);
+        final double npLogOdds = logOdds(np);
+
+        final int edges = s.edgesAfter();
+
+        // ---- Weights (start here; tweak after a couple runs) ----
+        // One unit of delta is big; it should dominate typical p-value movement.
+        final double W_DELTA = 2.0;     // delta penalty per violation increase
+        final double W_EDGES = 0.5;     // mild simplicity preference
+        final double W_MODEL = 0.5;      // model uniformity signal
+        final double W_NODE = 0.5;      // local uniformity signal
+
+        // Higher is better:
+        // -delta (since negative delta means improvement)
+        // + p-value log-odds terms
+        // - edges penalty
+        return (-W_DELTA * delta)
+                + (W_MODEL * mpLogOdds)
+                + (W_NODE * npLogOdds)
+                - (W_EDGES * edges);
+    }
+
+    private static double finiteOrDefault(double x, double dflt) {
+        return Double.isFinite(x) ? x : dflt;
+    }
+
+    private static double logOdds(double p) {
+        // Clamp to avoid infinities and to keep NaN/invalid p from exploding.
+        if (!Double.isFinite(p)) return -50.0; // very bad
+        if (p <= 0.0) return -50.0;
+        if (p >= 1.0) return 50.0;
+        final double eps = 1e-12;
+        double q = Math.min(1.0 - eps, Math.max(eps, p));
+        return Math.log(q) - Math.log(1.0 - q);
     }
 
     private Node resolveInitialNode(Graph g, Node requested) {
@@ -302,10 +443,6 @@ public final class VertexRepairPanel extends JPanel {
         Node inGraph = g.getNode(requested.getName());
         return (inGraph != null) ? inGraph : nodes.getFirst();
     }
-
-    // ---------------------------------------------------------------------
-    // Apply / undo / graph view
-    // ---------------------------------------------------------------------
 
     /**
      * Caller reads this after dialog closes.
@@ -437,6 +574,10 @@ public final class VertexRepairPanel extends JPanel {
 
         add(resultsCard, BorderLayout.CENTER);
     }
+
+    // ---------------------------------------------------------------------
+    // Canonicalization / legality / copies
+    // ---------------------------------------------------------------------
 
     private void populateNodeCombo() {
         DefaultComboBoxModel<Node> m = new DefaultComboBoxModel<>();
@@ -666,6 +807,10 @@ public final class VertexRepairPanel extends JPanel {
         });
     }
 
+    // ---------------------------------------------------------------------
+    // Knowledge
+    // ---------------------------------------------------------------------
+
     /**
      * One sweep over nodes. For each node, repeatedly:
      * - compute the candidate table for that node (same 2-pass scoring behavior as UI),
@@ -835,7 +980,7 @@ public final class VertexRepairPanel extends JPanel {
     }
 
     // ---------------------------------------------------------------------
-    // Canonicalization / legality / copies
+    // Cached CI access
     // ---------------------------------------------------------------------
 
     /**
@@ -949,6 +1094,10 @@ public final class VertexRepairPanel extends JPanel {
         return -Double.compare(pa, pb);
     }
 
+    // ---------------------------------------------------------------------
+    // Global evaluation
+    // ---------------------------------------------------------------------
+
     private void applyCandidate(CandidateEdit cand) {
         applyCandidateInternal(cand, true, true);
         updateButtons();
@@ -1050,10 +1199,6 @@ public final class VertexRepairPanel extends JPanel {
         startWatched("Searching", this::runSearchWatched, null);
     }
 
-    // ---------------------------------------------------------------------
-    // Knowledge
-    // ---------------------------------------------------------------------
-
     private void showGraphDialog() {
         Graph graph = workingGraph;
 
@@ -1083,10 +1228,6 @@ public final class VertexRepairPanel extends JPanel {
                 JOptionPane.INFORMATION_MESSAGE
         );
     }
-
-    // ---------------------------------------------------------------------
-    // Cached CI access
-    // ---------------------------------------------------------------------
 
     private List<CandidateEdit> enumerateCandidates(Graph g, Node x, RepairGraphType gt) {
         if (g == null || x == null) return List.of(CandidateEdit.noOp());
@@ -1191,10 +1332,6 @@ public final class VertexRepairPanel extends JPanel {
         return out;
     }
 
-    // ---------------------------------------------------------------------
-    // Global evaluation
-    // ---------------------------------------------------------------------
-
     private List<Edge> edgeMenuForPair(Node x, Node y, RepairGraphType gt) {
         List<Edge> variants = new ArrayList<>();
 
@@ -1226,6 +1363,10 @@ public final class VertexRepairPanel extends JPanel {
 
         return variants;
     }
+
+    // ---------------------------------------------------------------------
+    // Preferences
+    // ---------------------------------------------------------------------
 
     private List<Edge> addMenuForPair(Node x, Node y, RepairGraphType gt) {
         List<Edge> adds = new ArrayList<>();
@@ -1316,6 +1457,10 @@ public final class VertexRepairPanel extends JPanel {
         };
     }
 
+    // ---------------------------------------------------------------------
+    // Worker/watch dialog
+    // ---------------------------------------------------------------------
+
     private Graph safeCopy(Graph g) {
         if (g == null) return null;
         try {
@@ -1345,10 +1490,6 @@ public final class VertexRepairPanel extends JPanel {
         graphTypeCombo.setSelectedIndex(0);
     }
 
-    // ---------------------------------------------------------------------
-    // Preferences
-    // ---------------------------------------------------------------------
-
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = (knowledge == null) ? new Knowledge() : knowledge;
 
@@ -1368,6 +1509,10 @@ public final class VertexRepairPanel extends JPanel {
             throw new RuntimeException(e);
         }
     }
+
+    // ---------------------------------------------------------------------
+    // Types
+    // ---------------------------------------------------------------------
 
     private double nodePValue(Graph g, Node vertexInOriginalGraph) {
         if (g == null || vertexInOriginalGraph == null) return Double.NaN;
@@ -1407,10 +1552,6 @@ public final class VertexRepairPanel extends JPanel {
         double p = model.getUniformityP(pvals);
         return new GraphEval(violations, p, evals.size());
     }
-
-    // ---------------------------------------------------------------------
-    // Worker/watch dialog
-    // ---------------------------------------------------------------------
 
     private int evalViolationsOnly(Graph g) {
         if (g == null) return 0;
@@ -1547,10 +1688,6 @@ public final class VertexRepairPanel extends JPanel {
         return new GraphEval(violations, modelP, globalViolationByKey.size());
     }
 
-    // ---------------------------------------------------------------------
-    // Types
-    // ---------------------------------------------------------------------
-
     private Graph buildCandidateGraph(Graph base, CandidateEdit cand, RepairGraphType gt) {
         if (base == null || cand == null) return null;
 
@@ -1677,6 +1814,10 @@ public final class VertexRepairPanel extends JPanel {
         this.watchDialog = dlg;
     }
 
+    // ---------------------------------------------------------------------
+    // Table-order aware comparators (match the JTable ordering)
+    // ---------------------------------------------------------------------
+
     private void closeWatchDialog() {
         JDialog dlg = this.watchDialog;
         this.watchDialog = null;
@@ -1767,10 +1908,6 @@ public final class VertexRepairPanel extends JPanel {
         vlog(ok ? "APPLIED successfully" : "Rejected (no change)");
         return ok;
     }
-
-    // ---------------------------------------------------------------------
-    // Table-order aware comparators (match the JTable ordering)
-    // ---------------------------------------------------------------------
 
     public enum RepairGraphType {DAG, CPDAG, PDAG, MAG, PAG}
 
@@ -2041,7 +2178,7 @@ public final class VertexRepairPanel extends JPanel {
                 "Edit", "Baseline", "After", "Δ", "Node-P", "Model-P", "Edges", "Apply"
         };
 
-//        private List<ScoredCandidate> rows = List.of();
+        //        private List<ScoredCandidate> rows = List.of();
         private List<ScoredCandidate> rows = new ArrayList<>();
 
         void set(List<ScoredCandidate> rows) {
@@ -2126,6 +2263,12 @@ public final class VertexRepairPanel extends JPanel {
         }
     }
 
+    // ---------------------------------------------------------------------
+    // Canonical table ordering (single source of truth)
+    // Matches applySortAndFilter() intent:
+    //   Model-P DESC (NaN last), Δ ASC, Edges ASC, Node-P DESC (NaN last), stable tiebreak
+    // ---------------------------------------------------------------------
+
     private static final class ButtonEditor extends DefaultCellEditor {
         private final JButton button = new JButton();
         private int editingRow = -1;
@@ -2161,6 +2304,41 @@ public final class VertexRepairPanel extends JPanel {
             void run(int row);
         }
     }
+
+//    private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
+//        if (a == null && b == null) return 0;
+//        if (a == null) return 1;
+//        if (b == null) return -1;
+//
+//        int c;
+//
+//        // Model-P DESC (NaN last)
+//        c = comparePDescNaNLast(a.modelPAfter(), b.modelPAfter());
+//        if (c != 0) return c;
+//
+//        // Δ ASC
+//        c = Integer.compare(a.delta(), b.delta());
+//        if (c != 0) return c;
+//
+//        // Edges ASC
+//        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+//        if (c != 0) return c;
+//
+//        // Node-P DESC (NaN last)
+//        c = comparePDescNaNLast(a.nodePAfter(), b.nodePAfter());
+//        if (c != 0) return c;
+//
+//        // Stable tie-breaker (prevents jitter)
+//        String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
+//        String kb = (b.edit() == null || b.edit().key() == null) ? "" : b.edit().key();
+//        c = ka.compareTo(kb);
+//        if (c != 0) return c;
+//
+//        // Last-ditch stable tie-breaker
+//        String da = (a.edit() == null) ? "" : a.edit().description();
+//        String db = (b.edit() == null) ? "" : b.edit().description();
+//        return da.compareTo(db);
+//    };
 
     private record GraphEval(int violations, double modelP, int nFacts) {
     }
@@ -2213,7 +2391,7 @@ public final class VertexRepairPanel extends JPanel {
                 Node b = dag.getNode(b0.getName());
                 if (a == null || b == null || a.equals(b)) continue;
 
-                String key = a.getName().compareTo(b.getName()) < 0 ? a.getName()+"|"+b.getName() : b.getName()+"|"+a.getName();
+                String key = a.getName().compareTo(b.getName()) < 0 ? a.getName() + "|" + b.getName() : b.getName() + "|" + a.getName();
                 if (!seenPairs.add(key)) continue;
 
                 int ia = idx.getOrDefault(a.getName(), 0);
@@ -2227,100 +2405,4 @@ public final class VertexRepairPanel extends JPanel {
             return dag.paths().isLegalDag() ? dag : null;
         }
     }
-
-    private static Graph seedDagFromAnyGraph(Graph g) {
-        if (g == null) return null;
-
-        // 1) Nodes in a stable order (natural sort)
-        List<Node> nodes = new ArrayList<>(g.getNodes());
-        nodes.sort(Comparator.comparing(Node::getName,
-                Comparator.nullsLast(VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR)));
-
-        if (nodes.isEmpty()) return null;
-
-        Map<String, Integer> idx = new HashMap<>();
-        for (int i = 0; i < nodes.size(); i++) {
-            String name = nodes.get(i).getName();
-            if (name != null) idx.put(name, i);
-        }
-
-        // 2) Build a DAG with the same adjacencies (ignore endpoints), orienting by order
-        Graph dag = new EdgeListGraph(nodes);
-
-        Set<String> seenPairs = new HashSet<>();
-        for (Edge e : g.getEdges()) {
-            Node a0 = e.getNode1();
-            Node b0 = e.getNode2();
-            if (a0 == null || b0 == null) continue;
-
-            String an0 = a0.getName();
-            String bn0 = b0.getName();
-            if (an0 == null || bn0 == null) continue;
-
-            Node a = dag.getNode(an0);
-            Node b = dag.getNode(bn0);
-            if (a == null || b == null || a.equals(b)) continue;
-
-            String key = (an0.compareTo(bn0) <= 0) ? (an0 + "|" + bn0) : (bn0 + "|" + an0);
-            if (!seenPairs.add(key)) continue;
-
-            int ia = idx.getOrDefault(a.getName(), 0);
-            int ib = idx.getOrDefault(b.getName(), 0);
-
-            if (ia <= ib) dag.addEdge(new Edge(a, b, Endpoint.TAIL, Endpoint.ARROW));
-            else dag.addEdge(new Edge(b, a, Endpoint.TAIL, Endpoint.ARROW));
-        }
-
-        return dag.paths().isLegalDag() ? dag : null;
-    }
-
-    // ---------------------------------------------------------------------
-    // Canonical table ordering (single source of truth)
-    // Matches applySortAndFilter() intent:
-    //   Model-P DESC (NaN last), Δ ASC, Edges ASC, Node-P DESC (NaN last), stable tiebreak
-    // ---------------------------------------------------------------------
-
-    private static int comparePDescNaNLast(double a, double b) {
-        boolean aNaN = Double.isNaN(a);
-        boolean bNaN = Double.isNaN(b);
-        if (aNaN && bNaN) return 0;
-        if (aNaN) return 1;     // NaN last
-        if (bNaN) return -1;
-        return -Double.compare(a, b); // DESC
-    }
-
-    private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
-        if (a == null && b == null) return 0;
-        if (a == null) return 1;
-        if (b == null) return -1;
-
-        int c;
-
-        // Model-P DESC (NaN last)
-        c = comparePDescNaNLast(a.modelPAfter(), b.modelPAfter());
-        if (c != 0) return c;
-
-        // Δ ASC
-        c = Integer.compare(a.delta(), b.delta());
-        if (c != 0) return c;
-
-        // Edges ASC
-        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
-        if (c != 0) return c;
-
-        // Node-P DESC (NaN last)
-        c = comparePDescNaNLast(a.nodePAfter(), b.nodePAfter());
-        if (c != 0) return c;
-
-        // Stable tie-breaker (prevents jitter)
-        String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
-        String kb = (b.edit() == null || b.edit().key() == null) ? "" : b.edit().key();
-        c = ka.compareTo(kb);
-        if (c != 0) return c;
-
-        // Last-ditch stable tie-breaker
-        String da = (a.edit() == null) ? "" : a.edit().description();
-        String db = (b.edit() == null) ? "" : b.edit().description();
-        return da.compareTo(db);
-    };
 }
