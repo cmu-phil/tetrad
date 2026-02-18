@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.bayes;
 
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.VariableSource;
@@ -92,6 +93,38 @@ public final class BayesPm implements Pm, VariableSource {
         } else {
             for (Node node : this.dag.getNodes()) {
                 this.nodesToVariables.put(node, (DiscreteVariable) node);
+            }
+        }
+    }
+
+    /**
+     * Constructs a new BayesPm using the provided DAG and dataset. Each node in the graph is mapped
+     * to a variable. If the dataset contains discrete variables, the categories of the variable
+     * are copied. Otherwise, the node is assigned two default categories, "value1" and "value2".
+     *
+     * @param graph   The directed acyclic graph (DAG) defining the structure of the Bayesian network.
+     *                It must not be null.
+     * @param dataSet The dataset that provides information about the variables in the graph.
+     *                It must not be null.
+     * @throws NullPointerException if the provided graph or dataset is null.
+     */
+    public BayesPm(Graph graph, DataSet dataSet) {
+        if (graph == null) throw new NullPointerException("The graph must not be null.");
+        if (dataSet == null) throw new NullPointerException("The dataSet must not be null.");
+
+        this.dag = new EdgeListGraph(graph);
+        this.nodesToVariables = new HashMap<>();
+
+        for (Node node : this.dag.getNodes()) {
+            Node dsVar = dataSet.getVariable(node.getName());
+
+            if (dsVar instanceof DiscreteVariable dv) {
+                // Copy exact category list from dataset
+                mapNodeToVariable(node, dv.getCategories());
+            } else {
+                // Fallback: binary
+                List<String> cats = List.of(DataUtils.defaultCategory(0), DataUtils.defaultCategory(1));
+                mapNodeToVariable(node, cats);
             }
         }
     }

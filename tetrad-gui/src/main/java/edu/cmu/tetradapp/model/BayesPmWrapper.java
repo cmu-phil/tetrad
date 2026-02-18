@@ -305,7 +305,7 @@ public class BayesPmWrapper implements SessionModel {
             nodesToVars.put(node.getName(), var);
         }
 
-        BayesPm bayesPm = new BayesPm(graph);
+        BayesPm bayesPm = new BayesPm(graph, dataSet);
         List<Node> nodes = bayesPm.getDag().getNodes();
 
         for (Node node : nodes) {
@@ -485,7 +485,7 @@ public class BayesPmWrapper implements SessionModel {
         }
 
         Dag graph = new Dag(dagWrapper.getDag());
-        BayesPm bayesPm = new BayesPm(graph);
+        BayesPm bayesPm = new BayesPm(graph, dataSet);
         List<Node> nodes = bayesPm.getDag().getNodes();
 
         for (Node node : nodes) {

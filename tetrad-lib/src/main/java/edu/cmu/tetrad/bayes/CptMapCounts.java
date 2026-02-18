@@ -85,6 +85,20 @@ public class CptMapCounts implements CptMap {
      * @param column the column of the node
      * @return the probability of the node taking on the value specified by the given row and column
      */
+//    @Override
+//    public double get(int row, int column) {
+//        if (row < 0 || row >= numRows || column < 0 || column >= numColumns) {
+//            throw new IllegalArgumentException("Row and column must be within bounds.");
+//        }
+//
+//        int key = row * numColumns + column;
+//        double rowCount = rowCounts.getOrDefault(row, 0);
+//        double cellCount = cellCounts.getOrDefault(key, 0);
+//        rowCount += priorCount * numColumns;
+//        cellCount += priorCount;
+//        return cellCount / rowCount;
+//    }
+
     @Override
     public double get(int row, int column) {
         if (row < 0 || row >= numRows || column < 0 || column >= numColumns) {
@@ -92,11 +106,20 @@ public class CptMapCounts implements CptMap {
         }
 
         int key = row * numColumns + column;
-        double rowCount = rowCounts.getOrDefault(row, 0);
-        double cellCount = cellCounts.getOrDefault(key, 0);
-        rowCount += priorCount * numColumns;
-        cellCount += priorCount;
-        return cellCount / rowCount;
+
+        double rc = rowCounts.getOrDefault(row, 0);
+        double cc = cellCounts.getOrDefault(key, 0);
+
+        // Add priors
+        rc += priorCount * numColumns;
+        cc += priorCount;
+
+        // If we have no mass in the row at all, return uniform (avoids NaN/Inf)
+        if (rc <= 0.0) {
+            return 1.0 / numColumns;
+        }
+
+        return cc / rc;
     }
 
     /**
@@ -162,7 +185,13 @@ public class CptMapCounts implements CptMap {
      *
      * @param priorCount the value to set as the prior count.
      */
+//    public void setPriorCount(double priorCount) {
+//        this.priorCount = priorCount;
+//    }
     public void setPriorCount(double priorCount) {
+        if (priorCount < 0.0 || Double.isNaN(priorCount) || Double.isInfinite(priorCount)) {
+            throw new IllegalArgumentException("priorCount must be a finite nonnegative number.");
+        }
         this.priorCount = priorCount;
     }
 }
