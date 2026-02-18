@@ -370,8 +370,7 @@ public final class VertexRepairPanel extends JPanel {
         resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_APPLY)
                 .setCellEditor(new ButtonEditor(row -> {
                     if (row < 0) return;
-                    int modelRow = resultsTable.convertRowIndexToModel(row);
-                    CandidateEdit cand = resultsModel.getCandidate(modelRow);
+                    CandidateEdit cand = resultsModel.getCandidate(row); // no sorter => row == model row
                     applyCandidate(cand);
                 }));
 
@@ -422,39 +421,6 @@ public final class VertexRepairPanel extends JPanel {
         // Fact column: stretch
         editIndex.setPreferredWidth(1000);
 
-        resultsSorter = new TableRowSorter<>(resultsModel);
-        resultsTable.setRowSorter(resultsSorter);
-
-        // Model-P comparator with NaN last
-        resultsSorter.setComparator(CandidateTableModel.COL_MODEL_P, (a, b) -> {
-            double da = (a instanceof Number na) ? na.doubleValue() : Double.NaN;
-            double db = (b instanceof Number nb) ? nb.doubleValue() : Double.NaN;
-
-            boolean aNaN = Double.isNaN(da);
-            boolean bNaN = Double.isNaN(db);
-
-            if (aNaN && bNaN) return 0;
-            if (aNaN) return 1;
-            if (bNaN) return -1;
-
-            return Double.compare(da, db);
-        });
-
-        resultsSorter.setComparator(CandidateTableModel.COL_NODE_P, (a, b) -> {
-            double da = (a instanceof Number na) ? na.doubleValue() : Double.NaN;
-            double db = (b instanceof Number nb) ? nb.doubleValue() : Double.NaN;
-            boolean aNaN = Double.isNaN(da);
-            boolean bNaN = Double.isNaN(db);
-            if (aNaN && bNaN) return 0;
-            if (aNaN) return 1;
-            if (bNaN) return -1;
-            return Double.compare(da, db);
-        });
-
-        resultsSorter.setComparator(CandidateTableModel.COL_EDGES, Comparator.comparingInt(a -> ((Number) a).intValue()));
-        resultsSorter.setComparator(CandidateTableModel.COL_AFTER, Comparator.comparingInt(a -> ((Number) a).intValue()));
-        resultsSorter.setComparator(CandidateTableModel.COL_DELTA, Comparator.comparingInt(a -> ((Number) a).intValue()));
-
         applySortAndFilter();
 
         JPanel tablePanel = new JPanel(new BorderLayout());
@@ -501,16 +467,8 @@ public final class VertexRepairPanel extends JPanel {
     }
 
     private void applySortAndFilter() {
-        if (resultsSorter == null) return;
-
-        resultsSorter.setSortKeys(List.of(
-                new RowSorter.SortKey(CandidateTableModel.COL_MODEL_P, SortOrder.DESCENDING),
-                new RowSorter.SortKey(CandidateTableModel.COL_DELTA, SortOrder.ASCENDING),
-                new RowSorter.SortKey(CandidateTableModel.COL_EDGES, SortOrder.ASCENDING),
-                new RowSorter.SortKey(CandidateTableModel.COL_NODE_P, SortOrder.DESCENDING)
-        ));
-
-        resultsSorter.sort();
+        // Canonical “table = vertex repair ordering”
+        resultsModel.sortByCanonicalOrder();
     }
 
     private void wireActions() {
@@ -577,13 +535,6 @@ public final class VertexRepairPanel extends JPanel {
 
         if (gt == RepairGraphType.CPDAG) {// || gt == RepairGraphType.PDAG) {
             base = canonicalizeToCpdagOrNull(base);
-//            if (base == null) {
-//                SwingUtilities.invokeLater(() -> {
-//                    statusLabel.setText("Current graph has no consistent CPDAG extension.");
-//                    ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_NONE);
-//                });
-//                return;
-//            }
 
             if (base == null) {
                 SwingUtilities.invokeLater(() -> {
@@ -657,7 +608,7 @@ public final class VertexRepairPanel extends JPanel {
         // PASS 2: compute Model-P for the top-K rows *as the table would surface them*
         // when Model-P is mostly unknown (i.e., table order ignoring Model-P).
         List<ScoredCandidate> rankedForTopK = new ArrayList<>(scored);
-        rankedForTopK.sort(tableOrderIgnoringModelP());
+        rankedForTopK.sort(CANONICAL_TABLE_ORDER);
 
         if (!rankedForTopK.isEmpty()) {
             int k = rankedForTopK.size();//Math.min(modelPTopK, rankedForTopK.size());
@@ -688,7 +639,7 @@ public final class VertexRepairPanel extends JPanel {
         }
 
         List<ScoredCandidate> rankedForStatus = new ArrayList<>(scored);
-        rankedForStatus.sort(tableOrderFull());
+        rankedForStatus.sort(CANONICAL_TABLE_ORDER);
         ScoredCandidate bestCand = rankedForStatus.isEmpty() ? null : rankedForStatus.getFirst();
 
         List<ScoredCandidate> finalScored = scored;
@@ -739,10 +690,6 @@ public final class VertexRepairPanel extends JPanel {
         vlog("AUTO-REPAIR (greedy table-order, one sweep) (type=%s)", String.valueOf(gt));
         vlog("==================================================");
 
-        // One sweep only (use the same natural name ordering you use elsewhere)
-//        List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
-//        nodes.sort(Comparator.comparing(Node::getName, VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR));
-
         // One sweep only, but order nodes by increasing Node-P (NaN last), then by name for stability
         List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
         Map<String, Double> nodePOrder = new HashMap<>();
@@ -781,38 +728,6 @@ public final class VertexRepairPanel extends JPanel {
             // stable tiebreak
             return VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR.compare(an, bn);
         });
-
-        // Comparator that matches the *effective* JTable ordering given your current table model:
-        // Sort keys (applySortAndFilter):
-        //   Δ ASC, Edges ASC, Model-P DESC, Node-P DESC
-        // BUT Model-P column is rendered as a 0/1 "pass" flag in getValueAt(),
-        // so we must sort by that same flag here (NOT raw modelPAfter()).
-        final Comparator<ScoredCandidate> tableOrder = (a, b) -> {
-            if (a == null && b == null) return 0;
-            if (a == null) return 1;
-            if (b == null) return -1;
-
-            int c;
-
-            c = comparePDescNaNLast(a.modelPAfter(), b.modelPAfter());
-            if (c != 0) return c;
-
-            // Δ ASC
-            c = Integer.compare(a.delta(), b.delta());
-            if (c != 0) return c;
-
-            // Edges ASC
-            c = Integer.compare(a.edgesAfter(), b.edgesAfter());
-            if (c != 0) return c;
-
-            c = comparePDescNaNLast(a.nodePAfter, b.nodePAfter);
-            if (c != 0) return c;
-
-            // Stable tiebreak
-            String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
-            String kb = (b.edit() == null || b.edit().key() == null) ? "" : b.edit().key();
-            return ka.compareTo(kb);
-        };
 
         for (Node v0 : nodes) {
             if (stopRequested()) return;
@@ -860,7 +775,7 @@ public final class VertexRepairPanel extends JPanel {
 
                 // Rank exactly like the JTable (given current table model)
                 List<ScoredCandidate> ranked = new ArrayList<>(pack.scored);
-                ranked.sort(tableOrder);
+                ranked.sort(CANONICAL_TABLE_ORDER);
 
                 // If the top row is NO-OP, we're done with this node.
                 ScoredCandidate top = ranked.getFirst();
@@ -918,15 +833,6 @@ public final class VertexRepairPanel extends JPanel {
             statusLabel.setText("Auto-repair applied " + finalEdits + " edits.");
             startWatched("Searching", this::runSearchWatched, null);
         });
-    }
-
-    private static int comparePDescNaNLast(double pa, double pb) {
-        boolean aNaN = Double.isNaN(pa);
-        boolean bNaN = Double.isNaN(pb);
-        if (aNaN && bNaN) return 0;
-        if (aNaN) return 1;
-        if (bNaN) return -1;
-        return -Double.compare(pa, pb); // DESC
     }
 
     // ---------------------------------------------------------------------
@@ -1005,7 +911,7 @@ public final class VertexRepairPanel extends JPanel {
 
         // PASS 2: compute Model-P for top-K only (same as UI behavior)
         List<ScoredCandidate> ranked = new ArrayList<>(scored);
-        ranked.sort(tableOrderIgnoringModelP());
+        ranked.sort(CANONICAL_TABLE_ORDER);
 
         int k = ranked.size();//Math.min(modelPTopK, ranked.size());
         Map<String, Double> modelPByKey = new HashMap<>(k * 2);
@@ -1358,16 +1264,6 @@ public final class VertexRepairPanel extends JPanel {
 
         return adds;
     }
-
-//    private Graph canonicalizeToCpdagOrNull(Graph h) {
-//        try {
-//            Graph h2 = new EdgeListGraph(h);
-//            Graph dag = GraphTransforms.dagFromCpdag(h2);
-//            return GraphTransforms.dagToCpdag(dag);
-//        } catch (Throwable t) {
-//            return null;
-//        }
-//    }
 
     private Graph canonicalizeToCpdagOrNull(Graph h) {
         if (h == null) return null;
@@ -1793,64 +1689,6 @@ public final class VertexRepairPanel extends JPanel {
         return (w != null && w.isCancelled()) || Thread.currentThread().isInterrupted();
     }
 
-    /**
-     * Comparator that matches the JTable's sort order, but ignores Model-P.
-     * JTable order (applySortAndFilter):
-     *   Model-P DESC, Δ ASC, Edges ASC, Node-P DESC
-     * Ignoring Model-P => Δ ASC, Edges ASC, Node-P DESC (NaN last).
-     */
-    private Comparator<ScoredCandidate> tableOrderIgnoringModelP() {
-        return (a, b) -> {
-            if (a == null && b == null) return 0;
-            if (a == null) return 1;
-            if (b == null) return -1;
-
-            int c;
-
-            // Δ ASC
-            c = Integer.compare(a.delta(), b.delta());
-            if (c != 0) return c;
-
-            // Edges ASC
-            c = Integer.compare(a.edgesAfter(), b.edgesAfter());
-            if (c != 0) return c;
-
-            // Node-P DESC, NaN last
-            c = comparePDescNaNLast(a.nodePAfter(), b.nodePAfter());
-            if (c != 0) return c;
-
-            // Stable tiebreak
-            String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
-            String kb = (b.edit() == null || b.edit().key() == null) ? "" : b.edit().key();
-            return ka.compareTo(kb);
-        };
-    }
-
-    /**
-     * Comparator that matches the table sort fully:
-     * Edges ASC, Model-P DESC (NaN last), After ASC, Δ ASC.
-     */
-    private Comparator<ScoredCandidate> tableOrderFull() {
-        return (a, b) -> {
-            if (a == null && b == null) return 0;
-            if (a == null) return 1;
-            if (b == null) return -1;
-
-            int c;
-
-            c = Integer.compare(a.edgesAfter(), b.edgesAfter());
-            if (c != 0) return c;
-
-            c = compareModelPDescNaNLast(a.modelPAfter(), b.modelPAfter());
-            if (c != 0) return c;
-
-            c = Integer.compare(a.violationsAfter(), b.violationsAfter());
-            if (c != 0) return c;
-
-            return Integer.compare(a.delta(), b.delta());
-        };
-    }
-
     // Compute nodeP map for a set of vertex names in a graph
     private Map<String, Double> nodePMap(Graph g, Set<String> vertexNames) {
         Map<String, Double> out = new HashMap<>();
@@ -2204,10 +2042,16 @@ public final class VertexRepairPanel extends JPanel {
                 "Edit", "Baseline", "After", "Δ", "Node-P", "Model-P", "Edges", "Apply"
         };
 
-        private List<ScoredCandidate> rows = List.of();
+//        private List<ScoredCandidate> rows = List.of();
+        private List<ScoredCandidate> rows = new ArrayList<>();
 
         void set(List<ScoredCandidate> rows) {
-            this.rows = rows == null ? List.of() : rows;
+            this.rows = (rows == null) ? new ArrayList<>() : new ArrayList<>(rows);
+            sortByCanonicalOrder();
+        }
+
+        void sortByCanonicalOrder() {
+            this.rows.sort(CANONICAL_TABLE_ORDER);
             fireTableDataChanged();
         }
 
@@ -2430,4 +2274,54 @@ public final class VertexRepairPanel extends JPanel {
 
         return dag.paths().isLegalDag() ? dag : null;
     }
+
+    // ---------------------------------------------------------------------
+    // Canonical table ordering (single source of truth)
+    // Matches applySortAndFilter() intent:
+    //   Model-P DESC (NaN last), Δ ASC, Edges ASC, Node-P DESC (NaN last), stable tiebreak
+    // ---------------------------------------------------------------------
+
+    private static int comparePDescNaNLast(double a, double b) {
+        boolean aNaN = Double.isNaN(a);
+        boolean bNaN = Double.isNaN(b);
+        if (aNaN && bNaN) return 0;
+        if (aNaN) return 1;     // NaN last
+        if (bNaN) return -1;
+        return -Double.compare(a, b); // DESC
+    }
+
+    private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
+        if (a == null && b == null) return 0;
+        if (a == null) return 1;
+        if (b == null) return -1;
+
+        int c;
+
+        // Model-P DESC (NaN last)
+        c = comparePDescNaNLast(a.modelPAfter(), b.modelPAfter());
+        if (c != 0) return c;
+
+        // Δ ASC
+        c = Integer.compare(a.delta(), b.delta());
+        if (c != 0) return c;
+
+        // Edges ASC
+        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+        if (c != 0) return c;
+
+        // Node-P DESC (NaN last)
+        c = comparePDescNaNLast(a.nodePAfter(), b.nodePAfter());
+        if (c != 0) return c;
+
+        // Stable tie-breaker (prevents jitter)
+        String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
+        String kb = (b.edit() == null || b.edit().key() == null) ? "" : b.edit().key();
+        c = ka.compareTo(kb);
+        if (c != 0) return c;
+
+        // Last-ditch stable tie-breaker
+        String da = (a.edit() == null) ? "" : a.edit().description();
+        String db = (b.edit() == null) ? "" : b.edit().description();
+        return da.compareTo(db);
+    };
 }
