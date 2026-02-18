@@ -342,9 +342,6 @@ public class TestPc {
                 case 5:
                     search = new Rfci(test);
                     break;
-                case 6:
-                    search = new Cfci(test);
-                    break;
                 default:
                     throw new IllegalStateException();
             }
@@ -568,7 +565,7 @@ public class TestPc {
 
         RandomUtil.getInstance().setSeed(12345);
 
-        String[] algorithms = {"PC", "CPC", "FGES", "FCI", "FGES-FCI", "RFCI", "CFCI", "Regression"};
+        String[] algorithms = {"PC", "CPC", "FGES", "FCI", "FGES-FCI", "RFCI", "Regression"};
         String[] statLabels = {"AP", "AR"};
 
         final int numMeasures = 10;
@@ -721,14 +718,6 @@ public class TestPc {
                     }
                     break;
                 case 6:
-                    search = new Cfci(test);
-                    try {
-                        out = search.search();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    break;
-                case 7:
                     out = getRegressionGraph(data, target);
                     break;
                 default:
