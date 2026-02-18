@@ -89,6 +89,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * The conditioning set.
      */
     private Set<Node> conditioningSet = new HashSet<>();
+    private JLabel conditionOnLabel;
 
     /**
      * Represents an action that performs calculations on paths in a graph.
@@ -725,17 +726,11 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 "Backdoor paths"
         });
 
-        methodBox.setSelectedItem(Preferences.userRoot().get("pathMethod", null));
-        if (methodBox.getSelectedItem() == null) {
-            methodBox.setSelectedItem(node1Box.getItemAt(0));
-        }
+        methodBox.setSelectedItem(Preferences.userRoot().get("pathMethod", "Directed Paths"));
         method = (String) methodBox.getSelectedItem();
 
         methodBox.addActionListener(e13 -> {
             JComboBox<String> box = (JComboBox) e13.getSource();
-            if (PathsAction.this.method == null) {
-                box.setSelectedIndex(0);
-            }
             PathsAction.this.method = (String) box.getSelectedItem();
             Preferences preferences = Preferences.userRoot();
             preferences.put("pathMethod", PathsAction.this.method);
@@ -769,13 +764,15 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         b.setBorder(new EmptyBorder(2, 3, 2, 2));
         b.add(b1);
 
-        EditorUtils.JTextFieldWithPrompt comp = new EditorUtils.JTextFieldWithPrompt("Enter conditioning variables...");
-        comp.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1), new EmptyBorder(1, 3, 1, 3)));
-        comp.setPreferredSize(new Dimension(750, 20));
-        comp.setMaximumSize(new Dimension(1000, 20));
+        EditorUtils.JTextFieldWithPrompt conditioningVars = new EditorUtils.JTextFieldWithPrompt("Enter conditioning variables where appropriate...");
+        conditioningVars.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1), new EmptyBorder(1, 3, 1, 3)));
+        conditioningVars.setPreferredSize(new Dimension(750, 20));
+        conditioningVars.setMaximumSize(new Dimension(1000, 20));
 
-        comp.addActionListener(e16 -> {
-            String text = comp.getText();
+        conditionOnLabel = new JLabel("Condition on:");
+
+        conditioningVars.addActionListener(e16 -> {
+            String text = conditioningVars.getText();
             String[] parts = text.split("[\\s,\\[\\]]");
 
             Set<Node> conditioningSet = new HashSet<>();
@@ -792,10 +789,34 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             update(graph, textArea, nodes1, nodes2, method);
         });
 
+        Runnable refreshConditioningUi = () -> {
+            String m = (String) methodBox.getSelectedItem();
+            boolean enabled = methodUsesConditioning(m);
+
+            syncConditioningFieldEnabled(conditioningVars, conditionOnLabel, enabled, () -> {
+                conditioningVars.setText("");
+                PathsAction.this.conditioningSet = Set.of();  // important: avoid stale conditioning affecting later displays
+            });
+        };
+
+// initial state
+        refreshConditioningUi.run();
+
+        methodBox.addActionListener(e13 -> {
+            JComboBox<String> box = (JComboBox<String>) e13.getSource();
+            if (PathsAction.this.method == null) {
+                box.setSelectedIndex(0);
+            }
+            PathsAction.this.method = (String) box.getSelectedItem();
+            Preferences.userRoot().put("pathMethod", PathsAction.this.method);
+
+            refreshConditioningUi.run();          // <-- add this
+            update(graph, textArea, nodes1, nodes2, method);
+        });
 
         Box b1a = Box.createHorizontalBox();
-        b1a.add(new JLabel("Condition on:"));
-        b1a.add(comp);
+        b1a.add(conditionOnLabel);
+        b1a.add(conditioningVars);
         b1a.setBorder(new EmptyBorder(2, 3, 2, 2));
         b1a.add(Box.createHorizontalGlue());
 
@@ -918,6 +939,37 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     private void addConditionNote(JTextArea textArea) {
         String conditioningSymbol = "\u2714";
         textArea.append("\n" + conditioningSymbol + " indicates that the marked variable is in the conditioning set; (L) that L is latent.");
+    }
+
+    private static boolean methodUsesConditioning(String method) {
+        if (method == null) return false;
+        return switch (method) {
+            case "Directed Paths",
+                 "Possibly Directed Paths",
+                 "Treks",
+                 "Confounder Paths",
+                 "Latent Confounder Paths",
+                 "Cycles",
+                 "All Paths",
+                 "Amenable paths",
+                 "Backdoor paths" -> true;
+            default -> false; // Adjacents, Adjustment, O-sets, Edge-specific Adjustment
+        };
+    }
+
+    private static void syncConditioningFieldEnabled(JTextField conditioningVars, JLabel conditionOnLabel,
+                                                     boolean enabled,
+                                                     Runnable onDisableClear) {
+        conditioningVars.setEnabled(enabled);
+        conditioningVars.setEditable(enabled);
+        conditioningVars.setFocusable(enabled);
+        conditionOnLabel.setEnabled(enabled);
+
+        // Optional: make disabled look visually disabled but still readable
+        if (!enabled) {
+            // clear typed text + clear conditioning set (caller decides policy)
+            if (onDisableClear != null) onDisableClear.run();
+        }
     }
 
     /**

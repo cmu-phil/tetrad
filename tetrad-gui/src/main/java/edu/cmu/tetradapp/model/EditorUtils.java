@@ -289,9 +289,6 @@ public class EditorUtils {
      * component does not have focus.
      */
     public static class JTextFieldWithPrompt extends JTextField {
-        /**
-         * The prompt text.
-         */
         private final String promptText;
         /**
          * The color of the prompt text.
@@ -342,6 +339,13 @@ public class EditorUtils {
                 g2d.drawString(promptText, getInsets().left, getHeight() - padding - 1);
                 g2d.dispose();
             }
+        }
+
+        /**
+         * The prompt text.
+         */
+        public String getPromptText() {
+            return promptText;
         }
     }
 }
