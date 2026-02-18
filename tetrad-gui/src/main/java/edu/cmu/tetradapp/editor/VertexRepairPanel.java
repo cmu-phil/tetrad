@@ -467,7 +467,6 @@ public final class VertexRepairPanel extends JPanel {
     }
 
     private void applySortAndFilter() {
-        // Canonical “table = vertex repair ordering”
         resultsModel.sortByCanonicalOrder();
     }
 
