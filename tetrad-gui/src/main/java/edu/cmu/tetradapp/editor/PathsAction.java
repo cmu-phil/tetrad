@@ -678,7 +678,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             update(graph, textArea, nodes1, nodes2, method);
         });
 
-        node1Box.setSelectedItem(Preferences.userRoot().get("pathFrom", null));
+        node1Box.setSelectedItem(Preferences.userRoot().get("pathFrom", "null"));
         if (node1Box.getSelectedItem() == null) {
             node1Box.setSelectedItem(node1Box.getItemAt(0));
         }
@@ -718,7 +718,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 "Cycles",
                 "All Paths",
                 "Adjacents",
-                "Recursive Adjustment",
+                "Adjustment",
                 "O-sets",
                 "Edge-specific Adjustment",
                 "Amenable paths",
@@ -733,12 +733,19 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         methodBox.addActionListener(e13 -> {
             JComboBox<String> box = (JComboBox) e13.getSource();
+            if (PathsAction.this.method == null) {
+                box.setSelectedIndex(0);
+            }
             PathsAction.this.method = (String) box.getSelectedItem();
-            Preferences.userRoot().put("pathMethod", PathsAction.this.method);
+            Preferences preferences = Preferences.userRoot();
+            preferences.put("pathMethod", PathsAction.this.method);
             update(graph, textArea, nodes1, nodes2, method);
         });
 
         methodBox.setSelectedItem(this.method);
+        if (methodBox.getSelectedItem() == null) {
+            methodBox.setSelectedIndex(0);
+        }
 
         JButton editParameters = new JButton("Edit Parameters");
 
@@ -891,7 +898,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     latentConfounderPaths(graph, textArea, nodes1, nodes2);
                 } else if ("Adjacents".equals(method)) {
                     adjacentNodes(graph, textArea, nodes1, nodes2);
-                } else if ("Recursive Adjustment".equals(method)) {
+                } else if ("Adjustment".equals(method)) {
                     adjustmentSets(graph, textArea, nodes1, nodes2);
                 } else if ("O-sets".equals(method)) {
                     oSetAdjustmentSets(graph, textArea, nodes1, nodes2);
