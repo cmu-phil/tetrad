@@ -4,8 +4,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetradapp.model.MixedDrAdjustmentEffectEditorModelV2;
-import edu.cmu.tetradapp.model.MixedDrAdjustmentEffectEditorModelV2.ResultRowV2;
+import edu.cmu.tetradapp.model.DoublyRobustEstModelV2;
+import edu.cmu.tetradapp.model.DoublyRobustEstModelV2.ResultRowV2;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -36,9 +36,9 @@ import java.util.regex.Pattern;
  *  - table includes a "Note" column and is safe for rows where x/y are null
  *  - "View details..." enabled only for OK rows
  */
-public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
+public final class DoublyRobustEstEditorV2 extends JPanel {
 
-    private final MixedDrAdjustmentEffectEditorModelV2 model;
+    private final DoublyRobustEstModelV2 model;
     private final Graph graph;
 
     private final JRadioButton pairwiseRadio =
@@ -54,7 +54,7 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
     private final JButton viewDetailsButton = new JButton("View details...");
 
     private final JTable resultTable;
-    private final MixedDrResultTableModelV2 tableModel;
+    private final DoublyRobustEstResultTableModelV2 tableModel;
 
     private final DefaultTableCellRenderer numberRenderer = new DefaultTableCellRenderer() {
         {
@@ -80,11 +80,11 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
         }
     };
 
-    public MixedDrAdjustmentEffectEditorV2(MixedDrAdjustmentEffectEditorModelV2 model) {
+    public DoublyRobustEstEditorV2(DoublyRobustEstModelV2 model) {
         this.model = Objects.requireNonNull(model, "model");
         this.graph = Objects.requireNonNull(model.getGraph(), "graph");
 
-        this.tableModel = new MixedDrResultTableModelV2(this.model);
+        this.tableModel = new DoublyRobustEstResultTableModelV2(this.model);
         this.resultTable = new JTable(this.tableModel);
 
         this.resultTable.setFillsViewportHeight(true);
@@ -126,7 +126,7 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
         modeGroup.add(pairwiseRadio);
         modeGroup.add(jointRadio);
 
-        if (model.getEffectMode() == MixedDrAdjustmentEffectEditorModelV2.EffectMode.JOINT) jointRadio.setSelected(true);
+        if (model.getEffectMode() == DoublyRobustEstModelV2.EffectMode.JOINT) jointRadio.setSelected(true);
         else pairwiseRadio.setSelected(true);
 
         JPanel modePanel = new JPanel(new GridLayout(0, 1));
@@ -448,8 +448,8 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
 
         model.setEffectMode(
                 pairwiseRadio.isSelected()
-                        ? MixedDrAdjustmentEffectEditorModelV2.EffectMode.PAIRWISE
-                        : MixedDrAdjustmentEffectEditorModelV2.EffectMode.JOINT
+                        ? DoublyRobustEstModelV2.EffectMode.PAIRWISE
+                        : DoublyRobustEstModelV2.EffectMode.JOINT
         );
     }
 
@@ -592,7 +592,7 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
     // Table model
     // ------------------------
 
-    private static final class MixedDrResultTableModelV2 extends AbstractTableModel {
+    private static final class DoublyRobustEstResultTableModelV2 extends AbstractTableModel {
 
         private static final String COL_NUM  = "#";
         private static final String COL_X    = "X";
@@ -601,9 +601,9 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
         private static final String COL_ATE  = "ATE_DR";
         private static final String COL_NOTE = "Note";
 
-        private final MixedDrAdjustmentEffectEditorModelV2 model;
+        private final DoublyRobustEstModelV2 model;
 
-        MixedDrResultTableModelV2(MixedDrAdjustmentEffectEditorModelV2 model) {
+        DoublyRobustEstResultTableModelV2(DoublyRobustEstModelV2 model) {
             this.model = Objects.requireNonNull(model, "model");
         }
 

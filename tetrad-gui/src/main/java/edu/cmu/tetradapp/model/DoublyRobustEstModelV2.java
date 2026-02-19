@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  *  - Outcome Y must be continuous (not discrete).
  *  - Joint mode supported only for |X| = 1 in v2 (because estimator is binary-X).
  */
-public final class MixedDrAdjustmentEffectEditorModelV2 implements SessionModel, GraphSource, Serializable {
+public final class DoublyRobustEstModelV2 implements SessionModel, GraphSource, Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -75,9 +75,9 @@ public final class MixedDrAdjustmentEffectEditorModelV2 implements SessionModel,
     // results
     private final List<ResultRowV2> results = new ArrayList<>();
 
-    public MixedDrAdjustmentEffectEditorModelV2(DataWrapper dataWrapper,
-                                                GraphSource graphSource,
-                                                Parameters parameters) {
+    public DoublyRobustEstModelV2(DataWrapper dataWrapper,
+                                  GraphSource graphSource,
+                                  Parameters parameters) {
         this.dataWrapper = Objects.requireNonNull(dataWrapper, "dataWrapper");
         this.graphSource = Objects.requireNonNull(graphSource, "graphSource");
         this.parameters = Objects.requireNonNull(parameters, "parameters");

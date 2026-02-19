@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.estimate.v1.AdjustmentEffectEstimatorV1;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetradapp.model.MixedDrAdjustmentEffectEditorModelV1;
+import edu.cmu.tetradapp.model.DoublyRobustEstModelV1;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -21,9 +21,9 @@ import java.util.stream.Collectors;
  * v1: Swing editor for "Adjustment Effect".
  * v1: Manual selection of Z (adjustment set), with a helper to auto-fill using parents of X in the chosen graph.
  */
-public final class MixedDrAdjustmentEffectEditorV1 extends JPanel {
+public final class DoubleRobustEstEditorV1 extends JPanel {
 
-    private final MixedDrAdjustmentEffectEditorModelV1 model;
+    private final DoublyRobustEstModelV1 model;
 
     // v1: UI controls
     private final JComboBox<String> graphBox = new JComboBox<>();
@@ -43,7 +43,7 @@ public final class MixedDrAdjustmentEffectEditorV1 extends JPanel {
     private static final DecimalFormat DF3 = new DecimalFormat("0.###");
     private static final DecimalFormat DF4 = new DecimalFormat("0.####");
 
-    public MixedDrAdjustmentEffectEditorV1(MixedDrAdjustmentEffectEditorModelV1 model) {
+    public DoubleRobustEstEditorV1(DoublyRobustEstModelV1 model) {
         this.model = Objects.requireNonNull(model, "v1: model");
         buildUiV1();
         loadFromModelV1();

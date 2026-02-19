@@ -1254,9 +1254,9 @@
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.MixedDrAdjustmentEffectEditorModelV2
+                <model-class>edu.cmu.tetradapp.model.DoublyRobustEstModelV2
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.MixedDrAdjustmentEffectEditorV2</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.DoublyRobustEstEditorV2</editor-class>
             </model>
             <model name="Linear IDA Check" acronym="IDA Check"
                    help="indep_facts" category="Independence Facts Comparison">

@@ -17,7 +17,7 @@ import java.util.Objects;
  *
  * v1: Does not (yet) compute adjustment sets from CPDAG/PAG automatically.
  */
-public final class MixedDrAdjustmentEffectEditorModelV1 implements SessionModel {
+public final class DoublyRobustEstModelV1 implements SessionModel {
 
     private final DataSet dataSet;
     private final List<Graph> graphs;
@@ -25,7 +25,7 @@ public final class MixedDrAdjustmentEffectEditorModelV1 implements SessionModel 
     private final Parameters parameters;
     private String name = "Adjustment Effect (v1)";
 
-    public MixedDrAdjustmentEffectEditorModelV1(SessionModel[] inputs, Parameters parameters) {
+    public DoublyRobustEstModelV1(SessionModel[] inputs, Parameters parameters) {
         Objects.requireNonNull(inputs, "v1: inputs");
         this.parameters = Objects.requireNonNull(parameters, "v1: parameters");
 
