@@ -49,6 +49,7 @@ public final class DagModelScoreComparisonEditor extends JPanel {
 
         // Winner-bolding renderer for numeric cells.
         table.setDefaultRenderer(Object.class, new WinnerBoldRenderer());
+
         table.setTransferHandler(new DefaultTableTransferHandler(0));
 
         JButton recompute = new JButton("Recompute");
