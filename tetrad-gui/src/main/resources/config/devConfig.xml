@@ -1248,7 +1248,7 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.LinearAdjustmentTotalEffectsEditor</editor-class>
             </model>
-            <model name="Mixed DR Adjustment Effects" acronym="Mixed DR Adjustment Effects"
+            <model name="Doubly Robust ATE" acronym="Double Robust ATE"
                    help="indep_facts" category="Independence Facts Comparison">
                 <logger>
                     <event id="info" description="Information" default="on"/>
