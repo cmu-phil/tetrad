@@ -33,7 +33,7 @@ public final class DagMetrics {
             var algScore = new edu.cmu.tetrad.algcomparison.score.MinimaxTRffBicScore();
             var score = (edu.cmu.tetrad.search.score.MinimaxTRffBicScore) algScore.getScore(data, new Parameters());
             double s = sumLocalScores(data, dag, score);
-            return new DagMetricResult("Minimax t-RFF BIC", s, "General Mixed BIC Score");
+            return new DagMetricResult("Minimax t-RFF BIC", s, "General Mixed BIC Score", DagMetricResult.Better.HIGHER);
         };
     }
 
@@ -42,7 +42,7 @@ public final class DagMetrics {
             var algScore = new edu.cmu.tetrad.algcomparison.score.MinimaxLegendreScore();
             var score = (edu.cmu.tetrad.search.score.MinimaxLegendreScore) algScore.getScore(data, new Parameters());
             double s = sumLocalScores(data, dag, score);
-            return new DagMetricResult("Legendre BIC", s, "General Mixed BIC Score");
+            return new DagMetricResult("Legendre BIC", s, "General Mixed BIC Score", DagMetricResult.Better.HIGHER);
         };
     }
 
@@ -51,7 +51,7 @@ public final class DagMetrics {
             var algScore = new edu.cmu.tetrad.algcomparison.score.FfMl();
             var score = (edu.cmu.tetrad.search.score.FfMl) algScore.getScore(data, new Parameters());
             double s = sumLocalScores(data, dag, score);
-            return new DagMetricResult("FFML", s, "General Mixed Likelihood Score");
+            return new DagMetricResult("FFML", s, "General Mixed Likelihood Score", DagMetricResult.Better.HIGHER);
         };
     }
 
@@ -60,7 +60,7 @@ public final class DagMetrics {
             var algScore = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
             var score = (edu.cmu.tetrad.search.score.SemBicScore) algScore.getScore(data, new Parameters());
             double s = sumLocalScores(data, dag, score);
-            return new DagMetricResult("LG BIC", s, "Linear Gaussian BIC");
+            return new DagMetricResult("LG BIC", s, "Linear Gaussian BIC", DagMetricResult.Better.HIGHER);
         };
     }
 
@@ -69,7 +69,7 @@ public final class DagMetrics {
             SemPm pm = new SemPm(dag);
             SemEstimator est = new SemEstimator(data, pm);
             SemIm im = est.estimate();
-            return new DagMetricResult("LG Chi Square", im.getChiSquare(), "Linear Gaussian Chi Square");
+            return new DagMetricResult("LG Chi Square", im.getChiSquare(), "Linear Gaussian Chi Square", DagMetricResult.Better.LOWER);
         };
     }
 
@@ -78,7 +78,7 @@ public final class DagMetrics {
             SemPm pm = new SemPm(dag);
             SemEstimator est = new SemEstimator(data, pm);
             SemIm im = est.estimate();
-            return new DagMetricResult("CFI", im.getCfi(), "Comparative Fit Index");
+            return new DagMetricResult("CFI", im.getCfi(), "Comparative Fit Index", DagMetricResult.Better.HIGHER);
         };
     }
 
@@ -87,7 +87,7 @@ public final class DagMetrics {
             SemPm pm = new SemPm(dag);
             SemEstimator est = new SemEstimator(data, pm);
             SemIm im = est.estimate();
-            return new DagMetricResult("Model P", im.getPValue(), "LG Model P-Value");
+            return new DagMetricResult("Model P", im.getPValue(), "LG Model P-Value", DagMetricResult.Better.HIGHER);
         };
     }
 
@@ -96,7 +96,7 @@ public final class DagMetrics {
             SemPm pm = new SemPm(dag);
             SemEstimator est = new SemEstimator(data, pm);
             SemIm im = est.estimate();
-            return new DagMetricResult("RMSEA", im.getRmsea(), "RMSEA");
+            return new DagMetricResult("RMSEA", im.getRmsea(), "RMSEA", DagMetricResult.Better.HIGHER);
         };
     }
 
@@ -117,7 +117,7 @@ public final class DagMetrics {
                     new AdequacyParams()
             );
 
-            return new DagMetricResult("MMD2", report.mmd2, "Maximum Mean Discrepancy squared");
+            return new DagMetricResult("MMD2", report.mmd2, "Maximum Mean Discrepancy squared", DagMetricResult.Better.LOWER);
         };
     }
 }

@@ -1382,9 +1382,9 @@
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.DagModelScoreModel
+                <model-class>edu.cmu.tetradapp.model.DagModelScoreComparisonModel
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.DagModelScoreEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.DagModelScoreComparisonEditor</editor-class>
             </model>
             <!--            <model name="Grid Search" acronym="Grid Search"-->
             <!--                   help="indep_facts" category="Independence Facts Comparison">-->
