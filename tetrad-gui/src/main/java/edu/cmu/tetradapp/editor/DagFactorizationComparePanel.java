@@ -6,7 +6,6 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.Histogram;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.sem.TrainedDagSimulatorGNM;
 import edu.cmu.tetradapp.model.DagFactorizationCompare;
 
 import javax.swing.*;
@@ -20,18 +19,18 @@ import java.util.List;
 /**
  * Compare-box component: given (DataSet D, DAG G) where D contains all variables in G,
  * resimulates data using the DAG factorization (via TrainedDagSimulatorGNM) and shows:
- *
- *   left:  original dataset D
- *   right: resimulated dataset D~ (factorized by G)
- *
+ * <p>
+ * left:  original dataset D
+ * right: resimulated dataset D~ (factorized by G)
+ * <p>
  * The intent is *visual inspection* of whether the marginal/joint patterns in D are
  * plausibly compatible with the DAG factorization induced by G.
- *
+ * <p>
  * Optional/future: numerical distribution-equivalence metrics between left/right.
- *
+ * <p>
  * Drop-in notes:
  * - You MUST implement simulateWithGNM(...) to call your TrainedDagSimulatorGNM exactly
- *   the way the Simulation editor does (3–10 lines).
+ * the way the Simulation editor does (3–10 lines).
  * - Everything else is self-contained and uses your existing histogram/scatter/conditioning UI.
  */
 public final class DagFactorizationComparePanel extends JPanel {
@@ -131,31 +130,25 @@ public final class DagFactorizationComparePanel extends JPanel {
 
     private static final class DualPlotMatrix extends JPanel {
 
-        private DataSet left;
-        private DataSet right;
-
-        // shared variable list (by name intersection/order)
-        private List<Node> vars;       // nodes for selection list (names match both data sets)
-        private Node[] varsArray;
-
         // shared controls
         private final JList<Node> rowSelector;
         private final JList<Node> colSelector;
-
-        private int numBins = 9;
-        private boolean addRegressionLines = false;
-        private boolean removeZeroPointsPerPlot = false;
-
-        private ScatterPlot.JitterStyle jitterStyle = ScatterPlot.JitterStyle.None;
-        private Map<Node, VariableConditioningEditor.ConditioningPanel> conditioningPanelMap = new HashMap<>();
-
-        // state for click-to-zoom
-        private int[] lastRows = new int[]{0};
-        private int[] lastCols = new int[]{0};
-
         // chart panels
         private final JPanel chartsLeft = new JPanel();
         private final JPanel chartsRight = new JPanel();
+        private DataSet left;
+        private DataSet right;
+        // shared variable list (by name intersection/order)
+        private List<Node> vars;       // nodes for selection list (names match both data sets)
+        private Node[] varsArray;
+        private int numBins = 9;
+        private boolean addRegressionLines = false;
+        private boolean removeZeroPointsPerPlot = false;
+        private ScatterPlot.JitterStyle jitterStyle = ScatterPlot.JitterStyle.None;
+        private Map<Node, VariableConditioningEditor.ConditioningPanel> conditioningPanelMap = new HashMap<>();
+        // state for click-to-zoom
+        private int[] lastRows = new int[]{0};
+        private int[] lastCols = new int[]{0};
 
         DualPlotMatrix(DataSet left, DataSet right) {
             super(new BorderLayout(8, 8));

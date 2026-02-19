@@ -133,7 +133,5 @@ public final class DagFactorizationCompare extends DataWrapper implements Sessio
         System.out.println(report.toText());
 
         return simData.toDataSet();
-
-//        this.dataSets.add(simData.toDataSet());
     }
 }
