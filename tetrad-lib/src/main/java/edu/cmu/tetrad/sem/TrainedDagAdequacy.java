@@ -62,23 +62,23 @@ public final class TrainedDagAdequacy {
         double[][] X = toNumericMatrix(real);
         double[][] Y = toNumericMatrix(simulated);
 
-        double sigma = 1.0;
-
-        double mmd2 = RandomFeatureMMD.compute(
-                X, Y,
-                params.mmdFeatures,
-                params.mmdSeed,
-                sigma,
-                params.mmdMaxRows);
-
-//        double sigma = 1.0;  // assume roughly standardized data
+//        double sigma = 1.0;
 //
-//        double mmd2 = ExactRbfMMD.compute(
-//                X,
-//                Y,
+//        double mmd2 = RandomFeatureMMD.compute(
+//                X, Y,
+//                params.mmdFeatures,
+//                params.mmdSeed,
 //                sigma,
-//                params.mmdMaxRows   // optional truncation
-//        );
+//                params.mmdMaxRows);
+
+        double sigma = 1.0;  // assume roughly standardized data
+
+        double mmd2 = ExactRbfMMD.compute(
+                X,
+                Y,
+                sigma,
+                params.mmdMaxRows   // optional truncation
+        );
 
         return new AdequacyReport(
                 meanImprovement,

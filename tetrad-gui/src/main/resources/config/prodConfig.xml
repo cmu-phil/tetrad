@@ -1238,17 +1238,27 @@
             <!--                </model-class>-->
             <!--                <editor-class>edu.cmu.tetradapp.editor.LinearAdjustmentRegressionEditor</editor-class>-->
             <!--            </model>-->
-            <model name="Adjustment Total Effects" acronym="Adjustment Total Effects"
+            <model name="Linear Adjustment Effects" acronym="Linear Adjustment Effects"
                    help="indep_facts" category="Independence Facts Comparison">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.AdjustmentTotalEffectsModel
+                <model-class>edu.cmu.tetradapp.model.LinearAdjustmentTotalEffectsModel
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.AdjustmentTotalEffectsEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.LinearAdjustmentTotalEffectsEditor</editor-class>
             </model>
-            <model name="IDA Check" acronym="IDA Check"
+            <model name="Mixed DR Adjustment Effects" acronym="Mixed DR Adjustment Effects"
+                   help="indep_facts" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.MixedDrAdjustmentEffectEditorModelV2
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.MixedDrAdjustmentEffectEditorV2</editor-class>
+            </model>
+            <model name="Linear IDA Check" acronym="IDA Check"
                    help="indep_facts" category="Independence Facts Comparison">
                 <logger>
                     <event id="info" description="Information" default="on"/>

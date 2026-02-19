@@ -4,8 +4,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetradapp.model.AdjustmentTotalEffectsModel;
-import edu.cmu.tetradapp.model.AdjustmentTotalEffectsModel.ResultRow;
+import edu.cmu.tetradapp.model.LinearAdjustmentTotalEffectsModel;
+import edu.cmu.tetradapp.model.LinearAdjustmentTotalEffectsModel.ResultRow;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -40,9 +40,9 @@ import java.util.regex.Pattern;
  *   <li>View the full regression result for a selected row.</li>
  * </ul>
  */
-public final class AdjustmentTotalEffectsEditor extends JPanel {
+public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
 
-    private final AdjustmentTotalEffectsModel model;
+    private final LinearAdjustmentTotalEffectsModel model;
     private final Graph graph;
 
     // Mode controls
@@ -98,7 +98,7 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
      *
      * @param model the adjustment total effects model to be edited; must not be null
      */
-    public AdjustmentTotalEffectsEditor(AdjustmentTotalEffectsModel model) {
+    public LinearAdjustmentTotalEffectsEditor(LinearAdjustmentTotalEffectsModel model) {
         this.model = Objects.requireNonNull(model);
         this.graph = model.getGraph();
 
@@ -189,7 +189,7 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         modeGroup.add(pairwiseRadio);
         modeGroup.add(jointRadio);
 
-        if (model.getEffectMode() == AdjustmentTotalEffectsModel.EffectMode.JOINT) jointRadio.setSelected(true);
+        if (model.getEffectMode() == LinearAdjustmentTotalEffectsModel.EffectMode.JOINT) jointRadio.setSelected(true);
         else pairwiseRadio.setSelected(true);
 
         JPanel modePanel = new JPanel(new GridLayout(0, 1));
@@ -358,8 +358,8 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
 
         model.setEffectMode(
                 pairwiseRadio.isSelected()
-                        ? AdjustmentTotalEffectsModel.EffectMode.PAIRWISE
-                        : AdjustmentTotalEffectsModel.EffectMode.JOINT
+                        ? LinearAdjustmentTotalEffectsModel.EffectMode.PAIRWISE
+                        : LinearAdjustmentTotalEffectsModel.EffectMode.JOINT
         );
     }
 
@@ -549,14 +549,14 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         private static final String COL_TRUE_TE = "True Total Effect";
 //        private static final String COL_ABS_TRUE_TE = "Abs True Total Effect";
 
-        private final AdjustmentTotalEffectsModel model;
+        private final LinearAdjustmentTotalEffectsModel model;
 
-        ResultTableModel(AdjustmentTotalEffectsModel model) {
+        ResultTableModel(LinearAdjustmentTotalEffectsModel model) {
             this.model = model;
         }
 
         private boolean showTrueColumns() {
-            return model.getEffectMode() == AdjustmentTotalEffectsModel.EffectMode.PAIRWISE
+            return model.getEffectMode() == LinearAdjustmentTotalEffectsModel.EffectMode.PAIRWISE
                    && model.isTrueSemImAvailable();
         }
 

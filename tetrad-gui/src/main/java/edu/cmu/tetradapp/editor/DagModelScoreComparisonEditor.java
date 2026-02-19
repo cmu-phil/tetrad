@@ -99,7 +99,7 @@ public final class DagModelScoreComparisonEditor extends JPanel {
                     edu.cmu.tetrad.sem.DagMetrics.cfi()));
             metricSpecs.add(new DagMetricSpec("Model P", "LG Model P-Value", Better.HIGHER,
                     edu.cmu.tetrad.sem.DagMetrics.lgModelP()));
-            metricSpecs.add(new DagMetricSpec("RMSEA", "RMSEA", Better.HIGHER,
+            metricSpecs.add(new DagMetricSpec("RMSEA", "RMSEA", Better.LOWER,
                     edu.cmu.tetrad.sem.DagMetrics.rmsea()));
 
             metricSpecs.add(new DagMetricSpec("FFML", "General Mixed Likelihood Score", Better.HIGHER,

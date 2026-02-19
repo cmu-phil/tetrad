@@ -96,7 +96,7 @@ public final class DagMetrics {
             SemPm pm = new SemPm(dag);
             SemEstimator est = new SemEstimator(data, pm);
             SemIm im = est.estimate();
-            return new DagMetricResult("RMSEA", im.getRmsea(), "RMSEA", DagMetricResult.Better.HIGHER);
+            return new DagMetricResult("RMSEA", im.getRmsea(), "RMSEA", DagMetricResult.Better.LOWER);
         };
     }
 
@@ -108,7 +108,7 @@ public final class DagMetrics {
             TrainedDagSimulatorGNM sim = new TrainedDagSimulatorGNM(data, dag, params);
             sim.fit();
 
-            TrainedDagSimulatorGNM.SimResult simData = sim.simulate(data.getNumRows());
+            TrainedDagSimulatorGNM.SimResult simData = sim.simulate(1000);//data.getNumRows());
 
             AdequacyReport report = TrainedDagAdequacy.evaluate(
                     data,

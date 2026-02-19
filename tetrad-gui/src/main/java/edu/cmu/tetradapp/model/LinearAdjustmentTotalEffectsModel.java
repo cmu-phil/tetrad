@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  *   <li>Stores the regression coefficients for X on y | Z as “total effects”.</li>
  * </ul>
  */
-public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSource, Serializable {
+public final class LinearAdjustmentTotalEffectsModel implements SessionModel, GraphSource, Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     private final DataSet dataSet;
@@ -83,9 +83,9 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
      * @param graphSource the source of the graph used in the computations
      * @param parameters  the parameters required for the adjustment and total effects analysis
      */
-    public AdjustmentTotalEffectsModel(DataWrapper dataWrapper,
-                                       GraphSource graphSource,
-                                       Parameters parameters) {
+    public LinearAdjustmentTotalEffectsModel(DataWrapper dataWrapper,
+                                             GraphSource graphSource,
+                                             Parameters parameters) {
         this.dataSet = (DataSet) Objects.requireNonNull(dataWrapper)
                 .getDataModelList().getFirst();
         this.graph = GraphUtils.replaceNodes(Objects.requireNonNull(graphSource).getGraph(), dataSet.getVariables());

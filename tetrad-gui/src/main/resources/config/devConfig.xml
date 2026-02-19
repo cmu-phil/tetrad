@@ -787,21 +787,21 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-<!--            <model name="Bootstrap Sample"-->
-<!--                   acronym="Bootstrap" help="data" category="Row operations">-->
-<!--                <logger>-->
-<!--                    <event id="sampleSize" description="Sample Size"-->
-<!--                           default="on"/>-->
-<!--                    <event id="info" description="Information" default="on"/>-->
-<!--                    <event id="data" description="Data"/>-->
-<!--                </logger>-->
-<!--                <model-class>edu.cmu.tetradapp.model.BootstrapSamplerWrapper-->
-<!--                </model-class>-->
-<!--                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
-<!--                <params-editor-class>-->
-<!--                    edu.cmu.tetradapp.editor.BootstrapSamplerParamsEditor-->
-<!--                </params-editor-class>-->
-<!--            </model>-->
+            <!--            <model name="Bootstrap Sample"-->
+            <!--                   acronym="Bootstrap" help="data" category="Row operations">-->
+            <!--                <logger>-->
+            <!--                    <event id="sampleSize" description="Sample Size"-->
+            <!--                           default="on"/>-->
+            <!--                    <event id="info" description="Information" default="on"/>-->
+            <!--                    <event id="data" description="Data"/>-->
+            <!--                </logger>-->
+            <!--                <model-class>edu.cmu.tetradapp.model.BootstrapSamplerWrapper-->
+            <!--                </model-class>-->
+            <!--                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
+            <!--                <params-editor-class>-->
+            <!--                    edu.cmu.tetradapp.editor.BootstrapSamplerParamsEditor-->
+            <!--                </params-editor-class>-->
+            <!--            </model>-->
             <model name="Split By Cases" acronym="Split Cases" help="split"
                    category="Row operations">
                 <logger>
@@ -1228,27 +1228,37 @@
                 <editor-class>edu.cmu.tetradapp.editor.LogisticRegressionEditor
                 </editor-class>
             </model>
-<!--            <model name="Linear Adjustment" acronym="Linear Adjustment"-->
-<!--                   help="indep_facts" category="Independence Facts Comparison">-->
-<!--                <logger>-->
-<!--                    <event id="info" description="Information" default="on"/>-->
-<!--                    <event id="comparison" description="Comparison" default="on"/>-->
-<!--                </logger>-->
-<!--                <model-class>edu.cmu.tetradapp.model.LinearAdjustmentRegressionModel-->
-<!--                </model-class>-->
-<!--                <editor-class>edu.cmu.tetradapp.editor.LinearAdjustmentRegressionEditor</editor-class>-->
-<!--            </model>-->
-            <model name="Adjustment Total Effects" acronym="Adjustment Total Effects"
+            <!--            <model name="Linear Adjustment" acronym="Linear Adjustment"-->
+            <!--                   help="indep_facts" category="Independence Facts Comparison">-->
+            <!--                <logger>-->
+            <!--                    <event id="info" description="Information" default="on"/>-->
+            <!--                    <event id="comparison" description="Comparison" default="on"/>-->
+            <!--                </logger>-->
+            <!--                <model-class>edu.cmu.tetradapp.model.LinearAdjustmentRegressionModel-->
+            <!--                </model-class>-->
+            <!--                <editor-class>edu.cmu.tetradapp.editor.LinearAdjustmentRegressionEditor</editor-class>-->
+            <!--            </model>-->
+            <model name="Linear Adjustment Effects" acronym="Linear Adjustment Effects"
                    help="indep_facts" category="Independence Facts Comparison">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.AdjustmentTotalEffectsModel
+                <model-class>edu.cmu.tetradapp.model.LinearAdjustmentTotalEffectsModel
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.AdjustmentTotalEffectsEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.LinearAdjustmentTotalEffectsEditor</editor-class>
             </model>
-            <model name="IDA Check" acronym="IDA Check"
+            <model name="Mixed DR Adjustment Effects" acronym="Mixed DR Adjustment Effects"
+                   help="indep_facts" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.MixedDrAdjustmentEffectEditorModelV2
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.MixedDrAdjustmentEffectEditorV2</editor-class>
+            </model>
+            <model name="Linear IDA Check" acronym="IDA Check"
                    help="indep_facts" category="Independence Facts Comparison">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -1326,16 +1336,16 @@
                 <editor-class>edu.cmu.tetradapp.editor.GraphIntersectionsEditor
                 </editor-class>
             </model>
-<!--            <model name="Independence Facts" acronym="Ind Facts"-->
-<!--                   help="indep_facts" category="Independence Facts Comparison">-->
-<!--                <logger>-->
-<!--                    <event id="info" description="Information" default="on"/>-->
-<!--                    <event id="comparison" description="Comparison" default="on"/>-->
-<!--                </logger>-->
-<!--                <model-class>edu.cmu.tetradapp.model.IndTestModel-->
-<!--                </model-class>-->
-<!--                <editor-class>edu.cmu.tetradapp.editor.IndependenceFactsEditor</editor-class>-->
-<!--            </model>-->
+            <!--            <model name="Independence Facts" acronym="Ind Facts"-->
+            <!--                   help="indep_facts" category="Independence Facts Comparison">-->
+            <!--                <logger>-->
+            <!--                    <event id="info" description="Information" default="on"/>-->
+            <!--                    <event id="comparison" description="Comparison" default="on"/>-->
+            <!--                </logger>-->
+            <!--                <model-class>edu.cmu.tetradapp.model.IndTestModel-->
+            <!--                </model-class>-->
+            <!--                <editor-class>edu.cmu.tetradapp.editor.IndependenceFactsEditor</editor-class>-->
+            <!--            </model>-->
             <model name="Independence Facts" acronym="Ind Facts"
                    help="indep_facts" category="Independence Facts Comparison">
                 <logger>
