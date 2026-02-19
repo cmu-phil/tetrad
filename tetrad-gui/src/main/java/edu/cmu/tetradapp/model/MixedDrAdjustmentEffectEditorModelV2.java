@@ -12,6 +12,7 @@ import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetrad.estimate.v1.AdjustmentEffectEstimatorV1;
 
+import javax.swing.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
  *
  * v2 constraints:
  *  - One data set + one graph input (graph should be a DAG for now).
- *  - Treatment X must be binary discrete (2 categories; user discretizes).
+ *  - Treatment X must be binary discrete OR a derived binary treatment (binarize tool).
  *  - Outcome Y must be continuous (not discrete).
  *  - Joint mode supported only for |X| = 1 in v2 (because estimator is binary-X).
  */
@@ -41,7 +42,7 @@ public final class MixedDrAdjustmentEffectEditorModelV2 implements SessionModel,
     private final Graph graph;
     private final Parameters parameters;
 
-    // (kept like the linear model; useful for future wiring)
+    // kept (like the linear model; useful for future wiring)
     private final DataWrapper dataWrapper;
     private final GraphSource graphSource;
 
@@ -55,7 +56,7 @@ public final class MixedDrAdjustmentEffectEditorModelV2 implements SessionModel,
     private String treatmentsText = "*";
     private String outcomesText = "*";
 
-    // RA parameters (mirrors linear tool patterns; editor can expose these)
+    // RA parameters (editor can expose these)
     private String graphType = "DAG";
     private int maxNumSets = 20;
     private int maxRadius = -1;
@@ -68,6 +69,9 @@ public final class MixedDrAdjustmentEffectEditorModelV2 implements SessionModel,
     // estimator config (v1 estimator under the hood, but v2 tool)
     private final AdjustmentEffectEstimatorV1.ConfigV1 cfg = new AdjustmentEffectEstimatorV1.ConfigV1();
 
+    // derived/binarized treatments (name -> spec)
+    private final Map<String, DerivedTreatmentSpecV2> derivedTreatments = new LinkedHashMap<>();
+
     // results
     private final List<ResultRowV2> results = new ArrayList<>();
 
@@ -78,18 +82,17 @@ public final class MixedDrAdjustmentEffectEditorModelV2 implements SessionModel,
         this.graphSource = Objects.requireNonNull(graphSource, "graphSource");
         this.parameters = Objects.requireNonNull(parameters, "parameters");
 
-        // v2: match the linear model convention: first DataModel should be a DataSet
-        DataModel dm = dataWrapper.getDataModelList().getFirst();
+        DataModel dm = this.dataWrapper.getDataModelList().getFirst();
         if (!(dm instanceof DataSet ds)) {
             throw new IllegalArgumentException("v2: Mixed DR Adjustment Effect requires a tabular DataSet.");
         }
         this.dataSet = ds;
 
-        // v2: replace graph nodes with dataset variables (important for name alignment)
-        Graph rawGraph = graphSource.getGraph();
+        // replace graph nodes with dataset variables (important for name alignment)
+        Graph rawGraph = this.graphSource.getGraph();
         this.graph = GraphUtils.replaceNodes(rawGraph, dataSet.getVariables());
 
-        // v2: infer graph type string used by RA / RAMultiple
+        // infer default graph type string used by RA / RAMultiple
         this.graphType = inferGraphType(this.graph);
     }
 
@@ -161,18 +164,30 @@ public final class MixedDrAdjustmentEffectEditorModelV2 implements SessionModel,
         return Collections.unmodifiableSet(X);
     }
 
+    /** v2: Editor should pass dataset-aligned nodes; we still normalize by name defensively. */
     public void setX(Collection<Node> nodes) {
         X.clear();
-        if (nodes != null) X.addAll(nodes);
+        if (nodes != null) {
+            for (Node n : nodes) {
+                Node dn = dataSet.getVariable(n.getName());
+                X.add(dn != null ? dn : n);
+            }
+        }
     }
 
     public Set<Node> getY() {
         return Collections.unmodifiableSet(Y);
     }
 
+    /** v2: Editor should pass dataset-aligned nodes; we still normalize by name defensively. */
     public void setY(Collection<Node> nodes) {
         Y.clear();
-        if (nodes != null) Y.addAll(nodes);
+        if (nodes != null) {
+            for (Node n : nodes) {
+                Node dn = dataSet.getVariable(n.getName());
+                Y.add(dn != null ? dn : n);
+            }
+        }
     }
 
     public String getTreatmentsText() {
@@ -193,23 +208,52 @@ public final class MixedDrAdjustmentEffectEditorModelV2 implements SessionModel,
         this.outcomesText = outcomesText;
     }
 
+    // derived treatments
+    public boolean hasDerivedTreatment(String name) {
+        return derivedTreatments.containsKey(name);
+    }
+
+    public DerivedTreatmentSpecV2 getDerivedTreatment(String name) {
+        return derivedTreatments.get(name);
+    }
+
+    public Collection<DerivedTreatmentSpecV2> getDerivedTreatments() {
+        return Collections.unmodifiableCollection(derivedTreatments.values());
+    }
+
+    public void addOrReplaceDerivedTreatment(DerivedTreatmentSpecV2 spec) {
+        Objects.requireNonNull(spec, "spec");
+        derivedTreatments.put(spec.getDerivedName(), spec);
+    }
+
+    public void removeDerivedTreatment(String derivedName) {
+        derivedTreatments.remove(derivedName);
+    }
+
     // RA knobs (optional to expose in editor)
     public String getGraphType() { return graphType; }
     public void setGraphType(String graphType) { this.graphType = (graphType == null) ? "DAG" : graphType; }
+
     public int getMaxNumSets() { return maxNumSets; }
     public void setMaxNumSets(int maxNumSets) { this.maxNumSets = maxNumSets; }
+
     public int getMaxRadius() { return maxRadius; }
     public void setMaxRadius(int maxRadius) { this.maxRadius = maxRadius; }
+
     public int getNearWhichEndpoint() { return nearWhichEndpoint; }
     public void setNearWhichEndpoint(int nearWhichEndpoint) { this.nearWhichEndpoint = nearWhichEndpoint; }
+
     public int getMaxPathLength() { return maxPathLength; }
     public void setMaxPathLength(int maxPathLength) { this.maxPathLength = maxPathLength; }
+
     public boolean isAvoidAmenable() { return avoidAmenable; }
     public void setAvoidAmenable(boolean avoidAmenable) { this.avoidAmenable = avoidAmenable; }
+
     public Set<Node> getNotFollowed() { return notFollowed; }
     public void setNotFollowed(Set<Node> notFollowed) {
         this.notFollowed = (notFollowed == null) ? Collections.emptySet() : new LinkedHashSet<>(notFollowed);
     }
+
     public Set<Node> getContaining() { return containing; }
     public void setContaining(Set<Node> containing) {
         this.containing = (containing == null) ? Collections.emptySet() : new LinkedHashSet<>(containing);
@@ -231,7 +275,7 @@ public final class MixedDrAdjustmentEffectEditorModelV2 implements SessionModel,
     // Main computation
     // -----------------------
 
-    public void recompute() {
+    public void recomputeAsync(Runnable onFinish) {
         class MyWatchedProcess extends WatchedProcess {
             @Override
             public void watch() {
@@ -242,6 +286,7 @@ public final class MixedDrAdjustmentEffectEditorModelV2 implements SessionModel,
                 if (effectMode == EffectMode.PAIRWISE) {
                     for (Node x : X) {
                         for (Node y : Y) {
+                            if (x == null || y == null) continue;
                             if (x.equals(y)) continue;
                             computeRowsForPair(x, y);
                         }
@@ -250,6 +295,7 @@ public final class MixedDrAdjustmentEffectEditorModelV2 implements SessionModel,
                     // v2: JOINT supported only for |X|=1 (binary estimator)
                     if (X.size() != 1) {
                         for (Node y : Y) {
+                            if (y == null) continue;
                             results.add(ResultRowV2.notSupportedJoint(y));
                         }
                         return;
@@ -257,84 +303,180 @@ public final class MixedDrAdjustmentEffectEditorModelV2 implements SessionModel,
 
                     Node x = X.iterator().next();
                     for (Node y : Y) {
+                        if (y == null) continue;
                         if (x.equals(y)) continue;
                         computeRowsForJointSingleX(x, y);
                     }
                 }
+
+                SwingUtilities.invokeLater(onFinish);
             }
         }
 
+        // NOTE: LinearAdjustmentTotalEffectsModel uses the same pattern:
+        // instantiating WatchedProcess triggers the work.
         new MyWatchedProcess();
     }
 
-    private void computeRowsForPair(Node x, Node y) {
-        EligibilityV2 elig = checkEligibility(x, y);
+    private void computeRowsForPair(Node xSelected, Node y) {
+        // If derived, compute adjustment sets using the SOURCE node in the graph.
+        Node xForRa = xSelected;
+
+        DerivedTreatmentSpecV2 spec = null;
+        boolean isDerived = hasDerivedTreatment(xSelected.getName());
+        if (isDerived) {
+            spec = getDerivedTreatment(xSelected.getName());
+            xForRa = graph.getNode(spec.getSourceName());
+            if (xForRa == null) {
+                results.add(ResultRowV2.ineligible(xSelected, y,
+                        "Derived treatment " + spec.getDerivedName()
+                                + " refers to source variable " + spec.getSourceName()
+                                + " which is not in the graph."));
+                return;
+            }
+        }
+
+        EligibilityV2 elig = checkEligibility(xSelected, y);
         if (!elig.ok) {
-            results.add(ResultRowV2.ineligible(x, y, elig.reason));
+            results.add(ResultRowV2.ineligible(xSelected, y, elig.reason));
             return;
         }
 
-        List<Set<Node>> zSets = computeSinglePairAdjustmentSets(x, y);
+        // IMPORTANT: compute Z using xForRa (graph node), not xSelected (placeholder).
+        List<Set<Node>> zSets = computeSinglePairAdjustmentSets(xForRa, y);
 
         if (zSets.isEmpty()) {
-            results.add(ResultRowV2.noAdjustmentSet(x, y));
+            results.add(ResultRowV2.noAdjustmentSet(xSelected, y));
             return;
         }
 
         for (Set<Node> z : zSets) {
             LinkedHashSet<Node> zClean = new LinkedHashSet<>(z);
-            zClean.remove(x);
+            zClean.remove(xForRa);      // remove the SOURCE node if present
 
-            AdjustmentEffectEstimatorV1.EffectEstimateResultV1 er =
-                    AdjustmentEffectEstimatorV1.estimateAteV1(dataSet, x, y, zClean, cfg);
+            AdjustmentEffectEstimatorV1.EffectEstimateResultV1 er;
 
-            results.add(ResultRowV2.ok(x, y, zClean, er));
+            if (!isDerived) {
+                er = AdjustmentEffectEstimatorV1.estimateAteV1(dataSet, xSelected, y, zClean, cfg);
+            } else {
+                int[] x01Full = spec.computeX01Full(dataSet);
+
+                er = AdjustmentEffectEstimatorV1.estimateAteBinaryVectorV1(
+                        dataSet,
+                        spec.getDerivedName(),
+                        x01Full,
+                        y,
+                        zClean,
+                        cfg
+                );
+            }
+
+            // Row should still show xSelected (i.e. "X5_bin") in the table.
+            results.add(ResultRowV2.ok(xSelected, y, zClean, er));
         }
     }
 
-    private void computeRowsForJointSingleX(Node x, Node y) {
-        EligibilityV2 elig = checkEligibility(x, y);
+    private void computeRowsForJointSingleX(Node xSelected, Node y) {
+        // v2: JOINT supported only for |X| = 1 (binary estimator),
+        // but X may be a derived/binarized placeholder (e.g., "X5_bin").
+
+        // 1) If derived, use SOURCE node for RA (graph-based adjustment sets).
+        Node xForRa = xSelected;
+
+        DerivedTreatmentSpecV2 spec = null;
+        boolean isDerived = hasDerivedTreatment(xSelected.getName());
+        if (isDerived) {
+            spec = getDerivedTreatment(xSelected.getName());
+            xForRa = graph.getNode(spec.getSourceName());
+            if (xForRa == null) {
+                results.add(ResultRowV2.ineligible(
+                        xSelected, y,
+                        "Derived treatment " + spec.getDerivedName()
+                                + " refers to source variable " + spec.getSourceName()
+                                + " which is not in the graph."
+                ));
+                return;
+            }
+        }
+
+        // 2) Eligibility check should apply to the selected treatment (derived allowed).
+        EligibilityV2 elig = checkEligibility(xSelected, y);
         if (!elig.ok) {
-            results.add(ResultRowV2.ineligible(x, y, elig.reason));
+            results.add(ResultRowV2.ineligible(xSelected, y, elig.reason));
             return;
         }
 
-        Set<Node> Xset = new LinkedHashSet<>(Collections.singleton(x));
-        Set<Node> Yset = new LinkedHashSet<>(Collections.singleton(y));
-
-        List<Set<Node>> zSets = computeJointAdjustmentSets(Xset, Yset);
+        // 3) v2 JOINT is effectively singleton do(X) anyway, so compute Z using xForRa.
+        // (We use the single-pair RA to keep behavior consistent.)
+        List<Set<Node>> zSets = computeSinglePairAdjustmentSets(xForRa, y);
 
         if (zSets.isEmpty()) {
-            results.add(ResultRowV2.noAdjustmentSet(x, y));
+            results.add(ResultRowV2.noAdjustmentSet(xSelected, y));
             return;
         }
 
         for (Set<Node> z : zSets) {
             LinkedHashSet<Node> zClean = new LinkedHashSet<>(z);
-            zClean.removeAll(Xset);
+            zClean.remove(xForRa); // remove SOURCE node, not derived placeholder
 
-            AdjustmentEffectEstimatorV1.EffectEstimateResultV1 er =
-                    AdjustmentEffectEstimatorV1.estimateAteV1(dataSet, x, y, zClean, cfg);
+            AdjustmentEffectEstimatorV1.EffectEstimateResultV1 er;
 
-            results.add(ResultRowV2.ok(x, y, zClean, er));
+            if (!isDerived) {
+                // Standard binary discrete X in dataset
+                er = AdjustmentEffectEstimatorV1.estimateAteV1(dataSet, xSelected, y, zClean, cfg);
+            } else {
+                // Derived/binarized X: pass provided binary vector
+                int[] x01Full = spec.computeX01Full(dataSet);
+
+                er = AdjustmentEffectEstimatorV1.estimateAteBinaryVectorV1(
+                        dataSet,
+                        spec.getDerivedName(),
+                        x01Full,
+                        y,
+                        zClean,
+                        cfg
+                );
+            }
+
+            // Row should display the selected X (e.g., "X5_bin"), but Z comes from source X (e.g., "X5").
+            results.add(ResultRowV2.ok(xSelected, y, zClean, er));
         }
+    }
+
+    private AdjustmentEffectEstimatorV1.EffectEstimateResultV1 estimateFor(Node x, Node y, Set<Node> zClean) {
+        boolean isDerived = hasDerivedTreatment(x.getName());
+
+        if (!isDerived) {
+            return AdjustmentEffectEstimatorV1.estimateAteV1(dataSet, x, y, zClean, cfg);
+        }
+
+        DerivedTreatmentSpecV2 spec = getDerivedTreatment(x.getName());
+        int[] x01Full = spec.computeX01Full(dataSet);
+
+        return AdjustmentEffectEstimatorV1.estimateAteBinaryVectorV1(
+                dataSet,
+                spec.getDerivedName(),
+                x01Full,
+                y,
+                zClean,
+                cfg
+        );
     }
 
     private EligibilityV2 checkEligibility(Node x, Node y) {
-        // X must be binary discrete
-        Node xVar = dataSet.getVariable(x.getName());
-        if (!(xVar instanceof DiscreteVariable dx) || dx.getNumCategories() != 2) {
-            return EligibilityV2.bad("X must be a 2-category discrete variable (please discretize).");
+        boolean isDerived = hasDerivedTreatment(x.getName());
+
+        if (!isDerived) {
+            Node xVar = dataSet.getVariable(x.getName());
+            if (!(xVar instanceof DiscreteVariable dx) || dx.getNumCategories() != 2) {
+                return EligibilityV2.bad("X must be a 2-category discrete variable OR use Binarize...");
+            }
         }
 
-        // Y must be continuous
         Node yVar = dataSet.getVariable(y.getName());
         if (yVar instanceof DiscreteVariable) {
             return EligibilityV2.bad("Y must be continuous (not discrete).");
         }
-
-        // v2: you said "one DAG input" for now—if you want to hard-enforce:
-        // if (!"DAG".equalsIgnoreCase(graphType)) return EligibilityV2.bad("v2 currently expects a DAG input.");
 
         return EligibilityV2.ok();
     }
@@ -362,7 +504,8 @@ public final class MixedDrAdjustmentEffectEditorModelV2 implements SessionModel,
         ra.setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy.SEARCH);
 
         return ra.adjustmentSets(
-                x, y,
+                graph.getNode(x.getName()) != null ? graph.getNode(x.getName()) : x,
+                graph.getNode(y.getName()) != null ? graph.getNode(y.getName()) : y,
                 graphType,
                 maxNumSets,
                 maxRadius,
@@ -370,14 +513,13 @@ public final class MixedDrAdjustmentEffectEditorModelV2 implements SessionModel,
                 maxPathLength,
                 RecursiveAdjustment.ColliderPolicy.OFF,
                 avoidAmenable,
-                notFollowed,
-                containing,
+                normalizeToGraphNodes(notFollowed),
+                normalizeToGraphNodes(containing),
                 Set.of()
         );
     }
 
     private List<Set<Node>> computeJointAdjustmentSets(Set<Node> Xset, Set<Node> Yset) {
-        // v2: for singleton sets, reuse the single-pair logic (keeps behavior consistent)
         if (Xset.size() == 1 && Yset.size() == 1) {
             return computeSinglePairAdjustmentSets(Xset.iterator().next(), Yset.iterator().next());
         }
@@ -387,16 +529,28 @@ public final class MixedDrAdjustmentEffectEditorModelV2 implements SessionModel,
         ra.setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy.SEARCH);
 
         return ra.adjustmentSets(
-                Xset, Yset,
+                normalizeToGraphNodes(Xset),
+                normalizeToGraphNodes(Yset),
                 graphType,
                 maxNumSets,
                 maxRadius,
                 nearWhichEndpoint,
                 maxPathLength,
                 avoidAmenable,
-                notFollowed,
-                containing
+                normalizeToGraphNodes(notFollowed),
+                normalizeToGraphNodes(containing)
         );
+    }
+
+    private Set<Node> normalizeToGraphNodes(Set<Node> s) {
+        if (s == null || s.isEmpty()) return Collections.emptySet();
+        LinkedHashSet<Node> out = new LinkedHashSet<>();
+        for (Node n : s) {
+            if (n == null) continue;
+            Node gNode = graph.getNode(n.getName());
+            out.add(gNode != null ? gNode : n);
+        }
+        return out;
     }
 
     // -----------------------

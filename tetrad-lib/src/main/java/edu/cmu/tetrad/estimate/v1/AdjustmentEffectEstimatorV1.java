@@ -152,6 +152,280 @@ public final class AdjustmentEffectEstimatorV1 {
         );
     }
 
+    // v1.1: Add to edu.cmu.tetrad.estimate.v1.AdjustmentEffectEstimatorV1
+
+    public static EffectEstimateResultV1 estimateAteBinaryVectorV1(
+            DataSet data,
+            String xName,
+            int[] x01Full,          // length = data.getNumRows(); values {0,1}; others treated as missing
+            Node y,
+            Set<Node> z,
+            ConfigV1 cfg
+    ) {
+        Objects.requireNonNull(data, "v1.1: data");
+        Objects.requireNonNull(xName, "v1.1: xName");
+        Objects.requireNonNull(x01Full, "v1.1: x01Full");
+        Objects.requireNonNull(y, "v1.1: y");
+        Objects.requireNonNull(z, "v1.1: z");
+        Objects.requireNonNull(cfg, "v1.1: cfg");
+
+        if (x01Full.length != data.getNumRows()) {
+            throw new IllegalArgumentException("v1.1: x01Full length must match data rows.");
+        }
+
+        // v1.1: Extract complete cases, using X from x01Full instead of DataSet
+        ExtractedV1 ex = ExtractedV1.fromDataSetWithProvidedBinaryX(data, xName, x01Full, y, z);
+
+        if (ex.n < 10) {
+            throw new IllegalArgumentException("v1.1: Too few complete cases after filtering missingness: n=" + ex.n);
+        }
+
+        MixedFeatureBuilderV1 fb = new MixedFeatureBuilderV1(cfg);
+        fb.fit(ex);
+
+        OutcomeModelV1 om = new OutcomeModelV1(cfg);
+        PropensityModelV1 pm = new PropensityModelV1(cfg);
+
+        PointEstimatesV1 pe = computePointEstimatesV1(ex, fb, om, pm, cfg);
+        BootstrapSummaryV1 bs = bootstrapV1(ex, fb, om, pm, cfg);
+
+        List<String> zNames = z.stream().map(Node::getName).sorted().toList();
+        return new EffectEstimateResultV1(
+                zNames,
+                pe.ateOr, pe.ateDr,
+                bs.seOr, bs.seDr,
+                bs.ciLoOr, bs.ciHiOr,
+                bs.ciLoDr, bs.ciHiDr,
+                pe.minProp, pe.maxProp, pe.fracClipped,
+                ex.n
+        );
+    }
+
+    // v1.1: Add this factory method inside ExtractedV1 (keep class private as it is today).
+// v1: Inside AdjustmentEffectEstimatorV1
+
+    private static final class ExtractedV1 {
+        final int n;
+        final int[] x01;               // v1: treatment coded 0/1
+        final double[] y;              // v1: continuous outcome
+        final List<ZColumnV1> zCols;   // v1: covariates, mixed
+
+        private ExtractedV1(int n, int[] x01, double[] y, List<ZColumnV1> zCols) {
+            this.n = n;
+            this.x01 = x01;
+            this.y = y;
+            this.zCols = zCols;
+        }
+
+        /**
+         * v1: Extract (X,Y,Z) using complete-case rows only.
+         * v1: X must be a 2-category DiscreteVariable and will be coded to {0,1}.
+         * v1: Y must be continuous.
+         * v1: Z may be mixed discrete/continuous.
+         */
+        static ExtractedV1 fromDataSet(DataSet data, Node x, Node y, Set<Node> z) {
+            Objects.requireNonNull(data, "v1: data");
+            Objects.requireNonNull(x, "v1: x");
+            Objects.requireNonNull(y, "v1: y");
+            Objects.requireNonNull(z, "v1: z");
+
+            int xCol = data.getColumn(x);
+            int yCol = data.getColumn(y);
+
+            // v1: enforce binary discrete X
+            if (!(x instanceof DiscreteVariable dx)) {
+                throw new IllegalArgumentException("v1: Treatment X must be a 2-category DiscreteVariable.");
+            }
+            if (dx.getNumCategories() != 2) {
+                throw new IllegalArgumentException("v1: Treatment X must have exactly 2 categories; got " + dx.getNumCategories());
+            }
+
+            // v1: enforce continuous Y
+            if (y instanceof DiscreteVariable) {
+                throw new IllegalArgumentException("v1: Outcome Y must be continuous (not a DiscreteVariable).");
+            }
+
+            // v1: collect Z columns in stable order
+            List<Node> zList = z.stream().sorted(Comparator.comparing(Node::getName)).toList();
+            List<ZColumnV1> zCols = new ArrayList<>(zList.size());
+            for (Node zi : zList) {
+                int col = data.getColumn(zi);
+                if (zi instanceof DiscreteVariable dz) {
+                    zCols.add(ZColumnV1.discrete(zi.getName(), col, dz.getNumCategories()));
+                } else {
+                    zCols.add(ZColumnV1.continuous(zi.getName(), col));
+                }
+            }
+
+            // v1: complete-case filtering (any missing in X,Y, or any Z => drop row)
+            List<Integer> keep = new ArrayList<>();
+            for (int r = 0; r < data.getNumRows(); r++) {
+                if (isMissing(data, r, xCol)) continue;
+                if (isMissing(data, r, yCol)) continue;
+
+                boolean miss = false;
+                for (ZColumnV1 c : zCols) {
+                    if (isMissing(data, r, c.dataCol)) {
+                        miss = true;
+                        break;
+                    }
+                }
+                if (!miss) keep.add(r);
+            }
+
+            int n = keep.size();
+            int[] x01 = new int[n];
+            double[] yy = new double[n];
+
+            // v1: build per-Z storage arrays
+            List<ZColumnV1> built = zCols.stream().map(c -> c.emptyCopyForN(n)).toList();
+
+            for (int i = 0; i < n; i++) {
+                int r = keep.get(i);
+
+                // v1: DataSet stores discrete as integer category index
+                int xv = data.getInt(r, xCol);
+                x01[i] = (xv == 0) ? 0 : 1;  // v1: assumes categories are indexed 0/1
+
+                yy[i] = data.getDouble(r, yCol);
+
+                for (int j = 0; j < built.size(); j++) {
+                    ZColumnV1 dst = built.get(j);
+                    if (dst.isDiscrete) dst.discreteVals[i] = data.getInt(r, dst.dataCol);
+                    else dst.continuousVals[i] = data.getDouble(r, dst.dataCol);
+                }
+            }
+
+            return new ExtractedV1(n, x01, yy, built);
+        }
+
+        private static boolean isMissing(DataSet data, int row, int col) {
+            Node v = data.getVariable(col);
+            if (v instanceof DiscreteVariable) {
+                int val = data.getInt(row, col);
+                return val < 0;              // v1: typical Tetrad missing convention for discrete
+            } else {
+                double val = data.getDouble(row, col);
+                return Double.isNaN(val);    // v1: missing continuous
+            }
+        }
+
+        ExtractedV1 resample(int[] idx) {
+            int n2 = idx.length;
+            int[] x2 = new int[n2];
+            double[] y2 = new double[n2];
+            List<ZColumnV1> z2 = this.zCols.stream().map(c -> c.emptyCopyForN(n2)).collect(Collectors.toList());
+
+            for (int i = 0; i < n2; i++) {
+                int s = idx[i];
+                x2[i] = this.x01[s];
+                y2[i] = this.y[s];
+                for (int j = 0; j < z2.size(); j++) {
+                    ZColumnV1 dst = z2.get(j);
+                    ZColumnV1 src = this.zCols.get(j);
+                    if (dst.isDiscrete) dst.discreteVals[i] = src.discreteVals[s];
+                    else dst.continuousVals[i] = src.continuousVals[s];
+                }
+            }
+            return new ExtractedV1(n2, x2, y2, z2);
+        }
+
+        // v1.1: Inside AdjustmentEffectEstimatorV1.ExtractedV1
+
+        static ExtractedV1 fromDataSetWithProvidedBinaryX(
+                DataSet data,
+                String xName,
+                int[] x01Full,   // length = data.getNumRows(); values {0,1}; others treated as missing
+                Node y,
+                Set<Node> z
+        ) {
+            Objects.requireNonNull(data, "v1.1: data");
+            Objects.requireNonNull(xName, "v1.1: xName");
+            Objects.requireNonNull(x01Full, "v1.1: x01Full");
+            Objects.requireNonNull(y, "v1.1: y");
+            Objects.requireNonNull(z, "v1.1: z");
+
+            if (x01Full.length != data.getNumRows()) {
+                throw new IllegalArgumentException("v1.1: x01Full length must match data rows.");
+            }
+
+            int yCol = data.getColumn(y);
+
+            // v1.1: enforce continuous Y
+            if (y instanceof DiscreteVariable) {
+                throw new IllegalArgumentException("v1.1: Outcome Y must be continuous (not a DiscreteVariable).");
+            }
+
+            // v1.1: collect Z columns in stable order
+            List<Node> zList = z.stream().sorted(Comparator.comparing(Node::getName)).toList();
+            List<ZColumnV1> zCols = new ArrayList<>(zList.size());
+            for (Node zi : zList) {
+                int col = data.getColumn(zi);
+                if (zi instanceof DiscreteVariable dz) {
+                    zCols.add(ZColumnV1.discrete(zi.getName(), col, dz.getNumCategories()));
+                } else {
+                    zCols.add(ZColumnV1.continuous(zi.getName(), col));
+                }
+            }
+
+            // v1.1: complete-case filtering:
+            // accept only rows where X vector is 0/1 AND Y and all Z are non-missing
+            List<Integer> keep = new ArrayList<>();
+            for (int r = 0; r < data.getNumRows(); r++) {
+                int xv = x01Full[r];
+                if (xv != 0 && xv != 1) continue;
+
+                if (isMissing(data, r, yCol)) continue;
+
+                boolean miss = false;
+                for (ZColumnV1 c : zCols) {
+                    if (isMissing(data, r, c.dataCol)) {
+                        miss = true;
+                        break;
+                    }
+                }
+                if (!miss) keep.add(r);
+            }
+
+            int n = keep.size();
+            int[] x01 = new int[n];
+            double[] yy = new double[n];
+
+            // v1.1: build per-Z storage arrays
+            List<ZColumnV1> built = zCols.stream().map(c -> c.emptyCopyForN(n)).toList();
+
+            for (int i = 0; i < n; i++) {
+                int r = keep.get(i);
+
+                x01[i] = x01Full[r];
+                yy[i] = data.getDouble(r, yCol);
+
+                for (int j = 0; j < built.size(); j++) {
+                    ZColumnV1 dst = built.get(j);
+                    if (dst.isDiscrete) dst.discreteVals[i] = data.getInt(r, dst.dataCol);
+                    else dst.continuousVals[i] = data.getDouble(r, dst.dataCol);
+                }
+            }
+
+            return new ExtractedV1(n, x01, yy, built);
+        }
+
+//        private static boolean isMissing(DataSet data, int row, int col) {
+//            // v1: Tetrad uses NaN for missing continuous; for discrete it often uses -99 or similar
+//            // but DataSet provides isMissing() in some versions. If you have it, replace this logic.
+//            Node v = data.getVariable(col);
+//            if (v instanceof DiscreteVariable) {
+//                int val = data.getInt(row, col);
+//                return val < 0;
+//            } else {
+//                double val = data.getDouble(row, col);
+//                return Double.isNaN(val);
+//            }
+//        }
+
+        // ... keep your existing resample(int[] idx) etc. here ...
+    }
+
     // =========================
     // v1: Core computation
     // =========================
@@ -297,126 +571,126 @@ public final class AdjustmentEffectEstimatorV1 {
     // v1: Data extraction
     // =========================
 
-    /** v1: Extracted complete-case arrays for X (binary), Y (continuous), Z (mixed). */
-    private static final class ExtractedV1 {
-        final int n;
-        final int[] x01;          // v1: treatment coded 0/1
-        final double[] y;         // v1: outcome
-        final List<ZColumnV1> zCols; // v1: covariates, each column knows if discrete/continuous
-
-        private ExtractedV1(int n, int[] x01, double[] y, List<ZColumnV1> zCols) {
-            this.n = n;
-            this.x01 = x01;
-            this.y = y;
-            this.zCols = zCols;
-        }
-
-        static ExtractedV1 fromDataSet(DataSet data, Node x, Node y, Set<Node> z) {
-            int xCol = data.getColumn(x);
-            int yCol = data.getColumn(y);
-
-            // v1: enforce binary discrete X
-            if (!(x instanceof DiscreteVariable dx)) {
-                throw new IllegalArgumentException("v1: Treatment X must be a 2-category DiscreteVariable.");
-            }
-            if (dx.getNumCategories() != 2) {
-                throw new IllegalArgumentException("v1: Treatment X must have exactly 2 categories; got " + dx.getNumCategories());
-            }
-
-            // v1: collect Z columns in stable order
-            List<Node> zList = z.stream().sorted(Comparator.comparing(Node::getName)).toList();
-            List<ZColumnV1> zCols = new ArrayList<>(zList.size());
-            for (Node zi : zList) {
-                int col = data.getColumn(zi);
-                if (zi instanceof DiscreteVariable dz) {
-                    zCols.add(ZColumnV1.discrete(zi.getName(), col, dz.getNumCategories()));
-                } else {
-                    zCols.add(ZColumnV1.continuous(zi.getName(), col));
-                }
-            }
-
-            // v1: complete case filtering (any missing in X,Y,Z -> drop row)
-            List<Integer> keep = new ArrayList<>();
-            for (int r = 0; r < data.getNumRows(); r++) {
-                if (isMissing(data, r, xCol)) continue;
-                if (isMissing(data, r, yCol)) continue;
-                boolean miss = false;
-                for (ZColumnV1 c : zCols) {
-                    if (isMissing(data, r, c.dataCol)) {
-                        miss = true;
-                        break;
-                    }
-                }
-                if (!miss) keep.add(r);
-            }
-
-            int n = keep.size();
-            int[] x01 = new int[n];
-            double[] yy = new double[n];
-
-            // v1: store Z in column-wise arrays for faster feature building
-//            List<ZColumnV1> built = zCols.stream().map(ZColumnV1::emptyCopyForN).collect(Collectors.toList());
-            // v1: allocate arrays for the kept rows
-            List<ZColumnV1> built = zCols.stream()
-                    .map(c -> c.emptyCopyForN(n))
-                    .collect(Collectors.toList());
-
-            for (int i = 0; i < n; i++) {
-                int r = keep.get(i);
-
-                // v1: X is stored as int category index in Tetrad DataSet for discrete
-                int xv = data.getInt(r, xCol);
-                // v1: map category 0->0, 1->1 (if you prefer named mapping, add it here)
-                x01[i] = (xv == 0) ? 0 : 1;
-
-                yy[i] = data.getDouble(r, yCol);
-
-                for (int j = 0; j < built.size(); j++) {
-                    ZColumnV1 col = built.get(j);
-                    if (col.isDiscrete) {
-                        col.discreteVals[i] = data.getInt(r, col.dataCol);
-                    } else {
-                        col.continuousVals[i] = data.getDouble(r, col.dataCol);
-                    }
-                }
-            }
-
-            return new ExtractedV1(n, x01, yy, built);
-        }
-
-        ExtractedV1 resample(int[] idx) {
-            int n2 = idx.length;
-            int[] x2 = new int[n2];
-            double[] y2 = new double[n2];
-            List<ZColumnV1> z2 = this.zCols.stream().map(c -> c.emptyCopyForN(n2)).collect(Collectors.toList());
-
-            for (int i = 0; i < n2; i++) {
-                int s = idx[i];
-                x2[i] = this.x01[s];
-                y2[i] = this.y[s];
-                for (int j = 0; j < z2.size(); j++) {
-                    ZColumnV1 dst = z2.get(j);
-                    ZColumnV1 src = this.zCols.get(j);
-                    if (dst.isDiscrete) dst.discreteVals[i] = src.discreteVals[s];
-                    else dst.continuousVals[i] = src.continuousVals[s];
-                }
-            }
-            return new ExtractedV1(n2, x2, y2, z2);
-        }
-
-        private static boolean isMissing(DataSet data, int row, int col) {
-            // v1: Tetrad uses NaN for missing continuous; for discrete it often uses -99 or similar
-            // but DataSet provides isMissing() in some versions. If you have it, replace this logic.
-            Node v = data.getVariable(col);
-            if (v instanceof DiscreteVariable) {
-                int val = data.getInt(row, col);
-                return val < 0;
-            } else {
-                double val = data.getDouble(row, col);
-                return Double.isNaN(val);
-            }
-        }
-    }
+//    /** v1: Extracted complete-case arrays for X (binary), Y (continuous), Z (mixed). */
+//    private static final class ExtractedV1 {
+//        final int n;
+//        final int[] x01;          // v1: treatment coded 0/1
+//        final double[] y;         // v1: outcome
+//        final List<ZColumnV1> zCols; // v1: covariates, each column knows if discrete/continuous
+//
+//        private ExtractedV1(int n, int[] x01, double[] y, List<ZColumnV1> zCols) {
+//            this.n = n;
+//            this.x01 = x01;
+//            this.y = y;
+//            this.zCols = zCols;
+//        }
+//
+//        static ExtractedV1 fromDataSet(DataSet data, Node x, Node y, Set<Node> z) {
+//            int xCol = data.getColumn(x);
+//            int yCol = data.getColumn(y);
+//
+//            // v1: enforce binary discrete X
+//            if (!(x instanceof DiscreteVariable dx)) {
+//                throw new IllegalArgumentException("v1: Treatment X must be a 2-category DiscreteVariable.");
+//            }
+//            if (dx.getNumCategories() != 2) {
+//                throw new IllegalArgumentException("v1: Treatment X must have exactly 2 categories; got " + dx.getNumCategories());
+//            }
+//
+//            // v1: collect Z columns in stable order
+//            List<Node> zList = z.stream().sorted(Comparator.comparing(Node::getName)).toList();
+//            List<ZColumnV1> zCols = new ArrayList<>(zList.size());
+//            for (Node zi : zList) {
+//                int col = data.getColumn(zi);
+//                if (zi instanceof DiscreteVariable dz) {
+//                    zCols.add(ZColumnV1.discrete(zi.getName(), col, dz.getNumCategories()));
+//                } else {
+//                    zCols.add(ZColumnV1.continuous(zi.getName(), col));
+//                }
+//            }
+//
+//            // v1: complete case filtering (any missing in X,Y,Z -> drop row)
+//            List<Integer> keep = new ArrayList<>();
+//            for (int r = 0; r < data.getNumRows(); r++) {
+//                if (isMissing(data, r, xCol)) continue;
+//                if (isMissing(data, r, yCol)) continue;
+//                boolean miss = false;
+//                for (ZColumnV1 c : zCols) {
+//                    if (isMissing(data, r, c.dataCol)) {
+//                        miss = true;
+//                        break;
+//                    }
+//                }
+//                if (!miss) keep.add(r);
+//            }
+//
+//            int n = keep.size();
+//            int[] x01 = new int[n];
+//            double[] yy = new double[n];
+//
+//            // v1: store Z in column-wise arrays for faster feature building
+////            List<ZColumnV1> built = zCols.stream().map(ZColumnV1::emptyCopyForN).collect(Collectors.toList());
+//            // v1: allocate arrays for the kept rows
+//            List<ZColumnV1> built = zCols.stream()
+//                    .map(c -> c.emptyCopyForN(n))
+//                    .collect(Collectors.toList());
+//
+//            for (int i = 0; i < n; i++) {
+//                int r = keep.get(i);
+//
+//                // v1: X is stored as int category index in Tetrad DataSet for discrete
+//                int xv = data.getInt(r, xCol);
+//                // v1: map category 0->0, 1->1 (if you prefer named mapping, add it here)
+//                x01[i] = (xv == 0) ? 0 : 1;
+//
+//                yy[i] = data.getDouble(r, yCol);
+//
+//                for (int j = 0; j < built.size(); j++) {
+//                    ZColumnV1 col = built.get(j);
+//                    if (col.isDiscrete) {
+//                        col.discreteVals[i] = data.getInt(r, col.dataCol);
+//                    } else {
+//                        col.continuousVals[i] = data.getDouble(r, col.dataCol);
+//                    }
+//                }
+//            }
+//
+//            return new ExtractedV1(n, x01, yy, built);
+//        }
+//
+//        ExtractedV1 resample(int[] idx) {
+//            int n2 = idx.length;
+//            int[] x2 = new int[n2];
+//            double[] y2 = new double[n2];
+//            List<ZColumnV1> z2 = this.zCols.stream().map(c -> c.emptyCopyForN(n2)).collect(Collectors.toList());
+//
+//            for (int i = 0; i < n2; i++) {
+//                int s = idx[i];
+//                x2[i] = this.x01[s];
+//                y2[i] = this.y[s];
+//                for (int j = 0; j < z2.size(); j++) {
+//                    ZColumnV1 dst = z2.get(j);
+//                    ZColumnV1 src = this.zCols.get(j);
+//                    if (dst.isDiscrete) dst.discreteVals[i] = src.discreteVals[s];
+//                    else dst.continuousVals[i] = src.continuousVals[s];
+//                }
+//            }
+//            return new ExtractedV1(n2, x2, y2, z2);
+//        }
+//
+//        private static boolean isMissing(DataSet data, int row, int col) {
+//            // v1: Tetrad uses NaN for missing continuous; for discrete it often uses -99 or similar
+//            // but DataSet provides isMissing() in some versions. If you have it, replace this logic.
+//            Node v = data.getVariable(col);
+//            if (v instanceof DiscreteVariable) {
+//                int val = data.getInt(row, col);
+//                return val < 0;
+//            } else {
+//                double val = data.getDouble(row, col);
+//                return Double.isNaN(val);
+//            }
+//        }
+//    }
 
     /** v1: Represents one covariate column Z_j. */
     private static final class ZColumnV1 {

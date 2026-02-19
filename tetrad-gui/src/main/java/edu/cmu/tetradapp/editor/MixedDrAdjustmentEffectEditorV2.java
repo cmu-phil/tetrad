@@ -1,15 +1,19 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.MixedDrAdjustmentEffectEditorModelV2;
 import edu.cmu.tetradapp.model.MixedDrAdjustmentEffectEditorModelV2.ResultRowV2;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -26,6 +30,11 @@ import java.util.regex.Pattern;
  *  - "Compute adjustment sets and effects"
  *  - simple table rows
  *  - "View Details..." dialog (copy/paste friendly) for a selected row
+ *
+ * v2.1:
+ *  - adds "Binarize..." button for derived binary treatments (stored in model)
+ *  - table includes a "Note" column and is safe for rows where x/y are null
+ *  - "View details..." enabled only for OK rows
  */
 public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
 
@@ -45,41 +54,23 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
     private final JButton viewDetailsButton = new JButton("View details...");
 
     private final JTable resultTable;
-    private final ResultTableModel tableModel;
+    private final MixedDrResultTableModelV2 tableModel;
 
     private final DefaultTableCellRenderer numberRenderer = new DefaultTableCellRenderer() {
         {
             setHorizontalAlignment(SwingConstants.RIGHT);
         }
 
-//        @Override
-//        protected void setValue(Object value) {
-//            if (value == null) {
-//                setText("*");
-//                return;
-//            }
-//            if (value instanceof Number n) {
-//                double d = n.doubleValue();
-//                if (Double.isNaN(d)) {
-//                    setText("*");
-//                    return;
-//                }
-//                setText(NumberFormatUtil.getInstance().getNumberFormat().format(d));
-//                return;
-//            }
-//            setText(String.valueOf(value));
-//        }
-
         @Override
         protected void setValue(Object value) {
             if (value == null) {
-                setText("");          // v2: show blank instead of "*"
+                setText("");
                 return;
             }
             if (value instanceof Number n) {
                 double d = n.doubleValue();
                 if (Double.isNaN(d) || Double.isInfinite(d)) {
-                    setText("");      // v2: blank for missing/NA
+                    setText("");
                     return;
                 }
                 setText(NumberFormatUtil.getInstance().getNumberFormat().format(d));
@@ -90,15 +81,15 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
     };
 
     public MixedDrAdjustmentEffectEditorV2(MixedDrAdjustmentEffectEditorModelV2 model) {
-        this.model = Objects.requireNonNull(model);
-        this.graph = model.getGraph();
+        this.model = Objects.requireNonNull(model, "model");
+        this.graph = Objects.requireNonNull(model.getGraph(), "graph");
 
-        this.tableModel = new ResultTableModel(model);
-        this.resultTable = new JTable(tableModel);
+        this.tableModel = new MixedDrResultTableModelV2(this.model);
+        this.resultTable = new JTable(this.tableModel);
+
         this.resultTable.setFillsViewportHeight(true);
         this.resultTable.setTransferHandler(new DefaultTableTransferHandler(0));
-
-        this.resultTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        this.resultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.resultTable.setAutoCreateRowSorter(true);
 
         treatmentsField.setText(model.getTreatmentsText());
@@ -119,43 +110,17 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
         initUI();
         initListeners();
         installRenderers();
+        updateViewDetailsEnabled();
     }
 
-    private static String wildcardToRegex(String pattern) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("^");
-        for (int i = 0; i < pattern.length(); i++) {
-            char c = pattern.charAt(i);
-            switch (c) {
-                case '*': sb.append(".*"); break;
-                case '?': sb.append("."); break;
-                case '\\': sb.append("\\\\"); break;
-                case '.':
-                case '[':
-                case ']':
-                case '{':
-                case '}':
-                case '(':
-                case ')':
-                case '+':
-                case '-':
-                case '^':
-                case '$':
-                case '|':
-                    sb.append("\\").append(c);
-                    break;
-                default:
-                    sb.append(c);
-            }
-        }
-        sb.append("$");
-        return sb.toString();
-    }
+    // ------------------------
+    // UI
+    // ------------------------
 
     private void initUI() {
-        setLayout(new BorderLayout(5,5));
+        setLayout(new BorderLayout(5, 5));
 
-        JPanel topPanel = new JPanel(new BorderLayout(5,5));
+        JPanel topPanel = new JPanel(new BorderLayout(5, 5));
 
         ButtonGroup modeGroup = new ButtonGroup();
         modeGroup.add(pairwiseRadio);
@@ -164,58 +129,105 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
         if (model.getEffectMode() == MixedDrAdjustmentEffectEditorModelV2.EffectMode.JOINT) jointRadio.setSelected(true);
         else pairwiseRadio.setSelected(true);
 
-        JPanel modePanel = new JPanel(new GridLayout(0,1));
+        JPanel modePanel = new JPanel(new GridLayout(0, 1));
         modePanel.add(new JLabel("Mode:"));
         modePanel.add(pairwiseRadio);
         modePanel.add(jointRadio);
         topPanel.add(modePanel, BorderLayout.NORTH);
 
-        JPanel xyPanel = new JPanel(new GridLayout(2,2,5,5));
+        JPanel xyPanel = new JPanel(new GridLayout(2, 2, 5, 5));
+
+        JButton binarizeButton = new JButton("Binarize...");
+
+        JPanel xRow = new JPanel(new BorderLayout(5, 0));
+        xRow.add(treatmentsField, BorderLayout.CENTER);
+        xRow.add(binarizeButton, BorderLayout.EAST);
+
         xyPanel.add(new JLabel("Treatments (X):"));
-        xyPanel.add(treatmentsField);
+        xyPanel.add(xRow);
+
         xyPanel.add(new JLabel("Outcomes (Y):"));
         xyPanel.add(outcomesField);
+
         topPanel.add(xyPanel, BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttonPanel.add(runButton);
         buttonPanel.add(paramsButton);
         buttonPanel.add(viewDetailsButton);
+
         topPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         add(topPanel, BorderLayout.NORTH);
 
         add(new JScrollPane(resultTable), BorderLayout.CENTER);
+
+        // hook binarize
+        binarizeButton.addActionListener(e -> onBinarize());
     }
+
+    // ------------------------
+    // Listeners
+    // ------------------------
 
     private void initListeners() {
         runButton.addActionListener(this::onRun);
         paramsButton.addActionListener(this::onEditParams);
         viewDetailsButton.addActionListener(this::onViewDetails);
+
+        ListSelectionModel sel = resultTable.getSelectionModel();
+        sel.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (e.getValueIsAdjusting()) return;
+                updateViewDetailsEnabled();
+            }
+        });
     }
 
     private void onRun(ActionEvent e) {
         try {
             updateModelFromUI();
-            model.recompute();
+            model.recomputeAsync(() -> {
+                tableModel.fireTableDataChanged();
+                updateViewDetailsEnabled();
+            });
 
-            tableModel.fireTableStructureChanged();
             installRenderers();
+            updateViewDetailsEnabled();
+            tableModel.fireTableDataChanged();
         } catch (IllegalArgumentException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid selection", JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    private void refreshTableView() {
+        // If a RowSorter exists, this helps it pick up row count changes immediately.
+        RowSorter<?> sorter = resultTable.getRowSorter();
+        if (sorter instanceof DefaultRowSorter<?, ?> drs) {
+            drs.allRowsChanged();
+        }
+
+        // Revalidate & repaint the table and its parent viewport.
+        resultTable.revalidate();
+        resultTable.repaint();
+
+        Container p = resultTable.getParent();
+        if (p != null) {
+            p.revalidate();
+            p.repaint();
+        }
+    }
+
+
     private void onEditParams(ActionEvent e) {
-        // v2: keep this simple; borrow the RA panel feel from linear tool, plus a few estimator knobs.
         JTextField maxNumField = new JTextField(String.valueOf(model.getMaxNumSets()));
         JTextField radiusField = new JTextField(String.valueOf(model.getMaxRadius()));
         JTextField nearField = new JTextField(String.valueOf(model.getNearWhichEndpoint()));
         JTextField pathField = new JTextField(String.valueOf(model.getMaxPathLength()));
         JCheckBox avoidAmenableBox = new JCheckBox("Avoid amenable backbone (GAC mode)", model.isAvoidAmenable());
 
-        // Estimator knobs (v2)
         var cfg = model.getCfg();
         JTextField basisDegreeField = new JTextField(String.valueOf(cfg.basisDegree));
         JCheckBox interactionsBox = new JCheckBox("Include X*phi(Z) interactions", cfg.includeTreatmentInteractions);
@@ -272,32 +284,62 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
     }
 
     private void onViewDetails(ActionEvent e) {
-        int[] selected = resultTable.getSelectedRows();
-        if (selected.length == 0) {
+        int viewIndex = resultTable.getSelectedRow();
+        if (viewIndex < 0) {
             JOptionPane.showMessageDialog(this, "Please select a row first.", "No selection",
                     JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        if (selected.length > 1) {
-            JOptionPane.showMessageDialog(this, "Please select exactly one row to view details.",
-                    "Multiple selections", JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
 
-        int viewIndex = selected[0];
         int modelIndex = resultTable.convertRowIndexToModel(viewIndex);
         ResultRowV2 row = model.getResultRow(modelIndex);
 
-        if (row.status != ResultRowV2.Status.OK || row.details == null) {
-            JOptionPane.showMessageDialog(this,
-                    "No detailed estimate is available for this row.\n\n" + row.message,
-                    "No details",
-                    JOptionPane.INFORMATION_MESSAGE);
+        if (row == null || row.status != ResultRowV2.Status.OK || row.details == null) {
+            String msg = (row == null) ? "No row selected." : ("No detailed estimate is available for this row.\n\n" + safe(row.message));
+            JOptionPane.showMessageDialog(this, msg, "No details", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
         showDetailsDialog(row);
     }
+
+    private void onBinarize() {
+        var spec = edu.cmu.tetradapp.editor.BinarizeTreatmentDialogV2.showDialog(
+                this, model.getDataSet(), model.getGraph()
+        );
+        if (spec == null) return;
+
+        model.addOrReplaceDerivedTreatment(spec);
+
+        String cur = treatmentsField.getText().trim();
+        if (cur.isEmpty() || "*".equals(cur)) {
+            treatmentsField.setText(spec.getDerivedName());
+        } else {
+            treatmentsField.setText(cur + ", " + spec.getDerivedName());
+        }
+
+//        model.setTreatmentsText(treatmentsField.getText());
+
+        // v2: optional – immediately recompute and refresh table after creating a derived treatment
+        model.setTreatmentsText(treatmentsField.getText());
+        try {
+            updateModelFromUI();
+            model.recomputeAsync(() -> {
+                tableModel.fireTableDataChanged();
+                updateViewDetailsEnabled();
+            });
+            tableModel.fireTableStructureChanged();
+            installRenderers();
+            updateViewDetailsEnabled();
+        } catch (Exception ex) {
+            // v2: don't block binarize if recompute fails (e.g., missing Y selection yet)
+            tableModel.fireTableStructureChanged();
+        }
+    }
+
+    // ------------------------
+    // Details dialog
+    // ------------------------
 
     private void showDetailsDialog(ResultRowV2 row) {
         var d = row.details;
@@ -323,7 +365,7 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
         sb.append("Frac clipped: ").append(d.fracClipped).append("\n");
         sb.append("n (complete cases): ").append(d.n).append("\n");
 
-        JTextArea area = new JTextArea(sb.toString(), 24, 40);
+        JTextArea area = new JTextArea(sb.toString(), 24, 60);
         area.setEditable(false);
         area.setCaretPosition(0);
 
@@ -331,9 +373,9 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
 
         JButton copy = new JButton("Copy to clipboard");
         copy.addActionListener(ev -> {
-            area.selectAll();
-            area.copy();
-            area.select(0, 0);
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
+                    new StringSelection(area.getText()), null
+            );
         });
 
         JPanel south = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -352,9 +394,47 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
         dialog.setVisible(true);
     }
 
+    // ------------------------
+    // Model sync
+    // ------------------------
+
+//    private void updateModelFromUI() {
+//        Set<Node> X = parseNodeList(treatmentsField.getText().trim(), true);
+//        Set<Node> Y = parseNodeList(outcomesField.getText().trim(), false);
+//
+//        if (X.isEmpty() || Y.isEmpty()) {
+//            throw new IllegalArgumentException("Treatments and outcomes sets must not be empty.");
+//        }
+//
+//        model.setX(X);
+//        model.setY(Y);
+//
+//        model.setTreatmentsText(treatmentsField.getText());
+//        model.setOutcomesText(outcomesField.getText());
+//
+//        model.setEffectMode(
+//                pairwiseRadio.isSelected()
+//                        ? MixedDrAdjustmentEffectEditorModelV2.EffectMode.PAIRWISE
+//                        : MixedDrAdjustmentEffectEditorModelV2.EffectMode.JOINT
+//        );
+//
+//        // v2: optional – immediately recompute and refresh table after creating a derived treatment
+//        model.setTreatmentsText(treatmentsField.getText());
+//        try {
+//            updateModelFromUI();
+//            model.recompute();
+//            tableModel.fireTableStructureChanged();
+//            installRenderers();
+//            updateViewDetailsEnabled();
+//        } catch (Exception ex) {
+//            // v2: don't block binarize if recompute fails (e.g., missing Y selection yet)
+//            tableModel.fireTableStructureChanged();
+//        }
+//    }
+
     private void updateModelFromUI() {
-        Set<Node> X = parseNodeList(treatmentsField.getText().trim());
-        Set<Node> Y = parseNodeList(outcomesField.getText().trim());
+        Set<Node> X = parseNodeList(treatmentsField.getText().trim(), true);
+        Set<Node> Y = parseNodeList(outcomesField.getText().trim(), false);
 
         if (X.isEmpty() || Y.isEmpty()) {
             throw new IllegalArgumentException("Treatments and outcomes sets must not be empty.");
@@ -363,6 +443,9 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
         model.setX(X);
         model.setY(Y);
 
+        model.setTreatmentsText(treatmentsField.getText());
+        model.setOutcomesText(outcomesField.getText());
+
         model.setEffectMode(
                 pairwiseRadio.isSelected()
                         ? MixedDrAdjustmentEffectEditorModelV2.EffectMode.PAIRWISE
@@ -370,21 +453,38 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
         );
     }
 
-    private Set<Node> parseNodeList(String text) {
+    private Set<Node> parseNodeList(String text, boolean allowDerived) {
         LinkedHashSet<Node> nodes = new LinkedHashSet<>();
-        if (text.isEmpty()) return nodes;
+        if (text == null) return nodes;
 
-        String[] tokens = text.split("[,\\s]+");
+        // Manual tokenization: split on comma or any whitespace.
+        List<String> tokens = tokenizeCsvWhitespace(text);
+
         for (String tok : tokens) {
             String name = tok.trim();
             if (name.isEmpty()) continue;
 
-            boolean hasWildcard = name.contains("*") || name.contains("?");
+            boolean hasWildcard = name.indexOf('*') >= 0 || name.indexOf('?') >= 0;
             if (!hasWildcard) {
+
+                // v2: guard against accidental huge tokens (paste mishaps)
+                if (name.length() > 5000) {
+                    throw new IllegalArgumentException("Token is too long to be a variable name.");
+                }
+
+                // v2: for treatments, allow derived names WITHOUT querying graph.getNode(...)
+                if (allowDerived && model.hasDerivedTreatment(name)) {
+                    nodes.add(new GraphNode(name));   // placeholder by name
+                    continue;
+                }
+
                 Node n = graph.getNode(name);
-                if (n == null) throw new IllegalArgumentException("Unknown variable: " + name);
+                if (n == null) {
+                    throw new IllegalArgumentException("Unknown variable: " + name);
+                }
                 nodes.add(n);
             } else {
+                // Wildcard against real graph variables only
                 String regex = wildcardToRegex(name);
                 Pattern p = Pattern.compile(regex);
 
@@ -400,39 +500,115 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
                 }
             }
         }
+
         return nodes;
+    }
+
+    private static List<String> tokenizeCsvWhitespace(String s) {
+        ArrayList<String> out = new ArrayList<>();
+        StringBuilder cur = new StringBuilder();
+
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == ',' || Character.isWhitespace(c)) {
+                if (cur.length() > 0) {
+                    out.add(cur.toString());
+                    cur.setLength(0);
+                }
+            } else {
+                cur.append(c);
+            }
+        }
+
+        if (cur.length() > 0) out.add(cur.toString());
+        return out;
     }
 
     private void installRenderers() {
         var cm = resultTable.getColumnModel();
         for (int i = 0; i < cm.getColumnCount(); i++) {
-            String name = cm.getColumn(i).getHeaderValue().toString();
-            if (name.equals(ResultTableModel.COL_ATE_DR)) {
+            String header = String.valueOf(cm.getColumn(i).getHeaderValue());
+            if ("ATE_DR".equals(header)) {
                 cm.getColumn(i).setCellRenderer(numberRenderer);
             }
         }
     }
 
+    private void updateViewDetailsEnabled() {
+        int viewRow = resultTable.getSelectedRow();
+        if (viewRow < 0) {
+            viewDetailsButton.setEnabled(false);
+            return;
+        }
+
+        int modelRow = resultTable.convertRowIndexToModel(viewRow);
+        ResultRowV2 r;
+        try {
+            r = model.getResultRow(modelRow);
+        } catch (Exception ex) {
+            viewDetailsButton.setEnabled(false);
+            return;
+        }
+
+        viewDetailsButton.setEnabled(r != null && r.status == ResultRowV2.Status.OK && r.details != null);
+    }
+
     // ------------------------
-    // Table model (simple rows)
+    // Wildcard
     // ------------------------
 
-    private static final class ResultTableModel extends AbstractTableModel {
+    private static String wildcardToRegex(String pattern) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("^");
+        for (int i = 0; i < pattern.length(); i++) {
+            char c = pattern.charAt(i);
+            switch (c) {
+                case '*': sb.append(".*"); break;
+                case '?': sb.append("."); break;
+                case '\\': sb.append("\\\\"); break;
+                case '.':
+                case '[':
+                case ']':
+                case '{':
+                case '}':
+                case '(':
+                case ')':
+                case '+':
+                case '-':
+                case '^':
+                case '$':
+                case '|':
+                    sb.append("\\").append(c);
+                    break;
+                default:
+                    sb.append(c);
+            }
+        }
+        sb.append("$");
+        return sb.toString();
+    }
 
-        static final String COL_NUM = "#";
-        static final String COL_X = "X";
-        static final String COL_Y = "Y";
-        static final String COL_Z = "Adjustment set Z";
-        static final String COL_ATE_DR = "ATE_DR";
+    // ------------------------
+    // Table model
+    // ------------------------
+
+    private static final class MixedDrResultTableModelV2 extends AbstractTableModel {
+
+        private static final String COL_NUM  = "#";
+        private static final String COL_X    = "X";
+        private static final String COL_Y    = "Y";
+        private static final String COL_Z    = "Adjustment set Z";
+        private static final String COL_ATE  = "ATE_DR";
+        private static final String COL_NOTE = "Note";
 
         private final MixedDrAdjustmentEffectEditorModelV2 model;
 
-        ResultTableModel(MixedDrAdjustmentEffectEditorModelV2 model) {
-            this.model = model;
+        MixedDrResultTableModelV2(MixedDrAdjustmentEffectEditorModelV2 model) {
+            this.model = Objects.requireNonNull(model, "model");
         }
 
         private String[] columns() {
-            return new String[]{COL_NUM, COL_X, COL_Y, COL_Z, COL_ATE_DR};
+            return new String[] { COL_NUM, COL_X, COL_Y, COL_Z, COL_ATE, COL_NOTE };
         }
 
         @Override
@@ -454,7 +630,7 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
         public Class<?> getColumnClass(int columnIndex) {
             String col = columns()[columnIndex];
             if (COL_NUM.equals(col)) return Integer.class;
-            if (COL_ATE_DR.equals(col)) return Double.class;
+            if (COL_ATE.equals(col)) return Double.class;
             return String.class;
         }
 
@@ -467,10 +643,23 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
             String col = columns()[columnIndex];
 
             if (COL_NUM.equals(col)) return rowIndex + 1;
-            if (COL_X.equals(col)) return r.formatX();
-            if (COL_Y.equals(col)) return r.formatY();
-            if (COL_Z.equals(col)) return r.formatZ();
-            if (COL_ATE_DR.equals(col)) return r.ateDr;
+            if (COL_X.equals(col))   return safe(r.formatX());
+            if (COL_Y.equals(col))   return safe(r.formatY());
+            if (COL_Z.equals(col))   return safe(r.formatZ());
+
+            if (COL_ATE.equals(col)) {
+                return (r.status == ResultRowV2.Status.OK) ? r.ateDr : Double.NaN;
+            }
+
+            if (COL_NOTE.equals(col)) {
+                if (r.message != null && !r.message.isBlank()) return r.message;
+                return switch (r.status) {
+                    case OK -> "";
+                    case NO_ADJUSTMENT_SET -> "No adjustment set";
+                    case INELIGIBLE -> "Ineligible";
+                    case NOT_SUPPORTED -> "Not supported";
+                };
+            }
 
             return null;
         }
@@ -479,5 +668,13 @@ public final class MixedDrAdjustmentEffectEditorV2 extends JPanel {
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return false;
         }
+    }
+
+    // ------------------------
+    // Helpers
+    // ------------------------
+
+    private static String safe(String s) {
+        return (s == null) ? "" : s;
     }
 }
