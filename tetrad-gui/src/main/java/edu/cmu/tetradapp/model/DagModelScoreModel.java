@@ -4,10 +4,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.sem.AdequacyParams;
-import edu.cmu.tetrad.sem.AdequacyReport;
-import edu.cmu.tetrad.sem.TrainedDagAdequacy;
-import edu.cmu.tetrad.sem.TrainedDagSimulatorGNM;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.session.SessionModel;
 
@@ -20,7 +16,7 @@ import java.util.Objects;
  * <p>
  * This is intentionally lightweight compared to Simulation/SimulationModel editors.
  */
-public final class DagFactorizationCompare extends DataWrapper implements SessionModel {
+public final class DagModelScoreModel extends DataWrapper implements SessionModel {
 
     // ---- inputs ----
     private final Graph inputGraph;
@@ -29,9 +25,8 @@ public final class DagFactorizationCompare extends DataWrapper implements Sessio
 
     // ---- state/output ----
     private int sampleSize;
-    private DataSet simulatedData;
 
-    public DagFactorizationCompare(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters parameters) {
+    public DagModelScoreModel(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters parameters) {
         Objects.requireNonNull(dataWrapper, "dataWrapper");
         Objects.requireNonNull(graphWrapper, "graphWrapper");
         this.parameters = Objects.requireNonNull(parameters, "parameters");
@@ -49,20 +44,16 @@ public final class DagFactorizationCompare extends DataWrapper implements Sessio
 
         // Default sample size = observed sample size (as you requested)
         this.sampleSize = Math.max(1, inputData.getNumRows());
-
-        resimulate(this.sampleSize);
     }
 
     public void resimulate(int sampleSize) {
         this.sampleSize = sampleSize;
-        this.simulatedData = simulateWithGNM(this.inputData, this.inputGraph, this.sampleSize);
 
         // Optionally: expose both datasets from this wrapper (handy for downstream tooling)
         // If your DataWrapper already has a setter, use it; otherwise remove this block.
         try {
             DataModelList list = new DataModelList();
             list.add(inputData);
-            list.add(simulatedData);
             setDataModelList(list);
         } catch (Throwable ignored) {
             // If your DataWrapper doesn’t allow setting the list, that’s fine.
@@ -80,10 +71,6 @@ public final class DagFactorizationCompare extends DataWrapper implements Sessio
 
     public DataSet getInputData() {
         return inputData;
-    }
-
-    public DataSet getSimulatedData() {
-        return simulatedData;
     }
 
     public Parameters getParameters() {
@@ -106,34 +93,5 @@ public final class DagFactorizationCompare extends DataWrapper implements Sessio
     // -------------------------
     public Graph getGraph() {
         return inputGraph;
-    }
-
-    /**
-     * Train + simulate using the same mechanism as the Simulation editor’s TrainedDagSimulatorGNM path.
-     * <p>
-     * You should replace this stub with your actual TrainedDagSimulatorGNM calls.
-     */
-    private DataSet simulateWithGNM(DataSet observed, Graph dag, int sampleSize) {
-        TrainedDagSimulatorGNM.Params params = new TrainedDagSimulatorGNM.Params();
-        params.seed = System.nanoTime();
-        TrainedDagSimulatorGNM sim = new TrainedDagSimulatorGNM(observed, dag, params);
-        sim.fit();
-//        edu.cmu.tetrad.sem.TrainedDagSimulatorGNM.SimResult result = sim.simulate(sampleSize);
-//        return result.toDataSet();
-
-        TrainedDagSimulatorGNM.SimResult simData = sim.simulate(sampleSize);
-
-        AdequacyReport report =
-                TrainedDagAdequacy.evaluate(
-                        observed,
-                        simData.toDataSet(),
-                        sim,
-                        new AdequacyParams());
-
-        System.out.println(report.toText());
-
-        return simData.toDataSet();
-
-//        this.dataSets.add(simData.toDataSet());
     }
 }

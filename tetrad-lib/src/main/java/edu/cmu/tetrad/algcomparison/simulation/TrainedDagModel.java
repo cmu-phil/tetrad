@@ -26,6 +26,9 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.AdequacyParams;
+import edu.cmu.tetrad.sem.AdequacyReport;
+import edu.cmu.tetrad.sem.TrainedDagAdequacy;
 import edu.cmu.tetrad.sem.TrainedDagSimulatorGNM;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -123,22 +126,34 @@ public class TrainedDagModel implements Simulation, TakesData {
                     data, graph, new TrainedDagSimulatorGNM.Params());
             simulator.fit();
 
-            int anInt = parameters.getInt(Params.SAMPLE_SIZE);
-            edu.cmu.tetrad.sem.TrainedDagSimulatorGNM.SimResult result = simulator.simulate(anInt);
-            DataSet dataSet = result.toDataSet();
+            int samplaSize = parameters.getInt(Params.SAMPLE_SIZE);
+//            edu.cmu.tetrad.sem.TrainedDagSimulatorGNM.SimResult result = simulator.simulate(samplaSize);
+//            DataSet dataSet = result.toDataSet();
+//
+//            if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
+//                dataSet = DataTransforms.shuffleColumns(dataSet);
+//            }
+//
+//            if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
+//                double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
+//                dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
+//            }
 
-            if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataTransforms.shuffleColumns(dataSet);
-            }
+//            dataSet = DataTransforms.restrictToMeasured(dataSet);
+//
+//            sim.fit();
+            TrainedDagSimulatorGNM.SimResult simData = simulator.simulate(samplaSize);
 
-            if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
-                double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
-                dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
-            }
+            AdequacyReport report =
+                    TrainedDagAdequacy.evaluate(
+                            data,
+                            simData.toDataSet(),
+                            simulator,
+                            new AdequacyParams());
 
-            dataSet = DataTransforms.restrictToMeasured(dataSet);
+            System.out.println(report.toText());
 
-            this.dataSets.add(dataSet);
+            this.dataSets.add(simData.toDataSet());
         }
     }
 
