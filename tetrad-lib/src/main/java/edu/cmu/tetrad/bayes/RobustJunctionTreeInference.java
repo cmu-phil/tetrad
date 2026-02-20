@@ -98,8 +98,6 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
         this.hardEvidence = new int[this.nodes.length];
         Arrays.fill(this.hardEvidence, -1);
 
-//        this.allowed = null; // null means "all categories allowed"
-
         this.allowed = new boolean[nodes.length][];
         for (int i = 0; i < nodes.length; i++) {
             int k = bayesPm.getNumCategories(nodes[i]);
