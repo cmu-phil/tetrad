@@ -537,30 +537,62 @@ public final class UpdatedBayesIm implements BayesIm {
     /**
      * Calculates the set of variables whose CPT's change in response to the evidence provided.
      */
-    private boolean[] ancestorsOfEvidence(Evidence evidence) {
-        List<Node> variablesInEvidence = evidence.getVariablesInEvidence();
-        List<Node> nodesInEvidence = new LinkedList<>();
+//    private boolean[] ancestorsOfEvidence(Evidence evidence) {
+//        List<Node> variablesInEvidence = evidence.getVariablesInEvidence();
+//        List<Node> nodesInEvidence = new LinkedList<>();
+//
+//        for (Node _node : variablesInEvidence) {
+//            String nodeName = _node.getName();
+//            nodesInEvidence.add(this.bayesIm.getBayesPm().getNode(nodeName));
+//        }
+//
+//        List<Node> nodesInGraph = getBayesIm().getDag().getNodes();
+//        boolean[] ancestorsOfEvidence = new boolean[getBayesIm().getNumNodes()];
+//
+//        for (int i = 0; i < nodesInGraph.size(); i++) {
+//            for (Node node2 : nodesInEvidence) {
+//                Node node1 = nodesInGraph.get(i);
+//
+//                if (getBayesIm().getDag().paths().isAncestorOf(node1, node2)
+//                    || getBayesIm().getDag().isChildOf(node1, node2)) {
+//                    ancestorsOfEvidence[i] = true;
+//                }
+//            }
+//        }
+//
+//        return ancestorsOfEvidence;
+//    }
 
-        for (Node _node : variablesInEvidence) {
-            String nodeName = _node.getName();
-            nodesInEvidence.add(this.bayesIm.getBayesPm().getNode(nodeName));
+    private boolean[] ancestorsOfEvidence(Evidence evidence) {
+        boolean[] affected = new boolean[getBayesIm().getNumNodes()];
+
+        // Canonicalize evidence nodes to the BayesIm's Node instances
+        List<Node> nodesInEvidence = new ArrayList<>();
+        for (Node ev : evidence.getVariablesInEvidence()) {
+            Node canon = getBayesIm().getNode(ev.getName()); // safest canonicalization
+            if (canon != null) nodesInEvidence.add(canon);
         }
 
-        List<Node> nodesInGraph = getBayesIm().getDag().getNodes();
-        boolean[] ancestorsOfEvidence = new boolean[getBayesIm().getNumNodes()];
+        Graph dag = getBayesIm().getDag();
 
-        for (int i = 0; i < nodesInGraph.size(); i++) {
+        for (int i = 0; i < getBayesIm().getNumNodes(); i++) {
+            Node node1 = getBayesIm().getNode(i);
             for (Node node2 : nodesInEvidence) {
-                Node node1 = nodesInGraph.get(i);
-
-                if (getBayesIm().getDag().paths().isAncestorOf(node1, node2)
-                    || getBayesIm().getDag().isChildOf(node1, node2)) {
-                    ancestorsOfEvidence[i] = true;
+                if (dag.paths().isAncestorOf(node1, node2)) {
+                    affected[i] = true;
+                    break;
                 }
+
+//                // Optional: you probably don't want this at all (see note below),
+//                // but if you keep it, at least do it index-safely:
+//                if (dag.isChildOf(node1, node2)) {
+//                    affected[i] = true;
+//                    break;
+//                }
             }
         }
 
-        return ancestorsOfEvidence;
+        return affected;
     }
 
     private double calcUpdatedProb(int nodeIndex, int rowIndex, int colIndex) {

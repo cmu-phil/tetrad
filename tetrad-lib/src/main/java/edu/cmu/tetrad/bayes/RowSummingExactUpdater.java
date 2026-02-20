@@ -556,14 +556,13 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
     private Dag createManipulatedGraph(Graph graph) {
         Dag updatedGraph = new Dag(graph);
 
-        // Graph surgery: remove incoming edges to manipulated nodes (parent -> node).
         for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
             if (this.evidence.isManipulated(i)) {
                 Node node = updatedGraph.getNode(this.evidence.getNode(i).getName());
                 List<Node> parents = updatedGraph.getParents(node);
 
                 for (Node parent : parents) {
-                    updatedGraph.removeEdge(parent, node); // correct direction: parent -> node
+                    updatedGraph.removeEdge(parent, node);
                 }
             }
         }

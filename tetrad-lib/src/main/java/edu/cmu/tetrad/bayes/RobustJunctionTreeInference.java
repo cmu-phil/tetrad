@@ -58,6 +58,9 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
     /** Evidence per node index; -1 means none. */
     private final int[] hardEvidence;
 
+    /** Soft evidence: allowed categories per node (null => all allowed). */
+    private boolean[][] allowed;
+
     // =========================
     // Clique tree representation
     // =========================
@@ -95,6 +98,15 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
         this.hardEvidence = new int[this.nodes.length];
         Arrays.fill(this.hardEvidence, -1);
 
+//        this.allowed = null; // null means "all categories allowed"
+
+        this.allowed = new boolean[nodes.length][];
+        for (int i = 0; i < nodes.length; i++) {
+            int k = bayesPm.getNumCategories(nodes[i]);
+            allowed[i] = new boolean[k];
+            Arrays.fill(allowed[i], true);
+        }
+
         this.cliques = new ArrayList<>();
         this.adj = new HashMap<>();
         this.homeCliqueByVar = new HashMap<>();
@@ -102,14 +114,6 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
         buildCliqueTreeAndPotentials();
 
         this.calibrated = false; // evidence is empty but we can lazily calibrate on first query
-
-        for (Clique c : cliques) {
-            if (Arrays.stream(c.basePotential).allMatch(x -> x == 1.0)) {
-                System.out.println("Clique with vars "
-                        + Arrays.toString(c.vars)
-                        + " has basePotential all ones.");
-            }
-        }
     }
 
     private int indexOfByName(Node n) {
@@ -161,6 +165,27 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
         double[] m = getMarginal(iNode);
         if (value < 0 || value >= m.length) throw new IllegalArgumentException("Bad value index.");
         return m[value];
+    }
+
+    /** Reset allowed-categories to tautology (all categories allowed). */
+    public void clearAllowedCategories() {
+        for (int i = 0; i < allowed.length; i++) {
+            Arrays.fill(allowed[i], true);
+        }
+        this.calibrated = false;
+    }
+
+    /** Apply allowed/disallowed categories from a Proposition (soft evidence / restrictions). */
+    public void setAllowedCategories(Proposition p) {
+        if (p == null) throw new NullPointerException("proposition");
+
+        for (int i = 0; i < nodes.length; i++) {
+            int k = allowed[i].length;
+            for (int c = 0; c < k; c++) {
+                allowed[i][c] = p.isAllowed(i, c);
+            }
+        }
+        this.calibrated = false;
     }
 
     /**
@@ -337,16 +362,6 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
             Clique c = ent.getValue();
             if (c == null) continue;
             c.multiplyInCptFactor(v);
-        }
-
-        // NOW it is legal to inspect basePotential
-        for (int v = 0; v < nodes.length; v++) {
-            Clique c = assignedToClique.get(v);
-            boolean allOnes = Arrays.stream(c.basePotential).allMatch(x -> x == 1.0);
-            if (allOnes) {
-                System.out.println("Assigned clique for " + nodes[v].getName()
-                        + " has basePotential all ones. Clique vars=" + Arrays.toString(c.vars));
-            }
         }
 
         // Build clique base potentials = product of assigned CPT factors.
@@ -787,7 +802,6 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
             }
         }
 
-        /** Apply hard evidence by zeroing incompatible assignments. */
         void resetBeliefWithEvidence() {
             if (basePotential == null) throw new IllegalStateException("Potential not initialized.");
             System.arraycopy(basePotential, 0, baseWithEvidence, 0, basePotential.length);
@@ -797,14 +811,19 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
 
             for (int idx = 0; idx < baseWithEvidence.length; idx++) {
                 boolean ok = true;
+
                 for (int i = 0; i < n; i++) {
                     int v = vars[i];
+                    int x = assign[i];
+
+                    // hard evidence
                     int ev = hardEvidence[v];
-                    if (ev >= 0 && assign[i] != ev) {
-                        ok = false;
-                        break;
-                    }
+                    if (ev >= 0 && x != ev) { ok = false; break; }
+
+                    // allowed-categories restriction
+                    if (!allowed[v][x]) { ok = false; break; }
                 }
+
                 if (!ok) baseWithEvidence[idx] = 0.0;
 
                 incrementAssignment(assign, card);
