@@ -6,11 +6,21 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Registry class that provides utility methods for working with DAG metrics.
+ * This class is final and cannot be instantiated.
+ */
 public final class DagMetricRegistry {
 
-    private DagMetricRegistry() {}
+    private DagMetricRegistry() {
+    }
 
-    /** Returns the default metric list for a dataset type, in display order. */
+    /**
+     * Returns the default metric list for a dataset type, in display order.
+     *
+     * @param data the dataset
+     * @return the default metric list for the dataset type
+     */
     public static @NotNull List<DagMetric> defaultMetricsFor(@NotNull DataSet data) {
         List<DagMetric> metrics = new ArrayList<>();
 

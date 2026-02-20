@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // A fresh, self-contained junction-tree (clique tree) message passing engine
 // built on the existing Tetrad BayesIm/BayesPm API.
 //
@@ -22,11 +22,14 @@
 //    global scale if you enable message normalization. Marginals are correct.
 //  - If you need exact evidence probability Z, we can extend with log-scales.
 //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.bayes;
 
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 
@@ -38,7 +41,7 @@ import java.util.*;
 
 /**
  * Robust junction-tree inference via sum-product message passing on a clique tree.
- *
+ * <p>
  * This implementation uses GraphTools (moralize, fill-in, getCliques, getSeparators, getCliqueTree)
  * but performs its own potential construction, evidence handling, and message passing.
  */
@@ -46,39 +49,117 @@ public final class JunctionTreeInference implements TetradSerializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    // =========================
-    // Core inputs / canonical nodes
-    // =========================
+    /**
+     * Represents the Bayesian network model with parameters used for inference in the
+     * JunctionTreeInference class. This object encapsulates the structure of the network,
+     * as well as the conditional probability distributions associated with each node.
+     *
+     * This variable is critical for constructing the clique tree representation and
+     * facilitating various inference operations, such as marginal and conditional
+     * probability calculations. It provides the underlying data required for
+     * probabilistic reasoning in Bayesian networks.
+     *
+     * The value of this field is set at the construction of the containing
+     * JunctionTreeInference instance and remains immutable thereafter.
+     */
     private final BayesIm bayesIm;
+    /**
+     * Represents the BayesPm (Bayesian parameter model) used within the JunctionTreeInference class
+     * to manage the structural aspects of the Bayesian network. This model captures the relationships
+     * between variables and their conditional probability distributions, facilitating efficient
+     * graphical model operations such as inference and structure queries.
+     *
+     * This variable is final and initialized during the construction of the JunctionTreeInference
+     * instance. It serves as the backbone for defining the network's directed acyclic graph (DAG)
+     * and the probabilistic dependencies among the nodes.
+     */
     private final BayesPm bayesPm;
 
-    /** Canonical node list from bayesIm.getDag() (do NOT trust external graph Node instances). */
+    /**
+     * Canonical node list from bayesIm.getDag() (do NOT trust external graph Node instances).
+     */
     private final Node[] nodes;
 
-    /** Evidence per node index; -1 means none. */
+    /**
+     * Evidence per node index; -1 means none.
+     */
     private final int[] hardEvidence;
-
-    /** Soft evidence: allowed categories per node (null => all allowed). */
-    private boolean[][] allowed;
-
-    // =========================
-    // Clique tree representation
-    // =========================
-    private Clique superRoot;                 // dummy super-root if needed
+    /**
+     * List of cliques that make up the junction tree structure used for inference.
+     * This list includes a super-root clique at index 0 if one is created during
+     * the construction of the Junction Tree. Each clique is a part of the
+     * graphical representation that facilitates efficient probabilistic reasoning.
+     * <p>
+     * The cliques are organized based on the factorization of the probability
+     * distributions in the Bayesian network, ensuring that the structure adheres
+     * to the joint distribution's dependencies and independence properties.
+     */
     private final List<Clique> cliques;       // includes super-root at index 0 if created
+    /**
+     * Represents the adjacency structure of cliques in the junction tree, mapping each {@link Clique}
+     * to a list of {@link EdgeCT} objects that serve as separators or message-passing edges.
+     * <p>
+     * This structure encapsulates the relationships and message flow between cliques in the
+     * calibrated junction tree, which is used for probabilistic inference in Bayesian networks.
+     * <p>
+     * The map keys are cliques, while the associated values represent the edges connecting the clique
+     * with its neighbors. Each edge contains information about the separator variables and messages
+     * exchanged during inference.
+     */
     private final Map<Clique, List<EdgeCT>> adj;  // clique adjacency with separators/messages
+    /**
+     * A mapping of variable indices to their associated cliques in the junction tree.
+     * Each variable is assigned to a specific clique that contains the variable and its parents.
+     * This map is used to determine where to read the marginal distribution of a variable.
+     */
     private final Map<Integer, Clique> homeCliqueByVar; // where to read a variable marginal
+    /**
+     * A mapping of variable names to their corresponding indices.
+     * This map is used to facilitate quick lookup of a variable's
+     * index based on its name.
+     * <p>
+     * This field is immutable and initialized as a HashMap.
+     */
     private final Map<String, Integer> indexByName = new HashMap<>();
-
-    // =========================
-    // Cached state
-    // =========================
+    /**
+     * Soft evidence: allowed categories per node (null => all allowed).
+     */
+    private boolean[][] allowed;
+    /**
+     * A placeholder or dummy "super-root" clique used as a structural aid in certain
+     * algorithms. This super-root may be utilized to simplify initialization or
+     * ensure the algorithm operates on a unified structure by adding an artificial
+     * root to the clique tree.
+     * <p>
+     * Typically, this clique does not correspond to any actual domain variable but
+     * functions as a utility construct in managing the associated clique data structures.
+     */
+    private Clique superRoot;                 // dummy super-root if needed
+    /**
+     * Indicates whether the messages in the Junction Tree are up-to-date with the
+     * current evidence provided. This flag is used to ensure that the inference process
+     * operates on the correct and consistent state of the probabilistic model.
+     * <p>
+     * If `true`, the Junction Tree is calibrated, meaning all messages are consistent
+     * with the current evidence, and queries such as marginals or conditional probabilities
+     * can be accurately computed. If `false`, the Junction Tree is not calibrated, and
+     * recalibration is required before performing reliable probabilistic inference.
+     */
     private boolean calibrated; // whether messages are up-to-date for current evidence
 
     // =========================
     // Public API
     // =========================
 
+    /**
+     * Constructs a JunctionTreeInference object for performing inference on a Bayesian network.
+     * This initializes the Bayesian network representation and prepares necessary structures
+     * for clique tree construction and inference operations.
+     *
+     * @param bayesIm The BayesIm (Bayesian network model with parameters) used for inference.
+     *                Must not be null.
+     * @throws NullPointerException If the provided bayesIm is null.
+     */
     public JunctionTreeInference(BayesIm bayesIm) {
         if (bayesIm == null) throw new NullPointerException("bayesIm");
         this.bayesIm = bayesIm;
@@ -114,19 +195,81 @@ public final class JunctionTreeInference implements TetradSerializable {
         this.calibrated = false; // evidence is empty but we can lazily calibrate on first query
     }
 
+    private static void incrementAssignment(int[] assign, int[] card) {
+        for (int i = assign.length - 1; i >= 0; i--) {
+            assign[i]++;
+            if (assign[i] < card[i]) return;
+            assign[i] = 0;
+        }
+    }
+
+    private static double sum(double[] a) {
+        double s = 0.0;
+        for (double v : a) s += v;
+        return s;
+    }
+
+    private static double[] zeros(int k) {
+        return new double[k];
+    }
+
+    private static void normalizeInPlaceKidGloves(double[] a) {
+        double s = 0.0;
+        for (double v : a) {
+            if (!Double.isFinite(v)) {
+                Arrays.fill(a, Double.NaN);
+                return;
+            }
+            s += v;
+        }
+        if (!Double.isFinite(s) || s <= 0.0) {
+            // If impossible evidence, show all zeros rather than NaNs (UI-friendly),
+            // but you can flip this if you prefer NaN signaling.
+            Arrays.fill(a, 0.0);
+            return;
+        }
+        for (int i = 0; i < a.length; i++) a[i] /= s;
+    }
+
+    private static void normalizeMessageKidGloves(double[] msg) {
+        if (msg == null || msg.length == 0) return;
+        double s = 0.0;
+        for (double v : msg) {
+            if (!Double.isFinite(v)) {
+                Arrays.fill(msg, 0.0);
+                return;
+            }
+            s += v;
+        }
+        if (!Double.isFinite(s) || s <= 0.0) {
+            // If message becomes all zeros (inconsistent evidence), keep zeros.
+            Arrays.fill(msg, 0.0);
+            return;
+        }
+
+        for (int i = 0; i < msg.length; i++) msg[i] /= s;
+    }
+
     private int indexOfByName(Node n) {
         if (n == null) return -1;
         Integer idx = indexByName.get(n.getName());
         return (idx == null) ? -1 : idx;
     }
 
-    /** Clear all evidence. */
+    /**
+     * Clear all evidence.
+     */
     public void clearEvidence() {
         Arrays.fill(this.hardEvidence, -1);
         this.calibrated = false;
     }
 
-    /** Set hard evidence X_i = value. */
+    /**
+     * Set hard evidence X_i = value.
+     *
+     * @param iNode The node index
+     * @param value The evidence value
+     */
     public void setEvidence(int iNode, int value) {
         validateNode(iNode);
         int k = bayesPm.getNumCategories(nodes[iNode]);
@@ -137,7 +280,12 @@ public final class JunctionTreeInference implements TetradSerializable {
         this.calibrated = false;
     }
 
-    /** Get marginal P(X_i). */
+    /**
+     * Get marginal P(X_i).
+     *
+     * @param iNode The node index
+     * @return Marginal probability of X_i
+     */
     public double[] getMarginal(int iNode) {
         ensureCalibrated();
         validateNode(iNode);
@@ -158,14 +306,26 @@ public final class JunctionTreeInference implements TetradSerializable {
         return marg;
     }
 
-    /** Get marginal P(X_i = value). */
+    // =========================
+    // Building the clique tree
+    // =========================
+
+    /**
+     * Get marginal P(X_i = value).
+     *
+     * @param iNode The node index
+     * @param value The evidence value
+     * @return Marginal probability of
+     */
     public double getMarginal(int iNode, int value) {
         double[] m = getMarginal(iNode);
         if (value < 0 || value >= m.length) throw new IllegalArgumentException("Bad value index.");
         return m[value];
     }
 
-    /** Reset allowed-categories to tautology (all categories allowed). */
+    /**
+     * Reset allowed-categories to tautology (all categories allowed).
+     */
     public void clearAllowedCategories() {
         for (int i = 0; i < allowed.length; i++) {
             Arrays.fill(allowed[i], true);
@@ -173,7 +333,11 @@ public final class JunctionTreeInference implements TetradSerializable {
         this.calibrated = false;
     }
 
-    /** Apply allowed/disallowed categories from a Proposition (soft evidence / restrictions). */
+    /**
+     * Apply allowed/disallowed categories from a Proposition (soft evidence / restrictions).
+     *
+     * @param p The proposition
+     */
     public void setAllowedCategories(Proposition p) {
         if (p == null) throw new NullPointerException("proposition");
 
@@ -189,6 +353,11 @@ public final class JunctionTreeInference implements TetradSerializable {
     /**
      * Get conditional distribution P(X_i | Parents=parentValues) under current evidence.
      * Parents must be node indices; parentValues aligned to parents[].
+     *
+     * @param iNode The node index
+     * @param parents The parent node indices
+     * @param parentValues The parent values
+     * @return Conditional distribution
      */
     public double[] getConditional(int iNode, int[] parents, int[] parentValues) {
         ensureCalibrated();
@@ -219,11 +388,19 @@ public final class JunctionTreeInference implements TetradSerializable {
         return m;
     }
 
+    // =========================
+    // Calibration (message passing)
+    // =========================
+
     /**
      * Return P(assignments AND current evidence) *up to a global scale*.
-     *
+     * <p>
      * Marginals are correct even with message normalization; exact joint/evidence normalization
      * requires tracking scaling constants (can be added if you need it).
+     *
+     * @param queryNodes The query node indices
+     * @param queryValues The query values
+     * @return Joint probability of the query assignments given the current evidence.
      */
     public double getJointProbability(int[] queryNodes, int[] queryValues) {
         ensureCalibrated();
@@ -259,10 +436,6 @@ public final class JunctionTreeInference implements TetradSerializable {
 
         return z;
     }
-
-    // =========================
-    // Building the clique tree
-    // =========================
 
     private void buildCliqueTreeAndPotentials() {
         // Moralize + triangulate using canonical nodes.
@@ -386,16 +559,6 @@ public final class JunctionTreeInference implements TetradSerializable {
             }
         }
 
-        // Select a “home clique” per variable for marginal queries (any containing clique is fine).
-//        for (int v = 0; v < nodes.length; v++) {
-//            Clique c = findAnyCliqueContaining(v);
-//            if (c == null) {
-//                // Should not happen due to singleton clique guard, but kid gloves:
-//                c = superRoot;
-//            }
-//            homeCliqueByVar.put(v, c);
-//        }
-
         // Select a “home clique” per variable for marginal queries.
         // IMPORTANT: use the clique where the CPT factor for v was placed.
         for (int v = 0; v < nodes.length; v++) {
@@ -413,9 +576,7 @@ public final class JunctionTreeInference implements TetradSerializable {
      * Assign each variable v to a clique that contains {v} U Pa(v).
      * We pick the first clique (by MCO key order) that contains all those nodes.
      */
-    private Map<Integer, Clique> assignVariablesToCliques(Node[] mco,
-                                                          Map<Node, Clique> cliqueByKey,
-                                                          Map<Node, Set<Node>> cliqueMap) {
+    private Map<Integer, Clique> assignVariablesToCliques(Node[] mco, Map<Node, Clique> cliqueByKey, Map<Node, Set<Node>> cliqueMap) {
         Map<Integer, Clique> out = new HashMap<>();
 
         for (int v = 0; v < nodes.length; v++) {
@@ -432,28 +593,19 @@ public final class JunctionTreeInference implements TetradSerializable {
 
                 boolean ok = true;
                 for (int p : parents) {
-                    if (c.indexOfVar(p) < 0) { ok = false; break; }
+                    if (c.indexOfVar(p) < 0) {
+                        ok = false;
+                        break;
+                    }
                 }
-                if (ok) { chosen = c; break; }
+                if (ok) {
+                    chosen = c;
+                    break;
+                }
             }
 
-//            if (chosen == null) {
-//                // Kid gloves: this should not happen in a correct triangulation/clique extraction.
-//                // If it happens, CPT placement will be wrong; log it loudly.
-//                TetradLogger.getInstance().log(
-//                        "JT: No clique contains family {X=" + nodes[v].getName() +
-//                                "}∪Pa(X). Inference will be wrong for this variable.");
-//                // Still pick any clique containing v so marginals are at least defined.
-//                chosen = findAnyCliqueContaining(v);
-//                if (chosen == null) chosen = superRoot;
-//            }
-
             if (chosen == null) {
-                throw new IllegalStateException(
-                        "JT: No clique contains family {"
-                                + nodes[v].getName() + "} ∪ Pa. "
-                                + "This indicates clique extraction / canonicalization failure."
-                );
+                throw new IllegalStateException("JT: No clique contains family {" + nodes[v].getName() + "} ∪ Pa. " + "This indicates clique extraction / canonicalization failure.");
             }
 
             out.put(v, chosen);
@@ -462,8 +614,11 @@ public final class JunctionTreeInference implements TetradSerializable {
         return out;
     }
 
-    /** Canonicalize an undirected graph using the BayesIm node instances (by name). */
-    /** Canonicalize an undirected graph using the BayesIm node instances (by name). */
+    /**
+     * Canonicalize an undirected graph using the BayesIm node instances (by name).
+     *
+     * @param g The graph
+     */
     private Graph canonicalizeUndirected(Graph g) {
         EdgeListGraph out = new EdgeListGraph();
 
@@ -517,7 +672,7 @@ public final class JunctionTreeInference implements TetradSerializable {
     }
 
     // =========================
-    // Calibration (message passing)
+    // Factor ops (clique tables, separator tables)
     // =========================
 
     private void ensureCalibrated() {
@@ -557,7 +712,9 @@ public final class JunctionTreeInference implements TetradSerializable {
         }
     }
 
-    /** Message for a directed edge src -> dst. */
+    /**
+     * Message for a directed edge src -> dst.
+     */
     private double[] computeMessage(EdgeCT edge) {
         Clique src = edge.from;
         Clique dst = edge.to;
@@ -594,6 +751,11 @@ public final class JunctionTreeInference implements TetradSerializable {
         normalizeMessageKidGloves(msg);
         return msg;
     }
+
+    // =========================
+    // Internal structures
+    // =========================
+
     private void distribute(Clique current, Clique parent) {
         for (EdgeCT e : adj.getOrDefault(current, List.of())) {
             Clique child = e.to;
@@ -624,17 +786,13 @@ public final class JunctionTreeInference implements TetradSerializable {
         }
     }
 
-    // =========================
-    // Factor ops (clique tables, separator tables)
-    // =========================
-
     /**
      * Multiply a separator factor (msg) into a clique table (cliqueTable), aligning by separator variable positions.
      *
-     * @param cliqueTable mutable table over clique.vars
-     * @param clique clique descriptor
-     * @param msg factor array over sepVars.varIdx (in order)
-     * @param sepVars separator variable metadata
+     * @param cliqueTable    mutable table over clique.vars
+     * @param clique         clique descriptor
+     * @param msg            factor array over sepVars.varIdx (in order)
+     * @param sepVars        separator variable metadata
      * @param sepPosInClique positions of sep vars in clique.vars (same length as sepVars.varIdx)
      */
     private void multiplyFactorIntoCliqueTable(double[] cliqueTable, Clique clique, double[] msg, SepVars sepVars, int[] sepPosInClique) {
@@ -664,8 +822,13 @@ public final class JunctionTreeInference implements TetradSerializable {
             incrementAssignment(assign, clique.card);
         }
     }
+    // =========================
+    // Helpers / kid gloves
+    // =========================
 
-    /** Marginalize a clique table over a separator var-set. */
+    /**
+     * Marginalize a clique table over a separator var-set.
+     */
     private double[] marginalize(double[] cliqueTable, Clique clique, SepVars sep) {
         if (sep.varIdx.length == 0) {
             return new double[]{sum(cliqueTable)};
@@ -693,16 +856,98 @@ public final class JunctionTreeInference implements TetradSerializable {
         return out;
     }
 
-    private static void incrementAssignment(int[] assign, int[] card) {
-        for (int i = assign.length - 1; i >= 0; i--) {
-            assign[i]++;
-            if (assign[i] < card[i]) return;
-            assign[i] = 0;
+    private Clique firstRealClique() {
+        for (Clique c : cliques) {
+            if (c != null && c != superRoot) return c;
+        }
+        return null;
+    }
+
+    private Clique findAnyCliqueContaining(int varIdx) {
+        for (Clique c : cliques) {
+            if (c == null) continue;
+            if (c.indexOfVar(varIdx) >= 0) return c;
+        }
+        return null;
+    }
+
+    private void validateNode(int iNode) {
+        if (iNode < 0 || iNode >= nodes.length) {
+            throw new IllegalArgumentException("Node index out of range: " + iNode);
+        }
+    }
+
+    private void validateNodesAndValues(int[] ns, int[] vs) {
+        if (ns == null || vs == null) throw new IllegalArgumentException("nodes/values cannot be null.");
+        if (ns.length != vs.length) throw new IllegalArgumentException("nodes and values length mismatch.");
+        for (int i = 0; i < ns.length; i++) {
+            validateNode(ns[i]);
+            int k = bayesPm.getNumCategories(nodes[ns[i]]);
+            if (vs[i] < 0 || vs[i] >= k) {
+                throw new IllegalArgumentException("Value " + vs[i] + " out of range for node " + ns[i]);
+            }
+        }
+    }
+
+    /**
+     * Serializes the state of the object to the provided {@code ObjectOutputStream}.
+     * This method ensures that the default serialization process is performed
+     * and logs an error in case of a serialization failure.
+     *
+     * @param out The {@code ObjectOutputStream} to which the object state is serialized.
+     *            Must not be null.
+     * @throws IOException If an I/O error occurs during the serialization process.
+     */
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        try {
+            out.defaultWriteObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName() + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Deserializes the state of the object from the provided {@code ObjectInputStream}.
+     * This method ensures that the default deserialization process is performed and
+     * logs an error in case of a deserialization failure.
+     *
+     * @param in The {@code ObjectInputStream} from which the object state is deserialized.
+     *           Must not be null.
+     * @throws IOException If an I/O error occurs during the deserialization process.
+     * @throws ClassNotFoundException If the class of a serialized object could not be found.
+     */
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            in.defaultReadObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName() + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Separator variable metadata.
+     */
+    private static final class SepVars implements TetradSerializable {
+        @Serial
+        private static final long serialVersionUID = 23L;
+
+        final int[] varIdx;         // BN indices in separator (canonical order)
+        final int[] card;           // cardinalities in same order
+        final int[] posInSrcClique; // positions in SOURCE clique assignment array
+
+        SepVars(int[] varIdx, int[] card, int[] posInSrcClique) {
+            this.varIdx = (varIdx != null) ? varIdx : new int[0];
+            this.card = (card != null) ? card : new int[0];
+            this.posInSrcClique = (posInSrcClique != null) ? posInSrcClique : new int[0];
         }
     }
 
     // =========================
-    // Internal structures
+    // Serialization hooks
     // =========================
 
     private final class Clique implements TetradSerializable {
@@ -740,8 +985,7 @@ public final class JunctionTreeInference implements TetradSerializable {
             this.size = prod;
 
             if (!cliqueNodes.isEmpty() && this.vars.length == 0) {
-                TetradLogger.getInstance().log(
-                        "JT: Clique constructed empty despite non-empty cliqueNodes; Node identity mismatch likely.");
+                TetradLogger.getInstance().log("JT: Clique constructed empty despite non-empty cliqueNodes; Node identity mismatch likely.");
             }
         }
 
@@ -757,7 +1001,9 @@ public final class JunctionTreeInference implements TetradSerializable {
             return -1;
         }
 
-        /** Multiply in CPT factor for BN variable v whose family is contained in this clique. */
+        /**
+         * Multiply in CPT factor for BN variable v whose family is contained in this clique.
+         */
         void multiplyInCptFactor(int v) {
             int xPos = indexOfVar(v);
             if (xPos < 0) return; // not in clique; kid gloves
@@ -773,11 +1019,7 @@ public final class JunctionTreeInference implements TetradSerializable {
 //                }
 
                 if (pPos[i] < 0) {
-                    throw new IllegalStateException(
-                            "JT: Clique does not contain full family for " + nodes[v].getName()
-                                    + ". Missing parent " + nodes[parents[i]].getName()
-                                    + ". Clique vars=" + Arrays.toString(this.vars)
-                    );
+                    throw new IllegalStateException("JT: Clique does not contain full family for " + nodes[v].getName() + ". Missing parent " + nodes[parents[i]].getName() + ". Clique vars=" + Arrays.toString(this.vars));
                 }
             }
 
@@ -816,10 +1058,16 @@ public final class JunctionTreeInference implements TetradSerializable {
 
                     // hard evidence
                     int ev = hardEvidence[v];
-                    if (ev >= 0 && x != ev) { ok = false; break; }
+                    if (ev >= 0 && x != ev) {
+                        ok = false;
+                        break;
+                    }
 
                     // allowed-categories restriction
-                    if (!allowed[v][x]) { ok = false; break; }
+                    if (!allowed[v][x]) {
+                        ok = false;
+                        break;
+                    }
                 }
 
                 if (!ok) baseWithEvidence[idx] = 0.0;
@@ -828,7 +1076,9 @@ public final class JunctionTreeInference implements TetradSerializable {
             }
         }
 
-        /** Marginal of a single clique variable at position pos in this clique. */
+        /**
+         * Marginal of a single clique variable at position pos in this clique.
+         */
         double[] marginalOfSingleVar(int pos) {
             int k = card[pos];
             double[] out = new double[k];
@@ -847,7 +1097,9 @@ public final class JunctionTreeInference implements TetradSerializable {
         }
     }
 
-    /** Clique-tree directed edge with separator metadata and message. */
+    /**
+     * Clique-tree directed edge with separator metadata and message.
+     */
     private final class EdgeCT implements TetradSerializable {
         @Serial
         private static final long serialVersionUID = 23L;
@@ -855,10 +1107,14 @@ public final class JunctionTreeInference implements TetradSerializable {
         final Clique from;
         final Clique to;
 
-        /** Separator variables in CANONICAL order (ascending BN index), same both directions. */
+        /**
+         * Separator variables in CANONICAL order (ascending BN index), same both directions.
+         */
         final SepVars sepVars;
 
-        /** Positions of sepVars.varIdx inside FROM clique (same length as sepVars.varIdx). */
+        /**
+         * Positions of sepVars.varIdx inside FROM clique (same length as sepVars.varIdx).
+         */
         final int[] sepVarToPosInSrc;
 
         double[] message;
@@ -891,8 +1147,7 @@ public final class JunctionTreeInference implements TetradSerializable {
                 if (pos < 0) {
                     // This should not happen if sepNodes came from a proper separator set,
                     // but if it does, fail fast so we don't silently scramble messages.
-                    throw new IllegalStateException("Separator var " + nodes[v].getName()
-                            + " not found in FROM clique.");
+                    throw new IllegalStateException("Separator var " + nodes[v].getName() + " not found in FROM clique.");
                 }
                 posInFrom[i] = pos;
             }
@@ -901,130 +1156,6 @@ public final class JunctionTreeInference implements TetradSerializable {
 
             // For THIS directed edge, the separator positions are positions in FROM clique.
             this.sepVarToPosInSrc = posInFrom;
-        }
-    }
-    /** Separator variable metadata. */
-    private static final class SepVars implements TetradSerializable {
-        @Serial
-        private static final long serialVersionUID = 23L;
-
-        final int[] varIdx;         // BN indices in separator (canonical order)
-        final int[] card;           // cardinalities in same order
-        final int[] posInSrcClique; // positions in SOURCE clique assignment array
-
-        SepVars(int[] varIdx, int[] card, int[] posInSrcClique) {
-            this.varIdx = (varIdx != null) ? varIdx : new int[0];
-            this.card = (card != null) ? card : new int[0];
-            this.posInSrcClique = (posInSrcClique != null) ? posInSrcClique : new int[0];
-        }
-    }
-    // =========================
-    // Helpers / kid gloves
-    // =========================
-
-    private Clique firstRealClique() {
-        for (Clique c : cliques) {
-            if (c != null && c != superRoot) return c;
-        }
-        return null;
-    }
-
-    private Clique findAnyCliqueContaining(int varIdx) {
-        for (Clique c : cliques) {
-            if (c == null) continue;
-            if (c.indexOfVar(varIdx) >= 0) return c;
-        }
-        return null;
-    }
-
-    private void validateNode(int iNode) {
-        if (iNode < 0 || iNode >= nodes.length) {
-            throw new IllegalArgumentException("Node index out of range: " + iNode);
-        }
-    }
-
-    private void validateNodesAndValues(int[] ns, int[] vs) {
-        if (ns == null || vs == null) throw new IllegalArgumentException("nodes/values cannot be null.");
-        if (ns.length != vs.length) throw new IllegalArgumentException("nodes and values length mismatch.");
-        for (int i = 0; i < ns.length; i++) {
-            validateNode(ns[i]);
-            int k = bayesPm.getNumCategories(nodes[ns[i]]);
-            if (vs[i] < 0 || vs[i] >= k) {
-                throw new IllegalArgumentException("Value " + vs[i] + " out of range for node " + ns[i]);
-            }
-        }
-    }
-
-    private static double sum(double[] a) {
-        double s = 0.0;
-        for (double v : a) s += v;
-        return s;
-    }
-
-    private static double[] zeros(int k) {
-        return new double[k];
-    }
-
-    private static void normalizeInPlaceKidGloves(double[] a) {
-        double s = 0.0;
-        for (double v : a) {
-            if (!Double.isFinite(v)) {
-                Arrays.fill(a, Double.NaN);
-                return;
-            }
-            s += v;
-        }
-        if (!Double.isFinite(s) || s <= 0.0) {
-            // If impossible evidence, show all zeros rather than NaNs (UI-friendly),
-            // but you can flip this if you prefer NaN signaling.
-            Arrays.fill(a, 0.0);
-            return;
-        }
-        for (int i = 0; i < a.length; i++) a[i] /= s;
-    }
-
-    private static void normalizeMessageKidGloves(double[] msg) {
-        if (msg == null || msg.length == 0) return;
-        double s = 0.0;
-        for (double v : msg) {
-            if (!Double.isFinite(v)) {
-                Arrays.fill(msg, 0.0);
-                return;
-            }
-            s += v;
-        }
-        if (!Double.isFinite(s) || s <= 0.0) {
-            // If message becomes all zeros (inconsistent evidence), keep zeros.
-            Arrays.fill(msg, 0.0);
-            return;
-        }
-
-        for (int i = 0; i < msg.length; i++) msg[i] /= s;
-    }
-
-    // =========================
-    // Serialization hooks
-    // =========================
-
-    @Serial
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        try {
-            out.defaultWriteObject();
-        } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
-            throw e;
-        }
-    }
-
-    @Serial
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        try {
-            in.defaultReadObject();
-        } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                    + ", " + e.getMessage());
-            throw e;
         }
     }
 }

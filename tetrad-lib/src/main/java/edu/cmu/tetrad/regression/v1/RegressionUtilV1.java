@@ -7,15 +7,32 @@ package edu.cmu.tetrad.regression.v1;
 
 import org.ejml.simple.SimpleMatrix;
 
+/**
+ * Utility class for regression-related functionalities, including linear and logistic regression.
+ * This class provides methods for Ordinary Least Squares (OLS)-based regression
+ * and logistic regression using Iteratively Reweighted Least Squares (IRLS).
+ * The class also includes helper methods for numerical safety and optimization.
+ * This is version 1 (v1) of the implementation.
+ * It uses the EJML library's SimpleMatrix for matrix operations.
+ * <p>
+ * This class is not instantiable.
+ */
 public final class RegressionUtilV1 {
 
-    private RegressionUtilV1() { }
+    private RegressionUtilV1() {
+    }
 
     // =========================
     // v1: OLS
     // =========================
 
-    /** v1: OLS fit via QR-based least squares: beta = argmin ||X*beta - y||_2. */
+    /**
+     * v1: OLS fit via QR-based least squares: beta = argmin ||X*beta - y||_2.
+     *
+     * @param X design matrix (nxp)
+     * @param y response vector (nx1)
+     * @return FitOlsV1 object containing estimated coefficients and other relevant information.
+     */
     public static FitOlsV1 olsFitV1(SimpleMatrix X, SimpleMatrix y) {
         if (X.numRows() != y.numRows() || y.numCols() != 1) {
             throw new IllegalArgumentException("v1: OLS requires X(nxp), y(nx1).");
@@ -25,7 +42,14 @@ public final class RegressionUtilV1 {
         return new FitOlsV1(beta);
     }
 
-    /** v1: OLS fit with ridge (Tikhonov) via normal equations: (X'X + λI)β = X'y. */
+    /**
+     * v1: OLS fit with ridge (Tikhonov) via normal equations: (X'X + λI)β = X'y.
+     *
+     * @param X design
+     * @param y response
+     * @param ridgeLambda regularization parameter
+     * @return FitOlsV1 object containing
+     */
     public static FitOlsV1 olsFitRidgeV1(SimpleMatrix X, SimpleMatrix y, double ridgeLambda) {
         if (ridgeLambda <= 0) return olsFitV1(X, y);
         if (X.numRows() != y.numRows() || y.numCols() != 1) {
@@ -39,29 +63,16 @@ public final class RegressionUtilV1 {
         return new FitOlsV1(beta);
     }
 
-    public static final class FitOlsV1 {
-        public final SimpleMatrix beta; // v1: (p x 1)
-
-        FitOlsV1(SimpleMatrix beta) {
-            this.beta = beta;
-        }
-
-        /** v1: Predict yhat = X*beta. Returns double[n]. */
-        public double[] predictV1(SimpleMatrix X) {
-            SimpleMatrix yhat = X.mult(beta);
-            double[] out = new double[yhat.numRows()];
-            for (int i = 0; i < out.length; i++) out[i] = yhat.get(i, 0);
-            return out;
-        }
-    }
-
-    // =========================
-    // v1: Logistic regression via IRLS
-    // =========================
-
     /**
      * v1: Fit logistic regression using IRLS on design matrix X (n x p) with binary y01 (length n).
      * v1: Returns coefficients w (p x 1) for logit(P(y=1|x)) = X*w.
+     *
+     * @param X design matrix
+     * @param y01 binary response vector (0 or 1)
+     * @param maxIter maximum number of iterations for IRLS
+     * @param tol convergence tolerance for IRLS
+     * @param ridgeLambda regularization parameter for IRLS
+     * @return FitLogitV1 object containing estimated coefficients and other relevant information.
      */
     public static FitLogitV1 logitFitIrlsV1(
             SimpleMatrix X,
@@ -135,30 +146,8 @@ public final class RegressionUtilV1 {
         return new FitLogitV1(w);
     }
 
-    public static final class FitLogitV1 {
-        public final SimpleMatrix w; // v1: (p x 1)
-
-        FitLogitV1(SimpleMatrix w) {
-            this.w = w;
-        }
-
-        /** v1: Predict probabilities p = sigmoid(X*w). */
-        public double[] predictProbV1(SimpleMatrix X) {
-            int n = X.numRows();
-            int p = X.numCols();
-            if (w.numRows() != p) throw new IllegalArgumentException("v1: X columns must match w rows.");
-            double[] out = new double[n];
-            for (int i = 0; i < n; i++) {
-                double eta = 0.0;
-                for (int j = 0; j < p; j++) eta += X.get(i, j) * w.get(j, 0);
-                out[i] = sigmoidV1(eta);
-            }
-            return out;
-        }
-    }
-
     // =========================
-    // v1: Helpers
+    // v1: Logistic regression via IRLS
     // =========================
 
     private static double sigmoidV1(double x) {
@@ -173,5 +162,79 @@ public final class RegressionUtilV1 {
 
     private static double clipV1(double v, double lo, double hi) {
         return Math.max(lo, Math.min(hi, v));
+    }
+
+    // =========================
+    // v1: Helpers
+    // =========================
+
+    /**
+     * v1: OLS fit via QR-based least squares: beta = argmin ||X*beta - y||_2.
+     */
+    public static final class FitOlsV1 {
+        /**
+         * v1: Estimated coefficients for the linear regression model.
+         */
+        public final SimpleMatrix beta; // v1: (p x 1)
+
+        FitOlsV1(SimpleMatrix beta) {
+            this.beta = beta;
+        }
+
+        /**
+         * v1: Predict yhat = X*beta. Returns double[n].
+         *
+         * @param X design
+         * @return predicted response
+         */
+        public double[] predictV1(SimpleMatrix X) {
+            SimpleMatrix yhat = X.mult(beta);
+            double[] out = new double[yhat.numRows()];
+            for (int i = 0; i < out.length; i++) out[i] = yhat.get(i, 0);
+            return out;
+        }
+    }
+
+    /**
+     * v1: Represents the result of a logistic regression fit using IRLS.
+     * This class contains the coefficients used in the logistic regression model
+     * and provides functionality to predict probabilities for a given design matrix.
+     */
+    public static final class FitLogitV1 {
+
+        /**
+         * v1: Coefficients w
+         */
+        public final SimpleMatrix w; // v1: (p x 1)
+
+        /**
+         * Constructor for the FitLogitV1 class.
+         * Initializes an instance with the given logistic regression coefficients.
+         *
+         * @param w Coefficients for logistic regression. This is a SimpleMatrix instance
+         *          representing the weights for the logistic regression model.
+         */
+        FitLogitV1(SimpleMatrix w) {
+            this.w = w;
+        }
+
+        /**
+         * v1: Predict probabilities p = sigmoid(X*w).
+         *
+         * @param X design matrix
+         * @return Array of predicted probabilities for each row in the design matrix.
+         */
+        public double[] predictProbV1(SimpleMatrix X) {
+            int n = X.numRows();
+            int p = X.numCols();
+            if (w.numRows() != p) throw new IllegalArgumentException("v1: X columns must match w rows.");
+            double[] out = new double[n];
+            for (int i = 0; i < n; i++) {
+                double eta = 0.0;
+                for (int j = 0; j < p; j++) eta += X.get(i, j) * w.get(j, 0);
+                out[i] = sigmoidV1(eta);
+            }
+            return out;
+        }
     }
 }

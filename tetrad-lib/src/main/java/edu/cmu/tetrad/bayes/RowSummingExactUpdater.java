@@ -570,6 +570,15 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         return updatedGraph;
     }
 
+    /**
+     * Deserializes the {@code RowSummingExactUpdater} object from the provided input stream.
+     * This method ensures that the deserialized object has all mandatory fields non-null.
+     *
+     * @param s the {@code ObjectInputStream} from which the object is read
+     * @throws IOException if an I/O error occurs while reading the stream
+     * @throws ClassNotFoundException if the class of a serialized object could not be found
+     * @throws NullPointerException if the deserialized object's {@code bayesIm} or {@code evidence} fields are null
+     */
     @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

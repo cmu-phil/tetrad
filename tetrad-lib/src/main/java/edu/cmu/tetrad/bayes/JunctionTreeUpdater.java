@@ -61,9 +61,6 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
 
     /**
      * Inference engine (message passing) over the updated BayesIm.
-     * <p>
-     * IMPORTANT: This engine is always built from updatedBayesIm, which is
-     * manipulatedBayesIm plus the Evidence restrictions (via UpdatedBayesIm).
      */
     private JunctionTreeInference jti;
 
@@ -91,7 +88,13 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
-     * If exactly one category is allowed for the node, return it; else return -1.
+     * Returns the only allowed category for a given node if exactly one category is allowed.
+     * If multiple categories are allowed or none are allowed, returns -1.
+     *
+     * @param p       the Proposition instance used to check if a category is allowed for the node
+     * @param node    the index of the node being evaluated
+     * @param numCats the total number of categories to consider
+     * @return the index of the only allowed category, or -1 if multiple categories are allowed or none are allowed
      */
     private static int getOnlyAllowedCategoryOrMinusOne(Proposition p, int node, int numCats) {
         int only = -1;
@@ -486,6 +489,14 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
     // Serialization hooks
     // =========================================================
 
+    /**
+     * Serializes the state of the JunctionTreeUpdater object to an ObjectOutputStream.
+     * This method ensures that the default serialization process is executed and logs
+     * any serialization-related errors for debugging purposes.
+     *
+     * @param out the ObjectOutputStream to which the object state is written
+     * @throws IOException if an I/O error occurs during the serialization process
+     */
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         try {
@@ -497,6 +508,15 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         }
     }
 
+    /**
+     * Deserializes the state of the JunctionTreeUpdater object from an ObjectInputStream.
+     * This method ensures that the default deserialization behavior is executed while also
+     * logging any deserialization issues for debugging purposes.
+     *
+     * @param in the ObjectInputStream from which the object state is read
+     * @throws IOException if an I/O error occurs during the deserialization process
+     * @throws ClassNotFoundException if the class of a serialized object cannot be found
+     */
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         try {

@@ -9,6 +9,17 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * Utility class that provides a set of predefined metrics for evaluating
+ * Directed Acyclic Graphs (DAGs).
+ *
+ * The provided metrics are implemented as factory methods that return instances
+ * of the {@link DagMetric} functional interface. These metrics are commonly used
+ * to assess the quality, adequacy, or fitness of a given DAG structure based
+ * on observational data and various scoring or fitting criteria.
+ *
+ * This class is designed to be non-instantiable.
+ */
 public final class DagMetrics {
 
     private DagMetrics() {}
@@ -28,6 +39,14 @@ public final class DagMetrics {
         return total;
     }
 
+    /**
+     * Computes the Minimax t-RFF BIC metric for a given data set and directed acyclic graph (DAG).
+     * The Minimax t-RFF BIC score is a general mixed BIC-based metric that evaluates the fit of the graph
+     * to the dataset using a specific scoring algorithm.
+     *
+     * @return A {@link DagMetric} instance that calculates the Minimax t-RFF BIC metric, where higher scores
+     *         indicate a better fit according to the evaluation criterion.
+     */
     public static @NotNull DagMetric minimaxTrffBic() {
         return (data, dag) -> {
             var algScore = new edu.cmu.tetrad.algcomparison.score.MinimaxTRffBicScore();
@@ -37,6 +56,10 @@ public final class DagMetrics {
         };
     }
 
+    /**
+     * Computes the Legendre BIC score for a given dataset and DAG.
+     * @return A {@link DagMetric} instance that calculates the Legendre BIC metric.
+     */
     public static @NotNull DagMetric legendreBic() {
         return (data, dag) -> {
             var algScore = new edu.cmu.tetrad.algcomparison.score.MinimaxLegendreScore();
@@ -46,6 +69,10 @@ public final class DagMetrics {
         };
     }
 
+    /**
+     * Computes the FFML score for a given dataset and DAG.
+     * @return A {@link DagMetric} instance that calculates the FFML metric.
+     */
     public static @NotNull DagMetric ffml() {
         return (data, dag) -> {
             var algScore = new edu.cmu.tetrad.algcomparison.score.FfMl();
@@ -55,6 +82,10 @@ public final class DagMetrics {
         };
     }
 
+    /**
+     * Computes the Linear Gaussian BIC score for a given dataset and DAG.
+     * @return A {@link DagMetric} instance that calculates the Linear Gaussian BIC metric.
+     */
     public static @NotNull DagMetric semBic() {
         return (data, dag) -> {
             var algScore = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
@@ -64,6 +95,10 @@ public final class DagMetrics {
         };
     }
 
+    /**
+     * Computes the Linear Gaussian Chi Square score for a given dataset and DAG.
+     * @return A {@link DagMetric} instance that calculates the Linear Gaussian Chi Square metric.
+     */
     public static @NotNull DagMetric lgChiSquare() {
         return (data, dag) -> {
             SemPm pm = new SemPm(dag);
@@ -73,6 +108,10 @@ public final class DagMetrics {
         };
     }
 
+    /**
+     * Computes the Comparative Fit Index (CFI) for a given dataset and DAG.
+     * @return A {@link DagMetric} instance that calculates the CFI metric.
+     */
     public static @NotNull DagMetric cfi() {
         return (data, dag) -> {
             SemPm pm = new SemPm(dag);
@@ -82,6 +121,10 @@ public final class DagMetrics {
         };
     }
 
+    /**
+     * Computes the Model P-Value for a given dataset and DAG.
+     * @return A {@link DagMetric} instance that calculates the Model P-Value metric.
+     */
     public static @NotNull DagMetric lgModelP() {
         return (data, dag) -> {
             SemPm pm = new SemPm(dag);
@@ -91,6 +134,10 @@ public final class DagMetrics {
         };
     }
 
+    /**
+     * Computes the Root Mean Square Error of Approximation (RMSEA)
+     * @return A {@link DagMetric} instance that calculates the RMSEA metric.
+     */
     public static @NotNull DagMetric rmsea() {
         return (data, dag) -> {
             SemPm pm = new SemPm(dag);
@@ -100,6 +147,10 @@ public final class DagMetrics {
         };
     }
 
+    /**
+     * Computes the Maximum Mean Discrepancy (MMD)² score for a given dataset and DAG.
+     * @return A {@link DagMetric} instance that calculates the MMD² metric.
+     */
     public static @NotNull DagMetric mmd2() {
         return (data, dag) -> {
             TrainedDagSimulatorGNM.Params params = new TrainedDagSimulatorGNM.Params();
