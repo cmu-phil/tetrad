@@ -103,7 +103,16 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
         this.homeCliqueByVar = new HashMap<>();
 
         buildCliqueTreeAndPotentials();
+
         this.calibrated = false; // evidence is empty but we can lazily calibrate on first query
+
+        for (Clique c : cliques) {
+            if (Arrays.stream(c.basePotential).allMatch(x -> x == 1.0)) {
+                System.out.println("Clique with vars "
+                        + Arrays.toString(c.vars)
+                        + " has basePotential all ones.");
+            }
+        }
     }
 
     private int indexOfByName(Node n) {
@@ -145,6 +154,7 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
         if (pos < 0) throw new IllegalStateException("Internal: home clique missing var.");
 
         double[] marg = c.marginalOfSingleVar(pos);
+
         normalizeInPlaceKidGloves(marg);
         return marg;
     }
@@ -321,6 +331,27 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
         // Assign each BN variable to exactly one clique for CPT multiplication.
         Map<Integer, Clique> assignedToClique = assignVariablesToCliques(mco, cliqueByKey, cliqueMap);
 
+
+        // Build clique base potentials = product of assigned CPT factors.
+        for (Clique c : cliques) c.initializePotential();
+
+        for (Map.Entry<Integer, Clique> ent : assignedToClique.entrySet()) {
+            int v = ent.getKey();
+            Clique c = ent.getValue();
+            if (c == null) continue;
+            c.multiplyInCptFactor(v);
+        }
+
+        // NOW it is legal to inspect basePotential
+        for (int v = 0; v < nodes.length; v++) {
+            Clique c = assignedToClique.get(v);
+            boolean allOnes = Arrays.stream(c.basePotential).allMatch(x -> x == 1.0);
+            if (allOnes) {
+                System.out.println("Assigned clique for " + nodes[v].getName()
+                        + " has basePotential all ones. Clique vars=" + Arrays.toString(c.vars));
+            }
+        }
+
         // Build clique base potentials = product of assigned CPT factors.
         for (Clique c : cliques) {
             c.initializePotential();
@@ -333,12 +364,36 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
             c.multiplyInCptFactor(v);
         }
 
-        // Select a “home clique” per variable for marginal queries (any containing clique is fine).
+        double[] check = new double[nodes.length];
+        Arrays.fill(check, 0.0);
+
+        // After multiplication, each v's CPT should have introduced some non-1 structure somewhere.
+        // We can’t easily prove “structure,” but we can at least ensure we *attempted* to multiply in.
         for (int v = 0; v < nodes.length; v++) {
-            Clique c = findAnyCliqueContaining(v);
+            Clique c = assignedToClique.get(v);
+            if (c == null || c == superRoot) {
+                throw new IllegalStateException("JT: variable " + nodes[v].getName() + " assigned to null/superRoot clique");
+            }
+        }
+
+        // Select a “home clique” per variable for marginal queries (any containing clique is fine).
+//        for (int v = 0; v < nodes.length; v++) {
+//            Clique c = findAnyCliqueContaining(v);
+//            if (c == null) {
+//                // Should not happen due to singleton clique guard, but kid gloves:
+//                c = superRoot;
+//            }
+//            homeCliqueByVar.put(v, c);
+//        }
+
+        // Select a “home clique” per variable for marginal queries.
+        // IMPORTANT: use the clique where the CPT factor for v was placed.
+        for (int v = 0; v < nodes.length; v++) {
+            Clique c = assignedToClique.get(v);
             if (c == null) {
-                // Should not happen due to singleton clique guard, but kid gloves:
-                c = superRoot;
+                // Kid gloves fallback (should not happen now that you throw earlier)
+                c = findAnyCliqueContaining(v);
+                if (c == null) c = superRoot;
             }
             homeCliqueByVar.put(v, c);
         }
@@ -372,15 +427,23 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
                 if (ok) { chosen = c; break; }
             }
 
+//            if (chosen == null) {
+//                // Kid gloves: this should not happen in a correct triangulation/clique extraction.
+//                // If it happens, CPT placement will be wrong; log it loudly.
+//                TetradLogger.getInstance().log(
+//                        "JT: No clique contains family {X=" + nodes[v].getName() +
+//                                "}∪Pa(X). Inference will be wrong for this variable.");
+//                // Still pick any clique containing v so marginals are at least defined.
+//                chosen = findAnyCliqueContaining(v);
+//                if (chosen == null) chosen = superRoot;
+//            }
+
             if (chosen == null) {
-                // Kid gloves: this should not happen in a correct triangulation/clique extraction.
-                // If it happens, CPT placement will be wrong; log it loudly.
-                TetradLogger.getInstance().log(
-                        "JT: No clique contains family {X=" + nodes[v].getName() +
-                                "}∪Pa(X). Inference will be wrong for this variable.");
-                // Still pick any clique containing v so marginals are at least defined.
-                chosen = findAnyCliqueContaining(v);
-                if (chosen == null) chosen = superRoot;
+                throw new IllegalStateException(
+                        "JT: No clique contains family {"
+                                + nodes[v].getName() + "} ∪ Pa. "
+                                + "This indicates clique extraction / canonicalization failure."
+                );
             }
 
             out.put(v, chosen);
@@ -694,9 +757,17 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
             int[] pPos = new int[parents.length];
             for (int i = 0; i < parents.length; i++) {
                 pPos[i] = indexOfVar(parents[i]);
+//                if (pPos[i] < 0) {
+//                    // Family not fully in clique; skip (kid gloves)
+//                    return;
+//                }
+
                 if (pPos[i] < 0) {
-                    // Family not fully in clique; skip (kid gloves)
-                    return;
+                    throw new IllegalStateException(
+                            "JT: Clique does not contain full family for " + nodes[v].getName()
+                                    + ". Missing parent " + nodes[parents[i]].getName()
+                                    + ". Clique vars=" + Arrays.toString(this.vars)
+                    );
                 }
             }
 
@@ -712,12 +783,9 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
 
                 // BayesIm row index is based on BN parent order:
                 int row = bayesIm.getRowIndex(v, parentValues);
-
                 int xVal = assign[xPos];
                 double p = bayesIm.getProbability(v, row, xVal);
-
                 basePotential[idx] *= p;
-
                 incrementAssignment(assign, card);
             }
         }
@@ -916,6 +984,7 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
             Arrays.fill(msg, 0.0);
             return;
         }
+
         for (int i = 0; i < msg.length; i++) msg[i] /= s;
     }
 
