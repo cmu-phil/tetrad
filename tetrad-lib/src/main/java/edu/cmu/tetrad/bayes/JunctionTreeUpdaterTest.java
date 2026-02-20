@@ -7,148 +7,11 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static org.junit.Assert.*;
 
 public final class JunctionTreeUpdaterTest {
 
     private static final double EPS = 1e-10;
-
-    /**
-     * Structure:
-     *   X1 -> X2 -> X3 -> X5
-     *         \-> X4
-     *
-     * Evidence: X3 = 1 should propagate:
-     *  - Up: X2 and X1 change
-     *  - Down: X5 changes
-     *  - Side child: X4 changes because X2 changes
-     */
-    @Test
-    public void testEvidencePropagatesUpAndDown_andUpdatersAgree() {
-        BayesIm im = buildToyBayesIm();
-
-        int X1 = idx(im, "X1");
-        int X2 = idx(im, "X2");
-        int X3 = idx(im, "X3");
-        int X4 = idx(im, "X4");
-        int X5 = idx(im, "X5");
-
-        // --- PRIOR (tautology evidence): updaters must agree ---
-        Evidence taut = Evidence.tautology(im);
-
-        RowSummingExactUpdater rsPrior = new RowSummingExactUpdater(im, taut);
-        JunctionTreeUpdater jtPrior = new JunctionTreeUpdater(im, taut);
-
-        assertDistClose(rsPrior.calculateUpdatedMarginals(X1), jtPrior.calculateUpdatedMarginals(X1), EPS);
-        assertDistClose(rsPrior.calculateUpdatedMarginals(X2), jtPrior.calculateUpdatedMarginals(X2), EPS);
-        assertDistClose(rsPrior.calculateUpdatedMarginals(X3), jtPrior.calculateUpdatedMarginals(X3), EPS);
-        assertDistClose(rsPrior.calculateUpdatedMarginals(X4), jtPrior.calculateUpdatedMarginals(X4), EPS);
-        assertDistClose(rsPrior.calculateUpdatedMarginals(X5), jtPrior.calculateUpdatedMarginals(X5), EPS);
-
-        double[] priorX1 = jtPrior.calculateUpdatedMarginals(X1);
-        double[] priorX2 = jtPrior.calculateUpdatedMarginals(X2);
-        double[] priorX4 = jtPrior.calculateUpdatedMarginals(X4);
-        double[] priorX5 = jtPrior.calculateUpdatedMarginals(X5);
-
-        // --- POSTERIOR: evidence X3=1 ---
-        Evidence e = evidenceXEquals(im, "X3", 1);
-
-        RowSummingExactUpdater rsPost = new RowSummingExactUpdater(im, e);
-        JunctionTreeUpdater jtPost = new JunctionTreeUpdater(im, e);
-
-        // (4) Agreement between methods (spot + whole-vector)
-        assertDistClose(rsPost.calculateUpdatedMarginals(X1), jtPost.calculateUpdatedMarginals(X1), EPS);
-        assertDistClose(rsPost.calculateUpdatedMarginals(X2), jtPost.calculateUpdatedMarginals(X2), EPS);
-        assertDistClose(rsPost.calculateUpdatedMarginals(X3), jtPost.calculateUpdatedMarginals(X3), EPS);
-        assertDistClose(rsPost.calculateUpdatedMarginals(X4), jtPost.calculateUpdatedMarginals(X4), EPS);
-        assertDistClose(rsPost.calculateUpdatedMarginals(X5), jtPost.calculateUpdatedMarginals(X5), EPS);
-
-        double[] postX1 = jtPost.calculateUpdatedMarginals(X1);
-        double[] postX2 = jtPost.calculateUpdatedMarginals(X2);
-        double[] postX4 = jtPost.calculateUpdatedMarginals(X4);
-        double[] postX5 = jtPost.calculateUpdatedMarginals(X5);
-
-        // (1) Ancestors should change: X1, X2
-        assertTrue("Ancestor X2 marginal should change under evidence X3=1",
-                distDiff(priorX2, postX2) > 1e-6);
-        assertTrue("Ancestor X1 marginal should change under evidence X3=1",
-                distDiff(priorX1, postX1) > 1e-6);
-
-        // (2) Descendants/children should change: X5, and X4 via X2
-        assertTrue("Descendant X5 marginal should change under evidence X3=1",
-                distDiff(priorX5, postX5) > 1e-6);
-        assertTrue("Child of ancestor X4 marginal should change under evidence X3=1",
-                distDiff(priorX4, postX4) > 1e-6);
-
-        // Also sanity: evidence variable should be (nearly) degenerate at 1.
-        double[] postX3 = jtPost.calculateUpdatedMarginals(X3);
-        assertEquals(0.0, postX3[0], 1e-9);
-        assertEquals(1.0, postX3[1], 1e-9);
-    }
-
-    /**
-     * (3) do(X): incoming edges removed, other CPTs preserved, manipulated CPT set to intervention distribution.
-     * (4) Agreement between methods under manipulation too.
-     */
-    @Test
-    public void testDoInterventionRemovesParents_preservesOtherCpts_andUpdatersAgree() {
-        BayesIm im = buildToyBayesIm();
-
-        int X2 = idx(im, "X2");
-        int X3 = idx(im, "X3");
-        int X4 = idx(im, "X4");
-
-        // do(X2 = 1)
-        Evidence e = Evidence.tautology(im);
-        e = manipulateXToValue(im, e, "X2", 1);
-
-        RowSummingExactUpdater rs = new RowSummingExactUpdater(im, e);
-        JunctionTreeUpdater jt = new JunctionTreeUpdater(im, e);
-
-        // (3a) incoming edges removed: manipulated X2 must have no parents in manipulated graph
-        BayesIm rsManip = rs.getManipulatedBayesIm();
-        BayesIm jtManip = jt.getManipulatedBayesIm();
-
-        int rsX2 = idx(rsManip, "X2");
-        int jtX2 = idx(jtManip, "X2");
-
-        assertEquals("Manipulated X2 should have 0 parents (row count 1) in RowSumming manipulated IM",
-                1, rsManip.getNumRows(rsX2));
-        assertEquals("Manipulated X2 should have 0 parents (row count 1) in JT manipulated IM",
-                1, jtManip.getNumRows(jtX2));
-
-        // (3b) manipulated distribution is point-mass at 1
-        assertEquals(0.0, rsManip.getProbability(rsX2, 0, 0), 0.0);
-        assertEquals(1.0, rsManip.getProbability(rsX2, 0, 1), 0.0);
-
-        assertEquals(0.0, jtManip.getProbability(jtX2, 0, 0), 0.0);
-        assertEquals(1.0, jtManip.getProbability(jtX2, 0, 1), 0.0);
-
-        // (3c) CPTs of non-manipulated nodes are preserved (in manipulated IM) up to identity-by-name mapping.
-        // We'll check X3 and X4 tables exactly (these have parents; good stress).
-        assertCptEqualByName(im, rsManip, "X3", EPS);
-        assertCptEqualByName(im, rsManip, "X4", EPS);
-
-        assertCptEqualByName(im, jtManip, "X3", EPS);
-        assertCptEqualByName(im, jtManip, "X4", EPS);
-
-        // (4) Updaters agree on post-do marginals too.
-        assertDistClose(rs.calculateUpdatedMarginals(X2), jt.calculateUpdatedMarginals(X2), EPS);
-        assertDistClose(rs.calculateUpdatedMarginals(X3), jt.calculateUpdatedMarginals(X3), EPS);
-        assertDistClose(rs.calculateUpdatedMarginals(X4), jt.calculateUpdatedMarginals(X4), EPS);
-
-        // And sanity: X2 marginal after do should be degenerate at 1.
-        double[] m2 = jt.calculateUpdatedMarginals(X2);
-        assertEquals(0.0, m2[0], 1e-12);
-        assertEquals(1.0, m2[1], 1e-12);
-    }
-
-    // =========================================================
-    // Helpers
-    // =========================================================
 
     private static int idx(BayesIm im, String name) {
         Node n = im.getNode(name);
@@ -162,6 +25,10 @@ public final class JunctionTreeUpdaterTest {
             assertEquals("Mismatch at " + i, a[i], b[i], eps);
         }
     }
+
+    // =========================================================
+    // Helpers
+    // =========================================================
 
     private static double distDiff(double[] a, double[] b) {
         double s = 0.0;
@@ -334,9 +201,9 @@ public final class JunctionTreeUpdaterTest {
 
     /**
      * Convenience: set CPT for a binary child with ONE binary parent.
-     *
+     * <p>
      * We set: P(child=0|parent=pVal)=p0, P(child=1|parent=pVal)=1-p0.
-     *
+     * <p>
      * The mapping from parent value -> row index is via getRowIndex(child, parentValues).
      */
     private static void setBinaryCptOneParent(BayesIm im, int child, int parent, int parentVal, double p0) {
@@ -347,5 +214,135 @@ public final class JunctionTreeUpdaterTest {
         int row = im.getRowIndex(child, new int[]{parentVal});
         im.setProbability(child, row, 0, p0);
         im.setProbability(child, row, 1, 1.0 - p0);
+    }
+
+    /**
+     * Structure:
+     * X1 -> X2 -> X3 -> X5
+     * \-> X4
+     * <p>
+     * Evidence: X3 = 1 should propagate:
+     * - Up: X2 and X1 change
+     * - Down: X5 changes
+     * - Side child: X4 changes because X2 changes
+     */
+    @Test
+    public void testEvidencePropagatesUpAndDown_andUpdatersAgree() {
+        BayesIm im = buildToyBayesIm();
+
+        int X1 = idx(im, "X1");
+        int X2 = idx(im, "X2");
+        int X3 = idx(im, "X3");
+        int X4 = idx(im, "X4");
+        int X5 = idx(im, "X5");
+
+        // --- PRIOR (tautology evidence): updaters must agree ---
+        Evidence taut = Evidence.tautology(im);
+
+        RowSummingExactUpdater rsPrior = new RowSummingExactUpdater(im, taut);
+        JunctionTreeUpdater jtPrior = new JunctionTreeUpdater(im, taut);
+
+        assertDistClose(rsPrior.calculateUpdatedMarginals(X1), jtPrior.calculateUpdatedMarginals(X1), EPS);
+        assertDistClose(rsPrior.calculateUpdatedMarginals(X2), jtPrior.calculateUpdatedMarginals(X2), EPS);
+        assertDistClose(rsPrior.calculateUpdatedMarginals(X3), jtPrior.calculateUpdatedMarginals(X3), EPS);
+        assertDistClose(rsPrior.calculateUpdatedMarginals(X4), jtPrior.calculateUpdatedMarginals(X4), EPS);
+        assertDistClose(rsPrior.calculateUpdatedMarginals(X5), jtPrior.calculateUpdatedMarginals(X5), EPS);
+
+        double[] priorX1 = jtPrior.calculateUpdatedMarginals(X1);
+        double[] priorX2 = jtPrior.calculateUpdatedMarginals(X2);
+        double[] priorX4 = jtPrior.calculateUpdatedMarginals(X4);
+        double[] priorX5 = jtPrior.calculateUpdatedMarginals(X5);
+
+        // --- POSTERIOR: evidence X3=1 ---
+        Evidence e = evidenceXEquals(im, "X3", 1);
+
+        RowSummingExactUpdater rsPost = new RowSummingExactUpdater(im, e);
+        JunctionTreeUpdater jtPost = new JunctionTreeUpdater(im, e);
+
+        // (4) Agreement between methods (spot + whole-vector)
+        assertDistClose(rsPost.calculateUpdatedMarginals(X1), jtPost.calculateUpdatedMarginals(X1), EPS);
+        assertDistClose(rsPost.calculateUpdatedMarginals(X2), jtPost.calculateUpdatedMarginals(X2), EPS);
+        assertDistClose(rsPost.calculateUpdatedMarginals(X3), jtPost.calculateUpdatedMarginals(X3), EPS);
+        assertDistClose(rsPost.calculateUpdatedMarginals(X4), jtPost.calculateUpdatedMarginals(X4), EPS);
+        assertDistClose(rsPost.calculateUpdatedMarginals(X5), jtPost.calculateUpdatedMarginals(X5), EPS);
+
+        double[] postX1 = jtPost.calculateUpdatedMarginals(X1);
+        double[] postX2 = jtPost.calculateUpdatedMarginals(X2);
+        double[] postX4 = jtPost.calculateUpdatedMarginals(X4);
+        double[] postX5 = jtPost.calculateUpdatedMarginals(X5);
+
+        // (1) Ancestors should change: X1, X2
+        assertTrue("Ancestor X2 marginal should change under evidence X3=1",
+                distDiff(priorX2, postX2) > 1e-6);
+        assertTrue("Ancestor X1 marginal should change under evidence X3=1",
+                distDiff(priorX1, postX1) > 1e-6);
+
+        // (2) Descendants/children should change: X5, and X4 via X2
+        assertTrue("Descendant X5 marginal should change under evidence X3=1",
+                distDiff(priorX5, postX5) > 1e-6);
+        assertTrue("Child of ancestor X4 marginal should change under evidence X3=1",
+                distDiff(priorX4, postX4) > 1e-6);
+
+        // Also sanity: evidence variable should be (nearly) degenerate at 1.
+        double[] postX3 = jtPost.calculateUpdatedMarginals(X3);
+        assertEquals(0.0, postX3[0], 1e-9);
+        assertEquals(1.0, postX3[1], 1e-9);
+    }
+
+    /**
+     * (3) do(X): incoming edges removed, other CPTs preserved, manipulated CPT set to intervention distribution.
+     * (4) Agreement between methods under manipulation too.
+     */
+    @Test
+    public void testDoInterventionRemovesParents_preservesOtherCpts_andUpdatersAgree() {
+        BayesIm im = buildToyBayesIm();
+
+        int X2 = idx(im, "X2");
+        int X3 = idx(im, "X3");
+        int X4 = idx(im, "X4");
+
+        // do(X2 = 1)
+        Evidence e = Evidence.tautology(im);
+        e = manipulateXToValue(im, e, "X2", 1);
+
+        RowSummingExactUpdater rs = new RowSummingExactUpdater(im, e);
+        JunctionTreeUpdater jt = new JunctionTreeUpdater(im, e);
+
+        // (3a) incoming edges removed: manipulated X2 must have no parents in manipulated graph
+        BayesIm rsManip = rs.getManipulatedBayesIm();
+        BayesIm jtManip = jt.getManipulatedBayesIm();
+
+        int rsX2 = idx(rsManip, "X2");
+        int jtX2 = idx(jtManip, "X2");
+
+        assertEquals("Manipulated X2 should have 0 parents (row count 1) in RowSumming manipulated IM",
+                1, rsManip.getNumRows(rsX2));
+        assertEquals("Manipulated X2 should have 0 parents (row count 1) in JT manipulated IM",
+                1, jtManip.getNumRows(jtX2));
+
+        // (3b) manipulated distribution is point-mass at 1
+        assertEquals(0.0, rsManip.getProbability(rsX2, 0, 0), 0.0);
+        assertEquals(1.0, rsManip.getProbability(rsX2, 0, 1), 0.0);
+
+        assertEquals(0.0, jtManip.getProbability(jtX2, 0, 0), 0.0);
+        assertEquals(1.0, jtManip.getProbability(jtX2, 0, 1), 0.0);
+
+        // (3c) CPTs of non-manipulated nodes are preserved (in manipulated IM) up to identity-by-name mapping.
+        // We'll check X3 and X4 tables exactly (these have parents; good stress).
+        assertCptEqualByName(im, rsManip, "X3", EPS);
+        assertCptEqualByName(im, rsManip, "X4", EPS);
+
+        assertCptEqualByName(im, jtManip, "X3", EPS);
+        assertCptEqualByName(im, jtManip, "X4", EPS);
+
+        // (4) Updaters agree on post-do marginals too.
+        assertDistClose(rs.calculateUpdatedMarginals(X2), jt.calculateUpdatedMarginals(X2), EPS);
+        assertDistClose(rs.calculateUpdatedMarginals(X3), jt.calculateUpdatedMarginals(X3), EPS);
+        assertDistClose(rs.calculateUpdatedMarginals(X4), jt.calculateUpdatedMarginals(X4), EPS);
+
+        // And sanity: X2 marginal after do should be degenerate at 1.
+        double[] m2 = jt.calculateUpdatedMarginals(X2);
+        assertEquals(0.0, m2[0], 1e-12);
+        assertEquals(1.0, m2[1], 1e-12);
     }
 }
