@@ -137,7 +137,6 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
                 double sum = 0.0;
                 for (int j = 0; j < evidence.getNumCategories(i); j++) {
                     double v = evidence.getProposition().isAllowed(i, j) ? 1.0 : 0.0;
-//                    this.manipulatedBayesIm.setProbability(i, 0, j, v);
 
                     int dst = toManipulatedIndex(i);
                     this.manipulatedBayesIm.setProbability(dst, 0, j, v);
