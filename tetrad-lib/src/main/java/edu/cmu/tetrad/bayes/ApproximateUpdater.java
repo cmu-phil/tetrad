@@ -118,17 +118,18 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
     private static int[] getSinglePoint(BayesIm bayesIm, int[] tiers) {
         int[] point = new int[bayesIm.getNumNodes()];
-        int[] combination = new int[bayesIm.getNumNodes()];
         RandomUtil randomUtil = RandomUtil.getInstance();
 
         for (int nodeIndex : tiers) {
             double cutoff = randomUtil.nextDouble();
 
+            // MlBayesIm.getRowIndex expects a parent-value vector whose length matches numParents(nodeIndex).
+            int[] parentValues = new int[bayesIm.getNumParents(nodeIndex)];
             for (int k = 0; k < bayesIm.getNumParents(nodeIndex); k++) {
-                combination[k] = point[bayesIm.getParent(nodeIndex, k)];
+                parentValues[k] = point[bayesIm.getParent(nodeIndex, k)];
             }
 
-            int rowIndex = bayesIm.getRowIndex(nodeIndex, combination);
+            int rowIndex = bayesIm.getRowIndex(nodeIndex, parentValues);
             double sum = 0.0;
 
             for (int k = 0; k < bayesIm.getNumColumns(nodeIndex); k++) {
@@ -137,8 +138,8 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
                 if (Double.isNaN(probability)) {
                     throw new IllegalStateException("Some probability " +
-                                                    "values in the BayesIm are not filled in; " +
-                                                    "cannot simulate data to do approximate updating.");
+                            "values in the BayesIm are not filled in; " +
+                            "cannot simulate data to do approximate updating.");
                 }
 
                 sum += probability;
@@ -203,14 +204,14 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
      * <p>
      * Sets new evidence for the next update operation.
      */
-    public void setEvidence(Evidence evidence) {
+    public synchronized void setEvidence(Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
         }
 
         if (evidence.isIncompatibleWith(this.bayesIm)) {
             throw new IllegalArgumentException("The variables for the given " +
-                                               "evidence must be compatible with the Bayes IM being updated.");
+                    "evidence must be compatible with the Bayes IM being updated.");
         }
 
         this.evidence = new Evidence(evidence);
@@ -219,6 +220,28 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         Dag manipulatedGraph = createManipulatedGraph(graph);
         BayesPm manipulatedBayesPm = createUpdatedBayesPm(manipulatedGraph);
         this.manipulatedBayesIm = createdUpdatedBayesIm(manipulatedBayesPm);
+
+        // Ensure manipulated variables have defined row-0 distributions.
+        // (Manipulation implies no parents in the manipulated graph, so row 0 is used.)
+        for (int i = 0; i < evidence.getNumNodes(); i++) {
+            if (evidence.isManipulated(i)) {
+                double sum = 0.0;
+
+                for (int j = 0; j < evidence.getNumCategories(i); j++) {
+                    double p = evidence.getProposition().isAllowed(i, j) ? 1.0 : 0.0;
+                    this.manipulatedBayesIm.setProbability(i, 0, j, p);
+                    sum += p;
+                }
+
+                // Normalize to sum to 1 if any categories are allowed.
+                if (sum > 0.0) {
+                    for (int j = 0; j < evidence.getNumCategories(i); j++) {
+                        double p = this.manipulatedBayesIm.getProbability(i, 0, j);
+                        this.manipulatedBayesIm.setProbability(i, 0, j, p / sum);
+                    }
+                }
+            }
+        }
 
         this.counts = null;
     }
@@ -232,6 +255,10 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
         for (int i = 0; i < this.manipulatedBayesIm.getNumColumns(variable); i++) {
             sum += this.counts[variable][i];
+        }
+
+        if (sum == 0) {
+            return Double.NaN;
         }
 
         return this.counts[variable][value] / (double) sum;
@@ -300,18 +327,19 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         return "Approximate updater, evidence = " + this.evidence;
     }
 
-    private void doUpdate() {
+    private synchronized void doUpdate() {
         if (this.counts != null) {
             return;
         }
 
-        this.counts = new int[this.manipulatedBayesIm.getNumNodes()][];
+        // Kid gloves fix: build counts in a local array and publish it only once it's fully initialized.
+        // This avoids races with UI threads that may call setEvidence() while an update is in progress.
+        int[][] localCounts = new int[this.manipulatedBayesIm.getNumNodes()][];
 
         for (int i = 0; i < this.manipulatedBayesIm.getNumNodes(); i++) {
-            this.counts[i] = new int[this.manipulatedBayesIm.getNumColumns(i)];
+            localCounts[i] = new int[this.manipulatedBayesIm.getNumColumns(i)];
         }
-
-        // Get a tier ordering and convert it to an int array.
+// Get a tier ordering and convert it to an int array.
         Graph graph = getManipulatedGraph();
         Paths paths = graph.paths();
         List<Node> initialOrder = graph.getNodes();
@@ -332,16 +360,21 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
         // Construct the sample.
         while (numCounted < 1000 && ++numSurveyed < 10000) {
-            int[] point = ApproximateUpdater.getSinglePoint(getBayesIm(), tiers);
+
+            // Kid gloves fix: simulate from the *manipulated* Bayes IM so
+            // manipulations are actually respected in the sampled points.
+            int[] point = ApproximateUpdater.getSinglePoint(getManipulatedBayesIm(), tiers);
 
             if (this.evidence.getProposition().isPermissibleCombination(point)) {
                 numCounted++;
 
                 for (int j = 0; j < getManipulatedBayesIm().getNumNodes(); j++) {
-                    this.counts[j][point[j]]++;
+                    localCounts[j][point[j]]++;
                 }
             }
         }
+
+        this.counts = localCounts;
     }
 
     private BayesIm createdUpdatedBayesIm(BayesPm updatedBayesPm) {
@@ -383,7 +416,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
             out.defaultWriteObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
@@ -402,13 +435,8 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
             in.defaultReadObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
 }
-
-
-
-
-

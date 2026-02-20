@@ -271,18 +271,27 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     }
 
     private void normalize(double[] values) {
-        // sum up all the values
-        double sum = 0;
-        for (double value : values) {
-            sum += value;
+        double sum = 0.0;
+
+        // If anything is NaN/Inf, treat the whole vector as undefined.
+        for (double v : values) {
+            if (!Double.isFinite(v)) {
+                for (int i = 0; i < values.length; i++) {
+                    values[i] = Double.NaN;
+                }
+                return;
+            }
+            sum += v;
         }
 
-        // Avoid divide-by-zero; if all mass is 0, leave as-is.
-        if (sum == 0) {
+        // Sum must be finite and positive to normalize.
+        if (!Double.isFinite(sum) || sum <= 0.0) {
+            for (int i = 0; i < values.length; i++) {
+                values[i] = Double.NaN;
+            }
             return;
         }
 
-        // divide each value by the sum
         for (int i = 0; i < values.length; i++) {
             values[i] /= sum;
         }
@@ -628,7 +637,6 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     public double getMarginalProbability(int iNode, int value) {
         validate(iNode, value);
 
-        // margins[] are not normalized; normalize defensively here for callers that request a single entry.
         double[] marg = new double[this.margins[iNode].length];
         System.arraycopy(this.margins[iNode], 0, marg, 0, marg.length);
         normalize(marg);
@@ -1044,7 +1052,6 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
 
             return sb.toString();
         }
-
     }
 }
 

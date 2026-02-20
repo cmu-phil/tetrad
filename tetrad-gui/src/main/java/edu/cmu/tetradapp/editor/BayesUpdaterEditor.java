@@ -33,6 +33,7 @@ import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
+import java.util.List;
 
 /**
  * Lets the user calculate updated probabilities for a Bayes net.
@@ -44,6 +45,11 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
 
     private static final int SINGLE_VALUE = 0;
     private static final int MULTI_VALUE = 1;
+
+    /**
+     * Currently selected node (driven by graph selection in the workbench).
+     */
+    private Node currentNode;
 
     /**
      * The Bayes updater being edited.
@@ -115,8 +121,19 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
         add(menuBar, BorderLayout.NORTH);
 
         this.workbench.addPropertyChangeListener(evt -> {
+            if ("selectedNodes".equals(evt.getPropertyName())) {
+                Object newValue = evt.getNewValue();
+                if (newValue instanceof List) {
+                    @SuppressWarnings("unchecked")
+                    List<?> list = (List<?>) newValue;
+                    if (list.size() == 1 && list.get(0) instanceof Node) {
+                        setCurrentNode((Node) list.get(0));
+                    }
+                }
+            }
+
             if (BayesUpdaterEditor.this.mode == BayesUpdaterEditor.MULTI_VALUE
-                && "selectedNodes".equals(evt.getPropertyName())) {
+                    && "selectedNodes".equals(evt.getPropertyName())) {
                 setMode(BayesUpdaterEditor.MULTI_VALUE);
             }
         });
@@ -367,7 +384,7 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
     private void resetSingleResultPanelSub() {
         UpdatedBayesImWizard wizard = new UpdatedBayesImWizard(
                 getUpdaterWrapper(), getWorkbench(), this.updatedBayesImWizardTab,
-                getSelectedNode());
+                (this.currentNode != null ? this.currentNode : getSelectedNode()));
         wizard.addPropertyChangeListener(e -> {
             if ("updatedBayesImWizardTab".equals(e.getPropertyName())) {
                 BayesUpdaterEditor.this.updatedBayesImWizardTab = ((Integer) (e.getNewValue()));
@@ -385,6 +402,23 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
         this.multiResultPanel.add(textArea, BorderLayout.CENTER);
         this.multiResultPanel.revalidate();
         this.multiResultPanel.repaint();
+    }
+
+
+    /**
+     * Called when a node is selected in the graph workbench.
+     * <p>
+     * Kid-gloves change: drive the single-variable result view from the graph selection
+     * instead of a drop-down.
+     */
+    private void setCurrentNode(Node node) {
+        this.currentNode = node;
+
+        // When a node is clicked, refresh the single result panel.
+        if (this.mode == SINGLE_VALUE) {
+            resetSingleResultPanel();
+            show("viewSingleResult");
+        }
     }
 
     private Node getSelectedNode() {
