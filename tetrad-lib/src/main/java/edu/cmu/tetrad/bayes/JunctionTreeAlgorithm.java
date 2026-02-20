@@ -146,7 +146,25 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
      */
     private TreeNode buildJunctionTree() {
         // moralize dag
-        Graph undirectedGraph = GraphTools.moralize(this.bayesIm.getDag());
+//        Graph undirectedGraph = GraphTools.moralize(this.bayesIm.getDag());
+
+        Graph moral = GraphTools.moralize(this.bayesIm.getDag());
+
+// Canonicalize to BayesIm node instances.
+        Graph undirectedGraph = new EdgeListGraph();
+        Map<String, Node> canon = new HashMap<>();
+        for (Node n : this.graphNodes) {
+            canon.put(n.getName(), n);
+            undirectedGraph.addNode(n);
+        }
+        for (Edge e : moral.getEdges()) {
+            Node a = canon.get(e.getNode1().getName());
+            Node b = canon.get(e.getNode2().getName());
+            if (a == null || b == null || a == b) continue;
+            if (undirectedGraph.getEdge(a, b) == null && undirectedGraph.getEdge(b, a) == null) {
+                undirectedGraph.addUndirectedEdge(a, b);
+            }
+        }
 
         // triangulate
         computeMaximumCardinalityOrdering(undirectedGraph, this.maxCardOrdering);
@@ -886,7 +904,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
                 Node node = JunctionTreeAlgorithm.this.bayesIm.getNode(parent);
                 index *= JunctionTreeAlgorithm.this.bayesPm.getNumCategories(node);
                 for (int j = 0; j < nodes.length; j++) {
-                    if (node == nodes[j]) {
+                    if (node.getName().equals(nodes[j].getName())) {
                         index += values[j];
                     }
                 }
