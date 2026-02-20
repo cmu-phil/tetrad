@@ -31,7 +31,9 @@ import java.util.List;
 
 /**
  * A JunctionTreeUpdater that uses {@link JunctionTreeInference}, a fresh message-passing implementation
- * of Kevin's JunctionTreeAlgorithm, with discrepancies from RowSummingUpdater fixed.
+ * of the original JunctionTreeAlgorithm, with discrepancies from RowSummingUpdater fixed.
+ *
+ * 2026-2-20 jdramsey
  */
 public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
     @Serial
