@@ -81,9 +81,6 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
         this.bayesIm = bayesIm;
         this.bayesPm = bayesIm.getBayesPm();
 
-//        List<Node> list = bayesIm.getDag().getNodes();
-//        this.nodes = list.toArray(new Node[0]);
-
         Node[] tmp = new Node[bayesIm.getNumNodes()];
         for (int i = 0; i < tmp.length; i++) {
             tmp[i] = bayesIm.getNode(i);
