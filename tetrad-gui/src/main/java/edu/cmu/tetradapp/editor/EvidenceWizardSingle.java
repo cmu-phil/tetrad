@@ -20,6 +20,7 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.bayes.Evidence;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -39,7 +40,7 @@ import javax.swing.border.MatteBorder;
 class EvidenceWizardSingle extends JPanel {
     private final UpdaterWrapper updaterWrapper;
     private final GraphWorkbench workbench;
-    private final EvidenceEditor evidenceEditor;
+    public final EvidenceEditor evidenceEditor;
 
     /**
      * This is the wizard for the BayesUpdateEditor class.  It allows you to add and remove evidence, and to updater
@@ -131,6 +132,10 @@ class EvidenceWizardSingle extends JPanel {
 
     private GraphWorkbench getWorkbench() {
         return this.workbench;
+    }
+
+    public Evidence getCurrentEvidence() {
+        return evidenceEditor.getEvidence();
     }
 }
 

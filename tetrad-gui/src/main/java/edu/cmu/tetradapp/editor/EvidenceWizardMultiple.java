@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
+import edu.cmu.tetrad.bayes.Evidence;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -248,6 +249,10 @@ class EvidenceWizardMultiple extends JPanel {
      */
     public JTextArea getTextArea() {
         return this.textArea;
+    }
+
+    public Evidence getCurrentEvidence() {
+        return evidenceEditor.getEvidence();
     }
 }
 

@@ -483,11 +483,6 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         BayesIm updatedBayesIm = new MlBayesIm(this.manipulatedBayesIm);
         int numNodes = this.manipulatedBayesIm.getNumNodes();
 
-        // Base condition = evidence restrictions, constructed safely by name mapping.
-        final Proposition baseCondition = conditionFromEvidence();
-
-        final Proposition assertion = Proposition.tautology(this.manipulatedBayesIm);
-
         for (int node = 0; node < numNodes; node++) {
             int numRows = this.manipulatedBayesIm.getNumRows(node);
             int numCols = this.manipulatedBayesIm.getNumColumns(node);
@@ -497,15 +492,18 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
                 int[] parentValues = this.manipulatedBayesIm.getParentValues(node, row);
 
                 for (int col = 0; col < numCols; col++) {
-                    assertion.setToTautology();
 
-                    // Fresh condition per cell (avoid stale state / accidental aliasing).
-                    Proposition condition = new Proposition(baseCondition);
+                    // ALWAYS build fresh propositions from the SAME BayesIm
+                    Proposition assertion = Proposition.tautology(this.manipulatedBayesIm);
+                    Proposition condition = Proposition.tautology(this.manipulatedBayesIm);
+
+                    // Apply evidence restrictions directly (by name mapping)
+                    applyEvidenceToCondition(condition);
 
                     // X_node = col
                     assertion.disallowComplement(node, col);
 
-                    // Parents fixed to the row's parent configuration.
+                    // Fix parents
                     for (int k = 0; k < parents.length; k++) {
                         condition.disallowComplement(parents[k], parentValues[k]);
                     }
@@ -521,6 +519,30 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         }
 
         this.updatedBayesIm = updatedBayesIm;
+    }
+
+    /**
+     * Applies evidence restrictions (by name mapping) into a condition proposition.
+     * The proposition must belong to manipulatedBayesIm.
+     */
+    private void applyEvidenceToCondition(Proposition condition) {
+        Proposition evProp = this.evidence.getProposition();
+        BayesIm src = this.bayesIm;
+
+        for (int dstNode = 0; dstNode < this.manipulatedBayesIm.getNumNodes(); dstNode++) {
+            String name = this.manipulatedBayesIm.getNode(dstNode).getName();
+
+            Node srcNodeObj = src.getNode(name);
+            int srcNode = src.getNodeIndex(srcNodeObj);
+
+            int dstCats = this.manipulatedBayesIm.getNumColumns(dstNode);
+
+            for (int cat = 0; cat < dstCats; cat++) {
+                if (!evProp.isAllowed(srcNode, cat)) {
+                    condition.removeCategory(dstNode, cat);
+                }
+            }
+        }
     }
 
     private BayesIm createdUpdatedBayesIm(BayesPm updatedBayesPm) {

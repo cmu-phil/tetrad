@@ -21,6 +21,8 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
+import edu.cmu.tetrad.bayes.Evidence;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.session.DelegatesEditing;
@@ -295,6 +297,7 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
         getEvidenceWizardMultiple().addPropertyChangeListener(
                 e -> {
                     if ("updateButtonPressed".equals(e.getPropertyName())) {
+                        applyEvidenceFromActiveWizardToUpdater();
                         resetMultipleResultPanel();
                         show("viewMultiResult");
                     }
@@ -414,8 +417,10 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
     private void setCurrentNode(Node node) {
         this.currentNode = node;
 
-        // When a node is clicked, refresh the single result panel.
         if (this.mode == SINGLE_VALUE) {
+            // NEW: make graph clicks respect the currently-set evidence/manipulations.
+            applyEvidenceAndRefreshGraphKeepingSelection(node);
+
             resetSingleResultPanel();
             show("viewSingleResult");
         }
@@ -437,6 +442,73 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
         }
 
         return selectedNode;
+    }
+
+    private void applyEvidenceFromActiveWizardToUpdater() {
+        // Decide which wizard currently reflects the user's evidence edits.
+        // (Either is fine; they should represent the same evidence state conceptually.)
+        EvidenceWizardSingle single = getEvidenceWizardSingle();
+        EvidenceWizardMultiple multi = getEvidenceWizardMultiple();
+
+        // You need *some* way to obtain the current Evidence from the wizard UI.
+        // If these methods don't exist yet, see section (2) below.
+        Evidence evidence;
+        if (this.mode == SINGLE_VALUE && single != null) {
+            evidence = single.getCurrentEvidence();
+        } else if (multi != null) {
+            evidence = multi.getCurrentEvidence();
+        } else {
+            return;
+        }
+
+        // Push it into the updater.
+        // This is the crucial missing step when clicking nodes in the graph.
+        getUpdaterWrapper().getBayesUpdater().setEvidence(evidence);
+
+        // Optional but often important:
+        // evidence/manipulations can change the manipulated graph; keep the workbench in sync.
+        // If GraphWorkbench supports swapping graphs, do it; otherwise reconstruct the workbench panel.
+        Graph newGraph = getUpdaterWrapper().getBayesUpdater().getManipulatedGraph();
+        getWorkbench().setGraph(newGraph); // if available in GraphWorkbench
+    }
+
+    private boolean applyingEvidenceFromGraphClick = false;
+
+    private void applyEvidenceAndRefreshGraphKeepingSelection(Node clickedTetradNode) {
+        if (clickedTetradNode == null) return;
+
+        // Prevent re-entrancy: setGraph/selectNode can trigger selectedNodes events again.
+        if (applyingEvidenceFromGraphClick) return;
+        applyingEvidenceFromGraphClick = true;
+
+        try {
+            String selectedNodeName = clickedTetradNode.getName();
+
+            // 1) Read evidence from the UI (the thing the user has actually set).
+            Evidence ev = this.evidenceWizardSingle.evidenceEditor.getEvidence();
+            // If you want to support MULTI_VALUE mode too, switch on mode and read from that wizard/editor instead.
+
+            // 2) Push into params + updater (match your update button behavior).
+            getUpdaterWrapper().getParams().set("evidence", ev);
+            getUpdaterWrapper().getParams().set(
+                    "variable",
+                    getUpdaterWrapper().getBayesUpdater().getBayesIm().getBayesPm().getVariable(clickedTetradNode)
+            );
+            getUpdaterWrapper().getBayesUpdater().setEvidence(ev);
+
+            // 3) Update workbench graph and reselect the same node (by name) in the new graph.
+            Graph updatedGraph = getUpdaterWrapper().getBayesUpdater().getManipulatedGraph();
+            Node selectedNodeInNewGraph = updatedGraph.getNode(selectedNodeName);
+
+            getWorkbench().setGraph(updatedGraph);
+            getWorkbench().deselectAll();
+            if (selectedNodeInNewGraph != null) {
+                getWorkbench().selectNode(selectedNodeInNewGraph);
+            }
+
+        } finally {
+            applyingEvidenceFromGraphClick = false;
+        }
     }
 }
 
