@@ -276,15 +276,6 @@ public class SemGraphWrapper implements GraphSource,
     /**
      * <p>Constructor for SemGraphWrapper.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper} object
-     */
-    public SemGraphWrapper(CptInvariantUpdaterWrapper wrapper) {
-        this(new SemGraph(wrapper.getBayesUpdater().getManipulatedGraph()));
-    }
-
-    /**
-     * <p>Constructor for SemGraphWrapper.</p>
-     *
      * @param wrapper a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
      */
     public SemGraphWrapper(SemPmWrapper wrapper) {

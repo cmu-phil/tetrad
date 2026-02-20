@@ -153,15 +153,6 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
     /**
      * Constructs a new instantiated model editor from a Bayes IM wrapper.
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper} object
-     */
-    public BayesUpdaterEditor(CptInvariantUpdaterWrapper wrapper) {
-        this((UpdaterWrapper) wrapper);
-    }
-
-    /**
-     * Constructs a new instantiated model editor from a Bayes IM wrapper.
-     *
      * @param wrapper a {@link edu.cmu.tetradapp.model.ApproximateUpdaterWrapper} object
      */
     public BayesUpdaterEditor(ApproximateUpdaterWrapper wrapper) {

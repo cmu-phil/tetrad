@@ -206,18 +206,6 @@ public class Simulation extends DataWrapper implements
     }
 
     /**
-     * Creates a Simulation object.
-     *
-     * @param wrapper    the CptInvariantUpdaterWrapper object used for initializing the simulation
-     * @param parameters the Parameters object used for configuring the simulation
-     */
-    public Simulation(CptInvariantUpdaterWrapper wrapper, Parameters parameters) {
-        this.simulation = new BayesNetSimulation(wrapper.getBayesUpdater().getManipulatedBayesIm());
-        this.parameters = parameters;
-        createSimulation();
-    }
-
-    /**
      * Constructs a Simulation object using the given SemPmWrapper and Parameters.
      *
      * @param wrapper    the SemPmWrapper object for accessing the SEM-PM functionality

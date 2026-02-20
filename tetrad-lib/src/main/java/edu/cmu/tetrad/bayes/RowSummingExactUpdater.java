@@ -36,12 +36,12 @@ import java.util.List;
  *
  * <p>
  * This implementation is careful about index alignment between:
+ *  </p>
  * <ul>
  *   <li>the SOURCE BayesIm (this.bayesIm) and Evidence (which is indexed to the source variable list), and</li>
  *   <li>the MANIPULATED BayesIm (this.manipulatedBayesIm) created by do()-surgery.</li>
  * </ul>
  * All cross-object references are done by node name to avoid subtle mismatches.
- * </p>
  *
  * @author josephramsey
  * @version $Id: $Id

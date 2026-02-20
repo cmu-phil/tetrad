@@ -86,10 +86,6 @@ public final class TestRowSummingUpdater {
 
         assertEquals(0.0000, updatedIm.getProbability(1, 1, 0), 0.001);
         assertEquals(1.0000, updatedIm.getProbability(1, 1, 1), 0.001);
-
-        ManipulatingBayesUpdater updater2 = new CptInvariantUpdater(bayesIm);
-        Evidence evidence2 = new Evidence(evidence, bayesIm);
-        updater2.setEvidence(evidence2);
     }
 
     /**
@@ -204,7 +200,7 @@ public final class TestRowSummingUpdater {
         Evidence evidence = Evidence.tautology(bayesIm);
         evidence.getProposition().setCategory(x2, 0);
 
-        BayesUpdater updater1 = new CptInvariantUpdater(bayesIm);
+        BayesUpdater updater1 = new JunctionTreeUpdater(bayesIm);
         updater1.setEvidence(evidence);
 
         BayesUpdater updater2 = new RowSummingExactUpdater(bayesIm);
@@ -251,7 +247,7 @@ public final class TestRowSummingUpdater {
 
         evidence.getNodeIndex("X1");
 
-        BayesUpdater updater1 = new CptInvariantUpdater(bayesIm);
+        BayesUpdater updater1 = new JunctionTreeUpdater(bayesIm);
         updater1.setEvidence(evidence);
 
         BayesUpdater updater2 = new RowSummingExactUpdater(bayesIm);
