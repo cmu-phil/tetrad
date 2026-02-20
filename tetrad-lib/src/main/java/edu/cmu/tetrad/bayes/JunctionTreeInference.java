@@ -42,7 +42,7 @@ import java.util.*;
  * This implementation uses GraphTools (moralize, fill-in, getCliques, getSeparators, getCliqueTree)
  * but performs its own potential construction, evidence handling, and message passing.
  */
-public final class RobustJunctionTreeInference implements TetradSerializable {
+public final class JunctionTreeInference implements TetradSerializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -79,7 +79,7 @@ public final class RobustJunctionTreeInference implements TetradSerializable {
     // Public API
     // =========================
 
-    public RobustJunctionTreeInference(BayesIm bayesIm) {
+    public JunctionTreeInference(BayesIm bayesIm) {
         if (bayesIm == null) throw new NullPointerException("bayesIm");
         this.bayesIm = bayesIm;
         this.bayesPm = bayesIm.getBayesPm();

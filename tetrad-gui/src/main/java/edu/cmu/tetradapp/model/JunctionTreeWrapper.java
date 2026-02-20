@@ -46,7 +46,7 @@ public class JunctionTreeWrapper implements SessionModel, UpdaterWrapper, Unmars
     /**
      * The updater.
      */
-    private RobustJunctionTreeUpdater bayesUpdater;
+    private JunctionTreeUpdater bayesUpdater;
 
     /**
      * The name of the model.
@@ -134,9 +134,9 @@ public class JunctionTreeWrapper implements SessionModel, UpdaterWrapper, Unmars
         TetradLogger.getInstance().setConfigForClass(this.getClass());
         this.params = params;
         if (params.get("evidence", null) == null || ((Evidence) params.get("evidence", null)).isIncompatibleWith(bayesIm)) {
-            this.bayesUpdater = new RobustJunctionTreeUpdater(bayesIm);
+            this.bayesUpdater = new JunctionTreeUpdater(bayesIm);
         } else {
-            this.bayesUpdater = new RobustJunctionTreeUpdater(bayesIm,
+            this.bayesUpdater = new JunctionTreeUpdater(bayesIm,
                     (Evidence) params.get("evidence", null));
         }
 

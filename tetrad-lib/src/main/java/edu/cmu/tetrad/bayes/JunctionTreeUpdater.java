@@ -30,37 +30,43 @@ import java.io.Serial;
 import java.util.List;
 
 /**
- * Jan 21, 2020 11:03:09 AM
- *
- * @author Kevin V. Bui (kvb2@pitt.edu)
- * @version $Id: $Id
+ * A JunctionTreeUpdater that uses {@link JunctionTreeInference}, a fresh message-passing implementation
+ * of Kevin's JunctionTreeAlgorithm, with discrepancies from RowSummingUpdater fixed.
  */
 public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
     @Serial
     private static final long serialVersionUID = 23L;
+
     /**
      * The BayesIm which this updater modifies.
      */
     private final BayesIm bayesIm;
+
     /**
      * Stores evidence for all variables.
      */
     private Evidence evidence;
+
     /**
      * The last manipulated BayesIm.
      */
     private BayesIm manipulatedBayesIm;
+
     /**
      * The BayesIm after update, if this was calculated.
      */
     private BayesIm updatedBayesIm;
-    /**
-     * Calculates probabilities from the manipulated Bayes IM.
-     */
-    private JunctionTreeAlgorithm jta;
 
     /**
-     * <p>Constructor for JunctionTreeUpdater.</p>
+     * Inference engine (message passing) over the updated BayesIm.
+     * <p>
+     * IMPORTANT: This engine is always built from updatedBayesIm, which is
+     * manipulatedBayesIm plus the Evidence restrictions (via UpdatedBayesIm).
+     */
+    private JunctionTreeInference jti;
+
+    /**
+     * <p>Constructor for RobustJunctionTreeUpdater.</p>
      *
      * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
@@ -69,7 +75,7 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
-     * <p>Constructor for JunctionTreeUpdater.</p>
+     * <p>Constructor for RobustJunctionTreeUpdater.</p>
      *
      * @param bayesIm  a {@link edu.cmu.tetrad.bayes.BayesIm} object
      * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
@@ -78,38 +84,39 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
-
         this.bayesIm = bayesIm;
         setEvidence(evidence);
     }
 
     /**
-     * {@inheritDoc}
+     * If exactly one category is allowed for the node, return it; else return -1.
      */
+    private static int getOnlyAllowedCategoryOrMinusOne(Proposition p, int node, int numCats) {
+        int only = -1;
+        for (int c = 0; c < numCats; c++) {
+            if (p.isAllowed(node, c)) {
+                if (only >= 0) return -1; // multiple allowed
+                only = c;
+            }
+        }
+        return only;
+    }
+
     @Override
     public BayesIm getManipulatedBayesIm() {
         return this.manipulatedBayesIm;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Graph getManipulatedGraph() {
         return getManipulatedBayesIm().getDag();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Evidence getEvidence() {
         return new Evidence(this.evidence);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void setEvidence(Evidence evidence) {
         if (evidence == null) {
@@ -124,132 +131,279 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
 
         this.evidence = evidence;
 
+        // Build manipulated graph (for interventions), then a BayesPm/BayesIm with the same CPTs where possible.
         Graph graph = this.bayesIm.getBayesPm().getDag();
         Dag manipulatedGraph = createManipulatedGraph(graph);
         BayesPm manipulatedPm = createUpdatedBayesPm(manipulatedGraph);
-
         this.manipulatedBayesIm = createdUpdatedBayesIm(manipulatedPm);
 
-        Evidence evidence2 = new Evidence(evidence, this.manipulatedBayesIm);
-        this.updatedBayesIm = new UpdatedBayesIm(this.manipulatedBayesIm, evidence2);
+        // Ensure manipulatedBayesIm matches source BayesIm everywhere except manipulated nodes.
+        copyCptsFromSourceIntoManipulatedIm();
 
-        this.jta = new JunctionTreeAlgorithm(this.updatedBayesIm);
+        // Override manipulated nodes to match do() intervention distribution.
+        applyDoInterventionsToManipulatedIm();
+
+        // Build inference on manipulated IM (not UpdatedBayesIm)
+        this.updatedBayesIm = this.manipulatedBayesIm;
+        this.jti = new JunctionTreeInference(this.manipulatedBayesIm);
+
+        // Evidence re-indexed to manipulated IM
+        Evidence evidence2 = new Evidence(evidence, this.manipulatedBayesIm);
+        Proposition prop2 = evidence2.getProposition();
+
+        // Push soft evidence (allowed categories)
+        this.jti.setAllowedCategories(prop2);
+
+        // Optional: also push singleton hard evidence
+        for (int i = 0; i < evidence2.getNumNodes(); i++) {
+            int only = getOnlyAllowedCategoryOrMinusOne(prop2, i, evidence2.getNumCategories(i));
+            if (only >= 0) this.jti.setEvidence(i, only);
+        }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public BayesIm getUpdatedBayesIm() {
         if (this.updatedBayesIm == null) {
             updateAll();
         }
-
         return this.updatedBayesIm;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public double getMarginal(int variable, int category) {
-        Proposition assertion = Proposition.tautology(this.manipulatedBayesIm);
-        Proposition condition
-                = new Proposition(this.manipulatedBayesIm, this.evidence.getProposition());
-        assertion.setCategory(variable, category);
+        // variable is SOURCE index (per Evidence / UI conventions); map to manipulated/updated index.
+        int dstVar = mapSrcToManipulated(variable);
+        if (dstVar < 0) return Double.NaN;
 
-        if (condition.existsCombination()) {
-            return this.jta.getMarginalProbability(variable, category);
-        } else {
-            return Double.NaN;
-        }
+        // Condition must live in manipulated space too.
+        Proposition condition = new Proposition(this.manipulatedBayesIm, this.evidence.getProposition());
+        if (!condition.existsCombination()) return Double.NaN;
+
+        // IMPORTANT: query inference engine using dstVar (updatedBayesIm shares indices with manipulatedBayesIm)
+        return this.jti.getMarginal(dstVar, category);
     }
 
     /**
-     * {@inheritDoc}
+     * Map SOURCE BayesIm node index -> manipulatedBayesIm node index by name.
      */
+    private int mapSrcToManipulated(int srcIndex) {
+        String name = this.bayesIm.getNode(srcIndex).getName();
+        Node dstNode = this.manipulatedBayesIm.getNode(name);
+        if (dstNode == null) return -1;
+        return this.manipulatedBayesIm.getNodeIndex(dstNode);
+    }
+
     @Override
     public boolean isJointMarginalSupported() {
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public double getJointMarginal(int[] variables, int[] values) {
         if (variables.length != values.length) {
             throw new IllegalArgumentException("Values must match variables.");
         }
 
-        Proposition assertion = Proposition.tautology(this.manipulatedBayesIm);
-        Proposition condition
-                = new Proposition(this.manipulatedBayesIm, this.evidence.getProposition());
-
+        int[] dstVars = new int[variables.length];
         for (int i = 0; i < variables.length; i++) {
-            assertion.setCategory(variables[i], values[i]);
+            dstVars[i] = mapSrcToManipulated(variables[i]);
+            if (dstVars[i] < 0) return Double.NaN;
         }
 
-        if (condition.existsCombination()) {
-            double joint = 1.0;
-            for (int i = 0; i < variables.length; i++) {
-                joint *= this.jta.getMarginalProbability(variables[i], values[i]);
+        Proposition condition = new Proposition(this.manipulatedBayesIm, this.evidence.getProposition());
+        if (!condition.existsCombination()) return Double.NaN;
+
+        // Use inference engine’s joint proxy on dst indices.
+        return this.jti.getJointProbability(dstVars, values);
+    }
+
+    /**
+     * Copy CPTs from the source BayesIm into manipulatedBayesIm for all NON-manipulated nodes.
+     * For manipulated nodes, caller will override row 0 using evidence.
+     * <p>
+     * This avoids subtle bugs where MlBayesIm constructors fail to copy CPTs correctly
+     * when the BayesPm/DAG differs (even if only by removing parents of manipulated nodes).
+     * <p>
+     * All mapping is done by node name to avoid index mismatches.
+     */
+    private void copyCptsFromSourceIntoManipulatedIm() {
+        BayesIm src = this.bayesIm;
+        BayesIm dst = this.manipulatedBayesIm;
+
+        for (int dstNode = 0; dstNode < dst.getNumNodes(); dstNode++) {
+            String name = dst.getNode(dstNode).getName();
+
+            Node srcNodeObj = src.getNode(name);
+            if (srcNodeObj == null) {
+                throw new IllegalStateException("Node '" + name + "' not found in source BayesIm.");
+            }
+            int srcNode = src.getNodeIndex(srcNodeObj);
+
+            // Evidence is indexed to the SOURCE variable set.
+            boolean manipulated = this.evidence.isManipulated(srcNode);
+            if (manipulated) {
+                // leave for applyDoInterventionsToManipulatedIm() to set row 0
+                continue;
             }
 
-            return joint;
-        } else {
-            return Double.NaN;
+            // Sanity: same category count.
+            int srcCols = src.getNumColumns(srcNode);
+            int dstCols = dst.getNumColumns(dstNode);
+            if (srcCols != dstCols) {
+                throw new IllegalStateException("Category count mismatch for node '" + name +
+                        "': source has " + srcCols + ", manipulated has " + dstCols + ".");
+            }
+
+            // Copy every row/col by matching parent-values in SOURCE parent order.
+            int[] srcParents = src.getParents(srcNode);
+            int[] dstParents = dst.getParents(dstNode);
+
+            // Parent set must match by name for non-manipulated nodes.
+            if (srcParents.length != dstParents.length) {
+                throw new IllegalStateException("Parent count mismatch for node '" + name +
+                        "': source has " + srcParents.length + ", manipulated has " + dstParents.length + ".");
+            }
+
+            // Map each src-parent position -> dst-parent position (by name).
+            int[] srcPosToDstPos = new int[srcParents.length];
+            for (int k = 0; k < srcParents.length; k++) {
+                String pName = src.getNode(srcParents[k]).getName();
+                int dstPos = -1;
+                for (int t = 0; t < dstParents.length; t++) {
+                    if (dst.getNode(dstParents[t]).getName().equals(pName)) {
+                        dstPos = t;
+                        break;
+                    }
+                }
+                if (dstPos < 0) {
+                    throw new IllegalStateException(
+                            "Parent mismatch while copying CPTs for node '" + name +
+                                    "': expected parent '" + pName + "' not found in manipulated IM.");
+                }
+                srcPosToDstPos[k] = dstPos;
+            }
+
+            for (int dstRow = 0; dstRow < dst.getNumRows(dstNode); dstRow++) {
+                int[] dstParentValuesInDstOrder = dst.getParentValues(dstNode, dstRow);
+
+                // Build parent-value vector in SOURCE parent order.
+                int[] srcParentValuesInSrcOrder = new int[srcParents.length];
+                for (int k = 0; k < srcParents.length; k++) {
+                    srcParentValuesInSrcOrder[k] = dstParentValuesInDstOrder[srcPosToDstPos[k]];
+                }
+
+                int srcRow = src.getRowIndex(srcNode, srcParentValuesInSrcOrder);
+
+                for (int col = 0; col < dstCols; col++) {
+                    dst.setProbability(dstNode, dstRow, col,
+                            src.getProbability(srcNode, srcRow, col));
+                }
+            }
         }
     }
 
     /**
-     * {@inheritDoc}
+     * For each manipulated variable, force its CPT in manipulatedBayesIm to match
+     * the do() distribution implied by Evidence: an indicator distribution over allowed
+     * categories, normalized. This assumes do()-surgery has removed its parents, so there
+     * is exactly one row (row 0).
+     * <p>
+     * Mapping is by node name to avoid index mismatches.
      */
+    private void applyDoInterventionsToManipulatedIm() {
+        BayesIm dst = this.manipulatedBayesIm;
+        BayesIm src = this.bayesIm;
+        Proposition evProp = this.evidence.getProposition();
+
+        for (int srcNode = 0; srcNode < this.evidence.getNumNodes(); srcNode++) {
+            if (!this.evidence.isManipulated(srcNode)) continue;
+
+            String name = this.evidence.getNode(srcNode).getName();
+            Node dstNodeObj = dst.getNode(name);
+            if (dstNodeObj == null) {
+                throw new IllegalStateException("Manipulated node '" + name + "' not found in manipulated BayesIm.");
+            }
+            int dstNode = dst.getNodeIndex(dstNodeObj);
+
+            // After surgery, manipulated node should have no parents => exactly one row.
+            if (dst.getNumRows(dstNode) != 1) {
+                throw new IllegalStateException("Expected exactly one row for manipulated node '" + name +
+                        "' after do()-surgery, but found " + dst.getNumRows(dstNode) + ".");
+            }
+
+            int dstCats = dst.getNumColumns(dstNode);
+            int srcCats = this.evidence.getNumCategories(srcNode);
+            if (dstCats != srcCats) {
+                throw new IllegalStateException("Category count mismatch for manipulated node '" + name +
+                        "': evidence has " + srcCats + ", manipulated BayesIm has " + dstCats + ".");
+            }
+
+            // Set unnormalized indicator distribution from Evidence proposition.
+            for (int cat = 0; cat < dstCats; cat++) {
+                dst.setProbability(dstNode, 0, cat, evProp.isAllowed(srcNode, cat) ? 1.0 : 0.0);
+            }
+
+            // Normalize row 0.
+            double sum = 0.0;
+            for (int cat = 0; cat < dstCats; cat++) {
+                sum += dst.getProbability(dstNode, 0, cat);
+            }
+
+            if (sum > 0.0) {
+                for (int cat = 0; cat < dstCats; cat++) {
+                    dst.setProbability(dstNode, 0, cat, dst.getProbability(dstNode, 0, cat) / sum);
+                }
+            } else {
+                // No allowed categories => inconsistent manipulation; signal undefined.
+                for (int cat = 0; cat < dstCats; cat++) {
+                    dst.setProbability(dstNode, 0, cat, Double.NaN);
+                }
+            }
+        }
+    }
+
     @Override
     public BayesIm getBayesIm() {
         return this.bayesIm;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public double[] calculatePriorMarginals(int nodeIndex) {
-        Evidence evidence = getEvidence();
-        setEvidence(Evidence.tautology(evidence.getVariableSource()));
+        Evidence e = getEvidence();
+        setEvidence(Evidence.tautology(e.getVariableSource()));
 
-        double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
-
-        for (int i = 0; i < getBayesIm().getNumColumns(nodeIndex); i++) {
-            marginals[i] = getMarginal(nodeIndex, i);
+        int k = this.bayesIm.getNumColumns(nodeIndex);
+        double[] marginals = new double[k];
+        for (int c = 0; c < k; c++) {
+            marginals[c] = getMarginal(nodeIndex, c); // now maps correctly
         }
 
-        setEvidence(evidence);
-
+        setEvidence(e);
         return marginals;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public double[] calculateUpdatedMarginals(int nodeIndex) {
-        double[] marginals = new double[this.evidence.getNumCategories(nodeIndex)];
-
-        for (int i = 0; i < getBayesIm().getNumColumns(nodeIndex); i++) {
-            marginals[i] = getMarginal(nodeIndex, i);
+        int k = this.bayesIm.getNumColumns(nodeIndex);
+        double[] marginals = new double[k];
+        for (int c = 0; c < k; c++) {
+            marginals[c] = getMarginal(nodeIndex, c); // now maps correctly
         }
-
         return marginals;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    // =========================================================
+    // Kevin-compatible "updateAll" CPT rewriting (kept verbatim-ish)
+    // =========================================================
+
     @Override
     public String toString() {
-        return "Junction tree updater, evidence = " + this.evidence;
+        return "Robust junction tree updater, evidence = " + this.evidence;
     }
+
+    // =========================================================
+    // Helpers mirroring Kevin’s plumbing
+    // =========================================================
 
     private void updateAll() {
         this.updatedBayesIm = new MlBayesIm(this.manipulatedBayesIm);
@@ -265,8 +419,7 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
             int[] parents = this.manipulatedBayesIm.getParents(node);
 
             for (int row = 0; row < numRows; row++) {
-                int[] parentValues
-                        = this.manipulatedBayesIm.getParentValues(node, row);
+                int[] parentValues = this.manipulatedBayesIm.getParentValues(node, row);
 
                 for (int col = 0; col < numCols; col++) {
                     assertion.setToTautology();
@@ -283,18 +436,19 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
                     assertion.disallowComplement(node, col);
 
                     for (int k = 0; k < parents.length; k++) {
-                        condition.disallowComplement(parents[k],
-                                parentValues[k]);
+                        condition.disallowComplement(parents[k], parentValues[k]);
                     }
 
                     if (condition.existsCombination()) {
-                        double p = (parents.length > 0)
-                                ? this.jta.getConditionalProbability(node, col, parents, parentValues)
-                                : this.jta.getMarginalProbability(node, col);
+                        double p;
+                        if (parents.length > 0) {
+                            p = this.jti.getConditional(node, parents, parentValues)[col];
+                        } else {
+                            p = this.jti.getMarginal(node, col);
+                        }
                         this.updatedBayesIm.setProbability(node, row, col, p);
                     } else {
-                        this.updatedBayesIm.setProbability(node, row, col,
-                                Double.NaN);
+                        this.updatedBayesIm.setProbability(node, row, col, Double.NaN);
                     }
                 }
             }
@@ -312,14 +466,13 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
     private Dag createManipulatedGraph(Graph graph) {
         Dag updatedGraph = new Dag(graph);
 
-        // alters graph for manipulated evidenceItems
         for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
             if (this.evidence.isManipulated(i)) {
                 Node node = updatedGraph.getNode(this.evidence.getNode(i).getName());
                 List<Node> parents = updatedGraph.getParents(node);
 
-                for (Node parent1 : parents) {
-                    updatedGraph.removeEdge(node, parent1);
+                for (Node parent : parents) {
+                    updatedGraph.removeEdge(parent, node);
                 }
             }
         }
@@ -327,12 +480,10 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         return updatedGraph;
     }
 
-    /**
-     * Writes the object to the specified ObjectOutputStream.
-     *
-     * @param out The ObjectOutputStream to write the object to.
-     * @throws IOException If an I/O error occurs.
-     */
+    // =========================================================
+    // Serialization hooks
+    // =========================================================
+
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         try {
@@ -344,14 +495,6 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         }
     }
 
-    /**
-     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore the
-     * state of the object.
-     *
-     * @param in The ObjectInputStream to read the object from.
-     * @throws IOException            If an I/O error occurs.
-     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
-     */
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         try {
@@ -362,5 +505,4 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
             throw e;
         }
     }
-
 }
