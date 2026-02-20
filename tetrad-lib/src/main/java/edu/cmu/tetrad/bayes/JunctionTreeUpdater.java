@@ -120,8 +120,8 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
 
         if (evidence.isIncompatibleWith(this.bayesIm)) {
             throw new IllegalArgumentException("The variable list for the "
-                                               + "given bayesIm must be compatible with the variable list "
-                                               + "for this evidence.");
+                    + "given bayesIm must be compatible with the variable list "
+                    + "for this evidence.");
         }
 
         this.evidence = evidence;
@@ -131,6 +131,31 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         BayesPm manipulatedPm = createUpdatedBayesPm(manipulatedGraph);
 
         this.manipulatedBayesIm = createdUpdatedBayesIm(manipulatedPm);
+
+        // NEW: force manipulated nodes to have a defined row-0 distribution
+        for (int i = 0; i < evidence.getNumNodes(); i++) {
+            if (evidence.isManipulated(i)) {
+                // Manipulation implies the node has no parents in manipulated graph,
+                // so it should have exactly one row (row 0).
+                for (int j = 0; j < evidence.getNumCategories(i); j++) {
+                    this.manipulatedBayesIm.setProbability(i, 0, j,
+                            evidence.getProposition().isAllowed(i, j) ? 1.0 : 0.0);
+                }
+
+                // Optional but nice: normalize row 0 so it sums to 1
+                // (prevents “all 1.0” from being interpreted oddly by later code)
+                double sum = 0.0;
+                for (int j = 0; j < evidence.getNumCategories(i); j++) {
+                    sum += this.manipulatedBayesIm.getProbability(i, 0, j);
+                }
+                if (sum > 0) {
+                    for (int j = 0; j < evidence.getNumCategories(i); j++) {
+                        this.manipulatedBayesIm.setProbability(i, 0, j,
+                                this.manipulatedBayesIm.getProbability(i, 0, j) / sum);
+                    }
+                }
+            }
+        }
 
         Evidence evidence2 = new Evidence(evidence, this.manipulatedBayesIm);
         this.updatedBayesIm = new UpdatedBayesIm(this.manipulatedBayesIm, evidence2);
@@ -193,12 +218,8 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         }
 
         if (condition.existsCombination()) {
-            double joint = 1.0;
-            for (int i = 0; i < variables.length; i++) {
-                joint *= this.jta.getMarginalProbability(variables[i], values[i]);
-            }
-
-            return joint;
+            // NOTE: The JT algorithm can compute P(variables=values) directly.
+            return this.jta.getJointProbability(variables, values);
         } else {
             return Double.NaN;
         }
@@ -321,7 +342,9 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
                 List<Node> parents = updatedGraph.getParents(node);
 
                 for (Node parent1 : parents) {
-                    updatedGraph.removeEdge(node, parent1);
+                    // Kid-gloves fix: remove the parent -> node edge.
+                    // (The prior "removeEdges" call is not correct here, and can break compilation.)
+                    updatedGraph.removeEdge(parent1, node);
                 }
             }
         }
@@ -341,7 +364,7 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
             out.defaultWriteObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
@@ -360,10 +383,9 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
             in.defaultReadObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
 
 }
-

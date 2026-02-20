@@ -156,6 +156,16 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         computeMaximumCardinalityOrdering(undirectedGraph, this.maxCardOrdering);
         Map<Node, Set<Node>> cliques = GraphTools.getCliques(this.maxCardOrdering, undirectedGraph);
 
+        // Ensure every node (including isolated ones) appears in at least one clique.
+        // (Otherwise, its marginal array may remain unset/null.)
+        for (Node node : this.maxCardOrdering) {
+            if (!cliques.containsKey(node)) {
+                Set<Node> singleton = new HashSet<>();
+                singleton.add(node);
+                cliques.put(node, singleton);
+            }
+        }
+
         // get separator sets
         Map<Node, Set<Node>> separators = GraphTools.getSeparators(this.maxCardOrdering, cliques);
 
@@ -265,6 +275,11 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         double sum = 0;
         for (double value : values) {
             sum += value;
+        }
+
+        // Avoid divide-by-zero; if all mass is 0, leave as-is.
+        if (sum == 0) {
+            return;
         }
 
         // divide each value by the sum
@@ -406,7 +421,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
 
         for (int i = 0; i < values.length; i++) {
             int maxValue = this.margins[i].length - 1;
-            if (values[i] < 0 && values[i] > maxValue) {
+            if (values[i] < 0 || values[i] > maxValue) {
                 String msg = String.format(
                         "Invalid value %d for node index %d. Value must be between 0 and %d.",
                         values[i],
@@ -571,21 +586,14 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         if (isAllNodes(nodes)) {
             return getJointProbabilityAll(values);
         } else {
+            // Treat (nodes, values) as evidence and return P(evidence).
             for (int i = 0; i < nodes.length; i++) {
                 setEvidence(nodes[i], values[i]);
             }
 
-            // sum out a non-evidence variable
-            double prob = 0;
-            int index = 0;
-            for (int i = 0; i < this.margins.length; i++) {
-                if (i < nodes.length && i == nodes[index]) {
-                    index++;
-                } else {
-                    prob += Arrays.stream(this.margins[i]).sum();
-                    break;
-                }
-            }
+            // The internal margins are *unnormalized*; for any node i, sum_j margins[i][j] = P(evidence).
+            // (After evidence is set, margins[i][j] represents P(X_i=j, evidence).)
+            double prob = Arrays.stream(this.margins[nodes[0]]).sum();
 
             // reset
             initialize();
@@ -620,7 +628,12 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     public double getMarginalProbability(int iNode, int value) {
         validate(iNode, value);
 
-        return this.margins[iNode][value];
+        // margins[] are not normalized; normalize defensively here for callers that request a single entry.
+        double[] marg = new double[this.margins[iNode].length];
+        System.arraycopy(this.margins[iNode], 0, marg, 0, marg.length);
+        normalize(marg);
+
+        return marg[value];
     }
 
     /**
@@ -661,7 +674,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
             out.defaultWriteObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
@@ -680,7 +693,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
             in.defaultReadObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
@@ -936,7 +949,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
                     int indexChildNodeCPT = getIndexOfCPT(source.parentSeparator.nodes, values, this.nodes);
                     if (source.parentSeparator.parentPotentials[indexChildNodeCPT] != 0) {
                         this.prob[indexNodeCPT] *= source.parentSeparator.childPotentials[indexChildNodeCPT]
-                                                   / source.parentSeparator.parentPotentials[indexChildNodeCPT];
+                                / source.parentSeparator.parentPotentials[indexChildNodeCPT];
                     } else {
                         this.prob[indexNodeCPT] = 0;
                     }

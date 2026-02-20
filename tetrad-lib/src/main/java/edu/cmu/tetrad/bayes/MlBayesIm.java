@@ -133,7 +133,7 @@ public final class MlBayesIm implements BayesIm {
      *                                            contained in the bayes parametric model provided.
      */
     public MlBayesIm(BayesPm bayesPm) throws IllegalArgumentException {
-        this(bayesPm, null, InitializationMethod.MANUAL);
+        this(bayesPm, null, InitializationMethod.RANDOM);
     }
 
     /**

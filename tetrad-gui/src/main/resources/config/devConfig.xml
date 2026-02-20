@@ -1076,7 +1076,7 @@
                 <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor
                 </editor-class>
             </model>
-            <model name="Junction Tree Updater" acronym="Row Sum"
+            <model name="Junction Tree Updater" acronym="Junction Tree"
                    help="junction_tree_updater">
                 <logger>
                     <event id="info" description="Information" default="on"/>
