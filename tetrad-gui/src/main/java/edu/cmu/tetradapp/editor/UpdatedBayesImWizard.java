@@ -68,14 +68,14 @@ public final class UpdatedBayesImWizard extends JPanel {
     private final UpdaterWrapper updaterWrapper;
 
     /**
-     * The JComboBox containing the names of the variables in the getModel.
+     * The JComboBox containing the names of the variables in the marginal probabilities view.
      */
-    private final JComboBox varNamesComboBox;
+    private final JComboBox varNamesComboMarginalProbs;
 
     /**
-     * The JComboBox containing the names of the variables in the getModel.
+     * The JComboBox containing the names of the variables in the conditional probabilities view.
      */
-    private final JComboBox varNamesComboBox2;
+    private final JComboBox varNamesComboConditionalProbs;
 
     /**
      * The JPanel containing the marginal probabilities for the getModel selectedNode.
@@ -121,13 +121,13 @@ public final class UpdatedBayesImWizard extends JPanel {
         setLayout(new BorderLayout());
 
         // Set up components.
-        this.varNamesComboBox = makeVarNamesDropdown();
-        this.varNamesComboBox2 = makeVarNamesDropdown();
+        this.varNamesComboConditionalProbs = makeVarNamesDropdown();
+        this.varNamesComboMarginalProbs = makeVarNamesDropdown();
 
-        Node modelNode = (Node) (this.varNamesComboBox.getSelectedItem());
+        Node modelNode = (Node) (this.varNamesComboConditionalProbs.getSelectedItem());
         workbench.deselectAll();
         workbench.selectNode(modelNode);
-        selectedNode = (Node) (this.varNamesComboBox.getSelectedItem());
+        selectedNode = (Node) (this.varNamesComboConditionalProbs.getSelectedItem());
 
         this.marginalsPanel = new JPanel();
         this.marginalsPanel.setLayout(new BorderLayout());
@@ -151,13 +151,13 @@ public final class UpdatedBayesImWizard extends JPanel {
         add(new JScrollPane(probsPane), BorderLayout.CENTER);
 
         // Add listeners.
-        this.varNamesComboBox.addActionListener(e -> {
-            Node node = (Node) (UpdatedBayesImWizard.this.varNamesComboBox.getSelectedItem());
+        this.varNamesComboConditionalProbs.addActionListener(e -> {
+            Node node = (Node) (UpdatedBayesImWizard.this.varNamesComboConditionalProbs.getSelectedItem());
             setCurrentNode(node);
         });
 
-        this.varNamesComboBox2.addActionListener(e -> {
-            Node node = (Node) (UpdatedBayesImWizard.this.varNamesComboBox2.getSelectedItem());
+        this.varNamesComboMarginalProbs.addActionListener(e -> {
+            Node node = (Node) (UpdatedBayesImWizard.this.varNamesComboMarginalProbs.getSelectedItem());
             setCurrentNode(node);
         });
 
@@ -167,7 +167,7 @@ public final class UpdatedBayesImWizard extends JPanel {
 
                 if (selection.size() == 1) {
                     Node node = (Node) (selection.get(0));
-                    UpdatedBayesImWizard.this.varNamesComboBox.setSelectedItem(node);
+                    UpdatedBayesImWizard.this.varNamesComboConditionalProbs.setSelectedItem(node);
 
                     DisplayNode graphNode = getWorkbench().getSelectedNode();
 
@@ -238,7 +238,7 @@ public final class UpdatedBayesImWizard extends JPanel {
 
         Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Probabilities for values of "));
-        b1.add(this.varNamesComboBox);
+        b1.add(this.varNamesComboConditionalProbs);
         //b1.add(new JLabel(" conditional on values"));
         b1.add(Box.createHorizontalGlue());
         conditionalBox.add(b1);
@@ -323,7 +323,7 @@ public final class UpdatedBayesImWizard extends JPanel {
 
         Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Marginal probabilities for variable "));
-        b1.add(this.varNamesComboBox2);
+        b1.add(this.varNamesComboMarginalProbs);
         b1.add(new JLabel(", updated"));
         b1.add(Box.createHorizontalGlue());
         marginalBox.add(b1);
@@ -473,7 +473,7 @@ public final class UpdatedBayesImWizard extends JPanel {
         new MyWatchedProcess();
     }
 
-    private void setCurrentNodeSub(Node node) {
+    public void setCurrentNodeSub(Node node) {
         if (node == this.selectedNode) {
             return;
         }
@@ -483,12 +483,12 @@ public final class UpdatedBayesImWizard extends JPanel {
         getWorkbench().deselectAll();
         getWorkbench().selectNode(this.selectedNode);
 
-        if (this.varNamesComboBox.getSelectedItem() != node) {
-            this.varNamesComboBox.setSelectedItem(node);
+        if (this.varNamesComboConditionalProbs.getSelectedItem() != node) {
+            this.varNamesComboConditionalProbs.setSelectedItem(node);
         }
 
-        if (this.varNamesComboBox2.getSelectedItem() != node) {
-            this.varNamesComboBox2.setSelectedItem(node);
+        if (this.varNamesComboMarginalProbs.getSelectedItem() != node) {
+            this.varNamesComboMarginalProbs.setSelectedItem(node);
         }
 
         if (this.updaterWrapper.getBayesUpdater().getUpdatedBayesIm() != null) {
