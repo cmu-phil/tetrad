@@ -245,7 +245,7 @@ public final class TestRowSummingUpdater {
         evidence.getProposition().setCategory(x1, 1);
         evidence.getProposition().setCategory(x2, 0);
 
-        evidence.getNodeIndex("X1");
+        evidence.getNodeIndex("X1");j
 
         BayesUpdater updater1 = new JunctionTreeUpdater(bayesIm);
         updater1.setEvidence(evidence);

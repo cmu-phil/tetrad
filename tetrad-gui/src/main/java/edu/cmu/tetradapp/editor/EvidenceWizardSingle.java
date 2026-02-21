@@ -20,7 +20,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.bayes.Evidence;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -40,7 +39,7 @@ import javax.swing.border.MatteBorder;
 class EvidenceWizardSingle extends JPanel {
     private final UpdaterWrapper updaterWrapper;
     private final GraphWorkbench workbench;
-    public final EvidenceEditor evidenceEditor;
+    private final EvidenceEditor evidenceEditor;
 
     /**
      * This is the wizard for the BayesUpdateEditor class.  It allows you to add and remove evidence, and to updater
@@ -77,10 +76,10 @@ class EvidenceWizardSingle extends JPanel {
         // Do Layout.
         Box b0 = Box.createHorizontalBox();
         b0.add(new JLabel("<html>" +
-                          "Select the node in the graph that you would like to see updated" +
-                          "<br>probabilities for. In the list below, select the evidence that" +
-                          "<br>you would like to update on. Click the 'Do Update Now' button" +
-                          "<br>to view updated probabilities." + "</html>"));
+                "Select the node in the graph that you would like to see updated" +
+                "<br>probabilities for. In the list below, select the evidence that" +
+                "<br>you would like to update on. Click the 'Do Update Now' button" +
+                "<br>to view updated probabilities." + "</html>"));
         b0.add(Box.createHorizontalGlue());
         add(b0);
         add(Box.createVerticalStrut(10));
@@ -132,10 +131,6 @@ class EvidenceWizardSingle extends JPanel {
 
     private GraphWorkbench getWorkbench() {
         return this.workbench;
-    }
-
-    public Evidence getCurrentEvidence() {
-        return evidenceEditor.getEvidence();
     }
 }
 
