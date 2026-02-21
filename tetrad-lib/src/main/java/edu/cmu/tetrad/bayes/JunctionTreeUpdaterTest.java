@@ -269,7 +269,7 @@ public final class JunctionTreeUpdaterTest {
         Evidence taut = Evidence.tautology(im);
 
         RowSummingExactUpdater rsPrior = new RowSummingExactUpdater(im, taut);
-        JunctionTreeUpdater jtPrior = new JunctionTreeUpdater(im, taut);
+        JunctionTreeUpdater2 jtPrior = new JunctionTreeUpdater2(im, taut);
 
         assertDistClose(rsPrior.calculateUpdatedMarginals(X1), jtPrior.calculateUpdatedMarginals(X1), EPS);
         assertDistClose(rsPrior.calculateUpdatedMarginals(X2), jtPrior.calculateUpdatedMarginals(X2), EPS);
@@ -335,7 +335,7 @@ public final class JunctionTreeUpdaterTest {
         e = manipulateXToValue(im, e, "X2", 1);
 
         RowSummingExactUpdater rs = new RowSummingExactUpdater(im, e);
-        JunctionTreeUpdater jt = new JunctionTreeUpdater(im, e);
+        JunctionTreeUpdater2 jt = new JunctionTreeUpdater2(im, e);
 
         // (3a) incoming edges removed: manipulated X2 must have no parents in manipulated graph
         BayesIm rsManip = rs.getManipulatedBayesIm();

@@ -227,7 +227,9 @@ public final class JunctionTreeUpdater2 implements ManipulatingBayesUpdater {
      * on UI calling setEvidence().
      */
     private void syncJtiFromCurrentEvidence() {
-        if (this.jti == null || this.manipulatedBayesIm == null || this.evidence == null) return;
+        if (this.jti == null || this.manipulatedBayesIm == null || this.evidence == null) {
+            return;
+        }
 
         // Evidence re-indexed to manipulated IM
         Evidence ev2 = new Evidence(this.evidence, this.manipulatedBayesIm);
