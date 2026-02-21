@@ -40,14 +40,6 @@ import static org.junit.Assert.*;
  */
 public final class JunctionTreeUpdaterTest {
 
-    /**
-     * Private constructor to prevent instantiation of the {@code JunctionTreeUpdaterTest} class.
-     *
-     * This class is designed to contain static utility methods and test cases for verifying the
-     * functionality of junction tree updates in Bayesian inference. It is not meant to be instantiated.
-     */
-    private JunctionTreeUpdaterTest() { }
-
     private static final double EPS = 1e-10;
 
     private static int idx(BayesIm im, String name) {

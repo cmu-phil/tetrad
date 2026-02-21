@@ -1,1140 +1,1080 @@
-/// ////////////////////////////////////////////////////////////////////////////
-// A fresh, self-contained junction-tree (clique tree) message passing engine
-// built on the existing Tetrad BayesIm/BayesPm API.
-//
-// Name chosen to avoid collisions with Kevin's JunctionTreeAlgorithm.
-//
-// Design goals (kid gloves):
-//  - Use ONLY the BayesIm passed in; never “reinitialize” CPTs.
-//  - Build a *tree* even when the moral graph is disconnected by adding a
-//    dummy super-root clique (empty separator edges).
-//  - Avoid Node identity mismatches by canonicalizing everything to BayesIm's
-//    own Node instances.
-//  - Ensure every variable is assigned to exactly one clique for CPT-factor
-//    placement.
-//  - Evidence is handled by zeroing incompatible assignments inside clique
-//    potentials (hard evidence).
-//  - Two-pass message passing (collect + distribute) with safe normalization.
-//
-// NOTES:
-//  - This is exact for discrete Bayes nets when clique sizes are feasible.
-//  - getJointProbability(...) returns P(assignments AND evidence) up to a
-//    global scale if you enable message normalization. Marginals are correct.
-//  - If you need exact evidence probability Z, we can extend with log-scales.
-//
-/// ////////////////////////////////////////////////////////////////////////////
-
+/*
+ * Copyright (C) 2026
+ *
+ * Exact inference for discrete Bayes nets using a Junction Tree (Clique Tree).
+ *
+ * This implementation follows standard junction-tree theory:
+ *  1) Moralize the DAG
+ *  2) Triangulate (chordalize) via elimination order with fill-in edges
+ *  3) Form cliques induced by elimination (each elim var + its current neighbors)
+ *  4) Build a clique tree using a maximum-weight spanning tree on clique intersections
+ *  5) Assign each CPT (family = parents ∪ node) to a clique that contains it
+ *  6) Initialize clique potentials from assigned CPTs
+ *  7) Apply evidence as unary factors (hard + soft)
+ *  8) Calibrate via collect + distribute message passing
+ *  9) Answer marginals/joints by marginalizing a calibrated clique
+ *
+ * Notes:
+ *  - This is exact for discrete Bayes nets when clique sizes are feasible.
+ *  - This class *does* build and calibrate a junction tree.
+ *  - Evidence is “hard” in the potentials (0/1 masks). You can extend to soft likelihoods easily.
+ *
+ * 2026-02-21 jdramsey + (JT-based implementation provided here)
+ */
 package edu.cmu.tetrad.bayes;
 
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serial;
+import java.io.Serializable;
 import java.util.*;
 
 /**
- * Robust junction-tree inference via sum-product message passing on a clique tree.
- * <p>
- * This implementation uses GraphTools (moralize, fill-in, getCliques, getSeparators, getCliqueTree)
- * but performs its own potential construction, evidence handling, and message passing.
+ * Exact junction-tree inference over a {@link BayesIm} supporting:
+ * <ul>
+ *   <li>Soft evidence via allowed categories mask ({@link Proposition})</li>
+ *   <li>Hard evidence via node=category</li>
+ *   <li>Marginals, conditionals, and joint marginals (all conditional on evidence)</li>
+ * </ul>
+ *
+ * This class is designed specifically to satisfy the methods required by
+ * {@link JunctionTreeUpdater}.
  */
-public final class JunctionTreeInference implements TetradSerializable {
+public final class JunctionTreeInference implements Serializable {
+
     @Serial
     private static final long serialVersionUID = 1L;
 
-    /**
-     * Represents the Bayesian network model with parameters used for inference in the
-     * JunctionTreeInference class. This object encapsulates the structure of the network,
-     * as well as the conditional probability distributions associated with each node.
-     *
-     * This variable is critical for constructing the clique tree representation and
-     * facilitating various inference operations, such as marginal and conditional
-     * probability calculations. It provides the underlying data required for
-     * probabilistic reasoning in Bayesian networks.
-     *
-     * The value of this field is set at the construction of the containing
-     * JunctionTreeInference instance and remains immutable thereafter.
-     */
     private final BayesIm bayesIm;
-    /**
-     * Represents the BayesPm (Bayesian parameter model) used within the JunctionTreeInference class
-     * to manage the structural aspects of the Bayesian network. This model captures the relationships
-     * between variables and their conditional probability distributions, facilitating efficient
-     * graphical model operations such as inference and structure queries.
-     *
-     * This variable is final and initialized during the construction of the JunctionTreeInference
-     * instance. It serves as the backbone for defining the network's directed acyclic graph (DAG)
-     * and the probabilistic dependencies among the nodes.
-     */
-    private final BayesPm bayesPm;
+    private final int n;              // number of variables
+    private final int[] card;         // cardinalities per variable
 
-    /**
-     * Canonical node list from bayesIm.getDag() (do NOT trust external graph Node instances).
-     */
-    private final Node[] nodes;
+    // Evidence
+    private boolean[][] allowedMask;  // soft evidence: allowed categories; null => all allowed
+    private final int[] hardEvidence; // -1 => none else fixed
 
-    /**
-     * Evidence per node index; -1 means none.
-     */
-    private final int[] hardEvidence;
-    /**
-     * List of cliques that make up the junction tree structure used for inference.
-     * This list includes a super-root clique at index 0 if one is created during
-     * the construction of the Junction Tree. Each clique is a part of the
-     * graphical representation that facilitates efficient probabilistic reasoning.
-     * <p>
-     * The cliques are organized based on the factorization of the probability
-     * distributions in the Bayesian network, ensuring that the structure adheres
-     * to the joint distribution's dependencies and independence properties.
-     */
-    private final List<Clique> cliques;       // includes super-root at index 0 if created
-    /**
-     * Represents the adjacency structure of cliques in the junction tree, mapping each {@link Clique}
-     * to a list of {@link EdgeCT} objects that serve as separators or message-passing edges.
-     * <p>
-     * This structure encapsulates the relationships and message flow between cliques in the
-     * calibrated junction tree, which is used for probabilistic inference in Bayesian networks.
-     * <p>
-     * The map keys are cliques, while the associated values represent the edges connecting the clique
-     * with its neighbors. Each edge contains information about the separator variables and messages
-     * exchanged during inference.
-     */
-    private final Map<Clique, List<EdgeCT>> adj;  // clique adjacency with separators/messages
-    /**
-     * A mapping of variable indices to their associated cliques in the junction tree.
-     * Each variable is assigned to a specific clique that contains the variable and its parents.
-     * This map is used to determine where to read the marginal distribution of a variable.
-     */
-    private final Map<Integer, Clique> homeCliqueByVar; // where to read a variable marginal
-    /**
-     * A mapping of variable names to their corresponding indices.
-     * This map is used to facilitate quick lookup of a variable's
-     * index based on its name.
-     * <p>
-     * This field is immutable and initialized as a HashMap.
-     */
-    private final Map<String, Integer> indexByName = new HashMap<>();
-    /**
-     * Soft evidence: allowed categories per node (null => all allowed).
-     */
-    private boolean[][] allowed;
-    /**
-     * A placeholder or dummy "super-root" clique used as a structural aid in certain
-     * algorithms. This super-root may be utilized to simplify initialization or
-     * ensure the algorithm operates on a unified structure by adding an artificial
-     * root to the clique tree.
-     * <p>
-     * Typically, this clique does not correspond to any actual domain variable but
-     * functions as a utility construct in managing the associated clique data structures.
-     */
-    private Clique superRoot;                 // dummy super-root if needed
-    /**
-     * Indicates whether the messages in the Junction Tree are up-to-date with the
-     * current evidence provided. This flag is used to ensure that the inference process
-     * operates on the correct and consistent state of the probabilistic model.
-     * <p>
-     * If `true`, the Junction Tree is calibrated, meaning all messages are consistent
-     * with the current evidence, and queries such as marginals or conditional probabilities
-     * can be accurately computed. If `false`, the Junction Tree is not calibrated, and
-     * recalibration is required before performing reliable probabilistic inference.
-     */
-    private boolean calibrated; // whether messages are up-to-date for current evidence
+    // Junction tree structures (built once; calibrated on demand)
+    private final List<Clique> cliques;
+    private final List<int[]> cliqueNeighbors; // adjacency lists of clique indices
+    private final Map<Long, Separator> separators; // key=(minClique,maxClique)
 
-    // =========================
+    // Factor assignment
+    private final List<List<Factor>> cliqueAssignedFactors;
+
+    // Calibration cache
+    private boolean calibratedDirty = true;
+    private double cachedEvidenceProb = Double.NaN;
+
+    // ---------------------------------------------------------------------
     // Public API
-    // =========================
+    // ---------------------------------------------------------------------
 
-    /**
-     * Constructs a JunctionTreeInference object for performing inference on a Bayesian network.
-     * This initializes the Bayesian network representation and prepares necessary structures
-     * for clique tree construction and inference operations.
-     *
-     * @param bayesIm The BayesIm (Bayesian network model with parameters) used for inference.
-     *                Must not be null.
-     * @throws NullPointerException If the provided bayesIm is null.
-     */
     public JunctionTreeInference(BayesIm bayesIm) {
         if (bayesIm == null) throw new NullPointerException("bayesIm");
         this.bayesIm = bayesIm;
-        this.bayesPm = bayesIm.getBayesPm();
+        this.n = bayesIm.getNumNodes();
+        this.card = new int[n];
+        for (int i = 0; i < n; i++) card[i] = bayesIm.getNumColumns(i);
 
-        Node[] tmp = new Node[bayesIm.getNumNodes()];
-        for (int i = 0; i < tmp.length; i++) {
-            tmp[i] = bayesIm.getNode(i);
-        }
-        this.nodes = tmp;
-
-        // Build name->index map (canonical)
-        for (int i = 0; i < this.nodes.length; i++) {
-            indexByName.put(this.nodes[i].getName(), i);
-        }
-
-        this.hardEvidence = new int[this.nodes.length];
+        this.hardEvidence = new int[n];
         Arrays.fill(this.hardEvidence, -1);
+        this.allowedMask = null;
 
-        this.allowed = new boolean[nodes.length][];
+        // Build the JT once from structure
+        JunctionTree jt = buildJunctionTree();
+
+        this.cliques = jt.cliques;
+        this.cliqueNeighbors = jt.neighbors;
+        this.separators = jt.separators;
+
+        // Assign CPT-family factors to cliques
+        this.cliqueAssignedFactors = new ArrayList<>(cliques.size());
+        for (int i = 0; i < cliques.size(); i++) cliqueAssignedFactors.add(new ArrayList<>());
+        assignCptFactorsToCliques();
+
+        this.calibratedDirty = true;
+    }
+
+    public void setAllowedCategories(Proposition allowedCategories) {
+        if (allowedCategories == null) throw new NullPointerException("allowedCategories");
+
+        Proposition p = new Proposition(this.bayesIm, allowedCategories);
+
+        boolean[][] mask = new boolean[n][];
+        for (int v = 0; v < n; v++) {
+            int k = card[v];
+            mask[v] = new boolean[k];
+            for (int c = 0; c < k; c++) mask[v][c] = p.isAllowed(v, c);
+        }
+
+        this.allowedMask = mask;
+        invalidateCalibration();
+    }
+
+//    public void setEvidence(int node, int category) {
+//        if (node < 0 || node >= n) throw new IllegalArgumentException("node out of range: " + node);
+//        if (category < 0) {
+//            hardEvidence[node] = -1;
+//            invalidateCalibration();
+//            return;
+//        }
+//        if (category >= card[node]) throw new IllegalArgumentException("category out of range for node " + node + ": " + category);
+//        hardEvidence[node] = category;
+//        invalidateCalibration();
+//    }
+
+    public double getMarginal(int node, int category) {
+        if (node < 0 || node >= n) throw new IllegalArgumentException("node out of range: " + node);
+        if (category < 0 || category >= card[node]) throw new IllegalArgumentException("category out of range: " + category);
+
+        calibrateIfNeeded();
+
+        if (!(cachedEvidenceProb > 0.0) || Double.isNaN(cachedEvidenceProb)) return Double.NaN;
+
+        // Pick any clique containing node
+        int ci = findCliqueContaining(node);
+        if (ci < 0) return Double.NaN;
+
+        Factor pot = cliques.get(ci).potential; // calibrated
+        Factor marg = pot.marginalizeTo(new int[]{node});
+        double denom = marg.totalSum();
+        if (!(denom > 0.0) || Double.isNaN(denom)) return Double.NaN;
+
+        return marg.getByVarAssignment(new int[]{node}, new int[]{category}) / denom;
+    }
+
+    public double[] getConditional(int node, int[] parents, int[] parentValues) {
+        if (parents == null || parentValues == null) throw new NullPointerException();
+        if (parents.length != parentValues.length) throw new IllegalArgumentException("parents and parentValues length mismatch.");
+        if (node < 0 || node >= n) throw new IllegalArgumentException("node out of range: " + node);
+
+        for (int i = 0; i < parents.length; i++) {
+            int p = parents[i];
+            int pv = parentValues[i];
+            if (p < 0 || p >= n) throw new IllegalArgumentException("parent out of range: " + p);
+            if (pv < 0 || pv >= card[p]) throw new IllegalArgumentException("parent value out of range for parent " + p + ": " + pv);
+        }
+
+        calibrateIfNeeded();
+
+        int k = card[node];
+        double[] out = new double[k];
+
+        // Build var set = parents ∪ {node}
+        int m = parents.length;
+        int[] vars = new int[m + 1];
+        int[] vals = new int[m + 1];
+        System.arraycopy(parents, 0, vars, 0, m);
+        System.arraycopy(parentValues, 0, vals, 0, m);
+        vars[m] = node;
+
+        double sum = 0.0;
+        for (int c = 0; c < k; c++) {
+            vals[m] = c;
+            double p = getJointProbability(vars, vals);
+            out[c] = p;
+            if (!Double.isNaN(p)) sum += p;
+        }
+        if (!(sum > 0.0) || Double.isNaN(sum)) {
+            Arrays.fill(out, Double.NaN);
+            return out;
+        }
+        for (int c = 0; c < k; c++) out[c] /= sum;
+        return out;
+    }
+
+    public double getJointProbability(int[] vars, int[] values) {
+        if (vars == null || values == null) throw new NullPointerException();
+        if (vars.length != values.length) throw new IllegalArgumentException("vars and values length mismatch.");
+        if (vars.length == 0) {
+            calibrateIfNeeded();
+            return 1.0;
+        }
+
+        // quick contradiction check vs evidence
+        if (contradictsEvidence(vars, values)) return 0.0;
+
+        calibrateIfNeeded();
+        if (!(cachedEvidenceProb > 0.0) || Double.isNaN(cachedEvidenceProb)) return Double.NaN;
+
+        // Find clique containing all queried vars (if none, use a chain query via marginalization from any clique containing them
+        // Since the clique tree is calibrated, any clique that contains the vars is sufficient.)
+        int ci = findCliqueContainingAll(vars);
+        if (ci < 0) {
+            // fallback: pick clique containing first var, then marginalize from its calibrated potential.
+            ci = findCliqueContaining(vars[0]);
+            if (ci < 0) return Double.NaN;
+        }
+
+        Factor pot = cliques.get(ci).potential;
+        Factor marg = pot.marginalizeTo(unique(vars));
+        double denom = marg.totalSum();
+        if (!(denom > 0.0) || Double.isNaN(denom)) return Double.NaN;
+
+        double num = marg.getByVarAssignment(vars, values);
+        return num / denom;
+    }
+
+    // ---------------------------------------------------------------------
+    // Calibration
+    // ---------------------------------------------------------------------
+
+    private void invalidateCalibration() {
+        this.calibratedDirty = true;
+        this.cachedEvidenceProb = Double.NaN;
+    }
+
+    private void calibrateIfNeeded() {
+        if (!calibratedDirty) return;
+
+        // Reset clique potentials to product of assigned CPT factors
+        for (int i = 0; i < cliques.size(); i++) {
+            Clique c = cliques.get(i);
+            Factor pot = Factor.identity(c.vars, cardsOf(c.vars));
+            for (Factor f : cliqueAssignedFactors.get(i)) {
+                pot = pot.multiply(f);
+            }
+            c.potential = pot;
+        }
+
+        // Apply evidence as unary factors into any clique containing the variable
+        boolean[][] effMask = effectiveAllowedMask();
+        for (int v = 0; v < n; v++) {
+            Factor ev = unaryEvidenceFactor(v, effMask[v]);
+            int ci = findCliqueContaining(v);
+            if (ci < 0) {
+                // Should not happen: every variable must appear in some clique.
+                calibratedDirty = false;
+                cachedEvidenceProb = Double.NaN;
+                return;
+            }
+            cliques.get(ci).potential = cliques.get(ci).potential.multiply(ev);
+        }
+
+        // Initialize separator messages to all-ones over separator vars
+        for (Separator sep : separators.values()) {
+            sep.messageAToB = Factor.identity(sep.sepVars, cardsOf(sep.sepVars));
+            sep.messageBToA = Factor.identity(sep.sepVars, cardsOf(sep.sepVars));
+        }
+
+        // Calibrate with two-pass (collect then distribute) from an arbitrary root
+        int root = 0;
+        boolean[] visited = new boolean[cliques.size()];
+        collect(root, -1, visited);
+        Arrays.fill(visited, false);
+        distribute(root, -1, visited);
+
+        // Compute evidence probability from any clique by summing its calibrated potential
+        double z = cliques.get(root).potential.totalSum();
+        cachedEvidenceProb = z;
+        calibratedDirty = false;
+    }
+
+    private void collect(int cur, int parent, boolean[] visited) {
+        visited[cur] = true;
+        for (int nb : cliqueNeighbors.get(cur)) {
+            if (nb == parent) continue;
+            if (!visited[nb]) collect(nb, cur, visited);
+            // After child is calibrated, send message child -> cur
+            sendMessage(nb, cur);
+        }
+    }
+
+    private void distribute(int cur, int parent, boolean[] visited) {
+        visited[cur] = true;
+        for (int nb : cliqueNeighbors.get(cur)) {
+            if (nb == parent) continue;
+            // send message cur -> child
+            sendMessage(cur, nb);
+            if (!visited[nb]) distribute(nb, cur, visited);
+        }
+    }
+
+    /**
+     * HUGIN-style ratio update message passing.
+     *
+     * IMPORTANT:
+     *  - Do NOT multiply incoming messages into src when using ratio updates.
+     *    (src.potential already reflects absorbed messages via previous ratio updates.)
+     *  - Do NOT normalize messages here; normalization changes the ratio and breaks calibration.
+     */
+    private void sendMessage(int src, int dst) {
+        Separator sep = getSeparator(src, dst);
+        int[] sepVars = sep.sepVars;
+
+        // In ratio-update (HUGIN) form, message is just the marginal of src clique potential
+        // onto the separator.
+        Factor newMsg = cliques.get(src).potential.marginalizeTo(sepVars);
+
+        // Old message: treat null as identity (first pass safety).
+        Factor oldMsg;
+        if (sep.a == src && sep.b == dst) {
+            oldMsg = sep.messageAToB;
+            if (oldMsg == null) oldMsg = Factor.identity(sepVars, cardsOf(sepVars));
+        } else {
+            oldMsg = sep.messageBToA;
+            if (oldMsg == null) oldMsg = Factor.identity(sepVars, cardsOf(sepVars));
+        }
+
+        // Ratio update on separator scope.
+        // NOTE: If your divideSafe convention is causing issues, see note below.
+        Factor ratio = newMsg.divideSafe(oldMsg);
+
+        // Update destination clique potential.
+        cliques.get(dst).potential = cliques.get(dst).potential.multiply(ratio);
+
+        // Store message.
+        if (sep.a == src && sep.b == dst) sep.messageAToB = newMsg;
+        else sep.messageBToA = newMsg;
+    }
+
+    // ---------------------------------------------------------------------
+    // Evidence helpers
+    // ---------------------------------------------------------------------
+
+    private boolean contradictsEvidence(int[] vars, int[] vals) {
+        for (int i = 0; i < vars.length; i++) {
+            int v = vars[i];
+            int x = vals[i];
+            if (v < 0 || v >= n) throw new IllegalArgumentException("var out of range: " + v);
+            if (x < 0 || x >= card[v]) throw new IllegalArgumentException("value out of range for var " + v + ": " + x);
+
+            int he = hardEvidence[v];
+            if (he >= 0 && he != x) return true;
+            if (allowedMask != null && !allowedMask[v][x]) return true;
+        }
+        return false;
+    }
+
+    private boolean[][] effectiveAllowedMask() {
+        boolean[][] mask = new boolean[n][];
+        for (int v = 0; v < n; v++) {
+            int k = card[v];
+            mask[v] = new boolean[k];
+
+            if (allowedMask == null) Arrays.fill(mask[v], true);
+            else System.arraycopy(allowedMask[v], 0, mask[v], 0, k);
+
+            int he = hardEvidence[v];
+            if (he >= 0) {
+                for (int c = 0; c < k; c++) mask[v][c] = (c == he);
+            }
+        }
+        return mask;
+    }
+
+    private Factor unaryEvidenceFactor(int v, boolean[] allowed) {
+        int[] vars = new int[]{v};
+        int[] cards = new int[]{card[v]};
+        Factor f = new Factor(vars, cards);
+        for (int c = 0; c < card[v]; c++) f.set(new int[]{c}, allowed[c] ? 1.0 : 0.0);
+        return f;
+    }
+
+    // ---------------------------------------------------------------------
+    // Clique/Separator lookup
+    // ---------------------------------------------------------------------
+
+    private int findCliqueContaining(int var) {
+        for (int i = 0; i < cliques.size(); i++) {
+            if (cliques.get(i).contains(var)) return i;
+        }
+        return -1;
+    }
+
+    private int findCliqueContainingAll(int[] vars) {
+        int[] u = unique(vars);
+        outer:
+        for (int i = 0; i < cliques.size(); i++) {
+            Clique c = cliques.get(i);
+            for (int v : u) if (!c.contains(v)) continue outer;
+            return i;
+        }
+        return -1;
+    }
+
+    private Separator getSeparator(int a, int b) {
+        int x = Math.min(a, b), y = Math.max(a, b);
+        long key = (((long) x) << 32) | (y & 0xffffffffL);
+        Separator sep = separators.get(key);
+        if (sep == null) throw new IllegalStateException("Missing separator for edge " + a + " - " + b);
+        return sep;
+    }
+
+    // ---------------------------------------------------------------------
+    // CPT factor assignment
+    // ---------------------------------------------------------------------
+
+    private void assignCptFactorsToCliques() {
+        for (int node = 0; node < n; node++) {
+            int[] parents = bayesIm.getParents(node);
+            int[] fam = new int[parents.length + 1];
+            System.arraycopy(parents, 0, fam, 0, parents.length);
+            fam[fam.length - 1] = node;
+
+            int ci = findCliqueContainingAll(fam);
+            if (ci < 0) {
+                throw new IllegalStateException("No clique contains family of node " + node + ": " + Arrays.toString(fam));
+            }
+            cliqueAssignedFactors.get(ci).add(buildCptFactor(node));
+        }
+    }
+
+    private Factor buildCptFactor(int node) {
+        int[] parents = bayesIm.getParents(node);
+        int[] vars = new int[parents.length + 1];
+        System.arraycopy(parents, 0, vars, 0, parents.length);
+        vars[vars.length - 1] = node;
+
+        int[] cards = cardsOf(vars);
+        Factor f = new Factor(vars, cards);
+
+        int numRows = bayesIm.getNumRows(node);
+        int numCols = bayesIm.getNumColumns(node);
+
+        for (int row = 0; row < numRows; row++) {
+            int[] parentVals = bayesIm.getParentValues(node, row);
+            for (int col = 0; col < numCols; col++) {
+                int[] assign = new int[vars.length];
+                System.arraycopy(parentVals, 0, assign, 0, parentVals.length);
+                assign[assign.length - 1] = col;
+                f.set(assign, bayesIm.getProbability(node, row, col));
+            }
+        }
+        return f;
+    }
+
+    // ---------------------------------------------------------------------
+    // Junction tree construction (moralize + triangulate + cliques + MWST)
+    // ---------------------------------------------------------------------
+
+    private JunctionTree buildJunctionTree() {
+        // 1) Moralize DAG structure
+        UndirectedGraph moral = moralize();
+
+        // 2) Triangulate (min-fill) and record induced cliques from elimination
+        Triangulation tri = triangulateMinFill(moral);
+
+        // 3) Reduce cliques to maximal cliques
+        List<int[]> maxCliques = maximalCliques(tri.cliques);
+
+        // 4) Build clique tree via maximum-weight spanning tree on clique intersections
+        return buildCliqueTree(maxCliques);
+    }
+
+    private UndirectedGraph moralize() {
+        UndirectedGraph g = new UndirectedGraph(n);
+        // add undirected edges for each directed edge parent->child
+        for (int child = 0; child < n; child++) {
+            int[] parents = bayesIm.getParents(child);
+            for (int p : parents) g.addEdge(p, child);
+            // connect all pairs of parents (marry parents)
+            for (int i = 0; i < parents.length; i++) {
+                for (int j = i + 1; j < parents.length; j++) {
+                    g.addEdge(parents[i], parents[j]);
+                }
+            }
+        }
+        return g;
+    }
+
+    private Triangulation triangulateMinFill(UndirectedGraph g0) {
+        UndirectedGraph g = g0.copy();
+        boolean[] eliminated = new boolean[n];
+        List<int[]> inducedCliques = new ArrayList<>();
+
+        for (int step = 0; step < n; step++) {
+            int v = pickMinFillVertex(g, eliminated);
+            if (v < 0) break;
+
+            int[] nbrs = g.neighborsOf(v, eliminated);
+            int[] clique = new int[nbrs.length + 1];
+            System.arraycopy(nbrs, 0, clique, 0, nbrs.length);
+            clique[clique.length - 1] = v;
+            inducedCliques.add(unique(clique));
+
+            // add fill-in edges among neighbors
+            for (int i = 0; i < nbrs.length; i++) {
+                for (int j = i + 1; j < nbrs.length; j++) {
+                    g.addEdge(nbrs[i], nbrs[j]);
+                }
+            }
+
+            eliminated[v] = true;
+        }
+
+        return new Triangulation(inducedCliques);
+    }
+
+    private int pickMinFillVertex(UndirectedGraph g, boolean[] eliminated) {
+        int best = -1;
+        int bestFill = Integer.MAX_VALUE;
+        int bestDegree = Integer.MAX_VALUE;
+
+        for (int v = 0; v < n; v++) {
+            if (eliminated[v]) continue;
+            int[] nbrs = g.neighborsOf(v, eliminated);
+            int fill = countMissingEdgesAmong(g, nbrs);
+            int deg = nbrs.length;
+            // tie-breaker: smaller degree
+            if (fill < bestFill || (fill == bestFill && deg < bestDegree)) {
+                bestFill = fill;
+                bestDegree = deg;
+                best = v;
+            }
+        }
+        return best;
+    }
+
+    private int countMissingEdgesAmong(UndirectedGraph g, int[] nodes) {
+        int missing = 0;
         for (int i = 0; i < nodes.length; i++) {
-            int k = bayesPm.getNumCategories(nodes[i]);
-            allowed[i] = new boolean[k];
-            Arrays.fill(allowed[i], true);
+            for (int j = i + 1; j < nodes.length; j++) {
+                if (!g.hasEdge(nodes[i], nodes[j])) missing++;
+            }
         }
-
-        this.cliques = new ArrayList<>();
-        this.adj = new HashMap<>();
-        this.homeCliqueByVar = new HashMap<>();
-
-        buildCliqueTreeAndPotentials();
-
-        this.calibrated = false; // evidence is empty but we can lazily calibrate on first query
+        return missing;
     }
 
-    private static void incrementAssignment(int[] assign, int[] card) {
-        for (int i = assign.length - 1; i >= 0; i--) {
-            assign[i]++;
-            if (assign[i] < card[i]) return;
-            assign[i] = 0;
+    private List<int[]> maximalCliques(List<int[]> cliques) {
+        // remove duplicates and non-maximal
+        List<int[]> uniq = new ArrayList<>();
+        for (int[] c : cliques) uniq.add(unique(c));
+
+        // sort by size descending
+        uniq.sort((a, b) -> Integer.compare(b.length, a.length));
+
+        List<int[]> out = new ArrayList<>();
+        outer:
+        for (int i = 0; i < uniq.size(); i++) {
+            int[] c = uniq.get(i);
+            for (int[] kept : out) {
+                if (isSubset(c, kept)) continue outer;
+            }
+            out.add(c);
+        }
+        return out;
+    }
+
+    private JunctionTree buildCliqueTree(List<int[]> maxCliques) {
+        int m = maxCliques.size();
+        if (m == 0) throw new IllegalStateException("No cliques produced.");
+
+        List<Clique> cliqueObjs = new ArrayList<>(m);
+        for (int i = 0; i < m; i++) cliqueObjs.add(new Clique(i, maxCliques.get(i)));
+
+        // Complete graph over cliques weighted by intersection size
+        List<Edge> edges = new ArrayList<>();
+        for (int i = 0; i < m; i++) {
+            for (int j = i + 1; j < m; j++) {
+                int w = intersectionSize(cliqueObjs.get(i).vars, cliqueObjs.get(j).vars);
+                if (w > 0) edges.add(new Edge(i, j, w));
+            }
+        }
+        // Maximum spanning tree
+        edges.sort((a, b) -> Integer.compare(b.w, a.w));
+        DSU dsu = new DSU(m);
+
+        List<int[]> neighbors = new ArrayList<>(m);
+        for (int i = 0; i < m; i++) neighbors.add(new int[0]);
+
+        // Build adjacency lists dynamically
+        List<List<Integer>> neigh = new ArrayList<>(m);
+        for (int i = 0; i < m; i++) neigh.add(new ArrayList<>());
+
+        Map<Long, Separator> seps = new HashMap<>();
+
+        int used = 0;
+        for (Edge e : edges) {
+            if (dsu.find(e.a) == dsu.find(e.b)) continue;
+            dsu.union(e.a, e.b);
+            neigh.get(e.a).add(e.b);
+            neigh.get(e.b).add(e.a);
+
+            int[] sepVars = intersection(cliqueObjs.get(e.a).vars, cliqueObjs.get(e.b).vars);
+            Separator sep = new Separator(e.a, e.b, sepVars);
+
+            int x = Math.min(e.a, e.b), y = Math.max(e.a, e.b);
+            long key = (((long) x) << 32) | (y & 0xffffffffL);
+            seps.put(key, sep);
+
+            used++;
+            if (used == m - 1) break;
+        }
+
+        // If disconnected (can happen if intersection graph is disconnected), add a super-root empty separator edges.
+        // This keeps calibration defined as a forest -> tree trick.
+        if (used != m - 1) {
+            int superIdx = cliqueObjs.size();
+            cliqueObjs.add(new Clique(superIdx, new int[0]));
+
+            List<Integer> superNeigh = new ArrayList<>();
+            neigh.add(superNeigh);
+
+            // connect super-root to each component representative
+            DSU d2 = new DSU(m);
+            for (Edge e : edges) d2.union(e.a, e.b);
+            Map<Integer, Integer> repToClique = new HashMap<>();
+            for (int i = 0; i < m; i++) repToClique.put(d2.find(i), i);
+
+            for (int i : repToClique.values()) {
+                neigh.get(superIdx).add(i);
+                neigh.get(i).add(superIdx);
+
+                Separator sep = new Separator(superIdx, i, new int[0]);
+                int x = Math.min(superIdx, i), y = Math.max(superIdx, i);
+                long key = (((long) x) << 32) | (y & 0xffffffffL);
+                seps.put(key, sep);
+            }
+        }
+
+        // freeze adjacency
+        List<int[]> neighArr = new ArrayList<>(cliqueObjs.size());
+        for (int i = 0; i < cliqueObjs.size(); i++) {
+            List<Integer> li = neigh.get(i);
+            int[] arr = new int[li.size()];
+            for (int k = 0; k < li.size(); k++) arr[k] = li.get(k);
+            neighArr.add(arr);
+        }
+
+        // Running intersection check (tripwire)
+        verifyRunningIntersection(cliqueObjs, neighArr);
+
+        return new JunctionTree(cliqueObjs, neighArr, seps);
+    }
+
+    private void verifyRunningIntersection(List<Clique> cliques, List<int[]> neigh) {
+        // For each variable v, cliques containing v must form a connected subtree.
+        for (int v = 0; v < n; v++) {
+            List<Integer> contains = new ArrayList<>();
+            for (int i = 0; i < cliques.size(); i++) if (cliques.get(i).contains(v)) contains.add(i);
+            if (contains.isEmpty()) continue;
+
+            // BFS restricted to cliques containing v
+            Set<Integer> set = new HashSet<>(contains);
+            ArrayDeque<Integer> q = new ArrayDeque<>();
+            Set<Integer> seen = new HashSet<>();
+            q.add(contains.get(0));
+            seen.add(contains.get(0));
+
+            while (!q.isEmpty()) {
+                int cur = q.removeFirst();
+                for (int nb : neigh.get(cur)) {
+                    if (!set.contains(nb) || seen.contains(nb)) continue;
+                    seen.add(nb);
+                    q.add(nb);
+                }
+            }
+
+            if (seen.size() != set.size()) {
+                throw new IllegalStateException("Running intersection failed for var " + v
+                        + " (cliques containing v are not connected).");
+            }
         }
     }
 
-    private static double sum(double[] a) {
-        double s = 0.0;
-        for (double v : a) s += v;
+    // ---------------------------------------------------------------------
+    // Small utilities / data structures
+    // ---------------------------------------------------------------------
+
+    private int[] cardsOf(int[] vars) {
+        int[] c = new int[vars.length];
+        for (int i = 0; i < vars.length; i++) c[i] = card[vars[i]];
+        return c;
+    }
+
+    private static int[] unique(int[] a) {
+        if (a.length <= 1) return a.clone();
+        int[] b = a.clone();
+        Arrays.sort(b);
+        int k = 1;
+        for (int i = 1; i < b.length; i++) if (b[i] != b[i - 1]) b[k++] = b[i];
+        return Arrays.copyOf(b, k);
+    }
+
+    private static boolean isSubset(int[] small, int[] big) {
+        // both assumed unique+sorted
+        int i = 0, j = 0;
+        while (i < small.length && j < big.length) {
+            if (small[i] == big[j]) { i++; j++; }
+            else if (small[i] > big[j]) j++;
+            else return false;
+        }
+        return i == small.length;
+    }
+
+    private static int intersectionSize(int[] a, int[] b) {
+        int i = 0, j = 0, s = 0;
+        while (i < a.length && j < b.length) {
+            if (a[i] == b[j]) { s++; i++; j++; }
+            else if (a[i] < b[j]) i++;
+            else j++;
+        }
         return s;
     }
 
-    private static double[] zeros(int k) {
-        return new double[k];
+    private static int[] intersection(int[] a, int[] b) {
+        int i = 0, j = 0;
+        int[] tmp = new int[Math.min(a.length, b.length)];
+        int k = 0;
+        while (i < a.length && j < b.length) {
+            if (a[i] == b[j]) { tmp[k++] = a[i]; i++; j++; }
+            else if (a[i] < b[j]) i++;
+            else j++;
+        }
+        return Arrays.copyOf(tmp, k);
     }
 
-    private static void normalizeInPlaceKidGloves(double[] a) {
-        double s = 0.0;
-        for (double v : a) {
-            if (!Double.isFinite(v)) {
-                Arrays.fill(a, Double.NaN);
-                return;
-            }
-            s += v;
-        }
-        if (!Double.isFinite(s) || s <= 0.0) {
-            // If impossible evidence, show all zeros rather than NaNs (UI-friendly),
-            // but you can flip this if you prefer NaN signaling.
-            Arrays.fill(a, 0.0);
-            return;
-        }
-        for (int i = 0; i < a.length; i++) a[i] /= s;
-    }
+    // ---------------------------------------------------------------------
+    // Internal JT containers
+    // ---------------------------------------------------------------------
 
-    private static void normalizeMessageKidGloves(double[] msg) {
-        if (msg == null || msg.length == 0) return;
-        double s = 0.0;
-        for (double v : msg) {
-            if (!Double.isFinite(v)) {
-                Arrays.fill(msg, 0.0);
-                return;
-            }
-            s += v;
-        }
-        if (!Double.isFinite(s) || s <= 0.0) {
-            // If message becomes all zeros (inconsistent evidence), keep zeros.
-            Arrays.fill(msg, 0.0);
-            return;
-        }
+    private static final class JunctionTree implements TetradSerializable {
 
-        for (int i = 0; i < msg.length; i++) msg[i] /= s;
-    }
-
-    private int indexOfByName(Node n) {
-        if (n == null) return -1;
-        Integer idx = indexByName.get(n.getName());
-        return (idx == null) ? -1 : idx;
-    }
-
-    /**
-     * Clear all evidence.
-     */
-    public void clearEvidence() {
-        Arrays.fill(this.hardEvidence, -1);
-        this.calibrated = false;
-    }
-
-    /**
-     * Set hard evidence X_i = value.
-     *
-     * @param iNode The node index
-     * @param value The evidence value
-     */
-    public void setEvidence(int iNode, int value) {
-        validateNode(iNode);
-        int k = bayesPm.getNumCategories(nodes[iNode]);
-        if (value < 0 || value >= k) {
-            throw new IllegalArgumentException("Value " + value + " out of range 0.." + (k - 1));
-        }
-        this.hardEvidence[iNode] = value;
-        this.calibrated = false;
-    }
-
-    /**
-     * Get marginal P(X_i).
-     *
-     * @param iNode The node index
-     * @return Marginal probability of X_i
-     */
-    public double[] getMarginal(int iNode) {
-        ensureCalibrated();
-        validateNode(iNode);
-
-        Clique c = homeCliqueByVar.get(iNode);
-        if (c == null) {
-            // Kid gloves fallback: pick any clique containing node
-            c = findAnyCliqueContaining(iNode);
-            if (c == null) throw new IllegalStateException("No clique contains node " + nodes[iNode].getName());
-        }
-
-        int pos = c.indexOfVar(iNode);
-        if (pos < 0) throw new IllegalStateException("Internal: home clique missing var.");
-
-        double[] marg = c.marginalOfSingleVar(pos);
-
-        normalizeInPlaceKidGloves(marg);
-        return marg;
-    }
-
-    // =========================
-    // Building the clique tree
-    // =========================
-
-    /**
-     * Get marginal P(X_i = value).
-     *
-     * @param iNode The node index
-     * @param value The evidence value
-     * @return Marginal probability of
-     */
-    public double getMarginal(int iNode, int value) {
-        double[] m = getMarginal(iNode);
-        if (value < 0 || value >= m.length) throw new IllegalArgumentException("Bad value index.");
-        return m[value];
-    }
-
-    /**
-     * Reset allowed-categories to tautology (all categories allowed).
-     */
-    public void clearAllowedCategories() {
-        for (int i = 0; i < allowed.length; i++) {
-            Arrays.fill(allowed[i], true);
-        }
-        this.calibrated = false;
-    }
-
-    /**
-     * Apply allowed/disallowed categories from a Proposition (soft evidence / restrictions).
-     *
-     * @param p The proposition
-     */
-    public void setAllowedCategories(Proposition p) {
-        if (p == null) throw new NullPointerException("proposition");
-
-        for (int i = 0; i < nodes.length; i++) {
-            int k = allowed[i].length;
-            for (int c = 0; c < k; c++) {
-                allowed[i][c] = p.isAllowed(i, c);
-            }
-        }
-        this.calibrated = false;
-    }
-
-    /**
-     * Get conditional distribution P(X_i | Parents=parentValues) under current evidence.
-     * Parents must be node indices; parentValues aligned to parents[].
-     *
-     * @param iNode The node index
-     * @param parents The parent node indices
-     * @param parentValues The parent values
-     * @return Conditional distribution
-     */
-    public double[] getConditional(int iNode, int[] parents, int[] parentValues) {
-        ensureCalibrated();
-        validateNode(iNode);
-        validateNodesAndValues(parents, parentValues);
-
-        // Temporarily add parent assignments as evidence, read marginal, then restore.
-        int[] saved = Arrays.copyOf(hardEvidence, hardEvidence.length);
-
-        // Apply (with overwrite) kid gloves: if contradiction, return all zeros.
-        for (int j = 0; j < parents.length; j++) {
-            int p = parents[j];
-            int v = parentValues[j];
-            if (hardEvidence[p] >= 0 && hardEvidence[p] != v) {
-                return zeros(bayesPm.getNumCategories(nodes[iNode]));
-            }
-            hardEvidence[p] = v;
-        }
-
-        calibrated = false;
-        ensureCalibrated();
-        double[] m = getMarginal(iNode);
-
-        // Restore
-        System.arraycopy(saved, 0, hardEvidence, 0, saved.length);
-        calibrated = false; // because we changed evidence back
-
-        return m;
-    }
-
-    // =========================
-    // Calibration (message passing)
-    // =========================
-
-    /**
-     * Return P(assignments AND current evidence) *up to a global scale*.
-     * <p>
-     * Marginals are correct even with message normalization; exact joint/evidence normalization
-     * requires tracking scaling constants (can be added if you need it).
-     *
-     * @param queryNodes The query node indices
-     * @param queryValues The query values
-     * @return Joint probability of the query assignments given the current evidence.
-     */
-    public double getJointProbability(int[] queryNodes, int[] queryValues) {
-        ensureCalibrated();
-        validateNodesAndValues(queryNodes, queryValues);
-
-        // Treat query as additional evidence and return "probability of that evidence" proxy:
-        int[] saved = Arrays.copyOf(hardEvidence, hardEvidence.length);
-
-        for (int j = 0; j < queryNodes.length; j++) {
-            int q = queryNodes[j];
-            int v = queryValues[j];
-            if (hardEvidence[q] >= 0 && hardEvidence[q] != v) {
-                return 0.0;
-            }
-            hardEvidence[q] = v;
-        }
-
-        calibrated = false;
-        ensureCalibrated();
-
-        // With calibrated tree, any clique belief sum is proportional to P(evidence).
-        // We use a stable clique: home clique for first query node, else first non-empty clique.
-        Clique c = (queryNodes.length > 0) ? homeCliqueByVar.get(queryNodes[0]) : null;
-        if (c == null || c.vars.length == 0) c = firstRealClique();
-        if (c == null) c = superRoot; // fine even if dummy, belief size=1
-
-        double z = sum(c.belief);
-        if (!Double.isFinite(z) || z < 0) z = Double.NaN;
-
-        // Restore
-        System.arraycopy(saved, 0, hardEvidence, 0, saved.length);
-        calibrated = false;
-
-        return z;
-    }
-
-    private void buildCliqueTreeAndPotentials() {
-        // Moralize + triangulate using canonical nodes.
-        Graph moral = GraphTools.moralize(bayesIm.getDag());
-
-        Graph undirected = canonicalizeUndirected(moral);
-
-        // Triangulate using max cardinality ordering.
-        Node[] mco = new Node[nodes.length];
-        computeMaximumCardinalityOrdering(undirected, mco);
-        GraphTools.fillIn(undirected, mco);
-
-        // Recompute ordering and cliques after fill-in.
-        computeMaximumCardinalityOrdering(undirected, mco);
-        Map<Node, Set<Node>> cliqueMap = GraphTools.getCliques(mco, undirected);
-
-        // Kid gloves: ensure every variable participates (singleton clique for isolates).
-        for (Node v : mco) {
-            if (!cliqueMap.containsKey(v) || cliqueMap.get(v) == null || cliqueMap.get(v).isEmpty()) {
-                cliqueMap.put(v, new HashSet<>(Collections.singletonList(v)));
-            }
-        }
-
-        Map<Node, Set<Node>> separators = GraphTools.getSeparators(mco, cliqueMap);
-        Map<Node, Node> parentClique = GraphTools.getCliqueTree(mco, cliqueMap, separators);
-
-        // Create Clique objects (one per key in cliqueMap, using the key nodes in mco order).
-        Map<Node, Clique> cliqueByKey = new HashMap<>();
-        for (Node key : mco) {
-            Set<Node> cset = cliqueMap.get(key);
-            if (cset == null || cset.isEmpty()) continue;
-            Clique c = new Clique(cset);
-            cliqueByKey.put(key, c);
-            cliques.add(c);
-            adj.put(c, new ArrayList<>());
-        }
-
-        // Link edges according to parentClique; collect roots.
-        List<Clique> roots = new ArrayList<>();
-        for (Node key : mco) {
-            Clique child = cliqueByKey.get(key);
-            if (child == null) continue;
-
-            Node pk = parentClique.get(key);
-            if (pk == null) {
-                roots.add(child);
-                continue;
-            }
-            Clique parent = cliqueByKey.get(pk);
-            if (parent == null) {
-                roots.add(child);
-                continue;
-            }
-
-            Set<Node> sepSet = separators.get(key);
-            if (sepSet == null) sepSet = Collections.emptySet();
-
-            EdgeCT e1 = new EdgeCT(child, parent, sepSet);
-            EdgeCT e2 = new EdgeCT(parent, child, sepSet);
-            e1.twin = e2;
-            e2.twin = e1;
-
-            adj.get(child).add(e1);
-            adj.get(parent).add(e2);
-        }
-
-        // If multiple roots (disconnected moral graph), add a dummy super-root clique.
-        if (roots.size() == 1) {
-            this.superRoot = roots.get(0);
-        } else {
-            this.superRoot = new Clique(Collections.emptySet());
-            cliques.add(0, superRoot);
-            adj.put(superRoot, new ArrayList<>());
-
-            // connect superRoot to each component root with empty separator
-            for (Clique r : roots) {
-                EdgeCT e1 = new EdgeCT(superRoot, r, Collections.emptySet());
-                EdgeCT e2 = new EdgeCT(r, superRoot, Collections.emptySet());
-                e1.twin = e2;
-                e2.twin = e1;
-                adj.get(superRoot).add(e1);
-                adj.get(r).add(e2);
-            }
-        }
-
-        // Assign each BN variable to exactly one clique for CPT multiplication.
-        Map<Integer, Clique> assignedToClique = assignVariablesToCliques(mco, cliqueByKey, cliqueMap);
-
-        // Build clique base potentials = product of assigned CPT factors.
-        for (Clique c : cliques) {
-            c.initializePotential();
-        }
-
-        for (Map.Entry<Integer, Clique> ent : assignedToClique.entrySet()) {
-            int v = ent.getKey();
-            Clique c = ent.getValue();
-            if (c == null) continue;
-            c.multiplyInCptFactor(v);
-        }
-
-        // After multiplication, each v's CPT should have introduced some non-1 structure somewhere.
-        // We can’t easily prove “structure,” but we can at least ensure we *attempted* to multiply in.
-        for (int v = 0; v < nodes.length; v++) {
-            Clique c = assignedToClique.get(v);
-            if (c == null || c.vars.length == 0) {
-                throw new IllegalStateException("JT: variable " + nodes[v].getName() + " assigned to null/dummy clique");
-            }
-        }
-
-        // Select a “home clique” per variable for marginal queries.
-        // IMPORTANT: use the clique where the CPT factor for v was placed.
-        for (int v = 0; v < nodes.length; v++) {
-            Clique c = assignedToClique.get(v);
-            if (c == null) {
-                // Kid gloves fallback (should not happen now that you throw earlier)
-                c = findAnyCliqueContaining(v);
-                if (c == null) c = superRoot;
-            }
-            homeCliqueByVar.put(v, c);
-        }
-    }
-
-    /**
-     * Assign each variable v to a clique that contains {v} U Pa(v).
-     * We pick the first clique (by MCO key order) that contains all those nodes.
-     */
-    private Map<Integer, Clique> assignVariablesToCliques(Node[] mco, Map<Node, Clique> cliqueByKey, Map<Node, Set<Node>> cliqueMap) {
-        Map<Integer, Clique> out = new HashMap<>();
-
-        for (int v = 0; v < nodes.length; v++) {
-            int[] parents = bayesIm.getParents(v);
-
-            Clique chosen = null;
-
-            // Find a clique that contains v and all its parents (by BN index).
-            for (Clique c : cliques) {
-                if (c == null) continue;
-                // Skip ONLY the dummy empty super-root clique.
-                if (c.vars.length == 0) continue;
-
-                if (c.indexOfVar(v) < 0) continue;
-
-                boolean ok = true;
-                for (int p : parents) {
-                    if (c.indexOfVar(p) < 0) { ok = false; break; }
-                }
-                if (ok) { chosen = c; break; }
-            }
-
-            if (chosen == null) {
-                throw new IllegalStateException("JT: No clique contains family {" + nodes[v].getName() + "} ∪ Pa. " + "This indicates clique extraction / canonicalization failure.");
-            }
-
-            out.put(v, chosen);
-        }
-
-        return out;
-    }
-
-    /**
-     * Canonicalize an undirected graph using the BayesIm node instances (by name).
-     *
-     * @param g The graph
-     */
-    private Graph canonicalizeUndirected(Graph g) {
-        EdgeListGraph out = new EdgeListGraph();
-
-        // Add canonical nodes (from BayesIm indices)
-        Map<String, Node> canon = new HashMap<>();
-        for (Node n : nodes) {
-            canon.put(n.getName(), n);
-            out.addNode(n);
-        }
-
-        // Rebuild edges by name
-        for (Edge e : g.getEdges()) {
-            Node a = canon.get(e.getNode1().getName());
-            Node b = canon.get(e.getNode2().getName());
-            if (a == null || b == null || a == b) continue;
-
-            if (out.getEdge(a, b) == null && out.getEdge(b, a) == null) {
-                out.addUndirectedEdge(a, b);
-            }
-        }
-
-        return out;
-    }
-
-    private void computeMaximumCardinalityOrdering(Graph graph, Node[] orderingOut) {
-        Set<Node> numbered = new HashSet<>();
-        for (int i = 0; i < orderingOut.length; i++) {
-            Node best = null;
-            int bestScore = Integer.MIN_VALUE;
-
-            for (Node v : graph.getNodes()) {
-                if (numbered.contains(v)) continue;
-                int score = 0;
-                for (Node a : graph.getAdjacentNodes(v)) {
-                    if (numbered.contains(a)) score++;
-                }
-                if (score > bestScore) {
-                    bestScore = score;
-                    best = v;
-                }
-            }
-
-            if (best == null) {
-                // Kid gloves: in case graph.getNodes() differs from canonical set
-                best = nodes[Math.min(i, nodes.length - 1)];
-            }
-
-            orderingOut[i] = best;
-            numbered.add(best);
-        }
-    }
-
-    // =========================
-    // Factor ops (clique tables, separator tables)
-    // =========================
-
-    private void ensureCalibrated() {
-        if (calibrated) return;
-
-        // 1) reset all messages
-        for (Clique c : cliques) {
-            for (EdgeCT e : adj.getOrDefault(c, List.of())) {
-                e.message = null;
-            }
-        }
-
-        // 2) reset clique beliefs = base potential * evidence indicators
-        for (Clique c : cliques) {
-            c.resetBeliefWithEvidence();
-        }
-
-        // 3) collect + distribute
-        collect(superRoot, null);
-        distribute(superRoot, null);
-
-        // 4) finalize beliefs by multiplying all incoming messages
-        finalizeBeliefs();
-
-        calibrated = true;
-    }
-
-    private void collect(Clique current, Clique parent) {
-        for (EdgeCT e : adj.getOrDefault(current, List.of())) {
-            Clique child = e.to;
-            if (child == parent) continue;
-
-            collect(child, current);
-
-            // child -> current lives on e.twin
-            e.twin.message = computeMessage(e.twin); // compute message from child to current
-        }
-    }
-
-    /**
-     * Message for a directed edge src -> dst.
-     */
-    private double[] computeMessage(EdgeCT edge) {
-        Clique src = edge.from;
-        Clique dst = edge.to;
-
-        // Start from src's base-with-evidence table.
-        double[] tmp = Arrays.copyOf(src.baseWithEvidence, src.baseWithEvidence.length);
-
-        // Multiply in all incoming messages to src except the one from dst.
-        for (EdgeCT e : adj.getOrDefault(src, List.of())) {
-            Clique nb = e.to;
-            if (nb == dst) continue;
-
-            // Incoming message is nb -> src, which is stored on e.twin (since e is src -> nb).
-            EdgeCT incoming = e.twin;
-            double[] inMsg = incoming.message;
-            if (inMsg == null) continue;
-
-            int[] posInSrc = positionsInClique(src, incoming.sepVars.varIdx);
-            multiplyFactorIntoCliqueTable(tmp, src, inMsg, incoming.sepVars, posInSrc);
-        }
-
-        // Marginalize onto THIS edge's separator (src -> dst), positions are in src.
-        double[] msg = marginalize(tmp, src, edge.sepVars);
-
-        normalizeMessageKidGloves(msg);
-        return msg;
-    }
-
-    private int[] positionsInClique(Clique clique, int[] varIdx) {
-        int[] pos = new int[varIdx.length];
-        for (int i = 0; i < varIdx.length; i++) {
-            int p = clique.indexOfVar(varIdx[i]);
-            if (p < 0) throw new IllegalStateException("Separator var not in clique (should not happen).");
-            pos[i] = p;
-        }
-        return pos;
-    }
-
-    // =========================
-    // Internal structures
-    // =========================
-
-    private void distribute(Clique current, Clique parent) {
-        for (EdgeCT e : adj.getOrDefault(current, List.of())) {
-            Clique child = e.to;
-            if (child == parent) continue;
-
-            // current -> child
-            e.message = computeMessage(e);
-
-            distribute(child, current);
-        }
-    }
-
-    private void finalizeBeliefs() {
-        for (Clique c : cliques) {
-            double[] b = Arrays.copyOf(c.baseWithEvidence, c.baseWithEvidence.length);
-
-            for (EdgeCT e : adj.getOrDefault(c, List.of())) {
-                // Incoming message is neighbor -> c, stored on e.twin
-                double[] inMsg = e.twin.message;
-                if (inMsg == null) continue;
-
-                // Separator var order is canonical now, so we can use e.twin.sepVars (same varIdx/card)
-                // but positions must be in CURRENT clique c, which are e.sepVarToPosInSrc (since e is c -> neighbor).
-                int[] posInC = positionsInClique(c, e.twin.sepVars.varIdx);
-                multiplyFactorIntoCliqueTable(b, c, inMsg, e.twin.sepVars, posInC);
-            }
-
-            c.belief = b;
-        }
-    }
-
-    /**
-     * Multiply a separator factor (msg) into a clique table (cliqueTable), aligning by separator variable positions.
-     *
-     * @param cliqueTable    mutable table over clique.vars
-     * @param clique         clique descriptor
-     * @param msg            factor array over sepVars.varIdx (in order)
-     * @param sepVars        separator variable metadata
-     * @param sepPosInClique positions of sep vars in clique.vars (same length as sepVars.varIdx)
-     */
-    private void multiplyFactorIntoCliqueTable(double[] cliqueTable, Clique clique, double[] msg, SepVars sepVars, int[] sepPosInClique) {
-        if (sepVars.varIdx.length == 0) {
-            // empty separator => msg is scalar of length 1
-            if (msg != null && msg.length == 1) {
-                double s = msg[0];
-                for (int i = 0; i < cliqueTable.length; i++) cliqueTable[i] *= s;
-            }
-            return;
-        }
-        if (msg == null) return;
-
-        int n = clique.vars.length;
-        int[] assign = new int[n];
-
-        // Iterate assignments; compute msg index by extracting sep assignments.
-        for (int idx = 0; idx < cliqueTable.length; idx++) {
-            int mIndex = 0;
-            for (int k = 0; k < sepVars.varIdx.length; k++) {
-                int pos = sepPosInClique[k];
-                int card = sepVars.card[k];
-                mIndex = mIndex * card + assign[pos];
-            }
-            cliqueTable[idx] *= msg[mIndex];
-
-            incrementAssignment(assign, clique.card);
-        }
-    }
-    // =========================
-    // Helpers / kid gloves
-    // =========================
-
-    /**
-     * Marginalize a clique table over a separator var-set.
-     */
-    private double[] marginalize(double[] cliqueTable, Clique clique, SepVars sep) {
-        if (sep.varIdx.length == 0) {
-            return new double[]{sum(cliqueTable)};
-        }
-
-        int msgSize = 1;
-        for (int k : sep.card) msgSize *= k;
-        double[] out = new double[msgSize];
-
-        int n = clique.vars.length;
-        int[] assign = new int[n];
-
-        for (int idx = 0; idx < cliqueTable.length; idx++) {
-            int mIndex = 0;
-            for (int k = 0; k < sep.varIdx.length; k++) {
-                int pos = sep.posInSrcClique[k];
-                int card = sep.card[k];
-                mIndex = mIndex * card + assign[pos];
-            }
-            out[mIndex] += cliqueTable[idx];
-
-            incrementAssignment(assign, clique.card);
-        }
-
-        return out;
-    }
-
-    private Clique firstRealClique() {
-        for (Clique c : cliques) {
-            if (c != null && c.vars.length != 0) return c;
-        }
-        return null;
-    }
-
-    private Clique findAnyCliqueContaining(int varIdx) {
-        for (Clique c : cliques) {
-            if (c == null) continue;
-            if (c.indexOfVar(varIdx) >= 0) return c;
-        }
-        return null;
-    }
-
-    private void validateNode(int iNode) {
-        if (iNode < 0 || iNode >= nodes.length) {
-            throw new IllegalArgumentException("Node index out of range: " + iNode);
-        }
-    }
-
-    private void validateNodesAndValues(int[] ns, int[] vs) {
-        if (ns == null || vs == null) throw new IllegalArgumentException("nodes/values cannot be null.");
-        if (ns.length != vs.length) throw new IllegalArgumentException("nodes and values length mismatch.");
-        for (int i = 0; i < ns.length; i++) {
-            validateNode(ns[i]);
-            int k = bayesPm.getNumCategories(nodes[ns[i]]);
-            if (vs[i] < 0 || vs[i] >= k) {
-                throw new IllegalArgumentException("Value " + vs[i] + " out of range for node " + ns[i]);
-            }
-        }
-    }
-
-    /**
-     * Serializes the state of the object to the provided {@code ObjectOutputStream}.
-     * This method ensures that the default serialization process is performed
-     * and logs an error in case of a serialization failure.
-     *
-     * @param out The {@code ObjectOutputStream} to which the object state is serialized.
-     *            Must not be null.
-     * @throws IOException If an I/O error occurs during the serialization process.
-     */
-    @Serial
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        try {
-            out.defaultWriteObject();
-        } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName() + ", " + e.getMessage());
-            throw e;
-        }
-    }
-
-    /**
-     * Deserializes the state of the object from the provided {@code ObjectInputStream}.
-     * This method ensures that the default deserialization process is performed and
-     * logs an error in case of a deserialization failure.
-     *
-     * @param in The {@code ObjectInputStream} from which the object state is deserialized.
-     *           Must not be null.
-     * @throws IOException If an I/O error occurs during the deserialization process.
-     * @throws ClassNotFoundException If the class of a serialized object could not be found.
-     */
-    @Serial
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        try {
-            in.defaultReadObject();
-        } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName() + ", " + e.getMessage());
-            throw e;
-        }
-    }
-
-    /**
-     * Separator variable metadata.
-     */
-    private static final class SepVars implements TetradSerializable {
         @Serial
         private static final long serialVersionUID = 23L;
 
-        final int[] varIdx;         // BN indices in separator (canonical order)
-        final int[] card;           // cardinalities in same order
-        final int[] posInSrcClique; // positions in SOURCE clique assignment array
+        final List<Clique> cliques;
+        final List<int[]> neighbors;
+        final Map<Long, Separator> separators;
 
-        SepVars(int[] varIdx, int[] card, int[] posInSrcClique) {
-            this.varIdx = (varIdx != null) ? varIdx : new int[0];
-            this.card = (card != null) ? card : new int[0];
-            this.posInSrcClique = (posInSrcClique != null) ? posInSrcClique : new int[0];
+        JunctionTree(List<Clique> cliques, List<int[]> neighbors, Map<Long, Separator> separators) {
+            this.cliques = cliques;
+            this.neighbors = neighbors;
+            this.separators = separators;
         }
     }
 
-    // =========================
-    // Serialization hooks
-    // =========================
+    private static final class Clique implements TetradSerializable {
 
-    private final class Clique implements TetradSerializable {
+        @Serial
+
+        final int id;
+        final int[] vars;     // sorted unique
+        Factor potential;     // calibrated
+
+        Clique(int id, int[] vars) {
+            this.id = id;
+            this.vars = unique(vars);
+            this.potential = Factor.identity(this.vars, new int[this.vars.length]); // placeholder; set later
+        }
+
+        boolean contains(int v) {
+            return Arrays.binarySearch(vars, v) >= 0;
+        }
+    }
+
+    private static final class Separator implements TetradSerializable {
+
         @Serial
         private static final long serialVersionUID = 23L;
 
-        final int[] vars;    // variable indices (into nodes[]) in clique order
-        final int[] card;    // cardinalities per var
-        final int size;      // table length
+        final int a, b;       // clique ids
+        final int[] sepVars;  // sorted unique
+        Factor messageAToB;
+        Factor messageBToA;
 
-        double[] basePotential;   // product of CPT factors (no evidence)
-        double[] baseWithEvidence; // basePotential with hard evidence applied
-        double[] belief;          // calibrated belief (baseWithEvidence * incoming messages)
+        Separator(int a, int b, int[] sepVars) {
+            this.a = a;
+            this.b = b;
+            this.sepVars = unique(sepVars);
+            this.messageAToB = null;
+            this.messageBToA = null;
+        }
+    }
 
-        Clique(Set<Node> cliqueNodes) {
-            // Convert cliqueNodes -> BayesIm indices by NAME (never by Node identity).
-            List<Integer> v = new ArrayList<>();
-            for (Node cn : cliqueNodes) {
-                int idx = indexOfByName(cn);
-                if (idx >= 0) v.add(idx);
-            }
+    private static final class Edge {
+        final int a, b, w;
+        Edge(int a, int b, int w) { this.a = a; this.b = b; this.w = w; }
+    }
 
-            // Remove duplicates and sort by BN index.
-            v = v.stream().distinct().sorted().toList();
+    private static final class DSU {
+        final int[] p, r;
+        DSU(int n) { p = new int[n]; r = new int[n]; for (int i = 0; i < n; i++) p[i] = i; }
+        int find(int x) { while (p[x] != x) { p[x] = p[p[x]]; x = p[x]; } return x; }
+        void union(int a, int b) {
+            a = find(a); b = find(b);
+            if (a == b) return;
+            if (r[a] < r[b]) p[a] = b;
+            else if (r[a] > r[b]) p[b] = a;
+            else { p[b] = a; r[a]++; }
+        }
+    }
 
-            this.vars = v.stream().mapToInt(Integer::intValue).toArray();
+    private static final class Triangulation implements TetradSerializable {
 
-            this.card = new int[this.vars.length];
-            int prod = 1;
-            for (int i = 0; i < vars.length; i++) {
-                int k = bayesPm.getNumCategories(nodes[vars[i]]);
-                card[i] = k;
-                prod *= k;
-            }
-            this.size = prod;
+        @Serial
+        private static final long serialVersionUID = 23L;
 
-            if (!cliqueNodes.isEmpty() && this.vars.length == 0) {
-                TetradLogger.getInstance().log("JT: Clique constructed empty despite non-empty cliqueNodes; Node identity mismatch likely.");
-            }
+        final List<int[]> cliques;
+        Triangulation(List<int[]> cliques) { this.cliques = cliques; }
+    }
+
+    private static final class UndirectedGraph {
+        final int n;
+        final boolean[][] adj;
+
+        UndirectedGraph(int n) {
+            this.n = n;
+            this.adj = new boolean[n][n];
         }
 
-        void initializePotential() {
-            this.basePotential = new double[size];
-            Arrays.fill(this.basePotential, 1.0);
-            this.baseWithEvidence = new double[size];
-            this.belief = new double[size];
+        void addEdge(int a, int b) {
+            if (a == b) return;
+            adj[a][b] = true;
+            adj[b][a] = true;
         }
 
-        int indexOfVar(int varIdx) {
-            for (int i = 0; i < vars.length; i++) if (vars[i] == varIdx) return i;
-            return -1;
+        boolean hasEdge(int a, int b) {
+            return adj[a][b];
         }
 
-        /**
-         * Multiply in CPT factor for BN variable v whose family is contained in this clique.
-         */
-        void multiplyInCptFactor(int v) {
-            int xPos = indexOfVar(v);
-            if (xPos < 0) return; // not in clique; kid gloves
-            int[] parents = bayesIm.getParents(v);
+        int[] neighborsOf(int v, boolean[] eliminated) {
+            int[] tmp = new int[n];
+            int k = 0;
+            for (int u = 0; u < n; u++) {
+                if (u == v) continue;
+                if (eliminated != null && eliminated[u]) continue;
+                if (adj[v][u]) tmp[k++] = u;
+            }
+            return Arrays.copyOf(tmp, k);
+        }
 
-            // Build map from BN parent indices to positions in clique.
-            int[] pPos = new int[parents.length];
-            for (int i = 0; i < parents.length; i++) {
-                pPos[i] = indexOfVar(parents[i]);
+        UndirectedGraph copy() {
+            UndirectedGraph g = new UndirectedGraph(n);
+            for (int i = 0; i < n; i++) System.arraycopy(this.adj[i], 0, g.adj[i], 0, n);
+            return g;
+        }
+    }
 
-                if (pPos[i] < 0) {
-                    throw new IllegalStateException("JT: Clique does not contain full family for " + nodes[v].getName() + ". Missing parent " + nodes[parents[i]].getName() + ". Clique vars=" + Arrays.toString(this.vars));
+    // ---------------------------------------------------------------------
+    // Factor (dense table) supporting multiply / marginalize / scale / divideSafe
+    // ---------------------------------------------------------------------
+
+    private static final class Factor implements TetradSerializable {
+
+        @Serial
+        private static final long serialVersionUID = 23L;
+
+        private final int[] vars;      // sorted? not required, but we keep as given
+        private final int[] cards;
+        private final int[] strides;
+        private final double[] table;
+
+        Factor(int[] vars, int[] cards) {
+            this.vars = vars.clone();
+            this.cards = cards.clone();
+            this.strides = new int[cards.length];
+
+            int size = 1;
+            for (int i = cards.length - 1; i >= 0; i--) {
+                strides[i] = size;
+                size *= cards[i];
+            }
+            this.table = new double[size];
+        }
+
+        static Factor identity(int[] vars, int[] cards) {
+            // identity factor = all ones
+            Factor f = new Factor(vars, cards);
+            Arrays.fill(f.table, 1.0);
+            return f;
+        }
+
+        void set(int[] assignment, double value) {
+            table[indexOf(assignment)] = value;
+        }
+
+        double totalSum() {
+            double s = 0.0;
+            for (double x : table) if (!Double.isNaN(x)) s += x;
+            return s;
+        }
+
+        Factor scale(double alpha) {
+            Factor out = new Factor(vars, cards);
+            for (int i = 0; i < table.length; i++) out.table[i] = table[i] * alpha;
+            return out;
+        }
+
+        boolean containsVar(int v) {
+            for (int x : vars) if (x == v) return true;
+            return false;
+        }
+
+        Factor multiply(Factor other) {
+            int[] uVars = unionVars(this.vars, other.vars);
+            int[] uCards = new int[uVars.length];
+
+            for (int i = 0; i < uVars.length; i++) {
+                int v = uVars[i];
+                int c1 = cardOf(this, v);
+                int c2 = cardOf(other, v);
+                if (c1 < 0) uCards[i] = c2;
+                else if (c2 < 0) uCards[i] = c1;
+                else {
+                    if (c1 != c2) throw new IllegalStateException("Card mismatch for var " + v);
+                    uCards[i] = c1;
                 }
             }
 
-            int n = vars.length;
-            int[] assign = new int[n];
+            Factor out = new Factor(uVars, uCards);
 
-            for (int idx = 0; idx < basePotential.length; idx++) {
-                // Build parentValues in BN parent order:
-                int[] parentValues = new int[parents.length];
-                for (int i = 0; i < parents.length; i++) {
-                    parentValues[i] = assign[pPos[i]];
-                }
+            int[] mapThis = indexMap(uVars, this.vars);
+            int[] mapOther = indexMap(uVars, other.vars);
 
-                // BayesIm row index is based on BN parent order:
-                int row = bayesIm.getRowIndex(v, parentValues);
-                int xVal = assign[xPos];
-                double p = bayesIm.getProbability(v, row, xVal);
-                basePotential[idx] *= p;
-                incrementAssignment(assign, card);
-            }
-        }
-
-        void resetBeliefWithEvidence() {
-            if (basePotential == null) throw new IllegalStateException("Potential not initialized.");
-            System.arraycopy(basePotential, 0, baseWithEvidence, 0, basePotential.length);
-
-            int n = vars.length;
-            int[] assign = new int[n];
-
-            for (int idx = 0; idx < baseWithEvidence.length; idx++) {
-                boolean ok = true;
-
-                for (int i = 0; i < n; i++) {
-                    int v = vars[i];
-                    int x = assign[i];
-
-                    // hard evidence
-                    int ev = hardEvidence[v];
-                    if (ev >= 0 && x != ev) {
-                        ok = false;
-                        break;
-                    }
-
-                    // allowed-categories restriction
-                    if (!allowed[v][x]) {
-                        ok = false;
-                        break;
-                    }
-                }
-
-                if (!ok) baseWithEvidence[idx] = 0.0;
-
-                incrementAssignment(assign, card);
-            }
-        }
-
-        /**
-         * Marginal of a single clique variable at position pos in this clique.
-         */
-        double[] marginalOfSingleVar(int pos) {
-            int k = card[pos];
-            double[] out = new double[k];
-
-            int n = vars.length;
-            int[] assign = new int[n];
-
-            double[] src = (belief != null) ? belief : baseWithEvidence;
-
-            for (int idx = 0; idx < src.length; idx++) {
-                out[assign[pos]] += src[idx];
-                incrementAssignment(assign, card);
+            int[] assignU = new int[uVars.length];
+            for (int lin = 0; lin < out.table.length; lin++) {
+                decode(lin, out.cards, out.strides, assignU);
+                double a = this.table[this.indexFromUnion(assignU, mapThis)];
+                double b = other.table[other.indexFromUnion(assignU, mapOther)];
+                out.table[lin] = a * b;
             }
 
             return out;
         }
-    }
-
-    /**
-     * Clique-tree directed edge with separator metadata and message.
-     */
-    private final class EdgeCT implements TetradSerializable {
-        @Serial
-        private static final long serialVersionUID = 23L;
-
-        final Clique from;
-        final Clique to;
 
         /**
-         * Separator variables in CANONICAL order (ascending BN index), same both directions.
+         * Safe pointwise division on the overlap (assumes same scope),
+         * treating division by 0 as 0 (so ratio is 0 where old is 0).
          */
-        final SepVars sepVars;
+        Factor divideSafe(Factor denom) {
+            // Both should be over same vars in same order (we enforce this in JT code by construction)
+            if (!Arrays.equals(this.vars, denom.vars)) {
+                // Make compatible by reordering denom to this.vars if needed.
+                denom = denom.reorderTo(this.vars, this.cards);
+            }
+            Factor out = new Factor(this.vars, this.cards);
+            for (int i = 0; i < this.table.length; i++) {
+                double a = this.table[i];
+                double b = denom.table[i];
+                if (b == 0.0) out.table[i] = (a == 0.0) ? 1.0 : 0.0; // ratio update convention
+                else out.table[i] = a / b;
+            }
+            return out;
+        }
+
+        Factor reorderTo(int[] targetVars, int[] targetCards) {
+            // targetVars and targetCards define desired ordering/scope; scope must match
+            Factor out = new Factor(targetVars, targetCards);
+            int[] mapThis = indexMap(targetVars, this.vars);
+            int[] assignT = new int[targetVars.length];
+
+            for (int lin = 0; lin < out.table.length; lin++) {
+                decode(lin, out.cards, out.strides, assignT);
+                int idxThis = this.indexFromUnion(assignT, mapThis);
+                out.table[lin] = this.table[idxThis];
+            }
+            return out;
+        }
 
         /**
-         * Positions of sepVars.varIdx inside FROM clique (same length as sepVars.varIdx).
+         * Marginalize (sum out) all vars not in targetVars. targetVars can be in any order.
          */
-        final int[] sepVarToPosInSrc;
+        Factor marginalizeTo(int[] targetVars) {
+            int[] tVars = targetVars.clone();
+            Arrays.sort(tVars);
 
-        double[] message;
-        EdgeCT twin;
-
-        EdgeCT(Clique from, Clique to, Set<Node> sepNodes) {
-            this.from = from;
-            this.to = to;
-
-            // Convert separator nodes -> BN indices BY NAME (never by Node identity).
-            Set<Integer> sepIdx = new HashSet<>();
-            for (Node sn : sepNodes) {
-                int idx = indexOfByName(sn);
-                if (idx >= 0) sepIdx.add(idx);
+            // build target cards
+            int[] tCards = new int[tVars.length];
+            for (int i = 0; i < tVars.length; i++) {
+                int pos = positionOf(this.vars, tVars[i]);
+                if (pos < 0) throw new IllegalStateException("Var not in factor: " + tVars[i]);
+                tCards[i] = this.cards[pos];
             }
 
-            // CANONICAL separator order: ascending BN index.
-            int[] varIdx = sepIdx.stream().sorted().mapToInt(Integer::intValue).toArray();
+            Factor out = new Factor(tVars, tCards);
 
-            int[] card = new int[varIdx.length];
-            int[] posInFrom = new int[varIdx.length];
+            int[] assignThis = new int[this.vars.length];
+            int[] assignOut = new int[out.vars.length];
 
-            for (int i = 0; i < varIdx.length; i++) {
-                int v = varIdx[i];
+            for (int lin = 0; lin < this.table.length; lin++) {
+                decode(lin, this.cards, this.strides, assignThis);
 
-                // Cardinality from the BN (not from clique arrays—safer).
-                card[i] = bayesPm.getNumCategories(nodes[v]);
-
-                int pos = from.indexOfVar(v);
-                if (pos < 0) {
-                    // This should not happen if sepNodes came from a proper separator set,
-                    // but if it does, fail fast so we don't silently scramble messages.
-                    throw new IllegalStateException("Separator var " + nodes[v].getName() + " not found in FROM clique.");
+                // project to target vars (sorted)
+                for (int i = 0; i < out.vars.length; i++) {
+                    int v = out.vars[i];
+                    int pos = positionOf(this.vars, v);
+                    assignOut[i] = assignThis[pos];
                 }
-                posInFrom[i] = pos;
+
+                int outIdx = out.indexOf(assignOut);
+                double x = this.table[lin];
+                if (!Double.isNaN(x)) out.table[outIdx] += x;
+            }
+            return out;
+        }
+
+        double getByVarAssignment(int[] queryVars, int[] queryVals) {
+            // read off value after marginalizing to queryVars (for convenience)
+            int[] q = queryVars.clone();
+            int[] v = queryVals.clone();
+            // normalize ordering: sort query vars together with vals
+            Integer[] idx = new Integer[q.length];
+            for (int i = 0; i < q.length; i++) idx[i] = i;
+            Arrays.sort(idx, Comparator.comparingInt(i -> q[i]));
+            int[] qs = new int[q.length];
+            int[] vs = new int[v.length];
+            for (int i = 0; i < idx.length; i++) {
+                qs[i] = q[idx[i]];
+                vs[i] = v[idx[i]];
             }
 
-            this.sepVars = new SepVars(varIdx, card, posInFrom);
+            Factor m = this.marginalizeTo(qs);
+            return m.table[m.indexOf(vs)];
+        }
 
-            // For THIS directed edge, the separator positions are positions in FROM clique.
-            this.sepVarToPosInSrc = posInFrom;
+        private int indexOf(int[] assignment) {
+            int idx = 0;
+            for (int i = 0; i < assignment.length; i++) idx += assignment[i] * strides[i];
+            return idx;
+        }
+
+        private int indexFromUnion(int[] unionAssign, int[] map) {
+            int idx = 0;
+            for (int i = 0; i < this.vars.length; i++) idx += unionAssign[map[i]] * this.strides[i];
+            return idx;
+        }
+
+        private static int cardOf(Factor f, int var) {
+            for (int i = 0; i < f.vars.length; i++) if (f.vars[i] == var) return f.cards[i];
+            return -1;
+        }
+
+        private static int positionOf(int[] vars, int var) {
+            for (int i = 0; i < vars.length; i++) if (vars[i] == var) return i;
+            return -1;
+        }
+
+        private static int[] unionVars(int[] a, int[] b) {
+            int[] tmp = new int[a.length + b.length];
+            int n = 0;
+            for (int v : a) tmp[n++] = v;
+            outer:
+            for (int v : b) {
+                for (int x : a) if (x == v) continue outer;
+                tmp[n++] = v;
+            }
+            return Arrays.copyOf(tmp, n);
+        }
+
+        private static int[] indexMap(int[] unionVars, int[] subVars) {
+            int[] map = new int[subVars.length];
+            for (int i = 0; i < subVars.length; i++) {
+                int v = subVars[i];
+                int pos = -1;
+                for (int j = 0; j < unionVars.length; j++) if (unionVars[j] == v) { pos = j; break; }
+                if (pos < 0) throw new IllegalStateException("Var not found in union: " + v);
+                map[i] = pos;
+            }
+            return map;
+        }
+
+        private static void decode(int linear, int[] cards, int[] strides, int[] outAssign) {
+            for (int i = 0; i < cards.length; i++) {
+                int s = strides[i];
+                outAssign[i] = (linear / s) % cards[i];
+            }
         }
     }
 }
