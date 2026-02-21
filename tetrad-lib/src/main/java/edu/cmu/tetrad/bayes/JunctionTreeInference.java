@@ -424,8 +424,8 @@ public final class JunctionTreeInference implements TetradSerializable {
         // With calibrated tree, any clique belief sum is proportional to P(evidence).
         // We use a stable clique: home clique for first query node, else first non-empty clique.
         Clique c = (queryNodes.length > 0) ? homeCliqueByVar.get(queryNodes[0]) : null;
-        if (c == null) c = firstRealClique();
-        if (c == null) c = superRoot;
+        if (c == null || c.vars.length == 0) c = firstRealClique();
+        if (c == null) c = superRoot; // fine even if dummy, belief size=1
 
         double z = sum(c.belief);
         if (!Double.isFinite(z) || z < 0) z = Double.NaN;
@@ -524,17 +524,6 @@ public final class JunctionTreeInference implements TetradSerializable {
         // Assign each BN variable to exactly one clique for CPT multiplication.
         Map<Integer, Clique> assignedToClique = assignVariablesToCliques(mco, cliqueByKey, cliqueMap);
 
-
-        // Build clique base potentials = product of assigned CPT factors.
-        for (Clique c : cliques) c.initializePotential();
-
-        for (Map.Entry<Integer, Clique> ent : assignedToClique.entrySet()) {
-            int v = ent.getKey();
-            Clique c = ent.getValue();
-            if (c == null) continue;
-            c.multiplyInCptFactor(v);
-        }
-
         // Build clique base potentials = product of assigned CPT factors.
         for (Clique c : cliques) {
             c.initializePotential();
@@ -547,15 +536,12 @@ public final class JunctionTreeInference implements TetradSerializable {
             c.multiplyInCptFactor(v);
         }
 
-        double[] check = new double[nodes.length];
-        Arrays.fill(check, 0.0);
-
         // After multiplication, each v's CPT should have introduced some non-1 structure somewhere.
         // We can’t easily prove “structure,” but we can at least ensure we *attempted* to multiply in.
         for (int v = 0; v < nodes.length; v++) {
             Clique c = assignedToClique.get(v);
-            if (c == null || c == superRoot) {
-                throw new IllegalStateException("JT: variable " + nodes[v].getName() + " assigned to null/superRoot clique");
+            if (c == null || c.vars.length == 0) {
+                throw new IllegalStateException("JT: variable " + nodes[v].getName() + " assigned to null/dummy clique");
             }
         }
 
@@ -587,21 +573,16 @@ public final class JunctionTreeInference implements TetradSerializable {
             // Find a clique that contains v and all its parents (by BN index).
             for (Clique c : cliques) {
                 if (c == null) continue;
-                if (c == superRoot) continue;
+                // Skip ONLY the dummy empty super-root clique.
+                if (c.vars.length == 0) continue;
 
                 if (c.indexOfVar(v) < 0) continue;
 
                 boolean ok = true;
                 for (int p : parents) {
-                    if (c.indexOfVar(p) < 0) {
-                        ok = false;
-                        break;
-                    }
+                    if (c.indexOfVar(p) < 0) { ok = false; break; }
                 }
-                if (ok) {
-                    chosen = c;
-                    break;
-                }
+                if (ok) { chosen = c; break; }
             }
 
             if (chosen == null) {
@@ -732,17 +713,8 @@ public final class JunctionTreeInference implements TetradSerializable {
             double[] inMsg = incoming.message;
             if (inMsg == null) continue;
 
-            // IMPORTANT: use separator metadata from the INCOMING edge (nb -> src),
-            // because that metadata's posInSrcClique is positions in nb (its "from").
-            // But we are multiplying into src, so we need positions of separator vars in *src*.
-            //
-            // Luckily: the canonical var order is the same both directions now.
-            // So we can multiply using:
-            //   - sepVars from incoming (canonical varIdx/card)
-            //   - positions in CURRENT clique (src) for those vars.
-            //
-            // We'll use e.sepVarToPosInSrc, which for edge e (src -> nb) is positions in src.
-            multiplyFactorIntoCliqueTable(tmp, src, inMsg, incoming.sepVars, e.sepVarToPosInSrc);
+            int[] posInSrc = positionsInClique(src, incoming.sepVars.varIdx);
+            multiplyFactorIntoCliqueTable(tmp, src, inMsg, incoming.sepVars, posInSrc);
         }
 
         // Marginalize onto THIS edge's separator (src -> dst), positions are in src.
@@ -750,6 +722,16 @@ public final class JunctionTreeInference implements TetradSerializable {
 
         normalizeMessageKidGloves(msg);
         return msg;
+    }
+
+    private int[] positionsInClique(Clique clique, int[] varIdx) {
+        int[] pos = new int[varIdx.length];
+        for (int i = 0; i < varIdx.length; i++) {
+            int p = clique.indexOfVar(varIdx[i]);
+            if (p < 0) throw new IllegalStateException("Separator var not in clique (should not happen).");
+            pos[i] = p;
+        }
+        return pos;
     }
 
     // =========================
@@ -779,7 +761,8 @@ public final class JunctionTreeInference implements TetradSerializable {
 
                 // Separator var order is canonical now, so we can use e.twin.sepVars (same varIdx/card)
                 // but positions must be in CURRENT clique c, which are e.sepVarToPosInSrc (since e is c -> neighbor).
-                multiplyFactorIntoCliqueTable(b, c, inMsg, e.twin.sepVars, e.sepVarToPosInSrc);
+                int[] posInC = positionsInClique(c, e.twin.sepVars.varIdx);
+                multiplyFactorIntoCliqueTable(b, c, inMsg, e.twin.sepVars, posInC);
             }
 
             c.belief = b;
@@ -858,7 +841,7 @@ public final class JunctionTreeInference implements TetradSerializable {
 
     private Clique firstRealClique() {
         for (Clique c : cliques) {
-            if (c != null && c != superRoot) return c;
+            if (c != null && c.vars.length != 0) return c;
         }
         return null;
     }
@@ -1013,10 +996,6 @@ public final class JunctionTreeInference implements TetradSerializable {
             int[] pPos = new int[parents.length];
             for (int i = 0; i < parents.length; i++) {
                 pPos[i] = indexOfVar(parents[i]);
-//                if (pPos[i] < 0) {
-//                    // Family not fully in clique; skip (kid gloves)
-//                    return;
-//                }
 
                 if (pPos[i] < 0) {
                     throw new IllegalStateException("JT: Clique does not contain full family for " + nodes[v].getName() + ". Missing parent " + nodes[parents[i]].getName() + ". Clique vars=" + Arrays.toString(this.vars));
