@@ -257,16 +257,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         // Map each value -> level index 0..L-1
         double[][] Y = new double[n][L];
 
-//        for (int r = 0; r < n; r++) {
-//            int v = vals[r];
-//            int pos = Arrays.binarySearch(uniq, v);
-//            if (pos < 0) {
-//                // Shouldn't happen, but defensively clamp
-//                pos = 0;
-//            }
-//            Y[r][pos] = 1.0;
-//        }
-
         for (int r = 0; r < n; r++) {
             int v = vals[r];
             if (v == DiscreteVariable.MISSING_VALUE || v == Integer.MIN_VALUE) continue;
@@ -572,6 +562,11 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
     // -------------------- tuning knobs --------------------
 
+    // Packed lower-triangle index: (i>=j) -> i*(i+1)/2 + j
+    private static int idxLower(int i, int j) {
+        return i * (i + 1) / 2 + j;
+    }
+
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
@@ -730,6 +725,71 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * fullKey = keyTargetCont(targetIndex, contParents)
      * (i.e., “fullKey” is really the bw-opt cache key in that mode).
      */
+//    private double pickBw2ByGridSearch(
+//            long fullKey,
+//            double[] yCentered,
+//            int[] contParents,
+//            int[] discParents,
+//            int[] rows,
+//            int n,
+//            int mFeatures,
+//            double bw2Med,
+//            double sigma2,
+//            long seed
+//    ) {
+//        if (contParents == null || contParents.length == 0) return 1.0;  // no continuous inputs
+//        if (!(bw2Med > 0) || !Double.isFinite(bw2Med)) bw2Med = 1.0;
+//
+//        // Cache lookup
+//        if (bwCoupleByTarget) {
+//            // Here, fullKey should already be keyTargetCont(targetIndex, contParents)
+//            Double cached = bw2OptByTargetContCache.get(fullKey);
+//            if (cached != null) return cached;
+//        } else {
+//            Double cached = bw2OptCache.get(fullKey);
+//            if (cached != null) return cached;
+//        }
+//
+//        // Grid in multiplier space. Interpret as bw2 = bw2Med * mult^2
+//        final double[] mult = {0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0};
+//
+//        double bestBw2 = bw2Med;
+//        double best = Double.NEGATIVE_INFINITY;
+//
+//        for (double m : mult) {
+//            double bw2 = bw2Med * (m * m);
+//            if (!(bw2 > 0) || !Double.isFinite(bw2)) continue;
+//
+//            double ll = gpLogMarginalLikelihoodRFFMixed(
+//                    yCentered,
+//                    contParents,
+//                    discParents,
+//                    rows,
+//                    n,
+//                    mFeatures,
+//                    bw2,
+//                    sigma2,
+//                    seed
+//            );
+//
+//            if (Double.isFinite(ll) && ll > best) {
+//                best = ll;
+//                bestBw2 = bw2;
+//            }
+//        }
+//
+//        // Fallback safety
+//        if (!Double.isFinite(best) || !(bestBw2 > 0) || !Double.isFinite(bestBw2)) bestBw2 = bw2Med;
+//
+//        // Store
+//        if (bwCoupleByTarget) {
+//            bw2OptByTargetContCache.put(fullKey, bestBw2);
+//        } else {
+//            bw2OptCache.put(fullKey, bestBw2);
+//        }
+//
+//        return bestBw2;
+//    }
     private double pickBw2ByGridSearch(
             long fullKey,
             double[] yCentered,
@@ -742,12 +802,11 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             double sigma2,
             long seed
     ) {
-        if (contParents == null || contParents.length == 0) return 1.0;  // no continuous inputs
+        if (contParents == null || contParents.length == 0) return 1.0;
         if (!(bw2Med > 0) || !Double.isFinite(bw2Med)) bw2Med = 1.0;
 
         // Cache lookup
         if (bwCoupleByTarget) {
-            // Here, fullKey should already be keyTargetCont(targetIndex, contParents)
             Double cached = bw2OptByTargetContCache.get(fullKey);
             if (cached != null) return cached;
         } else {
@@ -755,43 +814,74 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             if (cached != null) return cached;
         }
 
-        // Grid in multiplier space. Interpret as bw2 = bw2Med * mult^2
         final double[] mult = {0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0};
+
+        // Precompute things that do NOT depend on bw2
+        final boolean useNxN = (discParents != null && discParents.length >= 2);
+
+        final BaseWB base = buildBaseWB(mFeatures, contParents.length, seed);
+        final double[] kcatLowerPacked = useNxN ? precomputeKcatLowerPacked(discParents, rows, n) : null;
 
         double bestBw2 = bw2Med;
         double best = Double.NEGATIVE_INFINITY;
 
-        for (double m : mult) {
-            double bw2 = bw2Med * (m * m);
-            if (!(bw2 > 0) || !Double.isFinite(bw2)) continue;
+//        // --- Option A: sequential (simplest, still big win) ---
+//        for (double m : mult) {
+//            double bw2 = bw2Med * (m * m);
+//            if (!(bw2 > 0) || !Double.isFinite(bw2)) continue;
+//
+//            final double ll;
+//            if (useNxN) {
+//                ll = gpLogML_mixedKernelNxN_precomp(
+//                        yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked
+//                );
+//            } else {
+//                // keep existing path unchanged
+//                ll = gpLogMarginalLikelihoodRFFMixed(
+//                        yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed
+//                );
+//            }
+//
+//            if (Double.isFinite(ll) && ll > best) {
+//                best = ll;
+//                bestBw2 = bw2;
+//            }
+//        }
 
-            double ll = gpLogMarginalLikelihoodRFFMixed(
-                    yCentered,
-                    contParents,
-                    discParents,
-                    rows,
-                    n,
-                    mFeatures,
-                    bw2,
-                    sigma2,
-                    seed
-            );
+        // --- Option B: parallel grid (uncomment if you want) ---
 
-            if (Double.isFinite(ll) && ll > best) {
-                best = ll;
-                bestBw2 = bw2;
+        final class Best {
+            final double bw2, ll;
+
+            Best(double bw2, double ll) {
+                this.bw2 = bw2;
+                this.ll = ll;
             }
         }
+        double finalBw2Med = bw2Med;
+        Best b = Arrays.stream(mult).parallel()
+                .mapToObj(m -> {
+                    double bw2 = finalBw2Med * (m * m);
+                    if (!(bw2 > 0) || !Double.isFinite(bw2)) return new Best(finalBw2Med, Double.NEGATIVE_INFINITY);
 
-        // Fallback safety
+                    double ll = useNxN
+                            ? gpLogML_mixedKernelNxN_precomp(yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked)
+                            : gpLogMarginalLikelihoodRFFMixed(yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed);
+
+                    return new Best(bw2, ll);
+                })
+                .filter(x -> Double.isFinite(x.ll))
+                .max(java.util.Comparator.comparingDouble(x -> x.ll))
+                .orElse(new Best(bw2Med, Double.NEGATIVE_INFINITY));
+
+        bestBw2 = b.bw2;
+        best = b.ll;
+
+
         if (!Double.isFinite(best) || !(bestBw2 > 0) || !Double.isFinite(bestBw2)) bestBw2 = bw2Med;
 
-        // Store
-        if (bwCoupleByTarget) {
-            bw2OptByTargetContCache.put(fullKey, bestBw2);
-        } else {
-            bw2OptCache.put(fullKey, bestBw2);
-        }
+        if (bwCoupleByTarget) bw2OptByTargetContCache.put(fullKey, bestBw2);
+        else bw2OptCache.put(fullKey, bestBw2);
 
         return bestBw2;
     }
@@ -904,6 +994,10 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return bump > 0;
     }
 
+    /* ====================================================================== */
+    /* ======================  n×n kernel (fast for 2+)  ===================== */
+    /* ====================================================================== */
+
     /**
      * Retrieves the data model associated with this instance, encapsulating the
      * data used for computations or analysis in the current context.
@@ -915,7 +1009,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     }
 
     /* ====================================================================== */
-    /* ======================  n×n kernel (fast for 2+)  ===================== */
+    /* ===================  feature-space (your original)  =================== */
     /* ====================================================================== */
 
     /**
@@ -930,9 +1024,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return nEff;
     }
 
-    /* ====================================================================== */
-    /* ===================  feature-space (your original)  =================== */
-    /* ====================================================================== */
+    // -------------------- categorical kernel helper --------------------
 
     /**
      * Sets the effective sample size for computations. If the provided value is less than zero,
@@ -947,8 +1039,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         resetCache();
     }
 
-    // -------------------- categorical kernel helper --------------------
-
     /**
      * Returns a string representation of the object, describing the type of kernel
      * configuration as "KFF-ML Mixed (continuous+categorical product-kernel)".
@@ -958,19 +1048,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     @Override
     public String toString() {
         return "FFML (continuous+categorical product-kernel)";
-    }
-
-    /**
-     * Sets the value of the lambda parameter. The lambda parameter must be greater than 0.
-     * Updates the internal state by resetting the cache.
-     *
-     * @param lambda the value of lambda to set (must be > 0)
-     * @throws IllegalArgumentException if the lambda value is less than or equal to 0
-     */
-    public void setLambda(double lambda) {
-        if (lambda <= 0) throw new IllegalArgumentException("lambda must be > 0");
-        this.lambda = lambda;
-        resetCache();
     }
 
 //    /**
@@ -992,6 +1069,21 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     // -------------------- sigma-only case --------------------
 
     /**
+     * Sets the value of the lambda parameter. The lambda parameter must be greater than 0.
+     * Updates the internal state by resetting the cache.
+     *
+     * @param lambda the value of lambda to set (must be > 0)
+     * @throws IllegalArgumentException if the lambda value is less than or equal to 0
+     */
+    public void setLambda(double lambda) {
+        if (lambda <= 0) throw new IllegalArgumentException("lambda must be > 0");
+        this.lambda = lambda;
+        resetCache();
+    }
+
+    // -------------------- missingness row selection (mixed) --------------------
+
+    /**
      * Sets the maximum number of rows allowed for a given operation, ensuring a minimum value of 50.
      * If the provided value is less than 50, the limit will default to 50.
      * Also resets the internal cache after updating the maximum row limit.
@@ -1002,8 +1094,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         this.bwMaxRows = Math.max(50, bwMaxRows);
         resetCache();
     }
-
-    // -------------------- missingness row selection (mixed) --------------------
 
     /**
      * Sets the number of features to be used and resets the internal cache.
@@ -1045,6 +1135,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return coupleFeaturesByTarget;
     }
 
+    // -------------------- extraction + preprocessing --------------------
+
     /**
      * Sets the state of the coupleFeaturesByTarget property, which determines whether
      * features are coupled based on the target.
@@ -1056,8 +1148,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         this.coupleFeaturesByTarget = coupleFeaturesByTarget;
         resetCache();
     }
-
-    // -------------------- extraction + preprocessing --------------------
 
     /**
      * Retrieves the feature type associated with this object.
@@ -1090,6 +1180,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return catRho;
     }
 
+    // -------------------- ORF / Gaussian helpers --------------------
+
     /**
      * Set categorical similarity rho in [0,1).
      * Try 0.3, 0.5, 0.7 for Auto-MPG Origin.
@@ -1103,8 +1195,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         this.catRho = rho;
         resetCache();
     }
-
-    // -------------------- ORF / Gaussian helpers --------------------
 
     /**
      * Drop-in replacement for gpLogMarginalLikelihoodRFFMixed(...).
@@ -1488,7 +1578,179 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return -0.5 * quad - 0.5 * logDetC;
     }
 
-    // -------------------- median heuristic on continuous part --------------------
+    /**
+     * Precompute the categorical kernel multiplier Kcat for the active rows.
+     * Stores ONLY the lower triangle in packed form.
+     * <p>
+     * Kcat(i,j) = Π_dp [ codes_dp[i]==codes_dp[j] ? 1 : rho ]
+     */
+    private double[] precomputeKcatLowerPacked(int[] discParents, int[] rows, int n) {
+        if (discParents == null || discParents.length == 0) return null;
+
+        final double rho = catRho;
+
+        // Extract codes for each discrete parent once.
+        final int[][] codes = new int[discParents.length][];
+        for (int t = 0; t < discParents.length; t++) {
+            codes[t] = extractDiscrete(discParents[t], rows, n);
+        }
+
+        final double[] kcat = new double[n * (n + 1) / 2];
+        int idx = 0;
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j <= i; j++, idx++) {
+                double mult = 1.0;
+                for (int t = 0; t < codes.length; t++) {
+                    if (codes[t][i] != codes[t][j]) mult *= rho;
+                }
+                kcat[idx] = mult;
+            }
+        }
+
+        return kcat;
+    }
+
+    private double gpLogML_mixedKernelNxN_precomp(
+            double[] yCentered,
+            int[] contParents,
+            int[] rows,
+            int n,
+            int mFeatures,
+            double bw2,
+            double sigma2,
+            BaseWB base,
+            double[] kcatLowerPacked
+    ) {
+        final int dc = contParents.length;
+
+        if (dc > 0) {
+            if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
+        } else {
+            bw2 = 1.0;
+        }
+
+        final double wStd = (dc > 0) ? Math.sqrt(2.0 / bw2) : 1.0;
+        final double contScale = Math.sqrt(2.0 / mFeatures);
+
+        // Phi (n x mFeatures)
+        double[][] Phi = new double[n][mFeatures];
+
+        for (int ii = 0; ii < n; ii++) {
+            int row = (rows == null) ? ii : rows[ii];
+
+            if (dc == 0) {
+                for (int j = 0; j < mFeatures; j++) {
+                    Phi[ii][j] = contScale * Math.cos(base.b[j]);
+                }
+            } else {
+                for (int j = 0; j < mFeatures; j++) {
+                    double dotBase = 0.0;
+                    double[] wj = base.Wbase[j];
+                    for (int k = 0; k < dc; k++) {
+                        dotBase += wj[k] * zCols[contParents[k]][row];
+                    }
+                    double dot = wStd * dotBase;
+                    Phi[ii][j] = contScale * Math.cos(dot + base.b[j]);
+                }
+            }
+        }
+
+        // Build K = (Phi Phi^T) ⊙ Kcat  (lower triangle), then mirror.
+        DMatrixRMaj K = new DMatrixRMaj(n, n);
+
+        for (int i = 0; i < n; i++) {
+            double[] phiI = Phi[i];
+            for (int j = 0; j <= i; j++) {
+                double[] phiJ = Phi[j];
+
+                double dot = 0.0;
+                for (int t = 0; t < mFeatures; t++) dot += phiI[t] * phiJ[t];
+
+                if (kcatLowerPacked != null) dot *= kcatLowerPacked[idxLower(i, j)];
+
+                K.set(i, j, dot);
+            }
+        }
+
+        // mirror
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < i; j++) K.set(j, i, K.get(i, j));
+        }
+
+        // C = K + sigma2 I
+        for (int i = 0; i < n; i++) K.add(i, i, sigma2);
+
+        // Cholesky(C)
+        CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+        if (!chol.decompose(K)) return Double.NaN;
+        DMatrixRMaj L = chol.getT(null);
+
+        // logdet(C) = 2*sum(log(diag(L)))
+        double logDetC = 0.0;
+        for (int i = 0; i < n; i++) {
+            double di = L.get(i, i);
+            if (!(di > 0) || !Double.isFinite(di)) return Double.NaN;
+            logDetC += Math.log(di);
+        }
+        logDetC *= 2.0;
+
+        // Solve C^{-1} y via two triangular solves
+        double[] alpha = Arrays.copyOf(yCentered, n);
+
+        // forward: L u = y
+        for (int i = 0; i < n; i++) {
+            double sum = alpha[i];
+            for (int j = 0; j < i; j++) sum -= L.get(i, j) * alpha[j];
+            alpha[i] = sum / L.get(i, i);
+        }
+        // back: L^T alpha = u
+        for (int i = n - 1; i >= 0; i--) {
+            double sum = alpha[i];
+            for (int j = i + 1; j < n; j++) sum -= L.get(j, i) * alpha[j];
+            alpha[i] = sum / L.get(i, i);
+        }
+
+        double quad = 0.0;
+        for (int i = 0; i < n; i++) quad += yCentered[i] * alpha[i];
+
+        if (!Double.isFinite(quad) || !Double.isFinite(logDetC)) return Double.NaN;
+
+        return -0.5 * quad - 0.5 * logDetC;
+    }
+
+    /**
+     * Build base W,b once per (seed, mFeatures, dc, featureType).  This is the SAME
+     * distribution as before, except wStd is factored out so bw2 only scales dot products.
+     * <p>
+     * For RFF: Wbase ~ N(0,1)
+     * For ORF: Wbase is what sampleOrthogonalW would produce with wStd=1 (so it already has chi radii).
+     */
+    private BaseWB buildBaseWB(int mFeatures, int dc, long seed) {
+        SplittableRandom rng = new SplittableRandom(seed);
+
+        double[][] Wbase;
+        double[] b = new double[mFeatures];
+
+        if (dc > 0) {
+            if (featureType == FeatureType.RFF) {
+                Wbase = new double[mFeatures][dc];
+                for (int j = 0; j < mFeatures; j++) {
+                    for (int k = 0; k < dc; k++) Wbase[j][k] = nextGaussian(rng);
+                    b[j] = 2.0 * Math.PI * rng.nextDouble();
+                }
+            } else {
+                // ORF base: same ORF sampling, but with wStd=1.0 so we can later multiply by wStd
+                Wbase = sampleOrthogonalW(mFeatures, dc, 1.0, rng);
+                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * Math.PI * rng.nextDouble();
+            }
+        } else {
+            Wbase = null;
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * Math.PI * rng.nextDouble();
+        }
+
+        return new BaseWB(Wbase, b);
+    }
 
     private int[] validRowsMixed(int[] vars) {
         int n = sampleSize;
@@ -1511,7 +1773,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return Arrays.copyOf(tmp, m);
     }
 
-    // -------------------- cache + utilities --------------------
+    // -------------------- median heuristic on continuous part --------------------
 
     private double[] extract1DContinuous(int varIndex, int[] rows, int n) {
         if (isDiscrete[varIndex]) {
@@ -1527,6 +1789,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return x;
     }
 
+    // -------------------- cache + utilities --------------------
+
     private int[] extractDiscrete(int varIndex, int[] rows, int n) {
         int[] x = new int[n];
         if (rows == null) {
@@ -1536,10 +1800,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         }
         return x;
     }
-
-//    private void resetCache() {
-//        localScoreCacheRef.set(new ConcurrentHashMap<>());
-//    }
 
     //    private void resetCache() {
 //        localScoreCacheRef.set(new ConcurrentHashMap<>());
@@ -1557,6 +1817,10 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         bw2MedByTargetContCache.clear();  // median bw^2 keyed by (target, contParents)
         bw2OptByTargetContCache.clear();  // optimized bw^2 keyed by (target, contParents)
     }
+
+//    private void resetCache() {
+//        localScoreCacheRef.set(new ConcurrentHashMap<>());
+//    }
 
     private long seedFor(int targetIndex, long cacheKey) {
         // If coupled: same feature basis for all parent sets of this target.
@@ -1608,6 +1872,16 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
          * and reduce variance during computation, particularly for large-scale datasets.
          */
         ORF
+    }
+
+    private static final class BaseWB {
+        final double[][] Wbase;  // mFeatures x dc
+        final double[] b;        // mFeatures
+
+        BaseWB(double[][] Wbase, double[] b) {
+            this.Wbase = Wbase;
+            this.b = b;
+        }
     }
 
     // -------------------- discrete reading --------------------
