@@ -110,7 +110,7 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
     private volatile boolean useInteractions = true;
 
     /** Only the first K continuous parents (in parentIdx order) participate in interactions. */
-    private volatile int interactionMaxParents = 4;  // 0/1 => none; 4 => up to 6 interaction cols
+    private volatile int interactionMaxParents = 5;  // 0/1 => none; 4 => up to 4 interaction cols
 
     // -------------------- ctor --------------------
 

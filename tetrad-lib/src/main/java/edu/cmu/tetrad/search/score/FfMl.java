@@ -120,6 +120,10 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     private final ConcurrentHashMap<Long, Double> bw2Cache = new ConcurrentHashMap<>();
 
     private final ConcurrentHashMap<Long, Double> bw2OptCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, Double> bw2MedByTargetContCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, Double> bw2OptByTargetContCache = new ConcurrentHashMap<>();
+    // ---- make bw selection "global-per-target" for comparability across DAGs ----
+    private volatile boolean bwCoupleByTarget = true;     // NEW: default true
     /**
      * Base ridge/noise knob. Used as sigma^2. Must be > 0.
      */
@@ -136,7 +140,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     /**
      * If true (recommended), random features (W,b) are coupled by TARGET only.
      * This stabilizes localScoreDiff comparisons and usually fixes BOSS edge reversals.
-     *
+     * <p>
      * If false, we revert to the old behavior: seed depends on (target, parent set).
      */
     private volatile boolean coupleFeaturesByTarget = true;
@@ -325,15 +329,30 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         // map distinct values to compact 0..L-1
         int n = vals.length;
 
-        int[] uniq = Arrays.stream(vals).distinct().sorted().toArray();
+//        int[] uniq = Arrays.stream(vals).distinct().sorted().toArray();
+
+        int[] uniq = Arrays.stream(vals)
+                .filter(v -> v != DiscreteVariable.MISSING_VALUE && v != Integer.MIN_VALUE)
+                .distinct().sorted().toArray();
+
         int L = uniq.length;
         if (L <= 0) return null;
 
         int[] levelOfRow = new int[n];
         for (int i = 0; i < n; i++) {
             int v = vals[i];
+
+            if (v == DiscreteVariable.MISSING_VALUE || v == Integer.MIN_VALUE) {
+                // This should not happen if rows were filtered correctly.
+                throw new IllegalStateException("Missing discrete value encountered in buildCatMap after row filtering.");
+            }
+
             int pos = Arrays.binarySearch(uniq, v);
-            if (pos < 0) pos = 0;
+            if (pos < 0) {
+                // Also should not happen since uniq comes from vals (minus missing).
+                throw new IllegalStateException("Discrete level not found in uniq: " + v);
+            }
+
             levelOfRow[i] = pos;
         }
 
@@ -529,6 +548,13 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return h;
     }
 
+    private static long keyTargetCont(int target, int[] contParentsSorted) {
+        long h = 1469598103934665603L;
+        h = (h ^ target) * 1099511628211L;
+        for (int p : contParentsSorted) h = (h ^ p) * 1099511628211L;
+        return h;
+    }
+
     private static boolean isMissingDiscrete(int v) {
         return v == DiscreteVariable.MISSING_VALUE || v == Integer.MIN_VALUE;
     }
@@ -554,12 +580,14 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     @Override
     public double localScore(int i, int... parents) {
         Arrays.sort(parents);
-        final long key = cacheKey(i, parents);
 
+        // full key for localScore cache (still parent-set coupled)
+        final long key = cacheKey(i, parents);
         final ConcurrentHashMap<Long, Double> cache = localScoreCacheRef.get();
 
         return cache.computeIfAbsent(key, k -> {
             try {
+                // rows for *scoring* depend on target + ALL parents (cont+disc)
                 int[] all = concat(i, parents);
                 int[] rows = calculateRowSubsets ? validRowsMixed(all) : null;
 
@@ -582,27 +610,54 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 contParents = Arrays.copyOf(contParents, nc);
                 discParents = Arrays.copyOf(discParents, nd);
 
-                // Median bw^2 from continuous parents only; cached by FULL key (rows depend on all vars)
+                // ---------- Median bw^2 on continuous parents ONLY ----------
                 double bw2Med = 1.0;
+
                 if (nc > 0) {
+                    // IMPORTANT: bandwidth rows must NOT depend on discrete parents
+                    // (otherwise "coupled by target" caching becomes inconsistent).
+                    int[] bwVars = concat(i, contParents);
+                    int[] rowsBw = calculateRowSubsets ? validRowsMixed(bwVars) : null;
+                    int nBw = (rowsBw == null) ? nEff : rowsBw.length;
+                    if (nBw < 5) return Double.NaN;
+
                     final int finalNc = nc;
                     final int[] finalContParents = contParents;
 
-                    bw2Med = bw2Cache.computeIfAbsent(key, kk -> {
-                        double[][] Zc = new double[n][finalNc];
-                        for (int r = 0; r < n; r++) {
-                            int row = (rows == null) ? r : rows[r];
-                            for (int j = 0; j < finalNc; j++) {
-                                Zc[r][j] = zCols[finalContParents[j]][row];
+                    if (bwCoupleByTarget) {
+                        // Cache by (target, contParents) signature
+                        final long bwKey = keyTargetCont(i, finalContParents);
+
+                        bw2Med = bw2MedByTargetContCache.computeIfAbsent(bwKey, kk -> {
+                            double[][] Zc = new double[nBw][finalNc];
+                            for (int r = 0; r < nBw; r++) {
+                                int row = (rowsBw == null) ? r : rowsBw[r];
+                                for (int j = 0; j < finalNc; j++) {
+                                    Zc[r][j] = zCols[finalContParents[j]][row];
+                                }
                             }
-                        }
-                        double est = medianDistanceSquaredND(Zc, Math.min(n, bwMaxRows));
-                        if (!(est > 0) || !Double.isFinite(est)) est = 1.0;
-                        return est;
-                    });
+                            double est = medianDistanceSquaredND(Zc, Math.min(nBw, bwMaxRows));
+                            if (!(est > 0) || !Double.isFinite(est)) est = 1.0;
+                            return est;
+                        });
+                    } else {
+                        // Old behavior: cache by full (target, parents) key
+                        bw2Med = bw2Cache.computeIfAbsent(key, kk -> {
+                            double[][] Zc = new double[n][finalNc];
+                            for (int r = 0; r < n; r++) {
+                                int row = (rows == null) ? r : rows[r];
+                                for (int j = 0; j < finalNc; j++) {
+                                    Zc[r][j] = zCols[finalContParents[j]][row];
+                                }
+                            }
+                            double est = medianDistanceSquaredND(Zc, Math.min(n, bwMaxRows));
+                            if (!(est > 0) || !Double.isFinite(est)) est = 1.0;
+                            return est;
+                        });
+                    }
                 }
 
-                // Deterministic seed per (target, parent set)
+                // Deterministic seed
                 long seed = seedFor(i, key);
 
                 // ----------------------------
@@ -616,10 +671,18 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                         return gpLogMarginalLikelihoodSigmaOnly(y, sigma2);
                     }
 
+                    // IMPORTANT: for "coupled" bw optimization, pickBw2 should cache by (target, contParents)
+                    long bwOptKey = bwCoupleByTarget ? keyTargetCont(i, contParents) : key;
+
                     double bw2 = pickBw2ByGridSearch(
-                            key, y,
-                            contParents, discParents, rows, n,
-                            numFeatures, bw2Med, sigma2, seed
+                            bwOptKey,          // NOTE: pass bwOptKey (not the fullKey) when coupled
+                            y,
+                            contParents, discParents,
+                            rows, n,
+                            numFeatures,
+                            bw2Med,
+                            sigma2,
+                            seed
                     );
 
                     return gpLogMarginalLikelihoodRFFMixed(
@@ -639,8 +702,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                     return gpLogMarginalLikelihoodSigmaOnlyMulti(Y, sigma2);
                 }
 
-                // For discrete targets, keep bandwidth simple (median on continuous parents)
-                // (Grid-search here can be much more expensive because of multi-output.)
+                // For discrete targets, keep bandwidth simple: median on continuous parents
                 double bw2 = (nc > 0 && Double.isFinite(bw2Med) && bw2Med > 0) ? bw2Med : 1.0;
 
                 return gpLogMarginalLikelihoodRFFMixedMultiOutput(
@@ -655,6 +717,19 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         });
     }
 
+    /**
+     * Choose bw^2 by a tiny grid-search around the median heuristic.
+     * <p>
+     * Key idea (when bwCoupleByTarget=true):
+     * - We cache the *optimized* bw^2 by a key that depends only on (target, contParents),
+     * NOT on discrete parents and NOT on the score-row-subset for the full parent set.
+     * - That keeps bw comparable across DAGs/parent-sets and avoids discrete-parent-driven
+     * missingness changing the bandwidth optimization target.
+     * <p>
+     * IMPORTANT: when bwCoupleByTarget=true, the caller should pass:
+     * fullKey = keyTargetCont(targetIndex, contParents)
+     * (i.e., “fullKey” is really the bw-opt cache key in that mode).
+     */
     private double pickBw2ByGridSearch(
             long fullKey,
             double[] yCentered,
@@ -667,14 +742,20 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             double sigma2,
             long seed
     ) {
-        if (contParents.length == 0) return 1.0;  // no continuous inputs
+        if (contParents == null || contParents.length == 0) return 1.0;  // no continuous inputs
         if (!(bw2Med > 0) || !Double.isFinite(bw2Med)) bw2Med = 1.0;
 
-        // Cache the best bw2 for this exact (target, full parent set, row subset)
-        Double cached = bw2OptCache.get(fullKey);
-        if (cached != null) return cached;
+        // Cache lookup
+        if (bwCoupleByTarget) {
+            // Here, fullKey should already be keyTargetCont(targetIndex, contParents)
+            Double cached = bw2OptByTargetContCache.get(fullKey);
+            if (cached != null) return cached;
+        } else {
+            Double cached = bw2OptCache.get(fullKey);
+            if (cached != null) return cached;
+        }
 
-        // Grid in multiplier space (log-spaced-ish). Interpret as bw2 = bw2Med * mult^2
+        // Grid in multiplier space. Interpret as bw2 = bw2Med * mult^2
         final double[] mult = {0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0};
 
         double bestBw2 = bw2Med;
@@ -685,8 +766,15 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             if (!(bw2 > 0) || !Double.isFinite(bw2)) continue;
 
             double ll = gpLogMarginalLikelihoodRFFMixed(
-                    yCentered, contParents, discParents, rows, n,
-                    mFeatures, bw2, sigma2, seed
+                    yCentered,
+                    contParents,
+                    discParents,
+                    rows,
+                    n,
+                    mFeatures,
+                    bw2,
+                    sigma2,
+                    seed
             );
 
             if (Double.isFinite(ll) && ll > best) {
@@ -698,7 +786,13 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         // Fallback safety
         if (!Double.isFinite(best) || !(bestBw2 > 0) || !Double.isFinite(bestBw2)) bestBw2 = bw2Med;
 
-        bw2OptCache.put(fullKey, bestBw2);
+        // Store
+        if (bwCoupleByTarget) {
+            bw2OptByTargetContCache.put(fullKey, bestBw2);
+        } else {
+            bw2OptCache.put(fullKey, bestBw2);
+        }
+
         return bestBw2;
     }
 
@@ -923,6 +1017,15 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     }
 
     /**
+     * Returns the base seed value used for initializing or seeding operations.
+     *
+     * @return the base seed as a long value
+     */
+    public long getBaseSeed() {
+        return baseSeed;
+    }
+
+    /**
      * Sets the base seed value for the random generator or algorithm
      * and resets any associated cached data.
      *
@@ -934,12 +1037,12 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     }
 
     /**
-     * Returns the base seed value used for initializing or seeding operations.
+     * Indicates whether features are coupled by target.
      *
-     * @return the base seed as a long value
+     * @return true if features are coupled by target; false otherwise.
      */
-    public long getBaseSeed() {
-        return baseSeed;
+    public boolean isCoupleFeaturesByTarget() {
+        return coupleFeaturesByTarget;
     }
 
     /**
@@ -947,20 +1050,11 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * features are coupled based on the target.
      *
      * @param coupleFeaturesByTarget a boolean indicating whether features should
-     *                                be coupled by target (true) or not (false)
+     *                               be coupled by target (true) or not (false)
      */
     public void setCoupleFeaturesByTarget(boolean coupleFeaturesByTarget) {
         this.coupleFeaturesByTarget = coupleFeaturesByTarget;
         resetCache();
-    }
-
-    /**
-     * Indicates whether features are coupled by target.
-     *
-     * @return true if features are coupled by target; false otherwise.
-     */
-    public boolean isCoupleFeaturesByTarget() {
-        return coupleFeaturesByTarget;
     }
 
     // -------------------- extraction + preprocessing --------------------
@@ -1447,15 +1541,21 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 //        localScoreCacheRef.set(new ConcurrentHashMap<>());
 //    }
 
-//    private void resetCache() {
+    //    private void resetCache() {
 //        localScoreCacheRef.set(new ConcurrentHashMap<>());
 //        bw2Cache.clear();
 //    }
-
     private void resetCache() {
+        // Local score cache
         localScoreCacheRef.set(new ConcurrentHashMap<>());
-        bw2Cache.clear();
-        bw2OptCache.clear();
+
+        // Old-style parent-set-coupled bandwidth caches
+        bw2Cache.clear();                 // median bw^2 (full parent-set key)
+        bw2OptCache.clear();              // optimized bw^2 (full parent-set key)
+
+        // New-style target+continuous-parent–coupled caches
+        bw2MedByTargetContCache.clear();  // median bw^2 keyed by (target, contParents)
+        bw2OptByTargetContCache.clear();  // optimized bw^2 keyed by (target, contParents)
     }
 
     private long seedFor(int targetIndex, long cacheKey) {

@@ -85,14 +85,14 @@ public final class DagModelScoreComparisonEditor extends JPanel {
         // IMPORTANT: set Better direction correctly so bolding is meaningful.
 
         if (data.isContinuous()) {
-            metricSpecs.add(new DagMetricSpec("SEM BIC", "Linear Gaussian BIC", Better.HIGHER,
+            metricSpecs.add(new DagMetricSpec("LG BIC", "Linear Gaussian BIC", Better.HIGHER,
                     edu.cmu.tetrad.sem.DagMetrics.semBic()));
             metricSpecs.add(new DagMetricSpec("LG Chi Square", "Linear Gaussian Chi Square", Better.LOWER,
                     edu.cmu.tetrad.sem.DagMetrics.lgChiSquare()));
+            metricSpecs.add(new DagMetricSpec("LG Model P", "Linear Gaussian Model P-Value", Better.HIGHER,
+                    edu.cmu.tetrad.sem.DagMetrics.lgModelP()));
             metricSpecs.add(new DagMetricSpec("CFI", "Comparative Fit Index", Better.HIGHER,
                     edu.cmu.tetrad.sem.DagMetrics.cfi()));
-            metricSpecs.add(new DagMetricSpec("Model P", "LG Model P-Value", Better.HIGHER,
-                    edu.cmu.tetrad.sem.DagMetrics.lgModelP()));
             metricSpecs.add(new DagMetricSpec("RMSEA", "RMSEA", Better.LOWER,
                     edu.cmu.tetrad.sem.DagMetrics.rmsea()));
 
