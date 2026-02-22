@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -93,6 +94,10 @@ public final class PythonKciIndependenceTest implements IndependenceTest, Closea
 
         double p = service.pValue(xi, yi, zi, alpha);
 
+        if (verbose) {
+            System.out.println(LogUtilsSearch.independenceFactMsg(x, y, z, p));
+        }
+
         // Your convention: score = alpha - p  (positive means "dependence holds" when used as score-as-test)
         return new IndependenceResult(new IndependenceFact(x, y, z), p > alpha, p, alpha - p);
     }
@@ -146,7 +151,7 @@ public final class PythonKciIndependenceTest implements IndependenceTest, Closea
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-        service.setVerbose(verbose);
+        service.setVerbose(false);
     }
 
     /**

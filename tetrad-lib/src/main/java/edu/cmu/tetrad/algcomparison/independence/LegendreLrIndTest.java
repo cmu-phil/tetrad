@@ -47,8 +47,8 @@ import java.util.List;
  * @author josephramsey
  */
 @TestOfIndependence(
-        name = "Legendre-LR-Test",
-        command = "legendre-lr-test",
+        name = "Minimax-Legendre-LR-Test",
+        command = "Minimax-legendre-lr-test",
         dataType = DataType.Mixed
 )
 @Mixed
@@ -102,7 +102,7 @@ public final class LegendreLrIndTest implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "Legendre LR (MinimaxLegendreScore)";
+        return "Minimax Legendre LR";
     }
 
     @Override

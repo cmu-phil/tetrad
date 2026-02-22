@@ -141,7 +141,7 @@ public final class TextBayesUpdateEditor extends JPanel {
         if (ev instanceof String s) evidenceText.setText(s);
         else {
             evidenceText.setText("""
-                    # Examples:
+                    # Examples (C = condition, M = manipulate):
                     # C: X = 1
                     # C: Y in {0,2}
                     # M: T = 1

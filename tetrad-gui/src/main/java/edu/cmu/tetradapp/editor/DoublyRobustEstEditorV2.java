@@ -44,7 +44,7 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
     private final JRadioButton pairwiseRadio =
             new JRadioButton("ATE for all X–Y pairs (binary X only)");
     private final JRadioButton jointRadio =
-            new JRadioButton("Joint intervention: p(Y | do(X)) (v2 supports |X|=1)");
+            new JRadioButton("Joint conditioning: p(Y | joint(X)) (v2 supports |X|=1)");
 
     private final JTextField treatmentsField = new JTextField();
     private final JTextField outcomesField = new JTextField();

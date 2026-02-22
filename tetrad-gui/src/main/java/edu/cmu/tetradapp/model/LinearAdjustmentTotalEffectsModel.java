@@ -823,7 +823,7 @@ public final class LinearAdjustmentTotalEffectsModel implements SessionModel, Gr
 
     public enum EffectMode {
         PAIRWISE,  // total effects for all (x, y) ∈ X×Y using RecursiveAdjustment
-        JOINT      // joint intervention p(Y | do(X)) using RecursiveAdjustmentMultiple
+        JOINT      // joint conditioning p(Y | joint(X)) using RecursiveAdjustmentMultiple
     }
 
     // ---------------------------------------------------------------------

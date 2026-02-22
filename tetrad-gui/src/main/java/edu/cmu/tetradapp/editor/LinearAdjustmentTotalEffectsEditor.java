@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  *     <ul>
  *       <li><b>PAIRWISE</b>: total effects for all (x, y) in X&times;Y
  *           (single-pair recursive adjustment).</li>
- *       <li><b>JOINT</b>: joint intervention {@code p(Y | do(X))} using
+ *       <li><b>JOINT</b>: joint conditioning {@code p(Y | joint(X))} using
  *           {@code RecursiveAdjustmentMultiple}.</li>
  *     </ul>
  *   </li>
@@ -49,7 +49,7 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
     private final JRadioButton pairwiseRadio =
             new JRadioButton("Total effects for all X–Y pairs");
     private final JRadioButton jointRadio =
-            new JRadioButton("Joint intervention: p(Y | do(X))");
+            new JRadioButton("Joint conditioning: p(Y | joint(X))");
 
     // Text fields for X and Y (used in both modes)
     private final JTextField treatmentsField = new JTextField();

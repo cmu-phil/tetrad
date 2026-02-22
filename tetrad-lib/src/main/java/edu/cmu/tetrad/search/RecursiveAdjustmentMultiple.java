@@ -12,7 +12,7 @@ import java.util.*;
  * Recursive adjustment for the case of multiple treatments X and multiple outcomes Y.
  * <p>
  * Semantics: X and Y are disjoint non-empty sets of nodes. An output set Z is intended to be a (generalized) adjustment
- * set for estimating the joint intervention effect p(Y | do(X)) in the sense of the generalized adjustment criterion
+ * set for estimating the joint conditioning effect p(Y | joint(X)) in the sense of the generalized adjustment criterion
  * (Perković et al.).
  * <p>
  * This class mirrors the structure of {@link RecursiveAdjustment}, but is written explicitly for set-valued X and Y:

@@ -38,6 +38,9 @@ import java.util.Set;
  */
 public final class Params {
 
+    private Params() {
+    }
+
     /**
      * Constant <code>ADD_ORIGINAL_DATASET="addOriginalDataset"</code>
      */
@@ -1274,11 +1277,40 @@ public final class Params {
      * Constant <code>MINIMAX_MAX_ITERATIONS="minimaxMaxIterations"</code>
      */
     public static final String GCM_RFF_SIGMA = "gcmRffSigma";
-
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_DEGREE="minimaxLegendreDegree"</code> Degree of the Legendre polynomial used in
+     * the Minimax Legendre scoring methodology.
+     */
+    public static final String MINIMAX_LEGENDRE_DEGREE = "minimaxLegendreDegree";
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_CLIP="minimaxLegendreClip"</code> Clip value for the Minimax Legendre scoring
+     * methodology.
+     */
+    public static final String MINIMAX_LEGENDRE_CLIP = "minimaxLegendreClip";
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_RIDGE="minimaxLegendreRidge"</code> Ridge parameter for the Minimax Legendre
+     * scoring methodology.
+     */
+    public static final String MINIMAX_LEGENDRE_RIDGE = "minimaxLegendreRidge";
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_RFF_FEATURES="minimaxLegendreRffFeatures"</code> Number
+     */
+    public static final String MINIMAX_LEGENDRE_NU = "minimaxLegendreNu";
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_RFF_SIGMA="minimaxLegendreRffSigma"</code>
+     */
+    public static final String MINIMAX_LEGENDRE_IRLS_ITERS = "minimaxLegendreIrlsIters";
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
+     */
+    public static final String MINIMAX_LEGENDRE_IRLS_TOL = "minimaxLegendreIrlsTol";
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
+     */
+    public static final String MINIMAX_LEGENDRE_INIT_SCALE = "minimaxLegendreInitScale";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
-
             Params.ADD_ORIGINAL_DATASET, Params.ALPHA, Params.APPLY_R1, Params.AVG_DEGREE, Params.BASIS_TYPE,
             Params.CCI_SCORE_ALPHA, Params.CG_EXACT, Params.COEF_HIGH, Params.COEF_LOW, Params.COEF_SYMMETRIC,
             Params.COLLIDER_DISCOVERY_RULE, Params.COMPLETE_RULE_SET_USED, Params.CONCURRENT_FAS,
@@ -1340,41 +1372,34 @@ public final class Params {
      * Constant <code>CELL_COUNT_TYPE="cellCountType"</code>
      */
     public static String CELL_TABLE_TYPE = "cellTableType";
-
     /**
      * Constant <code>RCIT_MODE="rcit.rcitMode"</code> Whether to use RCIT (true) or RCoT (false).
      */
     public static String RCIT_MODE = "rcit.rcitMode";
-
     /**
      * Constant <code>RCIT_NUM_FEATURES_Z="rcit.numFeaturesZ"</code> Number of random Fourier features for the
      * conditioning set Z (num_f).
      */
     public static String RCIT_NUM_FEATURES_Z = "rcit.numFeaturesZ";
-
     /**
      * Constant <code>RCIT_NUM_FEATURES_XY="rcit.numFeaturesXY"</code> Number of random Fourier features for the test
      * variables X and Y (num_f2).
      */
     public static String RCIT_NUM_FEATURES_XY = "rcit.numFeaturesXY";
-
     /**
      * Constant <code>RCIT_LAMBDA="rcit.lambda"</code> Ridge regularization parameter (λ) used during residualization.
      */
     public static String RCIT_LAMBDA = "rcit.lambda";
-
     /**
      * Constant <code>RCIT_APPROX="rcit.approx"</code> Approximation method for the null distribution: one of {"lpd4",
      * "hbe", "gamma", "chi2", "perm"}.
      */
     public static String RCIT_APPROX = "rcit.approx";
-
     /**
      * Constant <code>RCIT_PERMUTATIONS="rcit.permutations"</code> Number of permutations used when RCIT_APPROX is
      * "perm".
      */
     public static String RCIT_PERMUTATIONS = "rcit.permutations";
-
     /**
      * Constant <code>RCIT_CENTER_FEATURES="rcit.centerFeatures"</code> Whether to center feature matrices before
      * regression and HSIC.
@@ -1385,39 +1410,15 @@ public final class Params {
      */
     public static String TIME_LAG_REPLICATING_GRAPH = "timeLagReplicatingGraph";
     /**
-     * Constant <code>MINIMAX_LEGENDRE_DEGREE="minimaxLegendreDegree"</code> Degree of the Legendre polynomial used in
-     * the Minimax Legendre scoring methodology.
+     * Constant <code>MINIMAX_LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
      */
-    public static final String MINIMAX_LEGENDRE_DEGREE = "minimaxLegendreDegree";
-    /**
-     * Constant <code>MINIMAX_LEGENDRE_CLIP="minimaxLegendreClip"</code> Clip value for the Minimax Legendre scoring
-     * methodology.
-     */
-    public static final String MINIMAX_LEGENDRE_CLIP = "minimaxLegendreClip";
-    /**
-     * Constant <code>MINIMAX_LEGENDRE_RIDGE="minimaxLegendreRidge"</code> Ridge parameter for the Minimax Legendre
-     * scoring methodology.
-     */
-    public static final String MINIMAX_LEGENDRE_RIDGE = "minimaxLegendreRidge";
-    /**
-     * Constant <code>MINIMAX_LEGENDRE_RFF_FEATURES="minimaxLegendreRffFeatures"</code> Number
-     */
-    public static final String MINIMAX_LEGENDRE_NU = "minimaxLegendreNu";
-    /**
-     * Constant <code>MINIMAX_LEGENDRE_RFF_SIGMA="minimaxLegendreRffSigma"</code>
-     */
-    public static final String MINIMAX_LEGENDRE_IRLS_ITERS = "minimaxLegendreIrlsIters";
+    public static String PYTHON_EXE = "pythonExe";
     /**
      * Constant <code>MINIMAX_LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
      */
-    public static final String MINIMAX_LEGENDRE_IRLS_TOL = "minimaxLegendreIrlsTol";
-    /**
-     * Constant <code>MINIMAX_LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
-     */
-    public static final String MINIMAX_LEGENDRE_INIT_SCALE = "minimaxLegendreInitScale";
+    public static final String PYTHON_CI_SERVER = "pythonCiServer";
 
-    private Params() {
-    }
+
 
     /**
      * <p>getAlgorithmParameters.</p>

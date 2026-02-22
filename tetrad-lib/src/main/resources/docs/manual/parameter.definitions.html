@@ -6418,4 +6418,58 @@ Source:
             <span id="minimaxLegendreIrlsTol_value_type">Double</span>
         </li>
     </ul>
+
+    === pythonExe ===
+    <h3 class="parameter_description" id="pythonExe">pythonExe</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="pythonExe_short_desc">Path to Python executable for Python-based CI tests</span>
+        </li>
+        <li>Long Description:
+            <span id="pythonExe_long_desc">
+      Absolute path to the Python interpreter used to run the external CI server process.
+      This should typically point to the Python executable inside a dedicated virtual environment
+      that has the required packages installed (e.g., causal-learn and its dependencies).
+      </span>
+        </li>
+        <li>Default Value:
+            <span id="pythonExe_default_value">/Users/josephramsey/venvs/kci/bin/python</span>
+        </li>
+        <li>Lower Bound:
+            <span id="pythonExe_lower_bound">N/A</span>
+        </li>
+        <li>Upper Bound:
+            <span id="pythonExe_upper_bound">N/A</span>
+        </li>
+        <li>Value Type:
+            <span id="pythonExe_value_type">String</span>
+        </li>
+    </ul>
+
+    === pythonCiServer ===
+    <h3 class="parameter_description" id="pythonCiServer">pythonCiServer</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="pythonCiServer_short_desc">Path to Python CI server script</span>
+        </li>
+        <li>Long Description:
+            <span id="pythonCiServer_long_desc">
+      Absolute path to the Python CI server script (e.g., kci_server.py) used for Python-based CI tests.
+      If left blank, Tetrad will use the bundled server script shipped inside the Tetrad JAR
+      and extract it to a local cache directory at runtime.
+      </span>
+        </li>
+        <li>Default Value:
+            <span id="pythonCiServer_default_value">Use bundled script</span>
+        </li>
+        <li>Lower Bound:
+            <span id="pythonCiServer_lower_bound">N/A</span>
+        </li>
+        <li>Upper Bound:
+            <span id="pythonCiServer_upper_bound">N/A</span>
+        </li>
+        <li>Value Type:
+            <span id="pythonCiServer_value_type">String</span>
+        </li>
+    </ul>
 </div>
