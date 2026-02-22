@@ -159,7 +159,7 @@ public final class DagMetrics {
             TrainedDagSimulatorGNM sim = new TrainedDagSimulatorGNM(data, dag, params);
             sim.fit();
 
-            TrainedDagSimulatorGNM.SimResult simData = sim.simulate(1000);//data.getNumRows());
+            TrainedDagSimulatorGNM.SimResult simData = sim.simulate(10000);//data.getNumRows());
 
             AdequacyReport report = TrainedDagAdequacy.evaluate(
                     data,

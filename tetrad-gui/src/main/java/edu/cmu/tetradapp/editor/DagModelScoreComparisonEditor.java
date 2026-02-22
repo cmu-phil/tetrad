@@ -2,10 +2,10 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetradapp.model.DagModelScoreComparisonModel;
 import edu.cmu.tetrad.sem.DagMetric;
 import edu.cmu.tetrad.sem.DagMetricResult;
+import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetradapp.model.DagModelScoreComparisonModel;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -18,22 +18,14 @@ import java.util.List;
 /**
  * Compares multiple DAGs (columns) on a single dataset (shared),
  * displaying multiple metrics (rows), with per-row winners bolded.
- *
+ * <p>
  * Reflection constructor pattern: (DagModelScoreComparisonModel model).
  */
 public final class DagModelScoreComparisonEditor extends JPanel {
 
-    // --- Direction of "better" for bolding ---
-    public enum Better { HIGHER, LOWER, NA }
-
-    /** Metric spec = implementation + metadata for display/bolding. */
-    public record DagMetricSpec(String name, String note, Better better, DagMetric metric) {}
-
     private final DagModelScoreComparisonModel model;
-
     private final List<DagMetricSpec> metricSpecs = new ArrayList<>();
     private final List<List<DagMetricResult>> resultsByMetric = new ArrayList<>(); // [metricRow][graphCol]
-
     private final JTable table;
     private final ResultTableModel tableModel;
 
@@ -83,7 +75,9 @@ public final class DagModelScoreComparisonEditor extends JPanel {
         return Math.max(min, Math.min(max, total));
     }
 
-    /** Fill in whichever metrics you want here (and tweak tomorrow). */
+    /**
+     * Fill in whichever metrics you want here (and tweak tomorrow).
+     */
     private void buildDefaultMetricSpecs(DataSet data) {
         metricSpecs.clear();
 
@@ -114,7 +108,7 @@ public final class DagModelScoreComparisonEditor extends JPanel {
         } else if (data.isMixed()) {
             metricSpecs.add(new DagMetricSpec("FFML", "General Mixed Likelihood Score", Better.HIGHER,
                     edu.cmu.tetrad.sem.DagMetrics.ffml()));
-            metricSpecs.add(new DagMetricSpec("Legendre BIC", "General Mixed BIC Score", Better.HIGHER,
+            metricSpecs.add(new DagMetricSpec("Minimax Legendre BIC", "General Mixed BIC Score", Better.HIGHER,
                     edu.cmu.tetrad.sem.DagMetrics.legendreBic()));
             metricSpecs.add(new DagMetricSpec("Minimax t-RFF BIC", "General Mixed BIC Score", Better.HIGHER,
                     edu.cmu.tetrad.sem.DagMetrics.minimaxTrffBic()));
@@ -178,6 +172,15 @@ public final class DagModelScoreComparisonEditor extends JPanel {
         });
     }
 
+    // --- Direction of "better" for bolding ---
+    public enum Better {HIGHER, LOWER, NA}
+
+    /**
+     * Metric spec = implementation + metadata for display/bolding.
+     */
+    public record DagMetricSpec(String name, String note, Better better, DagMetric metric) {
+    }
+
     private final class ResultTableModel extends AbstractTableModel {
 
         @Override
@@ -218,9 +221,19 @@ public final class DagModelScoreComparisonEditor extends JPanel {
         }
     }
 
-    /** Renderer that bolds the best DAG per metric row (numeric columns only). */
+    /**
+     * Renderer that bolds all tied best DAGs per metric row (numeric columns only).
+     */
     private final class WinnerBoldRenderer extends DefaultTableCellRenderer {
         private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+
+        private static boolean ties(double a, double b) {
+            // Absolute + relative tolerance, so it works across scales.
+            double diff = Math.abs(a - b);
+            double scale = Math.max(1.0, Math.max(Math.abs(a), Math.abs(b)));
+            double eps = 1e-12 * scale;   // tighten/loosen as you prefer
+            return diff <= eps;
+        }
 
         @Override
         public Component getTableCellRendererComponent(JTable table,
@@ -240,13 +253,13 @@ public final class DagModelScoreComparisonEditor extends JPanel {
                 setHorizontalAlignment(SwingConstants.LEFT);
             }
 
-            // Bold winners only in graph columns (>=2)
+            // Default font
             Font base = c.getFont();
             c.setFont(base.deriveFont(Font.PLAIN));
 
+            // Bold winners only in graph columns (>=2)
             if (col >= 2 && row >= 0 && row < metricSpecs.size()) {
-                int bestCol = bestGraphColumnForRow(row);
-                if (bestCol == col) {
+                if (isWinnerColumnForRow(row, col)) {
                     c.setFont(base.deriveFont(Font.BOLD));
                 }
             }
@@ -254,57 +267,54 @@ public final class DagModelScoreComparisonEditor extends JPanel {
             return c;
         }
 
-        private int bestGraphColumnForRow(int metricRow) {
-            if (metricRow < 0 || metricRow >= metricSpecs.size()) return -1;
-//            DagMetricSpec spec = metricSpecs.get(metricRow);
-//            Better b = spec.better();
+        private boolean isWinnerColumnForRow(int metricRow, int tableCol) {
+            int graphIdx = tableCol - 2;
+            if (graphIdx < 0) return false;
+            if (metricRow < 0 || metricRow >= resultsByMetric.size()) return false;
 
-            // infer better-direction from the first finite result in the row
+            List<DagMetricResult> vals = resultsByMetric.get(metricRow);
+            if (vals == null || graphIdx >= vals.size()) return false;
+
+            // Determine better-direction from the first finite result in the row.
             DagMetricResult.Better b = DagMetricResult.Better.NA;
-            if (metricRow >= 0 && metricRow < resultsByMetric.size()) {
-                for (DagMetricResult r : resultsByMetric.get(metricRow)) {
-                    if (r != null && r.better() != null && r.better() != DagMetricResult.Better.NA) {
-                        b = r.better();
-                        break;
-                    }
+            for (DagMetricResult r : vals) {
+                if (r != null && r.better() != null && r.better() != DagMetricResult.Better.NA) {
+                    b = r.better();
+                    break;
                 }
             }
+            if (b == DagMetricResult.Better.NA) return false;
 
-            if (b == DagMetricResult.Better.NA) return -1;
+            // Find best finite value.
+            double best = (b == DagMetricResult.Better.HIGHER)
+                    ? Double.NEGATIVE_INFINITY
+                    : Double.POSITIVE_INFINITY;
 
-            if (metricRow >= resultsByMetric.size()) return -1;
-            List<DagMetricResult> vals = resultsByMetric.get(metricRow);
-
-            int bestIdx = -1;
-            double bestVal = b == DagMetricResult.Better.HIGHER ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
-
-            for (int i = 0; i < vals.size(); i++) {
-                double v = vals.get(i).value();
+            boolean found = false;
+            for (DagMetricResult r : vals) {
+                if (r == null) continue;
+                double v = r.value();
                 if (!Double.isFinite(v)) continue;
 
-                if (bestIdx < 0) {
-                    bestIdx = i;
-                    bestVal = v;
-                    continue;
-                }
-
-//                boolean better =
-//                        (b == Better.HIGHER) ? (v > bestVal) :
-//                                (b == Better.LOWER)  ? (v < bestVal) :
-//                                        false;
-
-                boolean better =
-                        (b == DagMetricResult.Better.HIGHER) ? (v > bestVal) :
-                                (b == DagMetricResult.Better.LOWER)  ? (v < bestVal) :
-                                        false;
-
-                if (better) {
-                    bestIdx = i;
-                    bestVal = v;
+                if (!found) {
+                    best = v;
+                    found = true;
+                } else if (b == DagMetricResult.Better.HIGHER) {
+                    if (v > best) best = v;
+                } else if (b == DagMetricResult.Better.LOWER) {
+                    if (v < best) best = v;
                 }
             }
+            if (!found) return false;
 
-            return (bestIdx < 0) ? -1 : (2 + bestIdx);
+            // Candidate value
+            DagMetricResult r = vals.get(graphIdx);
+            if (r == null) return false;
+            double v = r.value();
+            if (!Double.isFinite(v)) return false;
+
+            // Tie check (tolerant). Bold if v ties best.
+            return ties(v, best);
         }
     }
 }

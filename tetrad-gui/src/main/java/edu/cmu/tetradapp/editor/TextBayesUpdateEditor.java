@@ -14,6 +14,18 @@ import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+
 /**
  * Text-first Bayes updater tool:
  * - Choose updater implementation
@@ -51,6 +63,8 @@ public final class TextBayesUpdateEditor extends JPanel {
     private Evidence lastEvidence = null;
     private String lastEvidenceText = "";
 
+    private final UndoManager evidenceUndo = new UndoManager();
+
     public TextBayesUpdateEditor(TextBayesUpdateModel model) {
         this.model = Objects.requireNonNull(model, "model");
         this.bayesIm = model.getBayesIm();
@@ -67,6 +81,149 @@ public final class TextBayesUpdateEditor extends JPanel {
         TableRowSorter<ResultsTableModel> sorter= new TableRowSorter<>(resultsTableModel);
         resultsTable.setRowSorter(sorter);
         resultsTable.setTransferHandler(new DefaultTableTransferHandler(0));
+
+        installEvidenceTextEditorFeatures();
+    }
+
+    private void installEvidenceTextEditorFeatures() {
+        // ----- Undo manager hookup -----
+        evidenceText.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            @Override
+            public void undoableEditHappened(UndoableEditEvent e) {
+                evidenceUndo.addEdit(e.getEdit());
+            }
+        });
+
+        // Keep undo manager from growing without bound (tweak if you want).
+        evidenceUndo.setLimit(10_000);
+
+        // Cross-platform "menu shortcut" (Ctrl on Win/Linux, Cmd on macOS).
+        int menuMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+
+        // ----- Key bindings -----
+        InputMap im = evidenceText.getInputMap(JComponent.WHEN_FOCUSED);
+        ActionMap am = evidenceText.getActionMap();
+
+        // Undo: Ctrl/Cmd-Z
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, menuMask), "evidence.undo");
+        am.put("evidence.undo", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    if (evidenceUndo.canUndo()) evidenceUndo.undo();
+                } catch (CannotUndoException ignored) {
+                }
+            }
+        });
+
+        // Redo: Ctrl/Cmd-Shift-Z (common mac style; also add Ctrl/Cmd-Y for Win)
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, menuMask | InputEvent.SHIFT_DOWN_MASK), "evidence.redo");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, menuMask), "evidence.redo");
+        am.put("evidence.redo", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    if (evidenceUndo.canRedo()) evidenceUndo.redo();
+                } catch (CannotRedoException ignored) {
+                }
+            }
+        });
+
+        // Toggle comment: Ctrl/Cmd-/
+        // Note: VK_SLASH corresponds to '/' key on most layouts.
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, menuMask), "evidence.toggleComment");
+        am.put("evidence.toggleComment", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleCommentOnSelection(evidenceText);
+            }
+        });
+    }
+
+    private static void toggleCommentOnSelection(JTextArea ta) {
+        Document doc = ta.getDocument();
+        Element root = doc.getDefaultRootElement();
+
+        int selStart = ta.getSelectionStart();
+        int selEnd = ta.getSelectionEnd();
+        if (selStart > selEnd) { int tmp = selStart; selStart = selEnd; selEnd = tmp; }
+
+        // If nothing selected, operate on the current line.
+        if (selStart == selEnd) {
+            int caret = ta.getCaretPosition();
+            int line = root.getElementIndex(caret);
+            Element el = root.getElement(line);
+            selStart = el.getStartOffset();
+            selEnd = el.getEndOffset();
+        } else {
+            // Expand selection to full lines.
+            int startLine = root.getElementIndex(selStart);
+            int endLine = root.getElementIndex(Math.max(selEnd - 1, selStart));
+            selStart = root.getElement(startLine).getStartOffset();
+            selEnd = root.getElement(endLine).getEndOffset();
+        }
+
+        try {
+            String block = doc.getText(selStart, selEnd - selStart);
+            String[] lines = block.split("\\R", -1); // keep trailing empty
+
+            boolean allCommented = true;
+            for (String line : lines) {
+                if (line.isBlank()) continue;
+                if (!isCommentedLine(line)) {
+                    allCommented = false;
+                    break;
+                }
+            }
+
+            StringBuilder out = new StringBuilder(block.length() + lines.length * 2);
+            for (int i = 0; i < lines.length; i++) {
+                String line = lines[i];
+
+                if (line.isBlank()) {
+                    out.append(line);
+                } else if (allCommented) {
+                    out.append(uncommentLine(line));
+                } else {
+                    out.append(commentLine(line));
+                }
+
+                // Re-add original line separators except after last line; split("\\R") removes them.
+                if (i < lines.length - 1) out.append("\n");
+            }
+
+            // Replace and keep selection covering the modified block.
+            doc.remove(selStart, selEnd - selStart);
+            doc.insertString(selStart, out.toString(), null);
+            ta.select(selStart, selStart + out.length());
+
+        } catch (BadLocationException ex) {
+            // ignore
+        }
+    }
+
+    private static boolean isCommentedLine(String line) {
+        int i = 0;
+        while (i < line.length() && Character.isWhitespace(line.charAt(i))) i++;
+        return (i < line.length() && line.charAt(i) == '#');
+    }
+
+    private static String commentLine(String line) {
+        // Insert "# " after leading whitespace to preserve indentation.
+        int i = 0;
+        while (i < line.length() && Character.isWhitespace(line.charAt(i))) i++;
+        return line.substring(0, i) + "# " + line.substring(i);
+    }
+
+    private static String uncommentLine(String line) {
+        int i = 0;
+        while (i < line.length() && Character.isWhitespace(line.charAt(i))) i++;
+        if (i >= line.length() || line.charAt(i) != '#') return line;
+
+        int j = i + 1;
+        // Remove optional single space after '#'
+        if (j < line.length() && line.charAt(j) == ' ') j++;
+        return line.substring(0, i) + line.substring(j);
     }
 
     private JPanel buildTopPanel() {
@@ -81,7 +238,6 @@ public final class TextBayesUpdateEditor extends JPanel {
 
         // Updater dropdown
         c.gridx = 0; c.gridy = row; c.weightx = 0;
-        p.add(new JLabel("Updater:"), c);
         p.add(new JLabel("Updater:"), c);
         c.gridx = 1; c.gridy = row; c.weightx = 1.0;
         p.add(updaterCombo, c);
@@ -145,7 +301,7 @@ public final class TextBayesUpdateEditor extends JPanel {
                     # Examples (E = evidence, M = manipulation):
                     # E: X = 1
                     # E: Y in {0,2}
-                    # M: T = 1
+                    # DO: T = 1
                     """);
         }
     }
@@ -467,7 +623,7 @@ public final class TextBayesUpdateEditor extends JPanel {
     }
 
     // ============================================================
-    // Evidence parser: lines like "E: X = 1", "M: T in {0,1}"
+    // Evidence parser: lines like "E: X = 1", "DO: T in {0,1}"
     // ============================================================
 
     private static final class EvidenceSpec {
@@ -515,10 +671,10 @@ public final class TextBayesUpdateEditor extends JPanel {
                 if (line.startsWith("#")) continue;
 
                 boolean isEvidence = startsWithIgnoreCase(line, "E:");
-                boolean isManipulated = startsWithIgnoreCase(line, "M:");
+                boolean isManipulated = startsWithIgnoreCase(line, "DO:");
 
                 if (!isEvidence && !isManipulated) {
-                    throw new IllegalArgumentException("Bad line (must start with E: or M: for evidence on manipulation): " + raw);
+                    throw new IllegalArgumentException("Bad line (must start with E: or DO: for evidence on manipulation): " + raw);
                 }
 
                 String body = line.substring(line.indexOf(':') + 1).trim();
@@ -556,7 +712,7 @@ public final class TextBayesUpdateEditor extends JPanel {
                     ok.set(cat);
                 }
 
-                // if M: mark manipulated
+                // if DO: mark manipulated
                 if (isManipulated) {
                     spec.manipulated.set(node);
                 }

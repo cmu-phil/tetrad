@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Minimax-t Legendre BIC score (mixed).
+ * Wrapper for Minimax Legendre BIC score (mixed).
  * <p>
  * Exposed parameters (pared down):
  * - minimaxLegendreDegree (int, default 8)
@@ -129,7 +129,7 @@ public class MinimaxLegendreScore implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "Minimax-t Legendre BIC score (mixed)";
+        return "Minimax Legendre BIC score";
     }
 
     /**

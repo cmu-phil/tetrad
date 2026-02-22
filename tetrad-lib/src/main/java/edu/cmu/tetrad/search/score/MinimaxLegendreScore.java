@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static java.lang.Math.*;
 
 /**
- * <p><b>Minimax-t Legendre BIC score (mixed)</b></p>
+ * <p><b>Minimax Legendre BIC score</b></p>
  *
  * <p>
  * Local BIC-style score for structure learning with mixed continuous and discrete variables.
@@ -537,11 +537,11 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
     /**
      * Returns a string representation of the object.
      *
-     * @return a string indicating the description "Minimax-t Legendre BIC score (mixed)".
+     * @return a string indicating the description "Minimax- Legendre BIC score".
      */
     @Override
     public String toString() {
-        return "Minimax-t Legendre BIC score (mixed)";
+        return "Minimax Legendre BIC score";
     }
 
     /**
@@ -913,7 +913,7 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
             double z = Zc[i][j];
 //            double x = z * invClip;
             double x = Math.tanh(z / legendreClip);
-            x = clamp(x);
+//            x = clamp(x);
 
             if (j < kInt) xMap[j] = x;
 
@@ -963,10 +963,9 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
     }
 
     private static double clamp(double x) {
-        return tanh(x);
-//        if (x > 1.0) x = 1.0;
-//        else if (x < -1.0) x = -1.0;
-//        return x;
+        if (x > 1.0) return 1.0;
+        if (x < -1.0) return -1.0;
+        return x;
     }
 
     // -------------------- missing rows & extraction --------------------
