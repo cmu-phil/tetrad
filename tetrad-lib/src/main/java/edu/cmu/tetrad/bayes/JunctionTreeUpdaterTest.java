@@ -13,32 +13,34 @@ import static org.junit.Assert.*;
  * Test class for verifying the functionality of operations related to junction tree updates in Bayesian networks.
  * This class contains methods for evaluating propagation of evidence, handling interventions, and other utility
  * functions related to Bayesian inference and updates.
- *
+ * <p>
  * Fields:
  * - EPS: Permissible error tolerance for comparing probability distributions.
- *
+ * <p>
  * Methods:
  * - idx(BayesIm im, String name): Retrieves the index of a node in the Bayesian network by its name.
  * - assertDistClose(double[] a, double[] b, double eps): Verifies that two probability distributions are within a
- *   specified tolerance.
+ * specified tolerance.
  * - distDiff(double[] a, double[] b): Computes the maximum absolute difference between two distributions.
  * - evidenceXEquals(BayesIm im, String varName, int value): Creates evidence to constrain a variable to a specific
- *   single value (hard evidence).
+ * single value (hard evidence).
  * - manipulateXToValue(BayesIm im, Evidence e, String varName, int value): Marks a variable as manipulated and
- *   sets its do() distribution to a point mass at a specified value.
+ * sets its do() distribution to a point mass at a specified value.
  * - assertCptEqualByName(BayesIm src, BayesIm dst, String nodeName, double eps): Compares two conditional probability
- *   tables (CPTs) for a node by its name, avoiding dependencies on row order.
+ * tables (CPTs) for a node by its name, avoiding dependencies on row order.
  * - buildToyBayesIm(): Constructs a small binary Bayesian network with non-symmetric conditional probability
- *   tables (CPTs) for testing purposes.
+ * tables (CPTs) for testing purposes.
  * - setBinaryCptOneParent(BayesIm im, int child, int parent, int parentVal, double p0): Configures the conditional
- *   probability table (CPT) for a binary child node with one binary parent, based on a specified probability.
+ * probability table (CPT) for a binary child node with one binary parent, based on a specified probability.
  * - testEvidencePropagatesUpAndDown_andUpdatersAgree(): Verifies that evidence propagation occurs correctly both
- *   upward and downward in the Bayesian network structure, with consistency across updaters.
+ * upward and downward in the Bayesian network structure, with consistency across updaters.
  * - testDoInterventionRemovesParents_preservesOtherCpts_andUpdatersAgree(): Checks the behavior of a do() intervention
- *   to ensure that incoming edges are removed, non-intervention CPTs are preserved, and agreement exists across
- *   inference methods.
+ * to ensure that incoming edges are removed, non-intervention CPTs are preserved, and agreement exists across
+ * inference methods.
  */
 public final class JunctionTreeUpdaterTest {
+
+    private static final double EPS = 1e-10;
 
     /**
      * Test class for verifying the functionality of the JunctionTreeUpdater component,
@@ -47,9 +49,8 @@ public final class JunctionTreeUpdaterTest {
      * behavior of evidence propagation, intervention operations, and agreement between
      * different methods of inference.
      */
-    public JunctionTreeUpdaterTest() { }
-
-    private static final double EPS = 1e-10;
+    public JunctionTreeUpdaterTest() {
+    }
 
     private static int idx(BayesIm im, String name) {
         Node n = im.getNode(name);
