@@ -25,7 +25,6 @@ import edu.cmu.tetrad.algcomparison.utils.TakesData;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.AdequacyParams;
 import edu.cmu.tetrad.sem.AdequacyReport;
 import edu.cmu.tetrad.sem.TrainedDagAdequacy;
@@ -145,7 +144,7 @@ public class TrainedDagModel implements Simulation, TakesData {
             TrainedDagSimulatorGNM.SimResult simData = simulator.simulate(samplaSize);
 
             AdequacyReport report =
-                    TrainedDagAdequacy.evaluate(
+                    TrainedDagAdequacy.mmd2(
                             data,
                             simData.toDataSet(),
                             simulator,

@@ -1288,6 +1288,7 @@
             applyingGraphProgrammatically = true;
             try {
                 model.setGraph(g2);
+                firePropertyChange("modelChanged", null, null);
             } finally {
                 applyingGraphProgrammatically = false;
             }

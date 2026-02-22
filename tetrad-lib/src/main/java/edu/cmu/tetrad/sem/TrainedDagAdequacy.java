@@ -2,8 +2,6 @@ package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.graph.Node;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +38,7 @@ public final class TrainedDagAdequacy {
      * @return An {@code AdequacyReport} containing metrics such as mean improvement, fraction of nodes improved,
      *         MMD^2 value, and per-node adequacy summaries.
      */
-    public static AdequacyReport evaluate(
+    public static AdequacyReport mmd2(
             DataSet real,
             DataSet simulated,
             TrainedDagSimulatorGNM simulator,

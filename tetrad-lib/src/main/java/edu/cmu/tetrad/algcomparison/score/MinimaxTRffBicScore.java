@@ -102,7 +102,7 @@ public class MinimaxTRffBicScore implements ScoreWrapper {
         // score.setScale(1.0);
 
         // If you want a penalty discount at all, make it a fixed policy, not a tuning knob.
-        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT_DEFAULT_1));
 
         return score;
     }
@@ -141,7 +141,7 @@ public class MinimaxTRffBicScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.MINIMAX_RIDGE);
         parameters.add(Params.MINIMAX_FF_FEATURES);
-        parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.PENALTY_DISCOUNT_DEFAULT_1);
 
         // Optional (keep only if you want this exposed):
         parameters.add(Params.MINIMAX_NU);

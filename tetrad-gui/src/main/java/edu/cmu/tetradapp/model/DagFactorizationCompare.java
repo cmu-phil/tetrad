@@ -124,7 +124,7 @@ public final class DagFactorizationCompare extends DataWrapper implements Sessio
         TrainedDagSimulatorGNM.SimResult simData = sim.simulate(sampleSize);
 
         AdequacyReport report =
-                TrainedDagAdequacy.evaluate(
+                TrainedDagAdequacy.mmd2(
                         observed,
                         simData.toDataSet(),
                         sim,

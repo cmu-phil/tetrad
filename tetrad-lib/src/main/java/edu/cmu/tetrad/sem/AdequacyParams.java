@@ -20,13 +20,13 @@ public final class AdequacyParams {
      * This value determines the dimensionality of the feature space over which
      * MMD is computed to assess the adequacy of the model in terms of distributional similarity.
      */
-    public int mmdFeatures = 200;
+    public int mmdFeatures = 512;
     /**
      * Specifies the maximum number of rows to be used for the Maximum Mean Discrepancy (MMD) calculation.
      * This value limits the size of the dataset when computing MMD to ensure efficiency
      * during model adequacy assessment and prevents excessive memory or computational overhead.
      */
-    public int mmdMaxRows = 2000;
+    public int mmdMaxRows = 1000;
     /**
      * Seed value used in random number generation during the Maximum Mean
      * Discrepancy (MMD) calculation. This ensures reproducibility of the

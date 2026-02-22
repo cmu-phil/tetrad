@@ -117,7 +117,7 @@ public class MinimaxLegendreScore implements ScoreWrapper {
         if (nEff > 0) score.setEffectiveSampleSize(nEff);
 
         // ---- Keep exposed ----
-        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT_DEFAULT_1));
 
         return score;
     }
@@ -162,7 +162,7 @@ public class MinimaxLegendreScore implements ScoreWrapper {
         p.add(Params.MINIMAX_LEGENDRE_DEGREE);
         p.add(Params.MINIMAX_LEGENDRE_CLIP);
         p.add(Params.MINIMAX_LEGENDRE_RIDGE);
-        p.add(Params.PENALTY_DISCOUNT);
+        p.add(Params.PENALTY_DISCOUNT_DEFAULT_1);
         p.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return p;
     }

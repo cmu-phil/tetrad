@@ -3877,18 +3877,61 @@ Source:
     === penaltyDiscount ===
     <h3 class="parameter_description" id="penaltyDiscount">penaltyDiscount</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="penaltyDiscount_short_desc">Penalty discount (min =
-        0.0)</span></li>
-        <li>Long Description: <span id="penaltyDiscount_long_desc"> The parameter c added to a modified
-        BIC score of the form 2L – c k ln N, where L is the likelihood, k the
-        number of degrees of freedom, and N the sample size. Higher c yield
-        sparser graphs. </span></li>
-        <li>Default Value: <span id="penaltyDiscount_default_value">2.0</span></li>
+        <li>Short Description:
+            <span id="penaltyDiscount_short_desc">
+        Penalty discount (default = 2.0; min = 0.0)
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="penaltyDiscount_long_desc">
+        The parameter c in a modified BIC-style score of the form
+        2L – c k ln N, where L is the log-likelihood, k is the effective
+        number of degrees of freedom, and N is the sample size.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="penaltyDiscount_default_value">2.0</span>
+        </li>
         <li>Lower Bound:
-            <span id="penaltyDiscount_lower_bound">0.0</span></li>
-        <li>Upper
-            Bound: <span id="penaltyDiscount_upper_bound">1.7976931348623157E308</span></li>
-        <li>Value Type: <span id="penaltyDiscount_value_type">Double</span></li>
+            <span id="penaltyDiscount_lower_bound">0.0</span>
+        </li>
+        <li>Upper Bound:
+            <span id="penaltyDiscount_upper_bound">1.7976931348623157E308</span>
+        </li>
+        <li>Value Type:
+            <span id="penaltyDiscount_value_type">Double</span>
+        </li>
+    </ul>
+
+    === penaltyDiscountDefault1 ===
+    <h3 class="parameter_description" id="penaltyDiscountDefault1">penaltyDiscountDefault1</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="penaltyDiscountDefault1_short_desc">
+        Penalty discount (min = 0.0, default = 1.0)
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="penaltyDiscountDefault1_long_desc">
+        The parameter c added to a modified BIC score of the form
+        2L – c k ln N, where L is the likelihood, k the number of
+        degrees of freedom, and N the sample size. Higher c yields
+        sparser graphs. A value of 1.0 corresponds to the classical
+        BIC penalty scaling.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="penaltyDiscountDefault1_default_value">1.0</span>
+        </li>
+        <li>Lower Bound:
+            <span id="penaltyDiscountDefault1_lower_bound">0.0</span>
+        </li>
+        <li>Upper Bound:
+            <span id="penaltyDiscountDefault1_upper_bound">1.7976931348623157E308</span>
+        </li>
+        <li>Value Type:
+            <span id="penaltyDiscountDefault1_value_type">Double</span>
+        </li>
     </ul>
 
 

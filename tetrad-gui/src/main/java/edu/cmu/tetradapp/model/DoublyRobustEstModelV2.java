@@ -503,9 +503,14 @@ public final class DoublyRobustEstModelV2 implements SessionModel, GraphSource, 
         ra.setColliderPolicy(RecursiveAdjustment.ColliderPolicy.NONCOLLIDER_FIRST);
         ra.setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy.SEARCH);
 
+        Node x1 = graph.getNode(x.getName()) != null ? graph.getNode(x.getName()) : x;
+        Node y1 = graph.getNode(y.getName()) != null ? graph.getNode(y.getName()) : y;
+
+        if (x1 == y1) return Collections.emptyList();
+
         return ra.adjustmentSets(
-                graph.getNode(x.getName()) != null ? graph.getNode(x.getName()) : x,
-                graph.getNode(y.getName()) != null ? graph.getNode(y.getName()) : y,
+                x1,
+                y1,
                 graphType,
                 maxNumSets,
                 maxRadius,

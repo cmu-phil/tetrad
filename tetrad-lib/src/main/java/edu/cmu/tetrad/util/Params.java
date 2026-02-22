@@ -510,6 +510,10 @@ public final class Params {
      */
     public static final String PENALTY_DISCOUNT = "penaltyDiscount";
     /**
+     * Constant <code>PENALTY_DISCOUNT="penaltyDiscount"</code>
+     */
+    public static final String PENALTY_DISCOUNT_DEFAULT_1 = "penaltyDiscountDefault1";
+    /**
      * Constant <code>PENALTY_DISCOUNT_ZS="penaltyDiscountZs"</code>
      */
     public static final String PENALTY_DISCOUNT_ZS = "penaltyDiscountZs";
