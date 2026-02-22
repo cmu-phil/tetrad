@@ -221,6 +221,9 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         BayesPm manipulatedBayesPm = createUpdatedBayesPm(manipulatedGraph);
         this.manipulatedBayesIm = createdUpdatedBayesIm(manipulatedBayesPm);
 
+        copyCptsFromSourceIntoManipulatedIm();
+        applyDoInterventionsToManipulatedImByName();
+
         // Ensure manipulated variables have defined row-0 distributions.
         // (Manipulation implies no parents in the manipulated graph, so row 0 is used.)
         for (int i = 0; i < evidence.getNumNodes(); i++) {
@@ -246,22 +249,62 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         this.counts = null;
     }
 
+    private void applyDoInterventionsToManipulatedImByName() {
+        Proposition evProp = this.evidence.getProposition();
+        BayesIm dst = this.manipulatedBayesIm;
+
+        for (int srcNode = 0; srcNode < this.evidence.getNumNodes(); srcNode++) {
+            if (!this.evidence.isManipulated(srcNode)) continue;
+
+            String name = this.evidence.getNode(srcNode).getName();
+            Node dstNodeObj = dst.getNode(name);
+            if (dstNodeObj == null) throw new IllegalStateException("Manipulated node '" + name + "' not found.");
+            int dstNode = dst.getNodeIndex(dstNodeObj);
+
+            if (dst.getNumRows(dstNode) != 1) {
+                throw new IllegalStateException("Expected 1 row for manipulated node '" + name + "'.");
+            }
+
+            int dstCats = dst.getNumColumns(dstNode);
+            int srcCats = this.evidence.getNumCategories(srcNode);
+            if (dstCats != srcCats) throw new IllegalStateException("Category mismatch for manipulated '" + name + "'.");
+
+            double sum = 0.0;
+            for (int cat = 0; cat < dstCats; cat++) {
+                double p = evProp.isAllowed(srcNode, cat) ? 1.0 : 0.0;
+                dst.setProbability(dstNode, 0, cat, p);
+                sum += p;
+            }
+
+            if (sum > 0.0) {
+                for (int cat = 0; cat < dstCats; cat++) {
+                    dst.setProbability(dstNode, 0, cat, dst.getProbability(dstNode, 0, cat) / sum);
+                }
+            } else {
+                for (int cat = 0; cat < dstCats; cat++) dst.setProbability(dstNode, 0, cat, Double.NaN);
+            }
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
     public double getMarginal(int variable, int value) {
         doUpdate();
+
+        String name = this.bayesIm.getNode(variable).getName();
+        Node dstNodeObj = this.manipulatedBayesIm.getNode(name);
+        if (dstNodeObj == null) return Double.NaN;
+
+        int dstVar = this.manipulatedBayesIm.getNodeIndex(dstNodeObj);
+
         int sum = 0;
-
-        for (int i = 0; i < this.manipulatedBayesIm.getNumColumns(variable); i++) {
-            sum += this.counts[variable][i];
+        for (int i = 0; i < this.manipulatedBayesIm.getNumColumns(dstVar); i++) {
+            sum += this.counts[dstVar][i];
         }
+        if (sum == 0) return Double.NaN;
 
-        if (sum == 0) {
-            return Double.NaN;
-        }
-
-        return this.counts[variable][value] / (double) sum;
+        return this.counts[dstVar][value] / (double) sum;
     }
 
     /**
@@ -339,7 +382,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         for (int i = 0; i < this.manipulatedBayesIm.getNumNodes(); i++) {
             localCounts[i] = new int[this.manipulatedBayesIm.getNumColumns(i)];
         }
-// Get a tier ordering and convert it to an int array.
+        // Get a tier ordering and convert it to an int array.
         Graph graph = getManipulatedGraph();
         Paths paths = graph.paths();
         List<Node> initialOrder = graph.getNodes();
@@ -365,7 +408,8 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
             // manipulations are actually respected in the sampled points.
             int[] point = ApproximateUpdater.getSinglePoint(getManipulatedBayesIm(), tiers);
 
-            if (this.evidence.getProposition().isPermissibleCombination(point)) {
+            Evidence evidence2 = new Evidence(this.evidence, this.manipulatedBayesIm);
+            if (evidence2.getProposition().isPermissibleCombination(point)) {
                 numCounted++;
 
                 for (int j = 0; j < getManipulatedBayesIm().getNumNodes(); j++) {
@@ -378,29 +422,76 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     private BayesIm createdUpdatedBayesIm(BayesPm updatedBayesPm) {
-        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.InitializationMethod.RANDOM);
+        // Must not randomize CPTs; we will copy them explicitly.
+        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.InitializationMethod.MANUAL);
     }
 
     private BayesPm createUpdatedBayesPm(Dag updatedGraph) {
         return new BayesPm(updatedGraph, this.bayesIm.getBayesPm());
     }
 
-    private Dag createManipulatedGraph(Graph graph) {
-        Dag updatedGraph = new Dag(graph);
+    private void copyCptsFromSourceIntoManipulatedIm() {
+        BayesIm src = this.bayesIm;
+        BayesIm dst = this.manipulatedBayesIm;
 
-        // alters graph for manipulated evidenceItems
-        for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
-            if (this.evidence.isManipulated(i)) {
-                Node node = this.evidence.getNode(i);
-                node = updatedGraph.getNode(node.getName());
-                Collection<Node> parents = updatedGraph.getParents(node);
+        for (int dstNode = 0; dstNode < dst.getNumNodes(); dstNode++) {
+            String name = dst.getNode(dstNode).getName();
 
-                for (Node parent1 : parents) {
-                    updatedGraph.removeEdge(node, parent1);
+            Node srcNodeObj = src.getNode(name);
+            if (srcNodeObj == null) throw new IllegalStateException("Node '" + name + "' not found in source BayesIm.");
+            int srcNode = src.getNodeIndex(srcNodeObj);
+
+            if (this.evidence.isManipulated(srcNode)) continue;
+
+            int srcCols = src.getNumColumns(srcNode);
+            int dstCols = dst.getNumColumns(dstNode);
+            if (srcCols != dstCols) throw new IllegalStateException("Category mismatch for '" + name + "'.");
+
+            int[] srcParents = src.getParents(srcNode);
+            int[] dstParents = dst.getParents(dstNode);
+
+            int[] srcPosToDstPos = new int[srcParents.length];
+            for (int k = 0; k < srcParents.length; k++) {
+                String pName = src.getNode(srcParents[k]).getName();
+                int dstPos = -1;
+                for (int t = 0; t < dstParents.length; t++) {
+                    if (dst.getNode(dstParents[t]).getName().equals(pName)) { dstPos = t; break; }
+                }
+                if (dstPos < 0) throw new IllegalStateException("Parent mismatch copying CPTs for '" + name + "'.");
+                srcPosToDstPos[k] = dstPos;
+            }
+
+            for (int dstRow = 0; dstRow < dst.getNumRows(dstNode); dstRow++) {
+                int[] dstParentValues = dst.getParentValues(dstNode, dstRow);
+
+                int[] srcParentValues = new int[srcParents.length];
+                for (int k = 0; k < srcParents.length; k++) {
+                    srcParentValues[k] = dstParentValues[srcPosToDstPos[k]];
+                }
+
+                int srcRow = src.getRowIndex(srcNode, srcParentValues);
+
+                for (int col = 0; col < dstCols; col++) {
+                    dst.setProbability(dstNode, dstRow, col, src.getProbability(srcNode, srcRow, col));
                 }
             }
         }
+    }
 
+    private Dag createManipulatedGraph(Graph graph) {
+        Dag updatedGraph = new Dag(graph);
+
+        for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
+            if (this.evidence.isManipulated(i)) {
+                Node node = updatedGraph.getNode(this.evidence.getNode(i).getName());
+                Collection<Node> parents = updatedGraph.getParents(node);
+
+                // Remove incoming edges parent -> node
+                for (Node parent : parents) {
+                    updatedGraph.removeEdge(parent, node);
+                }
+            }
+        }
         return updatedGraph;
     }
 
