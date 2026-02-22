@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
  * Text-first Bayes updater tool:
  * - Choose updater implementation
  * - Specify variable glob(s)
- * - Specify evidence + do() manipulations via a pasteable text format
+ * - Specify evidence + manipulations via a pasteable text format
  * - Compute updated marginals and show in a wide table
  * - Show detailed copy/paste report for a selected variable
  */
@@ -269,10 +269,10 @@ public final class TextBayesUpdateEditor extends JPanel {
         sb.append("Variable: ").append(node.getName()).append("\n");
         sb.append("Updater: ").append(updater.getClass().getSimpleName()).append("\n\n");
 
-        sb.append("Evidence / DO (as entered):\n");
+        sb.append("Condition / Manipulation (as entered):\n");
         sb.append(evText.strip()).append("\n\n");
 
-        sb.append("Updated Marginal P(").append(node.getName()).append(" | evidence, do):\n");
+        sb.append("Updated Marginal P(").append(node.getName()).append(" | condition, manipulate):\n");
         int k = bayesIm.getNumColumns(nodeIndex);
         double sum = 0.0;
         for (int cat = 0; cat < k; cat++) {
@@ -560,7 +560,7 @@ public final class TextBayesUpdateEditor extends JPanel {
                     spec.manipulated.set(node);
                 }
 
-                // store allowed; if repeated lines, intersect for evidence, but for DO we just set final allowed
+                // store allowed; if repeated lines, intersect for evidence, but for Manipulation we just set final allowed
                 BitSet prior = spec.allowed.get(node);
                 if (prior == null) {
                     spec.allowed.put(node, ok);
