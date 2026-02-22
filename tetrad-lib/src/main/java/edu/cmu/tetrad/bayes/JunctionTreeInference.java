@@ -45,30 +45,160 @@ public final class JunctionTreeInference implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Represents the Bayesian network structure and Conditional Probability Tables (CPTs)
+     * used by the JunctionTreeInference class for probabilistic inference.
+     *
+     * This field encapsulates the Bayesian Interference Model (BayesIm), which provides
+     * the structure and parameters of the Bayesian Network, allowing the inference
+     * algorithm to compute marginal probabilities, joint probabilities, and conditional
+     * probabilities over the variables of the network.
+     *
+     * The BayesIm is essential for constructing junction trees, assigning factors
+     * to cliques, and calibrating the network for efficient exact inference.
+     *
+     * This field is immutable and instantiated through the constructor of the
+     * containing JunctionTreeInference class. All inference-related computations
+     * performed within the class rely on the information held by this BayesIm instance.
+     */
     private final BayesIm bayesIm;
+    /**
+     * Represents the total number of variables in the Bayesian network.
+     * This value is utilized in various computational processes within the
+     * junction tree inference algorithm to manage variable-related operations.
+     */
     private final int n;              // number of variables
+    /**
+     * An array representing the cardinalities for each variable in the Bayesian Network.
+     * Each element corresponds to the number of distinct possible values (or categories)
+     * that the respective variable can take.
+     *
+     * The index of the array corresponds directly to the variable index in the Bayesian
+     * model.
+     */
     private final int[] card;         // cardinalities per variable
 
     // Evidence
+    /**
+     * A two-dimensional boolean array representing soft evidence for allowed categories.
+     *
+     * Each element in the array indicates whether a specific category is allowed
+     * for a given variable. A {@code true} value signifies that the category
+     * is allowed, while {@code false} indicates it is disallowed.
+     *
+     * If {@code allowedMask} is {@code null}, it implies that all categories
+     * are allowed for all variables, imposing no restrictions.
+     *
+     * This array plays a critical role in influencing probabilistic inference
+     * by restricting the possible outcomes for variables during computations.
+     */
     private boolean[][] allowedMask;  // soft evidence: allowed categories; null => all allowed
+    /**
+     * An array representing fixed evidence values for nodes in the Bayesian network.
+     * Each element corresponds to a specific node, where:
+     * - A value of `-1` indicates no evidence for that particular node.
+     * - Any other value represents the fixed evidence for the node, corresponding to a specific category or state.
+     *
+     * This array is used in the process of probabilistic inference to incorporate known evidence
+     * into the calculations performed by the underlying inference algorithm.
+     */
     private final int[] hardEvidence; // -1 => none else fixed
 
     // Junction tree structures (built once; calibrated on demand)
+    /**
+     * Represents the collection of cliques used in the Junction Tree algorithm for probabilistic inference.
+     * Each clique is a subset of variables selected to satisfy the properties of the Junction Tree.
+     *
+     * Characteristics:
+     * - The cliques are maximal cliques derived from the triangulated moralized graph of the Bayesian network.
+     * - Stored as an immutable list and serves as the structural backbone for performing inference operations.
+     * - Used in conjunction with separators to manage potential distributions across subproblems.
+     */
     private final List<Clique> cliques;
+    /**
+     * Stores the adjacency lists of clique indices in the junction tree structure.
+     * Each element in the list corresponds to a clique, represented as an array of
+     * integers where each integer is the index of a neighboring clique.
+     *
+     * The adjacency lists define the connections between cliques in the tree,
+     * enabling traversal and message passing during inference. These connections
+     * are crucial for implementing algorithms like the HUGIN algorithm for
+     * probabilistic inference.
+     *
+     * The structure and contents of the adjacency lists are determined during the
+     * construction of the junction tree and remain immutable throughout the
+     * inference process.
+     */
     private final List<int[]> cliqueNeighbors; // adjacency lists of clique indices
+    /**
+     * A mapping of separators used in the Junction Tree inference process.
+     *
+     * Each separator represents the shared variables (separator variables) between
+     * two cliques in the Junction Tree structure, facilitating message passing
+     * during the inference process. The key of the map is a composite based on the
+     * IDs of the minimum and maximum Clique IDs `(minClique, maxClique)`, ensuring
+     * consistent and unique referencing for each separator.
+     *
+     * The corresponding value is an instance of the `Separator` class, which
+     * encapsulates the details of the separator, including the IDs of the connected
+     * cliques, the shared variables, and any associated message-passing factors.
+     */
     private final Map<Long, Separator> separators; // key=(minClique,maxClique)
 
     // Factor assignment
+    /**
+     * A nested list structure where each inner list corresponds to the factors
+     * assigned to a specific clique within the junction tree.
+     * Each factor encapsulates conditional probability information or evidence
+     * for nodes in the Bayesian network.
+     *
+     * This list is organized to map directly to the cliques in the junction tree,
+     * ensuring that each clique is associated with the relevant subset of factors.
+     * These factors play a critical role in calibrating the junction tree and
+     * performing probabilistic inference.
+     */
     private final List<List<Factor>> cliqueAssignedFactors;
 
     // Calibration cache
+    /**
+     * Indicates whether the current calibration state of the junction tree is invalid or "dirty."
+     *
+     * This flag is used to determine if recalibration is needed. It is set to {@code true} when
+     * any operation invalidates the calibration, such as changes to evidence or modifications
+     * to the internal structure of the junction tree. Once recalibration is performed, this
+     * flag should be toggled back to {@code false}.
+     */
     private boolean calibratedDirty = true;
+
+    /**
+     * Cached result of the evidence probability computation.
+     *
+     * This variable stores the computed probability of the observed evidence
+     * in the Bayesian network. It is used to avoid redundant calculations
+     * when the evidence remains unchanged.
+     *
+     * The value is initialized to {@code Double.NaN}, indicating that the
+     * evidence probability has not been computed or that the cached value
+     * is invalid. The value is updated during the inference process,
+     * particularly when the network is calibrated or the evidence changes.
+     */
     private double cachedEvidenceProb = Double.NaN;
 
     // ---------------------------------------------------------------------
     // Public API
     // ---------------------------------------------------------------------
 
+    /**
+     * Constructs a JunctionTreeInference object for performing inference on a Bayesian network
+     * represented by the given BayesIm (Bayesian network model interface). This constructor
+     * initializes the necessary data structures, builds the junction tree, and assigns conditional
+     * probability table (CPT) factors to the cliques.
+     *
+     * @param bayesIm The Bayesian network model interface (BayesIm) containing the structure,
+     *                variables, and conditional probability tables of the Bayesian network.
+     *                Must not be null.
+     * @throws NullPointerException If the provided bayesIm parameter is null.
+     */
     public JunctionTreeInference(BayesIm bayesIm) {
         if (bayesIm == null) throw new NullPointerException("bayesIm");
         this.bayesIm = bayesIm;
@@ -95,6 +225,15 @@ public final class JunctionTreeInference implements Serializable {
         this.calibratedDirty = true;
     }
 
+    /**
+     * Sets the allowed categories for variables in the Bayesian network by applying the given
+     * Proposition. This method updates the internal mask that specifies which categories are
+     * considered valid for each variable and reinitializes the calibration process as needed.
+     *
+     * @param allowedCategories The Proposition object defining the allowed categories for
+     *                          the variables. Must not be null. If null, a NullPointerException
+     *                          will be thrown.
+     */
     public void setAllowedCategories(Proposition allowedCategories) {
         if (allowedCategories == null) throw new NullPointerException("allowedCategories");
 
@@ -111,18 +250,21 @@ public final class JunctionTreeInference implements Serializable {
         invalidateCalibration();
     }
 
-//    public void setEvidence(int node, int category) {
-//        if (node < 0 || node >= n) throw new IllegalArgumentException("node out of range: " + node);
-//        if (category < 0) {
-//            hardEvidence[node] = -1;
-//            invalidateCalibration();
-//            return;
-//        }
-//        if (category >= card[node]) throw new IllegalArgumentException("category out of range for node " + node + ": " + category);
-//        hardEvidence[node] = category;
-//        invalidateCalibration();
-//    }
-
+    /**
+     * Computes the marginal probability of a specific variable (node) being in a given category
+     * within the current Bayesian network model after accounting for evidence.
+     * This method requires the network to be calibrated and ensures appropriate evidence processing.
+     *
+     * @param node The variable index for which the marginal probability is being computed.
+     *             Must be in the range [0, n), where n is the total number of variables.
+     * @param category The specific category index of the variable.
+     *                 Must be in the range [0, card[node]), where card[node] represents
+     *                 the number of categories available for the given variable.
+     * @return The marginal probability of the specified variable being in the given category
+     *         as a double value. If the calculation cannot be performed due to invalid
+     *         evidence or other issues, returns Double.NaN.
+     * @throws IllegalArgumentException If the node or category index is out of the allowable range.
+     */
     public double getMarginal(int node, int category) {
         if (node < 0 || node >= n) throw new IllegalArgumentException("node out of range: " + node);
         if (category < 0 || category >= card[node]) throw new IllegalArgumentException("category out of range: " + category);
@@ -143,6 +285,32 @@ public final class JunctionTreeInference implements Serializable {
         return marg.getByVarAssignment(new int[]{node}, new int[]{category}) / denom;
     }
 
+    /**
+     * Computes the conditional probability distribution of a given node (variable)
+     * conditioned on its parent variables and their specified values within a
+     * Bayesian network. This method ensures the network is calibrated before
+     * performing the computation.
+     *
+     * @param node The index of the node (variable) whose conditional probability
+     *             distribution is being computed. Must be in the range [0, n),
+     *             where n is the total number of variables.
+     * @param parents An array of indices representing the parent variables of the
+     *                node. Each index must be in the range [0, n).
+     * @param parentValues An array of values corresponding to the parents,
+     *                     specifying the state of each parent. Each value at index i
+     *                     must be in the range [0, card[parent[i]]), where
+     *                     card[parent[i]] is the cardinality of the parent variable.
+     * @return A double array representing the conditional probability distribution
+     *         of the node, normalized to sum to 1. If there is no valid probability
+     *         distribution (e.g., due to invalid inputs or evidence), the returned
+     *         array will contain NaN values.
+     * @throws NullPointerException If the parents or parentValues parameter is null.
+     * @throws IllegalArgumentException If the lengths of parents and parentValues
+     *                                   do not match, if node or any parent index
+     *                                   is out of range, or if any parent value is
+     *                                   out of the allowable range for the respective
+     *                                   parent variable.
+     */
     public double[] getConditional(int node, int[] parents, int[] parentValues) {
         if (parents == null || parentValues == null) throw new NullPointerException();
         if (parents.length != parentValues.length) throw new IllegalArgumentException("parents and parentValues length mismatch.");
@@ -183,6 +351,24 @@ public final class JunctionTreeInference implements Serializable {
         return out;
     }
 
+    /**
+     * Computes the joint probability of a set of variables being in specified states
+     * according to the current Bayesian network model and evidence. This method ensures
+     * the network is calibrated and performs the necessary factor marginalization or
+     * retrieval based on the given variables and their values.
+     *
+     * @param vars An array of variable indices whose joint probability is to be computed.
+     *             Each index must be in the range [0, n), where n is the total number
+     *             of variables in the Bayesian network.
+     * @param values An array of values corresponding to the specified variables. Each value
+     *               at index i must be in the range [0, card[vars[i]]), where card[vars[i]]
+     *               is the cardinality of the variable at index vars[i].
+     * @return The joint probability of the specified variables being in the given states
+     *         as a double value. Returns Double.NaN if the calculation cannot be performed,
+     *         such as when evidence conflicts with the specified states or due to invalid inputs.
+     * @throws NullPointerException If the vars or values parameter is null.
+     * @throws IllegalArgumentException If the lengths of vars and values do not match.
+     */
     public double getJointProbability(int[] vars, int[] values) {
         if (vars == null || values == null) throw new NullPointerException();
         if (vars.length != values.length) throw new IllegalArgumentException("vars and values length mismatch.");

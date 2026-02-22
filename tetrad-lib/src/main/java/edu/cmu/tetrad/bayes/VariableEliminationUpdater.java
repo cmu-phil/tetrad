@@ -10,11 +10,11 @@ import java.io.Serial;
 import java.util.List;
 
 /**
- * RowSummingExactUpdater-style updater plumbing, but uses JunctionTreeInference
+ * RowSummingExactUpdater-style updater plumbing, but uses VariableEliminationInference
  * for marginals/joints/conditionals. All evidence and BayesIm alignment behavior
  * is inherited from the RowSummingExactUpdater design.
  */
-public final class JunctionTreeUpdater implements ManipulatingBayesUpdater {
+public final class VariableEliminationUpdater implements ManipulatingBayesUpdater {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -23,7 +23,7 @@ public final class JunctionTreeUpdater implements ManipulatingBayesUpdater {
      * properties or methods to define and manipulate a parameterized Bayesian Network.
      * The structure includes conditional probabilities for nodes in the network,
      * defining how they interact and depend on one another.
-     *
+     * <p>
      * This variable is immutable and is initialized upon declaration.
      */
     private final BayesIm bayesIm;
@@ -61,29 +61,29 @@ public final class JunctionTreeUpdater implements ManipulatingBayesUpdater {
     private BayesIm updatedBayesIm;
 
     /**
-     * Junction tree inference engine over manipulatedBayesIm.
+     * Variable elimination inference engine over manipulatedBayesIm.
      * (manipulations are already baked into manipulatedBayesIm CPTs via do()-surgery)
      */
-    private transient JunctionTreeInference jti;
+    private transient VariableEliminationInference vei;
 
     //==============================CONSTRUCTORS===========================//
 
     /**
-     * Constructs a new instance of {@code JunctionTreeUpdater} using the provided
+     * Constructs a new instance of {@code VariableElimiinationUpdater} using the provided
      * Bayesian network representation.
      *
      * @param bayesIm the Bayesian network representation in the form of a {@code BayesIm}.
      *                Must not be {@code null}.
      * @throws NullPointerException if {@code bayesIm} is {@code null}.
      */
-    public JunctionTreeUpdater(BayesIm bayesIm) {
+    public VariableEliminationUpdater(BayesIm bayesIm) {
         if (bayesIm == null) throw new NullPointerException();
         this.bayesIm = bayesIm;
         setEvidence(Evidence.tautology(bayesIm));
     }
 
     /**
-     * Constructs a new instance of {@code JunctionTreeUpdater}, using the provided
+     * Constructs a new instance of {@code VariableElimiinationUpdater}, using the provided
      * Bayesian network representation and associated evidence.
      *
      * @param bayesIm  the Bayesian network representation in the form of a {@code BayesIm}.
@@ -92,38 +92,38 @@ public final class JunctionTreeUpdater implements ManipulatingBayesUpdater {
      *                 Can be {@code null} if no evidence is provided.
      * @throws NullPointerException if {@code bayesIm} is {@code null}.
      */
-    public JunctionTreeUpdater(BayesIm bayesIm, Evidence evidence) {
+    public VariableEliminationUpdater(BayesIm bayesIm, Evidence evidence) {
         if (bayesIm == null) throw new NullPointerException();
         this.bayesIm = bayesIm;
         setEvidence(evidence);
     }
 
     /**
-     * Creates an instance of the JunctionTreeUpdater class which performs updates on a junction tree
+     * Creates an instance of the VariableElimiinationUpdater class which performs updates on a variable elimination
      * structure based on Bayesian networks and evidence.
      *
      * @param bayesIm            The Bayesian network representation (BayesIm) used for the initial setup.
      * @param evidence           The evidence object containing observations and values to be applied to the network.
      * @param manipulatedBayesIm The manipulated BayesIm reflecting changes to the original network.
      * @param updatedBayesIm     The updated BayesIm reflecting the state of the network after processing evidence.
-     * @param jti                The JunctionTreeInference object used for performing inference on the junction tree.
+     * @param vei                The VariableElimiinationUpdater object used for performing inference.
      */
-    public JunctionTreeUpdater(BayesIm bayesIm, Evidence evidence, BayesIm manipulatedBayesIm, BayesIm updatedBayesIm, JunctionTreeInference jti) {
+    public VariableEliminationUpdater(BayesIm bayesIm, Evidence evidence, BayesIm manipulatedBayesIm, BayesIm updatedBayesIm, VariableEliminationInference vei) {
         this.bayesIm = bayesIm;
         this.evidence = evidence;
         this.manipulatedBayesIm = manipulatedBayesIm;
         this.updatedBayesIm = updatedBayesIm;
-        this.jti = jti;
+        this.vei = vei;
     }
 
     /**
-     * Creates and returns a serializable instance of {@code JunctionTreeUpdater}.
+     * Creates and returns a serializable instance of {@code VariableElimiinationUpdater}.
      *
-     * @return a new instance of {@code JunctionTreeUpdater}, configured with a serializable
+     * @return a new instance of {@code VariableElimiinationUpdater}, configured with a serializable
      * {@code BayesIm} instance, enabling the use of this updater in serialized form.
      */
-    public static JunctionTreeUpdater serializableInstance() {
-        return new JunctionTreeUpdater(MlBayesIm.serializableInstance());
+    public static VariableEliminationUpdater serializableInstance() {
+        return new VariableEliminationUpdater(MlBayesIm.serializableInstance());
     }
 
     //============================PUBLIC METHODS==========================//
@@ -230,7 +230,7 @@ public final class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         applyDoInterventionsToManipulatedIm();
 
         // Build (or rebuild) JT engine on manipulated IM.
-        this.jti = new JunctionTreeInference(this.manipulatedBayesIm);
+        this.vei = new VariableEliminationInference(this.manipulatedBayesIm);
 
         // IMPORTANT: do not compute updatedBayesIm eagerly; updateAll() will do it if asked.
         this.updatedBayesIm = null;
@@ -278,7 +278,7 @@ public final class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         syncJtiFromCurrentEvidence();
 
         // JT returns probability of this assignment under evidence (your JT code used this interpretation)
-        return this.jti.getJointProbability(dstVars, values);
+        return this.vei.getJointProbability(dstVars, values);
     }
 
     /**
@@ -304,7 +304,7 @@ public final class JunctionTreeUpdater implements ManipulatingBayesUpdater {
 
         syncJtiFromCurrentEvidence();
 
-        return this.jti.getMarginal(dstVar, value);
+        return this.vei.getMarginal(dstVar, value);
     }
 
     /**
@@ -374,15 +374,15 @@ public final class JunctionTreeUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
-     * Returns a string representation of the JunctionTreeUpdater2 instance,
+     * Returns a string representation of the VariableElimiinationUpdater instance,
      * summarizing its inference method and current evidence state.
      *
      * @return a string describing the inference method used (RowSumming plumbing
-     * combined with Junction Tree inference) and the current evidence state.
+     * combined with Variable Elimination inference) and the current evidence state.
      */
     @Override
     public String toString() {
-        return "JunctionTreeUpdater (RowSumming plumbing + JT inference), evidence = " + this.evidence;
+        return "VariableElimination (RowSumming plumbing + VE inference), evidence = " + this.evidence;
     }
 
     //==============================PRIVATE METHODS=======================//
@@ -395,7 +395,7 @@ public final class JunctionTreeUpdater implements ManipulatingBayesUpdater {
      * on UI calling setEvidence().
      */
     private void syncJtiFromCurrentEvidence() {
-        if (this.jti == null || this.manipulatedBayesIm == null || this.evidence == null) {
+        if (this.vei == null || this.manipulatedBayesIm == null || this.evidence == null) {
             return;
         }
 
@@ -404,7 +404,7 @@ public final class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         Proposition p2 = ev2.getProposition();
 
         // Soft evidence: allowed categories
-        this.jti.setAllowedCategories(p2);
+        this.vei.setAllowedCategories(p2);
     }
 
     /**
@@ -469,7 +469,7 @@ public final class JunctionTreeUpdater implements ManipulatingBayesUpdater {
                 // JT API you used elsewhere: getConditional(node, parents, parentValues)[col]
                 double[] cond;
                 if (parents.length > 0) {
-                    cond = this.jti.getConditional(node, parents, parentValues);
+                    cond = this.vei.getConditional(node, parents, parentValues);
                 } else {
                     cond = null; // use marginals below
                 }
@@ -487,7 +487,7 @@ public final class JunctionTreeUpdater implements ManipulatingBayesUpdater {
                         continue;
                     }
 
-                    double p = (parents.length > 0) ? cond[col] : this.jti.getMarginal(node, col);
+                    double p = (parents.length > 0) ? cond[col] : this.vei.getMarginal(node, col);
                     updated.setProbability(node, row, col, p);
                 }
             }
@@ -642,9 +642,9 @@ public final class JunctionTreeUpdater implements ManipulatingBayesUpdater {
      * and reconstructs transient fields required for the object's functionality.
      *
      * @param s the {@code ObjectInputStream} to read data from.
-     * @throws IOException if an I/O error occurs during reading.
+     * @throws IOException            if an I/O error occurs during reading.
      * @throws ClassNotFoundException if a class required for deserialization cannot be found.
-     * @throws NullPointerException if key fields such as {@code bayesIm} or {@code evidence} are null after deserialization.
+     * @throws NullPointerException   if key fields such as {@code bayesIm} or {@code evidence} are null after deserialization.
      */
     @Serial
     private void readObject(ObjectInputStream s)
@@ -656,7 +656,7 @@ public final class JunctionTreeUpdater implements ManipulatingBayesUpdater {
 
         // Rebuild transient JT engine on deserialize
         if (this.manipulatedBayesIm != null) {
-            this.jti = new JunctionTreeInference(this.manipulatedBayesIm);
+            this.vei = new VariableEliminationInference(this.manipulatedBayesIm);
             syncJtiFromCurrentEvidence();
         }
     }

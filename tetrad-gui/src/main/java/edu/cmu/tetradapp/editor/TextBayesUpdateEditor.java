@@ -27,6 +27,7 @@ public final class TextBayesUpdateEditor extends JPanel {
     // --- Updater choices (you can rename labels as desired) ---
     private enum UpdaterKind {
         JunctionTree,
+        VariableElimination,
         RowSummingExact,
         Approximate
     }
@@ -201,6 +202,7 @@ public final class TextBayesUpdateEditor extends JPanel {
         // No background listeners, no partial sync, no epicycles.
         return switch (kind) {
             case JunctionTree -> new JunctionTreeUpdater(bayesIm, ev);
+            case VariableElimination -> new VariableEliminationUpdater(bayesIm, ev);
             case RowSummingExact -> new RowSummingExactUpdater(bayesIm, ev);
             case Approximate -> {
                 // Replace with your actual approximate class.

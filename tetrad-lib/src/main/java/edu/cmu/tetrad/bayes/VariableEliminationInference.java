@@ -37,21 +37,67 @@ public final class VariableEliminationInference implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Represents the BayesIm instance used to perform Bayesian inference within the
+     * VariableEliminationInference class.
+     *
+     * This field encapsulates the structure, parameters, and conditional probability
+     * distributions of a Bayesian network. It serves as the core reference for
+     * computations involving evidence, marginal probabilities, conditional distributions,
+     * and joint probabilities.
+     *
+     * The BayesIm instance is immutable to ensure consistency during inference operations
+     * and is defined at the time of construction.
+     */
     private final BayesIm bayesIm;
 
-    // Soft evidence: allowed categories mask per node/category.
-    // If null, treat as all allowed.
+    /**
+     * A two-dimensional boolean array used as a mask to represent allowed categories
+     * for variables in the Bayesian network. Each row corresponds to a variable, and
+     * each column represents a category of that variable. A value of {@code true}
+     * indicates that the corresponding category is allowed, while {@code false}
+     * indicates that it is disallowed.
+     *
+     * The {@code allowedMask} is typically manipulated during the inference process
+     * to encode constraints such as soft evidence, hard evidence, or query-specific
+     * assignments. It serves as a key internal structure for defining and applying
+     * these restrictions when computing probabilities or distributions.
+     */
     private boolean[][] allowedMask;
 
-    // Hard evidence: -1 means none, else fixed category.
+    /**
+     * Stores hard evidence for Bayesian network inference.
+     * Each index in the array corresponds to a node in the network,
+     * and the value at that index represents the observed category for the node.
+     * A value of -1 indicates that no hard evidence is set for the corresponding node.
+     * This array is immutable and is used as part of the inference process.
+     */
     private final int[] hardEvidence;
 
-    // Cache for P(E). Invalidated on any evidence change.
+    /**
+     * Indicates whether the normalizer value or calculations within the inference process are outdated and
+     * need to be recomputed. When set to true, cached results or internal state related to normalization
+     * are considered invalid, triggering recomputation where necessary.
+     */
     private boolean normalizerDirty = true;
+    /**
+     * Cached value of the probability of the current evidence (both hard and soft)
+     * in the Bayesian Network. This value is used to avoid redundant computations
+     * of the evidence probability.
+     *
+     * Initialized to {@code Double.NaN} to indicate that the cache is invalid
+     * or the evidence probability has not been computed yet.
+     *
+     * The cache is managed internally and recomputed by methods that modify
+     * or depend on the evidence state, such as {@code setEvidence}, {@code setAllowedCategories},
+     * or other computational routines involving evidence probabilities.
+     */
     private double cachedEvidenceProb = Double.NaN;
 
     /**
      * Construct inference over the given BayesIm.
+     *
+     * @param bayesIm BayesIm to perform inference over
      */
     public VariableEliminationInference(BayesIm bayesIm) {
         if (bayesIm == null) throw new NullPointerException("bayesIm");
@@ -69,6 +115,8 @@ public final class VariableEliminationInference implements Serializable {
     /**
      * Soft evidence: set allowed categories for each variable.
      * Proposition must be indexed to this BayesIm.
+     *
+     * @param allowedCategories Proposition specifying allowed categories for each variable
      */
     public void setAllowedCategories(Proposition allowedCategories) {
         if (allowedCategories == null) throw new NullPointerException("allowedCategories");
@@ -91,6 +139,9 @@ public final class VariableEliminationInference implements Serializable {
 
     /**
      * Hard evidence: set node = category. Pass a negative category to clear hard evidence for that node.
+     *
+     * @param node Node
+     * @param category Category
      */
     public void setEvidence(int node, int category) {
         if (node < 0 || node >= bayesIm.getNumNodes()) {
@@ -113,6 +164,9 @@ public final class VariableEliminationInference implements Serializable {
 
     /**
      * Conditional marginal P(node=category | evidence).
+     *
+     * @param node Node
+     * @param category Category
      */
     public double getMarginal(int node, int category) {
         if (node < 0 || node >= bayesIm.getNumNodes()) {
@@ -134,6 +188,11 @@ public final class VariableEliminationInference implements Serializable {
     /**
      * Conditional distribution P(node | parents=parentValues, evidence).
      * This returns an array of length numCategories(node).
+     *
+     * @param node Node
+     * @param parents Parent nodes
+     * @param parentValues Values for parent nodes
+     * @return Conditional distribution
      */
     public double[] getConditional(int node, int[] parents, int[] parentValues) {
         if (parents == null || parentValues == null) throw new NullPointerException();
@@ -192,6 +251,10 @@ public final class VariableEliminationInference implements Serializable {
      * Conditional joint marginal P(vars=values | evidence).
      *
      * (This is what callers typically mean by "joint marginal".)
+     *
+     * @param vars Variables
+     * @param values Values for variables
+     * @return Joint probability
      */
     public double getJointProbability(int[] vars, int[] values) {
         if (vars == null || values == null) throw new NullPointerException();
@@ -217,6 +280,8 @@ public final class VariableEliminationInference implements Serializable {
 
     /**
      * Compute P(E) where E is (soft evidence ∩ hard evidence).
+     *
+     * @return Probability of evidence
      */
     private double evidenceProbability() {
         if (!normalizerDirty) return cachedEvidenceProb;
