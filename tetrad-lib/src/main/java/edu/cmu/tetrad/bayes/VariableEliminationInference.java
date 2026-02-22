@@ -167,6 +167,7 @@ public final class VariableEliminationInference implements Serializable {
      *
      * @param node Node
      * @param category Category
+     * @return Conditional marginal probability
      */
     public double getMarginal(int node, int category) {
         if (node < 0 || node >= bayesIm.getNumNodes()) {

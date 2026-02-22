@@ -40,6 +40,15 @@ import static org.junit.Assert.*;
  */
 public final class JunctionTreeUpdaterTest {
 
+    /**
+     * Test class for verifying the functionality of the JunctionTreeUpdater component,
+     * utilized for probabilistic reasoning and evidence propagation in Bayesian networks.
+     * This class contains unit tests and utility methods designed to test the correct
+     * behavior of evidence propagation, intervention operations, and agreement between
+     * different methods of inference.
+     */
+    public JunctionTreeUpdaterTest() { }
+
     private static final double EPS = 1e-10;
 
     private static int idx(BayesIm im, String name) {
