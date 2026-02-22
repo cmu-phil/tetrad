@@ -82,6 +82,7 @@ public final class TextBayesUpdateEditor extends JPanel {
         // Updater dropdown
         c.gridx = 0; c.gridy = row; c.weightx = 0;
         p.add(new JLabel("Updater:"), c);
+        p.add(new JLabel("Updater:"), c);
         c.gridx = 1; c.gridy = row; c.weightx = 1.0;
         p.add(updaterCombo, c);
         row++;
@@ -95,7 +96,7 @@ public final class TextBayesUpdateEditor extends JPanel {
 
         // Evidence text
         c.gridx = 0; c.gridy = row; c.weightx = 0; c.anchor = GridBagConstraints.NORTHWEST;
-        p.add(new JLabel("Condition / Manipulate:"), c);
+        p.add(new JLabel("Evidence / Manipulation:"), c);
         c.gridx = 1; c.gridy = row; c.weightx = 1.0; c.fill = GridBagConstraints.BOTH;
         JScrollPane sp = new JScrollPane(evidenceText);
         sp.setPreferredSize(new Dimension(650, 180));
@@ -141,9 +142,9 @@ public final class TextBayesUpdateEditor extends JPanel {
         if (ev instanceof String s) evidenceText.setText(s);
         else {
             evidenceText.setText("""
-                    # Examples (C = condition, M = manipulate):
-                    # C: X = 1
-                    # C: Y in {0,2}
+                    # Examples (E = evidence, M = manipulation):
+                    # E: X = 1
+                    # E: Y in {0,2}
                     # M: T = 1
                     """);
         }
@@ -269,10 +270,10 @@ public final class TextBayesUpdateEditor extends JPanel {
         sb.append("Variable: ").append(node.getName()).append("\n");
         sb.append("Updater: ").append(updater.getClass().getSimpleName()).append("\n\n");
 
-        sb.append("Condition / Manipulation (as entered):\n");
+        sb.append("Evidence / Manipulation (as entered):\n");
         sb.append(evText.strip()).append("\n\n");
 
-        sb.append("Updated Marginal P(").append(node.getName()).append(" | condition, manipulate):\n");
+        sb.append("Updated Marginal P(").append(node.getName()).append(" | evidence, manipulation):\n");
         int k = bayesIm.getNumColumns(nodeIndex);
         double sum = 0.0;
         for (int cat = 0; cat < k; cat++) {
@@ -466,7 +467,7 @@ public final class TextBayesUpdateEditor extends JPanel {
     }
 
     // ============================================================
-    // Evidence parser: lines like "C: X = 1", "M: T in {0,1}"
+    // Evidence parser: lines like "E: X = 1", "M: T in {0,1}"
     // ============================================================
 
     private static final class EvidenceSpec {
@@ -513,11 +514,11 @@ public final class TextBayesUpdateEditor extends JPanel {
                 if (line.isEmpty()) continue;
                 if (line.startsWith("#")) continue;
 
-                boolean isEvidence = startsWithIgnoreCase(line, "C:");
-                boolean isDo = startsWithIgnoreCase(line, "M:");
+                boolean isEvidence = startsWithIgnoreCase(line, "E:");
+                boolean isManipulated = startsWithIgnoreCase(line, "M:");
 
-                if (!isEvidence && !isDo) {
-                    throw new IllegalArgumentException("Bad line (must start with C: or M: for condition on manipulate): " + raw);
+                if (!isEvidence && !isManipulated) {
+                    throw new IllegalArgumentException("Bad line (must start with E: or M: for evidence on manipulation): " + raw);
                 }
 
                 String body = line.substring(line.indexOf(':') + 1).trim();
@@ -556,7 +557,7 @@ public final class TextBayesUpdateEditor extends JPanel {
                 }
 
                 // if M: mark manipulated
-                if (isDo) {
+                if (isManipulated) {
                     spec.manipulated.set(node);
                 }
 
@@ -565,7 +566,7 @@ public final class TextBayesUpdateEditor extends JPanel {
                 if (prior == null) {
                     spec.allowed.put(node, ok);
                 } else {
-                    // successive C: lines intersect (tighter restriction)
+                    // successive E: lines intersect (tighter restriction)
                     prior.and(ok);
                 }
             }
