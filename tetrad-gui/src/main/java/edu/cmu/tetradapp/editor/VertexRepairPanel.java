@@ -188,7 +188,7 @@ public final class VertexRepairPanel extends JPanel {
     // UI
     private final JComboBox<RepairGraphType> graphTypeCombo = new JComboBox<>(RepairGraphType.values());
     private final JButton searchButton = new JButton();              // label set after x is known
-    private final JButton modelBestButton = new JButton("One \"Do No Harm\" Node Sweep");
+    private final JButton modelBestButton = new JButton("One Node Sweep");
     private final JButton backButton = new JButton("Undo");
     private final JButton showGraphButton = new JButton("Graph");
     private final JLabel statusLabel = new JLabel(" ");
@@ -1042,7 +1042,8 @@ public final class VertexRepairPanel extends JPanel {
                             fmtP(sc.nodePAfter()),
                             fmtP(sc.modelPAfter()));
 
-                    if (tryMoveWithGuards(workingGraph, center, sc.edit(), gt)) {
+                    if (tryMoveWithGuards(workingGraph, center, sc, gt)) {
+//                    if (tryMoveWithGuards(workingGraph, center, sc.edit(), gt)) {
                         editsApplied++;
                         int finalEditsApplied = editsApplied;
                         SwingUtilities.invokeLater(() ->
@@ -2121,57 +2122,89 @@ public final class VertexRepairPanel extends JPanel {
         return false;
     }
 
-    private boolean tryMoveWithGuards(Graph base, Node center, CandidateEdit edit, RepairGraphType gt) {
-        if (edit == null || edit.isNoOp()) return false;
-
-        int currentEdges = base.getNumEdges();
-
-        // Build candidate graph exactly the same way as candidate evaluation does
-        Graph cand = buildCandidateGraph(base, edit, gt);
-        if (cand == null) {
-            vlog("Rejected: buildCandidateGraph returned null.");
-            return false;
-        }
-
-        // Use the same baseline notion you're using in pack
-        int baselineViol = evalViolationsOnly(base);
-        int afterViol    = evalViolationsOnly(cand);
-        int afterEdges   = cand.getNumEdges();
-
-        // NEW: model-p comparison
-        double mpBefore = evalGraphOnce(base).modelP();
-        double mpAfter  = evalGraphOnce(cand).modelP();
-
-        // Progress gate (now includes Model-P improvements when violations/edges tie)
-        if (!isProgress(baselineViol, afterViol, currentEdges, afterEdges, mpBefore, mpAfter)) {
-            vlog("Rejected: not progress (baseline=%d after=%d edges %d->%d modelP %s->%s).",
-                    baselineViol, afterViol, currentEdges, afterEdges, fmtP(mpBefore), fmtP(mpAfter));
-            return false;
-        }
-
-//        // Progress gate
-//        if (!isProgress(baselineViol, afterViol, currentEdges, afterEdges)) {
-//            vlog("Rejected: not progress (baseline=%d after=%d edges %d->%d).",
-//                    baselineViol, afterViol, currentEdges, afterEdges);
-//            return false;
-//        }
-
-//        // Do-no-harm on affected vertices
-//        Set<String> affected = affectedVertices(base, center, cand);
-//        Map<String, Double> pBefore = nodePMap(base, affected);
-//        Map<String, Double> pAfter = nodePMap(cand, affected);
+//    private boolean tryMoveWithGuards(Graph base, Node center, CandidateEdit edit, RepairGraphType gt) {
+//        if (edit == null || edit.isNoOp()) return false;
 //
-//        if (!respectsDoNoHarm(pBefore, pAfter, center.getName())) {
-//            vlog("Rejected: violates do-no-harm on affected nodes %s.", affected);
+//        int currentEdges = base.getNumEdges();
+//
+//        // Build candidate graph exactly the same way as candidate evaluation does
+//        Graph cand = buildCandidateGraph(base, edit, gt);
+//        if (cand == null) {
+//            vlog("Rejected: buildCandidateGraph returned null.");
 //            return false;
 //        }
+//
+//        // Use the same baseline notion you're using in pack
+//        int baselineViol = evalViolationsOnly(base);
+//        int afterViol    = evalViolationsOnly(cand);
+//        int afterEdges   = cand.getNumEdges();
+//
+//        // NEW: model-p comparison
+//        double mpBefore = evalGraphOnce(base).modelP();
+//        double mpAfter  = evalGraphOnce(cand).modelP();
+//
+//        // Progress gate (now includes Model-P improvements when violations/edges tie)
+//        if (!isProgress(baselineViol, afterViol, currentEdges, afterEdges, mpBefore, mpAfter)) {
+//            vlog("Rejected: not progress (baseline=%d after=%d edges %d->%d modelP %s->%s).",
+//                    baselineViol, afterViol, currentEdges, afterEdges, fmtP(mpBefore), fmtP(mpAfter));
+//            return false;
+//        }
+//
+////        // Progress gate
+////        if (!isProgress(baselineViol, afterViol, currentEdges, afterEdges)) {
+////            vlog("Rejected: not progress (baseline=%d after=%d edges %d->%d).",
+////                    baselineViol, afterViol, currentEdges, afterEdges);
+////            return false;
+////        }
+//
+////        // Do-no-harm on affected vertices
+////        Set<String> affected = affectedVertices(base, center, cand);
+////        Map<String, Double> pBefore = nodePMap(base, affected);
+////        Map<String, Double> pAfter = nodePMap(cand, affected);
+////
+////        if (!respectsDoNoHarm(pBefore, pAfter, center.getName())) {
+////            vlog("Rejected: violates do-no-harm on affected nodes %s.", affected);
+////            return false;
+////        }
+//
+//        // Actually apply to workingGraph using your normal applier (so Graph button / editor sees it)
+//        vlog("Attempting guarded move: %s", edit.description());
+//        boolean ok = applyCandidateInternal(edit, false, false);
+//        vlog(ok ? "APPLIED successfully" : "Rejected (no change)");
+//        return ok;
+//    }
 
-        // Actually apply to workingGraph using your normal applier (so Graph button / editor sees it)
-        vlog("Attempting guarded move: %s", edit.description());
-        boolean ok = applyCandidateInternal(edit, false, false);
-        vlog(ok ? "APPLIED successfully" : "Rejected (no change)");
-        return ok;
+private boolean tryMoveWithGuards(Graph base, Node center, ScoredCandidate sc, RepairGraphType gt) {
+    if (sc == null || sc.edit() == null || sc.edit().isNoOp()) return false;
+
+    CandidateEdit edit = sc.edit();
+
+    int currentEdges = base.getNumEdges();
+    Graph cand = buildCandidateGraph(base, edit, gt);
+    if (cand == null) {
+        vlog("Rejected: buildCandidateGraph returned null.");
+        return false;
     }
+
+    // Use the SAME numbers the table computed (and your 2-pass MP logic patched in).
+    int baselineViol = sc.baseline();
+    int afterViol    = sc.violationsAfter();
+    int afterEdges   = sc.edgesAfter();
+
+    double mpBefore  = sc.modelPBefore();
+    double mpAfter   = sc.modelPAfter();
+
+    if (!isProgress(baselineViol, afterViol, currentEdges, afterEdges, mpBefore, mpAfter)) {
+        vlog("Rejected: not progress (baseline=%d after=%d edges %d->%d modelP %s->%s).",
+                baselineViol, afterViol, currentEdges, afterEdges, fmtP(mpBefore), fmtP(mpAfter));
+        return false;
+    }
+
+    vlog("Attempting guarded move: %s", edit.description());
+    boolean ok = applyCandidateInternal(edit, false, false);
+    vlog(ok ? "APPLIED successfully" : "Rejected (no change)");
+    return ok;
+}
 
     public enum RepairGraphType {DAG, CPDAG, PDAG, MAG, PAG}
 
