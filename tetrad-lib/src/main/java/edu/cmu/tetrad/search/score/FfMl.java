@@ -825,60 +825,60 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         double bestBw2 = bw2Med;
         double best = Double.NEGATIVE_INFINITY;
 
-//        // --- Option A: sequential (simplest, still big win) ---
-//        for (double m : mult) {
-//            double bw2 = bw2Med * (m * m);
-//            if (!(bw2 > 0) || !Double.isFinite(bw2)) continue;
-//
-//            final double ll;
-//            if (useNxN) {
-//                ll = gpLogML_mixedKernelNxN_precomp(
-//                        yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked
-//                );
-//            } else {
-//                // keep existing path unchanged
-//                ll = gpLogMarginalLikelihoodRFFMixed(
-//                        yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed
-//                );
-//            }
-//
-//            if (Double.isFinite(ll) && ll > best) {
-//                best = ll;
-//                bestBw2 = bw2;
-//            }
-//        }
+        // --- Option A: sequential (simplest, still big win) ---
+        for (double m : mult) {
+            double bw2 = bw2Med * (m * m);
+            if (!(bw2 > 0) || !Double.isFinite(bw2)) continue;
 
-        // --- Option B: parallel grid (uncomment if you want) ---
+            final double ll;
+            if (useNxN) {
+                ll = gpLogML_mixedKernelNxN_precomp(
+                        yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked
+                );
+            } else {
+                // keep existing path unchanged
+                ll = gpLogMarginalLikelihoodRFFMixed(
+                        yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed
+                );
+            }
 
-        final class Best {
-            final double bw2, ll;
-
-            Best(double bw2, double ll) {
-                this.bw2 = bw2;
-                this.ll = ll;
+            if (Double.isFinite(ll) && ll > best) {
+                best = ll;
+                bestBw2 = bw2;
             }
         }
-        double finalBw2Med = bw2Med;
-        Best b = Arrays.stream(mult).parallel()
-                .mapToObj(m -> {
-                    double bw2 = finalBw2Med * (m * m);
-                    if (!(bw2 > 0) || !Double.isFinite(bw2)) return new Best(finalBw2Med, Double.NEGATIVE_INFINITY);
 
-                    double ll = useNxN
-                            ? gpLogML_mixedKernelNxN_precomp(yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked)
-                            : gpLogMarginalLikelihoodRFFMixed(yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed);
-
-                    return new Best(bw2, ll);
-                })
-                .filter(x -> Double.isFinite(x.ll))
-                .max(java.util.Comparator.comparingDouble(x -> x.ll))
-                .orElse(new Best(bw2Med, Double.NEGATIVE_INFINITY));
-
-        bestBw2 = b.bw2;
-        best = b.ll;
-
-
-        if (!Double.isFinite(best) || !(bestBw2 > 0) || !Double.isFinite(bestBw2)) bestBw2 = bw2Med;
+//        // --- Option B: parallel grid (uncomment if you want) ---
+//
+//        final class Best {
+//            final double bw2, ll;
+//
+//            Best(double bw2, double ll) {
+//                this.bw2 = bw2;
+//                this.ll = ll;
+//            }
+//        }
+//        double finalBw2Med = bw2Med;
+//        Best b = Arrays.stream(mult).parallel()
+//                .mapToObj(m -> {
+//                    double bw2 = finalBw2Med * (m * m);
+//                    if (!(bw2 > 0) || !Double.isFinite(bw2)) return new Best(finalBw2Med, Double.NEGATIVE_INFINITY);
+//
+//                    double ll = useNxN
+//                            ? gpLogML_mixedKernelNxN_precomp(yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked)
+//                            : gpLogMarginalLikelihoodRFFMixed(yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed);
+//
+//                    return new Best(bw2, ll);
+//                })
+//                .filter(x -> Double.isFinite(x.ll))
+//                .max(java.util.Comparator.comparingDouble(x -> x.ll))
+//                .orElse(new Best(bw2Med, Double.NEGATIVE_INFINITY));
+//
+//        bestBw2 = b.bw2;
+//        best = b.ll;
+//
+//
+//        if (!Double.isFinite(best) || !(bestBw2 > 0) || !Double.isFinite(bestBw2)) bestBw2 = bw2Med;
 
         if (bwCoupleByTarget) bw2OptByTargetContCache.put(fullKey, bestBw2);
         else bw2OptCache.put(fullKey, bestBw2);
