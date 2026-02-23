@@ -814,39 +814,40 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             if (cached != null) return cached;
         }
 
-        final double[] mult = {1};// {0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0};
-
-        // Precompute things that do NOT depend on bw2
-        final boolean useNxN = (discParents != null && discParents.length >= 2);
-
-        final BaseWB base = buildBaseWB(mFeatures, contParents.length, seed);
-        final double[] kcatLowerPacked = useNxN ? precomputeKcatLowerPacked(discParents, rows, n) : null;
-
         double bestBw2 = bw2Med;
-        double best = Double.NEGATIVE_INFINITY;
 
-        // --- Option A: sequential (simplest, still big win) ---
-        for (double m : mult) {
-            double bw2 = bw2Med * (m * m);
-            if (!(bw2 > 0) || !Double.isFinite(bw2)) continue;
-
-            final double ll;
-            if (useNxN) {
-                ll = gpLogML_mixedKernelNxN_precomp(
-                        yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked
-                );
-            } else {
-                // keep existing path unchanged
-                ll = gpLogMarginalLikelihoodRFFMixed(
-                        yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed
-                );
-            }
-
-            if (Double.isFinite(ll) && ll > best) {
-                best = ll;
-                bestBw2 = bw2;
-            }
-        }
+//        final double[] mult = {1};// {0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0};
+//
+//        // Precompute things that do NOT depend on bw2
+//        final boolean useNxN = (discParents != null && discParents.length >= 2);
+//
+//        final BaseWB base = buildBaseWB(mFeatures, contParents.length, seed);
+//        final double[] kcatLowerPacked = useNxN ? precomputeKcatLowerPacked(discParents, rows, n) : null;
+//
+//        double best = Double.NEGATIVE_INFINITY;
+//
+//        // --- Option A: sequential (simplest, still big win) ---
+//        for (double m : mult) {
+//            double bw2 = bw2Med * (m * m);
+//            if (!(bw2 > 0) || !Double.isFinite(bw2)) continue;
+//
+//            final double ll;
+//            if (useNxN) {
+//                ll = gpLogML_mixedKernelNxN_precomp(
+//                        yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked
+//                );
+//            } else {
+//                // keep existing path unchanged
+//                ll = gpLogMarginalLikelihoodRFFMixed(
+//                        yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed
+//                );
+//            }
+//
+//            if (Double.isFinite(ll) && ll > best) {
+//                best = ll;
+//                bestBw2 = bw2;
+//            }
+//        }
 
 //        // --- Option B: parallel grid (uncomment if you want) ---
 //
@@ -879,6 +880,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 //
 //
 //        if (!Double.isFinite(best) || !(bestBw2 > 0) || !Double.isFinite(bestBw2)) bestBw2 = bw2Med;
+//
+//        bestBw2 = bw2Med;
 
         if (bwCoupleByTarget) bw2OptByTargetContCache.put(fullKey, bestBw2);
         else bw2OptCache.put(fullKey, bestBw2);
