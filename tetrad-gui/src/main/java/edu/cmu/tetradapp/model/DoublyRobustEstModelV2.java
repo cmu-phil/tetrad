@@ -283,29 +283,37 @@ public final class DoublyRobustEstModelV2 implements SessionModel, GraphSource, 
 
                 if (X.isEmpty() || Y.isEmpty()) return;
 
-                if (effectMode == EffectMode.PAIRWISE) {
-                    for (Node x : X) {
-                        for (Node y : Y) {
-                            if (x == null || y == null) continue;
-                            if (x.equals(y)) continue;
-                            computeRowsForPair(x, y);
-                        }
-                    }
-                } else {
-                    // v2: JOINT supported only for |X|=1 (binary estimator)
-                    if (X.size() != 1) {
-                        for (Node y : Y) {
-                            if (y == null) continue;
-                            results.add(ResultRowV2.notSupportedJoint(y));
-                        }
-                        return;
-                    }
+//                if (effectMode == EffectMode.PAIRWISE) {
+//                    for (Node x : X) {
+//                        for (Node y : Y) {
+//                            if (x == null || y == null) continue;
+//                            if (x.equals(y)) continue;
+//                            computeRowsForPair(x, y);
+//                        }
+//                    }
+//                } else {
+//                    // v2: JOINT supported only for |X|=1 (binary estimator)
+//                    if (X.size() != 1) {
+//                        for (Node y : Y) {
+//                            if (y == null) continue;
+//                            results.add(ResultRowV2.notSupportedJoint(y));
+//                        }
+//                        return;
+//                    }
+//
+//                    Node x = X.iterator().next();
+//                    for (Node y : Y) {
+//                        if (y == null) continue;
+//                        if (x.equals(y)) continue;
+//                        computeRowsForJointSingleX(x, y);
+//                    }
+//                }
 
-                    Node x = X.iterator().next();
+                for (Node x : X) {
                     for (Node y : Y) {
-                        if (y == null) continue;
+                        if (x == null || y == null) continue;
                         if (x.equals(y)) continue;
-                        computeRowsForJointSingleX(x, y);
+                        computeRowsForPair(x, y);
                     }
                 }
 
