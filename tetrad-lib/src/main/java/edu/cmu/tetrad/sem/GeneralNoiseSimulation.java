@@ -256,5 +256,15 @@ public class GeneralNoiseSimulation {
         } else {
             for (int i = 0; i < n; i++) A.data[i] = f.apply(A.data[i]);
         }
+
+        // TODO Keep?
+        // Soft clip inputs to keep tanh in a stable nonlinear regime.
+        // 2.0..4.0 is a good start for inputScale ~ 5.
+        final double clip = 3.0;
+        for (int idx = 0; idx < A.getNumElements(); idx++) {
+            double v = A.data[idx];
+            if (v > clip) A.data[idx] = clip;
+            else if (v < -clip) A.data[idx] = -clip;
+        }
     }
 }
