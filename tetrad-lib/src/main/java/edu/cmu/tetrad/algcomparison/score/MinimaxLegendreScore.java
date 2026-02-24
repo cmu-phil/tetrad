@@ -30,13 +30,13 @@ import java.util.List;
  * - minimaxLegendreIrlsIters (default 8)
  * - minimaxLegendreIrlsTol   (default 1e-6)
  */
-@edu.cmu.tetrad.annotation.Score(
-        name = "Minimax Legendre Score",
-        command = "minimax-legendre-score",
-        dataType = {DataType.Mixed}
-)
-@General
-@Mixed
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "Minimax Legendre Score",
+//        command = "minimax-legendre-score",
+//        dataType = {DataType.Mi xed}
+//)
+//@General
+//@Mixed
 //@Experimental
 public class MinimaxLegendreScore implements ScoreWrapper {
 
@@ -96,15 +96,15 @@ public class MinimaxLegendreScore implements ScoreWrapper {
         if (degree <= 0) degree = 8;
         score.setLegendreDegree(degree);
 
-        // ---- Keep exposed (optional but practical): Clip ----
-        double clip = parameters.getDouble(Params.MINIMAX_LEGENDRE_CLIP);
-        if (!(clip > 0.0) || !Double.isFinite(clip)) clip = 3.0;
-        score.setLegendreClip(clip);
+//        // ---- Keep exposed (optional but practical): Clip ----
+//        double clip = parameters.getDouble(Params.MINIMAX_LEGENDRE_CLIP);
+//        if (!(clip > 0.0) || !Double.isFinite(clip)) clip = 3.0;
+//        score.setLegendreClip(clip);
 
-        // ---- Keep exposed: Ridge ----
-        double ridge = parameters.getDouble(Params.MINIMAX_LEGENDRE_RIDGE);
-        if (!(ridge > 0.0) || !Double.isFinite(ridge)) ridge = 1e-3;
-        score.setRidge(ridge);
+//        // ---- Keep exposed: Ridge ----
+//        double ridge = parameters.getDouble(Params.MINIMAX_LEGENDRE_RIDGE);
+//        if (!(ridge > 0.0) || !Double.isFinite(ridge)) ridge = 1e-3;
+//        score.setRidge(ridge);
 
         // ---- Hidden/internal defaults ----
         score.setNu(5.0);          // Student-t df
@@ -160,8 +160,8 @@ public class MinimaxLegendreScore implements ScoreWrapper {
     public List<String> getParameters() {
         List<String> p = new ArrayList<>();
         p.add(Params.MINIMAX_LEGENDRE_DEGREE);
-        p.add(Params.MINIMAX_LEGENDRE_CLIP);
-        p.add(Params.MINIMAX_LEGENDRE_RIDGE);
+//        p.add(Params.MINIMAX_LEGENDRE_CLIP);
+//        p.add(Params.MINIMAX_LEGENDRE_RIDGE);
         p.add(Params.PENALTY_DISCOUNT_DEFAULT_1);
         p.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return p;

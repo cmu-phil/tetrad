@@ -132,6 +132,8 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
         this.sampleSize = dataSet.getNumRows();
         setEffectiveSampleSize(-1);
 
+        this.ridge = 1.0 / this.sampleSize;
+
         this.calculateRowSubsets = dataSet.existsMissingValue();
 
         int p = variables.size();
@@ -904,16 +906,13 @@ public final class MinimaxLegendreScore implements Score, EffectiveSampleSizeSet
         Arrays.fill(out, 1, out.length, 0.0);
 
         // Precompute mapped x values (only need first kInt, but compute all is fine)
-        final double invClip = 1.0 / legendreClip;
         final double[] xMap = (kInt > 0) ? new double[kInt] : null;
 
         // Fill Legendre block
         int pos = legOff;
         for (int j = 0; j < dCont; j++) {
             double z = Zc[i][j];
-//            double x = z * invClip;
             double x = Math.tanh(z / legendreClip);
-//            x = clamp(x);
 
             if (j < kInt) xMap[j] = x;
 
