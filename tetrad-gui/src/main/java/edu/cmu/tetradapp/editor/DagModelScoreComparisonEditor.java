@@ -96,20 +96,20 @@ public final class DagModelScoreComparisonEditor extends JPanel {
             metricSpecs.add(new DagMetricSpec("RMSEA", "RMSEA", Better.LOWER,
                     edu.cmu.tetrad.sem.DagMetrics.rmsea()));
 
-            metricSpecs.add(new DagMetricSpec("FFML", "General Mixed Likelihood Score", Better.HIGHER,
+            metricSpecs.add(new DagMetricSpec("FFML", "General Mixed GP Likelihood Score", Better.HIGHER,
                     edu.cmu.tetrad.sem.DagMetrics.ffml()));
-            metricSpecs.add(new DagMetricSpec("Legendre BIC", "General Mixed BIC Score", Better.HIGHER,
-                    edu.cmu.tetrad.sem.DagMetrics.legendreBic()));
+//            metricSpecs.add(new DagMetricSpec("Legendre BIC", "General Mixed BIC Score", Better.HIGHER,
+//                    edu.cmu.tetrad.sem.DagMetrics.legendreBic()));
             metricSpecs.add(new DagMetricSpec("Minimax t-RFF BIC", "General Mixed BIC Score", Better.HIGHER,
                     edu.cmu.tetrad.sem.DagMetrics.minimaxTrffBic()));
 
 //            metricSpecs.add(new DagMetricSpec("MMD2", "Maximum Mean Discrepancy squared", Better.LOWER,
 //                    edu.cmu.tetrad.sem.DagMetrics.mmd2()));
         } else if (data.isMixed()) {
-            metricSpecs.add(new DagMetricSpec("FFML", "General Mixed Likelihood Score", Better.HIGHER,
+            metricSpecs.add(new DagMetricSpec("FFML", "General Mixed GP Likelihood Score", Better.HIGHER,
                     edu.cmu.tetrad.sem.DagMetrics.ffml()));
-            metricSpecs.add(new DagMetricSpec("Minimax Legendre BIC", "General Mixed BIC Score", Better.HIGHER,
-                    edu.cmu.tetrad.sem.DagMetrics.legendreBic()));
+//            metricSpecs.add(new DagMetricSpec("Minimax Legendre BIC", "General Mixed BIC Score", Better.HIGHER,
+//                    edu.cmu.tetrad.sem.DagMetrics.legendreBic()));
             metricSpecs.add(new DagMetricSpec("Minimax t-RFF BIC", "General Mixed BIC Score", Better.HIGHER,
                     edu.cmu.tetrad.sem.DagMetrics.minimaxTrffBic()));
 //            metricSpecs.add(new DagMetricSpec("MMD2", "Maximum Mean Discrepancy squared", Better.LOWER,
