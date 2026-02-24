@@ -42,7 +42,7 @@ public class TRffBicScore implements ScoreWrapper {
      * for operations such as determining if the dataset is continuous, discrete, or mixed,
      * accessing variables by name, and creating copies for further processing.
      */
-    private DataModel dataSet;
+    private transient DataModel dataSet;
 
     /**
      * Constructor for the TRffBicScore class. This class serves as a
@@ -157,5 +157,12 @@ public class TRffBicScore implements ScoreWrapper {
     @Override
     public Node getVariable(String name) {
         return this.dataSet.getVariable(name);
+    }
+
+    @Serial
+    private void readObject(java.io.ObjectInputStream in)
+            throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        this.dataSet = null;             // <-- force rebind after load
     }
 }

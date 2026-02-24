@@ -10,6 +10,7 @@ import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -102,14 +103,14 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
     /**
      * Cache key -> score.
      */
-    private final AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
+    private transient AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
 
     // RFF coupling caches:
     // - per (child i, cont-parent var j): omega vector length D
     // - per child i: phase vector length D
-    private final ConcurrentHashMap<Long, double[]> omegaCache = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Integer, double[]> phaseCache = new ConcurrentHashMap<>();
+    private transient ConcurrentHashMap<Long, double[]> omegaCache = new ConcurrentHashMap<>();
+    private transient ConcurrentHashMap<Integer, double[]> phaseCache = new ConcurrentHashMap<>();
     /**
      * Student-t degrees of freedom (continuous child).
      */
@@ -164,6 +165,8 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
         this.sampleSize = dataSet.getNumRows();
         setEffectiveSampleSize(-1);
 
+        initCaches();
+
         this.calculateRowSubsets = dataSet.existsMissingValue();
 
         int p = variables.size();
@@ -188,6 +191,12 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
     }
 
     // -------------------- Score interface --------------------
+
+    private void initCaches() {
+        localScoreCacheRef = new AtomicReference<>(new ConcurrentHashMap<>());
+        omegaCache = new ConcurrentHashMap<>();
+        phaseCache = new ConcurrentHashMap<>();
+    }
 
     private static double multinomialInterceptOnlyLogLik(int[] y, int K) {
         int n = y.length;
@@ -1456,5 +1465,12 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
             this.offsets = offsets;
             this.totalCols = totalCols;
         }
+    }
+
+    @Serial
+    private void readObject(java.io.ObjectInputStream in)
+            throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        initCaches(); // important
     }
 }

@@ -57,7 +57,7 @@ public class FfMl implements ScoreWrapper {
     /**
      * The data set.
      */
-    private DataModel dataSet;
+    private transient DataModel dataSet;
 
     /**
      * Constructs a new instance of the SemBicScore.
@@ -140,6 +140,13 @@ public class FfMl implements ScoreWrapper {
     @Override
     public Node getVariable(String name) {
         return this.dataSet.getVariable(name);
+    }
+
+    @Serial
+    private void readObject(java.io.ObjectInputStream in)
+            throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        this.dataSet = null;             // <-- force rebind after load
     }
 
 }

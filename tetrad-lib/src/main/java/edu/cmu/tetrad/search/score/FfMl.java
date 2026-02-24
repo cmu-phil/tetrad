@@ -10,6 +10,7 @@ import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -90,6 +91,9 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
+    @Serial
+    private static final long serialVersionUID = 23L;
+
     /**
      * If true, use valid row subsets when missing exists.
      */
@@ -114,16 +118,16 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     /**
      * Cache: (target i, sorted parents) -> score.
      */
-    private final AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
+    private transient AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
 
-    private final ConcurrentHashMap<Long, Double> bw2Cache = new ConcurrentHashMap<>();
+    private transient ConcurrentHashMap<Long, Double> bw2Cache = new ConcurrentHashMap<>();
 
-    private final ConcurrentHashMap<Long, Double> bw2OptCache = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Long, Double> bw2MedByTargetContCache = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Long, Double> bw2OptByTargetContCache = new ConcurrentHashMap<>();
+    private transient ConcurrentHashMap<Long, Double> bw2OptCache = new ConcurrentHashMap<>();
+    private transient ConcurrentHashMap<Long, Double> bw2MedByTargetContCache = new ConcurrentHashMap<>();
+    private transient ConcurrentHashMap<Long, Double> bw2OptByTargetContCache = new ConcurrentHashMap<>();
     // class field (add near other caches)
-    private final ConcurrentHashMap<Double, java.util.concurrent.atomic.LongAdder> bestMultCounts =
+    private transient ConcurrentHashMap<Double, java.util.concurrent.atomic.LongAdder> bestMultCounts =
             new ConcurrentHashMap<>();
     // ---- make bw selection "global-per-target" for comparability across DAGs ----
     private volatile boolean bwCoupleByTarget = true;     // NEW: default true
@@ -234,7 +238,16 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             }
         }
 
-        resetCache();
+        initCaches();
+    }
+
+    private void initCaches() {
+        localScoreCacheRef = new AtomicReference<>(new ConcurrentHashMap<>());
+        bw2Cache = new ConcurrentHashMap<>();
+        bw2OptCache = new ConcurrentHashMap<>();
+        bw2MedByTargetContCache = new ConcurrentHashMap<>();
+        bw2OptByTargetContCache = new ConcurrentHashMap<>();
+        bestMultCounts = new ConcurrentHashMap<>();
     }
 
     /**
@@ -1018,7 +1031,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = (nEff < 0) ? this.sampleSize : nEff;
-        resetCache();
+        initCaches();
     }
 
     /**
@@ -1060,7 +1073,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     public void setLambda(double lambda) {
         if (lambda <= 0) throw new IllegalArgumentException("lambda must be > 0");
         this.lambda = lambda;
-        resetCache();
+        initCaches();
     }
 
     // -------------------- missingness row selection (mixed) --------------------
@@ -1074,7 +1087,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      */
     public void setBwMaxRows(int bwMaxRows) {
         this.bwMaxRows = Math.max(50, bwMaxRows);
-        resetCache();
+        initCaches();
     }
 
     /**
@@ -1085,7 +1098,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     public void setNumFeatures(int numFeatures) {
         if (numFeatures < 8) throw new IllegalArgumentException("numFeatures should be >= 8");
         this.numFeatures = numFeatures;
-        resetCache();
+        initCaches();
     }
 
     /**
@@ -1105,7 +1118,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      */
     public void setBaseSeed(long baseSeed) {
         this.baseSeed = baseSeed;
-        resetCache();
+        initCaches();
     }
 
     /**
@@ -1128,7 +1141,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      */
     public void setCoupleFeaturesByTarget(boolean coupleFeaturesByTarget) {
         this.coupleFeaturesByTarget = coupleFeaturesByTarget;
-        resetCache();
+        initCaches();
     }
 
     /**
@@ -1150,7 +1163,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     public void setFeatureType(FeatureType featureType) {
         if (featureType == null) throw new IllegalArgumentException("featureType cannot be null");
         this.featureType = featureType;
-        resetCache();
+        initCaches();
     }
 
     /**
@@ -1175,7 +1188,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             throw new IllegalArgumentException("catRho must be in [0,1)");
         }
         this.catRho = rho;
-        resetCache();
+        initCaches();
     }
 
     /**
@@ -1783,27 +1796,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return x;
     }
 
-    //    private void resetCache() {
-//        localScoreCacheRef.set(new ConcurrentHashMap<>());
-//        bw2Cache.clear();
-//    }
-    private void resetCache() {
-        // Local score cache
-        localScoreCacheRef.set(new ConcurrentHashMap<>());
-
-        // Old-style parent-set-coupled bandwidth caches
-        bw2Cache.clear();                 // median bw^2 (full parent-set key)
-        bw2OptCache.clear();              // optimized bw^2 (full parent-set key)
-
-        // New-style target+continuous-parent–coupled caches
-        bw2MedByTargetContCache.clear();  // median bw^2 keyed by (target, contParents)
-        bw2OptByTargetContCache.clear();  // optimized bw^2 keyed by (target, contParents)
-    }
-
-//    private void resetCache() {
-//        localScoreCacheRef.set(new ConcurrentHashMap<>());
-//    }
-
     private long seedFor(int targetIndex, long cacheKey) {
         // If coupled: same feature basis for all parent sets of this target.
         // If not: old behavior (seed changes with parent set).
@@ -1883,5 +1875,12 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             int lev = levelOfRow[rowIndexWithinActive];
             return A[lev];
         }
+    }
+
+    @Serial
+    private void readObject(java.io.ObjectInputStream in)
+            throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        initCaches(); // important
     }
 }
