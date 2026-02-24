@@ -4,7 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.MinimaxLegendreScore;
-import edu.cmu.tetrad.search.score.MinimaxTRffBicScore;
+import edu.cmu.tetrad.search.score.TRffBicScore;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -27,7 +27,7 @@ import static java.lang.Float.NaN;
  */
 public final class MinimaxTRffTest implements IndependenceTest {
 
-    private final MinimaxTRffBicScore score;
+    private final TRffBicScore score;
     private final List<Node> variables;
     private final boolean disableInteractionsForTest;
     private boolean verbose = false;
@@ -39,7 +39,7 @@ public final class MinimaxTRffTest implements IndependenceTest {
      *
      * @param score the MinimaxTRffBicScore instance used to evaluate the test.
      */
-    public MinimaxTRffTest(MinimaxTRffBicScore score) {
+    public MinimaxTRffTest(TRffBicScore score) {
         this(score, true);
     }
 
@@ -52,7 +52,7 @@ public final class MinimaxTRffTest implements IndependenceTest {
      * should be disabled for the test.
      * @throws NullPointerException if the score parameter is null.
      */
-    public MinimaxTRffTest(MinimaxTRffBicScore score, boolean disableInteractionsForTest) {
+    public MinimaxTRffTest(TRffBicScore score, boolean disableInteractionsForTest) {
         if (score == null) throw new NullPointerException("score");
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());

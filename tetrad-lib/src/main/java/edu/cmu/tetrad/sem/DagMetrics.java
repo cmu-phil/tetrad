@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.TRffBicScore;
 import edu.cmu.tetrad.util.Parameters;
 import org.jetbrains.annotations.NotNull;
 
@@ -49,8 +50,8 @@ public final class DagMetrics {
      */
     public static @NotNull DagMetric minimaxTrffBic() {
         return (data, dag) -> {
-            var algScore = new edu.cmu.tetrad.algcomparison.score.MinimaxTRffBicScore();
-            var score = (edu.cmu.tetrad.search.score.MinimaxTRffBicScore) algScore.getScore(data, new Parameters());
+            var algScore = new edu.cmu.tetrad.algcomparison.score.TRffBicScore();
+            var score = (TRffBicScore) algScore.getScore(data, new Parameters());
             double s = sumLocalScores(data, dag, score);
             return new DagMetricResult("Minimax t-RFF BIC", s, "General Mixed BIC Score", DagMetricResult.Better.HIGHER);
         };

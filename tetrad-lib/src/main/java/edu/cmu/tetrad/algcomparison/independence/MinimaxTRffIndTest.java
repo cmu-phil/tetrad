@@ -20,13 +20,10 @@
 
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.annotation.General;
-import edu.cmu.tetrad.annotation.Mixed;
-import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
-import edu.cmu.tetrad.search.score.MinimaxTRffBicScore;
+import edu.cmu.tetrad.search.score.TRffBicScore;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MinimaxTRffTest;
 import edu.cmu.tetrad.util.Parameters;
@@ -69,7 +66,7 @@ public final class MinimaxTRffIndTest implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         // Build the score from the mixed dataset
-        MinimaxTRffBicScore score = new MinimaxTRffBicScore(SimpleDataLoader.getMixedDataSet(dataSet));
+        TRffBicScore score = new TRffBicScore(SimpleDataLoader.getMixedDataSet(dataSet));
 
         // Standard knobs
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));

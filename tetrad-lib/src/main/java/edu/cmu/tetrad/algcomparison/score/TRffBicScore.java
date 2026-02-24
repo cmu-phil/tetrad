@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
@@ -16,23 +15,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The {@code MinimaxTRffBicScore} class is a scoring mechanism designed to evaluate the fit and complexity
- * of a data model. This score uses Minimax Transposed Ridge Forward Feature Binary Information Criterion (BIC),
+ * The {@code TRffBicScore} class is a scoring mechanism designed to evaluate the fit and complexity
+ * of a data model. This score uses the Student-T Fourier Feature Bayes Information Criterion (BIC),
  * which is particularly suitable for mixed-data settings. The class provides parameterized control over
  * regularization, feature tuning, and penalty adjustments, allowing flexibility during model evaluation.
- *
+ * <p>
  * The scoring mechanism is implemented within the Tetrad framework and adheres to the {@code ScoreWrapper} interface.
  * It is annotated with {@code Score}, specifying the name, command, and applicable data type.
  */
-@edu.cmu.tetrad.annotation.Score(
-        name = "Minimax tRFF BIC Score",
-        command = "minimax-trff-bic-score",
-        dataType = {DataType.Mixed}
-)
+@edu.cmu.tetrad.annotation.Score(name = "T-RFF BIC Score", command = "trff-bic-score", dataType = {DataType.Mixed})
 @General
 @Mixed
 //@Experimental
-public class MinimaxTRffBicScore implements ScoreWrapper {
+public class TRffBicScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -40,9 +35,9 @@ public class MinimaxTRffBicScore implements ScoreWrapper {
     /**
      * Represents the data model associated with the current instance of the scoring mechanism.
      * This variable holds the dataset used for calculations and operations performed within the
-     * {@code MinimaxTRffBicScore} class. It is assigned when the scoring method is invoked and
+     * {@code TRffBicScore} class. It is assigned when the scoring method is invoked and
      * contains information about the structure and content of the dataset to be evaluated.
-     *
+     * <p>
      * The {@code DataModel} interface, implemented by the assigned instance, provides methods
      * for operations such as determining if the dataset is continuous, discrete, or mixed,
      * accessing variables by name, and creating copies for further processing.
@@ -50,17 +45,18 @@ public class MinimaxTRffBicScore implements ScoreWrapper {
     private DataModel dataSet;
 
     /**
-     * Constructor for the MinimaxTRffBicScore class. This class serves as a
-     * Minimax Transposed Ridge Forward Feature Binary Information Criterion (BIC)
+     * Constructor for the TRffBicScore class. This class serves as a
+     * Student-T Fourier Feature Bayes Information Criterion (BIC)
      * scoring mechanism typically applied in mixed-data settings.
-     *
+     * <p>
      * The score is used in conjunction with algorithms that evaluate the fit
      * and complexity of a model based on penalized likelihood principles.
-     *
-     * This constructor initializes a new instance of the MinimaxTRffBicScore
+     * <p>
+     * This constructor initializes a new instance of the TRffBicScore
      * without requiring parameters.
      */
-    public MinimaxTRffBicScore() { }
+    public TRffBicScore() {
+    }
 
     /**
      * Calculates and returns a score for the given dataset based on the specified parameters.
@@ -68,16 +64,16 @@ public class MinimaxTRffBicScore implements ScoreWrapper {
      * @param dataSet    The dataset for which the score is to be calculated. It must be an instance of DataSet.
      * @param parameters The parameters used to configure the scoring process, including tuning knobs
      *                   such as ridge regularization, number of random Fourier features, and penalty discount.
-     * @return An instance of {@link edu.cmu.tetrad.search.score.MinimaxTRffBicScore} configured with the provided dataset and parameters.
+     * @return An instance of {@link edu.cmu.tetrad.search.score.TRffBicScore} configured with the provided dataset and parameters.
      * @throws IllegalArgumentException If the provided dataset is not an instance of DataSet.
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        final edu.cmu.tetrad.search.score.MinimaxTRffBicScore score;
+        final edu.cmu.tetrad.search.score.TRffBicScore score;
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.score.MinimaxTRffBicScore((DataSet) dataSet);
+            score = new edu.cmu.tetrad.search.score.TRffBicScore((DataSet) dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
@@ -110,11 +106,11 @@ public class MinimaxTRffBicScore implements ScoreWrapper {
     /**
      * Provides a textual description of the current scoring mechanism.
      *
-     * @return a string representing the description of the Minimax tRFF BIC Score
+     * @return a string representing the description of the T-RFF BIC Score
      */
     @Override
     public String getDescription() {
-        return "Minimax tRFF BIC Score";
+        return "T-RFF BIC Score";
     }
 
     /**
@@ -128,8 +124,9 @@ public class MinimaxTRffBicScore implements ScoreWrapper {
     }
 
     /**
-     * Retrieves a list of parameter names associated with the Minimax Transposed Ridge Forward Feature
-     * Binary Information Criterion (BIC) scoring mechanism. These parameters can be used to configure
+     * Retrieves a list of parameter names associated with the
+     * Student-T Random Fourier Feature Bayes Information Criterion (BIC)
+     * scoring mechanism. These parameters can be used to configure
      * the behavior of the scoring process.
      *
      * @return a list of parameter names as strings. Each parameter represents a configurable aspect
@@ -155,7 +152,7 @@ public class MinimaxTRffBicScore implements ScoreWrapper {
      * @param name the name of the variable to retrieve. It must correspond to a variable
      *             contained in the dataset.
      * @return the {@code Node} representing the variable associated with the specified name.
-     *         Returns null if the dataset does not contain a variable with the given name.
+     * Returns null if the dataset does not contain a variable with the given name.
      */
     @Override
     public Node getVariable(String name) {
