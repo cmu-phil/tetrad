@@ -73,12 +73,27 @@ public final class DagMetrics {
      * Computes the FFML score for a given dataset and DAG.
      * @return A {@link DagMetric} instance that calculates the FFML metric.
      */
+    /**
+     * Computes the FFML score for a given dataset and DAG.
+     * @return A {@link DagMetric} instance that calculates the FFML metric.
+     */
     public static @NotNull DagMetric ffml() {
-        return (data, dag) -> {
-            var algScore = new edu.cmu.tetrad.algcomparison.score.FfMl();
-            var score = (edu.cmu.tetrad.search.score.FfMl) algScore.getScore(data, new Parameters());
-            double s = sumLocalScores(data, dag, score);
-            return new DagMetricResult("FFML", s, "General Mixed Likelihood Score", DagMetricResult.Better.HIGHER);
+        return new DagMetric() {
+            // cache per dataset object identity (or per unique ID)
+            private final java.util.IdentityHashMap<DataSet, edu.cmu.tetrad.search.score.Score> cache =
+                    new java.util.IdentityHashMap<>();
+
+            @Override
+            public DagMetricResult compute(DataSet data, Graph dag) {
+                var score = cache.computeIfAbsent(data, ds -> {
+                    var algScore = new edu.cmu.tetrad.algcomparison.score.FfMl();
+                    return (edu.cmu.tetrad.search.score.Score) algScore.getScore(ds, new Parameters());
+                });
+
+                double s = sumLocalScores(data, dag, score);
+                return new DagMetricResult("FFML", s, "General Mixed Likelihood Score",
+                        DagMetricResult.Better.HIGHER);
+            }
         };
     }
 

@@ -291,6 +291,11 @@ public class GeneralNoiseSimulation implements Simulation {
         }
 
         Function<Double, Double> activation = Math::tanh;// x -> Math.max(0.1 * x, x);
+//
+//        double alpha = 0.01;
+//
+//        Function<Double, Double> activation =
+//                x -> x > 0 ? x : alpha * x;
 
         edu.cmu.tetrad.sem.GeneralNoiseSimulation generator = new edu.cmu.tetrad.sem.GeneralNoiseSimulation(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),

@@ -41,10 +41,10 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
     private final DoublyRobustEstModelV2 model;
     private final Graph graph;
 
-    private final JRadioButton pairwiseRadio =
-            new JRadioButton("ATE for all X–Y pairs (binary X only)");
-    private final JRadioButton jointRadio =
-            new JRadioButton("Joint conditioning: p(Y | joint(X)) (v2 supports |X|=1)");
+//    private final JRadioButton pairwiseRadio =
+//            new JRadioButton("ATE for all X–Y pairs (binary X only)");
+//    private final JRadioButton jointRadio =
+//            new JRadioButton("Joint conditioning: p(Y | joint(X)) (v2 supports |X|=1)");
 
     private final JTextField treatmentsField = new JTextField();
     private final JTextField outcomesField = new JTextField();
@@ -122,17 +122,25 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
 
         JPanel topPanel = new JPanel(new BorderLayout(5, 5));
 
-        ButtonGroup modeGroup = new ButtonGroup();
-        modeGroup.add(pairwiseRadio);
-        modeGroup.add(jointRadio);
+//        ButtonGroup modeGroup = new ButtonGroup();
+//        modeGroup.add(pairwiseRadio);
+//        modeGroup.add(jointRadio);
+//
+//        if (model.getEffectMode() == DoublyRobustEstModelV2.EffectMode.JOINT) jointRadio.setSelected(true);
+//        else pairwiseRadio.setSelected(true);
 
-        if (model.getEffectMode() == DoublyRobustEstModelV2.EffectMode.JOINT) jointRadio.setSelected(true);
-        else pairwiseRadio.setSelected(true);
+//        JPanel modePanel = new JPanel(new GridLayout(0, 1));
+//        modePanel.add(new JLabel("Mode:"));
 
-        JPanel modePanel = new JPanel(new GridLayout(0, 1));
-        modePanel.add(new JLabel("Mode:"));
-        modePanel.add(pairwiseRadio);
-        modePanel.add(jointRadio);
+        JPanel modePanel = new JPanel(new BorderLayout());
+        modePanel.add(new JLabel(
+                "<html><b>Mode:</b> Average treatment effects computed for all X–Y pairs (binary X only).</html>"
+        ), BorderLayout.CENTER);
+
+        topPanel.add(modePanel, BorderLayout.NORTH);
+
+//        modePanel.add(pairwiseRadio);
+//        modePanel.add(jointRadio);
         topPanel.add(modePanel, BorderLayout.NORTH);
 
         JPanel xyPanel = new JPanel(new GridLayout(2, 2, 5, 5));
@@ -398,40 +406,6 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
     // Model sync
     // ------------------------
 
-//    private void updateModelFromUI() {
-//        Set<Node> X = parseNodeList(treatmentsField.getText().trim(), true);
-//        Set<Node> Y = parseNodeList(outcomesField.getText().trim(), false);
-//
-//        if (X.isEmpty() || Y.isEmpty()) {
-//            throw new IllegalArgumentException("Treatments and outcomes sets must not be empty.");
-//        }
-//
-//        model.setX(X);
-//        model.setY(Y);
-//
-//        model.setTreatmentsText(treatmentsField.getText());
-//        model.setOutcomesText(outcomesField.getText());
-//
-//        model.setEffectMode(
-//                pairwiseRadio.isSelected()
-//                        ? MixedDrAdjustmentEffectEditorModelV2.EffectMode.PAIRWISE
-//                        : MixedDrAdjustmentEffectEditorModelV2.EffectMode.JOINT
-//        );
-//
-//        // v2: optional – immediately recompute and refresh table after creating a derived treatment
-//        model.setTreatmentsText(treatmentsField.getText());
-//        try {
-//            updateModelFromUI();
-//            model.recompute();
-//            tableModel.fireTableStructureChanged();
-//            installRenderers();
-//            updateViewDetailsEnabled();
-//        } catch (Exception ex) {
-//            // v2: don't block binarize if recompute fails (e.g., missing Y selection yet)
-//            tableModel.fireTableStructureChanged();
-//        }
-//    }
-
     private void updateModelFromUI() {
         Set<Node> X = parseNodeList(treatmentsField.getText().trim(), true);
         Set<Node> Y = parseNodeList(outcomesField.getText().trim(), false);
@@ -446,11 +420,13 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
         model.setTreatmentsText(treatmentsField.getText());
         model.setOutcomesText(outcomesField.getText());
 
-        model.setEffectMode(
-                pairwiseRadio.isSelected()
-                        ? DoublyRobustEstModelV2.EffectMode.PAIRWISE
-                        : DoublyRobustEstModelV2.EffectMode.JOINT
-        );
+//        model.setEffectMode(
+//                pairwiseRadio.isSelected()
+//                        ? DoublyRobustEstModelV2.EffectMode.PAIRWISE
+//                        : DoublyRobustEstModelV2.EffectMode.JOINT
+//        );
+
+        model.setEffectMode(DoublyRobustEstModelV2.EffectMode.PAIRWISE);
     }
 
     private Set<Node> parseNodeList(String text, boolean allowDerived) {
