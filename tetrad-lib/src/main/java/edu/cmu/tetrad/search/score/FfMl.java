@@ -122,9 +122,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     private final ConcurrentHashMap<Long, Double> bw2OptCache = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, Double> bw2MedByTargetContCache = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, Double> bw2OptByTargetContCache = new ConcurrentHashMap<>();
-    // class field (add near other caches)
-    private final ConcurrentHashMap<Double, java.util.concurrent.atomic.LongAdder> bestMultCounts =
-            new ConcurrentHashMap<>();
     // ---- make bw selection "global-per-target" for comparability across DAGs ----
     private volatile boolean bwCoupleByTarget = true;     // NEW: default true
     /**
@@ -728,6 +725,71 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * fullKey = keyTargetCont(targetIndex, contParents)
      * (i.e., “fullKey” is really the bw-opt cache key in that mode).
      */
+//    private double pickBw2ByGridSearch(
+//            long fullKey,
+//            double[] yCentered,
+//            int[] contParents,
+//            int[] discParents,
+//            int[] rows,
+//            int n,
+//            int mFeatures,
+//            double bw2Med,
+//            double sigma2,
+//            long seed
+//    ) {
+//        if (contParents == null || contParents.length == 0) return 1.0;  // no continuous inputs
+//        if (!(bw2Med > 0) || !Double.isFinite(bw2Med)) bw2Med = 1.0;
+//
+//        // Cache lookup
+//        if (bwCoupleByTarget) {
+//            // Here, fullKey should already be keyTargetCont(targetIndex, contParents)
+//            Double cached = bw2OptByTargetContCache.get(fullKey);
+//            if (cached != null) return cached;
+//        } else {
+//            Double cached = bw2OptCache.get(fullKey);
+//            if (cached != null) return cached;
+//        }
+//
+//        // Grid in multiplier space. Interpret as bw2 = bw2Med * mult^2
+//        final double[] mult = {0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0};
+//
+//        double bestBw2 = bw2Med;
+//        double best = Double.NEGATIVE_INFINITY;
+//
+//        for (double m : mult) {
+//            double bw2 = bw2Med * (m * m);
+//            if (!(bw2 > 0) || !Double.isFinite(bw2)) continue;
+//
+//            double ll = gpLogMarginalLikelihoodRFFMixed(
+//                    yCentered,
+//                    contParents,
+//                    discParents,
+//                    rows,
+//                    n,
+//                    mFeatures,
+//                    bw2,
+//                    sigma2,
+//                    seed
+//            );
+//
+//            if (Double.isFinite(ll) && ll > best) {
+//                best = ll;
+//                bestBw2 = bw2;
+//            }
+//        }
+//
+//        // Fallback safety
+//        if (!Double.isFinite(best) || !(bestBw2 > 0) || !Double.isFinite(bestBw2)) bestBw2 = bw2Med;
+//
+//        // Store
+//        if (bwCoupleByTarget) {
+//            bw2OptByTargetContCache.put(fullKey, bestBw2);
+//        } else {
+//            bw2OptCache.put(fullKey, bestBw2);
+//        }
+//
+//        return bestBw2;
+//    }
     private double pickBw2ByGridSearch(
             long fullKey,
             double[] yCentered,
@@ -740,10 +802,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             double sigma2,
             long seed
     ) {
-        // No continuous parents => no bandwidth to tune.
         if (contParents == null || contParents.length == 0) return 1.0;
-
-        if (!(bw2Med > 0.0) || !Double.isFinite(bw2Med)) bw2Med = 1.0;
+        if (!(bw2Med > 0) || !Double.isFinite(bw2Med)) bw2Med = 1.0;
 
         // Cache lookup
         if (bwCoupleByTarget) {
@@ -754,118 +814,76 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             if (cached != null) return cached;
         }
 
-        // -------------------- grid definition --------------------
+        final double[] mult = {0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0};
 
-        // Heuristic: very large mult => bw2 huge => wStd tiny => features ~ constant.
-        // Cap higher when dc is small; cap lower when dc is large.
-        final int dc = contParents.length;
-        final double maxMult =
-                (dc <= 1) ? 50.0 :
-                        (dc == 2) ? 30.0 :
-                                (dc <= 4) ? 20.0 :
-                                        12.0;
-
-        // Base grid (sorted ascending)
-        final double[] baseMult = {
-                0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8,
-                4.0, 6.0, 8.0, 10.0, 12.0, 15.0, 20.0, 30.0,
-                50.0, 80.0, 100.0, 150.0, 200.0, 300.0, 500.0
-        };
-
-        // Filter to cap
-        int keep = 0;
-        for (double m : baseMult) if (m <= maxMult) keep++;
-        final double[] mult = new double[keep];
-        for (int i = 0, j = 0; i < baseMult.length; i++) {
-            double m = baseMult[i];
-            if (m <= maxMult) mult[j++] = m;
-        }
-
-        // -------------------- precompute invariants --------------------
-
+        // Precompute things that do NOT depend on bw2
         final boolean useNxN = (discParents != null && discParents.length >= 2);
-        final BaseWB base = buildBaseWB(mFeatures, dc, seed);
+
+        final BaseWB base = buildBaseWB(mFeatures, contParents.length, seed);
         final double[] kcatLowerPacked = useNxN ? precomputeKcatLowerPacked(discParents, rows, n) : null;
 
-        // -------------------- selection knobs --------------------
+        double bestBw2 = bw2Med;
+        double best = Double.NEGATIVE_INFINITY;
 
-        final double penaltyAlpha = 0.01; // 0.0 disables; try 0.002..0.03
-        final double tieTol = 1e-4;       // tolerance on objective (absolute-ish)
+//        // --- Option A: sequential (simplest, still big win) ---
+//        for (double m : mult) {
+//            double bw2 = bw2Med * (m * m);
+//            if (!(bw2 > 0) || !Double.isFinite(bw2)) continue;
+//
+//            final double ll;
+//            if (useNxN) {
+//                ll = gpLogML_mixedKernelNxN_precomp(
+//                        yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked
+//                );
+//            } else {
+//                // keep existing path unchanged
+//                ll = gpLogMarginalLikelihoodRFFMixed(
+//                        yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed
+//                );
+//            }
+//
+//            if (Double.isFinite(ll) && ll > best) {
+//                best = ll;
+//                bestBw2 = bw2;
+//            }
+//        }
+
+        // --- Option B: parallel grid (uncomment if you want) ---
 
         final class Best {
-            final double bw2;
-            final double ll;
-            final double mult;
-            final double obj; // selection objective (ll - penalty)
+            final double bw2, ll;
 
-            Best(double bw2, double ll, double mult, double obj) {
+            Best(double bw2, double ll) {
                 this.bw2 = bw2;
                 this.ll = ll;
-                this.mult = mult;
-                this.obj = obj;
             }
         }
-
-        final double finalBw2Med = bw2Med;
-
-        Best best = Arrays.stream(mult).parallel()
+        double finalBw2Med = bw2Med;
+        Best b = Arrays.stream(mult).parallel()
                 .mapToObj(m -> {
                     double bw2 = finalBw2Med * (m * m);
-                    if (!(bw2 > 0.0) || !Double.isFinite(bw2)) {
-                        return new Best(finalBw2Med, Double.NEGATIVE_INFINITY, m, Double.NEGATIVE_INFINITY);
-                    }
+                    if (!(bw2 > 0) || !Double.isFinite(bw2)) return new Best(finalBw2Med, Double.NEGATIVE_INFINITY);
 
                     double ll = useNxN
-                            ? gpLogML_mixedKernelNxN_precomp(
-                            yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked)
-                            : gpLogMarginalLikelihoodRFFMixed(
-                            yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed);
+                            ? gpLogML_mixedKernelNxN_precomp(yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked)
+                            : gpLogMarginalLikelihoodRFFMixed(yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed);
 
-                    if (!Double.isFinite(ll)) {
-                        return new Best(bw2, Double.NEGATIVE_INFINITY, m, Double.NEGATIVE_INFINITY);
-                    }
-
-                    // Soft penalty against extreme multipliers: prefer mult near 1 when nearly tied.
-                    double obj = ll - penaltyAlpha * Math.abs(Math.log(m));
-
-                    return new Best(bw2, ll, m, obj);
+                    return new Best(bw2, ll);
                 })
                 .filter(x -> Double.isFinite(x.ll))
-                .reduce((a, c) -> {
-                    // Primary: objective (higher better)
-                    if (c.obj > a.obj + tieTol) return c;
-                    if (a.obj > c.obj + tieTol) return a;
+                .max(java.util.Comparator.comparingDouble(x -> x.ll))
+                .orElse(new Best(bw2Med, Double.NEGATIVE_INFINITY));
 
-                    // Tie-break 1: closer to 1.0 in multiplier space (log distance)
-                    double da = Math.abs(Math.log(a.mult));
-                    double dc2 = Math.abs(Math.log(c.mult));
-                    if (dc2 < da) return c;
-                    if (da < dc2) return a;
+        bestBw2 = b.bw2;
+        best = b.ll;
 
-                    // Tie-break 2: smaller mult
-                    return (c.mult < a.mult) ? c : a;
-                })
-                .orElse(new Best(bw2Med, Double.NEGATIVE_INFINITY, 1.0, Double.NEGATIVE_INFINITY));
 
-        // record the chosen mult (only for uncached evaluations)
-        bestMultCounts.computeIfAbsent(best.mult, k -> new java.util.concurrent.atomic.LongAdder()).increment();
+        if (!Double.isFinite(best) || !(bestBw2 > 0) || !Double.isFinite(bestBw2)) bestBw2 = bw2Med;
 
-        double bestBw2 = best.bw2;
-
-        // Safety fallback
-        if (!(bestBw2 > 0.0) || !Double.isFinite(bestBw2)) bestBw2 = bw2Med;
-
-        // Store
         if (bwCoupleByTarget) bw2OptByTargetContCache.put(fullKey, bestBw2);
         else bw2OptCache.put(fullKey, bestBw2);
 
         return bestBw2;
-    }
-
-    public void dumpBestMultCounts() {
-        bestMultCounts.entrySet().stream()
-                .sorted(java.util.Map.Entry.comparingByKey())
-                .forEach(e -> System.out.println("mult=" + e.getKey() + " count=" + e.getValue().sum()));
     }
 
     /**
