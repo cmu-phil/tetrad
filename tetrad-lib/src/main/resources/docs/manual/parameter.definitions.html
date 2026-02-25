@@ -2556,19 +2556,19 @@ Source:
         <li>Value Type: <span id="kmlBandwidthMultiplier_value_type">Double</span></li>
     </ul>
 
-    === kmlBwMaxRows ===
-    <h3 class="parameter_description" id="kmlBwMaxRows">kmlBwMaxRows</h3>
+    === bwMaxRows ===
+    <h3 class="parameter_description" id="bwMaxRows">bwMaxRows</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="kmlBwMaxRows_short_desc">
+        <li>Short Description: <span id="bwMaxRows_short_desc">
                     Max rows used to estimate median bandwidth (subsample for speed).
                     </span></li>
-        <li>Long Description: <span id="kmlBwMaxRows_long_desc">
+        <li>Long Description: <span id="bwMaxRows_long_desc">
                     Max rows used to estimate median bandwidth (subsample for speed).
         </span></li>
-        <li>Default Value: <span id="kmlBwMaxRows_default_value">100</span></li>
-        <li>Lower Bound: <span id="kmlBwMaxRows_lower_bound">1</span></li>
-        <li>Upper Bound: <span id="kmlBwMaxRows_upper_bound">2000000</span></li>
-        <li>Value Type: <span id="kmlBwMaxRows_value_type">Integer</span></li>
+        <li>Default Value: <span id="bwMaxRows_default_value">100</span></li>
+        <li>Lower Bound: <span id="bwMaxRows_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="bwMaxRows_upper_bound">2000000</span></li>
+        <li>Value Type: <span id="bwMaxRows_value_type">Integer</span></li>
     </ul>
 
     === kmlNumFeatures ===
@@ -2601,19 +2601,19 @@ Source:
         <li>Value Type: <span id="kmlFeatureType_value_type">Integer</span></li>
     </ul>
 
-    === kmlCatRho ===
-    <h3 class="parameter_description" id="kmlCatRho">kmlCatRho</h3>
+    === catRho ===
+    <h3 class="parameter_description" id="catRho">catRho</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="kmlCatRho_short_desc">
+        <li>Short Description: <span id="catRho_short_desc">
                     Categorical kernel similarity (rho, range 0-1)
                     </span></li>
-        <li>Long Description: <span id="kmlCatRho_long_desc">
+        <li>Long Description: <span id="catRho_long_desc">
                     0 = categories fully distinct; values closer to 1 make categories more similar
         </span></li>
-        <li>Default Value: <span id="kmlCatRho_default_value">0.5</span></li>
-        <li>Lower Bound: <span id="kmlCatRho_lower_bound">0</span></li>
-        <li>Upper Bound: <span id="kmlCatRho_upper_bound">1</span></li>
-        <li>Value Type: <span id="kmlCatRho_value_type">Double</span></li>
+        <li>Default Value: <span id="catRho_default_value">0.5</span></li>
+        <li>Lower Bound: <span id="catRho_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="catRho_upper_bound">1</span></li>
+        <li>Value Type: <span id="catRho_value_type">Double</span></li>
     </ul>
 
     === lambda1 ===
@@ -6055,6 +6055,32 @@ Source:
         <li>Value Type: <span id="minimaxMaxNu_value_type">Double</span></li>
     </ul>
 
+    === trffNu ===
+    <h3 class="parameter_description" id="trffNu">trffNu</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="trffNu_short_desc">
+            Student-t degrees of freedom (nu)
+        </span>
+        </li>
+
+        <li>Long Description:
+            <span id="trffNu_long_desc">
+        The Student-t degrees of freedom parameter used by the TRFF model
+        for continuous children.
+
+        Smaller nu yields heavier tails and greater robustness to outliers.
+        Larger nu reduces tail heaviness and approaches a Gaussian model.
+        In practice, values above roughly 50–100 behave nearly Gaussian.
+        </span>
+        </li>
+
+        <li>Default Value: <span id="trffNu_default_value">5</span></li>
+        <li>Lower Bound: <span id="trffNu_lower_bound">2</span></li>
+        <li>Upper Bound: <span id="trffNu_upper_bound">1000</span></li>
+        <li>Value Type: <span id="trffNu_value_type">Double</span></li>
+    </ul>
+
 
     === minimaxScale ===
     <h3 class="parameter_description" id="minimaxScale">minimaxScale</h3>
@@ -6088,6 +6114,54 @@ Source:
         <li>Value Type: <span id="minimaxRidge_value_type">Double</span></li>
     </ul>
 
+    === trffRidge ===
+    <h3 class="parameter_description" id="trffRidge">trffRidge</h3>trffRidge
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="trffRidge_short_desc">
+            Ridge (L2) regularization strength for T-RFF local models
+        </span>
+        </li>
+
+        <li>Long Description:
+            <span id="trffRidge_long_desc">
+        Ridge (L2) regularization parameter used when fitting local conditional models
+        in the T-RFF BIC score.
+        </span>
+        </li>
+
+        <li>Default Value: <span id="trffRidge_default_value">1e-3</span></li>
+        <li>Lower Bound: <span id="trffRidge_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="trffRidge_upper_bound">1.0e12</span></li>
+        <li>Value Type: <span id="trffRidge_value_type">Double</span></li>
+    </ul>
+
+    === ffmlRidge ===
+    <h3 class="parameter_description" id="ffmlRidge">ffmlRidge</h3>ffmlRidge
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="ffmlRidge_short_desc">
+            Ridge / noise-variance (σ²) term for FFML Gaussian-process marginal likelihood
+        </span>
+        </li>
+
+        <li>Long Description:
+            <span id="ffmlRidge_long_desc">
+            Positive ridge (jitter) term added to the GP covariance when computing the FFML
+            (Feature-Function Marginal Likelihood) score. In the FFML implementation this
+            parameter is used as the observation noise variance σ² in the marginal likelihood
+            (i.e., K + σ²I in the n×n path, and G + σ²I in the feature-space path). Larger values
+            enforce smoother, more heavily regularized fits; smaller values allow tighter fits but
+            can be less numerically stable.
+        </span>
+        </li>
+
+        <li>Default Value: <span id="ffmlRidge_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="ffmlRidge_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="ffmlRidge_upper_bound">1.0e12</span></li>
+        <li>Value Type: <span id="ffmlRidge_value_type">Double</span></li>
+    </ul>
+
 
     === minimaxFfFeatures ===
     <h3 class="parameter_description" id="minimaxFfFeatures">minimaxFfFeatures</h3>
@@ -6104,6 +6178,46 @@ Source:
         <li>Value Type: <span id="minimaxFfFeatures_value_type">Integer</span></li>
     </ul>
 
+    === trffFfFeatures ===
+    <h3 class="parameter_description" id="trffFfFeatures">trffFfFeatures</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="trffFfFeatures_short_desc">Number of Fourier features (FF)</span>
+        </li>
+        <li>Long Description: <span id="trffFfFeatures_long_desc">
+        Number of Fourier features used to represent nonlinear effects of continuous parents in the Minimax score.
+        Larger values increase flexibility and runtime/memory cost; smaller values are faster but less expressive.
+    </span></li>
+        <li>Default Value: <span id="trffFfFeatures_default_value">100</span></li>
+        <li>Lower Bound: <span id="trffFfFeatures_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="trffFfFeatures_upper_bound">1000000</span></li>
+        <li>Value Type: <span id="trffFfFeatures_value_type">Integer</span></li>
+    </ul>
+
+    === numFfFeatures ===
+    <h3 class="parameter_description" id="numFfFeatures">numFfFeatures</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="numFfFeatures_short_desc">
+            Number of Fourier features used for nonlinear continuous effects
+        </span>
+        </li>
+
+        <li>Long Description:
+            <span id="numFfFeatures_long_desc">
+            Number of random Fourier (or orthogonal random) features used to approximate
+            the continuous kernel in feature-function (FF)–based scores.
+            Increasing this value improves the accuracy of the kernel approximation and
+            allows more flexible nonlinear modeling of continuous parents, but increases
+            runtime and memory usage. Smaller values are faster but provide a coarser
+            approximation of nonlinear effects.
+        </span>
+        </li>
+
+        <li>Default Value: <span id="numFfFeatures_default_value">100</span></li>
+        <li>Lower Bound: <span id="numFfFeatures_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="numFfFeatures_upper_bound">1000000</span></li>
+        <li>Value Type: <span id="numFfFeatures_value_type">Integer</span></li>
+    </ul>
 
     === minimaxFfSigma ===
     <h3 class="parameter_description" id="minimaxFfSigma">minimaxFfSigma</h3>

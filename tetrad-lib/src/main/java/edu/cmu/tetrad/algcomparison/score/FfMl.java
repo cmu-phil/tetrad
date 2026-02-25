@@ -20,7 +20,6 @@
 
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
@@ -80,15 +79,15 @@ public class FfMl implements ScoreWrapper {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
 
-        score.setLambda(parameters.getDouble(Params.KML_LAMBDA));
+        score.setLambda(parameters.getDouble(Params.FFML_RIDGE));
 //        score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
-        score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
+        score.setBwMaxRows(parameters.getInt(Params.BW_MAX_ROWS));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
-        score.setNumFeatures(parameters.getInt(Params.MINIMAX_FF_FEATURES));
-        edu.cmu.tetrad.search.score.FfMl.FeatureType[] values
-                = edu.cmu.tetrad.search.score.FfMl.FeatureType.values();
-        score.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
-        score.setCatRho(parameters.getDouble(Params.KML_CAT_RHO));
+        score.setNumFeatures(parameters.getInt(Params.NUM_FF_FEATURES));
+//        edu.cmu.tetrad.search.score.FfMl.FeatureType[] values
+//                = edu.cmu.tetrad.search.score.FfMl.FeatureType.values();
+//        score.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
+        score.setCatRho(parameters.getDouble(Params.CAT_RHO));
 
         return score;
     }
@@ -121,12 +120,12 @@ public class FfMl implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.KML_LAMBDA);
+        parameters.add(Params.FFML_RIDGE);
 //        parameters.add(Params.KML_BANDWIDTH_MULTIPLIER);
-        parameters.add(Params.KML_BW_MAX_ROWS);
-        parameters.add(Params.MINIMAX_FF_FEATURES);
-        parameters.add(Params.KML_FEATURE_TYPE);
-        parameters.add(Params.KML_CAT_RHO);
+        parameters.add(Params.BW_MAX_ROWS);
+        parameters.add(Params.NUM_FF_FEATURES);
+//        parameters.add(Params.KML_FEATURE_TYPE);
+        parameters.add(Params.CAT_RHO);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }

@@ -82,7 +82,7 @@ public class KernelMarginalLikelihoodScore implements ScoreWrapper {
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         score.setLambda(parameters.getDouble(Params.KML_LAMBDA));
         score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
-        score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
+        score.setBwMaxRows(parameters.getInt(Params.BW_MAX_ROWS));
         score.setJitter(parameters.getDouble(Params.KML_JITTER));
 
         FfMlContinuous.FeatureType[] values
@@ -123,7 +123,7 @@ public class KernelMarginalLikelihoodScore implements ScoreWrapper {
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.KML_LAMBDA);
         parameters.add(Params.KML_BANDWIDTH_MULTIPLIER);
-        parameters.add(Params.KML_BW_MAX_ROWS);
+        parameters.add(Params.BW_MAX_ROWS);
         parameters.add(Params.KML_JITTER);
 
         return parameters;

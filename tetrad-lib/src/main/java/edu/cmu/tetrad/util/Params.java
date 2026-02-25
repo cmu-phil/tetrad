@@ -1087,7 +1087,7 @@ public final class Params {
     /**
      * Constant <code>KML_BW_MAX_ROWS="kmlBwMaxRows"</code>
      */
-    public static final String KML_BW_MAX_ROWS = "kmlBwMaxRows";
+    public static final String BW_MAX_ROWS = "bwMaxRows";
     /**
      * Constant <code>KML_NUM_FEATURES="kmlNumFeatures"</code>
      */
@@ -1099,7 +1099,7 @@ public final class Params {
     /**
      * Constant <code>KML_CAT_RHO="kmlCatRho"</code>
      */
-    public static final String KML_CAT_RHO = "kmlCatRho";
+    public static final String CAT_RHO = "catRho";
     /**
      * Constant <code>CLUSTER_SIZES="clusterSizes"</code>
      */
@@ -1246,6 +1246,10 @@ public final class Params {
      */
     public static final String MINIMAX_NU = "minimaxMaxNu";
     /**
+     * Constant <code>MINIMAX_NU="trfffNu"</code>
+     */
+    public static final String TRFF_NU = "trffNu";
+    /**
      * Constant <code>MINIMAX_SCALE="minimaxScale"</code>
      */
     public static final String MINIMAX_SCALE = "minimaxScale";
@@ -1254,9 +1258,25 @@ public final class Params {
      */
     public static final String MINIMAX_RIDGE = "minimaxRidge";
     /**
+     * Constant <code>TRFF_RIDGE="trffRidge"</code>
+     */
+    public static final String TRFF_RIDGE = "trffRidge";
+    /**
+     * Constant <code>TRFF_RIDGE="trffRidge"</code>
+     */
+    public static final String FFML_RIDGE = "ffmlRidge";
+    /**
      * Constant <code>MINIMAX_RFF_FEATURES="minimaxRffFeatures"</code>
      */
     public static final String MINIMAX_FF_FEATURES = "minimaxFfFeatures";
+    /**
+     * Constant <code>MINIMAX_RFF_FEATURES="minimaxRffFeatures"</code>
+     */
+    public static final String TRFF_FF_FEATURES = "trffFfFeatures";
+    /**
+     * Constant <code>NUM_FF_FEATURES="numFfFeatures"</code>
+     */
+    public static final String NUM_FF_FEATURES = "numFfFeatures";
     /**
      * Constant <code>MINIMAX_RFF_SIGMA="minimaxRffSigma"</code>
      */

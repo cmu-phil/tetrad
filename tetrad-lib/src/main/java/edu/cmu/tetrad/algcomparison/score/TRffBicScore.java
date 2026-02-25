@@ -79,12 +79,12 @@ public class TRffBicScore implements ScoreWrapper {
         }
 
         // Exposed knobs (stable + meaningful):
-        score.setRidge(parameters.getDouble(Params.MINIMAX_RIDGE));
-        score.setRffFeatures(parameters.getInt(Params.MINIMAX_FF_FEATURES));
+        score.setRidge(parameters.getDouble(Params.TRFF_RIDGE));
+        score.setRffFeatures(parameters.getInt(Params.NUM_FF_FEATURES));
 
         // Optional: expose nu if you truly want users to tune heavy-tail robustness.
         // If not, delete this line and just leave nu at the score's internal default.
-        score.setNu(parameters.getDouble(Params.MINIMAX_NU));
+        score.setNu(parameters.getDouble(Params.TRFF_NU));
 
         // Hidden knobs: set to sane internal defaults (do NOT expose in UI).
         // Keep these deterministic so runs are reproducible.
@@ -136,12 +136,10 @@ public class TRffBicScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.MINIMAX_RIDGE);
-        parameters.add(Params.MINIMAX_FF_FEATURES);
+        parameters.add(Params.TRFF_RIDGE);
+        parameters.add(Params.NUM_FF_FEATURES);
         parameters.add(Params.PENALTY_DISCOUNT_DEFAULT_1);
-
-        // Optional (keep only if you want this exposed):
-        parameters.add(Params.MINIMAX_NU);
+        parameters.add(Params.TRFF_NU);
 
         return parameters;
     }

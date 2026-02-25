@@ -69,7 +69,7 @@ public class FfCiContinuous implements IndependenceWrapper {
         test.setPermutations(parameters.getInt(Params.RCIT_PERMUTATIONS));
 //        test.setCenterFeatures(parameters.getBoolean(Params.RCIT_CENTER_FEATURES));
 //        test.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
-        test.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
+        test.setBwMaxRows(parameters.getInt(Params.BW_MAX_ROWS));
         test.setLambda(parameters.getDouble(Params.KML_LAMBDA));
 
         edu.cmu.tetrad.search.test.FfCiContinuous.FeatureType[] values
@@ -120,7 +120,7 @@ public class FfCiContinuous implements IndependenceWrapper {
         params.add(Params.KML_LAMBDA);
         params.add(Params.RCIT_PERMUTATIONS);
 //        params.add(Params.KML_BANDWIDTH_MULTIPLIER);
-        params.add(Params.KML_BW_MAX_ROWS);
+        params.add(Params.BW_MAX_ROWS);
         params.add(Params.RCIT_APPROX);
 //        params.add(Params.RCIT_CENTER_FEATURES);
         params.add(Params.RCIT_NUM_FEATURES_XY);
