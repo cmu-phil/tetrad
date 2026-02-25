@@ -23,7 +23,7 @@ import java.util.List;
  * The scoring mechanism is implemented within the Tetrad framework and adheres to the {@code ScoreWrapper} interface.
  * It is annotated with {@code Score}, specifying the name, command, and applicable data type.
  */
-@edu.cmu.tetrad.annotation.Score(name = "T-RFF BIC Score", command = "trff-bic-score", dataType = {DataType.Mixed})
+@edu.cmu.tetrad.annotation.Score(name = "TRFF BIC Score", command = "trff-bic-score", dataType = {DataType.Mixed})
 @General
 @Mixed
 //@Experimental
@@ -110,7 +110,7 @@ public class TRffBicScore implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "T-RFF BIC Score";
+        return "TRFF BIC Score";
     }
 
     /**
