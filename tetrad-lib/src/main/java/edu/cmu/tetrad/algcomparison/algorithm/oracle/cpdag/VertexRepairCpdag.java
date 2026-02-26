@@ -99,7 +99,8 @@ public class VertexRepairCpdag extends AbstractBootstrapAlgorithm implements Alg
         Graph start = new EdgeListGraph(vars); // no edges
 
         // Configure VertexRepairSearch.
-        VertexRepairSearch vr = new VertexRepairSearch(start, it);
+        VertexRepairSearch vr = new VertexRepairSearch(it, start, this.knowledge,
+                ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
 
         // Conditioning-set type: VertexRepairSearch needs it; we expose it as an algcomparison param.
         // If you already have a Params constant for this in your VertexCheck UI model, reuse it here.
@@ -107,13 +108,6 @@ public class VertexRepairCpdag extends AbstractBootstrapAlgorithm implements Alg
         //
         // Convention: 0 = LOCAL_MARKOV, 1 = ALL_ADJACENT, 2 = ADJACENT_OR_ANCESTORS, etc.
         // Replace with your actual mapping.
-//        int cst = parameters.getInt(Params.CONDITIONING_SET_TYPE);
-//        vr.setConditioningSetType(cst);
-        vr.setConditioningSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
-
-        vr.setGraphType(VertexRepairSearch.RepairGraphType.CPDAG);
-        vr.setKnowledge(this.knowledge);
-        vr.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         // Optional knobs, only if your VertexRepairSearch supports them.
         // vr.setMaxEdits(parameters.getInt(Params.MAX_EDITS));
