@@ -43,7 +43,7 @@ public final class VertexRepairPanel extends JPanel {
     private static final Preferences PREFS = Preferences.userRoot().node("edu/cmu/tetradapp/editor/VertexRepairPanel");
     private static final String PREF_ALPHA = "markovAlpha";
     private static final double EPS_NODEP = 1e-6;
-
+    static double alpha = 0.01;
     // Canonical ordering that prioritizes REORIENTATION moves that IMPROVE MODEL SCORE.
     //
     // Summary:
@@ -73,17 +73,16 @@ public final class VertexRepairPanel extends JPanel {
         String db = (b.edit() == null || b.edit().description() == null) ? "" : b.edit().description();
         return da.compareTo(db);
     };
-    private final VertexCheckIndTestModel baseModel;
 
+    private final VertexCheckIndTestModel baseModel;
     // -------------------- move classification --------------------
 // Prefer SIMPLE reorientation (single-edge REP:) over collider moves (multi-edge).
 // We also treat collider moves as their own type so we can *penalize* them.
     private final Deque<Graph> history = new ArrayDeque<>();
     // UI
     private final JComboBox<RepairGraphType> graphTypeCombo = new JComboBox<>(RepairGraphType.values());
-    private final JButton searchButton = new JButton();              // label set after x is known
+    private final JButton searchButton = new JButton();              // label set violationsAfter x is known
     private final JButton modelBestButton = new JButton("One Node Sweep");
-
     // -------------------- numeric helpers --------------------
     private final JButton backButton = new JButton("Undo");
     private final JButton showGraphButton = new JButton("Graph");
@@ -100,6 +99,7 @@ public final class VertexRepairPanel extends JPanel {
     private TableRowSorter<CandidateTableModel> resultsSorter;
     private volatile SwingWorker<?, ?> activeWorker;
     private volatile JDialog watchDialog;
+
     public VertexRepairPanel(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
 
@@ -130,27 +130,26 @@ public final class VertexRepairPanel extends JPanel {
         setPreferredSize(new Dimension(650, 600));
     }
 
-    static double alpha = 0.01;
-
     private static double utility(ScoredCandidate s) {
+        if (s == null) return Double.NEGATIVE_INFINITY;
+        if (!s.passesGuards()) return Double.NEGATIVE_INFINITY;
+
         final int delta = s.delta();        // negative good
         final int edgesAfter = s.edgesAfter();
 
-        final double mpAfter = finiteOrDefault(s.modelPAfter(), 0.0);
-        final double npAfter = finiteOrDefault(s.nodePAfter(), 0.0);
+        // Treat missing p-values as NEUTRAL, not catastrophic.
+        final double mpAfter = s.modelPAfter();
+        final double npAfter = s.nodePAfter();
 
-        final double mpLogOdds = alphaLogOdds(mpAfter, alpha);
-        final double npLogOdds = alphaLogOdds(npAfter, alpha);
+        final double mpLogOdds = Double.isFinite(mpAfter) ? alphaLogOdds(mpAfter, alpha) : 0.0;
+        final double npLogOdds = Double.isFinite(npAfter) ? alphaLogOdds(npAfter, alpha) : 0.0;
 
-        // Baseline vs after Model-P change (higher is better)
+        // Model-P change: if unknown, treat as 0 (neutral), NOT -Infinity.
         final double mpBefore = s.modelPBefore();
-        final double dMp = (Double.isFinite(mpBefore) && Double.isFinite(s.modelPAfter()))
-                ? (s.modelPAfter() - mpBefore)
-                : Double.NEGATIVE_INFINITY;
+        final double dMp = (Double.isFinite(mpBefore) && Double.isFinite(mpAfter)) ? (mpAfter - mpBefore) : 0.0;
 
         final MoveType mt = moveType(s.edit());
 
-        // Edit size penalty: collider moves are usually replaceEdges(...) => getEdges().size()==2
         int editSize = 1;
         try {
             if (s.edit() != null && s.edit().getEdges() != null) {
@@ -160,29 +159,25 @@ public final class VertexRepairPanel extends JPanel {
             // keep editSize=1
         }
 
-        // ---- weights (tune these) ----
-        final double W_DELTA = 2.0;   // dominates
-        final double W_DMP = 1.5;   // encourage better Model-P vs baseline
-        final double W_NODE = 0.35;  // gentle
-        final double W_MODEL = 0.35;  // gentle
-        final double W_EDGES = 0.25;  // mild graph complexity
-        final double W_EDIT_SZ = 0.90;  // penalize multi-edge edits (2-edge collider fixes)
+        // ---- weights ----
+        final double W_DELTA = 2.0;    // dominates
+        final double W_DMP   = 1.5;    // encourage better Model-P vs baseline
+        final double W_NODE  = 0.35;
+        final double W_MODEL = 0.35;
+        final double W_EDGES = 1.0;
+        final double W_EDIT_SZ = 0.90;
 
-        // Bonuses/penalties applied ONLY when the move actually improves Model-P
         final double BONUS_SIMPLE_REORIENT_IMPROVE = 5.0;
         final double PENALTY_COLLIDER_IMPROVE = 1.0;
 
         double bonus = 0.0;
-        if (dMp > 0.0) {
+        if (Double.isFinite(dMp) && dMp > 0.0) {
             if (mt == MoveType.REORIENT_SIMPLE) bonus += BONUS_SIMPLE_REORIENT_IMPROVE;
-            if (mt == MoveType.COLLIDER_FIX) bonus -= PENALTY_COLLIDER_IMPROVE;
-        }
-
-        // Optional extra: even if dMp is unknown, still prefer simple reorients over collider fixes
-        // (keeps table behavior stable during PASS 1 when mpAfter might be NaN for many rows).
-        if (!Double.isFinite(dMp)) {
+            if (mt == MoveType.COLLIDER_FIX)    bonus -= PENALTY_COLLIDER_IMPROVE;
+        } else if (!Double.isFinite(mpAfter)) {
+            // If Model-P wasn't computed, gently prefer simple reorients over collider fixes.
             if (mt == MoveType.REORIENT_SIMPLE) bonus += 0.25;
-            if (mt == MoveType.COLLIDER_FIX) bonus -= 0.25;
+            if (mt == MoveType.COLLIDER_FIX)    bonus -= 0.25;
         }
 
         return (-W_DELTA * delta)
@@ -554,7 +549,7 @@ public final class VertexRepairPanel extends JPanel {
     }
 
     /**
-     * Caller reads this after dialog closes.
+     * Caller reads this violationsAfter dialog closes.
      */
     public Graph getGraph() {
         return workingGraph;
@@ -731,7 +726,7 @@ public final class VertexRepairPanel extends JPanel {
             Object sel = nodeCombo.getSelectedItem();
             if (!(sel instanceof Node n)) return;
 
-            // Resolve to node in current workingGraph (important after edits/canonicalization)
+            // Resolve to node in current workingGraph (important violationsAfter edits/canonicalization)
             Node inGraph = (workingGraph != null && n.getName() != null)
                     ? workingGraph.getNode(n.getName())
                     : null;
@@ -773,7 +768,7 @@ public final class VertexRepairPanel extends JPanel {
      * - apply it (guarded: progress + do-no-harm),
      * until the top row is "No change" (or no applicable move), then advance to next node.
      * <p>
-     * Stops after one pass through the nodes (no outer repetition).
+     * Stops violationsAfter one pass through the nodes (no outer repetition).
      */
 
     // ---------------------------------------------------------------------
@@ -833,7 +828,7 @@ public final class VertexRepairPanel extends JPanel {
         Map<String, Graph> candGraphByKey = new HashMap<>();
         List<ScoredCandidate> scored = new ArrayList<>();
 
-        // PASS 1: after + Node-P + edges for all candidates (Model-P deferred)
+        // PASS 1: violationsAfter + Node-P + edges for all candidates (Model-P deferred)
         for (CandidateEdit cand : candidates) {
             if (stopRequested()) return;
 
@@ -853,7 +848,10 @@ public final class VertexRepairPanel extends JPanel {
             double nodePAfter = nodePValue(g2, x);
             int edgesAfter = g2.getNumEdges();
 
-            scored.add(new ScoredCandidate(cand, baseline, after, nodePAfter, Double.NaN, Double.NaN, edgesAfter));
+//            scored.add(new ScoredCandidate(cand, baseline, after, nodePAfter, Double.NaN, Double.NaN, edgesAfter, true));
+
+            scored.add(new ScoredCandidate(cand, baseline, after, nodePAfter,
+                    Double.NaN, Double.NaN, edgesAfter, true));
         }
 
         if (stopRequested()) return;
@@ -901,15 +899,35 @@ public final class VertexRepairPanel extends JPanel {
                 Double mpAfter = mpAfterByKey.get(sc.edit().key());
                 patched.add(new ScoredCandidate(
                         sc.edit(),
-                        sc.baseline(),
-                        sc.after(),
+                        sc.violationsBaseline(),
+                        sc.violationsAfter(),
                         sc.nodePAfter(),
                         mpBefore,
                         (mpAfter == null ? Double.NaN : mpAfter),
-                        sc.edgesAfter()
+                        sc.edgesAfter(),
+                        true
                 ));
             }
             scored = patched;
+        }
+
+        {
+            List<ScoredCandidate> patched2 = new ArrayList<>(scored.size());
+            for (ScoredCandidate sc : scored) {
+                boolean ok = wouldPassGuards(base, x, sc, gt);
+
+                patched2.add(new ScoredCandidate(
+                        sc.edit(),
+                        sc.violationsBaseline(),
+                        sc.violationsAfter(),
+                        sc.nodePAfter(),
+                        sc.modelPBefore(),
+                        sc.modelPAfter(),
+                        sc.edgesAfter(),
+                        ok
+                ));
+            }
+            scored = patched2;
         }
 
         // Determine best candidate for status line
@@ -953,7 +971,7 @@ public final class VertexRepairPanel extends JPanel {
      * - try the ranked rows in order until one passes guards,
      * until the top row becomes NO-OP (or nothing passes guards), then advance to next node.
      * <p>
-     * Stops after one pass through the nodes (no outer repetition).
+     * Stops violationsAfter one pass through the nodes (no outer repetition).
      */
     private void runModelBestWatched() {
         // Single-undo checkpoint for the whole run
@@ -1070,9 +1088,9 @@ public final class VertexRepairPanel extends JPanel {
                     if (sc == null || sc.edit() == null) continue;
                     if (sc.edit().isNoOp()) break; // once we hit NO-OP, nothing below it matters
 
-                    vlog("Consider move: %s | base=%d after=%d delta=%d edges=%d nodeP=%s modelP=%s",
+                    vlog("Consider move: %s | base=%d violationsAfter=%d delta=%d edges=%d nodeP=%s modelP=%s",
                             sc.edit().description(),
-                            sc.baseline(),
+                            sc.violationsBaseline(),
                             sc.violationsAfter(),
                             sc.delta(),
                             sc.edgesAfter(),
@@ -1156,15 +1174,15 @@ public final class VertexRepairPanel extends JPanel {
 //
 //        // Baseline violations only via locality
 //        GraphEval baseEval = evalGraphLocality(baseCache, base, Set.of(), false);
-//        int baseline = baseEval.violations();
+//        int violationsBaseline = baseEval.violations();
 //
-//        // (Optional) if you ever want baseline Model-P in SearchPack, compute it like this:
+//        // (Optional) if you ever want violationsBaseline Model-P in SearchPack, compute it like this:
 //        // double baselineModelP = evalGraphOnce(base).modelP();
 //
 //        Map<String, Graph> candGraphByKey = new HashMap<>();
 //        List<ScoredCandidate> scored = new ArrayList<>();
 //
-//        // PASS 1: after + nodeP + edges
+//        // PASS 1: violationsAfter + nodeP + edges
 //        for (CandidateEdit cand : candidates) {
 //            if (stopRequested()) return null;
 //
@@ -1177,14 +1195,14 @@ public final class VertexRepairPanel extends JPanel {
 //            boolean useLocality = (gt == RepairGraphType.DAG || gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG);
 //            Set<String> affected = affectedVertices(base, center, g2);
 //
-//            int after = useLocality
+//            int violationsAfter = useLocality
 //                    ? evalGraphLocality(baseCache, g2, affected, false).violations()
 //                    : evalViolationsOnly(g2);
 //
 //            double nodePAfter = nodePValue(g2, center);
 //            int edgesAfter = g2.getNumEdges();
 //
-//            scored.add(new ScoredCandidate(cand, baseline, after, nodePAfter, Double.NaN, Double.NaN, edgesAfter));
+//            scored.add(new ScoredCandidate(cand, violationsBaseline, violationsAfter, nodePAfter, Double.NaN, Double.NaN, edgesAfter));
 //        }
 //
 //        if (stopRequested()) return null;
@@ -1211,13 +1229,13 @@ public final class VertexRepairPanel extends JPanel {
 //            for (ScoredCandidate sc : scored) {
 //                Double mpAfter = modelPByKey.get(sc.edit().key());
 //                patched.add(mpAfter == null ? sc : new ScoredCandidate(
-//                        sc.edit(), sc.baseline(), sc.after(), sc.nodePAfter(), mpBefore, mpAfter, sc.edgesAfter()
+//                        sc.edit(), sc.violationsBaseline(), sc.violationsAfter(), sc.nodePAfter(), mpBefore, mpAfter, sc.edgesAfter()
 //                ));
 //            }
 //            scored = patched;
 //        }
 //
-//        return new SearchPack(center.getName(), baseline, scored);
+//        return new SearchPack(center.getName(), violationsBaseline, scored);
 //    }
     // ---------------------------------------------------------------------
 // Auto-selection helper: compute candidates for a given node center
@@ -1259,7 +1277,7 @@ public final class VertexRepairPanel extends JPanel {
         Map<String, Graph> candGraphByKey = new HashMap<>();
         List<ScoredCandidate> scored = new ArrayList<>();
 
-        // PASS 1: after + nodeP + edges (Model-P deferred)
+        // PASS 1: violationsAfter + nodeP + edges (Model-P deferred)
         for (CandidateEdit cand : candidates) {
             if (stopRequested()) return null;
 
@@ -1279,7 +1297,7 @@ public final class VertexRepairPanel extends JPanel {
             double nodePAfter = nodePValue(g2, center);
             int edgesAfter = g2.getNumEdges();
 
-            scored.add(new ScoredCandidate(cand, baseline, after, nodePAfter, Double.NaN, Double.NaN, edgesAfter));
+            scored.add(new ScoredCandidate(cand, baseline, after, nodePAfter, Double.NaN, Double.NaN, edgesAfter, true));
         }
 
         if (stopRequested()) return null;
@@ -1326,12 +1344,13 @@ public final class VertexRepairPanel extends JPanel {
                 Double mpAfter = mpAfterByKey.get(sc.edit().key());
                 patched.add(new ScoredCandidate(
                         sc.edit(),
-                        sc.baseline(),
-                        sc.after(),
+                        sc.violationsBaseline(),
+                        sc.violationsAfter(),
                         sc.nodePAfter(),
                         mpBefore,
                         (mpAfter == null ? Double.NaN : mpAfter),
-                        sc.edgesAfter()
+                        sc.edgesAfter(),
+                        true
                 ));
             }
             scored = patched;
@@ -1417,14 +1436,14 @@ public final class VertexRepairPanel extends JPanel {
 
         // **CRITICAL**: if the move does not change the graph, treat it as “no move”
         if (g2.equals(base)) {
-            vlog("REJECTED (no graph change after canonicalization)");
-            if (updateStatus) statusLabel.setText("No-op after canonicalization: " + cand.description());
+            vlog("REJECTED (no graph change violationsAfter canonicalization)");
+            if (updateStatus) statusLabel.setText("No-op violationsAfter canonicalization: " + cand.description());
             if (pushHistory && !history.isEmpty()) history.pop();
             return false;
         }
 
         if (requiresEdgePresenceCheck(cand) && !allIntendedNewEdgesPresent(g2, cand)) {
-            vlog("REJECTED (intended new edge(s) not present after apply/canonicalization)");
+            vlog("REJECTED (intended new edge(s) not present violationsAfter apply/canonicalization)");
             if (updateStatus) statusLabel.setText("Skipped (edge vanished): " + cand.description());
             if (pushHistory && !history.isEmpty()) history.pop();
             return false;
@@ -1884,7 +1903,7 @@ public final class VertexRepairPanel extends JPanel {
                                         boolean computeModelP) {
         if (candidateGraph == null) return new GraphEval(0, Double.NaN, 0);
 
-        // 1) Start from baseline vertex contributions (shallow copy map)
+        // 1) Start from violationsBaseline vertex contributions (shallow copy map)
         Map<String, VertexContribution> contrib = new HashMap<>();
         if (baseCache != null && baseCache.contribByVertexName() != null) {
             contrib.putAll(baseCache.contribByVertexName());
@@ -2159,7 +2178,7 @@ public final class VertexRepairPanel extends JPanel {
         }
 
         // Use the SAME numbers the table computed (and your 2-pass MP logic patched in).
-        int baselineViol = sc.baseline();
+        int baselineViol = sc.violationsBaseline();
         int afterViol = sc.violationsAfter();
         int afterEdges = sc.edgesAfter();
 
@@ -2167,7 +2186,7 @@ public final class VertexRepairPanel extends JPanel {
         double mpAfter = sc.modelPAfter();
 
         if (!isProgress(baselineViol, afterViol, currentEdges, afterEdges, mpBefore, mpAfter)) {
-            vlog("Rejected: not progress (baseline=%d after=%d edges %d->%d modelP %s->%s).",
+            vlog("Rejected: not progress (violationsBaseline=%d violationsAfter=%d edges %d->%d modelP %s->%s).",
                     baselineViol, afterViol, currentEdges, afterEdges, fmtP(mpBefore), fmtP(mpAfter));
             return false;
         }
@@ -2190,7 +2209,7 @@ public final class VertexRepairPanel extends JPanel {
 //            return false;
 //        }
 //
-//        // Use the same baseline notion you're using in pack
+//        // Use the same violationsBaseline notion you're using in pack
 //        int baselineViol = evalViolationsOnly(base);
 //        int afterViol    = evalViolationsOnly(cand);
 //        int afterEdges   = cand.getNumEdges();
@@ -2201,18 +2220,37 @@ public final class VertexRepairPanel extends JPanel {
 //
 //        // Progress gate (now includes Model-P improvements when violations/edges tie)
 //        if (!isProgress(baselineViol, afterViol, currentEdges, afterEdges, mpBefore, mpAfter)) {
-//            vlog("Rejected: not progress (baseline=%d after=%d edges %d->%d modelP %s->%s).",
+//            vlog("Rejected: not progress (violationsBaseline=%d violationsAfter=%d edges %d->%d modelP %s->%s).",
 //                    baselineViol, afterViol, currentEdges, afterEdges, fmtP(mpBefore), fmtP(mpAfter));
 //            return false;
 //        }
 //
-////        // Progress gate
-////        if (!isProgress(baselineViol, afterViol, currentEdges, afterEdges)) {
-////            vlog("Rejected: not progress (baseline=%d after=%d edges %d->%d).",
-////                    baselineViol, afterViol, currentEdges, afterEdges);
-////            return false;
-////        }
+
+    /// /        // Progress gate
+    /// /        if (!isProgress(baselineViol, afterViol, currentEdges, afterEdges)) {
+    /// /            vlog("Rejected: not progress (violationsBaseline=%d violationsAfter=%d edges %d->%d).",
+    /// /                    baselineViol, afterViol, currentEdges, afterEdges);
+    /// /            return false;
+    /// /        }
 //
+    private boolean wouldPassGuards(Graph base, Node center, ScoredCandidate sc, RepairGraphType gt) {
+        if (sc == null || sc.edit() == null || sc.edit().isNoOp()) return false;
+
+        int currentEdges = base.getNumEdges();
+
+        Graph cand = buildCandidateGraph(base, sc.edit(), gt);
+        if (cand == null) return false;
+
+        // Use the SAME table numbers already computed:
+        int baselineViol = sc.violationsBaseline();
+        int afterViol = sc.violationsAfter();
+        int afterEdges = sc.edgesAfter();
+
+        double mpBefore = sc.modelPBefore();
+        double mpAfter = sc.modelPAfter();
+
+        return isProgress(baselineViol, afterViol, currentEdges, afterEdges, mpBefore, mpAfter);
+    }
 
     private enum MoveType {
         REORIENT_SIMPLE,   // single-edge replace/orient/flip (low-risk)
@@ -2462,19 +2500,16 @@ public final class VertexRepairPanel extends JPanel {
 
     private record ScoredCandidate(
             CandidateEdit edit,
-            int baseline,
-            int after,
+            int violationsBaseline,
+            int violationsAfter,
             double nodePAfter,
             double modelPBefore,
             double modelPAfter,
-            int edgesAfter
+            int edgesAfter,
+            boolean passesGuards
     ) {
-        int violationsAfter() {
-            return after;
-        }
-
         int delta() {
-            return after - baseline;
+            return violationsAfter - violationsBaseline;
         }
     }
 
@@ -2531,7 +2566,7 @@ public final class VertexRepairPanel extends JPanel {
 
             return switch (columnIndex) {
                 case COL_EDIT -> r.edit().description();
-                case COL_BASE -> r.baseline();
+                case COL_BASE -> r.violationsBaseline();
                 case COL_AFTER -> r.violationsAfter();
                 case COL_DELTA -> r.delta();
                 case COL_NODE_P -> r.nodePAfter();// > alpha ? 1.0 : 0.0;
