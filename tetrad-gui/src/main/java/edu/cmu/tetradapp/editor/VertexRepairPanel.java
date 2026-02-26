@@ -981,7 +981,7 @@ public final class VertexRepairPanel extends JPanel {
 
         int editsApplied = 0;
         final int MAX_EDITS = 500;           // global safety cap
-        final int MAX_STEPS_PER_NODE = 1; // per-node s  afety cap
+        final int MAX_STEPS_PER_NODE = 4; // per-node s  afety cap
 
         vlog("==================================================");
         vlog("AUTO-REPAIR (greedy table-order, one sweep) (type=%s)", String.valueOf(gt));
@@ -1241,6 +1241,11 @@ public final class VertexRepairPanel extends JPanel {
 // Auto-selection helper: compute candidates for a given node center
 // Mirrors UI behavior but ALSO forces Model-P for all reorientation moves.
 // ---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
+// Auto-selection helper: compute candidates for a given node center
+// Mirrors UI behavior and forces Model-P for (top-K rows) ∪ (all simple reorients),
+// then computes passesGuards consistently with the UI.
+// ---------------------------------------------------------------------
     private SearchPack computeCandidatesForNode(Graph g, Node center, RepairGraphType gt) {
         if (g == null || center == null) return null;
 
@@ -1297,26 +1302,28 @@ public final class VertexRepairPanel extends JPanel {
             double nodePAfter = nodePValue(g2, center);
             int edgesAfter = g2.getNumEdges();
 
-            scored.add(new ScoredCandidate(cand, baseline, after, nodePAfter, Double.NaN, Double.NaN, edgesAfter, true));
+            // passesGuards patched later
+            scored.add(new ScoredCandidate(cand, baseline, after, nodePAfter,
+                    Double.NaN, Double.NaN, edgesAfter, true));
         }
 
         if (stopRequested()) return null;
 
-        // PASS 2: compute Model-P for (top-K rows) UNION (all REORIENT_ONLY moves)
+        // PASS 2: compute Model-P for (top-K rows) UNION (all REORIENT_SIMPLE moves)
         List<ScoredCandidate> ranked = new ArrayList<>(scored);
         ranked.sort(CANONICAL_TABLE_ORDER);
 
         final int topK = Math.min(DEFAULT_MODELP_TOP_K, ranked.size());
         final LinkedHashSet<String> keysToEval = new LinkedHashSet<>();
 
-        // top-K (table-surfaced)
+        // 2a) top-K (table-surfaced set)
         for (int i = 0; i < topK; i++) {
             ScoredCandidate sc = ranked.get(i);
             if (sc == null || sc.edit() == null) continue;
             keysToEval.add(sc.edit().key());
         }
 
-        // all reorientation-only
+        // 2b) all simple reorientation moves
         for (ScoredCandidate sc : scored) {
             if (sc == null || sc.edit() == null) continue;
             if (moveType(sc.edit()) == MoveType.REORIENT_SIMPLE) {
@@ -1337,11 +1344,12 @@ public final class VertexRepairPanel extends JPanel {
             mpAfterByKey.put(key, mpAfter);
         }
 
-        // Patch mpBefore/mpAfter into scored rows
+        // Patch mpBefore/mpAfter into scored rows (mpBefore constant for this pack)
         {
             List<ScoredCandidate> patched = new ArrayList<>(scored.size());
             for (ScoredCandidate sc : scored) {
-                Double mpAfter = mpAfterByKey.get(sc.edit().key());
+                Double mpAfter = (sc.edit() == null) ? null : mpAfterByKey.get(sc.edit().key());
+
                 patched.add(new ScoredCandidate(
                         sc.edit(),
                         sc.violationsBaseline(),
@@ -1350,10 +1358,30 @@ public final class VertexRepairPanel extends JPanel {
                         mpBefore,
                         (mpAfter == null ? Double.NaN : mpAfter),
                         sc.edgesAfter(),
-                        true
+                        true // patched next
                 ));
             }
             scored = patched;
+        }
+
+        // PASS 3: compute passesGuards consistently with the UI path
+        {
+            List<ScoredCandidate> patched2 = new ArrayList<>(scored.size());
+            for (ScoredCandidate sc : scored) {
+                boolean ok = wouldPassGuards(base, center, sc, gt);
+
+                patched2.add(new ScoredCandidate(
+                        sc.edit(),
+                        sc.violationsBaseline(),
+                        sc.violationsAfter(),
+                        sc.nodePAfter(),
+                        sc.modelPBefore(),
+                        sc.modelPAfter(),
+                        sc.edgesAfter(),
+                        ok
+                ));
+            }
+            scored = patched2;
         }
 
         return new SearchPack(center.getName(), baseline, scored);
@@ -2177,7 +2205,7 @@ public final class VertexRepairPanel extends JPanel {
             return false;
         }
 
-        // Use the SAME numbers the table computed (and your 2-pass MP logic patched in).
+        // Use the SAME numbers the table computed.
         int baselineViol = sc.violationsBaseline();
         int afterViol = sc.violationsAfter();
         int afterEdges = sc.edgesAfter();
@@ -2185,8 +2213,9 @@ public final class VertexRepairPanel extends JPanel {
         double mpBefore = sc.modelPBefore();
         double mpAfter = sc.modelPAfter();
 
-        if (!isProgress(baselineViol, afterViol, currentEdges, afterEdges, mpBefore, mpAfter)) {
-            vlog("Rejected: not progress (violationsBaseline=%d violationsAfter=%d edges %d->%d modelP %s->%s).",
+        // Option 2: stored guard decision is authoritative.
+        if (!sc.passesGuards()) {
+            vlog("Rejected: fails guards (violationsBaseline=%d violationsAfter=%d edges %d->%d modelP %s->%s).",
                     baselineViol, afterViol, currentEdges, afterEdges, fmtP(mpBefore), fmtP(mpAfter));
             return false;
         }
