@@ -635,7 +635,7 @@ public final class VertexRepairSearch implements IGraphSearch {
             for (Edge add : addMenuForPair(x, y, gt)) out.add(CandidateEdit.addEdge(add));
         }
 
-        // multi-edge incident patterns (DAG/CPDAG/PDAG)
+        // multi-edge incident patterns (DAG//PDAG)
         if (gt == RepairGraphType.DAG || gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG) {
             out.addAll(enumerateIncidentOrientationPatternMoves(g, x, gt));
         }
