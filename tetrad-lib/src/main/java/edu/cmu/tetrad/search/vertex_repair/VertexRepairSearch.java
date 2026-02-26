@@ -53,10 +53,11 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     /** Progress guard: allow pure Model-P improvement if violations and edges tie. */
     private static final double MIN_MP_GAIN = 1e-3;
+    private static double staticAlpha = 0.01;
 
     private boolean verbose = false;
 
-    private Graph graph; // working graph
+    private Graph graph = new EdgeListGraph(); // working graph
     private IndependenceTest test;
     private CachedIndependenceQueries queries;
 
@@ -78,11 +79,13 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     public VertexRepairSearch(IndependenceTest test) {
         setTest(Objects.requireNonNull(test, "test"));
+        staticAlpha = test.getAlpha();
     }
 
     public VertexRepairSearch(Graph graph, IndependenceTest test) {
         setGraph(Objects.requireNonNull(graph, "graph"));
         setTest(Objects.requireNonNull(test, "test"));
+        staticAlpha = test.getAlpha();
     }
 
     // -------------------- IGraphSearch --------------------
@@ -567,17 +570,21 @@ public final class VertexRepairSearch implements IGraphSearch {
         // Node-P finite first then DESC
         c = finiteFirst(a.nodePAfter(), b.nodePAfter());
         if (c != 0) return c;
-        c = -Double.compare(alphaLogOdds(a.nodePAfter(), 0.01), alphaLogOdds(b.nodePAfter(), 0.01));
+        c = -Double.compare(alphaLogOdds(a.nodePAfter(), getStaticAlpha()), alphaLogOdds(b.nodePAfter(), 0.01));
         if (c != 0) return c;
 
         // Model-P finite first then DESC
         c = finiteFirst(a.modelPAfter(), b.modelPAfter());
         if (c != 0) return c;
-        c = -Double.compare(alphaLogOdds(a.modelPAfter(), 0.01), alphaLogOdds(b.modelPAfter(), 0.01));
+        c = -Double.compare(alphaLogOdds(a.modelPAfter(), getStaticAlpha()), alphaLogOdds(b.modelPAfter(), 0.01));
         if (c != 0) return c;
 
         return stableTieBreak(a, b);
     };
+
+    private static double getStaticAlpha() {
+        return staticAlpha;
+    }
 
     private static int stableTieBreak(ScoredCandidate a, ScoredCandidate b) {
         String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
