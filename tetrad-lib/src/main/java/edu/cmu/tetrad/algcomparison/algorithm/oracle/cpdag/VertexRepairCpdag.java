@@ -22,6 +22,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.independence.TakesGraph;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -58,7 +59,9 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
 )
 @Bootstrapping
 public class VertexRepairCpdag extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
-        TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+        TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm,
+        TakesGraph
+{
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -72,6 +75,7 @@ public class VertexRepairCpdag extends AbstractBootstrapAlgorithm implements Alg
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
+    private Graph graph;
 
     /**
      * <p>Constructor for VertexRepairCpdag.</p>
@@ -96,11 +100,11 @@ public class VertexRepairCpdag extends AbstractBootstrapAlgorithm implements Alg
 
         // Start from empty graph on the variables in the test.
         List<Node> vars = it.getVariables();
-        Graph start = new EdgeListGraph(vars); // no edges
+        Graph start = this.graph == null ? new EdgeListGraph(vars): graph; // no edges
 
         // Configure VertexRepairSearch.
         VertexRepairSearch vr = new VertexRepairSearch(it, start, this.knowledge,
-                ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
+                ConditioningSetType.RECURSIVE_BLOCKING);
 
         // Conditioning-set type: VertexRepairSearch needs it; we expose it as an algcomparison param.
         // If you already have a Params constant for this in your VertexCheck UI model, reuse it here.
@@ -114,7 +118,16 @@ public class VertexRepairCpdag extends AbstractBootstrapAlgorithm implements Alg
         // vr.setDepth(parameters.getInt(Params.DEPTH));
         // vr.setAlpha(parameters.getDouble(Params.ALPHA));
 
-        Graph repaired = vr.search();
+//        Graph repaired = vr.search();
+
+        Graph repaired = vr.search(
+                start,
+                VertexRepairSearch.RepairGraphType.CPDAG,
+                4, 50, 200);
+//                parameters.getInt(Params.MAX_STEPS_PER_NODE),
+//                parameters.getInt(Params.MAX_SWEEPS),
+//                parameters.getInt(Params.MAX_EDITS)
+//        );
 
         stampWithBic(repaired, dataModel);
         return repaired;
@@ -163,5 +176,10 @@ public class VertexRepairCpdag extends AbstractBootstrapAlgorithm implements Alg
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
+    }
+
+    @Override
+    public void setGraph(Graph graph) {
+        this.graph = graph;
     }
 }

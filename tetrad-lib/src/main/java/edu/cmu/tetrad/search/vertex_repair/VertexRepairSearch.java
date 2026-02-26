@@ -396,7 +396,9 @@ public class VertexRepairSearch implements IGraphSearch {
     }
 
     // ---------------------------------------------------------------------
-    // Auto model best
+    // Auto model best: "do no harm" sweep that greedily takes the TOP
+    // table row for each node until the TOP row becomes NO-OP, then moves on.
+    // One sweep only.
     // ---------------------------------------------------------------------
 
     private static boolean allIntendedNewEdgesPresent(Graph g, VertexRepairSearch.CandidateEdit cand) {
@@ -540,58 +542,175 @@ public class VertexRepairSearch implements IGraphSearch {
         return generalAndersonDarlingTest.getP();
     }
 
-    @Override
+//    @Override
+//    public Graph search() throws InterruptedException {
+//        this.workingGraph = safeCopy(this.start);
+//        if (this.workingGraph == null) return null;
+//
+//        final RepairGraphType gt = RepairGraphType.CPDAG;
+//
+//        // Canonicalize once up front (keeps invariants stable).
+//        this.workingGraph = canonicalizeToCpdagOrNull(this.workingGraph);
+//        if (this.workingGraph == null) return null;
+//
+//        int editsApplied = 0;
+//
+//        final int MAX_EDITS = 500;            // global safety cap
+//        final int MAX_STEPS_PER_NODE = 4;     // <-- YOUR knob: max accepted moves per node per sweep
+//        final int MAX_SWEEPS = 50;            // safety cap for repeat-until-fixed-point
+//
+//        int sweep = 0;
+//
+//        while (!Thread.currentThread().isInterrupted() && editsApplied < MAX_EDITS) {
+//            sweep++;
+//            if (sweep > MAX_SWEEPS) break;
+//
+//            final String sweepStartSig = graphSignature(this.workingGraph);
+//            int editsThisSweep = 0;
+//
+//            // Node iteration order for this sweep.
+//            // (Panel-ish stable order; change here if you want worst-first by nodeP.)
+//            List<Node> nodes = new ArrayList<>(this.workingGraph.getNodes());
+//            nodes.sort(Comparator.comparing(Node::getName,
+//                    Comparator.nullsLast(NATURAL_NAME_COMPARATOR)));
+//
+//            for (Node v0 : nodes) {
+//                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+//                if (editsApplied >= MAX_EDITS) break;
+//
+//                if (v0 == null || v0.getName() == null) continue;
+//
+//                Node center = this.workingGraph.getNode(v0.getName());
+//                if (center == null) continue;
+//
+//                int nodeSteps = 0;
+//
+//                // Up to MAX_STEPS_PER_NODE accepted moves for this node this sweep.
+//                while (nodeSteps < MAX_STEPS_PER_NODE && editsApplied < MAX_EDITS) {
+//                    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+//
+//                    // Refresh center in case graph replacement changed node instances.
+//                    center = this.workingGraph.getNode(center.getName());
+//                    if (center == null) break;
+//
+//                    SearchPack pack = computeCandidatesForNode(this.workingGraph, center, gt);
+//                    if (pack == null || pack.scored() == null || pack.scored().isEmpty()) break;
+//
+//                    List<ScoredCandidate> ranked = new ArrayList<>(pack.scored());
+//                    ranked.sort(CANONICAL_TABLE_ORDER);
+//
+//                    ScoredCandidate top = ranked.getFirst();
+//                    if (top == null || top.edit() == null || top.edit().isNoOp()) break;
+//
+//                    // TOP-only policy: if TOP can't be applied, stop this node for this sweep.
+//                    Graph next = applyCandidateHeadless(this.workingGraph, top, gt);
+//                    if (next == null) break;
+//
+//                    // Commit
+//                    this.workingGraph = next;
+//                    editsApplied++;
+//                    editsThisSweep++;
+//                    nodeSteps++;
+//                }
+//            }
+//
+//            final String sweepEndSig = graphSignature(this.workingGraph);
+//
+//            // Fixed point if nothing changed this sweep (or signature unchanged).
+//            if (editsThisSweep == 0 || sweepEndSig.equals(sweepStartSig)) break;
+//        }
+//
+//        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+//        return this.workingGraph;
+//    }
+
     public Graph search() throws InterruptedException {
-        this.workingGraph = safeCopy(this.start);
-        if (this.workingGraph == null) return null;
+        return search(this.start, RepairGraphType.CPDAG, 4, 50, 500);
+    }
 
-        final RepairGraphType gt = RepairGraphType.CPDAG;
+    public Graph search(Graph start,
+                        RepairGraphType gt,
+                        int maxStepsPerNode,
+                        int maxSweeps,
+                        int maxEdits) {
 
-        // Canonicalize once up front (keeps invariants stable).
-        this.workingGraph = canonicalizeToCpdagOrNull(this.workingGraph);
-        if (this.workingGraph == null) return null;
+        if (start == null) return null;
+        if (maxStepsPerNode <= 0) throw new IllegalArgumentException("maxStepsPerNode must be > 0");
+        if (maxSweeps <= 0) throw new IllegalArgumentException("maxSweeps must be > 0");
+        if (maxEdits <= 0) throw new IllegalArgumentException("maxEdits must be > 0");
+
+        // Panel-style: canonical node identity against test vars
+        this.workingGraph = safeCopy(start);
+        this.workingGraph = GraphUtils.replaceNodes(this.workingGraph, test.getVariables());
 
         int editsApplied = 0;
 
-        final int MAX_EDITS = 500;            // global safety cap
-        final int MAX_STEPS_PER_NODE = 4;     // <-- YOUR knob: max accepted moves per node per sweep
-        final int MAX_SWEEPS = 50;            // safety cap for repeat-until-fixed-point
-
         int sweep = 0;
-
-        while (!Thread.currentThread().isInterrupted() && editsApplied < MAX_EDITS) {
+        while (!stopRequested() && editsApplied < maxEdits) {
             sweep++;
-            if (sweep > MAX_SWEEPS) break;
+            if (sweep > maxSweeps) break;
 
-            final String sweepStartSig = graphSignature(this.workingGraph);
+            final String sweepStartSig = graphSignature(workingGraph);
             int editsThisSweep = 0;
 
-            // Node iteration order for this sweep.
-            // (Panel-ish stable order; change here if you want worst-first by nodeP.)
-            List<Node> nodes = new ArrayList<>(this.workingGraph.getNodes());
-            nodes.sort(Comparator.comparing(Node::getName,
-                    Comparator.nullsLast(NATURAL_NAME_COMPARATOR)));
+            // Recompute node order EACH sweep: worst nodeP first (panel behavior)
+            List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
+            Map<String, Double> nodePOrder = new HashMap<>();
 
+            for (Node n : nodes) {
+                if (n == null || n.getName() == null) continue;
+                double p = nodePValue(workingGraph, n);
+                nodePOrder.put(n.getName(), p);
+            }
+
+            nodes.sort((a, b) -> {
+                if (a == null && b == null) return 0;
+                if (a == null) return 1;
+                if (b == null) return -1;
+
+                String an = a.getName();
+                String bn = b.getName();
+
+                double pa = (an == null) ? Double.NaN : nodePOrder.getOrDefault(an, Double.NaN);
+                double pb = (bn == null) ? Double.NaN : nodePOrder.getOrDefault(bn, Double.NaN);
+
+                boolean aNaN = Double.isNaN(pa);
+                boolean bNaN = Double.isNaN(pb);
+
+                // NaN last
+                if (aNaN && bNaN) return NATURAL_NAME_COMPARATOR.compare(an, bn);
+                if (aNaN) return 1;
+                if (bNaN) return -1;
+
+                int c = Double.compare(pa, pb); // ASC (worst first)
+                if (c != 0) return c;
+
+                return NATURAL_NAME_COMPARATOR.compare(an, bn);
+            });
+
+            // One sweep over nodes
             for (Node v0 : nodes) {
-                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-                if (editsApplied >= MAX_EDITS) break;
-
+                if (stopRequested() || editsApplied >= maxEdits) break;
                 if (v0 == null || v0.getName() == null) continue;
 
-                Node center = this.workingGraph.getNode(v0.getName());
+                Node center = workingGraph.getNode(v0.getName());
                 if (center == null) continue;
 
+                Set<String> seenSignatures = new HashSet<>();
                 int nodeSteps = 0;
 
-                // Up to MAX_STEPS_PER_NODE accepted moves for this node this sweep.
-                while (nodeSteps < MAX_STEPS_PER_NODE && editsApplied < MAX_EDITS) {
-                    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+                while (!stopRequested() && editsApplied < maxEdits) {
+                    nodeSteps++;
+                    if (nodeSteps > maxStepsPerNode) break;
 
-                    // Refresh center in case graph replacement changed node instances.
-                    center = this.workingGraph.getNode(center.getName());
+                    // refresh center
+                    center = workingGraph.getNode(center.getName());
                     if (center == null) break;
 
-                    SearchPack pack = computeCandidatesForNode(this.workingGraph, center, gt);
+                    String sig = graphSignature(workingGraph);
+                    if (!seenSignatures.add(sig)) break;
+
+                    SearchPack pack = computeCandidatesForNode(workingGraph, center, gt);
                     if (pack == null || pack.scored() == null || pack.scored().isEmpty()) break;
 
                     List<ScoredCandidate> ranked = new ArrayList<>(pack.scored());
@@ -600,26 +719,43 @@ public class VertexRepairSearch implements IGraphSearch {
                     ScoredCandidate top = ranked.getFirst();
                     if (top == null || top.edit() == null || top.edit().isNoOp()) break;
 
-                    // TOP-only policy: if TOP can't be applied, stop this node for this sweep.
-                    Graph next = applyCandidateHeadless(this.workingGraph, top, gt);
-                    if (next == null) break;
+                    boolean moved = false;
 
-                    // Commit
-                    this.workingGraph = next;
-                    editsApplied++;
-                    editsThisSweep++;
-                    nodeSteps++;
+                    for (ScoredCandidate sc : ranked) {
+                        if (sc == null || sc.edit() == null) continue;
+                        if (sc.edit().isNoOp()) break;
+
+                        if (sc.passesGuards()) {
+                            // IMPORTANT: apply using the same semantics as panel
+                            if (applyCandidateInternal(sc.edit(), gt)) {
+                                editsApplied++;
+                                editsThisSweep++;
+                                moved = true;
+                                break; // recompute for same node
+                            }
+                        }
+                    }
+
+                    if (!moved) break;
                 }
             }
 
-            final String sweepEndSig = graphSignature(this.workingGraph);
+            final String sweepEndSig = graphSignature(workingGraph);
 
-            // Fixed point if nothing changed this sweep (or signature unchanged).
-            if (editsThisSweep == 0 || sweepEndSig.equals(sweepStartSig)) break;
+            if (editsThisSweep == 0 || sweepEndSig.equals(sweepStartSig)) {
+                break; // fixed point
+            }
         }
 
-        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-        return this.workingGraph;
+        return workingGraph;
+    }
+
+    /**
+     * If your tryMoveWithGuards/applyCandidateInternal mutates a field like `workingGraph`,
+     * use that field here; otherwise, just `return current;`.
+     */
+    private Graph getCurrentWorkingGraphOr(Graph current) {
+        return (this.workingGraph != null) ? this.workingGraph : current;
     }
 
     private Node resolveInitialNode(Graph g, Node requested) {
@@ -1192,7 +1328,7 @@ public class VertexRepairSearch implements IGraphSearch {
     }
 
     private Graph safeCopy(Graph g) {
-        if (g == null) return new EdgeListGraph();
+        if (g == null) return null;
         try {
             return g.copy();
         } catch (Throwable t) {
@@ -1412,22 +1548,22 @@ public class VertexRepairSearch implements IGraphSearch {
         return new GraphEval(violations, modelP, globalViolationByKey.size());
     }
 
-    private Graph buildCandidateGraph(Graph base, VertexRepairSearch.CandidateEdit cand, RepairGraphType gt) {
-//        if (base == null || cand == null) return null;
-//
+    private Graph buildCandidateGraph(Graph base, CandidateEdit cand, RepairGraphType gt) {
+        if (base == null || cand == null) return null;
+
         Graph g2 = cand.applyTo(safeCopy(base));
         if (g2 == null) return null;
-//
-//        if (gt == RepairGraphType.CPDAG) {
-        g2 = canonicalizeToCpdagOrNull(g2);
-        if (g2 == null) return null;
-//
-//            if (!cand.isNoOp() && g2.equals(base)) return null;
-//        } else if (gt == RepairGraphType.PAG) {
-//            // keep as-is
-//        } else if (gt == RepairGraphType.PDAG) {
-//            // keep as-is
-//        }
+
+        if (gt == RepairGraphType.CPDAG) {
+            g2 = canonicalizeToCpdagOrNull(g2);
+            if (g2 == null) return null;
+
+            if (!cand.isNoOp() && g2.equals(base)) return null;
+        } else if (gt == RepairGraphType.PAG) {
+            // keep as-is
+        } else if (gt == RepairGraphType.PDAG) {
+            // keep as-is
+        }
 
         if (requiresEdgePresenceCheck(cand) && !allIntendedNewEdgesPresent(g2, cand)) {
             return null;
@@ -1504,7 +1640,7 @@ public class VertexRepairSearch implements IGraphSearch {
         }
 
         vlog("Attempting guarded move: %s", edit.description());
-        boolean ok = applyCandidateInternal(edit, false, false);
+        boolean ok = applyCandidateInternal(edit, RepairGraphType.CPDAG);
         vlog(ok ? "APPLIED successfully" : "Rejected (no change)");
         return ok;
     }
@@ -1512,89 +1648,48 @@ public class VertexRepairSearch implements IGraphSearch {
     /**
      * Internal apply that lets auto-repair avoid per-step history pushes.
      */
-    private boolean applyCandidateInternal(VertexRepairSearch.CandidateEdit cand, boolean pushHistory, boolean updateStatus) {
+    private boolean applyCandidateInternal(CandidateEdit cand, RepairGraphType gt) {
         if (cand == null) return false;
         if (cand.isNoOp()) return false;
 
-        vlog("Attempting move: %s", cand.description());
-
-        if (pushHistory) {
-            history.push(safeCopy(workingGraph));
-        }
-
-        RepairGraphType gt = RepairGraphType.CPDAG;// (RepairGraphType) graphTypeCombo.getSelectedItem();
-
         Graph base = safeCopy(workingGraph);
 
-        // Canonicalize base if needed (same as you already do)
+        // Canonicalize base if needed (same as panel)
         if (gt == RepairGraphType.CPDAG) {
             base = canonicalizeToCpdagOrNull(base);
-            if (base == null) {
-                if (updateStatus) statusLabel.setText("Current graph has no consistent CPDAG extension.");
-                if (pushHistory && !history.isEmpty()) history.pop();
-                return false;
-            }
+            if (base == null) return false;
+        } else if (gt == RepairGraphType.PAG) {
+            base = canonicalizeToPagOrNull(base);
+            if (base == null) return false;
         }
-//        else if (gt == RepairGraphType.PAG) {
-//            base = canonicalizeToPagOrNull(base);
-//            if (base == null) {
-//                if (updateStatus) statusLabel.setText("Current graph has no consistent PAG extension.");
-//                if (pushHistory && !history.isEmpty()) history.pop();
-//                return false;
-//            }
-//        }
 
         Graph g2 = cand.applyTo(base);
-        if (g2 == null) {
-            if (updateStatus) statusLabel.setText("Failed to apply: " + cand.description());
-            if (pushHistory && !history.isEmpty()) history.pop();
-            return false;
-        }
+        if (g2 == null) return false;
 
         // Canonicalize result if needed
         if (gt == RepairGraphType.CPDAG) {
             g2 = canonicalizeToCpdagOrNull(g2);
-            if (g2 == null) {
-                if (updateStatus)
-                    statusLabel.setText("Failed to apply (CPDAG canonicalization): " + cand.description());
-                if (pushHistory && !history.isEmpty()) history.pop();
-                return false;
-            }
+            if (g2 == null) return false;
+        } else if (gt == RepairGraphType.PAG) {
+            // keep as-is (same as panel comment)
         }
-//        else if (gt == RepairGraphType.PAG) {
-//            // you currently “keep as-is” for PAG; that’s fine if your edits always produce legal PAGs
-//            // otherwise you might want to canonicalize here too.
-//        }
 
-        // **CRITICAL**: if the move does not change the graph, treat it as “no move”
-        if (g2.equals(base)) {
-            vlog("REJECTED (no graph change violationsAfter canonicalization)");
-            if (updateStatus) statusLabel.setText("No-op violationsAfter canonicalization: " + cand.description());
-            if (pushHistory && !history.isEmpty()) history.pop();
-            return false;
-        }
+        // Critical: treat “no net change” as no move
+        if (g2.equals(base)) return false;
 
         if (requiresEdgePresenceCheck(cand) && !allIntendedNewEdgesPresent(g2, cand)) {
-            vlog("REJECTED (intended new edge(s) not present violationsAfter apply/canonicalization)");
-            if (updateStatus) statusLabel.setText("Skipped (edge vanished): " + cand.description());
-            if (pushHistory && !history.isEmpty()) history.pop();
             return false;
         }
 
         // Commit
         workingGraph = g2;
 
-        // resync selected node object to the instance in the updated graph
+        // (If you maintain a selected node x in this class, resync it by name like panel.)
         if (x != null && x.getName() != null) {
             Node inGraph = workingGraph.getNode(x.getName());
-            if (inGraph != null) x = inGraph;
-            else x = resolveInitialNode(workingGraph, null);
-//            SwingUtilities.invokeLater(this::populateNodeCombo);
+            x = (inGraph != null) ? inGraph : x;
         }
 
-        vlog("APPLIED successfully");
-
-        if (updateStatus) statusLabel.setText("Applied: " + cand.description());
         return true;
     }
 
