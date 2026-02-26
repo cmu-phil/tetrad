@@ -73,122 +73,18 @@ public final class VertexRepairPanel extends JPanel {
         String db = (b.edit() == null || b.edit().description() == null) ? "" : b.edit().description();
         return da.compareTo(db);
     };
-
-    private static double utility(ScoredCandidate s) {
-        final int delta = s.delta();        // negative good
-        final int edgesAfter = s.edgesAfter();
-
-        final double mpAfter = finiteOrDefault(s.modelPAfter(), 0.0);
-        final double npAfter = finiteOrDefault(s.nodePAfter(), 0.0);
-
-        final double mpLogOdds = logOdds(mpAfter);
-        final double npLogOdds = logOdds(npAfter);
-
-        // Baseline vs after Model-P change (higher is better)
-        final double mpBefore = s.modelPBefore();
-        final double dMp = (Double.isFinite(mpBefore) && Double.isFinite(s.modelPAfter()))
-                ? (s.modelPAfter() - mpBefore)
-                : Double.NEGATIVE_INFINITY;
-
-        final MoveType mt = moveType(s.edit());
-
-        // Edit size penalty: collider moves are usually replaceEdges(...) => getEdges().size()==2
-        int editSize = 1;
-        try {
-            if (s.edit() != null && s.edit().getEdges() != null) {
-                editSize = Math.max(1, s.edit().getEdges().size());
-            }
-        } catch (Throwable ignored) {
-            // keep editSize=1
-        }
-
-        // ---- weights (tune these) ----
-        final double W_DELTA   = 0.1;   // dominates
-        final double W_DMP     = 1.5;   // encourage better Model-P vs baseline
-        final double W_NODE    = 0.35;  // gentle
-        final double W_MODEL   = 0.35;  // gentle
-        final double W_EDGES   = 0.25;  // mild graph complexity
-        final double W_EDIT_SZ = 0.90;  // penalize multi-edge edits (2-edge collider fixes)
-
-        // Bonuses/penalties applied ONLY when the move actually improves Model-P
-        final double BONUS_SIMPLE_REORIENT_IMPROVE = 5.0;
-        final double PENALTY_COLLIDER_IMPROVE      = 1.0;
-
-        double bonus = 0.0;
-        if (dMp > 0.0) {
-            if (mt == MoveType.REORIENT_SIMPLE) bonus += BONUS_SIMPLE_REORIENT_IMPROVE;
-            if (mt == MoveType.COLLIDER_FIX)    bonus -= PENALTY_COLLIDER_IMPROVE;
-        }
-
-        // Optional extra: even if dMp is unknown, still prefer simple reorients over collider fixes
-        // (keeps table behavior stable during PASS 1 when mpAfter might be NaN for many rows).
-        if (!Double.isFinite(dMp)) {
-            if (mt == MoveType.REORIENT_SIMPLE) bonus += 0.25;
-            if (mt == MoveType.COLLIDER_FIX)    bonus -= 0.25;
-        }
-
-        return (-W_DELTA * delta)
-                + (W_DMP * dMp)
-                + bonus
-                + (W_MODEL * mpLogOdds)
-                + (W_NODE  * npLogOdds)
-                - (W_EDGES * edgesAfter)
-                - (W_EDIT_SZ * (editSize - 1));
-    }
+    private final VertexCheckIndTestModel baseModel;
 
     // -------------------- move classification --------------------
 // Prefer SIMPLE reorientation (single-edge REP:) over collider moves (multi-edge).
 // We also treat collider moves as their own type so we can *penalize* them.
-
-    private enum MoveType {
-        REORIENT_SIMPLE,   // single-edge replace/orient/flip (low-risk)
-        COLLIDER_FIX,      // multi-edge "Orient collider..." / "Orient away..." (higher-risk)
-        REMOVE_EDGE,
-        ADD_EDGE,
-        OTHER
-    }
-
-    private static MoveType moveType(CandidateEdit e) {
-        if (e == null) return MoveType.OTHER;
-
-        String k = safeLower(e.key());
-        String d = safeLower(e.description());
-        String s = (k + " " + d).trim();
-
-        // Explicit add/remove first (unambiguous)
-        if (containsAny(s, "rem:") || containsAny(s, "remove", "delete")) return MoveType.REMOVE_EDGE;
-        if (containsAny(s, "add:") || containsAny(s, "add", "insert"))    return MoveType.ADD_EDGE;
-
-        // Collider fixes (usually MULTI:... and description starts with "Orient collider" / "Orient away from collider")
-        if (containsAny(s, "orient collider", "orient away from collider")) {
-            return MoveType.COLLIDER_FIX;
-        }
-
-        // Simple reorientation: typically REP:... and/or "replace" with same endpoints (orientation change)
-        // We don’t try to prove it’s “orientation-only” here; we just prioritize these moves over collider moves.
-        if (containsAny(s, "rep:") || containsAny(s, "replace", "reorient", "orient", "flip", "reverse", "endpoint")) {
-            return MoveType.REORIENT_SIMPLE;
-        }
-
-        return MoveType.OTHER;
-    }
-    private static String safeLower(String s) {
-        return s == null ? "" : s.toLowerCase();
-    }
-
-    private static boolean containsAny(String s, String... needles) {
-        for (String n : needles) if (n != null && !n.isEmpty() && s.contains(n)) return true;
-        return false;
-    }
-
-    // -------------------- numeric helpers --------------------
-
-    private final VertexCheckIndTestModel baseModel;
     private final Deque<Graph> history = new ArrayDeque<>();
     // UI
     private final JComboBox<RepairGraphType> graphTypeCombo = new JComboBox<>(RepairGraphType.values());
     private final JButton searchButton = new JButton();              // label set after x is known
     private final JButton modelBestButton = new JButton("One Node Sweep");
+
+    // -------------------- numeric helpers --------------------
     private final JButton backButton = new JButton("Undo");
     private final JButton showGraphButton = new JButton("Graph");
     private final JLabel statusLabel = new JLabel(" ");
@@ -204,7 +100,6 @@ public final class VertexRepairPanel extends JPanel {
     private TableRowSorter<CandidateTableModel> resultsSorter;
     private volatile SwingWorker<?, ?> activeWorker;
     private volatile JDialog watchDialog;
-
     public VertexRepairPanel(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
 
@@ -235,9 +130,103 @@ public final class VertexRepairPanel extends JPanel {
         setPreferredSize(new Dimension(650, 600));
     }
 
-    // ---------------------------------------------------------------------
-    // UI
-    // ---------------------------------------------------------------------
+    static double alpha = 0.01;
+
+    private static double utility(ScoredCandidate s) {
+        final int delta = s.delta();        // negative good
+        final int edgesAfter = s.edgesAfter();
+
+        final double mpAfter = finiteOrDefault(s.modelPAfter(), 0.0);
+        final double npAfter = finiteOrDefault(s.nodePAfter(), 0.0);
+
+        final double mpLogOdds = alphaLogOdds(mpAfter, alpha);
+        final double npLogOdds = alphaLogOdds(npAfter, alpha);
+
+        // Baseline vs after Model-P change (higher is better)
+        final double mpBefore = s.modelPBefore();
+        final double dMp = (Double.isFinite(mpBefore) && Double.isFinite(s.modelPAfter()))
+                ? (s.modelPAfter() - mpBefore)
+                : Double.NEGATIVE_INFINITY;
+
+        final MoveType mt = moveType(s.edit());
+
+        // Edit size penalty: collider moves are usually replaceEdges(...) => getEdges().size()==2
+        int editSize = 1;
+        try {
+            if (s.edit() != null && s.edit().getEdges() != null) {
+                editSize = Math.max(1, s.edit().getEdges().size());
+            }
+        } catch (Throwable ignored) {
+            // keep editSize=1
+        }
+
+        // ---- weights (tune these) ----
+        final double W_DELTA = 2.0;   // dominates
+        final double W_DMP = 1.5;   // encourage better Model-P vs baseline
+        final double W_NODE = 0.35;  // gentle
+        final double W_MODEL = 0.35;  // gentle
+        final double W_EDGES = 0.25;  // mild graph complexity
+        final double W_EDIT_SZ = 0.90;  // penalize multi-edge edits (2-edge collider fixes)
+
+        // Bonuses/penalties applied ONLY when the move actually improves Model-P
+        final double BONUS_SIMPLE_REORIENT_IMPROVE = 5.0;
+        final double PENALTY_COLLIDER_IMPROVE = 1.0;
+
+        double bonus = 0.0;
+        if (dMp > 0.0) {
+            if (mt == MoveType.REORIENT_SIMPLE) bonus += BONUS_SIMPLE_REORIENT_IMPROVE;
+            if (mt == MoveType.COLLIDER_FIX) bonus -= PENALTY_COLLIDER_IMPROVE;
+        }
+
+        // Optional extra: even if dMp is unknown, still prefer simple reorients over collider fixes
+        // (keeps table behavior stable during PASS 1 when mpAfter might be NaN for many rows).
+        if (!Double.isFinite(dMp)) {
+            if (mt == MoveType.REORIENT_SIMPLE) bonus += 0.25;
+            if (mt == MoveType.COLLIDER_FIX) bonus -= 0.25;
+        }
+
+        return (-W_DELTA * delta)
+                + (W_DMP * dMp)
+                + bonus
+                + (W_MODEL * mpLogOdds)
+                + (W_NODE * npLogOdds)
+                - (W_EDGES * edgesAfter)
+                - (W_EDIT_SZ * (editSize - 1));
+    }
+
+    private static MoveType moveType(CandidateEdit e) {
+        if (e == null) return MoveType.OTHER;
+
+        String k = safeLower(e.key());
+        String d = safeLower(e.description());
+        String s = (k + " " + d).trim();
+
+        // Explicit add/remove first (unambiguous)
+        if (containsAny(s, "rem:") || containsAny(s, "remove", "delete")) return MoveType.REMOVE_EDGE;
+        if (containsAny(s, "add:") || containsAny(s, "add", "insert")) return MoveType.ADD_EDGE;
+
+        // Collider fixes (usually MULTI:... and description starts with "Orient collider" / "Orient away from collider")
+        if (containsAny(s, "orient collider", "orient away from collider")) {
+            return MoveType.COLLIDER_FIX;
+        }
+
+        // Simple reorientation: typically REP:... and/or "replace" with same endpoints (orientation change)
+        // We don’t try to prove it’s “orientation-only” here; we just prioritize these moves over collider moves.
+        if (containsAny(s, "rep:") || containsAny(s, "replace", "reorient", "orient", "flip", "reverse", "endpoint")) {
+            return MoveType.REORIENT_SIMPLE;
+        }
+
+        return MoveType.OTHER;
+    }
+
+    private static String safeLower(String s) {
+        return s == null ? "" : s.toLowerCase();
+    }
+
+    private static boolean containsAny(String s, String... needles) {
+        for (String n : needles) if (n != null && !n.isEmpty() && s.contains(n)) return true;
+        return false;
+    }
 
     /**
      * Canonical key for de-duping implied facts by names: (X,Y unordered; Z sorted).
@@ -267,6 +256,10 @@ public final class VertexRepairPanel extends JPanel {
 
         return a + "|" + b + "|" + String.join(",", z);
     }
+
+    // ---------------------------------------------------------------------
+    // UI
+    // ---------------------------------------------------------------------
 
     private static boolean edgeStructurallyEqual(Edge a, Edge b, Node x, Node y) {
         if (a == null || b == null) return false;
@@ -304,10 +297,6 @@ public final class VertexRepairPanel extends JPanel {
         return new ArrayList<>(seen.values());
     }
 
-    // ---------------------------------------------------------------------
-    // Search logic (watched, background)
-    // ---------------------------------------------------------------------
-
     private static TableCellRenderer modelPRenderer() {
         return new DefaultTableCellRenderer() {
             @Override
@@ -323,6 +312,10 @@ public final class VertexRepairPanel extends JPanel {
         };
     }
 
+    // ---------------------------------------------------------------------
+    // Search logic (watched, background)
+    // ---------------------------------------------------------------------
+
     // Helpers used above (if you don't already have them)
     private static String graphSignature(Graph g) {
         if (g == null) return "null";
@@ -337,14 +330,14 @@ public final class VertexRepairPanel extends JPanel {
         return String.join("|", es);
     }
 
-    // ---------------------------------------------------------------------
-    // Auto model best
-    // ---------------------------------------------------------------------
-
     private static String fmtP(double p) {
         if (Double.isNaN(p)) return "NaN";
         return String.format("%.4g", p);
     }
+
+    // ---------------------------------------------------------------------
+    // Auto model best
+    // ---------------------------------------------------------------------
 
     private static void vlog(String fmt, Object... args) {
         System.out.println("[VertexAutoRepair] " + String.format(fmt, args));
@@ -404,12 +397,6 @@ public final class VertexRepairPanel extends JPanel {
         return a1 == reb.getEndpoint(reb.getNode1()) && b1 == reb.getEndpoint(reb.getNode2());
     }
 
-    // ---------------------------------------------------------------------
-    // Auto model best: "do no harm" sweep that greedily takes the TOP
-    // table row for each node until the TOP row becomes NO-OP, then moves on.
-    // One sweep only.
-    // ---------------------------------------------------------------------
-
     private static boolean requiresEdgePresenceCheck(CandidateEdit cand) {
         if (cand == null) return false;
         if (cand.isNoOp()) return false;
@@ -418,6 +405,12 @@ public final class VertexRepairPanel extends JPanel {
         String k = cand.key();
         return k == null || !(k.startsWith("REM:"));
     }
+
+    // ---------------------------------------------------------------------
+    // Auto model best: "do no harm" sweep that greedily takes the TOP
+    // table row for each node until the TOP row becomes NO-OP, then moves on.
+    // One sweep only.
+    // ---------------------------------------------------------------------
 
     private static boolean allIntendedNewEdgesPresent(Graph g, CandidateEdit cand) {
         if (g == null || cand == null) return false;
@@ -428,10 +421,6 @@ public final class VertexRepairPanel extends JPanel {
         }
         return true;
     }
-
-    // ---------------------------------------------------------------------
-    // Apply / undo / graph view
-    // ---------------------------------------------------------------------
 
     private static Graph seedDagFromAnyGraph(Graph g) {
         if (g == null) return null;
@@ -479,6 +468,10 @@ public final class VertexRepairPanel extends JPanel {
         return dag.paths().isLegalDag() ? dag : null;
     }
 
+    // ---------------------------------------------------------------------
+    // Apply / undo / graph view
+    // ---------------------------------------------------------------------
+
     private static int comparePDescNaNLast(double a, double b) {
         boolean aNaN = Double.isNaN(a);
         boolean bNaN = Double.isNaN(b);
@@ -500,6 +493,50 @@ public final class VertexRepairPanel extends JPanel {
         final double eps = 1e-12;
         double q = Math.min(1.0 - eps, Math.max(eps, p));
         return Math.log(q) - Math.log(1.0 - q);
+    }
+
+    private static double alphaLogOdds(double p, double alpha) {
+        if (!Double.isFinite(p)) return -50.0;
+        if (!Double.isFinite(alpha) || alpha <= 0.0 || alpha >= 1.0)
+            throw new IllegalArgumentException("alpha must be in (0,1)");
+
+        final double eps = 1e-12;
+
+        double q = Math.min(1.0 - eps, Math.max(eps, p));
+        double a = Math.min(1.0 - eps, Math.max(eps, alpha));
+
+        // log(p/(1-p)) - log(alpha/(1-alpha))
+        return (Math.log(q) - Math.log(1.0 - q))
+                - (Math.log(a) - Math.log(1.0 - a));
+    }
+
+    // Accept if:
+//  (A) violations decrease, OR
+//  (B) violations tie and edges decrease, OR
+//  (C) violations tie and edges tie and Model-P increases by at least MIN_MP_GAIN.
+    private static boolean isProgress(int baselineViol,
+                                      int afterViol,
+                                      int currentEdges,
+                                      int afterEdges,
+                                      double mpBefore,
+                                      double mpAfter) {
+
+        if (afterViol < baselineViol) return true;
+
+        if (afterViol == baselineViol) {
+            if (afterEdges < currentEdges) return true;
+
+            // NEW: allow pure "quality" improvement when structure doesn't worsen.
+            final double MIN_MP_GAIN = 1e-3; // tune; 0.001 is usually safe
+            if (afterEdges == currentEdges
+                    && Double.isFinite(mpBefore)
+                    && Double.isFinite(mpAfter)
+                    && (mpAfter - mpBefore) >= MIN_MP_GAIN) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private Node resolveInitialNode(Graph g, Node requested) {
@@ -2093,33 +2130,52 @@ public final class VertexRepairPanel extends JPanel {
 //        return afterViol == baselineViol && afterEdges < currentEdges;
 //    }
 
-    // Accept if:
-//  (A) violations decrease, OR
-//  (B) violations tie and edges decrease, OR
-//  (C) violations tie and edges tie and Model-P increases by at least MIN_MP_GAIN.
-    private static boolean isProgress(int baselineViol,
-                                      int afterViol,
-                                      int currentEdges,
-                                      int afterEdges,
-                                      double mpBefore,
-                                      double mpAfter) {
+    /// /        // Do-no-harm on affected vertices
+    /// /        Set<String> affected = affectedVertices(base, center, cand);
+    /// /        Map<String, Double> pBefore = nodePMap(base, affected);
+    /// /        Map<String, Double> pAfter = nodePMap(cand, affected);
+    /// /
+    /// /        if (!respectsDoNoHarm(pBefore, pAfter, center.getName())) {
+    /// /            vlog("Rejected: violates do-no-harm on affected nodes %s.", affected);
+    /// /            return false;
+    /// /        }
+//
+//        // Actually apply to workingGraph using your normal applier (so Graph button / editor sees it)
+//        vlog("Attempting guarded move: %s", edit.description());
+//        boolean ok = applyCandidateInternal(edit, false, false);
+//        vlog(ok ? "APPLIED successfully" : "Rejected (no change)");
+//        return ok;
+//    }
+    private boolean tryMoveWithGuards(Graph base, Node center, ScoredCandidate sc, RepairGraphType gt) {
+        if (sc == null || sc.edit() == null || sc.edit().isNoOp()) return false;
 
-        if (afterViol < baselineViol) return true;
+        CandidateEdit edit = sc.edit();
 
-        if (afterViol == baselineViol) {
-            if (afterEdges < currentEdges) return true;
-
-            // NEW: allow pure "quality" improvement when structure doesn't worsen.
-            final double MIN_MP_GAIN = 1e-3; // tune; 0.001 is usually safe
-            if (afterEdges == currentEdges
-                    && Double.isFinite(mpBefore)
-                    && Double.isFinite(mpAfter)
-                    && (mpAfter - mpBefore) >= MIN_MP_GAIN) {
-                return true;
-            }
+        int currentEdges = base.getNumEdges();
+        Graph cand = buildCandidateGraph(base, edit, gt);
+        if (cand == null) {
+            vlog("Rejected: buildCandidateGraph returned null.");
+            return false;
         }
 
-        return false;
+        // Use the SAME numbers the table computed (and your 2-pass MP logic patched in).
+        int baselineViol = sc.baseline();
+        int afterViol = sc.violationsAfter();
+        int afterEdges = sc.edgesAfter();
+
+        double mpBefore = sc.modelPBefore();
+        double mpAfter = sc.modelPAfter();
+
+        if (!isProgress(baselineViol, afterViol, currentEdges, afterEdges, mpBefore, mpAfter)) {
+            vlog("Rejected: not progress (baseline=%d after=%d edges %d->%d modelP %s->%s).",
+                    baselineViol, afterViol, currentEdges, afterEdges, fmtP(mpBefore), fmtP(mpAfter));
+            return false;
+        }
+
+        vlog("Attempting guarded move: %s", edit.description());
+        boolean ok = applyCandidateInternal(edit, false, false);
+        vlog(ok ? "APPLIED successfully" : "Rejected (no change)");
+        return ok;
     }
 
 //    private boolean tryMoveWithGuards(Graph base, Node center, CandidateEdit edit, RepairGraphType gt) {
@@ -2157,54 +2213,14 @@ public final class VertexRepairPanel extends JPanel {
 ////            return false;
 ////        }
 //
-////        // Do-no-harm on affected vertices
-////        Set<String> affected = affectedVertices(base, center, cand);
-////        Map<String, Double> pBefore = nodePMap(base, affected);
-////        Map<String, Double> pAfter = nodePMap(cand, affected);
-////
-////        if (!respectsDoNoHarm(pBefore, pAfter, center.getName())) {
-////            vlog("Rejected: violates do-no-harm on affected nodes %s.", affected);
-////            return false;
-////        }
-//
-//        // Actually apply to workingGraph using your normal applier (so Graph button / editor sees it)
-//        vlog("Attempting guarded move: %s", edit.description());
-//        boolean ok = applyCandidateInternal(edit, false, false);
-//        vlog(ok ? "APPLIED successfully" : "Rejected (no change)");
-//        return ok;
-//    }
 
-private boolean tryMoveWithGuards(Graph base, Node center, ScoredCandidate sc, RepairGraphType gt) {
-    if (sc == null || sc.edit() == null || sc.edit().isNoOp()) return false;
-
-    CandidateEdit edit = sc.edit();
-
-    int currentEdges = base.getNumEdges();
-    Graph cand = buildCandidateGraph(base, edit, gt);
-    if (cand == null) {
-        vlog("Rejected: buildCandidateGraph returned null.");
-        return false;
+    private enum MoveType {
+        REORIENT_SIMPLE,   // single-edge replace/orient/flip (low-risk)
+        COLLIDER_FIX,      // multi-edge "Orient collider..." / "Orient away..." (higher-risk)
+        REMOVE_EDGE,
+        ADD_EDGE,
+        OTHER
     }
-
-    // Use the SAME numbers the table computed (and your 2-pass MP logic patched in).
-    int baselineViol = sc.baseline();
-    int afterViol    = sc.violationsAfter();
-    int afterEdges   = sc.edgesAfter();
-
-    double mpBefore  = sc.modelPBefore();
-    double mpAfter   = sc.modelPAfter();
-
-    if (!isProgress(baselineViol, afterViol, currentEdges, afterEdges, mpBefore, mpAfter)) {
-        vlog("Rejected: not progress (baseline=%d after=%d edges %d->%d modelP %s->%s).",
-                baselineViol, afterViol, currentEdges, afterEdges, fmtP(mpBefore), fmtP(mpAfter));
-        return false;
-    }
-
-    vlog("Attempting guarded move: %s", edit.description());
-    boolean ok = applyCandidateInternal(edit, false, false);
-    vlog(ok ? "APPLIED successfully" : "Rejected (no change)");
-    return ok;
-}
 
     public enum RepairGraphType {DAG, CPDAG, PDAG, MAG, PAG}
 
@@ -2653,45 +2669,45 @@ private boolean tryMoveWithGuards(Graph base, Node center, ScoredCandidate sc, R
     }
 
     /**
-         * Lightweight container for per-node auto selection.
-         */
-        private record SearchPack(String centerName, int baseline, List<ScoredCandidate> scored) {
+     * Lightweight container for per-node auto selection.
+     */
+    private record SearchPack(String centerName, int baseline, List<ScoredCandidate> scored) {
 
         private Graph seedDagFromAnyGraph(Graph g) {
-                if (g == null) return null;
+            if (g == null) return null;
 
-                // 1) Nodes in a stable order
-                List<Node> nodes = new ArrayList<>(g.getNodes());
-                nodes.sort(Comparator.comparing(Node::getName, Comparator.nullsLast(VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR)));
+            // 1) Nodes in a stable order
+            List<Node> nodes = new ArrayList<>(g.getNodes());
+            nodes.sort(Comparator.comparing(Node::getName, Comparator.nullsLast(VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR)));
 
-                Map<String, Integer> idx = new HashMap<>();
-                for (int i = 0; i < nodes.size(); i++) idx.put(nodes.get(i).getName(), i);
+            Map<String, Integer> idx = new HashMap<>();
+            for (int i = 0; i < nodes.size(); i++) idx.put(nodes.get(i).getName(), i);
 
-                // 2) Build a DAG that has exactly the same adjacencies (ignore endpoints)
-                Graph dag = new EdgeListGraph(nodes);
+            // 2) Build a DAG that has exactly the same adjacencies (ignore endpoints)
+            Graph dag = new EdgeListGraph(nodes);
 
-                Set<String> seenPairs = new HashSet<>();
-                for (Edge e : g.getEdges()) {
-                    Node a0 = e.getNode1();
-                    Node b0 = e.getNode2();
-                    if (a0 == null || b0 == null) continue;
+            Set<String> seenPairs = new HashSet<>();
+            for (Edge e : g.getEdges()) {
+                Node a0 = e.getNode1();
+                Node b0 = e.getNode2();
+                if (a0 == null || b0 == null) continue;
 
-                    Node a = dag.getNode(a0.getName());
-                    Node b = dag.getNode(b0.getName());
-                    if (a == null || b == null || a.equals(b)) continue;
+                Node a = dag.getNode(a0.getName());
+                Node b = dag.getNode(b0.getName());
+                if (a == null || b == null || a.equals(b)) continue;
 
-                    String key = a.getName().compareTo(b.getName()) < 0 ? a.getName() + "|" + b.getName() : b.getName() + "|" + a.getName();
-                    if (!seenPairs.add(key)) continue;
+                String key = a.getName().compareTo(b.getName()) < 0 ? a.getName() + "|" + b.getName() : b.getName() + "|" + a.getName();
+                if (!seenPairs.add(key)) continue;
 
-                    int ia = idx.getOrDefault(a.getName(), 0);
-                    int ib = idx.getOrDefault(b.getName(), 0);
+                int ia = idx.getOrDefault(a.getName(), 0);
+                int ib = idx.getOrDefault(b.getName(), 0);
 
-                    // orient forward in the order => guarantees DAG
-                    if (ia <= ib) dag.addEdge(new Edge(a, b, Endpoint.TAIL, Endpoint.ARROW));
-                    else dag.addEdge(new Edge(b, a, Endpoint.TAIL, Endpoint.ARROW));
-                }
-
-                return dag.paths().isLegalDag() ? dag : null;
+                // orient forward in the order => guarantees DAG
+                if (ia <= ib) dag.addEdge(new Edge(a, b, Endpoint.TAIL, Endpoint.ARROW));
+                else dag.addEdge(new Edge(b, a, Endpoint.TAIL, Endpoint.ARROW));
             }
+
+            return dag.paths().isLegalDag() ? dag : null;
         }
+    }
 }
