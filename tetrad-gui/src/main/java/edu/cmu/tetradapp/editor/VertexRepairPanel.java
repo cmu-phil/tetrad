@@ -192,7 +192,7 @@ public final class VertexRepairPanel extends JPanel {
     // UI
     private final JComboBox<RepairGraphType> graphTypeCombo = new JComboBox<>(RepairGraphType.values());
     private final JButton searchButton = new JButton();              // label set violationsAfter x is known
-    private final JButton modelBestButton = new JButton("One Node Sweep");
+    private final JButton modelBestButton = new JButton("Node Sweep");
     // -------------------- numeric helpers --------------------
     private final JButton backButton = new JButton("Undo");
     private final JButton showGraphButton = new JButton("Graph");
@@ -1083,151 +1083,334 @@ public final class VertexRepairPanel extends JPanel {
      * <p>
      * Stops violationsAfter one pass through the nodes (no outer repetition).
      */
+//    private void runModelBestWatched() {
+//        // Single-undo checkpoint for the whole run
+//        Graph checkpoint = safeCopy(workingGraph);
+//
+//        final RepairGraphType gt = (RepairGraphType) graphTypeCombo.getSelectedItem();
+//
+//        int editsApplied = 0;
+//        final int MAX_EDITS = 500;           // global safety cap
+//        final int MAX_STEPS_PER_NODE = 4; // per-node s  afety cap
+//
+//        vlog("==================================================");
+//        vlog("AUTO-REPAIR (greedy table-order, one sweep) (type=%s)", String.valueOf(gt));
+//        vlog("==================================================");
+//
+//        // One sweep only, but order nodes by increasing Node-P (NaN last), then by name for stability
+//        List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
+//        Map<String, Double> nodePOrder = new HashMap<>();
+//
+//        for (Node n : nodes) {
+//            if (n == null || n.getName() == null) continue;
+//            // nodePValue resolves by name inside g, so passing n is fine
+//            double p = nodePValue(workingGraph, n);
+//            nodePOrder.put(n.getName(), p);
+//        }
+//
+//        nodes.sort((a, b) -> {
+//            if (a == null && b == null) return 0;
+//            if (a == null) return 1;
+//            if (b == null) return -1;
+//
+//            String an = a.getName();
+//            String bn = b.getName();
+//
+//            double pa = (an == null) ? Double.NaN : nodePOrder.getOrDefault(an, Double.NaN);
+//            double pb = (bn == null) ? Double.NaN : nodePOrder.getOrDefault(bn, Double.NaN);
+//
+//            boolean aNaN = Double.isNaN(pa);
+//            boolean bNaN = Double.isNaN(pb);
+//
+//            // NaN last
+//            if (aNaN && bNaN) {
+//                return VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR.compare(an, bn);
+//            }
+//            if (aNaN) return 1;
+//            if (bNaN) return -1;
+//
+//            int c = Double.compare(pa, pb); // ASC (increasing node-p)
+//            if (c != 0) return c;
+//
+//            // stable tiebreak
+//            return VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR.compare(an, bn);
+//        });
+//
+//        for (Node v0 : nodes) {
+//            if (stopRequested()) return;
+//            if (editsApplied >= MAX_EDITS) break;
+//
+//            if (v0 == null || v0.getName() == null) continue;
+//
+//            // Re-resolve each time from current workingGraph (edits/canonicalization can replace node objects)
+//            Node center = workingGraph.getNode(v0.getName());
+//            if (center == null) continue;
+//
+//            vlog("--------------------------------------------------");
+//            vlog("Editing node: %s", center.getName());
+//
+//            Set<String> seenSignatures = new HashSet<>();
+//            int nodeSteps = 0;
+//
+//            while (editsApplied < MAX_EDITS) {
+//                if (stopRequested()) return;
+//
+//                nodeSteps++;
+//                if (nodeSteps > MAX_STEPS_PER_NODE) {
+//                    vlog("STOP node %s: hit MAX_STEPS_PER_NODE=%d", center.getName(), MAX_STEPS_PER_NODE);
+//                    break;
+//                }
+//
+//                // Refresh center in case the graph swapped node instances
+//                center = workingGraph.getNode(center.getName());
+//                if (center == null) {
+//                    vlog("STOP node %s: center vanished from graph.", v0.getName());
+//                    break;
+//                }
+//
+//                String sig = graphSignature(workingGraph);
+//                if (!seenSignatures.add(sig)) {
+//                    vlog("STOP node %s: detected cycle (graph signature repeated).", center.getName());
+//                    break;
+//                }
+//
+//                SearchPack pack = computeCandidatesForNode(workingGraph, center, gt);
+//                if (pack == null || pack.scored == null || pack.scored.isEmpty()) {
+//                    vlog("STOP node %s: no candidates.", center.getName());
+//                    break;
+//                }
+//
+//                // Rank exactly like the JTable (given current table model)
+//                List<ScoredCandidate> ranked = new ArrayList<>(pack.scored);
+//                ranked.sort(CANONICAL_TABLE_ORDER);
+//
+//                // If the top row is NO-OP, we're done with this node.
+//                ScoredCandidate top = ranked.getFirst();
+//                if (top == null || top.edit() == null || top.edit().isNoOp()) {
+//                    vlog("STOP node %s: top row is NO-OP.", center.getName());
+//                    break;
+//                }
+//
+//                // Try rows in ranked order until one passes guards; if none do, stop this node.
+//                boolean moved = false;
+//
+//                for (ScoredCandidate sc : ranked) {
+//                    if (sc == null || sc.edit() == null) continue;
+//                    if (sc.edit().isNoOp()) break; // once we hit NO-OP, nothing below it matters
+//
+//                    vlog("Consider move: %s | base=%d violationsAfter=%d delta=%d edges=%d nodeP=%s modelP=%s",
+//                            sc.edit().description(),
+//                            sc.violationsBaseline(),
+//                            sc.violationsAfter(),
+//                            sc.delta(),
+//                            sc.edgesAfter(),
+//                            fmtP(sc.nodePAfter()),
+//                            fmtP(sc.modelPAfter()));
+//
+//                    if (tryMoveWithGuards(workingGraph, center, sc, gt)) {
+//                        editsApplied++;
+//                        int finalEditsApplied = editsApplied;
+//                        SwingUtilities.invokeLater(() ->
+//                                statusLabel.setText("Auto-repair: applied " + finalEditsApplied + " edits..."));
+//
+//                        vlog("APPLIED move for node %s: %s", center.getName(), sc.edit().description());
+//                        moved = true;
+//                        break; // recompute pack for same node
+//                    } else {
+//                        vlog("Rejected by guards: %s", sc.edit().description());
+//                    }
+//                }
+//
+//                if (!moved) {
+//                    vlog("STOP node %s: no ranked move passed guards.", center.getName());
+//                    break;
+//                }
+//            }
+//
+//            vlog("Finished node: %s", v0.getName());
+//        }
+//
+//        vlog("Checkpoint signature: %s", graphSignature(checkpoint));
+//
+//        final int finalEdits = editsApplied;
+//        SwingUtilities.invokeLater(() -> {
+//            history.clear();
+//            history.push(checkpoint);
+//            updateButtons();
+//            statusLabel.setText("Auto-repair applied " + finalEdits + " edits.");
+//            startWatched("Searching", this::runSearchWatched, null);
+//        });
+//    }
+
     private void runModelBestWatched() {
-        // Single-undo checkpoint for the whole run
+        // Single-undo checkpoint for the whole run (before any sweeps)
         Graph checkpoint = safeCopy(workingGraph);
 
         final RepairGraphType gt = (RepairGraphType) graphTypeCombo.getSelectedItem();
 
         int editsApplied = 0;
-        final int MAX_EDITS = 500;           // global safety cap
-        final int MAX_STEPS_PER_NODE = 4; // per-node s  afety cap
+        final int MAX_EDITS = 500;            // global safety cap
+        final int MAX_STEPS_PER_NODE = 4;     // per-node safety cap (per sweep)
+        final int MAX_SWEEPS = 50;            // extra safety cap for “repeat until no change”
 
         vlog("==================================================");
-        vlog("AUTO-REPAIR (greedy table-order, one sweep) (type=%s)", String.valueOf(gt));
+        vlog("AUTO-REPAIR (greedy table-order, repeat until fixed point) (type=%s)", String.valueOf(gt));
         vlog("==================================================");
 
-        // One sweep only, but order nodes by increasing Node-P (NaN last), then by name for stability
-        List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
-        Map<String, Double> nodePOrder = new HashMap<>();
+        int sweep = 0;
 
-        for (Node n : nodes) {
-            if (n == null || n.getName() == null) continue;
-            // nodePValue resolves by name inside g, so passing n is fine
-            double p = nodePValue(workingGraph, n);
-            nodePOrder.put(n.getName(), p);
-        }
-
-        nodes.sort((a, b) -> {
-            if (a == null && b == null) return 0;
-            if (a == null) return 1;
-            if (b == null) return -1;
-
-            String an = a.getName();
-            String bn = b.getName();
-
-            double pa = (an == null) ? Double.NaN : nodePOrder.getOrDefault(an, Double.NaN);
-            double pb = (bn == null) ? Double.NaN : nodePOrder.getOrDefault(bn, Double.NaN);
-
-            boolean aNaN = Double.isNaN(pa);
-            boolean bNaN = Double.isNaN(pb);
-
-            // NaN last
-            if (aNaN && bNaN) {
-                return VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR.compare(an, bn);
+        // Repeat sweeps until a full sweep makes no changes (or we hit safety caps).
+        while (!stopRequested() && editsApplied < MAX_EDITS) {
+            sweep++;
+            if (sweep > MAX_SWEEPS) {
+                vlog("STOP: hit MAX_SWEEPS=%d", MAX_SWEEPS);
+                break;
             }
-            if (aNaN) return 1;
-            if (bNaN) return -1;
 
-            int c = Double.compare(pa, pb); // ASC (increasing node-p)
-            if (c != 0) return c;
-
-            // stable tiebreak
-            return VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR.compare(an, bn);
-        });
-
-        for (Node v0 : nodes) {
-            if (stopRequested()) return;
-            if (editsApplied >= MAX_EDITS) break;
-
-            if (v0 == null || v0.getName() == null) continue;
-
-            // Re-resolve each time from current workingGraph (edits/canonicalization can replace node objects)
-            Node center = workingGraph.getNode(v0.getName());
-            if (center == null) continue;
+            final String sweepStartSig = graphSignature(workingGraph);
+            int editsThisSweep = 0;
 
             vlog("--------------------------------------------------");
-            vlog("Editing node: %s", center.getName());
+            vlog("SWEEP %d (start signature=%s)", sweep, sweepStartSig);
 
-            Set<String> seenSignatures = new HashSet<>();
-            int nodeSteps = 0;
+            // Recompute node order EACH sweep (since node p-values change as the graph changes)
+            List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
+            Map<String, Double> nodePOrder = new HashMap<>();
 
-            while (editsApplied < MAX_EDITS) {
+            for (Node n : nodes) {
+                if (n == null || n.getName() == null) continue;
+                double p = nodePValue(workingGraph, n);
+                nodePOrder.put(n.getName(), p);
+            }
+
+            nodes.sort((a, b) -> {
+                if (a == null && b == null) return 0;
+                if (a == null) return 1;
+                if (b == null) return -1;
+
+                String an = a.getName();
+                String bn = b.getName();
+
+                double pa = (an == null) ? Double.NaN : nodePOrder.getOrDefault(an, Double.NaN);
+                double pb = (bn == null) ? Double.NaN : nodePOrder.getOrDefault(bn, Double.NaN);
+
+                boolean aNaN = Double.isNaN(pa);
+                boolean bNaN = Double.isNaN(pb);
+
+                // NaN last
+                if (aNaN && bNaN) {
+                    return VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR.compare(an, bn);
+                }
+                if (aNaN) return 1;
+                if (bNaN) return -1;
+
+                int c = Double.compare(pa, pb); // ASC (worst p first)
+                if (c != 0) return c;
+
+                return VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR.compare(an, bn);
+            });
+
+            // One sweep over nodes (in current worst-first order)
+            for (Node v0 : nodes) {
                 if (stopRequested()) return;
+                if (editsApplied >= MAX_EDITS) break;
 
-                nodeSteps++;
-                if (nodeSteps > MAX_STEPS_PER_NODE) {
-                    vlog("STOP node %s: hit MAX_STEPS_PER_NODE=%d", center.getName(), MAX_STEPS_PER_NODE);
-                    break;
-                }
+                if (v0 == null || v0.getName() == null) continue;
 
-                // Refresh center in case the graph swapped node instances
-                center = workingGraph.getNode(center.getName());
-                if (center == null) {
-                    vlog("STOP node %s: center vanished from graph.", v0.getName());
-                    break;
-                }
+                Node center = workingGraph.getNode(v0.getName());
+                if (center == null) continue;
 
-                String sig = graphSignature(workingGraph);
-                if (!seenSignatures.add(sig)) {
-                    vlog("STOP node %s: detected cycle (graph signature repeated).", center.getName());
-                    break;
-                }
+                vlog("--------------------------------------------------");
+                vlog("Editing node: %s", center.getName());
 
-                SearchPack pack = computeCandidatesForNode(workingGraph, center, gt);
-                if (pack == null || pack.scored == null || pack.scored.isEmpty()) {
-                    vlog("STOP node %s: no candidates.", center.getName());
-                    break;
-                }
+                Set<String> seenSignatures = new HashSet<>();
+                int nodeSteps = 0;
 
-                // Rank exactly like the JTable (given current table model)
-                List<ScoredCandidate> ranked = new ArrayList<>(pack.scored);
-                ranked.sort(CANONICAL_TABLE_ORDER);
+                while (editsApplied < MAX_EDITS) {
+                    if (stopRequested()) return;
 
-                // If the top row is NO-OP, we're done with this node.
-                ScoredCandidate top = ranked.getFirst();
-                if (top == null || top.edit() == null || top.edit().isNoOp()) {
-                    vlog("STOP node %s: top row is NO-OP.", center.getName());
-                    break;
-                }
+                    nodeSteps++;
+                    if (nodeSteps > MAX_STEPS_PER_NODE) {
+                        vlog("STOP node %s: hit MAX_STEPS_PER_NODE=%d", center.getName(), MAX_STEPS_PER_NODE);
+                        break;
+                    }
 
-                // Try rows in ranked order until one passes guards; if none do, stop this node.
-                boolean moved = false;
+                    // Refresh center in case node instances were replaced
+                    center = workingGraph.getNode(center.getName());
+                    if (center == null) {
+                        vlog("STOP node %s: center vanished from graph.", v0.getName());
+                        break;
+                    }
 
-                for (ScoredCandidate sc : ranked) {
-                    if (sc == null || sc.edit() == null) continue;
-                    if (sc.edit().isNoOp()) break; // once we hit NO-OP, nothing below it matters
+                    String sig = graphSignature(workingGraph);
+                    if (!seenSignatures.add(sig)) {
+                        vlog("STOP node %s: detected cycle (graph signature repeated).", center.getName());
+                        break;
+                    }
 
-                    vlog("Consider move: %s | base=%d violationsAfter=%d delta=%d edges=%d nodeP=%s modelP=%s",
-                            sc.edit().description(),
-                            sc.violationsBaseline(),
-                            sc.violationsAfter(),
-                            sc.delta(),
-                            sc.edgesAfter(),
-                            fmtP(sc.nodePAfter()),
-                            fmtP(sc.modelPAfter()));
+                    SearchPack pack = computeCandidatesForNode(workingGraph, center, gt);
+                    if (pack == null || pack.scored == null || pack.scored.isEmpty()) {
+                        vlog("STOP node %s: no candidates.", center.getName());
+                        break;
+                    }
 
-                    if (tryMoveWithGuards(workingGraph, center, sc, gt)) {
-                        editsApplied++;
-                        int finalEditsApplied = editsApplied;
-                        SwingUtilities.invokeLater(() ->
-                                statusLabel.setText("Auto-repair: applied " + finalEditsApplied + " edits..."));
+                    List<ScoredCandidate> ranked = new ArrayList<>(pack.scored);
+                    ranked.sort(CANONICAL_TABLE_ORDER);
 
-                        vlog("APPLIED move for node %s: %s", center.getName(), sc.edit().description());
-                        moved = true;
-                        break; // recompute pack for same node
-                    } else {
-                        vlog("Rejected by guards: %s", sc.edit().description());
+                    ScoredCandidate top = ranked.getFirst();
+                    if (top == null || top.edit() == null || top.edit().isNoOp()) {
+                        vlog("STOP node %s: top row is NO-OP.", center.getName());
+                        break;
+                    }
+
+                    boolean moved = false;
+
+                    for (ScoredCandidate sc : ranked) {
+                        if (sc == null || sc.edit() == null) continue;
+                        if (sc.edit().isNoOp()) break;
+
+                        vlog("Consider move: %s | base=%d after=%d delta=%d edges=%d nodeP=%s modelP=%s",
+                                sc.edit().description(),
+                                sc.violationsBaseline(),
+                                sc.violationsAfter(),
+                                sc.delta(),
+                                sc.edgesAfter(),
+                                fmtP(sc.nodePAfter()),
+                                fmtP(sc.modelPAfter()));
+
+                        if (tryMoveWithGuards(workingGraph, center, sc, gt)) {
+                            editsApplied++;
+                            editsThisSweep++;
+
+                            int finalEditsApplied = editsApplied;
+                            SwingUtilities.invokeLater(() ->
+                                    statusLabel.setText("Auto-repair: applied " + finalEditsApplied + " edits..."));
+
+                            vlog("APPLIED move for node %s: %s", center.getName(), sc.edit().description());
+                            moved = true;
+                            break; // recompute pack for same node
+                        } else {
+                            vlog("Rejected by guards: %s", sc.edit().description());
+                        }
+                    }
+
+                    if (!moved) {
+                        vlog("STOP node %s: no ranked move passed guards.", center.getName());
+                        break;
                     }
                 }
 
-                if (!moved) {
-                    vlog("STOP node %s: no ranked move passed guards.", center.getName());
-                    break;
-                }
+                vlog("Finished node: %s", v0.getName());
             }
 
-            vlog("Finished node: %s", v0.getName());
+            final String sweepEndSig = graphSignature(workingGraph);
+            vlog("SWEEP %d done: edits=%d | end signature=%s", sweep, editsThisSweep, sweepEndSig);
+
+            // Fixed point: full sweep made no changes OR signature didn’t change
+            if (editsThisSweep == 0 || sweepEndSig.equals(sweepStartSig)) {
+                vlog("STOP: no changes in sweep %d (fixed point reached).", sweep);
+                break;
+            }
         }
 
         vlog("Checkpoint signature: %s", graphSignature(checkpoint));
