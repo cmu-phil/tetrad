@@ -10,7 +10,7 @@ import java.util.*;
 
 public class VertexRepairSearch implements IGraphSearch {
 
-    private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
+    public static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
         if (a == null && b == null) return 0;
         if (a == null) return 1;
         if (b == null) return -1;
@@ -153,7 +153,7 @@ public class VertexRepairSearch implements IGraphSearch {
         return 0;
     }
 
-    private enum MoveType {
+    public enum MoveType {
         REORIENT_SIMPLE,   // single-edge replace/orient/flip (low-risk)
         COLLIDER_FIX,      // multi-edge "Orient collider..." / "Orient away..." (higher-risk)
         REMOVE_EDGE,
@@ -161,7 +161,7 @@ public class VertexRepairSearch implements IGraphSearch {
         OTHER
     }
 
-    private static MoveType moveType(CandidateEdit e) {
+    public static MoveType moveType(CandidateEdit e) {
         if (e == null) return MoveType.OTHER;
 
         String k = safeLower(e.key());
@@ -200,7 +200,7 @@ public class VertexRepairSearch implements IGraphSearch {
         return Double.isFinite(p) ? alphaLogOdds(p, alpha) : 0.0;
     }
 
-    private record ScoredCandidate(
+    public record ScoredCandidate(
             CandidateEdit edit,
             int violationsBaseline,
             int violationsAfter,
@@ -210,7 +210,7 @@ public class VertexRepairSearch implements IGraphSearch {
             int edgesAfter,
             boolean passesGuards
     ) {
-        int delta() {
+        public int delta() {
             return violationsAfter - violationsBaseline;
         }
     }
