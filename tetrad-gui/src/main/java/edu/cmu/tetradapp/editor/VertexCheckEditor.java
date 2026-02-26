@@ -751,8 +751,8 @@
 
             JPanel factsButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
             factsButtons.add(showIndepsForRow);
-            factsButtons.add(repairModelButton);
-            factsButtons.add(undoGraphButton);
+//            factsButtons.add(repairModelButton);
+//            factsButtons.add(undoGraphButton);
             factsButtons.add(showGraphButton);
 
             factsPane.add(factsButtons, BorderLayout.SOUTH);
