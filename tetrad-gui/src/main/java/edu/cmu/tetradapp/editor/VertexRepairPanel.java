@@ -52,27 +52,137 @@ public final class VertexRepairPanel extends JPanel {
     // 3) Special preference: if it's a reorientation-only move AND it improves model score,
     //    give it an extra bonus so it rises above add/remove moves with similar stats.
     // 4) P-values + edges remain gentle tie-breakers.
+//    private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
+//        if (a == null && b == null) return 0;
+//        if (a == null) return 1;
+//        if (b == null) return -1;
+//
+//        double ua = utility(a);
+//        double ub = utility(b);
+//
+//        int c = -Double.compare(ua, ub);
+//        if (c != 0) return c;
+//
+//        // Stable tie-breaker
+//        String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
+//        String kb = (b.edit() == null || b.edit().key() == null) ? "" : b.edit().key();
+//        c = ka.compareTo(kb);
+//        if (c != 0) return c;
+//
+//        String da = (a.edit() == null || a.edit().description() == null) ? "" : a.edit().description();
+//        String db = (b.edit() == null || b.edit().description() == null) ? "" : b.edit().description();
+//        return da.compareTo(db);
+//    };
+
     private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
         if (a == null && b == null) return 0;
         if (a == null) return 1;
         if (b == null) return -1;
 
-        double ua = utility(a);
-        double ub = utility(b);
+        // 1) Guards first (true before false)
+        if (a.passesGuards() != b.passesGuards()) {
+            return a.passesGuards() ? -1 : 1;
+        }
 
-        int c = -Double.compare(ua, ub);
+        // If both fail guards, just stable-tie them
+        if (!a.passesGuards()) {
+            return stableTieBreak(a, b);
+        }
+
+        // 2) Δ violations (more negative is better)
+        int c = Integer.compare(a.delta(), b.delta()); // ASC (negative first)
         if (c != 0) return c;
 
-        // Stable tie-breaker
+        // 3) Fewer edges preferred
+        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+        if (c != 0) return c;
+
+        // 4) Node-P (log-odds DESC)
+        double npA = nodeLogOdds(a);
+        double npB = nodeLogOdds(b);
+        c = -Double.compare(npA, npB);
+        if (c != 0) return c;
+
+//        // 8) Smaller edit size preferred
+//        c = Integer.compare(editSize(a), editSize(b));
+//        if (c != 0) return c;
+
+        // 5) Model-P improvement over baseline (dMp DESC)
+        double dMpA = modelDelta(a);
+        double dMpB = modelDelta(b);
+        c = -Double.compare(dMpA, dMpB);
+        if (c != 0) return c;
+
+        // 6) Move-type bias when improving
+        c = -Integer.compare(moveBiasScore(a), moveBiasScore(b)); // DESC
+        // larger bias score first
+        if (c != 0) return c;
+
+        // 7) Absolute Model-P (log-odds DESC)
+        double mpA = modelLogOdds(a);
+        double mpB = modelLogOdds(b);
+        c = -Double.compare(mpA, mpB);
+        if (c != 0) return c;
+
+        // 8) Stable tie-break
+        return stableTieBreak(a, b);
+    };
+
+    private static double modelDelta(ScoredCandidate s) {
+        if (s == null) return 0.0;
+        double before = s.modelPBefore();
+        double after = s.modelPAfter();
+        if (Double.isFinite(before) && Double.isFinite(after)) {
+            return after - before;
+        }
+        return 0.0;
+    }
+
+    private static double modelLogOdds(ScoredCandidate s) {
+        double p = s.modelPAfter();
+        return Double.isFinite(p) ? alphaLogOdds(p, alpha) : 0.0;
+    }
+
+    private static double nodeLogOdds(ScoredCandidate s) {
+        double p = s.nodePAfter();
+        return Double.isFinite(p) ? alphaLogOdds(p, alpha) : 0.0;
+    }
+
+    private static int editSize(ScoredCandidate s) {
+        try {
+            if (s.edit() != null && s.edit().getEdges() != null) {
+                return Math.max(1, s.edit().getEdges().size());
+            }
+        } catch (Throwable ignored) {}
+        return 1;
+    }
+
+    // Higher score = preferred
+    private static int moveBiasScore(ScoredCandidate s) {
+        MoveType mt = moveType(s.edit());
+        double dMp = modelDelta(s);
+
+        if (Double.isFinite(dMp) && dMp > 0.0) {
+            if (mt == MoveType.REORIENT_SIMPLE) return 2;
+            if (mt == MoveType.COLLIDER_FIX) return -1;
+        } else if (!Double.isFinite(s.modelPAfter())) {
+            if (mt == MoveType.REORIENT_SIMPLE) return 1;
+            if (mt == MoveType.COLLIDER_FIX) return -1;
+        }
+
+        return 0;
+    }
+
+    private static int stableTieBreak(ScoredCandidate a, ScoredCandidate b) {
         String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
         String kb = (b.edit() == null || b.edit().key() == null) ? "" : b.edit().key();
-        c = ka.compareTo(kb);
+        int c = ka.compareTo(kb);
         if (c != 0) return c;
 
         String da = (a.edit() == null || a.edit().description() == null) ? "" : a.edit().description();
         String db = (b.edit() == null || b.edit().description() == null) ? "" : b.edit().description();
         return da.compareTo(db);
-    };
+    }
 
     private final VertexCheckIndTestModel baseModel;
     // -------------------- move classification --------------------
@@ -1098,7 +1208,6 @@ public final class VertexRepairPanel extends JPanel {
                             fmtP(sc.modelPAfter()));
 
                     if (tryMoveWithGuards(workingGraph, center, sc, gt)) {
-//                    if (tryMoveWithGuards(workingGraph, center, sc.edit(), gt)) {
                         editsApplied++;
                         int finalEditsApplied = editsApplied;
                         SwingUtilities.invokeLater(() ->
