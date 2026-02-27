@@ -3,7 +3,7 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.MinimaxLegendreScore;
+import edu.cmu.tetrad.search.score.LegendreBicScore;
 import edu.cmu.tetrad.search.score.TRffBicScore;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -59,16 +59,16 @@ public final class MinimaxTRffTest implements IndependenceTest {
         this.disableInteractionsForTest = disableInteractionsForTest;
     }
 
-    private static boolean getUseInteractions(MinimaxLegendreScore s) throws Exception {
-        var f = MinimaxLegendreScore.class.getDeclaredField("useInteractions");
+    private static boolean getUseInteractions(LegendreBicScore s) throws Exception {
+        var f = LegendreBicScore.class.getDeclaredField("useInteractions");
         f.setAccessible(true);
         return (boolean) f.get(s);
     }
 
     // --- boilerplate ---
 
-    private static int getInteractionMaxParents(MinimaxLegendreScore s) throws Exception {
-        var f = MinimaxLegendreScore.class.getDeclaredField("interactionMaxParents");
+    private static int getInteractionMaxParents(LegendreBicScore s) throws Exception {
+        var f = LegendreBicScore.class.getDeclaredField("interactionMaxParents");
         f.setAccessible(true);
         return (int) f.get(s);
     }

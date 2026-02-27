@@ -1,7 +1,5 @@
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.annotation.General;
-import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -38,7 +36,7 @@ import java.util.List;
 //@General
 //@Mixed
 //@Experimental
-public class MinimaxLegendreScore implements ScoreWrapper {
+public class LegendreBicScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -61,7 +59,7 @@ public class MinimaxLegendreScore implements ScoreWrapper {
      * The class serves as an intermediary layer for initializing
      * and managing parameters and datasets required for score calculations.
      */
-    public MinimaxLegendreScore() {
+    public LegendreBicScore() {
     }
 
     /**
@@ -88,8 +86,8 @@ public class MinimaxLegendreScore implements ScoreWrapper {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
 
-        edu.cmu.tetrad.search.score.MinimaxLegendreScore score =
-                new edu.cmu.tetrad.search.score.MinimaxLegendreScore(ds);
+        edu.cmu.tetrad.search.score.LegendreBicScore score =
+                new edu.cmu.tetrad.search.score.LegendreBicScore(ds);
 
         // ---- Keep exposed: Degree (t) ----
         int degree = parameters.getInt(Params.MINIMAX_LEGENDRE_DEGREE);
@@ -129,7 +127,7 @@ public class MinimaxLegendreScore implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "Minimax Legendre BIC score";
+        return "Legendre BIC score";
     }
 
     /**

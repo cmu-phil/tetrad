@@ -3,7 +3,7 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.MinimaxLegendreScore;
+import edu.cmu.tetrad.search.score.LegendreBicScore;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -26,7 +26,7 @@ import static java.lang.Float.NaN;
  */
 public final class LegendreLrIndependenceTest implements IndependenceTest {
 
-    private final MinimaxLegendreScore score;
+    private final LegendreBicScore score;
     private final List<Node> variables;
     private final boolean disableInteractionsForTest;
     private boolean verbose = false;
@@ -39,7 +39,7 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
      * @param score the scoring mechanism used to evaluate statistical independence.
      *              Must be an instance of MinimaxLegendreScore.
      */
-    public LegendreLrIndependenceTest(MinimaxLegendreScore score) {
+    public LegendreLrIndependenceTest(LegendreBicScore score) {
         this(score, true);
     }
 
@@ -53,23 +53,23 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
      * @param disableInteractionsForTest a boolean indicating whether interactions should be
      *                                    disabled during the test.
      */
-    public LegendreLrIndependenceTest(MinimaxLegendreScore score, boolean disableInteractionsForTest) {
+    public LegendreLrIndependenceTest(LegendreBicScore score, boolean disableInteractionsForTest) {
         if (score == null) throw new NullPointerException("score");
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.disableInteractionsForTest = disableInteractionsForTest;
     }
 
-    private static boolean getUseInteractions(MinimaxLegendreScore s) throws Exception {
-        var f = MinimaxLegendreScore.class.getDeclaredField("useInteractions");
+    private static boolean getUseInteractions(LegendreBicScore s) throws Exception {
+        var f = LegendreBicScore.class.getDeclaredField("useInteractions");
         f.setAccessible(true);
         return (boolean) f.get(s);
     }
 
     // --- boilerplate ---
 
-    private static int getInteractionMaxParents(MinimaxLegendreScore s) throws Exception {
-        var f = MinimaxLegendreScore.class.getDeclaredField("interactionMaxParents");
+    private static int getInteractionMaxParents(LegendreBicScore s) throws Exception {
+        var f = LegendreBicScore.class.getDeclaredField("interactionMaxParents");
         f.setAccessible(true);
         return (int) f.get(s);
     }

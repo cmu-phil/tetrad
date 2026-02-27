@@ -142,7 +142,7 @@ public class VertexRepairCpdag extends AbstractBootstrapAlgorithm implements Alg
 
     @Override
     public String getDescription() {
-        return "VertexRepairSearch (CPDAG) using " + this.test.getDescription();
+        return "Vertex Repair (CPDAG) using " + this.test.getDescription();
     }
 
     @Override

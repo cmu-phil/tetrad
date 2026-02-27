@@ -1278,6 +1278,9 @@ public final class Params {
      */
     public static final String NUM_FF_FEATURES = "numFfFeatures";
     /**
+     * Constant <code>FFML_FF_FEATURES="ffmlFfFeatures"</code>
+     */
+    public static final String FFML_FF_FEATURES = "ffmlFfFeatures";    /**
      * Constant <code>MINIMAX_RFF_SIGMA="minimaxRffSigma"</code>
      */
     public static final String MINIMAX_FF_SIGMA = "minimaxFfSigma";

@@ -26,7 +26,7 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
-import edu.cmu.tetrad.search.score.MinimaxLegendreScore;
+import edu.cmu.tetrad.search.score.LegendreBicScore;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.LegendreLrIndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for the Legendre LR CI test built on {@link MinimaxLegendreScore}.
+ * Wrapper for the Legendre LR CI test built on {@link LegendreBicScore}.
  *
  * <p>Tests X ⟂ Y | Z by comparing local fits:
  * reduced: Y ~ Z
@@ -67,7 +67,7 @@ public final class LegendreLrIndTest implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         // Build the score from the mixed dataset
-        MinimaxLegendreScore score = new MinimaxLegendreScore(SimpleDataLoader.getMixedDataSet(dataSet));
+        LegendreBicScore score = new LegendreBicScore(SimpleDataLoader.getMixedDataSet(dataSet));
 
         // Core knobs (only set what exists in your Params; remove any you don't have)
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));

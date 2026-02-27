@@ -6219,6 +6219,32 @@ Source:
         <li>Value Type: <span id="numFfFeatures_value_type">Integer</span></li>
     </ul>
 
+    === ffmlFfFeatures ===
+    <h3 class="parameter_description" id="ffmlFfFeatures">ffmlFfFeatures</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="ffmlFfFeatures_short_desc">
+            Number of Fourier features used for nonlinear continuous effects
+        </span>
+        </li>
+
+        <li>Long Description:
+            <span id="ffmlFfFeatures_long_desc">
+            Number of random Fourier (or orthogonal random) features used to approximate
+            the continuous kernel in FFML score.
+            Increasing this value improves the accuracy of the kernel approximation and
+            allows more flexible nonlinear modeling of continuous parents, but increases
+            runtime and memory usage. Smaller values are faster but provide a coarser
+            approximation of nonlinear effects.
+        </span>
+        </li>
+
+        <li>Default Value: <span id="ffmlFfFeatures_default_value">50</span></li>
+        <li>Lower Bound: <span id="ffmlFfFeatures_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="ffmlFfFeatures_upper_bound">1000000</span></li>
+        <li>Value Type: <span id="ffmlFfFeatures_value_type">Integer</span></li>
+    </ul>
+
     === minimaxFfSigma ===
     <h3 class="parameter_description" id="minimaxFfSigma">minimaxFfSigma</h3>
     <ul class="parameter_description_list">
