@@ -66,22 +66,18 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     private static final long serialVersionUID = 1L;
     private final DataModel dataModel;
     private final Parameters parameters;
-    // Results
     private final Map<String, VertexSummary> summariesByVertex = new LinkedHashMap<>();
     private final Map<String, List<IndependenceResult>> resultsByVertex = new LinkedHashMap<>();
     private final CachedIndependenceQueries cachedQueries =
             new CachedIndependenceQueries(CachedIndependenceQueries.ErrorPolicy.TREAT_AS_INDEPENDENT);
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private Graph graph;
-    //    private final Map<String, List<String>> conditioningSetByVertex = new LinkedHashMap<>();
     private String name = "";
     private transient IndependenceTest independenceTest;
     private ConditioningSetType conditioningSetType = ConditioningSetType.MARKOV_BLANKET;
     private Knowledge knowledge = new Knowledge();
     private List<String> vertexNames = new ArrayList<>();
     private boolean verbose = false;
-    // For RECURSIVE_MSEP-like options (optional; default -1 means no limit)
-    private int maxLength = -1;
     private ModelSummary modelSummary;
     private boolean useAndersonDarling = false;
 
@@ -115,32 +111,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
             return 0.5 * (copy.get(n / 2 - 1) + copy.get(n / 2));
         }
     }
-
-    /// /            conditioningSetByVertex.put(xName, List.of()); // varying-Z; show Z per row in results table
-//        }
-//    }
-    private static int conditioningSetSizeForSummary(List<IndependenceFact> impliedFacts) {
-        // Preserve your existing "CS size" column semantics:
-        // - uniform-Z: that size
-        // - varying-Z: return -1 (or 0) and let UI show “varies”.
-        Set<Set<Node>> distinct = impliedFacts.stream()
-                .map(IndependenceFact::getZ)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        if (distinct.size() == 1) return distinct.iterator().next().size();
-        return -1;
-    }
-
-//    private static List<IndependenceFact> factsForUniformZ(Graph g, Node x, Set<Node> z) {
-//        List<IndependenceFact> out = new ArrayList<>();
-//        for (Node y : g.getNodes()) {
-//            if (y.equals(x)) continue;
-//            if (z.contains(y)) continue;
-//            if (g.isAdjacentTo(x, y)) continue;   // <-- NEW LINE
-//            out.add(new IndependenceFact(x, y, z));
-//        }
-//        return out;
-//    }
 
     public double getUniformityP(List<Double> pvals) {
         if (pvals == null || pvals.size() < 2) return Double.NaN;
@@ -181,7 +151,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public void setGraph(Graph g) {
         Graph old = this.graph;
         this.graph = g;
-//        clearResults(); // strongly recommended since cached results are now invalid
         pcs.firePropertyChange(PROP_GRAPH, old, g);
     }
 
@@ -201,7 +170,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         this.independenceTest = test;
         cachedQueries.setTest(test);  // clears caches, rebuilds mapping
         clearResults();
-        // fire property change if you already do
     }
 
     public ConditioningSetType getConditioningSetType() {
@@ -212,14 +180,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     public void setConditioningSetType(ConditioningSetType conditioningSetType) {
         this.conditioningSetType = conditioningSetType;
-    }
-
-    public int getMaxLength() {
-        return maxLength;
-    }
-
-    public void setMaxLength(int maxLength) {
-        this.maxLength = maxLength;
     }
 
     public Knowledge getKnowledge() {
@@ -244,16 +204,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public String getName() {
         return name;
     }
-
-//    private void storeConditioningSetSummary(String xName, List<IndependenceFact> impliedFacts) {
-//        // If all facts share the same Z, store it; else store empty.
-//        Set<Set<Node>> distinct = impliedFacts.stream()
-//                .map(IndependenceFact::getZ)
-//                .collect(Collectors.toCollection(LinkedHashSet::new));
-//
-//        if (distinct.size() == 1) {
-//            Set<Node> z = distinct.iterator().next();
-//            List<String> names = z.stream().map(Node::getName).sorted().toList();
 
     @Override
     public void setName(String name) {
@@ -314,93 +264,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         runVertex(alignedGraph, x);
     }
 
-//    private void runVertex(Graph alignedGraph, Node x) {
-//        List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x);
-//
-////        List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x);
-//        TetradLogger.getInstance().log("VertexCheck: x=" + x.getName() + " g impliedFacts=" + impliedFacts.size());
-//
-//        int tried = 0;
-//        int ok = 0;
-//
-//        for (IndependenceFact fact : impliedFacts) {
-//            tried++;
-//
-//            Node X = independenceTest.getVariable(fact.getX().getName());
-//            Node Y = independenceTest.getVariable(fact.getY().getName());
-//
-//            Set<Node> Z = new HashSet<>();
-//            for (Node _z : fact.getZ()) {
-//                Z.add(independenceTest.getVariable(_z.getName()));
-//            }
-//
-//////            try {
-//////                IndependenceResult r = independenceTest.checkIndependence(X, Y, Z);
-////            IndependenceResult r = cachedQueries.checkIndependence(X, Y, Z);
-////            double p = r.getPValue();
-////            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) ok++;
-//////            } catch (Exception ex) {
-//////                TetradLogger.getInstance().log("VertexCheck: exception for " + fact + " : " + ex);
-//////            }
-//
-//            IndependenceResult r;
-//            try {
-//                r = (cachedQueries != null)
-//                        ? cachedQueries.checkIndependence(X, Y, Z)
-//                        : independenceTest.checkIndependence(X, Y, Z);
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-//
-//        TetradLogger.getInstance().log("VertexCheck: x=" + x.getName() + " tried=" + tried + " okP=" + ok);
-//
-//        // Conditioning-set “summary” for UI purposes only:
-//        // - If uniform-Z, store that Z.
-//        // - If varying-Z (e.g. OLMP), store empty and let the facts table carry Z.
-////        storeConditioningSetSummary(x.getName(), impliedFacts);
-//
-//        List<IndependenceResult> results = new ArrayList<>();
-//        List<Double> pvals = new ArrayList<>();
-//
-//        for (IndependenceFact fact : impliedFacts) {
-//            Node y = fact.getY();
-//            Set<Node> z = fact.getZ();
-//
-//            try {
-//                Node X = independenceTest.getVariable(fact.getX().getName());
-//                Node Y = independenceTest.getVariable(y.getName());
-//
-//                Set<Node> Z = new HashSet<>();
-//                for (Node _z : z) {
-//                    Z.add(independenceTest.getVariable(_z.getName()));
-//                }
-//
-//
-//                IndependenceResult r = independenceTest.checkIndependence(X, Y, Z);
-//
-//                double p = r.getPValue();
-//                IndependenceResult stored = new IndependenceResult(
-//                        fact,
-//                        r.isIndependent(),
-//                        p,
-//                        r.getScore()
-//                );
-//                results.add(stored);
-//
-//                if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
-//                    pvals.add(p);
-//                }
-//
-//                if (verbose) {
-//                    TetradLogger.getInstance().log("VertexCheck: " + fact + "  p=" + p);
-//                }
-//            } catch (Exception ex) {
-//                TetradLogger.getInstance().log("VertexCheck: error checking " + fact + ": " + ex.getMessage());
-//            }
-//        }
-//
-
     public List<VertexSummary> getSummaries() {
         return new ArrayList<>(summariesByVertex.values());
     }
@@ -409,10 +272,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return summariesByVertex.get(vertexName);
     }
 
-    // --- Required by KnowledgeBoxInput / GraphSource (kept consistent with MarkovCheckIndTestModel) ----
-
-    /// /            conditioningSetByVertex.put(xName, names);
-//        } else {
     public List<IndependenceResult> getResultsForVertex(String vertexName) {
         return resultsByVertex.getOrDefault(vertexName, List.of());
     }
@@ -590,10 +449,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return summariesByVertex.containsKey(vertexName);
     }
 
-//    public void setGraph(Graph graph) {
-//        this.graph = graph;
-//    }
-
     public void ensureVertexComputed(String vertexName) {
         if (independenceTest == null) {
             throw new IllegalStateException("IndependenceTest has not been set.");
@@ -612,8 +467,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return r.min();
     }
 
-
-    // --- Summary record ----------------------------------------------------------------------------
 
     public int getMaxConditioningSetSizeFast(String vertexName) {
         ConditioningSetSizeRange r = getConditioningSetSizeRangeFast(vertexName);
@@ -693,10 +546,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         pcs.addPropertyChangeListener(l);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        pcs.removePropertyChangeListener(l);
-    }
-
     public ModelSummary getModelSummary() {
         if (modelSummary != null) return modelSummary;
 
@@ -745,10 +594,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
             if (v != null) out.add(v);
         }
         return out;
-    }
-
-    public void setUseAndersonDarling(boolean useAndersonDarling) {
-        this.useAndersonDarling = useAndersonDarling;
     }
 
     public boolean getUseAndersonDarling() {
