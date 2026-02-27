@@ -260,10 +260,6 @@ public final class Gcm implements IndependenceTest {
             return 0.0;
         }
 
-//        int ix = idx(x);
-//        int iy = idx(y);
-//        int[] iz = idxSorted(z);
-
         double[] rx = cache.getResiduals(this, ix, iz, useRows);
         double[] ry = cache.getResiduals(this, iy, iz, useRows);
 

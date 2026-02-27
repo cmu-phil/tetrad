@@ -83,13 +83,8 @@ public final class LegendreLrIndTest implements IndependenceWrapper {
         score.setUseInteractions(true);
         score.setInteractionMaxParents(3);
 
-//        score.setUseInteractions(parameters.getBoolean(Params.USE_INTERACTIONS));
-//        score.setInteractionMaxParents(parameters.getInt(Params.INTERACTION_MAX_PARENTS));
-//        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-
         // CI test: default to disabling interactions during testing to preserve nesting.
         boolean disableInteractionsForTest = true;
-//        disableInteractionsForTest = parameters.getBoolean(Params.DISABLE_INTERACTIONS_FOR_TEST);
 
         LegendreLrIndependenceTest test = new LegendreLrIndependenceTest(score, disableInteractionsForTest);
 
@@ -125,10 +120,6 @@ public final class LegendreLrIndTest implements IndependenceWrapper {
         p.add(Params.LEGENDRE_NU);
         p.add(Params.MINIMAX_IRLS_ITERS);
         p.add(Params.MINIMAX_IRLS_ITERS);
-
-//        p.add(Params.USE_INTERACTIONS);
-//        p.add(Params.INTERACTION_MAX_PARENTS);
-//        p.add(Params.DISABLE_INTERACTIONS_FOR_TEST);
 
         p.add(Params.PENALTY_DISCOUNT);
         p.add(Params.VERBOSE);

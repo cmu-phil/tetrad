@@ -68,7 +68,6 @@ public class Gcm implements IndependenceWrapper {
 
         edu.cmu.tetrad.search.test.Gcm gcm = new edu.cmu.tetrad.search.test.Gcm((DataSet) dataSet,
                 parameters.getDouble(Params.ALPHA));
-        // start with something modest:
         gcm.setVerbose(parameters.getBoolean(Params.VERBOSE));
         edu.cmu.tetrad.search.test.Gcm.RegressorType[] types = edu.cmu.tetrad.search.test.Gcm.RegressorType.values();
         gcm.setRegressorType(types[parameters.getInt(Params.GCM_REGRESSOR_TYPE) - 1]);

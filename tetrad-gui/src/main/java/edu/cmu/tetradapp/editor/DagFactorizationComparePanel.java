@@ -130,15 +130,12 @@ public final class DagFactorizationComparePanel extends JPanel {
 
     private static final class DualPlotMatrix extends JPanel {
 
-        // shared controls
         private final JList<Node> rowSelector;
         private final JList<Node> colSelector;
-        // chart panels
         private final JPanel chartsLeft = new JPanel();
         private final JPanel chartsRight = new JPanel();
         private DataSet left;
         private DataSet right;
-        // shared variable list (by name intersection/order)
         private List<Node> vars;       // nodes for selection list (names match both data sets)
         private Node[] varsArray;
         private int numBins = 9;
@@ -146,7 +143,6 @@ public final class DagFactorizationComparePanel extends JPanel {
         private boolean removeZeroPointsPerPlot = false;
         private ScatterPlot.JitterStyle jitterStyle = ScatterPlot.JitterStyle.None;
         private Map<Node, VariableConditioningEditor.ConditioningPanel> conditioningPanelMap = new HashMap<>();
-        // state for click-to-zoom
         private int[] lastRows = new int[]{0};
         private int[] lastCols = new int[]{0};
 
@@ -166,16 +162,11 @@ public final class DagFactorizationComparePanel extends JPanel {
                 colSelector.setSelectedIndex(0);
             }
 
-            // listeners
             rowSelector.addListSelectionListener(e -> refreshCharts());
             colSelector.addListSelectionListener(e -> refreshCharts());
 
-            // menu/settings
             add(buildMenuBar(), BorderLayout.NORTH);
-
-            // center: left + right charts + shared selectors on right
             add(buildCenter(), BorderLayout.CENTER);
-
             refreshCharts();
         }
 
