@@ -104,7 +104,7 @@ public class VertexRepairCpdag extends AbstractBootstrapAlgorithm implements Alg
 
         // Configure VertexRepairSearch.
         VertexRepairSearch vr = new VertexRepairSearch(it, start, this.knowledge,
-                ConditioningSetType.RECURSIVE_BLOCKING);
+                ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
 
         // Conditioning-set type: VertexRepairSearch needs it; we expose it as an algcomparison param.
         // If you already have a Params constant for this in your VertexCheck UI model, reuse it here.

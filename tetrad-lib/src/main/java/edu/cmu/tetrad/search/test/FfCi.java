@@ -168,7 +168,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      */
     @Override
     public void setAlpha(double alpha) {
-        if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("alpha in (0,1)");
+        if (alpha < 0 || alpha > 1) throw new IllegalArgumentException("alpha in [0,1]");
         this.alpha = alpha;
         invalidateCaches();
         this.continuousDelegate.setAlpha(alpha);
