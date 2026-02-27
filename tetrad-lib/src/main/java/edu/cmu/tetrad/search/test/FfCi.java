@@ -160,11 +160,10 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Sets the alpha value to control transparency or blending levels.
-     * The value must be in the range (0, 1), exclusive.
+     * Sets the cutoff for judging independence. The value must be in the range [0, 1].
      *
-     * @param alpha the alpha value to set; must be greater than 0 and less than 1
-     * @throws IllegalArgumentException if the alpha value is not in the range (0, 1)
+     * @param alpha the alpha value to set
+     * @throws IllegalArgumentException if the alpha value is not in range.
      */
     @Override
     public void setAlpha(double alpha) {
