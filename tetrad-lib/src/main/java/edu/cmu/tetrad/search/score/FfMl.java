@@ -116,13 +116,15 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      */
     private final boolean[] isDiscrete;
     /**
+     * RFF vs ORF for continuous features.
+     */
+    private final FeatureType featureType = FeatureType.ORF;
+    /**
      * Cache: (target i, sorted parents) -> score.
      */
     private transient AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
-
     private transient ConcurrentHashMap<Long, Double> bw2Cache = new ConcurrentHashMap<>();
-
     private transient ConcurrentHashMap<Long, Double> bw2OptCache = new ConcurrentHashMap<>();
     private transient ConcurrentHashMap<Long, Double> bw2MedByTargetContCache = new ConcurrentHashMap<>();
     private transient ConcurrentHashMap<Long, Double> bw2OptByTargetContCache = new ConcurrentHashMap<>();
@@ -131,19 +133,23 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             new ConcurrentHashMap<>();
     // ---- make bw selection "global-per-target" for comparability across DAGs ----
     private volatile boolean bwCoupleByTarget = true;     // NEW: default true
+
+    // -------------------- reproducibility / feature coupling --------------------
     /**
      * Base ridge/noise knob. Used as sigma^2. Must be > 0.
      */
     private volatile double lambda = 1.0;
-
-    // -------------------- reproducibility / feature coupling --------------------
-
     /**
      * Base seed for random-feature generation. Changing this changes the random feature basis.
      * Default is arbitrary but fixed.
      */
     private volatile long baseSeed = 0xC0FFEE1234ABCDL;
 
+    // -------------------- data --------------------
+//    /**
+//     * Bandwidth multiplier on the median heuristic (continuous part only).
+//     */
+//    private volatile double bandwidthMultiplier = 1.0;
     /**
      * If true (recommended), random features (W,b) are coupled by TARGET only.
      * This stabilizes localScoreDiff comparisons and usually fixes BOSS edge reversals.
@@ -151,12 +157,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * If false, we revert to the old behavior: seed depends on (target, parent set).
      */
     private volatile boolean coupleFeaturesByTarget = true;
-
-    // -------------------- data --------------------
-//    /**
-//     * Bandwidth multiplier on the median heuristic (continuous part only).
-//     */
-//    private volatile double bandwidthMultiplier = 1.0;
     /**
      * Max rows used to estimate median bandwidth (subsample for speed).
      */
@@ -169,10 +169,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * Effective sample size.
      */
     private volatile int nEff;
-    /**
-     * RFF vs ORF for continuous features.
-     */
-    private FeatureType featureType = FeatureType.ORF;
     /**
      * Categorical kernel off-diagonal similarity rho in [0, 1).
      * k_cat(c,c)=1, k_cat(c,c')=rho for c!=c'.
@@ -241,15 +237,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         initCaches();
     }
 
-    private void initCaches() {
-        localScoreCacheRef = new AtomicReference<>(new ConcurrentHashMap<>());
-        bw2Cache = new ConcurrentHashMap<>();
-        bw2OptCache = new ConcurrentHashMap<>();
-        bw2MedByTargetContCache = new ConcurrentHashMap<>();
-        bw2OptByTargetContCache = new ConcurrentHashMap<>();
-        bestMultCounts = new ConcurrentHashMap<>();
-    }
-
     /**
      * Build a one-hot matrix for a discrete variable and center each column.
      * Levels are taken as the distinct observed values in the current row subset.
@@ -268,7 +255,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 .distinct().sorted().toArray();
 
         int L = uniq.length;
-        if (L <= 0) return null;
+        if (L == 0) return null;
 
         // Map each value -> level index 0..L-1
         double[][] Y = new double[n][L];
@@ -292,8 +279,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return Y;
     }
 
-    // -------------------- Score interface --------------------
-
     /**
      * Sigma-only multi-output: sum the sigma-only GP marginal likelihood across columns.
      * Each column is treated as an independent output with the same sigma^2 I covariance.
@@ -312,6 +297,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         }
         return sum;
     }
+
+    // -------------------- Score interface --------------------
 
     /**
      * A tiny 64-bit mixing function for seed diversification.
@@ -342,7 +329,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 .distinct().sorted().toArray();
 
         int L = uniq.length;
-        if (L <= 0) return null;
+        if (L == 0) return null;
 
         int[] levelOfRow = new int[n];
         for (int i = 0; i < n; i++) {
@@ -444,7 +431,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
     private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd, SplittableRandom rng) {
         double[][] W = new double[mFeatures][d];
-        if (d <= 0) return W;
+        if (d == 0) return W;
 
         int filled = 0;
         while (filled < mFeatures) {
@@ -576,11 +563,20 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         }
     }
 
-    // -------------------- tuning knobs --------------------
-
     // Packed lower-triangle index: (i>=j) -> i*(i+1)/2 + j
     private static int idxLower(int i, int j) {
         return i * (i + 1) / 2 + j;
+    }
+
+    // -------------------- tuning knobs --------------------
+
+    private void initCaches() {
+        localScoreCacheRef = new AtomicReference<>(new ConcurrentHashMap<>());
+        bw2Cache = new ConcurrentHashMap<>();
+        bw2OptCache = new ConcurrentHashMap<>();
+        bw2MedByTargetContCache = new ConcurrentHashMap<>();
+        bw2OptByTargetContCache = new ConcurrentHashMap<>();
+        bestMultCounts = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -805,18 +801,10 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         final double penaltyAlpha = 0.01; // 0.0 disables; try 0.002..0.03
         final double tieTol = 1e-4;       // tolerance on objective (absolute-ish)
 
-        final class Best {
-            final double bw2;
-            final double ll;
-            final double mult;
-            final double obj; // selection objective (ll - penalty)
-
-            Best(double bw2, double ll, double mult, double obj) {
-                this.bw2 = bw2;
-                this.ll = ll;
-                this.mult = mult;
-                this.obj = obj;
-            }
+        /**
+         * @param obj selection objective (ll - penalty)
+         */
+        record Best(double bw2, double ll, double mult, double obj) {
         }
 
         final double finalBw2Med = bw2Med;
@@ -873,12 +861,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         else bw2OptCache.put(fullKey, bestBw2);
 
         return bestBw2;
-    }
-
-    public void dumpBestMultCounts() {
-        bestMultCounts.entrySet().stream()
-                .sorted(java.util.Map.Entry.comparingByKey())
-                .forEach(e -> System.out.println("mult=" + e.getKey() + " count=" + e.getValue().sum()));
     }
 
     /**
@@ -1100,82 +1082,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         this.numFeatures = numFeatures;
         initCaches();
     }
-
-    /**
-     * Returns the base seed value used for initializing or seeding operations.
-     *
-     * @return the base seed as a long value
-     */
-    public long getBaseSeed() {
-        return baseSeed;
-    }
-
-    /**
-     * Sets the base seed value for the random generator or algorithm
-     * and resets any associated cached data.
-     *
-     * @param baseSeed the base seed value to initialize the random generator
-     */
-    public void setBaseSeed(long baseSeed) {
-        this.baseSeed = baseSeed;
-        initCaches();
-    }
-
-    /**
-     * Indicates whether features are coupled by target.
-     *
-     * @return true if features are coupled by target; false otherwise.
-     */
-    public boolean isCoupleFeaturesByTarget() {
-        return coupleFeaturesByTarget;
-    }
-
-    // -------------------- extraction + preprocessing --------------------
-
-    /**
-     * Sets the state of the coupleFeaturesByTarget property, which determines whether
-     * features are coupled based on the target.
-     *
-     * @param coupleFeaturesByTarget a boolean indicating whether features should
-     *                               be coupled by target (true) or not (false)
-     */
-    public void setCoupleFeaturesByTarget(boolean coupleFeaturesByTarget) {
-        this.coupleFeaturesByTarget = coupleFeaturesByTarget;
-        initCaches();
-    }
-
-    /**
-     * Retrieves the feature type associated with this object.
-     *
-     * @return the feature type as a FeatureType instance.
-     */
-    public FeatureType getFeatureType() {
-        return featureType;
-    }
-
-    /**
-     * Sets the feature type for the current object. This method assigns a new value
-     * to the featureType property and clears any cached data associated with the previous value.
-     *
-     * @param featureType the feature type to set; must not be null
-     * @throws IllegalArgumentException if the featureType parameter is null
-     */
-    public void setFeatureType(FeatureType featureType) {
-        if (featureType == null) throw new IllegalArgumentException("featureType cannot be null");
-        this.featureType = featureType;
-        initCaches();
-    }
-
-    /**
-     * Retrieves the value of the catRho property.
-     *
-     * @return the current value of catRho as a double.
-     */
-    public double getCatRho() {
-        return catRho;
-    }
-
-    // -------------------- ORF / Gaussian helpers --------------------
 
     /**
      * Set categorical similarity rho in [0,1).
@@ -1848,39 +1754,24 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         ORF
     }
 
-    private static final class BaseWB {
-        final double[][] Wbase;  // mFeatures x dc
-        final double[] b;        // mFeatures
-
-        BaseWB(double[][] Wbase, double[] b) {
-            this.Wbase = Wbase;
-            this.b = b;
-        }
+    /**
+     * @param Wbase mFeatures x dc
+     * @param b     mFeatures
+     */
+    private record BaseWB(double[][] Wbase, double[] b) {
     }
 
     // -------------------- discrete reading --------------------
 
-    private static final class CatFeatureMap {
-        final int L;
-        final int[] levelOfRow;     // maps each row (0..n-1) to 0..L-1
-        final double[][] A;         // L x L, rows are features for each level
-
-        CatFeatureMap(int L, int[] levelOfRow, double[][] A) {
-            this.L = L;
-            this.levelOfRow = levelOfRow;
-            this.A = A;
-        }
+    /**
+     * @param levelOfRow maps each row (0..n-1) to 0..L-1
+     * @param A          L x L, rows are features for each level
+     */
+    private record CatFeatureMap(int L, int[] levelOfRow, double[][] A) {
 
         double[] featureForRow(int rowIndexWithinActive) {
             int lev = levelOfRow[rowIndexWithinActive];
             return A[lev];
         }
-    }
-
-    @Serial
-    private void readObject(java.io.ObjectInputStream in)
-            throws java.io.IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        initCaches(); // important
     }
 }

@@ -157,6 +157,17 @@ public class TRffBicScore implements ScoreWrapper {
         return this.dataSet.getVariable(name);
     }
 
+    /**
+     * Handles the deserialization of a TRffBicScore object. This ensures that the object
+     * is properly restored from its serialized form. During the deserialization process,
+     * the underlying dataset reference is reset to null to enforce reinitialization after
+     * the object is loaded.
+     *
+     * @param in the {@code ObjectInputStream} from which the object is being deserialized.
+     *           This stream contains the serialized representation of the object.
+     * @throws java.io.IOException if an I/O error occurs during deserialization.
+     * @throws ClassNotFoundException if the class of a serialized object cannot be found.
+     */
     @Serial
     private void readObject(java.io.ObjectInputStream in)
             throws java.io.IOException, ClassNotFoundException {

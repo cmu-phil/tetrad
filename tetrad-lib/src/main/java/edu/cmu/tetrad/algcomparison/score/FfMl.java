@@ -135,6 +135,15 @@ public class FfMl implements ScoreWrapper {
         return this.dataSet.getVariable(name);
     }
 
+    /**
+     * Deserializes the object from the given {@link java.io.ObjectInputStream}.
+     * Resets the transient {@code dataSet} field to {@code null} to ensure that
+     * it is properly reinitialized after deserialization.
+     *
+     * @param in the {@link java.io.ObjectInputStream} from which the object is read
+     * @throws java.io.IOException if an I/O error occurs while reading the stream
+     * @throws ClassNotFoundException if the class of a serialized object cannot be found
+     */
     @Serial
     private void readObject(java.io.ObjectInputStream in)
             throws java.io.IOException, ClassNotFoundException {

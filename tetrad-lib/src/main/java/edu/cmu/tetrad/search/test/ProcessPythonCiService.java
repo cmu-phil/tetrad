@@ -29,6 +29,15 @@ public final class ProcessPythonCiService implements PythonCiService {
     private volatile Map<String, Object> params = new HashMap<>();
     private File csvTemp;
 
+    /**
+     * Constructor for ProcessPythonCiService, which sets up the Python executable
+     * and the server script path for the service.
+     *
+     * @param pythonExe the path to the Python executable. Must nojt be null or empty.
+     * @param serverScriptPath the path to the Python server script. Must not be null or empty.
+     * @throws NullPointerException if either {@code pythonExe} or {@code serverScriptPath} is null.
+     * @throws IllegalArgumentException if either {@code pythonExe} or {@code serverScriptPath} is empty.
+     */
     public ProcessPythonCiService(String pythonExe, String serverScriptPath) {
         this.pythonExe = Objects.requireNonNull(pythonExe, "pythonExe").trim();
         this.serverScriptPath = Objects.requireNonNull(serverScriptPath, "serverScriptPath").trim();

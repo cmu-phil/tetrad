@@ -16,13 +16,58 @@ import javax.swing.table.AbstractTableModel;
 import java.util.*;
 import java.util.prefs.Preferences;
 
+/**
+ * The VertexRepairSearch class implements graph search and repair algorithms for correcting edges
+ * and vertex relationships in a given graph. It supports evaluation of graph consistency,
+ * generation of candidate edits for repair, and application of edits to improve the graph's
+ * structural and probabilistic properties.
+ */
 public class VertexRepairSearch implements IGraphSearch {
 
+    /**
+     * A comparator for strings that compares them in "natural name order." This order
+     * is determined by breaking each input string into a prefix (non-numeric portion)
+     * and an optional numeric suffix. Comparison is performed first on the prefix
+     * lexicographically and then numerically on the suffix, if present.
+     * <p>
+     * This comparator ensures that strings like "X", "X1", "X2", "Y" are
+     * ordered as "X", "X1", "X2", "Y". Strings with no numeric suffix are ordered
+     * before those with numeric suffixes of the same prefix.
+     */
     public static final Comparator<String> NATURAL_NAME_COMPARATOR =
             Comparator.comparing(
                     NaturalKey::from
             );
+
+    /**
+     * A threshold value used during statistical tests to determine
+     * the significance level for accepting or rejecting a hypothesis.
+     * Typically interpreted as the alpha probability of a Type I error,
+     * indicating the likelihood of incorrectly rejecting a true null hypothesis.
+     * This value is fixed as 0.01, representing a 1% significance level.
+     */
     static final double alpha = 0.01;
+
+    /**
+     * Comparator defining the canonical ordering for scored candidates during
+     * vertex repair search. This comparator applies a multi-stage sorting process
+     * that prioritizes candidates based on a variety of criteria. The order of
+     * precedence is as follows:
+     * <p>
+     * 1. Candidates that pass guard conditions are prioritized over those that don't.
+     * 2. Candidates with more negative delta violations are preferred.
+     * 3. Fewer edges in the resulting graph are preferred.
+     * 4. Smaller edit sizes are favored (e.g., single-edge edits are preferred over multiple-edge edits).
+     * 5. Candidates with finite Node-P values are prioritized, followed by higher log-odds for Node-P.
+     * 6. Greater improvements in Model-P over the baseline are preferred, with finite improvements
+     * taking precedence over "unknown" improvements.
+     * 7. Candidates with higher move-bias values are prioritized.
+     * 8. Finite absolute Model-P values are preferred, followed by higher log-odds of Model-P.
+     * 9. A tie-breaker is applied for stable comparison if all other criteria are equal.
+     * <p>
+     * This comparator ensures that candidates are selected in an order that maximizes
+     * repair effectiveness and adheres to the specified search heuristics.
+     */
     public static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
         if (a == null && b == null) return 0;
         if (a == null) return 1;
@@ -83,19 +128,117 @@ public class VertexRepairSearch implements IGraphSearch {
         // 8) Stable tie-break
         return stableTieBreak(a, b);
     };
+
+    /**
+     * Defines the default value for the maximum number of candidates (K) to consider
+     * in the second pass of candidate evaluation during the repair search process.
+     * This value is used to limit the number of top-scoring candidates based on
+     * their model-p values, ensuring computational efficiency and consistency
+     * across search iterations.
+     */
     private static final int DEFAULT_MODELP_TOP_K = 25;
+
+    /**
+     * A static constant that provides access to a specific node in the user preferences tree.
+     * This node is used to store and retrieve application-specific configuration settings
+     * for the VertexRepairPanel in the Tetrad application.
+     * <p>
+     * The preferences node is located at "edu/cmu/tetradapp/editor/VertexRepairPanel" within
+     * the user preferences hierarchy.
+     * <p>
+     * This constant leverages the Java Preferences API to serialize and persist user-specific
+     * configurations.
+     */
     private static final Preferences PREFS = Preferences.userRoot().node("edu/cmu/tetradapp/editor/VertexRepairPanel");
+
+    /**
+     * A constant key used for storing or accessing the preferred alpha value in
+     * the configuration of a search or repair process. This key corresponds to
+     * the alpha level used in statistical tests or other operations within the
+     * associated graph search algorithms.
+     */
     private static final String PREF_ALPHA = "markovAlpha";
+
+    /**
+     * CachedIndependenceQueries object used for managing and caching results of independence tests.
+     * This variable is utilized during the search to reduce redundant computations by storing and reusing
+     * independence test results, thereby improving the efficiency of the search algorithm.
+     */
     private final CachedIndependenceQueries Q;
+
+    /**
+     * Represents an independence test used within the {@code VertexRepairSearch} process to
+     * evaluate statistical independence between variables in a given dataset.
+     * This test forms the basis for determining if certain edges in a graph
+     * should be added, removed, or retained during the search and repair process.
+     */
     private final IndependenceTest test;
+
+    /**
+     * The initial graph used as the starting point for the search process in the
+     * {@code VertexRepairSearch} class. This graph serves as the baseline structure
+     * upon which modifications and evaluations will be performed during the search.
+     * It is immutable to ensure the integrity of the starting point throughout the
+     * search procedure.
+     * <p>
+     * This field is set during the construction of a {@code VertexRepairSearch}
+     * instance and cannot be modified afterward.
+     */
     private final Graph start;
+
+    /**
+     * Represents the type of conditioning set to be utilized in the vertex repair search process.
+     * The conditioning set type is a core configuration parameter that influences
+     * the statistical analysis performed during the repair of the causal structure.
+     * <p>
+     * This variable is immutable and is initialized through the constructor of the
+     * {@code VertexRepairSearch} class.
+     */
     private final ConditioningSetType conditioningSetType;
+
+    /**
+     * Flag indicating whether the Anderson-Darling statistical test should be used
+     * during the vertex repair search process. This test is often employed to
+     * evaluate the uniformity of distributions such as p-values.
+     * <p>
+     * If set to {@code true}, the algorithm will perform the Anderson-Darling test
+     * at relevant steps to guide decisions or validate results. If set to
+     * {@code false}, the test will not be applied.
+     */
     private final boolean useAndersonDarling = false;
+
+    /**
+     * Stores knowledge constraints used in the search process.
+     * <p>
+     * This variable represents prior knowledge regarding the structure of the
+     * graph or constraints that must be satisfied during the vertex repair
+     * search. It may include rules about which edges are allowed, forbidden, or
+     * required, and is used to guide the search algorithm in modifying or
+     * evaluating the graph.
+     */
     private Knowledge knowledge;
+
+    /**
+     * Represents the currently selected node in the algorithm's context, which is
+     * dynamically updated through a dropdown or selection menu.
+     */
     private Node x; // selected node (changes via dropdown)
+
+    /**
+     * Represents the currently selected graph in the algorithm's context, which is
+     * dynamically updated based on the search progress and modifications.
+     */
     private Graph workingGraph;
 
-
+    /**
+     * Constructs an instance of VertexRepairSearch, initializing the class with the provided parameters and
+     * sets up the necessary components to perform a vertex repair search.
+     *
+     * @param test                The independence test to use for evaluating dependencies among variables in the graph.
+     * @param start               The initial graph on which the repair search process will begin.
+     * @param knowledge           Domain-specific knowledge about allowable and forbidden edges in the graph.
+     * @param conditioningSetType The strategy or type of conditioning set to use during independence testing.
+     */
     public VertexRepairSearch(IndependenceTest test, Graph start, Knowledge knowledge,
                               ConditioningSetType conditioningSetType) {
         this.test = test;
@@ -185,7 +328,7 @@ public class VertexRepairSearch implements IGraphSearch {
         return 0;
     }
 
-    public static MoveType moveType(CandidateEdit e) {
+    private static MoveType moveType(CandidateEdit e) {
         if (e == null) return MoveType.OTHER;
 
         String k = safeLower(e.key());
@@ -225,11 +368,18 @@ public class VertexRepairSearch implements IGraphSearch {
     }
 
     /**
-     * Canonical key for de-duping implied facts by names: (X,Y unordered; Z sorted).
-     * IMPORTANT: This is independent of the CachedIndependenceQueries cache key; it is used
-     * only for locality-based merging of per-vertex contributions.
+     * Generates a unique key for an {@code IndependenceFact} object based on its components.
+     * If the provided fact or its key components are {@code null}, a random UUID is returned.
+     * Otherwise, the key is constructed as a string in the format: "a|b|z1,z2,...,zn",
+     * where 'a' and 'b' are the names of the fact's variables (sorted lexicographically),
+     * and 'z1, z2, ..., zn' is a sorted, comma-separated list of names for the conditional variables.
+     *
+     * @param f the {@code IndependenceFact} object used to generate the key. It may contain
+     *          two variables (X and Y) and a list of conditional variables (Z).
+     * @return a string representing the unique key for the given {@code IndependenceFact},
+     *         or a random UUID string if the input is partially or entirely {@code null}.
      */
-    public static String factKey(IndependenceFact f) {
+    private static String factKey(IndependenceFact f) {
         if (f == null || f.getX() == null || f.getY() == null) return UUID.randomUUID().toString();
 
         String a = f.getX().getName();
@@ -457,10 +607,41 @@ public class VertexRepairSearch implements IGraphSearch {
         return generalAndersonDarlingTest.getP();
     }
 
+    /**
+     * Executes a vertex repair search algorithm using the default parameters.
+     * <p>
+     * The method starts from the initial graph, runs the search process with a
+     * fixed configuration, and returns a repaired graph. It internally delegates
+     * to the overloaded {@code search(Graph, RepairGraphType, int, int, int)}
+     * method with preset values for the repair graph type and other constraints.
+     *
+     * @return A {@code Graph} object that represents the outcome of the vertex
+     * repair search process.
+     * @throws InterruptedException If the thread executing the search process
+     *                              is interrupted.
+     */
     public Graph search() throws InterruptedException {
         return search(this.start, RepairGraphType.CPDAG, 4, 50, 500);
     }
 
+    /**
+     * Performs a search and repair operation on the given graph according to the specified parameters.
+     * This method iteratively modifies the input graph by applying edits until a stopping condition is met.
+     *
+     * @param start           The initial graph to start the search and repair process. Must not be null.
+     * @param gt              The type of repair graph to be used for computing candidates and edits.
+     * @param maxStepsPerNode The maximum number of steps allowed for processing a single node.
+     *                        Must be greater than zero.
+     * @param maxSweeps       The maximum number of sweeps over the graph to perform during the search.
+     *                        Must be greater than zero.
+     * @param maxEdits        The maximum number of edits to apply to the graph. Must be greater than zero.
+     * @return The modified graph after applying the search and repair process.
+     * Returns null if the input graph is null.
+     * @throws IllegalArgumentException If any of the following conditions are true:
+     *                                  - maxStepsPerNode is less than or equal to zero.
+     *                                  - maxSweeps is less than or equal to zero.
+     *                                  - maxEdits is less than or equal to zero.
+     */
     public Graph search(Graph start,
                         RepairGraphType gt,
                         int maxStepsPerNode,
@@ -583,6 +764,11 @@ public class VertexRepairSearch implements IGraphSearch {
         return workingGraph;
     }
 
+    /**
+     * Retrieves the current working graph.
+     *
+     * @return the Graph object representing the current working graph.
+     */
     public Graph getGraph() {
         return workingGraph;
     }
@@ -1116,6 +1302,17 @@ public class VertexRepairSearch implements IGraphSearch {
         }
     }
 
+    /**
+     * Sets the Knowledge object for the current instance. If the provided Knowledge
+     * object is null, a new Knowledge instance will replace it. If the provided
+     * Knowledge object is violated by the current working graph, an
+     * IllegalArgumentException is thrown.
+     *
+     * @param knowledge the Knowledge object to set; if null, a default Knowledge
+     *                  instance will be created and used
+     * @throws IllegalArgumentException if the provided Knowledge object is violated
+     *                                  by the current working graph
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = (knowledge == null) ? new Knowledge() : knowledge;
 
@@ -1149,7 +1346,16 @@ public class VertexRepairSearch implements IGraphSearch {
         return getUniformityP(pvals);
     }
 
-    public double getUniformityP(List<Double> pvals) {
+    /**
+     * Computes the p-value representing the uniformity of a given set of p-values.
+     * The method determines the uniformity using either the Anderson-Darling test
+     * or the Kolmogorov-Smirnov test, based on the configured setting.
+     *
+     * @param pvals A list of p-values to be tested for uniformity. Must contain at least two elements.
+     *              If the input list is null or has fewer than two elements, Double.NaN is returned.
+     * @return The computed uniformity p-value. If the input is invalid, returns Double.NaN.
+     */
+    private double getUniformityP(List<Double> pvals) {
         if (pvals == null || pvals.size() < 2) return Double.NaN;
 
         if (useAndersonDarling) {
@@ -1436,7 +1642,7 @@ public class VertexRepairSearch implements IGraphSearch {
         return isProgress(baselineViol, afterViol, currentEdges, afterEdges, mpBefore, mpAfter);
     }
 
-    public enum MoveType {
+    private enum MoveType {
         REORIENT_SIMPLE,   // single-edge replace/orient/flip (low-risk)
         COLLIDER_FIX,      // multi-edge "Orient collider..." / "Orient away..." (higher-risk)
         REMOVE_EDGE,
@@ -1444,9 +1650,70 @@ public class VertexRepairSearch implements IGraphSearch {
         OTHER
     }
 
-    public enum RepairGraphType {DAG, CPDAG, PDAG, MAG, PAG}
+    /**
+     * An enumeration that represents various types of graphical structures used
+     * in causal inference and other graph-based methodologies.
+     * <p>
+     * The following types of graph structures are included:
+     * - DAG: Directed Acyclic Graph, a graph with directed edges and no cycles.
+     * - CPDAG: Completed Partially Directed Acyclic Graph, a representation of a set of DAGs
+     * that are Markov equivalent.
+     * - PDAG: Partially Directed Acyclic Graph, a graph that combines directed and undirected edges
+     * with the restriction of being acyclic.
+     * - MAG: Maximal Ancestral Graph, a graph structure used to represent causal relationships
+     * with latent variables.
+     * - PAG: Partial Ancestral Graph, a generalization of MAGs that maintains ambiguity where
+     * causal directions cannot be fully determined.
+     */
+    public enum RepairGraphType {
 
-    public interface CandidateEdit {
+        /**
+         * Represents a Directed Acyclic Graph (DAG), a type of graph structure where all edges are directed
+         * and there are no cycles. Commonly used in causal inference, dependency modeling, and other
+         * computational methodologies requiring non-cyclic and directed relationships.
+         */
+        DAG,
+
+        /**
+         * Represents a Completed Partially Directed Acyclic Graph (CPDAG), which is a graphical structure
+         * used in causal inference to encode a set of Markov equivalent Directed Acyclic Graphs (DAGs).
+         * A CPDAG contains both directed and undirected edges and provides a compact representation
+         * of equivalence classes of DAGs that share the same conditional independence relationships.
+         * This structure is particularly useful in causal structure learning when the true causal
+         * graph cannot be uniquely identified from data.
+         */
+        CPDAG,
+
+        /**
+         * Represents a Partially Directed Acyclic Graph (PDAG), a graph structure that allows a combination
+         * of directed and undirected edges, while maintaining the restriction of being acyclic. PDAGs are
+         * often used in causal inference and graphical modeling as intermediate structures in the process
+         * of learning or representing causal relationships. They accommodate partial information about
+         * causal directions that may not be fully resolved.
+         */
+        PDAG,
+
+        /**
+         * Represents a Maximal Ancestral Graph (MAG), a graphical structure used in causal inference
+         * to represent causal relationships in the presence of latent variables and selection bias.
+         * MAGs encode ancestral relationships and conditional independencies while allowing for
+         * the representation of unmeasured confounders and selection effects. They are widely used
+         * in scenarios involving incomplete data or latent structures obscuring direct causal paths.
+         */
+        MAG,
+
+        /**
+         * Represents a Partial Ancestral Graph (PAG), a generalized graphical structure used in causal inference
+         * to encode ambiguity in causal directions when complete determination is not possible. PAGs extend
+         * Maximal Ancestral Graphs (MAGs) by maintaining indeterminacies in edge orientations, allowing them
+         * to represent equivalence classes of MAGs that share the same conditional independencies. This graph
+         * type is particularly useful in scenarios where the available data or assumptions are insufficient
+         * to uniquely infer causal directions, but some causal relationships can still be established.
+         */
+        PAG
+    }
+
+    private interface CandidateEdit {
 
         static CandidateEdit noOp() {
             return new CandidateEdit() {
@@ -1607,7 +1874,7 @@ public class VertexRepairSearch implements IGraphSearch {
         /**
          * Multi-edge replace: removes every old edge’s pair, then adds every new edge.
          */
-        static CandidateEdit replaceEdges(String label, List<Edge> oldEdges, List<Edge> newEdges) {
+        private static CandidateEdit replaceEdges(String label, List<Edge> oldEdges, List<Edge> newEdges) {
             Objects.requireNonNull(label, "label");
             Objects.requireNonNull(oldEdges, "oldEdges");
             Objects.requireNonNull(newEdges, "newEdges");
@@ -1744,7 +2011,7 @@ public class VertexRepairSearch implements IGraphSearch {
         }
     }
 
-    public record ScoredCandidate(
+    private record ScoredCandidate(
             CandidateEdit edit,
             int violationsBaseline,
             int violationsAfter,

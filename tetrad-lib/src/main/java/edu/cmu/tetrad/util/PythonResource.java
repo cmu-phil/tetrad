@@ -6,6 +6,13 @@ import java.security.MessageDigest;
 import java.util.HexFormat;
 import java.util.Objects;
 
+/**
+ * A utility class for working with Python-related resources. This class provides methods
+ * to extract classpath resources into a stable user cache directory, ensuring that
+ * Python scripts or files can be accessed in a way that supports long-lived processes.
+ *
+ * Instances of this class cannot be created as it is designed to be a static utility class.
+ */
 public final class PythonResource {
 
     private PythonResource() {}
@@ -17,6 +24,7 @@ public final class PythonResource {
      * @param resourcePath classpath resource path, e.g. "python/kci_server.py"
      * @param cacheFileName file name to use in the cache dir, e.g. "kci_server.py"
      * @return the extracted file path
+     * @throws IOException if the resource cannot be extracted or accessed
      */
     public static Path extractToUserCache(String resourcePath, String cacheFileName) throws IOException {
         Objects.requireNonNull(resourcePath, "resourcePath");
@@ -68,7 +76,7 @@ public final class PythonResource {
     }
 
     // Optional debugging helper:
-    public static String sha256Hex(Path p) throws IOException {
+    private static String sha256Hex(Path p) throws IOException {
         byte[] b = Files.readAllBytes(p);
         return HexFormat.of().formatHex(sha256(b));
     }
