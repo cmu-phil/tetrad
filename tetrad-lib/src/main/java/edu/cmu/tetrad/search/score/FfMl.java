@@ -98,10 +98,23 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * If true, use valid row subsets when missing exists.
      */
     private final boolean calculateRowSubsets;
-
-    // -------------------- configuration knobs --------------------
+    /**
+     * Represents a collection of data used for processing or analysis.
+     * This object is immutable and intended to provide a predefined
+     * set of data that remains constant throughout its lifecycle.
+     */
     private final DataSet dataSet;
+    /**
+     * A list containing instances of Node, representing the variables to be processed or managed.
+     * The list is immutable as it is declared final, ensuring the reference cannot be modified
+     * after initialization.
+     */
     private final List<Node> variables;
+    /**
+     * Represents the size of the sample to be used in a specific computation or process.
+     * This value is immutable and must be defined at the time of object construction.
+     * It typically indicates the number of elements or observations to include in an operation.
+     */
     private final int sampleSize;
     /**
      * Standardized columns for continuous variables only (NaNs preserved).
@@ -124,17 +137,85 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      */
     private transient AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
+    /**
+     * A transient cache used for storing computed values associated with specific
+     * keys, where the key is of type {@code Long} and the value is of type {@code Double}.
+     * This cache is implemented using a {@code ConcurrentHashMap} to allow
+     * thread-safe access and modifications.
+     *
+     * The transient modifier ensures that this cache will not be serialized.
+     * Typically used to hold temporary or derived data that can be recomputed
+     * or retrieved as needed.
+     */
     private transient ConcurrentHashMap<Long, Double> bw2Cache = new ConcurrentHashMap<>();
+    /**
+     * A transient cache implemented as a thread-safe {@code ConcurrentHashMap} that maps a {@code Long} key
+     * to a {@code Double} value. This cache is used to store and retrieve precomputed or intermediate
+     * results related to bw2 optimization processes.
+     *
+     * The use of the {@code transient} modifier ensures that this cache will not be serialized
+     * when the containing object is serialized.
+     *
+     * Key Characteristics:
+     * - Thread-safe for concurrent access in multi-threaded environments.
+     * - Designed to enhance performance by reducing repeated calculations.
+     */
     private transient ConcurrentHashMap<Long, Double> bw2OptCache = new ConcurrentHashMap<>();
+    /**
+     * A transient cache that maps a target identifier to its associated
+     * median bandwidth value.
+     *
+     * <p>
+     * This cache is implemented using a thread-safe {@code ConcurrentHashMap}
+     * to allow concurrent access and modifications across multiple threads.
+     * The keys in this map are represented by {@code Long} values, typically
+     * denoting unique target identifiers, and the values are represented by
+     * {@code Double}s indicating the calculated median bandwidth for each target.
+     * </p>
+     *
+     * <p>
+     * Being marked as {@code transient}, this cache will not be serialized during
+     * object serialization. It is used for non-persistent, in-memory computations
+     * that do not require long-term storage.
+     * </p>
+     */
     private transient ConcurrentHashMap<Long, Double> bw2MedByTargetContCache = new ConcurrentHashMap<>();
+    /**
+     * A thread-safe, transient cache that associates a target identifier
+     * (represented by a Long) with a corresponding Double value.
+     * Intended to store and retrieve data related to "bw2Opt" calculations
+     * based on a specific target context.
+     *
+     * The use of ConcurrentHashMap ensures that the cache can be accessed
+     * and updated concurrently by multiple threads without compromising consistency.
+     *
+     * Being marked as transient, this cache will not be serialized,
+     * which is typically desirable for caches to avoid unnecessary data persistence.
+     */
     private transient ConcurrentHashMap<Long, Double> bw2OptByTargetContCache = new ConcurrentHashMap<>();
-    // class field (add near other caches)
+    /**
+     * A thread-safe map that associates a Double key with a LongAdder value, designed to
+     * track and aggregate counts for specific multiplier values in a concurrent environment.
+     *
+     * The keys represent specific multiplier values (as a Double), while the LongAdder
+     * values enable efficient and contention-free updates to the count associated with
+     * each multiplier across multiple threads.
+     *
+     * This variable is marked as transient, meaning it will not be serialized during
+     * the standard serialization process. The choice of ConcurrentHashMap ensures
+     * high concurrency for read-and-update operations.
+     */
     private transient ConcurrentHashMap<Double, java.util.concurrent.atomic.LongAdder> bestMultCounts =
             new ConcurrentHashMap<>();
-    // ---- make bw selection "global-per-target" for comparability across DAGs ----
+    /**
+     * A flag indicating whether bandwidth coupling is enabled by target.
+     *
+     * This variable is marked as volatile to ensure visibility across threads,
+     * allowing updates made by one thread to be immediately visible to others.
+     *
+     * By default, this flag is set to {@code true}.
+     */
     private volatile boolean bwCoupleByTarget = true;     // NEW: default true
-
-    // -------------------- reproducibility / feature coupling --------------------
     /**
      * Base ridge/noise knob. Used as sigma^2. Must be > 0.
      */
@@ -144,12 +225,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * Default is arbitrary but fixed.
      */
     private volatile long baseSeed = 0xC0FFEE1234ABCDL;
-
-    // -------------------- data --------------------
-//    /**
-//     * Bandwidth multiplier on the median heuristic (continuous part only).
-//     */
-//    private volatile double bandwidthMultiplier = 1.0;
     /**
      * If true (recommended), random features (W,b) are coupled by TARGET only.
      * This stabilizes localScoreDiff comparisons and usually fixes BOSS edge reversals.
@@ -971,10 +1046,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return bump > 0;
     }
 
-    /* ====================================================================== */
-    /* ======================  n×n kernel (fast for 2+)  ===================== */
-    /* ====================================================================== */
-
     /**
      * Retrieves the data model associated with this instance, encapsulating the
      * data used for computations or analysis in the current context.
@@ -984,10 +1055,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     public DataModel getDataModel() {
         return dataSet;
     }
-
-    /* ====================================================================== */
-    /* ===================  feature-space (your original)  =================== */
-    /* ====================================================================== */
 
     /**
      * Returns the effective sample size used in computations. The effective sample size
@@ -1026,24 +1093,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     public String toString() {
         return "FFML (continuous+categorical product-kernel)";
     }
-
-//    /**
-//     * Sets the bandwidth multiplier to adjust the data transfer rate.
-//     * The provided value must be greater than 0 and finite.
-//     *
-//     * @param bandwidthMultiplier the positive finite value to set as the bandwidth multiplier
-//     * @throws IllegalArgumentException if the provided bandwidthMultiplier is not greater than 0
-//     *                                  or is not a finite value
-//     */
-//    public void setBandwidthMultiplier(double bandwidthMultiplier) {
-//        if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
-//            throw new IllegalArgumentException("bandwidthMultiplier must be > 0");
-//        }
-//        this.bandwidthMultiplier = bandwidthMultiplier;
-//        resetCache();
-//    }
-
-    // -------------------- sigma-only case --------------------
 
     /**
      * Sets the value of the lambda parameter. The lambda parameter must be greater than 0.
@@ -1307,14 +1356,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             double sigma2,
             long seed
     ) {
-        // This is essentially your original gpLogMarginalLikelihoodRFFMixed,
-        // but with two small improvements:
-        //  (i) For 1 discrete parent, preallocate the Kronecker temp buffer once per call.
-        //  (ii) For 1 discrete parent, avoid building CatFeatureMap (Cholesky on L×L) by using
-        //       your existing buildCatMap code as-is (keeps exact same semantics).
-        //
-        // I kept your original computations for G, v, yTy, B=G+sigma2I, logdet, solves.
-
         final int dc = contParents.length;
 
         double[][] W = null;
