@@ -37,15 +37,8 @@ public class FfCi implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 24L;
-
-    // ---- fixed defaults (not exposed as GUI params) ----
     private static final int DEFAULT_BW_MAX_ROWS = 100;
-
-    // If you have strong preferences, set these explicitly.
-    // Otherwise, the first enum value is the safest “always exists” default.
     private static final FfCiContinuous.FeatureType DEFAULT_FEATURE_TYPE = FfCiContinuous.FeatureType.ORF;
-
-    // Only relevant when categories are present; pick your house default.
     private static final double DEFAULT_CAT_RHO = 0.5;
 
     /**
@@ -73,7 +66,6 @@ public class FfCi implements IndependenceWrapper {
 
         test.setAlpha(parameters.getDouble(Params.ALPHA));
 
-        // Single “numFeatures” knob: apply to XY and Z.
         test.setNumFeaturesXY(parameters.getInt(Params.RCIT_NUM_FEATURES_XY));
         test.setNumFeaturesZ(parameters.getInt(Params.RCIT_NUM_FEATURES_Z));
 
@@ -84,7 +76,6 @@ public class FfCi implements IndependenceWrapper {
                 = FfCiContinuous.Approx.values();
         test.setApproximation(approxes[parameters.getInt(Params.RCIT_APPROX) - 1]);
 
-        // Fixed / hidden knobs
         test.setBwMaxRows(DEFAULT_BW_MAX_ROWS);
         test.setFeatureType(DEFAULT_FEATURE_TYPE);
         test.setCatRho(DEFAULT_CAT_RHO);
