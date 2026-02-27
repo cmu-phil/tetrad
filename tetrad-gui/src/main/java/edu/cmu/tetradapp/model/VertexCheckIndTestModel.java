@@ -216,7 +216,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public void clearResults() {
         summariesByVertex.clear();
         resultsByVertex.clear();
-//        conditioningSetByVertex.clear();
         modelSummary = null;
     }
 
