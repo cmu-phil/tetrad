@@ -1305,7 +1305,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
 
                 if (parents.length == 0) {
                     // intercept-only: same as your current localFit() code
-                    double scaleHat = this.scale;
+                    double scaleHat;
 
                     double s2 = 0.0;
                     for (double v : y) s2 += v * v;
