@@ -12,7 +12,6 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
-import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
 import java.util.prefs.Preferences;
@@ -95,7 +94,7 @@ public class VertexRepairSearch implements IGraphSearch {
     private Knowledge knowledge;
     private Node x; // selected node (changes via dropdown)
     private Graph workingGraph;
-    private volatile JDialog watchDialog;
+
 
     public VertexRepairSearch(IndependenceTest test, Graph start, Knowledge knowledge,
                               ConditioningSetType conditioningSetType) {
@@ -346,12 +345,6 @@ public class VertexRepairSearch implements IGraphSearch {
         return intended != null && !intended.isEmpty();
     }
 
-    // ---------------------------------------------------------------------
-    // Auto model best: "do no harm" sweep that greedily takes the TOP
-    // table row for each node until the TOP row becomes NO-OP, then moves on.
-    // One sweep only.
-    // ---------------------------------------------------------------------
-
     private static boolean allIntendedNewEdgesPresent(Graph g, VertexRepairSearch.CandidateEdit cand) {
         if (g == null || cand == null) return false;
         List<Edge> intended = cand.getEdges();
@@ -590,9 +583,6 @@ public class VertexRepairSearch implements IGraphSearch {
         return workingGraph;
     }
 
-    /**
-     * Caller reads this violationsAfter dialog closes.
-     */
     public Graph getGraph() {
         return workingGraph;
     }
@@ -703,7 +693,6 @@ public class VertexRepairSearch implements IGraphSearch {
             mpAfterByKey.put(key, mpAfter);
         }
 
-        // Patch mpBefore/mpAfter into scored rows (mpBefore constant for this pack)
         {
             List<VertexRepairSearch.ScoredCandidate> patched = new ArrayList<>(scored.size());
             for (VertexRepairSearch.ScoredCandidate sc : scored) {
@@ -1711,14 +1700,8 @@ public class VertexRepairSearch implements IGraphSearch {
             return description();
         }
 
-        /**
-         * Legacy single-edge accessor.
-         */
         Edge getEdge();
 
-        /**
-         * New multi-edge accessor (defaults to singleton or empty).
-         */
         default List<Edge> getEdges() {
             Edge e = getEdge();
             return (e == null) ? List.of() : List.of(e);
