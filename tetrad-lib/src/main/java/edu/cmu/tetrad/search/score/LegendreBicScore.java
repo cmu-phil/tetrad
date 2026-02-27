@@ -44,8 +44,6 @@ import static java.lang.Math.*;
  */
 public final class LegendreBicScore implements Score, EffectiveSampleSizeSettable {
 
-    // -------------------- data --------------------
-
     private final boolean calculateRowSubsets;
     private final DataSet dataSet;
     private final List<Node> variables;
@@ -642,10 +640,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
 
         final int t = legendreDegree;
 
-//        final int D = cont.length * t;          // additive Legendre: t per cont parent
-//        final int Q = oh.totalCols;
-//        final int M = 1 + D + Q;               // intercept + legendre + one-hot
-
         final int D = cont.length * t;
 
         final int kInt = (useInteractions ? Math.min(cont.length, interactionMaxParents) : 0);
@@ -901,10 +895,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
 
         final int t = legendreDegree;
 
-//        final int D = cont.length * t;
-//        final int Q = oh.totalCols;
-//        final int M = 1 + D + Q;
-
         final int D = cont.length * t;
 
         final int kInt = (useInteractions ? Math.min(cont.length, interactionMaxParents) : 0);
@@ -1140,10 +1130,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         this.penaltyDiscount = penaltyDiscount;
         resetCache();
     }
-
-//    private void resetCache() {
-//        localScoreCacheRef.set(new ConcurrentHashMap<>());
-//    }
 
     private void resetCache() {
         localScoreCacheRef.set(new ConcurrentHashMap<>());
