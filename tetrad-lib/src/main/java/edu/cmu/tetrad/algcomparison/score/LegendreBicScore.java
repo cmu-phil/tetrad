@@ -1,5 +1,8 @@
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.annotation.Experimental;
+import edu.cmu.tetrad.annotation.General;
+import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -28,32 +31,32 @@ import java.util.List;
  * - minimaxLegendreIrlsIters (default 8)
  * - minimaxLegendreIrlsTol   (default 1e-6)
  */
-//@edu.cmu.tetrad.annotation.Score(
-//        name = "Minimax Legendre Score",
-//        command = "minimax-legendre-score",
-//        dataType = {DataType.Mi xed}
-//)
-//@General
-//@Mixed
-//@Experimental
+@edu.cmu.tetrad.annotation.Score(
+        name = "Legendre BIC Score",
+        command = "minimax-legendre-score",
+        dataType = {DataType.Mixed}
+)
+@General
+@Mixed
+@Experimental
 public class LegendreBicScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     /**
-     * Represents the dataset used within the Minimax Legendre scoring framework.
+     * Represents the dataset used within the Legendre BIC scoring framework.
      * The dataset must adhere to the {@code DataModel} interface, which allows for
      * the handling of diverse data types, including continuous, discrete, and mixed data.
      * This field serves as a core component for initializing and performing
-     * calculations related to the Minimax Legendre scoring methodology.
+     * calculations related to the Legendre BIC scoring methodology.
      */
     private DataModel dataSet;
 
     /**
      * Constructs a new instance of the MinimaxLegendreScore.
      * This is a score wrapper for calculating measures based on the
-     * Minimax Legendre properties, designed for specific applications
+     * Legendre BIC properties, designed for specific applications
      * involving mixed data types.
      * <p>
      * The class serves as an intermediary layer for initializing
@@ -64,7 +67,7 @@ public class LegendreBicScore implements ScoreWrapper {
 
     /**
      * Calculates and returns a scoring object based on the provided dataset and parameters.
-     * This implementation utilizes the Minimax Legendre scoring approach, allowing configuration
+     * This implementation utilizes the Legendre BIC scoring approach, allowing configuration
      * of key parameters such as degree, ridge, clip value, and penalty discount.
      *
      * @param dataSet    The dataset for which the score will be calculated. Must be an instance of {@code DataSet}.
@@ -90,7 +93,7 @@ public class LegendreBicScore implements ScoreWrapper {
                 new edu.cmu.tetrad.search.score.LegendreBicScore(ds);
 
         // ---- Keep exposed: Degree (t) ----
-        int degree = parameters.getInt(Params.MINIMAX_LEGENDRE_DEGREE);
+        int degree = parameters.getInt(Params.LEGENDRE_DEGREE);
         if (degree <= 0) degree = 8;
         score.setLegendreDegree(degree);
 
@@ -121,7 +124,7 @@ public class LegendreBicScore implements ScoreWrapper {
     }
 
     /**
-     * Provides a description for the Minimax Legendre BIC score with mixed data.
+     * Provides a description for the Legendre BIC score with mixed data.
      *
      * @return a string representing the description of the Minimax Legendre BIC score for mixed data
      */
@@ -131,7 +134,7 @@ public class LegendreBicScore implements ScoreWrapper {
     }
 
     /**
-     * Retrieves the data type associated with the Minimax Legendre score.
+     * Retrieves the data type associated with the Legendre BIC score.
      * This method determines whether the data type is continuous, discrete,
      * or mixed based on the nature of the variables in the dataset.
      *
@@ -143,12 +146,12 @@ public class LegendreBicScore implements ScoreWrapper {
     }
 
     /**
-     * Retrieves a list of parameter names required for the Minimax Legendre score computations.
+     * Retrieves a list of parameter names required for the Legendre BIC score computations.
      * These parameters are used to configure various aspects of the scoring process, including
      * degree, clipping level, ridge value, effective sample size, and penalty discount.
      *
      * @return a list of parameter names as strings, including:
-     * - MINIMAX_LEGENDRE_DEGREE: Degree parameter for minimax legendre calculations.
+     * - MINIMAX_LEGENDRE_DEGREE: Degree parameter for legendre BIC calculations.
      * - MINIMAX_LEGENDRE_CLIP: Clip level used during computations.
      * - MINIMAX_LEGENDRE_RIDGE: Ridge value for regularization.
      * - PENALTY_DISCOUNT: Penalty discount applied in score calculations.
@@ -157,7 +160,7 @@ public class LegendreBicScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> p = new ArrayList<>();
-        p.add(Params.MINIMAX_LEGENDRE_DEGREE);
+        p.add(Params.LEGENDRE_DEGREE);
 //        p.add(Params.MINIMAX_LEGENDRE_CLIP);
 //        p.add(Params.MINIMAX_LEGENDRE_RIDGE);
         p.add(Params.PENALTY_DISCOUNT_DEFAULT_1);

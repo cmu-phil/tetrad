@@ -73,12 +73,12 @@ public final class LegendreLrIndTest implements IndependenceWrapper {
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
 
         // If you’ve defined these Params, wire them; otherwise delete these blocks.
-        score.setLegendreDegree(parameters.getInt(Params.MINIMAX_LEGENDRE_DEGREE));
-        score.setLegendreClip(parameters.getDouble(Params.MINIMAX_LEGENDRE_CLIP));
+        score.setLegendreDegree(parameters.getInt(Params.LEGENDRE_DEGREE));
+        score.setLegendreClip(parameters.getDouble(Params.LEGENDRE_CLIP));
         score.setRidge(parameters.getDouble(Params.MINIMAX_RIDGE));
-        score.setNu(parameters.getDouble(Params.MINIMAX_LEGENDRE_NU));
+        score.setNu(parameters.getDouble(Params.LEGENDRE_NU));
         score.setIrlsIters(parameters.getInt(Params.MINIMAX_IRLS_ITERS));
-        score.setIrlsTol(parameters.getDouble(Params.MINIMAX_LEGENDRE_IRLS_TOL));
+        score.setIrlsTol(parameters.getDouble(Params.LEGENDRE_IRLS_TOL));
 
         score.setUseInteractions(true);
         score.setInteractionMaxParents(3);
@@ -102,7 +102,7 @@ public final class LegendreLrIndTest implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "Minimax Legendre LR";
+        return "Legendre LR";
     }
 
     @Override
@@ -119,10 +119,10 @@ public final class LegendreLrIndTest implements IndependenceWrapper {
         p.add(Params.EFFECTIVE_SAMPLE_SIZE);
 
         // Optional score/test knobs — include only if you actually define these Params
-        p.add(Params.MINIMAX_LEGENDRE_DEGREE);
-        p.add(Params.MINIMAX_LEGENDRE_CLIP);
-        p.add(Params.MINIMAX_LEGENDRE_RIDGE);
-        p.add(Params.MINIMAX_LEGENDRE_NU);
+        p.add(Params.LEGENDRE_DEGREE);
+        p.add(Params.LEGENDRE_CLIP);
+        p.add(Params.LEGENDRE_RIDGE);
+        p.add(Params.LEGENDRE_NU);
         p.add(Params.MINIMAX_IRLS_ITERS);
         p.add(Params.MINIMAX_IRLS_ITERS);
 

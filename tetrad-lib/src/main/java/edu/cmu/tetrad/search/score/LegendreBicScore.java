@@ -411,7 +411,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
     @Override
     public double localScore(int i, int... parents) {
         LocalFit fit = localFit(i, parents);
-        if (!Double.isFinite(fit.logLik) || !Double.isFinite(fit.edf) || fit.nUsed < 10) return Double.NaN;
+        if (!Double.isFinite(fit.logLik) || !Double.isFinite(fit.edf) || fit.nUsed < 5) return Double.NaN;
         return fit.logLik - 0.5 * penaltyDiscount * fit.edf * Math.log(fit.nUsed);
     }
 

@@ -1305,36 +1305,36 @@ public final class Params {
      */
     public static final String GCM_RFF_SIGMA = "gcmRffSigma";
     /**
-     * Constant <code>MINIMAX_LEGENDRE_DEGREE="minimaxLegendreDegree"</code> Degree of the Legendre polynomial used in
-     * the Minimax Legendre scoring methodology.
+     * Constant <code>LEGENDRE_DEGREE="minimaxLegendreDegree"</code> Degree of the Legendre polynomial used in
+     * the MLegendre BIC scoring methodology.
      */
-    public static final String MINIMAX_LEGENDRE_DEGREE = "minimaxLegendreDegree";
+    public static final String LEGENDRE_DEGREE = "minimaxLegendreDegree";
     /**
-     * Constant <code>MINIMAX_LEGENDRE_CLIP="minimaxLegendreClip"</code> Clip value for the Minimax Legendre scoring
+     * Constant <code>MINIMAX_LEGENDRE_CLIP="minimaxLegendreClip"</code> Clip value for the Legendre BIC scoring
      * methodology.
      */
-    public static final String MINIMAX_LEGENDRE_CLIP = "minimaxLegendreClip";
+    public static final String LEGENDRE_CLIP = "minimaxLegendreClip";
     /**
      * Constant <code>MINIMAX_LEGENDRE_RIDGE="minimaxLegendreRidge"</code> Ridge parameter for the Minimax Legendre
      * scoring methodology.
      */
-    public static final String MINIMAX_LEGENDRE_RIDGE = "minimaxLegendreRidge";
+    public static final String LEGENDRE_RIDGE = "minimaxLegendreRidge";
     /**
-     * Constant <code>MINIMAX_LEGENDRE_RFF_FEATURES="minimaxLegendreRffFeatures"</code> Number
+     * Constant <code>LEGENDRE_RFF_FEATURES="minimaxLegendreRffFeatures"</code> Number
      */
-    public static final String MINIMAX_LEGENDRE_NU = "minimaxLegendreNu";
+    public static final String LEGENDRE_NU = "minimaxLegendreNu";
     /**
-     * Constant <code>MINIMAX_LEGENDRE_RFF_SIGMA="minimaxLegendreRffSigma"</code>
+     * Constant <code>LEGENDRE_RFF_SIGMA="minimaxLegendreRffSigma"</code>
      */
-    public static final String MINIMAX_LEGENDRE_IRLS_ITERS = "minimaxLegendreIrlsIters";
+    public static final String LEGENDRE_IRLS_ITERS = "minimaxLegendreIrlsIters";
     /**
-     * Constant <code>MINIMAX_LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
+     * Constant <code>LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
      */
-    public static final String MINIMAX_LEGENDRE_IRLS_TOL = "minimaxLegendreIrlsTol";
+    public static final String LEGENDRE_IRLS_TOL = "minimaxLegendreIrlsTol";
     /**
-     * Constant <code>MINIMAX_LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
+     * Constant <code>LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
      */
-    public static final String MINIMAX_LEGENDRE_INIT_SCALE = "minimaxLegendreInitScale";
+    public static final String LEGENDRE_INIT_SCALE = "minimaxLegendreInitScale";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
