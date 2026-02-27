@@ -1803,10 +1803,6 @@ public class VertexRepairSearch implements IGraphSearch {
             fireTableDataChanged();
         }
 
-        VertexRepairSearch.CandidateEdit getCandidate(int row) {
-            return rows.get(row).edit();
-        }
-
         @Override
         public int getRowCount() {
             return rows.size();
