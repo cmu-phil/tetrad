@@ -14,12 +14,7 @@ import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
-import java.awt.*;
-import java.text.DecimalFormat;
 import java.util.*;
-import java.util.List;
 import java.util.prefs.Preferences;
 
 public class VertexRepairSearch implements IGraphSearch {
@@ -89,39 +84,18 @@ public class VertexRepairSearch implements IGraphSearch {
         // 8) Stable tie-break
         return stableTieBreak(a, b);
     };
-    private static final String CARD_TABLE = "table";
-    private static final String CARD_NONE = "none";
-    private static final DecimalFormat MODEL_P_FORMAT = new DecimalFormat("0.0000");
     private static final int DEFAULT_MODELP_TOP_K = 25;
-    // ---- Preferences (persist α and model-P top-K) ----
     private static final Preferences PREFS = Preferences.userRoot().node("edu/cmu/tetradapp/editor/VertexRepairPanel");
     private static final String PREF_ALPHA = "markovAlpha";
-    private static final double EPS_NODEP = 1e-6;
     private final CachedIndependenceQueries Q;
     private final IndependenceTest test;
     private final Graph start;
     private final ConditioningSetType conditioningSetType;
-    // -------------------- move classification --------------------
-// Prefer SIMPLE reorientation (single-edge REP:) over collider moves (multi-edge).
-// We also treat collider moves as their own type so we can *penalize* them.
-    private final Deque<Graph> history = new ArrayDeque<>();
-    // UI
-    private final JButton searchButton = new JButton();              // label set violationsAfter x is known
-    private final JButton modelBestButton = new JButton("Node Sweep");
-    // -------------------- numeric helpers --------------------
-    private final JButton backButton = new JButton("Undo");
-    private final JButton showGraphButton = new JButton("Graph");
-    private final JLabel statusLabel = new JLabel(" ");
-    private final JTable resultsTable = new JTable();
-    private final CandidateTableModel resultsModel = new CandidateTableModel();
-    private final JPanel resultsCard = new JPanel(new CardLayout());
-    private final JComboBox<Node> nodeCombo = new JComboBox<>();
+    private final boolean useAndersonDarling = false;
     private Knowledge knowledge;
     private Node x; // selected node (changes via dropdown)
     private Graph workingGraph;
-    private volatile SwingWorker<?, ?> activeWorker;
     private volatile JDialog watchDialog;
-    private boolean useAndersonDarling = false;
 
     public VertexRepairSearch(IndependenceTest test, Graph start, Knowledge knowledge,
                               ConditioningSetType conditioningSetType) {
@@ -316,21 +290,6 @@ public class VertexRepairSearch implements IGraphSearch {
         return new ArrayList<>(seen.values());
     }
 
-    private static TableCellRenderer modelPRenderer() {
-        return new DefaultTableCellRenderer() {
-            @Override
-            public void setValue(Object value) {
-                if (value instanceof Number n) {
-                    double d = n.doubleValue();
-                    setText(Double.isNaN(d) ? "" : MODEL_P_FORMAT.format(d));
-                    setHorizontalAlignment(SwingConstants.RIGHT);
-                } else {
-                    setText("");
-                }
-            }
-        };
-    }
-
     // Helpers used above (if you don't already have them)
     private static String graphSignature(Graph g) {
         if (g == null) return "null";
@@ -345,10 +304,6 @@ public class VertexRepairSearch implements IGraphSearch {
         return String.join("|", es);
     }
 
-    // ---------------------------------------------------------------------
-    // UI
-    // ---------------------------------------------------------------------
-
     private static String fmtP(double p) {
         if (Double.isNaN(p)) return "NaN";
         return String.format("%.4g", p);
@@ -362,10 +317,6 @@ public class VertexRepairSearch implements IGraphSearch {
         if (e == null || n == null) return null;
         return e.getEndpoint(n);
     }
-
-    // ---------------------------------------------------------------------
-    // Search logic (watched, background)
-    // ---------------------------------------------------------------------
 
     // True iff graph contains an edge between the same named endpoints with the same endpoint types.
     private static boolean containsStructuralEdge(Graph g, Edge template) {
@@ -457,27 +408,6 @@ public class VertexRepairSearch implements IGraphSearch {
         return dag.paths().isLegalDag() ? dag : null;
     }
 
-//    private static Edge rebindEdgeToGraph(Graph g, Edge e) {
-//        if (g == null || e == null) return null;
-//
-//        Node a0 = e.getNode1();
-//        Node b0 = e.getNode2();
-//        if (a0 == null || b0 == null) return null;
-//
-//        String an = a0.getName();
-//        String bn = b0.getName();
-//        if (an == null || bn == null) return null;
-//
-//        Node a = g.getNode(an);
-//        Node b = g.getNode(bn);
-//        if (a == null || b == null) return null;
-//
-//        // Preserve endpoint-at-node semantics, regardless of node order
-//        Endpoint ea = e.getEndpoint(a0);
-//        Endpoint eb = e.getEndpoint(b0);
-//        return new Edge(a, b, ea, eb);
-//    }
-
     // Accept if:
     //  (A) violations decrease, OR
     //  (B) violations tie and edges decrease, OR
@@ -507,8 +437,6 @@ public class VertexRepairSearch implements IGraphSearch {
         return false;
     }
 
-    // NEW helper: used only as a cheap DAG pre-prune.
-    // If this method name doesn't match your Tetrad version, adjust to the right GraphPaths API.
     private static boolean hasDirectedPath(Graph g, Node from, Node to) {
         if (g == null || from == null || to == null) return false;
         try {
@@ -518,12 +446,6 @@ public class VertexRepairSearch implements IGraphSearch {
             return false;
         }
     }
-
-    // ---------------------------------------------------------------------
-    // Auto model best: "do no harm" sweep that greedily takes the TOP
-    // table row for each node until the TOP row becomes NO-OP, then moves on.
-    // One sweep only.
-    // ---------------------------------------------------------------------
 
     private static double getKolomogorovP(List<Double> pvals) {
         double[] x = pvals.stream().mapToDouble(Double::doubleValue).toArray();
@@ -541,88 +463,6 @@ public class VertexRepairSearch implements IGraphSearch {
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
         return generalAndersonDarlingTest.getP();
     }
-
-//    @Override
-//    public Graph search() throws InterruptedException {
-//        this.workingGraph = safeCopy(this.start);
-//        if (this.workingGraph == null) return null;
-//
-//        final RepairGraphType gt = RepairGraphType.CPDAG;
-//
-//        // Canonicalize once up front (keeps invariants stable).
-//        this.workingGraph = canonicalizeToCpdagOrNull(this.workingGraph);
-//        if (this.workingGraph == null) return null;
-//
-//        int editsApplied = 0;
-//
-//        final int MAX_EDITS = 500;            // global safety cap
-//        final int MAX_STEPS_PER_NODE = 4;     // <-- YOUR knob: max accepted moves per node per sweep
-//        final int MAX_SWEEPS = 50;            // safety cap for repeat-until-fixed-point
-//
-//        int sweep = 0;
-//
-//        while (!Thread.currentThread().isInterrupted() && editsApplied < MAX_EDITS) {
-//            sweep++;
-//            if (sweep > MAX_SWEEPS) break;
-//
-//            final String sweepStartSig = graphSignature(this.workingGraph);
-//            int editsThisSweep = 0;
-//
-//            // Node iteration order for this sweep.
-//            // (Panel-ish stable order; change here if you want worst-first by nodeP.)
-//            List<Node> nodes = new ArrayList<>(this.workingGraph.getNodes());
-//            nodes.sort(Comparator.comparing(Node::getName,
-//                    Comparator.nullsLast(NATURAL_NAME_COMPARATOR)));
-//
-//            for (Node v0 : nodes) {
-//                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-//                if (editsApplied >= MAX_EDITS) break;
-//
-//                if (v0 == null || v0.getName() == null) continue;
-//
-//                Node center = this.workingGraph.getNode(v0.getName());
-//                if (center == null) continue;
-//
-//                int nodeSteps = 0;
-//
-//                // Up to MAX_STEPS_PER_NODE accepted moves for this node this sweep.
-//                while (nodeSteps < MAX_STEPS_PER_NODE && editsApplied < MAX_EDITS) {
-//                    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-//
-//                    // Refresh center in case graph replacement changed node instances.
-//                    center = this.workingGraph.getNode(center.getName());
-//                    if (center == null) break;
-//
-//                    SearchPack pack = computeCandidatesForNode(this.workingGraph, center, gt);
-//                    if (pack == null || pack.scored() == null || pack.scored().isEmpty()) break;
-//
-//                    List<ScoredCandidate> ranked = new ArrayList<>(pack.scored());
-//                    ranked.sort(CANONICAL_TABLE_ORDER);
-//
-//                    ScoredCandidate top = ranked.getFirst();
-//                    if (top == null || top.edit() == null || top.edit().isNoOp()) break;
-//
-//                    // TOP-only policy: if TOP can't be applied, stop this node for this sweep.
-//                    Graph next = applyCandidateHeadless(this.workingGraph, top, gt);
-//                    if (next == null) break;
-//
-//                    // Commit
-//                    this.workingGraph = next;
-//                    editsApplied++;
-//                    editsThisSweep++;
-//                    nodeSteps++;
-//                }
-//            }
-//
-//            final String sweepEndSig = graphSignature(this.workingGraph);
-//
-//            // Fixed point if nothing changed this sweep (or signature unchanged).
-//            if (editsThisSweep == 0 || sweepEndSig.equals(sweepStartSig)) break;
-//        }
-//
-//        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-//        return this.workingGraph;
-//    }
 
     public Graph search() throws InterruptedException {
         return search(this.start, RepairGraphType.CPDAG, 4, 50, 500);
@@ -748,28 +588,6 @@ public class VertexRepairSearch implements IGraphSearch {
         }
 
         return workingGraph;
-    }
-
-    /**
-     * If your tryMoveWithGuards/applyCandidateInternal mutates a field like `workingGraph`,
-     * use that field here; otherwise, just `return current;`.
-     */
-    private Graph getCurrentWorkingGraphOr(Graph current) {
-        return (this.workingGraph != null) ? this.workingGraph : current;
-    }
-
-    private Node resolveInitialNode(Graph g, Node requested) {
-        if (g == null) return requested; // nothing better we can do
-        List<Node> nodes = new ArrayList<>(g.getNodes());
-        nodes.sort(Comparator.comparing(Node::getName, Comparator.nullsLast(String::compareTo)));
-
-        if (nodes.isEmpty()) return requested;
-
-        // if null or not in graph, choose first node
-        if (requested == null || requested.getName() == null) return nodes.getFirst();
-
-        Node inGraph = g.getNode(requested.getName());
-        return (inGraph != null) ? inGraph : nodes.getFirst();
     }
 
     /**
@@ -909,7 +727,7 @@ public class VertexRepairSearch implements IGraphSearch {
         {
             List<VertexRepairSearch.ScoredCandidate> patched2 = new ArrayList<>(scored.size());
             for (VertexRepairSearch.ScoredCandidate sc : scored) {
-                boolean ok = wouldPassGuards(base, center, sc, gt);
+                boolean ok = wouldPassGuards(base, sc, gt);
 
                 patched2.add(new VertexRepairSearch.ScoredCandidate(
                         sc.edit(),
@@ -927,25 +745,6 @@ public class VertexRepairSearch implements IGraphSearch {
 
         return new SearchPack(center.getName(), baseline, scored);
     }
-
-    // ---------------------------------------------------------------------
-    // Knowledge
-    // ---------------------------------------------------------------------
-
-    /**
-     * One sweep over nodes. For each node, repeatedly:
-     * - compute the candidate table for that node (same 2-pass scoring behavior as UI),
-     * - sort exactly like the JTable,
-     * - take the top row,
-     * - apply it (guarded: progress + do-no-harm),
-     * until the top row is "No change" (or no applicable move), then advance to next node.
-     * <p>
-     * Stops violationsAfter one pass through the nodes (no outer repetition).
-     */
-
-    // ---------------------------------------------------------------------
-    // Cached CI access
-    // ---------------------------------------------------------------------
 
     private List<VertexRepairSearch.CandidateEdit> enumerateCandidates(Graph g, Node x, RepairGraphType gt) {
         if (g == null || x == null) return List.of(VertexRepairSearch.CandidateEdit.noOp());
@@ -997,10 +796,6 @@ public class VertexRepairSearch implements IGraphSearch {
         return dedupCandidateEdits(out);
     }
 
-    // ---------------------------------------------------------------------
-// NEW: Enumerate multi-edge incident-orientation pattern moves around x.
-// Idea: sometimes you need to flip a *set* of incident edges together.
-// ---------------------------------------------------------------------
     private List<VertexRepairSearch.CandidateEdit> enumerateIncidentOrientationPatternMoves(Graph g, Node x, RepairGraphType gt) {
         if (g == null || x == null) return List.of();
 
@@ -1271,10 +1066,6 @@ public class VertexRepairSearch implements IGraphSearch {
         return adds;
     }
 
-    // ---------------------------------------------------------------------
-    // Preferences
-    // ---------------------------------------------------------------------
-
     private Graph canonicalizeToCpdagOrNull(Graph h) {
         if (h == null) return null;
 
@@ -1336,10 +1127,6 @@ public class VertexRepairSearch implements IGraphSearch {
         }
     }
 
-    // ---------------------------------------------------------------------
-    // Worker/watch dialog
-    // ---------------------------------------------------------------------
-
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = (knowledge == null) ? new Knowledge() : knowledge;
 
@@ -1366,18 +1153,12 @@ public class VertexRepairSearch implements IGraphSearch {
         Node v = g.getNode(vertexInOriginalGraph.getName());
         if (v == null) return Double.NaN;
 
-        ConditioningSetType type = this.conditioningSetType;
-
-        List<IndependenceFact> facts = MarkovCheck.computeImpliedFactsForVertex(g, v, type);
+        List<IndependenceFact> facts = MarkovCheck.computeImpliedFactsForVertex(g, v, this.conditioningSetType);
         if (facts.isEmpty()) return Double.NaN;
 
         List<Double> pvals = Q.pValuesForFacts(facts, CachedIndependenceQueries.Dedup.WITHIN_INPUT);
         return getUniformityP(pvals);
     }
-
-    // ---------------------------------------------------------------------
-    // Types
-    // ---------------------------------------------------------------------
 
     public double getUniformityP(List<Double> pvals) {
         if (pvals == null || pvals.size() < 2) return Double.NaN;
@@ -1392,9 +1173,7 @@ public class VertexRepairSearch implements IGraphSearch {
     private GraphEval evalGraphOnce(Graph g) {
         if (g == null) return new GraphEval(0, Double.NaN, 0);
 
-        ConditioningSetType type = this.conditioningSetType;
-
-        List<IndependenceFact> facts = MarkovCheck.computeAllImpliedFacts(g, type);
+        List<IndependenceFact> facts = MarkovCheck.computeAllImpliedFacts(g, this.conditioningSetType);
         if (facts.isEmpty()) return new GraphEval(0, Double.NaN, 0);
 
         List<CachedIndependenceQueries.Eval> evals =
@@ -1416,9 +1195,7 @@ public class VertexRepairSearch implements IGraphSearch {
     private int evalViolationsOnly(Graph g) {
         if (g == null) return 0;
 
-        ConditioningSetType type = this.conditioningSetType;
-
-        List<IndependenceFact> facts = MarkovCheck.computeAllImpliedFacts(g, type);
+        List<IndependenceFact> facts = MarkovCheck.computeAllImpliedFacts(g, this.conditioningSetType);
         if (facts.isEmpty()) return 0;
 
         List<CachedIndependenceQueries.Eval> evals =
@@ -1450,9 +1227,7 @@ public class VertexRepairSearch implements IGraphSearch {
         Node v = g.getNode(vInGraph.getName());
         if (v == null) return new VertexContribution(Map.of(), Map.of());
 
-        ConditioningSetType type = this.conditioningSetType;
-
-        List<IndependenceFact> facts = MarkovCheck.computeImpliedFactsForVertex(g, v, type);
+        List<IndependenceFact> facts = MarkovCheck.computeImpliedFactsForVertex(g, v, this.conditioningSetType);
         if (facts.isEmpty()) return new VertexContribution(Map.of(), Map.of());
 
         Map<String, Boolean> viol = new HashMap<>();
@@ -1601,48 +1376,8 @@ public class VertexRepairSearch implements IGraphSearch {
         return affected;
     }
 
-    private void closeWatchDialog() {
-        JDialog dlg = this.watchDialog;
-        this.watchDialog = null;
-        if (dlg != null) dlg.dispose();
-    }
-
     private boolean stopRequested() {
-        SwingWorker<?, ?> w = activeWorker;
-        return (w != null && w.isCancelled()) || Thread.currentThread().isInterrupted();
-    }
-
-    private boolean tryMoveWithGuards(Graph base, VertexRepairSearch.ScoredCandidate sc, RepairGraphType gt) {
-        if (sc == null || sc.edit() == null || sc.edit().isNoOp()) return false;
-
-        VertexRepairSearch.CandidateEdit edit = sc.edit();
-
-        int currentEdges = base.getNumEdges();
-        Graph cand = buildCandidateGraph(base, edit, gt);
-        if (cand == null) {
-            vlog("Rejected: buildCandidateGraph returned null.");
-            return false;
-        }
-
-        // Use the SAME numbers the table computed.
-        int baselineViol = sc.violationsBaseline();
-        int afterViol = sc.violationsAfter();
-        int afterEdges = sc.edgesAfter();
-
-        double mpBefore = sc.modelPBefore();
-        double mpAfter = sc.modelPAfter();
-
-        // Option 2: stored guard decision is authoritative.
-        if (!sc.passesGuards()) {
-            vlog("Rejected: fails guards (violationsBaseline=%d violationsAfter=%d edges %d->%d modelP %s->%s).",
-                    baselineViol, afterViol, currentEdges, afterEdges, fmtP(mpBefore), fmtP(mpAfter));
-            return false;
-        }
-
-        vlog("Attempting guarded move: %s", edit.description());
-        boolean ok = applyCandidateInternal(edit, RepairGraphType.CPDAG);
-        vlog(ok ? "APPLIED successfully" : "Rejected (no change)");
-        return ok;
+        return Thread.currentThread().isInterrupted();
     }
 
     /**
@@ -1693,51 +1428,7 @@ public class VertexRepairSearch implements IGraphSearch {
         return true;
     }
 
-    // ---------------------------------------------------------------------
-    // Table-order aware comparators (match the JTable ordering)
-    // ---------------------------------------------------------------------
-
-//    private Graph applyCandidateHeadless(Graph base, CandidateEdit cand, RepairGraphType gt) {
-//        if (base == null || cand == null || cand.isNoOp()) return null;
-//
-//        Graph g2 = cand.applyTo(safeCopy(base));
-//        if (g2 == null) return null;
-//
-//        if (gt == RepairGraphType.CPDAG) {
-//            g2 = canonicalizeToCpdagOrNull(g2);
-//            if (g2 == null) return null;
-//        }
-////        else if (gt == RepairGraphType.PAG) {
-////            // etc
-////        }
-//
-//        if (g2.equals(base)) return null;
-//        if (requiresEdgePresenceCheck(cand) && !allIntendedNewEdgesPresent(g2, cand)) return null;
-//        if (!isLegalGraphType(g2, gt)) return null;
-//
-//        return g2;
-//    }
-
-    private Graph applyCandidateHeadless(Graph base, ScoredCandidate sc, RepairGraphType gt) {
-        if (base == null || sc == null || sc.edit() == null || sc.edit().isNoOp()) return null;
-        if (!sc.passesGuards()) return null;
-
-        // Must match candidate-building semantics used in scoring:
-        Graph cand = buildCandidateGraph(base, sc.edit(), gt);
-        if (cand == null) return null;
-        if (cand.equals(base)) return null;
-
-        return cand;
-    }
-
-    /// /        // Progress gate
-    /// /        if (!isProgress(baselineViol, afterViol, currentEdges, afterEdges)) {
-    /// /            vlog("Rejected: not progress (violationsBaseline=%d violationsAfter=%d edges %d->%d).",
-    /// /                    baselineViol, afterViol, currentEdges, afterEdges);
-    /// /            return false;
-    /// /        }
-//
-    private boolean wouldPassGuards(Graph base, Node center, VertexRepairSearch.ScoredCandidate sc, RepairGraphType gt) {
+    private boolean wouldPassGuards(Graph base, ScoredCandidate sc, RepairGraphType gt) {
         if (sc == null || sc.edit() == null || sc.edit().isNoOp()) return false;
 
         int currentEdges = base.getNumEdges();
@@ -2034,36 +1725,6 @@ public class VertexRepairSearch implements IGraphSearch {
         }
     }
 
-
-//    private boolean tryMoveWithGuards(Graph base, Node center, VertexRepairSearch.CandidateEdit edit, RepairGraphType gt) {
-//        if (edit == null || edit.isNoOp()) return false;
-//
-//        int currentEdges = base.getNumEdges();
-//
-//        // Build candidate graph exactly the same way as candidate evaluation does
-//        Graph cand = buildCandidateGraph(base, edit, gt);
-//        if (cand == null) {
-//            vlog("Rejected: buildCandidateGraph returned null.");
-//            return false;
-//        }
-//
-//        // Use the same violationsBaseline notion you're using in pack
-//        int baselineViol = evalViolationsOnly(base);
-//        int afterViol    = evalViolationsOnly(cand);
-//        int afterEdges   = cand.getNumEdges();
-//
-//        // NEW: model-p comparison
-//        double mpBefore = evalGraphOnce(base).modelP();
-//        double mpAfter  = evalGraphOnce(cand).modelP();
-//
-//        // Progress gate (now includes Model-P improvements when violations/edges tie)
-//        if (!isProgress(baselineViol, afterViol, currentEdges, afterEdges, mpBefore, mpAfter)) {
-//            vlog("Rejected: not progress (violationsBaseline=%d violationsAfter=%d edges %d->%d modelP %s->%s).",
-//                    baselineViol, afterViol, currentEdges, afterEdges, fmtP(mpBefore), fmtP(mpAfter));
-//            return false;
-//        }
-//
-
     private static final class NaturalKey implements Comparable<NaturalKey> {
         final String prefix;
         final Integer suffix;   // null if no numeric suffix
@@ -2199,98 +1860,6 @@ public class VertexRepairSearch implements IGraphSearch {
         }
     }
 
-    private static final class ButtonRenderer extends JButton implements TableCellRenderer {
-        ButtonRenderer() {
-            setOpaque(true);
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                                                       boolean isSelected, boolean hasFocus,
-                                                       int row, int column) {
-            setText(value == null ? "" : value.toString());
-            setEnabled(value != null && !value.toString().isEmpty());
-            return this;
-        }
-    }
-
-    // ---------------------------------------------------------------------
-    // Canonical table ordering (single source of truth)
-    // Matches applySortAndFilter() intent:
-    //   Model-P DESC (NaN last), Δ ASC, Edges ASC, Node-P DESC (NaN last), stable tiebreak
-    // ---------------------------------------------------------------------
-
-    private static final class ButtonEditor extends DefaultCellEditor {
-        private final JButton button = new JButton();
-        private int editingRow = -1;
-
-        ButtonEditor(RowAction onClick) {
-            super(new JTextField());
-
-            button.setBackground(Color.WHITE);
-            setClickCountToStart(1);
-
-            button.addActionListener(e -> {
-                final int row = editingRow;
-                fireEditingStopped();
-                SwingUtilities.invokeLater(() -> onClick.run(row));
-            });
-        }
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value,
-                                                     boolean isSelected, int row, int column) {
-            this.editingRow = row;
-            button.setText(value == null ? "" : value.toString());
-            button.setEnabled(value != null && !value.toString().isEmpty());
-            return button;
-        }
-
-        @Override
-        public Object getCellEditorValue() {
-            return button.getText();
-        }
-
-        interface RowAction {
-            void run(int row);
-        }
-    }
-
-//    private static final Comparator<VertexRepairSearch.ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
-//        if (a == null && b == null) return 0;
-//        if (a == null) return 1;
-//        if (b == null) return -1;
-//
-//        int c;
-//
-//        // Model-P DESC (NaN last)
-//        c = comparePDescNaNLast(a.modelPAfter(), b.modelPAfter());
-//        if (c != 0) return c;
-//
-//        // Δ ASC
-//        c = Integer.compare(a.delta(), b.delta());
-//        if (c != 0) return c;
-//
-//        // Edges ASC
-//        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
-//        if (c != 0) return c;
-//
-//        // Node-P DESC (NaN last)
-//        c = comparePDescNaNLast(a.nodePAfter(), b.nodePAfter());
-//        if (c != 0) return c;
-//
-//        // Stable tie-breaker (prevents jitter)
-//        String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
-//        String kb = (b.edit() == null || b.edit().key() == null) ? "" : b.edit().key();
-//        c = ka.compareTo(kb);
-//        if (c != 0) return c;
-//
-//        // Last-ditch stable tie-breaker
-//        String da = (a.edit() == null) ? "" : a.edit().description();
-//        String db = (b.edit() == null) ? "" : b.edit().description();
-//        return da.compareTo(db);
-//    };
-
     private record GraphEval(int violations, double modelP, int nFacts) {
     }
 
@@ -2347,5 +1916,4 @@ public class VertexRepairSearch implements IGraphSearch {
             return dag.paths().isLegalDag() ? dag : null;
         }
     }
-
 }
