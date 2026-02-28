@@ -483,6 +483,7 @@
             conditioningCombo.addItem("Parents(X) and Neighbors(X)");
             conditioningCombo.addItem("Ordered Local Markov (MAG)");
             conditioningCombo.addItem("Recursive Blocking");
+            conditioningCombo.addItem("Recursive Adjustment");
             conditioningCombo.setPreferredSize(new Dimension(220, 24));
             controls.add(conditioningCombo);
 
@@ -960,6 +961,7 @@
                 case "MarkovBlanket(X)" -> ConditioningSetType.MARKOV_BLANKET;
                 case "Ordered Local Markov (MAG)" -> ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG;
                 case "Recursive Blocking" -> ConditioningSetType.RECURSIVE_BLOCKING;
+                case "Recursive Adjustment" -> ConditioningSetType.RECURSIVE_ADJUSTMENT;
                 default -> ConditioningSetType.MARKOV_BLANKET;
             };
         }

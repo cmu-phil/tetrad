@@ -66,6 +66,12 @@ public enum ConditioningSetType {
     RECURSIVE_BLOCKING,
 
     /**
+     * Conditioning on variables in the recursive order of a depth-first M-separation search. Some independence facts
+     * obtained in this way may be for implied dependencies.
+     */
+    RECURSIVE_ADJUSTMENT,
+
+    /**
      * Conditioning on noncolliders only. Some independence facts obtained in this way may be for implied dependencies.
      * This is equivalent to the "noncolliders only" option in the PC algorithm.
      */

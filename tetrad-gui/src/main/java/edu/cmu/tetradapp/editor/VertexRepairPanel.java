@@ -141,17 +141,7 @@ public final class VertexRepairPanel extends JPanel {
             return stableTieBreak(a, b);
         }
 
-        // 1) Δ violations (more negative is better)
-        int c = Integer.compare(a.delta(), b.delta()); // ASC
-        if (c != 0) return c;
-
-        // 2) Fewer edges preferred
-        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
-        if (c != 0) return c;
-
-        // 3) Smaller edit size preferred (single-edge before multi-edge)
-        c = Integer.compare(editSize(a), editSize(b));
-        if (c != 0) return c;
+        int c;
 
         // 4) Node-P: FINITE first, then log-odds DESC
         c = finiteFirst(a.nodePAfter(), b.nodePAfter());
@@ -160,6 +150,18 @@ public final class VertexRepairPanel extends JPanel {
         double npA = nodeLogOdds(a);
         double npB = nodeLogOdds(b);
         c = -Double.compare(npA, npB);
+        if (c != 0) return c;
+
+        // 1) Δ violations (more negative is better)
+        c = Integer.compare(a.delta(), b.delta()); // ASC
+        if (c != 0) return c;
+
+        // 2) Fewer edges preferred
+        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+        if (c != 0) return c;
+
+        // 3) Smaller edit size preferred (single-edge before multi-edge)
+        c = Integer.compare(editSize(a), editSize(b));
         if (c != 0) return c;
 
         // 5) Model-P improvement over baseline (dMp DESC)
