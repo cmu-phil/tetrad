@@ -5,6 +5,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.distribution.GammaDistribution;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
@@ -470,17 +471,39 @@ public final class Rcit implements IndependenceTest, RowsSettable {
 
             p = (greater + 1.0) / (permutations + 1.0);
 
+//        }
+//        else {
+//            SimpleMatrix Cov = kronResCov(RX, RY);
+//            double[] eig = positiveEigs(Cov);
+//
+//            p = switch (approx) {
+//                case GAMMA -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
+//                case SADDLEPOINT -> QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig);
+//                case DAVIES_IMHOF -> QuadraticFormPValues.daviesP(stat, eig);
+//                default -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
+//            };
+//        }
         } else {
-            SimpleMatrix Cov = kronResCov(RX, RY);
-            double[] eig = positiveEigs(Cov);
-
             p = switch (approx) {
-                case GAMMA -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
-                case SADDLEPOINT -> QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig);
-                case DAVIES_IMHOF -> QuadraticFormPValues.daviesP(stat, eig);
-                default -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
+                case GAMMA -> {
+                    Moments mv = gammaMomentsNoEig(RX, RY);
+                    yield gammaSatterthwaitePFromMoments(stat, mv.mu, mv.var);
+                }
+                case SADDLEPOINT, DAVIES_IMHOF -> {
+                    // Keep the old path for the methods that truly need eigenvalues.
+                    SimpleMatrix Cov = kronResCov(RX, RY);
+                    double[] eig = positiveEigs(Cov);
+                    yield (approx == Approx.SADDLEPOINT)
+                            ? QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig)
+                            : QuadraticFormPValues.daviesP(stat, eig);
+                }
+                default -> {
+                    Moments mv = gammaMomentsNoEig(RX, RY);
+                    yield gammaSatterthwaitePFromMoments(stat, mv.mu, mv.var);
+                }
             };
         }
+
 
         if (!Double.isFinite(p)) p = 1.0;
         p = Math.min(1.0, Math.max(0.0, p));
@@ -880,6 +903,131 @@ public final class Rcit implements IndependenceTest, RowsSettable {
 
     private int activeRowIndex(int i) {
         return (rows == null) ? i : rows.get(i);
+    }
+
+    // ---- Gamma approximation via moments (no eigenvalues needed) ----
+
+    /**
+     * Computes the first two moments needed for the Gamma–Satterthwaite approximation
+     * of the quadratic form used by RCIT:
+     *
+     *   Q = n * || cov(RX, RY) ||_F^2
+     *
+     * Under the usual approximation, Q behaves like sum_i lambda_i * chi^2_1,
+     * so we need:
+     *   mu  = sum_i lambda_i = tr(Cov)
+     *   var = 2 * sum_i lambda_i^2 = 2 * tr(Cov^2)
+     *
+     * where Cov is the covariance of the vectorized elementwise products RX_i * RY_j.
+     *
+     * This implementation avoids forming the explicit kron-product feature matrix
+     * and avoids eigen-decomposition.
+     */
+    private static Moments gammaMomentsNoEig(SimpleMatrix RX, SimpleMatrix RY) {
+        final int n = RX.getNumRows();
+        final int fx = RX.getNumCols();
+        final int fy = RY.getNumCols();
+
+        if (n < 2 || fx == 0 || fy == 0) {
+            // Degenerate; caller will clamp p anyway.
+            return new Moments(0.0, 0.0);
+        }
+
+        final double denom = (double) (n - 1);
+
+        // ---- mu = tr(Cov) = (1/(n-1)) * ||Z||_F^2
+        // Z has columns RX[:,i] .* RY[:,j], but we never build it.
+        // ||Z||_F^2 = sum_r (sum_i RX[r,i]^2) * (sum_j RY[r,j]^2).
+        double sumAxAy = 0.0;
+
+        for (int r = 0; r < n; r++) {
+            double ax = 0.0;
+            for (int i = 0; i < fx; i++) {
+                double v = RX.get(r, i);
+                ax += v * v;
+            }
+            double ay = 0.0;
+            for (int j = 0; j < fy; j++) {
+                double v = RY.get(r, j);
+                ay += v * v;
+            }
+            sumAxAy += ax * ay;
+        }
+
+        final double mu = sumAxAy / denom; // tr(Cov)
+
+        // ---- tr(Cov^2) = (1/(n-1)^2) * ||Z^T Z||_F^2
+        // Use identity ||Z^T Z||_F^2 = ||Z Z^T||_F^2 and
+        // (Z Z^T)[r,s] = (RX RX^T)[r,s] * (RY RY^T)[r,s].
+        //
+        // Let A = RX RX^T (n×n), B = RY RY^T (n×n).
+        // Then ||Z Z^T||_F^2 = sum_{r,s} (A[r,s]^2 * B[r,s]^2).
+
+        // These multiplies are fast in EJML relative to your old kron+eig path.
+        SimpleMatrix A = RX.mult(RX.transpose()); // n×n
+        SimpleMatrix B = RY.mult(RY.transpose()); // n×n
+
+        double[] Ad = A.getDDRM().data;
+        double[] Bd = B.getDDRM().data;
+
+        double sumA2B2 = 0.0;
+        final int len = Ad.length; // should be n*n
+        for (int t = 0; t < len; t++) {
+            double a = Ad[t];
+            double b = Bd[t];
+            // accumulate (a^2)*(b^2)
+            double a2 = a * a;
+            double b2 = b * b;
+            sumA2B2 += a2 * b2;
+        }
+
+        final double trCov2 = sumA2B2 / (denom * denom);
+        final double var = 2.0 * trCov2;
+
+        return new Moments(mu, var);
+    }
+
+    /**
+     * Gamma–Satterthwaite p-value using moments (mu, var) of the quadratic form.
+     * Matches the standard moment-matching:
+     *   shape k = mu^2 / var
+     *   scale θ = var / mu
+     *
+     * Returns upper-tail probability P(Q >= stat).
+     */
+    private static double gammaSatterthwaitePFromMoments(double stat, double mu, double var) {
+        if (!(stat >= 0.0) || !Double.isFinite(stat)) return Double.NaN;
+        if (!(mu > 0.0) || !Double.isFinite(mu)) return Double.NaN;
+        if (!(var > 0.0) || !Double.isFinite(var)) return Double.NaN;
+
+        double shape = (mu * mu) / var;
+        double scale = var / mu;
+
+        if (!(shape > 0.0) || !(scale > 0.0) || !Double.isFinite(shape) || !Double.isFinite(scale)) {
+            return Double.NaN;
+        }
+
+        // Commons-Math GammaDistribution uses (shape, scale).
+        GammaDistribution gd = new GammaDistribution(shape, scale);
+
+        double cdf = gd.cumulativeProbability(stat);
+        if (!Double.isFinite(cdf)) return Double.NaN;
+
+        double p = 1.0 - cdf;
+        // clamp
+        if (p < 0.0) p = 0.0;
+        if (p > 1.0) p = 1.0;
+        return p;
+    }
+
+    /** Tiny value object for moments. */
+    private static final class Moments {
+        final double mu;
+        final double var;
+        Moments(double mu, double var) {
+            this.mu = mu;
+            this.var = var;
+        }
     }
 
     // --------------------------------------------------------------------

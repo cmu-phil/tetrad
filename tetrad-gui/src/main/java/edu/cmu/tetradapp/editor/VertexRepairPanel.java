@@ -143,13 +143,13 @@ public final class VertexRepairPanel extends JPanel {
 
         int c;
 
-        // 1) Δ violations (more negative is better)
-        c = Integer.compare(a.delta(), b.delta()); // ASC
-        if (c != 0) return c;
+//        // 1) Δ violations (more negative is better)
+//        c = Integer.compare(a.delta(), b.delta()); // ASC
+//        if (c != 0) return c;
 
-        // 2) Fewer edges preferred
-        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
-        if (c != 0) return c;
+//        // 2) Fewer edges preferred
+//        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+//        if (c != 0) return c;
 
         // 3) Smaller edit size preferred (single-edge before multi-edge)
         c = Integer.compare(editSize(a), editSize(b));
@@ -178,14 +178,14 @@ public final class VertexRepairPanel extends JPanel {
         c = -Integer.compare(moveBiasScore(a), moveBiasScore(b)); // DESC
         if (c != 0) return c;
 
-        // 7) Absolute Model-P: FINITE first, then log-odds DESC
-        c = finiteFirst(a.modelPAfter(), b.modelPAfter());
-        if (c != 0) return c;
-
-        double mpA = modelLogOdds(a);
-        double mpB = modelLogOdds(b);
-        c = -Double.compare(mpA, mpB);
-        if (c != 0) return c;
+//        // 7) Absolute Model-P: FINITE first, then log-odds DESC
+//        c = finiteFirst(a.modelPAfter(), b.modelPAfter());
+//        if (c != 0) return c;
+//
+//        double mpA = modelLogOdds(a);
+//        double mpB = modelLogOdds(b);
+//        c = -Double.compare(mpA, mpB);
+//        if (c != 0) return c;
 
         // 8) Stable tie-break
         return stableTieBreak(a, b);
@@ -319,64 +319,64 @@ public final class VertexRepairPanel extends JPanel {
         return da.compareTo(db);
     }
 
-    private static double utility(ScoredCandidate s) {
-        if (s == null) return Double.NEGATIVE_INFINITY;
-        if (!s.passesGuards()) return Double.NEGATIVE_INFINITY;
-
-        final int delta = s.delta();        // negative good
-        final int edgesAfter = s.edgesAfter();
-
-        // Treat missing p-values as NEUTRAL, not catastrophic.
-        final double mpAfter = s.modelPAfter();
-        final double npAfter = s.nodePAfter();
-
-        final double mpLogOdds = Double.isFinite(mpAfter) ? alphaLogOdds(mpAfter, alpha) : 0.0;
-        final double npLogOdds = Double.isFinite(npAfter) ? alphaLogOdds(npAfter, alpha) : 0.0;
-
-        // Model-P change: if unknown, treat as 0 (neutral), NOT -Infinity.
-        final double mpBefore = s.modelPBefore();
-        final double dMp = (Double.isFinite(mpBefore) && Double.isFinite(mpAfter)) ? (mpAfter - mpBefore) : 0.0;
-
-        final MoveType mt = moveType(s.edit());
-
-        int editSize = 1;
-        try {
-            if (s.edit() != null && s.edit().getEdges() != null) {
-                editSize = Math.max(1, s.edit().getEdges().size());
-            }
-        } catch (Throwable ignored) {
-            // keep editSize=1
-        }
-
-        // ---- weights ----
-        final double W_DELTA = 2.0;    // dominates
-        final double W_DMP = 1.5;    // encourage better Model-P vs baseline
-        final double W_NODE = 0.35;
-        final double W_MODEL = 0.35;
-        final double W_EDGES = 1.0;
-        final double W_EDIT_SZ = 0.90;
-
-        final double BONUS_SIMPLE_REORIENT_IMPROVE = 5.0;
-        final double PENALTY_COLLIDER_IMPROVE = 1.0;
-
-        double bonus = 0.0;
-        if (Double.isFinite(dMp) && dMp > 0.0) {
-            if (mt == MoveType.REORIENT_SIMPLE) bonus += BONUS_SIMPLE_REORIENT_IMPROVE;
-            if (mt == MoveType.COLLIDER_FIX) bonus -= PENALTY_COLLIDER_IMPROVE;
-        } else if (!Double.isFinite(mpAfter)) {
-            // If Model-P wasn't computed, gently prefer simple reorients over collider fixes.
-            if (mt == MoveType.REORIENT_SIMPLE) bonus += 0.25;
-            if (mt == MoveType.COLLIDER_FIX) bonus -= 0.25;
-        }
-
-        return (-W_DELTA * delta)
-                + (W_DMP * dMp)
-                + bonus
-                + (W_MODEL * mpLogOdds)
-                + (W_NODE * npLogOdds)
-                - (W_EDGES * edgesAfter)
-                - (W_EDIT_SZ * (editSize - 1));
-    }
+//    private static double utility(ScoredCandidate s) {
+//        if (s == null) return Double.NEGATIVE_INFINITY;
+//        if (!s.passesGuards()) return Double.NEGATIVE_INFINITY;
+//
+//        final int delta = s.delta();        // negative good
+//        final int edgesAfter = s.edgesAfter();
+//
+//        // Treat missing p-values as NEUTRAL, not catastrophic.
+//        final double mpAfter = s.modelPAfter();
+//        final double npAfter = s.nodePAfter();
+//
+//        final double mpLogOdds = Double.isFinite(mpAfter) ? alphaLogOdds(mpAfter, alpha) : 0.0;
+//        final double npLogOdds = Double.isFinite(npAfter) ? alphaLogOdds(npAfter, alpha) : 0.0;
+//
+//        // Model-P change: if unknown, treat as 0 (neutral), NOT -Infinity.
+//        final double mpBefore = s.modelPBefore();
+//        final double dMp = (Double.isFinite(mpBefore) && Double.isFinite(mpAfter)) ? (mpAfter - mpBefore) : 0.0;
+//
+//        final MoveType mt = moveType(s.edit());
+//
+//        int editSize = 1;
+//        try {
+//            if (s.edit() != null && s.edit().getEdges() != null) {
+//                editSize = Math.max(1, s.edit().getEdges().size());
+//            }
+//        } catch (Throwable ignored) {
+//            // keep editSize=1
+//        }
+//
+//        // ---- weights ----
+//        final double W_DELTA = 2.0;    // dominates
+//        final double W_DMP = 1.5;    // encourage better Model-P vs baseline
+//        final double W_NODE = 0.35;
+//        final double W_MODEL = 0.35;
+//        final double W_EDGES = 1.0;
+//        final double W_EDIT_SZ = 0.90;
+//
+//        final double BONUS_SIMPLE_REORIENT_IMPROVE = 5.0;
+//        final double PENALTY_COLLIDER_IMPROVE = 1.0;
+//
+//        double bonus = 0.0;
+//        if (Double.isFinite(dMp) && dMp > 0.0) {
+//            if (mt == MoveType.REORIENT_SIMPLE) bonus += BONUS_SIMPLE_REORIENT_IMPROVE;
+//            if (mt == MoveType.COLLIDER_FIX) bonus -= PENALTY_COLLIDER_IMPROVE;
+//        } else if (!Double.isFinite(mpAfter)) {
+//            // If Model-P wasn't computed, gently prefer simple reorients over collider fixes.
+//            if (mt == MoveType.REORIENT_SIMPLE) bonus += 0.25;
+//            if (mt == MoveType.COLLIDER_FIX) bonus -= 0.25;
+//        }
+//
+//        return (-W_DELTA * delta)
+//                + (W_DMP * dMp)
+//                + bonus
+//                + (W_MODEL * mpLogOdds)
+//                + (W_NODE * npLogOdds)
+//                - (W_EDGES * edgesAfter)
+//                - (W_EDIT_SZ * (editSize - 1));
+//    }
 
     private static MoveType moveType(CandidateEdit e) {
         if (e == null) return MoveType.OTHER;
@@ -2790,13 +2790,6 @@ public final class VertexRepairPanel extends JPanel {
 //        }
 //
 
-    /// /        // Progress gate
-    /// /        if (!isProgress(baselineViol, afterViol, currentEdges, afterEdges)) {
-    /// /            vlog("Rejected: not progress (violationsBaseline=%d violationsAfter=%d edges %d->%d).",
-    /// /                    baselineViol, afterViol, currentEdges, afterEdges);
-    /// /            return false;
-    /// /        }
-//
     private boolean wouldPassGuards(Graph base, Node center, ScoredCandidate sc, RepairGraphType gt) {
         if (sc == null || sc.edit() == null || sc.edit().isNoOp()) return false;
 
