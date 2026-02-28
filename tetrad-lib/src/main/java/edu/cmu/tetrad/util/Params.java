@@ -1332,7 +1332,7 @@ public final class Params {
      */
     public static final String LEGENDRE_IRLS_TOL = "minimaxLegendreIrlsTol";
     /**
-     * Constant <code>LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
+     * Constant <code>LEGENDRE_INIT_SCALE="minimaxLegendreMaxIterations"</code>
      */
     public static final String LEGENDRE_INIT_SCALE = "minimaxLegendreInitScale";
 

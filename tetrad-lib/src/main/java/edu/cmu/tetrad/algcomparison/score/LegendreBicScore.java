@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Minimax Legendre BIC score (mixed).
+ * Wrapper for Legendre BIC score (mixed).
  * <p>
  * Exposed parameters (pared down):
  * - minimaxLegendreDegree (int, default 8)
@@ -33,7 +33,7 @@ import java.util.List;
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "Legendre BIC Score",
-        command = "minimax-legendre-score",
+        command = "legendre-score",
         dataType = {DataType.Mixed}
 )
 @General
@@ -126,7 +126,7 @@ public class LegendreBicScore implements ScoreWrapper {
     /**
      * Provides a description for the Legendre BIC score with mixed data.
      *
-     * @return a string representing the description of the Minimax Legendre BIC score for mixed data
+     * @return a string representing the description of the Legendre BIC score for mixed data
      */
     @Override
     public String getDescription() {

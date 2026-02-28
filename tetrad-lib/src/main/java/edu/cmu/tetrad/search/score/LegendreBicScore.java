@@ -102,6 +102,15 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      * Effective sample size.
      */
     private volatile int nEff;
+
+    /**
+     * Represents the discount applied to penalties or fines.
+     * This value typically determines the reduction factor
+     * for penalties, where a value of 1.0 means no discount.
+     *
+     * The discount factor should be a positive number, typically
+     * between 0.0 (maximum discount) and 1.0 (no discount).
+     */
     private double penaltyDiscount = 1.0;
 
     /** Add pairwise interactions using only P1(x)=x for continuous parents. */
@@ -462,7 +471,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      */
     @Override
     public String toString() {
-        return "Minimax Legendre BIC score";
+        return "Legendre BIC score";
     }
 
     /**
