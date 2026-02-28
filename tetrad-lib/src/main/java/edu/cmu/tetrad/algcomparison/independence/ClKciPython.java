@@ -51,6 +51,8 @@ public class ClKciPython implements IndependenceWrapper {
             );
         }
 
+        dataSet = dataSet.copy();
+
         // -----------------------------
         // 1. Resolve python executable
         // -----------------------------

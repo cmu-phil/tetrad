@@ -6,6 +6,7 @@ import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.vertex_repair.VertexRepairSearch;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -128,7 +129,7 @@ public final class VertexRepairPanel extends JPanel {
 //        return stableTieBreak(a, b);
 //    };
 
-    private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
+    public static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
         if (a == null && b == null) return 0;
         if (a == null) return 1;
         if (b == null) return -1;
@@ -141,15 +142,13 @@ public final class VertexRepairPanel extends JPanel {
             return stableTieBreak(a, b);
         }
 
-        int c;
+        // 1) Δ violations (more negative is better)
+        int c = Integer.compare(a.delta(), b.delta()); // ASC
+        if (c != 0) return c;
 
-//        // 1) Δ violations (more negative is better)
-//        c = Integer.compare(a.delta(), b.delta()); // ASC
-//        if (c != 0) return c;
-
-//        // 2) Fewer edges preferred
-//        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
-//        if (c != 0) return c;
+        // 2) Fewer edges preferred
+        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+        if (c != 0) return c;
 
         // 3) Smaller edit size preferred (single-edge before multi-edge)
         c = Integer.compare(editSize(a), editSize(b));
@@ -178,14 +177,14 @@ public final class VertexRepairPanel extends JPanel {
         c = -Integer.compare(moveBiasScore(a), moveBiasScore(b)); // DESC
         if (c != 0) return c;
 
-//        // 7) Absolute Model-P: FINITE first, then log-odds DESC
-//        c = finiteFirst(a.modelPAfter(), b.modelPAfter());
-//        if (c != 0) return c;
-//
-//        double mpA = modelLogOdds(a);
-//        double mpB = modelLogOdds(b);
-//        c = -Double.compare(mpA, mpB);
-//        if (c != 0) return c;
+        // 7) Absolute Model-P: FINITE first, then log-odds DESC
+        c = finiteFirst(a.modelPAfter(), b.modelPAfter());
+        if (c != 0) return c;
+
+        double mpA = modelLogOdds(a);
+        double mpB = modelLogOdds(b);
+        c = -Double.compare(mpA, mpB);
+        if (c != 0) return c;
 
         // 8) Stable tie-break
         return stableTieBreak(a, b);
@@ -713,7 +712,7 @@ public final class VertexRepairPanel extends JPanel {
             if (afterEdges < currentEdges) return true;
 
             // NEW: allow pure "quality" improvement when structure doesn't worsen.
-            final double MIN_MP_GAIN = 1e-3; // tune; 0.001 is usually safe
+            final double MIN_MP_GAIN = 0;// 1e-3; // tune; 0.001 is usually safe
             if (afterEdges == currentEdges
                     && Double.isFinite(mpBefore)
                     && Double.isFinite(mpAfter)

@@ -10,6 +10,8 @@ import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,30 +93,14 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
-    @Serial
-    private static final long serialVersionUID = 23L;
-
     /**
      * If true, use valid row subsets when missing exists.
      */
     private final boolean calculateRowSubsets;
-    /**
-     * Represents a collection of data used for processing or analysis.
-     * This object is immutable and intended to provide a predefined
-     * set of data that remains constant throughout its lifecycle.
-     */
+
+    // -------------------- configuration knobs --------------------
     private final DataSet dataSet;
-    /**
-     * A list containing instances of Node, representing the variables to be processed or managed.
-     * The list is immutable as it is declared final, ensuring the reference cannot be modified
-     * after initialization.
-     */
     private final List<Node> variables;
-    /**
-     * Represents the size of the sample to be used in a specific computation or process.
-     * This value is immutable and must be defined at the time of object construction.
-     * It typically indicates the number of elements or observations to include in an operation.
-     */
     private final int sampleSize;
     /**
      * Standardized columns for continuous variables only (NaNs preserved).
@@ -129,102 +115,31 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      */
     private final boolean[] isDiscrete;
     /**
-     * RFF vs ORF for continuous features.
-     */
-    private final FeatureType featureType = FeatureType.ORF;
-    /**
      * Cache: (target i, sorted parents) -> score.
      */
     private transient AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
-    /**
-     * A transient cache used for storing computed values associated with specific
-     * keys, where the key is of type {@code Long} and the value is of type {@code Double}.
-     * This cache is implemented using a {@code ConcurrentHashMap} to allow
-     * thread-safe access and modifications.
-     *
-     * The transient modifier ensures that this cache will not be serialized.
-     * Typically used to hold temporary or derived data that can be recomputed
-     * or retrieved as needed.
-     */
+
     private transient ConcurrentHashMap<Long, Double> bw2Cache = new ConcurrentHashMap<>();
-    /**
-     * A transient cache implemented as a thread-safe {@code ConcurrentHashMap} that maps a {@code Long} key
-     * to a {@code Double} value. This cache is used to store and retrieve precomputed or intermediate
-     * results related to bw2 optimization processes.
-     *
-     * The use of the {@code transient} modifier ensures that this cache will not be serialized
-     * when the containing object is serialized.
-     *
-     * Key Characteristics:
-     * - Thread-safe for concurrent access in multi-threaded environments.
-     * - Designed to enhance performance by reducing repeated calculations.
-     */
+
     private transient ConcurrentHashMap<Long, Double> bw2OptCache = new ConcurrentHashMap<>();
-    /**
-     * A transient cache that maps a target identifier to its associated
-     * median bandwidth value.
-     *
-     * <p>
-     * This cache is implemented using a thread-safe {@code ConcurrentHashMap}
-     * to allow concurrent access and modifications across multiple threads.
-     * The keys in this map are represented by {@code Long} values, typically
-     * denoting unique target identifiers, and the values are represented by
-     * {@code Double}s indicating the calculated median bandwidth for each target.
-     * </p>
-     *
-     * <p>
-     * Being marked as {@code transient}, this cache will not be serialized during
-     * object serialization. It is used for non-persistent, in-memory computations
-     * that do not require long-term storage.
-     * </p>
-     */
     private transient ConcurrentHashMap<Long, Double> bw2MedByTargetContCache = new ConcurrentHashMap<>();
-    /**
-     * A thread-safe, transient cache that associates a target identifier
-     * (represented by a Long) with a corresponding Double value.
-     * Intended to store and retrieve data related to "bw2Opt" calculations
-     * based on a specific target context.
-     *
-     * The use of ConcurrentHashMap ensures that the cache can be accessed
-     * and updated concurrently by multiple threads without compromising consistency.
-     *
-     * Being marked as transient, this cache will not be serialized,
-     * which is typically desirable for caches to avoid unnecessary data persistence.
-     */
     private transient ConcurrentHashMap<Long, Double> bw2OptByTargetContCache = new ConcurrentHashMap<>();
-    /**
-     * A thread-safe map that associates a Double key with a LongAdder value, designed to
-     * track and aggregate counts for specific multiplier values in a concurrent environment.
-     *
-     * The keys represent specific multiplier values (as a Double), while the LongAdder
-     * values enable efficient and contention-free updates to the count associated with
-     * each multiplier across multiple threads.
-     *
-     * This variable is marked as transient, meaning it will not be serialized during
-     * the standard serialization process. The choice of ConcurrentHashMap ensures
-     * high concurrency for read-and-update operations.
-     */
-    private transient ConcurrentHashMap<Double, java.util.concurrent.atomic.LongAdder> bestMultCounts =
-            new ConcurrentHashMap<>();
-    /**
-     * A flag indicating whether bandwidth coupling is enabled by target.
-     *
-     * This variable is marked as volatile to ensure visibility across threads,
-     * allowing updates made by one thread to be immediately visible to others.
-     *
-     * By default, this flag is set to {@code true}.
-     */
+    // ---- make bw selection "global-per-target" for comparability across DAGs ----
     private volatile boolean bwCoupleByTarget = true;     // NEW: default true
     /**
      * Base ridge/noise knob. Used as sigma^2. Must be > 0.
      */
     private volatile double lambda = 1.0;
+
+    // -------------------- reproducibility / feature coupling --------------------
+
     /**
      * Base seed for random-feature generation. Changing this changes the random feature basis.
      * Default is arbitrary but fixed.
      */
     private volatile long baseSeed = 0xC0FFEE1234ABCDL;
+
     /**
      * If true (recommended), random features (W,b) are coupled by TARGET only.
      * This stabilizes localScoreDiff comparisons and usually fixes BOSS edge reversals.
@@ -232,6 +147,12 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * If false, we revert to the old behavior: seed depends on (target, parent set).
      */
     private volatile boolean coupleFeaturesByTarget = true;
+
+    // -------------------- data --------------------
+//    /**
+//     * Bandwidth multiplier on the median heuristic (continuous part only).
+//     */
+//    private volatile double bandwidthMultiplier = 1.0;
     /**
      * Max rows used to estimate median bandwidth (subsample for speed).
      */
@@ -244,6 +165,10 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * Effective sample size.
      */
     private volatile int nEff;
+    /**
+     * RFF vs ORF for continuous features.
+     */
+    private FeatureType featureType = FeatureType.ORF;
     /**
      * Categorical kernel off-diagonal similarity rho in [0, 1).
      * k_cat(c,c)=1, k_cat(c,c')=rho for c!=c'.
@@ -268,9 +193,11 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     public FfMl(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
         this.dataSet = dataSet;
-        this.variables = List.copyOf(dataSet.getVariables());
+        this.variables = dataSet.getVariables();
         this.sampleSize = dataSet.getNumRows();
         setEffectiveSampleSize(-1);
+
+        resetCache();
 
         this.calculateRowSubsets = dataSet.existsMissingValue();
 
@@ -308,8 +235,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 zscoreColumnPreserveNaN(raw[j], zCols[j]);
             }
         }
-
-        initCaches();
     }
 
     /**
@@ -330,7 +255,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 .distinct().sorted().toArray();
 
         int L = uniq.length;
-        if (L == 0) return null;
+        if (L <= 0) return null;
 
         // Map each value -> level index 0..L-1
         double[][] Y = new double[n][L];
@@ -354,6 +279,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return Y;
     }
 
+    // -------------------- Score interface --------------------
+
     /**
      * Sigma-only multi-output: sum the sigma-only GP marginal likelihood across columns.
      * Each column is treated as an independent output with the same sigma^2 I covariance.
@@ -372,8 +299,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         }
         return sum;
     }
-
-    // -------------------- Score interface --------------------
 
     /**
      * A tiny 64-bit mixing function for seed diversification.
@@ -404,7 +329,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 .distinct().sorted().toArray();
 
         int L = uniq.length;
-        if (L == 0) return null;
+        if (L <= 0) return null;
 
         int[] levelOfRow = new int[n];
         for (int i = 0; i < n; i++) {
@@ -506,7 +431,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
     private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd, SplittableRandom rng) {
         double[][] W = new double[mFeatures][d];
-        if (d == 0) return W;
+        if (d <= 0) return W;
 
         int filled = 0;
         while (filled < mFeatures) {
@@ -638,21 +563,11 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         }
     }
 
+    // -------------------- tuning knobs --------------------
+
     // Packed lower-triangle index: (i>=j) -> i*(i+1)/2 + j
     private static int idxLower(int i, int j) {
         return i * (i + 1) / 2 + j;
-    }
-
-    // -------------------- tuning knobs --------------------
-
-    private void initCaches() {
-        // Always rebuild (cheap, and guarantees non-null after deserialization or partial construction)
-        localScoreCacheRef = new AtomicReference<>(new ConcurrentHashMap<>());
-        bw2Cache = new ConcurrentHashMap<>();
-        bw2OptCache = new ConcurrentHashMap<>();
-        bw2MedByTargetContCache = new ConcurrentHashMap<>();
-        bw2OptByTargetContCache = new ConcurrentHashMap<>();
-        bestMultCounts = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -664,34 +579,18 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     public double localScore(int i, int... parents) {
         Arrays.sort(parents);
 
+        // full key for localScore cache (still parent-set coupled)
         final long key = cacheKey(i, parents);
         final ConcurrentHashMap<Long, Double> cache = localScoreCacheRef.get();
 
         return cache.computeIfAbsent(key, k -> {
             try {
+                // rows for *scoring* depend on target + ALL parents (cont+disc)
                 int[] all = concat(i, parents);
                 int[] rows = calculateRowSubsets ? validRowsMixed(all) : null;
 
                 int n = (rows == null) ? nEff : rows.length;
-
-                // --- Small-n fallback: DO NOT return NaN (poisons search); use sigma-only baseline instead.
-                // If target is continuous: sigma-only Gaussian model.
-                // If target is discrete: sigma-only summed over centered one-hot columns.
-                if (n < 5) {
-                    double sigma2 = lambda;
-                    if (!(sigma2 > 0) || !Double.isFinite(sigma2)) return Double.NaN;
-
-                    if (!isDiscrete[i]) {
-                        double[] y = extract1DContinuous(i, rows, n);
-                        centerInPlace(y);
-                        return gpLogMarginalLikelihoodSigmaOnly(y, sigma2);
-                    } else {
-                        int[] yDisc = extractDiscrete(i, rows, n);
-                        double[][] Y = oneHotCentered(yDisc);
-                        if (Y == null || Y[0].length == 0) return Double.NaN;
-                        return gpLogMarginalLikelihoodSigmaOnlyMulti(Y, sigma2);
-                    }
-                }
+                if (n < 5) return Double.NaN;
 
                 double sigma2 = lambda;
                 if (!(sigma2 > 0) || !Double.isFinite(sigma2)) return Double.NaN;
@@ -713,49 +612,50 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 double bw2Med = 1.0;
 
                 if (nc > 0) {
-                    // bandwidth rows must NOT depend on discrete parents
+                    // IMPORTANT: bandwidth rows must NOT depend on discrete parents
+                    // (otherwise "coupled by target" caching becomes inconsistent).
                     int[] bwVars = concat(i, contParents);
                     int[] rowsBw = calculateRowSubsets ? validRowsMixed(bwVars) : null;
                     int nBw = (rowsBw == null) ? nEff : rowsBw.length;
+                    if (nBw < 5) return Double.NaN;
 
-                    // If bandwidth subset is too small, fallback to 1.0 rather than NaN
-                    if (nBw < 5) {
-                        bw2Med = 1.0;
+                    final int finalNc = nc;
+                    final int[] finalContParents = contParents;
+
+                    if (bwCoupleByTarget) {
+                        // Cache by (target, contParents) signature
+                        final long bwKey = keyTargetCont(i, finalContParents);
+
+                        bw2Med = bw2MedByTargetContCache.computeIfAbsent(bwKey, kk -> {
+                            double[][] Zc = new double[nBw][finalNc];
+                            for (int r = 0; r < nBw; r++) {
+                                int row = (rowsBw == null) ? r : rowsBw[r];
+                                for (int j = 0; j < finalNc; j++) {
+                                    Zc[r][j] = zCols[finalContParents[j]][row];
+                                }
+                            }
+                            double est = medianDistanceSquaredND(Zc, Math.min(nBw, bwMaxRows));
+                            if (!(est > 0) || !Double.isFinite(est)) est = 1.0;
+                            return est;
+                        });
                     } else {
-                        final int finalNc = nc;
-                        final int[] finalContParents = contParents;
-
-                        if (bwCoupleByTarget) {
-                            final long bwKey = keyTargetCont(i, finalContParents);
-                            bw2Med = bw2MedByTargetContCache.computeIfAbsent(bwKey, kk -> {
-                                double[][] Zc = new double[nBw][finalNc];
-                                for (int r = 0; r < nBw; r++) {
-                                    int row = (rowsBw == null) ? r : rowsBw[r];
-                                    for (int j = 0; j < finalNc; j++) {
-                                        Zc[r][j] = zCols[finalContParents[j]][row];
-                                    }
+                        // Old behavior: cache by full (target, parents) key
+                        bw2Med = bw2Cache.computeIfAbsent(key, kk -> {
+                            double[][] Zc = new double[n][finalNc];
+                            for (int r = 0; r < n; r++) {
+                                int row = (rows == null) ? r : rows[r];
+                                for (int j = 0; j < finalNc; j++) {
+                                    Zc[r][j] = zCols[finalContParents[j]][row];
                                 }
-                                double est = medianDistanceSquaredND(Zc, Math.min(nBw, bwMaxRows));
-                                if (!(est > 0) || !Double.isFinite(est)) est = 1.0;
-                                return est;
-                            });
-                        } else {
-                            bw2Med = bw2Cache.computeIfAbsent(key, kk -> {
-                                double[][] Zc = new double[n][finalNc];
-                                for (int r = 0; r < n; r++) {
-                                    int row = (rows == null) ? r : rows[r];
-                                    for (int j = 0; j < finalNc; j++) {
-                                        Zc[r][j] = zCols[finalContParents[j]][row];
-                                    }
-                                }
-                                double est = medianDistanceSquaredND(Zc, Math.min(n, bwMaxRows));
-                                if (!(est > 0) || !Double.isFinite(est)) est = 1.0;
-                                return est;
-                            });
-                        }
+                            }
+                            double est = medianDistanceSquaredND(Zc, Math.min(n, bwMaxRows));
+                            if (!(est > 0) || !Double.isFinite(est)) est = 1.0;
+                            return est;
+                        });
                     }
                 }
 
+                // Deterministic seed
                 long seed = seedFor(i, key);
 
                 // ----------------------------
@@ -769,10 +669,11 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                         return gpLogMarginalLikelihoodSigmaOnly(y, sigma2);
                     }
 
+                    // IMPORTANT: for "coupled" bw optimization, pickBw2 should cache by (target, contParents)
                     long bwOptKey = bwCoupleByTarget ? keyTargetCont(i, contParents) : key;
 
                     double bw2 = pickBw2ByGridSearch(
-                            bwOptKey,
+                            bwOptKey,          // NOTE: pass bwOptKey (not the fullKey) when coupled
                             y,
                             contParents, discParents,
                             rows, n,
@@ -799,6 +700,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                     return gpLogMarginalLikelihoodSigmaOnlyMulti(Y, sigma2);
                 }
 
+                // For discrete targets, keep bandwidth simple: median on continuous parents
                 double bw2 = (nc > 0 && Double.isFinite(bw2Med) && bw2Med > 0) ? bw2Med : 1.0;
 
                 return gpLogMarginalLikelihoodRFFMixedMultiOutput(
@@ -807,8 +709,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 );
 
             } catch (RuntimeException e) {
-                // If you want better post-mortems, log the full exception:
-                // TetradLogger.getInstance().log("FFML error", e);
                 TetradLogger.getInstance().log(e.getMessage());
                 return Double.NaN;
             }
@@ -828,6 +728,71 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * fullKey = keyTargetCont(targetIndex, contParents)
      * (i.e., “fullKey” is really the bw-opt cache key in that mode).
      */
+//    private double pickBw2ByGridSearch(
+//            long fullKey,
+//            double[] yCentered,
+//            int[] contParents,
+//            int[] discParents,
+//            int[] rows,
+//            int n,
+//            int mFeatures,
+//            double bw2Med,
+//            double sigma2,
+//            long seed
+//    ) {
+//        if (contParents == null || contParents.length == 0) return 1.0;  // no continuous inputs
+//        if (!(bw2Med > 0) || !Double.isFinite(bw2Med)) bw2Med = 1.0;
+//
+//        // Cache lookup
+//        if (bwCoupleByTarget) {
+//            // Here, fullKey should already be keyTargetCont(targetIndex, contParents)
+//            Double cached = bw2OptByTargetContCache.get(fullKey);
+//            if (cached != null) return cached;
+//        } else {
+//            Double cached = bw2OptCache.get(fullKey);
+//            if (cached != null) return cached;
+//        }
+//
+//        // Grid in multiplier space. Interpret as bw2 = bw2Med * mult^2
+//        final double[] mult = {0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0};
+//
+//        double bestBw2 = bw2Med;
+//        double best = Double.NEGATIVE_INFINITY;
+//
+//        for (double m : mult) {
+//            double bw2 = bw2Med * (m * m);
+//            if (!(bw2 > 0) || !Double.isFinite(bw2)) continue;
+//
+//            double ll = gpLogMarginalLikelihoodRFFMixed(
+//                    yCentered,
+//                    contParents,
+//                    discParents,
+//                    rows,
+//                    n,
+//                    mFeatures,
+//                    bw2,
+//                    sigma2,
+//                    seed
+//            );
+//
+//            if (Double.isFinite(ll) && ll > best) {
+//                best = ll;
+//                bestBw2 = bw2;
+//            }
+//        }
+//
+//        // Fallback safety
+//        if (!Double.isFinite(best) || !(bestBw2 > 0) || !Double.isFinite(bestBw2)) bestBw2 = bw2Med;
+//
+//        // Store
+//        if (bwCoupleByTarget) {
+//            bw2OptByTargetContCache.put(fullKey, bestBw2);
+//        } else {
+//            bw2OptCache.put(fullKey, bestBw2);
+//        }
+//
+//        return bestBw2;
+//    }
     private double pickBw2ByGridSearch(
             long fullKey,
             double[] yCentered,
@@ -840,10 +805,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             double sigma2,
             long seed
     ) {
-        // No continuous parents => no bandwidth to tune.
         if (contParents == null || contParents.length == 0) return 1.0;
-
-        if (!(bw2Med > 0.0) || !Double.isFinite(bw2Med)) bw2Med = 1.0;
+        if (!(bw2Med > 0) || !Double.isFinite(bw2Med)) bw2Med = 1.0;
 
         // Cache lookup
         if (bwCoupleByTarget) {
@@ -854,100 +817,72 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             if (cached != null) return cached;
         }
 
-        // -------------------- grid definition --------------------
+        final double[] mult = {0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0, 8.0, 16.0};
 
-        // Heuristic: very large mult => bw2 huge => wStd tiny => features ~ constant.
-        // Cap higher when dc is small; cap lower when dc is large.
-        final int dc = contParents.length;
-        final double maxMult =
-                (dc <= 1) ? 50.0 :
-                        (dc == 2) ? 30.0 :
-                                (dc <= 4) ? 20.0 :
-                                        12.0;
-
-        // Base grid (sorted ascending)
-        final double[] baseMult = {
-                0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8,
-                4.0, 6.0, 8.0, 10.0, 12.0, 15.0, 20.0, 30.0,
-                50.0, 80.0, 100.0, 150.0, 200.0, 300.0, 500.0
-        };
-
-        // Filter to cap
-        int keep = 0;
-        for (double m : baseMult) if (m <= maxMult) keep++;
-        final double[] mult = new double[keep];
-        for (int i = 0, j = 0; i < baseMult.length; i++) {
-            double m = baseMult[i];
-            if (m <= maxMult) mult[j++] = m;
-        }
-
-        // -------------------- precompute invariants --------------------
-
+        // Precompute things that do NOT depend on bw2
         final boolean useNxN = (discParents != null && discParents.length >= 2);
-        final BaseWB base = buildBaseWB(mFeatures, dc, seed);
+
+        final BaseWB base = buildBaseWB(mFeatures, contParents.length, seed);
         final double[] kcatLowerPacked = useNxN ? precomputeKcatLowerPacked(discParents, rows, n) : null;
 
-        // -------------------- selection knobs --------------------
+        double bestBw2 = bw2Med;
+        double best = Double.NEGATIVE_INFINITY;
 
-        final double penaltyAlpha = 0.01; // 0.0 disables; try 0.002..0.03
-        final double tieTol = 1e-4;       // tolerance on objective (absolute-ish)
+        // --- Option A: sequential (simplest, still big win) ---
+        for (double m : mult) {
+            double bw2 = bw2Med * (m * m);
+            if (!(bw2 > 0) || !Double.isFinite(bw2)) continue;
 
-        /**
-         * @param obj selection objective (ll - penalty)
-         */
-        record Best(double bw2, double ll, double mult, double obj) {
+            final double ll;
+            if (useNxN) {
+                ll = gpLogML_mixedKernelNxN_precomp(
+                        yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked
+                );
+            } else {
+                // keep existing path unchanged
+                ll = gpLogMarginalLikelihoodRFFMixed(
+                        yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed
+                );
+            }
+
+            if (Double.isFinite(ll) && ll > best) {
+                best = ll;
+                bestBw2 = bw2;
+            }
         }
 
-        final double finalBw2Med = bw2Med;
+//        // --- Option B: parallel grid (uncomment if you want) ---
+//
+//        final class Best {
+//            final double bw2, ll;
+//
+//            Best(double bw2, double ll) {
+//                this.bw2 = bw2;
+//                this.ll = ll;
+//            }
+//        }
+//        double finalBw2Med = bw2Med;
+//        Best b = Arrays.stream(mult).parallel()
+//                .mapToObj(m -> {
+//                    double bw2 = finalBw2Med * (m * m);
+//                    if (!(bw2 > 0) || !Double.isFinite(bw2)) return new Best(finalBw2Med, Double.NEGATIVE_INFINITY);
+//
+//                    double ll = useNxN
+//                            ? gpLogML_mixedKernelNxN_precomp(yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked)
+//                            : gpLogMarginalLikelihoodRFFMixed(yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed);
+//
+//                    return new Best(bw2, ll);
+//                })
+//                .filter(x -> Double.isFinite(x.ll))
+//                .max(java.util.Comparator.comparingDouble(x -> x.ll))
+//                .orElse(new Best(bw2Med, Double.NEGATIVE_INFINITY));
+//
+//        bestBw2 = b.bw2;
+//        best = b.ll;
 
-        Best best = Arrays.stream(mult).parallel()
-                .mapToObj(m -> {
-                    double bw2 = finalBw2Med * (m * m);
-                    if (!(bw2 > 0.0) || !Double.isFinite(bw2)) {
-                        return new Best(finalBw2Med, Double.NEGATIVE_INFINITY, m, Double.NEGATIVE_INFINITY);
-                    }
 
-                    double ll = useNxN
-                            ? gpLogML_mixedKernelNxN_precomp(
-                            yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked)
-                            : gpLogMarginalLikelihoodRFFMixed(
-                            yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed);
+        if (!Double.isFinite(best) || !(bestBw2 > 0) || !Double.isFinite(bestBw2)) bestBw2 = bw2Med;
 
-                    if (!Double.isFinite(ll)) {
-                        return new Best(bw2, Double.NEGATIVE_INFINITY, m, Double.NEGATIVE_INFINITY);
-                    }
-
-                    // Soft penalty against extreme multipliers: prefer mult near 1 when nearly tied.
-                    double obj = ll - penaltyAlpha * Math.abs(Math.log(m));
-
-                    return new Best(bw2, ll, m, obj);
-                })
-                .filter(x -> Double.isFinite(x.ll))
-                .reduce((a, c) -> {
-                    // Primary: objective (higher better)
-                    if (c.obj > a.obj + tieTol) return c;
-                    if (a.obj > c.obj + tieTol) return a;
-
-                    // Tie-break 1: closer to 1.0 in multiplier space (log distance)
-                    double da = Math.abs(Math.log(a.mult));
-                    double dc2 = Math.abs(Math.log(c.mult));
-                    if (dc2 < da) return c;
-                    if (da < dc2) return a;
-
-                    // Tie-break 2: smaller mult
-                    return (c.mult < a.mult) ? c : a;
-                })
-                .orElse(new Best(bw2Med, Double.NEGATIVE_INFINITY, 1.0, Double.NEGATIVE_INFINITY));
-
-        // record the chosen mult (only for uncached evaluations)
-        bestMultCounts.computeIfAbsent(best.mult, k -> new java.util.concurrent.atomic.LongAdder()).increment();
-
-        double bestBw2 = best.bw2;
-
-        // Safety fallback
-        if (!(bestBw2 > 0.0) || !Double.isFinite(bestBw2)) bestBw2 = bw2Med;
-
-        // Store
         if (bwCoupleByTarget) bw2OptByTargetContCache.put(fullKey, bestBw2);
         else bw2OptCache.put(fullKey, bestBw2);
 
@@ -1062,6 +997,10 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return bump > 0;
     }
 
+    /* ====================================================================== */
+    /* ======================  n×n kernel (fast for 2+)  ===================== */
+    /* ====================================================================== */
+
     /**
      * Retrieves the data model associated with this instance, encapsulating the
      * data used for computations or analysis in the current context.
@@ -1071,6 +1010,10 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     public DataModel getDataModel() {
         return dataSet;
     }
+
+    /* ====================================================================== */
+    /* ===================  feature-space (your original)  =================== */
+    /* ====================================================================== */
 
     /**
      * Returns the effective sample size used in computations. The effective sample size
@@ -1096,7 +1039,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = (nEff < 0) ? this.sampleSize : nEff;
-        initCaches();
+        resetCache();
     }
 
     /**
@@ -1110,6 +1053,24 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return "FFML (continuous+categorical product-kernel)";
     }
 
+//    /**
+//     * Sets the bandwidth multiplier to adjust the data transfer rate.
+//     * The provided value must be greater than 0 and finite.
+//     *
+//     * @param bandwidthMultiplier the positive finite value to set as the bandwidth multiplier
+//     * @throws IllegalArgumentException if the provided bandwidthMultiplier is not greater than 0
+//     *                                  or is not a finite value
+//     */
+//    public void setBandwidthMultiplier(double bandwidthMultiplier) {
+//        if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
+//            throw new IllegalArgumentException("bandwidthMultiplier must be > 0");
+//        }
+//        this.bandwidthMultiplier = bandwidthMultiplier;
+//        resetCache();
+//    }
+
+    // -------------------- sigma-only case --------------------
+
     /**
      * Sets the value of the lambda parameter. The lambda parameter must be greater than 0.
      * Updates the internal state by resetting the cache.
@@ -1120,7 +1081,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     public void setLambda(double lambda) {
         if (lambda <= 0) throw new IllegalArgumentException("lambda must be > 0");
         this.lambda = lambda;
-        initCaches();
+        resetCache();
     }
 
     // -------------------- missingness row selection (mixed) --------------------
@@ -1134,7 +1095,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      */
     public void setBwMaxRows(int bwMaxRows) {
         this.bwMaxRows = Math.max(50, bwMaxRows);
-        initCaches();
+        resetCache();
     }
 
     /**
@@ -1145,8 +1106,84 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     public void setNumFeatures(int numFeatures) {
         if (numFeatures < 8) throw new IllegalArgumentException("numFeatures should be >= 8");
         this.numFeatures = numFeatures;
-        initCaches();
+        resetCache();
     }
+
+    /**
+     * Returns the base seed value used for initializing or seeding operations.
+     *
+     * @return the base seed as a long value
+     */
+    public long getBaseSeed() {
+        return baseSeed;
+    }
+
+    /**
+     * Sets the base seed value for the random generator or algorithm
+     * and resets any associated cached data.
+     *
+     * @param baseSeed the base seed value to initialize the random generator
+     */
+    public void setBaseSeed(long baseSeed) {
+        this.baseSeed = baseSeed;
+        resetCache();
+    }
+
+    /**
+     * Indicates whether features are coupled by target.
+     *
+     * @return true if features are coupled by target; false otherwise.
+     */
+    public boolean isCoupleFeaturesByTarget() {
+        return coupleFeaturesByTarget;
+    }
+
+    // -------------------- extraction + preprocessing --------------------
+
+    /**
+     * Sets the state of the coupleFeaturesByTarget property, which determines whether
+     * features are coupled based on the target.
+     *
+     * @param coupleFeaturesByTarget a boolean indicating whether features should
+     *                               be coupled by target (true) or not (false)
+     */
+    public void setCoupleFeaturesByTarget(boolean coupleFeaturesByTarget) {
+        this.coupleFeaturesByTarget = coupleFeaturesByTarget;
+        resetCache();
+    }
+
+    /**
+     * Retrieves the feature type associated with this object.
+     *
+     * @return the feature type as a FeatureType instance.
+     */
+    public FeatureType getFeatureType() {
+        return featureType;
+    }
+
+    /**
+     * Sets the feature type for the current object. This method assigns a new value
+     * to the featureType property and clears any cached data associated with the previous value.
+     *
+     * @param featureType the feature type to set; must not be null
+     * @throws IllegalArgumentException if the featureType parameter is null
+     */
+    public void setFeatureType(FeatureType featureType) {
+        if (featureType == null) throw new IllegalArgumentException("featureType cannot be null");
+        this.featureType = featureType;
+        resetCache();
+    }
+
+    /**
+     * Retrieves the value of the catRho property.
+     *
+     * @return the current value of catRho as a double.
+     */
+    public double getCatRho() {
+        return catRho;
+    }
+
+    // -------------------- ORF / Gaussian helpers --------------------
 
     /**
      * Set categorical similarity rho in [0,1).
@@ -1159,7 +1196,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             throw new IllegalArgumentException("catRho must be in [0,1)");
         }
         this.catRho = rho;
-        initCaches();
+        resetCache();
     }
 
     /**
@@ -1372,6 +1409,14 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             double sigma2,
             long seed
     ) {
+        // This is essentially your original gpLogMarginalLikelihoodRFFMixed,
+        // but with two small improvements:
+        //  (i) For 1 discrete parent, preallocate the Kronecker temp buffer once per call.
+        //  (ii) For 1 discrete parent, avoid building CatFeatureMap (Cholesky on L×L) by using
+        //       your existing buildCatMap code as-is (keeps exact same semantics).
+        //
+        // I kept your original computations for G, v, yTy, B=G+sigma2I, logdet, solves.
+
         final int dc = contParents.length;
 
         double[][] W = null;
@@ -1759,6 +1804,29 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return x;
     }
 
+    //    private void resetCache() {
+//        localScoreCacheRef.set(new ConcurrentHashMap<>());
+//        bw2Cache.clear();
+//    }
+    private void resetCache() {
+        // If the object was deserialized / cloned / reconstructed without calling constructors
+        // (or without calling readObject), these can be null.
+        if (localScoreCacheRef == null) {
+            localScoreCacheRef = new AtomicReference<>(new ConcurrentHashMap<>());
+        } else if (localScoreCacheRef.get() == null) {
+            localScoreCacheRef.set(new ConcurrentHashMap<>());
+        }
+
+        if (bw2Cache == null) bw2Cache = new ConcurrentHashMap<>();
+        if (bw2OptCache == null) bw2OptCache = new ConcurrentHashMap<>();
+        if (bw2MedByTargetContCache == null) bw2MedByTargetContCache = new ConcurrentHashMap<>();
+        if (bw2OptByTargetContCache == null) bw2OptByTargetContCache = new ConcurrentHashMap<>();
+    }
+
+//    private void resetCache() {
+//        localScoreCacheRef.set(new ConcurrentHashMap<>());
+//    }
+
     private long seedFor(int targetIndex, long cacheKey) {
         // If coupled: same feature basis for all parent sets of this target.
         // If not: old behavior (seed changes with parent set).
@@ -1811,20 +1879,28 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         ORF
     }
 
-    /**
-     * @param Wbase mFeatures x dc
-     * @param b     mFeatures
-     */
-    private record BaseWB(double[][] Wbase, double[] b) {
+    private static final class BaseWB {
+        final double[][] Wbase;  // mFeatures x dc
+        final double[] b;        // mFeatures
+
+        BaseWB(double[][] Wbase, double[] b) {
+            this.Wbase = Wbase;
+            this.b = b;
+        }
     }
 
     // -------------------- discrete reading --------------------
 
-    /**
-     * @param levelOfRow maps each row (0..n-1) to 0..L-1
-     * @param A          L x L, rows are features for each level
-     */
-    private record CatFeatureMap(int L, int[] levelOfRow, double[][] A) {
+    private static final class CatFeatureMap {
+        final int L;
+        final int[] levelOfRow;     // maps each row (0..n-1) to 0..L-1
+        final double[][] A;         // L x L, rows are features for each level
+
+        CatFeatureMap(int L, int[] levelOfRow, double[][] A) {
+            this.L = L;
+            this.levelOfRow = levelOfRow;
+            this.A = A;
+        }
 
         double[] featureForRow(int rowIndexWithinActive) {
             int lev = levelOfRow[rowIndexWithinActive];
@@ -1833,10 +1909,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     }
 
     @Serial
-    private void readObject(java.io.ObjectInputStream in)
-            throws java.io.IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        // Rebuild transient caches after deserialization.
-        initCaches();
+    private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
+        s.defaultReadObject();
+        resetCache();
     }
 }

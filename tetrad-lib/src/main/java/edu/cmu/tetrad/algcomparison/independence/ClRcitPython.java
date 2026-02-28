@@ -89,6 +89,8 @@ public class ClRcitPython implements IndependenceWrapper {
             );
         }
 
+        dataSet = dataSet.copy();
+
         // -----------------------------
         // 1. Resolve python executable
         // -----------------------------
