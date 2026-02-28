@@ -143,15 +143,6 @@ public final class VertexRepairPanel extends JPanel {
 
         int c;
 
-        // 4) Node-P: FINITE first, then log-odds DESC
-        c = finiteFirst(a.nodePAfter(), b.nodePAfter());
-        if (c != 0) return c;
-
-        double npA = nodeLogOdds(a);
-        double npB = nodeLogOdds(b);
-        c = -Double.compare(npA, npB);
-        if (c != 0) return c;
-
         // 1) Δ violations (more negative is better)
         c = Integer.compare(a.delta(), b.delta()); // ASC
         if (c != 0) return c;
@@ -162,6 +153,15 @@ public final class VertexRepairPanel extends JPanel {
 
         // 3) Smaller edit size preferred (single-edge before multi-edge)
         c = Integer.compare(editSize(a), editSize(b));
+        if (c != 0) return c;
+
+        // 4) Node-P: FINITE first, then log-odds DESC
+        c = finiteFirst(a.nodePAfter(), b.nodePAfter());
+        if (c != 0) return c;
+
+        double npA = nodeLogOdds(a);
+        double npB = nodeLogOdds(b);
+        c = -Double.compare(npA, npB);
         if (c != 0) return c;
 
         // 5) Model-P improvement over baseline (dMp DESC)
