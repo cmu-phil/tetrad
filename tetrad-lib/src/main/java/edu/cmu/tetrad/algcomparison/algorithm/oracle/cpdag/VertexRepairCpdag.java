@@ -123,7 +123,7 @@ public class VertexRepairCpdag extends AbstractBootstrapAlgorithm implements Alg
 
         // Configure VertexRepairSearch.
         VertexRepairSearch vr = new VertexRepairSearch(it, start, this.knowledge,
-                ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
+                ConditioningSetType.RECURSIVE_BLOCKING);
 
         Graph repaired = vr.search(
                 start,

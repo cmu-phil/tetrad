@@ -576,8 +576,8 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         continuousDelegate.setVerbose(verbose);
         continuousDelegate.setLambda(lambda);
 //        continuousDelegate.setCenterFeatures(centerFeatures);
-//        continuousDelegate.setNumFeaturesXY(numFeatXY);
-//        continuousDelegate.setNumFeaturesZ(numFeatZ);
+        continuousDelegate.setNumFeaturesXY(numFeatXY);
+        continuousDelegate.setNumFeaturesZ(numFeatZ);
         continuousDelegate.setPermutations(permutations);
         continuousDelegate.setApproximation(pValueMethod);
         continuousDelegate.setRows(rows);
