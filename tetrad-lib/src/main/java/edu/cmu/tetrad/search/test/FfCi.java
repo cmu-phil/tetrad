@@ -85,6 +85,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
     // ---------------- RNG ----------------
     private final Random rng;
+    private long seed = 1729L; // stable default seed (can be overridden by constructor/params)
 
     // ---------------- caches ----------------
     private transient Map<String, SimpleMatrix> featCache = new ConcurrentHashMap<>();
@@ -107,6 +108,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      */
     public FfCi(DataSet dataSet) {
         this(dataSet, new Parameters());
+        // ensure dataVersion is set consistently even when someone calls the 1-arg ctor
         this.dataVersion = System.identityHashCode(dataSet);
     }
 
@@ -124,6 +126,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     public FfCi(DataSet dataSet, Parameters params) {
         this.data = Objects.requireNonNull(dataSet, "data");
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
+        // set initial active row count (will be updated by setRows if used)
         this.n = getActiveRowCount();
 
         boolean anyDisc = false;
@@ -136,11 +139,15 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         this.continuousDelegate = new FfCiContinuous(this.data);
 
         // Seed: respect rcit.seed if present; otherwise stable default.
-        long seed = params.getLong("rcit.seed", 1729L);
-        this.rng = new Random(seed);
+        this.seed = params.getLong("rcit.seed", 1729L);
+        this.rng = new Random(this.seed);
 
-        // Initialize delegate from current knobs
+        // initialize dataVersion so cache keys incorporate dataset identity by default
+        this.dataVersion = System.identityHashCode(dataSet);
+
+        // Initialize delegate from current knobs (and propagate seed)
         syncDelegateToThis();
+        this.continuousDelegate.setSeed(this.seed);
     }
 
     // ---------------- public setters (wrapper-friendly) ----------------
@@ -154,6 +161,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      * @param seed the initial seed value to set for the random number generator.
      */
     public void setSeed(long seed) {
+        this.seed = seed;
         this.rng.setSeed(seed);
         invalidateCaches();
         this.continuousDelegate.setSeed(seed);
@@ -336,7 +344,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     public void setFeatureType(FfCiContinuous.FeatureType featureType) {
         this.featureType = Objects.requireNonNull(featureType, "featureType");
         this.continuousDelegate.setFeatureType(featureType);
-        this.featCache.clear();
+        getFeatureCache().clear(); // null-safe
     }
 
     /**
@@ -399,8 +407,8 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         if (rows == null) {
             this.rows = null;
             this.n = data.getNumRows();
-            featCache.clear();
-            bw2Cache.clear();
+            getFeatureCache().clear();
+            getBw2Cache().clear();
             // critical for parity
             this.continuousDelegate.setRows(null);
             return;
@@ -415,8 +423,8 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
         this.rows = new ArrayList<>(rows);
         this.n = this.rows.size();
-        featCache.clear();
-        bw2Cache.clear();
+        getFeatureCache().clear();
+        getBw2Cache().clear();
         // critical for parity
         this.continuousDelegate.setRows(this.rows);
     }
@@ -575,12 +583,14 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         continuousDelegate.setAlpha(alpha);
         continuousDelegate.setVerbose(verbose);
         continuousDelegate.setLambda(lambda);
-//        continuousDelegate.setCenterFeatures(centerFeatures);
+//    continuousDelegate.setCenterFeatures(centerFeatures);
         continuousDelegate.setNumFeaturesXY(numFeatXY);
         continuousDelegate.setNumFeaturesZ(numFeatZ);
         continuousDelegate.setPermutations(permutations);
         continuousDelegate.setApproximation(pValueMethod);
         continuousDelegate.setRows(rows);
+        // Make sure the delegate uses the same RNG seed for reproducibility
+        continuousDelegate.setSeed(this.seed);
         // NOTE: bandwidthMultiplier/bwMaxRows/featureType/catRho are mixed-only here.
     }
 
@@ -592,7 +602,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
         String key = keyFeat(tag, varsForKey, mFeaturesCont, seed);
 
-        return featCache.computeIfAbsent(key, k -> {
+        return getFeatureCache().computeIfAbsent(key, k -> {
             MixedBlock block = extractMixedBlock(varsForKey);
 
             double[][] Zc = block.cont; // n x dc (z-scored)
@@ -682,7 +692,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     private double bw2For(String tag, List<Node> varsForKey, double[][] Zcont) {
         String key = keyBw2ContinuousOnly(tag, varsForKey);
 
-        return bw2Cache.computeIfAbsent(key, k -> {
+        return getBw2Cache().computeIfAbsent(key, k -> {
             int n = Zcont.length;
             if (n <= 2 || (n > 0 && Zcont[0].length == 0)) return 1.0;
 
