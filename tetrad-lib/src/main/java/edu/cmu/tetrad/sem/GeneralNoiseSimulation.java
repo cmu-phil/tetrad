@@ -13,15 +13,11 @@ import java.util.*;
 import java.util.function.Function;
 
 /**
- * Represents a Causal Perceptron Network designed to generate synthetic data by traversing
- * an acyclic graph while applying random multi-layer perceptron (MLP) computations to represent
- * node relationships. This class provides functionality to create a dataset that respects the
- * causal structure defined by the graph, optionally applying noise, rescaling, and activation
- * functions to the generated data.
- * <p>
- * Each node of the graph can be represented as being driven by other parent nodes,
- * constructed through a random MLP. The MLP structure, activation function, and other
- * parameters can be customized in the constructor.
+ * General-noise simulator: X_j = f_j(Pa(X_j), e_j) + b_j
+ * where b_j is a per-node intercept sampled once per dataset (not per sample).
+ *
+ * This keeps e_j mean-zero (assuming your noiseDistribution is centered, or at least stable),
+ * while letting marginal locations vary across variables in a controlled way.
  */
 public class GeneralNoiseSimulation {
 
@@ -33,22 +29,15 @@ public class GeneralNoiseSimulation {
     private final Function<Double, Double> activationFunction;
     private final boolean useFastTanh;
 
+    // Per-node intercepts (aligned to topo order at generation time)
+    private final double interceptSd;
+    private final long interceptSeed;
+
     // Keep simple per-node seeding (still random overall)
     private final Random seeder = new Random();
 
     /**
-     * Creates a AdditiveNoiseSimulation for generating data with a causal structure based on the provided graph.
-     *
-     * @param graph The acyclic graph representing the causal structure of the network.
-     * @param numSamples The number of samples to generate by the network. Must be greater than 0.
-     * @param noiseDistribution The probability distribution used to sample noise for the network.
-     * @param hiddenDimensions An array representing the number of hidden neurons per layer. All entries must be at least 1.
-     * @param inputScale A scaling factor applied to the inputs of the network.
-     * @param activationFunction A function applied as the activation function for the perceptron network.
-     *                           Must be provided and not null.
-     * @throws IllegalArgumentException If the graph is not acyclic, numSamples is less than 1, rescaleMin is greater
-     *                                  than rescaleMax, or if any hidden dimensions are less than 1.
-     * @throws NullPointerException If noiseDistribution, hiddenDimensions, or activationFunction are null.
+     * Backward-compatible constructor: intercept SD defaults to 0 (no intercepts).
      */
     public GeneralNoiseSimulation(Graph graph,
                                   int numSamples,
@@ -56,13 +45,29 @@ public class GeneralNoiseSimulation {
                                   int[] hiddenDimensions,
                                   double inputScale,
                                   Function<Double, Double> activationFunction) {
+        this(graph, numSamples, noiseDistribution, hiddenDimensions, inputScale, activationFunction,
+                0.0, 123456789L);
+    }
+
+    /**
+     * New constructor: adds per-node intercepts b_j ~ N(0, interceptSd^2).
+     *
+     * @param interceptSd  standard deviation of node intercepts (try 0.5, 1.0, 2.0)
+     * @param interceptSeed seed for intercept RNG so runs are reproducible if desired
+     */
+    public GeneralNoiseSimulation(Graph graph,
+                                  int numSamples,
+                                  RealDistribution noiseDistribution,
+                                  int[] hiddenDimensions,
+                                  double inputScale,
+                                  Function<Double, Double> activationFunction,
+                                  double interceptSd,
+                                  long interceptSeed) {
         if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycles.");
         if (numSamples < 1) throw new IllegalArgumentException("numSamples must be positive.");
-//        if (rescaleMin > rescaleMax) throw new IllegalArgumentException("rescaleMin > rescaleMax");
         Objects.requireNonNull(noiseDistribution, "noiseDistribution");
         Objects.requireNonNull(hiddenDimensions, "hiddenDimensions");
         Objects.requireNonNull(activationFunction, "activationFunction");
-
         for (int h : hiddenDimensions) if (h < 1) throw new IllegalArgumentException("Hidden dims must be >= 1");
 
         this.graph = graph;
@@ -72,23 +77,15 @@ public class GeneralNoiseSimulation {
         this.inputScale = inputScale;
         this.activationFunction = activationFunction;
 
+        this.interceptSd = Math.max(0.0, interceptSd);
+        this.interceptSeed = interceptSeed;
+
         // IMPORTANT: give the method reference a target type to make == legal
         @SuppressWarnings("unchecked")
         Function<Double, Double> tanhRef = (Function<Double, Double>) (Double x) -> Math.tanh(x);
         this.useFastTanh = activationFunction == tanhRef;
     }
 
-    /**
-     * Generates a dataset based on the causal structure defined by the network's graph.
-     * This method uses a causal graph to determine the order of nodes, processes the
-     * parent's data, adds noise, and forwards it through a randomly initialized multilayer
-     * perceptron (MLP) with the specified parameters. The data is optionally rescaled
-     * between specified minimum and maximum values, and the resulting data is returned
-     * as part of a structured dataset.
-     *
-     * @return A dataset containing generated data with causal relationships derived from
-     *         the network's graph structure and the associated processing logic.
-     */
     public DataSet generateData() {
         final List<Node> topo = graph.paths().getValidOrder(graph.getNodes(), true);
         final int P = topo.size(), N = numSamples;
@@ -109,6 +106,13 @@ public class GeneralNoiseSimulation {
             parentsIdx[j] = idx;
         }
 
+        // Sample per-node intercepts once (aligned to topo order)
+        final double[] nodeIntercept = new double[P];
+        if (interceptSd > 0.0) {
+            Random irng = new Random(interceptSeed);
+            for (int j = 0; j < P; j++) nodeIntercept[j] = irng.nextGaussian() * interceptSd;
+        }
+
         // Reusable EJML matrices
         DMatrixRMaj A = new DMatrixRMaj(N, 1);  // input to MLP (will reshape)
         DMatrixRMaj Z = new DMatrixRMaj(N, 1);  // hidden scratch
@@ -127,6 +131,7 @@ public class GeneralNoiseSimulation {
                 int k = c;
                 for (int i = 0; i < N; i++, k += Din) A.data[k] = raw[i][col];
             }
+
             // draw noise once and place as last column
             for (int i = 0; i < N; i++) noise[i] = noiseDistribution.sample();
             int k = pj.length;
@@ -138,11 +143,10 @@ public class GeneralNoiseSimulation {
             // Forward pass: Y = mlp(A)
             Y = mlp.forward(A, Z, Y, activationFunction, useFastTanh);
 
-//            // write column + rescale
-            double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
-            for (int i = 0; i < N; i++) {
-                double v = Y.data[i]; raw[i][j] = v;
-                if (v < min) min = v; if (v > max) max = v;
+            // Add per-node intercept b_j (constant shift for this variable)
+            final double bj = nodeIntercept[j];
+            if (bj != 0.0) {
+                for (int i = 0; i < N; i++) Y.data[i] += bj;
             }
 
             // write column
@@ -150,25 +154,6 @@ public class GeneralNoiseSimulation {
         }
 
         return new BoxDataSet(new DoubleDataBox(raw), new ArrayList<>(topo));
-    }
-
-    // Computes an approximate quantile of raw[0..N-1][col].
-    // Uses a copy + sort; O(N log N) per node, which is usually fine for simulation.
-    private static double quantileOfColumn(double[][] raw, int col, double q) {
-        int n = raw.length;
-        double[] tmp = new double[n];
-        for (int i = 0; i < n; i++) tmp[i] = raw[i][col];
-        Arrays.sort(tmp);
-
-        if (q <= 0) return tmp[0];
-        if (q >= 1) return tmp[n - 1];
-
-        double pos = q * (n - 1);
-        int lo = (int) Math.floor(pos);
-        int hi = (int) Math.ceil(pos);
-        if (hi == lo) return tmp[lo];
-        double w = pos - lo;
-        return tmp[lo] * (1.0 - w) + tmp[hi] * w;
     }
 
     // ------------------ Tiny EJML MLP ------------------
@@ -198,8 +183,6 @@ public class GeneralNoiseSimulation {
             heInit(W[L - 1], r, inputScale * 0.5);
         }
 
-        /** Y = forward(X). Uses multTransB so we never materialize W^T. */
-        /** Y = forward(X). Uses two scratch buffers so output != input for EJML. */
         DMatrixRMaj forward(DMatrixRMaj X,
                             DMatrixRMaj scratch1,
                             DMatrixRMaj out,

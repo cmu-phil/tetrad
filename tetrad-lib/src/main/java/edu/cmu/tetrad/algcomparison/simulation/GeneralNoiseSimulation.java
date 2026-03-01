@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.BetaDistribution;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
@@ -229,8 +230,8 @@ public class GeneralNoiseSimulation implements Simulation {
 
 //        parameters.add(Params.AM_RESCALE_MIN);
 //        parameters.add(Params.AM_RESCALE_MAX);
-        parameters.add(Params.AM_BETA_ALPHA);
-        parameters.add(Params.AM_BETA_BETA);
+//        parameters.add(Params.AM_BETA_ALPHA);
+//        parameters.add(Params.AM_BETA_BETA);
         parameters.add(Params.HIDDEN_DIMENSIONS);
         parameters.add(Params.INPUT_SCALE);
         parameters.add(Params.NUM_RUNS);
@@ -294,7 +295,8 @@ public class GeneralNoiseSimulation implements Simulation {
 
         edu.cmu.tetrad.sem.GeneralNoiseSimulation generator = new edu.cmu.tetrad.sem.GeneralNoiseSimulation(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
-                new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
+//                new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
+                new NormalDistribution(0, 1),
 //                parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
                 hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
 
