@@ -97,10 +97,23 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * If true, use valid row subsets when missing exists.
      */
     private final boolean calculateRowSubsets;
-
-    // -------------------- configuration knobs --------------------
+    /**
+     * Represents a collection of data organized in a specific structure.
+     * This dataset is immutable after initialization and can be used
+     * for operations such as processing or analysis within the application.
+     */
     private final DataSet dataSet;
+    /**
+     * A list of Node objects representing variable elements.
+     * This list is immutable and maintains a collection of variables
+     * used within a specific context.
+     */
     private final List<Node> variables;
+    /**
+     * Represents the size of a sample or subset of data.
+     * This value is immutable and determines the number of elements
+     * or measurements included in a single sampling instance.
+     */
     private final int sampleSize;
     /**
      * Standardized columns for continuous variables only (NaNs preserved).
@@ -115,31 +128,84 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      */
     private final boolean[] isDiscrete;
     /**
-     * Cache: (target i, sorted parents) -> score.
+     * A thread-safe, transient reference to a cache that maps unique identifiers (Long) to scores (Double).
+     * This cache is implemented as a ConcurrentHashMap and wrapped in an AtomicReference
+     * to support atomic updates and ensure thread safety during cache modifications.
+     * <p>
+     * The use of the transient keyword indicates that this field should not be serialized.
+     * This is typically used for data that is either derived or does not need to persist across sessions.
      */
     private transient AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
-
+    /**
+     * A thread-safe, transient cache used to store mappings between unique identifiers and their corresponding
+     * double-precision floating-point values. This cache is implemented as a {@code ConcurrentHashMap<Long, Double>},
+     * allowing concurrent access and modifications while ensuring data consistency.
+     * <p>
+     * The {@code bw2Cache} variable is marked as {@code transient}, indicating that it will not be serialized
+     * when the containing object is serialized. This is useful for scenarios where the cache data is intended
+     * to exist only during the runtime of the application and should be recreated or reloaded after deserialization.
+     */
     private transient ConcurrentHashMap<Long, Double> bw2Cache = new ConcurrentHashMap<>();
-
+    /**
+     * A thread-safe cache used for storing and retrieving precomputed results for optimizations
+     * based on a key-value pair structure. The key is a {@code Long} representing a unique identifier,
+     * and the value is a {@code Double} representing the associated computed result.
+     * <p>
+     * The cache uses a {@code ConcurrentHashMap} to allow for safe access and modification
+     * in a concurrent execution environment.
+     * <p>
+     * This field is marked as {@code transient}, indicating that it is not intended to be
+     * serialized as part of the object's state.
+     */
     private transient ConcurrentHashMap<Long, Double> bw2OptCache = new ConcurrentHashMap<>();
+    /**
+     * A transient cache used to store mappings between a target identifier and its associated
+     * median bandwidth value. The mapping uses a {@code Long} as the key representing the
+     * target's unique identifier, and a {@code Double} as the value representing the computed
+     * median bandwidth.
+     * <p>
+     * The use of {@code ConcurrentHashMap} ensures thread-safe access and modifications,
+     * making this variable suitable for concurrent environments where multiple threads might
+     * read from or write to the cache simultaneously.
+     * <p>
+     * Marked as {@code transient} to exclude it from the serialization process, ensuring
+     * the cache contents are not persisted and must be recomputed or reloaded upon
+     * deserialization when needed.
+     */
     private transient ConcurrentHashMap<Long, Double> bw2MedByTargetContCache = new ConcurrentHashMap<>();
+    /**
+     * A thread-safe, transient cache that maps a target container identifier
+     * (represented as a Long) to its associated bandwidth optimization value
+     * (represented as a Double).
+     * <p>
+     * The cache is designed to store intermediate or temporary computation results
+     * for optimizing bandwidth related to specific target containers. Due to its
+     * transient nature, this data will not be serialized during object serialization.
+     * <p>
+     * ConcurrentHashMap is used to ensure thread-safe operations, enabling
+     * concurrent access and updates by multiple threads without requiring
+     * explicit synchronization.
+     */
     private transient ConcurrentHashMap<Long, Double> bw2OptByTargetContCache = new ConcurrentHashMap<>();
-    // ---- make bw selection "global-per-target" for comparability across DAGs ----
-    private volatile boolean bwCoupleByTarget = true;     // NEW: default true
+    /**
+     * Indicates whether bidirectional coupling is enabled by target.
+     * This flag is used to determine if the coupling logic should
+     * operate in a bidirectional manner based on the target configuration.
+     * <p>
+     * By default, this variable is set to {@code true}.
+     * Marked as {@code volatile} to ensure visibility of updates across threads.
+     */
+    private volatile boolean bwCoupleByTarget = true;     // default true
     /**
      * Base ridge/noise knob. Used as sigma^2. Must be > 0.
      */
     private volatile double lambda = 1.0;
-
-    // -------------------- reproducibility / feature coupling --------------------
-
     /**
      * Base seed for random-feature generation. Changing this changes the random feature basis.
      * Default is arbitrary but fixed.
      */
     private volatile long baseSeed = 0xC0FFEE1234ABCDL;
-
     /**
      * If true (recommended), random features (W,b) are coupled by TARGET only.
      * This stabilizes localScoreDiff comparisons and usually fixes BOSS edge reversals.
@@ -147,12 +213,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * If false, we revert to the old behavior: seed depends on (target, parent set).
      */
     private volatile boolean coupleFeaturesByTarget = true;
-
-    // -------------------- data --------------------
-//    /**
-//     * Bandwidth multiplier on the median heuristic (continuous part only).
-//     */
-//    private volatile double bandwidthMultiplier = 1.0;
     /**
      * Max rows used to estimate median bandwidth (subsample for speed).
      */
@@ -248,8 +308,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         if (n == 0) return null;
 
         // Use observed levels in this subset (important when some levels are absent after filtering)
-//        int[] uniq = Arrays.stream(vals).distinct().sorted().toArray();
-
         int[] uniq = Arrays.stream(vals)
                 .filter(v -> v != DiscreteVariable.MISSING_VALUE && v != Integer.MIN_VALUE)
                 .distinct().sorted().toArray();
@@ -321,8 +379,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     private static CatFeatureMap buildCatMap(int[] vals, double rho) {
         // map distinct values to compact 0..L-1
         int n = vals.length;
-
-//        int[] uniq = Arrays.stream(vals).distinct().sorted().toArray();
 
         int[] uniq = Arrays.stream(vals)
                 .filter(v -> v != DiscreteVariable.MISSING_VALUE && v != Integer.MIN_VALUE)
@@ -728,71 +784,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * fullKey = keyTargetCont(targetIndex, contParents)
      * (i.e., “fullKey” is really the bw-opt cache key in that mode).
      */
-//    private double pickBw2ByGridSearch(
-//            long fullKey,
-//            double[] yCentered,
-//            int[] contParents,
-//            int[] discParents,
-//            int[] rows,
-//            int n,
-//            int mFeatures,
-//            double bw2Med,
-//            double sigma2,
-//            long seed
-//    ) {
-//        if (contParents == null || contParents.length == 0) return 1.0;  // no continuous inputs
-//        if (!(bw2Med > 0) || !Double.isFinite(bw2Med)) bw2Med = 1.0;
-//
-//        // Cache lookup
-//        if (bwCoupleByTarget) {
-//            // Here, fullKey should already be keyTargetCont(targetIndex, contParents)
-//            Double cached = bw2OptByTargetContCache.get(fullKey);
-//            if (cached != null) return cached;
-//        } else {
-//            Double cached = bw2OptCache.get(fullKey);
-//            if (cached != null) return cached;
-//        }
-//
-//        // Grid in multiplier space. Interpret as bw2 = bw2Med * mult^2
-//        final double[] mult = {0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0};
-//
-//        double bestBw2 = bw2Med;
-//        double best = Double.NEGATIVE_INFINITY;
-//
-//        for (double m : mult) {
-//            double bw2 = bw2Med * (m * m);
-//            if (!(bw2 > 0) || !Double.isFinite(bw2)) continue;
-//
-//            double ll = gpLogMarginalLikelihoodRFFMixed(
-//                    yCentered,
-//                    contParents,
-//                    discParents,
-//                    rows,
-//                    n,
-//                    mFeatures,
-//                    bw2,
-//                    sigma2,
-//                    seed
-//            );
-//
-//            if (Double.isFinite(ll) && ll > best) {
-//                best = ll;
-//                bestBw2 = bw2;
-//            }
-//        }
-//
-//        // Fallback safety
-//        if (!Double.isFinite(best) || !(bestBw2 > 0) || !Double.isFinite(bestBw2)) bestBw2 = bw2Med;
-//
-//        // Store
-//        if (bwCoupleByTarget) {
-//            bw2OptByTargetContCache.put(fullKey, bestBw2);
-//        } else {
-//            bw2OptCache.put(fullKey, bestBw2);
-//        }
-//
-//        return bestBw2;
-//    }
     private double pickBw2ByGridSearch(
             long fullKey,
             double[] yCentered,
@@ -817,7 +808,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             if (cached != null) return cached;
         }
 
-        final double[] mult = {0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0, 8.0, 16.0};
+        final double[] mult = {0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0, 8.0, 16.0, 32.0, 64.0};
 
         // Precompute things that do NOT depend on bw2
         final boolean useNxN = (discParents != null && discParents.length >= 2);
@@ -828,58 +819,64 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         double bestBw2 = bw2Med;
         double best = Double.NEGATIVE_INFINITY;
 
-        // --- Option A: sequential (simplest, still big win) ---
-        for (double m : mult) {
-            double bw2 = bw2Med * (m * m);
-            if (!(bw2 > 0) || !Double.isFinite(bw2)) continue;
-
-            final double ll;
-            if (useNxN) {
-                ll = gpLogML_mixedKernelNxN_precomp(
-                        yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked
-                );
-            } else {
-                // keep existing path unchanged
-                ll = gpLogMarginalLikelihoodRFFMixed(
-                        yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed
-                );
-            }
-
-            if (Double.isFinite(ll) && ll > best) {
-                best = ll;
-                bestBw2 = bw2;
-            }
-        }
-
-//        // --- Option B: parallel grid (uncomment if you want) ---
+//        // --- Option A: sequential (simplest, still big win) ---
+//        {
+//            for (double m : mult) {
+//                double bw2 = bw2Med * (m * m);
+//                if (!(bw2 > 0) || !Double.isFinite(bw2)) continue;
 //
-//        final class Best {
-//            final double bw2, ll;
+//                final double ll;
+//                if (useNxN) {
+//                    ll = gpLogML_mixedKernelNxN_precomp(
+//                            yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked
+//                    );
+//                } else {
+//                    // keep existing path unchanged
+//                    ll = gpLogMarginalLikelihoodRFFMixed(
+//                            yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed
+//                    );
+//                }
 //
-//            Best(double bw2, double ll) {
-//                this.bw2 = bw2;
-//                this.ll = ll;
+//                if (Double.isFinite(ll) && ll > best) {
+//                    best = ll;
+//                    bestBw2 = bw2;
+//                }
 //            }
 //        }
-//        double finalBw2Med = bw2Med;
-//        Best b = Arrays.stream(mult).parallel()
-//                .mapToObj(m -> {
-//                    double bw2 = finalBw2Med * (m * m);
-//                    if (!(bw2 > 0) || !Double.isFinite(bw2)) return new Best(finalBw2Med, Double.NEGATIVE_INFINITY);
-//
-//                    double ll = useNxN
-//                            ? gpLogML_mixedKernelNxN_precomp(yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked)
-//                            : gpLogMarginalLikelihoodRFFMixed(yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed);
-//
-//                    return new Best(bw2, ll);
-//                })
-//                .filter(x -> Double.isFinite(x.ll))
-//                .max(java.util.Comparator.comparingDouble(x -> x.ll))
-//                .orElse(new Best(bw2Med, Double.NEGATIVE_INFINITY));
-//
-//        bestBw2 = b.bw2;
-//        best = b.ll;
 
+        // --- Option B: parallel grid (uncomment if you want) ---
+        {
+            record Cand(int idx, double bw2, double ll) {
+            }
+
+            double finalBw2Med = bw2Med;
+
+            Cand bestCand = java.util.stream.IntStream.range(0, mult.length)
+                    .parallel()
+                    .mapToObj(idx -> {
+                        double m = mult[idx];
+                        double bw2 = finalBw2Med * (m * m);
+                        if (!(bw2 > 0) || !Double.isFinite(bw2))
+                            return new Cand(idx, finalBw2Med, Double.NEGATIVE_INFINITY);
+
+                        double ll = useNxN
+                                ? gpLogML_mixedKernelNxN_precomp(yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked)
+                                : gpLogMarginalLikelihoodRFFMixed(yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed);
+
+                        return new Cand(idx, bw2, ll);
+                    })
+                    .filter(c -> Double.isFinite(c.ll()))
+                    .reduce((a, c) -> {
+                        if (c.ll() > a.ll()) return c;
+                        if (c.ll() < a.ll()) return a;
+                        // tie: keep earlier (matches Option A’s first-max behavior)
+                        return (c.idx() < a.idx()) ? c : a;
+                    })
+                    .orElse(new Cand(-1, bw2Med, Double.NEGATIVE_INFINITY));
+
+            bestBw2 = bestCand.bw2();
+            best = bestCand.ll();
+        }
 
         if (!Double.isFinite(best) || !(bestBw2 > 0) || !Double.isFinite(bestBw2)) bestBw2 = bw2Med;
 
@@ -1052,22 +1049,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     public String toString() {
         return "FFML (continuous+categorical product-kernel)";
     }
-
-//    /**
-//     * Sets the bandwidth multiplier to adjust the data transfer rate.
-//     * The provided value must be greater than 0 and finite.
-//     *
-//     * @param bandwidthMultiplier the positive finite value to set as the bandwidth multiplier
-//     * @throws IllegalArgumentException if the provided bandwidthMultiplier is not greater than 0
-//     *                                  or is not a finite value
-//     */
-//    public void setBandwidthMultiplier(double bandwidthMultiplier) {
-//        if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
-//            throw new IllegalArgumentException("bandwidthMultiplier must be > 0");
-//        }
-//        this.bandwidthMultiplier = bandwidthMultiplier;
-//        resetCache();
-//    }
 
     // -------------------- sigma-only case --------------------
 
@@ -1409,14 +1390,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             double sigma2,
             long seed
     ) {
-        // This is essentially your original gpLogMarginalLikelihoodRFFMixed,
-        // but with two small improvements:
-        //  (i) For 1 discrete parent, preallocate the Kronecker temp buffer once per call.
-        //  (ii) For 1 discrete parent, avoid building CatFeatureMap (Cholesky on L×L) by using
-        //       your existing buildCatMap code as-is (keeps exact same semantics).
-        //
-        // I kept your original computations for G, v, yTy, B=G+sigma2I, logdet, solves.
-
         final int dc = contParents.length;
 
         double[][] W = null;
@@ -1804,10 +1777,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return x;
     }
 
-    //    private void resetCache() {
-//        localScoreCacheRef.set(new ConcurrentHashMap<>());
-//        bw2Cache.clear();
-//    }
     private void resetCache() {
         // If the object was deserialized / cloned / reconstructed without calling constructors
         // (or without calling readObject), these can be null.
@@ -1822,10 +1791,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         if (bw2MedByTargetContCache == null) bw2MedByTargetContCache = new ConcurrentHashMap<>();
         if (bw2OptByTargetContCache == null) bw2OptByTargetContCache = new ConcurrentHashMap<>();
     }
-
-//    private void resetCache() {
-//        localScoreCacheRef.set(new ConcurrentHashMap<>());
-//    }
 
     private long seedFor(int targetIndex, long cacheKey) {
         // If coupled: same feature basis for all parent sets of this target.
@@ -1845,6 +1810,12 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         int[] out = Arrays.copyOf(z, z.length + 1);
         out[z.length] = x;
         return out;
+    }
+
+    @Serial
+    private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
+        s.defaultReadObject();
+        resetCache();
     }
 
     /**
@@ -1879,6 +1850,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         ORF
     }
 
+    // -------------------- discrete reading --------------------
+
     private static final class BaseWB {
         final double[][] Wbase;  // mFeatures x dc
         final double[] b;        // mFeatures
@@ -1888,8 +1861,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             this.b = b;
         }
     }
-
-    // -------------------- discrete reading --------------------
 
     private static final class CatFeatureMap {
         final int L;
@@ -1906,11 +1877,5 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             int lev = levelOfRow[rowIndexWithinActive];
             return A[lev];
         }
-    }
-
-    @Serial
-    private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
-        resetCache();
     }
 }
