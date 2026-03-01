@@ -6,7 +6,6 @@ import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.vertex_repair.VertexRepairSearch;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -45,89 +44,6 @@ public final class VertexRepairPanel extends JPanel {
     private static final String PREF_ALPHA = "markovAlpha";
     private static final double EPS_NODEP = 1e-6;
     static double alpha = 0.01;
-    // Canonical ordering that prioritizes REORIENTATION moves that IMPROVE MODEL SCORE.
-    //
-    // Summary:
-    // 1) Primary objective still: reduce Markov violations (delta negative is good).
-    // 2) Next: prefer edits that increase the *model score* (After - Baseline).
-    // 3) Special preference: if it's a reorientation-only move AND it improves model score,
-    //    give it an extra bonus so it rises above add/remove moves with similar stats.
-    // 4) P-values + edges remain gentle tie-breakers.
-//    private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
-//        if (a == null && b == null) return 0;
-//        if (a == null) return 1;
-//        if (b == null) return -1;
-//
-//        double ua = utility(a);
-//        double ub = utility(b);
-//
-//        int c = -Double.compare(ua, ub);
-//        if (c != 0) return c;
-//
-//        // Stable tie-breaker
-//        String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
-//        String kb = (b.edit() == null || b.edit().key() == null) ? "" : b.edit().key();
-//        c = ka.compareTo(kb);
-//        if (c != 0) return c;
-//
-//        String da = (a.edit() == null || a.edit().description() == null) ? "" : a.edit().description();
-//        String db = (b.edit() == null || b.edit().description() == null) ? "" : b.edit().description();
-//        return da.compareTo(db);
-//    };
-
-//    private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
-//        if (a == null && b == null) return 0;
-//        if (a == null) return 1;
-//        if (b == null) return -1;
-//
-//        // 1) Guards first (true before false)
-//        if (a.passesGuards() != b.passesGuards()) {
-//            return a.passesGuards() ? -1 : 1;
-//        }
-//
-//        // If both fail guards, just stable-tie them
-//        if (!a.passesGuards()) {
-//            return stableTieBreak(a, b);
-//        }
-//
-//        // 2) Δ violations (more negative is better)
-//        int c = Integer.compare(a.delta(), b.delta()); // ASC (negative first)
-//        if (c != 0) return c;
-//
-//        // 3) Fewer edges preferred
-//        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
-//        if (c != 0) return c;
-//
-//        // 4) Node-P (log-odds DESC)
-//        double npA = nodeLogOdds(a);
-//        double npB = nodeLogOdds(b);
-//        c = -Double.compare(npA, npB);
-//        if (c != 0) return c;
-//
-    /// /        // 8) Smaller edit size preferred
-    /// /        c = Integer.compare(editSize(a), editSize(b));
-    /// /        if (c != 0) return c;
-//
-//        // 5) Model-P improvement over baseline (dMp DESC)
-//        double dMpA = modelDelta(a);
-//        double dMpB = modelDelta(b);
-//        c = -Double.compare(dMpA, dMpB);
-//        if (c != 0) return c;
-//
-//        // 6) Move-type bias when improving
-//        c = -Integer.compare(moveBiasScore(a), moveBiasScore(b)); // DESC
-//        // larger bias score first
-//        if (c != 0) return c;
-//
-//        // 7) Absolute Model-P (log-odds DESC)
-//        double mpA = modelLogOdds(a);
-//        double mpB = modelLogOdds(b);
-//        c = -Double.compare(mpA, mpB);
-//        if (c != 0) return c;
-//
-//        // 8) Stable tie-break
-//        return stableTieBreak(a, b);
-//    };
 
     public static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
         if (a == null && b == null) return 0;
@@ -215,6 +131,7 @@ public final class VertexRepairPanel extends JPanel {
     private TableRowSorter<CandidateTableModel> resultsSorter;
     private volatile SwingWorker<?, ?> activeWorker;
     private volatile JDialog watchDialog;
+
     public VertexRepairPanel(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
 
