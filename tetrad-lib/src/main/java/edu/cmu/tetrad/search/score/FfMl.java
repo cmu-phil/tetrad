@@ -542,6 +542,47 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return u * Math.sqrt(-2.0 * Math.log(s) / s);
     }
 
+//    private static double medianDistanceSquaredND(double[][] Z, int maxRows) {
+//        int n = Z.length;
+//        int d = Z[0].length;
+//        if (n < 3) return 1.0;
+//
+//        int m = Math.min(n, maxRows);
+//
+//        int[] idx = new int[m];
+//        if (m == n) {
+//            for (int i = 0; i < m; i++) idx[i] = i;
+//        } else {
+//            for (int i = 0; i < m; i++) idx[i] = (int) Math.floor((i * (long) (n - 1)) / (double) (m - 1));
+//        }
+//
+//        int cnt = m * (m - 1) / 2;
+//        double[] d2 = new double[cnt];
+//        int t = 0;
+//
+//        for (int a = 1; a < m; a++) {
+//            int i = idx[a];
+//            for (int b = 0; b < a; b++) {
+//                int j = idx[b];
+//                double dist2 = 0.0;
+//                for (int k = 0; k < d; k++) {
+//                    double diff = Z[i][k] - Z[j][k];
+//                    dist2 += diff * diff;
+//                }
+//                d2[t++] = dist2;
+//            }
+//        }
+//
+//        Arrays.sort(d2, 0, t);
+//
+//        int firstPos = 0;
+//        while (firstPos < t && d2[firstPos] <= 0) firstPos++;
+//        if (firstPos >= t) return 1.0;
+//
+//        int mid = firstPos + (t - firstPos) / 2;
+//        return d2[mid];
+//    }
+
     private static double medianDistanceSquaredND(double[][] Z, int maxRows) {
         int n = Z.length;
         int d = Z[0].length;
@@ -549,12 +590,25 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
         int m = Math.min(n, maxRows);
 
-        int[] idx = new int[m];
-        if (m == n) {
-            for (int i = 0; i < m; i++) idx[i] = i;
-        } else {
-            for (int i = 0; i < m; i++) idx[i] = (int) Math.floor((i * (long) (n - 1)) / (double) (m - 1));
+        // Derive a reproducible seed from the data so this is deterministic
+        // but not biased by row order. A light hash of a few values suffices.
+        long seed = 0x9E3779B97F4A7C15L;
+        int stride = Math.max(1, n / 16);
+        for (int i = 0; i < n; i += stride) {
+            seed ^= Double.doubleToLongBits(Z[i][0]);
+            seed *= 0x517CC1B727220A95L;
         }
+
+        // Partial Fisher-Yates shuffle to draw m indices without replacement.
+        int[] idx = new int[n];
+        for (int i = 0; i < n; i++) idx[i] = i;
+
+        SplittableRandom rng = new SplittableRandom(seed);
+        for (int i = 0; i < m; i++) {
+            int j = i + rng.nextInt(n - i);
+            int tmp = idx[i]; idx[i] = idx[j]; idx[j] = tmp;
+        }
+        // idx[0..m-1] now holds m distinct random row indices.
 
         int cnt = m * (m - 1) / 2;
         double[] d2 = new double[cnt];
