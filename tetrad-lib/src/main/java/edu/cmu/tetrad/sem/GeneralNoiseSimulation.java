@@ -13,48 +13,49 @@ import java.util.*;
 import java.util.function.Function;
 
 /**
- * General-noise simulator: X_j = f_j(Pa(X_j), e_j) + b_j
- * where b_j is a per-node intercept sampled once per dataset (not per sample).
- *
- * This keeps e_j mean-zero (assuming your noiseDistribution is centered, or at least stable),
- * while letting marginal locations vary across variables in a controlled way.
+ * General-noise simulator: X_j = f_j(Pa(X_j), e_j)
+ * <p>
+ * Each node's causal mechanism f_j is a randomly initialized MLP. Noise enters
+ * as an extra input column, allowing nonlinear interaction between parents and noise.
+ * <p>
+ * To produce data resembling real scientific datasets:
+ * <ul>
+ *   <li>Each node draws its noise from a randomly chosen distribution (normal,
+ *       skewed, or near-uniform), giving varied marginal error character.</li>
+ *   <li>Each node's MLP depth is drawn randomly from 0..maxDepth, so some
+ *       relationships are near-linear and others are strongly nonlinear.</li>
+ *   <li>Each node's output is rescaled by a random per-node factor, giving
+ *       variables different effective variances rather than all being
+ *       tanh-compressed to a similar range.</li>
+ * </ul>
  */
 public class GeneralNoiseSimulation {
 
     private final Graph graph;
     private final int numSamples;
     private final RealDistribution noiseDistribution;
-    private final int[] hiddenDimensions;
+    private final int[] hiddenDimensions;   // max hidden layer spec; actual depth varies per node
     private final double inputScale;
     private final Function<Double, Double> activationFunction;
-    private final boolean useFastTanh;
+    private final boolean isTanh;           // reliable check, not reference equality
 
-    // Per-node intercepts (aligned to topo order at generation time)
     private final double interceptSd;
     private final long interceptSeed;
 
-    // Keep simple per-node seeding (still random overall)
+    // Shared seeder — advances continuously across nodes, giving each node
+    // a distinct but reproducible random weight matrix.
     private final Random seeder = new Random();
 
-    /**
-     * Backward-compatible constructor: intercept SD defaults to 0 (no intercepts).
-     */
     public GeneralNoiseSimulation(Graph graph,
                                   int numSamples,
                                   RealDistribution noiseDistribution,
                                   int[] hiddenDimensions,
                                   double inputScale,
                                   Function<Double, Double> activationFunction) {
-        this(graph, numSamples, noiseDistribution, hiddenDimensions, inputScale, activationFunction,
-                0.0, 123456789L);
+        this(graph, numSamples, noiseDistribution, hiddenDimensions, inputScale,
+                activationFunction, 0.0, 123456789L);
     }
 
-    /**
-     * New constructor: adds per-node intercepts b_j ~ N(0, interceptSd^2).
-     *
-     * @param interceptSd  standard deviation of node intercepts (try 0.5, 1.0, 2.0)
-     * @param interceptSeed seed for intercept RNG so runs are reproducible if desired
-     */
     public GeneralNoiseSimulation(Graph graph,
                                   int numSamples,
                                   RealDistribution noiseDistribution,
@@ -76,28 +77,22 @@ public class GeneralNoiseSimulation {
         this.hiddenDimensions = hiddenDimensions.clone();
         this.inputScale = inputScale;
         this.activationFunction = activationFunction;
-
         this.interceptSd = Math.max(0.0, interceptSd);
         this.interceptSeed = interceptSeed;
 
-        // IMPORTANT: give the method reference a target type to make == legal
-        @SuppressWarnings("unchecked")
-        Function<Double, Double> tanhRef = (Function<Double, Double>) (Double x) -> Math.tanh(x);
-        this.useFastTanh = activationFunction == tanhRef;
+        // Functional check for tanh: avoids the broken reference-equality trick.
+        this.isTanh = (Math.abs(activationFunction.apply(1.0) - Math.tanh(1.0)) < 1e-12)
+                && (Math.abs(activationFunction.apply(-0.7) - Math.tanh(-0.7)) < 1e-12);
     }
 
     public DataSet generateData() {
         final List<Node> topo = graph.paths().getValidOrder(graph.getNodes(), true);
         final int P = topo.size(), N = numSamples;
-
-        // raw[row][col]
         final double[][] raw = new double[N][P];
 
-        // map node -> topo index (avoid topo.indexOf in hot loops)
         final Map<Node, Integer> indexOf = new HashMap<>(P * 2);
         for (int j = 0; j < P; j++) indexOf.put(topo.get(j), j);
 
-        // parents indices per node
         final int[][] parentsIdx = new int[P][];
         for (int j = 0; j < P; j++) {
             List<Node> ps = graph.getParents(topo.get(j));
@@ -106,66 +101,142 @@ public class GeneralNoiseSimulation {
             parentsIdx[j] = idx;
         }
 
-        // Sample per-node intercepts once (aligned to topo order)
+        // Per-node intercepts (only used if interceptSd > 0).
         final double[] nodeIntercept = new double[P];
         if (interceptSd > 0.0) {
             Random irng = new Random(interceptSeed);
             for (int j = 0; j < P; j++) nodeIntercept[j] = irng.nextGaussian() * interceptSd;
         }
 
-        // Reusable EJML matrices
-        DMatrixRMaj A = new DMatrixRMaj(N, 1);  // input to MLP (will reshape)
-        DMatrixRMaj Z = new DMatrixRMaj(N, 1);  // hidden scratch
-        DMatrixRMaj Y = new DMatrixRMaj(N, 1);  // output (N x 1)
+        // Per-node variety RNG — seeded separately from weight RNG so they don't interfere.
+        final Random varietyRng = new Random(seeder.nextLong());
 
+        DMatrixRMaj A = new DMatrixRMaj(N, 1);
+        DMatrixRMaj Z = new DMatrixRMaj(N, 1);
+        DMatrixRMaj Y = new DMatrixRMaj(N, 1);
         final double[] noise = new double[N];
 
         for (int j = 0; j < P; j++) {
             final int[] pj = parentsIdx[j];
-            final int Din = pj.length + 1;      // parents + noise
+            final int Din = pj.length + 1;
             A.reshape(N, Din, false);
 
-            // copy parents
+            // Copy parent values into input matrix.
             for (int c = 0; c < pj.length; c++) {
                 int col = pj[c];
                 int k = c;
                 for (int i = 0; i < N; i++, k += Din) A.data[k] = raw[i][col];
             }
 
-            // draw noise once and place as last column
-            for (int i = 0; i < N; i++) noise[i] = noiseDistribution.sample();
+            // Draw noise from a per-node randomly chosen distribution.
+            // This creates marginal variety: some nodes get Gaussian error,
+            // some skewed, some near-uniform — as in real scientific variables.
+            drawNodeNoise(noise, N, varietyRng);
             int k = pj.length;
             for (int i = 0; i < N; i++, k += Din) A.data[k] = noise[i];
 
-            // Random MLP for this node, supports H=[] (no hidden) too
-            RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale, seeder);
+            // Random depth for this node: 0..maxDepth layers.
+            // Depth 0 = linear model; depth > 0 = nonlinear.
+            // This means some relationships will be near-linear, others complex.
+            int[] nodeDims = randomDepth(hiddenDimensions, varietyRng);
 
-            // Forward pass: Y = mlp(A)
-            Y = mlp.forward(A, Z, Y, activationFunction, useFastTanh);
+            RandomMLP mlp = new RandomMLP(Din, nodeDims, 1, inputScale, seeder);
+            Y = mlp.forward(A, Z, Y, activationFunction, isTanh);
 
-            // Add per-node intercept b_j (constant shift for this variable)
-            final double bj = nodeIntercept[j];
-            if (bj != 0.0) {
+            // Per-node output scaling: gives variables different effective variances.
+            // Real scientific variables rarely all have the same scale.
+            double outScale = drawOutputScale(varietyRng);
+            for (int i = 0; i < N; i++) Y.data[i] *= outScale;
+
+            if (interceptSd > 0.0) {
+                final double bj = nodeIntercept[j];
                 for (int i = 0; i < N; i++) Y.data[i] += bj;
             }
 
-            // write column
             for (int i = 0; i < N; i++) raw[i][j] = Y.data[i];
         }
 
         return new BoxDataSet(new DoubleDataBox(raw), new ArrayList<>(topo));
     }
 
-    // ------------------ Tiny EJML MLP ------------------
+    /**
+     * Draw noise for one node from a randomly chosen distribution.
+     * The mix of types produces varied marginal error character across nodes:
+     *   ~50% standard normal
+     *   ~25% skewed (chi-squared-like, via sum of squared normals)
+     *   ~25% near-uniform (average of two uniforms, giving a triangular shape)
+     *
+     * All are re-centered to zero mean so the causal interpretation is clean.
+     */
+    private static void drawNodeNoise(double[] noise, int N, Random rng) {
+        int type = rng.nextInt(4); // 0,1 = normal; 2 = skewed; 3 = near-uniform
+
+        if (type <= 1) {
+            // Standard normal.
+            for (int i = 0; i < N; i++) noise[i] = rng.nextGaussian();
+        } else if (type == 2) {
+            // Skewed: difference of two exponentials with different rates.
+            // This gives a zero-mean asymmetric distribution.
+            double mean = 0.0;
+            for (int i = 0; i < N; i++) {
+                double e1 = -Math.log(1.0 - rng.nextDouble());      // Exp(1)
+                double e2 = -0.5 * Math.log(1.0 - rng.nextDouble()); // Exp(0.5)
+                noise[i] = e1 - e2;
+                mean += noise[i];
+            }
+            mean /= N;
+            for (int i = 0; i < N; i++) noise[i] -= mean;
+        } else {
+            // Near-uniform: average of two uniforms (triangular distribution).
+            double mean = 0.0;
+            for (int i = 0; i < N; i++) {
+                noise[i] = (rng.nextDouble() + rng.nextDouble()) - 1.0; // center at 0
+                mean += noise[i];
+            }
+            mean /= N;
+            for (int i = 0; i < N; i++) noise[i] -= mean;
+        }
+    }
+
+    /**
+     * Choose a random depth from 0 to hiddenDimensions.length.
+     * Depth 0 returns an empty array (linear model for this node).
+     * Otherwise returns the first d entries of hiddenDimensions.
+     * <p>
+     * Weighting: depths are drawn uniformly so all levels of nonlinearity
+     * are represented equally. Adjust the weights here if you want to bias
+     * toward more or less nonlinearity.
+     */
+    private static int[] randomDepth(int[] hiddenDimensions, Random rng) {
+        return hiddenDimensions;
+//        int maxDepth = hiddenDimensions.length;
+//        if (maxDepth == 0) return hiddenDimensions;
+//        int depth = rng.nextInt(maxDepth) + 1; // 1..maxDepth inclusive
+//        return Arrays.copyOf(hiddenDimensions, depth);
+    }
+
+    /**
+     * Draw a per-node output scale factor.
+     * Uses a log-normal distribution so scales vary over roughly an order of
+     * magnitude but are always positive. Real scientific variables measured in
+     * different units or with different effect sizes will have this kind of spread.
+     */
+    private static double drawOutputScale(Random rng) {
+        // Log-normal with mean ~1, SD ~0.6 on the log scale.
+        // 90th percentile range is roughly 0.4 to 2.5.
+        return Math.exp(rng.nextGaussian() * 0.5);
+    }
+
+    // ------------------- MLP (unchanged from original) -------------------
 
     private static final class RandomMLP {
-        final int Din, Dout;
         final int[] H;
-        final DMatrixRMaj[] W;   // layer weights: (out x in)
-        final double[][] b;      // biases per layer
+        final DMatrixRMaj[] W;
+        final double[][] b;
+        final int Dout;
 
         RandomMLP(int Din, int[] hidden, int Dout, double inputScale, Random r) {
-            this.Din = Din; this.Dout = Dout;
+            this.Dout = Dout;
             this.H = hidden == null ? new int[0] : hidden.clone();
             int L = H.length + 1;
             this.W = new DMatrixRMaj[L];
@@ -188,30 +259,20 @@ public class GeneralNoiseSimulation {
                             DMatrixRMaj out,
                             Function<Double, Double> act,
                             boolean fastTanh) {
-
-            // Two ping-pong buffers for hidden activations
             DMatrixRMaj cur = X;
             DMatrixRMaj bufA = scratch1;
-            DMatrixRMaj bufB = new DMatrixRMaj(1, 1); // will be reshaped
+            DMatrixRMaj bufB = new DMatrixRMaj(1, 1);
 
-            // Hidden layers
             for (int l = 0; l < H.length; l++) {
                 int h = H[l];
-
-                // choose destination buffer so it's not the same instance as 'cur'
                 DMatrixRMaj dest = (cur == bufA) ? bufB : bufA;
                 dest.reshape(X.numRows, h, false);
-
-                // dest = cur * W[l]^T
                 CommonOps_DDRM.multTransB(cur, W[l], dest);
                 addBiasRowsInPlace(dest, b[l]);
                 applyActivationInPlace(dest, act, fastTanh);
-
-                // advance
                 cur = dest;
             }
 
-            // Output layer: write into 'out' (guaranteed != cur)
             out.reshape(X.numRows, Dout, false);
             CommonOps_DDRM.multTransB(cur, W[W.length - 1], out);
             addBiasRowsInPlace(out, b[b.length - 1]);

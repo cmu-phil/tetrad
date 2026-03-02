@@ -228,10 +228,6 @@ public class GeneralNoiseSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-//        parameters.add(Params.AM_RESCALE_MIN);
-//        parameters.add(Params.AM_RESCALE_MAX);
-//        parameters.add(Params.AM_BETA_ALPHA);
-//        parameters.add(Params.AM_BETA_BETA);
         parameters.add(Params.HIDDEN_DIMENSIONS);
         parameters.add(Params.INPUT_SCALE);
         parameters.add(Params.NUM_RUNS);
@@ -295,20 +291,10 @@ public class GeneralNoiseSimulation implements Simulation {
 
         edu.cmu.tetrad.sem.GeneralNoiseSimulation generator = new edu.cmu.tetrad.sem.GeneralNoiseSimulation(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
-//                new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 new NormalDistribution(0, 1),
-//                parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
                 hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
 
         return generator.generateData();
     }
-
-//    private DataSet runModel(Graph graph, Parameters parameters) {
-//        Function<Double, Double> activation = Math::tanh;// x -> Math.max(0.1 * x, x);
-//        edu.cmu.tetrad.sem.GeneralNoiseSimulation sim = new edu.cmu.tetrad.sem.GeneralNoiseSimulation(graph, parameters.getInt(Params.SAMPLE_SIZE),
-//                new BetaDistribution(2, 5), new int[]{100, 100, 100, 100, 100},
-//                5, activation);
-//        return sim.generateData();
-//    }
 }
 
