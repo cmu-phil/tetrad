@@ -27,9 +27,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.distribution.BetaDistribution;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
@@ -292,7 +290,11 @@ public class GeneralNoiseSimulation implements Simulation {
 
         edu.cmu.tetrad.sem.GeneralNoiseSimulation generator = new edu.cmu.tetrad.sem.GeneralNoiseSimulation(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
-                new ChiSquaredDistribution(1),
+//                new BetaDistribution(1, 3),
+//                new GammaDistribution(.25, 1),
+//                new GumbelDistribution(.25, 1),
+                new ExponentialDistribution(.25),
+//                new NormalDistribution(0, 1),
                 hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
 
         return generator.generateData();
