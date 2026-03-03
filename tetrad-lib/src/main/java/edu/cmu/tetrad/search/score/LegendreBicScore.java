@@ -123,6 +123,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
     // mapping quantiles (only used for ROBUST_MINMAX_Z)
     private volatile double mapLoQ = 0.01;
     private volatile double mapHiQ = 0.99;
+    private volatile double featureScale = 0.25; // 1.0 = no scaling; 0.2 ≈ divide-by-5 effect
+
     // -------------------- ctor --------------------
     public LegendreBicScore(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
@@ -148,8 +150,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
             }
         }
 
-//        double inputScale = 8.0;
-
         // z-score continuous
         this.zCols = new double[p][sampleSize];
         for (int j = 0; j < p; j++) {
@@ -157,10 +157,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
                 Arrays.fill(zCols[j], Double.NaN);
             } else {
                 zscoreColumnPreserveNaN(raw[j], zCols[j]);
-
-//                for (int r = 0; r < sampleSize; r++) {
-//                    zCols[j][r] /= inputScale;
-//                }
             }
         }
 
@@ -404,17 +400,24 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
     /**
      * Cholesky with a few jitter attempts; returns null if it still fails.
      */
-    private static CholeskyDecomposition_F64<DMatrixRMaj> cholWithJitter(DMatrixRMaj G, double base) {
+    private static CholeskyDecomposition_F64<DMatrixRMaj> cholWithJitter(DMatrixRMaj G, double ridge, double featureScale) {
         CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
         if (chol.decompose(G)) return chol;
 
-        double jitter = Math.max(base, 1e-12);
-        for (int attempt = 0; attempt < 5; attempt++) {
-            jitter *= 10.0;
-            for (int a = 1; a < G.numRows; a++) G.add(a, a, jitter); // keep intercept unpenalized
-            chol = DecompositionFactory_DDRM.chol(true);
-            if (chol.decompose(G)) return chol;
-        }
+        double ridgeEff = ridge * (featureScale * featureScale);
+        addRidgeToDiagonal(G, ridgeEff, true);
+
+        chol = DecompositionFactory_DDRM.chol(true);
+        if (chol.decompose(G)) return chol;
+
+//        double jitter = Math.max(ridge, 1e-12);
+//        for (int attempt = 0; attempt < 5; attempt++) {
+//            jitter *= 10.0;
+//            for (int a = 1; a < G.numRows; a++) G.add(a, a, jitter); // keep intercept unpenalized
+//            chol = DecompositionFactory_DDRM.chol(true);
+//            if (chol.decompose(G)) return chol;
+//        }
+
         return null;
     }
 
@@ -778,9 +781,9 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
             final DMatrixRMaj G = new DMatrixRMaj(M, M);
             Arrays.fill(v, 0.0);
 
-            // Build normal equations (weighted ridge)
             for (int i = 0; i < n; i++) {
                 buildXRow_Intercept_Legendre(xRow, i, Xmap, cont.length, t, oh, disc, rows);
+                applyFeatureScaleInPlace(xRow);   // <-- ADD THIS
 
                 final double wi = w[i];
                 final double yi = yCentered[i];
@@ -792,15 +795,10 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
                 }
             }
 
-//            double featureScale = .2;
-
-            // after building xRow:
-            for (int a = 1; a < M; a++) xRow[a] *= featureScale;  // featureScale ~ 0.2
-
             symmetrizeLowerToFull(G);
             addRidgeToDiagonal(G, ridge, /*skipIntercept=*/true);
 
-            final CholeskyDecomposition_F64<DMatrixRMaj> chol = cholWithJitter(G, ridge);
+            final CholeskyDecomposition_F64<DMatrixRMaj> chol = cholWithJitter(G, ridge, featureScale);
             if (chol == null) return new FitResult(Double.NaN, Double.NaN);
             final DMatrixRMaj L = chol.getT(null);
 
@@ -813,6 +811,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
 
             for (int i = 0; i < n; i++) {
                 buildXRow_Intercept_Legendre(xRow, i, Xmap, cont.length, t, oh, disc, rows);
+                applyFeatureScaleInPlace(xRow);
 
                 double mu = 0.0;
                 for (int a = 0; a < M; a++) mu += xRow[a] * beta[a];
@@ -844,8 +843,11 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         final double[] yhat = new double[n];
         for (int i = 0; i < n; i++) {
             buildXRow_Intercept_Legendre(xRow, i, Xmap, cont.length, legendreDegree, oh, disc, rows);
+            applyFeatureScaleInPlace(xRow);
+
             double mu = 0.0;
             for (int a = 0; a < M; a++) mu += xRow[a] * beta[a];
+
             yhat[i] = mu;
         }
 
@@ -855,6 +857,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         final DMatrixRMaj Gfinal = new DMatrixRMaj(M, M);
         for (int i = 0; i < n; i++) {
             buildXRow_Intercept_Legendre(xRow, i, Xmap, cont.length, legendreDegree, oh, disc, rows);
+            applyFeatureScaleInPlace(xRow);
+
             final double wi = w[i];
             for (int a = 0; a < M; a++) {
                 final double pa = wi * xRow[a];
@@ -868,7 +872,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         if (!Double.isFinite(trInvPen)) return new FitResult(Double.NaN, Double.NaN);
 
         final int Mp = M - 1;
-        double edf = 1.0 + (Mp - ridge * trInvPen);
+        double ridgeEff = ridge * (featureScale * featureScale);
+        double edf = 1.0 + (Mp - ridgeEff * trInvPen);
         if (!(edf >= 0) || !Double.isFinite(edf)) edf = 1.0 + Mp;
 
         return new FitResult(ll, edf);
@@ -909,8 +914,10 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         // Precompute Phi
         final double[][] Phi = new double[n][M];
         final double[] xRow = new double[M];
+
         for (int i = 0; i < n; i++) {
             buildXRow_Intercept_Legendre(xRow, i, Xmap, cont.length, t, oh, disc, rows);
+            applyFeatureScaleInPlace(xRow);
             System.arraycopy(xRow, 0, Phi[i], 0, M);
         }
 
@@ -956,7 +963,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
                 symmetrizeLowerToFull(G);
                 addRidgeToDiagonal(G, ridge, /*skipIntercept=*/true);
 
-                final CholeskyDecomposition_F64<DMatrixRMaj> chol = cholWithJitter(G, ridge);
+                final CholeskyDecomposition_F64<DMatrixRMaj> chol = cholWithJitter(G, ridge, featureScale);
                 if (chol == null) return new FitResult(Double.NaN, Double.NaN);
                 final DMatrixRMaj L = chol.getT(null);
 
@@ -1010,7 +1017,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return new FitResult(ll, edf);
     }
 
-    private volatile double featureScale = 0.2; // 1.0 = no scaling; 0.2 ≈ divide-by-5 effect
     public void setFeatureScale(double s) {
         if (!(s > 0.0) || !Double.isFinite(s)) throw new IllegalArgumentException("featureScale must be finite and > 0");
         this.featureScale = s;
@@ -1102,6 +1108,12 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
             final int col = oh.offsets[parentPos] + local;
             out[ohOff + col] = 1.0;
         }
+    }
+
+    private void applyFeatureScaleInPlace(double[] xRow) {
+        final double s = this.featureScale;
+        if (s == 1.0) return;
+        for (int a = 1; a < xRow.length; a++) xRow[a] *= s; // keep intercept unscaled
     }
 
     // -------------------- linear algebra helpers --------------------
@@ -1205,23 +1217,15 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
                 double x = (2.0 * (z - lo) / (hi - lo)) - 1.0;
                 return clamp(x);
             }
-            case SCALE_DOWN:
+            case SCALE_DOWN: {
                 final double lo = zQlo[varIndex];
                 final double hi = zQhi[varIndex];
-                final double max = Math.max(Math.abs(lo), Math.abs(hi));
-                return clamp(z / max);
-//                if (!Double.isFinite(lo) || !Double.isFinite(hi) || !(hi > lo)) {
-//                    // fall back to raw min/max then clip
-//                    final double lo2 = zMin[varIndex];
-//                    final double hi2 = zMax[varIndex];
-//                    if (Double.isFinite(lo2) && Double.isFinite(hi2) && hi2 > lo2) {
-//                        double x = (2.0 * (z - lo2) / (hi2 - lo2)) - 1.0;
-//                        return clamp(x);
-//                    }
-//                    return clamp(z / legendreClip);
-//                }
-//                double x = (2.0 * (z - lo) / (hi - lo)) - 1.0;
-//                return clamp(x);
+                final double m = Math.max(Math.abs(lo), Math.abs(hi));
+                if (!(m > 0.0) || !Double.isFinite(m)) {
+                    return clamp(z / legendreClip);
+                }
+                return clamp(z / m);
+            }
             case CLIP_Z:
             default:
                 return clamp(z / legendreClip);
