@@ -21,18 +21,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * <p><b>FF-ML-Mixed: Feature-Function Marginal Likelihood score for mixed (continuous + discrete) parents</b></p>
+ * <p><b>FFML-Mixed: Feature-Function Marginal Likelihood score for mixed (continuous + discrete) parents</b></p>
  *
  * <p>
- * This class extends the continuous FF-ML (GP marginal-likelihood / “kernel ML”) score to parent sets that
- * include both continuous and discrete variables. The intent is to preserve the nonlinear flexibility of the
- * RBF/GP model for continuous parents while treating discrete parents with an appropriate categorical kernel,
- * rather than forcing integer-coded categories into a smooth Euclidean geometry.
+ * This class extends the continuous FFML (random-feature Gaussian-process marginal likelihood)
+ * score to parent sets containing both continuous and discrete variables. The goal is to retain
+ * nonlinear flexibility for continuous parents while treating discrete parents via an appropriate
+ * categorical kernel, rather than embedding integer-coded levels into a smooth Euclidean geometry.
  * </p>
  *
  * <p><b>Product-kernel model</b></p>
  * <p>
- * For a parent vector {@code Z = (Z_c, Z_d)} with continuous part {@code Z_c} and discrete part {@code Z_d},
+ * For parent vector {@code Z = (Z_c, Z_d)} with continuous part {@code Z_c} and discrete part {@code Z_d},
  * we use a product kernel:
  * </p>
  *
@@ -42,16 +42,18 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * <ul>
  *   <li>{@code k_cont} is an RBF kernel over continuous parents, approximated using Random Fourier Features
- *       (RFF) or Orthogonal Random Features (ORF), as in the continuous FF-ML score.</li>
- *   <li>{@code k_cat} is a simple positive semidefinite (PSD) categorical kernel over discrete levels:
- *       it returns {@code 1} for a level match and {@code ρ} for a mismatch (with {@code 0 ≤ ρ < 1}).</li>
+ *       (RFF) or Orthogonal Random Features (ORF), as in the continuous FFML score.</li>
+ *   <li>{@code k_cat} is a positive semidefinite categorical kernel returning {@code 1} for a level match
+ *       and {@code ρ} for a mismatch ({@code 0 ≤ ρ < 1}). When {@code ρ=0}, this corresponds to
+ *       independent function draws per joint discrete level; larger {@code ρ} induces partial pooling
+ *       across levels.</li>
  * </ul>
  *
- * <p><b>Feature representation via a Kronecker map</b></p>
+ * <p><b>Feature representation</b></p>
  * <p>
- * The product kernel is implemented using an explicit (finite) feature map. The discrete component is mapped
- * to a categorical feature vector (one block per joint discrete level), and the continuous component is mapped
- * via Fourier features. The mixed feature map is the Kronecker product:
+ * The product kernel is implemented via an explicit finite feature map. Discrete parents are mapped to
+ * a categorical feature block (indexed by joint discrete levels), and continuous parents are mapped via
+ * Fourier features. The mixed feature map is the Kronecker product:
  * </p>
  *
  * <pre>
@@ -59,36 +61,36 @@ import java.util.concurrent.atomic.AtomicReference;
  * </pre>
  *
  * <p>
- * This construction guarantees that the inner product in feature space corresponds to the product kernel above,
- * and it avoids treating discrete codes as continuous numeric inputs to an RBF kernel. For example, if a single
- * discrete parent has {@code L} levels, the effective feature dimension is multiplied by {@code L}. (If multiple
- * discrete parents are present, the categorical feature space corresponds to their joint level combinations.)
+ * This guarantees that inner products in feature space correspond to the product kernel above.
+ * For a discrete parent with {@code L} levels, the feature dimension is multiplied by {@code L};
+ * with multiple discrete parents, the feature space corresponds to their joint level combinations.
  * </p>
  *
- * <p><b>Scoring objective (GP marginal likelihood)</b></p>
+ * <p><b>Scoring objective</b></p>
  * <p>
- * As in FF-ML, the local score for {@code Y | Pa(Y)} is the log Gaussian-process marginal likelihood in the
- * random-feature approximation. Computation is performed using the standard “Woodbury/dual” reduction to an
- * {@code m×m} system (where {@code m} is the mixed feature dimension) rather than forming an {@code n×n} kernel
- * matrix.
+ * The local score for {@code Y | Pa(Y)} is the log marginal likelihood of a Bayesian linear model
+ * in the random-feature space. This is equivalent to a low-rank Gaussian-process marginal likelihood
+ * under the chosen kernel approximation. Computation uses the standard Woodbury reduction to an
+ * {@code m×m} system (where {@code m} is the mixed feature dimension), avoiding formation of an
+ * {@code n×n} kernel matrix.
  * </p>
  *
  * <p><b>Bandwidths and preprocessing</b></p>
  * <ul>
  *   <li>Continuous parent columns are globally z-scored.</li>
- *   <li>The RBF bandwidth for {@code k_cont} is chosen by a median pairwise (squared) distance heuristic on the
- *       continuous parents only (typically using a row subsample for speed). If no continuous parents are present,
- *       the continuous bandwidth defaults to {@code 1.0} and the score reduces to a purely categorical-kernel model.</li>
- *   <li>Random-feature generation is deterministic per (target, parent set), enabling stable caching and reproducibility.</li>
+ *   <li>The RBF bandwidth for {@code k_cont} is selected using a median pairwise (squared)
+ *       distance heuristic on continuous parents only (typically via subsampling).</li>
+ *   <li>If no continuous parents are present, the model reduces to a purely categorical-kernel
+ *       marginal likelihood.</li>
+ *   <li>Random-feature generation is deterministic per (target, parent set), enabling stable
+ *       caching and reproducibility.</li>
  * </ul>
  *
  * <p><b>Practical notes</b></p>
  * <ul>
- *   <li>This score is intended for mixed data where discrete parents are genuinely categorical (unordered) variables.</li>
- *   <li>The mixed feature dimension can grow quickly with multiple discrete parents (via joint-level combinations),
- *       so feature counts and discrete cardinalities materially affect runtime.</li>
- *   <li>The parameter {@code ρ} controls how strongly different categorical levels are treated as “similar”:
- *       {@code ρ=0} corresponds to a strict delta kernel; larger {@code ρ} smooths across levels.</li>
+ *   <li>Intended for mixed data with genuinely categorical (unordered) discrete parents.</li>
+ *   <li>Feature dimension grows with joint discrete cardinality; runtime scales accordingly.</li>
+ *   <li>The parameter {@code ρ} controls similarity across categorical levels.</li>
  * </ul>
  */
 public final class FfMl implements Score, EffectiveSampleSizeSettable {
