@@ -25,9 +25,9 @@ import static java.lang.Math.*;
  *
  * <p>
  * Local Bayesian Information Criterion (BIC)–style score for structure learning with
- * mixed continuous and discrete variables. The score is designed to be robust to
- * heavy-tailed noise, nonlinear effects, and heterogeneous parent sets, while remaining
- * computationally stable and fully local.
+ * mixed continuous and discrete variables. The score combines nonlinear mean modeling
+ * via Random Fourier Features (RFF) with Student-t likelihoods for robustness to
+ * heavy-tailed residuals, while remaining computationally stable and fully local.
  * </p>
  *
  * <p><b>Local conditional models.</b>
@@ -35,9 +35,8 @@ import static java.lang.Math.*;
  * </p>
  * <ul>
  *   <li><b>Continuous child Y</b>:
- *     Student-t location model with additive structure.
- *     Continuous parents enter through Random Fourier Features (RFF);
- *     discrete parents enter via one-hot encoding.
+ *     Student-t location model of the form Y = f(Pa) + ε.
+ *     Continuous parents enter through RFF; discrete parents enter via one-hot encoding.
  *     Parameters are estimated by iteratively reweighted ridge regression (IRLS),
  *     yielding robustness to heavy-tailed residuals.</li>
  *   <li><b>Discrete child Y</b>:
@@ -47,15 +46,14 @@ import static java.lang.Math.*;
  * </ul>
  *
  * <p><b>Score definition.</b>
- * The local score takes the BIC form
+ * The local score takes a generalized BIC form
  * </p>
  * <pre>
  *   score(Y | Pa(Y)) = logLik_hat − 0.5 · edf · log(n),
  * </pre>
- * where {@code logLik_hat} is the maximized (penalized) log-likelihood,
+ * where {@code logLik_hat} is the maximized penalized log-likelihood,
  * {@code n} is the effective sample size for the local family, and {@code edf}
- * is the effective degrees of freedom induced by ridge regularization.
- *
+ * is the ridge-based effective degrees of freedom.
  *
  * <p>
  * For multinomial logistic models, the effective degrees of freedom are approximated
@@ -64,25 +62,19 @@ import static java.lang.Math.*;
  * </p>
  *
  * <p><b>Student-t robustness.</b>
- * The Student-t likelihood induces a reweighting of residuals that downweights extreme
- * observations, yielding a conservative, worst-case–oriented local score that is
- * less sensitive to outliers and model misspecification than Gaussian BIC variants.
+ * The Student-t likelihood induces residual-dependent reweighting that downweights
+ * extreme observations, reducing sensitivity to outliers relative to Gaussian BIC
+ * variants while preserving a location-model structure.
  * </p>
  *
  * <p><b>Missing data handling.</b>
- * Missing values are represented as:
+ * Rows with missing values in the local family {@code {Y} ∪ Pa(Y)} are excluded
+ * on a per-score basis (testwise deletion).
  * </p>
- * <ul>
- *   <li>continuous variables: {@code NaN}</li>
- *   <li>discrete variables: {@code DiscreteVariable.MISSING_VALUE}</li>
- * </ul>
- * Rows with missing values in the local family
- * {@code {Y} ∪ Pa(Y)} are excluded on a per-score basis.
  *
  * <p><b>Intended use.</b>
- * This score is intended for robust causal structure learning in mixed-type data,
- * particularly as a conservative alternative to Gaussian or purely kernel-based
- * scores when noise distributions are heavy-tailed or nonlinear effects are present.
+ * Intended for robust causal structure learning in mixed-type data when nonlinear
+ * mean effects are expected and residual distributions may be heavy-tailed.
  * </p>
  */
 public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {

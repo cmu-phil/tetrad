@@ -23,30 +23,48 @@ import static java.lang.Math.*;
  *
  * <p>
  * Local BIC-style score for structure learning with mixed continuous and discrete variables.
- * Continuous children use a Student-t location model fit via IRLS with ridge regularization;
- * discrete children use multinomial logistic regression fit via IRLS with ridge.
+ * Continuous children are modeled using a Student-t location model of the form
+ * Y = f(Pa) + ε, fit via IRLS with ridge regularization.
+ * Discrete children are modeled using multinomial logistic regression
+ * (softmax) with ridge regularization, also fit via IRLS.
  * </p>
  *
  * <p>
- * Continuous parents enter through additive Legendre basis expansions:
- * for each continuous parent X (globally z-scored), we map to [-1,1] and include P1(x)..Pt(x),
- * where t = legendreDegree. (Intercept handled separately.)
+ * Continuous parents enter through additive Legendre basis expansions.
+ * For each continuous parent X (globally z-scored), values are mapped to [-1,1]
+ * and polynomial terms P1(x)..Pt(x) are included, where t = legendreDegree.
+ * (The intercept is handled separately.)
  * Discrete parents enter via baseline-dropped one-hot blocks.
  * </p>
  *
- * <p><b>Missing data:</b> Rows with missing in {Y} ∪ Pa(Y) are dropped locally.</p>
- *
- * <p><b>Score:</b> score = logLik_hat - 0.5 * penaltyDiscount * edf * log(n)</p>
- *
  * <p>
- * Key fixes vs your pasted version:
- * <ul>
- *   <li><b>No hard NaN cutoff at n&lt;10</b>. We only require n>=5; otherwise return a finite intercept-only fallback.</li>
- *   <li><b>Robust mapping to [-1,1]</b> defaults to quantile-based min/max (1%..99%) rather than raw global min/max.</li>
- *   <li><b>Jitter-on-Cholesky-failure</b> for both Student-t and multinomial IRLS normal equations.</li>
- *   <li><b>Stable cache key includes knob signature</b>; any knob change resets caches.</li>
- * </ul>
+ * This yields a nonlinear additive location-model representation in which
+ * the conditional mean lies in the span of the chosen Legendre basis.
  * </p>
+ *
+ * <p><b>Missing data:</b>
+ * Rows with missing values in {Y} ∪ Pa(Y) are excluded locally (testwise deletion).
+ * </p>
+ *
+ * <p><b>Score:</b>
+ * <pre>
+ *   score(Y | Pa(Y)) = logLik_hat − 0.5 · penaltyDiscount · edf · log(n)
+ * </pre>
+ * where {@code logLik_hat} is the maximized penalized log-likelihood,
+ * {@code n} is the effective local sample size, and {@code edf}
+ * is the ridge-based effective degrees of freedom.
+ * </p>
+ *
+ * <p><b>Implementation notes:</b></p>
+ * <ul>
+ *   <li>No hard NaN cutoff at small n; if n is very small, a stable
+ *       intercept-only fallback is used.</li>
+ *   <li>Mapping to [-1,1] defaults to quantile-based bounds (e.g., 1%..99%)
+ *       for robustness rather than raw global extrema.</li>
+ *   <li>Cholesky failures during IRLS are handled via adaptive jitter.</li>
+ *   <li>Cache keys include all tuning parameters to ensure correctness
+ *       under configuration changes.</li>
+ * </ul>
  */
 public final class LegendreBicScore implements Score, EffectiveSampleSizeSettable {
 
@@ -591,11 +609,11 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      * Computes the local score for a given node and its parent nodes based on the
      * log-likelihood, effective degrees of freedom, and penalty discount.
      *
-     * @param i        Index of the current node for which the score is being calculated.
-     * @param parents  Indices of the parent nodes of the current node.
-     * @return         The computed local score as a double. Returns {@code Double.NaN} if
-     *                 log-likelihood, effective degrees of freedom, or the number of data
-     *                 points used are invalid.
+     * @param i       Index of the current node for which the score is being calculated.
+     * @param parents Indices of the parent nodes of the current node.
+     * @return The computed local score as a double. Returns {@code Double.NaN} if
+     * log-likelihood, effective degrees of freedom, or the number of data
+     * points used are invalid.
      */
     @Override
     public double localScore(int i, int... parents) {
@@ -872,12 +890,12 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      * child node and parent nodes. The fitting process may involve discrete or continuous variables
      * depending on the data, and includes error handling and fallback mechanisms.
      *
-     * @param i The index of the child variable for which the local fit is calculated.
+     * @param i       The index of the child variable for which the local fit is calculated.
      * @param parents The indices of parent variables that form the predictors for the child variable.
      *                The order of the parent indices will be sorted internally.
      * @return A {@code LocalFit} object containing log-likelihood, effective degrees of freedom,
-     *         and the number of valid rows used in the fitting process. If the fit is invalid or
-     *         fails, the returned object contains fallback values.
+     * and the number of valid rows used in the fitting process. If the fit is invalid or
+     * fails, the returned object contains fallback values.
      */
     public LocalFit localFit(int i, int... parents) {
         Arrays.sort(parents);
@@ -1625,7 +1643,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      * @param z the original array to which the integer will be appended
      * @param x the integer value to be appended to the array
      * @return a new array containing all the elements of the original array,
-     *         followed by the appended integer
+     * followed by the appended integer
      */
     public int[] append(int[] z, int x) {
         int[] out = Arrays.copyOf(z, z.length + 1);
@@ -1660,8 +1678,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      * and the number of data points utilized in the fitting process.
      *
      * @param logLik The log-likelihood of the fit, representing goodness of fit.
-     * @param edf The effective degrees of freedom used in the model.
-     * @param nUsed The number of data points used in the fitting process.
+     * @param edf    The effective degrees of freedom used in the model.
+     * @param nUsed  The number of data points used in the fitting process.
      */
     public record LocalFit(double logLik, double edf, int nUsed) {
     }
