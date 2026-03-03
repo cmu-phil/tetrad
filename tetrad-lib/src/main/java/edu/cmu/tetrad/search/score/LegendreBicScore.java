@@ -50,26 +50,64 @@ import static java.lang.Math.*;
  */
 public final class LegendreBicScore implements Score, EffectiveSampleSizeSettable {
 
-    // -------------------- data --------------------
+    /**
+     * Represents the dataset used to calculate statistical scores and perform
+     * various operations within the LegendreBicScore class. This dataset serves
+     * as the primary source of data input for all computations, including fitting
+     * models, evaluating scores, and determining effective sample sizes.
+     */
     private final DataSet dataSet;
+    /**
+     * Stores the list of variables (nodes) used in the LegendreBicScore.
+     * Represents the set of nodes that will be considered in scoring and
+     * fitting operations within the context of the current dataset.
+     * The list is immutable once initialized to prevent accidental modification.
+     */
     private final List<Node> variables;
+    /**
+     * The sample size used for statistical computations in the class.
+     * This variable represents the total number of observations available
+     * in the dataset and is utilized in various scoring and fitting methods.
+     * It is a fixed value that remains constant throughout the lifetime
+     * of the class instance.
+     */
     private final int sampleSize;
+    /**
+     * A flag indicating whether row subsets should be calculated as part of
+     * the scoring procedure.
+     */
     private final boolean calculateRowSubsets;
-
     /**
      * Continuous columns z-scored globally (NaNs preserved). Discrete cols are all NaN.
      */
     private final double[][] zCols;
-    // -------------------- caches --------------------
+    /**
+     * An atomic reference holding a thread-safe cache for storing and retrieving
+     * {@link LocalFit} objects. The cache is implemented as a {@link ConcurrentHashMap},
+     * keyed by a unique {@code Long} identifier and used to optimize repeated local fitting
+     * calculations in the {@code LegendreBicScore} class.
+     */
     private final AtomicReference<ConcurrentHashMap<Long, LocalFit>> localFitCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
-    // per-variable raw min/max of zCols (continuous vars only; NaNs ignored)
+    /**
+     * Represents the minimum values for the z-coordinate in the mapped Legendre domain
+     * for each column of interest. These values are used during transformations and
+     * calculations involving Legendre polynomials.
+     */
     private final double[] zMin;
-
-    // -------------------- knobs --------------------
+    /**
+     * Represents the maximum values for the z-coordinate in the mapped Legendre domain
+     * for each column of interest. These values are used during transformations and
+     * calculations involving Legendre polynomials.
+     */
     private final double[] zMax;
-    // per-variable robust quantile lo/hi (continuous vars only; NaNs ignored)
+    /**
+     * Represents the quantiles
+     */
     private final double[] zQlo;
+    /**
+     * Represents the quantiles
+     */
     private final double[] zQhi;
     /**
      * Effective sample size.
@@ -119,13 +157,67 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      * Minimum n to attempt a nontrivial fit.
      */
     private volatile int minN = 5;
+    /**
+     * Represents the mapping mode used to transform variables into the Legendre domain.
+     * Possible mapping modes are defined in the {@link LegendreMapMode} enum and include
+     * options such as value clipping, robust rescaling based on quantile ranges,
+     * simple min-max scaling, and scale-down transformations.
+     */
     private volatile LegendreMapMode legendreMapMode = LegendreMapMode.ROBUST_MINMAX_Z;
-    // mapping quantiles (only used for ROBUST_MINMAX_Z)
+    /**
+     * Represents the lower quantile threshold used in mapping numeric values
+     * to the Legendre domain. The value is expected to be between 0 and 1,
+     * where it determines the proportion of data considered in the lower bound
+     * during the mapping process.
+     * <p>
+     * This variable is primarily used for pre-processing numeric data by transforming
+     * continuous variables into a bounded interval within the Legendre domain for
+     * model-fitting and score calculations.
+     * <p>
+     * The `mapLo
+     */
     private volatile double mapLoQ = 0.01;
+    /**
+     * Represents the upper quantile threshold for mapping data to
+     * the Legendre polynomial domain. This threshold is used to scale or map
+     * data values within a specified range for numerical stability and improved
+     * accuracy during calculations.
+     * <p>
+     * The value is volatile to ensure visibility across threads, as the mapping
+     * procedure may involve concurrent computations in a multi-threaded environment.
+     * <p>
+     * A higher value of this threshold widens the range of data values mapped
+     * to the upper end of the [−1, 1] interval in the Legendre domain.
+     */
     private volatile double mapHiQ = 0.99;
+    /**
+     * Controls the scaling factor applied to features during specific computations
+     * in the Legendre-based scoring framework.
+     * <p>
+     * This variable is used to modify the magnitude of feature values to ensure numerical
+     * stability or to regularize feature contributions in fitting procedures.
+     * <p>
+     * A value of 1.0 signifies no scaling, preserving the original feature magnitudes,
+     * whereas values less than 1.0 reduce the influence of features, effectively applying
+     * a division-like effect (e.g., 0.2 corresponds approximately to a divide-by-5 scaling).
+     * <p>
+     * The `volatile` modifier ensures visibility of changes to this variable across
+     * multiple threads, supporting concurrent operations in multi-threaded environments.
+     */
     private volatile double featureScale = 1.0; // 1.0 = no scaling; 0.2 ≈ divide-by-5 effect
 
-    // -------------------- ctor --------------------
+    /**
+     * Constructs an instance of the LegendreBicScore class.
+     * This class computes Bayesian information criterion (BIC) scores for variables
+     * in a given dataset, focusing on a mixture of discrete and continuous data. It
+     * standardizes the continuous variables using z-scores, applies robust quantile
+     * normalization, and initializes parameters for further computations.
+     *
+     * @param dataSet the input dataset containing data variables. Must not be null.
+     *                The dataset is expected to provide methods for retrieving variables,
+     *                checking for missing values, and accessing data values.
+     *                Throws a NullPointerException if the dataSet is null.
+     */
     public LegendreBicScore(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
         this.dataSet = dataSet;
@@ -204,8 +296,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         if (x < -1.0) return -1.0;
         return x;
     }
-
-    // -------------------- Score interface --------------------
 
     private static void centerInPlace(double[] y) {
         double m = 0.0;
@@ -310,8 +400,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         }
     }
 
-    // -------------------- EffectiveSampleSizeSettable --------------------
-
     private static double multinomialLogLikFromPhi(int[] y, int K, int n,
                                                    double[][] beta,
                                                    double[][] Phi,
@@ -356,8 +444,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         }
         return sum;
     }
-
-    // -------------------- public knob setters --------------------
 
     private static double logGamma(double x) {
         double[] p = {
@@ -409,14 +495,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
 
         chol = DecompositionFactory_DDRM.chol(true);
         if (chol.decompose(G)) return chol;
-
-//        double jitter = Math.max(ridge, 1e-12);
-//        for (int attempt = 0; attempt < 5; attempt++) {
-//            jitter *= 10.0;
-//            for (int a = 1; a < G.numRows; a++) G.add(a, a, jitter); // keep intercept unpenalized
-//            chol = DecompositionFactory_DDRM.chol(true);
-//            if (chol.decompose(G)) return chol;
-//        }
 
         return null;
     }
@@ -496,7 +574,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return h;
     }
 
-    // small helper (put near other helpers)
     private static double sumsq(double[] a) {
         double s = 0.0;
         for (double v : a) s += v * v;
@@ -510,6 +587,16 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return all;
     }
 
+    /**
+     * Computes the local score for a given node and its parent nodes based on the
+     * log-likelihood, effective degrees of freedom, and penalty discount.
+     *
+     * @param i        Index of the current node for which the score is being calculated.
+     * @param parents  Indices of the parent nodes of the current node.
+     * @return         The computed local score as a double. Returns {@code Double.NaN} if
+     *                 log-likelihood, effective degrees of freedom, or the number of data
+     *                 points used are invalid.
+     */
     @Override
     public double localScore(int i, int... parents) {
         LocalFit fit = localFit(i, parents);
@@ -517,12 +604,27 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return fit.logLik - 0.5 * penaltyDiscount * fit.edf * Math.log(Math.max(2, fit.nUsed));
     }
 
+    /**
+     * Calculates the difference in local scores based on the given variables.
+     * The method computes the difference between the local score of `y` given
+     * the array `z` with `x` appended and the local score of `y` given only the array `z`.
+     *
+     * @param x the variable to be appended to the array `z` for the local score calculation
+     * @param y the target variable for which the local scores are calculated
+     * @param z an array of context variables for the local score calculation
+     * @return the difference in local scores between `y | z, x` and `y | z`
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         // standard definition: localScore(y | z, x) - localScore(y | z)
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
+    /**
+     * Retrieves a list of variables as Node objects.
+     *
+     * @return a new list containing the Node objects stored in the variables collection
+     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(variables);
@@ -530,71 +632,120 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
 
     // -------------------- core scoring: localFit --------------------
 
+    /**
+     * Retrieves the sample size of the dataset used for scoring.
+     *
+     * @return the number of rows in the dataset
+     */
     @Override
     public int getSampleSize() {
         return dataSet.getNumRows();
     }
 
-    // ============================================================================================
-    // Continuous child: Student-t IRLS ridge on features [Legendre(cont parents), OneHot(disc parents)]
-    // ============================================================================================
-
+    /**
+     * Returns a string representation of the object.
+     *
+     * @return the string "Legendre BIC score"
+     */
     @Override
     public String toString() {
         return "Legendre BIC score";
     }
 
-    // ============================================================================================
-    // Discrete child: multinomial logistic ridge on features [Legendre(cont parents), OneHot(disc parents)]
-    // ============================================================================================
-
+    /**
+     * Retrieves the current data model instance.
+     *
+     * @return the DataModel object representing the current state of the dataset
+     */
     public DataModel getDataModel() {
         return dataSet;
     }
 
-    // ============================================================================================
-    // Feature map: intercept + Legendre blocks + (optional) pairwise x interactions + one-hot blocks
-    // ============================================================================================
-
+    /**
+     * Returns the effective sample size, which represents the adjusted number
+     * of observations in the dataset after accounting for factors such as
+     * correlation or weighting.
+     *
+     * @return the effective sample size as an integer.
+     */
     @Override
     public int getEffectiveSampleSize() {
         return nEff;
     }
 
-    // ============================================================================================
-    // Missing rows, extraction, mapping, utilities
-    // ============================================================================================
-
+    /**
+     * Sets the effective sample size. If the provided sample size is negative,
+     * the default sample size will be used instead.
+     *
+     * @param nEff the effective sample size to set; if negative, the default
+     *             sample size will be used.
+     */
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = (nEff < 0) ? this.sampleSize : nEff;
         resetCache();
     }
 
+    /**
+     * Sets the value of nu. The provided value must be finite and greater than 2.
+     * Throws an IllegalArgumentException if the value does not meet these conditions.
+     *
+     * @param nu the new value for nu; must be a finite number greater than 2
+     */
     public void setNu(double nu) {
         if (!(nu > 2) || !Double.isFinite(nu)) throw new IllegalArgumentException("nu must be finite and > 2");
         this.nu = nu;
         resetCache();
     }
 
+    /**
+     * Sets the scale value for this object. The scale determines the proportion or factor
+     * by which certain properties or behaviors of the object are adjusted.
+     * The scale value must be greater than 0 and finite.
+     *
+     * @param scale the new scale value to be set; must be greater than 0 and finite
+     * @throws IllegalArgumentException if the scale value is not greater than 0 or is not a finite value
+     */
     public void setScale(double scale) {
         if (!(scale > 0) || !Double.isFinite(scale)) throw new IllegalArgumentException("scale must be finite and > 0");
         this.scale = scale;
         resetCache();
     }
 
+    /**
+     * Sets the ridge parameter used in the computation. The ridge value must be a positive finite number.
+     *
+     * @param ridge the ridge parameter to set; must be greater than 0 and finite
+     * @throws IllegalArgumentException if the ridge value is not greater than 0 or is not a finite number
+     */
     public void setRidge(double ridge) {
         if (!(ridge > 0) || !Double.isFinite(ridge)) throw new IllegalArgumentException("ridge must be finite and > 0");
         this.ridge = ridge;
         resetCache();
     }
 
+    /**
+     * Sets the degree for the Legendre polynomial calculations.
+     * The degree must be a positive integer (greater than or equal to 1).
+     * If the provided value is invalid, an {@link IllegalArgumentException} is thrown.
+     * Updates the cached results after setting a new degree.
+     *
+     * @param t The degree of the Legendre polynomial. Must be >= 1.
+     * @throws IllegalArgumentException if t is less than 1.
+     */
     public void setLegendreDegree(int t) {
         if (t < 1) throw new IllegalArgumentException("legendreDegree must be >= 1");
         this.legendreDegree = t;
         resetCache();
     }
 
+    /**
+     * Sets the Legendre clip value used to configure the computation or process.
+     * The provided value must be finite and greater than 0.
+     *
+     * @param clip the positive, finite value to set as the Legendre clip
+     * @throws IllegalArgumentException if the provided value is not finite or not greater than 0
+     */
     public void setLegendreClip(double clip) {
         if (!(clip > 0) || !Double.isFinite(clip))
             throw new IllegalArgumentException("legendreClip must be finite and > 0");
@@ -602,16 +753,36 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         resetCache();
     }
 
+    /**
+     * Sets the number of iterations for the IRLS (Iteratively Reweighted Least Squares) process.
+     * Ensures the minimum number of iterations is 1. Updates internal state by resetting the cache.
+     *
+     * @param iters the desired number of IRLS iterations; if less than 1, it will be automatically set to 1.
+     */
     public void setIrlsIters(int iters) {
         this.irlsIters = Math.max(1, iters);
         resetCache();
     }
 
+    /**
+     * Sets the tolerance value used for the Iterative Reweighted Least Squares (IRLS) algorithm.
+     * The provided value is constrained to be non-negative. If a negative value is passed, it
+     * will be replaced with 0.0. Changing this value will reset any cached computations.
+     *
+     * @param tol the tolerance value for the IRLS algorithm; must be a non-negative number
+     */
     public void setIrlsTol(double tol) {
         this.irlsTol = Math.max(0.0, tol);
         resetCache();
     }
 
+    /**
+     * Sets the penalty discount value. This value must be a finite number greater than 0.
+     * If the provided value does not meet the criteria, an IllegalArgumentException is thrown.
+     *
+     * @param penaltyDiscount the penalty discount to be applied; must be a finite value > 0
+     * @throws IllegalArgumentException if the penaltyDiscount is not a finite value or is ≤ 0
+     */
     public void setPenaltyDiscount(double penaltyDiscount) {
         if (!(penaltyDiscount > 0.0) || !Double.isFinite(penaltyDiscount))
             throw new IllegalArgumentException("Penalty discount must be finite and > 0");
@@ -619,28 +790,63 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         resetCache();
     }
 
+    /**
+     * Sets whether the system should use interactions and updates the internal state accordingly.
+     *
+     * @param useInteractions a boolean indicating if interaction usage should be enabled (true) or disabled (false)
+     */
     public void setUseInteractions(boolean useInteractions) {
         this.useInteractions = useInteractions;
         resetCache();
     }
 
+    /**
+     * Sets the maximum number of parent interactions allowed for an entity.
+     * This value determines the limit on parent relationships an entity can have.
+     * If a negative value is provided, it will be treated as 0.
+     *
+     * @param k the number specifying the maximum parent interactions;
+     *          must be a non-negative integer.
+     */
     public void setInteractionMaxParents(int k) {
         this.interactionMaxParents = Math.max(0, k);
         resetCache();
     }
 
+    /**
+     * Sets the minimum value of 'minN' and ensures it is not less than 2.
+     * This method also clears any cached data by calling resetCache().
+     *
+     * @param minN the new minimum value to set. If the provided value is less than 2, it will default to 2.
+     */
     public void setMinN(int minN) {
         this.minN = Math.max(2, minN);
         resetCache();
     }
 
+    /**
+     * Configures the Legendre map mode for the system.
+     * This method sets the mode of operation for the Legendre map
+     * by using the specified string value and resets the associated cache.
+     *
+     * @param mode The string representation of the desired Legendre map mode.
+     *             It must match one of the predefined enum values in LegendreMapMode.
+     */
     public void setLegendreMapMode(String mode) {
         this.legendreMapMode = LegendreMapMode.valueOf(mode);
         resetCache();
     }
 
-    // -------------------- multinomial helpers --------------------
-
+    /**
+     * Sets the lower and upper quantile thresholds for mapping. The specified quantiles are used
+     * to calculate the robust bounds for the data variables. This method validates the input quantiles
+     * to ensure they satisfy the conditions: 0 <= loQ < hiQ <= 1.
+     *
+     * @param loQ The lower quantile threshold, a value between 0 (inclusive) and 1 (exclusive).
+     * @param hiQ The upper quantile threshold, a value between 0 (exclusive) and 1 (inclusive),
+     *            and greater than the specified loQ.
+     * @throws IllegalArgumentException If the quantiles do not satisfy 0 <= loQ < hiQ <= 1.
+     */
     public void setMapQuantiles(double loQ, double hiQ) {
         if (!(loQ >= 0 && loQ < hiQ && hiQ <= 1)) {
             throw new IllegalArgumentException("Quantiles must satisfy 0 <= loQ < hiQ <= 1");
@@ -661,6 +867,18 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         resetCache();
     }
 
+    /**
+     * Computes and returns a {@code LocalFit} object representing the fit of a model with the specified
+     * child node and parent nodes. The fitting process may involve discrete or continuous variables
+     * depending on the data, and includes error handling and fallback mechanisms.
+     *
+     * @param i The index of the child variable for which the local fit is calculated.
+     * @param parents The indices of parent variables that form the predictors for the child variable.
+     *                The order of the parent indices will be sorted internally.
+     * @return A {@code LocalFit} object containing log-likelihood, effective degrees of freedom,
+     *         and the number of valid rows used in the fitting process. If the fit is invalid or
+     *         fails, the returned object contains fallback values.
+     */
     public LocalFit localFit(int i, int... parents) {
         Arrays.sort(parents);
         final long key = cacheKey(i, parents, knobsSignature());
@@ -1017,8 +1235,16 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return new FitResult(ll, edf);
     }
 
+    /**
+     * Sets the scaling factor to be applied to features in computations.
+     * The provided value must be a positive, finite number.
+     *
+     * @param s the scaling factor for features; must be greater than 0 and finite
+     * @throws IllegalArgumentException if the provided scaling factor is not greater than 0 or is not finite
+     */
     public void setFeatureScale(double s) {
-        if (!(s > 0.0) || !Double.isFinite(s)) throw new IllegalArgumentException("featureScale must be finite and > 0");
+        if (!(s > 0.0) || !Double.isFinite(s))
+            throw new IllegalArgumentException("featureScale must be finite and > 0");
         this.featureScale = s;
         resetCache();
     }
@@ -1393,14 +1619,20 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return calculateRowSubsets ? validRows(vars) : null;
     }
 
-    // keep an explicit append to avoid relying on Score default in old codepaths
+    /**
+     * Appends a given integer to the end of an array, creating a new array.
+     *
+     * @param z the original array to which the integer will be appended
+     * @param x the integer value to be appended to the array
+     * @return a new array containing all the elements of the original array,
+     *         followed by the appended integer
+     */
     public int[] append(int[] z, int x) {
         int[] out = Arrays.copyOf(z, z.length + 1);
         out[z.length] = x;
         return out;
     }
 
-    // ---- Legendre domain mapping mode ----
     private enum LegendreMapMode {
         CLIP_Z,            // x = clamp(z/clip)
         ROBUST_MINMAX_Z,   // x = rescale z to [-1,1] using per-variable quantile range [qLo,qHi]
@@ -1422,9 +1654,24 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
 
     // -------------------- records --------------------
 
+    /**
+     * Represents the result of a local fit in a statistical model.
+     * Used to capture the fit's log-likelihood, effective degrees of freedom,
+     * and the number of data points utilized in the fitting process.
+     *
+     * @param logLik The log-likelihood of the fit, representing goodness of fit.
+     * @param edf The effective degrees of freedom used in the model.
+     * @param nUsed The number of data points used in the fitting process.
+     */
     public record LocalFit(double logLik, double edf, int nUsed) {
     }
 
+    /**
+     * A record representing the result of a model fitting process.
+     *
+     * @param logLik The log-likelihood value of the fitted model.
+     * @param edf    The effective degrees of freedom used in the model.
+     */
     private record FitResult(double logLik, double edf) {
     }
 }
