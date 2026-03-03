@@ -148,6 +148,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
             }
         }
 
+//        double inputScale = 8.0;
+
         // z-score continuous
         this.zCols = new double[p][sampleSize];
         for (int j = 0; j < p; j++) {
@@ -155,6 +157,10 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
                 Arrays.fill(zCols[j], Double.NaN);
             } else {
                 zscoreColumnPreserveNaN(raw[j], zCols[j]);
+
+//                for (int r = 0; r < sampleSize; r++) {
+//                    zCols[j][r] /= inputScale;
+//                }
             }
         }
 
@@ -786,6 +792,11 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
                 }
             }
 
+//            double featureScale = .2;
+
+            // after building xRow:
+            for (int a = 1; a < M; a++) xRow[a] *= featureScale;  // featureScale ~ 0.2
+
             symmetrizeLowerToFull(G);
             addRidgeToDiagonal(G, ridge, /*skipIntercept=*/true);
 
@@ -997,6 +1008,13 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         }
 
         return new FitResult(ll, edf);
+    }
+
+    private volatile double featureScale = 0.2; // 1.0 = no scaling; 0.2 ≈ divide-by-5 effect
+    public void setFeatureScale(double s) {
+        if (!(s > 0.0) || !Double.isFinite(s)) throw new IllegalArgumentException("featureScale must be finite and > 0");
+        this.featureScale = s;
+        resetCache();
     }
 
     /**
