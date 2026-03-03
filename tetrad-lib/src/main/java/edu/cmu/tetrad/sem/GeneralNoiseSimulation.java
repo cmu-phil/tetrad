@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.sem;
 
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DoubleDataBox;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.distribution.RealDistribution;
@@ -23,8 +21,8 @@ import static java.lang.Math.abs;
 public class GeneralNoiseSimulation {
 
     // --- Your requested noise behavior ---
-    private static final double NOISE_MIN = -2.0;
-    private static final double NOISE_MAX = 2.0;
+    private static final double NOISE_MIN = -1;
+    private static final double NOISE_MAX = 1;
 
     private final Graph graph;
     private final int numSamples;
@@ -102,7 +100,7 @@ public class GeneralNoiseSimulation {
             }
 
             // draw noise once (positive + clipped) and place as last column
-            drawPositiveClippedNoise(noise, N, noiseDistribution, inputScale);
+            drawClippedNoise(noise, N, noiseDistribution, inputScale);
 
             int k = pj.length;
             for (int i = 0; i < N; i++, k += Din) A.data[k] = noise[i];
@@ -127,7 +125,7 @@ public class GeneralNoiseSimulation {
      *
      * Note: this is still NOT additive noise; it's an input column to f_j.
      */
-    private static void drawPositiveClippedNoise(double[] noise, int N, RealDistribution dist, double inputScale) {
+    private static void drawClippedNoise(double[] noise, int N, RealDistribution dist, double inputScale) {
         for (int i = 0; i < N; i++) {
 //            double v;
 //
@@ -141,13 +139,24 @@ public class GeneralNoiseSimulation {
             // IMPORTANT: do NOT divide by inputScale here unless you really want to couple
             // weight init scale and noise magnitude. If that coupling empirically helps you,
             // you can re-enable it by uncommenting the next line.
-             v /= Math.max(1e-12, inputScale);
+//             v /= Math.max(1e-12, inputScale);
 
-            if (v < NOISE_MIN) v = NOISE_MIN;
-            if (v > NOISE_MAX) v = NOISE_MAX;
+//            if (v < NOISE_MIN) v = NOISE_MIN;
+//            if (v > NOISE_MAX) v = NOISE_MAX;
             noise[i] = v;
         }
-    }
+
+        noise = DataTransforms.standardizeData(noise);
+
+        for (int i = 0; i < N; i++) {
+            noise[i] /= Math.max(1e-12, inputScale);
+        }
+
+        for (int i = 0; i < N; i++) {
+            if (noise[i] < NOISE_MIN) noise[i] = NOISE_MIN;
+            if (noise[i] > NOISE_MAX) noise[i] = NOISE_MAX;
+        }
+        }
 
     private static boolean isTanhLike(Function<Double, Double> f) {
         // Very low-cost signature test.
