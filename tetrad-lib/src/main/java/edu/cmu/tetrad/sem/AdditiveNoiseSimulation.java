@@ -127,6 +127,41 @@ public class AdditiveNoiseSimulation {
     }
 
     /**
+     * Z-score each column of A in place: mean 0, sd 1.
+     * Columns with ~0 variance are left unchanged.
+     */
+    private static void zScoreColumnsInPlace(DMatrixRMaj A) {
+        final int N = A.numRows;
+        final int D = A.numCols;
+
+        for (int j = 0; j < D; j++) {
+            // column j is at offsets j, j+D, j+2D, ...
+            double mean = 0.0;
+            int k = j;
+            for (int i = 0; i < N; i++, k += D) {
+                mean += A.data[k];
+            }
+            mean /= N;
+
+            double var = 0.0;
+            k = j;
+            for (int i = 0; i < N; i++, k += D) {
+                double d = A.data[k] - mean;
+                var += d * d;
+            }
+            var /= N;
+
+            if (var < 1e-12) continue; // avoid division by ~0
+
+            double invSd = 1.0 / Math.sqrt(var);
+            k = j;
+            for (int i = 0; i < N; i++, k += D) {
+                A.data[k] = (A.data[k] - mean) * invSd;
+            }
+        }
+    }
+
+    /**
      * Generates a synthetic dataset by simulating data propagation through a graph with additive noise. The method
      * creates data for each node in the graph based on its topological order, parent relationships, and random
      * multilayer perceptron (MLP) evaluations, along with additive noise and optional data rescaling.
@@ -167,8 +202,12 @@ public class AdditiveNoiseSimulation {
             final int Din = pj.length;          // <-- PARENTS ONLY (additive noise comes AFTER)
             final boolean isRoot = (Din == 0);
 
-            // Draw noise once for this node (independent across i)
-            for (int i = 0; i < N; i++) noise[i] = noiseDistribution.sample();
+            double noiseScale = 0.5 * inputScale;
+
+            for (int i = 0; i < N; i++) {
+                double v = noiseDistribution.sample();
+                noise[i] = noiseScale * v;
+            }
 
             if (isRoot) {
                 // Root: X_j = N_j
@@ -183,16 +222,10 @@ public class AdditiveNoiseSimulation {
                     for (int i = 0; i < N; i++, k += Din) A.data[k] = raw[i][col];
                 }
 
-                // copy parents into A (existing code)
-
-                // NEW: stabilize parent scale
-                zScoreColumnsInPlace(A);
+                applyActivationInPlace(A, activationFunction, useFastTanh);
 
                 // Random MLP for this node
                 RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale, seeder);
-
-//                // Random MLP for this node: f_j(Pa)
-//                RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale, seeder);
 
                 // signal = f_j(Pa)
                 Y = mlp.forward(A, Z, Y, activationFunction, useFastTanh);
@@ -223,7 +256,6 @@ public class AdditiveNoiseSimulation {
             for (int l = 0; l < H.length; l++) {
                 W[l] = new DMatrixRMaj(H[l], prev);
                 b[l] = new double[H[l]];
-//                heInit(W[l], r, inputScale);
                 heInit(W[l], r, inputScale, true);  // tanh-friendly
                 prev = H[l];
             }
@@ -233,11 +265,6 @@ public class AdditiveNoiseSimulation {
             heInit(W[L - 1], r, inputScale * 0.5, true);
 
         }
-
-//        private static void heInit(DMatrixRMaj W, Random r, double scale) {
-//            double s = scale * Math.sqrt(2.0 / Math.max(1, W.numCols));
-//            for (int i = 0, n = W.getNumElements(); i < n; i++) W.data[i] = r.nextGaussian() * s;
-//        }
 
         private static void heInit(DMatrixRMaj W, Random r, double scale, boolean tanhLike) {
             // tanh prefers sqrt(1 / fan_in), ReLU prefers sqrt(2 / fan_in)
@@ -283,41 +310,6 @@ public class AdditiveNoiseSimulation {
             CommonOps_DDRM.multTransB(cur, W[W.length - 1], out);
             addBiasRowsInPlace(out, b[b.length - 1]);
             return out;
-        }
-    }
-
-    /**
-     * Z-score each column of A in place: mean 0, sd 1.
-     * Columns with ~0 variance are left unchanged.
-     */
-    private static void zScoreColumnsInPlace(DMatrixRMaj A) {
-        final int N = A.numRows;
-        final int D = A.numCols;
-
-        for (int j = 0; j < D; j++) {
-            // column j is at offsets j, j+D, j+2D, ...
-            double mean = 0.0;
-            int k = j;
-            for (int i = 0; i < N; i++, k += D) {
-                mean += A.data[k];
-            }
-            mean /= N;
-
-            double var = 0.0;
-            k = j;
-            for (int i = 0; i < N; i++, k += D) {
-                double d = A.data[k] - mean;
-                var += d * d;
-            }
-            var /= N;
-
-            if (var < 1e-12) continue; // avoid division by ~0
-
-            double invSd = 1.0 / Math.sqrt(var);
-            k = j;
-            for (int i = 0; i < N; i++, k += D) {
-                A.data[k] = (A.data[k] - mean) * invSd;
-            }
         }
     }
 }
