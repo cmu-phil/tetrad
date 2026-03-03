@@ -86,15 +86,28 @@ import static java.lang.Math.*;
  * </p>
  */
 public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
-
-    // -------------------- config knobs --------------------
-
     /**
      * If true, compute row subsets when missing exists.
      */
     private final boolean calculateRowSubsets;
+    /**
+     * Represents an immutable instance of the DataSet being used in the application.
+     * This variable is declared as {@code final}, indicating that its reference cannot be changed
+     * once assigned. It encapsulates and manages a structured set of data, typically used for processing,
+     * analysis, or storage within the application's domain.
+     */
     private final DataSet dataSet;
+    /**
+     * A list that holds Node instances representing variables.
+     * This list is immutable and cannot be modified after initialization.
+     */
     private final List<Node> variables;
+    /**
+     * Represents the size of the sample to be used in a specific context.
+     * This value is immutable and initialized at the time of object creation.
+     * It typically denotes the number of elements or observations
+     * considered for processing or analysis in a dataset or operation.
+     */
     private final int sampleSize;
     /**
      * Continuous columns z-scored globally, NaNs preserved. For discrete vars, column is all NaN.
@@ -105,11 +118,25 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
      */
     private transient AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
-
-    // RFF coupling caches:
-    // - per (child i, cont-parent var j): omega vector length D
-    // - per child i: phase vector length D
+    /**
+     * A transient concurrent map used to cache omega values associated with a unique identifier.
+     * The map's keys are of type Long, representing unique IDs, and the values are arrays of doubles
+     * containing precomputed omega-related data.
+     *
+     * This cache is designed to improve performance by avoiding repeated calculations of omega-related
+     * data during runtime. Due to its transient nature, the cache will not be serialized if the containing
+     * object is serialized.
+     */
     private transient ConcurrentHashMap<Long, double[]> omegaCache = new ConcurrentHashMap<>();
+    /**
+     * A transient cache that maps an integer key to a double array, intended
+     * for storing precomputed phase values or related data. The use of a
+     * {@code ConcurrentHashMap} ensures thread-safe access in concurrent
+     * environments.
+     *
+     * Being marked as transient, this variable will not be serialized during
+     * the object's serialization process.
+     */
     private transient ConcurrentHashMap<Integer, double[]> phaseCache = new ConcurrentHashMap<>();
     /**
      * Student-t degrees of freedom (continuous child).
@@ -123,8 +150,6 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
      * Ridge penalty (>0). Applies to both continuous and discrete child fits.
      */
     private volatile double ridge = 1e-3;
-
-    // -------------------- data --------------------
     /**
      * Number of RFF features (D) for continuous-parent subvector.
      */
@@ -145,7 +170,13 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
      * IRLS stopping tolerance.
      */
     private volatile double irlsTol = 1e-6;
+    /**
+     * Effective sample size (n_eff).
+     */
     private volatile int nEff;
+    /**
+     * Penalty discount factor for BIC score.
+     */
     private double penaltyDiscount = 1.0;
 
     /**
@@ -189,8 +220,6 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
             }
         }
     }
-
-    // -------------------- Score interface --------------------
 
     private void initCaches() {
         localScoreCacheRef = new AtomicReference<>(new ConcurrentHashMap<>());
@@ -552,11 +581,6 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
                     double[] y = extractContinuousChild(i, rows, n);
                     centerInPlace(y);
 
-//                    if (parents.length == 0) {
-//                        double ll = studentTLogLik(y, new double[n], nu, scale);
-//                        return ll; // edf=0 after centering
-//                    }
-
                     if (parents.length == 0) {
                         // y is already centered in your code.
                         double scaleHat = profileStudentTScale(y, nu, this.scale, irlsIters, irlsTol);
@@ -566,7 +590,6 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
 
                     long seed = rffSeed ^ (long) i * 0x9E3779B97F4A7C15L ^ Arrays.hashCode(parents);
 
-//                        FitResult fit = fitStudentTRffRidgeMixed(y, parents, rows, n, seed);
                     FitResult fit = fitStudentTRffRidgeMixed(i, y, parents, rows, n);
                     if (!Double.isFinite(fit.logLik)) return Double.NaN;
 
@@ -1346,10 +1369,6 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
         out[z.length] = x;
         return out;
     }
-
-    // ============================================================================================
-// Public fit helpers for CI tests (same-sample reduced/full LRT)
-// ============================================================================================
 
     /**
      * A record that encapsulates the results of a local fit operation, consisting of

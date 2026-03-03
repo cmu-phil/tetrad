@@ -110,11 +110,11 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
     /**
      * Add pairwise interactions using only P1(x)=x for continuous parents.
      */
-    private volatile boolean useInteractions = false;
+    private volatile boolean useInteractions = true;
     /**
      * Only the first K continuous parents (in parentIdx order) participate in interactions.
      */
-    private volatile int interactionMaxParents = 5;
+    private volatile int interactionMaxParents = 6;
     /**
      * Minimum n to attempt a nontrivial fit.
      */
