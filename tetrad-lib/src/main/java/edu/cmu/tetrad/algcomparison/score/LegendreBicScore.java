@@ -98,14 +98,14 @@ public class LegendreBicScore implements ScoreWrapper {
         score.setLegendreDegree(degree);
 
 //        // ---- Keep exposed (optional but practical): Clip ----
-//        double clip = parameters.getDouble(Params.MINIMAX_LEGENDRE_CLIP);
-//        if (!(clip > 0.0) || !Double.isFinite(clip)) clip = 3.0;
-//        score.setLegendreClip(clip);
+        double clip = parameters.getDouble(Params.LEGENDRE_CLIP);
+        if (!(clip > 0.0) || !Double.isFinite(clip)) clip = 3.0;
+        score.setLegendreClip(clip);
 
 //        // ---- Keep exposed: Ridge ----
-//        double ridge = parameters.getDouble(Params.MINIMAX_LEGENDRE_RIDGE);
-//        if (!(ridge > 0.0) || !Double.isFinite(ridge)) ridge = 1e-3;
-//        score.setRidge(ridge);
+        double ridge = parameters.getDouble(Params.LEGENDRE_RIDGE);
+        if (!(ridge > 0.0) || !Double.isFinite(ridge)) ridge = 1e-3;
+        score.setRidge(ridge);
 
         // ---- Hidden/internal defaults ----
         score.setNu(5.0);          // Student-t df
@@ -161,8 +161,8 @@ public class LegendreBicScore implements ScoreWrapper {
     public List<String> getParameters() {
         List<String> p = new ArrayList<>();
         p.add(Params.LEGENDRE_DEGREE);
-//        p.add(Params.MINIMAX_LEGENDRE_CLIP);
-//        p.add(Params.MINIMAX_LEGENDRE_RIDGE);
+        p.add(Params.LEGENDRE_CLIP);
+        p.add(Params.LEGENDRE_RIDGE);
         p.add(Params.PENALTY_DISCOUNT_DEFAULT_1);
         p.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return p;

@@ -29,59 +29,70 @@ import static java.lang.Math.*;
  *
  * <p>
  * Continuous parents enter through additive Legendre basis expansions:
- * for each continuous parent X (globally z-scored), we map to [-1,1] using x = clamp(z/clip),
- * then include P1(x)..Pt(x) where t = legendreDegree. (Intercept handled separately.)
+ * for each continuous parent X (globally z-scored), we map to [-1,1] and include P1(x)..Pt(x),
+ * where t = legendreDegree. (Intercept handled separately.)
  * Discrete parents enter via baseline-dropped one-hot blocks.
  * </p>
  *
  * <p><b>Missing data:</b> Rows with missing in {Y} ∪ Pa(Y) are dropped locally.</p>
  *
- * <p><b>Score:</b> score = logLik_hat - 0.5 * edf * log(n)</p>
+ * <p><b>Score:</b> score = logLik_hat - 0.5 * penaltyDiscount * edf * log(n)</p>
+ *
  * <p>
- * Notes:
- * - This is additive in continuous parents (no cross terms) to control feature growth.
- * - Legendre polynomials are evaluated by stable recurrence.
+ * Key fixes vs your pasted version:
+ * <ul>
+ *   <li><b>No hard NaN cutoff at n&lt;10</b>. We only require n>=5; otherwise return a finite intercept-only fallback.</li>
+ *   <li><b>Robust mapping to [-1,1]</b> defaults to quantile-based min/max (1%..99%) rather than raw global min/max.</li>
+ *   <li><b>Jitter-on-Cholesky-failure</b> for both Student-t and multinomial IRLS normal equations.</li>
+ *   <li><b>Stable cache key includes knob signature</b>; any knob change resets caches.</li>
+ * </ul>
+ * </p>
  */
 public final class LegendreBicScore implements Score, EffectiveSampleSizeSettable {
 
-    private final boolean calculateRowSubsets;
+    // -------------------- data --------------------
     private final DataSet dataSet;
     private final List<Node> variables;
     private final int sampleSize;
+    private final boolean calculateRowSubsets;
 
     /**
      * Continuous columns z-scored globally (NaNs preserved). Discrete cols are all NaN.
      */
     private final double[][] zCols;
-
-    /**
-     * Cache key -> score.
-     */
-    private final AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
-            new AtomicReference<>(new ConcurrentHashMap<>());
-
-    // -------------------- knobs --------------------
+    // -------------------- caches --------------------
     private final AtomicReference<ConcurrentHashMap<Long, LocalFit>> localFitCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
+    // per-variable raw min/max of zCols (continuous vars only; NaNs ignored)
+    private final double[] zMin;
+
+    // -------------------- knobs --------------------
+    private final double[] zMax;
+    // per-variable robust quantile lo/hi (continuous vars only; NaNs ignored)
+    private final double[] zQlo;
+    private final double[] zQhi;
+    /**
+     * Effective sample size.
+     */
+    private volatile int nEff;
     /**
      * Student-t df for continuous child. Must be > 2.
      */
     private volatile double nu = 5.0;
     /**
-     * Initial scale for Student-t IRLS; also used if profiled scale can't be estimated.
+     * Initial scale for Student-t IRLS; used as warm-start.
      */
     private volatile double scale = 1.0;
     /**
      * Ridge penalty (>0). Intercept is not penalized.
      */
-    private volatile double ridge = 1e-3;
+    private volatile double ridge;
     /**
      * Legendre truncation t (>=1). Features per continuous parent = t.
      */
     private volatile int legendreDegree = 8;
     /**
-     * Map z to [-1,1] by x = clamp(z/clip). Typical clip ~ 2.5..4.0.
-     * Larger clip keeps more of z in linear region; smaller clip saturates more.
+     * Map z to [-1,1] by x = clamp(z/clip) if CLIP_Z mode is used.
      */
     private volatile double legendreClip = 3.0;
     /**
@@ -93,52 +104,41 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      */
     private volatile double irlsTol = 1e-6;
     /**
-     * Effective sample size.
+     * Discount multiplier on the BIC penalty.
      */
-    private volatile int nEff;
-    /**
-     * Represents the discount applied to penalties or fines.
-     * This value typically determines the reduction factor
-     * for penalties, where a value of 1.0 means no discount.
-     * <p>
-     * The discount factor should be a positive number, typically
-     * between 0.0 (maximum discount) and 1.0 (no discount).
-     */
-    private double penaltyDiscount = 1.0;
+    private volatile double penaltyDiscount = 1.0;
     /**
      * Add pairwise interactions using only P1(x)=x for continuous parents.
      */
-    private volatile boolean useInteractions = true;
-
-    // -------------------- ctor --------------------
+    private volatile boolean useInteractions = false;
     /**
      * Only the first K continuous parents (in parentIdx order) participate in interactions.
      */
-    private volatile int interactionMaxParents = 5;  // 0/1 => none; 4 => up to 4 interaction cols
-
+    private volatile int interactionMaxParents = 5;
     /**
-     * Constructs a MinimaxLegendreScore instance by initializing the dataset and performing
-     * preprocessing steps such as handling missing values, calculating z-scores for variables,
-     * and preparing the necessary internal data structures.
-     *
-     * @param dataSet the input dataset containing rows of samples and variables; must not be null.
-     *                Throws a NullPointerException if the dataSet is null. The dataset is used to
-     *                compute z-scores for continuous variables while preserving NaN values and sets up
-     *                necessary metadata such as variables and sample size.
+     * Minimum n to attempt a nontrivial fit.
      */
+    private volatile int minN = 5;
+    private volatile LegendreMapMode legendreMapMode = LegendreMapMode.ROBUST_MINMAX_Z;
+    // mapping quantiles (only used for ROBUST_MINMAX_Z)
+    private volatile double mapLoQ = 0.01;
+    private volatile double mapHiQ = 0.99;
+    // -------------------- ctor --------------------
     public LegendreBicScore(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
         this.dataSet = dataSet;
-
         this.variables = new ArrayList<>(dataSet.getVariables());
         this.sampleSize = dataSet.getNumRows();
-        setEffectiveSampleSize(-1);
-
-        this.ridge = 1.0 / this.sampleSize;
-
         this.calculateRowSubsets = dataSet.existsMissingValue();
 
+        setEffectiveSampleSize(-1);
+
+        // reasonable default ridge ~ 1/n
+        this.ridge = 1.0 / Math.max(1, this.sampleSize);
+
         int p = variables.size();
+
+        // raw (continuous only)
         double[][] raw = new double[p][sampleSize];
         for (int j = 0; j < p; j++) {
             if (isDiscrete(j)) {
@@ -148,6 +148,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
             }
         }
 
+        // z-score continuous
         this.zCols = new double[p][sampleSize];
         for (int j = 0; j < p; j++) {
             if (isDiscrete(j)) {
@@ -156,6 +157,50 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
                 zscoreColumnPreserveNaN(raw[j], zCols[j]);
             }
         }
+
+        this.zMin = new double[p];
+        this.zMax = new double[p];
+        this.zQlo = new double[p];
+        this.zQhi = new double[p];
+        Arrays.fill(zMin, Double.NaN);
+        Arrays.fill(zMax, Double.NaN);
+        Arrays.fill(zQlo, Double.NaN);
+        Arrays.fill(zQhi, Double.NaN);
+
+        for (int j = 0; j < p; j++) {
+            if (isDiscrete(j)) continue;
+
+            double lo = Double.POSITIVE_INFINITY;
+            double hi = Double.NEGATIVE_INFINITY;
+
+            int nFinite = 0;
+            for (int r = 0; r < sampleSize; r++) {
+                double z = zCols[j][r];
+                if (Double.isNaN(z)) continue;
+                nFinite++;
+                if (z < lo) lo = z;
+                if (z > hi) hi = z;
+            }
+
+            if (nFinite >= 2 && Double.isFinite(lo) && Double.isFinite(hi) && hi > lo) {
+                zMin[j] = lo;
+                zMax[j] = hi;
+                // robust defaults using the current default quantiles
+                zQlo[j] = quantileOfFinite(zCols[j], mapLoQ);
+                zQhi[j] = quantileOfFinite(zCols[j], mapHiQ);
+                // if quantiles collapse (tiny n), fall back to min/max
+                if (!(Double.isFinite(zQlo[j]) && Double.isFinite(zQhi[j]) && zQhi[j] > zQlo[j])) {
+                    zQlo[j] = lo;
+                    zQhi[j] = hi;
+                }
+            }
+        }
+    }
+
+    private static double clamp(double x) {
+        if (x > 1.0) return 1.0;
+        if (x < -1.0) return -1.0;
+        return x;
     }
 
     // -------------------- Score interface --------------------
@@ -165,6 +210,14 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         for (double v : y) m += v;
         m /= y.length;
         for (int i = 0; i < y.length; i++) y[i] -= m;
+    }
+
+    private static double warmStartScale(double[] yCentered, int n) {
+        double s2 = 0.0;
+        for (int i = 0; i < n; i++) s2 += yCentered[i] * yCentered[i];
+        double rms = sqrt(max(1e-12, s2 / max(1, n)));
+        if (!Double.isFinite(rms) || rms <= 0) rms = 1.0;
+        return rms;
     }
 
     private static void zscoreColumnPreserveNaN(double[] in, double[] out) {
@@ -189,115 +242,23 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         }
     }
 
-    private static double studentTLogLik(double[] y, double[] yhat, double nu, double scale) {
-        int n = y.length;
-        double c = logGamma(0.5 * (nu + 1.0)) - logGamma(0.5 * nu)
-                - 0.5 * log(nu * PI) - log(scale);
+    private static double quantileOfFinite(double[] col, double q) {
+        int n = 0;
+        for (double v : col) if (!Double.isNaN(v)) n++;
+        if (n == 0) return Double.NaN;
 
-        double sum = 0.0;
-        double inv = 1.0 / (nu * scale * scale);
+        double[] a = new double[n];
+        int k = 0;
+        for (double v : col) if (!Double.isNaN(v)) a[k++] = v;
+        Arrays.sort(a);
 
-        for (int i = 0; i < n; i++) {
-            double r = y[i] - yhat[i];
-            double v = 1.0 + (r * r) * inv;
-            sum += c - 0.5 * (nu + 1.0) * log(v);
-        }
-        return sum;
+        double pos = q * (a.length - 1);
+        int lo = (int) floor(pos);
+        int hi = (int) ceil(pos);
+        if (lo == hi) return a[lo];
+        double t = pos - lo;
+        return (1.0 - t) * a[lo] + t * a[hi];
     }
-
-    private static double logGamma(double x) {
-        double[] p = {
-                676.5203681218851,
-                -1259.1392167224028,
-                771.32342877765313,
-                -176.61502916214059,
-                12.507343278686905,
-                -0.13857109526572012,
-                9.9843695780195716e-6,
-                1.5056327351493116e-7
-        };
-        int g = 7;
-
-        if (x < 0.5) {
-            return log(PI) - log(sin(PI * x)) - logGamma(1.0 - x);
-        }
-
-        x -= 1.0;
-        double a = 0.99999999999980993;
-        for (int i = 0; i < p.length; i++) a += p[i] / (x + i + 1.0);
-
-        double t = x + g + 0.5;
-        return 0.5 * log(2.0 * PI) + (x + 0.5) * log(t) - t + log(a);
-    }
-
-    private static double[] solveFromCholeskyLower(DMatrixRMaj L, double[] b) {
-        int n = b.length;
-        double[] x = Arrays.copyOf(b, n);
-
-        // forward solve L u = b
-        for (int i = 0; i < n; i++) {
-            double sum = x[i];
-            for (int j = 0; j < i; j++) sum -= L.get(i, j) * x[j];
-            x[i] = sum / L.get(i, i);
-        }
-
-        // back solve L^T x = u
-        for (int i = n - 1; i >= 0; i--) {
-            double sum = x[i];
-            for (int j = i + 1; j < n; j++) sum -= L.get(j, i) * x[j];
-            x[i] = sum / L.get(i, i);
-        }
-        return x;
-    }
-
-    // -------------------- EffectiveSampleSizeSettable --------------------
-
-    private static double traceInvFromCholeskyLower(DMatrixRMaj L) {
-        int n = L.numRows;
-        double tr = 0.0;
-        double[] v = new double[n];
-
-        for (int col = 0; col < n; col++) {
-            Arrays.fill(v, 0.0);
-            v[col] = 1.0;
-
-            // solve L u = e_col
-            for (int i = 0; i < n; i++) {
-                double sum = v[i];
-                for (int j = 0; j < i; j++) sum -= L.get(i, j) * v[j];
-                v[i] = sum / L.get(i, i);
-            }
-
-            double ss = 0.0;
-            for (int i = 0; i < n; i++) ss += v[i] * v[i];
-            tr += ss;
-        }
-
-        return tr;
-    }
-
-    private static double traceInvPenalizedBlockFromG(DMatrixRMaj Gfull) {
-        final int M = Gfull.numRows;
-        if (M <= 1) return 0.0;
-
-        final int Mp = M - 1;
-        final DMatrixRMaj Gp = new DMatrixRMaj(Mp, Mp);
-
-        for (int a = 0; a < Mp; a++) {
-            for (int b = 0; b <= a; b++) {
-                Gp.set(a, b, Gfull.get(a + 1, b + 1));
-            }
-        }
-        for (int a = 0; a < Mp; a++) for (int b = 0; b < a; b++) Gp.set(b, a, Gp.get(a, b));
-
-        final CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
-        if (!chol.decompose(Gp)) return Double.NaN;
-        final DMatrixRMaj L = chol.getT(null);
-
-        return traceInvFromCholeskyLower(L);
-    }
-
-    // -------------------- knobs setters --------------------
 
     private static double multinomialInterceptOnlyLogLik(int[] y, int K) {
         int n = y.length;
@@ -337,7 +298,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
 
             double sum = 0.0;
             for (int k = 0; k < K; k++) {
-                final double e = Math.exp(logitsScratch[k] - maxLog);
+                final double e = exp(logitsScratch[k] - maxLog);
                 outProbs[i][k] = e;
                 sum += e;
             }
@@ -346,6 +307,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
             for (int k = 0; k < K; k++) outProbs[i][k] *= inv;
         }
     }
+
+    // -------------------- EffectiveSampleSizeSettable --------------------
 
     private static double multinomialLogLikFromPhi(int[] y, int K, int n,
                                                    double[][] beta,
@@ -368,12 +331,152 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
             }
 
             double sum = 0.0;
-            for (int k = 0; k < K; k++) sum += Math.exp(logitsScratch[k] - maxLog);
+            for (int k = 0; k < K; k++) sum += exp(logitsScratch[k] - maxLog);
 
-            ll += (logitsScratch[y[i]] - maxLog) - Math.log(sum);
+            ll += (logitsScratch[y[i]] - maxLog) - log(sum);
         }
 
         return ll;
+    }
+
+    private static double studentTLogLik(double[] y, double[] yhat, double nu, double scale) {
+        int n = y.length;
+        double c = logGamma(0.5 * (nu + 1.0)) - logGamma(0.5 * nu)
+                - 0.5 * log(nu * PI) - log(scale);
+
+        double sum = 0.0;
+        double inv = 1.0 / (nu * scale * scale);
+
+        for (int i = 0; i < n; i++) {
+            double r = y[i] - yhat[i];
+            double v = 1.0 + (r * r) * inv;
+            sum += c - 0.5 * (nu + 1.0) * log(v);
+        }
+        return sum;
+    }
+
+    // -------------------- public knob setters --------------------
+
+    private static double logGamma(double x) {
+        double[] p = {
+                676.5203681218851,
+                -1259.1392167224028,
+                771.32342877765313,
+                -176.61502916214059,
+                12.507343278686905,
+                -0.13857109526572012,
+                9.9843695780195716e-6,
+                1.5056327351493116e-7
+        };
+        int g = 7;
+
+        if (x < 0.5) {
+            return log(PI) - log(sin(PI * x)) - logGamma(1.0 - x);
+        }
+
+        x -= 1.0;
+        double a = 0.99999999999980993;
+        for (int i = 0; i < p.length; i++) a += p[i] / (x + i + 1.0);
+
+        double t = x + g + 0.5;
+        return 0.5 * log(2.0 * PI) + (x + 0.5) * log(t) - t + log(a);
+    }
+
+    private static void symmetrizeLowerToFull(DMatrixRMaj G) {
+        for (int a = 0; a < G.numRows; a++) {
+            for (int b = 0; b < a; b++) {
+                G.set(b, a, G.get(a, b));
+            }
+        }
+    }
+
+    private static void addRidgeToDiagonal(DMatrixRMaj G, double ridge, boolean skipIntercept) {
+        int start = skipIntercept ? 1 : 0;
+        for (int a = start; a < G.numRows; a++) G.add(a, a, ridge);
+    }
+
+    /**
+     * Cholesky with a few jitter attempts; returns null if it still fails.
+     */
+    private static CholeskyDecomposition_F64<DMatrixRMaj> cholWithJitter(DMatrixRMaj G, double base) {
+        CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+        if (chol.decompose(G)) return chol;
+
+        double jitter = Math.max(base, 1e-12);
+        for (int attempt = 0; attempt < 5; attempt++) {
+            jitter *= 10.0;
+            for (int a = 1; a < G.numRows; a++) G.add(a, a, jitter); // keep intercept unpenalized
+            chol = DecompositionFactory_DDRM.chol(true);
+            if (chol.decompose(G)) return chol;
+        }
+        return null;
+    }
+
+    private static double[] solveFromCholeskyLower(DMatrixRMaj L, double[] b) {
+        int n = b.length;
+        double[] x = Arrays.copyOf(b, n);
+
+        // forward solve L u = b
+        for (int i = 0; i < n; i++) {
+            double sum = x[i];
+            for (int j = 0; j < i; j++) sum -= L.get(i, j) * x[j];
+            x[i] = sum / L.get(i, i);
+        }
+
+        // back solve L^T x = u
+        for (int i = n - 1; i >= 0; i--) {
+            double sum = x[i];
+            for (int j = i + 1; j < n; j++) sum -= L.get(j, i) * x[j];
+            x[i] = sum / L.get(i, i);
+        }
+        return x;
+    }
+
+    private static double traceInvFromCholeskyLower(DMatrixRMaj L) {
+        int n = L.numRows;
+        double tr = 0.0;
+        double[] v = new double[n];
+
+        for (int col = 0; col < n; col++) {
+            Arrays.fill(v, 0.0);
+            v[col] = 1.0;
+
+            // solve L u = e_col
+            for (int i = 0; i < n; i++) {
+                double sum = v[i];
+                for (int j = 0; j < i; j++) sum -= L.get(i, j) * v[j];
+                v[i] = sum / L.get(i, i);
+            }
+
+            double ss = 0.0;
+            for (int i = 0; i < n; i++) ss += v[i] * v[i];
+            tr += ss;
+        }
+        return tr;
+    }
+
+    /**
+     * Trace of (G_p)^{-1} where G_p is the penalized block excluding intercept.
+     */
+    private static double traceInvPenalizedBlockFromG(DMatrixRMaj Gfull) {
+        final int M = Gfull.numRows;
+        if (M <= 1) return 0.0;
+
+        final int Mp = M - 1;
+        final DMatrixRMaj Gp = new DMatrixRMaj(Mp, Mp);
+
+        for (int a = 0; a < Mp; a++) {
+            for (int b = 0; b <= a; b++) {
+                Gp.set(a, b, Gfull.get(a + 1, b + 1));
+            }
+        }
+        for (int a = 0; a < Mp; a++) for (int b = 0; b < a; b++) Gp.set(b, a, Gp.get(a, b));
+
+        final CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+        if (!chol.decompose(Gp)) return Double.NaN;
+        final DMatrixRMaj L = chol.getT(null);
+
+        return traceInvFromCholeskyLower(L);
     }
 
     private static long cacheKey(int i, int[] parents, long knobsSig) {
@@ -384,6 +487,13 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return h;
     }
 
+    // small helper (put near other helpers)
+    private static double sumsq(double[] a) {
+        double s = 0.0;
+        for (double v : a) s += v * v;
+        return s;
+    }
+
     private static int[] concat(int i, int[] parents) {
         int[] all = new int[parents.length + 1];
         all[0] = i;
@@ -391,184 +501,91 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return all;
     }
 
-    private static double clamp(double x) {
-        if (x > 1.0) return 1.0;
-        if (x < -1.0) return -1.0;
-        return x;
-    }
-
-    /**
-     * Retrieves the current DataModel instance.
-     *
-     * @return the DataModel instance representing the current data set
-     */
-    public DataModel getDataModel() {
-        return dataSet;
-    }
-
-    // ============================================================================================
-    // Continuous child: Student-t IRLS ridge on features [Legendre(cont parents), OneHot(disc parents)]
-    // ============================================================================================
-
-    /**
-     * Computes the local score for a given variable and its parent variables
-     * using a caching mechanism to store the computed scores.
-     *
-     * @param i       The index of the target variable for which the local score is calculated.
-     * @param parents An optional variable-length argument representing the indices
-     *                of the parent variables of the target variable.
-     * @return A double representing the local score, or {@code Double.NaN} if the
-     * score cannot be computed due to invalid conditions or parameters.
-     */
     @Override
     public double localScore(int i, int... parents) {
         LocalFit fit = localFit(i, parents);
-        if (!Double.isFinite(fit.logLik) || !Double.isFinite(fit.edf) || fit.nUsed < 5) return Double.NaN;
-        return fit.logLik - 0.5 * penaltyDiscount * fit.edf * Math.log(fit.nUsed);
+        if (!Double.isFinite(fit.logLik) || !Double.isFinite(fit.edf) || fit.nUsed < 2) return Double.NaN;
+        return fit.logLik - 0.5 * penaltyDiscount * fit.edf * Math.log(Math.max(2, fit.nUsed));
     }
 
-    /**
-     * Calculates the difference in local scores when a new variable is appended
-     * to the conditioning set.
-     *
-     * @param x The variable being appended to the conditioning set.
-     * @param y The target variable for which the local score is computed.
-     * @param z The current conditioning set of variables.
-     * @return The difference in local scores after appending {@code x} to {@code z}.
-     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
+        // standard definition: localScore(y | z, x) - localScore(y | z)
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-    // ============================================================================================
-    // Discrete child: multinomial logistic ridge on features [Legendre(cont parents), OneHot(disc parents)]
-    // ============================================================================================
-
-    /**
-     * Retrieves a list of variables represented as Node objects.
-     *
-     * @return a new List containing the current variables. Modifying the returned list does not affect the original list.
-     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(variables);
     }
 
-    /**
-     * Retrieves the sample size, which corresponds to the number of rows in the dataset.
-     *
-     * @return the number of rows in the dataset as an integer
-     */
+    // -------------------- core scoring: localFit --------------------
+
     @Override
     public int getSampleSize() {
         return dataSet.getNumRows();
     }
 
     // ============================================================================================
-    // Helpers
+    // Continuous child: Student-t IRLS ridge on features [Legendre(cont parents), OneHot(disc parents)]
     // ============================================================================================
 
-    /**
-     * Returns a string representation of the object.
-     *
-     * @return a string indicating the description "Minimax- Legendre BIC score".
-     */
     @Override
     public String toString() {
         return "Legendre BIC score";
     }
 
-    /**
-     * Computes and returns the effective sample size.
-     * <p>
-     * The effective sample size is a measure of the amount of independent
-     * information in the data, adjusted for autocorrelation or statistical dependencies
-     * within the sample. It is useful in statistical analyses where independence
-     * of observations is an assumption.
-     *
-     * @return the effective sample size as an integer
-     */
+    // ============================================================================================
+    // Discrete child: multinomial logistic ridge on features [Legendre(cont parents), OneHot(disc parents)]
+    // ============================================================================================
+
+    public DataModel getDataModel() {
+        return dataSet;
+    }
+
+    // ============================================================================================
+    // Feature map: intercept + Legendre blocks + (optional) pairwise x interactions + one-hot blocks
+    // ============================================================================================
+
     @Override
     public int getEffectiveSampleSize() {
         return nEff;
     }
 
-    /**
-     * Sets the effective sample size for the current instance.
-     * If the provided effective sample size is negative, it defaults to the overall sample size.
-     * After setting the effective sample size, the internal cache is reset.
-     *
-     * @param nEff the effective sample size to be set; if negative, the sample size will be used instead
-     */
+    // ============================================================================================
+    // Missing rows, extraction, mapping, utilities
+    // ============================================================================================
+
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = (nEff < 0) ? this.sampleSize : nEff;
         resetCache();
     }
 
-    /**
-     * Sets the value of nu. The value of nu must be a finite number greater than 2.
-     *
-     * @param nu The new value to assign to nu. It must be a finite number greater than 2.
-     * @throws IllegalArgumentException If the provided value for nu is not finite or is less than or equal to 2.
-     */
     public void setNu(double nu) {
         if (!(nu > 2) || !Double.isFinite(nu)) throw new IllegalArgumentException("nu must be finite and > 2");
         this.nu = nu;
         resetCache();
     }
 
-    /**
-     * Sets the scale factor for this object. The scale must be a finite positive value.
-     * Passing an invalid scale value will result in an IllegalArgumentException.
-     *
-     * @param scale the new scale factor, must be greater than 0 and finite
-     */
     public void setScale(double scale) {
         if (!(scale > 0) || !Double.isFinite(scale)) throw new IllegalArgumentException("scale must be finite and > 0");
         this.scale = scale;
         resetCache();
     }
 
-    /**
-     * Sets the ridge regularization parameter, which is used to stabilize
-     * inverse operations and control overfitting in statistical models.
-     * The ridge value must be a finite positive number.
-     *
-     * @param ridge the ridge regularization parameter; must be greater than 0
-     *              and finite
-     * @throws IllegalArgumentException if {@code ridge} is not finite or is less
-     *                                  than or equal to 0
-     */
     public void setRidge(double ridge) {
         if (!(ridge > 0) || !Double.isFinite(ridge)) throw new IllegalArgumentException("ridge must be finite and > 0");
         this.ridge = ridge;
         resetCache();
     }
 
-    /**
-     * Sets the degree of the Legendre polynomial used in the model.
-     * The Legendre degree must be a positive integer greater than or equal to 1.
-     * This parameter impacts the complexity of the polynomial expansion.
-     *
-     * @param t the degree of the Legendre polynomial; must be >= 1
-     * @throws IllegalArgumentException if {@code t} is less than 1
-     */
     public void setLegendreDegree(int t) {
         if (t < 1) throw new IllegalArgumentException("legendreDegree must be >= 1");
         this.legendreDegree = t;
         resetCache();
     }
 
-    /**
-     * Sets the threshold for Legendre clipping, which is a numerical safeguard used
-     * to constrain values within a finite range. This parameter ensures stability
-     * during numerical operations involving Legendre polynomials.
-     *
-     * @param clip the Legendre clip value; must be a finite positive number greater than 0
-     * @throws IllegalArgumentException if {@code clip} is not finite or is less than or equal to 0
-     */
     public void setLegendreClip(double clip) {
         if (!(clip > 0) || !Double.isFinite(clip))
             throw new IllegalArgumentException("legendreClip must be finite and > 0");
@@ -576,73 +593,133 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         resetCache();
     }
 
-    /**
-     * Sets the maximum number of iterations to be used in the Iterative Reweighted
-     * Least Squares (IRLS) procedure. The IRLS method is often used in optimization
-     * algorithms for fitting statistical models.
-     * <p>
-     * If the provided number of iterations is less than 1, it defaults to 1.
-     * <p>
-     * This method also triggers a reset of the cached local score data.
-     *
-     * @param iters the number of iterations for the IRLS procedure; must be
-     *              a positive integer
-     */
     public void setIrlsIters(int iters) {
         this.irlsIters = Math.max(1, iters);
         resetCache();
     }
 
-    /**
-     * Sets the convergence tolerance for the Iterative Reweighted Least Squares (IRLS) procedure.
-     * The tolerance specifies the threshold for stopping the IRLS iterations as soon as
-     * the updates in the optimization process become sufficiently small.
-     * <p>
-     * If the provided tolerance is less than 0.0, it is set to 0.0 by default.
-     * <p>
-     * This method also triggers a reset of the cached local score data.
-     *
-     * @param tol the convergence tolerance for the IRLS procedure; must be non-negative
-     */
     public void setIrlsTol(double tol) {
         this.irlsTol = Math.max(0.0, tol);
         resetCache();
     }
 
-    /**
-     * Enables or disables the use of interaction terms in the model. Interaction terms
-     * represent combined effects between variables and can be included to capture
-     * their joint influence on the outcome. When interactions are enabled, the model
-     * considers such terms during calculations.
-     * <p>
-     * Changing this setting triggers a reset of the cached local score data, ensuring
-     * subsequent computations use updated parameters.
-     *
-     * @param useInteractions a boolean indicating whether to enable (true) or disable
-     *                        (false) interaction terms in the model
-     */
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        if (!(penaltyDiscount > 0.0) || !Double.isFinite(penaltyDiscount))
+            throw new IllegalArgumentException("Penalty discount must be finite and > 0");
+        this.penaltyDiscount = penaltyDiscount;
+        resetCache();
+    }
+
     public void setUseInteractions(boolean useInteractions) {
         this.useInteractions = useInteractions;
         resetCache();
     }
 
-    /**
-     * Student-t design row:
-     * - intercept
-     * - Legendre block: for each continuous parent j, P1..Pt of mapped value
-     * - one-hot block for discrete parents (baseline dropped)
-     */
-
-    /**
-     * Sets the maximum number of parents that can be considered for interaction terms in the model.
-     * The value is adjusted to ensure it is non-negative, with negative inputs being clamped to zero.
-     * This method also triggers a reset of the cached local score data.
-     *
-     * @param k the maximum number of parents allowed for interactions; must be a non-negative integer
-     */
     public void setInteractionMaxParents(int k) {
         this.interactionMaxParents = Math.max(0, k);
         resetCache();
+    }
+
+    public void setMinN(int minN) {
+        this.minN = Math.max(2, minN);
+        resetCache();
+    }
+
+    public void setLegendreMapMode(String mode) {
+        this.legendreMapMode = LegendreMapMode.valueOf(mode);
+        resetCache();
+    }
+
+    // -------------------- multinomial helpers --------------------
+
+    public void setMapQuantiles(double loQ, double hiQ) {
+        if (!(loQ >= 0 && loQ < hiQ && hiQ <= 1)) {
+            throw new IllegalArgumentException("Quantiles must satisfy 0 <= loQ < hiQ <= 1");
+        }
+        this.mapLoQ = loQ;
+        this.mapHiQ = hiQ;
+
+        // recompute robust bounds (cheap enough)
+        for (int j = 0; j < variables.size(); j++) {
+            if (isDiscrete(j)) continue;
+            double lo = quantileOfFinite(zCols[j], mapLoQ);
+            double hi = quantileOfFinite(zCols[j], mapHiQ);
+            if (Double.isFinite(lo) && Double.isFinite(hi) && hi > lo) {
+                zQlo[j] = lo;
+                zQhi[j] = hi;
+            }
+        }
+        resetCache();
+    }
+
+    public LocalFit localFit(int i, int... parents) {
+        Arrays.sort(parents);
+        final long key = cacheKey(i, parents, knobsSignature());
+        final ConcurrentHashMap<Long, LocalFit> cache = localFitCacheRef.get();
+
+        return cache.computeIfAbsent(key, k -> {
+            try {
+                if (!(ridge > 0) || !Double.isFinite(ridge)) return new LocalFit(Double.NaN, Double.NaN, 0);
+
+                final int[] all = concat(i, parents);
+                final int[] rows = calculateRowSubsets ? validRows(all) : null;
+
+                final int n = (rows == null) ? nEff : rows.length;
+
+                // do not bail out with NaN just because n is small:
+                // - if n < 2 it's hopeless
+                // - if n < minN we use intercept-only (finite) as a fallback
+                if (n < 2) return new LocalFit(Double.NaN, Double.NaN, n);
+
+                if (isDiscrete(i)) {
+                    final int K = numCategories(i);
+                    if (K < 2) return new LocalFit(Double.NaN, Double.NaN, n);
+
+                    final int[] y = extractDiscreteChild(i, rows, n);
+
+                    if (parents.length == 0 || n < minN) {
+                        double ll = multinomialInterceptOnlyLogLik(y, K);
+                        double edf = (K - 1.0);
+                        return new LocalFit(ll, edf, n);
+                    }
+
+                    FitResult fit = fitMultinomialLogitMixed(i, y, K, parents, rows, n);
+                    if (!Double.isFinite(fit.logLik) || !Double.isFinite(fit.edf)) {
+                        // fallback to intercept-only rather than NaN
+                        double ll = multinomialInterceptOnlyLogLik(y, K);
+                        double edf = (K - 1.0);
+                        return new LocalFit(ll, edf, n);
+                    }
+                    return new LocalFit(fit.logLik, fit.edf, n);
+
+                } else {
+                    if (!(nu > 2) || !Double.isFinite(nu)) return new LocalFit(Double.NaN, Double.NaN, n);
+
+                    final double[] y = extractContinuousChild(i, rows, n);
+                    centerInPlace(y);
+
+                    if (parents.length == 0 || n < minN) {
+                        // intercept-only t model (mean 0 after centering)
+                        double scaleHat = warmStartScale(y, n);
+                        double ll0 = studentTLogLik(y, new double[n], nu, scaleHat);
+                        return new LocalFit(ll0, 1.0, n);
+                    }
+
+                    FitResult fit = fitStudentTLegendreRidgeMixed(y, parents, rows, n);
+                    if (!Double.isFinite(fit.logLik) || !Double.isFinite(fit.edf)) {
+                        // fallback to intercept-only rather than NaN
+                        double scaleHat = warmStartScale(y, n);
+                        double ll0 = studentTLogLik(y, new double[n], nu, scaleHat);
+                        return new LocalFit(ll0, 1.0, n);
+                    }
+                    return new LocalFit(fit.logLik, fit.edf, n);
+                }
+
+            } catch (RuntimeException e) {
+                TetradLogger.getInstance().log(e.getMessage());
+                return new LocalFit(Double.NaN, Double.NaN, 0);
+            }
+        });
     }
 
     private FitResult fitStudentTLegendreRidgeMixed(double[] yCentered,
@@ -652,11 +729,9 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
 
         final int[] cont = filterContinuous(parentIdx);
         final int[] disc = filterDiscrete(parentIdx);
-
         final OneHotSpec oh = buildOneHotSpec(disc);
 
         final int t = legendreDegree;
-
         final int D = cont.length * t;
 
         final int kInt = (useInteractions ? Math.min(cont.length, interactionMaxParents) : 0);
@@ -665,42 +740,33 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         final int Q = oh.totalCols;
         final int M = 1 + D + I + Q;
 
-        // Extract continuous parents (z-scored) into dense n x dCont
-        final double[][] Zc = new double[n][cont.length];
+        // Extract continuous parents mapped to [-1,1] into dense n x dCont
+        final double[][] Xmap = new double[n][cont.length];
         for (int i = 0; i < n; i++) {
             final int row = (rows == null) ? i : rows[i];
-            for (int j = 0; j < cont.length; j++) Zc[i][j] = zCols[cont[j]][row];
+            for (int j = 0; j < cont.length; j++) {
+                final int var = cont[j];
+                final double z = zCols[var][row];
+                Xmap[i][j] = mapToLegendreDomain(var, z);
+            }
         }
 
         // IRLS weights for Student-t
         final double[] w = new double[n];
         Arrays.fill(w, 1.0);
 
+        // Warm-start scale to avoid pathological early weights
+        double scaleHat = (Double.isFinite(scale) && scale > 0) ? scale : 1.0;
+        // If user left default-ish scale, warm-start from y
+        if (Math.abs(scaleHat - 1.0) < 1e-12) scaleHat = warmStartScale(yCentered, n);
+
         double[] beta = new double[M];
         double prevObj = Double.POSITIVE_INFINITY;
 
-        // Profile scale per family
-        double scaleHat = this.scale;
-
-        // Scratch buffers (reuse to avoid churn)
+        // Scratch buffers (reuse)
         final double[] xRow = new double[M];
         final double[] v = new double[M];
 
-        // -------------------- low-risk robustness upgrades --------------------
-
-        // Warm-start scaleHat from y when the configured scale is the generic default (≈1.0).
-        // This avoids pathological first-step weights when y is z-scored but scale is not tuned.
-        if (Math.abs(scaleHat - 1.0) < 1e-12) {
-            double s2 = 0.0;
-            for (int i = 0; i < n; i++) {
-                final double yi = yCentered[i];
-                s2 += yi * yi;
-            }
-            final double rms = Math.sqrt(Math.max(1e-12, s2 / Math.max(1, n)));
-            scaleHat = rms;
-        }
-
-        // -------------------- IRLS loop --------------------
         for (int iter = 0; iter < irlsIters; iter++) {
 
             final DMatrixRMaj G = new DMatrixRMaj(M, M);
@@ -708,44 +774,25 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
 
             // Build normal equations (weighted ridge)
             for (int i = 0; i < n; i++) {
-                buildXRowStudentT_Intercept_Legendre(
-                        xRow, i, Zc, cont.length, t,
-                        oh, disc, rows
-                );
+                buildXRow_Intercept_Legendre(xRow, i, Xmap, cont.length, t, oh, disc, rows);
 
                 final double wi = w[i];
                 final double yi = yCentered[i];
 
                 for (int a = 0; a < M; a++) v[a] += wi * xRow[a] * yi;
-
                 for (int a = 0; a < M; a++) {
                     final double pa = wi * xRow[a];
                     for (int b = 0; b <= a; b++) G.add(a, b, pa * xRow[b]);
                 }
             }
 
-            // symmetrize
-            for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) G.set(b, a, G.get(a, b));
-            // ridge (intercept unpenalized)
-            for (int a = 1; a < M; a++) G.add(a, a, ridge);
+            symmetrizeLowerToFull(G);
+            addRidgeToDiagonal(G, ridge, /*skipIntercept=*/true);
 
-            // Cholesky with jitter-on-failure (no behavior change unless decomposition fails)
-            CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
-            if (!chol.decompose(G)) {
-                double jitter = ridge;
-                boolean ok = false;
-
-                for (int attempt = 0; attempt < 4; attempt++) {
-                    jitter *= 10.0;
-                    for (int a = 1; a < M; a++) G.add(a, a, jitter);
-                    chol = DecompositionFactory_DDRM.chol(true);
-                    if (chol.decompose(G)) { ok = true; break; }
-                }
-
-                if (!ok) return new FitResult(Double.NaN, Double.NaN);
-            }
-
+            final CholeskyDecomposition_F64<DMatrixRMaj> chol = cholWithJitter(G, ridge);
+            if (chol == null) return new FitResult(Double.NaN, Double.NaN);
             final DMatrixRMaj L = chol.getT(null);
+
             beta = solveFromCholeskyLower(L, v);
 
             // Update weights + profiled scale
@@ -754,10 +801,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
             double wrss = 0.0;
 
             for (int i = 0; i < n; i++) {
-                buildXRowStudentT_Intercept_Legendre(
-                        xRow, i, Zc, cont.length, t,
-                        oh, disc, rows
-                );
+                buildXRow_Intercept_Legendre(xRow, i, Xmap, cont.length, t, oh, disc, rows);
 
                 double mu = 0.0;
                 for (int a = 0; a < M; a++) mu += xRow[a] * beta[a];
@@ -770,55 +814,44 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
                 final double wi = (nu + 1.0) / (nu + u2);
                 w[i] = wi;
 
-                obj += 0.5 * (nu + 1.0) * Math.log1p(u2 / nu);
+                obj += 0.5 * (nu + 1.0) * log1p(u2 / nu);
 
                 wsum += wi;
                 wrss += wi * r * r;
             }
 
-            // Defensive scale update: don't let NaN/inf collapse poison subsequent iterations.
             if (wsum > 0.0) {
                 final double s2 = wrss / wsum;
-                if (Double.isFinite(s2) && s2 > 0.0) {
-                    scaleHat = Math.sqrt(Math.max(1e-12, s2));
-                }
+                if (Double.isFinite(s2) && s2 > 0.0) scaleHat = sqrt(max(1e-12, s2));
             }
 
-            if (Math.abs(prevObj - obj) <= irlsTol * (1.0 + Math.abs(prevObj))) break;
+            if (abs(prevObj - obj) <= irlsTol * (1.0 + abs(prevObj))) break;
             prevObj = obj;
         }
 
         // Final predictions
         final double[] yhat = new double[n];
         for (int i = 0; i < n; i++) {
-            buildXRowStudentT_Intercept_Legendre(
-                    xRow, i, Zc, cont.length, t,
-                    oh, disc, rows
-            );
+            buildXRow_Intercept_Legendre(xRow, i, Xmap, cont.length, legendreDegree, oh, disc, rows);
             double mu = 0.0;
             for (int a = 0; a < M; a++) mu += xRow[a] * beta[a];
             yhat[i] = mu;
         }
 
-        // Likelihood uses profiled scaleHat
         final double ll = studentTLogLik(yCentered, yhat, nu, scaleHat);
 
-        // EDF using last weights
+        // EDF: approximate ridge smoother trace using last weights
         final DMatrixRMaj Gfinal = new DMatrixRMaj(M, M);
         for (int i = 0; i < n; i++) {
-            buildXRowStudentT_Intercept_Legendre(
-                    xRow, i, Zc, cont.length, t,
-                    oh, disc, rows
-            );
-
+            buildXRow_Intercept_Legendre(xRow, i, Xmap, cont.length, legendreDegree, oh, disc, rows);
             final double wi = w[i];
             for (int a = 0; a < M; a++) {
                 final double pa = wi * xRow[a];
                 for (int b = 0; b <= a; b++) Gfinal.add(a, b, pa * xRow[b]);
             }
         }
-        for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) Gfinal.set(b, a, Gfinal.get(a, b));
-        for (int a = 1; a < M; a++) Gfinal.add(a, a, ridge);
+        symmetrizeLowerToFull(Gfinal);
+        addRidgeToDiagonal(Gfinal, ridge, /*skipIntercept=*/true);
 
         final double trInvPen = traceInvPenalizedBlockFromG(Gfinal);
         if (!Double.isFinite(trInvPen)) return new FitResult(Double.NaN, Double.NaN);
@@ -830,97 +863,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return new FitResult(ll, edf);
     }
 
-    // -------------------- missing rows & extraction --------------------
-
-    /**
-     * Student-t design row:
-     * - intercept
-     * - Legendre block: for each continuous parent j, P1..Pt of mapped value
-     * - (optional) interaction block: x_a * x_b for first-degree mapped values
-     * - one-hot block for discrete parents (baseline dropped)
-     */
-    private void buildXRowStudentT_Intercept_Legendre(double[] out,
-                                                      int i,
-                                                      double[][] Zc,
-                                                      int dCont,
-                                                      int t,
-                                                      OneHotSpec oh,
-                                                      int[] discParents,
-                                                      int[] rows) {
-
-        // intercept
-        out[0] = 1.0;
-
-        final int legOff = 1;
-
-        // How many continuous parents participate in interactions?
-        final int kInt = (useInteractions ? Math.min(dCont, interactionMaxParents) : 0);
-        final int nInt = (kInt >= 2) ? (kInt * (kInt - 1)) / 2 : 0;
-
-        // Interaction block starts right after Legendre block
-        final int intOff = legOff + dCont * t;
-
-        // one-hot block starts after interactions
-        final int ohOff = intOff + nInt;
-
-        // Defensive: zero out whole row except intercept (cheap + safe)
-        Arrays.fill(out, 1, out.length, 0.0);
-
-        // Precompute mapped x values (only need first kInt, but compute all is fine)
-        final double[] xMap = (kInt > 0) ? new double[kInt] : null;
-
-        // Fill Legendre block
-        int pos = legOff;
-        for (int j = 0; j < dCont; j++) {
-            double z = Zc[i][j];
-            double x = clamp(z / legendreClip);
-
-            if (j < kInt) xMap[j] = x;
-
-            // Legendre recurrence:
-            double Pnm2 = 1.0; // P0
-            double Pnm1 = x;   // P1
-
-            for (int deg = 1; deg <= t; deg++) {
-                final double Pd;
-                if (deg == 1) {
-                    Pd = Pnm1;
-                } else {
-                    Pd = ((2.0 * deg - 1.0) * x * Pnm1 - (deg - 1.0) * Pnm2) / deg;
-                    Pnm2 = Pnm1;
-                    Pnm1 = Pd;
-                }
-                out[pos++] = Pd;
-            }
-        }
-
-        // Fill interaction block (x_a * x_b using mapped x = P1)
-        if (nInt > 0) {
-            int ipos = intOff;
-            for (int a = 0; a < kInt; a++) {
-                final double xa = xMap[a];
-                for (int b = 0; b < a; b++) {
-                    out[ipos++] = xa * xMap[b];
-                }
-            }
-        }
-
-        // one-hot block (baseline dropped)
-        if (discParents.length == 0) return;
-
-        final int row = (rows == null) ? i : rows[i];
-        for (int parentPos = 0; parentPos < discParents.length; parentPos++) {
-            final int var = discParents[parentPos];
-            final int lev = dataSet.getInt(row, var);
-            if (lev == DiscreteVariable.MISSING_VALUE) continue;
-            if (lev <= 0) continue;
-
-            final int col = oh.offsets[parentPos] + (lev - 1);
-            if (col >= oh.offsets[parentPos] && col < oh.offsets[parentPos] + oh.sizes[parentPos] - 1) {
-                out[ohOff + col] = 1.0;
-            }
-        }
-    }
+    // -------------------- Student-t likelihood + logGamma --------------------
 
     private FitResult fitMultinomialLogitMixed(int child,
                                                int[] y, int K,
@@ -932,7 +875,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         final OneHotSpec oh = buildOneHotSpec(disc);
 
         final int t = legendreDegree;
-
         final int D = cont.length * t;
 
         final int kInt = (useInteractions ? Math.min(cont.length, interactionMaxParents) : 0);
@@ -943,18 +885,21 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
 
         final int C = K - 1;
 
-        // Extract continuous parents
-        final double[][] Zc = new double[n][cont.length];
+        // Extract continuous parents mapped into [-1,1]
+        final double[][] Xmap = new double[n][cont.length];
         for (int r = 0; r < n; r++) {
             final int row = (rows == null) ? r : rows[r];
-            for (int j = 0; j < cont.length; j++) Zc[r][j] = zCols[cont[j]][row];
+            for (int j = 0; j < cont.length; j++) {
+                final int var = cont[j];
+                Xmap[r][j] = mapToLegendreDomain(var, zCols[var][row]);
+            }
         }
 
         // Precompute Phi
         final double[][] Phi = new double[n][M];
         final double[] xRow = new double[M];
         for (int i = 0; i < n; i++) {
-            buildXRowLogit_Intercept_Legendre(xRow, i, Zc, cont.length, t, oh, disc, rows);
+            buildXRow_Intercept_Legendre(xRow, i, Xmap, cont.length, t, oh, disc, rows);
             System.arraycopy(xRow, 0, Phi[i], 0, M);
         }
 
@@ -997,11 +942,11 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
                     }
                 }
 
-                for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) G.set(b, a, G.get(a, b));
-                for (int a = 1; a < M; a++) G.add(a, a, ridge);
+                symmetrizeLowerToFull(G);
+                addRidgeToDiagonal(G, ridge, /*skipIntercept=*/true);
 
-                final CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
-                if (!chol.decompose(G)) return new FitResult(Double.NaN, Double.NaN);
+                final CholeskyDecomposition_F64<DMatrixRMaj> chol = cholWithJitter(G, ridge);
+                if (chol == null) return new FitResult(Double.NaN, Double.NaN);
                 final DMatrixRMaj L = chol.getT(null);
 
                 final double[] bc = solveFromCholeskyLower(L, v);
@@ -1011,17 +956,18 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
             final double llIter = multinomialLogLikFromPhi(y, K, n, beta, Phi, logits);
             final double obj = -llIter;
 
-            if (Math.abs(prevObj - obj) <= irlsTol * (1.0 + Math.abs(prevObj))) break;
+            if (abs(prevObj - obj) <= irlsTol * (1.0 + abs(prevObj))) break;
             prevObj = obj;
         }
 
         final double ll = multinomialLogLikFromPhi(y, K, n, beta, Phi, logits);
 
-        // EDF
+        // EDF approximation (sum over C one-vs-baseline fits)
         fillSoftmaxProbsFromPhi(K, n, beta, Phi, logits, probs);
 
         double edf = 0.0;
         final int Mp = M - 1;
+
         for (int c = 0; c < C; c++) {
             final DMatrixRMaj G = new DMatrixRMaj(M, M);
 
@@ -1038,8 +984,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
                 }
             }
 
-            for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) G.set(b, a, G.get(a, b));
-            for (int a = 1; a < M; a++) G.add(a, a, ridge);
+            symmetrizeLowerToFull(G);
+            addRidgeToDiagonal(G, ridge, /*skipIntercept=*/true);
 
             double trInvPen = traceInvPenalizedBlockFromG(G);
             if (!Double.isFinite(trInvPen)) return new FitResult(Double.NaN, Double.NaN);
@@ -1053,27 +999,101 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return new FitResult(ll, edf);
     }
 
-    private void buildXRowLogit_Intercept_Legendre(double[] out,
-                                                   int i,
-                                                   double[][] Zc,
-                                                   int dCont,
-                                                   int t,
-                                                   OneHotSpec oh,
-                                                   int[] discParents,
-                                                   int[] rows) {
-        // identical feature map as Student-t
-        buildXRowStudentT_Intercept_Legendre(out, i, Zc, dCont, t, oh, discParents, rows);
+    /**
+     * Design row:
+     * - intercept
+     * - Legendre block: for each continuous parent j, P1..Pt of mapped value in [-1,1]
+     * - (optional) interaction block: x_a * x_b for first-degree mapped values
+     * - one-hot block for discrete parents (baseline dropped)
+     */
+    private void buildXRow_Intercept_Legendre(double[] out,
+                                              int i,
+                                              double[][] Xmap, // n x dCont values already in [-1,1]
+                                              int dCont,
+                                              int t,
+                                              OneHotSpec oh,
+                                              int[] discParents,
+                                              int[] rows) {
+
+        out[0] = 1.0;
+        Arrays.fill(out, 1, out.length, 0.0);
+
+        final int legOff = 1;
+
+        final int kInt = (useInteractions ? Math.min(dCont, interactionMaxParents) : 0);
+        final int nInt = (kInt >= 2) ? (kInt * (kInt - 1)) / 2 : 0;
+
+        final int intOff = legOff + dCont * t;
+        final int ohOff = intOff + nInt;
+
+        // need x's for interaction block
+        final double[] xInt = (kInt > 0) ? new double[kInt] : null;
+
+        int pos = legOff;
+        for (int j = 0; j < dCont; j++) {
+            double x = Xmap[i][j];
+            if (Double.isNaN(x)) x = 0.0; // should not occur if validRows filtered, but safe
+
+            if (j < kInt) xInt[j] = x;
+
+            // P0 = 1, P1 = x
+            double Pnm2 = 1.0;
+            double Pnm1 = x;
+
+            for (int deg = 1; deg <= t; deg++) {
+                final double Pd;
+                if (deg == 1) {
+                    Pd = Pnm1;
+                } else {
+                    Pd = ((2.0 * deg - 1.0) * x * Pnm1 - (deg - 1.0) * Pnm2) / deg;
+                    Pnm2 = Pnm1;
+                    Pnm1 = Pd;
+                }
+                out[pos++] = Pd;
+            }
+        }
+
+        if (nInt > 0) {
+            int ipos = intOff;
+            for (int a = 0; a < kInt; a++) {
+                final double xa = xInt[a];
+                for (int b = 0; b < a; b++) {
+                    out[ipos++] = xa * xInt[b];
+                }
+            }
+        }
+
+        if (discParents.length == 0) return;
+
+        final int row = (rows == null) ? i : rows[i];
+        for (int parentPos = 0; parentPos < discParents.length; parentPos++) {
+            final int var = discParents[parentPos];
+            final int lev = dataSet.getInt(row, var);
+            if (lev == DiscreteVariable.MISSING_VALUE) continue;
+
+            // baseline is 0 -> dropped
+            if (lev <= 0) continue;
+
+            final int local = lev - 1;
+            final int size = oh.sizes[parentPos];
+            if (size <= 1) continue;
+
+            // columns are 0..(K-2) for levels 1..(K-1)
+            if (local >= (size - 1)) continue;
+
+            final int col = oh.offsets[parentPos] + local;
+            out[ohOff + col] = 1.0;
+        }
     }
 
-    // -------------------- type utils --------------------
+    // -------------------- linear algebra helpers --------------------
 
     private int[] validRows(int[] vars) {
-        int n = sampleSize;
-        int[] tmp = new int[n];
+        int[] tmp = new int[sampleSize];
         int m = 0;
 
         outer:
-        for (int r = 0; r < n; r++) {
+        for (int r = 0; r < sampleSize; r++) {
             for (int v : vars) {
                 if (isDiscrete(v)) {
                     int val = dataSet.getInt(r, v);
@@ -1112,7 +1132,11 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return variables.get(col) instanceof DiscreteVariable;
     }
 
-    // -------------------- one-hot spec --------------------
+    private int numCategories(int varIndex) {
+        Node v = variables.get(varIndex);
+        if (!(v instanceof DiscreteVariable dv)) return 0;
+        return dv.getNumCategories();
+    }
 
     private int[] filterContinuous(int[] cols) {
         int c = 0;
@@ -1123,6 +1147,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return out;
     }
 
+    // -------------------- one-hot spec --------------------
+
     private int[] filterDiscrete(int[] cols) {
         int c = 0;
         for (int v : cols) if (isDiscrete(v)) c++;
@@ -1132,45 +1158,77 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return out;
     }
 
-    private int numCategories(int varIndex) {
-        Node v = variables.get(varIndex);
-        if (!(v instanceof DiscreteVariable dv)) return 0;
-        return dv.getNumCategories();
+    private double mapToLegendreDomain(int varIndex, double z) {
+        if (Double.isNaN(z)) return Double.NaN;
+
+        switch (legendreMapMode) {
+            case MINMAX_Z: {
+                final double lo = zMin[varIndex];
+                final double hi = zMax[varIndex];
+                if (!Double.isFinite(lo) || !Double.isFinite(hi) || !(hi > lo)) {
+                    return clamp(z / legendreClip);
+                }
+                double x = (2.0 * (z - lo) / (hi - lo)) - 1.0;
+                return clamp(x);
+            }
+            case ROBUST_MINMAX_Z: {
+                final double lo = zQlo[varIndex];
+                final double hi = zQhi[varIndex];
+                if (!Double.isFinite(lo) || !Double.isFinite(hi) || !(hi > lo)) {
+                    // fall back to raw min/max then clip
+                    final double lo2 = zMin[varIndex];
+                    final double hi2 = zMax[varIndex];
+                    if (Double.isFinite(lo2) && Double.isFinite(hi2) && hi2 > lo2) {
+                        double x = (2.0 * (z - lo2) / (hi2 - lo2)) - 1.0;
+                        return clamp(x);
+                    }
+                    return clamp(z / legendreClip);
+                }
+                double x = (2.0 * (z - lo) / (hi - lo)) - 1.0;
+                return clamp(x);
+            }
+            case SCALE_DOWN:
+                final double lo = zQlo[varIndex];
+                final double hi = zQhi[varIndex];
+                final double max = Math.max(Math.abs(lo), Math.abs(hi));
+                return clamp(z / max);
+//                if (!Double.isFinite(lo) || !Double.isFinite(hi) || !(hi > lo)) {
+//                    // fall back to raw min/max then clip
+//                    final double lo2 = zMin[varIndex];
+//                    final double hi2 = zMax[varIndex];
+//                    if (Double.isFinite(lo2) && Double.isFinite(hi2) && hi2 > lo2) {
+//                        double x = (2.0 * (z - lo2) / (hi2 - lo2)) - 1.0;
+//                        return clamp(x);
+//                    }
+//                    return clamp(z / legendreClip);
+//                }
+//                double x = (2.0 * (z - lo) / (hi - lo)) - 1.0;
+//                return clamp(x);
+            case CLIP_Z:
+            default:
+                return clamp(z / legendreClip);
+        }
     }
 
-    // -------------------- cache & hashing --------------------
+    // -------------------- cache + hashing --------------------
 
     private OneHotSpec buildOneHotSpec(int[] discParents) {
         int m = discParents.length;
         int[] sizes = new int[m];
         int[] offsets = new int[m];
         int off = 0;
+
         for (int t = 0; t < m; t++) {
             int var = discParents[t];
             int K = numCategories(var);
             sizes[t] = K;
             offsets[t] = off;
-            off += max(0, K - 1);
+            off += Math.max(0, K - 1);
         }
         return new OneHotSpec(sizes, offsets, off);
     }
 
-    /**
-     * Sets the penalty discount to be applied. The value must be a finite positive number.
-     *
-     * @param penaltyDiscount the penalty discount value to set. Must be greater than 0 and finite.
-     * @throws IllegalArgumentException if the provided penaltyDiscount is not finite or not greater than 0.
-     */
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        if (!(penaltyDiscount > 0.0) || !Double.isFinite(penaltyDiscount))
-            throw new IllegalArgumentException("Penalty discount must be finite and > 0");
-
-        this.penaltyDiscount = penaltyDiscount;
-        resetCache();
-    }
-
     private void resetCache() {
-        localScoreCacheRef.set(new ConcurrentHashMap<>());
         localFitCacheRef.set(new ConcurrentHashMap<>());
     }
 
@@ -1186,103 +1244,12 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         h = (h ^ nEff) * 1099511628211L;
         h = (h ^ (useInteractions ? 1L : 0L)) * 1099511628211L;
         h = (h ^ interactionMaxParents) * 1099511628211L;
+        h = (h ^ Double.doubleToLongBits(penaltyDiscount)) * 1099511628211L;
+        h = (h ^ legendreMapMode.ordinal()) * 1099511628211L;
+        h = (h ^ Double.doubleToLongBits(mapLoQ)) * 1099511628211L;
+        h = (h ^ Double.doubleToLongBits(mapHiQ)) * 1099511628211L;
+        h = (h ^ minN) * 1099511628211L;
         return h;
-    }
-
-    /**
-     * Appends an integer value to the end of the given array and returns a new array.
-     *
-     * @param z the original array to which the value is to be appended
-     * @param x the integer value to append to the array
-     * @return a new array containing all elements of the original array followed by the appended value
-     */
-    public int[] append(int[] z, int x) {
-        int[] out = Arrays.copyOf(z, z.length + 1);
-        out[z.length] = x;
-        return out;
-    }
-
-    /**
-     * Computes a local fit for a variable based on its parents using cached or newly
-     * computed models. The method supports both discrete and continuous cases with
-     * handling for multinomial logistic regression or Student-t regression respectively.
-     * This operation involves extracting subsets of rows, calculating effective data size,
-     * and fitting appropriate models based on the given parameters.
-     *
-     * @param i       The index of the variable for which the local fit is computed.
-     * @param parents An array of indices representing the parent variables of the target variable.
-     *                This array may be empty if the variable has no parents.
-     * @return A {@code LocalFit} object containing the log-likelihood,
-     * degrees of freedom, and effective sample size for the computed model.
-     */
-    public LocalFit localFit(int i, int... parents) {
-        Arrays.sort(parents);
-        long key = cacheKey(i, parents, knobsSignature());
-        final ConcurrentHashMap<Long, LocalFit> cache = localFitCacheRef.get();
-
-        return cache.computeIfAbsent(key, k -> {
-            try {
-                if (!(ridge > 0) || !Double.isFinite(ridge)) return new LocalFit(Double.NaN, Double.NaN, 0);
-
-                int[] all = concat(i, parents);
-                int[] rows = calculateRowSubsets ? validRows(all) : null;
-
-                int n = (rows == null) ? nEff : rows.length;
-                if (n < 10) return new LocalFit(Double.NaN, Double.NaN, n);
-
-                if (isDiscrete(i)) {
-                    int[] y = extractDiscreteChild(i, rows, n);
-                    int K = numCategories(i);
-                    if (K < 2) return new LocalFit(Double.NaN, Double.NaN, n);
-
-                    if (parents.length == 0) {
-                        double ll = multinomialInterceptOnlyLogLik(y, K);
-                        double edf = (K - 1.0); // parameters for baseline-dropped intercept-only
-                        return new LocalFit(ll, edf, n);
-                    }
-
-                    FitResult fit = fitMultinomialLogitMixed(i, y, K, parents, rows, n);
-                    return new LocalFit(fit.logLik(), fit.edf(), n);
-
-                } else {
-                    if (!(nu > 2) || !Double.isFinite(nu)) return new LocalFit(Double.NaN, Double.NaN, n);
-                    if (!(scale > 0) || !Double.isFinite(scale)) return new LocalFit(Double.NaN, Double.NaN, n);
-
-                    double[] y = extractContinuousChild(i, rows, n);
-
-                    if (parents.length == 0) {
-                        double scaleHat = this.scale;
-
-                        double s2 = 0.0;
-                        for (double v : y) s2 += v * v;
-                        scaleHat = Math.sqrt(Math.max(1e-12, s2 / n));
-
-                        for (int it = 0; it < 2; it++) {
-                            double wsum = 0.0, wrss = 0.0;
-                            double invS2 = 1.0 / (scaleHat * scaleHat);
-                            for (int r = 0; r < n; r++) {
-                                double u2 = (y[r] * y[r]) * invS2;
-                                double w = (nu + 1.0) / (nu + u2);
-                                wsum += w;
-                                wrss += w * y[r] * y[r];
-                            }
-                            if (wsum > 0.0) scaleHat = Math.sqrt(Math.max(1e-12, wrss / wsum));
-                        }
-
-                        double ll0 = studentTLogLik(y, new double[n], nu, scaleHat);
-                        double edf0 = 1.0; // intercept
-                        return new LocalFit(ll0, edf0, n);
-                    }
-
-                    FitResult fit = fitStudentTLegendreRidgeMixed(y, parents, rows, n);
-                    return new LocalFit(fit.logLik(), fit.edf(), n);
-                }
-
-            } catch (RuntimeException e) {
-                TetradLogger.getInstance().log(e.getMessage());
-                return new LocalFit(Double.NaN, Double.NaN, 0);
-            }
-        });
     }
 
     /**
@@ -1304,39 +1271,56 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         Arrays.sort(parents);
 
         try {
-            if (!(ridge > 0) || !Double.isFinite(ridge)) return new LocalFit(Double.NaN, Double.NaN, 0);
+            if (!(ridge > 0) || !Double.isFinite(ridge)) {
+                return new LocalFit(Double.NaN, Double.NaN, 0);
+            }
 
             final int n = (rows == null) ? nEff : rows.length;
-            if (n < 10) return new LocalFit(Double.NaN, Double.NaN, n);
+            if (n < 2) {
+                return new LocalFit(Double.NaN, Double.NaN, n);
+            }
 
             if (isDiscrete(child)) {
-                int[] y = extractDiscreteChild(child, rows, n);
-                int K = numCategories(child);
+                final int K = numCategories(child);
                 if (K < 2) return new LocalFit(Double.NaN, Double.NaN, n);
 
-                if (parents.length == 0) {
+                final int[] y = extractDiscreteChild(child, rows, n);
+
+                // For LRT stability: always return a finite likelihood if possible.
+                if (parents.length == 0 || n < 5) {
                     double ll = multinomialInterceptOnlyLogLik(y, K);
                     double edf = (K - 1.0);
                     return new LocalFit(ll, edf, n);
                 }
 
                 FitResult fit = fitMultinomialLogitMixed(child, y, K, parents, rows, n);
+                if (!Double.isFinite(fit.logLik()) || !Double.isFinite(fit.edf())) {
+                    // fallback to intercept-only (finite)
+                    double ll = multinomialInterceptOnlyLogLik(y, K);
+                    double edf = (K - 1.0);
+                    return new LocalFit(ll, edf, n);
+                }
                 return new LocalFit(fit.logLik(), fit.edf(), n);
 
             } else {
                 if (!(nu > 2) || !Double.isFinite(nu)) return new LocalFit(Double.NaN, Double.NaN, n);
-                if (!(scale > 0) || !Double.isFinite(scale)) return new LocalFit(Double.NaN, Double.NaN, n);
 
                 double[] y = extractContinuousChild(child, rows, n);
 
-                if (parents.length == 0) {
-                    // intercept-only: same as your current localFit() code
-                    double scaleHat;
+                // IMPORTANT: make this consistent with localFit(): center y in-place
+                centerInPlace(y);
 
+                if (parents.length == 0 || n < 5) {
+                    // intercept-only Student-t with profiled scale
+                    double scaleHat = this.scale;
+
+                    // robust warm start from y if scale is generic/default-ish
                     double s2 = 0.0;
                     for (double v : y) s2 += v * v;
-                    scaleHat = Math.sqrt(Math.max(1e-12, s2 / n));
+                    double rms = Math.sqrt(Math.max(1e-12, s2 / Math.max(1, n)));
+                    if (Math.abs(scaleHat - 1.0) < 1e-12) scaleHat = rms;
 
+                    // a couple of t-weighted updates for scale
                     for (int it = 0; it < 2; it++) {
                         double wsum = 0.0, wrss = 0.0;
                         double invS2 = 1.0 / (scaleHat * scaleHat);
@@ -1350,11 +1334,16 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
                     }
 
                     double ll0 = studentTLogLik(y, new double[n], nu, scaleHat);
-                    double edf0 = 1.0;
-                    return new LocalFit(ll0, edf0, n);
+                    return new LocalFit(ll0, 1.0, n);
                 }
 
                 FitResult fit = fitStudentTLegendreRidgeMixed(y, parents, rows, n);
+                if (!Double.isFinite(fit.logLik()) || !Double.isFinite(fit.edf())) {
+                    // fallback to intercept-only (finite)
+                    double scaleHat = Math.sqrt(Math.max(1e-12, sumsq(y) / Math.max(1, n)));
+                    double ll0 = studentTLogLik(y, new double[n], nu, scaleHat);
+                    return new LocalFit(ll0, 1.0, n);
+                }
                 return new LocalFit(fit.logLik(), fit.edf(), n);
             }
 
@@ -1382,6 +1371,21 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return calculateRowSubsets ? validRows(vars) : null;
     }
 
+    // keep an explicit append to avoid relying on Score default in old codepaths
+    public int[] append(int[] z, int x) {
+        int[] out = Arrays.copyOf(z, z.length + 1);
+        out[z.length] = x;
+        return out;
+    }
+
+    // ---- Legendre domain mapping mode ----
+    private enum LegendreMapMode {
+        CLIP_Z,            // x = clamp(z/clip)
+        ROBUST_MINMAX_Z,   // x = rescale z to [-1,1] using per-variable quantile range [qLo,qHi]
+        MINMAX_Z,           // x = rescale z to [-1,1] using per-variable raw min/max
+        SCALE_DOWN
+    }
+
     private static final class OneHotSpec {
         final int[] sizes;
         final int[] offsets;
@@ -1394,17 +1398,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         }
     }
 
-    /**
-     * Represents the result of a localized fit in statistical modeling or estimation processes.
-     * This record encapsulates values related to the fit, including the log-likelihood,
-     * the effective degrees of freedom, and the number of data points used in the computation.
-     *
-     * @param logLik The log-likelihood value of the fit, which indicates the likelihood of the observed data
-     *               given the model parameters. Higher values generally represent a better fit.
-     * @param edf    The effective degrees of freedom, which is a measure of the complexity of the model
-     *               and the amount of smoothing applied to the data.
-     * @param nUsed  The number of data points used in the fitting process.
-     */
+    // -------------------- records --------------------
+
     public record LocalFit(double logLik, double edf, int nUsed) {
     }
 
