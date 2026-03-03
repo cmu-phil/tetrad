@@ -123,7 +123,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
     // mapping quantiles (only used for ROBUST_MINMAX_Z)
     private volatile double mapLoQ = 0.01;
     private volatile double mapHiQ = 0.99;
-    private volatile double featureScale = 0.25; // 1.0 = no scaling; 0.2 ≈ divide-by-5 effect
+    private volatile double featureScale = 1.0; // 1.0 = no scaling; 0.2 ≈ divide-by-5 effect
 
     // -------------------- ctor --------------------
     public LegendreBicScore(DataSet dataSet) {
