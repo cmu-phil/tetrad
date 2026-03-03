@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -113,7 +114,7 @@ public final class Gcm implements IndependenceTest {
      */
     public Gcm(DataSet data, double alpha) {
         if (!data.isContinuous()) throw new IllegalArgumentException("GCM test currently requires continuous DataSet.");
-        this.data = data;
+        this.data = DataTransforms.standardizeData(data);
         this.variables = Collections.unmodifiableList(new ArrayList<>(data.getVariables()));
         this.indexMap = indexMap(this.variables);
         setAlpha(alpha);

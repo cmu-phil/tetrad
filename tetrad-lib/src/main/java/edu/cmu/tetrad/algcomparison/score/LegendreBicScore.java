@@ -5,6 +5,7 @@ import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
@@ -83,14 +84,13 @@ public class LegendreBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        this.dataSet = dataSet;
-
         if (!(dataSet instanceof DataSet ds)) {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
 
+        this.dataSet = DataTransforms.standardizeData(ds);
         edu.cmu.tetrad.search.score.LegendreBicScore score =
-                new edu.cmu.tetrad.search.score.LegendreBicScore(ds);
+                new edu.cmu.tetrad.search.score.LegendreBicScore((DataSet) this.dataSet);
 
         // ---- Keep exposed: Degree (t) ----
         int degree = parameters.getInt(Params.LEGENDRE_DEGREE);

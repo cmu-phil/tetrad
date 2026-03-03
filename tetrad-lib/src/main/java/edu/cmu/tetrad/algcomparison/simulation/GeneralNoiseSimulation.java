@@ -293,8 +293,8 @@ public class GeneralNoiseSimulation implements Simulation {
 //                new BetaDistribution(1, 3),
 //                new GammaDistribution(.25, 1),
 //                new GumbelDistribution(.25, 1),
-                new ExponentialDistribution(.25),
-//                new NormalDistribution(0, 1),
+//                new ExponentialDistribution(.25),
+                new NormalDistribution(0, 1),
                 hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
 
         return generator.generateData();

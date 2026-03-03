@@ -23,7 +23,7 @@ import static java.lang.Math.abs;
 public class GeneralNoiseSimulation {
 
     // --- Your requested noise behavior ---
-    private static final double NOISE_MIN = 0.0;
+    private static final double NOISE_MIN = -2.0;
     private static final double NOISE_MAX = 2.0;
 
     private final Graph graph;
@@ -136,7 +136,7 @@ public class GeneralNoiseSimulation {
 //            } while (v < NOISE_MIN || v > NOISE_MAX);
 
 
-            double v = abs(dist.sample());
+            double v = dist.sample();
 
             // IMPORTANT: do NOT divide by inputScale here unless you really want to couple
             // weight init scale and noise magnitude. If that coupling empirically helps you,

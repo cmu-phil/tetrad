@@ -24,6 +24,7 @@ import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
@@ -69,11 +70,10 @@ public class FfMl implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        this.dataSet = dataSet;
-
         edu.cmu.tetrad.search.score.FfMl score;
 
         if (dataSet instanceof DataSet) {
+            this.dataSet = DataTransforms.standardizeData((DataSet) dataSet);
             score = new edu.cmu.tetrad.search.score.FfMl((DataSet) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");

@@ -61,65 +61,60 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
             new AtomicReference<>(new ConcurrentHashMap<>());
 
     // -------------------- knobs --------------------
-
+    private final AtomicReference<ConcurrentHashMap<Long, LocalFit>> localFitCacheRef =
+            new AtomicReference<>(new ConcurrentHashMap<>());
     /**
      * Student-t df for continuous child. Must be > 2.
      */
     private volatile double nu = 5.0;
-
     /**
      * Initial scale for Student-t IRLS; also used if profiled scale can't be estimated.
      */
     private volatile double scale = 1.0;
-
     /**
      * Ridge penalty (>0). Intercept is not penalized.
      */
     private volatile double ridge = 1e-3;
-
     /**
      * Legendre truncation t (>=1). Features per continuous parent = t.
      */
     private volatile int legendreDegree = 8;
-
     /**
      * Map z to [-1,1] by x = clamp(z/clip). Typical clip ~ 2.5..4.0.
      * Larger clip keeps more of z in linear region; smaller clip saturates more.
      */
     private volatile double legendreClip = 3.0;
-
     /**
      * IRLS iterations.
      */
     private volatile int irlsIters = 8;
-
     /**
      * IRLS stopping tolerance.
      */
     private volatile double irlsTol = 1e-6;
-
     /**
      * Effective sample size.
      */
     private volatile int nEff;
-
     /**
      * Represents the discount applied to penalties or fines.
      * This value typically determines the reduction factor
      * for penalties, where a value of 1.0 means no discount.
-     *
+     * <p>
      * The discount factor should be a positive number, typically
      * between 0.0 (maximum discount) and 1.0 (no discount).
      */
     private double penaltyDiscount = 1.0;
-
-    /** Add pairwise interactions using only P1(x)=x for continuous parents. */
+    /**
+     * Add pairwise interactions using only P1(x)=x for continuous parents.
+     */
     private volatile boolean useInteractions = true;
 
-    /** Only the first K continuous parents (in parentIdx order) participate in interactions. */
-    private volatile int interactionMaxParents = 5;  // 0/1 => none; 4 => up to 4 interaction cols
-
     // -------------------- ctor --------------------
+    /**
+     * Only the first K continuous parents (in parentIdx order) participate in interactions.
+     */
+    private volatile int interactionMaxParents = 5;  // 0/1 => none; 4 => up to 4 interaction cols
 
     /**
      * Constructs a MinimaxLegendreScore instance by initializing the dataset and performing
@@ -133,8 +128,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      */
     public LegendreBicScore(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
-
         this.dataSet = dataSet;
+
         this.variables = new ArrayList<>(dataSet.getVariables());
         this.sampleSize = dataSet.getNumRows();
         setEffectiveSampleSize(-1);
@@ -163,14 +158,14 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         }
     }
 
+    // -------------------- Score interface --------------------
+
     private static void centerInPlace(double[] y) {
         double m = 0.0;
         for (double v : y) m += v;
         m /= y.length;
         for (int i = 0; i < y.length; i++) y[i] -= m;
     }
-
-    // -------------------- Score interface --------------------
 
     private static void zscoreColumnPreserveNaN(double[] in, double[] out) {
         double sum = 0.0, sum2 = 0.0;
@@ -255,6 +250,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return x;
     }
 
+    // -------------------- EffectiveSampleSizeSettable --------------------
+
     private static double traceInvFromCholeskyLower(DMatrixRMaj L) {
         int n = L.numRows;
         double tr = 0.0;
@@ -279,8 +276,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return tr;
     }
 
-    // -------------------- EffectiveSampleSizeSettable --------------------
-
     private static double traceInvPenalizedBlockFromG(DMatrixRMaj Gfull) {
         final int M = Gfull.numRows;
         if (M <= 1) return 0.0;
@@ -302,6 +297,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return traceInvFromCholeskyLower(L);
     }
 
+    // -------------------- knobs setters --------------------
+
     private static double multinomialInterceptOnlyLogLik(int[] y, int K) {
         int n = y.length;
         int[] counts = new int[K];
@@ -317,8 +314,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         }
         return ll;
     }
-
-    // -------------------- knobs setters --------------------
 
     private static void fillSoftmaxProbsFromPhi(int K, int n,
                                                 double[][] beta,
@@ -396,6 +391,12 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return all;
     }
 
+    private static double clamp(double x) {
+        if (x > 1.0) return 1.0;
+        if (x < -1.0) return -1.0;
+        return x;
+    }
+
     /**
      * Retrieves the current DataModel instance.
      *
@@ -405,15 +406,19 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return dataSet;
     }
 
+    // ============================================================================================
+    // Continuous child: Student-t IRLS ridge on features [Legendre(cont parents), OneHot(disc parents)]
+    // ============================================================================================
+
     /**
      * Computes the local score for a given variable and its parent variables
      * using a caching mechanism to store the computed scores.
      *
-     * @param i The index of the target variable for which the local score is calculated.
+     * @param i       The index of the target variable for which the local score is calculated.
      * @param parents An optional variable-length argument representing the indices
      *                of the parent variables of the target variable.
      * @return A double representing the local score, or {@code Double.NaN} if the
-     *         score cannot be computed due to invalid conditions or parameters.
+     * score cannot be computed due to invalid conditions or parameters.
      */
     @Override
     public double localScore(int i, int... parents) {
@@ -437,7 +442,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
     }
 
     // ============================================================================================
-    // Continuous child: Student-t IRLS ridge on features [Legendre(cont parents), OneHot(disc parents)]
+    // Discrete child: multinomial logistic ridge on features [Legendre(cont parents), OneHot(disc parents)]
     // ============================================================================================
 
     /**
@@ -461,7 +466,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
     }
 
     // ============================================================================================
-    // Discrete child: multinomial logistic ridge on features [Legendre(cont parents), OneHot(disc parents)]
+    // Helpers
     // ============================================================================================
 
     /**
@@ -476,7 +481,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
 
     /**
      * Computes and returns the effective sample size.
-     *
+     * <p>
      * The effective sample size is a measure of the amount of independent
      * information in the data, adjusted for autocorrelation or statistical dependencies
      * within the sample. It is useful in statistical analyses where independence
@@ -488,10 +493,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
     public int getEffectiveSampleSize() {
         return nEff;
     }
-
-    // ============================================================================================
-    // Helpers
-    // ============================================================================================
 
     /**
      * Sets the effective sample size for the current instance.
@@ -579,9 +580,9 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      * Sets the maximum number of iterations to be used in the Iterative Reweighted
      * Least Squares (IRLS) procedure. The IRLS method is often used in optimization
      * algorithms for fitting statistical models.
-     *
+     * <p>
      * If the provided number of iterations is less than 1, it defaults to 1.
-     *
+     * <p>
      * This method also triggers a reset of the cached local score data.
      *
      * @param iters the number of iterations for the IRLS procedure; must be
@@ -596,9 +597,9 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      * Sets the convergence tolerance for the Iterative Reweighted Least Squares (IRLS) procedure.
      * The tolerance specifies the threshold for stopping the IRLS iterations as soon as
      * the updates in the optimization process become sufficiently small.
-     *
+     * <p>
      * If the provided tolerance is less than 0.0, it is set to 0.0 by default.
-     *
+     * <p>
      * This method also triggers a reset of the cached local score data.
      *
      * @param tol the convergence tolerance for the IRLS procedure; must be non-negative
@@ -613,7 +614,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      * represent combined effects between variables and can be included to capture
      * their joint influence on the outcome. When interactions are enabled, the model
      * considers such terms during calculations.
-     *
+     * <p>
      * Changing this setting triggers a reset of the cached local score data, ensuring
      * subsequent computations use updated parameters.
      *
@@ -624,6 +625,13 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         this.useInteractions = useInteractions;
         resetCache();
     }
+
+    /**
+     * Student-t design row:
+     * - intercept
+     * - Legendre block: for each continuous parent j, P1..Pt of mapped value
+     * - one-hot block for discrete parents (baseline dropped)
+     */
 
     /**
      * Sets the maximum number of parents that can be considered for interaction terms in the model.
@@ -678,6 +686,21 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         final double[] xRow = new double[M];
         final double[] v = new double[M];
 
+        // -------------------- low-risk robustness upgrades --------------------
+
+        // Warm-start scaleHat from y when the configured scale is the generic default (≈1.0).
+        // This avoids pathological first-step weights when y is z-scored but scale is not tuned.
+        if (Math.abs(scaleHat - 1.0) < 1e-12) {
+            double s2 = 0.0;
+            for (int i = 0; i < n; i++) {
+                final double yi = yCentered[i];
+                s2 += yi * yi;
+            }
+            final double rms = Math.sqrt(Math.max(1e-12, s2 / Math.max(1, n)));
+            scaleHat = rms;
+        }
+
+        // -------------------- IRLS loop --------------------
         for (int iter = 0; iter < irlsIters; iter++) {
 
             final DMatrixRMaj G = new DMatrixRMaj(M, M);
@@ -706,10 +729,23 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
             // ridge (intercept unpenalized)
             for (int a = 1; a < M; a++) G.add(a, a, ridge);
 
-            final CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
-            if (!chol.decompose(G)) return new FitResult(Double.NaN, Double.NaN);
-            final DMatrixRMaj L = chol.getT(null);
+            // Cholesky with jitter-on-failure (no behavior change unless decomposition fails)
+            CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+            if (!chol.decompose(G)) {
+                double jitter = ridge;
+                boolean ok = false;
 
+                for (int attempt = 0; attempt < 4; attempt++) {
+                    jitter *= 10.0;
+                    for (int a = 1; a < M; a++) G.add(a, a, jitter);
+                    chol = DecompositionFactory_DDRM.chol(true);
+                    if (chol.decompose(G)) { ok = true; break; }
+                }
+
+                if (!ok) return new FitResult(Double.NaN, Double.NaN);
+            }
+
+            final DMatrixRMaj L = chol.getT(null);
             beta = solveFromCholeskyLower(L, v);
 
             // Update weights + profiled scale
@@ -728,7 +764,9 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
 
                 final double r = yCentered[i] - mu;
 
-                final double u2 = (r / scaleHat) * (r / scaleHat);
+                final double u = r / scaleHat;
+                final double u2 = u * u;
+
                 final double wi = (nu + 1.0) / (nu + u2);
                 w[i] = wi;
 
@@ -738,16 +776,19 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
                 wrss += wi * r * r;
             }
 
+            // Defensive scale update: don't let NaN/inf collapse poison subsequent iterations.
             if (wsum > 0.0) {
                 final double s2 = wrss / wsum;
-                scaleHat = Math.sqrt(Math.max(1e-12, s2));
+                if (Double.isFinite(s2) && s2 > 0.0) {
+                    scaleHat = Math.sqrt(Math.max(1e-12, s2));
+                }
             }
 
             if (Math.abs(prevObj - obj) <= irlsTol * (1.0 + Math.abs(prevObj))) break;
             prevObj = obj;
         }
 
-        // Final predictions  (FIXED: build into xRow, don’t allocate a throwaway array)
+        // Final predictions
         final double[] yhat = new double[n];
         for (int i = 0; i < n; i++) {
             buildXRowStudentT_Intercept_Legendre(
@@ -789,12 +830,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return new FitResult(ll, edf);
     }
 
-    /**
-     * Student-t design row:
-     * - intercept
-     * - Legendre block: for each continuous parent j, P1..Pt of mapped value
-     * - one-hot block for discrete parents (baseline dropped)
-     */
+    // -------------------- missing rows & extraction --------------------
+
     /**
      * Student-t design row:
      * - intercept
@@ -836,7 +873,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         int pos = legOff;
         for (int j = 0; j < dCont; j++) {
             double z = Zc[i][j];
-            double x = Math.tanh(z / legendreClip);
+            double x = clamp(z / legendreClip);
 
             if (j < kInt) xMap[j] = x;
 
@@ -884,14 +921,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
             }
         }
     }
-
-    private static double clamp(double x) {
-        if (x > 1.0) return 1.0;
-        if (x < -1.0) return -1.0;
-        return x;
-    }
-
-    // -------------------- missing rows & extraction --------------------
 
     private FitResult fitMultinomialLogitMixed(int child,
                                                int[] y, int K,
@@ -1036,6 +1065,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         buildXRowStudentT_Intercept_Legendre(out, i, Zc, dCont, t, oh, discParents, rows);
     }
 
+    // -------------------- type utils --------------------
+
     private int[] validRows(int[] vars) {
         int n = sampleSize;
         int[] tmp = new int[n];
@@ -1056,8 +1087,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         }
         return Arrays.copyOf(tmp, m);
     }
-
-    // -------------------- type utils --------------------
 
     private double[] extractContinuousChild(int varIndex, int[] rows, int n) {
         double[] y = new double[n];
@@ -1083,6 +1112,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return variables.get(col) instanceof DiscreteVariable;
     }
 
+    // -------------------- one-hot spec --------------------
+
     private int[] filterContinuous(int[] cols) {
         int c = 0;
         for (int v : cols) if (!isDiscrete(v)) c++;
@@ -1091,8 +1122,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         for (int v : cols) if (!isDiscrete(v)) out[k++] = v;
         return out;
     }
-
-    // -------------------- one-hot spec --------------------
 
     private int[] filterDiscrete(int[] cols) {
         int c = 0;
@@ -1109,6 +1138,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return dv.getNumCategories();
     }
 
+    // -------------------- cache & hashing --------------------
+
     private OneHotSpec buildOneHotSpec(int[] discParents) {
         int m = discParents.length;
         int[] sizes = new int[m];
@@ -1123,8 +1154,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         }
         return new OneHotSpec(sizes, offsets, off);
     }
-
-    // -------------------- cache & hashing --------------------
 
     /**
      * Sets the penalty discount to be applied. The value must be a finite positive number.
@@ -1173,18 +1202,6 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         return out;
     }
 
-    private static final class OneHotSpec {
-        final int[] sizes;
-        final int[] offsets;
-        final int totalCols;
-
-        OneHotSpec(int[] sizes, int[] offsets, int totalCols) {
-            this.sizes = sizes;
-            this.offsets = offsets;
-            this.totalCols = totalCols;
-        }
-    }
-
     /**
      * Computes a local fit for a variable based on its parents using cached or newly
      * computed models. The method supports both discrete and continuous cases with
@@ -1192,11 +1209,11 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      * This operation involves extracting subsets of rows, calculating effective data size,
      * and fitting appropriate models based on the given parameters.
      *
-     * @param i         The index of the variable for which the local fit is computed.
-     * @param parents   An array of indices representing the parent variables of the target variable.
-     *                  This array may be empty if the variable has no parents.
-     * @return          A {@code LocalFit} object containing the log-likelihood,
-     *                  degrees of freedom, and effective sample size for the computed model.
+     * @param i       The index of the variable for which the local fit is computed.
+     * @param parents An array of indices representing the parent variables of the target variable.
+     *                This array may be empty if the variable has no parents.
+     * @return A {@code LocalFit} object containing the log-likelihood,
+     * degrees of freedom, and effective sample size for the computed model.
      */
     public LocalFit localFit(int i, int... parents) {
         Arrays.sort(parents);
@@ -1273,15 +1290,15 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      * and data rows. Handles both discrete and continuous children, applying
      * different fitting methods depending on the type of the child and the input parameters.
      *
-     * @param child The index of the child node for which the local fit is computed.
+     * @param child   The index of the child node for which the local fit is computed.
      * @param parents An array of indices representing the parent nodes of the child node.
      *                These indices are expected to be sorted internally within the method.
-     * @param rows An array of row indices specifying the subset of data to be used for
-     *             fitting. If null, the full effective number of rows (nEff) is used.
+     * @param rows    An array of row indices specifying the subset of data to be used for
+     *                fitting. If null, the full effective number of rows (nEff) is used.
      * @return A LocalFit object containing the log-likelihood of the fit, the effective
-     *         degrees of freedom (edf), and the number of data points (n) used in the fit.
-     *         Returns NaN values in the LocalFit object if certain criteria are not met
-     *         (e.g., insufficient data points, invalid parameters).
+     * degrees of freedom (edf), and the number of data points (n) used in the fit.
+     * Returns NaN values in the LocalFit object if certain criteria are not met
+     * (e.g., insufficient data points, invalid parameters).
      */
     public LocalFit localFitOnRows(int child, int[] parents, int[] rows) {
         Arrays.sort(parents);
@@ -1352,10 +1369,10 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      * and parent arrays. The child and parent values are combined, sorted, and
      * processed to compute the valid rows.
      *
-     * @param child the value representing the child element in the union operation
+     * @param child   the value representing the child element in the union operation
      * @param parents an array of values representing the parent elements in the union operation
      * @return an array of integers representing the valid rows for the union operation,
-     *         or null if row subsets calculation is disabled
+     * or null if row subsets calculation is disabled
      */
     public int[] validRowsForUnion(int child, int[] parents) {
         int[] vars = new int[parents.length + 1];
@@ -1363,6 +1380,18 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         System.arraycopy(parents, 0, vars, 1, parents.length);
         Arrays.sort(vars); // <-- add this
         return calculateRowSubsets ? validRows(vars) : null;
+    }
+
+    private static final class OneHotSpec {
+        final int[] sizes;
+        final int[] offsets;
+        final int totalCols;
+
+        OneHotSpec(int[] sizes, int[] offsets, int totalCols) {
+            this.sizes = sizes;
+            this.offsets = offsets;
+            this.totalCols = totalCols;
+        }
     }
 
     /**
@@ -1376,10 +1405,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      *               and the amount of smoothing applied to the data.
      * @param nUsed  The number of data points used in the fitting process.
      */
-    public record LocalFit(double logLik, double edf, int nUsed) {}
-
-    private final AtomicReference<ConcurrentHashMap<Long, LocalFit>> localFitCacheRef =
-            new AtomicReference<>(new ConcurrentHashMap<>());
+    public record LocalFit(double logLik, double edf, int nUsed) {
+    }
 
     private record FitResult(double logLik, double edf) {
     }

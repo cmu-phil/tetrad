@@ -184,7 +184,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
      *                list, and other attributes.
      */
     public Kci(DataSet dataSet) {
-        this.dataSet = dataSet;
+        this.dataSet = DataTransforms.standardizeData(dataSet);
 
         this.varToRow = new HashMap<>();
         this.rows = new ArrayList<>();

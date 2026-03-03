@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -56,8 +57,9 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable {
      * @param dataSet the dataset to be analyzed; must not be null
      */
     public FfCiContinuous(DataSet dataSet) {
-        this.data = Objects.requireNonNull(dataSet, "data");
-        this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
+        DataSet _data = Objects.requireNonNull(dataSet, "data");
+        this.data = DataTransforms.standardizeData(_data);
+        this.vars = Collections.unmodifiableList(new ArrayList<>(this.data.getVariables()));
         this.n = getActiveRowCount();
     }
 

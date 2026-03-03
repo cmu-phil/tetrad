@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
@@ -87,7 +88,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
      * @param params the set of parameters to configure the behavior of the Rcit instance; must not be null.
      */
     public Rcit(DataSet dataSet, Parameters params) {
-        this.data = Objects.requireNonNull(dataSet, "data");
+        this.data = DataTransforms.standardizeData(dataSet);
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
         this.n = getActiveRowCount();
 

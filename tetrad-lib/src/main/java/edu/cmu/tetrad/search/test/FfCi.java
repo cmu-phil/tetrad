@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
@@ -124,7 +125,8 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      *                for random seed initialization
      */
     public FfCi(DataSet dataSet, Parameters params) {
-        this.data = Objects.requireNonNull(dataSet, "data");
+        DataSet _data = Objects.requireNonNull(dataSet, "data");
+        this.data = DataTransforms.standardizeData(_data);
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
         // set initial active row count (will be updated by setRows if used)
         this.n = getActiveRowCount();
