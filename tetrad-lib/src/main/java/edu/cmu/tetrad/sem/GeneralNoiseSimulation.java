@@ -15,7 +15,7 @@ import static java.lang.Math.abs;
 
 /**
  * General-noise simulator: X_j = f_j(Pa(X_j), e_j)
- *
+ * <p>
  * Noise enters as an extra input column, allowing nonlinear interaction between parents and noise.
  * This variant enforces "nature-like" positive noise clipped to a tanh-friendly interval [0, 2].
  */
@@ -53,6 +53,50 @@ public class GeneralNoiseSimulation {
 
         // Robust functional check for tanh (instead of broken reference equality).
         this.useFastTanh = isTanhLike(activationFunction);
+    }
+
+    /**
+     * Your requested noise model:
+     * - make it positive (abs)
+     * - clip to [NOISE_MIN, NOISE_MAX] to avoid tanh saturation via the noise channel
+     * <p>
+     * Note: this is still NOT additive noise; it's an input column to f_j.
+     */
+    private static void drawNoise(double[] noise, int N, Sampler sampler) {
+        for (int i = 0; i < N; i++) {
+            noise[i] = sampler.sample();
+        }
+    }
+
+    private static boolean isTanhLike(Function<Double, Double> f) {
+        // Very low-cost signature test.
+        double a = f.apply(1.0);
+        double b = f.apply(-0.7);
+        return abs(a - Math.tanh(1.0)) < 1e-12
+                && abs(b - Math.tanh(-0.7)) < 1e-12;
+    }
+
+    private static void addBiasRowsInPlace(DMatrixRMaj A, double[] b) {
+        final int n = A.numRows, m = A.numCols;
+        int k = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++, k++) {
+                A.data[k] += b[j];
+            }
+        }
+    }
+
+    // ------------------ Tiny EJML MLP ------------------
+
+    private static void applyActivationInPlace(DMatrixRMaj A,
+                                               Function<Double, Double> f,
+                                               boolean fastTanh) {
+        final int n = A.getNumElements();
+        if (fastTanh) {
+            for (int i = 0; i < n; i++) A.data[i] = Math.tanh(A.data[i]);
+        } else {
+            for (int i = 0; i < n; i++) A.data[i] = f.apply(A.data[i]);
+        }
     }
 
     public DataSet generateData() {
@@ -107,35 +151,71 @@ public class GeneralNoiseSimulation {
             // Forward pass: Y = mlp(A)
             Y = mlp.forward(A, S1, S2, Y, activationFunction, useFastTanh);
 
+//            // ------------------------------------------------------------------
+//            // Mix linear backbone with nonlinear MLP output (single knob lambda)
+//            // ------------------------------------------------------------------
+//
+//            if (pj.length > 0) {
+//                double[] beta = new double[pj.length];
+//
+//                // draw parent coefficients bounded away from 0
+//                for (int c = 0; c < pj.length; c++) {
+//                    double b = 0.5 + seeder.nextDouble(); // in [0.5, 1.5]
+//                    if (seeder.nextBoolean()) b = -b;     // random sign
+//                    beta[c] = b;
+//                }
+//
+//                double lambda = 0.7;   // 0 = purely linear, 1 = purely nonlinear
+//
+//                for (int i = 0; i < N; i++) {
+//                    double linear = 0.0;
+//                    for (int c = 0; c < pj.length; c++) {
+//                        linear += beta[c] * raw[i][pj[c]];
+//                    }
+//
+//                    // original: just nonlinear
+//                    // Y.data[i] = Y.data[i];
+//
+//                    // mix
+//                    Y.data[i] = (1.0 - lambda) * linear + lambda * Y.data[i];
+//                }
+//            }
+
+//            // ------------------------------------------------------------------
+//            // Stabilizing linear anchor to reduce near-faithfulness cancellations
+//            // ------------------------------------------------------------------
+//
+//            double alpha = 0.2;
+//
+//            if (pj.length > 0) {
+//                double[] beta = new double[pj.length];
+//
+//                // draw parent coefficients bounded away from 0
+//                for (int c = 0; c < pj.length; c++) {
+//                    double b = 0.5 + seeder.nextDouble();
+//                    if (seeder.nextBoolean()) b = -b;
+//                    beta[c] = b;
+//                }
+//
+//                for (int i = 0; i < N; i++) {
+//                    double lin = 0.0;
+//                    for (int c = 0; c < pj.length; c++) {
+//                        lin += beta[c] * raw[i][pj[c]];
+//                    }
+//
+//                    // original:
+//                    // Y.data[i] = Y.data[i];
+//
+//                    Y.data[i] += alpha * lin;
+//                }
+//            }
+
             // write column
             for (int i = 0; i < N; i++) raw[i][j] = Y.data[i];
         }
 
         return new BoxDataSet(new DoubleDataBox(raw), new ArrayList<>(topo));
     }
-
-    /**
-     * Your requested noise model:
-     *  - make it positive (abs)
-     *  - clip to [NOISE_MIN, NOISE_MAX] to avoid tanh saturation via the noise channel
-     *
-     * Note: this is still NOT additive noise; it's an input column to f_j.
-     */
-    private static void drawNoise(double[] noise, int N, Sampler sampler) {
-        for (int i = 0; i < N; i++) {
-            noise[i] = sampler.sample();
-        }
-    }
-
-    private static boolean isTanhLike(Function<Double, Double> f) {
-        // Very low-cost signature test.
-        double a = f.apply(1.0);
-        double b = f.apply(-0.7);
-        return abs(a - Math.tanh(1.0)) < 1e-12
-                && abs(b - Math.tanh(-0.7)) < 1e-12;
-    }
-
-    // ------------------ Tiny EJML MLP ------------------
 
     private static final class RandomMLP {
         final int Din, Dout;
@@ -155,13 +235,31 @@ public class GeneralNoiseSimulation {
             for (int l = 0; l < H.length; l++) {
                 W[l] = new DMatrixRMaj(H[l], prev);
                 b[l] = new double[H[l]];
-                heInit(W[l], r, inputScale);
+                xavierInit(W[l], r, inputScale);
                 // biases default to 0; you can randomize later if you want
                 prev = H[l];
             }
             W[L - 1] = new DMatrixRMaj(Dout, prev);
             b[L - 1] = new double[Dout];
-            heInit(W[L - 1], r, inputScale * 0.5);
+            xavierInit(W[L - 1], r, inputScale * 0.5);
+        }
+
+        private static void heInit(DMatrixRMaj W, Random r, double scale) {
+            double s = scale * Math.sqrt(2.0 / Math.max(1, W.numCols));
+            for (int i = 0, n = W.getNumElements(); i < n; i++) {
+                W.data[i] = r.nextGaussian() * s;
+            }
+        }
+
+        private static void xavierInit(DMatrixRMaj W, Random r, double scale) {
+            int fanIn = Math.max(1, W.numCols);
+            int fanOut = Math.max(1, W.numRows);
+
+            double std = scale * Math.sqrt(2.0 / (fanIn + fanOut));
+
+            for (int i = 0, n = W.getNumElements(); i < n; i++) {
+                W.data[i] = r.nextGaussian() * std;
+            }
         }
 
         /**
@@ -198,34 +296,6 @@ public class GeneralNoiseSimulation {
             CommonOps_DDRM.multTransB(cur, W[W.length - 1], out);
             addBiasRowsInPlace(out, b[b.length - 1]);
             return out;
-        }
-
-        private static void heInit(DMatrixRMaj W, Random r, double scale) {
-            double s = scale * Math.sqrt(2.0 / Math.max(1, W.numCols));
-            for (int i = 0, n = W.getNumElements(); i < n; i++) {
-                W.data[i] = r.nextGaussian() * s;
-            }
-        }
-    }
-
-    private static void addBiasRowsInPlace(DMatrixRMaj A, double[] b) {
-        final int n = A.numRows, m = A.numCols;
-        int k = 0;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++, k++) {
-                A.data[k] += b[j];
-            }
-        }
-    }
-
-    private static void applyActivationInPlace(DMatrixRMaj A,
-                                               Function<Double, Double> f,
-                                               boolean fastTanh) {
-        final int n = A.getNumElements();
-        if (fastTanh) {
-            for (int i = 0; i < n; i++) A.data[i] = Math.tanh(A.data[i]);
-        } else {
-            for (int i = 0; i < n; i++) A.data[i] = f.apply(A.data[i]);
         }
     }
 }

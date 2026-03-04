@@ -6,5 +6,5 @@ package edu.cmu.tetrad.sem;
  * are expected to define specific sampling strategies.
  */
 public interface Sampler {
-     double sample();
+     double sample() throws IllegalArgumentException;
 }
