@@ -824,6 +824,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         }
 
         final double[] mult = {0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0, 8.0, 16.0, 32.0, 64.0};
+//        final double[] mult = {.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0};
 
         // Precompute things that do NOT depend on bw2
         final boolean useNxN = (discParents != null && discParents.length >= 2);
@@ -831,10 +832,11 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         final BaseWB base = buildBaseWB(mFeatures, contParents.length, seed);
         final double[] kcatLowerPacked = useNxN ? precomputeKcatLowerPacked(discParents, rows, n) : null;
 
-        double bestBw2 = bw2Med;
-        double best = Double.NEGATIVE_INFINITY;
 
 //        // --- Option A: sequential (simplest, still big win) ---
+//        double bestBw2 = bw2Med;
+//        double best = Double.NEGATIVE_INFINITY;
+//
 //        {
 //            for (double m : mult) {
 //                double bw2 = bw2Med * (m * m);
@@ -860,6 +862,9 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 //        }
 
         // --- Option B: parallel grid (uncomment if you want) ---
+        double bestBw2;
+        double best;
+
         {
             record Cand(int idx, double bw2, double ll) {
             }
