@@ -231,6 +231,7 @@ public class GeneralNoiseSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
+        parameters.add(Params.NOISE_EXPRESSION);
         parameters.add(Params.HIDDEN_DIMENSIONS);
         parameters.add(Params.INPUT_SCALE);
         parameters.add(Params.NUM_RUNS);
@@ -292,27 +293,8 @@ public class GeneralNoiseSimulation implements Simulation {
 
         Function<Double, Double> activation = Math::tanh;// x -> Math.max(0.1 * x, x);
 
-
-        //                            new BetaDistribution(1, 3),
-//                new GammaDistribution(.25, 1),
-//                new GumbelDistribution(.25, 1),
-//                new ExponentialDistribution(.25),
-//                new NormalDistribution(0, 1),'
-
-//        Sampler sampler = new Sampler(new NormalDistribution(0, 1)) {
-//            public double sample() {
-//                return getDistribution().sample() * 0.3;
-//            }
-//        };
-
-//        Sampler sampler = new Sampler(new BetaDistribution(1, 3)) {
-//            public double sample() {
-//                return (getDistribution().sample() - 0.5) * 2;
-//            }
-//        };
-
         try {
-            Sampler sampler = new ExpressionSampler("Normal(0, 1)");
+            Sampler sampler = new ExpressionSampler(parameters.getString("noiseExpression"));
 
             edu.cmu.tetrad.sem.GeneralNoiseSimulation generator = new edu.cmu.tetrad.sem.GeneralNoiseSimulation(
                     graph, parameters.getInt(Params.SAMPLE_SIZE), sampler,

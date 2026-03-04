@@ -1049,6 +1049,10 @@ public final class Params {
      */
     public static final String HIDDEN_DIMENSIONS = "hiddenDimensions";
     /**
+     * Constant <code>NOISE_EXPRESSION="noiseExpression"</code>
+     */
+    public static final String NOISE_EXPRESSION = "noiseExpression";
+    /**
      * Constant <code>INPUT_SCALE="inputScale"</code>
      */
     public static final String INPUT_SCALE = "inputScale";

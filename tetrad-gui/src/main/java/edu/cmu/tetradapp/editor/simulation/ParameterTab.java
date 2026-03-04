@@ -393,28 +393,34 @@ public class ParameterTab extends JPanel {
         }
 
         class MyWatchedProcess extends WatchedProcess {
+            private volatile Throwable error;
+
             @Override
             public void watch() {
                 try {
                     RandomGraph randomGraph = newRandomGraph();
                     newSimulation(randomGraph);
-                    ParameterTab.this.simulation.getSimulation().createData(ParameterTab.this.simulation.getParams(), false);
+                    ParameterTab.this.simulation.getSimulation()
+                            .createData(ParameterTab.this.simulation.getParams(), false);
 
                     initial = false;
                     firePropertyChange("modelChanged", null, null);
-                } catch (Exception exception) {
-                    exception.printStackTrace(System.err);
-                    Throwable cause = exception;
-                    if (exception.getCause() != null) {
-                        cause = exception.getCause();
-                    }
 
-                    if (cause.getMessage() == null || cause.getMessage().trim().isEmpty()) {
-                        exception.printStackTrace();
-                        throw new IllegalArgumentException(
-                                "Exception in creating data. Check model setup or parameter settings.");
-                    } else {
-                        throw new IllegalArgumentException(cause.getMessage());
+                } catch (Throwable t) {
+                    t.printStackTrace(System.err);
+                    error = (t.getCause() != null) ? t.getCause() : t;
+                } finally {
+                    if (error != null) {
+                        final String msg =
+                                (error.getMessage() == null || error.getMessage().trim().isEmpty())
+                                        ? "Exception in creating data. Check model setup or parameter settings."
+                                        : error.getMessage();
+
+                        // Let WatchedProcess finish & close its dialog, then show the error.
+                        SwingUtilities.invokeLater(() ->
+                                SwingUtilities.invokeLater(() ->
+                                        JOptionPane.showMessageDialog(
+                                                getPanel(), msg + " (This could be a parse error)", "Error", JOptionPane.ERROR_MESSAGE)));
                     }
                 }
             }

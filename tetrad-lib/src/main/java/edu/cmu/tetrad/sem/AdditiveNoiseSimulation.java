@@ -30,7 +30,7 @@ public class AdditiveNoiseSimulation {
 
     private final Graph graph;
     private final int numSamples;
-    private final RealDistribution noiseDistribution;
+    private final Sampler sampler;
     private final int[] hiddenDimensions;
     private final double inputScale;
     private final Function<Double, Double> activationFunction;
@@ -44,20 +44,20 @@ public class AdditiveNoiseSimulation {
      *
      * @param graph              The causal graph representing the structural relationships.
      * @param numSamples         The number of data samples to generate.
-     * @param noiseDistribution  The distribution for additive noise.
+     * @param sampler            The sampler for additive noise.
      * @param hiddenDimensions   The dimensions of hidden layers in the MLP.
      * @param inputScale         The scaling factor for input data.
      * @param activationFunction The activation function for the MLP.
      */
     public AdditiveNoiseSimulation(Graph graph,
                                    int numSamples,
-                                   RealDistribution noiseDistribution,
+                                   Sampler sampler,
                                    int[] hiddenDimensions,
                                    double inputScale,
                                    Function<Double, Double> activationFunction) {
         if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycles.");
         if (numSamples < 1) throw new IllegalArgumentException("numSamples must be positive.");
-        Objects.requireNonNull(noiseDistribution, "noiseDistribution");
+        Objects.requireNonNull(sampler, "sampler");
         Objects.requireNonNull(hiddenDimensions, "hiddenDimensions");
         Objects.requireNonNull(activationFunction, "activationFunction");
 
@@ -65,7 +65,7 @@ public class AdditiveNoiseSimulation {
 
         this.graph = graph;
         this.numSamples = numSamples;
-        this.noiseDistribution = noiseDistribution;
+        this.sampler = sampler;
         this.hiddenDimensions = hiddenDimensions.clone();
         this.inputScale = inputScale;
         this.activationFunction = activationFunction;
@@ -205,7 +205,7 @@ public class AdditiveNoiseSimulation {
             double noiseScale = 0.5 * inputScale;
 
             for (int i = 0; i < N; i++) {
-                double v = noiseDistribution.sample();
+                double v = sampler.sample();
                 noise[i] = noiseScale * v;
             }
 

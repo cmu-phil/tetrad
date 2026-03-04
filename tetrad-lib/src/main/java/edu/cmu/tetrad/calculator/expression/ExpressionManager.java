@@ -170,6 +170,8 @@ public class ExpressionManager {
         descriptors.add(new DiscErrorExpressionDescriptor());
         descriptors.add(new SwitchExpressionDescriptor());
 
+        descriptors.add(new ClipExpressionDescriptor());
+
 //        Collections.sort(descriptor, new Comp());
         return descriptors;
     }
@@ -2414,6 +2416,36 @@ public class ExpressionManager {
                         throw new IllegalArgumentException("First term index out of bounds");
                     }
                     return expressions.get((int) a + 1).evaluate(context);
+                }
+            };
+        }
+    }
+
+    private static class ClipExpressionDescriptor extends AbstractExpressionDescriptor {
+        private static final long serialVersionUID = 23L;
+
+        public ClipExpressionDescriptor() {
+            super("clip", "clip", Position.PREFIX, true);
+        }
+
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
+            if (expressions.length != 3) {
+                //should use IF for three args...
+                throw new ExpressionInitializationException("Must have at three arguments.");
+            }
+
+            return new AbstractExpression("clip", Position.PREFIX, expressions) {
+                private static final long serialVersionUID = 23L;
+
+                public double evaluate(Context context) {
+                    List<Expression> expressions = getExpressions();
+                    double a = expressions.get(0).evaluate(context);
+                    double b = expressions.get(1).evaluate(context);
+                    double c = expressions.get(2).evaluate(context);
+
+                    if (a < b) return b;
+                    if (a > c) return c;
+                    return a;
                 }
             };
         }

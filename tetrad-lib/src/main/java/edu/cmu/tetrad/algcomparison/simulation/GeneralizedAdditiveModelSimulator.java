@@ -27,16 +27,16 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.ExpressionSampler;
+import edu.cmu.tetrad.sem.Sampler;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.distribution.BetaDistribution;
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
-import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -110,35 +110,35 @@ public class GeneralizedAdditiveModelSimulator implements Simulation {
 
     // ------------------------ Simulation API ------------------------
 
-    private static RealDistribution buildNoise(Parameters parameters, String noiseKind, double sigma) {
-        switch (noiseKind) {
-            case "gaussian": {
-                // N(0, sigma^2)
-                return new NormalDistribution(0.0, Math.max(1e-8, sigma));
-            }
-            case "student_t": {
-                // df ∈ (2, 30], larger df ~ more Gaussian. Use slider’s inverse for df.
-                double strength = clamp01(parameters.getDouble(Params.ANM_NOISE_STRENGTH, 0.4));
-                double df = 3.0 + 27.0 * (1.0 - strength); // 30 -> near Gaussian at low strength
-                if (df <= 2.1) df = 2.1; // ensure finite variance
-                TDistribution base = new TDistribution(df);
-                // Base t has sd = sqrt(df/(df-2)). Scale so final sd = sigma.
-                final double baseSd = Math.sqrt(df / (df - 2.0));
-                return new TransformedOnlyForSampling(base, 0.0, baseSd, sigma);
-            }
-            case "beta":
-            default: {
-                // Default Beta(a,b) then center/standardize to unit sd and scale to sigma
-                double a = 2.0;//parameters.getDouble(Params.AM_BETA_ALPHA, 2.0);
-                double b = 5.0;//parameters.getDouble(Params.AM_BETA_BETA, 5.0);
-                BetaDistribution base = new BetaDistribution(a, b);
-                double mu = a / (a + b);
-                double var = (a * b) / ((a + b) * (a + b) * (a + b + 1.0));
-                double sd = Math.sqrt(Math.max(var, 1e-12));
-                return new TransformedOnlyForSampling(base, mu, sd, sigma);
-            }
-        }
-    }
+//    private static RealDistribution buildNoise(Parameters parameters, String noiseKind, double sigma) {
+//        switch (noiseKind) {
+//            case "gaussian": {
+//                // N(0, sigma^2)
+//                return new NormalDistribution(0.0, Math.max(1e-8, sigma));
+//            }
+//            case "student_t": {
+//                // df ∈ (2, 30], larger df ~ more Gaussian. Use slider’s inverse for df.
+//                double strength = clamp01(parameters.getDouble(Params.ANM_NOISE_STRENGTH, 0.4));
+//                double df = 3.0 + 27.0 * (1.0 - strength); // 30 -> near Gaussian at low strength
+//                if (df <= 2.1) df = 2.1; // ensure finite variance
+//                TDistribution base = new TDistribution(df);
+//                // Base t has sd = sqrt(df/(df-2)). Scale so final sd = sigma.
+//                final double baseSd = Math.sqrt(df / (df - 2.0));
+//                return new TransformedOnlyForSampling(base, 0.0, baseSd, sigma);
+//            }
+//            case "beta":
+//            default: {
+//                // Default Beta(a,b) then center/standardize to unit sd and scale to sigma
+//                double a = 2.0;//parameters.getDouble(Params.AM_BETA_ALPHA, 2.0);
+//                double b = 5.0;//parameters.getDouble(Params.AM_BETA_BETA, 5.0);
+//                BetaDistribution base = new BetaDistribution(a, b);
+//                double mu = a / (a + b);
+//                double var = (a * b) / ((a + b) * (a + b) * (a + b + 1.0));
+//                double sd = Math.sqrt(Math.max(var, 1e-12));
+//                return new TransformedOnlyForSampling(base, mu, sd, sigma);
+//            }
+//        }
+//    }
 
     private static double clamp(double v, double lo, double hi) {
         return (v < lo) ? lo : (v > hi) ? hi : v;
@@ -318,12 +318,12 @@ public class GeneralizedAdditiveModelSimulator implements Simulation {
             default -> "wavy_rbf";
         };
 
-        final String noiseKind = switch (noiseKindIndex) {
-            case 1 -> "beta";
-            case 2 -> "gaussian";
-            case 3 -> "student_t";
-            default -> "beta";
-        };
+//        final String noiseKind = switch (noiseKindIndex) {
+//            case 1 -> "beta";
+//            case 2 -> "gaussian";
+//            case 3 -> "student_t";
+//            default -> "beta";
+//        };
 
         final double nonlin = clamp01(parameters.getDouble(Params.ANM_NONLINEARITY, 0.6));
         final double noiseStrength = clamp01(parameters.getDouble(Params.ANM_NOISE_STRENGTH, 0.4));
@@ -360,25 +360,22 @@ public class GeneralizedAdditiveModelSimulator implements Simulation {
         int unitsPerEdge = clampInt((int) Math.round(baseUnits + 6.0 * nonlin), 3, 20);
         double edgeScale = clamp(baseEdgeScale + 0.8 * (nonlin - 0.5), 0.2, 2.0);
 
-        // ---------- 5) Noise ----------
-        final double sigma = 0.2 + 1.0 * noiseStrength; // maps [0,1] -> [0.2, 1.2]
-        RealDistribution noiseDist = buildNoise(parameters, noiseKind, sigma);
+        try {
+            Sampler sampler = new ExpressionSampler(parameters.getString("noiseExpression"));
 
-        // ---------- 6) Build generator ----------
-        edu.cmu.tetrad.sem.AdditiveAnmSimulator gen = new edu.cmu.tetrad.sem.AdditiveAnmSimulator(
-                graph,
-                N,
-                noiseDist
-        )
-                .setFunctionFamily(family)
-                .setNumUnitsPerEdge(unitsPerEdge)
-                .setInputStandardize(standardizeParents)
-                .setEdgeScale(edgeScale);
+            // ---------- 6) Build generator ----------
+            edu.cmu.tetrad.sem.AdditiveAnmSimulator gen = new edu.cmu.tetrad.sem.AdditiveAnmSimulator(
+                    graph, N, sampler
+            ).setFunctionFamily(family).setNumUnitsPerEdge(unitsPerEdge).setInputStandardize(standardizeParents)
+                    .setEdgeScale(edgeScale);
 
-        long seed = parameters.getLong(Params.SEED);
-        if (seed != -1L) gen.setSeed(seed);
+            long seed = parameters.getLong(Params.SEED);
+            if (seed != -1L) gen.setSeed(seed);
 
-        return gen.generate();
+            return gen.generate();
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -395,11 +392,10 @@ public class GeneralizedAdditiveModelSimulator implements Simulation {
         }
 
         // minimal user-facing
+        params.add(Params.NOISE_EXPRESSION);
         params.add(Params.ANM_PRESET);
         params.add(Params.ANM_NONLINEARITY);
-        params.add(Params.ANM_NOISE_KIND);
         params.add(Params.ANM_NOISE_STRENGTH);
-//        params.add(Params.ANM_UNITS_PER_EDGE);
 
         // sampling & post-process
         params.add(Params.SAMPLE_SIZE);

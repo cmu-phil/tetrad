@@ -41,10 +41,9 @@ import java.util.*;
  * </pre>
  */
 public class AdditiveAnmSimulator {
-
     private final Graph graph;
     private final int numSamples;
-    private final RealDistribution noise;
+    private final Sampler noise;
     private Family family = Family.RBF;
     private int numUnitsPerEdge = 6;      // K: #basis per edge
     private boolean inputStandardize = true; // z-score inputs before f(x)
@@ -54,19 +53,21 @@ public class AdditiveAnmSimulator {
     private Random rng;
 
     /**
-     * Constructs an instance of the AdditiveAnmSimulator. This simulator generates data based on an acyclic graph
-     * structure using additive noise models, producing synthetic datasets with specified characteristics.
+     * Constructs an AdditiveAnmSimulator, which generates synthetic datasets
+     * based on an additive noise model using a directed acyclic graph (DAG).
+     * The graph defines the causal relationships, and sampling is based on a
+     * specified noise distribution.
      *
-     * @param graph             the directed acyclic graph (DAG) to define the structure of the simulation. Must be
-     *                          acyclic; otherwise, an IllegalArgumentException is thrown.
-     * @param numSamples        the number of samples to generate for the dataset. Must be greater than or equal to 1;
-     *                          otherwise, an IllegalArgumentException is thrown.
-     * @param noiseDistribution the distribution used to generate noise for the simulation. Must not be null; a
-     *                          NullPointerException is thrown if null.
+     * @param graph the directed acyclic graph (DAG) representing the causal structure
+     * @param numSamples the number of samples to be generated; must be >= 1
+     * @param sampler the sampler for generating noise values used in the simulation
+     * @throws IllegalArgumentException if the provided graph is not acyclic
+     * @throws IllegalArgumentException if numSamples is less than 1
+     * @throws NullPointerException if graph or sampler is null
      */
     public AdditiveAnmSimulator(Graph graph,
                                 int numSamples,
-                                RealDistribution noiseDistribution) {
+                                Sampler sampler) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph must be acyclic for this generator.");
         }
@@ -74,7 +75,7 @@ public class AdditiveAnmSimulator {
 
         this.graph = Objects.requireNonNull(graph, "graph");
         this.numSamples = numSamples;
-        this.noise = Objects.requireNonNull(noiseDistribution, "noiseDistribution");
+        this.noise = Objects.requireNonNull(sampler, "sampler");
         this.rng = new Random(seed);
     }
 

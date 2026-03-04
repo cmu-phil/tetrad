@@ -2101,6 +2101,27 @@ Source:
         <li>Value Type: <span id="hiddenDimension_value_type">Integer</span></li>
     </ul>
 
+    === noiseExpression ===
+    <h3 class="parameter_description" id="noiseExpression">noiseExpression</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="noiseExpression_short_desc">
+            Expression specifying how noise values are generated
+        </span></li>
+
+        <li>Long Description: <span id="noiseExpression_long_desc">
+            An expression in the Tetrad expression language specifying how noise values
+            should be sampled for the error term in the model. The expression is evaluated
+            independently for each sample to produce a noise value. The expression may use
+            any supported random generators and arithmetic operations defined in the
+            expression language.
+        </span></li>
+
+        <li>Default Value: <span id="noiseExpression_default_value">Normal(0,1)</span></li>
+        <li>Lower Bound: <span id="noiseExpression_lower_bound"></span></li>
+        <li>Upper
+            Bound: <span id="noiseExpression_upper_bound"></span></li>
+        <li>Value Type: <span id="noiseExpression_value_type">String</span></li>
+    </ul>
 
     === hiddenDimensions ===
     <h3 class="parameter_description" id="hiddenDimensions">hiddenDimensions</h3>
