@@ -211,7 +211,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
         List<Integer> remainingVars = new ArrayList<>(allVariables());
         clusterToRank = new HashMap<>();
 
-        for (int rank = 0; rank <= rMax; rank++) {
+        for (int rank = 1; rank <= rMax; rank++) {
             int size = rank + 1;
             if (Thread.currentThread().isInterrupted()) break;
 //            if (size >= remainingVars.size() - size) continue;
