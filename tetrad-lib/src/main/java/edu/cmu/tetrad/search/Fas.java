@@ -371,6 +371,8 @@ public class Fas implements IFas {
                 IndependenceResult result;
                 try {
                     result = test.checkIndependence(x, y, S);
+
+                    System.out.println(x.getName() + " " + y.getName() + " " + S.size() + " " + result.isIndependent());
                 } catch (InterruptedException e) {
                     // Preserve interrupt status and stop working this pair.
                     Thread.currentThread().interrupt();

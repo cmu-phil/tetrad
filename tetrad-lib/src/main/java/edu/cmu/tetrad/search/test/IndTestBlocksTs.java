@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -360,10 +361,17 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
             List<Node> leftVars = indicesToNodes(b.Lcols, dataVars);
             List<Node> rightVars = indicesToNodes(b.Rcols, dataVars);
             TetradLogger.getInstance().log("TS split: left=" + leftVars + " right=" + rightVars);
-            TetradLogger.getInstance().log("TS: " + b.xName + " _||_ " + b.yName + " | " + b.zNames + " ? estRank(min over trials)=" + bestRank + ", target(sum ranks)=" + target + " -> " + (indep ? "INDEP" : "DEP"));
+            TetradLogger.getInstance().log("TS: " + b.xName + " _||_ " + b.yName + " | " + b.zNames + " " +
+                    "? estRank(min over trials)=" + bestRank + ", target(sum ranks)=" + target + " -> " + (indep ? "INDEP" : "DEP"));
         }
 
-        return new IndependenceResult(new IndependenceFact(b.xNode, b.yNode, z), indep, Double.NaN, // p-value intentionally not exposed
+        if (indep) {
+            System.out.println(LogUtilsSearch.independenceFactMsg(x, y, z, Double.NaN));
+        } else {
+            System.out.println(LogUtilsSearch.dependenceFactMsg(x, y, z, Double.NaN));
+        }
+
+        return new IndependenceResult(new IndependenceFact(x, y, z), indep, Double.NaN, // p-value intentionally not exposed
                 Double.NaN  // score not used
         );
     }

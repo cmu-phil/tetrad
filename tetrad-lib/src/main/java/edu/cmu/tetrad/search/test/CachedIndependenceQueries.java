@@ -393,7 +393,9 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
         double alpha = test.getAlpha();
 
         // Decision must be computed now, from the current alpha.
-        boolean independent = !Double.isNaN(p) && p > alpha;
+        // No! The decision must be obtained from Eval! jdramsey 2026-3-4
+        // Some tests to not return a p-value but give an independende judgment!
+        boolean independent = eval.independent();// !Double.isNaN(p) && p > alpha;
 
         double score = Double.isNaN(p) ? -alpha : (alpha - p);
         return new IndependenceResult(fact, independent, p, score);
