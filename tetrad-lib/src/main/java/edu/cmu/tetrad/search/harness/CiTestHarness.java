@@ -13,6 +13,7 @@ import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.sem.GeneralNoiseSimulation;
+import edu.cmu.tetrad.sem.DistributionSampler;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -163,8 +164,10 @@ public final class CiTestHarness {
 
         Function<Double, Double> activation = Math::tanh;
 
+        DistributionSampler distributionSampler = new DistributionSampler(new BetaDistribution(2, 5));
+
         GeneralNoiseSimulation sim = new GeneralNoiseSimulation(trueGraph, params.getInt(Params.SAMPLE_SIZE),
-                new BetaDistribution(2, 5), new int[]{100, 100, 100, 100, 100},
+                distributionSampler, new int[]{100, 100, 100, 100, 100},
                 5, activation);
         DataSet dataSet1 = sim.generateData();
 

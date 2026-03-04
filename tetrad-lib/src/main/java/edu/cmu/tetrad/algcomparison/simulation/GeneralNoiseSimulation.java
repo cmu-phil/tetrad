@@ -24,6 +24,9 @@ import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.sem.DistributionSampler;
+import edu.cmu.tetrad.sem.ExpressionSampler;
+import edu.cmu.tetrad.sem.Sampler;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -31,6 +34,7 @@ import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -288,16 +292,36 @@ public class GeneralNoiseSimulation implements Simulation {
 
         Function<Double, Double> activation = Math::tanh;// x -> Math.max(0.1 * x, x);
 
-        edu.cmu.tetrad.sem.GeneralNoiseSimulation generator = new edu.cmu.tetrad.sem.GeneralNoiseSimulation(
-                graph, parameters.getInt(Params.SAMPLE_SIZE),
-//                new BetaDistribution(1, 3),
+
+        //                            new BetaDistribution(1, 3),
 //                new GammaDistribution(.25, 1),
 //                new GumbelDistribution(.25, 1),
 //                new ExponentialDistribution(.25),
-                new NormalDistribution(0, 1),
-                hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
+//                new NormalDistribution(0, 1),'
 
-        return generator.generateData();
+//        Sampler sampler = new Sampler(new NormalDistribution(0, 1)) {
+//            public double sample() {
+//                return getDistribution().sample() * 0.3;
+//            }
+//        };
+
+//        Sampler sampler = new Sampler(new BetaDistribution(1, 3)) {
+//            public double sample() {
+//                return (getDistribution().sample() - 0.5) * 2;
+//            }
+//        };
+
+        try {
+            Sampler sampler = new ExpressionSampler("Normal(0, 1)");
+
+            edu.cmu.tetrad.sem.GeneralNoiseSimulation generator = new edu.cmu.tetrad.sem.GeneralNoiseSimulation(
+                    graph, parameters.getInt(Params.SAMPLE_SIZE), sampler,
+                    hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
+
+            return generator.generateData();
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

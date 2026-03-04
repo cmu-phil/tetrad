@@ -5,7 +5,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import org.apache.commons.math3.distribution.RealDistribution;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 
@@ -28,7 +27,7 @@ public class GeneralNoiseSimulation {
 
     private final Graph graph;
     private final int numSamples;
-    private final RealDistribution noiseDistribution;
+    private final Sampler sampler;
     private final int[] hiddenDimensions;
     private final double inputScale;
     private final Function<Double, Double> activationFunction;
@@ -39,20 +38,20 @@ public class GeneralNoiseSimulation {
 
     public GeneralNoiseSimulation(Graph graph,
                                   int numSamples,
-                                  RealDistribution noiseDistribution,
+                                  Sampler sampler,
                                   int[] hiddenDimensions,
                                   double inputScale,
                                   Function<Double, Double> activationFunction) {
         if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycles.");
         if (numSamples < 1) throw new IllegalArgumentException("numSamples must be positive.");
-        Objects.requireNonNull(noiseDistribution, "noiseDistribution");
+        Objects.requireNonNull(sampler, "sampler");
         Objects.requireNonNull(hiddenDimensions, "hiddenDimensions");
         Objects.requireNonNull(activationFunction, "activationFunction");
         for (int h : hiddenDimensions) if (h < 1) throw new IllegalArgumentException("Hidden dims must be >= 1");
 
         this.graph = graph;
         this.numSamples = numSamples;
-        this.noiseDistribution = noiseDistribution;
+        this.sampler = sampler;
         this.hiddenDimensions = hiddenDimensions.clone();
         this.inputScale = inputScale;
         this.activationFunction = activationFunction;
@@ -102,7 +101,7 @@ public class GeneralNoiseSimulation {
             }
 
             // draw noise once (positive + clipped) and place as last column
-            drawPositiveClippedNoise(noise, N, noiseDistribution, inputScale);
+            drawNoise(noise, N, sampler);
 
             int k = pj.length;
             for (int i = 0; i < N; i++, k += Din) A.data[k] = noise[i];
@@ -127,25 +126,9 @@ public class GeneralNoiseSimulation {
      *
      * Note: this is still NOT additive noise; it's an input column to f_j.
      */
-    private static void drawPositiveClippedNoise(double[] noise, int N, RealDistribution dist, double inputScale) {
+    private static void drawNoise(double[] noise, int N, Sampler sampler) {
         for (int i = 0; i < N; i++) {
-//            double v;
-//
-//            do {
-//                v = dist.sample();
-//            } while (v < NOISE_MIN || v > NOISE_MAX);
-
-
-            double v = dist.sample();
-
-            // IMPORTANT: do NOT divide by inputScale here unless you really want to couple
-            // weight init scale and noise magnitude. If that coupling empirically helps you,
-            // you can re-enable it by uncommenting the next line.
-            v /= Math.max(1e-12, inputScale);
-
-            if (v < NOISE_MIN) v = NOISE_MIN;
-            if (v > NOISE_MAX) v = NOISE_MAX;
-            noise[i] = v;
+            noise[i] = sampler.sample();
         }
     }
 
