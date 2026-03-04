@@ -20,11 +20,6 @@ import static java.lang.Math.abs;
  * This variant enforces "nature-like" positive noise clipped to a tanh-friendly interval [0, 2].
  */
 public class GeneralNoiseSimulation {
-
-    // --- Your requested noise behavior ---
-    private static final double NOISE_MIN = -2.0;
-    private static final double NOISE_MAX = 2.0;
-
     private final Graph graph;
     private final int numSamples;
     private final Sampler sampler;
