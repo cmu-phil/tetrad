@@ -25,6 +25,7 @@ import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -95,7 +96,14 @@ public class CheckMSeparationFacts extends AbstractAction {
         IndependenceFactsDslEditor editor = new IndependenceFactsDslEditor(null, null, graph, new Parameters(),
                 independenceQueries);
 
-        JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), editor, "Independence Facts DSL Editor", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+//        JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), editor, "Independence Facts DSL Editor", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+
+        EditorWindow editorWindow = new EditorWindow(editor, "Nonlinearity Checks", null,
+                false, JOptionUtils.centeringComp());
+
+        DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+        editorWindow.pack();
+        editorWindow.setVisible(true);
     }
 }
 

@@ -70,7 +70,7 @@ class PlotMatrixAction extends AbstractAction {
         }
 
         JPanel panel = new PlotMatrix(dataSet);
-        EditorWindow editorWindow = new EditorWindow(panel, "Plot Matrix", "Save", true,
+        EditorWindow editorWindow = new EditorWindow(panel, "Plot Matrix", null, false,
                 (JComponent) this.dataEditor);
 
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);

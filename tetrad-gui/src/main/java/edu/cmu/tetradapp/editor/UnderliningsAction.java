@@ -128,7 +128,7 @@ public class UnderliningsAction extends AbstractAction implements ClipboardOwner
         panel.add(b);
 
         EditorWindow window = new EditorWindow(panel,
-                "Underlinings", "Close", false, JOptionUtils.centeringComp());
+                "Underlinings", null, false, JOptionUtils.centeringComp());
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
