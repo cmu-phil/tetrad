@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -58,7 +58,7 @@ public class ExpressionManager {
         for (ExpressionDescriptor exp : this.descriptors) {
             if (this.tokenMap.containsKey(exp.getToken())) {
                 throw new IllegalStateException("Expression descriptors must have unique tokens, but " + exp.getToken()
-                                                + " is not unique.");
+                        + " is not unique.");
             }
             this.tokenMap.put(exp.getToken(), exp);
         }
@@ -297,7 +297,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Ceil must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("ceil", Position.PREFIX, expressions) {
                 @Serial
@@ -323,7 +323,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Signum must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("signum", Position.PREFIX, expressions) {
                 @Serial
@@ -352,7 +352,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Cos must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("cos", Position.PREFIX, expressions) {
                 @Serial
@@ -378,7 +378,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Cosh must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("cosh", Position.PREFIX, expressions) {
                 @Serial
@@ -404,7 +404,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Acos must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("acos", Position.PREFIX, expressions) {
                 @Serial
@@ -434,7 +434,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Floor must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("floor", Position.PREFIX, expressions) {
                 @Serial
@@ -463,7 +463,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Floor must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("abs", Position.PREFIX, expressions) {
                 @Serial
@@ -489,7 +489,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Log10 must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("log10", Position.PREFIX, expressions) {
                 @Serial
@@ -559,7 +559,7 @@ public class ExpressionManager {
 
                 public double evaluate(Context context) {
                     return getExpressions().getFirst().evaluate(context)
-                           / getExpressions().get(1).evaluate(context);
+                            / getExpressions().get(1).evaluate(context);
                 }
             };
         }
@@ -582,7 +582,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("log must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("ln", Position.PREFIX, expressions) {
                 @Serial
@@ -639,7 +639,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Round must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("round", Position.PREFIX, expressions) {
                 @Serial
@@ -669,7 +669,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Tan must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("tan", Position.PREFIX, expressions) {
                 @Serial
@@ -695,7 +695,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Hyperbolic tangent must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("tanh", Position.PREFIX, expressions) {
                 @Serial
@@ -721,7 +721,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Atan must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("atan", Position.PREFIX, expressions) {
                 @Serial
@@ -747,7 +747,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Logistic function must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("logistic", Position.PREFIX, expressions) {
                 @Serial
@@ -777,7 +777,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Square Root must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("sqrt", Position.PREFIX, expressions) {
                 @Serial
@@ -806,7 +806,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Sine must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("sin", Position.PREFIX, expressions) {
                 @Serial
@@ -832,7 +832,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Sinh must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("sinh", Position.PREFIX, expressions) {
                 @Serial
@@ -858,7 +858,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Asin must have one and only one" +
-                                                            " argument.");
+                        " argument.");
             }
             return new AbstractExpression("asin", Position.PREFIX, expressions) {
                 @Serial
@@ -2516,7 +2516,7 @@ public class ExpressionManager {
                     }
 
                     throw new IllegalArgumentException("exps: " + expPrint + " err: " + err + " p: " + Arrays.toString(p)
-                                                       + " p2: " + Arrays.toString(p2));
+                            + " p2: " + Arrays.toString(p2));
                 }
 
                 private double[] convert(double... p) {
@@ -2603,7 +2603,8 @@ public class ExpressionManager {
                     double c = expressions.get(2).evaluate(context);
 
                     if (a < b) return b;
-                    return Math.min(a, c);
+                    if (a > c) return c;
+                    return a;
                 }
             };
         }
@@ -2629,19 +2630,21 @@ public class ExpressionManager {
 
                 public double evaluate(Context context) {
                     List<Expression> expressions = getExpressions();
-                    double a = expressions.getFirst().evaluate(context);
+
                     double b = expressions.get(1).evaluate(context);
                     double c = expressions.get(2).evaluate(context);
 
-                    int count = 0;
+                    double lo = Math.min(b, c), hi = Math.max(b, c);
+                    double a = Double.NaN;
 
-                    while (++count <= 1000) {
-                        if (a < b) continue;
-                        if (a > c) continue;
-                        break;
+                    for (int count = 0; count < 1000; count++) {
+                        a = expressions.getFirst().evaluate(context);
+                        if (Double.isFinite(a) && a >= lo && a <= hi) return a;
                     }
 
-                    return a;
+                    // fallback: clamp last finite value (or pick midpoint if none)
+                    if (!Double.isFinite(a)) a = 0.5 * (lo + hi);
+                    return Math.max(lo, Math.min(hi, a));
                 }
             };
         }

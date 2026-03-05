@@ -222,20 +222,36 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         switch (evt.getPropertyName()) {
-            case "modelChanged":
+            case "modelChanged": {
+                // Update true graphs
                 List<Graph> trueGraphs = new ArrayList<>();
-                for (int i = 0; i < this.simulation.getSimulation().getNumDataModels(); i++) {
-                    trueGraphs.add(this.simulation.getSimulation().getTrueGraph(i));
+                if (this.simulation.getSimulation() != null) {
+                    for (int i = 0; i < this.simulation.getSimulation().getNumDataModels(); i++) {
+                        trueGraphs.add(this.simulation.getSimulation().getTrueGraph(i));
+                    }
                 }
                 this.simulationGraphEditor.replace(trueGraphs);
 
-                DataWrapper wrapper = new DataWrapper(new Parameters());
-                wrapper.setDataModelList(this.simulation.getDataModelList());
-                this.tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, SwingConstants.LEFT));
+                // Update the existing DataEditor (NO new instance)
+                DataModelList list = this.simulation.getDataModelList();
+
+                // Ensure the selection is valid before giving it to DataEditor
+                if (list.getSelectedModel() == null && !list.isEmpty()) {
+                    list.setSelectedModel(list.get(0));
+                }
+
+                this.dataEditor.replace(list);
+
+                // Make sure the tab still points at the same editor instance
+                if (this.tabbedPane.getComponentAt(2) != this.dataEditor) {
+                    this.tabbedPane.setComponentAt(2, this.dataEditor);
+                }
 
                 showTab();
                 firePropertyChange("modelChanged", null, null);
                 break;
+            }
+
             case "refreshParameters":
                 showTab();
                 break;

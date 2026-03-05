@@ -134,6 +134,10 @@ final class LoadDataAction extends AbstractAction {
 
         dataModelList.addAll(_dataModelList);
 
+        if (dataModelList.getSelectedModel() == null && !dataModelList.isEmpty()) {
+            dataModelList.setSelectedModel(dataModelList.get(0));
+        }
+
         this.dataEditor.replace(dataModelList);
         this.dataEditor.selectFirstTab();
         firePropertyChange("modelChanged", null, null);
