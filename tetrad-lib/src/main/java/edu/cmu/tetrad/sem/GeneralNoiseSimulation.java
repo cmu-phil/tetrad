@@ -151,65 +151,6 @@ public class GeneralNoiseSimulation {
             // Forward pass: Y = mlp(A)
             Y = mlp.forward(A, S1, S2, Y, activationFunction, useFastTanh);
 
-//            // ------------------------------------------------------------------
-//            // Mix linear backbone with nonlinear MLP output (single knob lambda)
-//            // ------------------------------------------------------------------
-//
-//            if (pj.length > 0) {
-//                double[] beta = new double[pj.length];
-//
-//                // draw parent coefficients bounded away from 0
-//                for (int c = 0; c < pj.length; c++) {
-//                    double b = 0.5 + seeder.nextDouble(); // in [0.5, 1.5]
-//                    if (seeder.nextBoolean()) b = -b;     // random sign
-//                    beta[c] = b;
-//                }
-//
-//                double lambda = 0.7;   // 0 = purely linear, 1 = purely nonlinear
-//
-//                for (int i = 0; i < N; i++) {
-//                    double linear = 0.0;
-//                    for (int c = 0; c < pj.length; c++) {
-//                        linear += beta[c] * raw[i][pj[c]];
-//                    }
-//
-//                    // original: just nonlinear
-//                    // Y.data[i] = Y.data[i];
-//
-//                    // mix
-//                    Y.data[i] = (1.0 - lambda) * linear + lambda * Y.data[i];
-//                }
-//            }
-
-//            // ------------------------------------------------------------------
-//            // Stabilizing linear anchor to reduce near-faithfulness cancellations
-//            // ------------------------------------------------------------------
-//
-//            double alpha = 0.2;
-//
-//            if (pj.length > 0) {
-//                double[] beta = new double[pj.length];
-//
-//                // draw parent coefficients bounded away from 0
-//                for (int c = 0; c < pj.length; c++) {
-//                    double b = 0.5 + seeder.nextDouble();
-//                    if (seeder.nextBoolean()) b = -b;
-//                    beta[c] = b;
-//                }
-//
-//                for (int i = 0; i < N; i++) {
-//                    double lin = 0.0;
-//                    for (int c = 0; c < pj.length; c++) {
-//                        lin += beta[c] * raw[i][pj[c]];
-//                    }
-//
-//                    // original:
-//                    // Y.data[i] = Y.data[i];
-//
-//                    Y.data[i] += alpha * lin;
-//                }
-//            }
-
             // write column
             for (int i = 0; i < N; i++) raw[i][j] = Y.data[i];
         }
