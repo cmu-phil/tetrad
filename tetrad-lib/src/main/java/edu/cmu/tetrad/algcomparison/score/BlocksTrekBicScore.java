@@ -85,7 +85,7 @@ public class BlocksTrekBicScore implements BlockScoreWrapper {
     public Score getScore(DataModel model, Parameters parameters) {
         edu.cmu.tetrad.search.score.BlocksBicScoreTrekSoft score = new edu.cmu.tetrad.search.score.BlocksBicScoreTrekSoft(
                 blockSpec);
-        score.setCoupledTrekPenalty(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return score;
     }

@@ -27,7 +27,9 @@ import java.util.*;
  * <p>The score for a candidate rank <code>r</code> is</p>
  *
  * <pre>
- * score(r) = fit(r) - c * k(r) * log(nAdj) - c * log(nAdj) * (r - r*)²
+ * score(r) = fit(r)
+ *            - c * k(r) * log(nAdj)
+ *            - (mult * c) * log(nAdj) * (r - r*)²
  * </pre>
  *
  * <p>where</p>
@@ -38,7 +40,8 @@ import java.util.*;
  *   <li><code>r* = Σ rank(Z)</code> for <code>Z ∈ Pa(Y)</code>, the trek-implied rank</li>
  *   <li><code>p</code>, <code>q</code> are the sizes of the parent and target blocks</li>
  *   <li><code>nAdj</code> is the Bartlett-style effective sample size used in the CCA likelihood ratio</li>
- *   <li><code>c</code> is <code>penaltyDiscount</code></li>
+ *   <li><code>c</code> is <code>coupledTrekPenalty</code> (the BIC penalty discount)</li>
+ *   <li><code>mult</code> is <code>trekPenaltyMultiplier</code></li>
  * </ul>
  *
  * <p>
@@ -52,13 +55,8 @@ import java.util.*;
  * Blocks whose rank is specified as <code>0</code> are treated as structurally isolated:
  * they cannot have parents and cannot act as parents of other variables.
  * </p>
- *
- * <p>
- * This score preserves the empirical strengths of <code>BlocksBicScore</code> while
- * incorporating trek-based structural information as a soft preference rather than
- * a hard constraint.
- * </p>
- */public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampleSizeSettable {
+ */
+public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampleSizeSettable {
 
     private static final int SCORE_CACHE_MAX = 100_000;
     private static final int XBLOCK_CACHE_MAX = 50_000;
@@ -70,7 +68,7 @@ import java.util.*;
 
     private final int[][] blockAllCols;
 
-    private double trekPenaltyMultiplier = 1.0; // default: 1
+    private double trekPenaltyMultiplier = 2.0; // default: 1
 
     private final Map<FamilyKey, Double> scoreCache =
             new LinkedHashMap<>(2048, 0.75f, true) {
@@ -91,7 +89,7 @@ import java.util.*;
     private final BlockSpec blockSpec;
 
     // --- Knobs (same as BlocksBicScore) ---
-    private double coupledTrekPenalty = 1.0;
+    private double penaltyDiscount = 1.0;
     private double ridge = 1e-8;
     private int nEff;
 
@@ -182,7 +180,7 @@ import java.util.*;
         Arrays.sort(parentIdx);
 
         // Cache key uses filtered parent set (critical!)
-        FamilyKey fkey = new FamilyKey(yi, parentIdx, ridge, coupledTrekPenalty);
+        FamilyKey fkey = new FamilyKey(yi, parentIdx, ridge, penaltyDiscount, trekPenaltyMultiplier);
         Double cached = scoreCache.get(fkey);
         if (cached != null) return cached;
 
@@ -248,7 +246,7 @@ import java.util.*;
 
             int k = r * (p + q - r);
 
-            double pen = coupledTrekPenalty * k * logN;
+            double pen = penaltyDiscount * k * logN;
 
 //            // Soft trek preference (FIXED: no stray "trekPen = 4")
 //            double trekPen = 0.0;
@@ -258,9 +256,9 @@ import java.util.*;
 //            }
 
             double trekPen = 0.0;
-            if (coupledTrekPenalty > 0.0) {
+            if (penaltyDiscount > 0.0) {
                 double d = (double) r - (double) rStar;
-                trekPen = trekPenaltyMultiplier * coupledTrekPenalty * logN * d * d;
+                trekPen = trekPenaltyMultiplier * penaltyDiscount * logN * d * d;
             }
 
             double sc = fit - pen - trekPen;
@@ -269,7 +267,6 @@ import java.util.*;
         }
 
         if (best <= 0.0) best = -1e-12;
-
         scoreCache.put(fkey, best);
         return best;
     }
@@ -288,13 +285,31 @@ import java.util.*;
     // --- knobs ---
 
     /**
-     * Sets the coupled trek penalty, which is used to penalize the number of trek edges in the graph as well
-     * as BIC penalty.
+     * Sets the BIC penalty discount coefficient <code>c</code>.
+     * Larger values encourage sparser graphs by increasing the complexity penalty.
      *
-     * @param c the coupled trek penalty
+     * <p>
+     * This coefficient is also used (coupled) in the trek-rank mismatch penalty.
+     * </p>
      */
-    public void setCoupledTrekPenalty(double c) {
-        this.coupledTrekPenalty = c;
+    public void setPenaltyDiscount(double c) {
+        this.penaltyDiscount = c;
+        scoreCache.clear();
+    }
+
+    /**
+     * Sets the multiplier applied to the trek-rank mismatch penalty.
+     * Default is 1.0. Values &lt; 1 weaken the trek preference; values &gt; 1 strengthen it.
+     *
+     * <p>
+     * Note: this affects cached local scores, so the score cache is cleared.
+     * </p>
+     */
+    public void setTrekPenaltyMultiplier(double mult) {
+        if (!Double.isFinite(mult) || mult < 0.0) {
+            throw new IllegalArgumentException("trekPenaltyMultiplier must be finite and >= 0.");
+        }
+        this.trekPenaltyMultiplier = mult;
         scoreCache.clear();
     }
 
@@ -366,19 +381,22 @@ import java.util.*;
     private static final class FamilyKey {
         final int y;
         final int[] parents;
-        final long ridgeBits, penBits;
+        final long ridgeBits, penBits, multBits;
         private final int hash;
 
-        FamilyKey(int y, int[] parents, double ridge, double pen) {
+        FamilyKey(int y, int[] parents, double ridge, double pen, double mult) {
             this.y = y;
             this.parents = parents.clone();
             this.ridgeBits = quantize(ridge);
             this.penBits = quantize(pen);
+            this.multBits = quantize(mult);
+
             int h = 1;
             h = 31 * h + y;
             h = 31 * h + Arrays.hashCode(this.parents);
             h = 31 * h + Long.hashCode(ridgeBits);
             h = 31 * h + Long.hashCode(penBits);
+            h = 31 * h + Long.hashCode(multBits);
             this.hash = h;
         }
 
@@ -392,6 +410,7 @@ import java.util.*;
             return y == fk.y
                     && ridgeBits == fk.ridgeBits
                     && penBits == fk.penBits
+                    && multBits == fk.multBits
                     && Arrays.equals(parents, fk.parents);
         }
 
