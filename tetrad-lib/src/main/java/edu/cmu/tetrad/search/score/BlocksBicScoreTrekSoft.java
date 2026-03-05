@@ -10,16 +10,55 @@ import org.ejml.simple.SimpleMatrix;
 import java.util.*;
 
 /**
- * BlocksBicScoreTrekSoft:
- * BlocksBicScore with an additional soft regularizer that prefers the trek-implied rank
- * r* = sum_{Z in Pa(Y)} rank(Z) (from BlockSpec.ranks()).
+ * <b>BlocksBicScoreTrekSoft</b>
  *
- * score(r) = [fit(r) - c*k(r)*log(n)] - trekRankPenalty * (r - r*)^2  (+ optional EBIC).
+ * <p>
+ * A block-structured BIC score based on regularized canonical correlation analysis (RCCA)
+ * with an additional soft regularizer encouraging agreement with the trek-implied rank.
+ * </p>
  *
- * This keeps the empirical strength of BlocksBicScore (rank sweep on Xblock vs Yblock),
- * while injecting trek-structure information as a soft preference rather than a hard constraint.
- */
-public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampleSizeSettable {
+ * <p>
+ * For a candidate family <code>Y | Pa(Y)</code>, let <code>Xblock</code> be the concatenation
+ * of the indicator columns for the parent blocks and <code>Yblock</code> the indicator columns
+ * for the target block. The score evaluates reduced-rank models of canonical rank
+ * <code>r</code> between these two blocks.
+ * </p>
+ *
+ * <p>The score for a candidate rank <code>r</code> is</p>
+ *
+ * <pre>
+ * score(r) = fit(r) - c * k(r) * log(nAdj) - c * log(nAdj) * (r - r*)²
+ * </pre>
+ *
+ * <p>where</p>
+ *
+ * <ul>
+ *   <li><code>fit(r) = -nAdj * Σ log(1 - ρᵢ²)</code> for the top <code>r</code> canonical correlations</li>
+ *   <li><code>k(r) = r (p + q - r)</code> is the parameter count for rank <code>r</code></li>
+ *   <li><code>r* = Σ rank(Z)</code> for <code>Z ∈ Pa(Y)</code>, the trek-implied rank</li>
+ *   <li><code>p</code>, <code>q</code> are the sizes of the parent and target blocks</li>
+ *   <li><code>nAdj</code> is the Bartlett-style effective sample size used in the CCA likelihood ratio</li>
+ *   <li><code>c</code> is <code>penaltyDiscount</code></li>
+ * </ul>
+ *
+ * <p>
+ * The first penalty term is the usual BIC complexity penalty for a rank-<code>r</code>
+ * reduced-rank model. The second term softly encourages the canonical rank to match
+ * the trek-implied rank <code>r*</code>, while still allowing the data to select a
+ * different rank if strongly supported.
+ * </p>
+ *
+ * <p>
+ * Blocks whose rank is specified as <code>0</code> are treated as structurally isolated:
+ * they cannot have parents and cannot act as parents of other variables.
+ * </p>
+ *
+ * <p>
+ * This score preserves the empirical strengths of <code>BlocksBicScore</code> while
+ * incorporating trek-based structural information as a soft preference rather than
+ * a hard constraint.
+ * </p>
+ */public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampleSizeSettable {
 
     private static final int SCORE_CACHE_MAX = 100_000;
     private static final int XBLOCK_CACHE_MAX = 50_000;
@@ -30,7 +69,8 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
     private final int n;
 
     private final int[][] blockAllCols;
-    private final int totalEmbeddedCols;
+
+    private double trekPenaltyMultiplier = 1.0; // default: 1
 
     private final Map<FamilyKey, Double> scoreCache =
             new LinkedHashMap<>(2048, 0.75f, true) {
@@ -51,13 +91,9 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
     private final BlockSpec blockSpec;
 
     // --- Knobs (same as BlocksBicScore) ---
-    private double penaltyDiscount = 1.0;
+    private double coupledTrekPenalty = 1.0;
     private double ridge = 1e-8;
-    private double ebicGamma = 0.0;
     private int nEff;
-
-    // --- New knob ---
-    private double trekRankPenalty = 3.0; // lambda; 0 disables
 
     public BlocksBicScoreTrekSoft(BlockSpec blockSpec) {
         this.blockSpec = Objects.requireNonNull(blockSpec, "blockspec == null");
@@ -82,7 +118,6 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
 
         int D = blockSpec.dataSet().getNumColumns();
         this.blockAllCols = new int[B][];
-        int totalCols = 0;
         for (int b = 0; b < B; b++) {
             List<Integer> cols = blockSpec.blocks().get(b);
             if (cols == null || cols.isEmpty()) {
@@ -99,9 +134,7 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
                 }
                 this.blockAllCols[b] = all;
             }
-            totalCols += this.blockAllCols[b].length;
         }
-        this.totalEmbeddedCols = totalCols;
     }
 
     @Override
@@ -149,7 +182,7 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
         Arrays.sort(parentIdx);
 
         // Cache key uses filtered parent set (critical!)
-        FamilyKey fkey = new FamilyKey(yi, parentIdx, ridge, penaltyDiscount, ebicGamma, trekRankPenalty);
+        FamilyKey fkey = new FamilyKey(yi, parentIdx, ridge, coupledTrekPenalty);
         Double cached = scoreCache.get(fkey);
         if (cached != null) return cached;
 
@@ -201,11 +234,11 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
             rStar += rk;
         }
         if (rStar < 0) rStar = 0;
+        rStar = Math.min(rStar, m);
 
         double best = Double.NEGATIVE_INFINITY;
         double suffix0 = suffix[0];
 
-        int Ppool = Math.max(totalEmbeddedCols - Yblock.length, 2);
         double logN = Math.log(Math.max(nAdj, 2.0));
 
         // Sweep r = 1..m
@@ -215,10 +248,7 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
 
             int k = r * (p + q - r);
 
-            double pen = penaltyDiscount * k * logN;
-            if (ebicGamma > 0.0) {
-                pen += 2.0 * ebicGamma * k * Math.log(Ppool);
-            }
+            double pen = coupledTrekPenalty * k * logN;
 
 //            // Soft trek preference (FIXED: no stray "trekPen = 4")
 //            double trekPen = 0.0;
@@ -228,9 +258,9 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
 //            }
 
             double trekPen = 0.0;
-            if (trekRankPenalty > 0.0) {
+            if (coupledTrekPenalty > 0.0) {
                 double d = (double) r - (double) rStar;
-                trekPen = trekRankPenalty * logN * d * d;  // <-- multiply by logN
+                trekPen = trekPenaltyMultiplier * coupledTrekPenalty * logN * d * d;
             }
 
             double sc = fit - pen - trekPen;
@@ -246,7 +276,6 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-
         return localScore(variables.get(y), appendNodes(z, x)) - localScore(variables.get(y), z);
     }
 
@@ -257,24 +286,46 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
     }
 
     // --- knobs ---
-    public void setPenaltyDiscount(double c) {
-        this.penaltyDiscount = c;
-        this.trekRankPenalty = c;
+
+    /**
+     * Sets the coupled trek penalty, which is used to penalize the number of trek edges in the graph as well
+     * as BIC penalty.
+     *
+     * @param c the coupled trek penalty
+     */
+    public void setCoupledTrekPenalty(double c) {
+        this.coupledTrekPenalty = c;
         scoreCache.clear();
     }
-    public void setRidge(double ridge) { this.ridge = ridge; scoreCache.clear(); }
-    public void setEbicGamma(double gamma) { this.ebicGamma = gamma; scoreCache.clear(); }
 
-//    /** New: strength of the trek rank preference. 0 disables. */
-//    public void setTrekRankPenalty(double lambda) { this.trekRankPenalty = Math.max(0.0, lambda); scoreCache.clear(); }
+    public void setRidge(double ridge) {
+        this.ridge = ridge;
+        scoreCache.clear();
+    }
 
     // --- Score / BlockScore / EffectiveSampleSizeSettable ---
-    @Override public List<Node> getVariables() { return new ArrayList<>(variables); }
-    @Override public int getSampleSize() { return blockSpec.dataSet().getNumRows(); }
-    @Override public BlockSpec getBlockSpec() { return blockSpec; }
+    @Override
+    public List<Node> getVariables() {
+        return new ArrayList<>(variables);
+    }
 
-    @Override public int getEffectiveSampleSize() { return nEff; }
-    @Override public void setEffectiveSampleSize(int nEff) {
+    @Override
+    public int getSampleSize() {
+        return blockSpec.dataSet().getNumRows();
+    }
+
+    @Override
+    public BlockSpec getBlockSpec() {
+        return blockSpec;
+    }
+
+    @Override
+    public int getEffectiveSampleSize() {
+        return nEff;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
         this.nEff = nEff < 0 ? this.n : nEff;
         scoreCache.clear();
         xblockCache.clear();
@@ -287,7 +338,9 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
         return i;
     }
 
-    private int[] blockFor(int blockIndex) { return blockAllCols[blockIndex]; }
+    private int[] blockFor(int blockIndex) {
+        return blockAllCols[blockIndex];
+    }
 
     private int[] concatBlocksFromSortedParentIdx(int[] sortedParents) {
         int total = 0;
@@ -313,23 +366,19 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
     private static final class FamilyKey {
         final int y;
         final int[] parents;
-        final long ridgeBits, penBits, ebicBits, trekBits;
+        final long ridgeBits, penBits;
         private final int hash;
 
-        FamilyKey(int y, int[] parents, double ridge, double pen, double ebic, double trek) {
+        FamilyKey(int y, int[] parents, double ridge, double pen) {
             this.y = y;
             this.parents = parents.clone();
             this.ridgeBits = quantize(ridge);
             this.penBits = quantize(pen);
-            this.ebicBits = quantize(ebic);
-            this.trekBits = quantize(trek);
             int h = 1;
             h = 31 * h + y;
             h = 31 * h + Arrays.hashCode(this.parents);
             h = 31 * h + Long.hashCode(ridgeBits);
             h = 31 * h + Long.hashCode(penBits);
-            h = 31 * h + Long.hashCode(ebicBits);
-            h = 31 * h + Long.hashCode(trekBits);
             this.hash = h;
         }
 
@@ -337,17 +386,19 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
             return Double.doubleToLongBits(Math.rint(x * 1e12) / 1e12);
         }
 
-        @Override public boolean equals(Object o) {
+        @Override
+        public boolean equals(Object o) {
             if (!(o instanceof FamilyKey fk)) return false;
             return y == fk.y
                     && ridgeBits == fk.ridgeBits
                     && penBits == fk.penBits
-                    && ebicBits == fk.ebicBits
-                    && trekBits == fk.trekBits
                     && Arrays.equals(parents, fk.parents);
         }
 
-        @Override public int hashCode() { return hash; }
+        @Override
+        public int hashCode() {
+            return hash;
+        }
     }
 
     private static final class ParentsKey {
@@ -359,11 +410,15 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
             this.hash = Arrays.hashCode(this.parents);
         }
 
-        @Override public boolean equals(Object o) {
+        @Override
+        public boolean equals(Object o) {
             if (!(o instanceof ParentsKey pk)) return false;
             return Arrays.equals(parents, pk.parents);
         }
 
-        @Override public int hashCode() { return hash; }
+        @Override
+        public int hashCode() {
+            return hash;
+        }
     }
 }
