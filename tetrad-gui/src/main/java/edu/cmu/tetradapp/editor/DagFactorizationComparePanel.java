@@ -120,6 +120,8 @@ public final class DagFactorizationComparePanel extends JPanel {
                     resimulateButton.setEnabled(true);
                 }
             });
+
+            firePropertyChange("modelChanged", null, null);
         });
     }
 
