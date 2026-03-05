@@ -93,6 +93,20 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
     private double ridge = 1e-8;
     private int nEff;
 
+    /**
+     * Constructs a BlocksBicScoreTrekSoft object with the specified block specification.
+     * Initializes the variables, node indices, correlation matrix, and block column mappings
+     * based on the given block specification.
+     *
+     * @param blockSpec the block specification containing dataset, block structure, and variables
+     *                  used for initializing the object. Must not be null and should contain valid
+     *                  blocks and variables to configure the score computations.
+     * @throws NullPointerException if the provided block specification is null.
+     * @throws IllegalArgumentException if any variable in the block variables is null,
+     *                                  or if there are duplicate nodes in the block variables,
+     *                                  or if any block references columns outside the dataset's
+     *                                  bounds.
+     */
     public BlocksBicScoreTrekSoft(BlockSpec blockSpec) {
         this.blockSpec = Objects.requireNonNull(blockSpec, "blockspec == null");
 
@@ -135,6 +149,13 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
         }
     }
 
+    /**
+     * Computes the local score for the given node index and its parent nodes.
+     *
+     * @param i the index of the target node for which the local score is computed.
+     * @param parents the indices of the parent nodes influencing the target node.
+     * @return the computed local score for the specified node and its parents.
+     */
     @Override
     public double localScore(int i, int... parents) {
         Node y = variables.get(i);
@@ -143,6 +164,21 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
         return localScore(y, _parents);
     }
 
+    /**
+     * Computes the local score for a given node and its potential parent nodes.
+     * The method calculates a scoring measure based on the relationships
+     * specified, enforcing certain constraints such as rank-based exclusions
+     * and penalties for overly complex parent-child relationships.
+     *
+     * @param y the target node for which the local score is computed.
+     * @param parents the list of potential parent nodes influencing the target node.
+     *                The parents list may be filtered to exclude invalid or
+     *                disallowed nodes based on specific criteria (e.g., rank-0 blocks).
+     * @return the computed local score. Returns negative infinity for invalid
+     *         configurations or blocked relationships. A small negative value may
+     *         also indicate penalties in some scenarios. Positive or zero scores represent
+     *         valid and permissible relationships weighted by their associated scores.
+     */
     public double localScore(Node y, List<Node> parents) {
         final int yi = idx(y);
 
@@ -248,13 +284,6 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
 
             double pen = penaltyDiscount * k * logN;
 
-//            // Soft trek preference (FIXED: no stray "trekPen = 4")
-//            double trekPen = 0.0;
-//            if (trekRankPenalty > 0.0) {
-//                double d = (double) r - (double) rStar;
-//                trekPen = trekRankPenalty * d * d;
-//            }
-
             double trekPen = 0.0;
             if (penaltyDiscount > 0.0) {
                 double d = (double) r - (double) rStar;
@@ -271,6 +300,18 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
         return best;
     }
 
+    /**
+     * Computes the difference in local scores for a specified target node and
+     * its parent configurations. The method calculates the score for the target
+     * node with an additional parent node `x` compared to the original parent
+     * configuration `z`.
+     *
+     * @param x the index of the potential new parent node to be added.
+     * @param y the index of the target node for which the score difference is computed.
+     * @param z the array of indices representing the original parent nodes of the target node.
+     * @return the difference in local scores between the configuration with
+     *         the additional parent node `x` and the original configuration without `x`.
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(variables.get(y), appendNodes(z, x)) - localScore(variables.get(y), z);
@@ -313,32 +354,73 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
         scoreCache.clear();
     }
 
+    /**
+     * Sets the ridge parameter used in the scoring process.
+     * The ridge parameter is typically used to enhance numerical stability
+     * by adding a small regularization term in calculations involving
+     * matrix inversions or linear regressions.
+     *
+     * This method also clears the cached scores as the ridge value change
+     * might affect the computed scores.
+     *
+     * @param ridge the new ridge parameter value. Must be non-negative.
+     */
     public void setRidge(double ridge) {
         this.ridge = ridge;
         scoreCache.clear();
     }
 
-    // --- Score / BlockScore / EffectiveSampleSizeSettable ---
+    /**
+     * Retrieves the list of variables associated with this object.
+     * The returned list represents the nodes or variables being managed
+     * or utilized within the current context.
+     *
+     * @return a list of Node objects representing the variables.
+     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(variables);
     }
 
+    /**
+     * Retrieves the sample size of the dataset associated with the current block specification.
+     *
+     * @return the number of rows in the dataset.
+     */
     @Override
     public int getSampleSize() {
         return blockSpec.dataSet().getNumRows();
     }
 
+    /**
+     * Retrieves the block specification associated with this score object.
+     *
+     * @return the BlockSpec object representing the block specification.
+     */
     @Override
     public BlockSpec getBlockSpec() {
         return blockSpec;
     }
 
+    /**
+     * Retrieves the effective sample size used in the score calculation.
+     * This is a measure of the effective number of independent observations
+     * used in the calculation, accounting for potential dependencies.
+     *
+     * @return the effective sample size.
+     */
     @Override
     public int getEffectiveSampleSize() {
         return nEff;
     }
 
+    /**
+     * Sets the effective sample size used in the score calculation.
+     * This is a measure of the effective number of independent observations
+     * used in the calculation, accounting for potential dependencies.
+     *
+     * @param nEff the effective sample size.
+     */
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = nEff < 0 ? this.n : nEff;
