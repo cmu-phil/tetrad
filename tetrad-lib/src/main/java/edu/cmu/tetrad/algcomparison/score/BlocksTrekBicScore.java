@@ -86,7 +86,6 @@ public class BlocksTrekBicScore implements BlockScoreWrapper {
         edu.cmu.tetrad.search.score.BlocksBicScoreTrekSoft score = new edu.cmu.tetrad.search.score.BlocksBicScoreTrekSoft(
                 blockSpec);
         score.setCoupledTrekPenalty(parameters.getDouble(Params.PENALTY_DISCOUNT));
-//        score.setEbicGamma(parameters.getDouble(Params.EBIC_GAMMA));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return score;
     }
@@ -125,7 +124,6 @@ public class BlocksTrekBicScore implements BlockScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
-//        parameters.add(Params.EBIC_GAMMA);
         return parameters;
     }
 
