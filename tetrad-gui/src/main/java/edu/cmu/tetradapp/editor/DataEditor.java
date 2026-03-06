@@ -202,10 +202,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         });
     }
 
-    //==========================PUBLIC METHODS=============================//
-
-    //=============================PRIVATE METHODS======================//
-
     private void rebuildTabsFrom(DataModelList list, DataModel selectedModel) {
         tabbedPane.removeAll();
         displayedModels.clear();
