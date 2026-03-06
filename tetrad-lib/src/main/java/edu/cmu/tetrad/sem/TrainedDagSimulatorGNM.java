@@ -74,7 +74,7 @@ import java.util.*;
 public final class TrainedDagSimulatorGNM {
 
     // -------------------- configuration --------------------
-    private final List<NodeReport> nodeReports = new ArrayList<>();
+    private final List<NodeReport> nodeReports = Collections.synchronizedList(new ArrayList<>());
 
     // -------------------- fit reporting --------------------
     private final DataSet data;
@@ -240,71 +240,96 @@ public final class TrainedDagSimulatorGNM {
 
     // -------------------- main simulator object --------------------
 
+    private static long mixSeed(long baseSeed, int index, long salt) {
+        long z = baseSeed + salt + 0x9E3779B97F4A7C15L * (index + 1L);
+        z ^= (z >>> 30);
+        z *= 0xBF58476D1CE4E5B9L;
+        z ^= (z >>> 27);
+        z *= 0x94D049BB133111EBL;
+        z ^= (z >>> 31);
+        return z;
+    }
+
+    private int[] parentIndicesFor(Node child, Map<String, Integer> indexByName) {
+        List<Node> ps = dag.getParents(child);
+        int[] parentIdx = new int[ps.size()];
+
+        for (int k = 0; k < ps.size(); k++) {
+            Integer pi = indexByName.get(ps.get(k).getName());
+            if (pi == null) {
+                throw new IllegalArgumentException("Parent not found in dataset: " + ps.get(k).getName());
+            }
+            parentIdx[k] = pi;
+        }
+
+        return parentIdx;
+    }
+
     /**
      * Fit one mechanism per node given its parents in the supplied DAG.
      */
     public void fit() {
         nodeReports.clear();
-        Random rng = new Random(params.seed);
 
         // topo order (use dag nodes, but we map to dataset indices)
         List<Node> topo = dag.paths().getValidOrder(dag.getNodes(), true);
 
         // map name -> dataset index
         Map<String, Integer> indexByName = new HashMap<>();
-        for (int j = 0; j < variables.size(); j++) indexByName.put(variables.get(j).getName(), j);
+        for (int j = 0; j < variables.size(); j++) {
+            indexByName.put(variables.get(j).getName(), j);
+        }
 
+        // Convert topo nodes to dataset indices once
+        List<Integer> topoIdx = new ArrayList<>(topo.size());
         for (Node child : topo) {
-            Integer childIdxObj = indexByName.get(child.getName());
-            if (childIdxObj == null) continue;
-            int childIdx = childIdxObj;
-
-            List<Node> ps = dag.getParents(child);
-            int[] parentIdx = new int[ps.size()];
-            for (int k = 0; k < ps.size(); k++) {
-                Integer pi = indexByName.get(ps.get(k).getName());
-                if (pi == null) {
-                    throw new IllegalArgumentException("Parent not found in dataset: " + ps.get(k).getName());
-                }
-                parentIdx[k] = pi;
+            Integer idx = indexByName.get(child.getName());
+            if (idx != null) {
+                topoIdx.add(idx);
             }
+        }
 
+        topoIdx.parallelStream().forEach(childIdx -> {
+            Node child = variables.get(childIdx);
+            int[] parentIdx = parentIndicesFor(child, indexByName);
             boolean isRoot = parentIdx.length == 0;
 
-            // Important: build encoder once, BEFORE any non-root mechanism needs it.
-            // (It is harmless for roots too, but roots don't need it.)
+            // Independent RNGs per node to avoid shared contention.
+            Random initRng = new Random(mixSeed(params.seed, childIdx, 0x1234ABCDL));
+            Random fitRng = new Random(mixSeed(params.seed, childIdx, 0x5678EF01L));
+
             InputEncoder encoder = new InputEncoder(data, parentIdx, params.maxDiscreteLevels);
+
+            Mechanism m;
 
             if (!isDiscrete[childIdx]) {
                 if (isRoot && params.bootstrapRoots) {
-                    RootContinuousMechanism m = new RootContinuousMechanism(childIdx);
-                    m.fit(data, rng, params);
-                    mechanisms[childIdx] = m;
+                    m = new RootContinuousMechanism(childIdx);
                 } else {
-                    ContinuousMechanism m = new ContinuousMechanism(childIdx, parentIdx, encoder, rng);
-                    m.fit(data, rng, params);
-                    mechanisms[childIdx] = m;
+                    m = new ContinuousMechanism(childIdx, parentIdx, encoder, initRng);
                 }
             } else {
                 int L = ((DiscreteVariable) variables.get(childIdx)).getNumCategories();
+
                 if (L <= 1) {
-                    throw new IllegalArgumentException("Discrete variable has <=1 category: " + variables.get(childIdx).getName());
+                    throw new IllegalArgumentException(
+                            "Discrete variable has <=1 category: " + variables.get(childIdx).getName());
                 }
                 if (L > params.maxDiscreteLevels) {
-                    throw new IllegalArgumentException("Discrete child has too many levels: " + variables.get(childIdx).getName() + " L=" + L);
+                    throw new IllegalArgumentException(
+                            "Discrete child has too many levels: " + variables.get(childIdx).getName() + " L=" + L);
                 }
 
                 if (isRoot && params.bootstrapRoots) {
-                    RootDiscreteMechanism m = new RootDiscreteMechanism(childIdx, L);
-                    m.fit(data, rng, params);
-                    mechanisms[childIdx] = m;
+                    m = new RootDiscreteMechanism(childIdx, L);
                 } else {
-                    DiscreteMechanism m = new DiscreteMechanism(childIdx, parentIdx, encoder, L, rng);
-                    m.fit(data, rng, params);
-                    mechanisms[childIdx] = m;
+                    m = new DiscreteMechanism(childIdx, parentIdx, encoder, L, initRng);
                 }
             }
-        }
+
+            m.fit(data, fitRng, params);
+            mechanisms[childIdx] = m;
+        });
     }
 
     /**
@@ -638,13 +663,42 @@ public final class TrainedDagSimulatorGNM {
 
         double[] encodeFromGenerated(double[] contRow, int[] discRow) {
             double[] out = new double[featureDim];
-            // continuous
+            encodeFromGenerated(contRow, discRow, out);
+            return out;
+        }
+
+//        double[] encodeFromGenerated(double[] contRow, int[] discRow) {
+//            double[] out = new double[featureDim];
+//            // continuous
+//            for (int k = 0; k < contParents.length; k++) {
+//                int col = contParents[k];
+//                double x = contRow[col];
+//                out[k] = (x - mean[k]) / sd[k];
+//            }
+//            // discrete
+//            for (int j = 0; j < parentIdx.length; j++) {
+//                if (!parentIsDisc[j]) continue;
+//                int col = parentIdx[j];
+//                int L = discLevels[j];
+//                int off = discOffset[j];
+//                int v = discRow[col];
+//                if (v < 0 || v >= L) continue;
+//                out[off + v] = 1.0;
+//            }
+//            return out;
+//        }
+
+        void encodeFromGenerated(double[] contRow, int[] discRow, double[] out) {
+            Arrays.fill(out, 0.0);
+
+            // continuous block
             for (int k = 0; k < contParents.length; k++) {
                 int col = contParents[k];
                 double x = contRow[col];
                 out[k] = (x - mean[k]) / sd[k];
             }
-            // discrete
+
+            // discrete blocks
             for (int j = 0; j < parentIdx.length; j++) {
                 if (!parentIsDisc[j]) continue;
                 int col = parentIdx[j];
@@ -654,7 +708,6 @@ public final class TrainedDagSimulatorGNM {
                 if (v < 0 || v >= L) continue;
                 out[off + v] = 1.0;
             }
-            return out;
         }
 
         double maxAbsZFromGenerated(double[] contRow) {
@@ -1051,6 +1104,12 @@ public final class TrainedDagSimulatorGNM {
         }
 
         double[] predictProbs(double[] x) {
+            double[] probs = new double[k];
+            predictProbsInto(x, probs);
+            return probs;
+        }
+
+        void predictProbsInto(double[] x, double[] outProbs) {
             double[] a = x;
 
             for (int l = 0; l < hiddenLayers.length; l++) {
@@ -1075,9 +1134,7 @@ public final class TrainedDagSimulatorGNM {
                 logits[c] = z;
             }
 
-            double[] probs = new double[k];
-            softmaxInto(logits, probs);
-            return probs;
+            softmaxInto(logits, outProbs);
         }
 
         void sgdStep(DataSet data, int[] rows, int start, int end,
@@ -1437,12 +1494,19 @@ public final class TrainedDagSimulatorGNM {
         double residMean;
         double residSd;
 
-        ContinuousMechanism(int childIndex, int[] parentIdx, InputEncoder encoder, Random rng){
+        // reusable simulation buffers
+        private final double[] workX;
+        private final double[] workXE;
+
+        ContinuousMechanism(int childIndex, int[] parentIdx, InputEncoder encoder, Random rng) {
             super(childIndex, parentIdx, encoder);
 
             int[] layers = params.getHiddenLayers();
             this.netMean = new MlpRegressor(encoder.featureDim, layers, rng);
             this.netGNM = new MlpRegressor(encoder.featureDim + 1, layers, rng);
+
+            this.workX = new double[encoder.featureDim];
+            this.workXE = new double[encoder.featureDim + 1];
         }
 
         @Override
@@ -1556,12 +1620,14 @@ public final class TrainedDagSimulatorGNM {
         @Override
         void generateOneRow(DataSet data, double[] contRow, int[] discRow, Random rng) {
             // parent features from already-generated parents
-            double[] x = encoder.encodeFromGenerated(contRow, discRow);
+            encoder.encodeFromGenerated(contRow, discRow, workX);
 
             // optional “turn down” parent influence
             double lam = clamp01(params.lambdaParents);
             if (lam != 1.0) {
-                for (int i = 0; i < x.length; i++) x[i] *= lam;
+                for (int i = 0; i < workX.length; i++) {
+                    workX[i] *= lam;
+                }
             }
 
             // sample e from pools
@@ -1569,22 +1635,21 @@ public final class TrainedDagSimulatorGNM {
             if (residualsBySig != null) {
                 int sig = encoder.discreteSignatureFromGenerated(discRow);
                 double[] pool = residualsBySig.get(sig);
-                if (pool != null && pool.length > 0) e = pool[rng.nextInt(pool.length)];
-                else e = residuals[rng.nextInt(residuals.length)];
+                if (pool != null && pool.length > 0) {
+                    e = pool[rng.nextInt(pool.length)];
+                } else {
+                    e = residuals[rng.nextInt(residuals.length)];
+                }
             } else {
                 e = residuals[rng.nextInt(residuals.length)];
             }
 
             double eStd = (e - residMean) / residSd;
 
-            double[] xe = new double[x.length + 1];
-            System.arraycopy(x, 0, xe, 0, x.length);
-            xe[x.length] = eStd;
+            System.arraycopy(workX, 0, workXE, 0, workX.length);
+            workXE[workX.length] = eStd;
 
-            double yGen = netGNM.predict(xe);
-
-            // If you want a tiny anchor to the unconditional mean (rarely needed), you can blend:
-            // yGen = (1.0 - lam) * baseMean + lam * yGen;
+            double yGen = netGNM.predict(workXE);
             contRow[childIndex] = yGen;
         }
 
@@ -1627,13 +1692,21 @@ public final class TrainedDagSimulatorGNM {
 
         double[] baseProbs; // empirical p(y) over training rows
 
+        // reusable simulation buffers
+        private final double[] workX;
+        private final double[] workPNet;
+        private final double[] workPMix;
+
         DiscreteMechanism(int childIndex, int[] parentIdx, InputEncoder encoder, int numLevels, Random rng) {
             super(childIndex, parentIdx, encoder);
             this.numLevels = numLevels;
-//            this.net = new MlpSoftmaxClassifier(encoder.featureDim, hidden, numLevels, rng);
 
             int[] layers = params.getHiddenLayers();
             this.net = new MlpSoftmaxClassifier(encoder.featureDim, layers, numLevels, rng);
+
+            this.workX = new double[encoder.featureDim];
+            this.workPNet = new double[numLevels];
+            this.workPMix = new double[numLevels];
         }
 
         @Override
@@ -1686,28 +1759,31 @@ public final class TrainedDagSimulatorGNM {
 
         @Override
         void generateOneRow(DataSet data, double[] contRow, int[] discRow, Random rng) {
-            double[] x = encoder.encodeFromGenerated(contRow, discRow);
-            double[] pNet = net.predictProbs(x);
+            encoder.encodeFromGenerated(contRow, discRow, workX);
+            net.predictProbsInto(workX, workPNet);
 
             double lam = clamp01(params.lambdaParents);
 
             // p = (1-lam)*pBase + lam*pNet
-            double[] pMix = new double[numLevels];
             double sum = 0.0;
             for (int k = 0; k < numLevels; k++) {
-                double v = (1.0 - lam) * baseProbs[k] + lam * pNet[k];
-                pMix[k] = v;
+                double v = (1.0 - lam) * baseProbs[k] + lam * workPNet[k];
+                workPMix[k] = v;
                 sum += v;
             }
+
             if (sum > 0) {
                 double inv = 1.0 / sum;
-                for (int k = 0; k < numLevels; k++) pMix[k] *= inv;
+                for (int k = 0; k < numLevels; k++) {
+                    workPMix[k] *= inv;
+                }
             } else {
-                // fallback uniform
-                for (int k = 0; k < numLevels; k++) pMix[k] = 1.0 / numLevels;
+                for (int k = 0; k < numLevels; k++) {
+                    workPMix[k] = 1.0 / numLevels;
+                }
             }
 
-            discRow[childIndex] = sampleCategorical(pMix, rng);
+            discRow[childIndex] = sampleCategorical(workPMix, rng);
         }
 
         private double[] empiricalProbs(DataSet data, TrainingRows tr, int col, int K) {
