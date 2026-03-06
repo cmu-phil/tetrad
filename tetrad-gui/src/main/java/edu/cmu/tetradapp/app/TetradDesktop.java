@@ -101,7 +101,8 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 
         // Do Layout.
         setLayout(new BorderLayout());
-        this.desktopPane.setDesktopManager(new DefaultDesktopManager());
+//        this.desktopPane.setDesktopManager(new DefaultDesktopManager());
+        this.desktopPane.setDesktopManager(new BoundedDesktopManager());
         this.desktopPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
         this.desktopPane.addPropertyChangeListener(this);
 
@@ -205,7 +206,6 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     public void addEditorWindow(EditorWindowIndirectRef windowRef, int layer) {
         EditorWindow window = (EditorWindow) windowRef;
 
-//	Dimension desktopSize = desktopPane.getSize();
         Dimension preferredSize = window.getPreferredSize();
 
         Component source = window.getCenteringComp();
@@ -687,6 +687,79 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         }
 
     }
+
+    // This prevents editor windows from being dragged off the top of the screen.
+    private static final class BoundedDesktopManager extends DefaultDesktopManager {
+
+        @Serial
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public void dragFrame(JComponent f, int newX, int newY) {
+            super.dragFrame(f, newX, Math.max(0, newY));
+        }
+
+        @Override
+        public void setBoundsForFrame(JComponent f, int newX, int newY, int newWidth, int newHeight) {
+            super.setBoundsForFrame(f, newX, Math.max(0, newY), newWidth, newHeight);
+        }
+    }
+
+    // This makes editor windows never go our of bounds, which is draconian since they can sensibly
+    // be dragged off to the right or to the left or down. It's dragging up that's the problem, since
+    // then they cannot be dragged back into a place where the close button can be clicked.
+//    private final class BoundedDesktopManager extends DefaultDesktopManager {
+//
+//        @Serial
+//        private static final long serialVersionUID = 1L;
+//
+//        private static final int TOP_GUTTER = 0;
+//        private static final int LEFT_GUTTER = 0;
+//        private static final int RIGHT_GUTTER = 0;
+//        private static final int BOTTOM_GUTTER = 0;
+//
+//        @Override
+//        public void dragFrame(JComponent f, int newX, int newY) {
+//            Rectangle bounded = getBoundedBounds(f, newX, newY, f.getWidth(), f.getHeight());
+//            super.dragFrame(f, bounded.x, bounded.y);
+//        }
+//
+//        @Override
+//        public void setBoundsForFrame(JComponent f, int newX, int newY, int newWidth, int newHeight) {
+//            Rectangle bounded = getBoundedBounds(f, newX, newY, newWidth, newHeight);
+//            super.setBoundsForFrame(f, bounded.x, bounded.y, bounded.width, bounded.height);
+//        }
+//
+//        private Rectangle getBoundedBounds(JComponent f, int x, int y, int width, int height) {
+//            Container parent = f.getParent();
+//
+//            if (parent == null) {
+//                return new Rectangle(x, y, width, height);
+//            }
+//
+//            Insets insets = parent.getInsets();
+//            int minX = insets.left + LEFT_GUTTER;
+//            int minY = insets.top + TOP_GUTTER;
+//
+//            int maxX = parent.getWidth() - insets.right - RIGHT_GUTTER - width;
+//            int maxY = parent.getHeight() - insets.bottom - BOTTOM_GUTTER - height;
+//
+//            // If the frame is larger than the desktop in a dimension, pin it to the minimum.
+//            if (maxX < minX) {
+//                x = minX;
+//            } else {
+//                x = Math.max(minX, Math.min(x, maxX));
+//            }
+//
+//            if (maxY < minY) {
+//                y = minY;
+//            } else {
+//                y = Math.max(minY, Math.min(y, maxY));
+//            }
+//
+//            return new Rectangle(x, y, width, height);
+//        }
+//    }
 
 }
 
