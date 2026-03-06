@@ -401,8 +401,8 @@ public final class TrainedDagSimulatorGNM {
     }
 
     public static final class Params {
-        public int hidden = 16;              // backward compatibility
-        public int[] hiddenLayers = new int[]{64};    // e.g. new int[]{32, 32}
+        public int hidden = 64;
+        public int[] hiddenLayers = null;
 
         public int epochs = 200;
         public double lr = 0.01;
@@ -742,6 +742,77 @@ public final class TrainedDagSimulatorGNM {
         }
     }
 
+    private static final class EncodedRegressionData {
+        final double[][] X;
+        final double[] y;
+        final int[] rows;   // original dataset row indices
+        final int n;
+
+        EncodedRegressionData(double[][] X, double[] y, int[] rows) {
+            this.X = X;
+            this.y = y;
+            this.rows = rows;
+            this.n = rows.length;
+        }
+    }
+
+    private static final class EncodedClassificationData {
+        final double[][] X;
+        final int[] y;
+        final int[] rows;   // original dataset row indices
+        final int n;
+
+        EncodedClassificationData(double[][] X, int[] y, int[] rows) {
+            this.X = X;
+            this.y = y;
+            this.rows = rows;
+            this.n = rows.length;
+        }
+    }
+
+    private static EncodedRegressionData buildEncodedRegressionData(
+            DataSet data, InputEncoder encoder, int childIndex, TrainingRows tr) {
+
+        int n = tr.n;
+        double[][] X = new double[n][encoder.featureDim];
+        double[] y = new double[n];
+        int[] rows = tr.rows.clone();
+
+        for (int i = 0; i < n; i++) {
+            int row = rows[i];
+            encoder.encodeRow(data, row, X[i]);
+            y[i] = data.getDouble(row, childIndex);
+        }
+
+        return new EncodedRegressionData(X, y, rows);
+    }
+
+    private static EncodedClassificationData buildEncodedClassificationData(
+            DataSet data, InputEncoder encoder, int childIndex, TrainingRows tr) {
+
+        int n = tr.n;
+        double[][] X = new double[n][encoder.featureDim];
+        int[] y = new int[n];
+        int[] rows = tr.rows.clone();
+
+        for (int i = 0; i < n; i++) {
+            int row = rows[i];
+            encoder.encodeRow(data, row, X[i]);
+            y[i] = safeGetInt(data, row, childIndex);
+        }
+
+        return new EncodedClassificationData(X, y, rows);
+    }
+
+    private static void shuffleIndices(int[] order, Random rng) {
+        for (int i = order.length - 1; i > 0; i--) {
+            int j = rng.nextInt(i + 1);
+            int t = order[i];
+            order[i] = order[j];
+            order[j] = t;
+        }
+    }
+
     private static final class MlpRegressor {
         final int din;
         final int[] hiddenLayers;
@@ -891,6 +962,14 @@ public final class TrainedDagSimulatorGNM {
                 }
 
                 deltaNext = newDeltaNext;
+            }
+        }
+
+        void sgdStep(double[][] X, double[] y, int[] order, int start, int end,
+                     double lr, double l2) {
+            for (int t = start; t < end; t++) {
+                int i = order[t];
+                sgdStepOne(X[i], y[i], lr, l2);
             }
         }
     }
@@ -1099,6 +1178,16 @@ public final class TrainedDagSimulatorGNM {
                 }
 
                 deltaNext = newDeltaNext;
+            }
+        }
+
+        void sgdStep(double[][] X, int[] y, int[] order, int start, int end,
+                     double lr, double l2) {
+            for (int t = start; t < end; t++) {
+                int i = order[t];
+                int yi = y[i];
+                if (yi < 0 || yi >= k) continue;
+                sgdStepOne(X[i], yi, lr, l2);
             }
         }
     }
@@ -1374,25 +1463,35 @@ public final class TrainedDagSimulatorGNM {
                 return;
             }
 
-            // -------------------------
+            // ---------------------------------
+            // Pre-encode X and y once
+            // ---------------------------------
+            EncodedRegressionData encData = buildEncodedRegressionData(data, encoder, childIndex, tr);
+            double[][] X = encData.X;
+            double[] y = encData.y;
+            int[] rows = encData.rows;
+            int n = encData.n;
+
+            int[] order = new int[n];
+            for (int i = 0; i < n; i++) order[i] = i;
+
+            // ---------------------------------
             // Stage 1: fit mu(x)
-            // -------------------------
+            // ---------------------------------
             for (int ep = 0; ep < p.epochs; ep++) {
-                tr.shuffle(rng);
-                for (int start = 0; start < tr.n; start += p.batchSize) {
-                    int end = Math.min(tr.n, start + p.batchSize);
-                    netMean.sgdStep(data, tr.rows, start, end, encoder, childIndex, p.lr, p.l2);
+                shuffleIndices(order, rng);
+                for (int start = 0; start < n; start += p.batchSize) {
+                    int end = Math.min(n, start + p.batchSize);
+                    netMean.sgdStep(X, y, order, start, end, p.lr, p.l2);
                 }
             }
 
-            // -------------------------
-            // Compute residuals e = y - mu(x)
-            // -------------------------
-            residuals = new double[tr.n];
+            // ---------------------------------
+            // Residuals e = y - mu(x)
+            // ---------------------------------
+            residuals = new double[n];
             residByRow = new double[data.getNumRows()];
             Arrays.fill(residByRow, Double.NaN);
-
-            double[] x = new double[encoder.featureDim];
 
             double sse = 0.0;
             double sumE = 0.0, sumE2 = 0.0;
@@ -1400,32 +1499,27 @@ public final class TrainedDagSimulatorGNM {
             boolean doStrata = p.stratifyResidualsByDiscreteParents && encoder.hasAnyDiscreteParents();
             Map<Integer, ArrayList<Double>> tmpStrata = doStrata ? new HashMap<>() : null;
 
-            for (int i = 0; i < tr.n; i++) {
-                int row = tr.rows[i];
-                encoder.encodeRow(data, row, x);
-                double yhat = netMean.predict(x);
-                double y = data.getDouble(row, childIndex);
-                double e = y - yhat;
+            for (int i = 0; i < n; i++) {
+                double yhat = netMean.predict(X[i]);
+                double e = y[i] - yhat;
 
                 residuals[i] = e;
-                residByRow[row] = e;
+                residByRow[rows[i]] = e;
 
                 sse += e * e;
                 sumE += e;
                 sumE2 += e * e;
 
                 if (doStrata) {
-                    int sig = discreteSignatureFromDataRow(data, row, encoder);
+                    int sig = discreteSignatureFromDataRow(data, rows[i], encoder);
                     tmpStrata.computeIfAbsent(sig, k -> new ArrayList<>()).add(e);
                 }
             }
 
-            // residual stats for feeding e into g
-            residMean = sumE / tr.n;
-            double varE = (tr.n > 1) ? (sumE2 - tr.n * residMean * residMean) / (tr.n - 1.0) : 1.0;
+            residMean = sumE / n;
+            double varE = (n > 1) ? (sumE2 - n * residMean * residMean) / (n - 1.0) : 1.0;
             residSd = Math.sqrt(Math.max(1e-12, varE));
 
-            // optional stratified pools
             if (doStrata && tmpStrata.size() <= p.maxResidualStrata) {
                 residualsBySig = new HashMap<>();
                 for (Map.Entry<Integer, ArrayList<Double>> ent : tmpStrata.entrySet()) {
@@ -1438,38 +1532,23 @@ public final class TrainedDagSimulatorGNM {
                 residualsBySig = null;
             }
 
-            // report (keep the same report fields you already expose)
-            double mse = sse / tr.n;
-            double mean = residMean;
-            double sd = residSd;
-            addNodeReportContinuous(childIndex, parentIdx, tr.n, mse, mean, sd);
+            double mse = sse / n;
+            addNodeReportContinuous(childIndex, parentIdx, n, mse, residMean, residSd);
 
-            // -------------------------
-            // Stage 2: fit g(x, e) to predict y
-            //   input = [encodedParents, eStd]
-            // -------------------------
+            // ---------------------------------
+            // Stage 2: build XE once, fit g(x,e)
+            // ---------------------------------
+            double[][] XE = new double[n][encoder.featureDim + 1];
+            for (int i = 0; i < n; i++) {
+                System.arraycopy(X[i], 0, XE[i], 0, encoder.featureDim);
+                XE[i][encoder.featureDim] = (residuals[i] - residMean) / residSd;
+            }
+
             for (int ep = 0; ep < p.epochs; ep++) {
-                tr.shuffle(rng);
-                for (int start = 0; start < tr.n; start += p.batchSize) {
-                    int end = Math.min(tr.n, start + p.batchSize);
-
-                    for (int t = start; t < end; t++) {
-                        int row = tr.rows[t];
-
-                        encoder.encodeRow(data, row, x);
-                        double y = data.getDouble(row, childIndex);
-
-                        double e = residByRow[row];
-                        if (!Double.isFinite(e)) e = 0.0;
-                        double eStd = (e - residMean) / residSd;
-
-                        // build extended feature vector [x, eStd]
-                        double[] xe = new double[encoder.featureDim + 1];
-                        System.arraycopy(x, 0, xe, 0, encoder.featureDim);
-                        xe[encoder.featureDim] = eStd;
-
-                        netGNM.sgdStepOne(xe, y, p.lr, p.l2);
-                    }
+                shuffleIndices(order, rng);
+                for (int start = 0; start < n; start += p.batchSize) {
+                    int end = Math.min(n, start + p.batchSize);
+                    netGNM.sgdStep(XE, y, order, start, end, p.lr, p.l2);
                 }
             }
         }
@@ -1569,32 +1648,40 @@ public final class TrainedDagSimulatorGNM {
                 return;
             }
 
+            // ---------------------------------
+            // Pre-encode X and y once
+            // ---------------------------------
+            EncodedClassificationData encData = buildEncodedClassificationData(data, encoder, childIndex, tr);
+            double[][] X = encData.X;
+            int[] y = encData.y;
+            int n = encData.n;
+
+            int[] order = new int[n];
+            for (int i = 0; i < n; i++) order[i] = i;
+
             for (int ep = 0; ep < p.epochs; ep++) {
-                tr.shuffle(rng);
-                for (int start = 0; start < tr.n; start += p.batchSize) {
-                    int end = Math.min(tr.n, start + p.batchSize);
-                    net.sgdStep(data, tr.rows, start, end, encoder, childIndex, p.lr, p.l2);
+                shuffleIndices(order, rng);
+                for (int start = 0; start < n; start += p.batchSize) {
+                    int end = Math.min(n, start + p.batchSize);
+                    net.sgdStep(X, y, order, start, end, p.lr, p.l2);
                 }
             }
 
-            // Cross-entropy on training rows (net only)
+            // Cross-entropy on training rows
             double xent = 0.0;
             int used = 0;
-            double[] x = new double[encoder.featureDim];
 
-            for (int i = 0; i < tr.n; i++) {
-                int row = tr.rows[i];
-                encoder.encodeRow(data, row, x);
-                int y = safeGetInt(data, row, childIndex);
-                if (y < 0 || y >= numLevels) continue;
+            for (int i = 0; i < n; i++) {
+                int yi = y[i];
+                if (yi < 0 || yi >= numLevels) continue;
 
-                double[] probs = net.predictProbs(x);
-                xent += -Math.log(Math.max(1e-300, probs[y]));
+                double[] probs = net.predictProbs(X[i]);
+                xent += -Math.log(Math.max(1e-300, probs[yi]));
                 used++;
             }
 
             double xentAvg = (used > 0) ? (xent / used) : Double.NaN;
-            addNodeReportDiscrete(childIndex, parentIdx, tr.n, xentAvg, numLevels);
+            addNodeReportDiscrete(childIndex, parentIdx, n, xentAvg, numLevels);
         }
 
         @Override
