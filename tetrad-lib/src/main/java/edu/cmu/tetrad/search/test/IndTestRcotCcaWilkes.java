@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
@@ -95,9 +96,9 @@ public final class IndTestRcotCcaWilkes implements IndependenceTest, RowsSettabl
         this.rng = new Random(seed);
 
         // mirror legacy names used by IndTestRcit
-        this.numFeatZ = Math.max(1, params.getInt("rcit.numF", 100));
-        this.numFeatXY = Math.max(1, params.getInt("rcit.numF2", 5));
-        this.lambda = Math.max(1e-12, params.getDouble("rcit.lambda", this.lambda));
+        this.numFeatZ = FastMath.max(1, params.getInt("rcit.numF", 100));
+        this.numFeatXY = FastMath.max(1, params.getInt("rcit.numF2", 5));
+        this.lambda = FastMath.max(1e-12, params.getDouble("rcit.lambda", this.lambda));
         this.centerFeatures = params.getBoolean("rcit.centerFeatures", true);
     }
 
@@ -118,7 +119,7 @@ public final class IndTestRcotCcaWilkes implements IndependenceTest, RowsSettabl
             }
             double mean = sum / n;
             double var = (sumsq - n * mean * mean) / (n - 1);
-            double sd = (var > 0) ? Math.sqrt(var) : 1.0;
+            double sd = (var > 0) ? FastMath.sqrt(var) : 1.0;
             for (int i = 0; i < n; i++) M.set(i, j, (M.get(i, j) - mean) / sd);
         }
     }
@@ -144,8 +145,8 @@ public final class IndTestRcotCcaWilkes implements IndependenceTest, RowsSettabl
         if (sigma <= 0 || !Double.isFinite(sigma)) sigma = 1.0;
 
         double sd = 1.0 / sigma;
-        double twoPi = 2.0 * Math.PI;
-        double scale = Math.sqrt(2.0);
+        double twoPi = 2.0 * FastMath.PI;
+        double scale = FastMath.sqrt(2.0);
 
         SimpleMatrix feat = new SimpleMatrix(n, numF);
         for (int f = 0; f < numF; f++) {
@@ -153,7 +154,7 @@ public final class IndTestRcotCcaWilkes implements IndependenceTest, RowsSettabl
             double b = rng.nextDouble() * twoPi;
             for (int i = 0; i < n; i++) {
                 double v = x.get(i, 0);
-                feat.set(i, f, scale * Math.cos(w * v + b));
+                feat.set(i, f, scale * FastMath.cos(w * v + b));
             }
         }
         return feat;
@@ -172,7 +173,7 @@ public final class IndTestRcotCcaWilkes implements IndependenceTest, RowsSettabl
             for (int j = 0; j < d; j++)
                 W.set(i, j, rng.nextGaussian() * sd);
 
-        double twoPi = 2.0 * Math.PI;
+        double twoPi = 2.0 * FastMath.PI;
         double[] b = new double[numF];
         for (int i = 0; i < numF; i++) b[i] = rng.nextDouble() * twoPi;
 
@@ -183,10 +184,10 @@ public final class IndTestRcotCcaWilkes implements IndependenceTest, RowsSettabl
                 WX.set(i, j, WX.get(i, j) + b[i]);
 
         SimpleMatrix feat = new SimpleMatrix(n, numF);
-        double scale = Math.sqrt(2.0);
+        double scale = FastMath.sqrt(2.0);
         for (int i = 0; i < numF; i++)
             for (int j = 0; j < n; j++)
-                feat.set(j, i, scale * Math.cos(WX.get(i, j)));
+                feat.set(j, i, scale * FastMath.cos(WX.get(i, j)));
 
         return feat;
     }
@@ -209,7 +210,7 @@ public final class IndTestRcotCcaWilkes implements IndependenceTest, RowsSettabl
                     double diff = A.get(i, k) - A.get(j, k);
                     ss += diff * diff;
                 }
-                double dist = Math.sqrt(ss);
+                double dist = FastMath.sqrt(ss);
                 if (dist > 0 && Double.isFinite(dist)) dists.add(dist);
             }
         }
@@ -221,7 +222,7 @@ public final class IndTestRcotCcaWilkes implements IndependenceTest, RowsSettabl
 
     /** Approx median pairwise Euclidean distance using random pairs (ignores zeros). */
     private static double approxMedianPairwiseDistance(SimpleMatrix A, int maxRows, int numPairs, Random rng) {
-        int n = Math.min(A.getNumRows(), maxRows);
+        int n = FastMath.min(A.getNumRows(), maxRows);
         int d = A.getNumCols();
         if (n <= 1 || d == 0) return 1.0;
 
@@ -238,7 +239,7 @@ public final class IndTestRcotCcaWilkes implements IndependenceTest, RowsSettabl
                 double diff = A.get(i, k) - A.get(j, k);
                 ss += diff * diff;
             }
-            double dist = Math.sqrt(ss);
+            double dist = FastMath.sqrt(ss);
             if (dist > 0.0 && Double.isFinite(dist)) dists[filled++] = dist;
         }
 
@@ -332,13 +333,13 @@ public final class IndTestRcotCcaWilkes implements IndependenceTest, RowsSettabl
 
         // take k = min(p,q) largest r^2
         r2.sort(Double::compareTo);
-        int k = Math.min(p, q);
+        int k = FastMath.min(p, q);
         double logLambda = 0.0;
         for (int t = 0; t < k; t++) {
             double v = r2.get(r2.size() - 1 - t);
             double oneMinus = 1.0 - v;
             if (oneMinus <= 1e-12) oneMinus = 1e-12;
-            logLambda += Math.log(oneMinus);
+            logLambda += FastMath.log(oneMinus);
         }
 
         double c = (n - 1.0) - 0.5 * (p + q + 1.0);
@@ -367,7 +368,7 @@ public final class IndTestRcotCcaWilkes implements IndependenceTest, RowsSettabl
      *               1e-12.
      */
     public void setLambda(double lambda) {
-        this.lambda = Math.max(1e-12, lambda);
+        this.lambda = FastMath.max(1e-12, lambda);
     }
 
     /**
@@ -387,7 +388,7 @@ public final class IndTestRcotCcaWilkes implements IndependenceTest, RowsSettabl
      * @param d the desired number of features for the XY component; if the input is less than 1, it will default to 1.
      */
     public void setNumFeaturesXY(int d) {
-        this.numFeatXY = Math.max(1, d);
+        this.numFeatXY = FastMath.max(1, d);
     }
 
     /**
@@ -397,7 +398,7 @@ public final class IndTestRcotCcaWilkes implements IndependenceTest, RowsSettabl
      * @param d the desired number of features for the Z component; if the input is less than 1, it will default to 1.
      */
     public void setNumFeaturesZ(int d) {
-        this.numFeatZ = Math.max(1, d);
+        this.numFeatZ = FastMath.max(1, d);
     }
 
     /**
@@ -473,7 +474,7 @@ public final class IndTestRcotCcaWilkes implements IndependenceTest, RowsSettabl
         zscoreInPlace(Zm);
 
         // Bandwidths via median pairwise distance on first r1 rows
-        int r1 = Math.min(n, 500);
+        int r1 = FastMath.min(n, 500);
         double sigX = medianPairwiseDistance(X.rows(0, r1));
         double sigY = medianPairwiseDistance(Y.rows(0, r1));
         double sigZ = (Zm.getNumCols() == 0) ? 1.0 : medianPairwiseDistance(Zm.rows(0, r1));

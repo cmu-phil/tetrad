@@ -95,7 +95,7 @@ class TabularDataTable extends AbstractTableModel {
      * @return the number of columns in the wrapper table model. Guarantees that this number will be at least 30.
      */
     public int getColumnCount() {
-        int min = Math.min(this.minColumnCount + getNumLeadingCols(), 30 + getNumLeadingCols());
+        int min = FastMath.min(this.minColumnCount + getNumLeadingCols(), 30 + getNumLeadingCols());
 
         return (this.dataSet.getNumColumns() + getNumLeadingCols() < min) ? min
                 : this.dataSet.getNumColumns() + getNumLeadingCols() + 1;

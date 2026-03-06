@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.Histogram;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.model.DagFactorizationCompare;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -55,7 +56,7 @@ public final class DagFactorizationComparePanel extends JPanel {
         this.dag = Objects.requireNonNull(model.getGraph(), "dag");
         this.model = model;
 
-        int n0 = Math.max(1, observed.getNumRows());
+        int n0 = FastMath.max(1, observed.getNumRows());
         this.nSpinner = new JSpinner(new SpinnerNumberModel(n0, 1, 10_000_000, 50));
 
         // initial simulation (same n as observed)

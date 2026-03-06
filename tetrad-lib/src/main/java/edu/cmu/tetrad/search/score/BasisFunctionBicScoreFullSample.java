@@ -273,12 +273,12 @@ public class BasisFunctionBicScoreFullSample implements Score {
             double sigma_sq = computeVariance(residuals) + 1e-10;
 
             // Compute log-likelihood
-            double logLikelihood = -0.5 * N * (Math.log(2 * Math.PI * sigma_sq) + 1);
+            double logLikelihood = -0.5 * N * (FastMath.log(2 * FastMath.PI * sigma_sq) + 1);
             totalLikelihood += logLikelihood;
             totalDof += Z.getNumCols() + 1;
         }
 
-        return 2 * totalLikelihood - penaltyDiscount * totalDof * Math.log(N);
+        return 2 * totalLikelihood - penaltyDiscount * totalDof * FastMath.log(N);
     }
 
     /**

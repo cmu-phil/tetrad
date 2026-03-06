@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 
@@ -78,7 +79,7 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
      * @return the current instance of {@code CamAdditivePsplineBic}, allowing for method chaining
      */
     public CamAdditivePsplineBic setNumBasis(int m) {
-        this.numBasis = Math.max(4, m);
+        this.numBasis = FastMath.max(4, m);
         return this;
     }
 
@@ -90,7 +91,7 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
      * @return the current instance of {@code CamAdditivePsplineBic}, allowing for method chaining
      */
     public CamAdditivePsplineBic setPenaltyOrder(int d) {
-        this.penaltyOrder = Math.max(1, Math.min(3, d));
+        this.penaltyOrder = FastMath.max(1, FastMath.min(3, d));
         return this;
     }
 
@@ -102,7 +103,7 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
      * @return the current instance of {@code CamAdditivePsplineBic}, enabling method chaining
      */
     public CamAdditivePsplineBic setRidge(double r) {
-        this.ridge = Math.max(0.0, r);
+        this.ridge = FastMath.max(0.0, r);
         return this;
     }
 
@@ -127,7 +128,7 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
      * @return the current instance of {@code CamAdditivePsplineBic}, enabling method chaining
      */
     public CamAdditivePsplineBic setMaxBackfitIters(int it) {
-        this.maxBackfitIters = Math.max(1, it);
+        this.maxBackfitIters = FastMath.max(1, it);
         return this;
     }
 
@@ -140,7 +141,7 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
      * @return the current instance of {@code CamAdditivePsplineBic}, allowing for method chaining
      */
     public CamAdditivePsplineBic setTol(double t) {
-        this.tol = Math.max(1e-8, t);
+        this.tol = FastMath.max(1e-8, t);
         return this;
     }
 
@@ -176,7 +177,7 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
                 double e = val(i, yIndex) - mean;
                 rss += e * e;
             }
-            double bic = N * Math.log(Math.max(1e-300, rss / N)) + penaltyDiscount * Math.log(N) * 1.0;
+            double bic = N * FastMath.log(FastMath.max(1e-300, rss / N)) + penaltyDiscount * FastMath.log(N) * 1.0;
             return bic;
         }
 
@@ -240,7 +241,7 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
                 double e = y[i] - (mu + sumfk);
                 rss += e * e;
             }
-            if (Math.abs(prevRss - rss) / Math.max(1.0, prevRss) < tol) break;
+            if (FastMath.abs(prevRss - rss) / FastMath.max(1.0, prevRss) < tol) break;
             prevRss = rss;
         }
 
@@ -255,7 +256,7 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
         double edf = 1.0; // intercept
         for (ParentBlock b : blocks) edf += b.edf;
 
-        double bic = N * Math.log(Math.max(1e-300, rss / N)) + penaltyDiscount * Math.log(N) * edf;
+        double bic = N * FastMath.log(FastMath.max(1e-300, rss / N)) + penaltyDiscount * FastMath.log(N) * edf;
         return bic;
     }
 
@@ -300,7 +301,7 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
         double[] x = new double[N];
         for (int i = 0; i < N; i++) x[i] = (xRaw[i] - xmin) / span; // scale to [0,1]
 
-        int K = Math.max(2, m - degree - 1);
+        int K = FastMath.max(2, m - degree - 1);
         double[] knots = knotsOpenUniform(K, degree);
 
         int M = m;
@@ -374,7 +375,7 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
             double edf = trace(S);
 
             // Keep edf within sensible bounds to avoid N - edf → 0
-            edf = Math.max(0.0, Math.min(edf, Math.min(pb.M - edfEps, N - 2.0)));
+            edf = FastMath.max(0.0, FastMath.min(edf, FastMath.min(pb.M - edfEps, N - 2.0)));
 
             // RSS = || r - B beta ||^2
             double rss = 0.0;
@@ -385,8 +386,8 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
                 rss += e * e;
             }
 
-            double denom = Math.max(gcvMinDenom, N - Math.min(N - 1.0, edf));
-            double gcv = (rss / N) / Math.pow(denom / N, 2.0);
+            double denom = FastMath.max(gcvMinDenom, N - FastMath.min(N - 1.0, edf));
+            double gcv = (rss / N) / FastMath.pow(denom / N, 2.0);
 
             if (gcv < bestGcv) {
                 bestGcv = gcv;
@@ -473,12 +474,12 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
     private static double[] logspace(double a, double b, int k) {
         double[] out = new double[k];
         double da = (b - a) / (k - 1);
-        for (int i = 0; i < k; i++) out[i] = Math.pow(10.0, a + da * i);
+        for (int i = 0; i < k; i++) out[i] = FastMath.pow(10.0, a + da * i);
         return out;
     }
 
     private static double trace(DMatrixRMaj A) {
-        int n = Math.min(A.numRows, A.numCols);
+        int n = FastMath.min(A.numRows, A.numCols);
         double s = 0;
         for (int i = 0; i < n; i++) s += A.get(i, i);
         return s;

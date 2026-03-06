@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlockSpecTextCodec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.Timer;
@@ -773,7 +774,7 @@ public final class BlockSpecEditorPanel extends JPanel {
             int pos = textPane.getCaretPosition();
             String ins = sel;
             if (pos > 0) {
-                String prev = doc.getText(Math.max(0, pos - 1), 1);
+                String prev = doc.getText(FastMath.max(0, pos - 1), 1);
                 if (!prev.isBlank() && !prev.equals(",") && !prev.equals(":")) ins = ", " + ins;
                 else if (prev.equals(":")) ins = " " + ins;
             }
@@ -858,8 +859,8 @@ public final class BlockSpecEditorPanel extends JPanel {
         private void drawSquiggle(Graphics2D g2, int x0, int x1, int y) {
             int cur = x0;
             while (cur < x1) {
-                int mid = Math.min(x1, cur + wavelength / 2);
-                int nxt = Math.min(x1, cur + wavelength);
+                int mid = FastMath.min(x1, cur + wavelength / 2);
+                int nxt = FastMath.min(x1, cur + wavelength);
                 g2.drawLine(cur, y, mid, y + amplitude);
                 g2.drawLine(mid, y + amplitude, nxt, y);
                 cur = nxt;

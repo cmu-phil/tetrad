@@ -21,6 +21,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.util.JOptionUtils;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -276,7 +277,7 @@ public class EditorUtils {
     }
 
     private static String commonPrefix(String s1, String s2) {
-        int minLength = Math.min(s1.length(), s2.length());
+        int minLength = FastMath.min(s1.length(), s2.length());
         int i = 0;
         while (i < minLength && s1.charAt(i) == s2.charAt(i)) {
             i++;

@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
 
@@ -385,7 +386,7 @@ public class Gin {
             double p = test.computePValue(e, Z1);
             if (!Double.isFinite(p)) return 1.0;
             if (p < 0.0) return 0.0;
-            return Math.min(p, 1.0);
+            return FastMath.min(p, 1.0);
         } catch (InterruptedException ex) {
             throw new RuntimeException(ex);
         }
@@ -404,7 +405,7 @@ public class Gin {
             double q = p;
             if (!Double.isFinite(q) || q <= 0.0) q = 1e-5;
             if (q < 1e-5) q = 1e-5;  // cap small p-values
-            stat += -2.0 * Math.log(q);
+            stat += -2.0 * FastMath.log(q);
             k++;
         }
         double df = 2.0 * k;

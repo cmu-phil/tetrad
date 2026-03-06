@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -221,7 +222,7 @@ public class PdagPagIda {
     public LinkedList<Double> getAbsTotalEffects(Node x, Node y) {
         LinkedList<Double> eff = getTotalEffects(x, y);
         LinkedList<Double> out = new LinkedList<>();
-        for (double d : eff) out.add(Math.abs(d));
+        for (double d : eff) out.add(FastMath.abs(d));
         Collections.sort(out);
         return out;
     }

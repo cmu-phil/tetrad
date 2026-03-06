@@ -11,6 +11,7 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
@@ -262,7 +263,7 @@ public class VertexRepairSearch implements IGraphSearch {
     private static int editSize(ScoredCandidate s) {
         try {
             if (s.edit() != null && s.edit().getEdges() != null) {
-                return Math.max(1, s.edit().getEdges().size());
+                return FastMath.max(1, s.edit().getEdges().size());
             }
         } catch (Throwable ignored) {
         }
@@ -288,12 +289,12 @@ public class VertexRepairSearch implements IGraphSearch {
 
         final double eps = 1e-12;
 
-        double q = Math.min(1.0 - eps, Math.max(eps, p));
-        double a = Math.min(1.0 - eps, Math.max(eps, alpha));
+        double q = FastMath.min(1.0 - eps, FastMath.max(eps, p));
+        double a = FastMath.min(1.0 - eps, FastMath.max(eps, alpha));
 
         // log(p/(1-p)) - log(alpha/(1-alpha))
-        return (Math.log(q) - Math.log(1.0 - q))
-                - (Math.log(a) - Math.log(1.0 - a));
+        return (FastMath.log(q) - FastMath.log(1.0 - q))
+                - (FastMath.log(a) - FastMath.log(1.0 - a));
     }
 
     private static double modelDeltaValueOrNaN(ScoredCandidate s) {
@@ -848,7 +849,7 @@ public class VertexRepairSearch implements IGraphSearch {
         List<VertexRepairSearch.ScoredCandidate> ranked = new ArrayList<>(scored);
         ranked.sort(CANONICAL_TABLE_ORDER);
 
-        final int topK = Math.min(DEFAULT_MODELP_TOP_K, ranked.size());
+        final int topK = FastMath.min(DEFAULT_MODELP_TOP_K, ranked.size());
         final LinkedHashSet<String> keysToEval = new LinkedHashSet<>();
 
         // 2a) top-K (table-surfaced set)

@@ -478,7 +478,7 @@ public class TsUtils {
 
 //    public static TimeLagGraph graphToLagGraph(Graph _graph, int numLags) {
 //        // Backward-compatible default: roughly matches your old ~0.15 density when n~10
-//        final double defaultAvgOutDeg = 0.15 * Math.max(0, _graph.getNodes().size() - 1);
+//        final double defaultAvgOutDeg = 0.15 * FastMath.max(0, _graph.getNodes().size() - 1);
 //        final int noHardMax = -1;
 //        return graphToLagGraph(_graph, numLags, defaultAvgOutDeg, noHardMax, 0.05);
 //    }

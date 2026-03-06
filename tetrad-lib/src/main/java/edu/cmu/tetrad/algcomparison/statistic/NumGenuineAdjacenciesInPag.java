@@ -27,7 +27,7 @@ import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
-import static java.lang.Math.tanh;
+import static org.apache.commons.math3.util.FastMath.tanh;
 
 /**
  * The number of genuine adjacencies in an estimated PAG compared to the true PAG. These are edges that are not induced

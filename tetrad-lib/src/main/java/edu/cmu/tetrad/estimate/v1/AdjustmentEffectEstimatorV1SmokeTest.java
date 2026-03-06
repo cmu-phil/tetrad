@@ -13,6 +13,7 @@ package edu.cmu.tetrad.estimate.v1;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Test;
 
 import java.util.*;
@@ -119,12 +120,12 @@ public class AdjustmentEffectEstimatorV1SmokeTest {
         assertTrue("v1: OR ATE should be finite", Double.isFinite(res.ateOr));
         assertTrue("v1: DR ATE should be finite", Double.isFinite(res.ateDr));
 
-        assertTrue("v1: OR ATE magnitude unexpectedly huge", Math.abs(res.ateOr) < 50);
-        assertTrue("v1: DR ATE magnitude unexpectedly huge", Math.abs(res.ateDr) < 50);
+        assertTrue("v1: OR ATE magnitude unexpectedly huge", FastMath.abs(res.ateOr) < 50);
+        assertTrue("v1: DR ATE magnitude unexpectedly huge", FastMath.abs(res.ateDr) < 50);
 
         // v1: in-the-ballpark checks (tolerances are generous; this is a smoke test)
-        assertTrue("v1: OR ATE should be reasonably close to truth", Math.abs(res.ateOr - tauTrue) < 0.35);
-        assertTrue("v1: DR ATE should be reasonably close to truth", Math.abs(res.ateDr - tauTrue) < 0.25);
+        assertTrue("v1: OR ATE should be reasonably close to truth", FastMath.abs(res.ateOr - tauTrue) < 0.35);
+        assertTrue("v1: DR ATE should be reasonably close to truth", FastMath.abs(res.ateDr - tauTrue) < 0.25);
 
         // v1: overlap diagnostics
         assertTrue("v1: propensity range must be within [0,1]", res.minProp >= 0.0 && res.maxProp <= 1.0);
@@ -194,7 +195,7 @@ public class AdjustmentEffectEstimatorV1SmokeTest {
                 AdjustmentEffectEstimatorV1.estimateAteV1(data, X, Y, Z, cfg);
 
         assertTrue("v1: DR ATE should be finite under clipping", Double.isFinite(res.ateDr));
-        assertTrue("v1: DR ATE should not explode under clipping", Math.abs(res.ateDr) < 200);
+        assertTrue("v1: DR ATE should not explode under clipping", FastMath.abs(res.ateDr) < 200);
         assertTrue("v1: should clip some propensities in near-violation scenario", res.fracClipped > 0.0);
     }
 
@@ -294,10 +295,10 @@ public class AdjustmentEffectEstimatorV1SmokeTest {
 
         private static double sigmoid(double x) {
             if (x >= 0) {
-                double z = Math.exp(-x);
+                double z = FastMath.exp(-x);
                 return 1.0 / (1.0 + z);
             } else {
-                double z = Math.exp(x);
+                double z = FastMath.exp(x);
                 return z / (1.0 + z);
             }
         }

@@ -151,7 +151,7 @@ public final class BayesProperties {
         int df = paramsSat - rModel.dof();
 
         // Numerical & sanity guards
-        if (chisq < 0 && Math.abs(chisq) < 1e-9) chisq = 0.0;
+        if (chisq < 0 && FastMath.abs(chisq) < 1e-9) chisq = 0.0;
         if (chisq < 0) {
             throw new IllegalStateException("Negative LR statistic: check log-likelihood calculations.");
         }
@@ -163,7 +163,7 @@ public final class BayesProperties {
         this.dof = df;
 
         // ... after computing chisq and df ...
-        if (chisq < 0 && Math.abs(chisq) < 1e-9) chisq = 0.0;
+        if (chisq < 0 && FastMath.abs(chisq) < 1e-9) chisq = 0.0;
         if (chisq < 0) throw new IllegalStateException("Negative LR statistic.");
         if (df < 0) throw new IllegalStateException("Negative DOF: parameter counting mismatch.");
 
@@ -333,7 +333,7 @@ public final class BayesProperties {
             if (nr == 0) continue;
             for (int c : counts) {
                 if (c > 0) {
-                    ll += c * Math.log((double) c / nr);
+                    ll += c * FastMath.log((double) c / nr);
                 }
             }
         }
@@ -402,7 +402,7 @@ public final class BayesProperties {
         int N = dataSet.getNumRows();
         double ll = 0.0;
         for (int n : counts.values()) {
-            if (n > 0) ll += n * Math.log((double) n / N);
+            if (n > 0) ll += n * FastMath.log((double) n / N);
         }
         return ll;
     }

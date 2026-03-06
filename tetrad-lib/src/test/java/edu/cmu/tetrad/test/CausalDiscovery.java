@@ -20,6 +20,8 @@
 
 package edu.cmu.tetrad.test;
 
+import org.apache.commons.math3.util.FastMath;
+
 import java.util.Random;
 
 public class CausalDiscovery {
@@ -116,7 +118,7 @@ public class CausalDiscovery {
         for (int i = 2; i < p; i++) {
             int dne = 2 * countEdges(g);
             for (int j = 0; j < i; j++) {
-                double rand = Math.random();
+                double rand = FastMath.random();
                 double prob = (countEdges(g[j]) + countEdges(transpose(g)[j])) / (double) dne;
                 g[i][j] = (rand < prob) ? 1 : 0;
             }
@@ -173,14 +175,14 @@ public class CausalDiscovery {
 
         double[] E = new double[p];
         for (int i = 0; i < p; i++) {
-            E[i] = Math.random() * s + 1.0;
+            E[i] = FastMath.random() * s + 1.0;
         }
 
         double[][] B = new double[p][p];
         for (int i = 0; i < p; i++) {
             for (int j = 0; j < p; j++) {
                 if (g[i][j] == 1) {
-                    B[i][j] = Math.random() * 2 * b - b;
+                    B[i][j] = FastMath.random() * 2 * b - b;
                 }
             }
         }
@@ -210,7 +212,7 @@ public class CausalDiscovery {
         for (int i = 0; i < n; i++) {
             int maxRow = i;
             for (int j = i + 1; j < n; j++) {
-                if (Math.abs(augmented[j][i]) > Math.abs(augmented[maxRow][i])) {
+                if (FastMath.abs(augmented[j][i]) > FastMath.abs(augmented[maxRow][i])) {
                     maxRow = j;
                 }
             }
@@ -219,7 +221,7 @@ public class CausalDiscovery {
             augmented[maxRow] = temp;
 
             double pivot = augmented[i][i];
-            if (Math.abs(pivot) < 1e-12) {
+            if (FastMath.abs(pivot) < 1e-12) {
                 throw new ArithmeticException("Matrix is singular.");
             }
 

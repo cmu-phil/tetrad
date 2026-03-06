@@ -22,6 +22,7 @@ package edu.cmu.tetrad.search.ntad_test;
 
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
 
@@ -75,8 +76,8 @@ public class Wishart extends NtadTest {
         double sigma2 = (double) (n + 1) / (n - 1) * determinant(StatUtils.extractSubMatrix(S, a, a)) * determinant(StatUtils.extractSubMatrix(S, b, b))
                         - determinant(StatUtils.extractSubMatrix(S, concat(a, b), concat(a, b))) / (n - 2);
 
-        double z_score = determinant(StatUtils.extractSubMatrix(S, a, b)) / Math.sqrt(sigma2);
-        return 2 * new NormalDistribution().cumulativeProbability(-Math.abs(z_score));
+        double z_score = determinant(StatUtils.extractSubMatrix(S, a, b)) / FastMath.sqrt(sigma2);
+        return 2 * new NormalDistribution().cumulativeProbability(-FastMath.abs(z_score));
     }
 
     private int[] concat(int[] a, int[] b) {

@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleMatrix;
 import edu.cmu.tetrad.search.test.RowsSettable;
 
@@ -265,11 +266,11 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
 
         // Compute variance estimates
         double eps = 1e-20;
-        double sigma0_sq = Math.max(eps, computeResidualVariance(xIndices, zIndices, covarianceMatrix, lambda));
-        double sigma1_sq = Math.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices), covarianceMatrix, lambda));
+        double sigma0_sq = FastMath.max(eps, computeResidualVariance(xIndices, zIndices, covarianceMatrix, lambda));
+        double sigma1_sq = FastMath.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices), covarianceMatrix, lambda));
 
         // Log-likelihood ratio statistic
-        double LR_stat = sampleSize * Math.log(sigma0_sq / sigma1_sq);
+        double LR_stat = sampleSize * FastMath.log(sigma0_sq / sigma1_sq);
 
         // Degrees of freedom is the number of additional basis columns in Y
         int df = yIndices.length;

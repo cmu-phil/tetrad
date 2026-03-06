@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.model.DerivedTreatmentSpecV2;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -140,7 +141,7 @@ public final class BinarizeTreatmentDialogV2 extends JDialog {
                 int usable = pr.n0 + pr.n1;
 
                 if (usable > 0) {
-                    double minFrac = Math.min(pr.n0, pr.n1) / (double) usable;
+                    double minFrac = FastMath.min(pr.n0, pr.n1) / (double) usable;
                     if (minFrac < 0.05) {
                         int ans = JOptionPane.showConfirmDialog(
                                 this,

@@ -20,6 +20,8 @@
 
 package edu.cmu.tetrad.search;
 
+import org.apache.commons.math3.util.FastMath;
+
 /**
  * Functional interface for performing a raw marginal independence test.
  * <p>
@@ -65,8 +67,8 @@ public interface RawMarginalIndependenceTest {
             for (int i = 0; i < Y.length; i++) yj[i] = Y[i][j];
             double pj = computePValue(x, yj);
             if (Double.isNaN(pj)) continue;
-            double pc = Math.max(pj, 1e-300); // clamp low
-            stat += -2.0 * Math.log(pc);
+            double pc = FastMath.max(pj, 1e-300); // clamp low
+            stat += -2.0 * FastMath.log(pc);
             k++;
         }
         if (k == 0) return 1.0;

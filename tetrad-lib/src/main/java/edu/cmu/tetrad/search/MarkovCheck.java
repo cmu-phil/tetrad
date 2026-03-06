@@ -485,7 +485,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public List<List<Double>> getLocalPValues(IndependenceTest independenceTest, List<IndependenceFact> facts, Double shuffleThreshold) {
         // Shuffle to generate more data from the same graph.
-        int shuffleTimes = (int) Math.ceil(1 / shuffleThreshold);
+        int shuffleTimes = (int) FastMath.ceil(1 / shuffleThreshold);
         // pVals is a list of lists of the p values for each shuffled results.
         List<List<Double>> pVals_list = new ArrayList<>();
         for (int i = 0; i < shuffleTimes; i++) {
@@ -2117,7 +2117,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
         double leftTail = bd.cumulativeProbability(k);
         double rightTail = 1.0 - bd.cumulativeProbability(k - 1);
-        double pValue = Math.min(1.0, 2.0 * Math.min(leftTail, rightTail));
+        double pValue = FastMath.min(1.0, 2.0 * FastMath.min(leftTail, rightTail));
 
         return pValue;
     }
@@ -2226,7 +2226,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         double sum = 0.0;
 
         for (double pValue : pValues) {
-            sum += Math.log(pValue);
+            sum += FastMath.log(pValue);
         }
 
         double c = -2.0 * sum;

@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.DataSet;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -48,8 +49,8 @@ public final class MinimaxBinning {
         int d = zIdx.length;
 
         if (d == 0 || n == 0) return new int[0][];
-        binsPerDim = Math.max(2, binsPerDim);
-        minBinSize = Math.max(1, minBinSize);
+        binsPerDim = FastMath.max(2, binsPerDim);
+        minBinSize = FastMath.max(1, minBinSize);
 
         // Pull Z into a local array Z[n][d] (faster than repeated data.getDouble)
         double[][] Z = new double[n][d];
@@ -65,7 +66,7 @@ public final class MinimaxBinning {
             for (int i = 0; i < n; i++) col[i] = Z[i][j];
             Arrays.sort(col);
             for (int k = 1; k < binsPerDim; k++) {
-                int q = (int) Math.floor((k * (n - 1.0)) / binsPerDim);
+                int q = (int) FastMath.floor((k * (n - 1.0)) / binsPerDim);
                 edges[j][k - 1] = col[q];
             }
         }

@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunctionND;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.List;
 import java.util.Map;
@@ -220,19 +221,19 @@ public class PostnonlinearSem {
             int colIndex = nodeToIndex.get(node);
 
             // Draw parameters for this node's f2
-            double a = 0.5 + Math.abs(functionRng.nextGaussian()); // ensure strictly positive
+            double a = 0.5 + FastMath.abs(functionRng.nextGaussian()); // ensure strictly positive
             double b = functionRng.nextGaussian();
 
             // g is the activationFunction (default  cubic-perturbation-of-identity), assumed strictly monotone
 
-            double c = Math.abs(functionRng.nextGaussian()) * 0.3; // e.g. 0..~1
+            double c = FastMath.abs(functionRng.nextGaussian()) * 0.3; // e.g. 0..~1
             Function<Double, Double> g = x -> x + c * x * x * x;   // strictly increasing
             Function<Double, Double> f2 = x -> a * g.apply(x) + b;
 
 //            double outerScale = 0.5; // new param, default
 //            Function<Double, Double> f2 = x -> a * activationFunction.apply(outerScale * x) + b;
 
-//            Function<Double, Double> f2 = x -> a * Math.tanh(outerScale * x) + b;
+//            Function<Double, Double> f2 = x -> a * FastMath.tanh(outerScale * x) + b;
 
             for (int sample = 0; sample < numSamples; sample++) {
                 double value = data.getDouble(sample, colIndex);

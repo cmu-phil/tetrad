@@ -4,6 +4,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -332,7 +333,7 @@ public final class RecursiveAdjustmentMultiple {
                 Integer dx = distFromX.get(v);
                 Integer dy = distFromY.get(v);
                 if (dx == null && dy == null) continue;
-                int d = (dx == null) ? dy : (dy == null ? dx : Math.min(dx, dy));
+                int d = (dx == null) ? dy : (dy == null ? dx : FastMath.min(dx, dy));
                 distFromCenter.put(v, d);
             }
         }

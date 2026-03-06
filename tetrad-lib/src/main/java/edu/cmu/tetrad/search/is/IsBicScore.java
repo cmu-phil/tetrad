@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search.is;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -407,13 +408,13 @@ public class IsBicScore implements IsScore {
             for (int k = 0; k < K; k++) {
                 final int njk = n_jk[j][k];
                 if (njk == 0) continue;
-                ll += njk * (Math.log(njk) - Math.log(nj));
+                ll += njk * (FastMath.log(njk) - FastMath.log(nj));
             }
         }
 
         // Parameters: r_p * (K - 1)
         final int nParams = r_p * (K - 1);
-        return ll - 0.5 * penaltyDiscount * nParams * Math.log(sampleSize);
+        return ll - 0.5 * penaltyDiscount * nParams * FastMath.log(sampleSize);
     }
 
     private double structurePrior(final int nodeIndex, final int[] parentsIS,
@@ -436,9 +437,9 @@ public class IsBicScore implements IsScore {
         }
         for (int p : popP) if (!isParentsSet.contains(p)) removed++;
 
-        return added   * Math.log(kAddition)
-               + removed * Math.log(kDeletion)
-               + reversed* Math.log(kReorient);
+        return added   * FastMath.log(kAddition)
+               + removed * FastMath.log(kDeletion)
+               + reversed* FastMath.log(kReorient);
     }
 
     // ----------------------- Small utilities -----------------------

@@ -708,7 +708,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
      */
     public double getLikelihood(int i, int[] parents) throws SingularMatrixException {
         double sigmaSquared = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets, lambda);
-        return -0.5 * this.nEff * (Math.log(2 * Math.PI * sigmaSquared) + 1);
+        return -0.5 * this.nEff * (FastMath.log(2 * FastMath.PI * sigmaSquared) + 1);
 //        return -(double) (this.nEff / 2.0) * log(sigmaSquared);
     }
 

@@ -6,6 +6,7 @@ import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.distribution.RealDistribution;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 
@@ -85,8 +86,8 @@ public class AdditiveNoiseSimulation {
         if (q >= 1.0) return tmp[n - 1];
 
         double pos = q * (n - 1);
-        int lo = (int) Math.floor(pos);
-        int hi = (int) Math.ceil(pos);
+        int lo = (int) FastMath.floor(pos);
+        int hi = (int) FastMath.ceil(pos);
         if (hi == lo) return tmp[lo];
         double w = pos - lo;
         return tmp[lo] * (1.0 - w) + tmp[hi] * w;
@@ -105,7 +106,7 @@ public class AdditiveNoiseSimulation {
                                                boolean fastTanh) {
         final int n = A.getNumElements();
         if (fastTanh) {
-            for (int i = 0; i < n; i++) A.data[i] = Math.tanh(A.data[i]);
+            for (int i = 0; i < n; i++) A.data[i] = FastMath.tanh(A.data[i]);
         } else {
             for (int i = 0; i < n; i++) A.data[i] = f.apply(A.data[i]);
         }
@@ -118,12 +119,12 @@ public class AdditiveNoiseSimulation {
         for (double x : xs) {
             double fx = f.apply(x);
             if (!Double.isFinite(fx)) return false;
-            if (Math.abs(fx) > 1.000001) return false;
+            if (FastMath.abs(fx) > 1.000001) return false;
         }
         // oddness check at 0.5 and 1.0
         double a = f.apply(0.5), b = f.apply(-0.5);
         double c = f.apply(1.0), d = f.apply(-1.0);
-        return Math.abs(a + b) < 1e-6 && Math.abs(c + d) < 1e-6;
+        return FastMath.abs(a + b) < 1e-6 && FastMath.abs(c + d) < 1e-6;
     }
 
     /**
@@ -153,7 +154,7 @@ public class AdditiveNoiseSimulation {
 
             if (var < 1e-12) continue; // avoid division by ~0
 
-            double invSd = 1.0 / Math.sqrt(var);
+            double invSd = 1.0 / FastMath.sqrt(var);
             k = j;
             for (int i = 0; i < N; i++, k += D) {
                 A.data[k] = (A.data[k] - mean) * invSd;
@@ -269,7 +270,7 @@ public class AdditiveNoiseSimulation {
         private static void heInit(DMatrixRMaj W, Random r, double scale, boolean tanhLike) {
             // tanh prefers sqrt(1 / fan_in), ReLU prefers sqrt(2 / fan_in)
             double base = tanhLike ? 1.0 : 2.0;
-            double s = scale * Math.sqrt(base / Math.max(1, W.numCols));
+            double s = scale * FastMath.sqrt(base / FastMath.max(1, W.numCols));
             for (int i = 0, n = W.getNumElements(); i < n; i++) {
                 W.data[i] = r.nextGaussian() * s;
             }

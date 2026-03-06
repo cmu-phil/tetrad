@@ -118,7 +118,7 @@ public class Bpc {
         this.ess = ess == -1 ? sampleSize : ess;
 
         // Implementation knobs (paper-faithful defaults)
-        this.alphaPairs = Math.min(this.alpha * 2.0, 0.20); // looser than tetrad alpha
+        this.alphaPairs = FastMath.min(this.alpha * 2.0, 0.20); // looser than tetrad alpha
         this.deltaMerge = 0.02; // small allowed drop in avg|r| when merging
     }
 
@@ -387,7 +387,7 @@ public class Bpc {
                 double q = .5 * (FastMath.log(1.0 + abs(r)) - FastMath.log(1.0 - abs(r)));
                 double df = n - 3.0; // no conditioning
                 double fisherZ = sqrt(df) * q;
-                double pTwoSided = 2 * (1.0 - this.normal.cumulativeProbability(Math.abs(fisherZ)));
+                double pTwoSided = 2 * (1.0 - this.normal.cumulativeProbability(FastMath.abs(fisherZ)));
                 if (pTwoSided > alpha) return false;
             }
         }
@@ -409,7 +409,7 @@ public class Bpc {
                 double q = .5 * (FastMath.log(1.0 + abs(r)) - FastMath.log(1.0 - abs(r)));
                 double df = n - 3.0;
                 double fisherZ = sqrt(df) * q;
-                double pTwoSided = 2 * (1.0 - this.normal.cumulativeProbability(Math.abs(fisherZ)));
+                double pTwoSided = 2 * (1.0 - this.normal.cumulativeProbability(FastMath.abs(fisherZ)));
                 boolean dep = pTwoSided <= alphaPairs; // looser screen than tetrads
                 canLink[i][j] = canLink[j][i] = dep;
             }
@@ -443,7 +443,7 @@ public class Bpc {
                     double meanU = avgAbsCorrGroup(u);
                     double meanA = avgAbsCorrGroup(current.get(a));
                     double meanB = avgAbsCorrGroup(current.get(b));
-                    if (meanU + deltaMerge >= Math.min(meanA, meanB)) {
+                    if (meanU + deltaMerge >= FastMath.min(meanA, meanB)) {
                         candidates.add(new int[]{a, b});
                         mergesConsidered.increment();
                     }
@@ -468,7 +468,7 @@ public class Bpc {
                         double meanU = avgAbsCorrGroup(u);
                         double meanA = avgAbsCorrGroup(current.get(a));
                         double meanB = avgAbsCorrGroup(current.get(b));
-                        if (meanU + deltaMerge >= Math.min(meanA, meanB)) {
+                        if (meanU + deltaMerge >= FastMath.min(meanA, meanB)) {
                             current.set(a, u);
                             current.remove(b);
                             used[a] = true; // mark the merged slot; indexes shift for >b, but we prevent reuse
@@ -574,7 +574,7 @@ public class Bpc {
         int c = 0;
         for (int u : group) {
             if (u == v) continue;
-            s += Math.abs(S.get(v, u));
+            s += FastMath.abs(S.get(v, u));
             c++;
         }
         return c == 0 ? Double.NEGATIVE_INFINITY : s / c;
@@ -589,7 +589,7 @@ public class Bpc {
             int vi = list.get(i);
             for (int j = i + 1; j < list.size(); j++) {
                 int vj = list.get(j);
-                s += Math.abs(S.get(vi, vj));
+                s += FastMath.abs(S.get(vi, vj));
                 c++;
             }
         }

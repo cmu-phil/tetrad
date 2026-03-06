@@ -1267,7 +1267,7 @@ public final class StatUtils {
     public static double calculateMoment(double[] data, int i) {
         double sum = 0.0;
         for (double value : data) {
-            sum += Math.pow(value, i);
+            sum += FastMath.pow(value, i);
         }
         return sum / data.length; // Mean of powers
     }
@@ -1284,7 +1284,7 @@ public final class StatUtils {
         double mean = calculateMoment(data, 1); // First moment is the mean
         double sum = 0.0;
         for (double value : data) {
-            sum += Math.pow(value - mean, i); // (x - mean)^i
+            sum += FastMath.pow(value - mean, i); // (x - mean)^i
         }
         return sum / data.length; // Average
     }
@@ -1311,13 +1311,13 @@ public final class StatUtils {
             case 4: // Kurtosis-related cumulant
                 double mu2 = calculateCentralMoment(data, 2);
                 double mu4 = calculateCentralMoment(data, 4);
-                return mu4 - 3 * Math.pow(mu2, 2);
+                return mu4 - 3 * FastMath.pow(mu2, 2);
             case 5: // Fifth cumulant
                 double mu1 = calculateMoment(data, 1); // Mean
                 double mu2b = calculateCentralMoment(data, 2);
                 double mu3 = calculateCentralMoment(data, 3);
                 double mu5 = calculateCentralMoment(data, 5);
-                return mu5 - 10 * mu2b * mu3 - 15 * Math.pow(mu2b, 2) * mu1 - 10 * mu3 * Math.pow(mu1, 2) + 30 * mu2b * Math.pow(mu1, 3);
+                return mu5 - 10 * mu2b * mu3 - 15 * FastMath.pow(mu2b, 2) * mu1 - 10 * mu3 * FastMath.pow(mu1, 2) + 30 * mu2b * FastMath.pow(mu1, 3);
             default:
                 throw new IllegalArgumentException("Cumulant calculation for i > 5 is not implemented");
         }

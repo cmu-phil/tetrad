@@ -114,7 +114,7 @@ public class GeneralizedAdditiveModelSimulator implements Simulation {
 //        switch (noiseKind) {
 //            case "gaussian": {
 //                // N(0, sigma^2)
-//                return new NormalDistribution(0.0, Math.max(1e-8, sigma));
+//                return new NormalDistribution(0.0, FastMath.max(1e-8, sigma));
 //            }
 //            case "student_t": {
 //                // df ∈ (2, 30], larger df ~ more Gaussian. Use slider’s inverse for df.
@@ -123,7 +123,7 @@ public class GeneralizedAdditiveModelSimulator implements Simulation {
 //                if (df <= 2.1) df = 2.1; // ensure finite variance
 //                TDistribution base = new TDistribution(df);
 //                // Base t has sd = sqrt(df/(df-2)). Scale so final sd = sigma.
-//                final double baseSd = Math.sqrt(df / (df - 2.0));
+//                final double baseSd = FastMath.sqrt(df / (df - 2.0));
 //                return new TransformedOnlyForSampling(base, 0.0, baseSd, sigma);
 //            }
 //            case "beta":
@@ -134,7 +134,7 @@ public class GeneralizedAdditiveModelSimulator implements Simulation {
 //                BetaDistribution base = new BetaDistribution(a, b);
 //                double mu = a / (a + b);
 //                double var = (a * b) / ((a + b) * (a + b) * (a + b + 1.0));
-//                double sd = Math.sqrt(Math.max(var, 1e-12));
+//                double sd = FastMath.sqrt(FastMath.max(var, 1e-12));
 //                return new TransformedOnlyForSampling(base, mu, sd, sigma);
 //            }
 //        }
@@ -357,7 +357,7 @@ public class GeneralizedAdditiveModelSimulator implements Simulation {
         };
 
         // ---------- 3) Nonlinearity slider -> adjust units & scale ----------
-        int unitsPerEdge = clampInt((int) Math.round(baseUnits + 6.0 * nonlin), 3, 20);
+        int unitsPerEdge = clampInt((int) FastMath.round(baseUnits + 6.0 * nonlin), 3, 20);
         double edgeScale = clamp(baseEdgeScale + 0.8 * (nonlin - 0.5), 0.2, 2.0);
 
         try {
@@ -422,8 +422,8 @@ public class GeneralizedAdditiveModelSimulator implements Simulation {
         TransformedOnlyForSampling(RealDistribution base, double muBase, double sdBase, double sigma) {
             this.base = base;
             this.muBase = muBase;
-            this.sdBase = Math.max(sdBase, 1e-12);
-            this.sigma = Math.max(sigma, 1e-12);
+            this.sdBase = FastMath.max(sdBase, 1e-12);
+            this.sigma = FastMath.max(sigma, 1e-12);
         }
 
         @Override

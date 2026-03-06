@@ -20,6 +20,8 @@
 
 package edu.cmu.tetrad.search.utils;
 
+import org.apache.commons.math3.util.FastMath;
+
 import java.util.Random;
 import java.util.stream.DoubleStream;
 
@@ -94,8 +96,8 @@ public class RandomFourier {
     public double compute(double x) {
         double result = 0.0;
         for (int i = 0; i < numTerms; i++) {
-            result += cosAmplitudes[i] * Math.cos(frequencies[i] * x)
-                      + sinAmplitudes[i] * Math.sin(frequencies[i] * x);
+            result += cosAmplitudes[i] * FastMath.cos(frequencies[i] * x)
+                      + sinAmplitudes[i] * FastMath.sin(frequencies[i] * x);
         }
         return result;
     }

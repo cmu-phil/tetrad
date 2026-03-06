@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -289,7 +290,7 @@ public final class BlocksUtil {
                     takenNames.add(variable.getName());
 
                     int rk = estimateRankSafe(S, n, newBlock, others, alpha);
-                    outRanks.add(Math.max(0, rk));
+                    outRanks.add(FastMath.max(0, rk));
                 }
 
                 return new BlockSpec(dataSet, outBlocks, outLatents, outRanks);
@@ -314,7 +315,7 @@ public final class BlocksUtil {
 
                 int[] others = toIndexArray(allMinus(unused, all));
                 int rk = estimateRankSafe(S, n, noise, others, alpha);
-                outRanks.add(Math.max(0, rk));
+                outRanks.add(FastMath.max(0, rk));
 
                 return new BlockSpec(dataSet, outBlocks, outLatents, outRanks);
             }
@@ -331,9 +332,9 @@ public final class BlocksUtil {
         int[] blk = toIndexArray(block);
 
         if (others != null && others.length > 0) {
-            return Math.max(0, edu.cmu.tetrad.util.RankTests.estimateWilksRank(S, blk, others, nRows, alpha));
+            return FastMath.max(0, edu.cmu.tetrad.util.RankTests.estimateWilksRank(S, blk, others, nRows, alpha));
         } else {
-            return Math.max(0, edu.cmu.tetrad.util.RankTests.estimateWilksRank(S, blk, new int[0], nRows, alpha));
+            return FastMath.max(0, edu.cmu.tetrad.util.RankTests.estimateWilksRank(S, blk, new int[0], nRows, alpha));
         }
     }
 

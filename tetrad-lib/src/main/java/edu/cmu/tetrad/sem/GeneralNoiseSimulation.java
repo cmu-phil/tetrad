@@ -5,13 +5,14 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 
 import java.util.*;
 import java.util.function.Function;
 
-import static java.lang.Math.abs;
+import static org.apache.commons.math3.util.FastMath.abs;
 
 /**
  * General-noise simulator: X_j = f_j(Pa(X_j), e_j)
@@ -112,8 +113,8 @@ public class GeneralNoiseSimulation {
         // Very low-cost signature test.
         double a = f.apply(1.0);
         double b = f.apply(-0.7);
-        return abs(a - Math.tanh(1.0)) < 1e-12
-                && abs(b - Math.tanh(-0.7)) < 1e-12;
+        return abs(a - FastMath.tanh(1.0)) < 1e-12
+                && abs(b - FastMath.tanh(-0.7)) < 1e-12;
     }
 
     private static void addBiasRowsInPlace(DMatrixRMaj A, double[] b) {
@@ -133,7 +134,7 @@ public class GeneralNoiseSimulation {
                                                boolean fastTanh) {
         final int n = A.getNumElements();
         if (fastTanh) {
-            for (int i = 0; i < n; i++) A.data[i] = Math.tanh(A.data[i]);
+            for (int i = 0; i < n; i++) A.data[i] = FastMath.tanh(A.data[i]);
         } else {
             for (int i = 0; i < n; i++) A.data[i] = f.apply(A.data[i]);
         }
@@ -147,10 +148,10 @@ public class GeneralNoiseSimulation {
         int sat = 0;
 
         for (int i = 0; i < total; i++) {
-            if (Math.abs(activations.data[i]) >= absThreshold) sat++;
+            if (FastMath.abs(activations.data[i]) >= absThreshold) sat++;
         }
 
-        double pct = 100.0 * sat / Math.max(1, total);
+        double pct = 100.0 * sat / FastMath.max(1, total);
 
         System.out.printf(
                 Locale.US,
@@ -254,17 +255,17 @@ public class GeneralNoiseSimulation {
         }
 
         private static void heInit(DMatrixRMaj W, Random r, double scale) {
-            double s = scale * Math.sqrt(2.0 / Math.max(1, W.numCols));
+            double s = scale * FastMath.sqrt(2.0 / FastMath.max(1, W.numCols));
             for (int i = 0, n = W.getNumElements(); i < n; i++) {
                 W.data[i] = r.nextGaussian() * s;
             }
         }
 
         private static void xavierInit(DMatrixRMaj W, Random r, double scale) {
-            int fanIn = Math.max(1, W.numCols);
-            int fanOut = Math.max(1, W.numRows);
+            int fanIn = FastMath.max(1, W.numCols);
+            int fanOut = FastMath.max(1, W.numRows);
 
-            double std = scale * Math.sqrt(2.0 / (fanIn + fanOut));
+            double std = scale * FastMath.sqrt(2.0 / (fanIn + fanOut));
 
             for (int i = 0, n = W.getNumElements(); i < n; i++) {
                 W.data[i] = r.nextGaussian() * std;

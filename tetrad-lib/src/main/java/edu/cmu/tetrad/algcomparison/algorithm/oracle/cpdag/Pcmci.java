@@ -18,6 +18,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -94,7 +95,7 @@ public class Pcmci implements Algorithm, TakesIndependenceWrapper, HasKnowledge 
             throw new IllegalArgumentException("PCMCI requires a DataSet.");
         }
 
-        final int maxLag = Math.max(1, parameters.getInt(Params.TIME_LAG, 1));
+        final int maxLag = FastMath.max(1, parameters.getInt(Params.TIME_LAG, 1));
         final int maxCondSize = parameters.getInt(Params.DEPTH, 3);
         final double alpha = parameters.getDouble(Params.ALPHA, 0.05);
         final boolean verbose = parameters.getBoolean(Params.VERBOSE, false);

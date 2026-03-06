@@ -207,7 +207,7 @@ public class HistogramPanel extends JPanel {
     private static int getMax(int[] freqs) {
         int max = freqs.length == 0 ? 0 : freqs[0];
         for (int i = 1; i < freqs.length; i++) {
-            max = Math.max(max, freqs[i]);
+            max = FastMath.max(max, freqs[i]);
         }
         return max;
     }
@@ -301,7 +301,7 @@ public class HistogramPanel extends JPanel {
 
             int topY = height - paddingY - (int) FastMath.ceil(scale * topFreq) + 1;
             String top = String.valueOf(topFreq);
-            g2d.drawString(top, paddingX - fm.stringWidth(top), Math.max(10, topY - 2));
+            g2d.drawString(top, paddingX - fm.stringWidth(top), FastMath.max(10, topY - 2));
             g2d.drawLine(paddingX - dash, topY, paddingX, topY);
 
             g2d.drawString("0", paddingX - fm.stringWidth("0"), height - paddingY + fm.getAscent() / 2);
@@ -324,7 +324,7 @@ public class HistogramPanel extends JPanel {
                 int yLabel = height - 2; // bottom
                 g2d.drawString(sMin, paddingX, yLabel);
                 int maxX = width - fm.stringWidth(sMax);
-                g2d.drawString(sMax, Math.max(paddingX + 5, maxX), yLabel);
+                g2d.drawString(sMax, FastMath.max(paddingX + 5, maxX), yLabel);
             }
         }
     }
@@ -333,8 +333,8 @@ public class HistogramPanel extends JPanel {
         if (Double.isNaN(v)) return "";
         // Keep it simple; you can swap for NumberFormatUtil if you prefer
         // For p-values, this will show nicely as 0 and 1.
-        if (Math.abs(v) < 1e-9) return "0";
-        if (Math.abs(v - 1.0) < 1e-9) return "1";
+        if (FastMath.abs(v) < 1e-9) return "0";
+        if (FastMath.abs(v - 1.0) < 1e-9) return "1";
         return String.format("%.3g", v);
     }
 

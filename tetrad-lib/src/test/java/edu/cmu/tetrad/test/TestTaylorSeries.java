@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.util.TaylorSeries;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -46,7 +47,7 @@ public class TestTaylorSeries {
         // Example 2: Derivatives for e^x at a = 1 (f^(n)(a) = e^1 = e for all n)
         int numTerms = 30;
         double[] derivatives2 = new double[numTerms];
-        Arrays.fill(derivatives2, Math.E);
+        Arrays.fill(derivatives2, FastMath.E);
 
         double x2 = 1.5; // Point to evaluate the Taylor series
         double a2 = 1.0; // Center of the series
@@ -54,11 +55,11 @@ public class TestTaylorSeries {
         System.out.println("f(" + x + ") = " + TaylorSeries.get(derivatives2, a2).evaluate(x2));
 
         double result = TaylorSeries.get(derivatives2, a2).evaluate(x2);
-        System.out.println("Taylor series approximation: " + result + ", actual value: " + Math.exp(x2));
+        System.out.println("Taylor series approximation: " + result + ", actual value: " + FastMath.exp(x2));
 
         TaylorSeries.get(derivatives2, a2).printSeries();
 
-        assertEquals(Math.exp(x2), TaylorSeries.get(derivatives2, a2).evaluate(x2), 1e-10);
+        assertEquals(FastMath.exp(x2), TaylorSeries.get(derivatives2, a2).evaluate(x2), 1e-10);
     }
 }
 

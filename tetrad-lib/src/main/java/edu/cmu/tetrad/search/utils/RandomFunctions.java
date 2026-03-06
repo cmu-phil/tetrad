@@ -24,6 +24,7 @@ import org.apache.commons.math3.distribution.MultivariateNormalDistribution;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.CholeskyDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -60,7 +61,7 @@ public class RandomFunctions {
         }
         double result = 0;
         for (int i = 0; i < coefficients.length; i++) {
-            result += coefficients[i] * Math.pow(x, i);
+            result += coefficients[i] * FastMath.pow(x, i);
         }
         return result;
     }
@@ -89,7 +90,7 @@ public class RandomFunctions {
         }
         double result = 0;
         for (int k = 1; k <= numTerms; k++) {
-            result += a[k - 1] * Math.cos(k * x) + b[k - 1] * Math.sin(k * x);
+            result += a[k - 1] * FastMath.cos(k * x) + b[k - 1] * FastMath.sin(k * x);
         }
         return result;
     }
@@ -157,12 +158,12 @@ public class RandomFunctions {
 
         double fAtZero = 0;
         for (int i = 0; i < numCenters; i++) {
-            fAtZero += amplitudes[i] * Math.exp(-Math.pow(centers[i], 2) / (2 * Math.pow(sigma, 2)));
+            fAtZero += amplitudes[i] * FastMath.exp(-FastMath.pow(centers[i], 2) / (2 * FastMath.pow(sigma, 2)));
         }
 
         double result = 0;
         for (int i = 0; i < numCenters; i++) {
-            result += amplitudes[i] * Math.exp(-Math.pow(x - centers[i], 2) / (2 * Math.pow(sigma, 2)));
+            result += amplitudes[i] * FastMath.exp(-FastMath.pow(x - centers[i], 2) / (2 * FastMath.pow(sigma, 2)));
         }
 
         if (passThroughOrigin) {
@@ -183,7 +184,7 @@ public class RandomFunctions {
      * @return the computed RBF kernel value as a double.
      */
     private static double rbfKernel(double x1, double x2, double lengthScale) {
-        return Math.exp(-Math.pow(x1 - x2, 2) / (2 * Math.pow(lengthScale, 2)));
+        return FastMath.exp(-FastMath.pow(x1 - x2, 2) / (2 * FastMath.pow(lengthScale, 2)));
     }
 
     /**
@@ -266,10 +267,10 @@ public class RandomFunctions {
         if (passThroughOrigin) {
             // Find the index of the closest value to 0
             int closestIndex = 0;
-            double minDistance = Math.abs(x[0]);
+            double minDistance = FastMath.abs(x[0]);
             for (int i = 1; i < n; i++) {
-                if (Math.abs(x[i]) < minDistance) {
-                    minDistance = Math.abs(x[i]);
+                if (FastMath.abs(x[i]) < minDistance) {
+                    minDistance = FastMath.abs(x[i]);
                     closestIndex = i;
                 }
             }

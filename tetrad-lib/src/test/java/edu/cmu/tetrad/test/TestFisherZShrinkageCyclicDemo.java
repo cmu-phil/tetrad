@@ -33,11 +33,12 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Test;
 
 import java.util.*;
 
-import static java.lang.Math.abs;
+import static org.apache.commons.math3.util.FastMath.abs;
 
 public class TestFisherZShrinkageCyclicDemo {
 
@@ -193,7 +194,7 @@ public class TestFisherZShrinkageCyclicDemo {
     private static boolean acceptIndependence(double p, Double rhoAbs) {
         // p > alpha AND (optional) |rho| <= TAU_R
         if (p <= ALPHA) return false;
-        if (TAU_R != null && rhoAbs != null && Math.abs(rhoAbs) > TAU_R) return false;
+        if (TAU_R != null && rhoAbs != null && FastMath.abs(rhoAbs) > TAU_R) return false;
         return true;
     }
 
@@ -208,7 +209,7 @@ public class TestFisherZShrinkageCyclicDemo {
             }
             var ci = (CI) o;
             String cond = ci.cond.isEmpty() ? "â" : prettySet(ci.cond);
-            String rho = (ci.r == null) ? "" : String.format(Locale.US, "  |Ï|=%7.4f", Math.abs(ci.r));
+            String rho = (ci.r == null) ? "" : String.format(Locale.US, "  |Ï|=%7.4f", FastMath.abs(ci.r));
             System.out.printf(Locale.US, "  %s â %s | %s : p=%8.5f%s%n",
                     ci.a.getName(), ci.b.getName(), cond, ci.p, rho);
         }
@@ -228,7 +229,7 @@ public class TestFisherZShrinkageCyclicDemo {
 
     private static String fmtR(Double r) {
         if (r == null) return "";
-        return String.format(Locale.US, "   |Ï| = %7.4f", Math.abs(r));
+        return String.format(Locale.US, "   |Ï| = %7.4f", FastMath.abs(r));
     }
 
     // âFDR on large pâsâ: apply BH to p' = 1 - p, i.e., prefer *larger* p-values.
@@ -326,7 +327,7 @@ public class TestFisherZShrinkageCyclicDemo {
         double sumAbsR_xw_yz = 0.0, sumP_xw_yz = 0.0;
 
         // Keep some example rows to show Peter
-        final int K = Math.min(5, N_TRIALS);
+        final int K = FastMath.min(5, N_TRIALS);
         List<String> sampleRows = new ArrayList<>();
 
         for (int t = 0; t < N_TRIALS; t++) {

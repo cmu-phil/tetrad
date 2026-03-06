@@ -28,6 +28,7 @@ import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetradapp.session.SessionModel;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -136,7 +137,7 @@ public class HybridCgImWrapper implements SessionModel, Cloneable, Serializable 
                     double sum = 0.0;
                     double[] tmp = new double[K];
                     for (int k = 0; k < K; k++) {
-                        double v = -Math.log(1.0 - rng.nextDouble());
+                        double v = -FastMath.log(1.0 - rng.nextDouble());
                         tmp[k] = v;
                         sum += v;
                     }

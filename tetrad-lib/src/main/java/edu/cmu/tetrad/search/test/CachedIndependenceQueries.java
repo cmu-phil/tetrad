@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
 import java.util.*;
@@ -542,8 +543,8 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
         Integer iy = idOfName(f.getY());
         if (ix == null || iy == null) return null;
 
-        int a = Math.min(ix, iy);
-        int b = Math.max(ix, iy);
+        int a = FastMath.min(ix, iy);
+        int b = FastMath.max(ix, iy);
 
         Set<Node> zset = f.getZ();
         if (zset == null || zset.isEmpty()) {

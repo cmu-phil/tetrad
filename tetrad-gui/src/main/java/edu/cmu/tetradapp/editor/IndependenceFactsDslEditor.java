@@ -46,6 +46,7 @@ import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.ParameterComponents;
 import edu.cmu.tetradapp.util.WatchedProcess;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -667,7 +668,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
         resultsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
         // Optional: nicer row height for readability
-        resultsTable.setRowHeight(Math.max(resultsTable.getRowHeight(), 20));
+        resultsTable.setRowHeight(FastMath.max(resultsTable.getRowHeight(), 20));
 
         // Column indices: "#", "Fact", "Engine", "Result", "p-value / score", "Error"
         int[] pref = {40, 200, 90, 110, 130, 200};
@@ -980,7 +981,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
             @Override
             public void watch() {
 
-                List<ResultRow> out = new ArrayList<>(Math.min(limit, lastExpanded.size()));
+                List<ResultRow> out = new ArrayList<>(FastMath.min(limit, lastExpanded.size()));
                 int idx = 1;
 
                 for (FactSpec fs : lastExpanded) {
@@ -1139,7 +1140,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
         String rest = normalized.substring(sep + 4).trim();
 
         if (left.isEmpty()) {
-            problems.add(error("Missing left variable.", lineIndex, baseOffset, baseOffset + Math.min(1, line.length())));
+            problems.add(error("Missing left variable.", lineIndex, baseOffset, baseOffset + FastMath.min(1, line.length())));
             return new TemplateParseResult(null, problems);
         }
 

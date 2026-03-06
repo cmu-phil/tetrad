@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -274,7 +275,7 @@ public final class LatentNameAssigner {
 
                 final String base = uniqueOrFallback(baseCandidate, origCandidate, used, config);
 
-                final int r = (ranksOut != null && ranksOut.get(bi) != null) ? Math.max(1, ranksOut.get(bi)) : 1;
+                final int r = (ranksOut != null && ranksOut.get(bi) != null) ? FastMath.max(1, ranksOut.get(bi)) : 1;
 
                 for (int j = 0; j < r; j++) {
                     final String candidate;

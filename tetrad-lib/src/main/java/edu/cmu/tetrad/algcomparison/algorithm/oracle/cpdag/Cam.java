@@ -19,6 +19,7 @@ import edu.cmu.tetrad.search.score.AdditiveLocalScorer;
 import edu.cmu.tetrad.search.score.CamAdditivePsplineBic;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -82,8 +83,8 @@ public class Cam extends AbstractBootstrapAlgorithm implements Algorithm,
         final int maxParents = 20;//parameters.getInt(Params.MAX_PARENTS, 20);
 
         // PNS strength: keep top-K univariate candidates per target (set to large value to effectively disable)
-        final int pnsTopK = Math.min(10, Math.max(1, data.getNumColumns() - 1));//parameters.getInt(Params.PNS_TOP_K,
-//                Math.min(10, Math.max(1, data.getNumColumns() - 1)));
+        final int pnsTopK = FastMath.min(10, FastMath.max(1, data.getNumColumns() - 1));//parameters.getInt(Params.PNS_TOP_K,
+//                FastMath.min(10, FastMath.max(1, data.getNumColumns() - 1)));
 
         // Ridge: use a dedicated param if present; otherwise tiny default
         final double ridge = parameters.getDouble(Params.GIN_RIDGE, ridgeDefault);

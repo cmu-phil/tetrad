@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RankTests;
 import edu.pitt.dbmi.data.reader.Delimiter;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleMatrix;
 import org.junit.Test;
 
@@ -116,7 +117,7 @@ public class TestRankTests {
         long[][] C = new long[n + 1][k + 1];
         for (int i = 0; i <= n; i++) {
             C[i][0] = 1;
-            int maxj = Math.min(i, k);
+            int maxj = FastMath.min(i, k);
             for (int j = 1; j <= maxj; j++) {
                 long v = C[i - 1][j - 1] + C[i - 1][j];
                 if (v < 0 || v < C[i - 1][j - 1]) v = Long.MAX_VALUE; // clamp on overflow

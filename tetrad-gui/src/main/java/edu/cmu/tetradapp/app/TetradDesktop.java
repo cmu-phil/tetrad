@@ -696,12 +696,12 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 
         @Override
         public void dragFrame(JComponent f, int newX, int newY) {
-            super.dragFrame(f, newX, Math.max(0, newY));
+            super.dragFrame(f, newX, FastMath.max(0, newY));
         }
 
         @Override
         public void setBoundsForFrame(JComponent f, int newX, int newY, int newWidth, int newHeight) {
-            super.setBoundsForFrame(f, newX, Math.max(0, newY), newWidth, newHeight);
+            super.setBoundsForFrame(f, newX, FastMath.max(0, newY), newWidth, newHeight);
         }
     }
 
@@ -748,13 +748,13 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 //            if (maxX < minX) {
 //                x = minX;
 //            } else {
-//                x = Math.max(minX, Math.min(x, maxX));
+//                x = FastMath.max(minX, FastMath.min(x, maxX));
 //            }
 //
 //            if (maxY < minY) {
 //                y = minY;
 //            } else {
-//                y = Math.max(minY, Math.min(y, maxY));
+//                y = FastMath.max(minY, FastMath.min(y, maxY));
 //            }
 //
 //            return new Rectangle(x, y, width, height);

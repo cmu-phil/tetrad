@@ -635,7 +635,7 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
 //            if (COL_Y.equals(col)) return r.formatYSet();
 //            if (COL_Z.equals(col)) return r.formatZSet();
 //            if (COL_TE.equals(col)) return est;
-//            if (COL_ABS_TE.equals(col)) return Math.abs(est);
+//            if (COL_ABS_TE.equals(col)) return FastMath.abs(est);
 //
 //            // True effect columns (PAIRWISE + true SEM only)
 //            if (COL_TRUE_TE.equals(col) || COL_ABS_TRUE_TE.equals(col)) {
@@ -655,7 +655,7 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
 //                    truth = Double.NaN;
 //                }
 //
-//                return COL_ABS_TRUE_TE.equals(col) ? Math.abs(truth) : truth;
+//                return COL_ABS_TRUE_TE.equals(col) ? FastMath.abs(truth) : truth;
 //            }
 //
 //            return null;

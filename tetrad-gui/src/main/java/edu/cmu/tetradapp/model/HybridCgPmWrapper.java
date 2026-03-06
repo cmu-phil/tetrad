@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.hybridcg.HybridCgModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.session.SessionModel;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -105,7 +106,7 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
      */
     public HybridCgPmWrapper(Graph graph, Parameters params, DataSet data) {
         this(graph, null, params); // builds PM first
-        int bins = Math.max(2, params.getInt("hybridcg.cutBins", 3));
+        int bins = FastMath.max(2, params.getInt("hybridcg.cutBins", 3));
 
         String m = params.getString("hybridcg.cutMethod", "freq").trim().toLowerCase(Locale.ROOT);
         CutMethod method = switch (m) {
@@ -262,7 +263,7 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
         if (q <= 0) return sorted[0];
         if (q >= 1) return sorted[sorted.length - 1];
         double pos = q * (sorted.length - 1);
-        int i = (int) Math.floor(pos);
+        int i = (int) FastMath.floor(pos);
         double frac = pos - i;
         if (i + 1 >= sorted.length) return sorted[i];
         return sorted[i] * (1 - frac) + sorted[i + 1] * frac;

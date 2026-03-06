@@ -23,6 +23,7 @@ package edu.cmu.tetrad.test;
 // File: RccaRankEstimatorTest.java
 
 import edu.cmu.tetrad.util.RankTests;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleMatrix;
 import org.junit.Test;
 
@@ -68,7 +69,7 @@ public class TestRccaRankEstimator {
             v[i] = z;
             norm2 += z * z;
         }
-        double inv = 1.0 / Math.sqrt(norm2);
+        double inv = 1.0 / FastMath.sqrt(norm2);
         for (int i = 0; i < dim; i++) v[i] *= inv;
         return v;
     }
@@ -103,7 +104,7 @@ public class TestRccaRankEstimator {
         }
 
         // Noise scale: for d=1 and unit signal, rho = 1/(1+Ï^2) => Ï^2 = 1/rho - 1
-        double sigma = (d >= 1 && rho > 0 && rho < 1) ? Math.sqrt(1.0 / rho - 1.0) : 1.0;
+        double sigma = (d >= 1 && rho > 0 && rho < 1) ? FastMath.sqrt(1.0 / rho - 1.0) : 1.0;
 
         for (int i = 0; i < n; i++) {
             // Latents
@@ -254,7 +255,7 @@ public class TestRccaRankEstimator {
                 double dlt = v - mean;
                 var += dlt * dlt;
             }
-            double sd = Math.sqrt(var / Math.max(1, trials - 1));
+            double sd = FastMath.sqrt(var / FastMath.max(1, trials - 1));
             double frac2 = exact2 / (double) trials;
 
             System.out.printf("d=2 recovery: n=%d  mean=%.3f  sd=%.3f  P{est=2}=%.3f%n",

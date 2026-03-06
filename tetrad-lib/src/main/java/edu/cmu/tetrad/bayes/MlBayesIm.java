@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -315,7 +316,7 @@ public final class MlBayesIm implements BayesIm {
         double[] row = new double[size];
         double sum = 0.0;
 
-        int strong = (int) Math.floor(random.nextDouble() * size);
+        int strong = (int) FastMath.floor(random.nextDouble() * size);
 
         for (int i = 0; i < size; i++) {
             if (i == strong) {

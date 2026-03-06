@@ -117,7 +117,7 @@ public class Ricf {
             for (int i = 0; i < p; i++) {
                 double d = L.get(i, i);
                 if (!(d > 0.0) || Double.isNaN(d)) throw new RuntimeException("non-SPD");
-                sumLogDiag += Math.log(d);
+                sumLogDiag += FastMath.log(d);
             }
             logdetK = 2.0 * sumLogDiag;
         } catch (Exception e) {
@@ -132,10 +132,10 @@ public class Ricf {
                         new cern.colt.matrix.linalg.CholeskyDecomposition(Ks);
                 DoubleMatrix2D L2 = chol2.getL();
                 double sumLogDiag2 = 0.0;
-                for (int i = 0; i < p; i++) sumLogDiag2 += Math.log(Math.max(1e-300, L2.get(i, i)));
+                for (int i = 0; i < p; i++) sumLogDiag2 += FastMath.log(FastMath.max(1e-300, L2.get(i, i)));
                 logdetK = 2.0 * sumLogDiag2;
             } catch (Exception e2) {
-                logdetK = Math.log(Math.max(1e-300, Math.abs(A.det(Ks))));
+                logdetK = FastMath.log(FastMath.max(1e-300, FastMath.abs(A.det(Ks))));
             }
         }
 

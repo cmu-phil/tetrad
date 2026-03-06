@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
@@ -378,7 +379,7 @@ public final class RicfEjml {
             SimpleMatrix S_par_v = select(S, parv, new int[]{v}); // |par| x 1
             double Svv = S.get(v, v);
             double sub = betaRow.mult(S_par_v).get(0, 0);
-            Omega.set(v, v, Math.max(1e-8, Svv - sub));
+            Omega.set(v, v, FastMath.max(1e-8, Svv - sub));
         }
     }
 
@@ -427,7 +428,7 @@ public final class RicfEjml {
 
         // Case 1: vector -> diagonal matrix
         if (rows == 1 || cols == 1) {
-            int n = Math.max(rows, cols);
+            int n = FastMath.max(rows, cols);
             SimpleMatrix D = new SimpleMatrix(n, n);
 
             for (int i = 0; i < n; i++) {

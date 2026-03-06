@@ -290,7 +290,7 @@ public class AdditiveNoiseSimulation implements Simulation {
             hiddenDimensions[i] = Integer.parseInt(hiddenDimensionsSplit[i].trim());
         }
 
-        Function<Double, Double> activation = Math::tanh;// x -> Math.max(0.1 * x, x);
+        Function<Double, Double> activation = Math::tanh;// x -> FastMath.max(0.1 * x, x);
 
         try {
             Sampler sampler = new ExpressionSampler(parameters.getString("noiseExpression"));

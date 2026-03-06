@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search.unmix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 import java.util.function.Function;
@@ -70,15 +71,15 @@ public final class ParentSupersetBuilder {
             for (int k = 0; k < p; k++)
                 if (k != j) {
                     double s = switch (cfg.scoreType) {
-                        case PEARSON -> Math.abs(pearson(column(X, k), y));
-                        case SPEARMAN -> Math.abs(spearman(column(X, k), y));
-                        case KENDALL -> Math.abs(kendallTau(column(X, k), y));
+                        case PEARSON -> FastMath.abs(pearson(column(X, k), y));
+                        case SPEARMAN -> FastMath.abs(spearman(column(X, k), y));
+                        case KENDALL -> FastMath.abs(kendallTau(column(X, k), y));
                     };
                     scores[k] = s;
                 }
 
             // take topM indices by score
-            int m = Math.min(cfg.topM, Math.max(0, p - 1));
+            int m = FastMath.min(cfg.topM, FastMath.max(0, p - 1));
             List<Integer> idxs = argTopK(scores, m, j);
             List<Node> cand = idxs.stream().map(vars::get).collect(Collectors.toList());
             superset.put(target, cand);
@@ -88,7 +89,7 @@ public final class ParentSupersetBuilder {
         if (cfg.useBagging && cfg.shallowSearch != null && cfg.bags > 0 && cfg.bagFraction > 0.0) {
             Random rnd = new Random(cfg.seed);
             int n = data.getNumRows();
-            int m = Math.max(1, (int) Math.round(cfg.bagFraction * n));
+            int m = FastMath.max(1, (int) FastMath.round(cfg.bagFraction * n));
             for (int b = 0; b < cfg.bags; b++) {
                 List<Integer> rows = sampleWithoutReplacement(n, m, rnd);
                 int[] rowArray = rows.stream().mapToInt(Integer::intValue).toArray();
@@ -127,7 +128,7 @@ public final class ParentSupersetBuilder {
         PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingDouble(a -> a[1]));
         for (int i = 0; i < s.length; i++) {
             if (i == skipIdx) continue;
-            int scoreScaled = (int) Math.round(s[i] * 1_000_000.0);
+            int scoreScaled = (int) FastMath.round(s[i] * 1_000_000.0);
             if (pq.size() < k) {
                 pq.offer(new int[]{i, scoreScaled});
             } else if (scoreScaled > pq.peek()[1]) {
@@ -169,7 +170,7 @@ public final class ParentSupersetBuilder {
         double cov = sxy - sx * sy / n;
         double vx = sxx - sx * sx / n;
         double vy = syy - sy * sy / n;
-        double den = Math.sqrt(Math.max(vx, 0.0) * Math.max(vy, 0.0));
+        double den = FastMath.sqrt(FastMath.max(vx, 0.0) * FastMath.max(vy, 0.0));
         return den > 0 ? cov / den : 0.0;
     }
 

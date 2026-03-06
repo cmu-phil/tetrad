@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Set;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
-import static java.lang.Math.signum;
+import static org.apache.commons.math3.util.FastMath.signum;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
@@ -331,7 +331,7 @@ public final class Fask {
                 double c2 = StatUtils.cov(x, y, y, 0, +1)[1];
 
                 if ((useFasAdjacencies && G0.isAdjacentTo(X, Y)) ||
-                    (useSkewAdjacencies && Math.abs(c1 - c2) > extraEdgeThreshold)) {
+                    (useSkewAdjacencies && FastMath.abs(c1 - c2) > extraEdgeThreshold)) {
 
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
@@ -467,10 +467,10 @@ public final class Fask {
 
         // -------------------- Housekeeping / guards --------------------
         final int n = x.length;
-        final int minPart = (int) Math.ceil(0.15 * n); // require at least 15% of samples in X>0 and Y>0
+        final int minPart = (int) FastMath.ceil(0.15 * n); // require at least 15% of samples in X>0 and Y>0
         final double ridge = 1e-6;                      // small ridge in partial-corr inversion
         final double clampEps = 1e-6;                   // Fisher z clamp
-        final int maxSize = (depth < 0) ? cand.size() : Math.min(depth, cand.size());
+        final int maxSize = (depth < 0) ? cand.size() : FastMath.min(depth, cand.size());
 
         // -------------------- 1) Baseline: does the unconditioned pattern look cyclic? --------------------
         if (!showsCyclePattern(x, y, /*Z=*/null, minPart, ridge, clampEps)) {
@@ -517,22 +517,22 @@ public final class Fask {
         if (nxPos < minPart || nyPos < minPart) return false;
 
         // Clamp correlations for Fisher z
-        double _pc = Math.max(-1.0 + clampEps, Math.min(1.0 - clampEps, pc));
-        double _pc1 = Math.max(-1.0 + clampEps, Math.min(1.0 - clampEps, pc1));
-        double _pc2 = Math.max(-1.0 + clampEps, Math.min(1.0 - clampEps, pc2));
+        double _pc = FastMath.max(-1.0 + clampEps, FastMath.min(1.0 - clampEps, pc));
+        double _pc1 = FastMath.max(-1.0 + clampEps, FastMath.min(1.0 - clampEps, pc1));
+        double _pc2 = FastMath.max(-1.0 + clampEps, FastMath.min(1.0 - clampEps, pc2));
 
         // Fisher z
-        double z = 0.5 * (Math.log(1.0 + _pc) - Math.log(1.0 - _pc));
-        double z1 = 0.5 * (Math.log(1.0 + _pc1) - Math.log(1.0 - _pc1));
-        double z2 = 0.5 * (Math.log(1.0 + _pc2) - Math.log(1.0 - _pc2));
+        double z = 0.5 * (FastMath.log(1.0 + _pc) - FastMath.log(1.0 - _pc));
+        double z1 = 0.5 * (FastMath.log(1.0 + _pc1) - FastMath.log(1.0 - _pc1));
+        double z2 = 0.5 * (FastMath.log(1.0 + _pc2) - FastMath.log(1.0 - _pc2));
 
         // Standardized directional shifts
         int nAll = StatUtils.getRows(x, x, Double.NEGATIVE_INFINITY, +1).size();
-        double zv1 = (z - z1) / Math.sqrt((1.0 / ((double) nAll - 3)) + (1.0 / ((double) nxPos - 3)));
-        double zv2 = (z - z2) / Math.sqrt((1.0 / ((double) nAll - 3)) + (1.0 / ((double) nyPos - 3)));
+        double zv1 = (z - z1) / FastMath.sqrt((1.0 / ((double) nAll - 3)) + (1.0 / ((double) nxPos - 3)));
+        double zv2 = (z - z2) / FastMath.sqrt((1.0 / ((double) nAll - 3)) + (1.0 / ((double) nyPos - 3)));
 
-        boolean rejected1 = Math.abs(zv1) > cutoff;
-        boolean rejected2 = Math.abs(zv2) > cutoff;
+        boolean rejected1 = FastMath.abs(zv1) > cutoff;
+        boolean rejected2 = FastMath.abs(zv2) > cutoff;
 
         // "Cycle opposition pattern": opposite signs with at least one significant;
         // or both significant (even if not cleanly opposite)

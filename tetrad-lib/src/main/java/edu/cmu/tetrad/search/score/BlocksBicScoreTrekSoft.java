@@ -5,11 +5,12 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.RankTests;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
-import static java.lang.Math.abs;
+import static org.apache.commons.math3.util.FastMath.abs;
 
 /**
  * <b>BlocksBicScoreTrekSoft</b>
@@ -255,8 +256,8 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
         if (nAdj < 1.0) nAdj = 1.0;
 
         double[] suffix = ent.suffixLogs;
-        int m = Math.min(Math.min(p, q), (int) nAdj - 1);
-        m = Math.min(m, suffix.length - 1);
+        int m = FastMath.min(FastMath.min(p, q), (int) nAdj - 1);
+        m = FastMath.min(m, suffix.length - 1);
         if (m <= 0) {
             scoreCache.put(fkey, -1e-12);
             return -1e-12;
@@ -270,12 +271,12 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
             rStar += rk;
         }
         if (rStar < 0) rStar = 0;
-        rStar = Math.min(rStar, m);
+        rStar = FastMath.min(rStar, m);
 
         double best = Double.NEGATIVE_INFINITY;
         double suffix0 = suffix[0];
 
-        double logN = Math.log(Math.max(nAdj, 2.0));
+        double logN = FastMath.log(FastMath.max(nAdj, 2.0));
 
         // Sweep r = 1..m
         for (int r = 1; r <= m; r++) {
@@ -489,7 +490,7 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
         }
 
         private static long quantize(double x) {
-            return Double.doubleToLongBits(Math.rint(x * 1e12) / 1e12);
+            return Double.doubleToLongBits(FastMath.rint(x * 1e12) / 1e12);
         }
 
         @Override

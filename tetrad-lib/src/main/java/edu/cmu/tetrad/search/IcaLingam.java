@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.PermutationMatrixPair;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -99,7 +100,7 @@ public class IcaLingam {
         W = new Matrix(W);
 
         // (1) Optional gentle denoising of W
-        double wt = Math.max(0.0, this.wThreshold);
+        double wt = FastMath.max(0.0, this.wThreshold);
         if (wt > 0) {
             for (int i = 0; i < W.getNumRows(); i++) {
                 for (int j = 0; j < W.getNumColumns(); j++) {
@@ -113,7 +114,7 @@ public class IcaLingam {
         Matrix scaledBHat = IcaLingD.getScaledBHat(bestPair);
 
         // (3) Hard-threshold B̂ BEFORE trimming
-        double bt = Math.max(0.0, this.bThreshold);
+        double bt = FastMath.max(0.0, this.bThreshold);
         if (bt > 0) {
             for (int i = 0; i < scaledBHat.getNumRows(); i++) {
                 for (int j = 0; j < scaledBHat.getNumColumns(); j++) {

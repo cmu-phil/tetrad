@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
@@ -185,9 +186,9 @@ public final class TwoStep {
      * BIC for a row (no intercept): n*log(RSS/n) + k*log(n).
      */
     private static double bicForRow(double rss, int n, int k) {
-        double nSafe = Math.max(1, n);
-        double rssSafe = Math.max(rss, 1e-12);
-        return nSafe * Math.log(rssSafe / nSafe) + k * Math.log(nSafe);
+        double nSafe = FastMath.max(1, n);
+        double rssSafe = FastMath.max(rss, 1e-12);
+        return nSafe * FastMath.log(rssSafe / nSafe) + k * FastMath.log(nSafe);
     }
 
     /**
@@ -241,7 +242,7 @@ public final class TwoStep {
      */
     private static SimpleMatrix covarianceS(SimpleMatrix X) {
         int n = X.numRows();
-        return X.transpose().mult(X).divide(Math.max(1, n));
+        return X.transpose().mult(X).divide(FastMath.max(1, n));
     }
 
     /**
@@ -261,12 +262,12 @@ public final class TwoStep {
         for (int j = 0; j < p; j++) {
             double mu = 0.0, s2 = 0.0;
             for (int i = 0; i < n; i++) mu += X.get(i, j);
-            mu /= Math.max(1, n);
+            mu /= FastMath.max(1, n);
             for (int i = 0; i < n; i++) {
                 double v = X.get(i, j) - mu;
                 s2 += v * v;
             }
-            double sd = Math.sqrt(Math.max(s2 / Math.max(n - 1, 1), 1e-12));
+            double sd = FastMath.sqrt(FastMath.max(s2 / FastMath.max(n - 1, 1), 1e-12));
             for (int i = 0; i < n; i++) out.set(i, j, (X.get(i, j) - mu) / sd);
         }
         return out;
@@ -299,7 +300,7 @@ public final class TwoStep {
         for (int i = 0; i < p; i++)
             for (int j = 0; j < p; j++) {
                 if (i == j) continue;
-                if (Math.abs(B.get(i, j)) > thr) g.addDirectedEdge(vars.get(j), vars.get(i));
+                if (FastMath.abs(B.get(i, j)) > thr) g.addDirectedEdge(vars.get(j), vars.get(i));
             }
         return g;
     }
@@ -314,11 +315,11 @@ public final class TwoStep {
         for (int i = 0; i < evd.getNumberOfEigenvalues(); i++) {
             double ev = evd.getEigenvalue(i).getReal();
             if (Double.isNaN(ev) || ev <= 0.0) continue;
-            maxEv = Math.max(maxEv, ev);
-            minEv = Math.min(minEv, ev);
+            maxEv = FastMath.max(maxEv, ev);
+            minEv = FastMath.min(minEv, ev);
         }
         if (!(maxEv > 0.0) || !(minEv > 0.0)) return Double.POSITIVE_INFINITY;
-        return Math.sqrt(maxEv / minEv);
+        return FastMath.sqrt(maxEv / minEv);
     }
 
     /**
@@ -375,7 +376,7 @@ public final class TwoStep {
      */
     public void setCoefThreshold(double t) {
         this.coefThreshold = t;
-        this.twoCycleMinAbs = Math.max(this.twoCycleMinAbs, t);
+        this.twoCycleMinAbs = FastMath.max(this.twoCycleMinAbs, t);
     }
 
     /**
@@ -586,7 +587,7 @@ public final class TwoStep {
 
         // Final: strict two-cycle breaker (deterministic)
         if (breakTwoCyclesEnabled) {
-            double minAbs = Math.max(twoCycleMinAbs, coefThreshold);
+            double minAbs = FastMath.max(twoCycleMinAbs, coefThreshold);
             B = breakTwoCyclesStrict(B, minAbs);
         }
 
@@ -605,7 +606,7 @@ public final class TwoStep {
         }
 
         // Paper-style penalty scaling: lambdaEff = lambda * (ln N)/2 when normalizeLossByN
-        final double lambdaEffRow = normalizeLossByN ? (lambda * Math.log(Math.max(8, n)) / 2.0) : lambda;
+        final double lambdaEffRow = normalizeLossByN ? (lambda * FastMath.log(FastMath.max(8, n)) / 2.0) : lambda;
 
         for (int i = 0; i < p; i++) {
             int[] P = predIdxCache[i];
@@ -615,14 +616,14 @@ public final class TwoStep {
             double eps = 1e-6;
             double[] w = new double[P.length];
             for (int k = 0; k < P.length; k++) {
-                double b = Math.abs(ols.beta.get(k, 0));
-                w[k] = useAdaptiveLasso ? 1.0 / Math.pow(b + eps, adaptiveGamma) : 1.0;
+                double b = FastMath.abs(ols.beta.get(k, 0));
+                w[k] = useAdaptiveLasso ? 1.0 / FastMath.pow(b + eps, adaptiveGamma) : 1.0;
             }
 
             SimpleMatrix beta = lassoGram(S, i, P, w, lambdaEffRow, alassoEps, alassoMaxIter, null);
 
             for (int k = 0; k < P.length; k++) {
-                if (Math.abs(beta.get(k, 0)) > maskThreshold) {
+                if (FastMath.abs(beta.get(k, 0)) > maskThreshold) {
                     M.set(i, P[k], 1.0);
                 }
             }
@@ -646,7 +647,7 @@ public final class TwoStep {
         if (betaWarm != null && betaWarm.length == m) System.arraycopy(betaWarm, 0, beta, 0, m);
 
         double[] Gdiag = new double[m];
-        for (int j = 0; j < m; j++) Gdiag[j] = Math.max(G.get(j, j), 1e-12);
+        for (int j = 0; j < m; j++) Gdiag[j] = FastMath.max(G.get(j, j), 1e-12);
 
         for (int it = 0; it < maxIter; it++) {
             double maxDelta = 0.0;
@@ -656,7 +657,7 @@ public final class TwoStep {
                 double bjOld = beta[j];
                 double bjNew = softThreshold(r, lambdaEff * w[j]) / Gdiag[j];
                 beta[j] = bjNew;
-                maxDelta = Math.max(maxDelta, Math.abs(bjNew - bjOld));
+                maxDelta = FastMath.max(maxDelta, FastMath.abs(bjNew - bjOld));
             }
             if (maxDelta < tol) break;
         }
@@ -697,7 +698,7 @@ public final class TwoStep {
         for (int i = 0; i < p; i++) {
             double d = Aperm.get(i, i);
             if (d < 0.0) for (int r = 0; r < p; r++) Aperm.set(r, i, -Aperm.get(r, i));
-            double s = 1.0 / Math.max(Math.abs(Aperm.get(i, i)), 1e-12);
+            double s = 1.0 / FastMath.max(FastMath.abs(Aperm.get(i, i)), 1e-12);
             for (int r = 0; r < p; r++) Aperm.set(r, i, Aperm.get(r, i) * s);
         }
         return Aperm;
@@ -722,7 +723,7 @@ public final class TwoStep {
             OlsCov fit = olsFromCov(S, i, P, n);
             for (int k = 0; k < P.length; k++) {
                 double v = fit.beta.get(k, 0);
-                B.set(i, P[k], Math.abs(v) < coefThreshold ? 0.0 : v);
+                B.set(i, P[k], FastMath.abs(v) < coefThreshold ? 0.0 : v);
             }
         }
         for (int d = 0; d < p; d++) B.set(d, d, 0.0);
@@ -896,21 +897,21 @@ public final class TwoStep {
         java.util.function.BiFunction<double[], double[], Double> depScore = (a, b) -> {
             double meanA = 0, meanB = 0;
             for (int t = 0; t < n; t++) {
-                meanA += Math.tanh(a[t]);
-                meanB += Math.tanh(b[t]);
+                meanA += FastMath.tanh(a[t]);
+                meanB += FastMath.tanh(b[t]);
             }
             meanA /= n;
             meanB /= n;
             double num = 0, va = 0, vb = 0;
             for (int t = 0; t < n; t++) {
-                double ta = Math.tanh(a[t]) - meanA;
-                double tb = Math.tanh(b[t]) - meanB;
+                double ta = FastMath.tanh(a[t]) - meanA;
+                double tb = FastMath.tanh(b[t]) - meanB;
                 num += ta * tb;
                 va += ta * ta;
                 vb += tb * tb;
             }
-            double den = Math.sqrt(Math.max(va, 1e-12) * Math.max(vb, 1e-12));
-            return Math.abs(num / Math.max(den, 1e-12));
+            double den = FastMath.sqrt(FastMath.max(va, 1e-12) * FastMath.max(vb, 1e-12));
+            return FastMath.abs(num / FastMath.max(den, 1e-12));
         };
 
         // Convenience: extract a single column as array
@@ -941,7 +942,7 @@ public final class TwoStep {
                 // none: both residuals with Pi0/Pj0; score = max(dep(ri, Xj), dep(rj, Xi))
                 double[] ri_none = fitResiduals.apply(i, Pi0);
                 double[] rj_none = fitResiduals.apply(j, Pj0);
-                double s_none = Math.max(depScore.apply(ri_none, colAsArray.apply(j)),
+                double s_none = FastMath.max(depScore.apply(ri_none, colAsArray.apply(j)),
                         depScore.apply(rj_none, colAsArray.apply(i)));
                 bestScore = s_none;
                 choice = 0;
@@ -978,7 +979,7 @@ public final class TwoStep {
                     Pj[Pj0.length] = i;
                     double[] ri = fitResiduals.apply(i, Pi);
                     double[] rj = fitResiduals.apply(j, Pj);
-                    double s = Math.max(depScore.apply(ri, colAsArray.apply(j)),
+                    double s = FastMath.max(depScore.apply(ri, colAsArray.apply(j)),
                             depScore.apply(rj, colAsArray.apply(i)));
                     if (s < bestScore) {
                         bestScore = s;
@@ -1014,7 +1015,7 @@ public final class TwoStep {
 
         // zero diagonal and final prune/sym break
         for (int d = 0; d < p; d++) Bout.set(d, d, 0.0);
-        if (breakTwoCyclesEnabled) Bout = breakTwoCyclesStrict(Bout, Math.max(twoCycleMinAbs, coefThreshold));
+        if (breakTwoCyclesEnabled) Bout = breakTwoCyclesStrict(Bout, FastMath.max(twoCycleMinAbs, coefThreshold));
         return Bout;
     }
 
@@ -1038,12 +1039,12 @@ public final class TwoStep {
 
         for (int k = 0; k < P.length; k++) {
             double v = beta.get(k, 0);
-            B.set(target, P[k], Math.abs(v) < coefThreshold ? 0.0 : v);
+            B.set(target, P[k], FastMath.abs(v) < coefThreshold ? 0.0 : v);
         }
     }
 
     private double prune(double v) {
-        return Math.abs(v) < coefThreshold ? 0.0 : v;
+        return FastMath.abs(v) < coefThreshold ? 0.0 : v;
     }
 
     /**
@@ -1061,7 +1062,7 @@ public final class TwoStep {
         SimpleMatrix beta = Spp.solve(Spi);
         double explained = Spi.transpose().mult(beta).get(0, 0); // S_iP * beta
         out.beta = beta;
-        out.rss = n * Math.max(1.0 - explained, 0.0);
+        out.rss = n * FastMath.max(1.0 - explained, 0.0);
         return out;
     }
 
@@ -1074,7 +1075,7 @@ public final class TwoStep {
         SimpleMatrix Spi = take(S, P, new int[]{i});
         SimpleMatrix beta = Spp.solve(Spi);
         double explained = Spi.transpose().mult(beta).get(0, 0);
-        return n * Math.max(1.0 - explained, 0.0);
+        return n * FastMath.max(1.0 - explained, 0.0);
     }
 
     /**
@@ -1085,8 +1086,8 @@ public final class TwoStep {
         SimpleMatrix out = B.copy();
         for (int i = 0; i < p; i++) {
             for (int j = i + 1; j < p; j++) {
-                double a = Math.abs(out.get(i, j));
-                double b = Math.abs(out.get(j, i));
+                double a = FastMath.abs(out.get(i, j));
+                double b = FastMath.abs(out.get(j, i));
                 if (a < minAbs) a = 0.0;
                 if (b < minAbs) b = 0.0;
                 if (a == 0.0 && b == 0.0) {
@@ -1145,7 +1146,7 @@ public final class TwoStep {
             double[][] cost = new double[n][n];
             for (int i = 0; i < n; i++)
                 for (int j = 0; j < n; j++)
-                    cost[i][j] = -Math.abs(C.get(i, j)); // maximize abs -> minimize negative abs
+                    cost[i][j] = -FastMath.abs(C.get(i, j)); // maximize abs -> minimize negative abs
             return hungarian(cost);
         }
 

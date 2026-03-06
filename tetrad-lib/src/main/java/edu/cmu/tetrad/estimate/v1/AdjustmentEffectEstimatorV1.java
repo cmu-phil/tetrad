@@ -15,6 +15,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.v1.RegressionUtilV1;
 import edu.cmu.tetrad.util.TetradSerializable;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.io.Serial;
@@ -194,8 +195,8 @@ public final class AdjustmentEffectEstimatorV1 {
         double[] eClip = new double[ex.n];
         for (int i = 0; i < ex.n; i++) {
             double ei = e[i];
-            minE = Math.min(minE, ei);
-            maxE = Math.max(maxE, ei);
+            minE = FastMath.min(minE, ei);
+            maxE = FastMath.max(maxE, ei);
             double c = clip(ei, cfg.propensityClipEps, 1.0 - cfg.propensityClipEps);
             if (c != ei) clipped++;
             eClip[i] = c;
@@ -230,7 +231,7 @@ public final class AdjustmentEffectEstimatorV1 {
             PropensityModelV1 pm,
             ConfigV1 cfg
     ) {
-        int B = Math.max(0, cfg.bootstrapB);
+        int B = FastMath.max(0, cfg.bootstrapB);
         if (B == 0) {
             return new BootstrapSummaryV1(Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
         }
@@ -277,10 +278,10 @@ public final class AdjustmentEffectEstimatorV1 {
 
     private static double sigmoid(double x) {
         if (x >= 0) {
-            double z = Math.exp(-x);
+            double z = FastMath.exp(-x);
             return 1.0 / (1.0 + z);
         } else {
-            double z = Math.exp(x);
+            double z = FastMath.exp(x);
             return z / (1.0 + z);
         }
     }
@@ -290,7 +291,7 @@ public final class AdjustmentEffectEstimatorV1 {
     // =========================
 
     private static double clip(double v, double lo, double hi) {
-        return Math.max(lo, Math.min(hi, v));
+        return FastMath.max(lo, FastMath.min(hi, v));
     }
 
     private static double[] diff(double[] a, double[] b) {
@@ -316,7 +317,7 @@ public final class AdjustmentEffectEstimatorV1 {
             double d = x - m;
             s2 += d * d;
         }
-        return Math.sqrt(s2 / Math.max(1, v.length - 1));
+        return FastMath.sqrt(s2 / FastMath.max(1, v.length - 1));
     }
 
     // =========================
@@ -329,8 +330,8 @@ public final class AdjustmentEffectEstimatorV1 {
         if (q <= 0) return copy[0];
         if (q >= 1) return copy[copy.length - 1];
         double pos = q * (copy.length - 1);
-        int i = (int) Math.floor(pos);
-        int j = Math.min(copy.length - 1, i + 1);
+        int i = (int) FastMath.floor(pos);
+        int j = FastMath.min(copy.length - 1, i + 1);
         double t = pos - i;
         return (1 - t) * copy[i] + t * copy[j];
     }
@@ -866,14 +867,14 @@ public final class AdjustmentEffectEstimatorV1 {
                     int k = zc.numCategories;
                     discK.put(zc.name, k);
 
-                    int cols = Math.max(0, k - 1); // v1: baseline 0
+                    int cols = FastMath.max(0, k - 1); // v1: baseline 0
                     s.add(FeatSpecV1.discrete(zc.name, colStart, cols, k));
                     colStart += cols;
                 } else {
                     ScalingV1 sc = ScalingV1.fit(zc.continuousVals, cfg.winsorFrac);
                     scaling.put(zc.name, sc);
 
-                    int cols = Math.max(0, cfg.basisDegree); // v1: degrees 1..t
+                    int cols = FastMath.max(0, cfg.basisDegree); // v1: degrees 1..t
                     s.add(FeatSpecV1.continuous(zc.name, colStart, cols, cfg.basisDegree));
                     colStart += cols;
                 }
@@ -965,9 +966,9 @@ public final class AdjustmentEffectEstimatorV1 {
                 Arrays.sort(copy);
 
                 int n = copy.length;
-                int k = (winsorFrac <= 0) ? 0 : (int) Math.floor(winsorFrac * n);
-                int loIdx = Math.min(Math.max(0, k), n - 1);
-                int hiIdx = Math.min(Math.max(0, n - 1 - k), n - 1);
+                int k = (winsorFrac <= 0) ? 0 : (int) FastMath.floor(winsorFrac * n);
+                int loIdx = FastMath.min(FastMath.max(0, k), n - 1);
+                int hiIdx = FastMath.min(FastMath.max(0, n - 1 - k), n - 1);
 
                 double lo = copy[loIdx];
                 double hi = copy[hiIdx];

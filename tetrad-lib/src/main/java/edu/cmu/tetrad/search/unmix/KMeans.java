@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.util.StatUtils;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -50,7 +51,7 @@ public final class KMeans {
      */
     public static Result cluster(double[][] X, int K, int maxIter, long seed) {
         int n = X.length, d = (n == 0 ? 0 : X[0].length);
-        if (n == 0 || K <= 0) return new Result(new int[0], new double[Math.max(K, 0)][d]);
+        if (n == 0 || K <= 0) return new Result(new int[0], new double[FastMath.max(K, 0)][d]);
         if (K > n) K = n;
 
         Random rnd = new Random(seed);
@@ -152,7 +153,7 @@ public final class KMeans {
         Result best = null;
         double bestSse = Double.POSITIVE_INFINITY;
         Random seeder = new Random(seed);
-        for (int r = 0; r < Math.max(1, restarts); r++) {
+        for (int r = 0; r < FastMath.max(1, restarts); r++) {
             long s = seeder.nextLong();
             Result res = cluster(X, K, maxIter, s);
             double sse = withinSSE(X, res.labels, res.centroids);

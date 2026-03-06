@@ -24,6 +24,7 @@
 package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.util.TetradSerializable;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -580,7 +581,7 @@ public final class JunctionTreeInference implements Serializable {
     }
 
     private Separator getSeparator(int a, int b) {
-        int x = Math.min(a, b), y = Math.max(a, b);
+        int x = FastMath.min(a, b), y = FastMath.max(a, b);
         long key = (((long) x) << 32) | (y & 0xffffffffL);
         Separator sep = separators.get(key);
         if (sep == null) throw new IllegalStateException("Missing separator for edge " + a + " - " + b);
@@ -780,7 +781,7 @@ public final class JunctionTreeInference implements Serializable {
             int[] sepVars = intersection(cliqueObjs.get(e.a).vars, cliqueObjs.get(e.b).vars);
             Separator sep = new Separator(e.a, e.b, sepVars);
 
-            int x = Math.min(e.a, e.b), y = Math.max(e.a, e.b);
+            int x = FastMath.min(e.a, e.b), y = FastMath.max(e.a, e.b);
             long key = (((long) x) << 32) | (y & 0xffffffffL);
             seps.put(key, sep);
 
@@ -808,7 +809,7 @@ public final class JunctionTreeInference implements Serializable {
                 neigh.get(i).add(superIdx);
 
                 Separator sep = new Separator(superIdx, i, new int[0]);
-                int x = Math.min(superIdx, i), y = Math.max(superIdx, i);
+                int x = FastMath.min(superIdx, i), y = FastMath.max(superIdx, i);
                 long key = (((long) x) << 32) | (y & 0xffffffffL);
                 seps.put(key, sep);
             }
@@ -901,7 +902,7 @@ public final class JunctionTreeInference implements Serializable {
 
     private static int[] intersection(int[] a, int[] b) {
         int i = 0, j = 0;
-        int[] tmp = new int[Math.min(a.length, b.length)];
+        int[] tmp = new int[FastMath.min(a.length, b.length)];
         int k = 0;
         while (i < a.length && j < b.length) {
             if (a[i] == b[j]) { tmp[k++] = a[i]; i++; j++; }

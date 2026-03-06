@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.LegendreBicScore;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -157,7 +158,7 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
 
             ChiSquaredDistribution chi2 = new ChiSquaredDistribution(ddf);
             double p = 1.0 - chi2.cumulativeProbability(D);
-            p = Math.max(0.0, Math.min(1.0, p));
+            p = FastMath.max(0.0, FastMath.min(1.0, p));
 
             boolean indep = (p > getAlpha());
             return new IndependenceResult(fact, indep, p, getAlpha() - p);

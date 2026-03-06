@@ -1,5 +1,7 @@
 package edu.cmu.tetradapp.editor.ind_facts;
 
+import org.apache.commons.math3.util.FastMath;
+
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -228,7 +230,7 @@ public final class IndFactsDsl {
         // If any parse errors, we still compute previews for parsable templates.
         // Expansion
         List<PreviewLineStats> stats = new ArrayList<>();
-        List<String> firstFacts = new ArrayList<>(Math.min(previewLimit, 1024));
+        List<String> firstFacts = new ArrayList<>(FastMath.min(previewLimit, 1024));
 
         int totalExpanded = 0, totalKept = 0, totalSkippedInvalid = 0;
 
@@ -494,7 +496,7 @@ public final class IndFactsDsl {
         // underline whole line
         int start = baseOffset;
         int end = baseOffset + rawLine.length();
-        return new ParseError(lineIndex0, start, Math.max(start, end), msg);
+        return new ParseError(lineIndex0, start, FastMath.max(start, end), msg);
     }
 
     private static ParseError tokenError(int lineIndex0, int baseOffset, String rawLine, String token, String msg) {

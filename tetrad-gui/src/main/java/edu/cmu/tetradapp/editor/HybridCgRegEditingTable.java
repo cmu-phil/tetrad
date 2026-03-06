@@ -2,6 +2,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -54,14 +55,14 @@ final class HybridCgRegEditingTable extends JTable {
                 if (c < d) {
                     // discrete parent label width
                     String maxLabel = m.maxParentLabelWidthSample(c);
-                    w = Math.max(80, fm.stringWidth(maxLabel) + pad);
+                    w = FastMath.max(80, fm.stringWidth(maxLabel) + pad);
                 } else if (c == d) {
                     w = fm.stringWidth("mean") + pad;
                 } else if (c == d + 1 + mcoeff) {
                     w = fm.stringWidth("Variance") + pad;
                 } else {
                     // coefficient columns
-                    w = Math.max(100, fm.stringWidth(getColumnName(c)) + pad);
+                    w = FastMath.max(100, fm.stringWidth(getColumnName(c)) + pad);
                 }
                 getColumnModel().getColumn(c).setPreferredWidth(w);
             }

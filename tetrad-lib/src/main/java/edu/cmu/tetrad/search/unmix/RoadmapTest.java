@@ -34,6 +34,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
@@ -71,7 +72,7 @@ public class RoadmapTest {
         double best = 0.0;
         for (int[] pm : perms) {
             int ok = 0, tot = 0;
-            for (int k = 0; k < Math.min(truth.length, found.size()); k++) {
+            for (int k = 0; k < FastMath.min(truth.length, found.size()); k++) {
                 Graph T = truth[k];
                 Graph F = found.get(pm[k]);
                 for (Edge e : T.getEdges()) {
@@ -156,8 +157,8 @@ public class RoadmapTest {
         inter.retainAll(skelH);
 
         int tp = inter.size();
-        int fp = Math.max(skelH.size() - tp, 0);
-        int fn = Math.max(skelT.size() - tp, 0);
+        int fp = FastMath.max(skelH.size() - tp, 0);
+        int fn = FastMath.max(skelT.size() - tp, 0);
 
         double precA = tp == 0 ? 0 : (double) tp / (tp + fp);
         double recA = tp == 0 ? 0 : (double) tp / (tp + fn);
@@ -369,8 +370,8 @@ public class RoadmapTest {
     private static double iqr(List<Double> xs) {
         double[] v = xs.stream().mapToDouble(Double::doubleValue).sorted().toArray();
         int n = v.length;
-        double q1 = v[(int) Math.floor(0.25 * (n - 1))];
-        double q3 = v[(int) Math.floor(0.75 * (n - 1))];
+        double q1 = v[(int) FastMath.floor(0.25 * (n - 1))];
+        double q3 = v[(int) FastMath.floor(0.75 * (n - 1))];
         return q3 - q1;
     }
 
@@ -496,7 +497,7 @@ public class RoadmapTest {
                     double d = x[j] - mean;
                     m2 += d * d;
                 }
-                double sd = Math.sqrt(m2 / Math.max(1, X.length - 1));
+                double sd = FastMath.sqrt(m2 / FastMath.max(1, X.length - 1));
                 if (sd < 1e-12) sd = 1.0;
                 for (int i = 0; i < X.length; i++) X[i][j] = (X[i][j] - mean) / sd;
             }
@@ -563,7 +564,7 @@ public class RoadmapTest {
         System.out.println("\n=== Phase2: robustness curves (meanÂ±IQR over seeds) ===");
         for (int nTot : nTotals) {
             for (double fracA : imbalances) {
-                int n1 = (int) Math.round(nTot * fracA);
+                int n1 = (int) FastMath.round(nTot * fracA);
                 int n2 = nTot - n1;
                 for (double sig : signalScales) {
                     List<Double> arisEM = new ArrayList<>();

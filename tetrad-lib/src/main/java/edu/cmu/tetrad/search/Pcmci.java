@@ -9,6 +9,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -74,7 +75,7 @@ public final class Pcmci implements IGraphSearch {
          * @param L the proposed maximum lag to be set (must be a positive integer)
          * @return this builder instance, allowing for method chaining
          */
-        public Builder maxLag(int L){ this.maxLag = Math.max(1, L); return this; }
+        public Builder maxLag(int L){ this.maxLag = FastMath.max(1, L); return this; }
 
         /**
          * Sets the significance level (alpha) to be used in the Pcmci algorithm.

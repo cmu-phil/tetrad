@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.RankTests;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -140,8 +141,8 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest, Effect
         if (a == null || a.length == 0) return distinctSorted(b);
         if (b == null || b.length == 0) return distinctSorted(a);
         int max = 0;
-        for (int v : a) max = Math.max(max, v);
-        for (int v : b) max = Math.max(max, v);
+        for (int v : a) max = FastMath.max(max, v);
+        for (int v : b) max = FastMath.max(max, v);
         BitSet bs = new BitSet(max + 1);
         for (int v : a) bs.set(v);
         for (int v : b) bs.set(v);
@@ -172,7 +173,7 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest, Effect
 
         // Decision per Lemma 10 with chosen mode/tol
         boolean indep = switch (mode) {
-            case EQ -> Math.abs(estRank - parts.Csize) <= tol;
+            case EQ -> FastMath.abs(estRank - parts.Csize) <= tol;
             case LE -> estRank <= parts.Csize + tol;
             case GE -> estRank >= parts.Csize - tol;
         };
@@ -253,7 +254,7 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest, Effect
         // Use the same p-value path; treat as "unconditioned" by passing empty Z.
         double p = RankTests.pValueIndepConditioned(S, AC, BC, new int[0], nEff);
         if (Double.isNaN(p) || Double.isInfinite(p)) p = 1.0;
-        p = Math.max(0.0, Math.min(1.0, p));
+        p = FastMath.max(0.0, FastMath.min(1.0, p));
 
         pvalCache.put(key, p);
         return p;
@@ -349,7 +350,7 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest, Effect
         private final LinkedHashMap<K, V> map;
 
         LruMap(int maxSize) {
-            this.maxSize = Math.max(16, maxSize);
+            this.maxSize = FastMath.max(16, maxSize);
             this.map = new LinkedHashMap<>(1024, 0.75f, true);
         }
 
@@ -395,7 +396,7 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest, Effect
             this.AC = AC.clone();
             this.BC = BC.clone();
             this.n = n;
-            this.alphaBits = Double.doubleToLongBits(Math.rint(alpha * 1e12) / 1e12);
+            this.alphaBits = Double.doubleToLongBits(FastMath.rint(alpha * 1e12) / 1e12);
             int h = 1;
             h = 31 * h + Arrays.hashCode(this.AC);
             h = 31 * h + Arrays.hashCode(this.BC);
@@ -432,7 +433,7 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest, Effect
             this.AC = AC.clone();
             this.BC = BC.clone();
             this.n = n;
-            this.alphaBits = Double.doubleToLongBits(Math.rint(alpha * 1e12) / 1e12);
+            this.alphaBits = Double.doubleToLongBits(FastMath.rint(alpha * 1e12) / 1e12);
             this.modeOrdinal = mode.ordinal();
             this.tol = tol;
             int h = 1;

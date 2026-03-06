@@ -38,6 +38,7 @@ import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -293,7 +294,7 @@ public class MimbuildBollen {
 
         // Initialize unique variances (delta) from observed diagonals
         double[] delta = new double[m];
-        for (int i = 0; i < m; i++) delta[i] = Math.max(1e-6, measures.get(i, i) * 0.1);
+        for (int i = 0; i < m; i++) delta[i] = FastMath.max(1e-6, measures.get(i, i) * 0.1);
 
         // Optimize all parameters jointly (Powell)
         int numParams = optimizeAllParamsSimultaneously(indicators, measures, latentCov, loadings, indicatorIndices, delta);
@@ -414,7 +415,7 @@ public class MimbuildBollen {
         // delta (uniques)
         for (int i = 0; i < delta.length; i++) {
             double x = v[t++];
-            delta[i] = Math.max(1e-8, x);
+            delta[i] = FastMath.max(1e-8, x);
         }
     }
 

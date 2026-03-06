@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleMatrix;
 
 import javax.net.ssl.SSLContext;
@@ -328,7 +329,7 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
         int bestRank = Integer.MAX_VALUE;
         Build bestBuild = null;
 
-        for (int trial = 0; trial < Math.max(1, numTrials); trial++) {
+        for (int trial = 0; trial < FastMath.max(1, numTrials); trial++) {
             if (randomizeSplits) this.splitSeed = baseSeed + trial;
             Build b = buildSides(x, y, z);
             int r = getRank(b.Lcols, b.Rcols);
@@ -459,7 +460,7 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
         private final LinkedHashMap<K, V> map;
 
         LruMap(int maxSize) {
-            this.maxSize = Math.max(16, maxSize);
+            this.maxSize = FastMath.max(16, maxSize);
             this.map = new LinkedHashMap<>(1024, 0.75f, true);
         }
 
@@ -516,7 +517,7 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
             this.L = L.clone();
             this.R = R.clone();
             this.n = n;
-            this.alphaBits = Double.doubleToLongBits(Math.rint(alpha * 1e12) / 1e12);
+            this.alphaBits = Double.doubleToLongBits(FastMath.rint(alpha * 1e12) / 1e12);
             this.seed = seed;
             this.rand = rand;
             this.trials = trials;

@@ -24,7 +24,6 @@ import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.sem.DistributionSampler;
 import edu.cmu.tetrad.sem.ExpressionSampler;
 import edu.cmu.tetrad.sem.Sampler;
 import edu.cmu.tetrad.util.Parameters;
@@ -37,7 +36,6 @@ import java.io.Serial;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * This class represents a Causal Perceptron Network.
@@ -291,7 +289,8 @@ public class GeneralNoiseSimulation implements Simulation {
             hiddenDimensions[i] = Integer.parseInt(hiddenDimensionsSplit[i].trim());
         }
 
-        Function<Double, Double> activation = Math::tanh;// x -> Math.max(0.1 * x, x);
+//        Function<Double, Double> activation = Math::tanh;// x -> FastMath.max(0.1 * x, x);
+//        Function<Double, Double> activation =  x -> (1 + tanh(x / 2)) / 2;
 
         try {
             Sampler sampler = new ExpressionSampler(parameters.getString("noiseExpression"));
@@ -306,7 +305,7 @@ public class GeneralNoiseSimulation implements Simulation {
                     sampler,
                     hiddenDimensions,
                     parameters.getDouble(Params.INPUT_SCALE),
-                    Math::tanh,
+                    FastMath::tanh,
                     false,   // reportSaturation
                     .999     // saturation threshold on |tanh activation|
             );

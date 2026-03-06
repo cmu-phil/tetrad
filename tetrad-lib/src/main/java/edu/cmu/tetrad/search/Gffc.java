@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -254,7 +255,7 @@ public class Gffc {
         List<Integer> toAdd = new ArrayList<>();
 
         // Choose subset size: if cluster is small, use the whole cluster; otherwise tadSize-1
-        final int k = Math.min(cluster.size(), tadSize - 1);
+        final int k = FastMath.min(cluster.size(), tadSize - 1);
 
         // Pre-enumerate all k-subsets of the current cluster once
         List<List<Integer>> subsets = new ArrayList<>();
@@ -427,7 +428,7 @@ public class Gffc {
                 if (!inX) y[yIndex++] = v;
             }
 
-            int r = Math.min(x.length, y.length) - 1;
+            int r = FastMath.min(x.length, y.length) - 1;
             int rank = RankTests.estimateWilksRankFast(S, x, y, n, alpha);
             if (rank != r) {
                 vanishCache.put(key, false);

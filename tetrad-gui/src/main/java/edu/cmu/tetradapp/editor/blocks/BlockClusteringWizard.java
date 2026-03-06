@@ -33,6 +33,7 @@ import edu.cmu.tetradapp.editor.simulation.ParameterTab;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.ParameterComponents;
 import edu.cmu.tetradapp.util.WatchedProcess;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -213,8 +214,8 @@ public class BlockClusteringWizard extends JPanel {
         VerticalDoubleDataBox box = new VerticalDoubleDataBox(n, p);
 
         Random rnd = new Random(42);
-        double sdLatent = Math.sqrt(latentVar);
-        double sdNoiseIndicator = Math.sqrt(1.0 - loading * loading); // ensure Var(X) â 1
+        double sdLatent = FastMath.sqrt(latentVar);
+        double sdNoiseIndicator = FastMath.sqrt(1.0 - loading * loading); // ensure Var(X) â 1
 
         for (int t = 0; t < n; t++) {
             // Latent disturbances (std normal scaled)

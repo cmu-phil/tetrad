@@ -7,6 +7,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetradapp.util.WatchedProcess;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
 import java.util.*;
@@ -289,7 +290,7 @@ public final class InterventionalHistogramModel implements SessionModel {
 
         public ParentAdjustmentResampleSampler(boolean fallbackIgnoreZ, int maxAttemptsPerDraw) {
             this.fallbackIgnoreZ = fallbackIgnoreZ;
-            this.maxAttemptsPerDraw = Math.max(1, maxAttemptsPerDraw);
+            this.maxAttemptsPerDraw = FastMath.max(1, maxAttemptsPerDraw);
         }
 
         @Override
@@ -481,7 +482,7 @@ public final class InterventionalHistogramModel implements SessionModel {
             private int[] a;
             private int n;
 
-            IntArrayList(int cap) { a = new int[Math.max(16, cap)]; }
+            IntArrayList(int cap) { a = new int[FastMath.max(16, cap)]; }
 
             void add(int v) {
                 if (n == a.length) a = Arrays.copyOf(a, a.length * 2);

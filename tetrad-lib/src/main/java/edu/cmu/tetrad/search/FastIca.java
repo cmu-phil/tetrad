@@ -297,7 +297,7 @@ public class FastIca {
         Matrix U = new Matrix(s.getU());
         for (int i = 0; i < D.getNumRows(); i++) {
             double lambda = D.get(i, i);
-            D.set(i, i, 1.0 / FastMath.sqrt(Math.max(lambda, eps)));
+            D.set(i, i, 1.0 / FastMath.sqrt(FastMath.max(lambda, eps)));
         }
         Matrix K = D.times(U.transpose());
         K = K.getPart(0, this.numComponents, 0, p); // keep first components

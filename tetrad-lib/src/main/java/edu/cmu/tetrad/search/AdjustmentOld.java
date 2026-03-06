@@ -4,6 +4,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -332,7 +333,7 @@ public final class AdjustmentOld {
                 .comparingInt((Node v) -> {
                     if (nearWhichEndpoint == 1) return endpointDistance(v, shellsFromX);
                     if (nearWhichEndpoint == 2) return endpointDistance(v, shellsFromY);
-                    return Math.min(endpointDistance(v, shellsFromX), endpointDistance(v, shellsFromY));
+                    return FastMath.min(endpointDistance(v, shellsFromX), endpointDistance(v, shellsFromY));
                 })
                 .thenComparingInt((Node v) -> graph.getAdjacentNodes(v).size())
                 .thenComparing(Node::getName));
@@ -585,7 +586,7 @@ public final class AdjustmentOld {
         return switch (policy) {
             case OFF ->
                 // Soften the effect but keep the shape
-                    (int) Math.round(base * 0.3);
+                    (int) FastMath.round(base * 0.3);
             case PREFER_NONCOLLIDERS -> base;
             default -> base; // filtering already applied
         };
@@ -699,8 +700,8 @@ public final class AdjustmentOld {
 
     private int approxEndpointDistance(Node v, Node X, Node Y, Shells sx, Shells sy) {
         int best = Integer.MAX_VALUE;
-        for (int r = 1; r < sx.layers.length; r++) if (sx.layers[r].contains(v)) best = Math.min(best, r);
-        for (int r = 1; r < sy.layers.length; r++) if (sy.layers[r].contains(v)) best = Math.min(best, r);
+        for (int r = 1; r < sx.layers.length; r++) if (sx.layers[r].contains(v)) best = FastMath.min(best, r);
+        for (int r = 1; r < sy.layers.length; r++) if (sy.layers[r].contains(v)) best = FastMath.min(best, r);
         return best == Integer.MAX_VALUE ? 1_000_000_000 : best;
     }
 

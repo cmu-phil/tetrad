@@ -2634,7 +2634,7 @@ public class ExpressionManager {
                     double b = expressions.get(1).evaluate(context);
                     double c = expressions.get(2).evaluate(context);
 
-                    double lo = Math.min(b, c), hi = Math.max(b, c);
+                    double lo = FastMath.min(b, c), hi = FastMath.max(b, c);
                     double a = Double.NaN;
 
                     for (int count = 0; count < 1000; count++) {
@@ -2644,7 +2644,7 @@ public class ExpressionManager {
 
                     // fallback: clamp last finite value (or pick midpoint if none)
                     if (!Double.isFinite(a)) a = 0.5 * (lo + hi);
-                    return Math.max(lo, Math.min(hi, a));
+                    return FastMath.max(lo, FastMath.min(hi, a));
                 }
             };
         }

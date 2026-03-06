@@ -38,6 +38,7 @@ import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.UniformityTest;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
+import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.NumberFormat;
@@ -105,7 +106,7 @@ public class TestJoeMarkovCheckExploration {
 
 //        for (double penalty = 0.01; penalty <= .2; penalty += 0.1) {
         for (double penalty = 0.5; penalty <= 10; penalty += 0.1) {
-            penalty = Math.round(penalty * 10) / 10.0;
+            penalty = FastMath.round(penalty * 10) / 10.0;
             SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
             score.setPenaltyDiscount(penalty);
 

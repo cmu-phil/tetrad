@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.pitt.dbmi.data.reader.Delimiter;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -110,8 +111,8 @@ public class DemixerMMLKun {
         double[][] dataArray = data.getDoubleData().toArray();
         int numVars = data.getNumColumns();
         int numCases = data.getNumRows();
-        double lambda2 = Math.sqrt((Math.log(numCases) - Math.log(Math.log(numCases))) / 2.0);
-        double lambda = lambda2 * ((Math.pow(numVars, 2)) * 0.5 + 1.5 * numVars + 1); // part of the MML score
+        double lambda2 = FastMath.sqrt((FastMath.log(numCases) - FastMath.log(FastMath.log(numCases))) / 2.0);
+        double lambda = lambda2 * ((FastMath.pow(numVars, 2)) * 0.5 + 1.5 * numVars + 1); // part of the MML score
         double epsilon = 1e-6; // part of the MML score
         double threshold = 1e-8; // threshold for MML score convergence
 
@@ -256,7 +257,7 @@ public class DemixerMMLKun {
                     gammaMean += gammaArray[i][j];
                 }
                 gammaMean /= numCases;
-                mml += Math.log(gammaMean);
+                mml += FastMath.log(gammaMean);
             }
 
             mml /= weightsArray.length;
@@ -264,7 +265,7 @@ public class DemixerMMLKun {
             double weightSum = 0;
 
             for (double v : weightsArray) {
-                weightSum += Math.log(v / epsilon + 1);
+                weightSum += FastMath.log(v / epsilon + 1);
             }
 
             weightSum *= lambda / numCases;
@@ -272,7 +273,7 @@ public class DemixerMMLKun {
             newLogL = mml + weightSum;
 
             // if oldLogL and newLogL converge, end; otherwise, set oldLogL to newLogL
-            if (Math.abs(oldLogL / (newLogL) - 1) < threshold) {
+            if (FastMath.abs(oldLogL / (newLogL) - 1) < threshold) {
                 break;
             } else {
                 oldLogL = newLogL;
@@ -406,9 +407,9 @@ public class DemixerMMLKun {
             }
         }
 
-        double distanceScal = Math.pow(2 * Math.PI, -(numVars) / 2.0);
+        double distanceScal = FastMath.pow(2 * FastMath.PI, -(numVars) / 2.0);
         distanceScal = distanceScal / cov.det();
-        distanceScal = distanceScal * Math.exp(-.5 * mahScal);
+        distanceScal = distanceScal * FastMath.exp(-.5 * mahScal);
 
         return distanceScal;
     }

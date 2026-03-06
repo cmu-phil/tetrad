@@ -752,7 +752,7 @@ public final class MatrixUtils {
         // Compute standard deviations (sqrt of diagonal elements)
         double[] stdDevs = new double[n];
         for (int i = 0; i < n; i++) {
-            stdDevs[i] = Math.sqrt(covarianceMatrix.get(i, i));
+            stdDevs[i] = FastMath.sqrt(covarianceMatrix.get(i, i));
         }
 
         // Compute correlation matrix

@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.IntTextField;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -353,7 +354,7 @@ public class DataSubsetEditor extends JPanel {
                 model.add(index - 1, n);
             }
         }
-        list.setSelectedIndices(Arrays.stream(indices).map(i -> Math.max(i - 1, 0)).toArray());
+        list.setSelectedIndices(Arrays.stream(indices).map(i -> FastMath.max(i - 1, 0)).toArray());
     }
 
     private void moveSelectedDown(JList<Node> list, DefaultListModel<Node> model) {

@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -200,7 +201,7 @@ public final class RandomMim {
                 if (!candidates.isEmpty()) {
                     Collections.shuffle(candidates, rng);
                     // âPatchyâ = pick about half of the possible connections, but at least one.
-                    final int k = Math.max(1, candidates.size() / 2);
+                    final int k = FastMath.max(1, candidates.size() / 2);
                     for (int i = 0; i < k; i++) {
                         Node Lfrom = candidates.get(i)[0];
                         Node Lto = candidates.get(i)[1];
@@ -256,8 +257,8 @@ public final class RandomMim {
             int j = rng.nextInt(measured.size());
             if (i == j) continue;
 
-            Node A = measured.get(Math.min(i, j)); // bias lower -> higher
-            Node B = measured.get(Math.max(i, j));
+            Node A = measured.get(FastMath.min(i, j)); // bias lower -> higher
+            Node B = measured.get(FastMath.max(i, j));
 
             if (g.isAdjacentTo(A, B)) continue;           // any edge already between them? skip
             if (hasDirectedPath(g, B, A)) continue;       // adding A->B would create a cycle
@@ -371,7 +372,7 @@ public final class RandomMim {
     }
 
     private static String alphaCode(int idx) { // 0->A, 25->Z, 26->AA
-        idx = Math.max(0, idx);
+        idx = FastMath.max(0, idx);
         StringBuilder sb = new StringBuilder();
         do {
             int rem = idx % 26;

@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -326,7 +327,7 @@ public class Ida {
         LinkedList<Double> totalEffects = getTotalEffects(x, y);
         LinkedList<Double> absTotalEffects = new LinkedList<>();
         for (double d : totalEffects) {
-            absTotalEffects.add(Math.abs(d));
+            absTotalEffects.add(FastMath.abs(d));
         }
 
         Collections.sort(absTotalEffects);

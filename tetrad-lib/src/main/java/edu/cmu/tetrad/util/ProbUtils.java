@@ -2073,7 +2073,7 @@ public class ProbUtils {
     /**
      * Compute the probability over a rectangular region with correlation matrix c. Algorithm extracted from Alan Genz:
      * Numerical Computation of Multivariate Normal Probabilities; revised version published in J. Comp. Graph Stat. 1
-     * (1992), pp. 141-149. http://www.math.wsu.edu/faculty/genz/homepage Warning: this method has the side effect of
+     * (1992), pp. 141-149. http://www.FastMath.wsu.edu/faculty/genz/homepage Warning: this method has the side effect of
      * changing the order of the elements in the arrays given as input. --November 3st 2003, Ricardo Silva
      *
      * @param a   lower bounds (use Double.NEGATIVE_INFINITY if necessary)

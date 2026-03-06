@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -208,8 +209,8 @@ public class TeyssierScorer {
         int minj = Integer.MAX_VALUE;
         for (Node node : j) {
             jIndices.add(index(node));
-            maxj = Math.max(maxj, index(node));
-            minj = Math.min(minj, index(node));
+            maxj = FastMath.max(maxj, index(node));
+            minj = FastMath.min(minj, index(node));
         }
 
         int kIndex = index(k);

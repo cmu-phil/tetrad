@@ -127,7 +127,7 @@ public class MathUtils {
      * @return the result of applying the ReLU function, which is the input if it is positive, or 0 otherwise
      */
     public static Double relu(Double x) {
-        return Math.max(0, x);
+        return FastMath.max(0, x);
     }
 
     /**
@@ -138,7 +138,7 @@ public class MathUtils {
      * @return the result of applying the Leaky ReLU function, which is x if x is positive, or 0.1 * x otherwise
      */
     public static Double leakyRelu(Double x) {
-        return Math.max(0.1 * x, x);
+        return FastMath.max(0.1 * x, x);
     }
 
     /**
@@ -153,7 +153,7 @@ public class MathUtils {
         if (x <= -1 || x >= 1) {
             throw new IllegalArgumentException("Input x must be between -1 and 1 (exclusive).");
         }
-        return 0.5 * Math.log((1 + x) / (1 - x));
+        return 0.5 * FastMath.log((1 + x) / (1 - x));
     }
 
     /**

@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.utils.SepsetsMaxP;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -365,7 +366,7 @@ public final class Ccd implements IGraphSearch {
             TT.remove(b);
             TT.remove(c);
 
-            int kMax = (depth < 0) ? -1 : Math.min(depth, TT.size());
+            int kMax = (depth < 0) ? -1 : FastMath.min(depth, TT.size());
             SublistGenerator gen2 = new SublistGenerator(TT.size(), kMax);
             int[] choice2;
 

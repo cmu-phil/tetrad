@@ -610,7 +610,7 @@ public class Matrix implements TetradSerializable {
 
         // Compute square root of W (singular values)
         for (int i = 0; i < W.getNumRows(); i++) {
-            W.set(i, i, Math.sqrt(W.get(i, i)));
+            W.set(i, i, FastMath.sqrt(W.get(i, i)));
         }
 
         // Reconstruct the square root matrix

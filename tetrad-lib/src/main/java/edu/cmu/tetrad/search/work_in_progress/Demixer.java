@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search.work_in_progress;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Vector;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -89,7 +90,7 @@ public class Demixer {
 
         // initialize the weights array uniformly
         for (int i = 0; i < k; i++) {
-            weightsArray[i] = Math.abs((1.0 / k));
+            weightsArray[i] = FastMath.abs((1.0 / k));
         }
 
         // initialize the covariance matrix array to the actual covariance matrix
@@ -140,7 +141,7 @@ public class Demixer {
 
             diffsList = new ArrayList<>(); // list of differences between new weights and old weights
             for (int i = 0; i < numClusters; i++) {
-                diffsList.add(Math.abs(weightsArray[i] - tempWeights[i]));
+                diffsList.add(FastMath.abs(weightsArray[i] - tempWeights[i]));
             }
 
             Collections.sort(diffsList); // sort the list
@@ -242,7 +243,7 @@ public class Demixer {
             for (int v = 0; v < numVars; v++) {
                 for (int v2 = v; v2 < numVars; v2++) {
                     var = getVar(i, v, v2, numCases, gammaArray, dataArray, meansArray);
-                    // if(Math.abs(var) >= 0.5) {
+                    // if(FastMath.abs(var) >= 0.5) {
                     variancesArray[i].set(v, v2, var);
                     variancesArray[i].set(v2, v, var);
 
@@ -286,8 +287,8 @@ public class Demixer {
 
         double distanceScal = distance.get(0, 0); // distance is a scalar, but in matrix representation
         distanceScal = distanceScal * (-.5);
-        distanceScal = Math.exp(distanceScal);
-        distanceScal = distanceScal / Math.sqrt(2 * Math.PI * cov.det()); // exp(-.5 * distance) / sqrt(2 * pi * cov)
+        distanceScal = FastMath.exp(distanceScal);
+        distanceScal = distanceScal / FastMath.sqrt(2 * FastMath.PI * cov.det()); // exp(-.5 * distance) / sqrt(2 * pi * cov)
 
         return distanceScal;
     }

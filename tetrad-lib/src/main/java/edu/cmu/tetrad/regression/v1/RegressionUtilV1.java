@@ -5,6 +5,7 @@
 
 package edu.cmu.tetrad.regression.v1;
 
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleMatrix;
 
 /**
@@ -110,14 +111,14 @@ public final class RegressionUtilV1 {
                 pHat[i] = pi;
 
                 double vi = pi * (1.0 - pi);
-                wgt[i] = Math.max(vi, 1e-9);       // v1: avoid divide-by-zero
+                wgt[i] = FastMath.max(vi, 1e-9);       // v1: avoid divide-by-zero
 
                 z[i] = eta + (y01[i] - pi) / wgt[i];
 
-                ll += y01[i] * Math.log(pi) + (1 - y01[i]) * Math.log(1 - pi);
+                ll += y01[i] * FastMath.log(pi) + (1 - y01[i]) * FastMath.log(1 - pi);
             }
 
-            if (Math.abs(ll - prevLl) < tol) break;
+            if (FastMath.abs(ll - prevLl) < tol) break;
             prevLl = ll;
 
             // v1: weighted least squares solve:
@@ -152,16 +153,16 @@ public final class RegressionUtilV1 {
 
     private static double sigmoidV1(double x) {
         if (x >= 0) {
-            double z = Math.exp(-x);
+            double z = FastMath.exp(-x);
             return 1.0 / (1.0 + z);
         } else {
-            double z = Math.exp(x);
+            double z = FastMath.exp(x);
             return z / (1.0 + z);
         }
     }
 
     private static double clipV1(double v, double lo, double hi) {
-        return Math.max(lo, Math.min(hi, v));
+        return FastMath.max(lo, FastMath.min(hi, v));
     }
 
     // =========================

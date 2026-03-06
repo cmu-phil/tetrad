@@ -461,7 +461,7 @@ public final class SemIm implements Im, ISemIm {
 //            if (!(d > 0.0) || Double.isNaN(d) || Double.isInfinite(d)) {
 //                throw new IllegalStateException("Cholesky diagonal not positive.");
 //            }
-//            sum += Math.log(d);
+//            sum += FastMath.log(d);
 //        }
 //        return 2.0 * sum;
 //    }
@@ -478,14 +478,14 @@ public final class SemIm implements Im, ISemIm {
                 if (!(d > 0.0) || Double.isNaN(d) || Double.isInfinite(d)) {
                     throw new IllegalStateException("Cholesky diagonal not positive.");
                 }
-                sum += Math.log(d);
+                sum += FastMath.log(d);
             }
             return 2.0 * sum;
         } catch (Throwable t) {
             // Add a tiny jitter proportional to average diagonal, retry once
             int n = S.getNumRows();
             double avgDiag = 0.0;
-            for (int i = 0; i < n; i++) avgDiag += Math.max(0.0, S.get(i, i));
+            for (int i = 0; i < n; i++) avgDiag += FastMath.max(0.0, S.get(i, i));
             avgDiag = (n > 0 ? avgDiag / n : 1.0);
             double eps = 1e-8 * (avgDiag > 0.0 ? avgDiag : 1.0);
 
@@ -494,7 +494,7 @@ public final class SemIm implements Im, ISemIm {
 
             Matrix L = MatrixUtils.cholesky(Sj); // will throw if truly not SPD
             double sum = 0.0;
-            for (int i = 0; i < n; i++) sum += Math.log(L.get(i, i));
+            for (int i = 0; i < n; i++) sum += FastMath.log(L.get(i, i));
             return 2.0 * sum;
         }
     }
@@ -1356,7 +1356,7 @@ public final class SemIm implements Im, ISemIm {
             } catch (Throwable t) {
                 int n = Sigma.getNumRows();
                 double avgDiag = 0.0;
-                for (int i = 0; i < n; i++) avgDiag += Math.max(0.0, Sigma.get(i, i));
+                for (int i = 0; i < n; i++) avgDiag += FastMath.max(0.0, Sigma.get(i, i));
                 avgDiag = (n > 0 ? avgDiag / n : 1.0);
                 double eps = 1e-8 * (avgDiag > 0.0 ? avgDiag : 1.0);
 
@@ -1395,7 +1395,7 @@ public final class SemIm implements Im, ISemIm {
             // Near-SPD fallback: add a tiny jitter to the diagonal and retry
             int n = S.getNumRows();
             double avgDiag = 0.0;
-            for (int i = 0; i < n; i++) avgDiag += Math.max(0.0, S.get(i, i));
+            for (int i = 0; i < n; i++) avgDiag += FastMath.max(0.0, S.get(i, i));
             avgDiag = (n > 0 ? avgDiag / n : 1.0);
             double eps = 1e-8 * (avgDiag > 0.0 ? avgDiag : 1.0);
             Matrix Sj = S.copy();
@@ -1470,15 +1470,15 @@ public final class SemIm implements Im, ISemIm {
     public double getRmsea() {
         double chi2 = getChiSquare();
         int dof = this.semPm.getDof();
-        int n = Math.max(1, getSampleSize() - 1);
+        int n = FastMath.max(1, getSampleSize() - 1);
 
         if (dof <= 0 || Double.isNaN(chi2)) return Double.NaN;
 
-        double num = Math.max(0.0, chi2 - dof);
+        double num = FastMath.max(0.0, chi2 - dof);
         double den = dof * n;
         if (den <= 0.0) return Double.NaN;
 
-        return Math.sqrt(num / den);
+        return FastMath.sqrt(num / den);
     }
 
     /**
@@ -1608,7 +1608,7 @@ public final class SemIm implements Im, ISemIm {
                         Node child = semGraph.getChildren(parent).iterator().next();
 
                         double var = getParamValue(child, child); // variance parameter is on the child variable
-                        sum += getNextNormal(0.0, Math.sqrt(Math.max(0.0, var)));
+                        sum += getNextNormal(0.0, FastMath.sqrt(FastMath.max(0.0, var)));
                     } else {
                         TimeLagGraph.NodeId id = timeSeriesGraph.getNodeId(parent);
                         int fromIndex = nodeIndices.get(timeSeriesGraph.getNode(id.getName(), 0));
@@ -1981,7 +1981,7 @@ public final class SemIm implements Im, ISemIm {
                     if (errorType == 1) {
                         // not taken; kept for completeness
                         double v = this.errCovar.get(i, i);
-                        e.set(i, v == 0.0 ? 0.0 : RandomUtil.getInstance().nextGaussian(0, Math.sqrt(v)));
+                        e.set(i, v == 0.0 ? 0.0 : RandomUtil.getInstance().nextGaussian(0, FastMath.sqrt(v)));
                     } else if (errorType == 2) {
                         e.set(i, RandomUtil.getInstance().nextUniform(errorParam1, errorParam2));
                     } else if (errorType == 3) {

@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -604,7 +605,7 @@ public class RecursiveBlockingVerbose {
          */
         public void pop(String trailer) {
             if (!enabled) return;
-            indent = Math.max(0, indent - 1);
+            indent = FastMath.max(0, indent - 1);
             if (trailer != null && !trailer.isEmpty()) {
                 printLine("◀ " + trailer);
             }

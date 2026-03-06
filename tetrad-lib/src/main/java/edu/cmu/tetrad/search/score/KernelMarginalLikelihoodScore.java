@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
@@ -298,7 +299,7 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
      */
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(Math.log(Math.max(5, nEff)));
+        return (int) FastMath.ceil(FastMath.log(FastMath.max(5, nEff)));
     }
 
     /**
@@ -425,7 +426,7 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
      *                  adjusted to 50.
      */
     public void setBwMaxRows(int bwMaxRows) {
-        this.bwMaxRows = Math.max(50, bwMaxRows);
+        this.bwMaxRows = FastMath.max(50, bwMaxRows);
         resetCache();
     }
 
@@ -463,7 +464,7 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
         for (int i = 0; i < n; i++) {
             double di = L.get(i, i);
             if (!(di > 0) || !Double.isFinite(di)) return Double.NaN;
-            logDet += Math.log(di);
+            logDet += FastMath.log(di);
         }
         logDet *= 2.0;
 
@@ -512,7 +513,7 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
             for (int j = 0; j < d; j++) Z[r][j] = zCols[parentIdx[j]][row];
         }
 
-        double bw2 = medianDistanceSquaredND(Z, Math.min(n, bwMaxRows));
+        double bw2 = medianDistanceSquaredND(Z, FastMath.min(n, bwMaxRows));
         if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
         bw2 *= (bandwidthMultiplier * bandwidthMultiplier);
 
@@ -530,7 +531,7 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
                     double diff = Z[i][k] - Z[j][k];
                     dist2 += diff * diff;
                 }
-                double v = Math.exp(-dist2 * invBw);
+                double v = FastMath.exp(-dist2 * invBw);
                 K.set(i, j, v);
                 K.set(j, i, v);
             }
@@ -590,7 +591,7 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
         }
         double mean = sum / n;
         double var = (sum2 - n * mean * mean) / (n - 1.0);
-        double sd = Math.sqrt(Math.max(1e-12, var));
+        double sd = FastMath.sqrt(FastMath.max(1e-12, var));
 
         for (int i = 0; i < in.length; i++) {
             double v = in[i];
@@ -599,7 +600,7 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
     }
 
     private static void addDiagonalInPlace(DMatrixRMaj M, double v) {
-        int n = Math.min(M.numRows, M.numCols);
+        int n = FastMath.min(M.numRows, M.numCols);
         for (int i = 0; i < n; i++) M.add(i, i, v);
     }
 
@@ -609,14 +610,14 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
         int d = Z[0].length;
         if (n < 3) return 1.0;
 
-        int m = Math.min(n, maxRows);
+        int m = FastMath.min(n, maxRows);
 
         // Take evenly spaced rows (deterministic, no RNG).
         int[] idx = new int[m];
         if (m == n) {
             for (int i = 0; i < m; i++) idx[i] = i;
         } else {
-            for (int i = 0; i < m; i++) idx[i] = (int) Math.floor((i * (long) (n - 1)) / (double) (m - 1));
+            for (int i = 0; i < m; i++) idx[i] = (int) FastMath.floor((i * (long) (n - 1)) / (double) (m - 1));
         }
 
         int cnt = m * (m - 1) / 2;

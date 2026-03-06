@@ -8,6 +8,7 @@ import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -201,7 +202,7 @@ public final class VertexRepairPanel extends JPanel {
     private static int editSize(ScoredCandidate s) {
         try {
             if (s.edit() != null && s.edit().getEdges() != null) {
-                return Math.max(1, s.edit().getEdges().size());
+                return FastMath.max(1, s.edit().getEdges().size());
             }
         } catch (Throwable ignored) {
         }
@@ -258,7 +259,7 @@ public final class VertexRepairPanel extends JPanel {
 //        int editSize = 1;
 //        try {
 //            if (s.edit() != null && s.edit().getEdges() != null) {
-//                editSize = Math.max(1, s.edit().getEdges().size());
+//                editSize = FastMath.max(1, s.edit().getEdges().size());
 //            }
 //        } catch (Throwable ignored) {
 //            // keep editSize=1
@@ -593,8 +594,8 @@ public final class VertexRepairPanel extends JPanel {
         if (p <= 0.0) return -50.0;
         if (p >= 1.0) return 50.0;
         final double eps = 1e-12;
-        double q = Math.min(1.0 - eps, Math.max(eps, p));
-        return Math.log(q) - Math.log(1.0 - q);
+        double q = FastMath.min(1.0 - eps, FastMath.max(eps, p));
+        return FastMath.log(q) - FastMath.log(1.0 - q);
     }
 
     private static double alphaLogOdds(double p, double alpha) {
@@ -604,12 +605,12 @@ public final class VertexRepairPanel extends JPanel {
 
         final double eps = 1e-12;
 
-        double q = Math.min(1.0 - eps, Math.max(eps, p));
-        double a = Math.min(1.0 - eps, Math.max(eps, alpha));
+        double q = FastMath.min(1.0 - eps, FastMath.max(eps, p));
+        double a = FastMath.min(1.0 - eps, FastMath.max(eps, alpha));
 
         // log(p/(1-p)) - log(alpha/(1-alpha))
-        return (Math.log(q) - Math.log(1.0 - q))
-                - (Math.log(a) - Math.log(1.0 - a));
+        return (FastMath.log(q) - FastMath.log(1.0 - q))
+                - (FastMath.log(a) - FastMath.log(1.0 - a));
     }
 
     // Accept if:
@@ -984,7 +985,7 @@ public final class VertexRepairPanel extends JPanel {
         List<ScoredCandidate> ranked = new ArrayList<>(scored);
         ranked.sort(CANONICAL_TABLE_ORDER);
 
-        final int topK = Math.min(DEFAULT_MODELP_TOP_K, ranked.size());
+        final int topK = FastMath.min(DEFAULT_MODELP_TOP_K, ranked.size());
         final LinkedHashSet<String> keysToEval = new LinkedHashSet<>();
 
         // 2a) always compute for top-K rows (table-surfaced set)
@@ -1511,7 +1512,7 @@ public final class VertexRepairPanel extends JPanel {
 //        List<ScoredCandidate> ranked = new ArrayList<>(scored);
 //        ranked.sort(CANONICAL_TABLE_ORDER);
 //
-//        int k = ranked.size();//Math.min(modelPTopK, ranked.size());
+//        int k = ranked.size();//FastMath.min(modelPTopK, ranked.size());
 //        Map<String, Double> modelPByKey = new HashMap<>(k * 2);
 //
 //        for (ScoredCandidate scoredCandidate : ranked) {
@@ -1613,7 +1614,7 @@ public final class VertexRepairPanel extends JPanel {
         List<ScoredCandidate> ranked = new ArrayList<>(scored);
         ranked.sort(CANONICAL_TABLE_ORDER);
 
-        final int topK = Math.min(DEFAULT_MODELP_TOP_K, ranked.size());
+        final int topK = FastMath.min(DEFAULT_MODELP_TOP_K, ranked.size());
         final LinkedHashSet<String> keysToEval = new LinkedHashSet<>();
 
         // 2a) top-K (table-surfaced set)

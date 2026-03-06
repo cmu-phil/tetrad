@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm;
 import edu.cmu.tetrad.util.Parameters;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -63,7 +64,7 @@ public final class HybridCgEstimator {
                                                    " (expected equal_frequency, equal_interval, or none)");
         }
 
-        final int binsRequested = Math.max(2, params.getInt("hybridcg.bins", 3));
+        final int binsRequested = FastMath.max(2, params.getInt("hybridcg.bins", 3));
 
         if ("none".equals(binPolicy)) {
             // Ensure PM already carries cutpoints for any discrete child with continuous parents
@@ -170,7 +171,7 @@ public final class HybridCgEstimator {
         // Nudge ties upward in one pass
         for (int i = 1; i < out.length; i++) {
             if (!(out[i] > out[i - 1])) {
-                out[i] = Math.nextUp(out[i - 1]);
+                out[i] = FastMath.nextUp(out[i - 1]);
             }
         }
         for (int i = 1; i < out.length; i++) if (!(out[i] > out[i - 1])) {
@@ -193,8 +194,8 @@ public final class HybridCgEstimator {
         double[] e = new double[bins - 1];
         for (int k = 1; k <= bins - 1; k++) {
             double q = k / (double) bins;
-            int idx = (int) Math.ceil(q * n) - 1;
-            idx = Math.min(Math.max(idx, 0), n - 1);
+            int idx = (int) FastMath.ceil(q * n) - 1;
+            idx = FastMath.min(FastMath.max(idx, 0), n - 1);
             e[k - 1] = data[idx];
         }
         return e;

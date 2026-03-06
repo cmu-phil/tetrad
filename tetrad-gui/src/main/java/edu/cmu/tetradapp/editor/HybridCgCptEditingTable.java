@@ -3,6 +3,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -132,7 +133,7 @@ final class HybridCgCptEditingTable extends JTable {
             for (int i = 0; i < discParents.length; i++) dims[i] = pm.getCardinality(discParents[i]);
             for (int j = 0; j < contParents.length; j++) {
                 int bins = (contEdges != null && contEdges[j] != null) ? contEdges[j].length + 1 : 1;
-                dims[discParents.length + j] = Math.max(1, bins);
+                dims[discParents.length + j] = FastMath.max(1, bins);
             }
 
             // Build column headers (parents followed by child category columns)
@@ -193,11 +194,11 @@ final class HybridCgCptEditingTable extends JTable {
         void normalizeRow(int row) {
             int K = childCats.size();
             double s = 0.0;
-            for (int k = 0; k < K; k++) s += Math.max(0.0, im.getProbability(y, row, k));
+            for (int k = 0; k < K; k++) s += FastMath.max(0.0, im.getProbability(y, row, k));
             if (s <= 0) { // make uniform
                 for (int k = 0; k < K; k++) im.setProbability(y, row, k, 1.0 / K);
             } else {
-                for (int k = 0; k < K; k++) im.setProbability(y, row, k, Math.max(0.0, im.getProbability(y, row, k)) / s);
+                for (int k = 0; k < K; k++) im.setProbability(y, row, k, FastMath.max(0.0, im.getProbability(y, row, k)) / s);
             }
         }
         void normalizeAll() {
@@ -206,7 +207,7 @@ final class HybridCgCptEditingTable extends JTable {
         void randomizeRow(int row) {
             int K = childCats.size();
             double[] e = new double[K]; double s = 0;
-            for (int k = 0; k < K; k++) { e[k] = -Math.log(1.0 - Math.random()); s += e[k]; }
+            for (int k = 0; k < K; k++) { e[k] = -FastMath.log(1.0 - FastMath.random()); s += e[k]; }
             for (int k = 0; k < K; k++) im.setProbability(y, row, k, e[k] / s);
         }
         void randomizeAll() { for (int r = 0; r < getRowCount(); r++) randomizeRow(r); }
@@ -217,7 +218,7 @@ final class HybridCgCptEditingTable extends JTable {
             // mixed-radix decode (least-significant = last dimension)
             int[] out = new int[dims.length];
             for (int i = dims.length - 1; i >= 0; i--) {
-                int d = Math.max(1, dims[i]);
+                int d = FastMath.max(1, dims[i]);
                 out[i] = index % d;
                 index /= d;
             }

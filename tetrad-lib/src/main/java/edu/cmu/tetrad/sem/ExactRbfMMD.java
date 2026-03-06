@@ -1,5 +1,7 @@
 package edu.cmu.tetrad.sem;
 
+import org.apache.commons.math3.util.FastMath;
+
 final class ExactRbfMMD {
 
     private ExactRbfMMD() {}
@@ -18,8 +20,8 @@ final class ExactRbfMMD {
         double inv2sig2 = 1.0 / (2.0 * sig * sig);
 
         // Optional truncation
-        int n = (maxRows > 0) ? Math.min(maxRows, X.length) : X.length;
-        int m = (maxRows > 0) ? Math.min(maxRows, Y.length) : Y.length;
+        int n = (maxRows > 0) ? FastMath.min(maxRows, X.length) : X.length;
+        int m = (maxRows > 0) ? FastMath.min(maxRows, Y.length) : Y.length;
 
         double sumXX = 0.0;
         for (int i = 0; i < n; i++) {
@@ -46,7 +48,7 @@ final class ExactRbfMMD {
         sumXY *= 2.0 / (n * m);
 
         double mmd2 = sumXX + sumYY - sumXY;
-        return Math.max(0.0, mmd2);
+        return FastMath.max(0.0, mmd2);
     }
 
     private static double rbf(double[] a,
@@ -58,6 +60,6 @@ final class ExactRbfMMD {
             double d = a[i] - b[i];
             dist2 += d * d;
         }
-        return Math.exp(-dist2 * inv2sig2);
+        return FastMath.exp(-dist2 * inv2sig2);
     }
 }

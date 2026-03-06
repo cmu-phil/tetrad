@@ -10,6 +10,7 @@ import edu.cmu.tetradapp.model.HybridCgImWrapper;
 import edu.cmu.tetradapp.model.HybridCgPmWrapper;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.util.Parameters;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -230,8 +231,8 @@ public final class HybridCgEstimatorEditor extends JPanel {
         alpha.setValue(params.getDouble("hybridcg.alpha", 1.0));
         shareVar.setSelected(params.getBoolean("hybridcg.shareVariance", false));
         binPolicy.setSelectedItem(params.getString("hybridcg.binPolicy", "equal_frequency"));
-        bins.setValue(Math.max(2, params.getInt("hybridcg.bins", 3)));
-        defBins.setValue(Math.max(2, params.getInt("hybridcg.defaultBins", 3)));
+        bins.setValue(FastMath.max(2, params.getInt("hybridcg.bins", 3)));
+        defBins.setValue(FastMath.max(2, params.getInt("hybridcg.defaultBins", 3)));
         defLo.setValue(params.getDouble("hybridcg.defaultRangeLow", -1.0));
         defHi.setValue(params.getDouble("hybridcg.defaultRangeHigh", 1.0));
     }
