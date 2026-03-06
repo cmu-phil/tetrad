@@ -126,21 +126,6 @@ public class TrainedDagModel implements Simulation, TakesData {
             simulator.fit();
 
             int samplaSize = parameters.getInt(Params.SAMPLE_SIZE);
-//            edu.cmu.tetrad.sem.TrainedDagSimulatorGNM.SimResult result = simulator.simulate(samplaSize);
-//            DataSet dataSet = result.toDataSet();
-//
-//            if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-//                dataSet = DataTransforms.shuffleColumns(dataSet);
-//            }
-//
-//            if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
-//                double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
-//                dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
-//            }
-
-//            dataSet = DataTransforms.restrictToMeasured(dataSet);
-//
-//            sim.fit();
             TrainedDagSimulatorGNM.SimResult simData = simulator.simulate(samplaSize);
 
             AdequacyReport report =

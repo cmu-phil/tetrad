@@ -71,7 +71,7 @@ import java.util.*;
  *       given parents, while still using bootstrapped noise anchored to the observed dataset.</li>
  * </ul>
  */
-public final class TrainedDagSimulatorGNM {
+public final class TrainedDagSimulatorGNM1 {
 
     // -------------------- configuration --------------------
     private final List<NodeReport> nodeReports = new ArrayList<>();
@@ -99,7 +99,7 @@ public final class TrainedDagSimulatorGNM {
      * @throws NullPointerException     If {@code data} or {@code dag} is {@code null}.
      * @throws IllegalArgumentException If {@code dag} contains cycles (i.e., is not a valid DAG).
      */
-    public TrainedDagSimulatorGNM(DataSet data, Graph dag, Params params) {
+    public TrainedDagSimulatorGNM1(DataSet data, Graph dag, Params params) {
         if (data == null) throw new NullPointerException("data");
         if (dag == null) throw new NullPointerException("dag");
         if (!dag.paths().isLegalDag()) throw new IllegalArgumentException("The supplied graph is not a DAG.");
@@ -188,7 +188,7 @@ public final class TrainedDagSimulatorGNM {
         StringBuilder sb = new StringBuilder();
         sb.append("TrainedDagSimulator fit report\n");
         sb.append("seed=").append(params.seed).append("\n");
-        sb.append("hiddenLayers=").append(Arrays.toString(params.getHiddenLayers()))
+        sb.append("hidden=").append(params.hidden)
                 .append(" epochs=").append(params.epochs)
                 .append(" lr=").append(params.lr)
                 .append(" l2=").append(params.l2)
@@ -281,7 +281,7 @@ public final class TrainedDagSimulatorGNM {
                     m.fit(data, rng, params);
                     mechanisms[childIdx] = m;
                 } else {
-                    ContinuousMechanism m = new ContinuousMechanism(childIdx, parentIdx, encoder, rng);
+                    ContinuousMechanism m = new ContinuousMechanism(childIdx, parentIdx, encoder, params.hidden, rng);
                     m.fit(data, rng, params);
                     mechanisms[childIdx] = m;
                 }
@@ -299,7 +299,7 @@ public final class TrainedDagSimulatorGNM {
                     m.fit(data, rng, params);
                     mechanisms[childIdx] = m;
                 } else {
-                    DiscreteMechanism m = new DiscreteMechanism(childIdx, parentIdx, encoder, L, rng);
+                    DiscreteMechanism m = new DiscreteMechanism(childIdx, parentIdx, encoder, params.hidden, L, rng);
                     m.fit(data, rng, params);
                     mechanisms[childIdx] = m;
                 }
@@ -400,31 +400,107 @@ public final class TrainedDagSimulatorGNM {
         ));
     }
 
+    /**
+     * Encapsulates configuration parameters for the TrainedDagSimulatorGNM class.
+     * This class defines a set of tunable options that control the behavior of the simulator,
+     * such as training parameters, random seed initialization, and simulation strategies.
+     * These parameters can be customized to achieve different trade-offs in simulation fidelity,
+     * efficiency, or interpretability.
+     */
     public static final class Params {
-        public int hidden = 16;              // backward compatibility
-        public int[] hiddenLayers = new int[]{64};    // e.g. new int[]{32, 32}
-
+        /**
+         * Configuration parameters for the TrainedDagSimulatorGNM class.
+         * This class defines a set of tunable options that control the behavior of the simulator,
+         * such as training parameters, random seed initialization, and simulation strategies.
+         * These parameters can be customized to achieve different trade-offs in simulation fidelity,
+         * efficiency, or interpretability.
+         */
+        public int hidden = 16;
+        /**
+         * Number of training epochs for the simulator.
+         * This parameter controls the number of iterations over the entire dataset during training.
+         * A higher number of epochs can lead to more refined models but may also increase training time.
+         */
         public int epochs = 200;
+        /**
+         * Learning rate for the simulator.
+         * This parameter controls the step size at each iteration during training.
+         * A smaller learning rate can lead to more stable convergence but may require more epochs.
+         */
         public double lr = 0.01;
+        /**
+         * L2 regularization parameter for the simulator.
+         * This parameter controls the amount of L2 regularization applied during training.
+         * A higher value can lead to more regularization and potentially prevent overfitting.
+         */
         public double l2 = 1e-4;
+        /**
+         * Batch size for the simulator.
+         * This parameter controls the number of samples processed in each training iteration.
+         * A larger batch size can lead to faster training but may require more memory.
+         */
         public int batchSize = 64;
+        /**
+         * Random seed for the simulator.
+         * This parameter initializes the random number generator used for various operations,
+         * ensuring reproducibility of simulation results when the same seed is used.
+         */
         public long seed = 12345L;
+        /**
+         * Maximum number of discrete levels to consider for simulation.
+         * This parameter controls the maximum number of discrete levels allowed for variables
+         * in the simulation. Variables with more levels than this threshold will be treated
+         * as continuous.
+         */
         public int maxDiscreteLevels = 50;
+        /**
+         * Whether to preserve marginal distributions at root nodes during simulation.
+         * This parameter controls whether the simulator should maintain the marginal distributions
+         * of root nodes (nodes with no parents) during the simulation process. When set to true,
+         * the simulator will attempt to preserve these distributions, which can be useful for
+         * certain types of simulations or analyses.
+         */
         public boolean bootstrapRoots = true;
+        /**
+         * Interpolation factor for unconditional vs structural mechanism during simulation.
+         * This parameter controls the balance between using the structural mechanism (based on
+         * parent variables) and the unconditional mechanism (ignoring parent variables) when
+         * simulating the effect of a variable. A value of 1.0 means fully structural, while
+         * 0.0 means fully unconditional.
+         */
         public double lambdaParents = 1.0;
+        /**
+         * A threshold value used to issue a warning for the "z" score in statistical or analytical calculations.
+         * This variable may represent a critical boundary, signaling the occurrence of a significant event
+         * or aiding in anomaly detection. The default value is set to 4.0.
+         */
         public double zWarn1 = 4.0;
+        /**
+         * A threshold value used to issue a warning for the "z" score in statistical or analytical calculations.
+         * This variable may represent a critical boundary, signaling the occurrence of a significant event
+         * or aiding in anomaly detection. The default value is set to 6.0.
+         */
         public double zWarn2 = 6.0;
+        /**
+         * Whether to stratify residual bootstrap by discrete-parent signature.
+         * This parameter controls whether the simulator should stratify residual bootstrap based on the
+         * discrete-parent signature of variables. Stratification can help improve the accuracy of simulations
+         * in mixed variable settings.
+         */
         public boolean stratifyResidualsByDiscreteParents = true;
+        /**
+         * Maximum number of residual bootstrap strata to consider.
+         * This parameter controls the maximum number of strata maps allowed for residual bootstrap
+         * in large categorical parent sets. It helps prevent excessive memory usage and computational
+         * complexity.
+         */
         public int maxResidualStrata = 5000;
 
+        /**
+         * Default constructor for the Params class.
+         * Initializes an instance of Params with default values for all fields.
+         */
         public Params() {
-        }
-
-        public int[] getHiddenLayers() {
-            if (hiddenLayers != null && hiddenLayers.length > 0) {
-                return hiddenLayers.clone();
-            }
-            return new int[]{hidden};
         }
     }
 
@@ -743,267 +819,214 @@ public final class TrainedDagSimulatorGNM {
     }
 
     private static final class MlpRegressor {
-        final int din;
-        final int[] hiddenLayers;
+        final int din, hidden;
+        final double[][] W1;  // hidden x din
+        final double[] b1;    // hidden
+        final double[] W2;    // hidden -> scalar
+        double b2;
 
-        // Hidden layers
-        final double[][][] W;   // W[layer][out][in]
-        final double[][] b;     // b[layer][out]
-
-        // Output layer
-        final double[] Wout;    // scalar output from last hidden
-        double bout;
-
-        MlpRegressor(int din, int[] hiddenLayers, Random rng) {
+        MlpRegressor(int din, int hidden, Random rng) {
             this.din = din;
-            this.hiddenLayers = hiddenLayers.clone();
-
-            this.W = new double[hiddenLayers.length][][];
-            this.b = new double[hiddenLayers.length][];
-
-            int prev = din;
-            for (int l = 0; l < hiddenLayers.length; l++) {
-                int h = hiddenLayers[l];
-                W[l] = new double[h][prev];
-                b[l] = new double[h];
-                prev = h;
-            }
-
-            this.Wout = new double[Math.max(1, prev)];
+            this.hidden = hidden;
+            this.W1 = new double[hidden][din];
+            this.b1 = new double[hidden];
+            this.W2 = new double[hidden];
             initHe(rng);
         }
 
         void initHe(Random rng) {
-            int prev = din;
-            for (int l = 0; l < hiddenLayers.length; l++) {
-                int h = hiddenLayers[l];
-                double s = Math.sqrt(2.0 / Math.max(1, prev));
-                for (int i = 0; i < h; i++) {
-                    for (int j = 0; j < prev; j++) {
-                        W[l][i][j] = rng.nextGaussian() * s;
-                    }
-                    b[l][i] = 0.0;
-                }
-                prev = h;
+            double s1 = Math.sqrt(2.0 / Math.max(1, din));
+            for (int i = 0; i < hidden; i++) {
+                for (int j = 0; j < din; j++) W1[i][j] = rng.nextGaussian() * s1;
+                b1[i] = 0.0;
             }
-
-            double sout = Math.sqrt(2.0 / Math.max(1, prev));
-            for (int i = 0; i < Wout.length; i++) {
-                Wout[i] = rng.nextGaussian() * sout;
-            }
-            bout = 0.0;
+            double s2 = Math.sqrt(2.0 / Math.max(1, hidden));
+            for (int i = 0; i < hidden; i++) W2[i] = rng.nextGaussian() * s2;
+            b2 = 0.0;
         }
 
         double predict(double[] x) {
-            double[] a = x;
-
-            for (int l = 0; l < hiddenLayers.length; l++) {
-                double[] next = new double[hiddenLayers[l]];
-                for (int i = 0; i < hiddenLayers[l]; i++) {
-                    double z = b[l][i];
-                    double[] wi = W[l][i];
-                    for (int j = 0; j < a.length; j++) {
-                        z += wi[j] * a[j];
-                    }
-                    next[i] = Math.tanh(z);
-                }
-                a = next;
+            double[] h = new double[hidden];
+            for (int i = 0; i < hidden; i++) {
+                double z = b1[i];
+                double[] wi = W1[i];
+                for (int j = 0; j < din; j++) z += wi[j] * x[j];
+                h[i] = Math.tanh(z);
             }
-
-            double y = bout;
-            for (int i = 0; i < a.length; i++) {
-                y += Wout[i] * a[i];
-            }
+            double y = b2;
+            for (int i = 0; i < hidden; i++) y += W2[i] * h[i];
             return y;
         }
 
         void sgdStep(DataSet data, int[] rows, int start, int end,
                      InputEncoder enc, int childCol, double lr, double l2) {
+
             double[] x = new double[din];
+            double[] h = new double[hidden];
+            double[] dh = new double[hidden];
+
             for (int t = start; t < end; t++) {
                 int r = rows[t];
                 enc.encodeRow(data, r, x);
                 double y = data.getDouble(r, childCol);
-                sgdStepOne(x, y, lr, l2);
+
+                // forward
+                for (int i = 0; i < hidden; i++) {
+                    double z = b1[i];
+                    double[] wi = W1[i];
+                    for (int j = 0; j < din; j++) z += wi[j] * x[j];
+                    h[i] = Math.tanh(z);
+                }
+                double yhat = b2;
+                for (int i = 0; i < hidden; i++) yhat += W2[i] * h[i];
+
+                double err = (yhat - y); // d/dyhat 0.5*(err^2) = err
+
+                // grads output layer
+                for (int i = 0; i < hidden; i++) {
+                    double gW2 = err * h[i] + l2 * W2[i];
+                    W2[i] -= lr * gW2;
+                }
+                b2 -= lr * err;
+
+                // backprop to hidden
+                for (int i = 0; i < hidden; i++) {
+                    double d = err * W2[i];
+                    // tanh' = 1 - h^2
+                    dh[i] = d * (1.0 - h[i] * h[i]);
+                }
+
+                // grads W1, b1
+                for (int i = 0; i < hidden; i++) {
+                    double[] wi = W1[i];
+                    double dhi = dh[i];
+                    for (int j = 0; j < din; j++) {
+                        double g = dhi * x[j] + l2 * wi[j];
+                        wi[j] -= lr * g;
+                    }
+                    b1[i] -= lr * dhi;
+                }
             }
         }
 
         void sgdStepOne(double[] x, double y, double lr, double l2) {
-            int L = hiddenLayers.length;
+            double[] h = new double[hidden];
+            double[] dh = new double[hidden];
 
-            // Forward pass
-            double[][] activations = new double[L + 1][];
-            activations[0] = x;
+            // forward
+            for (int i = 0; i < hidden; i++) {
+                double z = b1[i];
+                double[] wi = W1[i];
+                for (int j = 0; j < din; j++) z += wi[j] * x[j];
+                h[i] = Math.tanh(z);
+            }
+            double yhat = b2;
+            for (int i = 0; i < hidden; i++) yhat += W2[i] * h[i];
 
-            for (int l = 0; l < L; l++) {
-                double[] prev = activations[l];
-                double[] curr = new double[hiddenLayers[l]];
-                for (int i = 0; i < hiddenLayers[l]; i++) {
-                    double z = b[l][i];
-                    double[] wi = W[l][i];
-                    for (int j = 0; j < prev.length; j++) {
-                        z += wi[j] * prev[j];
-                    }
-                    curr[i] = Math.tanh(z);
-                }
-                activations[l + 1] = curr;
+            double err = (yhat - y);
+
+            // output layer
+            for (int i = 0; i < hidden; i++) {
+                double gW2 = err * h[i] + l2 * W2[i];
+                W2[i] -= lr * gW2;
+            }
+            b2 -= lr * err;
+
+            // backprop hidden
+            for (int i = 0; i < hidden; i++) {
+                double d = err * W2[i];
+                dh[i] = d * (1.0 - h[i] * h[i]);
             }
 
-            double[] last = activations[L];
-            double yhat = bout;
-            for (int i = 0; i < last.length; i++) {
-                yhat += Wout[i] * last[i];
-            }
-
-            double err = yhat - y;
-
-            // Gradient wrt output layer
-            double[] deltaNext = new double[last.length];
-            for (int i = 0; i < last.length; i++) {
-                deltaNext[i] = err * Wout[i];
-                double g = err * last[i] + l2 * Wout[i];
-                Wout[i] -= lr * g;
-            }
-            bout -= lr * err;
-
-            // Backprop hidden layers
-            for (int l = L - 1; l >= 0; l--) {
-                double[] a = activations[l + 1];
-                double[] prev = activations[l];
-                double[] delta = new double[a.length];
-
-                for (int i = 0; i < a.length; i++) {
-                    delta[i] = deltaNext[i] * (1.0 - a[i] * a[i]);
+            // W1, b1
+            for (int i = 0; i < hidden; i++) {
+                double[] wi = W1[i];
+                double dhi = dh[i];
+                for (int j = 0; j < din; j++) {
+                    double g = dhi * x[j] + l2 * wi[j];
+                    wi[j] -= lr * g;
                 }
-
-                double[] newDeltaNext = new double[prev.length];
-
-                for (int i = 0; i < a.length; i++) {
-                    double[] wi = W[l][i];
-                    double di = delta[i];
-
-                    for (int j = 0; j < prev.length; j++) {
-                        newDeltaNext[j] += di * wi[j];
-                        double g = di * prev[j] + l2 * wi[j];
-                        wi[j] -= lr * g;
-                    }
-                    b[l][i] -= lr * di;
-                }
-
-                deltaNext = newDeltaNext;
+                b1[i] -= lr * dhi;
             }
         }
     }
 
     private static final class MlpSoftmaxClassifier {
-        final int din;
-        final int[] hiddenLayers;
-        final int k;
+        final int din, hidden, k;
+        final double[][] W1; // hidden x din
+        final double[] b1;   // hidden
+        final double[][] W2; // k x hidden
+        final double[] b2;   // k
 
-        // Hidden layers
-        final double[][][] W;   // W[layer][out][in]
-        final double[][] b;     // b[layer][out]
-
-        // Output layer
-        final double[][] Wout;  // k x lastHidden
-        final double[] bout;    // k
-
-        MlpSoftmaxClassifier(int din, int[] hiddenLayers, int k, Random rng) {
+        MlpSoftmaxClassifier(int din, int hidden, int k, Random rng) {
             this.din = din;
-            this.hiddenLayers = hiddenLayers.clone();
+            this.hidden = hidden;
             this.k = k;
-
-            this.W = new double[hiddenLayers.length][][];
-            this.b = new double[hiddenLayers.length][];
-
-            int prev = din;
-            for (int l = 0; l < hiddenLayers.length; l++) {
-                int h = hiddenLayers[l];
-                W[l] = new double[h][prev];
-                b[l] = new double[h];
-                prev = h;
-            }
-
-            this.Wout = new double[k][Math.max(1, prev)];
-            this.bout = new double[k];
-
+            this.W1 = new double[hidden][din];
+            this.b1 = new double[hidden];
+            this.W2 = new double[k][hidden];
+            this.b2 = new double[k];
             initHe(rng);
         }
 
-        void initHe(Random rng) {
-            int prev = din;
-            for (int l = 0; l < hiddenLayers.length; l++) {
-                int h = hiddenLayers[l];
-                double s = Math.sqrt(2.0 / Math.max(1, prev));
-                for (int i = 0; i < h; i++) {
-                    for (int j = 0; j < prev; j++) {
-                        W[l][i][j] = rng.nextGaussian() * s;
-                    }
-                    b[l][i] = 0.0;
-                }
-                prev = h;
-            }
-
-            double sout = Math.sqrt(2.0 / Math.max(1, prev));
-            for (int c = 0; c < k; c++) {
-                for (int j = 0; j < Wout[c].length; j++) {
-                    Wout[c][j] = rng.nextGaussian() * sout;
-                }
-                bout[c] = 0.0;
-            }
+        private static double[] softmax(double[] z) {
+            double[] out = new double[z.length];
+            softmaxInto(z, out);
+            return out;
         }
 
-        private static void softmaxInto(double[] z, double[] out) {
+        private static double[] softmaxInto(double[] z, double[] out) {
             double max = z[0];
-            for (int i = 1; i < z.length; i++) {
-                if (z[i] > max) max = z[i];
-            }
-
+            for (int i = 1; i < z.length; i++) max = Math.max(max, z[i]);
             double sum = 0.0;
             for (int i = 0; i < z.length; i++) {
                 out[i] = Math.exp(z[i] - max);
                 sum += out[i];
             }
-
             double inv = 1.0 / Math.max(1e-300, sum);
-            for (int i = 0; i < z.length; i++) {
-                out[i] *= inv;
+            for (int i = 0; i < z.length; i++) out[i] *= inv;
+            return out;
+        }
+
+        void initHe(Random rng) {
+            double s1 = Math.sqrt(2.0 / Math.max(1, din));
+            for (int i = 0; i < hidden; i++) {
+                for (int j = 0; j < din; j++) W1[i][j] = rng.nextGaussian() * s1;
+                b1[i] = 0.0;
+            }
+            double s2 = Math.sqrt(2.0 / Math.max(1, hidden));
+            for (int i = 0; i < k; i++) {
+                for (int j = 0; j < hidden; j++) W2[i][j] = rng.nextGaussian() * s2;
+                b2[i] = 0.0;
             }
         }
 
         double[] predictProbs(double[] x) {
-            double[] a = x;
-
-            for (int l = 0; l < hiddenLayers.length; l++) {
-                double[] next = new double[hiddenLayers[l]];
-                for (int i = 0; i < hiddenLayers[l]; i++) {
-                    double z = b[l][i];
-                    double[] wi = W[l][i];
-                    for (int j = 0; j < a.length; j++) {
-                        z += wi[j] * a[j];
-                    }
-                    next[i] = Math.tanh(z);
-                }
-                a = next;
+            double[] h = new double[hidden];
+            for (int i = 0; i < hidden; i++) {
+                double z = b1[i];
+                double[] wi = W1[i];
+                for (int j = 0; j < din; j++) z += wi[j] * x[j];
+                h[i] = Math.tanh(z);
             }
-
             double[] logits = new double[k];
             for (int c = 0; c < k; c++) {
-                double z = bout[c];
-                for (int j = 0; j < a.length; j++) {
-                    z += Wout[c][j] * a[j];
-                }
+                double z = b2[c];
+                double[] wc = W2[c];
+                for (int j = 0; j < hidden; j++) z += wc[j] * h[j];
                 logits[c] = z;
             }
-
-            double[] probs = new double[k];
-            softmaxInto(logits, probs);
-            return probs;
+            return softmax(logits);
         }
 
         void sgdStep(DataSet data, int[] rows, int start, int end,
                      InputEncoder enc, int childCol, double lr, double l2) {
+
             double[] x = new double[din];
+            double[] h = new double[hidden];
+            double[] dh = new double[hidden];
+            double[] logits = new double[k];
+            double[] probs = new double[k];
 
             for (int t = start; t < end; t++) {
                 int r = rows[t];
@@ -1012,93 +1035,57 @@ public final class TrainedDagSimulatorGNM {
                 int y = safeGetInt(data, r, childCol);
                 if (y < 0 || y >= k) continue;
 
-                sgdStepOne(x, y, lr, l2);
-            }
-        }
-
-        void sgdStepOne(double[] x, int y, double lr, double l2) {
-            int L = hiddenLayers.length;
-
-            // Forward pass
-            double[][] activations = new double[L + 1][];
-            activations[0] = x;
-
-            for (int l = 0; l < L; l++) {
-                double[] prev = activations[l];
-                double[] curr = new double[hiddenLayers[l]];
-                for (int i = 0; i < hiddenLayers[l]; i++) {
-                    double z = b[l][i];
-                    double[] wi = W[l][i];
-                    for (int j = 0; j < prev.length; j++) {
-                        z += wi[j] * prev[j];
-                    }
-                    curr[i] = Math.tanh(z);
+                // forward hidden
+                for (int i = 0; i < hidden; i++) {
+                    double z = b1[i];
+                    double[] wi = W1[i];
+                    for (int j = 0; j < din; j++) z += wi[j] * x[j];
+                    h[i] = Math.tanh(z);
                 }
-                activations[l + 1] = curr;
-            }
 
-            double[] last = activations[L];
-
-            double[] logits = new double[k];
-            for (int c = 0; c < k; c++) {
-                double z = bout[c];
-                for (int j = 0; j < last.length; j++) {
-                    z += Wout[c][j] * last[j];
-                }
-                logits[c] = z;
-            }
-
-            double[] probs = new double[k];
-            softmaxInto(logits, probs);
-
-            // gradient wrt logits
-            probs[y] -= 1.0;
-
-            // backprop into last hidden using OLD Wout
-            double[] deltaNext = new double[last.length];
-            for (int j = 0; j < last.length; j++) {
-                double s = 0.0;
+                // logits
                 for (int c = 0; c < k; c++) {
-                    s += Wout[c][j] * probs[c];
-                }
-                deltaNext[j] = s;
-            }
-
-            // update output layer
-            for (int c = 0; c < k; c++) {
-                double gc = probs[c];
-                for (int j = 0; j < last.length; j++) {
-                    double g = gc * last[j] + l2 * Wout[c][j];
-                    Wout[c][j] -= lr * g;
-                }
-                bout[c] -= lr * gc;
-            }
-
-            // backprop through hidden layers
-            for (int l = L - 1; l >= 0; l--) {
-                double[] a = activations[l + 1];
-                double[] prev = activations[l];
-
-                double[] delta = new double[a.length];
-                for (int i = 0; i < a.length; i++) {
-                    delta[i] = deltaNext[i] * (1.0 - a[i] * a[i]);
+                    double z = b2[c];
+                    double[] wc = W2[c];
+                    for (int j = 0; j < hidden; j++) z += wc[j] * h[j];
+                    logits[c] = z;
                 }
 
-                double[] newDeltaNext = new double[prev.length];
+                // softmax
+                System.arraycopy(softmaxInto(logits, probs), 0, probs, 0, k);
 
-                for (int i = 0; i < a.length; i++) {
-                    double[] wi = W[l][i];
-                    double di = delta[i];
+                // gradient on logits: (p - y_onehot)
+                probs[y] -= 1.0;
 
-                    for (int j = 0; j < prev.length; j++) {
-                        newDeltaNext[j] += di * wi[j];
-                        double g = di * prev[j] + l2 * wi[j];
+                // update W2, b2
+                for (int c = 0; c < k; c++) {
+                    double gc = probs[c];
+                    double[] wc = W2[c];
+                    for (int j = 0; j < hidden; j++) {
+                        double g = gc * h[j] + l2 * wc[j];
+                        wc[j] -= lr * g;
+                    }
+                    b2[c] -= lr * gc;
+                }
+
+                // backprop to hidden: dh = (W2^T * probs) ⊙ tanh'
+                Arrays.fill(dh, 0.0);
+                for (int j = 0; j < hidden; j++) {
+                    double s = 0.0;
+                    for (int c = 0; c < k; c++) s += W2[c][j] * probs[c];
+                    dh[j] = s * (1.0 - h[j] * h[j]);
+                }
+
+                // update W1, b1
+                for (int i = 0; i < hidden; i++) {
+                    double[] wi = W1[i];
+                    double dhi = dh[i];
+                    for (int j = 0; j < din; j++) {
+                        double g = dhi * x[j] + l2 * wi[j];
                         wi[j] -= lr * g;
                     }
-                    b[l][i] -= lr * di;
+                    b1[i] -= lr * dhi;
                 }
-
-                deltaNext = newDeltaNext;
             }
         }
     }
@@ -1348,12 +1335,10 @@ public final class TrainedDagSimulatorGNM {
         double residMean;
         double residSd;
 
-        ContinuousMechanism(int childIndex, int[] parentIdx, InputEncoder encoder, Random rng){
+        ContinuousMechanism(int childIndex, int[] parentIdx, InputEncoder encoder, int hidden, Random rng) {
             super(childIndex, parentIdx, encoder);
-
-            int[] layers = params.getHiddenLayers();
-            this.netMean = new MlpRegressor(encoder.featureDim, layers, rng);
-            this.netGNM = new MlpRegressor(encoder.featureDim + 1, layers, rng);
+            this.netMean = new MlpRegressor(encoder.featureDim, hidden, rng);
+            this.netGNM = new MlpRegressor(encoder.featureDim + 1, hidden, rng); // +1 for e
         }
 
         @Override
@@ -1535,7 +1520,7 @@ public final class TrainedDagSimulatorGNM {
             for (int j = 0; j < enc.parentIdx.length; j++) {
                 if (!enc.parentIsDisc[j]) continue;
                 int col = enc.parentIdx[j];
-                int v = TrainedDagSimulatorGNM.safeGetInt(data, row, col);
+                int v = TrainedDagSimulatorGNM1.safeGetInt(data, row, col);
                 h = 31 * h + v;
             }
             return h;
@@ -1548,13 +1533,10 @@ public final class TrainedDagSimulatorGNM {
 
         double[] baseProbs; // empirical p(y) over training rows
 
-        DiscreteMechanism(int childIndex, int[] parentIdx, InputEncoder encoder, int numLevels, Random rng) {
+        DiscreteMechanism(int childIndex, int[] parentIdx, InputEncoder encoder, int hidden, int numLevels, Random rng) {
             super(childIndex, parentIdx, encoder);
             this.numLevels = numLevels;
-//            this.net = new MlpSoftmaxClassifier(encoder.featureDim, hidden, numLevels, rng);
-
-            int[] layers = params.getHiddenLayers();
-            this.net = new MlpSoftmaxClassifier(encoder.featureDim, layers, numLevels, rng);
+            this.net = new MlpSoftmaxClassifier(encoder.featureDim, hidden, numLevels, rng);
         }
 
         @Override
