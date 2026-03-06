@@ -2,7 +2,7 @@ package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -130,7 +130,7 @@ public final class TrainedDagAdequacy {
                 mean += v;
                 n++;
             }
-            mean /= FastMath.max(1, n);
+            mean /= TMath.max(1, n);
 
             double mse = 0.0;
             for (int i = 0; i < data.getNumRows(); i++) {
@@ -139,7 +139,7 @@ public final class TrainedDagAdequacy {
                 double e = v - mean;
                 mse += e * e;
             }
-            return mse / FastMath.max(1, n);
+            return mse / TMath.max(1, n);
 
         } else {
             // crude baseline: entropy of empirical distribution
@@ -157,7 +157,7 @@ public final class TrainedDagAdequacy {
             for (int k = 0; k < L; k++) {
                 if (counts[k] == 0) continue;
                 double p = counts[k] / n;
-                xent -= p * FastMath.log(p);
+                xent -= p * TMath.log(p);
             }
             return xent;
         }

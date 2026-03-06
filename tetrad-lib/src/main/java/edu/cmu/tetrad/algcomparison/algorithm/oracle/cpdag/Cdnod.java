@@ -18,7 +18,7 @@ import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -104,7 +104,7 @@ public class Cdnod extends AbstractBootstrapAlgorithm implements Algorithm, HasK
                 .alpha(alpha)                             // kept for parity
                 .stable(stable)
                 .colliderStyle(colliderOrientationStyle)
-                .maxPMargin(FastMath.max(0.0, maxPMargin))
+                .maxPMargin(TMath.max(0.0, maxPMargin))
                 .depth(depth)
                 .knowledge(knowledge)                     // IMPORTANT: provides tier 0 contexts and tier constraints
                 .verbose(verbose)

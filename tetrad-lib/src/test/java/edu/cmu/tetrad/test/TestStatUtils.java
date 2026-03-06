@@ -38,7 +38,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 

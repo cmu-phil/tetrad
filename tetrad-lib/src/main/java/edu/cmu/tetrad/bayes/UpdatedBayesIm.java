@@ -24,7 +24,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -479,7 +479,7 @@ public final class UpdatedBayesIm implements BayesIm {
                         continue;
                     }
 
-                    if (FastMath.abs(prob - otherProb) > UpdatedBayesIm.ALLOWABLE_DIFFERENCE) {
+                    if (TMath.abs(prob - otherProb) > UpdatedBayesIm.ALLOWABLE_DIFFERENCE) {
                         return false;
                     }
                 }

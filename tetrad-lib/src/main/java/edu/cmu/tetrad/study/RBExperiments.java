@@ -40,7 +40,7 @@ import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.ParsingException;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,8 +50,8 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static org.apache.commons.math3.util.FastMath.exp;
-import static org.apache.commons.math3.util.FastMath.log;
+import static edu.cmu.tetrad.util.TMath.exp;
+import static edu.cmu.tetrad.util.TMath.log;
 
 /**
  * <p>RBExperiments class.</p>
@@ -207,7 +207,7 @@ public class RBExperiments {
 
         // set the "numLatentConfounders" percentage of variables to be latent
         int numVars = im.getNumNodes();
-        int LV = (int) FastMath.floor(numLatentConfounders * numVars);
+        int LV = (int) TMath.floor(numLatentConfounders * numVars);
         RandomGraph.fixLatents4(LV, dag);
         System.out.println("Variables set to be latent:" + getLatents(dag));
 
@@ -708,7 +708,7 @@ public class RBExperiments {
         if (lnYminusLnX < RBExperiments.MININUM_EXPONENT) {
             return lnX;
         } else {
-            double w = FastMath.log1p(exp(lnYminusLnX));
+            double w = TMath.log1p(exp(lnYminusLnX));
             return w + lnX;
         }
     }

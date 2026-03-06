@@ -3,7 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
@@ -130,7 +130,7 @@ public final class CyclicSemScorer {
             for (int i = 0; i < evd.getNumberOfEigenvalues(); i++) {
                 double re = evd.getEigenvalue(i).getReal();
                 double im = evd.getEigenvalue(i).getImaginary();
-                double mag = FastMath.hypot(re, im);
+                double mag = TMath.hypot(re, im);
                 if (Double.isFinite(mag) && mag > rho) rho = mag;
             }
             if (Double.isFinite(rho)) return rho;
@@ -144,9 +144,9 @@ public final class CyclicSemScorer {
             // largest singular value is the (0,0) entry of W in SimpleSVD
             double sigmaMax = 0.0;
             SimpleMatrix W = svd.getW();
-            int d = FastMath.min(W.numRows(), W.numCols());
+            int d = TMath.min(W.numRows(), W.numCols());
             for (int i = 0; i < d; i++) {
-                sigmaMax = FastMath.max(sigmaMax, FastMath.abs(W.get(i, i)));
+                sigmaMax = TMath.max(sigmaMax, TMath.abs(W.get(i, i)));
             }
             if (Double.isFinite(sigmaMax)) return sigmaMax; // ρ(B) ≤ ||B||₂
         } catch (RuntimeException ignore) {
@@ -157,16 +157,16 @@ public final class CyclicSemScorer {
         double norm1 = 0.0;  // max column sum
         for (int c = 0; c < B.numCols(); c++) {
             double s = 0.0;
-            for (int r = 0; r < B.numRows(); r++) s += FastMath.abs(B.get(r, c));
-            norm1 = FastMath.max(norm1, s);
+            for (int r = 0; r < B.numRows(); r++) s += TMath.abs(B.get(r, c));
+            norm1 = TMath.max(norm1, s);
         }
         double normInf = 0.0; // max row sum
         for (int r = 0; r < B.numRows(); r++) {
             double s = 0.0;
-            for (int c = 0; c < B.numCols(); c++) s += FastMath.abs(B.get(r, c));
-            normInf = FastMath.max(normInf, s);
+            for (int c = 0; c < B.numCols(); c++) s += TMath.abs(B.get(r, c));
+            normInf = TMath.max(normInf, s);
         }
-        double bound = FastMath.min(norm1, normInf); // both bound ρ(B)
+        double bound = TMath.min(norm1, normInf); // both bound ρ(B)
         return bound;
     }
 
@@ -183,8 +183,8 @@ public final class CyclicSemScorer {
         double sum = 0.0;
         for (int i = 0; i < evd.getNumberOfEigenvalues(); i++) {
             double lam = evd.getEigenvalue(i).getReal(); // PSD -> real
-            lam = FastMath.max(lam, 1e-15);
-            sum += FastMath.log(lam);
+            lam = TMath.max(lam, 1e-15);
+            sum += TMath.log(lam);
         }
         return sum;
     }
@@ -266,7 +266,7 @@ public final class CyclicSemScorer {
             for (int t = 0; t < k; t++) {
                 int j = idx[t];
                 double bji = beta.get(t);
-                if (FastMath.abs(bji) > 1e-12) { // epsilon to avoid counting numerical noise
+                if (TMath.abs(bji) > 1e-12) { // epsilon to avoid counting numerical noise
                     B.set(j, i, bji);
                     edgeCount++;
                 }
@@ -291,7 +291,7 @@ public final class CyclicSemScorer {
                 fitted = fitted.plus(Xc.extractVector(false, j).scale(bji));
             }
             SimpleMatrix ri = Xi.minus(fitted);
-            sigmaE[i] = FastMath.max(ri.elementPower(2).elementSum() / FastMath.max(1, n), ridgeOmega);
+            sigmaE[i] = TMath.max(ri.elementPower(2).elementSum() / TMath.max(1, n), ridgeOmega);
         }
 
         // Sigma = (I - B^T)^{-1} Omega (I - B)^{-1}
@@ -324,12 +324,12 @@ public final class CyclicSemScorer {
         double logDetSigma = logDetPSD(Sigma);
         double tr = SigmaInv.mult(S).trace();
 
-        double log2pi = FastMath.log(2 * FastMath.PI);
+        double log2pi = TMath.log(2 * TMath.PI);
         double L = -0.5 * n * (logDetSigma + tr + p * log2pi);
 
         int k = edgeCount + p; // nonzeros in B + diagonal Omega params
-        double bic = higherIsBetterBic ? (2.0 * L - k * FastMath.log(n))
-                : (-2.0 * L + k * FastMath.log(n));
+        double bic = higherIsBetterBic ? (2.0 * L - k * TMath.log(n))
+                : (-2.0 * L + k * TMath.log(n));
 
         return new ScoreResult(bic, true, k);
     }

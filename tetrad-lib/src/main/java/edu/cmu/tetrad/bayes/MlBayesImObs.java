@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -963,7 +963,7 @@ public final class MlBayesImObs implements BayesIm {
                         continue;
                     }
 
-                    if (FastMath.abs(prob - otherProb) > MlBayesImObs.ALLOWABLE_DIFFERENCE) {
+                    if (TMath.abs(prob - otherProb) > MlBayesImObs.ALLOWABLE_DIFFERENCE) {
                         return false;
                     }
                 }

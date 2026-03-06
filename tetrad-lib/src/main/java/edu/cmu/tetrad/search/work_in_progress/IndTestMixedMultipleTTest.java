@@ -34,7 +34,7 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -343,13 +343,13 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             for (int j = 0; j < yzList.size(); j++) {
                 for (int dum = 0; dum < this.variablesPerNode.get(yzList.get(j)).size(); dum++) {
 
-                    double wald = FastMath.abs(result1.getCoefs()[coefIndex] / result1.getStdErrs()[coefIndex]);
+                    double wald = TMath.abs(result1.getCoefs()[coefIndex] / result1.getStdErrs()[coefIndex]);
                     //double val = (1.0 - new NormalDistribution(0,1).cumulativeProbability(wald))*2;//two-tailed test
                     //double val = 1-result1.getProbs()[i+1];
 
                     //this is exactly the same test as the linear case
                     double val = (1.0 - ProbUtils.tCdf(wald, n - k)) * 2;
-                    sumLnP[j] += FastMath.log(val);
+                    sumLnP[j] += TMath.log(val);
                     coefIndex++;
                 }
             }
@@ -449,7 +449,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             }
 
             for (Node ignored : curDummy) {
-                pVec[i] += FastMath.log(pCoef[coeffInd]);
+                pVec[i] += TMath.log(pCoef[coeffInd]);
                 coeffInd++;
             }
 

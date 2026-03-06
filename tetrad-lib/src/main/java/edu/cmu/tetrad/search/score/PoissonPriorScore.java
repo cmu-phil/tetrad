@@ -30,7 +30,7 @@ import org.apache.commons.math3.special.Gamma;
 
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Implements Poisson prior score, a novel (unpubished) score that replaces the penalty term in BIC by the log of the

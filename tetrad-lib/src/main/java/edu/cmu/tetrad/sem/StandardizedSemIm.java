@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.commons.math3.util.FastMath.sqrt;
+import static edu.cmu.tetrad.util.TMath.sqrt;
 
 /**
  * A special SEM model in which variances of variables are always 1 and means of variables are always 0. In order to

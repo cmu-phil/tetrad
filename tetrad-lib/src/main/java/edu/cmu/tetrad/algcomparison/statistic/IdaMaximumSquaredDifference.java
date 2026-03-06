@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IdaCheck;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Parameters;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 
@@ -103,7 +103,7 @@ public class IdaMaximumSquaredDifference implements Statistic {
      */
     @Override
     public double getNormValue(double value) {
-        return FastMath.tanh(value);
+        return TMath.tanh(value);
     }
 }
 

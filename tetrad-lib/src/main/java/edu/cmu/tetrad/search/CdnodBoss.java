@@ -12,7 +12,7 @@ import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -108,7 +108,7 @@ public final class CdnodBoss implements IGraphSearch {
 
     private long pairKey(Node a, Node b){
         int ia = id.get(a), ib = id.get(b);
-        int lo = FastMath.min(ia, ib), hi = FastMath.max(ia, ib);
+        int lo = TMath.min(ia, ib), hi = TMath.max(ia, ib);
         return (((long) lo) << 32) | (hi & 0xffffffffL);
     }
     private void indexNodes(Graph g){
@@ -350,7 +350,7 @@ public final class CdnodBoss implements IGraphSearch {
                 return new MaxPDecision(ColliderOutcome.INDEPENDENT, bestExcl, bestS_excl);
             if (bestIncl >= bestExcl + maxPMargin)
                 return new MaxPDecision(ColliderOutcome.DEPENDENT, bestIncl, bestS_incl);
-            return new MaxPDecision(ColliderOutcome.AMBIGUOUS, FastMath.max(bestIncl, bestExcl),
+            return new MaxPDecision(ColliderOutcome.AMBIGUOUS, TMath.max(bestIncl, bestExcl),
                     (bestIncl >= bestExcl ? bestS_incl : bestS_excl));
         } else if (hasExcl) {
             return new MaxPDecision(ColliderOutcome.INDEPENDENT, bestExcl, bestS_excl);
@@ -372,8 +372,8 @@ public final class CdnodBoss implements IGraphSearch {
         adjx.sort(Comparator.comparing(Node::getName));
         adjy.sort(Comparator.comparing(Node::getName));
 
-        int maxAdj = FastMath.max(adjx.size(), adjy.size());
-        int cap = (depth < 0 ? maxAdj : FastMath.min(depth, maxAdj));
+        int maxAdj = TMath.max(adjx.size(), adjy.size());
+        int cap = (depth < 0 ? maxAdj : TMath.min(depth, maxAdj));
 
         for (int d = 0; d <= cap; d++) {
             for (List<Node> adj : new List[]{adjx, adjy}) {
@@ -689,7 +689,7 @@ public final class CdnodBoss implements IGraphSearch {
          * @return The current {@code Builder} instance for method chaining.
          */
         public Builder maxPMargin(double m) {
-            this.maxPMargin = FastMath.max(0.0, m);
+            this.maxPMargin = TMath.max(0.0, m);
             return this;
         }
 

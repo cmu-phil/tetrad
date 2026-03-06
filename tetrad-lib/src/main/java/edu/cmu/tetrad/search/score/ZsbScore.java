@@ -34,7 +34,7 @@ import org.apache.commons.math3.linear.SingularMatrixException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Implements an unpublished score based on a risk bound due to Zhang and Shen. It adapts Theorem 1 in the following

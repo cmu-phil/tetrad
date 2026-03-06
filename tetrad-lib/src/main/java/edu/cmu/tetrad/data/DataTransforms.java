@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.rmi.MarshalledObject;
 import java.util.*;
@@ -77,16 +77,16 @@ public class DataTransforms {
             for (int i = 0; i < x1.length; i++) {
                 if (isUnlog) {
                     if (base == 0) {
-                        x1[i] = FastMath.exp(x1Orig[i]) - a;
+                        x1[i] = TMath.exp(x1Orig[i]) - a;
                     } else {
-                        x1[i] = FastMath.pow(base, (x1Orig[i])) - a;
+                        x1[i] = TMath.pow(base, (x1Orig[i])) - a;
                     }
                 } else {
-                    double log = FastMath.log(a + x1Orig[i]);
+                    double log = TMath.log(a + x1Orig[i]);
                     if (base == 0) {
                         x1[i] = log;
                     } else {
-                        x1[i] = log / FastMath.log(base);
+                        x1[i] = log / TMath.log(base);
                     }
                 }
             }
@@ -716,7 +716,7 @@ public class DataTransforms {
             Matrix data = dataSet.getDoubleData();
             Matrix X = data.like();
             double n = dataSet.getNumRows();
-//            delta = 1.0 / (4.0 * FastMath.pow(n, 0.25) * FastMath.sqrt(FastMath.PI * FastMath.log(n)));
+//            delta = 1.0 / (4.0 * TMath.pow(n, 0.25) * TMath.sqrt(TMath.PI * TMath.log(n)));
 
             NormalDistribution normalDistribution = new NormalDistribution();
 
@@ -933,7 +933,7 @@ public class DataTransforms {
                 }
             }
 
-            norm = FastMath.sqrt(norm / (data.getNumRows() - 1));
+            norm = TMath.sqrt(norm / (data.getNumRows() - 1));
 
             for (int i = 0; i < data.getNumRows(); i++) {
                 if (!Double.isNaN(data2.get(i, j))) {
@@ -993,7 +993,7 @@ public class DataTransforms {
                 }
             }
 
-            norm = FastMath.sqrt(norm / (data.getNumRows() - 1));
+            norm = TMath.sqrt(norm / (data.getNumRows() - 1));
 
             for (int i = 0; i < data.getNumRows(); i++) {
                 if (!Double.isNaN(data2.get(i, j))) {
@@ -1032,7 +1032,7 @@ public class DataTransforms {
             norm += v * v;
         }
 
-        norm = FastMath.sqrt(norm / (data2.length - 1));
+        norm = TMath.sqrt(norm / (data2.length - 1));
 
         for (int i = 0; i < data2.length; i++) {
             data2[i] = data2[i] / norm;

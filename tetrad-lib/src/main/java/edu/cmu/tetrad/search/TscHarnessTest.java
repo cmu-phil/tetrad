@@ -31,7 +31,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.RankTests;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 import org.junit.Test;
 
@@ -160,7 +160,7 @@ public class TscHarnessTest {
         for (List<Integer> T : truth) {
             int c = 0;
             for (int v : T) if (s.contains(v)) c++;
-            maxOverlap = FastMath.max(maxOverlap, c);
+            maxOverlap = TMath.max(maxOverlap, c);
         }
         return maxOverlap / (double) size;
     }
@@ -175,7 +175,7 @@ public class TscHarnessTest {
         for (Set<Integer> C : pred) {
             int c = 0;
             for (int v : C) if (t.contains(v)) c++;
-            maxOverlap = FastMath.max(maxOverlap, c);
+            maxOverlap = TMath.max(maxOverlap, c);
         }
         return maxOverlap / (double) size;
     }
@@ -265,7 +265,7 @@ public class TscHarnessTest {
                 for (int j = i + 1; j < B.size(); j++)
                     pairs.add(new int[]{B.get(i), B.get(j)});
             Collections.shuffle(pairs, rng);
-            int keep = FastMath.max(1, (int) FastMath.round(0.10 * pairs.size()));
+            int keep = TMath.max(1, (int) TMath.round(0.10 * pairs.size()));
             for (int k = 0; k < keep; k++) {
                 int i = pairs.get(k)[0], j = pairs.get(k)[1];
                 R[i][j] += eps;
@@ -277,7 +277,7 @@ public class TscHarnessTest {
 
     private static int max(int[] a) {
         int m = Integer.MIN_VALUE;
-        for (int x : a) m = FastMath.max(m, x);
+        for (int x : a) m = TMath.max(m, x);
         return m;
     }
 
@@ -316,7 +316,7 @@ public class TscHarnessTest {
                 counts.merge(C, 1, Integer::sum);
             }
         }
-        int thresh = (int) FastMath.ceil(keepFrac * B);
+        int thresh = (int) TMath.ceil(keepFrac * B);
         Set<Set<Integer>> stable = new HashSet<>();
         for (var e : counts.entrySet()) if (e.getValue() >= thresh) stable.add(e.getKey());
         return stable;
@@ -481,7 +481,7 @@ public class TscHarnessTest {
         int ess = data.getNumRows();
 
         // Adaptive alpha helps tamp down borderline rank calls as N grows
-        double alphaBase = FastMath.min(ALPHA, 1.0 / FastMath.log(FastMath.max(50, ess)));
+        double alphaBase = TMath.min(ALPHA, 1.0 / TMath.log(TMath.max(50, ess)));
         int minRedundancy = 0;
 
         // ---- Dual-alpha intersection (cheap) ----
@@ -503,7 +503,7 @@ public class TscHarnessTest {
                     counts.merge(C, 1, Integer::sum);
                 }
             }
-            int thresh = (int) FastMath.ceil(keepFrac * B);
+            int thresh = (int) TMath.ceil(keepFrac * B);
             for (var e : counts.entrySet()) if (e.getValue() >= thresh) boot.add(e.getKey());
         }
 

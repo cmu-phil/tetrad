@@ -31,7 +31,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.linear.SingularMatrixException;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -243,12 +243,12 @@ public final class IndTestCramerT implements IndependenceTest {
         }
 
         double a = -1.0 * submatrix.get(0, 1);
-        double b = FastMath.sqrt(submatrix.get(0, 0) * submatrix.get(1, 1));
+        double b = TMath.sqrt(submatrix.get(0, 0) * submatrix.get(1, 1));
 
         this.storedR = a / b; // Store R so P value can be calculated.
 
-        if (FastMath.abs(this.storedR) > 1) {
-            this.storedR = FastMath.signum(this.storedR);
+        if (TMath.abs(this.storedR) > 1) {
+            this.storedR = TMath.signum(this.storedR);
         }
 
         if (Double.isNaN(this.storedR)) {
@@ -282,7 +282,7 @@ public final class IndTestCramerT implements IndependenceTest {
      * @return the p-value for the independence test.
      */
     public double getPValue() {
-        return 2.0 * Integrator.getArea(pdf(), FastMath.abs(this.storedR), 1.0, 100);
+        return 2.0 * Integrator.getArea(pdf(), TMath.abs(this.storedR), 1.0, 100);
     }
 
     /**
@@ -398,7 +398,7 @@ public final class IndTestCramerT implements IndependenceTest {
         if (pdf() == null || pdf().getK() != k) {
             this.cutoff = cutoff(k, alpha);
         }
-        return FastMath.abs(r) <= this.cutoff;
+        return TMath.abs(r) <= this.cutoff;
     }
 
     private double cutoff(int k, double alpha) {

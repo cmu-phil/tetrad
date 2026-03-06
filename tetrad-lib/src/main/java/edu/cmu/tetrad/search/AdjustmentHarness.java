@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.FileWriter;
 import java.io.PrintWriter;
@@ -186,7 +186,7 @@ public class AdjustmentHarness {
                     long e1 = System.nanoTime();
                     double olsMs = (e1 - e0) / 1_000_000.0;
 
-                    double ae = FastMath.abs(betaHat - trueTE);
+                    double ae = TMath.abs(betaHat - trueTE);
                     absErrSum += ae;
                     estCount++;
 
@@ -344,7 +344,7 @@ public class AdjustmentHarness {
                 double sum = S[i][j];
                 for (int k = 0; k < j; k++) sum -= L[i][k] * L[j][k];
                 if (i == j) {
-                    L[i][j] = FastMath.sqrt(FastMath.max(sum, 1e-12));
+                    L[i][j] = TMath.sqrt(TMath.max(sum, 1e-12));
                 } else {
                     L[i][j] = sum / L[j][j];
                 }

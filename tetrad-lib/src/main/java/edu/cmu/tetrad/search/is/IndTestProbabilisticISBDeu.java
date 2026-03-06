@@ -8,7 +8,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -100,7 +100,7 @@ public class IndTestProbabilisticISBDeu implements IndependenceTest {
             b = t;
         }
         double diff = b - a;
-        return (diff < -745.0) ? a : a + FastMath.log1p(FastMath.exp(diff));
+        return (diff < -745.0) ? a : a + TMath.log1p(TMath.exp(diff));
     }
 
     /**
@@ -362,7 +362,7 @@ public class IndTestProbabilisticISBDeu implements IndependenceTest {
             indBN.addDirectedEdge(n, x);
             indBN.addDirectedEdge(n, y);
         }
-        double lnPInd = FastMath.log(priorProb);
+        double lnPInd = TMath.log(priorProb);
         double lnScoreInd = scoreDag(indBN, bdeu);
         double lnAllInd = lnScoreInd + lnPInd;
 
@@ -373,13 +373,13 @@ public class IndTestProbabilisticISBDeu implements IndependenceTest {
             depBN.addDirectedEdge(n, x);
             depBN.addDirectedEdge(n, y);
         }
-        double lnPDep = FastMath.log(1.0 - priorProb);                // FIX: was log(1 - log(prior))
+        double lnPDep = TMath.log(1.0 - priorProb);                // FIX: was log(1 - log(prior))
         double lnScoreDep = scoreDag(depBN, bdeu);
         double lnAllDep = lnScoreDep + lnPDep;
 
         // log P(ind | D) = logsumexp(lnAllInd) – logsumexp(lnAllInd, lnAllDep)
         double lnDen = logSumExp(lnAllInd, lnAllDep);
-        return FastMath.exp(lnAllInd - lnDen);
+        return TMath.exp(lnAllInd - lnDen);
     }
 
     private double scoreDag(Graph dag, BDeuScoreWOprior bdeu) {

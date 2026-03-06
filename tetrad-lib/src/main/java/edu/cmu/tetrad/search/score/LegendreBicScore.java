@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * <p><b>Legendre BIC score</b></p>
@@ -247,7 +247,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         setEffectiveSampleSize(-1);
 
         // reasonable default ridge ~ 1/n
-        this.ridge = 1.0 / FastMath.max(1, this.sampleSize);
+        this.ridge = 1.0 / TMath.max(1, this.sampleSize);
 
         int p = variables.size();
 
@@ -620,7 +620,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
     public double localScore(int i, int... parents) {
         LocalFit fit = localFit(i, parents);
         if (!Double.isFinite(fit.logLik) || !Double.isFinite(fit.edf) || fit.nUsed < 2) return Double.NaN;
-        return fit.logLik - 0.5 * penaltyDiscount * fit.edf * FastMath.log(FastMath.max(2, fit.nUsed));
+        return fit.logLik - 0.5 * penaltyDiscount * fit.edf * TMath.log(TMath.max(2, fit.nUsed));
     }
 
     /**
@@ -779,7 +779,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      * @param iters the desired number of IRLS iterations; if less than 1, it will be automatically set to 1.
      */
     public void setIrlsIters(int iters) {
-        this.irlsIters = FastMath.max(1, iters);
+        this.irlsIters = TMath.max(1, iters);
         resetCache();
     }
 
@@ -791,7 +791,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      * @param tol the tolerance value for the IRLS algorithm; must be a non-negative number
      */
     public void setIrlsTol(double tol) {
-        this.irlsTol = FastMath.max(0.0, tol);
+        this.irlsTol = TMath.max(0.0, tol);
         resetCache();
     }
 
@@ -828,7 +828,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      *          must be a non-negative integer.
      */
     public void setInteractionMaxParents(int k) {
-        this.interactionMaxParents = FastMath.max(0, k);
+        this.interactionMaxParents = TMath.max(0, k);
         resetCache();
     }
 
@@ -839,7 +839,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      * @param minN the new minimum value to set. If the provided value is less than 2, it will default to 2.
      */
     public void setMinN(int minN) {
-        this.minN = FastMath.max(2, minN);
+        this.minN = TMath.max(2, minN);
         resetCache();
     }
 
@@ -980,7 +980,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         final int t = legendreDegree;
         final int D = cont.length * t;
 
-        final int kInt = (useInteractions ? FastMath.min(cont.length, interactionMaxParents) : 0);
+        final int kInt = (useInteractions ? TMath.min(cont.length, interactionMaxParents) : 0);
         final int I = (kInt >= 2) ? (kInt * (kInt - 1)) / 2 : 0;
 
         final int Q = oh.totalCols;
@@ -1004,7 +1004,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         // Warm-start scale to avoid pathological early weights
         double scaleHat = (Double.isFinite(scale) && scale > 0) ? scale : 1.0;
         // If user left default-ish scale, warm-start from y
-        if (FastMath.abs(scaleHat - 1.0) < 1e-12) scaleHat = warmStartScale(yCentered, n);
+        if (TMath.abs(scaleHat - 1.0) < 1e-12) scaleHat = warmStartScale(yCentered, n);
 
         double[] beta = new double[M];
         double prevObj = Double.POSITIVE_INFINITY;
@@ -1130,7 +1130,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
         final int t = legendreDegree;
         final int D = cont.length * t;
 
-        final int kInt = (useInteractions ? FastMath.min(cont.length, interactionMaxParents) : 0);
+        final int kInt = (useInteractions ? TMath.min(cont.length, interactionMaxParents) : 0);
         final int I = (kInt >= 2) ? (kInt * (kInt - 1)) / 2 : 0;
 
         final int Q = oh.totalCols;
@@ -1180,7 +1180,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
 
                     final double pc = probs[i][c + 1];
                     double wc = pc * (1.0 - pc);
-                    wc = FastMath.max(wc, 1e-10);
+                    wc = TMath.max(wc, 1e-10);
 
                     double eta = 0.0;
                     for (int a = 0; a < M; a++) eta += phi[a] * beta[a][c];
@@ -1231,7 +1231,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
 
                 final double pc = probs[i][c + 1];
                 double wc = pc * (1.0 - pc);
-                wc = FastMath.max(wc, 1e-10);
+                wc = TMath.max(wc, 1e-10);
 
                 for (int a = 0; a < M; a++) {
                     final double pa = wc * phi[a];
@@ -1289,7 +1289,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
 
         final int legOff = 1;
 
-        final int kInt = (useInteractions ? FastMath.min(dCont, interactionMaxParents) : 0);
+        final int kInt = (useInteractions ? TMath.min(dCont, interactionMaxParents) : 0);
         final int nInt = (kInt >= 2) ? (kInt * (kInt - 1)) / 2 : 0;
 
         final int intOff = legOff + dCont * t;
@@ -1465,7 +1465,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
             case SCALE_DOWN: {
                 final double lo = zQlo[varIndex];
                 final double hi = zQhi[varIndex];
-                final double m = FastMath.max(FastMath.abs(lo), FastMath.abs(hi));
+                final double m = TMath.max(TMath.abs(lo), TMath.abs(hi));
                 if (!(m > 0.0) || !Double.isFinite(m)) {
                     return clamp(z / legendreClip);
                 }
@@ -1490,7 +1490,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
             int K = numCategories(var);
             sizes[t] = K;
             offsets[t] = off;
-            off += FastMath.max(0, K - 1);
+            off += TMath.max(0, K - 1);
         }
         return new OneHotSpec(sizes, offsets, off);
     }
@@ -1584,8 +1584,8 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
                     // robust warm start from y if scale is generic/default-ish
                     double s2 = 0.0;
                     for (double v : y) s2 += v * v;
-                    double rms = FastMath.sqrt(FastMath.max(1e-12, s2 / FastMath.max(1, n)));
-                    if (FastMath.abs(scaleHat - 1.0) < 1e-12) scaleHat = rms;
+                    double rms = TMath.sqrt(TMath.max(1e-12, s2 / TMath.max(1, n)));
+                    if (TMath.abs(scaleHat - 1.0) < 1e-12) scaleHat = rms;
 
                     // a couple of t-weighted updates for scale
                     for (int it = 0; it < 2; it++) {
@@ -1597,7 +1597,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
                             wsum += w;
                             wrss += w * y[r] * y[r];
                         }
-                        if (wsum > 0.0) scaleHat = FastMath.sqrt(FastMath.max(1e-12, wrss / wsum));
+                        if (wsum > 0.0) scaleHat = TMath.sqrt(TMath.max(1e-12, wrss / wsum));
                     }
 
                     double ll0 = studentTLogLik(y, new double[n], nu, scaleHat);
@@ -1607,7 +1607,7 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
                 FitResult fit = fitStudentTLegendreRidgeMixed(y, parents, rows, n);
                 if (!Double.isFinite(fit.logLik()) || !Double.isFinite(fit.edf())) {
                     // fallback to intercept-only (finite)
-                    double scaleHat = FastMath.sqrt(FastMath.max(1e-12, sumsq(y) / FastMath.max(1, n)));
+                    double scaleHat = TMath.sqrt(TMath.max(1e-12, sumsq(y) / TMath.max(1, n)));
                     double ll0 = studentTLogLik(y, new double[n], nu, scaleHat);
                     return new LocalFit(ll0, 1.0, n);
                 }

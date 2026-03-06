@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.Discretizer.Discretization;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.Contract;
 
 import java.util.ArrayList;
@@ -36,8 +36,8 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 import static edu.cmu.tetrad.data.Discretizer.discretize;
 import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.log;
+import static edu.cmu.tetrad.util.TMath.abs;
+import static edu.cmu.tetrad.util.TMath.log;
 
 /**
  * Implements a conditional Gaussian likelihood. Please note that this likelihood will be maximal only if the continuous
@@ -58,7 +58,7 @@ public class ConditionalGaussianLikelihood {
     /**
      * A constant.
      */
-    private static final double LOG2PI = log(2.0 * FastMath.PI);
+    private static final double LOG2PI = log(2.0 * TMath.PI);
     /**
      * The data set. May contain continuous and/or discrete mixedVariables.
      */

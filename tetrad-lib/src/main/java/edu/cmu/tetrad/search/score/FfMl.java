@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
@@ -435,7 +435,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
                 if (i == j) {
                     if (sum <= 1e-15) return null;
-                    L[i][j] = FastMath.sqrt(sum);
+                    L[i][j] = TMath.sqrt(sum);
                 } else {
                     L[i][j] = sum / L[j][j];
                 }
@@ -453,7 +453,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         for (double v : yCentered) yTy += v * v;
 
         double quad = yTy / sigma2;
-        double logDet = n * FastMath.log(sigma2);
+        double logDet = n * TMath.log(sigma2);
 
         return -0.5 * quad - 0.5 * logDet;
     }
@@ -480,7 +480,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         }
         double mean = sum / n;
         double var = (sum2 - n * mean * mean) / (n - 1.0);
-        double sd = FastMath.sqrt(FastMath.max(1e-12, var));
+        double sd = TMath.sqrt(TMath.max(1e-12, var));
 
         for (int i = 0; i < in.length; i++) {
             double v = in[i];
@@ -494,7 +494,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
         int filled = 0;
         while (filled < mFeatures) {
-            int block = FastMath.min(d, mFeatures - filled);
+            int block = TMath.min(d, mFeatures - filled);
 
             double[][] Q = new double[block][d];
             for (int i = 0; i < block; i++) {
@@ -509,7 +509,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 }
                 double norm2 = 0.0;
                 for (int j = 0; j < d; j++) norm2 += Q[i][j] * Q[i][j];
-                double norm = FastMath.sqrt(FastMath.max(1e-18, norm2));
+                double norm = TMath.sqrt(TMath.max(1e-18, norm2));
                 for (int j = 0; j < d; j++) Q[i][j] /= norm;
             }
 
@@ -532,7 +532,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             double g = nextGaussian(rng);
             ss += g * g;
         }
-        return FastMath.sqrt(FastMath.max(1e-18, ss));
+        return TMath.sqrt(TMath.max(1e-18, ss));
     }
 
     private static double nextGaussian(SplittableRandom rng) {
@@ -542,7 +542,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             v = 2.0 * rng.nextDouble() - 1.0;
             s = u * u + v * v;
         } while (s >= 1.0 || s == 0.0);
-        return u * FastMath.sqrt(-2.0 * FastMath.log(s) / s);
+        return u * TMath.sqrt(-2.0 * TMath.log(s) / s);
     }
 
     private static double medianDistanceSquaredND(double[][] Z, int maxRows) {
@@ -550,12 +550,12 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         int d = Z[0].length;
         if (n < 3) return 1.0;
 
-        int m = FastMath.min(n, maxRows);
+        int m = TMath.min(n, maxRows);
 
         // Derive a reproducible seed from the data so this is deterministic
         // but not biased by row order. A light hash of a few values suffices.
         long seed = 0x9E3779B97F4A7C15L;
-        int stride = FastMath.max(1, n / 16);
+        int stride = TMath.max(1, n / 16);
         for (int i = 0; i < n; i += stride) {
             seed ^= Double.doubleToLongBits(Z[i][0]);
             seed *= 0x517CC1B727220A95L;
@@ -631,7 +631,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             // Fallback if dataset stores codes as doubles
             double v = ds.getDouble(row, col);
             if (!Double.isFinite(v)) return Integer.MIN_VALUE;
-            return (int) FastMath.rint(v);
+            return (int) TMath.rint(v);
         }
     }
 
@@ -706,7 +706,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                                     Zc[r][j] = zCols[finalContParents[j]][row];
                                 }
                             }
-                            double est = medianDistanceSquaredND(Zc, FastMath.min(nBw, bwMaxRows));
+                            double est = medianDistanceSquaredND(Zc, TMath.min(nBw, bwMaxRows));
                             if (!(est > 0) || !Double.isFinite(est)) est = 1.0;
                             return est;
                         });
@@ -720,7 +720,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                                     Zc[r][j] = zCols[finalContParents[j]][row];
                                 }
                             }
-                            double est = medianDistanceSquaredND(Zc, FastMath.min(n, bwMaxRows));
+                            double est = medianDistanceSquaredND(Zc, TMath.min(n, bwMaxRows));
                             if (!(est > 0) || !Double.isFinite(est)) est = 1.0;
                             return est;
                         });
@@ -983,7 +983,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      */
     @Override
     public int getMaxDegree() {
-        return (int) FastMath.ceil(FastMath.log(FastMath.max(5, nEff)));
+        return (int) TMath.ceil(TMath.log(TMath.max(5, nEff)));
     }
 
     /**
@@ -1094,7 +1094,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * @param bwMaxRows the desired maximum number of rows; must be greater than or equal to 50.
      */
     public void setBwMaxRows(int bwMaxRows) {
-        this.bwMaxRows = FastMath.max(50, bwMaxRows);
+        this.bwMaxRows = TMath.max(50, bwMaxRows);
         resetCache();
     }
 
@@ -1275,7 +1275,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         SplittableRandom rng = new SplittableRandom(seed);
 
         // Sample W,b exactly like your existing code
-        double wStd = (dc > 0) ? FastMath.sqrt(2.0 / bw2) : 1.0;
+        double wStd = (dc > 0) ? TMath.sqrt(2.0 / bw2) : 1.0;
         double[][] W;
         double[] b = new double[mFeatures];
 
@@ -1284,19 +1284,19 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 W = new double[mFeatures][dc];
                 for (int j = 0; j < mFeatures; j++) {
                     for (int k = 0; k < dc; k++) W[j][k] = wStd * nextGaussian(rng);
-                    b[j] = 2.0 * FastMath.PI * rng.nextDouble();
+                    b[j] = 2.0 * TMath.PI * rng.nextDouble();
                 }
             } else { // ORF
                 W = sampleOrthogonalW(mFeatures, dc, wStd, rng);
-                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * FastMath.PI * rng.nextDouble();
+                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
             }
         } else {
             // no continuous parents: phi_cont is constant cos(b)
             W = null;
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * FastMath.PI * rng.nextDouble();
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
         }
 
-        final double contScale = FastMath.sqrt(2.0 / mFeatures);
+        final double contScale = TMath.sqrt(2.0 / mFeatures);
 
         // Phi: store as double[n][mFeatures]
         double[][] Phi = new double[n][mFeatures];
@@ -1306,14 +1306,14 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
             if (dc == 0) {
                 for (int j = 0; j < mFeatures; j++) {
-                    Phi[ii][j] = contScale * FastMath.cos(b[j]);
+                    Phi[ii][j] = contScale * TMath.cos(b[j]);
                 }
             } else {
                 for (int j = 0; j < mFeatures; j++) {
                     double dot = 0.0;
                     double[] wj = W[j];
                     for (int k = 0; k < dc; k++) dot += wj[k] * zCols[contParents[k]][row];
-                    Phi[ii][j] = contScale * FastMath.cos(dot + b[j]);
+                    Phi[ii][j] = contScale * TMath.cos(dot + b[j]);
                 }
             }
         }
@@ -1368,7 +1368,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         for (int i = 0; i < n; i++) {
             double di = L.get(i, i);
             if (!(di > 0) || !Double.isFinite(di)) return Double.NaN;
-            logDetC += FastMath.log(di);
+            logDetC += TMath.log(di);
         }
         logDetC *= 2.0;
 
@@ -1417,9 +1417,9 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         double wStd = 1.0;
         if (dc > 0) {
             if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
-            wStd = FastMath.sqrt(2.0 / bw2);
+            wStd = TMath.sqrt(2.0 / bw2);
         }
-        final double contScale = FastMath.sqrt(2.0 / mFeatures);
+        final double contScale = TMath.sqrt(2.0 / mFeatures);
 
         SplittableRandom rng = new SplittableRandom(seed);
 
@@ -1429,14 +1429,14 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 W = new double[mFeatures][dc];
                 for (int j = 0; j < mFeatures; j++) {
                     for (int k = 0; k < dc; k++) W[j][k] = wStd * nextGaussian(rng);
-                    b[j] = 2.0 * FastMath.PI * rng.nextDouble();
+                    b[j] = 2.0 * TMath.PI * rng.nextDouble();
                 }
             } else {
                 W = sampleOrthogonalW(mFeatures, dc, wStd, rng);
-                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * FastMath.PI * rng.nextDouble();
+                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
             }
         } else {
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * FastMath.PI * rng.nextDouble();
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
         }
 
         final CatFeatureMap[] catMaps = new CatFeatureMap[discParents.length];
@@ -1470,13 +1470,13 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
             // Continuous features
             if (dc == 0) {
-                for (int j = 0; j < mFeatures; j++) phiCont[j] = contScale * FastMath.cos(b[j]);
+                for (int j = 0; j < mFeatures; j++) phiCont[j] = contScale * TMath.cos(b[j]);
             } else {
                 for (int j = 0; j < mFeatures; j++) {
                     double dot = 0.0;
                     double[] wj = W[j];
                     for (int k = 0; k < dc; k++) dot += wj[k] * zCols[contParents[k]][row];
-                    phiCont[j] = contScale * FastMath.cos(dot + b[j]);
+                    phiCont[j] = contScale * TMath.cos(dot + b[j]);
                 }
             }
 
@@ -1526,7 +1526,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         for (int i = 0; i < mTotal; i++) {
             double di = L.get(i, i);
             if (!(di > 0) || !Double.isFinite(di)) return Double.NaN;
-            logDetB += FastMath.log(di);
+            logDetB += TMath.log(di);
         }
         logDetB *= 2.0;
 
@@ -1555,7 +1555,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
         // log|C| = (n - mTotal) * log(sigma2) + log|B|
         // Derivation: |C| = sigma^{2n} * |I + G/sigma2| = sigma^{2n} * |B|/sigma^{2m}
-        double logDetC = (n - mTotal) * FastMath.log(sigma2) + logDetB;
+        double logDetC = (n - mTotal) * TMath.log(sigma2) + logDetB;
 
         if (!Double.isFinite(quad) || !Double.isFinite(logDetC)) return Double.NaN;
 
@@ -1614,8 +1614,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             bw2 = 1.0;
         }
 
-        final double wStd = (dc > 0) ? FastMath.sqrt(2.0 / bw2) : 1.0;
-        final double contScale = FastMath.sqrt(2.0 / mFeatures);
+        final double wStd = (dc > 0) ? TMath.sqrt(2.0 / bw2) : 1.0;
+        final double contScale = TMath.sqrt(2.0 / mFeatures);
 
         // Phi (n x mFeatures)
         double[][] Phi = new double[n][mFeatures];
@@ -1625,7 +1625,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
             if (dc == 0) {
                 for (int j = 0; j < mFeatures; j++) {
-                    Phi[ii][j] = contScale * FastMath.cos(base.b[j]);
+                    Phi[ii][j] = contScale * TMath.cos(base.b[j]);
                 }
             } else {
                 for (int j = 0; j < mFeatures; j++) {
@@ -1635,7 +1635,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                         dotBase += wj[k] * zCols[contParents[k]][row];
                     }
                     double dot = wStd * dotBase;
-                    Phi[ii][j] = contScale * FastMath.cos(dot + base.b[j]);
+                    Phi[ii][j] = contScale * TMath.cos(dot + base.b[j]);
                 }
             }
         }
@@ -1675,7 +1675,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         for (int i = 0; i < n; i++) {
             double di = L.get(i, i);
             if (!(di > 0) || !Double.isFinite(di)) return Double.NaN;
-            logDetC += FastMath.log(di);
+            logDetC += TMath.log(di);
         }
         logDetC *= 2.0;
 
@@ -1721,16 +1721,16 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 Wbase = new double[mFeatures][dc];
                 for (int j = 0; j < mFeatures; j++) {
                     for (int k = 0; k < dc; k++) Wbase[j][k] = nextGaussian(rng);
-                    b[j] = 2.0 * FastMath.PI * rng.nextDouble();
+                    b[j] = 2.0 * TMath.PI * rng.nextDouble();
                 }
             } else {
                 // ORF base: same ORF sampling, but with wStd=1.0 so we can later multiply by wStd
                 Wbase = sampleOrthogonalW(mFeatures, dc, 1.0, rng);
-                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * FastMath.PI * rng.nextDouble();
+                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
             }
         } else {
             Wbase = null;
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * FastMath.PI * rng.nextDouble();
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
         }
 
         return new BaseWB(Wbase, b);

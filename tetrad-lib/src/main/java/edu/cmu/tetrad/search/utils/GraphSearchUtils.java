@@ -31,7 +31,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.MultiKeyMap;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
@@ -43,7 +43,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static java.util.Collections.sort;
-import static org.apache.commons.math3.util.FastMath.max;
+import static edu.cmu.tetrad.util.TMath.max;
 
 /**
  * Provides some graph utilities for search algorithm.
@@ -207,7 +207,7 @@ public final class GraphSearchUtils {
         adj.remove(c);
         adj.remove(a);
 
-        for (int d = 0; d <= FastMath.min(1000, adj.size()); d++) {
+        for (int d = 0; d <= TMath.min(1000, adj.size()); d++) {
             ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
             int[] choice;
 
@@ -771,7 +771,7 @@ public final class GraphSearchUtils {
      */
     public static List<Set<Node>> powerSet(List<Node> nodes) {
         List<Set<Node>> subsets = new ArrayList<>();
-        int total = (int) FastMath.pow(2, nodes.size());
+        int total = (int) TMath.pow(2, nodes.size());
         for (int i = 0; i < total; i++) {
             Set<Node> newSet = new HashSet<>();
             String selection = Integer.toBinaryString(i);
@@ -811,7 +811,7 @@ public final class GraphSearchUtils {
         if (_depth == -1) {
             _depth = 1000;
         }
-        _depth = FastMath.min(_depth, _nodes.size());
+        _depth = TMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
@@ -838,7 +838,7 @@ public final class GraphSearchUtils {
         _nodes.remove(x);
         TetradLogger.getInstance().log("Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
-        _depth = FastMath.min(_depth, _nodes.size());
+        _depth = TMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);

@@ -5,7 +5,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -88,7 +88,7 @@ public class IndTestGin implements IndependenceTest {
      * @param n the number of permutations to set
      */
     public void setNumPermutations(int n) {
-        this.numPerm = FastMath.max(0, n);
+        this.numPerm = TMath.max(0, n);
     }
 
     /**
@@ -406,7 +406,7 @@ public class IndTestGin implements IndependenceTest {
                     Z[i][j + 1] = v;
                     var += v * v;
                 }
-                double sd = FastMath.sqrt(var / FastMath.max(1, n - 1));
+                double sd = TMath.sqrt(var / TMath.max(1, n - 1));
                 if (sd > 0) for (int i = 0; i < n; i++) Z[i][j + 1] /= sd;
             }
 
@@ -458,7 +458,7 @@ public class IndTestGin implements IndependenceTest {
         }
 
         private static double clamp01(double p) {
-            return FastMath.max(0.0, FastMath.min(1.0, p));
+            return TMath.max(0.0, TMath.min(1.0, p));
         }
 
         // Simple t CDF complement using regularized incomplete beta (compact, dependency-free)
@@ -470,15 +470,15 @@ public class IndTestGin implements IndependenceTest {
         }
 
         private static double regIncompleteBeta(double x, double a, double b) {
-            x = FastMath.max(0.0, FastMath.min(1.0, x));
+            x = TMath.max(0.0, TMath.min(1.0, x));
             boolean flip = x > (a + 1) / (a + b + 2);
             if (flip) x = 1 - x;
             double cf = betaContinuedFraction(x, a, b) / a;
-            double front = FastMath.exp(logGamma(a + b) - logGamma(a) - logGamma(b)
-                                    + a * FastMath.log(FastMath.max(1e-16, x)) + b * FastMath.log(FastMath.max(1e-16, 1 - x)));
+            double front = TMath.exp(logGamma(a + b) - logGamma(a) - logGamma(b)
+                                    + a * TMath.log(TMath.max(1e-16, x)) + b * TMath.log(TMath.max(1e-16, 1 - x)));
             double result = front * cf;
             if (flip) result = 1 - result;
-            return FastMath.max(0.0, FastMath.min(1.0, result));
+            return TMath.max(0.0, TMath.min(1.0, result));
         }
 
         private static double betaContinuedFraction(double x, double a, double b) {
@@ -496,7 +496,7 @@ public class IndTestGin implements IndependenceTest {
                 bm = bp / bpp;
                 az = app / bpp;
                 bz = 1.0;
-                if (FastMath.abs(app - ap) < EPS * FastMath.abs(app)) break;
+                if (TMath.abs(app - ap) < EPS * TMath.abs(app)) break;
             }
             return az;
         }
@@ -506,12 +506,12 @@ public class IndTestGin implements IndependenceTest {
                     -176.61502916214059, 12.507343278686905, -0.13857109526572012,
                     9.9843695780195716e-6, 1.5056327351493116e-7};
             int g = 7;
-            if (z < 0.5) return FastMath.log(FastMath.PI) - FastMath.log(FastMath.sin(FastMath.PI * z)) - logGamma(1 - z);
+            if (z < 0.5) return TMath.log(TMath.PI) - TMath.log(TMath.sin(TMath.PI * z)) - logGamma(1 - z);
             z -= 1;
             double x = 0.99999999999980993;
             for (int i = 0; i < c.length; i++) x += c[i] / (z + i + 1);
             double t = z + g + 0.5;
-            return 0.5 * FastMath.log(2 * FastMath.PI) + (z + 0.5) * FastMath.log(t) - t + FastMath.log(x);
+            return 0.5 * TMath.log(2 * TMath.PI) + (z + 0.5) * TMath.log(t) - t + TMath.log(x);
         }
 
         /**
@@ -543,9 +543,9 @@ public class IndTestGin implements IndependenceTest {
                 syy += dy * dy;
                 sxy += dx * dy;
             }
-            double r = sxy / FastMath.sqrt(FastMath.max(1e-16, sxx * syy));
-            double t = r * FastMath.sqrt(FastMath.max(1, n - 2) / FastMath.max(1e-16, (1 - r * r)));
-            double p = 2.0 * studentTCdfComplement(FastMath.abs(t), FastMath.max(1, n - 2));
+            double r = sxy / TMath.sqrt(TMath.max(1e-16, sxx * syy));
+            double t = r * TMath.sqrt(TMath.max(1, n - 2) / TMath.max(1e-16, (1 - r * r)));
+            double p = 2.0 * studentTCdfComplement(TMath.abs(t), TMath.max(1, n - 2));
             return clamp01(p);
         }
     }
@@ -577,11 +577,11 @@ public class IndTestGin implements IndependenceTest {
                     C += ayij * ayij;
                 }
             }
-            double dvarx = FastMath.max(1e-16, B / (n * (double) n));
-            double dvary = FastMath.max(1e-16, C / (n * (double) n));
+            double dvarx = TMath.max(1e-16, B / (n * (double) n));
+            double dvary = TMath.max(1e-16, C / (n * (double) n));
             double dcov = A / (n * (double) n);
-            double dcor = dcov / FastMath.sqrt(dvarx * dvary);
-            dcor = FastMath.max(0.0, FastMath.min(1.0, dcor));
+            double dcor = dcov / TMath.sqrt(dvarx * dvary);
+            dcor = TMath.max(0.0, TMath.min(1.0, dcor));
             return new DcorrStats(n, dcor);
         }
 
@@ -596,7 +596,7 @@ public class IndTestGin implements IndependenceTest {
             for (int i = 0; i < n; i++) {
                 double ai = a[i];
                 for (int j = 0; j < n; j++) {
-                    double d = FastMath.abs(ai - a[j]);
+                    double d = TMath.abs(ai - a[j]);
                     D[i][j] = d;
                     rowSum[i] += d;
                 }
@@ -641,8 +641,8 @@ public class IndTestGin implements IndependenceTest {
             DcorrStats s = dcorr(x, y);
             // Crude tail approximation; GUI can expose permutations to improve this.
             double z = s.n * s.dcor * s.dcor;
-            double p = FastMath.exp(-z);
-            return FastMath.max(0.0, FastMath.min(1.0, p));
+            double p = TMath.exp(-z);
+            return TMath.max(0.0, TMath.min(1.0, p));
         }
 
         /**

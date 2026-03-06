@@ -6,7 +6,7 @@ import edu.cmu.tetrad.sem.DagMetric;
 import edu.cmu.tetrad.sem.DagMetricResult;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.DagModelScoreComparisonModel;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -70,10 +70,10 @@ public final class DagModelScoreComparisonEditor extends JPanel {
         int wMetric = 160;
         int wNote = 220;
         int wGraph = 140;
-        int total = wMetric + wNote + FastMath.max(1, graphCount) * wGraph + 40; // padding
+        int total = wMetric + wNote + TMath.max(1, graphCount) * wGraph + 40; // padding
         int min = 650;
         int max = 1400;
-        return FastMath.max(min, FastMath.min(max, total));
+        return TMath.max(min, TMath.min(max, total));
     }
 
     /**
@@ -230,8 +230,8 @@ public final class DagModelScoreComparisonEditor extends JPanel {
 
         private static boolean ties(double a, double b) {
             // Absolute + relative tolerance, so it works across scales.
-            double diff = FastMath.abs(a - b);
-            double scale = FastMath.max(1.0, FastMath.max(FastMath.abs(a), FastMath.abs(b)));
+            double diff = TMath.abs(a - b);
+            double scale = TMath.max(1.0, TMath.max(TMath.abs(a), TMath.abs(b)));
             double eps = 1e-12 * scale;   // tighten/loosen as you prefer
             return diff <= eps;
         }

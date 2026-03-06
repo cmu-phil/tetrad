@@ -37,7 +37,7 @@ import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.*;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Calculates independence from pooled residuals.

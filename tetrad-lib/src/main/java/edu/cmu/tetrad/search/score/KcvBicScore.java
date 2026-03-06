@@ -5,7 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
@@ -122,7 +122,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
         // ignoring NaNs.
         this.sigmaPerVar = new double[p];
         for (int j = 0; j < p; j++) {
-            this.sigmaPerVar[j] = medianPairwiseDistance1D(j, null, FastMath.min(sampleSize, maxBandwidthRows));
+            this.sigmaPerVar[j] = medianPairwiseDistance1D(j, null, TMath.min(sampleSize, maxBandwidthRows));
             if (!(sigmaPerVar[j] > 0) || !Double.isFinite(sigmaPerVar[j])) sigmaPerVar[j] = 1.0;
         }
     }
@@ -230,7 +230,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
     private static double medianPairwiseSquaredDistance1D(double[] x, int m, long seed) {
         final int n = x.length;
         if (n < 3) return 1.0;
-        if (m < 3) m = FastMath.min(n, 3);
+        if (m < 3) m = TMath.min(n, 3);
 
         // Choose m indices without replacement (partial Fisher–Yates)
         int[] idx = new int[n];
@@ -270,7 +270,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
      * trace of a square matrix.
      */
     private static double trace(DMatrixRMaj A) {
-        int n = FastMath.min(A.numRows, A.numCols);
+        int n = TMath.min(A.numRows, A.numCols);
         double s = 0.0;
         for (int i = 0; i < n; i++) s += A.get(i, i);
         return s;
@@ -294,7 +294,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
 
     private static double gaussianLogLikFromRss(double[] y, int n, double rss) {
         double sigma2 = rss / n;
-        return -0.5 * n * (FastMath.log(2.0 * FastMath.PI * sigma2) + 1.0);
+        return -0.5 * n * (TMath.log(2.0 * TMath.PI * sigma2) + 1.0);
     }
 
     private static double rssZeroModel(double[] y) {
@@ -328,7 +328,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
     }
 
     private static void addDiagonalInPlace(DMatrixRMaj M, double v) {
-        int n = FastMath.min(M.numRows, M.numCols);
+        int n = TMath.min(M.numRows, M.numCols);
         for (int i = 0; i < n; i++) {
             M.add(i, i, v);
         }
@@ -356,11 +356,11 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
 
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * sd;
-            b[i] = rng.nextDouble() * 2.0 * FastMath.PI;
+            b[i] = rng.nextDouble() * 2.0 * TMath.PI;
         }
 
         DMatrixRMaj Phi = new DMatrixRMaj(n, m);
-        double scale = FastMath.sqrt(2.0 / m);
+        double scale = TMath.sqrt(2.0 / m);
 
         for (int i = 0; i < n; i++) {
             double[] zi = Z[i];
@@ -368,7 +368,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
                 double dot = 0.0;
                 double[] wf = W[f];
                 for (int j = 0; j < d; j++) dot += wf[j] * zi[j];
-                Phi.set(i, f, scale * FastMath.cos(dot + b[f]));
+                Phi.set(i, f, scale * TMath.cos(dot + b[f]));
             }
         }
 
@@ -385,7 +385,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
         }
         double mean = sum / n;
         double var = (sumsq - n * mean * mean) / (n - 1);
-        double sd = (var > 0) ? FastMath.sqrt(var) : 1.0;
+        double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
         for (int i = 0; i < n; i++) x[i] = (x[i] - mean) / sd;
     }
 
@@ -404,7 +404,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
             }
             double mean = sum / n;
             double var = (sumsq - n * mean * mean) / (n - 1);
-            double sd = (var > 0) ? FastMath.sqrt(var) : 1.0;
+            double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
 
             for (int i = 0; i < n; i++) {
                 X[i][j] = (X[i][j] - mean) / sd;
@@ -425,7 +425,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
             }
             double mean = sum / n;
             double var = (sumsq - n * mean * mean) / (n - 1);
-            double sd = (var > 0) ? FastMath.sqrt(var) : 1.0;
+            double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
 
             for (int i = 0; i < n; i++) {
                 M.set(i, j, (M.get(i, j) - mean) / sd);
@@ -434,7 +434,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
     }
 
     private static double medianPairwiseDistanceND(double[][] Z, int limit) {
-        int n = FastMath.min(Z.length, limit);
+        int n = TMath.min(Z.length, limit);
         if (n < 3) return 1.0;
         int d = Z[0].length;
         if (d == 0) return 1.0;
@@ -449,7 +449,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
                     double diff = Z[i][k] - Z[j][k];
                     ss += diff * diff;
                 }
-                double dist = FastMath.sqrt(ss);
+                double dist = TMath.sqrt(ss);
                 if (dist > 0 && Double.isFinite(dist)) dists[idx++] = dist;
             }
         }
@@ -550,8 +550,8 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
 //
 //        if (parents.length == 0) {
 //            // RX = Kx
-//            double v = FastMath.max(trace(Kx) / n, varianceFloor);
-//            ll = -0.5 * n * FastMath.log(v);
+//            double v = TMath.max(trace(Kx) / n, varianceFloor);
+//            ll = -0.5 * n * TMath.log(v);
 //            pen = 0.0;
 //        } else {
 //            // A = Kz + lambda I
@@ -598,12 +598,12 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
 //            symmetrizeInPlace(RX);
 //
 //            // Fit proxy
-//            double v = FastMath.max(trace(RX) / n, varianceFloor);
-//            ll = -0.5 * n * FastMath.log(v);
+//            double v = TMath.max(trace(RX) / n, varianceFloor);
+//            ll = -0.5 * n * TMath.log(v);
 //
 //            // Complexity proxy: edf = tr(H)
-//            double edf = FastMath.max(1e-12, trace(H));
-//            pen = -0.5 * edf * FastMath.log(FastMath.max(3.0, n));
+//            double edf = TMath.max(1e-12, trace(H));
+//            pen = -0.5 * edf * TMath.log(TMath.max(3.0, n));
 //            // If you already have a "penaltyDiscount" field, multiply here:
 //            // pen *= penaltyDiscount;
 //        }
@@ -681,8 +681,8 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
 
         // No parents: RX = Kx, penalty 0
         if (parents.length == 0) {
-            double v = FastMath.max(trace(Kx) / n, varianceFloor);
-            double ll = -0.5 * n * FastMath.log(v);
+            double v = TMath.max(trace(Kx) / n, varianceFloor);
+            double ll = -0.5 * n * TMath.log(v);
             double score = ll; // pen=0
             localScoreCache.put(key, score);
             return score;
@@ -700,7 +700,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
         if (!solver.setA(A)) {
             // jitter escalation
             boolean ok = false;
-            double eps = FastMath.max(jitter, 1e-12);
+            double eps = TMath.max(jitter, 1e-12);
             for (int t = 0; t < 6 && !ok; t++) {
                 DMatrixRMaj Aj = A.copy();
                 addDiagonalInPlace(Aj, eps);
@@ -745,11 +745,11 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
         double trRX = t1 - 2.0 * t2 + t3;
         if (!Double.isFinite(trRX) || trRX <= 0) trRX = varianceFloor;
 
-        double v = FastMath.max(trRX / n, varianceFloor);
-        double ll = -0.5 * n * FastMath.log(v);
+        double v = TMath.max(trRX / n, varianceFloor);
+        double ll = -0.5 * n * TMath.log(v);
 
         // penalty (your prior form)
-        double pen = -0.5 * penaltyDiscount * edf * FastMath.log(FastMath.max(3.0, n));
+        double pen = -0.5 * penaltyDiscount * edf * TMath.log(TMath.max(3.0, n));
 
         double score = ll + pen;
 
@@ -809,7 +809,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
                     dist2 += diff * diff;
                 }
 
-                double v = FastMath.exp(-dist2 * invBw);
+                double v = TMath.exp(-dist2 * invBw);
                 K.set(i, j, v);
                 K.set(j, i, v);
             }
@@ -841,7 +841,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
 
         // Bandwidth: median squared distance (subsampled for speed)
         final int maxBWPoints = 256;  // tune: 128–512 are all reasonable
-        double bw2 = medianPairwiseSquaredDistance1D(x, FastMath.min(n, maxBWPoints), 1729);
+        double bw2 = medianPairwiseSquaredDistance1D(x, TMath.min(n, maxBWPoints), 1729);
 
         // Robust fallback
         if (!(bw2 > 0.0) || !Double.isFinite(bw2)) bw2 = 1.0;
@@ -860,7 +860,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
             double xi = x[i];
             for (int j = 0; j < i; j++) {
                 double d = xi - x[j];
-                double v = FastMath.exp(-(d * d) * invBw2);
+                double v = TMath.exp(-(d * d) * invBw2);
                 K.set(i, j, v);
                 K.set(j, i, v);
             }
@@ -895,7 +895,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
      */
     @Override
     public int getMaxDegree() {
-        return (int) FastMath.ceil(FastMath.log(FastMath.max(3, nEff)));
+        return (int) TMath.ceil(TMath.log(TMath.max(3, nEff)));
     }
 
     /**
@@ -992,7 +992,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
      *                 1.
      */
     public void setNumFeatZ(int numFeatZ) {
-        this.numFeatZ = FastMath.max(1, numFeatZ);
+        this.numFeatZ = TMath.max(1, numFeatZ);
         clearCache();
     }
 
@@ -1092,7 +1092,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
      * @param maxBandwidthRows the maximum number of rows for bandwidth estimation
      */
     public void setMaxBandwidthRows(int maxBandwidthRows) {
-        this.maxBandwidthRows = FastMath.max(10, maxBandwidthRows);
+        this.maxBandwidthRows = TMath.max(10, maxBandwidthRows);
         clearCache();
     }
 
@@ -1163,7 +1163,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
             return s[s.length / 2];
         } else {
             // Parent-set median in d-dim on up to maxBandwidthRows rows
-            int r = FastMath.min(n, maxBandwidthRows);
+            int r = TMath.min(n, maxBandwidthRows);
             return medianPairwiseDistanceND(Z, r);
         }
     }
@@ -1250,7 +1250,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
         for (int i = 1; i < m; i++) {
             double xi = tmp[i];
             for (int j = 0; j < i; j++) {
-                double dist = FastMath.abs(xi - tmp[j]);
+                double dist = TMath.abs(xi - tmp[j]);
                 if (dist > 0 && Double.isFinite(dist)) dists[idx++] = dist;
             }
         }

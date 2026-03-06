@@ -24,7 +24,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.RegexTokenizer;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import java.awt.datatransfer.DataFlavor;
@@ -333,7 +333,7 @@ class TabularDataTransferHandler extends TransferHandler {
         if (headerPaste && originalCols > 0) {
             int firstCol = startCol;
             int lastCol = startCol + pasteCols - 1;
-            int overlapLastCol = FastMath.min(lastCol, originalCols - 1);
+            int overlapLastCol = TMath.min(lastCol, originalCols - 1);
 
             boolean hasMismatch = false;
 

@@ -28,7 +28,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Normal;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -893,7 +893,7 @@ public class MeasurementSimulator implements TetradSerializable {
                             // Antilog it if necessary.
                             if (isAntilogCalculated()) {
                                 cellData[sIndex][f] =
-                                        FastMath.exp(cellData[sIndex][f]);
+                                        TMath.exp(cellData[sIndex][f]);
                             }
 
                             // Optional--save this data to the raw

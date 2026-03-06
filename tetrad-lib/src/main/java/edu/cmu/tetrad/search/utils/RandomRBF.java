@@ -20,7 +20,7 @@
 
 package edu.cmu.tetrad.search.utils;
 
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.Random;
 
@@ -86,8 +86,8 @@ public class RandomRBF {
     public double compute(double x) {
         double result = 0.0;
         for (int i = 0; i < centers.length; i++) {
-            double distanceSquared = FastMath.pow(x - centers[i], 2);
-            result += amplitudes[i] * FastMath.exp(-distanceSquared / (2 * FastMath.pow(sigma, 2)));
+            double distanceSquared = TMath.pow(x - centers[i], 2);
+            result += amplitudes[i] * TMath.exp(-distanceSquared / (2 * TMath.pow(sigma, 2)));
         }
         return result;
     }

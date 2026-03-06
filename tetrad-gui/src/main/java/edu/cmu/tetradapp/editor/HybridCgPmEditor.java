@@ -6,7 +6,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm;
 import edu.cmu.tetradapp.model.HybridCgPmWrapper;
 import edu.cmu.tetrad.util.Parameters;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -66,7 +66,7 @@ public final class HybridCgPmEditor extends JPanel {
 
         // init from wrapper
         methodCombo.setSelectedItem(this.params.getString("hybridcg.cutMethod", "equal_frequency"));
-        binsSpinner.setValue(FastMath.max(2, this.params.getInt("hybridcg.cutBins", 3)));
+        binsSpinner.setValue(TMath.max(2, this.params.getInt("hybridcg.cutBins", 3)));
 
         // Ensure the incoming PM has all required cutpoints seeded
         ensureCutpointsSeeded(pmWrapper.getHybridCgPm(), (int) binsSpinner.getValue());
@@ -292,7 +292,7 @@ public final class HybridCgPmEditor extends JPanel {
             this.discrete = discrete;
             if (discrete) {
                 this.categories = new ArrayList<>(cats == null ? List.of("c1","c2","c3") : cats);
-                this.catCount = FastMath.max(2, this.categories.size());
+                this.catCount = TMath.max(2, this.categories.size());
             } else {
                 this.categories = null;
                 this.catCount = 0;
@@ -374,7 +374,7 @@ public final class HybridCgPmEditor extends JPanel {
                         row.discrete = toDisc;
                         if (toDisc) {
                             if (row.categories == null) row.categories = new ArrayList<>(List.of("c1","c2","c3"));
-                            row.catCount = FastMath.max(2, row.categories.size());
+                            row.catCount = TMath.max(2, row.categories.size());
                         } else {
                             row.categories = null;
                             row.catCount = 0;
@@ -384,7 +384,7 @@ public final class HybridCgPmEditor extends JPanel {
                         SwingUtilities.invokeLater(() -> adjustVarTableColumnWidths(varTable));
                     }
                 } else if (c == 2 && row.discrete) {
-                    int k = FastMath.max(2, ((Number) v).intValue());
+                    int k = TMath.max(2, ((Number) v).intValue());
                     row.catCount = k;
                     row.enforceCount();
                     fireTableRowsUpdated(r, r);
@@ -471,8 +471,8 @@ public final class HybridCgPmEditor extends JPanel {
         // col 0: variable names
         int maxVar = 0;
         for (int r = 0; r < table.getRowCount(); r++)
-            maxVar = FastMath.max(maxVar, fm.stringWidth(String.valueOf(table.getValueAt(r,0))));
-        int varW = FastMath.min(FastMath.max(80, maxVar + pad), 240);
+            maxVar = TMath.max(maxVar, fm.stringWidth(String.valueOf(table.getValueAt(r,0))));
+        int varW = TMath.min(TMath.max(80, maxVar + pad), 240);
 
         // col 1: "Continuous" or "Discrete"
         int typeW = fm.stringWidth("Continuous") + pad;
@@ -532,7 +532,7 @@ public final class HybridCgPmEditor extends JPanel {
                 edges[r] = v;
                 // enforce strictly increasing cutpoints
                 for (int i = 1; i < edges.length; i++) {
-                    if (!(edges[i] > edges[i-1])) edges[i] = FastMath.nextUp(edges[i-1]);
+                    if (!(edges[i] > edges[i-1])) edges[i] = TMath.nextUp(edges[i-1]);
                 }
                 fireTableCellUpdated(r, c);
                 persistBack();
@@ -541,7 +541,7 @@ public final class HybridCgPmEditor extends JPanel {
 
         void addRow() {
             edges = Arrays.copyOf(edges, edges.length + 1);
-            edges[edges.length - 1] = (edges.length == 1) ? 0.0 : FastMath.nextUp(edges[edges.length - 2]);
+            edges[edges.length - 1] = (edges.length == 1) ? 0.0 : TMath.nextUp(edges[edges.length - 2]);
             fireTableDataChanged();
             persistBack();
         }
@@ -641,7 +641,7 @@ public final class HybridCgPmEditor extends JPanel {
     /** Ensure every (discrete child ← continuous parent) has non-empty, strictly increasing cutpoints. */
     private void ensureCutpointsSeeded(HybridCgPm pm, int bins) {
         Node[] nodes = pm.getNodes();
-        int B = FastMath.max(2, bins);
+        int B = TMath.max(2, bins);
         double lo = -0.5, hi = 0.5, step = (hi - lo) / B;
         double[] defaultEdges = new double[B - 1];
         for (int i = 0; i < defaultEdges.length; i++) defaultEdges[i] = lo + (i + 1) * step;
@@ -662,7 +662,7 @@ public final class HybridCgPmEditor extends JPanel {
                     for (int t = 0; t < cps.length; t++) {
                         double[] e = (arr[t] == null || arr[t].length == 0) ? defaultEdges : arr[t];
                         e = e.clone();
-                        for (int k = 1; k < e.length; k++) if (!(e[k] > e[k-1])) e[k] = FastMath.nextUp(e[k-1]);
+                        for (int k = 1; k < e.length; k++) if (!(e[k] > e[k-1])) e[k] = TMath.nextUp(e[k-1]);
                         map.put(pm.getNodes()[cps[t]], e);
                     }
                     try { pm.setContParentCutpointsForDiscreteChild(nodes[y], map); } catch (Exception ignore) {}
@@ -682,7 +682,7 @@ public final class HybridCgPmEditor extends JPanel {
     private static final class DefaultSeeding {
         void run(HybridCgPm pm, int bins) {
             Node[] nodes = pm.getNodes();
-            int B = FastMath.max(2, bins);
+            int B = TMath.max(2, bins);
             double lo = -0.5, hi = 0.5, step = (hi - lo) / B;
             double[] edges = new double[B - 1];
             for (int i = 0; i < edges.length; i++) edges[i] = lo + (i + 1) * step;

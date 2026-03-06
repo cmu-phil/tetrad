@@ -28,7 +28,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
@@ -217,8 +217,8 @@ public class TestCausalUnmixer {
         inter.retainAll(skelH);
 
         int tp = inter.size();
-        int fp = FastMath.max(skelH.size() - tp, 0);
-        int fn = FastMath.max(skelT.size() - tp, 0);
+        int fp = TMath.max(skelH.size() - tp, 0);
+        int fn = TMath.max(skelT.size() - tp, 0);
 
         double precA = tp == 0 ? 0 : (double) tp / (tp + fp);
         double recA = tp == 0 ? 0 : (double) tp / (tp + fn);

@@ -11,7 +11,7 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
@@ -263,7 +263,7 @@ public class VertexRepairSearch implements IGraphSearch {
     private static int editSize(ScoredCandidate s) {
         try {
             if (s.edit() != null && s.edit().getEdges() != null) {
-                return FastMath.max(1, s.edit().getEdges().size());
+                return TMath.max(1, s.edit().getEdges().size());
             }
         } catch (Throwable ignored) {
         }
@@ -289,12 +289,12 @@ public class VertexRepairSearch implements IGraphSearch {
 
         final double eps = 1e-12;
 
-        double q = FastMath.min(1.0 - eps, FastMath.max(eps, p));
-        double a = FastMath.min(1.0 - eps, FastMath.max(eps, alpha));
+        double q = TMath.min(1.0 - eps, TMath.max(eps, p));
+        double a = TMath.min(1.0 - eps, TMath.max(eps, alpha));
 
         // log(p/(1-p)) - log(alpha/(1-alpha))
-        return (FastMath.log(q) - FastMath.log(1.0 - q))
-                - (FastMath.log(a) - FastMath.log(1.0 - a));
+        return (TMath.log(q) - TMath.log(1.0 - q))
+                - (TMath.log(a) - TMath.log(1.0 - a));
     }
 
     private static double modelDeltaValueOrNaN(ScoredCandidate s) {
@@ -849,7 +849,7 @@ public class VertexRepairSearch implements IGraphSearch {
         List<VertexRepairSearch.ScoredCandidate> ranked = new ArrayList<>(scored);
         ranked.sort(CANONICAL_TABLE_ORDER);
 
-        final int topK = FastMath.min(DEFAULT_MODELP_TOP_K, ranked.size());
+        final int topK = TMath.min(DEFAULT_MODELP_TOP_K, ranked.size());
         final LinkedHashSet<String> keysToEval = new LinkedHashSet<>();
 
         // 2a) top-K (table-surfaced set)

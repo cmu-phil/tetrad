@@ -325,8 +325,8 @@ public class NonlinearFunctionOfLinear {
         )::evaluate;
 
 //        g = Math::tanh;
-//        g = x -> FastMath.max(0, x);
-//        g = x -> FastMath.max(0.01 * x, x);
+//        g = x -> TMath.max(0, x);
+//        g = x -> TMath.max(0.01 * x, x);
 
         for (int sample = 0; sample < numSamples; sample++) {
             double y = g.apply(data.getDouble(sample, nodeToIndex.get(node))) / rescaleMax;

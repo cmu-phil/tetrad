@@ -22,7 +22,7 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.ProbUtils;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
@@ -84,7 +84,7 @@ public class EstimateRank {
         Arrays.sort(rtCors);
         double[] Cors = new double[rtCors.length];
         for (int i = rtCors.length; i > 0; i--) {
-            Cors[rtCors.length - i] = FastMath.pow(rtCors[i - 1], .5);
+            Cors[rtCors.length - i] = TMath.pow(rtCors[i - 1], .5);
         }
         return Cors;
     }
@@ -105,12 +105,12 @@ public class EstimateRank {
         while (reject) {
             double sum = 0;
             int i;
-            for (i = rank; i < FastMath.min(A[0].length, B[0].length); i++) {
-                sum += FastMath.log(1 - FastMath.pow(Cors[i], 2));
+            for (i = rank; i < TMath.min(A[0].length, B[0].length); i++) {
+                sum += TMath.log(1 - TMath.pow(Cors[i], 2));
             }
             double stat = -(A.length - .5 * (A[0].length + B[0].length + 3)) * sum;
             reject = ProbUtils.chisqCdf(stat, (A[0].length - rank) * (B[0].length - rank)) > (1 - alpha);
-            if (reject & rank < FastMath.min(A[0].length, B[0].length)) {
+            if (reject & rank < TMath.min(A[0].length, B[0].length)) {
                 rank++;
             } else {
                 reject = false;
@@ -137,12 +137,12 @@ public class EstimateRank {
         while (reject) {
             double sum = 0;
             int i;
-            for (i = rank; i < FastMath.min(iA.length, iB.length); i++) {
-                sum += FastMath.log(1 - FastMath.pow(Cors[i], 2));
+            for (i = rank; i < TMath.min(iA.length, iB.length); i++) {
+                sum += TMath.log(1 - TMath.pow(Cors[i], 2));
             }
             double stat = -(N - .5 * (iA.length + iB.length + 3)) * sum;
             reject = ProbUtils.chisqCdf(stat, (iA.length - rank) * (iB.length - rank)) > (1 - alpha);
-            if (reject & rank < FastMath.min(iA.length, iB.length)) {
+            if (reject & rank < TMath.min(iA.length, iB.length)) {
                 rank++;
             } else {
                 reject = false;

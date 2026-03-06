@@ -38,7 +38,7 @@ import org.junit.Test;
 import java.util.*;
 
 import static edu.cmu.tetrad.search.test.IndTestFisherZ.ShrinkageMode.LEDOIT_WOLF;
-import static org.apache.commons.math3.util.FastMath.abs;
+import static edu.cmu.tetrad.util.TMath.abs;
 import static org.junit.Assert.assertTrue;
 
 /**

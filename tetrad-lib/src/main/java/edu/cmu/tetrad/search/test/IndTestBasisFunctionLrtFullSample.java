@@ -29,7 +29,7 @@ import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -386,7 +386,7 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
 
         // Compute Likelihood Ratio Statistic
         double epsilon = 1e-10;
-        double LR_stat = this.nEff * FastMath.log((sigma0_sq + epsilon) / (sigma1_sq + epsilon));
+        double LR_stat = this.nEff * TMath.log((sigma0_sq + epsilon) / (sigma1_sq + epsilon));
 
         // Compute p-value using chi-square distribution
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);

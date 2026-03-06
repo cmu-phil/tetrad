@@ -24,7 +24,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -85,7 +85,7 @@ public final class CyclicStableUtils {
             Graph g, int n, double maxProd, double coefLow, double coefHigh,
             long seed, Parameters params) {
 
-        double targetRadius = FastMath.sqrt(maxProd); // exact for 2-node cycles; safe upper bound otherwise
+        double targetRadius = TMath.sqrt(maxProd); // exact for 2-node cycles; safe upper bound otherwise
         return simulateStableFixedRadius(g, n, targetRadius, coefLow, coefHigh, seed, params);
     }
 
@@ -213,7 +213,7 @@ public final class CyclicStableUtils {
                 if (i == j) continue;
                 Node from = scc.get(j);
                 if (g.getDirectedEdge(from, to) != null) {
-                    A[i][j] = FastMath.abs(getEdgeCoef(im, from, to));
+                    A[i][j] = TMath.abs(getEdgeCoef(im, from, to));
                 }
             }
         }
@@ -237,7 +237,7 @@ public final class CyclicStableUtils {
 
             // Rayleigh quotient in 1-norm for nonnegative A: lambda â ||A v||_1 / ||v||_1 = sum(w)
             lambda = norm;
-            if (FastMath.abs(lambda - prev) < 1e-9 * FastMath.max(1.0, lambda)) break;
+            if (TMath.abs(lambda - prev) < 1e-9 * TMath.max(1.0, lambda)) break;
             prev = lambda;
         }
         return lambda;

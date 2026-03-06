@@ -3,7 +3,7 @@ package edu.cmu.tetrad.search.cdnod_pag;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 import java.util.function.Function;
@@ -148,7 +148,7 @@ public final class CdnodPagOrienter {
      */
     // ---- Fluent setters ----
     public CdnodPagOrienter withMaxSubsetSize(int k) {
-        this.maxSubsetSize = FastMath.max(0, k);
+        this.maxSubsetSize = TMath.max(0, k);
         return this;
     }
 

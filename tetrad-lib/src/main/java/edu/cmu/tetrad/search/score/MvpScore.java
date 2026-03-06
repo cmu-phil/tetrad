@@ -22,7 +22,7 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.List;
 
@@ -66,10 +66,10 @@ public class MvpScore implements Score {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         this.likelihood = new MvpLikelihood(dataSet, structurePrior, fDegree, discretize);
-//        this.logn = FastMath.log(dataSet.getNumRows());
+//        this.logn = TMath.log(dataSet.getNumRows());
 
         int nEff = effectiveSampleSize < 0 ? dataSet.getNumRows() : effectiveSampleSize;
-        this.logn = FastMath.log(nEff);
+        this.logn = TMath.log(nEff);
     }
 
     /**
@@ -148,7 +148,7 @@ public class MvpScore implements Score {
      */
     @Override
     public int getMaxDegree() {
-        return (int) FastMath.ceil(FastMath.log(this.dataSet.getNumRows()));
+        return (int) TMath.ceil(TMath.log(this.dataSet.getNumRows()));
     }
 
     /**

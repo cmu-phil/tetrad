@@ -24,7 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -154,7 +154,7 @@ public class Sp implements SuborderSearch {
 
                 bestSuborders.add(new ArrayList<>(suborder));
                 seen.add(canonicalOrderKey(suborder));
-            } else if (FastMath.abs(s - bestScore) <= eps) {
+            } else if (TMath.abs(s - bestScore) <= eps) {
                 String key = canonicalOrderKey(suborder);
                 if (seen.add(key)) {
                     bestSuborders.add(new ArrayList<>(suborder));

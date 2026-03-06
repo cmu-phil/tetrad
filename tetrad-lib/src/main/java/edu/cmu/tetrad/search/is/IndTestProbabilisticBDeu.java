@@ -9,7 +9,7 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.special.Gamma;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -80,7 +80,7 @@ public class IndTestProbabilisticBDeu implements IndependenceTest {
             b = t;
         }
         double d = b - a;
-        return (d < -745.0) ? a : a + FastMath.log1p(FastMath.exp(d));
+        return (d < -745.0) ? a : a + TMath.log1p(TMath.exp(d));
     }
 
     private static int[] unrankMixedRadix(int index, int[] dims) {
@@ -325,7 +325,7 @@ public class IndTestProbabilisticBDeu implements IndependenceTest {
 
 //    /** log evidence under Dirichlet‑multinomial for a single parent row: P(D_y|row) up to a constant. */
 //    private double dirichletLogEvidence(int n_j, int[] n_jk, int K) {
-//        double rowPrior = samplePrior / FastMath.max(1, K == 0 ? 1 : 1); // unused guard; K>0 for discrete
+//        double rowPrior = samplePrior / TMath.max(1, K == 0 ? 1 : 1); // unused guard; K>0 for discrete
 //        rowPrior = samplePrior; // ESS is spread across rows by caller via localCounts indices
 //        final double cellPrior = rowPrior / K;
 //        double s = 0.0;
@@ -375,8 +375,8 @@ public class IndTestProbabilisticBDeu implements IndependenceTest {
         }
 
         // Per‑config priors: distribute mass uniformly over the r configurations
-        final double lnPriorIndPerJ = FastMath.log(prior) - FastMath.log(FastMath.max(1, r));
-        final double lnPriorDepPerJ = FastMath.log(1.0 - prior) - FastMath.log(FastMath.max(1, r));
+        final double lnPriorIndPerJ = TMath.log(prior) - TMath.log(TMath.max(1, r));
+        final double lnPriorDepPerJ = TMath.log(1.0 - prior) - TMath.log(TMath.max(1, r));
 
         // Set BDeu ESS used by local counts
         score.setSamplePrior(samplePrior);
@@ -454,7 +454,7 @@ public class IndTestProbabilisticBDeu implements IndependenceTest {
             }
         }
 
-        return FastMath.exp(sumLnInd - sumLnAll);
+        return TMath.exp(sumLnInd - sumLnAll);
     }
 
     private int requireIndex(Node n) {

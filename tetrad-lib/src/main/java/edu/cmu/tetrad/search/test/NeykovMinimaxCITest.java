@@ -6,14 +6,14 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Double.NaN;
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Neykov-style Minimax CI test (Neykov, Balakrishnan, Wasserman 2021):
@@ -191,7 +191,7 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
 
         // permutation calibration: shuffle Y within each stratum, recompute T
         SplittableRandom rng = new SplittableRandom(seed);
-        int BB = FastMath.max(50, permutations);
+        int BB = TMath.max(50, permutations);
 
         int ge = 0;
         int valid = 0;
@@ -257,9 +257,9 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
         if (m < minStratumSize) return null;
 
         // Adaptive bins for continuous X/Y within this stratum: min(global, floor(sqrt(m))) with floor 2.
-        int binsXY = FastMath.max(2, FastMath.min(binsPerContXY, (int) FastMath.floor(FastMath.sqrt(m))));
-        int maxBinsByCells = FastMath.max(2, (int) FastMath.floor(FastMath.sqrt(maxCellsPerStratum)));
-        binsXY = FastMath.min(binsXY, maxBinsByCells);
+        int binsXY = TMath.max(2, TMath.min(binsPerContXY, (int) TMath.floor(TMath.sqrt(m))));
+        int maxBinsByCells = TMath.max(2, (int) TMath.floor(TMath.sqrt(maxCellsPerStratum)));
+        binsXY = TMath.min(binsXY, maxBinsByCells);
 
         Cat xCat = buildCategories(ix, useRows, g, binsXY);
         Cat yCat = buildCategories(iy, useRows, g, binsXY);
@@ -275,10 +275,10 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
 
         long cells = (long) Kx * (long) Ky;
         if (cells > maxCellsPerStratum) {
-            int K = FastMath.max(2, (int) FastMath.floor(FastMath.sqrt(maxCellsPerStratum)));
+            int K = TMath.max(2, (int) TMath.floor(TMath.sqrt(maxCellsPerStratum)));
             int[] x = (Kx > K) ? downBinDeterministic(xCat.codes, Kx, K) : xCat.codes;
             int[] y = (Ky > K) ? downBinDeterministic(yCat.codes, Ky, K) : yCat.codes;
-            return new GroupPlan(x, y, FastMath.min(Kx, K), FastMath.min(Ky, K), binId, seed, epsProb);
+            return new GroupPlan(x, y, TMath.min(Kx, K), TMath.min(Ky, K), binId, seed, epsProb);
         }
 
         return new GroupPlan(xCat.codes, yCat.codes, Kx, Ky, binId, seed, epsProb);
@@ -351,8 +351,8 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
         // Keep sane caps because this is used repeatedly inside causal search.
         double d = pow(n, 0.4) * pow(12.0, 0.2);
         int di = (int) floor(d);
-        di = FastMath.max(2, di);
-        di = FastMath.min(di, 50); // practical cap; adjust if you like
+        di = TMath.max(2, di);
+        di = TMath.min(di, 50); // practical cap; adjust if you like
         return di;
     }
 
@@ -449,7 +449,7 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
         if (alpha < 0 || alpha > 1) throw new IllegalArgumentException("alpha must be in [0,1]");
         this.alpha = alpha;
 
-        int minB = (alpha > 0.0) ? ((int) FastMath.ceil(1.0 / alpha) - 1) : Integer.MAX_VALUE;
+        int minB = (alpha > 0.0) ? ((int) TMath.ceil(1.0 / alpha) - 1) : Integer.MAX_VALUE;
         NumberFormat nf = NumberFormat.getNumberInstance();
 
         if (this.permutations < minB) {
@@ -508,9 +508,9 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
      *          automatically adjusted to the required minimum.
      */
     public void setPermutations(int B) {
-        int requested = FastMath.max(50, B);
+        int requested = TMath.max(50, B);
 
-        int minB = (alpha > 0.0) ? ((int) FastMath.ceil(1.0 / alpha) - 1) : Integer.MAX_VALUE;
+        int minB = (alpha > 0.0) ? ((int) TMath.ceil(1.0 / alpha) - 1) : Integer.MAX_VALUE;
         NumberFormat nf = NumberFormat.getNumberInstance();
 
         if (requested < minB) {
@@ -553,7 +553,7 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
      * @param b the desired number of bins for the Z-axis; must be 2 or greater. Values less than 2 will default to 2.
      */
     public void setBinsPerContZ(int b) {
-        this.binsPerContZ = FastMath.max(2, b);
+        this.binsPerContZ = TMath.max(2, b);
         strataCache.clear();
     }
 
@@ -566,7 +566,7 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
      *          less than 2, it will default to 2.
      */
     public void setMinStratumSize(int m) {
-        this.minStratumSize = FastMath.max(2, m);
+        this.minStratumSize = TMath.max(2, m);
         strataCache.clear();
     }
 
@@ -577,7 +577,7 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
      * @param b the desired number of bins per container along the X and Y dimensions
      */
     public void setBinsPerContXY(int b) {
-        this.binsPerContXY = FastMath.max(2, b);
+        this.binsPerContXY = TMath.max(2, b);
     }
 
     /**
@@ -589,7 +589,7 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
      *          If this value is less than 4, the threshold of 4 will be used instead.
      */
     public void setMaxObservedLevelsPerVar(int m) {
-        this.maxObservedLevelsPerVar = FastMath.max(4, m);
+        this.maxObservedLevelsPerVar = TMath.max(4, m);
     }
 
     /**
@@ -600,7 +600,7 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
      *          value is less than 64, it defaults to 64.
      */
     public void setMaxCellsPerStratum(int m) {
-        this.maxCellsPerStratum = FastMath.max(64, m);
+        this.maxCellsPerStratum = TMath.max(64, m);
     }
 
     /**
@@ -762,7 +762,7 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
     }
 
     private static double[] quantileEdges(double[] x, int bins) {
-        bins = FastMath.max(2, bins);
+        bins = TMath.max(2, bins);
         double[] a = Arrays.copyOf(x, x.length);
         Arrays.sort(a);
 
@@ -772,8 +772,8 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
         double last = Double.NEGATIVE_INFINITY;
         for (int b = 1; b < bins; b++) {
             double q = b / (double) bins;
-            int idx = (int) FastMath.floor(q * (n - 1));
-            idx = FastMath.min(FastMath.max(0, idx), n - 1);
+            int idx = (int) TMath.floor(q * (n - 1));
+            idx = TMath.min(TMath.max(0, idx), n - 1);
 
             double e = a[idx];
 
@@ -893,7 +893,7 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
             int unique = approxUniqueCount(lev, maxObservedLevelsPerVar + 1);
 
             if (unique > maxObservedLevelsPerVar) {
-                int K = FastMath.max(2, maxObservedLevelsPerVar);
+                int K = TMath.max(2, maxObservedLevelsPerVar);
                 int[] codes = compressTopLPlusOther(lev, K);
                 return new Cat(codes, K);
             }
@@ -923,7 +923,7 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
             if (n < minStratumSize) return null;
             if (n != vals.length) vals = Arrays.copyOf(vals, n);
 
-            int bins = FastMath.max(2, effBinsXY);
+            int bins = TMath.max(2, effBinsXY);
             double[] edges = quantileEdges(vals, bins);
 
             int[] codes = new int[vals.length];

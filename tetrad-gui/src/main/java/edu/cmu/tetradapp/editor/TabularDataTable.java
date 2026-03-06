@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.Variable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeVariableType;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.table.AbstractTableModel;
 import java.beans.PropertyChangeListener;
@@ -86,7 +86,7 @@ class TabularDataTable extends AbstractTableModel {
      */
     public int getRowCount() {
         int maxRowCount = this.dataSet.getNumRows() + 3;
-        return FastMath.max(maxRowCount, 100);
+        return TMath.max(maxRowCount, 100);
     }
 
     /**
@@ -95,7 +95,7 @@ class TabularDataTable extends AbstractTableModel {
      * @return the number of columns in the wrapper table model. Guarantees that this number will be at least 30.
      */
     public int getColumnCount() {
-        int min = FastMath.min(this.minColumnCount + getNumLeadingCols(), 30 + getNumLeadingCols());
+        int min = TMath.min(this.minColumnCount + getNumLeadingCols(), 30 + getNumLeadingCols());
 
         return (this.dataSet.getNumColumns() + getNumLeadingCols() < min) ? min
                 : this.dataSet.getNumColumns() + getNumLeadingCols() + 1;

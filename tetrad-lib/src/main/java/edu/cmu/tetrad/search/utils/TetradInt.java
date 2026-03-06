@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.util.TetradSerializable;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.Objects;
 
@@ -61,10 +61,10 @@ public record TetradInt(int i, int j, int k, int l) implements TetradSerializabl
     @Override
     public int hashCode() {
         // Sort nodes within each pair, then hash the ordered pairs
-        int min1 = FastMath.min(i, j);
-        int max1 = FastMath.max(i, j);
-        int min2 = FastMath.min(k, l);
-        int max2 = FastMath.max(k, l);
+        int min1 = TMath.min(i, j);
+        int max1 = TMath.max(i, j);
+        int min2 = TMath.min(k, l);
+        int max2 = TMath.max(k, l);
 
         // Hash the ordered pairs <{i, j}, {k, l}>
         return Objects.hash(min1, max1, min2, max2);
@@ -84,15 +84,15 @@ public record TetradInt(int i, int j, int k, int l) implements TetradSerializabl
         if (!(o instanceof TetradInt(int i1, int j1, int k1, int l1))) return false;
 
         // Sort nodes within each pair
-        int min1This = FastMath.min(this.i, this.j);
-        int max1This = FastMath.max(this.i, this.j);
-        int min2This = FastMath.min(this.k, this.l);
-        int max2This = FastMath.max(this.k, this.l);
+        int min1This = TMath.min(this.i, this.j);
+        int max1This = TMath.max(this.i, this.j);
+        int min2This = TMath.min(this.k, this.l);
+        int max2This = TMath.max(this.k, this.l);
 
-        int min1Other = FastMath.min(i1, j1);
-        int max1Other = FastMath.max(i1, j1);
-        int min2Other = FastMath.min(k1, l1);
-        int max2Other = FastMath.max(k1, l1);
+        int min1Other = TMath.min(i1, j1);
+        int max1Other = TMath.max(i1, j1);
+        int min2Other = TMath.min(k1, l1);
+        int max2Other = TMath.max(k1, l1);
 
         // Compare ordered pairs <{i, j}, {k, l}>
         return min1This == min1Other && max1This == max1Other &&

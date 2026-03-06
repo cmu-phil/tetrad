@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -1006,7 +1006,7 @@ public final class DirichletBayesIm implements BayesIm {
                         continue;
                     }
 
-                    if (FastMath.abs(probability - otherProbability)
+                    if (TMath.abs(probability - otherProbability)
                         > DirichletBayesIm.ALLOWABLE_DIFFERENCE) {
                         return false;
                     }

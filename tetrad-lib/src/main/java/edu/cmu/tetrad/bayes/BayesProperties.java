@@ -24,7 +24,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -151,7 +151,7 @@ public final class BayesProperties {
         int df = paramsSat - rModel.dof();
 
         // Numerical & sanity guards
-        if (chisq < 0 && FastMath.abs(chisq) < 1e-9) chisq = 0.0;
+        if (chisq < 0 && TMath.abs(chisq) < 1e-9) chisq = 0.0;
         if (chisq < 0) {
             throw new IllegalStateException("Negative LR statistic: check log-likelihood calculations.");
         }
@@ -163,13 +163,13 @@ public final class BayesProperties {
         this.dof = df;
 
         // ... after computing chisq and df ...
-        if (chisq < 0 && FastMath.abs(chisq) < 1e-9) chisq = 0.0;
+        if (chisq < 0 && TMath.abs(chisq) < 1e-9) chisq = 0.0;
         if (chisq < 0) throw new IllegalStateException("Negative LR statistic.");
         if (df < 0) throw new IllegalStateException("Negative DOF: parameter counting mismatch.");
 
         // BIC for BN model
         int N = this.dataSet.getNumRows();
-        this.bic = 2 * rModel.lik() - rModel.dof() * FastMath.log(N);
+        this.bic = 2 * rModel.lik() - rModel.dof() * TMath.log(N);
 
         double p;
         if (df == 0) {
@@ -333,7 +333,7 @@ public final class BayesProperties {
             if (nr == 0) continue;
             for (int c : counts) {
                 if (c > 0) {
-                    ll += c * FastMath.log((double) c / nr);
+                    ll += c * TMath.log((double) c / nr);
                 }
             }
         }
@@ -402,7 +402,7 @@ public final class BayesProperties {
         int N = dataSet.getNumRows();
         double ll = 0.0;
         for (int n : counts.values()) {
-            if (n > 0) ll += n * FastMath.log((double) n / N);
+            if (n > 0) ll += n * TMath.log((double) n / N);
         }
         return ll;
     }

@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.*;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Implements the Direct-LiNGAM algorithm. The reference is here:

@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -143,7 +143,7 @@ public class LgMnarDataSimulator {
                 Arrays.sort(data);
 
                 // Find the threshold value at the 90th percentile.
-                double _threshold = data[data.length - (int) FastMath.ceil(threshold * data.length)];
+                double _threshold = data[data.length - (int) TMath.ceil(threshold * data.length)];
 
                 IntStream.range(0, dataSet.getNumRows()).parallel().forEach(row -> {
                     double value = dataSet.getDouble(row, colIndex);

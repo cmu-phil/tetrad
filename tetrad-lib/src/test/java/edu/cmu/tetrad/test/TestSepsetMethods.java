@@ -29,7 +29,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.util.SublistGenerator;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,8 +117,8 @@ public class TestSepsetMethods {
             Node x, y;
 
             do {
-                x = nodes.get((int) (FastMath.random() * numNodes));
-                y = nodes.get((int) (FastMath.random() * numNodes));
+                x = nodes.get((int) (TMath.random() * numNodes));
+                y = nodes.get((int) (TMath.random() * numNodes));
             } while (x.equals(y));
 
             if (graph.isAdjacentTo(x, y)) {

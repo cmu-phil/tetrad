@@ -2,7 +2,7 @@ package edu.cmu.tetrad.hybridcg;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -139,7 +139,7 @@ public final class HybridCgCutpoints {
         if (q <= 0) return sorted[0];
         if (q >= 1) return sorted[sorted.length - 1];
         double pos = q * (sorted.length - 1);
-        int i = (int) FastMath.floor(pos);
+        int i = (int) TMath.floor(pos);
         double frac = pos - i;
         if (i + 1 >= sorted.length) return sorted[i];
         return sorted[i] * (1 - frac) + sorted[i + 1] * frac;

@@ -21,12 +21,12 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.text.NumberFormat;
 import java.util.*;
 
-import static org.apache.commons.math3.util.FastMath.min;
+import static edu.cmu.tetrad.util.TMath.min;
 
 /**
  * The RandomGraph class provides methods for generating random graphs. It includes methods for generating random
@@ -1164,7 +1164,7 @@ public class RandomGraph {
             NumberFormat nf = NumberFormat.getInstance();
             nf.setMaximumFractionDigits(0);
 
-            int numDigits = (int) FastMath.ceil(FastMath.log(this.numNodes) / FastMath.log(10.0));
+            int numDigits = (int) TMath.ceil(TMath.log(this.numNodes) / TMath.log(10.0));
             nf.setMinimumIntegerDigits(numDigits);
             nf.setGroupingUsed(false);
 
@@ -1443,7 +1443,7 @@ public class RandomGraph {
          * Initializes the graph to have no edges.
          */
         private void initializeGraphAsEmpty() {
-            int max = FastMath.max(getMaxInDegree() + getMaxOutDegree(), getMaxDegree());
+            int max = TMath.max(getMaxInDegree() + getMaxOutDegree(), getMaxDegree());
             max += 1;
 
             this.parentMatrix = new int[getNumNodes()][max];

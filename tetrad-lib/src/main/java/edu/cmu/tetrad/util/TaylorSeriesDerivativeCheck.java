@@ -20,7 +20,7 @@
 
 package edu.cmu.tetrad.util;
 
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.Arrays;
 import java.util.stream.DoubleStream;
@@ -93,7 +93,7 @@ public class TaylorSeriesDerivativeCheck {
 
         // Start summing from the first derivative term (n = 1)
         for (int n = 1; n < derivatives.length; n++) {
-            double term = n * derivatives[n] * FastMath.pow(x, n - 1);
+            double term = n * derivatives[n] * TMath.pow(x, n - 1);
             derivative += term;
         }
 

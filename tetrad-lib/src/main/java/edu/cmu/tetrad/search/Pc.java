@@ -28,7 +28,7 @@ import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -743,8 +743,8 @@ public class Pc implements IGraphSearch {
 
         double bestExcl = Double.NEGATIVE_INFINITY, bestIncl = Double.NEGATIVE_INFINITY;
         for (SepCandidate c : indep) {
-            if (c.S.contains(t.z)) bestIncl = FastMath.max(bestIncl, c.p);
-            else bestExcl = FastMath.max(bestExcl, c.p);
+            if (c.S.contains(t.z)) bestIncl = TMath.max(bestIncl, c.p);
+            else bestExcl = TMath.max(bestExcl, c.p);
         }
         boolean hasExcl = bestExcl > Double.NEGATIVE_INFINITY;
         boolean hasIncl = bestIncl > Double.NEGATIVE_INFINITY;
@@ -762,7 +762,7 @@ public class Pc implements IGraphSearch {
                 logStream.println("[MAX-P ambiguous] pair=(" + x.getName() + "," + y.getName() + "), z=" + t.z.getName()
                         + " bestExcl=" + bestExcl + " bestIncl=" + bestIncl + " margin=" + maxPMargin);
             }
-            return new MaxPDecision(t, ColliderOutcome.AMBIGUOUS, FastMath.max(bestExcl, bestIncl), Collections.emptySet());
+            return new MaxPDecision(t, ColliderOutcome.AMBIGUOUS, TMath.max(bestExcl, bestIncl), Collections.emptySet());
         } else if (hasExcl) {
             Set<Node> bestS = firstTieMatchingContainsZ(indep, t.z, false, bestExcl);
             return new MaxPDecision(t, ColliderOutcome.INDEPENDENT, bestExcl, bestS);
@@ -796,9 +796,9 @@ public class Pc implements IGraphSearch {
         adjy.sort(Comparator.comparing(Node::getName));
 
         final int depthCap = (depth < 0) ? Integer.MAX_VALUE : depth;
-        int maxAdj = FastMath.max(adjx.size(), adjy.size());
+        int maxAdj = TMath.max(adjx.size(), adjy.size());
 
-        for (int d = 0; d <= FastMath.min(depthCap, maxAdj); d++) {
+        for (int d = 0; d <= TMath.min(depthCap, maxAdj); d++) {
             for (List<Node> adj : new List[]{adjx, adjy}) {
                 if (d > adj.size()) continue;
 

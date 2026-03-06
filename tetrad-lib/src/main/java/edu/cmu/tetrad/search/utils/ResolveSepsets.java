@@ -28,7 +28,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -116,7 +116,7 @@ public final class ResolveSepsets {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
             IndependenceResult result = independenceTest.checkIndependence(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
-            tf += -2.0 * FastMath.log(result.getPValue());
+            tf += -2.0 * TMath.log(result.getPValue());
         }
         double p = 1.0 - ProbUtils.chisqCdf(tf, 2 * independenceTests.size());
         return (p > alpha);
@@ -141,7 +141,7 @@ public final class ResolveSepsets {
 
         for (double p : pValues) {
 //            if (p > 0) {
-            tf += -2.0 * FastMath.log(p);
+            tf += -2.0 * TMath.log(p);
             numPValues++;
 //            }
         }
@@ -184,7 +184,7 @@ public final class ResolveSepsets {
                 p = newp;
             }
         }
-        return (p > (1 - FastMath.pow(1 - alpha, (1 / (double) independenceTests.size()))));
+        return (p > (1 - TMath.pow(1 - alpha, (1 / (double) independenceTests.size()))));
     }
 
     /**
@@ -211,7 +211,7 @@ public final class ResolveSepsets {
             k++;
         }
         java.util.Arrays.sort(p);
-        return (p[r] > (1 - FastMath.pow(1 - FastMath.pow(alpha, 1.0 / (double) r), (r / (double) independenceTests.size()))));
+        return (p[r] > (1 - TMath.pow(1 - TMath.pow(alpha, 1.0 / (double) r), (r / (double) independenceTests.size()))));
     }
 
     /**
@@ -246,7 +246,7 @@ public final class ResolveSepsets {
                 p = newp;
             }
         }
-        return (p > FastMath.pow(alpha, (1 / (double) independenceTests.size())));
+        return (p > TMath.pow(alpha, (1 / (double) independenceTests.size())));
     }
 
     /**
@@ -273,9 +273,9 @@ public final class ResolveSepsets {
             }
             IndependenceResult result = independenceTest.checkIndependence(independenceTest.getVariable(x.getName()),
                     independenceTest.getVariable(y.getName()), localCondSet);
-            ts += ProbUtils.normalQuantile(result.getPValue()) / FastMath.sqrt(independenceTests.size());
+            ts += ProbUtils.normalQuantile(result.getPValue()) / TMath.sqrt(independenceTests.size());
         }
-        double p = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(ts)));
+        double p = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, TMath.abs(ts)));
         return (p > alpha);
     }
 
@@ -294,7 +294,7 @@ public final class ResolveSepsets {
      */
     public static boolean isIndependentPooledMudholkerGeorge(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.iterator().next().getAlpha();
-        double c = FastMath.sqrt(3 * (5 * independenceTests.size() + 4) / (independenceTests.size() * FastMath.pow(FastMath.PI, 2) * (5 * independenceTests.size() + 2)));
+        double c = TMath.sqrt(3 * (5 * independenceTests.size() + 4) / (independenceTests.size() * TMath.pow(TMath.PI, 2) * (5 * independenceTests.size() + 2)));
         double tm = 0.0;
         for (IndependenceTest independenceTest : independenceTests) {
             Set<Node> localCondSet = new HashSet<>();
@@ -304,10 +304,10 @@ public final class ResolveSepsets {
             IndependenceResult result = independenceTest.checkIndependence(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
             double pk = result.getPValue();
             if (pk != 0 && pk != 1) {
-                tm += -c * FastMath.log(pk / (1 - pk));
+                tm += -c * TMath.log(pk / (1 - pk));
             }
         }
-        double p = 2.0 * (1.0 - ProbUtils.tCdf(FastMath.abs(tm), 5 * independenceTests.size() + 4));
+        double p = 2.0 * (1.0 - ProbUtils.tCdf(TMath.abs(tm), 5 * independenceTests.size() + 4));
         return (p > alpha);
     }
 
@@ -324,12 +324,12 @@ public final class ResolveSepsets {
                                                               Set<Node> condSet) {
         double alpha = independenceTests.iterator().next().getAlpha();
         List<Double> pValues = ResolveSepsets.getAvailablePValues(independenceTests, x, y, condSet);
-        double c = FastMath.sqrt(3 * (5 * pValues.size() + 4) / (pValues.size() * FastMath.pow(FastMath.PI, 2) * (5 * pValues.size() + 2)));
+        double c = TMath.sqrt(3 * (5 * pValues.size() + 4) / (pValues.size() * TMath.pow(TMath.PI, 2) * (5 * pValues.size() + 2)));
         double tm = 0.0;
         for (double pk : pValues) {
-            tm += -c * FastMath.log(pk / (1 - pk));
+            tm += -c * TMath.log(pk / (1 - pk));
         }
-        double p = 2.0 * (1.0 - ProbUtils.tCdf(FastMath.abs(tm), 5 * pValues.size() + 4));
+        double p = 2.0 * (1.0 - ProbUtils.tCdf(TMath.abs(tm), 5 * pValues.size() + 4));
         return (p > alpha);
     }
 

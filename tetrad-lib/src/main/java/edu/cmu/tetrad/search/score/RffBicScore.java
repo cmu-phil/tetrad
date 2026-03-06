@@ -5,7 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
@@ -128,7 +128,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         // ignoring NaNs.
         this.sigmaPerVar = new double[p];
         for (int j = 0; j < p; j++) {
-            this.sigmaPerVar[j] = medianPairwiseDistance1D(j, null, FastMath.min(sampleSize, maxBandwidthRows));
+            this.sigmaPerVar[j] = medianPairwiseDistance1D(j, null, TMath.min(sampleSize, maxBandwidthRows));
             if (!(sigmaPerVar[j] > 0) || !Double.isFinite(sigmaPerVar[j])) sigmaPerVar[j] = 1.0;
         }
 
@@ -139,7 +139,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
 
     private static double gaussianLogLikFromRss(double[] y, int n, double rss) {
         double sigma2 = rss / n;
-        return -0.5 * n * (FastMath.log(2.0 * FastMath.PI * sigma2) + 1.0);
+        return -0.5 * n * (TMath.log(2.0 * TMath.PI * sigma2) + 1.0);
     }
 
     private static double rssZeroModel(double[] y) {
@@ -173,7 +173,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
     }
 
     private static void addDiagonalInPlace(DMatrixRMaj M, double v) {
-        int n = FastMath.min(M.numRows, M.numCols);
+        int n = TMath.min(M.numRows, M.numCols);
         for (int i = 0; i < n; i++) {
             M.add(i, i, v);
         }
@@ -200,36 +200,36 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
             double[] b = new double[m];
             for (int i = 0; i < m; i++) {
                 for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * wStd;
-                b[i] = rng.nextDouble() * 2.0 * FastMath.PI;
+                b[i] = rng.nextDouble() * 2.0 * TMath.PI;
             }
 
             DMatrixRMaj Phi = new DMatrixRMaj(n, m);
-            double scale = FastMath.sqrt(2.0 / m);
+            double scale = TMath.sqrt(2.0 / m);
             for (int i = 0; i < n; i++) {
                 double[] zi = Z[i];
                 for (int f = 0; f < m; f++) {
                     double dot = 0.0;
                     double[] wf = W[f];
                     for (int j = 0; j < d; j++) dot += wf[j] * zi[j];
-                    Phi.set(i, f, scale * FastMath.cos(dot + b[f]));
+                    Phi.set(i, f, scale * TMath.cos(dot + b[f]));
                 }
             }
             return Phi;
         }
 
         // cos+sin paired features
-        int mf = FastMath.max(1, m / 2);     // number of frequencies
+        int mf = TMath.max(1, m / 2);     // number of frequencies
         int outM = 2 * mf;               // output features (even)
         double[][] W = new double[mf][d];
         double[] b = new double[mf];
 
         for (int i = 0; i < mf; i++) {
             for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * wStd;
-            b[i] = rng.nextDouble() * 2.0 * FastMath.PI;
+            b[i] = rng.nextDouble() * 2.0 * TMath.PI;
         }
 
         DMatrixRMaj Phi = new DMatrixRMaj(n, outM);
-        double scale = FastMath.sqrt(2.0 / outM);
+        double scale = TMath.sqrt(2.0 / outM);
 
         for (int i = 0; i < n; i++) {
             double[] zi = Z[i];
@@ -239,8 +239,8 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
                 double[] wf = W[f];
                 for (int j = 0; j < d; j++) dot += wf[j] * zi[j];
                 double t = dot + b[f];
-                Phi.set(i, col++, scale * FastMath.cos(t));
-                Phi.set(i, col++, scale * FastMath.sin(t));
+                Phi.set(i, col++, scale * TMath.cos(t));
+                Phi.set(i, col++, scale * TMath.sin(t));
             }
         }
 
@@ -257,7 +257,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         }
         double mean = sum / n;
         double var = (sumsq - n * mean * mean) / (n - 1);
-        double sd = (var > 0) ? FastMath.sqrt(var) : 1.0;
+        double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
         for (int i = 0; i < n; i++) x[i] = (x[i] - mean) / sd;
     }
 
@@ -276,7 +276,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
             }
             double mean = sum / n;
             double var = (sumsq - n * mean * mean) / (n - 1);
-            double sd = (var > 0) ? FastMath.sqrt(var) : 1.0;
+            double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
 
             for (int i = 0; i < n; i++) {
                 X[i][j] = (X[i][j] - mean) / sd;
@@ -297,7 +297,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
             }
             double mean = sum / n;
             double var = (sumsq - n * mean * mean) / (n - 1);
-            double sd = (var > 0) ? FastMath.sqrt(var) : 1.0;
+            double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
 
             for (int i = 0; i < n; i++) {
                 M.set(i, j, (M.get(i, j) - mean) / sd);
@@ -306,7 +306,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
     }
 
     private static double medianPairwiseDistanceND(double[][] Z, int limit) {
-        int n = FastMath.min(Z.length, limit);
+        int n = TMath.min(Z.length, limit);
         if (n < 3) return 1.0;
         int d = Z[0].length;
         if (d == 0) return 1.0;
@@ -321,7 +321,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
                     double diff = Z[i][k] - Z[j][k];
                     ss += diff * diff;
                 }
-                double dist = FastMath.sqrt(ss);
+                double dist = TMath.sqrt(ss);
                 if (dist > 0 && Double.isFinite(dist)) dists[idx++] = dist;
             }
         }
@@ -460,10 +460,10 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         if (!(sigma > 0) || !Double.isFinite(sigma)) sigma = 1.0;
 
         // Optional RCIT-ish tweak: sigma = medianDist / sqrt(2)
-        sigma = sigma / FastMath.sqrt(2.0);
+        sigma = sigma / TMath.sqrt(2.0);
 
         // Ensemble-average the score over a few deterministic RFF draws
-        final int E = FastMath.max(1, this.rffEnsemble);
+        final int E = TMath.max(1, this.rffEnsemble);
 
         double scoreSum = 0.0;
         int good = 0;
@@ -471,7 +471,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         for (int e = 0; e < E; e++) {
             // Build Phi(Z): n x m
 //            int m = numFeatZ;
-            int m = FastMath.min(numFeatZ, 20 * d);
+            int m = TMath.min(numFeatZ, 20 * d);
 //            int m = baseFeatPerParent * d;
             DMatrixRMaj Phi = rffFeaturesStable(
                     Z, n, d, m, sigma,
@@ -534,7 +534,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
             double df = effectiveDfFromChol(solver, mPhi, lambda);
             if (!Double.isFinite(df) || df < 0) df = mPhi;
 
-            double score = 2.0 * ll - penaltyDiscount * df * FastMath.log(n);
+            double score = 2.0 * ll - penaltyDiscount * df * TMath.log(n);
             if (Double.isFinite(score)) {
                 scoreSum += score;
                 good++;
@@ -574,7 +574,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
      */
     @Override
     public int getMaxDegree() {
-        return (int) FastMath.ceil(FastMath.log(FastMath.max(3, nEff)));
+        return (int) TMath.ceil(TMath.log(TMath.max(3, nEff)));
     }
 
     /**
@@ -665,7 +665,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
      * @param numFeatZ the number of features for Z
      */
     public void setNumFeatZ(int numFeatZ) {
-        this.numFeatZ = FastMath.max(1, numFeatZ);
+        this.numFeatZ = TMath.max(1, numFeatZ);
         clearCache();
     }
 
@@ -768,7 +768,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
      *                         will automatically be set to 10.
      */
     public void setMaxBandwidthRows(int maxBandwidthRows) {
-        this.maxBandwidthRows = FastMath.max(10, maxBandwidthRows);
+        this.maxBandwidthRows = TMath.max(10, maxBandwidthRows);
         clearCache();
     }
 
@@ -837,7 +837,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
      * @param rffEnsemble the number of RFF ensembles to set for use in the model.
      */
     public void setRffEnsemble(int rffEnsemble) {
-        this.rffEnsemble = FastMath.max(1, rffEnsemble);
+        this.rffEnsemble = TMath.max(1, rffEnsemble);
         clearCache();
     }
 
@@ -897,7 +897,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
 //            return s[s.length / 2];
 //        } else {
 //            // Parent-set median in d-dim on up to maxBandwidthRows rows
-//            int r = FastMath.min(n, maxBandwidthRows);
+//            int r = TMath.min(n, maxBandwidthRows);
 //            return medianPairwiseDistanceND(Z, r);
 //        }
 //    }
@@ -918,7 +918,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
             return fallback;
         }
 
-        int r = FastMath.min(FastMath.min(n, maxBandwidthRows), Z.length);
+        int r = TMath.min(TMath.min(n, maxBandwidthRows), Z.length);
 
         double[] clamp = new double[2];
         double sigma = medianPairwiseDistanceND(Z, r, clamp);
@@ -951,7 +951,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
     private static double medianPairwiseDistanceND_deterministic(double[][] Z, int r) {
         if (Z == null) return Double.NaN;
 
-        int n = FastMath.min(FastMath.min(Z.length, r), Z.length);
+        int n = TMath.min(TMath.min(Z.length, r), Z.length);
         if (n < 3) return Double.NaN;
 
         int d = (Z[0] == null) ? 0 : Z[0].length;
@@ -983,7 +983,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
 
                 if (!any) continue;
 
-                double dist = FastMath.sqrt(ss);
+                double dist = TMath.sqrt(ss);
                 if (dist > 0.0 && Double.isFinite(dist)) {
                     dists[idx++] = dist;
                 }
@@ -1003,7 +1003,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         // Guard against extremely tiny values that can blow up wStd = 1/sigma.
         // (This is conservative; adjust if you prefer.)
         final double MIN = 1e-12;
-        if (sigma < MIN) return FastMath.max(fallback, MIN);
+        if (sigma < MIN) return TMath.max(fallback, MIN);
 
         return sigma;
     }
@@ -1028,9 +1028,9 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
 
         Arrays.sort(dists, 0, len);
 
-        double q10 = dists[(int) FastMath.floor(0.10 * (len - 1))];
-        double q50 = dists[(int) FastMath.floor(0.50 * (len - 1))];
-        double q90 = dists[(int) FastMath.floor(0.90 * (len - 1))];
+        double q10 = dists[(int) TMath.floor(0.10 * (len - 1))];
+        double q50 = dists[(int) TMath.floor(0.50 * (len - 1))];
+        double q90 = dists[(int) TMath.floor(0.90 * (len - 1))];
 
         // Guards
         if (!Double.isFinite(q50) || q50 <= 0) q50 = 1.0;
@@ -1038,8 +1038,8 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         if (!Double.isFinite(q90) || q90 <= q10) q90 = q50 * 1e3;
 
         // Lo/Hi: keep sigma within a couple orders around typical distances
-        double lo = FastMath.max(1e-12, q10);
-        double hi = FastMath.max(lo * 10.0, q90);
+        double lo = TMath.max(1e-12, q10);
+        double hi = TMath.max(lo * 10.0, q90);
         return new double[]{lo, hi};
     }
 
@@ -1189,7 +1189,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         for (int i = 1; i < m; i++) {
             double xi = tmp[i];
             for (int j = 0; j < i; j++) {
-                double dist = FastMath.abs(xi - tmp[j]);
+                double dist = TMath.abs(xi - tmp[j]);
                 if (dist > 0 && Double.isFinite(dist)) dists[idx++] = dist;
             }
         }
@@ -1202,7 +1202,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
     // Returns median; if clampOut != null, writes {lo, hi} into it.
 // clampOut length must be >= 2.
     private static double medianPairwiseDistanceND(double[][] Z, int limit, double[] clampOut) {
-        int n = FastMath.min(Z.length, limit);
+        int n = TMath.min(Z.length, limit);
         if (n < 3) {
             if (clampOut != null) { clampOut[0] = 1e-12; clampOut[1] = 1e12; }
             return 1.0;
@@ -1223,7 +1223,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
                     double diff = Z[i][k] - Z[j][k];
                     ss += diff * diff;
                 }
-                double dist = FastMath.sqrt(ss);
+                double dist = TMath.sqrt(ss);
                 if (dist > 0 && Double.isFinite(dist)) dists[idx++] = dist;
             }
         }

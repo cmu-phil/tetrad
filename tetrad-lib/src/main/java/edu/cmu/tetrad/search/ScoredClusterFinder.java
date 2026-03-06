@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.RankTests;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -117,7 +117,7 @@ public final class ScoredClusterFinder {
         long[][] C = new long[n + 1][k + 1];
         for (int i = 0; i <= n; i++) {
             C[i][0] = 1L;
-            int maxj = FastMath.min(i, k);
+            int maxj = TMath.min(i, k);
             for (int j = 1; j <= maxj; j++) {
                 long v = C[i - 1][j - 1] + C[i - 1][j];
                 if (v < 0 || v < C[i - 1][j - 1]) v = Long.MAX_VALUE; // clamp on overflow
@@ -198,8 +198,8 @@ public final class ScoredClusterFinder {
      * @param marginKp1 the margin value for the succeeding cluster; must be a non-negative double
      */
     public void setMargins(double marginKm1, double marginKp1) {
-        this.marginKm1 = FastMath.max(0.0, marginKm1);
-        this.marginKp1 = FastMath.max(0.0, marginKp1);
+        this.marginKm1 = TMath.max(0.0, marginKm1);
+        this.marginKp1 = TMath.max(0.0, marginKp1);
     }
 
     /**
@@ -305,8 +305,8 @@ public final class ScoredClusterFinder {
             return new ScoreSweep(-1, -1, Double.NEGATIVE_INFINITY, Double.NaN, Double.NaN);
 
         int p = C.length, q = D.length;
-        int m = FastMath.min(FastMath.min(p, q), n - 1);
-        m = FastMath.min(m, ent.suffixLogs.length - 1);
+        int m = TMath.min(TMath.min(p, q), n - 1);
+        m = TMath.min(m, ent.suffixLogs.length - 1);
         if (m < 0) return new ScoreSweep(-1, -1, Double.NEGATIVE_INFINITY, Double.NaN, Double.NaN);
         if (m == 0) {
             double sc0 = -0.0; // Fit(0)=0, Pen(0)=0
@@ -317,7 +317,7 @@ public final class ScoredClusterFinder {
         if (nEff < 1.0) nEff = 1.0;
 
         // EBIC pool size: treat Vsub\C as available predictors; rough proxy:
-        int Ppool = FastMath.max(q, 2);
+        int Ppool = TMath.max(q, 2);
 
         double[] suf = ent.suffixLogs;
         double base = suf[0];
@@ -331,8 +331,8 @@ public final class ScoredClusterFinder {
             double sumLogsTopR = base - suf[r];            // sum_{i=1..r} log(1 - rho_i^2), with convention suf[0]=sum_{i=1..0}(...) = 0
             double fit = -nEff * sumLogsTopR;              // larger is better
             int kParams = r * (p + q - r);
-            double pen = c * kParams * FastMath.log(n);
-            if (gamma > 0.0) pen += 2.0 * gamma * kParams * FastMath.log(Ppool);
+            double pen = c * kParams * TMath.log(n);
+            if (gamma > 0.0) pen += 2.0 * gamma * kParams * TMath.log(Ppool);
             double sc = fit - pen;
             scByR[r] = sc;
             if (sc > scStar) {

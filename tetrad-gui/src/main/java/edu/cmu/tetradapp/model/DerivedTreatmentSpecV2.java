@@ -3,7 +3,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -166,8 +166,8 @@ public final class DerivedTreatmentSpecV2 implements Serializable {
         if (q >= 1) return vals[vals.length - 1];
 
         double pos = q * (vals.length - 1);
-        int i = (int) FastMath.floor(pos);
-        int j = FastMath.min(vals.length - 1, i + 1);
+        int i = (int) TMath.floor(pos);
+        int j = TMath.min(vals.length - 1, i + 1);
         double t = pos - i;
         return (1 - t) * vals[i] + t * vals[j];
     }

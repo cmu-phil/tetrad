@@ -29,7 +29,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -38,7 +38,7 @@ import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static org.apache.commons.math3.util.FastMath.abs;
+import static edu.cmu.tetrad.util.TMath.abs;
 
 /**
  * Stores a table of probabilities for a Bayes net and, together with BayesPm and Dag, provides methods to manipulate
@@ -316,7 +316,7 @@ public final class MlBayesIm implements BayesIm {
         double[] row = new double[size];
         double sum = 0.0;
 
-        int strong = (int) FastMath.floor(random.nextDouble() * size);
+        int strong = (int) TMath.floor(random.nextDouble() * size);
 
         for (int i = 0; i < size; i++) {
             if (i == strong) {

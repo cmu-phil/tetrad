@@ -40,8 +40,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
-import static org.apache.commons.math3.util.FastMath.max;
-import static org.apache.commons.math3.util.FastMath.min;
+import static edu.cmu.tetrad.util.TMath.max;
+import static edu.cmu.tetrad.util.TMath.min;
 
 /**
  * Implements the Fast Greedy Equivalence Search (FGES) algorithm. This is an implementation of the Greedy Equivalence

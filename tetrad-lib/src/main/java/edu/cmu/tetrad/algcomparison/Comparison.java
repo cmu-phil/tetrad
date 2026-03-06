@@ -43,7 +43,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.reflections.Reflections;
 
 import java.io.*;
@@ -1358,7 +1358,7 @@ public class Comparison implements TetradSerializable {
 
                 List<DataModel> dataModels = new ArrayList<>();
                 int randomSelectionSize = algorithmWrapper.getAlgorithmSpecificParameters().getInt("randomSelectionSize");
-                for (int i = 0; i < FastMath.min(numDataModels, randomSelectionSize); i++) {
+                for (int i = 0; i < TMath.min(numDataModels, randomSelectionSize); i++) {
                     dataModels.add(simulationWrapper.getSimulation().getDataModel(indices.get(i)));
                 }
 
@@ -1729,7 +1729,7 @@ public class Comparison implements TetradSerializable {
                     } else if (Double.isNaN(stat)) {
                         table.setToken(t + 1, initialColumn + statIndex, "*");
                     } else {
-                        table.setToken(t + 1, initialColumn + statIndex, FastMath.abs(stat) < FastMath.pow(10, -smallNf.getMaximumFractionDigits()) && stat != 0 ? smallNf.format(stat) : nf.format(stat));
+                        table.setToken(t + 1, initialColumn + statIndex, TMath.abs(stat) < TMath.pow(10, -smallNf.getMaximumFractionDigits()) && stat != 0 ? smallNf.format(stat) : nf.format(stat));
                     }
                 }
 

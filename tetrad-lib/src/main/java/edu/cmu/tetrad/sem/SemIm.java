@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -40,7 +40,7 @@ import java.io.Serial;
 import java.rmi.MarshalledObject;
 import java.util.*;
 
-import static org.apache.commons.math3.util.FastMath.sqrt;
+import static edu.cmu.tetrad.util.TMath.sqrt;
 
 /**
  * Stores an instantiated structural equation model (SEM), with error covariance terms, possibly cyclic, suitable for
@@ -461,7 +461,7 @@ public final class SemIm implements Im, ISemIm {
 //            if (!(d > 0.0) || Double.isNaN(d) || Double.isInfinite(d)) {
 //                throw new IllegalStateException("Cholesky diagonal not positive.");
 //            }
-//            sum += FastMath.log(d);
+//            sum += TMath.log(d);
 //        }
 //        return 2.0 * sum;
 //    }
@@ -478,14 +478,14 @@ public final class SemIm implements Im, ISemIm {
                 if (!(d > 0.0) || Double.isNaN(d) || Double.isInfinite(d)) {
                     throw new IllegalStateException("Cholesky diagonal not positive.");
                 }
-                sum += FastMath.log(d);
+                sum += TMath.log(d);
             }
             return 2.0 * sum;
         } catch (Throwable t) {
             // Add a tiny jitter proportional to average diagonal, retry once
             int n = S.getNumRows();
             double avgDiag = 0.0;
-            for (int i = 0; i < n; i++) avgDiag += FastMath.max(0.0, S.get(i, i));
+            for (int i = 0; i < n; i++) avgDiag += TMath.max(0.0, S.get(i, i));
             avgDiag = (n > 0 ? avgDiag / n : 1.0);
             double eps = 1e-8 * (avgDiag > 0.0 ? avgDiag : 1.0);
 
@@ -494,7 +494,7 @@ public final class SemIm implements Im, ISemIm {
 
             Matrix L = MatrixUtils.cholesky(Sj); // will throw if truly not SPD
             double sum = 0.0;
-            for (int i = 0; i < n; i++) sum += FastMath.log(L.get(i, i));
+            for (int i = 0; i < n; i++) sum += TMath.log(L.get(i, i));
             return 2.0 * sum;
         }
     }
@@ -1356,7 +1356,7 @@ public final class SemIm implements Im, ISemIm {
             } catch (Throwable t) {
                 int n = Sigma.getNumRows();
                 double avgDiag = 0.0;
-                for (int i = 0; i < n; i++) avgDiag += FastMath.max(0.0, Sigma.get(i, i));
+                for (int i = 0; i < n; i++) avgDiag += TMath.max(0.0, Sigma.get(i, i));
                 avgDiag = (n > 0 ? avgDiag / n : 1.0);
                 double eps = 1e-8 * (avgDiag > 0.0 ? avgDiag : 1.0);
 
@@ -1395,7 +1395,7 @@ public final class SemIm implements Im, ISemIm {
             // Near-SPD fallback: add a tiny jitter to the diagonal and retry
             int n = S.getNumRows();
             double avgDiag = 0.0;
-            for (int i = 0; i < n; i++) avgDiag += FastMath.max(0.0, S.get(i, i));
+            for (int i = 0; i < n; i++) avgDiag += TMath.max(0.0, S.get(i, i));
             avgDiag = (n > 0 ? avgDiag / n : 1.0);
             double eps = 1e-8 * (avgDiag > 0.0 ? avgDiag : 1.0);
             Matrix Sj = S.copy();
@@ -1459,7 +1459,7 @@ public final class SemIm implements Im, ISemIm {
      */
     public double getBicScore() {
         int dof = getSemPm().getDof();
-        return getChiSquare() - dof * FastMath.log(this.sampleSize);
+        return getChiSquare() - dof * TMath.log(this.sampleSize);
 
     }
 
@@ -1470,15 +1470,15 @@ public final class SemIm implements Im, ISemIm {
     public double getRmsea() {
         double chi2 = getChiSquare();
         int dof = this.semPm.getDof();
-        int n = FastMath.max(1, getSampleSize() - 1);
+        int n = TMath.max(1, getSampleSize() - 1);
 
         if (dof <= 0 || Double.isNaN(chi2)) return Double.NaN;
 
-        double num = FastMath.max(0.0, chi2 - dof);
+        double num = TMath.max(0.0, chi2 - dof);
         double den = dof * n;
         if (den <= 0.0) return Double.NaN;
 
-        return FastMath.sqrt(num / den);
+        return TMath.sqrt(num / den);
     }
 
     /**
@@ -1608,7 +1608,7 @@ public final class SemIm implements Im, ISemIm {
                         Node child = semGraph.getChildren(parent).iterator().next();
 
                         double var = getParamValue(child, child); // variance parameter is on the child variable
-                        sum += getNextNormal(0.0, FastMath.sqrt(FastMath.max(0.0, var)));
+                        sum += getNextNormal(0.0, TMath.sqrt(TMath.max(0.0, var)));
                     } else {
                         TimeLagGraph.NodeId id = timeSeriesGraph.getNodeId(parent);
                         int fromIndex = nodeIndices.get(timeSeriesGraph.getNode(id.getName(), 0));
@@ -1981,7 +1981,7 @@ public final class SemIm implements Im, ISemIm {
                     if (errorType == 1) {
                         // not taken; kept for completeness
                         double v = this.errCovar.get(i, i);
-                        e.set(i, v == 0.0 ? 0.0 : RandomUtil.getInstance().nextGaussian(0, FastMath.sqrt(v)));
+                        e.set(i, v == 0.0 ? 0.0 : RandomUtil.getInstance().nextGaussian(0, TMath.sqrt(v)));
                     } else if (errorType == 2) {
                         e.set(i, RandomUtil.getInstance().nextUniform(errorParam1, errorParam2));
                     } else if (errorType == 3) {
@@ -2156,7 +2156,7 @@ public final class SemIm implements Im, ISemIm {
     public double getPValue(Parameter parameter, int maxFreeParams) {
         double tValue = getTValue(parameter, maxFreeParams);
         int df = getSampleSize() - 1;
-        return 2.0 * (1.0 - ProbUtils.tCdf(FastMath.abs(tValue), df));
+        return 2.0 * (1.0 - ProbUtils.tCdf(TMath.abs(tValue), df));
     }
 
     /**
@@ -2446,7 +2446,7 @@ public final class SemIm implements Im, ISemIm {
                 if (getParams().getBoolean("coefSymmetric", true)) {
                     return value;
                 } else {
-                    return FastMath.abs(value);
+                    return TMath.abs(value);
                 }
             } else if (parameter.getType() == ParamType.COVAR) {
                 double covLow = getParams().getDouble("covLow", 0.1);
@@ -2455,7 +2455,7 @@ public final class SemIm implements Im, ISemIm {
                 if (getParams().getBoolean("covSymmetric", true)) {
                     return value;
                 } else {
-                    return FastMath.abs(value);
+                    return TMath.abs(value);
                 }
             } else { //if (parameter.getType() == ParamType.VAR) {
                 return RandomUtil.getInstance().nextUniform(getParams().getDouble("varLow", 1), getParams().getDouble("varHigh", 3));
@@ -2553,7 +2553,7 @@ public final class SemIm implements Im, ISemIm {
 
 //    private double logDet(Matrix matrix2D) {
 //        double det = matrix2D.det();
-//        return FastMath.log(FastMath.abs(det));
+//        return TMath.log(TMath.abs(det));
 
     /**
      * Computes the implied covariance matrices of the Sem. There are two:
@@ -2570,7 +2570,7 @@ public final class SemIm implements Im, ISemIm {
 
     }
 
-    /// /        return det > 0 ? FastMath.log(det) : 0;
+    /// /        return det > 0 ? TMath.log(det) : 0;
 //    }
     private double logDet(Matrix matrix2D) {
         // Keep signature but route to robust SPD log-det.

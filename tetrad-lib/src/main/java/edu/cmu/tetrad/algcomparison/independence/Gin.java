@@ -29,7 +29,7 @@ import edu.cmu.tetrad.search.test.IndTestGin;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -99,7 +99,7 @@ public class Gin implements IndependenceWrapper {
             test.setNumPermutations(0); // permutations not used for Pearson
         } else {
             test.setBackend(new IndTestGin.DistanceCorrTest());
-            test.setNumPermutations(FastMath.max(0, permutations));
+            test.setNumPermutations(TMath.max(0, permutations));
         }
 
         return test;

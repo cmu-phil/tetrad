@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Pm;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -337,7 +337,7 @@ public final class BayesPm implements Pm, VariableSource {
 
         List<String> oldCategories = variable.getCategories();
         List<String> newCategories = new LinkedList<>();
-        int min = FastMath.min(numCategories, oldCategories.size());
+        int min = TMath.min(numCategories, oldCategories.size());
 
         for (int i = 0; i < min; i++) {
             newCategories.add(oldCategories.get(i));
@@ -555,7 +555,7 @@ public final class BayesPm implements Pm, VariableSource {
             numVals = BayesPm.pickNumVals(lowerBound, upperBound);
         }
 
-        int min = FastMath.min(oldBayesPm.getNumCategories(oldNode), numVals);
+        int min = TMath.min(oldBayesPm.getNumCategories(oldNode), numVals);
 
         for (int i = 0; i < min; i++) {
             values.add(oldBayesPm.getCategory(oldNode, i));

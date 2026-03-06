@@ -22,7 +22,7 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.akutsu;
 
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.*;
 import java.text.NumberFormat;
@@ -142,15 +142,15 @@ public class LTestSsys1 {
 
                 for (int t = 1; t < ntimes; t++) {
                     String g0 =
-                            nf.format(FastMath.log(gene[t][regs[0]] + baseLevel));
+                            nf.format(TMath.log(gene[t][regs[0]] + baseLevel));
                     String g1 =
-                            nf.format(FastMath.log(gene[t][regs[1]] + baseLevel));
+                            nf.format(TMath.log(gene[t][regs[1]] + baseLevel));
                     String g2 =
-                            nf.format(FastMath.log(gene[t][regs[2]] + baseLevel));
+                            nf.format(TMath.log(gene[t][regs[2]] + baseLevel));
                     String g3 =
-                            nf.format(FastMath.log(gene[t][regs[3]] + baseLevel));
+                            nf.format(TMath.log(gene[t][regs[3]] + baseLevel));
                     String g4 =
-                            nf.format(FastMath.log(gene[t][regs[4]] + baseLevel));
+                            nf.format(TMath.log(gene[t][regs[4]] + baseLevel));
 
                     if (deriv[t][g] > 0.35) {
 

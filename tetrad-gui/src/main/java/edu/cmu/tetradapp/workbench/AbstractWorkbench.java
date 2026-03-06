@@ -33,7 +33,7 @@ import edu.cmu.tetradapp.editor.UnderliningsAction;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -258,7 +258,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     private static double distance(Point p1, Point p2) {
         double d = (p1.x - p2.x) * (p1.x - p2.x);
         d += (p1.y - p2.y) * (p1.y - p2.y);
-        d = FastMath.sqrt(d);
+        d = TMath.sqrt(d);
         return d;
     }
 
@@ -2027,7 +2027,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         Point pointA = connectedPoints.getFrom();
         Point pointB = connectedPoints.getTo();
         double length = AbstractWorkbench.distance(pointA, pointB);
-        double endpointRadius = FastMath.min(20.0, length / 3.0);
+        double endpointRadius = TMath.min(20.0, length / 3.0);
 
         if (e.isShiftDown()) {
             if (AbstractWorkbench.distance(point, pointA) < endpointRadius) {
@@ -2310,8 +2310,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         int x = node.getLocation().x;
         int y = node.getLocation().y;
 
-        x = FastMath.max(x, 0);
-        y = FastMath.max(y, 0);
+        x = TMath.max(x, 0);
+        y = TMath.max(y, 0);
 
         node.setLocation(x, y);
     }
@@ -2330,12 +2330,12 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             int x = _node.getLocation().x;
             int y = _node.getLocation().y;
 
-            minX = FastMath.min(minX, x);
-            minY = FastMath.min(minY, y);
+            minX = TMath.min(minX, x);
+            minY = TMath.min(minY, y);
         }
 
-        minX = FastMath.min(minX, 0);
-        minY = FastMath.min(minY, 0);
+        minX = TMath.min(minX, 0);
+        minY = TMath.min(minY, 0);
 
         for (DisplayNode _node : dragNodes) {
             int x = _node.getLocation().x;

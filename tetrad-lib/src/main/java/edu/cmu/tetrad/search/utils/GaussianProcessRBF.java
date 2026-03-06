@@ -20,7 +20,7 @@
 
 package edu.cmu.tetrad.search.utils;
 
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.Random;
 
@@ -102,14 +102,14 @@ public class GaussianProcessRBF {
 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                double sqDist = FastMath.pow(xValues[i] - xValues[j], 2);
-                matrix[i][j] = amplitude * FastMath.exp(-sqDist / (2 * FastMath.pow(lengthScale, 2)));
+                double sqDist = TMath.pow(xValues[i] - xValues[j], 2);
+                matrix[i][j] = amplitude * TMath.exp(-sqDist / (2 * TMath.pow(lengthScale, 2)));
             }
         }
 
         // Add noise to the diagonal for numerical stability
         for (int i = 0; i < n; i++) {
-            matrix[i][i] += FastMath.pow(noiseStd, 2);
+            matrix[i][i] += TMath.pow(noiseStd, 2);
         }
 
         return matrix;
@@ -150,8 +150,8 @@ public class GaussianProcessRBF {
         double result = 0.0;
 
         for (int i = 0; i < xValues.length; i++) {
-            double sqDist = FastMath.pow(x - xValues[i], 2);
-            double kernelValue = amplitude * FastMath.exp(-sqDist / (2 * FastMath.pow(lengthScale, 2)));
+            double sqDist = TMath.pow(x - xValues[i], 2);
+            double kernelValue = amplitude * TMath.exp(-sqDist / (2 * TMath.pow(lengthScale, 2)));
             result += kernelValue * functionValues[i];
         }
 

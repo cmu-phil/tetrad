@@ -5,7 +5,7 @@ import org.apache.commons.math3.util.FastMath;
 /**
  * Unified math interface for Tetrad.
  *
- * Allows switching between Math, StrictMath, and FastMath implementations
+ * Allows switching between Math, StrictMath, and Math implementations
  * from a single place for experimentation and benchmarking.
  *
  * If IMPL is static final the JVM will constant-fold the switch and inline
@@ -13,13 +13,17 @@ import org.apache.commons.math3.util.FastMath;
  */
 public final class TMath {
 
+    public static double copySign(double sqrt, double tStar) {
+        return Math.copySign(sqrt, tStar);
+    }
+
     public enum Impl {
         MATH,
         STRICT,
         FAST
     }
 
-    private static final Impl IMPL = Impl.FAST;
+    private static final Impl IMPL = Impl.STRICT;
 
     private TMath() {}
 
@@ -407,7 +411,27 @@ public final class TMath {
     }
 
     public static int getExponent(double d) {
-        return Math.getExponent(d);
+        switch (IMPL) {
+            case STRICT: return StrictMath.getExponent(d);
+            case FAST: return FastMath.getExponent(d);
+            default: return Math.getExponent(d);
+        }
+    }
+
+    public static double signum(double d) {
+        switch (IMPL) {
+            case STRICT: return StrictMath.signum(d);
+            case FAST: return FastMath.signum(d);
+            default: return Math.signum(d);
+        }
+    }
+
+    public static double random() {
+        switch (IMPL) {
+            case STRICT: return StrictMath.random();
+            case FAST: return FastMath.random();
+            default: return Math.random();
+        }
     }
 
 }

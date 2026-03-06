@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.util.List;
@@ -90,9 +90,9 @@ public class FirstInflection implements Algorithm {
 
     private static double getValue(double value, Parameters parameters) {
         if (parameters.getBoolean("logScale")) {
-            return FastMath.round(FastMath.pow(10.0, value) * 1000000000.0) / 1000000000.0;
+            return TMath.round(TMath.pow(10.0, value) * 1000000000.0) / 1000000000.0;
         } else {
-            return FastMath.round(value * 1000000000.0) / 1000000000.0;
+            return TMath.round(value * 1000000000.0) / 1000000000.0;
         }
     }
 
@@ -142,7 +142,7 @@ public class FirstInflection implements Algorithm {
                 _prevDiff = diff;
             }
 
-            if (_value == FastMath.round((this.low + this.increment) * 1000000000.0) / 1000000000.0) {
+            if (_value == TMath.round((this.low + this.increment) * 1000000000.0) / 1000000000.0) {
                 for (double value = this.low; value >= Double.NEGATIVE_INFINITY; value -= this.increment) {
                     value = FirstInflection.getValue(value, parameters);
 
@@ -205,7 +205,7 @@ public class FirstInflection implements Algorithm {
                 _prevDiff = diff;
             }
 
-            if (_value == FastMath.round((this.high - this.increment) * 1000000000.0) / 1000000000.0) {
+            if (_value == TMath.round((this.high - this.increment) * 1000000000.0) / 1000000000.0) {
                 for (double value = this.low; value >= Double.NEGATIVE_INFINITY; value -= this.increment) {
                     value = FirstInflection.getValue(value, parameters);
 

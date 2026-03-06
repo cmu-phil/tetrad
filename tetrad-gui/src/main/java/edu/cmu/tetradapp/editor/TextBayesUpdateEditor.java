@@ -5,7 +5,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.TextBayesUpdateModel;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -159,7 +159,7 @@ public final class TextBayesUpdateEditor extends JPanel {
         } else {
             // Expand selection to full lines.
             int startLine = root.getElementIndex(selStart);
-            int endLine = root.getElementIndex(FastMath.max(selEnd - 1, selStart));
+            int endLine = root.getElementIndex(TMath.max(selEnd - 1, selStart));
             selStart = root.getElement(startLine).getStartOffset();
             selEnd = root.getElement(endLine).getEndOffset();
         }
@@ -574,7 +574,7 @@ public final class TextBayesUpdateEditor extends JPanel {
             // pick a reasonable column schema:
             // if rows vary in category count, choose max (rare in BayesIm, but safe).
             int maxCats = 0;
-            for (ResultRow r : this.rows) maxCats = FastMath.max(maxCats, r.marginals.length);
+            for (ResultRow r : this.rows) maxCats = TMath.max(maxCats, r.marginals.length);
             this.numCats = maxCats;
 
             this.colNames = new String[2 + numCats];

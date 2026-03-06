@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.List;
 
@@ -169,7 +169,7 @@ public class KernelUtils {
 
             // compute next column
             double diag =
-                    FastMath.sqrt(Dadv[k]);
+                    TMath.sqrt(Dadv[k]);
             G.set(k, k, diag);
             for (int j = (k + 1); j < m; j++) {
                 double s = 0.0;
@@ -181,7 +181,7 @@ public class KernelUtils {
 
             // update diagonal
             for (int j = (k + 1); j < m; j++) {
-                Dadv[j] -= FastMath.pow(G.get(j, k), 2);
+                Dadv[j] -= TMath.pow(G.get(j, k), 2);
             }
             Dadv[k] = 0;
         }

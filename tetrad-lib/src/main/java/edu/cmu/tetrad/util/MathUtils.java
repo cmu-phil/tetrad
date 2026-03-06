@@ -20,13 +20,13 @@
 
 package edu.cmu.tetrad.util;
 
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Some extra mathematical functions not contained in org.apache.commons.math3.util.FastMath.
+ * Some extra mathematical functions not contained in org.apache.commons.math3.util.TMath.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -47,7 +47,7 @@ public class MathUtils {
      * @return the logistic function of x = 1 / (1 + exp(-x)).
      */
     public static double logistic(double x) {
-        return 1. / (1. + FastMath.exp(-x));
+        return 1. / (1. + TMath.exp(-x));
     }
 
     /**
@@ -82,7 +82,7 @@ public class MathUtils {
         double i = 0;
 
         for (int j = 1; j <= n; j++) {
-            i += FastMath.log(j);
+            i += TMath.log(j);
         }
 
         return i;
@@ -99,11 +99,11 @@ public class MathUtils {
         if (a == 0 && b == 0) {
             return 1;
         } else if (a == 0 && b > 0) {
-            return (int) FastMath.round(FastMath.exp(1 - (MathUtils.logFactorial(b) + MathUtils.logFactorial(-b))));
+            return (int) TMath.round(TMath.exp(1 - (MathUtils.logFactorial(b) + MathUtils.logFactorial(-b))));
         } else if (a > 0 && b == 0) {
-            return (int) FastMath.round(FastMath.exp(MathUtils.logFactorial(a) - (1 + MathUtils.logFactorial(a))));
+            return (int) TMath.round(TMath.exp(MathUtils.logFactorial(a) - (1 + MathUtils.logFactorial(a))));
         } else if (a > 0 && b > 0) {
-            return (int) FastMath.round(FastMath.exp(MathUtils.logFactorial(a) - (MathUtils.logFactorial(b) + MathUtils.logFactorial(a - b))));
+            return (int) TMath.round(TMath.exp(MathUtils.logFactorial(a) - (MathUtils.logFactorial(b) + MathUtils.logFactorial(a - b))));
         } else {
             throw new IllegalArgumentException();
         }
@@ -127,7 +127,7 @@ public class MathUtils {
      * @return the result of applying the ReLU function, which is the input if it is positive, or 0 otherwise
      */
     public static Double relu(Double x) {
-        return FastMath.max(0, x);
+        return TMath.max(0, x);
     }
 
     /**
@@ -138,7 +138,7 @@ public class MathUtils {
      * @return the result of applying the Leaky ReLU function, which is x if x is positive, or 0.1 * x otherwise
      */
     public static Double leakyRelu(Double x) {
-        return FastMath.max(0.1 * x, x);
+        return TMath.max(0.1 * x, x);
     }
 
     /**
@@ -153,7 +153,7 @@ public class MathUtils {
         if (x <= -1 || x >= 1) {
             throw new IllegalArgumentException("Input x must be between -1 and 1 (exclusive).");
         }
-        return 0.5 * FastMath.log((1 + x) / (1 - x));
+        return 0.5 * TMath.log((1 + x) / (1 - x));
     }
 
     /**

@@ -2,7 +2,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.Histogram;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -207,7 +207,7 @@ public class HistogramPanel extends JPanel {
     private static int getMax(int[] freqs) {
         int max = freqs.length == 0 ? 0 : freqs[0];
         for (int i = 1; i < freqs.length; i++) {
-            max = FastMath.max(max, freqs[i]);
+            max = TMath.max(max, freqs[i]);
         }
         return max;
     }
@@ -273,7 +273,7 @@ public class HistogramPanel extends JPanel {
             return;
         }
 
-        int barWidth = FastMath.max((width - paddingX) / categories, 2) - space;
+        int barWidth = TMath.max((width - paddingX) / categories, 2) - space;
         int topFreq = getMax(freqs);
         double scale = (topFreq == 0) ? 0.0 : (displayedHeight / (double) topFreq);
 
@@ -282,7 +282,7 @@ public class HistogramPanel extends JPanel {
         // Bars
         for (int i = 0; i < categories; i++) {
             int freq = freqs[i];
-            int y = (int) FastMath.ceil(scale * freq);
+            int y = (int) TMath.ceil(scale * freq);
             int x = space * (i + 1) + barWidth * i + paddingX;
 
             g2d.setColor(barColor);
@@ -299,9 +299,9 @@ public class HistogramPanel extends JPanel {
             // Y-axis ticks/labels (existing behavior)
             g2d.setColor(LINE_COLOR);
 
-            int topY = height - paddingY - (int) FastMath.ceil(scale * topFreq) + 1;
+            int topY = height - paddingY - (int) TMath.ceil(scale * topFreq) + 1;
             String top = String.valueOf(topFreq);
-            g2d.drawString(top, paddingX - fm.stringWidth(top), FastMath.max(10, topY - 2));
+            g2d.drawString(top, paddingX - fm.stringWidth(top), TMath.max(10, topY - 2));
             g2d.drawLine(paddingX - dash, topY, paddingX, topY);
 
             g2d.drawString("0", paddingX - fm.stringWidth("0"), height - paddingY + fm.getAscent() / 2);
@@ -324,7 +324,7 @@ public class HistogramPanel extends JPanel {
                 int yLabel = height - 2; // bottom
                 g2d.drawString(sMin, paddingX, yLabel);
                 int maxX = width - fm.stringWidth(sMax);
-                g2d.drawString(sMax, FastMath.max(paddingX + 5, maxX), yLabel);
+                g2d.drawString(sMax, TMath.max(paddingX + 5, maxX), yLabel);
             }
         }
     }
@@ -333,8 +333,8 @@ public class HistogramPanel extends JPanel {
         if (Double.isNaN(v)) return "";
         // Keep it simple; you can swap for NumberFormatUtil if you prefer
         // For p-values, this will show nicely as 0 and 1.
-        if (FastMath.abs(v) < 1e-9) return "0";
-        if (FastMath.abs(v - 1.0) < 1e-9) return "1";
+        if (TMath.abs(v) < 1e-9) return "0";
+        if (TMath.abs(v - 1.0) < 1e-9) return "1";
         return String.format("%.3g", v);
     }
 

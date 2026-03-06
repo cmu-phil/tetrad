@@ -24,11 +24,11 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * FastICA (real-valued) translated for Tetrad.
@@ -297,7 +297,7 @@ public class FastIca {
         Matrix U = new Matrix(s.getU());
         for (int i = 0; i < D.getNumRows(); i++) {
             double lambda = D.get(i, i);
-            D.set(i, i, 1.0 / FastMath.sqrt(FastMath.max(lambda, eps)));
+            D.set(i, i, 1.0 / TMath.sqrt(TMath.max(lambda, eps)));
         }
         Matrix K = D.times(U.transpose());
         K = K.getPart(0, this.numComponents, 0, p); // keep first components
@@ -496,7 +496,7 @@ public class FastIca {
 
     private double rms(Vector w) {
         double ssq = sumOfSquares(w);
-        return FastMath.sqrt(ssq);
+        return TMath.sqrt(ssq);
     }
 
     private void scale(Matrix x) {

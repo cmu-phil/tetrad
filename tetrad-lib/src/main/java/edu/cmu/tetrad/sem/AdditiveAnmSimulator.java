@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.distribution.RealDistribution;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -90,7 +90,7 @@ public class AdditiveAnmSimulator {
             double d = a - m;
             v += d * d;
         }
-        double sd = FastMath.sqrt(FastMath.max(v / FastMath.max(1, n - 1), 1e-12));
+        double sd = TMath.sqrt(TMath.max(v / TMath.max(1, n - 1), 1e-12));
         for (int i = 0; i < n; i++) x[i] = (x[i] - m) / sd;
     }
 
@@ -180,15 +180,15 @@ public class AdditiveAnmSimulator {
         double[] s = new double[K];
 
         for (int u = 0; u < K; u++) {
-            a[u] = rng.nextGaussian() / FastMath.sqrt(K);     // variance-normalized
+            a[u] = rng.nextGaussian() / TMath.sqrt(K);     // variance-normalized
             c[u] = rng.nextGaussian() * 0.75;             // centers near 0
-            s[u] = 0.4 + FastMath.abs(rng.nextGaussian()) * 0.6; // widths in [~0.1, ~1.5]
+            s[u] = 0.4 + TMath.abs(rng.nextGaussian()) * 0.6; // widths in [~0.1, ~1.5]
         }
         return x -> {
             double sum = 0.0;
             for (int u = 0; u < K; u++) {
                 double d = (x - c[u]) / s[u];
-                sum += a[u] * FastMath.exp(-0.5 * d * d);
+                sum += a[u] * TMath.exp(-0.5 * d * d);
             }
             return sum;
         };
@@ -202,14 +202,14 @@ public class AdditiveAnmSimulator {
         double[] b = new double[K];
 
         for (int u = 0; u < K; u++) {
-            a[u] = rng.nextGaussian() / FastMath.sqrt(K);
+            a[u] = rng.nextGaussian() / TMath.sqrt(K);
             w[u] = rng.nextGaussian();
             b[u] = rng.nextGaussian();
         }
         return x -> {
             double sum = 0.0;
             for (int u = 0; u < K; u++) {
-                sum += a[u] * FastMath.tanh(w[u] * x + b[u]);
+                sum += a[u] * TMath.tanh(w[u] * x + b[u]);
             }
             return sum;
         };
@@ -217,9 +217,9 @@ public class AdditiveAnmSimulator {
 
     // sum_{r=1..K} a_r * x^r   (K is degree; omit intercept to keep f(0)=0 on average)
     private EdgeFunction randomPoly() {
-        int deg = FastMath.max(1, numUnitsPerEdge);
+        int deg = TMath.max(1, numUnitsPerEdge);
         double[] a = new double[deg + 1]; // a[0] unused to avoid constant shift
-        for (int r = 1; r <= deg; r++) a[r] = rng.nextGaussian() / FastMath.pow(2.0, r); // damp high degrees
+        for (int r = 1; r <= deg; r++) a[r] = rng.nextGaussian() / TMath.pow(2.0, r); // damp high degrees
         return x -> {
             double xr = x, sum = 0.0;
             for (int r = 1; r <= deg; r++) {
@@ -271,7 +271,7 @@ public class AdditiveAnmSimulator {
      * @return This simulator instance, allowing for method chaining.
      */
     public AdditiveAnmSimulator setNumUnitsPerEdge(int k) {
-        this.numUnitsPerEdge = FastMath.max(1, k);
+        this.numUnitsPerEdge = TMath.max(1, k);
         return this;
     }
 

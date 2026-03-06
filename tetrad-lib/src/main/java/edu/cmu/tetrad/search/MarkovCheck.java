@@ -28,7 +28,7 @@ import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.apache.commons.math3.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -485,7 +485,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public List<List<Double>> getLocalPValues(IndependenceTest independenceTest, List<IndependenceFact> facts, Double shuffleThreshold) {
         // Shuffle to generate more data from the same graph.
-        int shuffleTimes = (int) FastMath.ceil(1 / shuffleThreshold);
+        int shuffleTimes = (int) TMath.ceil(1 / shuffleThreshold);
         // pVals is a list of lists of the p values for each shuffled results.
         List<List<Double>> pVals_list = new ArrayList<>();
         for (int i = 0; i < shuffleTimes; i++) {
@@ -1989,7 +1989,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         }
 
         double effectiveSampleSize = (sum * sum) / sumSquared;
-        return (int) FastMath.round(effectiveSampleSize);
+        return (int) TMath.round(effectiveSampleSize);
     }
 
     /**
@@ -2048,7 +2048,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     private List<Integer> getSubsampleRows(double v) {
         int sampleSize = independenceTest.getSampleSize();
-        int subsampleSize = (int) FastMath.floor(sampleSize * v);
+        int subsampleSize = (int) TMath.floor(sampleSize * v);
         List<Integer> rows = new ArrayList<>(sampleSize);
         for (int i = 0; i < sampleSize; i++) {
             rows.add(i);
@@ -2070,7 +2070,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
     private List<Integer> getBootstrapRows(double v) {
         int sampleSize = independenceTest.getSampleSize();
-        int subsampleSize = (int) FastMath.floor(sampleSize * v);
+        int subsampleSize = (int) TMath.floor(sampleSize * v);
 
         // Draw a sample of size subsampleSize with replacement from the set of all rows.
         List<Integer> rows = new ArrayList<>(sampleSize);
@@ -2117,7 +2117,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
         double leftTail = bd.cumulativeProbability(k);
         double rightTail = 1.0 - bd.cumulativeProbability(k - 1);
-        double pValue = FastMath.min(1.0, 2.0 * FastMath.min(leftTail, rightTail));
+        double pValue = TMath.min(1.0, 2.0 * TMath.min(leftTail, rightTail));
 
         return pValue;
     }
@@ -2226,7 +2226,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         double sum = 0.0;
 
         for (double pValue : pValues) {
-            sum += FastMath.log(pValue);
+            sum += TMath.log(pValue);
         }
 
         double c = -2.0 * sum;

@@ -33,7 +33,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -255,7 +255,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
             int k = regressors1.size() + 1;
 
             for (int i = 0; i < this.variablesPerNode.get(y).size(); i++) {
-                double wald = FastMath.abs(result1.getCoefs()[i + 1] / result1.getStdErrs()[i + 1]);
+                double wald = TMath.abs(result1.getCoefs()[i + 1] / result1.getStdErrs()[i + 1]);
                 //double val = (1.0 - new NormalDistribution(0,1).cumulativeProbability(wald))*2;//two-tailed test
                 //double val = 1-result1.getProbs()[i+1];
 

@@ -6,14 +6,14 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Double.NaN;
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Minimax CI test: a robust, nonparametric conditional independence test for mixed data
@@ -231,7 +231,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         double[] yPerm = Arrays.copyOf(yArr, n);
 
         int ge = 0;
-        int BB =  FastMath.max(50, B);
+        int BB =  TMath.max(50, B);
 
         for (int b = 0; b < BB; b++) {
             System.arraycopy(yArr, 0, yPerm, 0, n);
@@ -294,8 +294,8 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         if (k == 0) return 0.0;
         if (k == 1) return stats[0];
 
-        double qq = FastMath.min(1.0, FastMath.max(0.0, q));
-        int idx = (int) FastMath.floor(qq * (k - 1));
+        double qq = TMath.min(1.0, TMath.max(0.0, q));
+        int idx = (int) TMath.floor(qq * (k - 1));
 
         // nth-element (QuickSelect)
         return quickSelect(stats, 0, k - 1, idx);
@@ -350,7 +350,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         if (!Double.isFinite(tObs)) return 1.0;
 
         SplittableRandom rng = new SplittableRandom(seed);
-        int BB = FastMath.max(50, B);
+        int BB = TMath.max(50, B);
 
         int ge = 0;
         int valid = 0;
@@ -397,8 +397,8 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         if (n == 0) return NaN;
         if (n == 1) return a[0];
 
-        q = FastMath.max(0.0, FastMath.min(1.0, q));
-        int k = (int) FastMath.floor(q * (n - 1)); // 0..n-1
+        q = TMath.max(0.0, TMath.min(1.0, q));
+        int k = (int) TMath.floor(q * (n - 1)); // 0..n-1
 
         // quickselect instead of full sort
         return quickSelect(a, 0, n - 1, k);
@@ -421,11 +421,11 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         if (m < minStratumSize) return null;
 
         // Adaptive bins for continuous X/Y: min(global, floor(sqrt(m))) with a floor of 2.
-        int binsXY = FastMath.max(2, FastMath.min(binsPerContXY, (int) FastMath.floor(FastMath.sqrt(m))));
+        int binsXY = TMath.max(2, TMath.min(binsPerContXY, (int) TMath.floor(TMath.sqrt(m))));
 
         // Also enforce maxCellsPerStratum for contingency tables
-        int maxBinsByCells = FastMath.max(2, (int) FastMath.floor(FastMath.sqrt(maxCellsPerStratum)));
-        binsXY = FastMath.min(binsXY, maxBinsByCells);
+        int maxBinsByCells = TMath.max(2, (int) TMath.floor(TMath.sqrt(maxCellsPerStratum)));
+        binsXY = TMath.min(binsXY, maxBinsByCells);
 
         Cat xCat = buildCategories(ix, useRows, g, binsXY);
         Cat yCat = buildCategories(iy, useRows, g, binsXY);
@@ -438,12 +438,12 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         long cells = (long) xCat.K * (long) yCat.K;
         if (cells > maxCellsPerStratum) {
             // Prefer structured reductions over hashing:
-            int K = FastMath.max(2, (int) FastMath.floor(FastMath.sqrt(maxCellsPerStratum)));
+            int K = TMath.max(2, (int) TMath.floor(TMath.sqrt(maxCellsPerStratum)));
 
             int[] x = (xCat.K > K) ? downBinDeterministic(xCat.codes, xCat.K, K) : xCat.codes;
             int[] y = (yCat.K > K) ? downBinDeterministic(yCat.codes, yCat.K, K) : yCat.codes;
 
-            return new GroupPlan(x, y, FastMath.min(xCat.K, K), FastMath.min(yCat.K, K), false);
+            return new GroupPlan(x, y, TMath.min(xCat.K, K), TMath.min(yCat.K, K), false);
         }
 
         return new GroupPlan(xCat.codes, yCat.codes, xCat.K, yCat.K, false);
@@ -465,7 +465,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
             int unique = approxUniqueCount(lev, maxObservedLevelsPerVar + 1);
 
             if (unique > maxObservedLevelsPerVar) {
-                int K = FastMath.max(2, maxObservedLevelsPerVar);
+                int K = TMath.max(2, maxObservedLevelsPerVar);
                 int[] codes = compressTopLPlusOther(lev, K);
                 return new Cat(codes, K);
             }
@@ -495,7 +495,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
             if (n < minStratumSize) return null;
             if (n != vals.length) vals = Arrays.copyOf(vals, n);
 
-            int bins = FastMath.max(2, effBinsXY);
+            int bins = TMath.max(2, effBinsXY);
             double[] edges = quantileEdges(vals, bins);
 
             int[] codes = new int[vals.length];
@@ -652,7 +652,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         if (alpha < 0 || alpha > 1) throw new IllegalArgumentException("alpha must be in [0,1]");
         this.alpha = alpha;
 
-        int minB = (alpha > 0.0) ? ((int) FastMath.ceil(1.0 / alpha) - 1) : Integer.MAX_VALUE;
+        int minB = (alpha > 0.0) ? ((int) TMath.ceil(1.0 / alpha) - 1) : Integer.MAX_VALUE;
         NumberFormat nf = NumberFormat.getNumberInstance();
 
         if (this.permutations < minB) {
@@ -707,15 +707,15 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
      *          Otherwise, it will be set to the value of B.
      */
 //    public void setPermutations(int B) {
-//        this.permutations = FastMath.max(50, B);
+//        this.permutations = TMath.max(50, B);
 //    }
 
     public void setPermutations(int B) {
         // keep your existing floor
-        int requested = FastMath.max(50, B);
+        int requested = TMath.max(50, B);
 
         // enforce p-value resolution for current alpha
-        int minB = (alpha > 0.0) ? ((int) FastMath.ceil(1.0 / alpha) - 1) : Integer.MAX_VALUE;
+        int minB = (alpha > 0.0) ? ((int) TMath.ceil(1.0 / alpha) - 1) : Integer.MAX_VALUE;
         NumberFormat nf = NumberFormat.getNumberInstance();
 
         if (requested < minB) {
@@ -748,7 +748,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
      * @param b the number of bins to be set for each contour layer (Z dimension)
      */
     public void setBinsPerContZ(int b) {
-        this.binsPerContZ = FastMath.max(2, b);
+        this.binsPerContZ = TMath.max(2, b);
         strataCache.clear();
     }
 
@@ -759,7 +759,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
      * @param m the desired minimum size for a stratum. Values less than 2 will default to 2.
      */
     public void setMinStratumSize(int m) {
-        this.minStratumSize = FastMath.max(2, m);
+        this.minStratumSize = TMath.max(2, m);
         strataCache.clear();
     }
 
@@ -770,7 +770,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
      * @param b the desired number of bins per container along the X and Y axes
      */
     public void setBinsPerContXY(int b) {
-        this.binsPerContXY = FastMath.max(2, b);
+        this.binsPerContXY = TMath.max(2, b);
     }
 
     /**
@@ -780,7 +780,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
      *          and values greater than 1.0 will be adjusted to 1.0.
      */
     public void setQMinimax(double q) {
-        this.qMinimax = FastMath.max(0.50, FastMath.min(1.0, q));
+        this.qMinimax = TMath.max(0.50, TMath.min(1.0, q));
     }
 
     /**
@@ -791,7 +791,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
      *          If the specified value is less than 4, it will default to 4.
      */
     public void setMaxObservedLevelsPerVar(int m) {
-        this.maxObservedLevelsPerVar = FastMath.max(4, m);
+        this.maxObservedLevelsPerVar = TMath.max(4, m);
     }
 
     /**
@@ -802,7 +802,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
      *          If the specified value is less than 64, it will default to 64.
      */
     public void setMaxCellsPerStratum(int m) {
-        this.maxCellsPerStratum = FastMath.max(64, m);
+        this.maxCellsPerStratum = TMath.max(64, m);
     }
 
     /**
@@ -945,7 +945,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
     }
 
     private static double[] quantileEdges(double[] x, int bins) {
-        bins = FastMath.max(2, bins);
+        bins = TMath.max(2, bins);
         double[] a = Arrays.copyOf(x, x.length);
         Arrays.sort(a);
 
@@ -955,8 +955,8 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         double last = Double.NEGATIVE_INFINITY;
         for (int b = 1; b < bins; b++) {
             double q = b / (double) bins;
-            int idx = (int) FastMath.floor(q * (n - 1));
-            idx = FastMath.min(FastMath.max(0, idx), n - 1);
+            int idx = (int) TMath.floor(q * (n - 1));
+            idx = TMath.min(TMath.max(0, idx), n - 1);
 
             double e = a[idx];
 

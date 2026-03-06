@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search.unmix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -110,9 +110,9 @@ public final class ResidualUtils {
             double[] col = new double[n];
             for (int i = 0; i < n; i++) col[i] = R[i][j];
             double med = median(col);
-            for (int i = 0; i < n; i++) col[i] = FastMath.abs(col[i] - med);
+            for (int i = 0; i < n; i++) col[i] = TMath.abs(col[i] - med);
             double mad = median(col) / 0.67448975; // Phi^-1(0.75)
-            double s = FastMath.max(mad, 1e-8);
+            double s = TMath.max(mad, 1e-8);
             for (int i = 0; i < n; i++) R[i][j] /= s;
         }
     }

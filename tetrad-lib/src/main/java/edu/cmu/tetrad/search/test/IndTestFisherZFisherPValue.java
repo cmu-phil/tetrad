@@ -36,7 +36,7 @@ import org.apache.commons.math3.linear.SingularMatrixException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Calculates independence from multiple datasets from using the Fisher method of pooling independence results. See this

@@ -8,7 +8,7 @@ import edu.cmu.tetrad.data.MixedDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -174,7 +174,7 @@ public final class TrainedDagSimulatorGNM {
         } catch (Throwable t) {
             double x = data.getDouble(row, col);
             if (!Double.isFinite(x)) return -1;
-            return (int) FastMath.rint(x);
+            return (int) TMath.rint(x);
         }
     }
 
@@ -620,7 +620,7 @@ public final class TrainedDagSimulatorGNM {
                 }
                 double m = (n > 0) ? sum / n : 0.0;
                 double var = (n > 1) ? (sum2 - n * m * m) / (n - 1.0) : 1.0;
-                double s = FastMath.sqrt(FastMath.max(1e-12, var));
+                double s = TMath.sqrt(TMath.max(1e-12, var));
                 mean[k] = m;
                 sd[k] = s;
             }
@@ -716,7 +716,7 @@ public final class TrainedDagSimulatorGNM {
             for (int k = 0; k < contParents.length; k++) {
                 int col = contParents[k];
                 double z = (contRow[col] - mean[k]) / sd[k];
-                double az = FastMath.abs(z);
+                double az = TMath.abs(z);
                 if (az > m) m = az;
             }
             return m;
@@ -894,7 +894,7 @@ public final class TrainedDagSimulatorGNM {
                 prev = h;
             }
 
-            this.Wout = new double[FastMath.max(1, prev)];
+            this.Wout = new double[TMath.max(1, prev)];
             initHe(rng);
         }
 
@@ -902,7 +902,7 @@ public final class TrainedDagSimulatorGNM {
             int prev = din;
             for (int l = 0; l < hiddenLayers.length; l++) {
                 int h = hiddenLayers[l];
-                double s = FastMath.sqrt(2.0 / FastMath.max(1, prev));
+                double s = TMath.sqrt(2.0 / TMath.max(1, prev));
                 for (int i = 0; i < h; i++) {
                     for (int j = 0; j < prev; j++) {
                         W[l][i][j] = rng.nextGaussian() * s;
@@ -912,7 +912,7 @@ public final class TrainedDagSimulatorGNM {
                 prev = h;
             }
 
-            double sout = FastMath.sqrt(2.0 / FastMath.max(1, prev));
+            double sout = TMath.sqrt(2.0 / TMath.max(1, prev));
             for (int i = 0; i < Wout.length; i++) {
                 Wout[i] = rng.nextGaussian() * sout;
             }
@@ -930,7 +930,7 @@ public final class TrainedDagSimulatorGNM {
                     for (int j = 0; j < a.length; j++) {
                         z += wi[j] * a[j];
                     }
-                    next[i] = FastMath.tanh(z);
+                    next[i] = TMath.tanh(z);
                 }
                 a = next;
             }
@@ -969,7 +969,7 @@ public final class TrainedDagSimulatorGNM {
                     for (int j = 0; j < prev.length; j++) {
                         z += wi[j] * prev[j];
                     }
-                    curr[i] = FastMath.tanh(z);
+                    curr[i] = TMath.tanh(z);
                 }
                 activations[l + 1] = curr;
             }
@@ -1057,7 +1057,7 @@ public final class TrainedDagSimulatorGNM {
                 prev = h;
             }
 
-            this.Wout = new double[k][FastMath.max(1, prev)];
+            this.Wout = new double[k][TMath.max(1, prev)];
             this.bout = new double[k];
 
             initHe(rng);
@@ -1067,7 +1067,7 @@ public final class TrainedDagSimulatorGNM {
             int prev = din;
             for (int l = 0; l < hiddenLayers.length; l++) {
                 int h = hiddenLayers[l];
-                double s = FastMath.sqrt(2.0 / FastMath.max(1, prev));
+                double s = TMath.sqrt(2.0 / TMath.max(1, prev));
                 for (int i = 0; i < h; i++) {
                     for (int j = 0; j < prev; j++) {
                         W[l][i][j] = rng.nextGaussian() * s;
@@ -1077,7 +1077,7 @@ public final class TrainedDagSimulatorGNM {
                 prev = h;
             }
 
-            double sout = FastMath.sqrt(2.0 / FastMath.max(1, prev));
+            double sout = TMath.sqrt(2.0 / TMath.max(1, prev));
             for (int c = 0; c < k; c++) {
                 for (int j = 0; j < Wout[c].length; j++) {
                     Wout[c][j] = rng.nextGaussian() * sout;
@@ -1094,11 +1094,11 @@ public final class TrainedDagSimulatorGNM {
 
             double sum = 0.0;
             for (int i = 0; i < z.length; i++) {
-                out[i] = FastMath.exp(z[i] - max);
+                out[i] = TMath.exp(z[i] - max);
                 sum += out[i];
             }
 
-            double inv = 1.0 / FastMath.max(1e-300, sum);
+            double inv = 1.0 / TMath.max(1e-300, sum);
             for (int i = 0; i < z.length; i++) {
                 out[i] *= inv;
             }
@@ -1121,7 +1121,7 @@ public final class TrainedDagSimulatorGNM {
                     for (int j = 0; j < a.length; j++) {
                         z += wi[j] * a[j];
                     }
-                    next[i] = FastMath.tanh(z);
+                    next[i] = TMath.tanh(z);
                 }
                 a = next;
             }
@@ -1169,7 +1169,7 @@ public final class TrainedDagSimulatorGNM {
                     for (int j = 0; j < prev.length; j++) {
                         z += wi[j] * prev[j];
                     }
-                    curr[i] = FastMath.tanh(z);
+                    curr[i] = TMath.tanh(z);
                 }
                 activations[l + 1] = curr;
             }
@@ -1384,7 +1384,7 @@ public final class TrainedDagSimulatorGNM {
                 sb.append("zWarn1=").append(zWarn1).append(" zWarn2=").append(zWarn2).append("\n\n");
                 sb.append("Support warnings (fraction of rows where max|z(parent)| exceeds thresholds)\n");
 
-                long denom = FastMath.max(1L, nSamples);
+                long denom = TMath.max(1L, nSamples);
                 for (int j = 0; j < variables.size(); j++) {
                     double f1 = zExceedWarn1[j] / (double) denom;
                     double f2 = zExceedWarn2[j] / (double) denom;
@@ -1546,7 +1546,7 @@ public final class TrainedDagSimulatorGNM {
             for (int ep = 0; ep < p.epochs; ep++) {
                 shuffleIndices(order, rng);
                 for (int start = 0; start < n; start += p.batchSize) {
-                    int end = FastMath.min(n, start + p.batchSize);
+                    int end = TMath.min(n, start + p.batchSize);
                     netMean.sgdStep(X, y, order, start, end, p.lr, p.l2);
                 }
             }
@@ -1583,7 +1583,7 @@ public final class TrainedDagSimulatorGNM {
 
             residMean = sumE / n;
             double varE = (n > 1) ? (sumE2 - n * residMean * residMean) / (n - 1.0) : 1.0;
-            residSd = FastMath.sqrt(FastMath.max(1e-12, varE));
+            residSd = TMath.sqrt(TMath.max(1e-12, varE));
 
             if (doStrata && tmpStrata.size() <= p.maxResidualStrata) {
                 residualsBySig = new HashMap<>();
@@ -1612,7 +1612,7 @@ public final class TrainedDagSimulatorGNM {
             for (int ep = 0; ep < p.epochs; ep++) {
                 shuffleIndices(order, rng);
                 for (int start = 0; start < n; start += p.batchSize) {
-                    int end = FastMath.min(n, start + p.batchSize);
+                    int end = TMath.min(n, start + p.batchSize);
                     netGNM.sgdStep(XE, y, order, start, end, p.lr, p.l2);
                 }
             }
@@ -1736,7 +1736,7 @@ public final class TrainedDagSimulatorGNM {
             for (int ep = 0; ep < p.epochs; ep++) {
                 shuffleIndices(order, rng);
                 for (int start = 0; start < n; start += p.batchSize) {
-                    int end = FastMath.min(n, start + p.batchSize);
+                    int end = TMath.min(n, start + p.batchSize);
                     net.sgdStep(X, y, order, start, end, p.lr, p.l2);
                 }
             }
@@ -1750,7 +1750,7 @@ public final class TrainedDagSimulatorGNM {
                 if (yi < 0 || yi >= numLevels) continue;
 
                 double[] probs = net.predictProbs(X[i]);
-                xent += -FastMath.log(FastMath.max(1e-300, probs[yi]));
+                xent += -TMath.log(TMath.max(1e-300, probs[yi]));
                 used++;
             }
 

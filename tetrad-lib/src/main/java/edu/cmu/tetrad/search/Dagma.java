@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.MeekRules;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.LUDecomposition_F64;
@@ -33,7 +33,7 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Implements the DAGMA algorithm. The reference is here:
@@ -486,7 +486,7 @@ public class Dagma {
         }
 
         double trace = 0.0;
-        for (int i = 0; i < FastMath.min(P.getNumRows(), P.getNumCols()); i++) {
+        for (int i = 0; i < TMath.min(P.getNumRows(), P.getNumCols()); i++) {
             trace += M.get(i, i); // Add diagonal elements
         }
 

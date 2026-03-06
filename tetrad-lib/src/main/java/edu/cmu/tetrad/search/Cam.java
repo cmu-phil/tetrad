@@ -6,7 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.AdditiveLocalScorer;
 import edu.cmu.tetrad.search.score.CamAdditivePsplineBic;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -120,7 +120,7 @@ public class Cam {
      * @return the current instance of {@code Cam} to allow method chaining
      */
     public Cam setMaxForwardParents(int maxForwardParents) {
-        this.maxForwardParents = FastMath.max(1, maxForwardParents);
+        this.maxForwardParents = TMath.max(1, maxForwardParents);
         return this;
     }
 
@@ -157,7 +157,7 @@ public class Cam {
      * @return the current instance of {@code Cam} to allow method chaining
      */
     public Cam setRestarts(int restarts) {
-        this.restarts = FastMath.max(1, restarts);
+        this.restarts = TMath.max(1, restarts);
         return this;
     }
 
@@ -170,7 +170,7 @@ public class Cam {
      * @return the current instance of {@code Cam} to allow method chaining
      */
     public Cam setPnsTopK(int k) {
-        this.pnsTopK = FastMath.max(1, k);
+        this.pnsTopK = TMath.max(1, k);
         return this;
     }
 
@@ -272,7 +272,7 @@ public class Cam {
                 if (s < best - 1e-12) {
                     best = s;
                     bestVar = y;
-                } else if (FastMath.abs(s - best) <= 1e-12) {
+                } else if (TMath.abs(s - best) <= 1e-12) {
                     // deterministic tie-break: lexicographic by name
                     if (bestVar == null || y.getName().compareTo(bestVar.getName()) < 0) {
                         bestVar = y;

@@ -7,12 +7,12 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Generalized Covariance Measure (GCM) conditional independence test.
@@ -190,11 +190,11 @@ public final class Gcm implements IndependenceTest {
     }
 
     private int autoRffFeatures(int n, int p) {
-        int d = (int) FastMath.ceil(4.0 * FastMath.sqrt(n)); // tune 3–8
-        d = FastMath.max(d, 200);
-        d = FastMath.min(d, 2000); // cap for sanity
+        int d = (int) TMath.ceil(4.0 * TMath.sqrt(n)); // tune 3–8
+        d = TMath.max(d, 200);
+        d = TMath.min(d, 2000); // cap for sanity
         // optionally scale a bit with p:
-        d = FastMath.min(2000, d + 50 * p);
+        d = TMath.min(2000, d + 50 * p);
         return d;
     }
 
@@ -594,7 +594,7 @@ public final class Gcm implements IndependenceTest {
      */
     private static double[] crossFitPredict(Regressor reg, double[][] Z, double[] y, int K, long seed) {
         int n = y.length;
-        K = FastMath.min(K, n);              // guard
+        K = TMath.min(K, n);              // guard
         if (K < 2) K = 2;
 
         int[] foldOf = new int[n];

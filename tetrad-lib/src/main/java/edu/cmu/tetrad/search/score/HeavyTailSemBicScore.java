@@ -5,7 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.factory.LinearSolverFactory_DDRM;
@@ -159,7 +159,7 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
         }
         double mean = sum / n;
         double var = (sumsq - n * mean * mean) / (n - 1);
-        double sd = (var > 0) ? FastMath.sqrt(var) : 1.0;
+        double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
         for (int i = 0; i < n; i++) x[i] = (x[i] - mean) / sd;
     }
 
@@ -178,13 +178,13 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
             }
             double mean = sum / n;
             double var = (sumsq - n * mean * mean) / (n - 1);
-            double sd = (var > 0) ? FastMath.sqrt(var) : 1.0;
+            double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
             for (int i = 0; i < n; i++) X[i][j] = (X[i][j] - mean) / sd;
         }
     }
 
     private static void addDiagonalInPlace(DMatrixRMaj M, double v) {
-        int n = FastMath.min(M.numRows, M.numCols);
+        int n = TMath.min(M.numRows, M.numCols);
         for (int i = 0; i < n; i++) M.add(i, i, v);
     }
 
@@ -202,8 +202,8 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
 
     private static double logCosh(double x) {
         // stable: log(cosh(x)) = |x| + log(1 + exp(-2|x|)) - log 2
-        double ax = FastMath.abs(x);
-        return ax + FastMath.log1p(FastMath.exp(-2.0 * ax)) - FastMath.log(2.0);
+        double ax = TMath.abs(x);
+        return ax + TMath.log1p(TMath.exp(-2.0 * ax)) - TMath.log(2.0);
     }
 
     private static int[] concat(int i, int[] parents) {
@@ -277,7 +277,7 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
             // df: just noise scale (and maybe intercept, but if p=0 and centerData==false, intercept is the location;
             // we’re not estimating a separate location here. Keep it simple: count 1 scale parameter.)
             double df = noiseDf();
-            double score = 2.0 * ll - penaltyDiscount * df * FastMath.log(n);
+            double score = 2.0 * ll - penaltyDiscount * df * TMath.log(n);
             localScoreCache.put(key, score);
             return score;
         }
@@ -321,7 +321,7 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
         LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.symmPosDef(m);
         if (!solver.setA(XtX)) {
             // fall back: try a bit more ridge
-            double extra = FastMath.max(1e-10, ridge);
+            double extra = TMath.max(1e-10, ridge);
             boolean ok = false;
             for (int k = 0; k < 6; k++) {
                 DMatrixRMaj A = XtX.copy();
@@ -363,7 +363,7 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
 // df for BIC penalty (see section 3 below for improved df by model)
         double df = m + noiseDf();
 
-        double score = 2.0 * ll + bonus - penaltyDiscount * df * FastMath.log(n);
+        double score = 2.0 * ll + bonus - penaltyDiscount * df * TMath.log(n);
 
         localScoreCache.put(key, score);
         return score;
@@ -399,7 +399,7 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
      */
     @Override
     public int getMaxDegree() {
-        return (int) FastMath.ceil(FastMath.log(FastMath.max(3, nEff)));
+        return (int) TMath.ceil(TMath.log(TMath.max(3, nEff)));
     }
 
     /**
@@ -724,13 +724,13 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
             case LAPLACE -> {
                 // Laplace(0, b): loglik = -n log(2b) - (1/b) sum |e|
                 double sumAbs = 0.0;
-                for (double v : e) sumAbs += FastMath.abs(v);
+                for (double v : e) sumAbs += TMath.abs(v);
 
                 double b = sumAbs / n;
                 if (!(b > 0) || !Double.isFinite(b)) b = minScale;
                 if (b < minScale) b = minScale;
 
-                return -n * FastMath.log(2.0 * b) - (sumAbs / b);
+                return -n * TMath.log(2.0 * b) - (sumAbs / b);
             }
 
             case STUDENT_T -> {
@@ -744,18 +744,18 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
                 if (!(sigma2 > 0) || !Double.isFinite(sigma2)) sigma2 = minScale * minScale;
                 if (sigma2 < minScale * minScale) sigma2 = minScale * minScale;
 
-                double sigma = FastMath.sqrt(sigma2);
+                double sigma = TMath.sqrt(sigma2);
 
                 double c =
                         org.apache.commons.math3.special.Gamma.logGamma((nu + 1.0) / 2.0)
                         - org.apache.commons.math3.special.Gamma.logGamma(nu / 2.0)
-                        - 0.5 * FastMath.log(nu * FastMath.PI)
-                        - FastMath.log(sigma);
+                        - 0.5 * TMath.log(nu * TMath.PI)
+                        - TMath.log(sigma);
 
                 double ll = 0.0;
                 for (double v : e) {
                     double z = (v * v) / (nu * sigma2);
-                    ll += c - 0.5 * (nu + 1.0) * FastMath.log1p(z);
+                    ll += c - 0.5 * (nu + 1.0) * TMath.log1p(z);
                 }
                 return ll;
             }
@@ -770,7 +770,7 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
                 if (!(sigma2 > 0) || !Double.isFinite(sigma2)) sigma2 = minScale * minScale;
                 if (sigma2 < minScale * minScale) sigma2 = minScale * minScale;
 
-                return -0.5 * n * (FastMath.log(2.0 * FastMath.PI) + 1.0 + FastMath.log(sigma2));
+                return -0.5 * n * (TMath.log(2.0 * TMath.PI) + 1.0 + TMath.log(sigma2));
             }
 
             case LOG_COSH -> {
@@ -820,14 +820,14 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
 
         // pick a scale s (roughly comparable to sigma): use mean absolute deviation
         double sumAbs = 0.0;
-        for (double v : e) sumAbs += FastMath.abs(v);
+        for (double v : e) sumAbs += TMath.abs(v);
         double s = sumAbs / n;
         if (!(s > 0) || !Double.isFinite(s)) s = minScale;
         if (s < minScale) s = minScale;
 
         // loglik up to an additive constant:
         // ll = - n*log(s) - sum log cosh(e/s)  (+ constant not depending on parents)
-        double ll = -n * FastMath.log(s);
+        double ll = -n * TMath.log(s);
         double invS = 1.0 / s;
         for (double v : e) ll -= logCosh(v * invS);
 

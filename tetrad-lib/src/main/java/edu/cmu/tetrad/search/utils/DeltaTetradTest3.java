@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -173,8 +173,8 @@ public class DeltaTetradTest3 {
 
         if (isGaussian) {
             return 0.5 * (getCovariance(e, f) * getCovariance(g, h))
-                   * (FastMath.pow(getCovariance(e, g), 2) + FastMath.pow(getCovariance(e, h), 2)
-                      + FastMath.pow(getCovariance(f, g), 2) + FastMath.pow(getCovariance(f, h), 2))
+                   * (TMath.pow(getCovariance(e, g), 2) + TMath.pow(getCovariance(e, h), 2)
+                      + TMath.pow(getCovariance(f, g), 2) + TMath.pow(getCovariance(f, h), 2))
                    + getCovariance(e, g) * getCovariance(f, h)
                    + getCovariance(e, h) * getCovariance(f, g)
                    - getCovariance(e, f) * (getCovariance(f, g) * getCovariance(f, h)

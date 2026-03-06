@@ -42,7 +42,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TextTable;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
@@ -224,8 +224,8 @@ public class TestCliqueDetection {
         }
 
         // --- Macro aggregates with zeros for misses/unmatched ---
-        int Kt = FastMath.max(1, T.size()); // avoid /0 when no truths (shouldn't happen)
-        int Kr = FastMath.max(1, R.size()); // avoid /0 when no predictions
+        int Kt = TMath.max(1, T.size()); // avoid /0 when no truths (shouldn't happen)
+        int Kr = TMath.max(1, R.size()); // avoid /0 when no predictions
 
         double nodeRec = sumRec_T / Kt;          // unmatched truths contribute 0
         double nodePrec = sumPrec_R / Kr;        // unmatched predictions contribute 0
@@ -310,7 +310,7 @@ public class TestCliqueDetection {
     private static String trunc(String s, int max) {
         if (s == null) return "";
         if (s.length() <= max) return s;
-        return s.substring(0, FastMath.max(0, max - 1)) + "…";
+        return s.substring(0, TMath.max(0, max - 1)) + "…";
     }
 
     private static String fmtMSD(double mean, double sd, int wMean, int wSd) {
@@ -571,11 +571,11 @@ public class TestCliqueDetection {
             if (n <= 1) return 0.0;
             double m = mean();
             double v = (sum2 / n) - m * m;
-            return FastMath.max(0.0, v);
+            return TMath.max(0.0, v);
         }
 
         double sd() {
-            return FastMath.sqrt(var());
+            return TMath.sqrt(var());
         }
     }
 
@@ -693,9 +693,9 @@ public class TestCliqueDetection {
                 double dNodeP_m = b.nodeP.mean() - a.nodeP.mean();
                 double dNodeR_m = b.nodeR.mean() - a.nodeR.mean();
 
-                double dSumJ_sd = FastMath.sqrt(b.sumJ.var() + a.sumJ.var());
-                double dNodeP_sd = FastMath.sqrt(b.nodeP.var() + a.nodeP.var());
-                double dNodeR_sd = FastMath.sqrt(b.nodeR.var() + a.nodeR.var());
+                double dSumJ_sd = TMath.sqrt(b.sumJ.var() + a.sumJ.var());
+                double dNodeP_sd = TMath.sqrt(b.nodeP.var() + a.nodeP.var());
+                double dNodeR_sd = TMath.sqrt(b.nodeR.var() + a.nodeR.var());
 
                 tt.setToken(i + 1, 0, Integer.toString(i + 1));
                 tt.setToken(i + 1, 1, trunc(k, 40));

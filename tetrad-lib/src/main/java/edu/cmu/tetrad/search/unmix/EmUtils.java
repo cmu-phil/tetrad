@@ -20,7 +20,7 @@
 
 package edu.cmu.tetrad.search.unmix;
 
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 /**
  * A utility class for operations commonly used in the Expectation-Maximization (EM) algorithm. This class contains
@@ -91,8 +91,8 @@ public final class EmUtils {
         double m = Double.NEGATIVE_INFINITY;
         for (double v : a) if (v > m) m = v;
         double s = 0.0;
-        for (double v : a) s += FastMath.exp(v - m);
-        return m + FastMath.log(s);
+        for (double v : a) s += TMath.exp(v - m);
+        return m + TMath.log(s);
     }
 
     /**

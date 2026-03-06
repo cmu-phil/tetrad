@@ -20,7 +20,7 @@
 
 package edu.cmu.tetrad.simulation;
 
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -154,10 +154,10 @@ public class HsimCompareRepeat {
         System.out.println(HD);
         System.out.println(" ");
 
-        double hfDifDifAR = FastMath.abs(fgDifAR) - FastMath.abs(hgDifAR);
-        double hfDifDifAP = FastMath.abs(fgDifAP) - FastMath.abs(hgDifAP);
-        double hfDifDifOR = FastMath.abs(fgDifOR) - FastMath.abs(hgDifOR);
-        double hfDifDifOP = FastMath.abs(fgDifOP) - FastMath.abs(hgDifOP);
+        double hfDifDifAR = TMath.abs(fgDifAR) - TMath.abs(hgDifAR);
+        double hfDifDifAP = TMath.abs(fgDifAP) - TMath.abs(hgDifAP);
+        double hfDifDifOR = TMath.abs(fgDifOR) - TMath.abs(hgDifOR);
+        double hfDifDifOP = TMath.abs(fgDifOP) - TMath.abs(hgDifOP);
 
         String AFH = "Absolute F-H: AR=" + hfDifDifAR + " AP=" + hfDifDifAP + " OR=" + hfDifDifOR + " OP=" + hfDifDifOP;
         System.out.println(AFH);

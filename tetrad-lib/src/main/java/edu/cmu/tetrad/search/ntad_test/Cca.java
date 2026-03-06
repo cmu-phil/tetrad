@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.search.ntad_test;
 
 import edu.cmu.tetrad.util.RankTests;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
@@ -80,7 +80,7 @@ public class Cca extends NtadTest {
         int n = resample ? (int) (frac * this.ess) : this.ess;
 
         // Use the getCcaPValueRankD method for rank r = 1 (or make r configurable if needed)
-        int r = FastMath.min(a.length, b.length) - 1;
+        int r = TMath.min(a.length, b.length) - 1;
         return RankTests.rankLeByWilks(S, a, b, n, r);
     }
 
@@ -99,7 +99,7 @@ public class Cca extends NtadTest {
         int[] a = ntad[0];
         int[] b = ntad[1];
 
-        int minpq = FastMath.min(a.length, b.length);
+        int minpq = TMath.min(a.length, b.length);
         int n = this.ess;
 
         for (int r = 0; r < a.length; r++) {

@@ -1,6 +1,6 @@
 package edu.cmu.tetradapp.editor.ind_facts;
 
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.text.*;
 import java.awt.*;
@@ -29,7 +29,7 @@ public final class WavyUnderlinePainter implements Highlighter.HighlightPainter 
                 if (rs == null) break;
 
                 int lineEnd = Utilities.getRowEnd(c, start);
-                int end = FastMath.min(p1, lineEnd);
+                int end = TMath.min(p1, lineEnd);
 
                 Rectangle re = c.modelToView(end);
                 if (re == null) break;
@@ -53,7 +53,7 @@ public final class WavyUnderlinePainter implements Highlighter.HighlightPainter 
         int x = x1;
         boolean up = true;
         while (x < x2) {
-            int nx = FastMath.min(x + waveLength, x2);
+            int nx = TMath.min(x + waveLength, x2);
             int ny = up ? y1 - waveHeight : y1 + waveHeight;
             g.drawLine(x, y1, nx, ny);
             y1 = ny;

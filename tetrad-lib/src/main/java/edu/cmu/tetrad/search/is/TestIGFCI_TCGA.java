@@ -13,7 +13,7 @@ import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetReader;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.File;
 import java.io.IOException;
@@ -219,7 +219,7 @@ public class TestIGFCI_TCGA {
     }
 
     private static DataSet bootstrap(DataSet data, double fraction) {
-        int numRows = (int) FastMath.round(fraction * data.getNumRows());
+        int numRows = (int) TMath.round(fraction * data.getNumRows());
         return new BootstrapSampler().sample(data, numRows);
         // NOTE: BootstrapSampler().sample() samples with replacement in Tetrad.
     }

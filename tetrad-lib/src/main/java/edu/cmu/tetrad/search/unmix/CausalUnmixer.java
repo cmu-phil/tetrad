@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search.unmix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Pc;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -96,13 +96,13 @@ public class CausalUnmixer {
      */
     private static EmUnmix.Config toEmConfig(Config cfg, DataSet data) {
         EmUnmix.Config ec = new EmUnmix.Config();
-        ec.K = (cfg.K != null ? cfg.K : FastMath.max(cfg.Kmin, 1));
+        ec.K = (cfg.K != null ? cfg.K : TMath.max(cfg.Kmin, 1));
 
         // Covariance policy
         int n = data.getNumRows();
         int p = data.getNumColumns();
-        int K = (cfg.K != null ? cfg.K : FastMath.max(cfg.Kmin, 2));
-        boolean okFull = (n / FastMath.max(1, K)) >= (p + cfg.fullSigmaSafetyMargin);
+        int K = (cfg.K != null ? cfg.K : TMath.max(cfg.Kmin, 2));
+        boolean okFull = (n / TMath.max(1, K)) >= (p + cfg.fullSigmaSafetyMargin);
         ec.covType = okFull ? GaussianMixtureEM.CovarianceType.FULL : GaussianMixtureEM.CovarianceType.DIAGONAL;
 
         // Residual options

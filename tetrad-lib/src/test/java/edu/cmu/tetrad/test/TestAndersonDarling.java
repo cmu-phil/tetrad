@@ -23,7 +23,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.AndersonDarlingTest;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -100,10 +100,10 @@ public final class TestAndersonDarling {
 
         for (int i = 0; i < n; i++) {
             double x1 = x[i];
-            double a1 = FastMath.log(RandomUtil.getInstance().normalCdf(0, 1, x1));
+            double a1 = TMath.log(RandomUtil.getInstance().normalCdf(0, 1, x1));
 
             double x2 = x[n - i - 1];
-            double a2 = FastMath.log(1.0 - RandomUtil.getInstance().normalCdf(0, 1, x2));
+            double a2 = TMath.log(1.0 - RandomUtil.getInstance().normalCdf(0, 1, x2));
 
             double k = (2 * (i + 1) - 1) * (a1 + a2);
             h += k;

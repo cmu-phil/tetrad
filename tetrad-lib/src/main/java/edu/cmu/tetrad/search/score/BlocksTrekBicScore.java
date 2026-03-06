@@ -5,7 +5,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.RankTests;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -169,7 +169,7 @@ public class BlocksTrekBicScore implements Score, BlockScore, EffectiveSampleSiz
         double best = Double.NEGATIVE_INFINITY;
         long baseSeed = this.splitSeed;
 
-        int trials = FastMath.max(1, numTrials);
+        int trials = TMath.max(1, numTrials);
         for (int t = 0; t < trials; t++) {
             long seed = randomizeSplits ? (baseSeed + t) : baseSeed;
 
@@ -192,8 +192,8 @@ public class BlocksTrekBicScore implements Score, BlockScore, EffectiveSampleSiz
             if (nAdj < 1.0) nAdj = 1.0;
 
             // Max admissible rank
-            int m = FastMath.min(FastMath.min(p, q), (int) nAdj - 1);
-            m = FastMath.min(m, ent.suffixLogs.length - 1); // need suffix[r]
+            int m = TMath.min(TMath.min(p, q), (int) nAdj - 1);
+            m = TMath.min(m, ent.suffixLogs.length - 1); // need suffix[r]
             if (m <= 0) continue;
 
             // Clamp target rank to feasible range; if target > m, this parent set cannot realize the implied rank
@@ -213,13 +213,13 @@ public class BlocksTrekBicScore implements Score, BlockScore, EffectiveSampleSiz
 
             int k = r * (p + q - r);
 
-            double logN = FastMath.log(FastMath.max(nAdj, 2.0));
+            double logN = TMath.log(TMath.max(nAdj, 2.0));
             double pen = penaltyDiscount * k * logN;
 
             if (ebicGamma > 0.0) {
                 // Pool size excludes Y's own block
-                int Ppool = FastMath.max(totalEmbeddedCols - Yblock.length, 2);
-                pen += 2.0 * ebicGamma * k * FastMath.log(Ppool);
+                int Ppool = TMath.max(totalEmbeddedCols - Yblock.length, 2);
+                pen += 2.0 * ebicGamma * k * TMath.log(Ppool);
             }
 
             double sc = fit - pen;
@@ -436,7 +436,7 @@ public class BlocksTrekBicScore implements Score, BlockScore, EffectiveSampleSiz
         }
 
         private static long quantize(double x) {
-            return Double.doubleToLongBits(FastMath.rint(x * 1e12) / 1e12);
+            return Double.doubleToLongBits(TMath.rint(x * 1e12) / 1e12);
         }
 
         private int computeHash() {

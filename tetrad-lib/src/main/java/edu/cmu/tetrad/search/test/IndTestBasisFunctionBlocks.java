@@ -27,7 +27,7 @@ import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -248,7 +248,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
 
         // Clamp for numeric robustness
         if (!Double.isFinite(p)) return 1.0;
-        return FastMath.max(0.0, FastMath.min(p, 1.0));
+        return TMath.max(0.0, TMath.min(p, 1.0));
     }
 
     // --- helper: build a 2-column continuous DataSet (rows = samples) ---
@@ -272,8 +272,8 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
             for (int i = 0; i < n; i++) yj[i] = Y[i][j];
             double pj = computePValue(x, yj);
             if (Double.isNaN(pj)) continue;
-            double pc = FastMath.max(pj, 1e-300); // avoid log(0)
-            stat += -2.0 * FastMath.log(pc);
+            double pc = TMath.max(pj, 1e-300); // avoid log(0)
+            stat += -2.0 * TMath.log(pc);
             k++;
         }
         if (k == 0) return 1.0;
@@ -286,7 +286,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         double p = 1.0 - cdf;
         if (!Double.isFinite(p)) return 1.0;
         if (p < 0.0) return 0.0;
-        return FastMath.min(p, 1.0);
+        return TMath.min(p, 1.0);
     }
 
     /**

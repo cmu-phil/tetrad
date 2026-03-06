@@ -35,8 +35,8 @@ import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.ceil;
-import static org.apache.commons.math3.util.FastMath.log;
+import static edu.cmu.tetrad.util.TMath.ceil;
+import static edu.cmu.tetrad.util.TMath.log;
 
 /**
  * Implements the extended BIC (EBIC) score. The reference is here:

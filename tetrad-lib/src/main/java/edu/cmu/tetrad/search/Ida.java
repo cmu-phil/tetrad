@@ -34,12 +34,12 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.min;
+import static edu.cmu.tetrad.util.TMath.abs;
+import static edu.cmu.tetrad.util.TMath.min;
 
 /**
  * Implements the IDA algorithm. The reference is here:
@@ -327,7 +327,7 @@ public class Ida {
         LinkedList<Double> totalEffects = getTotalEffects(x, y);
         LinkedList<Double> absTotalEffects = new LinkedList<>();
         for (double d : totalEffects) {
-            absTotalEffects.add(FastMath.abs(d));
+            absTotalEffects.add(TMath.abs(d));
         }
 
         Collections.sort(absTotalEffects);

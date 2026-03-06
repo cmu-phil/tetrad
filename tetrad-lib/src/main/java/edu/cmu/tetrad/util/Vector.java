@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.util;
 
 import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.io.IOException;
@@ -398,7 +398,7 @@ public class Vector implements TetradSerializable {
             sum += get(i) * get(i);
         }
 
-        return FastMath.sqrt(sum);
+        return TMath.sqrt(sum);
     }
 
 

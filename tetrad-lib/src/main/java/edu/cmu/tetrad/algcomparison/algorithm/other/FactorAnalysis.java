@@ -30,7 +30,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.text.NumberFormat;
@@ -103,7 +103,7 @@ public class FactorAnalysis extends AbstractBootstrapAlgorithm implements Algori
 
             for (int i = 0; i < rotatedSolution.getNumRows(); i++) {
                 for (int j = 0; j < rotatedSolution.getNumColumns(); j++) {
-                    if (FastMath.abs(rotatedSolution.get(i, j)) > threshold) {
+                    if (TMath.abs(rotatedSolution.get(i, j)) > threshold) {
                         graph.addDirectedEdge(factors.get(j), observedVariables.get(i));
                     }
                 }
@@ -118,7 +118,7 @@ public class FactorAnalysis extends AbstractBootstrapAlgorithm implements Algori
 
             for (int i = 0; i < unrotatedSolution.getNumRows(); i++) {
                 for (int j = 0; j < unrotatedSolution.getNumColumns(); j++) {
-                    if (FastMath.abs(unrotatedSolution.get(i, j)) > threshold) {
+                    if (TMath.abs(unrotatedSolution.get(i, j)) > threshold) {
                         graph.addDirectedEdge(factors.get(j), observedVariables.get(i));
                     }
                 }
@@ -156,7 +156,7 @@ public class FactorAnalysis extends AbstractBootstrapAlgorithm implements Algori
                 } else if (i > 0) {
                     double coefficient = matrix.get(i - 1, j - 1);
                     String token = !Double.isNaN(coefficient) ? nf.format(coefficient) : "Undefined";
-                    token += FastMath.abs(coefficient) > threshold ? "*" : " ";
+                    token += TMath.abs(coefficient) > threshold ? "*" : " ";
                     table.setToken(i, j, token);
                 }
             }

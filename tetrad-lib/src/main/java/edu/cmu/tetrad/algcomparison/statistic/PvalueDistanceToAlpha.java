@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
-import static org.apache.commons.math3.util.FastMath.abs;
+import static edu.cmu.tetrad.util.TMath.abs;
 
 /**
  * Estimates whether the p-values under the null are Uniform usign the Markov Checker. This estimates whether the

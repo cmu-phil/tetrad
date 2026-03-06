@@ -22,7 +22,7 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -325,8 +325,8 @@ public final class NumberObjectDataSet implements DataSet {
                         "Row and column must be >= 0.");
             }
 
-            int newRows = FastMath.max(row + 1, this.data.length);
-            int newCols = FastMath.max(column + 1, this.data[0].length);
+            int newRows = TMath.max(row + 1, this.data.length);
+            int newCols = TMath.max(column + 1, this.data[0].length);
             resize(newRows, newCols);
             setIntPrivate(row, column, value);
         }
@@ -353,8 +353,8 @@ public final class NumberObjectDataSet implements DataSet {
             }
 
             assert this.data != null;
-            int newRows = FastMath.max(row + 1, this.data.length);
-            int newCols = FastMath.max(column + 1, this.data[0].length);
+            int newRows = TMath.max(row + 1, this.data.length);
+            int newCols = TMath.max(column + 1, this.data[0].length);
             resize(newRows, newCols);
             this.data[row][column] = value;
         }
@@ -1216,7 +1216,7 @@ public final class NumberObjectDataSet implements DataSet {
                     double value = Double.parseDouble(nf.format(getDouble(i, j)));
                     double _value = Double.parseDouble(nf.format(_dataSet.getDouble(i, j)));
 
-                    if (FastMath.abs(value - _value) > 0.0) {
+                    if (TMath.abs(value - _value) > 0.0) {
                         return false;
                     }
                 } else {

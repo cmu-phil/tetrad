@@ -38,8 +38,8 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static org.apache.commons.math3.util.FastMath.log;
-import static org.apache.commons.math3.util.FastMath.pow;
+import static edu.cmu.tetrad.util.TMath.log;
+import static edu.cmu.tetrad.util.TMath.pow;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 

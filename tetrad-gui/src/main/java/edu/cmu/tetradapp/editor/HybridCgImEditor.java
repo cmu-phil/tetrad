@@ -5,7 +5,7 @@ import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetradapp.model.HybridCgImWrapper;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -319,7 +319,7 @@ public final class HybridCgImEditor extends JPanel {
         if (y < 0 || pm.isDiscrete(y)) return;
         int rows = pm.getNumRows(y);
         double s = 0.0; int cnt = 0;
-        for (int r = 0; r < rows; r++) { s += FastMath.max(1e-12, im.getVariance(y, r)); cnt++; }
+        for (int r = 0; r < rows; r++) { s += TMath.max(1e-12, im.getVariance(y, r)); cnt++; }
         double pooled = (cnt > 0) ? (s / cnt) : 1.0;
         for (int r = 0; r < rows; r++) im.setVariance(y, r, pooled);
         refreshActiveTable();
@@ -334,7 +334,7 @@ public final class HybridCgImEditor extends JPanel {
         for (int r = 0; r < rows; r++) {
             double[] e = new double[K];
             double sum = 0.0;
-            for (int k = 0; k < K; k++) { e[k] = -FastMath.log(1.0 - rng.nextDouble()); sum += e[k]; }
+            for (int k = 0; k < K; k++) { e[k] = -TMath.log(1.0 - rng.nextDouble()); sum += e[k]; }
             for (int k = 0; k < K; k++) im.setProbability(y, r, k, e[k] / sum);
         }
         firePropertyChange("modelChanged", null, null);

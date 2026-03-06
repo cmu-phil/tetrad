@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -102,7 +102,7 @@ public class NumVisibleEdgeTrue implements Statistic {
      */
     @Override
     public double getNormValue(double value) {
-        return FastMath.tan(value);
+        return TMath.tan(value);
     }
 }
 

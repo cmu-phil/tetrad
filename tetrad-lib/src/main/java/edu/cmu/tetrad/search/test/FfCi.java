@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
@@ -220,7 +220,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      * @param lambda the new lambda value to be set; constrained to a minimum of 1e-12
      */
     public void setLambda(double lambda) {
-        this.lambda = FastMath.max(1e-12, lambda);
+        this.lambda = TMath.max(1e-12, lambda);
         invalidateCaches();
         this.continuousDelegate.setLambda(this.lambda);
     }
@@ -238,7 +238,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      * @param d the desired number of features in the XY dimension
      */
     public void setNumFeaturesXY(int d) {
-        this.numFeatXY = FastMath.max(1, d);
+        this.numFeatXY = TMath.max(1, d);
         invalidateCaches();
         this.continuousDelegate.setNumFeaturesXY(this.numFeatXY);
     }
@@ -250,7 +250,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      * @param d the desired number of features for the Z component
      */
     public void setNumFeaturesZ(int d) {
-        this.numFeatZ = FastMath.max(1, d);
+        this.numFeatZ = TMath.max(1, d);
         invalidateCaches();
         this.continuousDelegate.setNumFeaturesZ(this.numFeatZ);
     }
@@ -286,7 +286,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      * @param permutations the number of permutations to set; must be non-negative
      */
     public void setPermutations(int permutations) {
-        this.permutations = FastMath.max(0, permutations);
+        this.permutations = TMath.max(0, permutations);
         invalidateCaches();
         this.continuousDelegate.setPermutations(this.permutations);
     }
@@ -331,7 +331,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      * @param bwMaxRows the maximum number of rows to set; must be a non-negative integer.
      */
     public void setBwMaxRows(int bwMaxRows) {
-        this.bwMaxRows = FastMath.max(50, bwMaxRows);
+        this.bwMaxRows = TMath.max(50, bwMaxRows);
         this.continuousDelegate.setBwMaxRows(bwMaxRows);
         invalidateCaches();
     }
@@ -543,7 +543,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
             p = pValueFromMethod(fact, stat, eig, fX, fY, null);
         } else {
             // -------- Conditional: ridge residualization --------
-            final double alphaRidge = FastMath.max(1e-18, lambda);// / FastMath.max(1.0, (n - 1.0)));
+            final double alphaRidge = TMath.max(1e-18, lambda);// / TMath.max(1.0, (n - 1.0)));
             SimpleMatrix rX = ridgeResidual(fX, fZ, alphaRidge);
             SimpleMatrix rY = ridgeResidual(fY, fZ, alphaRidge);
 
@@ -653,7 +653,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         int totalLevels = 0;
         final int[] levelsPerVar = new int[discVars.size()];
         for (int j = 0; j < discVars.size(); j++) {
-            int k = FastMath.max(1, discVars.get(j).getNumCategories());
+            int k = TMath.max(1, discVars.get(j).getNumCategories());
             levelsPerVar[j] = k;
             totalLevels += k;
         }
@@ -677,7 +677,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
                     try {
                         val = data.getInt(row, col);
                     } catch (Throwable t) {
-                        val = (int) FastMath.round(data.getDouble(row, col));
+                        val = (int) TMath.round(data.getDouble(row, col));
                     }
                     if (val < 0) val = 0;
                     if (val >= k) val = k - 1;
@@ -699,7 +699,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
             int n = Zcont.length;
             if (n <= 2 || (n > 0 && Zcont[0].length == 0)) return 1.0;
 
-            int maxRows = FastMath.min(n, bwMaxRows);
+            int maxRows = TMath.min(n, bwMaxRows);
             double bw2 = medianDistanceSquaredND(Zcont, maxRows);
             if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
 
@@ -792,24 +792,24 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         final int n = Z.length;
         final int d = (n == 0) ? 0 : Z[0].length;
 
-        if (n == 0 || mFeatures <= 0) return new double[n][FastMath.max(mFeatures, 0)];
+        if (n == 0 || mFeatures <= 0) return new double[n][TMath.max(mFeatures, 0)];
 
         if (d == 0) {
             double[][] Phi = new double[n][mFeatures];
             SplittableRandom rng0 = new SplittableRandom(seed);
-            double scale0 = FastMath.sqrt(2.0 / mFeatures);
+            double scale0 = TMath.sqrt(2.0 / mFeatures);
             double[] b0 = new double[mFeatures];
-            for (int j = 0; j < mFeatures; j++) b0[j] = 2.0 * FastMath.PI * rng0.nextDouble();
+            for (int j = 0; j < mFeatures; j++) b0[j] = 2.0 * TMath.PI * rng0.nextDouble();
             for (int i = 0; i < n; i++)
                 for (int j = 0; j < mFeatures; j++)
-                    Phi[i][j] = scale0 * FastMath.cos(b0[j]);
+                    Phi[i][j] = scale0 * TMath.cos(b0[j]);
             return Phi;
         }
 
         if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
 
-        final double wStd = FastMath.sqrt(2.0 / bw2);
-        final double scale = FastMath.sqrt(2.0 / mFeatures);
+        final double wStd = TMath.sqrt(2.0 / bw2);
+        final double scale = TMath.sqrt(2.0 / mFeatures);
 
         SplittableRandom rng = new SplittableRandom(seed);
 
@@ -820,11 +820,11 @@ public final class FfCi implements IndependenceTest, RowsSettable {
             W = new double[mFeatures][d];
             for (int j = 0; j < mFeatures; j++) {
                 for (int k = 0; k < d; k++) W[j][k] = wStd * nextGaussian(rng);
-                b[j] = 2.0 * FastMath.PI * rng.nextDouble();
+                b[j] = 2.0 * TMath.PI * rng.nextDouble();
             }
         } else {
             W = sampleOrthogonalW(mFeatures, d, wStd, rng);
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * FastMath.PI * rng.nextDouble();
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
         }
 
         double[][] Phi = new double[n][mFeatures];
@@ -834,7 +834,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
                 double dot = 0.0;
                 double[] wj = W[j];
                 for (int k = 0; k < d; k++) dot += wj[k] * Zi[k];
-                Phi[i][j] = scale * FastMath.cos(dot + b[j]);
+                Phi[i][j] = scale * TMath.cos(dot + b[j]);
             }
         }
         return Phi;
@@ -847,7 +847,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
             v = 2.0 * rng.nextDouble() - 1.0;
             s = u * u + v * v;
         } while (s >= 1.0 || s == 0.0);
-        return u * FastMath.sqrt(-2.0 * FastMath.log(s) / s);
+        return u * TMath.sqrt(-2.0 * TMath.log(s) / s);
     }
 
     private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd, SplittableRandom rng) {
@@ -856,7 +856,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
         int filled = 0;
         while (filled < mFeatures) {
-            int block = FastMath.min(d, mFeatures - filled);
+            int block = TMath.min(d, mFeatures - filled);
 
             double[][] Q = new double[block][d];
             for (int i = 0; i < block; i++)
@@ -871,7 +871,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
                 }
                 double norm2 = 0.0;
                 for (int j = 0; j < d; j++) norm2 += Q[i][j] * Q[i][j];
-                double norm = FastMath.sqrt(FastMath.max(1e-18, norm2));
+                double norm = TMath.sqrt(TMath.max(1e-18, norm2));
                 for (int j = 0; j < d; j++) Q[i][j] /= norm;
             }
 
@@ -893,7 +893,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
             double g = nextGaussian(rng);
             ss += g * g;
         }
-        return FastMath.sqrt(FastMath.max(1e-18, ss));
+        return TMath.sqrt(TMath.max(1e-18, ss));
     }
 
     private static double medianDistanceSquaredND(double[][] Z, int maxRows) {
@@ -901,13 +901,13 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         int d = (n == 0) ? 0 : Z[0].length;
         if (n < 3 || d == 0) return 1.0;
 
-        int m = FastMath.min(n, FastMath.max(3, maxRows));
+        int m = TMath.min(n, TMath.max(3, maxRows));
 
         int[] idx = new int[m];
         if (m == n) {
             for (int i = 0; i < m; i++) idx[i] = i;
         } else {
-            for (int i = 0; i < m; i++) idx[i] = (int) FastMath.floor((i * (long) (n - 1)) / (double) (m - 1));
+            for (int i = 0; i < m; i++) idx[i] = (int) TMath.floor((i * (long) (n - 1)) / (double) (m - 1));
         }
 
         int cnt = m * (m - 1) / 2;
@@ -1004,7 +1004,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
                 if (i == j) {
                     if (!(sum > 1e-15) || !Double.isFinite(sum)) return false;
-                    L[i][j] = FastMath.sqrt(sum);
+                    L[i][j] = TMath.sqrt(sum);
                 } else {
                     double denom = L[j][j];
                     if (!(denom > 0) || !Double.isFinite(denom)) return false;
@@ -1084,8 +1084,8 @@ public final class FfCi implements IndependenceTest, RowsSettable {
                 double u = M[i][j] - mean;
                 var += u * u;
             }
-            var /= FastMath.max(1, n - 1);
-            double sd = FastMath.sqrt(var);
+            var /= TMath.max(1, n - 1);
+            double sd = TMath.sqrt(var);
 
             if (!(sd > 0) || !Double.isFinite(sd)) {
                 for (int i = 0; i < n; i++) M[i][j] = 0.0;
@@ -1107,7 +1107,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
             }
             double mean = sum / n;
             double var = (sumsq - n * mean * mean) / (n - 1);
-            double sd = (var > 0) ? FastMath.sqrt(var) : 1.0;
+            double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
             for (int i = 0; i < n; i++) M.set(i, j, (M.get(i, j) - mean) / sd);
         }
     }

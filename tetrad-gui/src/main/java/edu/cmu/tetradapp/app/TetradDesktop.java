@@ -28,7 +28,7 @@ import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetradapp.ui.tool.SessionFileTransferHandler;
 import edu.cmu.tetradapp.util.*;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -176,7 +176,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         // Set the "small" size of the frame so that it has sensible
         // bounds when the users unmazimizes it.
         Dimension fullSize = this.desktopPane.getSize();
-        int smallSize = FastMath.min(fullSize.width - TetradDesktop.MARGIN, fullSize.height
+        int smallSize = TMath.min(fullSize.width - TetradDesktop.MARGIN, fullSize.height
                                                                             - TetradDesktop.MARGIN);
         Dimension size = new Dimension(smallSize, smallSize);
         TetradDesktop.setGoodBounds(frame, this.desktopPane, size);
@@ -230,9 +230,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             y = topMargin;
         }
 
-        int height = FastMath.min(preferredSize.height, getHeight() - topMargin
+        int height = TMath.min(preferredSize.height, getHeight() - topMargin
                                                         - bottomMargin);
-        int width = FastMath.min(preferredSize.width, getWidth() - leftMargin
+        int width = TMath.min(preferredSize.width, getWidth() - leftMargin
                                                       - rightMargin);
 
         if (x + width > getWidth() - rightMargin) {
@@ -696,12 +696,12 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 
         @Override
         public void dragFrame(JComponent f, int newX, int newY) {
-            super.dragFrame(f, newX, FastMath.max(0, newY));
+            super.dragFrame(f, newX, TMath.max(0, newY));
         }
 
         @Override
         public void setBoundsForFrame(JComponent f, int newX, int newY, int newWidth, int newHeight) {
-            super.setBoundsForFrame(f, newX, FastMath.max(0, newY), newWidth, newHeight);
+            super.setBoundsForFrame(f, newX, TMath.max(0, newY), newWidth, newHeight);
         }
     }
 
@@ -748,13 +748,13 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 //            if (maxX < minX) {
 //                x = minX;
 //            } else {
-//                x = FastMath.max(minX, FastMath.min(x, maxX));
+//                x = TMath.max(minX, TMath.min(x, maxX));
 //            }
 //
 //            if (maxY < minY) {
 //                y = minY;
 //            } else {
-//                y = FastMath.max(minY, FastMath.min(y, maxY));
+//                y = TMath.max(minY, TMath.min(y, maxY));
 //            }
 //
 //            return new Rectangle(x, y, width, height);

@@ -15,7 +15,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetradapp.util.WatchedProcess;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -377,7 +377,7 @@ public final class LinearAdjustmentTotalEffectsModel implements SessionModel, Gr
         //
         // I recommend (A) for safety.
         if (maxPathLength >= 1) return maxPathLength;
-        return FastMath.max(1, graph.getNumNodes()); // effective bound
+        return TMath.max(1, graph.getNumNodes()); // effective bound
     }
 
     private GacTotalEffectElibility gac() {

@@ -32,7 +32,7 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Vector;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
@@ -478,7 +478,7 @@ public class TsUtils {
 
 //    public static TimeLagGraph graphToLagGraph(Graph _graph, int numLags) {
 //        // Backward-compatible default: roughly matches your old ~0.15 density when n~10
-//        final double defaultAvgOutDeg = 0.15 * FastMath.max(0, _graph.getNodes().size() - 1);
+//        final double defaultAvgOutDeg = 0.15 * TMath.max(0, _graph.getNodes().size() - 1);
 //        final int noHardMax = -1;
 //        return graphToLagGraph(_graph, numLags, defaultAvgOutDeg, noHardMax, 0.05);
 //    }
@@ -753,7 +753,7 @@ public class TsUtils {
         for (int i = 0; i < eig.getNumberOfEigenvalues(); i++) {
             double realEigenvalue = eig.getEigenvalue(i).getReal();
             double imagEigenvalue = eig.getEigenvalue(i).getImaginary();
-            double modulus = FastMath.sqrt(FastMath.pow(realEigenvalue, 2) + FastMath.pow(imagEigenvalue, 2));
+            double modulus = TMath.sqrt(TMath.pow(realEigenvalue, 2) + TMath.pow(imagEigenvalue, 2));
 
             if (modulus >= 1.0) {
                 return false;

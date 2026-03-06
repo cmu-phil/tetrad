@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
@@ -19,7 +19,7 @@ import java.util.SplittableRandom;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * <p><b>T-RFF BIC score (mixed)</b></p>
@@ -396,7 +396,7 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
 
             double sum = 0.0;
             for (int k = 0; k < K; k++) {
-                final double e = FastMath.exp(logitsScratch[k] - maxLog);
+                final double e = TMath.exp(logitsScratch[k] - maxLog);
                 outProbs[i][k] = e;
                 sum += e;
             }
@@ -428,7 +428,7 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
 
             double sum = 0.0;
             for (int k = 0; k < K; k++) {
-                final double e = FastMath.exp(logitsScratch[k] - maxLog);
+                final double e = TMath.exp(logitsScratch[k] - maxLog);
                 p[i][k] = e;
                 sum += e;
             }
@@ -461,9 +461,9 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
             }
 
             double sum = 0.0;
-            for (int k = 0; k < K; k++) sum += FastMath.exp(logitsScratch[k] - maxLog);
+            for (int k = 0; k < K; k++) sum += TMath.exp(logitsScratch[k] - maxLog);
 
-            ll += (logitsScratch[y[i]] - maxLog) - FastMath.log(sum);
+            ll += (logitsScratch[y[i]] - maxLog) - TMath.log(sum);
         }
 
         return ll;
@@ -514,7 +514,7 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
         return phaseCache.computeIfAbsent(child, cc -> {
             SplittableRandom rng = new SplittableRandom(mix64(rffSeed ^ (long) cc * 0x9E3779B97F4A7C15L));
             double[] phase = new double[D];
-            for (int k = 0; k < D; k++) phase[k] = 2.0 * FastMath.PI * rng.nextDouble();
+            for (int k = 0; k < D; k++) phase[k] = 2.0 * TMath.PI * rng.nextDouble();
             return phase;
         });
     }
@@ -616,17 +616,17 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
 
                 double wi = (nu + 1.0) / (nu + u2);
 
-                obj += 0.5 * (nu + 1.0) * FastMath.log1p(u2 / nu);
+                obj += 0.5 * (nu + 1.0) * TMath.log1p(u2 / nu);
                 wsum += wi;
                 wrss += wi * r * r;
             }
 
             if (wsum > 0.0) {
                 double s2 = wrss / wsum;
-                scaleHat = FastMath.sqrt(FastMath.max(1e-12, s2));
+                scaleHat = TMath.sqrt(TMath.max(1e-12, s2));
             }
 
-            if (FastMath.abs(prevObj - obj) <= tol * (1.0 + FastMath.abs(prevObj))) break;
+            if (TMath.abs(prevObj - obj) <= tol * (1.0 + TMath.abs(prevObj))) break;
             prevObj = obj;
         }
 
@@ -821,7 +821,7 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
      * @param iters the desired number of IRLS iterations; if less than 1, it will be set to 1
      */
     public void setIrlsIters(int iters) {
-        this.irlsIters = FastMath.max(1, iters);
+        this.irlsIters = TMath.max(1, iters);
         resetCache();
     }
 
@@ -833,7 +833,7 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
      * @param tol the tolerance value to be used for the IRLS algorithm. Must be a non-negative value.
      */
     public void setIrlsTol(double tol) {
-        this.irlsTol = FastMath.max(0.0, tol);
+        this.irlsTol = TMath.max(0.0, tol);
         resetCache();
     }
 
@@ -868,7 +868,7 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
             omegaByParent[j] = getOmega(child, cont[j], D); // MUST return length D
         }
         final double[] phase = getPhase(child, D);          // MUST return length D
-        final double phiScale = FastMath.sqrt(2.0 / D);
+        final double phiScale = TMath.sqrt(2.0 / D);
 
         // IRLS weights for Student-t
         final double[] w = new double[n];
@@ -934,7 +934,7 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
                 final double wi = (nu + 1.0) / (nu + u2);
                 w[i] = wi;
 
-                obj += 0.5 * (nu + 1.0) * FastMath.log1p(u2 / nu);
+                obj += 0.5 * (nu + 1.0) * TMath.log1p(u2 / nu);
 
                 wsum += wi;
                 wrss += wi * r * r;
@@ -943,10 +943,10 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
             // Profile / estimate scale for this family (clamp away from 0)
             if (wsum > 0.0) {
                 final double s2 = wrss / wsum;
-                scaleHat = FastMath.sqrt(FastMath.max(1e-12, s2));
+                scaleHat = TMath.sqrt(TMath.max(1e-12, s2));
             }
 
-            if (FastMath.abs(prevObj - obj) <= irlsTol * (1.0 + FastMath.abs(prevObj))) break;
+            if (TMath.abs(prevObj - obj) <= irlsTol * (1.0 + TMath.abs(prevObj))) break;
             prevObj = obj;
         }
 
@@ -1023,7 +1023,7 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
                 double dot = 0.0;
                 // dot = sum_j omega_j[k] * z_j
                 for (int j = 0; j < dCont; j++) dot += omegaByParent[j][k] * Zc[i][j];
-                out[rffOff + k] = phiScale * FastMath.cos(dot + phase[k]);
+                out[rffOff + k] = phiScale * TMath.cos(dot + phase[k]);
             }
         }
 
@@ -1071,7 +1071,7 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
             for (int j = 0; j < cont.length; j++) Zc[r][j] = zCols[cont[j]][row];
         }
 
-        final double phiScale = FastMath.sqrt(2.0 / D);
+        final double phiScale = TMath.sqrt(2.0 / D);
 
         // Coupled: omega per (child,parent), and phase per child.
         final double[][] omegaByParent = new double[cont.length][];
@@ -1118,7 +1118,7 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
 
                     final double pc = probs[i][c + 1];
                     double wc = pc * (1.0 - pc);
-                    wc = FastMath.max(wc, 1e-10);
+                    wc = TMath.max(wc, 1e-10);
 
                     double eta = 0.0;
                     for (int a = 0; a < M; a++) eta += phi[a] * beta[a][c];
@@ -1149,7 +1149,7 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
             final double llIter = multinomialLogLikFromPhi(y, K, n, beta, Phi, logits);
             final double obj = -llIter;
 
-            if (FastMath.abs(prevObj - obj) <= irlsTol * (1.0 + FastMath.abs(prevObj))) break;
+            if (TMath.abs(prevObj - obj) <= irlsTol * (1.0 + TMath.abs(prevObj))) break;
             prevObj = obj;
         }
 
@@ -1168,7 +1168,7 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
 
                 final double pc = probs[i][c + 1];
                 double wc = pc * (1.0 - pc);
-                wc = FastMath.max(wc, 1e-10);
+                wc = TMath.max(wc, 1e-10);
 
                 for (int a = 0; a < M; a++) {
                     final double pa = wc * phi[a];
@@ -1209,7 +1209,7 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
                 for (int j = 0; j < dCont; j++) {
                     dot += omegaByParent[j][k] * Zc[i][j];
                 }
-                out[rffOff + k] = phiScale * FastMath.cos(dot + phase[k]);
+                out[rffOff + k] = phiScale * TMath.cos(dot + phase[k]);
             }
         }
 

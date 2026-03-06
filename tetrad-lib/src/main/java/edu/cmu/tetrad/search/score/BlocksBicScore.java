@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.RankTests;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -227,8 +227,8 @@ public class BlocksBicScore implements Score, BlockScore, EffectiveSampleSizeSet
             scoreCache.put(fkey, Double.NEGATIVE_INFINITY);
             return Double.NEGATIVE_INFINITY;
         }
-        int m = FastMath.min(FastMath.min(p, q), (int) _nEff - 1);
-        m = FastMath.min(m, suffix.length - 1); // need suffix[m]
+        int m = TMath.min(TMath.min(p, q), (int) _nEff - 1);
+        m = TMath.min(m, suffix.length - 1); // need suffix[m]
         if (m <= 0) {
             scoreCache.put(fkey, -1e-12);
             return -1e-12;
@@ -239,7 +239,7 @@ public class BlocksBicScore implements Score, BlockScore, EffectiveSampleSizeSet
         double suffix0 = suffix[0];
 
         // EBIC pool size: all potential predictors' embedded columns excluding Y's own block
-        int Ppool = FastMath.max(totalEmbeddedCols - Yblock.length, 2);
+        int Ppool = TMath.max(totalEmbeddedCols - Yblock.length, 2);
 
         // Evaluate r = m
         {
@@ -247,10 +247,10 @@ public class BlocksBicScore implements Score, BlockScore, EffectiveSampleSizeSet
             double fit = -_nEff * sumLogsTopR;
             int k = m * (p + q - m);
 
-            double logN = FastMath.log(FastMath.max(_nEff, 2.0));
+            double logN = TMath.log(TMath.max(_nEff, 2.0));
             double pen = penaltyDiscount * k * logN;
             if (ebicGamma > 0.0) {
-                pen += 2.0 * ebicGamma * k * FastMath.log(Ppool);
+                pen += 2.0 * ebicGamma * k * TMath.log(Ppool);
             }
 
             double sc = fit - pen;
@@ -265,10 +265,10 @@ public class BlocksBicScore implements Score, BlockScore, EffectiveSampleSizeSet
             double fit = -_nEff * sumLogsTopR;
             int k = r * (p + q - r);
 
-            double logN = FastMath.log(FastMath.max(_nEff, 2.0));
+            double logN = TMath.log(TMath.max(_nEff, 2.0));
             double pen = penaltyDiscount * k * logN;
             if (ebicGamma > 0.0) {
-                pen += 2.0 * ebicGamma * k * FastMath.log(Ppool);
+                pen += 2.0 * ebicGamma * k * TMath.log(Ppool);
             }
 
             double sc = fit - pen;
@@ -465,7 +465,7 @@ public class BlocksBicScore implements Score, BlockScore, EffectiveSampleSizeSet
 
         private static long quantize(double x) {
             // quantize to ~1e-12 relative resolution to keep keys stable
-            return Double.doubleToLongBits(FastMath.rint(x * 1e12) / 1e12);
+            return Double.doubleToLongBits(TMath.rint(x * 1e12) / 1e12);
         }
 
         private int computeHash() {

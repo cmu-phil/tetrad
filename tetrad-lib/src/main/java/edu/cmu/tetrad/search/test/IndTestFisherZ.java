@@ -31,15 +31,15 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.*;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.StrictMath.log;
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.sqrt;
+import static edu.cmu.tetrad.util.TMath.abs;
+import static edu.cmu.tetrad.util.TMath.sqrt;
 
 /**
  * Fisher's Z CI test with shrinkage (RIDGE/LedoitâWolf) and optional pseudoinverse fallback.
@@ -202,7 +202,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         double w22 = P.getEntry(1, 1);
         double w12 = P.getEntry(0, 1);
         if (w11 <= 0 || w22 <= 0) throw new RuntimeException("Nonpositive diagonal in precision.");
-        return -w12 / FastMath.sqrt(w11 * w22);
+        return -w12 / TMath.sqrt(w11 * w22);
     }
 
     /* ======================= API ======================= */
@@ -340,7 +340,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      *         and the correlation coefficient squared.
      */
     public double getBic() {
-        return -getEffectiveSampleSize() * FastMath.log(1.0 - this.r * this.r) - FastMath.log(getEffectiveSampleSize());
+        return -getEffectiveSampleSize() * TMath.log(1.0 - this.r * this.r) - TMath.log(getEffectiveSampleSize());
     }
 
     /**
@@ -545,7 +545,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
                         }
                     }
                     double delta = 0.0;
-                    if (denom > 0.0) delta = FastMath.min(1.0, FastMath.max(0.0, num / denom));
+                    if (denom > 0.0) delta = TMath.min(1.0, TMath.max(0.0, num / denom));
                     this.lastLedoitWolfDelta = delta;
                     if (delta > 0.0) {
                         Matrix I = Matrix.identity(p);
@@ -596,7 +596,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         RealMatrix V = eig.getV();
 
         double maxEig = 0.0;
-        for (double v : vals) maxEig = FastMath.max(maxEig, FastMath.abs(v));
+        for (double v : vals) maxEig = TMath.max(maxEig, TMath.abs(v));
         double cut = tolRel * (maxEig > 0 ? maxEig : 1.0);
 
         // Build precision = V diag(1/max(eig,cut)) V^T
@@ -604,7 +604,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         double[][] Dinv = new double[p][p];
         for (int i = 0; i < p; i++) {
             double v = vals[i];
-            double adj = FastMath.abs(v) < cut ? cut : v;
+            double adj = TMath.abs(v) < cut ? cut : v;
             Dinv[i][i] = 1.0 / adj;
         }
         RealMatrix Pinv = V.multiply(new Array2DRowRealMatrix(Dinv)).multiply(V.transpose());

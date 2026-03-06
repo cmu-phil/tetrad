@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.Arrays;
 
@@ -79,9 +79,9 @@ public final class GaussianMixtureEM {
             // --- annealing schedule: beta â (0,1], climbs to 1 across annealSteps
             double beta = 1.0;
             if (cfg.annealSteps > 0) {
-                double t = FastMath.min(1.0, (it + 1) / (double) cfg.annealSteps);
+                double t = TMath.min(1.0, (it + 1) / (double) cfg.annealSteps);
                 beta = cfg.annealStartT + t * (1.0 - cfg.annealStartT);
-                beta = FastMath.max(1e-6, FastMath.min(1.0, beta));
+                beta = TMath.max(1e-6, TMath.min(1.0, beta));
             }
 
             // E-step (tempered)
@@ -96,7 +96,7 @@ public final class GaussianMixtureEM {
             }
 
             // convergence check uses the same objective we just optimized (tempered LL)
-            if (FastMath.abs(llTemp - prevLL) < cfg.tol * (1 + FastMath.abs(prevLL))) {
+            if (TMath.abs(llTemp - prevLL) < cfg.tol * (1 + TMath.abs(prevLL))) {
                 prevLL = llTemp;
                 break;
             }
@@ -119,7 +119,7 @@ public final class GaussianMixtureEM {
         int n = X.length, d = X[0].length, K = w.length;
         double ll = 0.0;
         double[] logw = new double[K];
-        for (int k = 0; k < K; k++) logw[k] = FastMath.log(FastMath.max(w[k], 1e-12));
+        for (int k = 0; k < K; k++) logw[k] = TMath.log(TMath.max(w[k], 1e-12));
 
         for (int i = 0; i < n; i++) {
             double[] xi = X[i];
@@ -136,10 +136,10 @@ public final class GaussianMixtureEM {
             double maxT = Double.NEGATIVE_INFINITY;
             for (int k = 0; k < K; k++) if (logp[k] > maxT) maxT = logp[k];
             double sum = 0.0;
-            for (int k = 0; k < K; k++) sum += FastMath.exp(logp[k] - maxT);
-            double logsum = maxT + FastMath.log(sum);
+            for (int k = 0; k < K; k++) sum += TMath.exp(logp[k] - maxT);
+            double logsum = maxT + TMath.log(sum);
 
-            for (int k = 0; k < K; k++) R[i][k] = FastMath.exp(logp[k] - logsum);
+            for (int k = 0; k < K; k++) R[i][k] = TMath.exp(logp[k] - logsum);
             ll += logsum;
         }
         return ll;
@@ -152,10 +152,10 @@ public final class GaussianMixtureEM {
             quad = 0.0;
             logdet = 0.0;
             for (int j = 0; j < d; j++) {
-                double v = FastMath.max(S[j][0], 1e-12);
+                double v = TMath.max(S[j][0], 1e-12);
                 double z = x[j] - m[j];
                 quad += (z * z) / v;
-                logdet += FastMath.log(v);
+                logdet += TMath.log(v);
             }
         } else {
             // FULL: use simple Cholesky
@@ -164,7 +164,7 @@ public final class GaussianMixtureEM {
             quad = dot(sub(x, m), y);
             logdet = 2.0 * ch.logDiagSum;
         }
-        return -0.5 * (d * FastMath.log(2 * FastMath.PI) + logdet + quad);
+        return -0.5 * (d * TMath.log(2 * TMath.PI) + logdet + quad);
     }
 
     // ---------- M-step ----------
@@ -202,11 +202,11 @@ public final class GaussianMixtureEM {
 
         double sumw = 0.0;
         for (int k = 0; k < K; k++) {
-            double denom = FastMath.max(rk[k], 1e-12);
+            double denom = TMath.max(rk[k], 1e-12);
             for (int j = 0; j < d; j++) mu[k][j] /= denom;
 
-            w[k] = denom / FastMath.max(n, 1);
-            w[k] = FastMath.max(w[k], 1e-12);
+            w[k] = denom / TMath.max(n, 1);
+            w[k] = TMath.max(w[k], 1e-12);
             sumw += w[k];
         }
         for (int k = 0; k < K; k++) w[k] /= sumw;
@@ -231,10 +231,10 @@ public final class GaussianMixtureEM {
             }
 
             // --- shrinkage + ridge ---
-            double lam = FastMath.min(FastMath.max(shrinkage, 0.0), 1.0);
-            double rel = FastMath.max(ridgeRel, 0.0);
+            double lam = TMath.min(TMath.max(shrinkage, 0.0), 1.0);
+            double rel = TMath.max(ridgeRel, 0.0);
             for (int k = 0; k < K; k++) {
-                double denom = FastMath.max(rk[k], 1e-12);
+                double denom = TMath.max(rk[k], 1e-12);
 
                 // raw variances
                 double meanVar = 0.0;
@@ -242,7 +242,7 @@ public final class GaussianMixtureEM {
                     S[k][j][0] = S[k][j][0] / denom;
                     meanVar += S[k][j][0];
                 }
-                meanVar /= FastMath.max(1, d);
+                meanVar /= TMath.max(1, d);
 
                 // shrink toward mean variance
                 if (lam > 0.0) {
@@ -277,10 +277,10 @@ public final class GaussianMixtureEM {
                 }
             }
 
-            double lam = FastMath.min(FastMath.max(shrinkage, 0.0), 1.0);
-            double rel = FastMath.max(ridgeRel, 0.0);
+            double lam = TMath.min(TMath.max(shrinkage, 0.0), 1.0);
+            double rel = TMath.max(ridgeRel, 0.0);
             for (int k = 0; k < K; k++) {
-                double denom = FastMath.max(rk[k], 1e-12);
+                double denom = TMath.max(rk[k], 1e-12);
 
                 // raw ML covariance
                 double trace = 0.0;
@@ -288,7 +288,7 @@ public final class GaussianMixtureEM {
                     for (int b = 0; b < d; b++) S[k][a][b] /= denom;
                     trace += S[k][a][a];
                 }
-                double tau = trace / FastMath.max(1, d); // avg variance
+                double tau = trace / TMath.max(1, d); // avg variance
 
                 // shrink toward spherical tau*I
                 if (lam > 0.0) {
@@ -340,7 +340,7 @@ public final class GaussianMixtureEM {
             for (int j = 0; j < d; j++) mu[k][j] += xi[j];
         }
         for (int k = 0; k < K; k++) {
-            double denom = FastMath.max(cnt[k], 1); // avoid div-by-zero
+            double denom = TMath.max(cnt[k], 1); // avoid div-by-zero
             for (int j = 0; j < d; j++) mu[k][j] /= denom;
         }
 
@@ -354,7 +354,7 @@ public final class GaussianMixtureEM {
                         double diff = X[i][j] - mu[k][j];
                         s2 += diff * diff;
                     }
-                    double denom = FastMath.max(cnt[k], 1);
+                    double denom = TMath.max(cnt[k], 1);
                     S[k][j][0] = s2 / denom + ridge;
                 }
             }
@@ -373,7 +373,7 @@ public final class GaussianMixtureEM {
                         }
                     }
                 }
-                double denom = FastMath.max(cnt[k], 1);
+                double denom = TMath.max(cnt[k], 1);
                 for (int a = 0; a < d; a++) {
                     for (int b = 0; b < d; b++) S[k][a][b] /= denom;
                     S[k][a][a] += ridge; // regularize diagonal
@@ -437,20 +437,20 @@ public final class GaussianMixtureEM {
         if (covType == CovarianceType.DIAGONAL) {
             double logdet = 0.0, quad = 0.0;
             for (int j = 0; j < d; j++) {
-                double v = FastMath.max(cov[j][0], 1e-12);
+                double v = TMath.max(cov[j][0], 1e-12);
                 double z = diff[j];
                 quad += (z * z) / v;
-                logdet += FastMath.log(v);
+                logdet += TMath.log(v);
             }
-            double logp = -0.5 * (d * FastMath.log(2 * FastMath.PI) + logdet + quad);
-            return FastMath.exp(logp);
+            double logp = -0.5 * (d * TMath.log(2 * TMath.PI) + logdet + quad);
+            return TMath.exp(logp);
         } else {
             Chol ch = Chol.decompose(cov);
             double[] y = ch.solve(diff);
             double quad = dot(diff, y);
             double logdet = 2.0 * ch.logDiagSum;
-            double logp = -0.5 * (d * FastMath.log(2 * FastMath.PI) + logdet + quad);
-            return FastMath.exp(logp);
+            double logp = -0.5 * (d * TMath.log(2 * TMath.PI) + logdet + quad);
+            return TMath.exp(logp);
         }
     }
 
@@ -637,7 +637,7 @@ public final class GaussianMixtureEM {
                             + K * d                    // means
                             + K * covParamsPerComp;    // covariance params
 
-            return -2.0 * this.logLikelihood + numParams * FastMath.log(FastMath.max(1, n));
+            return -2.0 * this.logLikelihood + numParams * TMath.log(TMath.max(1, n));
         }
     }
 
@@ -816,9 +816,9 @@ public final class GaussianMixtureEM {
                     double s = A[i][j];
                     for (int k = 0; k < j; k++) s -= L[i][k] * L[j][k];
                     if (i == j) {
-                        double v = FastMath.max(s, 1e-12);
-                        L[i][j] = FastMath.sqrt(v);
-                        logDiagSum += FastMath.log(L[i][j]);
+                        double v = TMath.max(s, 1e-12);
+                        L[i][j] = TMath.sqrt(v);
+                        logDiagSum += TMath.log(L[i][j]);
                     } else {
                         L[i][j] = s / L[j][j];
                     }

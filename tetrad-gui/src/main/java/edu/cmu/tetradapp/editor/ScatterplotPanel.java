@@ -20,7 +20,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -115,9 +115,9 @@ class ScatterplotPanel extends JPanel {
             g.drawString(this.nf.format(xmin), 20 + 30, yMax + 14);
             g.drawString(this.scatterPlot.getXvar(), xMin + (xRange / 2) - 10, yMax + 14);
             g.translate(xMin - 7, yMin + (yRange / 2) + 10);
-            g.rotate(-FastMath.PI / 2.0);
+            g.rotate(-TMath.PI / 2.0);
             g.drawString(this.scatterPlot.getYvar(), xStringMin, 0);
-            g.rotate(FastMath.PI / 2.0);
+            g.rotate(TMath.PI / 2.0);
             g.translate(-(xMin - 7), -(yMin + (yRange / 2) + 10));
         }
 

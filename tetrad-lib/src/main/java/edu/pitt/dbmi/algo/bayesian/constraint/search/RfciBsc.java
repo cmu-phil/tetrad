@@ -36,7 +36,7 @@ import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -46,8 +46,8 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import static org.apache.commons.math3.util.FastMath.exp;
-import static org.apache.commons.math3.util.FastMath.log;
+import static edu.cmu.tetrad.util.TMath.exp;
+import static edu.cmu.tetrad.util.TMath.log;
 
 /**
  * Dec 17, 2018 3:28:15 PM
@@ -108,7 +108,7 @@ public class RfciBsc implements IGraphSearch {
         if (lnYminusLnX < RfciBsc.MININUM_EXPONENT) {
             return lnX;
         } else {
-            double w = FastMath.log1p(exp(lnYminusLnX));
+            double w = TMath.log1p(exp(lnYminusLnX));
             return w + lnX;
         }
     }

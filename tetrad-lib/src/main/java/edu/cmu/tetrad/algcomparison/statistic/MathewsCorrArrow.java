@@ -24,7 +24,7 @@ import edu.cmu.tetrad.algcomparison.statistic.utils.ArrowConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 
@@ -95,7 +95,7 @@ public class MathewsCorrArrow implements Statistic {
 
         if (b == 0) b = 1;
 
-        return a / FastMath.sqrt(b);
+        return a / TMath.sqrt(b);
     }
 }
 

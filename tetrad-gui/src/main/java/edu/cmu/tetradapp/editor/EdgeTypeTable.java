@@ -21,7 +21,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import javax.swing.table.*;
@@ -417,7 +417,7 @@ public class EdgeTypeTable extends JPanel {
             Component component = super.prepareRenderer(renderer, row, column);
             int rendererWidth = component.getPreferredSize().width;
             TableColumn tableColumn = getColumnModel().getColumn(column);
-            tableColumn.setPreferredWidth(FastMath.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
+            tableColumn.setPreferredWidth(TMath.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
 
             return component;
         }

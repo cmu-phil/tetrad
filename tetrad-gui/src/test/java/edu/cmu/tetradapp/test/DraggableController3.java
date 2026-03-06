@@ -185,30 +185,30 @@ package edu.cmu.tetradapp.test;
 //        line.setEndY(endIntersection[1]);
 //
 //        double arrowSize = 10;
-//        double angle = FastMath.atan2(line.getStartY() - line.getEndY(), line.getStartX() - line.getEndX());
+//        double angle = TMath.atan2(line.getStartY() - line.getEndY(), line.getStartX() - line.getEndX());
 //
 //        arrowhead1.getPoints().clear();
 //        arrowhead2.getPoints().clear();
 //
 //        if (edge.getEndpoint1() == Endpoint.ARROW) {
 //            arrowhead1.getPoints().addAll(
-//                    line.getStartX() + arrowSize * FastMath.cos(angle - FastMath.PI / 6),
-//                    line.getStartY() + arrowSize * FastMath.sin(angle - FastMath.PI / 6),
+//                    line.getStartX() + arrowSize * TMath.cos(angle - TMath.PI / 6),
+//                    line.getStartY() + arrowSize * TMath.sin(angle - TMath.PI / 6),
 //                    line.getStartX(),
 //                    line.getStartX(),
-//                    line.getStartX() + arrowSize * FastMath.cos(angle + FastMath.PI / 6),
-//                    line.getStartX() + arrowSize * FastMath.sin(angle + FastMath.PI / 6)
+//                    line.getStartX() + arrowSize * TMath.cos(angle + TMath.PI / 6),
+//                    line.getStartX() + arrowSize * TMath.sin(angle + TMath.PI / 6)
 //            );
 //        }
 //
 //        if (edge.getEndpoint2() == Endpoint.ARROW) {
 //            arrowhead2.getPoints().addAll(
-//                    line.getEndX() + arrowSize * FastMath.cos(angle - FastMath.PI / 6),
-//                    line.getEndY() + arrowSize * FastMath.sin(angle - FastMath.PI / 6),
+//                    line.getEndX() + arrowSize * TMath.cos(angle - TMath.PI / 6),
+//                    line.getEndY() + arrowSize * TMath.sin(angle - TMath.PI / 6),
 //                    line.getEndX(),
 //                    line.getEndY(),
-//                    line.getEndX() + arrowSize * FastMath.cos(angle + FastMath.PI / 6),
-//                    line.getEndY() + arrowSize * FastMath.sin(angle + FastMath.PI / 6)
+//                    line.getEndX() + arrowSize * TMath.cos(angle + TMath.PI / 6),
+//                    line.getEndY() + arrowSize * TMath.sin(angle + TMath.PI / 6)
 //            );
 //        }
 //    }

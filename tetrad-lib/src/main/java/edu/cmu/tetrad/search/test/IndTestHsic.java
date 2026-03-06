@@ -34,7 +34,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -357,7 +357,7 @@ public final class IndTestHsic implements IndependenceTest {
         for (int i = 0; i < m; i++) {
             empHSIC += Kyx.get(i, i);
         }
-        empHSIC /= FastMath.pow(m - 1, 2);
+        empHSIC /= TMath.pow(m - 1, 2);
         return empHSIC;
     }
 
@@ -385,7 +385,7 @@ public final class IndTestHsic implements IndependenceTest {
         for (int i = 0; i < m; i++) {
             empHSIC += matrixProductEntry(B, Gcxt, i, i);
         }
-        empHSIC /= FastMath.pow(m - 1, 2);
+        empHSIC /= TMath.pow(m - 1, 2);
         return empHSIC;
     }
 
@@ -422,12 +422,12 @@ public final class IndTestHsic implements IndependenceTest {
             empHSIC += (-2 * Kyzzregzx.get(i, i));
             empHSIC += Kyzzregzxzzregz.get(i, i);
         }
-        empHSIC /= FastMath.pow(m - 1, 2);
+        empHSIC /= TMath.pow(m - 1, 2);
         double Bz = 0.0;
         for (int i = 0; i < (m - 1); i++) {
             for (int j = (i + 1); j < m; j++) {
-                Bz += FastMath.pow(Kz.get(i, j), 2);
-                Bz += FastMath.pow(Kz.get(j, i), 2);
+                Bz += TMath.pow(Kz.get(i, j), 2);
+                Bz += TMath.pow(Kz.get(j, i), 2);
             }
         }
         Bz = (m * (m - 1)) / Bz;
@@ -512,8 +512,8 @@ public final class IndTestHsic implements IndependenceTest {
         double betaz = 0.0;
         for (int i = 0; i < (m - 1); i++) {
             for (int j = (i + 1); j < m; j++) {
-                betaz += FastMath.pow(matrixProductEntry(Gcz, Gczt, i, j), 2);
-                betaz += FastMath.pow(matrixProductEntry(Gcz, Gczt, j, i), 2);
+                betaz += TMath.pow(matrixProductEntry(Gcz, Gczt, i, j), 2);
+                betaz += TMath.pow(matrixProductEntry(Gcz, Gczt, j, i), 2);
             }
         }
 

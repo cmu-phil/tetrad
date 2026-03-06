@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.session.SessionModel;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.Objects;
 
@@ -44,7 +44,7 @@ public final class DagModelScoreModel extends DataWrapper implements SessionMode
         this.inputData = ds;
 
         // Default sample size = observed sample size (as you requested)
-        this.sampleSize = FastMath.max(1, inputData.getNumRows());
+        this.sampleSize = TMath.max(1, inputData.getNumRows());
     }
 
     public void resimulate(int sampleSize) {
@@ -86,7 +86,7 @@ public final class DagModelScoreModel extends DataWrapper implements SessionMode
      * Set desired n (does not resimulate until resimulate() is called).
      */
     public void setSampleSize(int n) {
-        this.sampleSize = FastMath.max(1, n);
+        this.sampleSize = TMath.max(1, n);
     }
 
     // -------------------------

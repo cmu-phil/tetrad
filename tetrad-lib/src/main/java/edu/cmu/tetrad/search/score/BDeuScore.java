@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.special.Gamma;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -336,7 +336,7 @@ public class BDeuScore implements DiscreteScore {
      */
     @Override
     public int getMaxDegree() {
-        return (int) FastMath.ceil(FastMath.log(this.sampleSize));
+        return (int) TMath.ceil(TMath.log(this.sampleSize));
     }
 
     /**
@@ -374,7 +374,7 @@ public class BDeuScore implements DiscreteScore {
         if (e == 0) return 0.0;
         else {
             int vm = N - 1;
-            return numParents * FastMath.log(e / (vm)) + (vm - numParents) * FastMath.log(1.0 - (e / (vm)));
+            return numParents * TMath.log(e / (vm)) + (vm - numParents) * TMath.log(1.0 - (e / (vm)));
         }
     }
 }

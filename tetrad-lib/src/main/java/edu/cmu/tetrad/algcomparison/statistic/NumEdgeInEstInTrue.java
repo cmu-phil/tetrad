@@ -27,7 +27,7 @@ import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
-import static org.apache.commons.math3.util.FastMath.tanh;
+import static edu.cmu.tetrad.util.TMath.tanh;
 
 /**
  * The number of adjacencies in the estimated graph but not in the true graph.

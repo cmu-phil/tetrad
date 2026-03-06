@@ -28,7 +28,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.linear.SingularMatrixException;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.Arrays;
 import java.util.List;
@@ -129,7 +129,7 @@ public class RegressionCovariance implements Regression {
         Vector standardDeviations = new Vector(covariances.getDimension());
 
         for (int i = 0; i < covariances.getDimension(); i++) {
-            standardDeviations.set(i, FastMath.sqrt(covariances.getValue(i, i)));
+            standardDeviations.set(i, TMath.sqrt(covariances.getValue(i, i)));
         }
 
         return standardDeviations;
@@ -225,7 +225,7 @@ public class RegressionCovariance implements Regression {
             double r2 = 1.0 - (1.0 / vY);
             double tss = n * this.sd.get(yIndex) * this.sd.get(yIndex); // Book says n - 1.
             double rss = tss * (1.0 - r2);
-            double seY = FastMath.sqrt(rss / (double) (n - k));
+            double seY = TMath.sqrt(rss / (double) (n - k));
 
             Vector sqErr = new Vector(allIndices.length);
             Vector t = new Vector(allIndices.length);
@@ -240,10 +240,10 @@ public class RegressionCovariance implements Regression {
             for (int i = 0; i < regressors.size(); i++) {
                 double _r2 = 1.0 - (1.0 / rxInv.get(i, i));
                 double _tss = n * this.sd.get(xIndices[i]) * this.sd.get(xIndices[i]);
-                double _se = seY / FastMath.sqrt(_tss * (1.0 - _r2));
+                double _se = seY / TMath.sqrt(_tss * (1.0 - _r2));
 
                 double _t = b.get(i + 1) / _se;
-                double _p = (1.0 - ProbUtils.tCdf(FastMath.abs(_t), n - k));
+                double _p = (1.0 - ProbUtils.tCdf(TMath.abs(_t), n - k));
 
                 sqErr.set(i + 1, _se);
                 t.set(i + 1, _t);

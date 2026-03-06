@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.text.ParseException;
@@ -280,7 +280,7 @@ public class LeeHastieSimulation implements Simulation {
                 // d-d edges use one vector and permute edges, could use different strategy
                 if (cL > 0 && pL > 0) {
                     double[][] newWeights = new double[cL][pL];
-                    w = FastMath.abs(w);
+                    w = TMath.abs(w);
                     double bgW = w / ((double) pL - 1.0);
                     double[] weightVals;
 
@@ -481,7 +481,7 @@ public class LeeHastieSimulation implements Simulation {
         double vMax = 0;
         for (int i = 0; i < L; i++) {
             vec[i] = vec[i] - vMean;
-            if (FastMath.abs(vec[i]) > FastMath.abs(vMax))
+            if (TMath.abs(vec[i]) > TMath.abs(vMax))
                 vMax = vec[i];
         }
 

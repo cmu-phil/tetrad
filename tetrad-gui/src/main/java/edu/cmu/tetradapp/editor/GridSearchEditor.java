@@ -40,7 +40,7 @@ import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.*;
 import edu.cmu.tetradapp.util.*;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -3482,7 +3482,7 @@ public class GridSearchEditor extends JPanel {
             int modelRow = table.convertRowIndexToModel(row);
             if (tableModel.moveUp(modelRow)) {
                 tableModel.fireTableDataChanged();
-                int newRow = FastMath.max(0, row - 1);
+                int newRow = TMath.max(0, row - 1);
                 table.getSelectionModel().setSelectionInterval(newRow, newRow);
             } else {
                 Toolkit.getDefaultToolkit().beep();
@@ -3498,7 +3498,7 @@ public class GridSearchEditor extends JPanel {
             int modelRow = table.convertRowIndexToModel(row);
             if (tableModel.moveDown(modelRow)) {
                 tableModel.fireTableDataChanged();
-                int newRow = FastMath.min(table.getRowCount() - 1, row + 1);
+                int newRow = TMath.min(table.getRowCount() - 1, row + 1);
                 table.getSelectionModel().setSelectionInterval(newRow, newRow);
             } else {
                 Toolkit.getDefaultToolkit().beep();
@@ -3600,7 +3600,7 @@ public class GridSearchEditor extends JPanel {
             int modelRow = table.convertRowIndexToModel(row);
             if (tableModel.moveUp(modelRow)) {
                 tableModel.fireTableDataChanged();
-                int newRow = FastMath.max(0, row - 1);
+                int newRow = TMath.max(0, row - 1);
                 table.getSelectionModel().setSelectionInterval(newRow, newRow);
             } else Toolkit.getDefaultToolkit().beep();
         });
@@ -3614,7 +3614,7 @@ public class GridSearchEditor extends JPanel {
             int modelRow = table.convertRowIndexToModel(row);
             if (tableModel.moveDown(modelRow)) {
                 tableModel.fireTableDataChanged();
-                int newRow = FastMath.min(table.getRowCount() - 1, row + 1);
+                int newRow = TMath.min(table.getRowCount() - 1, row + 1);
                 table.getSelectionModel().setSelectionInterval(newRow, newRow);
             } else Toolkit.getDefaultToolkit().beep();
         });

@@ -39,7 +39,7 @@ import edu.cmu.tetradapp.workbench.LayoutMenu;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Serializer;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -558,7 +558,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     double d1 = implCovar[i][j];
                     double d2 = implCovar[i][i];
                     double d3 = implCovar[j][j];
-                    double d4 = d1 / FastMath.pow(d2 * d3, 0.5);
+                    double d4 = d1 / TMath.pow(d2 * d3, 0.5);
 
                     if (d4 <= 1.0 || Double.isNaN(d4)) {
                         corr[i][j] = d4;
@@ -566,7 +566,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                         throw new IllegalArgumentException(
                                 "Off-diagonal element at (" + i + ", " + j
                                 + ") cannot be converted to correlation: "
-                                + d1 + " <= FastMath.pow(" + d2 + " * " + d3
+                                + d1 + " <= TMath.pow(" + d2 + " * " + d3
                                 + ", 0.5)");
                     }
                 }
@@ -663,7 +663,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 append("\nRMSEA = " + this.nf.format(semIm().getRmsea()));
 
             } else {
-                int numToFix = (int) FastMath.abs(modelDof);
+                int numToFix = (int) TMath.abs(modelDof);
                 append("\n\nA SEM with negative degrees of freedom is underidentified, "
                        + "\nand other model statistics are meaningless.  Please increase "
                        + "\nthe degrees of freedom to 0 or above by fixing at least "
@@ -1287,7 +1287,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 double varA = semIm().getParamValue(nodeA, nodeA);
                 double varB = semIm().getParamValue(nodeB, nodeB);
 
-                d /= FastMath.sqrt(varA * varB);
+                d /= TMath.sqrt(varA * varB);
             }
 
             DoubleTextField field = new DoubleTextField(d, 10, NumberFormatUtil.getInstance().getNumberFormat());
@@ -1360,7 +1360,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     d = semIm().getMean(node);
                 }
             } else {
-                d = FastMath.sqrt(semIm().getParamValue(parameter));
+                d = TMath.sqrt(semIm().getParamValue(parameter));
             }
 
             DoubleTextField field = new DoubleTextField(d, 10, NumberFormatUtil.getInstance().getNumberFormat());
@@ -1513,7 +1513,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     double varA = semIm().getVariance(nodeA, implCovar);
                     double varB = semIm().getVariance(nodeB, implCovar);
 
-                    val /= FastMath.sqrt(varA * varB);
+                    val /= TMath.sqrt(varA * varB);
                 }
 
                 JLabel label = new JLabel();
@@ -1670,7 +1670,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     double varA = semIm().getVariance(nodeA, implCovar);
                     double varB = semIm().getVariance(nodeB, implCovar);
 
-                    d *= FastMath.sqrt(varA * varB);
+                    d *= TMath.sqrt(varA * varB);
 
                     semIm().setParamValue(parameter, d);
                     this.firePropertyChange("modelChanged", null, null);
@@ -2012,11 +2012,11 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 int df = n - 1;
                 double mean = semIm().getMean(node);
                 double stdDev = semIm().getMeanStdDev(node);
-                double stdErr = stdDev / FastMath.sqrt(n);
-//            double tValue = mean * FastMath.sqrt(n - 1) / stdDev;
+                double stdErr = stdDev / TMath.sqrt(n);
+//            double tValue = mean * TMath.sqrt(n - 1) / stdDev;
 
                 double tValue = mean / stdErr;
-                double p = 2.0 * (1.0 - ProbUtils.tCdf(FastMath.abs(tValue), df));
+                double p = 2.0 * (1.0 - ProbUtils.tCdf(TMath.abs(tValue), df));
 
                 switch (column) {
                     case 0:
@@ -2061,11 +2061,11 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     double varA = semIm().getParamValue(nodeA, nodeA);
                     double varB = semIm().getParamValue(nodeB, nodeB);
 
-                    paramValue *= FastMath.sqrt(varA * varB);
+                    paramValue *= TMath.sqrt(varA * varB);
                 }
             } else {
                 if (parameter.getType() == ParamType.VAR) {
-                    paramValue = FastMath.sqrt(paramValue);
+                    paramValue = TMath.sqrt(paramValue);
                 }
             }
 

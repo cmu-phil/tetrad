@@ -32,7 +32,7 @@ import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
@@ -3418,9 +3418,9 @@ public final class GraphUtils {
         for (Node w : g.getChildren(v)) {  // outgoing edges only
             if (!index.containsKey(w)) {
                 strongConnect(w, g, index, lowlink, stack, onStack, counter, sccs);
-                lowlink.put(v, FastMath.min(lowlink.get(v), lowlink.get(w)));
+                lowlink.put(v, TMath.min(lowlink.get(v), lowlink.get(w)));
             } else if (onStack.contains(w)) {
-                lowlink.put(v, FastMath.min(lowlink.get(v), index.get(w)));
+                lowlink.put(v, TMath.min(lowlink.get(v), index.get(w)));
             }
         }
 

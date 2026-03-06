@@ -48,7 +48,7 @@ import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetradapp.ui.model.*;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
@@ -636,7 +636,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         list.clear();
         list.addAll(algorithms);
 
-        if (selectedAlgorithm >= list.size()) selectedAlgorithm = FastMath.max(0, list.size() - 1);
+        if (selectedAlgorithm >= list.size()) selectedAlgorithm = TMath.max(0, list.size() - 1);
         if (selectedAlgorithm < 0) selectedAlgorithm = 0;
     }
 

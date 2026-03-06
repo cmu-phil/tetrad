@@ -34,12 +34,12 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.min;
+import static edu.cmu.tetrad.util.TMath.abs;
+import static edu.cmu.tetrad.util.TMath.min;
 
 /**
  * Implements PDAG/PAG IDA with **incremental FCI propagation** after each local orientation at X.
@@ -222,7 +222,7 @@ public class PdagPagIda {
     public LinkedList<Double> getAbsTotalEffects(Node x, Node y) {
         LinkedList<Double> eff = getTotalEffects(x, y);
         LinkedList<Double> out = new LinkedList<>();
-        for (double d : eff) out.add(FastMath.abs(d));
+        for (double d : eff) out.add(TMath.abs(d));
         Collections.sort(out);
         return out;
     }

@@ -5,7 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
@@ -232,7 +232,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
         for (double v : yCentered) yTy += v * v;
 
         double quad = yTy / sigma2;
-        double logDet = n * FastMath.log(sigma2);
+        double logDet = n * TMath.log(sigma2);
 
         return -0.5 * quad - 0.5 * logDet;
     }
@@ -280,7 +280,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
             DMatrixRMaj G,
             double[] v
     ) {
-        sigma2 = FastMath.max(1e-10, sigma2);
+        sigma2 = TMath.max(1e-10, sigma2);
         if (!Double.isFinite(sigma2)) return null;
 
         // B = G + sigma2 I
@@ -296,7 +296,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
         for (int k = 0; k < m; k++) {
             double di = L.get(k, k);
             if (!(di > 0) || !Double.isFinite(di)) return null;
-            ld += FastMath.log(di);
+            ld += TMath.log(di);
         }
         double logDetB = 2.0 * ld;
 
@@ -321,7 +321,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
         // quad + logdetC
         double invSig = 1.0 / sigma2;
         double quad = invSig * yTy - (invSig * invSig) * vTBInvV;
-        double logDetC = (n - m) * FastMath.log(sigma2) + logDetB;
+        double logDetC = (n - m) * TMath.log(sigma2) + logDetB;
         double ll = -0.5 * quad - 0.5 * logDetC;
 
         // ---- derivative dℓ/d log(sigma2) ----
@@ -389,12 +389,12 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
             DMatrixRMaj G,
             double[] v
     ) {
-        double s0 = FastMath.log(FastMath.max(1e-10, sigma2Init));
+        double s0 = TMath.log(TMath.max(1e-10, sigma2Init));
         // a nearby second point for secant
         double s1 = s0 + 0.25;
 
-        SigmaEval e0 = evalSigma2(FastMath.exp(s0), n, m, yTy, G, v);
-        SigmaEval e1 = evalSigma2(FastMath.exp(s1), n, m, yTy, G, v);
+        SigmaEval e0 = evalSigma2(TMath.exp(s0), n, m, yTy, G, v);
+        SigmaEval e1 = evalSigma2(TMath.exp(s1), n, m, yTy, G, v);
         if (e0 == null) return sigma2Init;
         if (e1 == null) return e0.sigma2;
 
@@ -404,21 +404,21 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
             double f1 = e1.dlds;
 
             double denom = (f1 - f0);
-            if (FastMath.abs(denom) < 1e-12) break;
+            if (TMath.abs(denom) < 1e-12) break;
 
             double s2 = s1 - f1 * (s1 - s0) / denom;
 
             // clamp to sane range so we don’t explode
-            s2 = FastMath.max(FastMath.log(1e-10), FastMath.min(FastMath.log(1e6), s2));
+            s2 = TMath.max(TMath.log(1e-10), TMath.min(TMath.log(1e6), s2));
 
-            SigmaEval e2 = evalSigma2(FastMath.exp(s2), n, m, yTy, G, v);
+            SigmaEval e2 = evalSigma2(TMath.exp(s2), n, m, yTy, G, v);
             if (e2 == null) break;
 
             // shift
             s0 = s1; e0 = e1;
             s1 = s2; e1 = e2;
 
-            if (FastMath.abs(e1.dlds) < 1e-3) break;
+            if (TMath.abs(e1.dlds) < 1e-3) break;
         }
 
         return e1.sigma2;
@@ -441,7 +441,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
 
         // Generate in blocks of size d (or remaining rows).
         while (filled < mFeatures) {
-            int block = FastMath.min(d, mFeatures - filled);
+            int block = TMath.min(d, mFeatures - filled);
 
             // Step 1: Gaussian block G (block x d)
             double[][] Q = new double[block][d];
@@ -462,7 +462,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
                 // normalize
                 double norm2 = 0.0;
                 for (int j = 0; j < d; j++) norm2 += Q[i][j] * Q[i][j];
-                double norm = FastMath.sqrt(FastMath.max(1e-18, norm2));
+                double norm = TMath.sqrt(TMath.max(1e-18, norm2));
                 for (int j = 0; j < d; j++) Q[i][j] /= norm;
             }
 
@@ -492,7 +492,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
             double g = nextGaussian(rng);
             ss += g * g;
         }
-        return FastMath.sqrt(FastMath.max(1e-18, ss));
+        return TMath.sqrt(TMath.max(1e-18, ss));
     }
 
     // Box–Muller-ish gaussian from SplittableRandom (fast enough)
@@ -504,7 +504,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
             v = 2.0 * rng.nextDouble() - 1.0;
             s = u * u + v * v;
         } while (s >= 1.0 || s == 0.0);
-        return u * FastMath.sqrt(-2.0 * FastMath.log(s) / s);
+        return u * TMath.sqrt(-2.0 * TMath.log(s) / s);
     }
 
     private static void centerInPlace(double[] y) {
@@ -529,7 +529,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
         }
         double mean = sum / n;
         double var = (sum2 - n * mean * mean) / (n - 1.0);
-        double sd = FastMath.sqrt(FastMath.max(1e-12, var));
+        double sd = TMath.sqrt(TMath.max(1e-12, var));
 
         for (int i = 0; i < in.length; i++) {
             double v = in[i];
@@ -538,7 +538,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
     }
 
     private static void addDiagonalInPlace(DMatrixRMaj M, double v) {
-        int n = FastMath.min(M.numRows, M.numCols);
+        int n = TMath.min(M.numRows, M.numCols);
         for (int i = 0; i < n; i++) M.add(i, i, v);
     }
 
@@ -548,14 +548,14 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
         int d = Z[0].length;
         if (n < 3) return 1.0;
 
-        int m = FastMath.min(n, maxRows);
+        int m = TMath.min(n, maxRows);
 
         // Take evenly spaced rows (deterministic, no RNG).
         int[] idx = new int[m];
         if (m == n) {
             for (int i = 0; i < m; i++) idx[i] = i;
         } else {
-            for (int i = 0; i < m; i++) idx[i] = (int) FastMath.floor((i * (long) (n - 1)) / (double) (m - 1));
+            for (int i = 0; i < m; i++) idx[i] = (int) TMath.floor((i * (long) (n - 1)) / (double) (m - 1));
         }
 
         int cnt = m * (m - 1) / 2;
@@ -715,7 +715,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
      */
     @Override
     public int getMaxDegree() {
-        return (int) FastMath.ceil(FastMath.log(FastMath.max(5, nEff)));
+        return (int) TMath.ceil(TMath.log(TMath.max(5, nEff)));
     }
 
     /**
@@ -834,7 +834,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
      * @param bwMaxRows the maximum number of rows to set. Must be a positive integer.
      */
     public void setBwMaxRows(int bwMaxRows) {
-        this.bwMaxRows = FastMath.max(50, bwMaxRows);
+        this.bwMaxRows = TMath.max(50, bwMaxRows);
         resetCache();
     }
 
@@ -902,8 +902,8 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
 
         // RFF parameters for k(x,x') = exp(-||x-x'||^2 / bw2)
         // => w ~ N(0, 2/bw2 I)
-        final double wStd = FastMath.sqrt(2.0 / bw2);
-        final double scale = FastMath.sqrt(2.0 / mFeatures);
+        final double wStd = TMath.sqrt(2.0 / bw2);
+        final double scale = TMath.sqrt(2.0 / mFeatures);
 
         // Deterministic RNG per (target, parentset) key:
         SplittableRandom rng = new SplittableRandom(seed);
@@ -922,14 +922,14 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
                 for (int k = 0; k < d; k++) {
                     W[j][k] = wStd * nextGaussian(rng);
                 }
-                b[j] = 2.0 * FastMath.PI * rng.nextDouble();
+                b[j] = 2.0 * TMath.PI * rng.nextDouble();
             }
         } else if (featureType == FeatureType.ORF) {
             W = sampleOrthogonalW(mFeatures, d, wStd, rng);
 
             b = new double[mFeatures];
             for (int j = 0; j < mFeatures; j++) {
-                b[j] = 2.0 * FastMath.PI * rng.nextDouble();
+                b[j] = 2.0 * TMath.PI * rng.nextDouble();
             }
         } else {
             throw new IllegalArgumentException("featureType must be RFF or ORF");
@@ -955,7 +955,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
                 for (int k = 0; k < d; k++) {
                     dot += wj[k] * zCols[parentIdx[k]][row];
                 }
-                phi[j] = scale * FastMath.cos(dot + b[j]);
+                phi[j] = scale * TMath.cos(dot + b[j]);
             }
 
             double yi = yCentered[ii];
@@ -999,7 +999,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
         for (int i = 0; i < mFeatures; i++) {
             double di = L.get(i, i);
             if (!(di > 0) || !Double.isFinite(di)) return Double.NaN;
-            logDetB += FastMath.log(di);
+            logDetB += TMath.log(di);
         }
         logDetB *= 2.0;
 
@@ -1029,7 +1029,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
         double quad = invSig * yTy - (invSig * invSig) * vTBInvV;
 
         // log|C| = (n - m) log sigma2 + log|B|
-        double logDetC = (n - mFeatures) * FastMath.log(sigma2) + logDetB;
+        double logDetC = (n - mFeatures) * TMath.log(sigma2) + logDetB;
 
         if (!Double.isFinite(quad) || !Double.isFinite(logDetC)) return Double.NaN;
 
@@ -1067,8 +1067,8 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
 
         // Nested features:
         // phi_k(x) = sqrt(2/m) cos( sum_j (wStd * omega_j[k]) * z_j + phase[k] )
-        final double wStd = FastMath.sqrt(2.0 / bw2Child);
-        final double scale = FastMath.sqrt(2.0 / mFeatures);
+        final double wStd = TMath.sqrt(2.0 / bw2Child);
+        final double scale = TMath.sqrt(2.0 / mFeatures);
 
         final double[] phase = getPhaseForChild(seedBase, mFeatures);
 
@@ -1092,7 +1092,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
                 for (int j = 0; j < d; j++) {
                     dot += (wStd * omegaByParent[j][k]) * zCols[parentIdx[j]][row];
                 }
-                phi[k] = scale * FastMath.cos(dot + phase[k]);
+                phi[k] = scale * TMath.cos(dot + phase[k]);
             }
 
             final double yi = yCentered[ii];
@@ -1139,7 +1139,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
         return cache.computeIfAbsent(key, k -> {
             SplittableRandom rng = new SplittableRandom(k);
             double[] b = new double[mFeatures];
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * FastMath.PI * rng.nextDouble();
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
             return b;
         });
     }
@@ -1170,8 +1170,8 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
         }
 
         // Use first m rows (or all if smaller) for bandwidth estimation; deterministic.
-        int m = FastMath.min(nEff, bwMaxRows);
-        m = FastMath.max(5, m);
+        int m = TMath.min(nEff, bwMaxRows);
+        m = TMath.max(5, m);
 
         double[][] Z = new double[m][d];
 
@@ -1206,7 +1206,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
             for (int j = 0; j < d; j++) Z[r][j] = zCols[parentIdx[j]][row];
         }
 
-        double bw2 = medianDistanceSquaredND(Z, FastMath.min(n, bwMaxRows));
+        double bw2 = medianDistanceSquaredND(Z, TMath.min(n, bwMaxRows));
         if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
         bw2 *= (bandwidthMultiplier * bandwidthMultiplier);
 
@@ -1224,7 +1224,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
                     double diff = Z[i][k] - Z[j][k];
                     dist2 += diff * diff;
                 }
-                double v = FastMath.exp(-dist2 * invBw);
+                double v = TMath.exp(-dist2 * invBw);
                 K.set(i, j, v);
                 K.set(j, i, v);
             }

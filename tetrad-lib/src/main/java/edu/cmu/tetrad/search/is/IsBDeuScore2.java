@@ -3,7 +3,7 @@ package edu.cmu.tetrad.search.is;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.special.Gamma;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -356,7 +356,7 @@ public class IsBDeuScore2 implements IsScore {
      * @return the maximum degree as an integer.
      */
     @Override
-    public int getMaxDegree() { return (int) FastMath.ceil(FastMath.log(FastMath.max(2, sampleSize))); }
+    public int getMaxDegree() { return (int) TMath.ceil(TMath.log(TMath.max(2, sampleSize))); }
 
     /**
      * Determines if variable y is determined by variables z.
@@ -504,9 +504,9 @@ public class IsBDeuScore2 implements IsScore {
             System.out.println("children pop: " + Arrays.toString(children_pop));
             System.out.println("added=" + added + ", removed=" + removed + ", reversed=" + reversed);
         }
-        return added.size()   * FastMath.log(getKAddition())
-               + removed.size() * FastMath.log(getKDeletion())
-               + reversed.size()* FastMath.log(getKReorientation());
+        return added.size()   * TMath.log(getKAddition())
+               + removed.size() * TMath.log(getKDeletion())
+               + reversed.size()* TMath.log(getKReorientation());
     }
 
     private double computeRowPrior(int[] parents, int[] parent_values, int[] parents_all, Map<List<Integer>, Double> row_priors) {

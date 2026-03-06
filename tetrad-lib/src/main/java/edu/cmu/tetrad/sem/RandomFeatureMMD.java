@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.sem;
 
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -129,7 +129,7 @@ final class RandomFeatureMMD {
             sigmas = new double[] { baseSigma };
         }
 
-        final int R = FastMath.max(1, replicates);
+        final int R = TMath.max(1, replicates);
 
         // Accumulate over replicates and (optionally) over sigma mixture.
         double acc = 0.0;
@@ -150,7 +150,7 @@ final class RandomFeatureMMD {
                 for (int j = 0; j < dim; j++) {
                     W0[k][j] = rng.nextGaussian(); // unit
                 }
-                b[k] = 2.0 * FastMath.PI * rng.nextDouble();
+                b[k] = 2.0 * TMath.PI * rng.nextDouble();
             }
 
             for (double sig : sigmas) {
@@ -160,7 +160,7 @@ final class RandomFeatureMMD {
         }
 
         final double mmd2 = (count > 0) ? (acc / (double) count) : Double.NaN;
-        return FastMath.max(0.0, mmd2);
+        return TMath.max(0.0, mmd2);
     }
 
     // Convenience “good defaults” for your regime (n≈1000, dim≈10):
@@ -204,7 +204,7 @@ final class RandomFeatureMMD {
         final int dim = W0[0].length;
 
         // phi(x) = sqrt(2/D) cos((W0/sigma) x + b)
-        final double phiScale = FastMath.sqrt(2.0 / (double) D);
+        final double phiScale = TMath.sqrt(2.0 / (double) D);
         final double wScale = 1.0 / sigma;
 
         final double[] sumX = new double[D];
@@ -268,7 +268,7 @@ final class RandomFeatureMMD {
         final double mmd2 = termXX + termYY - 2.0 * termXY;
 
         // Numerical guard
-        return FastMath.max(0.0, mmd2);
+        return TMath.max(0.0, mmd2);
     }
 
     private static void fillPhi(double[] out,
@@ -285,7 +285,7 @@ final class RandomFeatureMMD {
             final double[] wk = W0[k];
             double dot = 0.0;
             for (int j = 0; j < dim; j++) dot += (wk[j] * wScale) * x[j];
-            out[k] = phiScale * FastMath.cos(dot + b[k]);
+            out[k] = phiScale * TMath.cos(dot + b[k]);
         }
     }
 
@@ -311,7 +311,7 @@ final class RandomFeatureMMD {
         if (N < 2) return 1.0;
 
         final Random rng = new Random(seed);
-        final int P = FastMath.max(1000, pairs);
+        final int P = TMath.max(1000, pairs);
 
         double[] d2 = new double[P];
 
@@ -338,7 +338,7 @@ final class RandomFeatureMMD {
         if (!(medianSq > 0.0) || !Double.isFinite(medianSq)) return 1.0;
 
         double sigma2 = medianSq / 2.0;
-        double sigma = FastMath.sqrt(sigma2);
+        double sigma = TMath.sqrt(sigma2);
 
         if (!(sigma > 0.0) || !Double.isFinite(sigma)) return 1.0;
         return sigma;

@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.util;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
@@ -491,7 +491,7 @@ public class Matrix implements TetradSerializable {
     public boolean equals(Matrix m, double tolerance) {
         for (int i = 0; i < getData().getNumRows(); i++) {
             for (int j = 0; j < getData().getNumCols(); j++) {
-                if (FastMath.abs(getData().get(i, j) - m.getData().get(i, j)) > tolerance) {
+                if (TMath.abs(getData().get(i, j) - m.getData().get(i, j)) > tolerance) {
                     return false;
                 }
             }
@@ -610,7 +610,7 @@ public class Matrix implements TetradSerializable {
 
         // Compute square root of W (singular values)
         for (int i = 0; i < W.getNumRows(); i++) {
-            W.set(i, i, FastMath.sqrt(W.get(i, i)));
+            W.set(i, i, TMath.sqrt(W.get(i, i)));
         }
 
         // Reconstruct the square root matrix

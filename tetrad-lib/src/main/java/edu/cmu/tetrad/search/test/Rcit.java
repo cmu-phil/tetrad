@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.GammaDistribution;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
@@ -124,7 +124,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
             }
             double mean = sum / n;
             double var = (sumsq - n * mean * mean) / (n - 1);
-            double sd = (var > 0) ? FastMath.sqrt(var) : 1.0;
+            double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
             for (int i = 0; i < n; i++) {
                 M.set(i, j, (M.get(i, j) - mean) / sd);
             }
@@ -153,13 +153,13 @@ public final class Rcit implements IndependenceTest, RowsSettable {
         if (Z == null || Z.getNumCols() == 0) return X;
 
         int n = Z.getNumRows();
-        double denom = FastMath.max(1.0, n - 1.0);
+        double denom = TMath.max(1.0, n - 1.0);
 
         SimpleMatrix Czz = Z.transpose().mult(Z).scale(1.0 / denom);
         SimpleMatrix Czx = Z.transpose().mult(X).scale(1.0 / denom);
 
         SimpleMatrix A = Czz.plus(SimpleMatrix.identity(Czz.getNumRows())
-                .scale(FastMath.max(1e-18, lambda)));
+                .scale(TMath.max(1e-18, lambda)));
 
         SimpleMatrix B = A.solve(Czx);  // (Czz + λI)^{-1} Czx
         return X.minus(Z.mult(B));
@@ -240,7 +240,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
             v = 2.0 * rng.nextDouble() - 1.0;
             s = u * u + v * v;
         } while (s >= 1.0 || s == 0.0);
-        return u * FastMath.sqrt(-2.0 * FastMath.log(s) / s);
+        return u * TMath.sqrt(-2.0 * TMath.log(s) / s);
     }
 
     /** ORF: block-orthogonal rows in blocks of size d. */
@@ -250,7 +250,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
 
         int filled = 0;
         while (filled < mFeatures) {
-            int block = FastMath.min(d, mFeatures - filled);
+            int block = TMath.min(d, mFeatures - filled);
 
             double[][] Q = new double[block][d];
             for (int i = 0; i < block; i++) {
@@ -266,7 +266,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
                 }
                 double norm2 = 0.0;
                 for (int j = 0; j < d; j++) norm2 += Q[i][j] * Q[i][j];
-                double norm = FastMath.sqrt(FastMath.max(1e-18, norm2));
+                double norm = TMath.sqrt(TMath.max(1e-18, norm2));
                 for (int j = 0; j < d; j++) Q[i][j] /= norm;
             }
 
@@ -289,7 +289,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
             double g = nextGaussian(rng);
             ss += g * g;
         }
-        return FastMath.sqrt(FastMath.max(1e-18, ss));
+        return TMath.sqrt(TMath.max(1e-18, ss));
     }
 
     /**
@@ -301,13 +301,13 @@ public final class Rcit implements IndependenceTest, RowsSettable {
         int d = (n == 0) ? 0 : Z[0].length;
         if (n < 3 || d == 0) return 1.0;
 
-        int m = FastMath.min(n, FastMath.max(3, maxRows));
+        int m = TMath.min(n, TMath.max(3, maxRows));
 
         int[] idx = new int[m];
         if (m == n) {
             for (int i = 0; i < m; i++) idx[i] = i;
         } else {
-            for (int i = 0; i < m; i++) idx[i] = (int) FastMath.floor((i * (long) (n - 1)) / (double) (m - 1));
+            for (int i = 0; i < m; i++) idx[i] = (int) TMath.floor((i * (long) (n - 1)) / (double) (m - 1));
         }
 
         int cnt = m * (m - 1) / 2;
@@ -351,7 +351,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
             }
             double mean = sum / n;
             double var = (sumsq - n * mean * mean) / (n - 1);
-            double sd = (var > 0) ? FastMath.sqrt(var) : 1.0;
+            double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
             for (int i = 0; i < n; i++) M[i][j] = (M[i][j] - mean) / sd;
         }
     }
@@ -508,7 +508,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
 
 
         if (!Double.isFinite(p)) p = 1.0;
-        p = FastMath.min(1.0, FastMath.max(0.0, p));
+        p = TMath.min(1.0, TMath.max(0.0, p));
         lastP = p;
 
         IndependenceFact fact = new IndependenceFact(x, y, new HashSet<>(Z));
@@ -565,7 +565,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
      *          is less than 1, it will be automatically set to 1.
      */
     public void setNumFeaturesXY(int d) {
-        this.numFeatXY = FastMath.max(1, d);
+        this.numFeatXY = TMath.max(1, d);
         invalidateFeatureCache();
     }
 
@@ -579,7 +579,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
      *          is less than 1, it will be automatically set to 1.
      */
     public void setNumFeaturesZ(int d) {
-        this.numFeatZ = FastMath.max(1, d);
+        this.numFeatZ = TMath.max(1, d);
         invalidateFeatureCache();
     }
 
@@ -593,7 +593,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
      *          is less than 1, it will be automatically set to 1.
      */
     public void setNumFeaturesYAug(int d) {
-        this.numFeatYAug = FastMath.max(1, d);
+        this.numFeatYAug = TMath.max(1, d);
         invalidateFeatureCache();
     }
 
@@ -614,7 +614,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
      * @param permutations the desired number of permutations. If the provided value is negative, it will be set to 0.
      */
     public void setPermutations(int permutations) {
-        this.permutations = FastMath.max(0, permutations);
+        this.permutations = TMath.max(0, permutations);
     }
 
     /**
@@ -712,7 +712,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
 
         double bw2 = 1.0;
         if (Zraw.length > 0 && Zraw[0].length > 0) {
-            bw2 = medianDistanceSquaredND(Zraw, FastMath.min(n, bwMaxRows));
+            bw2 = medianDistanceSquaredND(Zraw, TMath.min(n, bwMaxRows));
             if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
             bw2 *= (bandwidthMultiplier * bandwidthMultiplier);
             if (bw2 < 1e-12) bw2 = 1e-12;
@@ -814,19 +814,19 @@ public final class Rcit implements IndependenceTest, RowsSettable {
         // Handle d=0: constant features (cos(b))
         if (d == 0) {
             SplittableRandom rng0 = new SplittableRandom(seed);
-            double scale0 = FastMath.sqrt(2.0 / mFeatures);
+            double scale0 = TMath.sqrt(2.0 / mFeatures);
             double[] b0 = new double[mFeatures];
-            for (int j = 0; j < mFeatures; j++) b0[j] = 2.0 * FastMath.PI * rng0.nextDouble();
+            for (int j = 0; j < mFeatures; j++) b0[j] = 2.0 * TMath.PI * rng0.nextDouble();
             for (int i = 0; i < n; i++) {
-                for (int j = 0; j < mFeatures; j++) Phi[i][j] = scale0 * FastMath.cos(b0[j]);
+                for (int j = 0; j < mFeatures; j++) Phi[i][j] = scale0 * TMath.cos(b0[j]);
             }
             return Phi;
         }
 
         if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
 
-        final double wStd = FastMath.sqrt(2.0 / bw2);
-        final double scale = FastMath.sqrt(2.0 / mFeatures);
+        final double wStd = TMath.sqrt(2.0 / bw2);
+        final double scale = TMath.sqrt(2.0 / mFeatures);
         SplittableRandom rng = new SplittableRandom(seed);
 
         double[][] W;
@@ -836,11 +836,11 @@ public final class Rcit implements IndependenceTest, RowsSettable {
             W = new double[mFeatures][d];
             for (int j = 0; j < mFeatures; j++) {
                 for (int k = 0; k < d; k++) W[j][k] = wStd * nextGaussian(rng);
-                b[j] = 2.0 * FastMath.PI * rng.nextDouble();
+                b[j] = 2.0 * TMath.PI * rng.nextDouble();
             }
         } else if (featureType == FeatureType.ORF) {
             W = sampleOrthogonalW(mFeatures, d, wStd, rng);
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * FastMath.PI * rng.nextDouble();
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
         } else {
             throw new IllegalArgumentException("featureType must be RFF or ORF");
         }
@@ -851,7 +851,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
                 double dot = 0.0;
                 double[] wj = W[j];
                 for (int k = 0; k < d; k++) dot += wj[k] * Zi[k];
-                Phi[i][j] = scale * FastMath.cos(dot + b[j]);
+                Phi[i][j] = scale * TMath.cos(dot + b[j]);
             }
         }
 

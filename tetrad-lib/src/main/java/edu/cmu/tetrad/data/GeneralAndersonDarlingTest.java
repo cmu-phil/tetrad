@@ -23,13 +23,13 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Implements the Anderson-Darling test against the given CDF, with P values calculated as in R's ad.test method (in
@@ -139,10 +139,10 @@ public class GeneralAndersonDarlingTest {
 
         for (int i = 1; i <= n; i++) {
             double x1 = this.data.get(i - 1);
-            double a1 = FastMath.log(this.dist.cumulativeProbability(x1));
+            double a1 = TMath.log(this.dist.cumulativeProbability(x1));
 
             double x2 = this.data.get(n + 1 - i - 1);
-            double a2 = FastMath.log(1.0 - this.dist.cumulativeProbability(x2));
+            double a2 = TMath.log(1.0 - this.dist.cumulativeProbability(x2));
 
             double k = (2 * i - 1) * (a1 + a2);
 

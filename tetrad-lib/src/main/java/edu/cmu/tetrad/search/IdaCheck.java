@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.OrderedPair;
 import edu.cmu.tetrad.sem.SemIm;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -285,7 +285,7 @@ public class IdaCheck {
         double ret = Double.NaN;
 
         for (double te : total) {
-            if (FastMath.abs(FastMath.abs(te) - targetAbs) < 1e-12) {
+            if (TMath.abs(TMath.abs(te) - targetAbs) < 1e-12) {
                 ret = te;
                 break;
             }

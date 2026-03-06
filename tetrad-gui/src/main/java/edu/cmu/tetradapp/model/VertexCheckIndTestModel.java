@@ -36,7 +36,7 @@ import edu.cmu.tetradapp.session.SessionModel;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.beans.PropertyChangeListener;
@@ -369,8 +369,8 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         double sum = 0.0;
 
         for (double pValue : pvals) {
-            double p = FastMath.max(pValue, 1e-300);
-            sum += FastMath.log(p);
+            double p = TMath.max(pValue, 1e-300);
+            sum += TMath.log(p);
         }
 
         double c = -2.0 * sum;
@@ -403,7 +403,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
         double leftTail = bd.cumulativeProbability(k);
         double rightTail = 1.0 - bd.cumulativeProbability(k - 1);
-        double pValue = FastMath.min(1.0, 2.0 * FastMath.min(leftTail, rightTail));
+        double pValue = TMath.min(1.0, 2.0 * TMath.min(leftTail, rightTail));
 
         return pValue;
     }
@@ -488,8 +488,8 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
             for (IndependenceResult r : results) {
                 int sz = r.getFact().getZ().size();
-                min = FastMath.min(min, sz);
-                max = FastMath.max(max, sz);
+                min = TMath.min(min, sz);
+                max = TMath.max(max, sz);
             }
             return new ConditioningSetSizeRange(min, max);
         }
@@ -509,8 +509,8 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
         for (IndependenceFact f : facts) {
             int sz = f.getZ().size();
-            min = FastMath.min(min, sz);
-            max = FastMath.max(max, sz);
+            min = TMath.min(min, sz);
+            max = TMath.max(max, sz);
         }
 
         return new ConditioningSetSizeRange(min, max);

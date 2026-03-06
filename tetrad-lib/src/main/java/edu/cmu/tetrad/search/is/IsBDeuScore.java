@@ -5,7 +5,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.search.score.Score;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.List;
 import java.util.Objects;
@@ -247,13 +247,13 @@ public final class IsBDeuScore implements Score {
             }
         }
 
-        final double ess = FastMath.max(0.0, getPriorEquivalentSampleSize());
+        final double ess = TMath.max(0.0, getPriorEquivalentSampleSize());
         final double alpha_ijk = (q == 0 ? 0.0 : ess / (r_i * q));
         final double alpha_ij = (q == 0 ? 0.0 : ess / q);
 
         final double num = N_ijk + alpha_ijk;
         final double den = N_ij + alpha_ij;
         if (num <= 0.0 || den <= 0.0) return 0.0; // safe guard
-        return FastMath.log(num) - FastMath.log(den);
+        return TMath.log(num) - TMath.log(den);
     }
 }

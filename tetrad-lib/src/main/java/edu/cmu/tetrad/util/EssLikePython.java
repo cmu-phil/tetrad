@@ -20,7 +20,7 @@
 
 package edu.cmu.tetrad.util;
 
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.Random;
@@ -54,7 +54,7 @@ public final class EssLikePython {
 
         final int N = X.getNumRows();
         final int P = X.getNumCols();
-        if (N < 2 || P < 1) return new Result(0.0, N, FastMath.max(0, N));
+        if (N < 2 || P < 1) return new Result(0.0, N, TMath.max(0, N));
 
         // 1) Column-standardize with ddof=0 (population)
         SimpleMatrix Z = new SimpleMatrix(N, P);
@@ -69,7 +69,7 @@ public final class EssLikePython {
                 varPop += d * d;
             }
             varPop /= N; // ddof=0
-            double sd = FastMath.sqrt(FastMath.max(varPop, 1e-24));
+            double sd = TMath.sqrt(TMath.max(varPop, 1e-24));
 
             for (int i = 0; i < N; i++) {
                 Z.set(i, j, (X.get(i, j) - mean) / sd);
@@ -89,7 +89,7 @@ public final class EssLikePython {
                 varPop += d * d;
             }
             varPop /= P; // ddof=0
-            double sd = FastMath.sqrt(FastMath.max(varPop, 1e-24));
+            double sd = TMath.sqrt(TMath.max(varPop, 1e-24));
 
             for (int j = 0; j < P; j++) {
                 Z.set(i, j, (Z.get(i, j) - mean) / sd);
@@ -97,7 +97,7 @@ public final class EssLikePython {
         }
 
         // 2) Sample m rows without replacement (like df.sample(..., random_state=0))
-        int m = FastMath.min(sampleSize, N);
+        int m = TMath.min(sampleSize, N);
         int[] rows = shuffledRange(N, rng);
         int[] pick = new int[m];
         System.arraycopy(rows, 0, pick, 0, m);
@@ -123,7 +123,7 @@ public final class EssLikePython {
                 varPop += d * d;
             }
             varPop /= P; // ddof=0
-            rStd[i] = FastMath.sqrt(FastMath.max(varPop, 1e-24));
+            rStd[i] = TMath.sqrt(TMath.max(varPop, 1e-24));
         }
 
         for (int i = 0; i < m; i++) {

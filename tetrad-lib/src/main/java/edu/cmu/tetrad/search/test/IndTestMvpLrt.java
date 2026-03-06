@@ -28,7 +28,7 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.HashedMap;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -164,7 +164,7 @@ public class IndTestMvpLrt implements IndependenceTest {
             TetradLogger.getInstance().log(e.getMessage());
         }
 
-        double pValue = FastMath.min(p_0, p_1);
+        double pValue = TMath.min(p_0, p_1);
 
         if (Double.isNaN(pValue)) {
             throw new RuntimeException("Undefined p-value encountered when testing " +

@@ -27,7 +27,7 @@ import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
@@ -396,7 +396,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
         log("Removing clusters of size <= rank + 1 + minRedundancy.");
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
-            int r = FastMath.max(0, clusterToRank.getOrDefault(cluster, 0));
+            int r = TMath.max(0, clusterToRank.getOrDefault(cluster, 0));
             int minSize = r + 1 + minRedundancy;
             if (cluster.size() < minSize) {
                 clusterToRank.remove(cluster);
@@ -523,7 +523,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
                 List<Integer> Dnow = allVariables();
                 Dnow.removeAll(Cset);
 
-                SublistGenerator gen2 = new SublistGenerator(Cnow.size(), FastMath.min(Cnow.size() - 1, rC));
+                SublistGenerator gen2 = new SublistGenerator(Cnow.size(), TMath.min(Cnow.size() - 1, rC));
                 int[] choice2;
                 while ((choice2 = gen2.next()) != null) {
                     if (choice2.length < rC) continue;
@@ -577,10 +577,10 @@ public class Tsc implements EffectiveSampleSizeSettable {
             int[] c1Array = C1.stream().mapToInt(Integer::intValue).toArray();
             int[] c2Array = C2.stream().mapToInt(Integer::intValue).toArray();
 
-            int minpq = FastMath.min(c1Array.length, c2Array.length);
+            int minpq = TMath.min(c1Array.length, c2Array.length);
             Integer l = clusterToRank.get(cluster);
             if (l == null) continue;
-            l = FastMath.min(minpq, FastMath.max(0, l));
+            l = TMath.min(minpq, TMath.max(0, l));
 
             int r = RankTests.estimateWilksRank(S, c1Array, c2Array, expectedSampleSize, alpha);
             if (r == 0) {

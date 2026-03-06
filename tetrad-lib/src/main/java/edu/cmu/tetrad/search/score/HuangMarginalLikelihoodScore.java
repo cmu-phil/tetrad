@@ -5,7 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
@@ -319,7 +319,7 @@ public final class HuangMarginalLikelihoodScore implements Score, EffectiveSampl
     public int getMaxDegree() {
         // Similar heuristic to SEM BIC: ceil(log(n)).
         // Adjust if you want something else.
-        return (int) FastMath.ceil(FastMath.log(FastMath.max(3, nEff)));
+        return (int) TMath.ceil(TMath.log(TMath.max(3, nEff)));
     }
 
     /**
@@ -508,7 +508,7 @@ public final class HuangMarginalLikelihoodScore implements Score, EffectiveSampl
         double scale = nl / 2.0;
         if (!(scale > 0) || !Double.isFinite(scale)) return Double.NaN;
 
-        double logDetScaled = n * FastMath.log(scale) + logDetM;
+        double logDetScaled = n * TMath.log(scale) + logDetM;
 
         // Huang Eq.(6), dropping constants:
         // S = -(n/2) * log| (n*lambda/2) * M | - n/2  (+ const)
@@ -537,7 +537,7 @@ public final class HuangMarginalLikelihoodScore implements Score, EffectiveSampl
                 for (int i = 0; i < n; i++) {
                     double di = L.get(i, i);
                     if (!(di > 0) || !Double.isFinite(di)) return Double.NaN;
-                    sum += FastMath.log(di);
+                    sum += TMath.log(di);
                 }
                 return 2.0 * sum;
             }
@@ -548,7 +548,7 @@ public final class HuangMarginalLikelihoodScore implements Score, EffectiveSampl
     }
 
     private static void addDiagonalInPlace(DMatrixRMaj M, double v) {
-        int n = FastMath.min(M.numRows, M.numCols);
+        int n = TMath.min(M.numRows, M.numCols);
         for (int i = 0; i < n; i++) {
             M.add(i, i, v);
         }
@@ -573,7 +573,7 @@ public final class HuangMarginalLikelihoodScore implements Score, EffectiveSampl
             double xi = x[i];
             for (int j = 0; j < i; j++) {
                 double d = xi - x[j];
-                double v = FastMath.exp(-(d * d) * invBw);
+                double v = TMath.exp(-(d * d) * invBw);
                 K.set(i, j, v);
                 K.set(j, i, v);
             }
@@ -609,7 +609,7 @@ public final class HuangMarginalLikelihoodScore implements Score, EffectiveSampl
                     double diff = Z[i][k] - Z[j][k];
                     dist2 += diff * diff;
                 }
-                double v = FastMath.exp(-dist2 * invBw);
+                double v = TMath.exp(-dist2 * invBw);
                 K.set(i, j, v);
                 K.set(j, i, v);
             }

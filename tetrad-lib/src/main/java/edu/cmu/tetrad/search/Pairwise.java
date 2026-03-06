@@ -29,15 +29,15 @@ import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
 import static edu.cmu.tetrad.util.MatrixUtils.transpose;
 import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Double.isNaN;
-import static org.apache.commons.math3.util.FastMath.*;
-import static org.apache.commons.math3.util.FastMath.pow;
+import static edu.cmu.tetrad.util.TMath.*;
+import static edu.cmu.tetrad.util.TMath.pow;
 
 /**
  * Implements a number of methods which take a fixed graph as input and use linear, non-Gaussian methods to orient the
@@ -1152,7 +1152,7 @@ public class Pairwise {
      * @return The result of applying the function g(x) to the input value.
      */
     private double g(double x) {
-        return log(cosh(FastMath.max(x, 0)));
+        return log(cosh(TMath.max(x, 0)));
     }
 
     /**
@@ -1216,8 +1216,8 @@ public class Pairwise {
 
         for (int i = 0; i < d1b.length; i++) {
             double y1 = (d1in[i] - grotMIN) / (grotMAX - grotMIN);
-            double y2 = FastMath.min(y1, 1.0);
-            double y3 = FastMath.max(y2, 0.0);
+            double y2 = TMath.min(y1, 1.0);
+            double y3 = TMath.max(y2, 0.0);
             d1b[i] = y3;
         }
 
@@ -1235,8 +1235,8 @@ public class Pairwise {
 
         for (int i = 0; i < d2b.length; i++) {
             double y1 = (d2in[i] - grotMIN) / (grotMAX - grotMIN);
-            double y2 = FastMath.min(y1, 1.0);
-            double y3 = FastMath.max(y2, 0.0);
+            double y2 = TMath.min(y1, 1.0);
+            double y3 = TMath.max(y2, 0.0);
             d2b[i] = y3;
         }
 
@@ -2154,7 +2154,7 @@ public class Pairwise {
         for (var j = 0; j < N; j++) x[j] = abs(x[j] - central);
         var mad = median(x);
         var sigmaRobust = 1.4826 * mad;
-        return 1.06 * sigmaRobust * FastMath.pow(N, -0.20);
+        return 1.06 * sigmaRobust * TMath.pow(N, -0.20);
     }
 
     /**

@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.util;
 
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
@@ -178,7 +178,7 @@ public class RankTests {
         DMatrixRMaj Qsorted = new DMatrixRMaj(n, n);
         for (int j = 0; j < n; j++) {
             int idx = order[j];
-            sorted[j] = FastMath.max(vals[idx], EIG_FLOOR); // floor small/negatives
+            sorted[j] = TMath.max(vals[idx], EIG_FLOOR); // floor small/negatives
             for (int r = 0; r < n; r++) Qsorted.set(r, j, Q.get(r, idx));
         }
         return new EigenSym(Qsorted, sorted);
@@ -207,7 +207,7 @@ public class RankTests {
     private static void scaleRowsInvSqrtInPlace(DMatrixRMaj A, double[] eig) {
         int n = A.numRows, m = A.numCols;
         for (int i = 0; i < n; i++) {
-            double s = 1.0 / FastMath.sqrt(eig[i]);
+            double s = 1.0 / TMath.sqrt(eig[i]);
             int rowStart = i * m;
             for (int j = 0; j < m; j++) {
                 A.data[rowStart + j] *= s;
@@ -226,7 +226,7 @@ public class RankTests {
     private static void scaleColsInvSqrtInPlace(DMatrixRMaj A, double[] eig) {
         int n = A.numRows, m = A.numCols;
         for (int j = 0; j < m; j++) {
-            double s = 1.0 / FastMath.sqrt(eig[j]);
+            double s = 1.0 / TMath.sqrt(eig[j]);
             for (int i = 0; i < n; i++) {
                 A.set(i, j, A.get(i, j) * s);
             }
@@ -282,7 +282,7 @@ public class RankTests {
      * @param lam The scalar value to add to the diagonal elements of the matrix.
      */
     private static void addRidgeInPlace(DMatrixRMaj A, double lam) {
-        int n = FastMath.min(A.numRows, A.numCols);
+        int n = TMath.min(A.numRows, A.numCols);
         for (int i = 0; i < n; i++) {
             A.set(i, i, A.get(i, i) + lam);
         }
@@ -291,7 +291,7 @@ public class RankTests {
 //    public static int estimateWilksRankFast(SimpleMatrix S, int[] xIdx, int[] yIdx, int n, double alpha) {
 //        final int p = xIdx.length, q = yIdx.length;
 //        if (p == 0 || q == 0) return 0;
-//        final int m = FastMath.min(p, q);
+//        final int m = TMath.min(p, q);
 //
 //        // submatrices
 //        SimpleMatrix Sxx = submatrix(S, xIdx, xIdx);
@@ -316,7 +316,7 @@ public class RankTests {
 //        double[] evals = eigSymmetricClamped(M);
 //        Arrays.sort(evals);                 // ascending
 //        // take descending into rho2[0..L-1]
-//        int L = FastMath.min(evals.length, m);
+//        int L = TMath.min(evals.length, m);
 //        double[] rho2 = new double[L];
 //        for (int i = 0; i < L; i++) rho2[i] = evals[evals.length - 1 - i];
 //
@@ -328,8 +328,8 @@ public class RankTests {
 //        for (int r = 0; r < m; r++) {
 //            double sum = 0.0;
 //            for (int i = r; i < L; i++) {
-//                double oneMinus = FastMath.max(1e-15, 1.0 - rho2[i]);
-//                sum += FastMath.log(oneMinus);
+//                double oneMinus = TMath.max(1e-15, 1.0 - rho2[i]);
+//                sum += TMath.log(oneMinus);
 //            }
 //            double stat = -c * sum;
 //            int nu = (p - r) * (q - r);
@@ -356,7 +356,7 @@ public class RankTests {
     public static int estimateWilksRank(SimpleMatrix Scond,
                                         int[] xIdxLocal, int[] yIdxLocal,
                                         int n, double alpha) {
-        int minpq = FastMath.min(xIdxLocal.length, yIdxLocal.length);
+        int minpq = TMath.min(xIdxLocal.length, yIdxLocal.length);
 
         for (int r = 0; r < yIdxLocal.length; r++) {
             if (r >= minpq) {
@@ -385,7 +385,7 @@ public class RankTests {
     public static int estimateWilksRankFast(SimpleMatrix S, int[] xIdx, int[] yIdx, int n, double alpha) {
         final int p = xIdx.length, q = yIdx.length;
         if (p == 0 || q == 0) return 0;
-        final int m = FastMath.min(p, q);
+        final int m = TMath.min(p, q);
 
         // submatrices
         SimpleMatrix Sxx = submatrix(S, xIdx, xIdx);
@@ -420,7 +420,7 @@ public class RankTests {
             evals[i] = evals[evals.length - 1 - i];
             evals[evals.length - 1 - i] = tmp;
         }
-        int L = FastMath.min(evals.length, m);
+        int L = TMath.min(evals.length, m);
         double[] rho2 = Arrays.copyOf(evals, L);
 
         // For r = 0..m-1, test H0: rank â¤ r using Bartlett ÏÂ² approx
@@ -433,8 +433,8 @@ public class RankTests {
         for (int r = 0; r < m; r++) {
             double sum = 0.0;
             for (int i = r; i < L; i++) {
-                double oneMinus = FastMath.max(1e-15, 1.0 - rho2[i]);
-                sum += FastMath.log(oneMinus);
+                double oneMinus = TMath.max(1e-15, 1.0 - rho2[i]);
+                sum += TMath.log(oneMinus);
             }
             double stat = -c * sum;
             int nu = (p - r) * (q - r);
@@ -447,19 +447,19 @@ public class RankTests {
 //
 //            double sum = 0.0;
 //            for (int i = r; i < L; i++) {
-//                double oneMinus = FastMath.max(1e-15, 1.0 - rho2[i]);
-//                sum += FastMath.log(oneMinus);
+//                double oneMinus = TMath.max(1e-15, 1.0 - rho2[i]);
+//                sum += TMath.log(oneMinus);
 //            }
 //            double stat = -c * sum;
 //            int nu = (p - r) * (q - r);
 //            if (nu <= 0) {
-//                hat = FastMath.max(hat, r);
+//                hat = TMath.max(hat, r);
 //                continue;
 //            }
 //
 //            double crit = chi2CriticalWH(nu, alpha);
 //            if (stat <= crit) {
-//                hat = FastMath.max(hat, r); // fail to reject â rank â¤ r plausible
+//                hat = TMath.max(hat, r); // fail to reject â rank â¤ r plausible
 //            } else {
 //                // reject H0(rank â¤ r); continue increasing r wonât help acceptance
 //                // (stat decreases with larger r), but we still compute loop to keep it simple
@@ -494,7 +494,7 @@ public class RankTests {
         // WilsonâHilferty: Q_{1-a,Î½} â Î½ * [1 - 2/(9Î½) + z * sqrt(2/(9Î½))]^3
         double n = nu;
         double a = 2.0 / (9.0 * n);
-        double q = n * FastMath.pow(1.0 - a + z * FastMath.sqrt(a), 3.0);
+        double q = n * TMath.pow(1.0 - a + z * TMath.sqrt(a), 3.0);
 
         CHI2_CRIT_CACHE.put(key, q);
         return q;
@@ -525,12 +525,12 @@ public class RankTests {
 
         if (p < plow) {
             // lower tail
-            q = FastMath.sqrt(-2.0 * FastMath.log(p));
+            q = TMath.sqrt(-2.0 * TMath.log(p));
             x = (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
                     ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1.0);
         } else if (p > phigh) {
             // upper tail
-            q = FastMath.sqrt(-2.0 * FastMath.log(1.0 - p));
+            q = TMath.sqrt(-2.0 * TMath.log(1.0 - p));
             x = -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
                     ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1.0);
         } else {
@@ -543,8 +543,8 @@ public class RankTests {
 
         // One Newton step for polish
         // Î¦(x) via erf
-        double err = 0.5 * (1.0 + erf(x / FastMath.sqrt(2.0))) - p;
-        double pdf = FastMath.exp(-0.5 * x * x) / FastMath.sqrt(2.0 * FastMath.PI);
+        double err = 0.5 * (1.0 + erf(x / TMath.sqrt(2.0))) - p;
+        double pdf = TMath.exp(-0.5 * x * x) / TMath.sqrt(2.0 * TMath.PI);
         x -= err / pdf;
 
         return x;
@@ -568,7 +568,7 @@ public class RankTests {
         SimpleMatrix Sxy = block(Scond, xLoc, yLoc);
 
         int p = Sxx.getNumRows(), q = Syy.getNumRows();
-        int minpq = FastMath.min(p, q);
+        int minpq = TMath.min(p, q);
         if (r < 0 || r >= minpq) {
             throw new IllegalArgumentException("Rank r should be semIm 0 <= r <= minpq.");
         }
@@ -588,9 +588,9 @@ public class RankTests {
         // Defensive clamp + ensure we only use the first minpq values
         double sumLog = 0.0; // log Î = Î£ log(1 - Ï_i^2) over i = r..k-1
         for (int i = r; i < minpq; i++) {
-            double rho = FastMath.max(0.0, FastMath.min(1.0, s[i]));
-            double oneMinus = FastMath.max(1e-16, 1.0 - rho * rho);
-            sumLog += FastMath.log(oneMinus);
+            double rho = TMath.max(0.0, TMath.min(1.0, s[i]));
+            double oneMinus = TMath.max(1e-16, 1.0 - rho * rho);
+            sumLog += TMath.log(oneMinus);
         }
 
         // Bartlettâs approx: -c * log Î  ~  ÏÂ²_df
@@ -632,8 +632,8 @@ public class RankTests {
         SimpleMatrix V = new SimpleMatrix(n, n);
         SimpleMatrix DinvSqrt = new SimpleMatrix(n, n);
         for (int i = 0; i < n; i++) {
-            double eig = FastMath.max(evd.getEigenvalue(i).getReal(), MIN_EIG);
-            double invs = 1.0 / FastMath.sqrt(eig);
+            double eig = TMath.max(evd.getEigenvalue(i).getReal(), MIN_EIG);
+            double invs = 1.0 / TMath.sqrt(eig);
             DinvSqrt.set(i, i, invs);
             // eigenvectors are columns of V
             SimpleMatrix vi = evd.getEigenVector(i);
@@ -674,9 +674,9 @@ public class RankTests {
         for (int i = 0; i < n; i++) {
             d[i] = evd.getEigenvalue(i).getReal();
             vec[i] = evd.getEigenVector(i);
-            if (Double.isFinite(d[i])) dmax = FastMath.max(dmax, d[i]);
+            if (Double.isFinite(d[i])) dmax = TMath.max(dmax, d[i]);
         }
-        double tol = FastMath.max(MIN_EIG, relTol * dmax);
+        double tol = TMath.max(MIN_EIG, relTol * dmax);
 
         // build U_kept and D^{-1/2}_kept
         int r = 0;
@@ -693,7 +693,7 @@ public class RankTests {
         int k = 0;
         for (int i = 0; i < n; i++) {
             if (d[i] > tol) {
-                double invs = 1.0 / FastMath.sqrt(d[i]);
+                double invs = 1.0 / TMath.sqrt(d[i]);
                 Dinv.set(k, k, invs);
                 SimpleMatrix vi = vec[i];
                 for (int row = 0; row < n; row++) U.set(row, k, vi.get(row, 0));
@@ -897,17 +897,17 @@ public class RankTests {
 //        SimpleMatrix Wyy = invSqrtPSD(Syy);
 //        SimpleMatrix M = Wxx.mult(Sxy).mult(Wyy);
 //        var svd = M.svd();
-//        int m = FastMath.min(M.getNumRows(), M.getNumCols());
+//        int m = TMath.min(M.getNumRows(), M.getNumCols());
 //        double logLambda = 0.0;
 //        for (int i = 0; i < m; i++) {
-//            double rho = FastMath.max(0.0, FastMath.min(1.0, svd.getSingleValue(i)));
-//            logLambda += FastMath.log(FastMath.max(1e-16, 1.0 - rho * rho));
+//            double rho = TMath.max(0.0, TMath.min(1.0, svd.getSingleValue(i)));
+//            logLambda += TMath.log(TMath.max(1e-16, 1.0 - rho * rho));
 //        }
 //
 //        // Bartlett approx (use your standard scaling)
 //        int p = Sxx.getNumRows(), q = Syy.getNumRows();
 //        double kappa = (n - 1) - 0.5 * (p + q + 1);
-//        if (!Double.isFinite(kappa) || kappa < 1.0) kappa = FastMath.max(1.0, n - 1);
+//        if (!Double.isFinite(kappa) || kappa < 1.0) kappa = TMath.max(1.0, n - 1);
 //        double stat = -kappa * logLambda;
 //        int df = p * q;
 //        if (df <= 0) return 1.0;
@@ -928,12 +928,12 @@ public class RankTests {
         // M is (rX x rY)
         SimpleMatrix M = Wx.W.mult(Sxy).mult(Wy.W.transpose());
         var svd = M.svd();
-        int m = FastMath.min(M.getNumRows(), M.getNumCols());
+        int m = TMath.min(M.getNumRows(), M.getNumCols());
 
         double logLambda = 0.0;
         for (int i = 0; i < m; i++) {
-            double rho = FastMath.max(0.0, FastMath.min(1.0, svd.getSingleValue(i)));
-            logLambda += FastMath.log(FastMath.max(1e-16, 1.0 - rho * rho));
+            double rho = TMath.max(0.0, TMath.min(1.0, svd.getSingleValue(i)));
+            logLambda += TMath.log(TMath.max(1e-16, 1.0 - rho * rho));
         }
 
         int pEff = Wx.rank, qEff = Wy.rank;
@@ -941,7 +941,7 @@ public class RankTests {
         if (df <= 0) return 1.0;
 
         double kappa = (n - 1) - 0.5 * (pEff + qEff + 1);
-        if (!Double.isFinite(kappa) || kappa < 1.0) kappa = FastMath.max(1.0, n - 1);
+        if (!Double.isFinite(kappa) || kappa < 1.0) kappa = TMath.max(1.0, n - 1);
 
         double stat = -kappa * logLambda;
         return 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(stat);
@@ -971,12 +971,12 @@ public class RankTests {
         if (sv == null) return null;
 
         // build suffix logs once (sum_{j=i}^{end} log(1 - s_j^2))
-        int m = FastMath.min(xIdx.length, yIdx.length);
+        int m = TMath.min(xIdx.length, yIdx.length);
         double[] svals = Arrays.copyOf(sv.svals, m);
         double[] suffix = new double[m + 1];
         for (int i = m - 1; i >= 0; i--) {
-            double s = FastMath.max(0.0, FastMath.min(svals[i], 1.0 - 1e-12));
-            suffix[i] = suffix[i + 1] + FastMath.log(1.0 - s * s);
+            double s = TMath.max(0.0, TMath.min(svals[i], 1.0 - 1e-12));
+            suffix[i] = suffix[i + 1] + TMath.log(1.0 - s * s);
         }
 
         entry = new RccaEntry(svals, suffix);
@@ -1060,13 +1060,13 @@ public class RankTests {
             return null;
         }
 
-        int m = FastMath.min(C.length, D.length);
+        int m = TMath.min(C.length, D.length);
         List<Double> rho2 = new ArrayList<>(m);
-        for (int i = 0; i < FastMath.min(m, M.getNumRows()); i++) {
+        for (int i = 0; i < TMath.min(m, M.getNumRows()); i++) {
             double val = evd.getEigenvalue(i).getReal();
             if (Double.isNaN(val) || Double.isInfinite(val)) continue;
             // clamp to [0,1] for safety
-            val = FastMath.max(0.0, FastMath.min(1.0, val));
+            val = TMath.max(0.0, TMath.min(1.0, val));
             rho2.add(val);
         }
 
@@ -1082,15 +1082,15 @@ public class RankTests {
         // Convert to canonical correlations (not squared)
         double[] svals = new double[rho2.size()];
         for (int i = 0; i < rho2.size(); i++) {
-            svals[i] = FastMath.sqrt(rho2.get(i));
+            svals[i] = TMath.sqrt(rho2.get(i));
         }
 
         // Build suffix logs: suffixLogs[i] = Î£_{j=i}^{end} log(1 - s_j^2)
         double[] suffixLogs = new double[svals.length + 1];
         suffixLogs[svals.length] = 0.0; // last element is 0
         for (int i = svals.length - 1; i >= 0; i--) {
-            double oneMinus = FastMath.max(1e-16, 1.0 - svals[i] * svals[i]);
-            suffixLogs[i] = suffixLogs[i + 1] + FastMath.log(oneMinus);
+            double oneMinus = TMath.max(1e-16, 1.0 - svals[i] * svals[i]);
+            suffixLogs[i] = suffixLogs[i + 1] + TMath.log(oneMinus);
         }
 
         return new RccaEntry(svals, suffixLogs);
@@ -1185,7 +1185,7 @@ public class RankTests {
             this.y = yIdx.clone();
             Arrays.sort(this.y);
             // quantize regLambda to ~1e-12 resolution
-            this.regBits = Double.doubleToLongBits(FastMath.rint(regLambda * 1e20) / 1e20);
+            this.regBits = Double.doubleToLongBits(TMath.rint(regLambda * 1e20) / 1e20);
         }
 
         @Override

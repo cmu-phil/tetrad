@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.RankTests;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -218,7 +218,7 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
 
         double p = RankTests.pValueIndepConditioned(S, pads.xAdj, pads.yAdj, kp.zCols, n);
         if (Double.isNaN(p) || Double.isInfinite(p)) p = 1.0;
-        p = FastMath.max(0.0, FastMath.min(1.0, p));
+        p = TMath.max(0.0, TMath.min(1.0, p));
 
         pvalCache.put(key, p);
         return p;
@@ -251,7 +251,7 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
 //
 //            int need = X.length - Y.length;
 //            if (need > 0 && pool.cardinality() > 0) {
-//                int take = FastMath.min(need, pool.cardinality());
+//                int take = TMath.min(need, pool.cardinality());
 //                int[] Ypad = new int[Y.length + take];
 //                System.arraycopy(Y, 0, Ypad, 0, Y.length);
 //                int k = Y.length;
@@ -336,8 +336,8 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
         }
         Arrays.sort(zVars);
 
-        int a = FastMath.min(xiVar, yiVar);
-        int b = FastMath.max(xiVar, yiVar);
+        int a = TMath.min(xiVar, yiVar);
+        int b = TMath.max(xiVar, yiVar);
 
         // Embedded columns
         int[] xCols = allCols[xiVar];
@@ -380,7 +380,7 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
         private final LinkedHashMap<K, V> map;
 
         LruMap(int maxSize) {
-            this.maxSize = FastMath.max(16, maxSize);
+            this.maxSize = TMath.max(16, maxSize);
             this.map = new LinkedHashMap<>(1024, 0.75f, true);
         }
 
@@ -436,7 +436,7 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
             this.yVarMax = yVarMax;
             this.zVars = zVars.clone();
             this.n = n;
-            this.alphaBits = Double.doubleToLongBits(FastMath.rint(alpha * 1e12) / 1e12);
+            this.alphaBits = Double.doubleToLongBits(TMath.rint(alpha * 1e12) / 1e12);
             int h = 1;
             h = 31 * h + xVarMin;
             h = 31 * h + yVarMax;

@@ -24,7 +24,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 
@@ -133,9 +133,9 @@ class QQPlot {
         double mid = low + ((high - low) / 2.);
         //System.out.println("Mid: " + mid);
         double cdfResult = n.cumulativeProbability(mid);
-        //System.out.println("CDF: " + cdfResult + " Abs value of difference: " + FastMath.abs(cdfResult - quantile) + " Count: " + count);
+        //System.out.println("CDF: " + cdfResult + " Abs value of difference: " + TMath.abs(cdfResult - quantile) + " Count: " + count);
         if (
-                FastMath.abs(cdfResult - quantile) < precision || count > searchCap) {
+                TMath.abs(cdfResult - quantile) < precision || count > searchCap) {
             //System.out.println("Found result: " + mid);
             return mid;
         } else {
@@ -329,7 +329,7 @@ class QQPlot {
             sd = 1.0;
         } else {
             sd /= this.dataSet.getNumRows() - 1.0;
-            sd = FastMath.sqrt(sd);
+            sd = TMath.sqrt(sd);
         }
 
         //System.out.println("Mean: " + mean + " SD: " + sd + " Min: " + this.minData + " Max: " + this.maxData);

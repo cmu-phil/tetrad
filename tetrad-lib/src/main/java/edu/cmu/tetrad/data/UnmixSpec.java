@@ -20,7 +20,7 @@
 
 package edu.cmu.tetrad.data;
 
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serializable;
 
@@ -253,7 +253,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setKmin(int kmin) {
-        this.Kmin = FastMath.max(1, kmin);
+        this.Kmin = TMath.max(1, kmin);
         return this;
     }
 
@@ -274,7 +274,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setKmax(int kmax) {
-        this.Kmax = FastMath.max(1, kmax);
+        this.Kmax = TMath.max(1, kmax);
         return this;
     }
 
@@ -404,7 +404,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setSupersetTopM(int m) {
-        this.supersetTopM = FastMath.max(1, m);
+        this.supersetTopM = TMath.max(1, m);
         return this;
     }
 
@@ -484,7 +484,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setFullSigmaSafetyMargin(int m) {
-        this.fullSigmaSafetyMargin = FastMath.max(0, m);
+        this.fullSigmaSafetyMargin = TMath.max(0, m);
         return this;
     }
 
@@ -504,7 +504,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setKmeansRestarts(int r) {
-        this.kmeansRestarts = FastMath.max(1, r);
+        this.kmeansRestarts = TMath.max(1, r);
         return this;
     }
 
@@ -524,7 +524,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setEmMaxIters(int it) {
-        this.emMaxIters = FastMath.max(1, it);
+        this.emMaxIters = TMath.max(1, it);
         return this;
     }
 
@@ -544,7 +544,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setRidge(double r) {
-        this.ridge = FastMath.max(0.0, r);
+        this.ridge = TMath.max(0.0, r);
         return this;
     }
 
@@ -564,7 +564,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setShrinkage(double s) {
-        this.shrinkage = FastMath.max(0.0, FastMath.min(1.0, s));
+        this.shrinkage = TMath.max(0.0, TMath.min(1.0, s));
         return this;
     }
 
@@ -584,7 +584,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setAnnealSteps(int s) {
-        this.annealSteps = FastMath.max(0, s);
+        this.annealSteps = TMath.max(0, s);
         return this;
     }
 
@@ -604,7 +604,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setAnnealStartT(double t) {
-        this.annealStartT = FastMath.max(0.0, t);
+        this.annealStartT = TMath.max(0.0, t);
         return this;
     }
 

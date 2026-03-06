@@ -131,7 +131,7 @@ public class GaussianPower implements Distribution {
      */
     public double nextRandom() {
         double value = RandomUtil.getInstance().nextGaussian(0, 1);
-        double poweredValue = org.apache.commons.math3.util.FastMath.pow(org.apache.commons.math3.util.FastMath.abs(value), this.power);
+        double poweredValue = edu.cmu.tetrad.util.TMath.pow(edu.cmu.tetrad.util.TMath.abs(value), this.power);
         return (value >= 0) ? poweredValue : -poweredValue;
     }
 }

@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Pm;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.io.Serial;
@@ -424,7 +424,7 @@ public final class HybridCgModel {
                         cuts[t] = new double[0]; // all in one bin
                         continue;
                     }
-                    int m = FastMath.min(unique.length - 1, binsPerParent - 1);
+                    int m = TMath.min(unique.length - 1, binsPerParent - 1);
                     double[] cp = new double[m];
                     int step = (unique.length - 1) / m;
                     for (int k = 0; k < m; k++) {
@@ -441,12 +441,12 @@ public final class HybridCgModel {
                 double[] cp = new double[binsPerParent - 1];
                 for (int k = 1; k < binsPerParent; k++) {
                     double q = k / (double) binsPerParent;
-                    int idx = FastMath.min(vals.size() - 1, FastMath.max(0, (int) FastMath.round(q * (vals.size() - 1))));
+                    int idx = TMath.min(vals.size() - 1, TMath.max(0, (int) TMath.round(q * (vals.size() - 1))));
                     cp[k - 1] = vals.get(idx);
                 }
                 // ensure strictly increasing (nudge ties)
                 for (int k = 1; k < cp.length; k++) {
-                    if (!(cp[k] > cp[k - 1])) cp[k] = FastMath.nextUp(cp[k - 1]);
+                    if (!(cp[k] > cp[k - 1])) cp[k] = TMath.nextUp(cp[k - 1]);
                 }
                 cuts[t] = cp;
             }
@@ -959,7 +959,7 @@ public final class HybridCgModel {
                         for (int t = 0; t < cps[y].length; t++)
                             mean += getCoefficient(y, rowIndex, t) * contCols[cps[y][t]][r];
                         double var = getVariance(y, rowIndex);
-                        double sd = var > 0 ? FastMath.sqrt(var) : 0.0;
+                        double sd = var > 0 ? TMath.sqrt(var) : 0.0;
                         contCols[y][r] = mean + sd * rng.nextGaussian();
                     }
                 }
@@ -1004,7 +1004,7 @@ public final class HybridCgModel {
                 }
                 sb.append("  rows=").append(rows).append("\n");
 
-                int maxRowsToShow = FastMath.min(rows, 6);
+                int maxRowsToShow = TMath.min(rows, 6);
 
                 if (pm.isDiscrete(y)) {
                     int K = pm.getCardinality(y);
@@ -1246,7 +1246,7 @@ public final class HybridCgModel {
                     // Residual variance
                     SimpleMatrix resid = ym.minus(Xm.mult(beta));
                     double rss = resid.elementPower(2.0).elementSum();
-                    int df = FastMath.max(1, n - (m + 1));
+                    int df = TMath.max(1, n - (m + 1));
                     double s2 = rss / df;
                     im.setVariance(y, row, s2);
 

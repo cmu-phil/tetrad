@@ -32,7 +32,7 @@ import edu.cmu.tetrad.util.Parameters;
 import java.io.Serial;
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.tanh;
+import static edu.cmu.tetrad.util.TMath.tanh;
 
 /**
  * Estimated BIC score. The BIC is calculated as 2L - k ln N, so "higher is better."

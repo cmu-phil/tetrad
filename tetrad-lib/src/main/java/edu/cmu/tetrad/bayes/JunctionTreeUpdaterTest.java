@@ -5,7 +5,7 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -72,7 +72,7 @@ public final class JunctionTreeUpdaterTest {
 
     private static double distDiff(double[] a, double[] b) {
         double s = 0.0;
-        for (int i = 0; i < a.length; i++) s += FastMath.abs(a[i] - b[i]);
+        for (int i = 0; i < a.length; i++) s += TMath.abs(a[i] - b[i]);
         return s;
     }
 

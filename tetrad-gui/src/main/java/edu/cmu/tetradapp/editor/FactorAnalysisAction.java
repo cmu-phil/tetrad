@@ -34,7 +34,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -163,7 +163,7 @@ public class FactorAnalysisAction extends AbstractAction {
 
         for (int i = 0; i < rotatedSolution.getNumRows(); i++) {
             for (int j = 0; j < rotatedSolution.getNumColumns(); j++) {
-                if (FastMath.abs(rotatedSolution.get(i, j)) > threshold) {
+                if (TMath.abs(rotatedSolution.get(i, j)) > threshold) {
                     graph.addDirectedEdge(factors.get(j), observedVariables.get(i));
                     //HEY JOE -- rotatedSolution.get(i, j) is the edge coeficient
                 }
@@ -213,7 +213,7 @@ public class FactorAnalysisAction extends AbstractAction {
                 } else if (i > 0) {
                     double coefficient = matrix.get(i - 1, j - 1);
                     String token = !Double.isNaN(coefficient) ? nf.format(coefficient) : "Undefined";
-                    token += FastMath.abs(coefficient) > threshold ? "*" : " ";
+                    token += TMath.abs(coefficient) > threshold ? "*" : " ";
                     table.setToken(i, j, token);
                 }
             }

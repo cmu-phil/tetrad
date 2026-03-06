@@ -20,7 +20,7 @@
 
 package edu.cmu.tetrad.search.ntad_test;
 
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.apache.commons.math3.util.FastMath.sqrt;
+import static edu.cmu.tetrad.util.TMath.sqrt;
 
 /**
  * NtadTest is an abstract base class for implementing ntad-based statistical tests. A ntad specifies structural
@@ -211,7 +211,7 @@ public abstract class NtadTest {
      * @return a SimpleMatrix containing the sampled rows from the input matrix
      */
     protected SimpleMatrix sampleRows(SimpleMatrix matrix, double frac) {
-        int numSamples = (int) FastMath.ceil(frac * matrix.getNumRows());
+        int numSamples = (int) TMath.ceil(frac * matrix.getNumRows());
         List<Integer> sampledIndices = new ArrayList<>();
         Random rand = new Random();
 
@@ -278,7 +278,7 @@ public abstract class NtadTest {
 //        int[] a = ntad[0];
 //        int[] b = ntad[1];
 //
-//        int minpq = FastMath.min(a.length, b.length);
+//        int minpq = TMath.min(a.length, b.length);
 //
 //        for (int r = 0; r < a.length; r++) {
 //            if (r >= minpq) {

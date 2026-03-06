@@ -31,7 +31,7 @@ import edu.cmu.tetrad.search.utils.NRooks;
 import edu.cmu.tetrad.search.utils.PermutationMatrixPair;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
@@ -41,8 +41,8 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.sqrt;
+import static edu.cmu.tetrad.util.TMath.abs;
+import static edu.cmu.tetrad.util.TMath.sqrt;
 
 /**
  * ICA-LiNG-D (Lacerda, Spirtes, Ramsey, Hoyer, 2012).
@@ -325,7 +325,7 @@ public class IcaLingD {
     public List<Matrix> getScaledBHats(Matrix W) {
         // 1) Threshold W
         W = new Matrix(W);
-        double wt = FastMath.max(0.0, this.wThreshold);
+        double wt = TMath.max(0.0, this.wThreshold);
         for (int i = 0; i < W.getNumRows(); i++) {
             for (int j = 0; j < W.getNumColumns(); j++) {
                 if (abs(W.get(i, j)) < wt) W.set(i, j, 0.0);
@@ -347,7 +347,7 @@ public class IcaLingD {
 
         // 3) Build B̂ per permutation with robust scaling & threshold
         List<Matrix> results = new ArrayList<>();
-        double bt = FastMath.max(0.0, this.bThreshold);
+        double bt = TMath.max(0.0, this.bThreshold);
 
         for (PermutationMatrixPair pair : pairs) {
             Matrix bHat = IcaLingD.getScaledBHat(pair);

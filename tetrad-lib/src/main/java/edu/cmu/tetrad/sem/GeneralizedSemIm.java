@@ -38,7 +38,7 @@ import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.text.NumberFormat;
@@ -126,7 +126,7 @@ public class GeneralizedSemIm implements Im, Simulator {
             double value = semIm.getParamValue(paramObject);
 
             if (paramObject.getType() == ParamType.VAR) {
-                value = FastMath.sqrt(value);
+                value = TMath.sqrt(value);
             }
 
             setParameterValue(parameter, value);
@@ -738,8 +738,8 @@ public class GeneralizedSemIm implements Im, Simulator {
 
                     // If any of the variables hasn't converged or if any of the variable values has gone
                     // outside the bound (-1e6, 1e6), judge non-convergence and pick another random starting point.
-                    if (!(FastMath.abs(variableValues.get(node.getName()) - values[i]) < delta)) {
-                        if (!(FastMath.abs(variableValues.get(node.getName())) < 1e6)) {
+                    if (!(TMath.abs(variableValues.get(node.getName()) - values[i]) < delta)) {
+                        if (!(TMath.abs(variableValues.get(node.getName())) < 1e6)) {
                             if (count < 1000) {
                                 row--;
                                 continue ROW;
@@ -894,7 +894,7 @@ public class GeneralizedSemIm implements Im, Simulator {
                 boolean converged = true;
 
                 for (int j = 0; j < t1.length; j++) {
-                    if (FastMath.abs(t2[j] - t1[j]) > epsilon) {
+                    if (TMath.abs(t2[j] - t1[j]) > epsilon) {
                         converged = false;
                         break;
                     }
@@ -991,7 +991,7 @@ public class GeneralizedSemIm implements Im, Simulator {
             for (int i = 0; i < values.length; i++) {
                 Node node = variableNodes.get(i);
 
-                if (!(FastMath.abs(variableValues.get(node.getName()) - values[i]) < delta)) {
+                if (!(TMath.abs(variableValues.get(node.getName()) - values[i]) < delta)) {
                     allInRange = false;
                     break;
                 }

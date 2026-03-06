@@ -29,13 +29,13 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.abs;
+import static edu.cmu.tetrad.util.TMath.abs;
 
 //import edu.cmu.tetrad.sem.MimBuildEstimator;
 
@@ -494,7 +494,7 @@ public final class TetradTestContinuous implements TetradTest {
         double product3 = (n + 1) / ((n - 1) * (n - 2)) * product1 * product2;
         double determinant = determinant44(this.bufferMatrix);
         double var = (product3 - determinant / (n - 2));
-        return FastMath.sqrt(abs(var));
+        return TMath.sqrt(abs(var));
     }
 
     private double determinant44(Matrix m) {

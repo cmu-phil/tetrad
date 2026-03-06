@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.util;
 
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 /**
  * <p>Implements a number of important functions from probability and
@@ -275,12 +275,12 @@ public class ProbUtils {
 
         x = y;
 
-        if (FastMath.abs(x) > 15.) {
+        if (TMath.abs(x) > 15.) {
             dcphi = 0.;
         } else {
-            j = (int) FastMath.floor(FastMath.abs(x) * 16. + .5);
+            j = (int) TMath.floor(TMath.abs(x) * 16. + .5);
             z = j * .0625;
-            h = FastMath.abs(x) - z;
+            h = TMath.abs(x) - z;
             f = ProbUtils.r[j];
             f1 = f * z - 1;
             f2 = f + z * f1;
@@ -290,7 +290,7 @@ public class ProbUtils {
             dcphi = f + h * (f1 * 120. +
                              h * (f2 * 60. + h * (f3 * 20. + h * (f4 * 5. + h * f5)))) /
                         120.;
-            dcphi = dcphi * .3989422804014326779 * FastMath.exp(x * -.5 * x);
+            dcphi = dcphi * .3989422804014326779 * TMath.exp(x * -.5 * x);
         }
 
         if (x < 0.) {
@@ -339,12 +339,12 @@ public class ProbUtils {
         int j;
         y = x = xx;
         tmp = x + 5.5;
-        tmp -= (x + 0.5) * FastMath.log(tmp);
+        tmp -= (x + 0.5) * TMath.log(tmp);
         ser = 1.000000000190015;
         for (j = 0; j <= 5; j++) {
             ser += ProbUtils.cof[j] / ++y;
         }
-        return -tmp + FastMath.log(2.5066282746310005 * ser / x);
+        return -tmp + TMath.log(2.5066282746310005 * ser / x);
     }
 
     /**
@@ -425,7 +425,7 @@ public class ProbUtils {
         }
 
         eps = ProbUtils.macheps();
-        alneps = FastMath.log(eps);
+        alneps = TMath.log(eps);
         sml = eps;
         alnsml = alneps;
         y = x;
@@ -442,10 +442,10 @@ public class ProbUtils {
 
         if ((p + q) * y / (p + 1.0) < eps) {
             dbetai = 0.0;
-            xb = p * FastMath.log(FastMath.max(y, sml)) - FastMath.log(p) - ProbUtils.logbeta(p, q);
+            xb = p * TMath.log(TMath.max(y, sml)) - TMath.log(p) - ProbUtils.logbeta(p, q);
 
             if ((xb > alnsml) && (y != 0.0)) {
-                dbetai = FastMath.exp(xb);
+                dbetai = TMath.exp(xb);
             }
 
             if ((y != x) || (p != pin)) {
@@ -457,21 +457,21 @@ public class ProbUtils {
             // evaluate the infinite sum first.  term will equal
             // y**/pbeta(ps,p) * (1.-ps)-sub-i * y**i / fac(i) .
             //
-            ps = q - FastMath.floor(q);
+            ps = q - TMath.floor(q);
 
             if (ps == 0.0) {
                 ps = 1.0;
             }
 
-            xb = p * FastMath.log(y) - ProbUtils.logbeta(ps, p) - FastMath.log(p);
+            xb = p * TMath.log(y) - ProbUtils.logbeta(ps, p) - TMath.log(p);
             dbetai = 0.0;
 
             if (xb >= alnsml) {
-                dbetai = FastMath.exp(xb);
+                dbetai = TMath.exp(xb);
                 term = dbetai * p;
 
                 if (ps != 1.0) {
-                    n = (int) FastMath.max(alneps / FastMath.log(y), 4.0);
+                    n = (int) TMath.max(alneps / TMath.log(y), 4.0);
 
                     for (i = 1; i <= n; i++) {
                         xi = i;
@@ -485,10 +485,10 @@ public class ProbUtils {
             // now evaluate the finite sum, maybe.
             //
             if (q > 1.0) {
-                xb = p * FastMath.log(y) + q * FastMath.log(1.0 - y) - ProbUtils.logbeta(p, q) -
-                     FastMath.log(q);
-                ib = (int) FastMath.max(xb / alnsml, 0.0);
-                term = FastMath.exp(xb - ((double) ib) * alnsml);
+                xb = p * TMath.log(y) + q * TMath.log(1.0 - y) - ProbUtils.logbeta(p, q) -
+                     TMath.log(q);
+                ib = (int) TMath.max(xb / alnsml, 0.0);
+                term = TMath.exp(xb - ((double) ib) * alnsml);
                 c = 1.0 / (1.0 - y);
                 p1 = q * c / (p + q - 1.0);
                 finsum = 0.0;
@@ -526,7 +526,7 @@ public class ProbUtils {
                 dbetai = 1.0 - dbetai;
             }
 
-            dbetai = FastMath.max(FastMath.min(dbetai, 1.0), 0.0);
+            dbetai = TMath.max(TMath.min(dbetai, 1.0), 0.0);
         }
 
         return dbetai;
@@ -571,7 +571,7 @@ public class ProbUtils {
      * @return a double
      */
     public static double cauchyCdf(double x) {
-        return (FastMath.atan(x) + FastMath.PI / 2) / FastMath.PI;
+        return (TMath.atan(x) + TMath.PI / 2) / TMath.PI;
     }
 
     /**
@@ -596,8 +596,8 @@ public class ProbUtils {
         if ((x <= 0.0) || (a <= 0.0)) {
             return 0.0;
         } else {
-            sx = FastMath.sqrt(a) * 3.0 *
-                 (FastMath.pow(x / a, 1.0 / 3.0) + 1.0 / (a * 9.0) - 1.0);
+            sx = TMath.sqrt(a) * 3.0 *
+                 (TMath.pow(x / a, 1.0 / 3.0) + 1.0 / (a * 9.0) - 1.0);
 
             return ProbUtils.normalCdf(sx);
         }
@@ -624,12 +624,12 @@ public class ProbUtils {
                 del *= x / ap;
                 sum += del;
 
-                if (FastMath.abs(del) < ProbUtils.EPSILON) {
+                if (TMath.abs(del) < ProbUtils.EPSILON) {
                     done = true;
                 }
             }
 
-            p = sum * FastMath.exp(-x + a * FastMath.log(x) - gln);
+            p = sum * TMath.exp(-x + a * TMath.log(x) - gln);
         }
 
         return p;
@@ -660,8 +660,8 @@ public class ProbUtils {
                 fac = 1.0 / a1;
                 g = b1 * fac;
 
-                if (FastMath.abs((g - gold) / g) < ProbUtils.EPSILON) {
-                    p = FastMath.exp(-x + a * FastMath.log(x) - gln) * g;
+                if (TMath.abs((g - gold) / g) < ProbUtils.EPSILON) {
+                    p = TMath.exp(-x + a * TMath.log(x) - gln) * g;
                     done = true;
                 }
 
@@ -760,7 +760,7 @@ public class ProbUtils {
         y = t / n;
         b = 1.0 + y;
 
-        if ((n > FastMath.floor(n)) || ((n >= 20.0) && (t < n)) || (n > 20.0)) {
+        if ((n > TMath.floor(n)) || ((n >= 20.0) && (t < n)) || (n > 20.0)) {
             if ((n < 2.0) && (n != 1.0)) {
 
                 /* beta integral aproximation for small df */
@@ -768,7 +768,7 @@ public class ProbUtils {
                 double db = 0.5 * n;
                 double dx;
                 double dp;
-                //                int ia = 0, ib = (int) FastMath.floor(db);
+                //                int ia = 0, ib = (int) TMath.floor(db);
 
                 dx = db / (db + da * t);
                 dp = ProbUtils.betaCdf(dx, db, da);
@@ -777,7 +777,7 @@ public class ProbUtils {
 
                 /* asymptotic series for large or non-integer df */
                 if (y > ProbUtils.TOL) {
-                    y = FastMath.log(b);
+                    y = TMath.log(b);
                 }
 
                 a = n - 0.5;
@@ -785,7 +785,7 @@ public class ProbUtils {
                 y = a * y;
                 y = (((((-0.4 * y - 3.3) * y - 24.0) * y - 85.5) /
                       (0.8 * y * y + 100.0 + b) + y + 3.0) / b + 1.0) *
-                    FastMath.sqrt(y);
+                    TMath.sqrt(y);
                 y = -1.0 * y;
                 cdf = ProbUtils.normalCdf(y);
 
@@ -797,17 +797,17 @@ public class ProbUtils {
 
             /* nested summation of cosine series */
             if ((n < 20.0) && (t < 4.0)) {
-                a = FastMath.sqrt(y);
+                a = TMath.sqrt(y);
                 y = a;
 
                 if (n == 1.0) {
                     a = 0.0;
                 }
             } else {
-                a = FastMath.sqrt(b);
+                a = TMath.sqrt(b);
                 y = a * n;
 
-                for (j = 2; FastMath.abs(a - z) > ProbUtils.TOL; j += 2.0) {
+                for (j = 2; TMath.abs(a - z) > ProbUtils.TOL; j += 2.0) {
                     z = a;
                     y = (y * (j - 1)) / (b * j);
                     a = a + y / (n + j);
@@ -823,8 +823,8 @@ public class ProbUtils {
                 a = ((n - 1.0) / (b * n)) * a + y;
             }
 
-            a = (FastMath.abs(n) < ProbUtils.TOL) ?
-                    a / FastMath.sqrt(b) : ProbUtils.TWOVRPI * (FastMath.atan(y) + a / b);
+            a = (TMath.abs(n) < ProbUtils.TOL) ?
+                    a / TMath.sqrt(b) : ProbUtils.TWOVRPI * (TMath.atan(y) + a / b);
             cdf = z - a;
 
             if (x > 0.0) {
@@ -906,7 +906,7 @@ public class ProbUtils {
         }
 
         // calculate the initial approximation
-        r = FastMath.sqrt(-FastMath.log(a * a));
+        r = TMath.sqrt(-TMath.log(a * a));
         y = r - (r * .27061 + 2.30753) / (ProbUtils.one + (r * .04481 + .99229) * r);
 
         if ((pp > ProbUtils.one) && (qq > ProbUtils.one)) {
@@ -914,26 +914,26 @@ public class ProbUtils {
             s = ProbUtils.one / (pp + pp - ProbUtils.one);
             t = ProbUtils.one / (qq + qq - ProbUtils.one);
             h = ProbUtils.two / (s + t);
-            d_1 = y * FastMath.sqrt(h + r) / h;
+            d_1 = y * TMath.sqrt(h + r) / h;
             d_2 = (t - s) * (r + ProbUtils.five / ProbUtils.six - ProbUtils.two / (ProbUtils.three * h));
             w = d_1 - d_2;
-            ret_val = pp / (pp + qq * FastMath.exp(w + w));
+            ret_val = pp / (pp + qq * TMath.exp(w + w));
         } else {
             r = qq + qq;
             t = ProbUtils.one / (qq * 9.);
 
             // Computing 3rd power
-            d_1 = ProbUtils.one - t + y * FastMath.sqrt(t);
+            d_1 = ProbUtils.one - t + y * TMath.sqrt(t);
             t = r * (d_1 * d_1 * d_1);
 
             if (t <= ProbUtils.zero) {
                 ret_val =
-                        ProbUtils.one - FastMath.exp((FastMath.log((ProbUtils.one - a) * qq) + beta) / qq);
+                        ProbUtils.one - TMath.exp((TMath.log((ProbUtils.one - a) * qq) + beta) / qq);
             } else {
                 t = (ProbUtils.four * pp + r - ProbUtils.two) / t;
 
                 if (t <= ProbUtils.one) {
-                    ret_val = FastMath.exp((FastMath.log(a * pp) + beta) / pp);
+                    ret_val = TMath.exp((TMath.log(a * pp) + beta) / pp);
                 } else {
                     ret_val = ProbUtils.one - ProbUtils.two / (t + ProbUtils.one);
                 }
@@ -961,16 +961,16 @@ public class ProbUtils {
 
         d_1 = -5.0 / (pp * pp) - 1.0 / (a * a) - 13.0;
         iex = (ProbUtils.sae > d_1) ? (int) ProbUtils.sae : (int) d_1;
-        acu = FastMath.pow(10.0, iex);
+        acu = TMath.pow(10.0, iex);
 
         do {
             y = ProbUtils.betaCdf(ret_val, pp, qq);
             xin = ret_val;
-            y = (y - a) * FastMath.exp(
-                    beta + r * FastMath.log(xin) + t * FastMath.log(ProbUtils.one - xin));
+            y = (y - a) * TMath.exp(
+                    beta + r * TMath.log(xin) + t * TMath.log(ProbUtils.one - xin));
 
             if (y * yprev <= ProbUtils.zero) {
-                prev = FastMath.max(sq, fpu);
+                prev = TMath.max(sq, fpu);
             }
 
             g = ProbUtils.one;
@@ -1043,15 +1043,15 @@ public class ProbUtils {
         }
 
         m = n * p;
-        s = FastMath.sqrt(n * p * (1 - p));
-        del = FastMath.max(1, (int) (0.2 * s));
+        s = TMath.sqrt(n * p * (1 - p));
+        del = TMath.max(1, (int) (0.2 * s));
         k = (int) (m + s * ProbUtils.normalQuantile(x));
         k1 = k;
         k2 = k;
 
         do {
             k1 = k1 - del;
-            k1 = FastMath.max(0, k1);
+            k1 = TMath.max(0, k1);
             p1 = ProbUtils.binomialCdf(k1, n, p);
         } while ((k1 > 0) && (p1 > x));
 
@@ -1061,7 +1061,7 @@ public class ProbUtils {
 
         do {
             k2 = k2 + del;
-            k2 = FastMath.min(n, k2);
+            k2 = TMath.min(n, k2);
             p2 = ProbUtils.binomialCdf(k2, n, p);
         } while ((k2 < n) && (p2 < x));
 
@@ -1092,7 +1092,7 @@ public class ProbUtils {
      * @return a double
      */
     public static double cauchyQuantile(double x) {
-        return FastMath.tan(FastMath.PI * (x - 0.5));
+        return TMath.tan(TMath.PI * (x - 0.5));
     }
 
     /**
@@ -1135,10 +1135,10 @@ public class ProbUtils {
         xx = ProbUtils.half * v;
         c = xx - ProbUtils.one;
 
-        if (v < -ProbUtils.c5 * FastMath.log(p)) {
+        if (v < -ProbUtils.c5 * TMath.log(p)) {
 
             // starting approximation for small chi-squared
-            ch = FastMath.pow(p * xx * FastMath.exp(g + xx * ProbUtils.aa), ProbUtils.one / xx);
+            ch = TMath.pow(p * xx * TMath.exp(g + xx * ProbUtils.aa), ProbUtils.one / xx);
 
             if (ch < ProbUtils.e) {
                 ret_val = ch;
@@ -1155,18 +1155,18 @@ public class ProbUtils {
             p1 = ProbUtils.c2 / v;
 
             // Computing 3rd power
-            d_1 = x * FastMath.sqrt(p1) + ProbUtils.one - p1;
+            d_1 = x * TMath.sqrt(p1) + ProbUtils.one - p1;
             ch = v * (d_1 * d_1 * d_1);
 
             // starting approximation for p tending to 1
             if (ch > ProbUtils.c6 * v + ProbUtils.six) {
-                ch = -ProbUtils.two * (FastMath.log(ProbUtils.one - p) - c * FastMath.log(ProbUtils.half * ch) + g);
+                ch = -ProbUtils.two * (TMath.log(ProbUtils.one - p) - c * TMath.log(ProbUtils.half * ch) + g);
             }
         } else {
 
             // starting approximation for v less than or equal to 0.32
             ch = ProbUtils.c4;
-            a = FastMath.log(ProbUtils.one - p);
+            a = TMath.log(ProbUtils.one - p);
 
             do {
                 q = ch;
@@ -1175,9 +1175,9 @@ public class ProbUtils {
                 d_1 = -ProbUtils.half + (ProbUtils.c7 + ProbUtils.two * ch) / p1;
                 d_2 = (ProbUtils.c9 + ch * (ProbUtils.c10 + ProbUtils.three * ch)) / p2;
                 t = d_1 - d_2;
-                ch -= (ProbUtils.one - FastMath.exp(a + g + ProbUtils.half * ch + c * ProbUtils.aa) * p2 / p1) /
+                ch -= (ProbUtils.one - TMath.exp(a + g + ProbUtils.half * ch + c * ProbUtils.aa) * p2 / p1) /
                       t;
-            } while (FastMath.abs(q / ch - ProbUtils.one) > ProbUtils.c1);
+            } while (TMath.abs(q / ch - ProbUtils.one) > ProbUtils.c1);
         }
 
         do {
@@ -1186,7 +1186,7 @@ public class ProbUtils {
             q = ch;
             p1 = ProbUtils.half * ch;
             p2 = p - ProbUtils.gammaCdf(xx, p1);
-            t = p2 * FastMath.exp(xx * ProbUtils.aa + g + p1 - c * FastMath.log(ch));
+            t = p2 * TMath.exp(xx * ProbUtils.aa + g + p1 - c * TMath.log(ch));
             b = t / ch;
             a = ProbUtils.half * t - b * c;
             s1 = (ProbUtils.c19 +
@@ -1201,7 +1201,7 @@ public class ProbUtils {
             d_1 = (s3 - b * (s4 - b * (s5 - b * s6)));
             d_1 = (s1 - b * (s2 - b * d_1));
             ch += t * (ProbUtils.one + ProbUtils.half * t * s1 - b * c * d_1);
-        } while (FastMath.abs(q / ch - ProbUtils.one) > ProbUtils.e);
+        } while (TMath.abs(q / ch - ProbUtils.one) > ProbUtils.e);
 
         ret_val = ch;
 
@@ -1262,7 +1262,7 @@ public class ProbUtils {
 
         q = p - ProbUtils.half;
 
-        if (FastMath.abs(q) <= ProbUtils.split) {
+        if (TMath.abs(q) <= ProbUtils.split) {
             r = q * q;
             ppn = q * (((ProbUtils.a3 * r + ProbUtils.a2) * r + ProbUtils.a1) * r + ProbUtils.a0) /
                   ((((ProbUtils.b4 * r + ProbUtils.b3) * r + ProbUtils.b2) * r + ProbUtils.b1) * r + ProbUtils.one);
@@ -1273,7 +1273,7 @@ public class ProbUtils {
                 r = ProbUtils.one - p;
             }
 
-            r = FastMath.sqrt(-FastMath.log(r));
+            r = TMath.sqrt(-TMath.log(r));
             ppn = (((ProbUtils.cc3 * r + ProbUtils.cc2) * r + ProbUtils.cc1) * r + ProbUtils.cc0) /
                   ((ProbUtils.d2 * r + ProbUtils.d1) * r + ProbUtils.one);
 
@@ -1314,15 +1314,15 @@ public class ProbUtils {
         }
 
         m = l;
-        s = FastMath.sqrt(l);
-        del = FastMath.max(1, (int) (0.2 * s));
+        s = TMath.sqrt(l);
+        del = TMath.max(1, (int) (0.2 * s));
         k = (int) (m + s * ProbUtils.normalQuantile(x));
         k1 = k;
         k2 = k;
 
         do {
             k1 = k1 - del;
-            k1 = FastMath.max(0, k1);
+            k1 = TMath.max(0, k1);
             p1 = ProbUtils.poissonCdf(k1, l);
         } while ((k1 > 0) && (p1 > x));
 
@@ -1374,23 +1374,23 @@ public class ProbUtils {
 
         if (n <= 3.0) {
             if (n == 1) {
-                sq = FastMath.tan(ProbUtils.HALF_PI * (1.0 - p));
+                sq = TMath.tan(ProbUtils.HALF_PI * (1.0 - p));
             } else if (n == 2.0) {
-                sq = FastMath.sqrt(2.0 / (p * (2.0 - p)) - 2.0);
+                sq = TMath.sqrt(2.0 / (p * (2.0 - p)) - 2.0);
             } else {
                 sq = ProbUtils.betaQuantile(p, 0.5 * n, 0.5);
 
                 if (sq != 0.0) {
-                    sq = FastMath.sqrt(n / sq - n);
+                    sq = TMath.sqrt(n / sq - n);
                 }
             }
         } else {
             a = 1.0 / (n - 0.5);
             b = 48.0 / (a * a);
             c = ((20700.0 * a / b - 98.0) * a - 16) * a + 96.36;
-            d = ((94.5 / (b + c) - 3.0) / b + 1.0) * FastMath.sqrt(a * ProbUtils.HALF_PI) * n;
+            d = ((94.5 / (b + c) - 3.0) / b + 1.0) * TMath.sqrt(a * ProbUtils.HALF_PI) * n;
             x = d * p;
-            y = FastMath.pow(x, 2.0 / n);
+            y = TMath.pow(x, 2.0 / n);
 
             if (y > 0.05 + a) {
 
@@ -1406,14 +1406,14 @@ public class ProbUtils {
                 y = (((((0.4 * y + 6.3) * y + 36.0) * y + 94.5) / c - y - 3.0) /
                      b + 1.0) * x;
                 y = a * y * y;
-                y = (y > .002) ? FastMath.exp(y) - 1.0 : 0.5 * y * y + y;
+                y = (y > .002) ? TMath.exp(y) - 1.0 : 0.5 * y * y + y;
             } else {
                 y = ((1.0 / (((n + 6.0) / (n * y) - 0.089 * d - 0.822) *
                              (n + 2.0) * 3.0) + 0.5 / (n + 4.0)) * y - 1.0) *
                     (n + 1.0) / (n + 2.0) + 1.0 / y;
             }
 
-            sq = FastMath.sqrt(n * y);
+            sq = TMath.sqrt(n * y);
         }
 
         // decode based on tail
@@ -1437,7 +1437,7 @@ public class ProbUtils {
         if ((x <= 0.0) || (x >= 1.0)) {
             return 0.0;
         } else {
-            return (FastMath.exp(FastMath.log(x) * (a - 1) + FastMath.log(1 - x) * (b - 1) -
+            return (TMath.exp(TMath.log(x) * (a - 1) + TMath.log(1 - x) * (b - 1) -
                                  ProbUtils.logbeta(a, b)));
         }
     }
@@ -1459,9 +1459,9 @@ public class ProbUtils {
         } else if ((k < 0) || (k > n)) {
             return 0.0;
         } else {
-            return (FastMath.exp(ProbUtils.lngamma(n + 1.0) - ProbUtils.lngamma(k + 1.0) -
-                                 ProbUtils.lngamma(n - k + 1.0) + k * FastMath.log(p) +
-                                 (n - k) * FastMath.log(1.0 - p)));
+            return (TMath.exp(ProbUtils.lngamma(n + 1.0) - ProbUtils.lngamma(k + 1.0) -
+                                 ProbUtils.lngamma(n - k + 1.0) + k * TMath.log(p) +
+                                 (n - k) * TMath.log(1.0 - p)));
         }
     }
 
@@ -1499,9 +1499,9 @@ public class ProbUtils {
         if (x <= 0.0) {
             return 0.0;
         } else {
-            return (FastMath.exp(0.5 * a * FastMath.log(a) + 0.5 * b * FastMath.log(b) +
-                                 (0.5 * a - 1.0) * FastMath.log(x) - ProbUtils.logbeta(0.5 * a, 0.5 * b) -
-                                 0.5 * (a + b) * FastMath.log(b + a * x)));
+            return (TMath.exp(0.5 * a * TMath.log(a) + 0.5 * b * TMath.log(b) +
+                                 (0.5 * a - 1.0) * TMath.log(x) - ProbUtils.logbeta(0.5 * a, 0.5 * b) -
+                                 0.5 * (a + b) * TMath.log(b + a * x)));
         }
     }
 
@@ -1517,7 +1517,7 @@ public class ProbUtils {
         if (x <= 0.0) {
             return 0.0;
         } else {
-            return FastMath.exp(FastMath.log(x) * (a - 1) - x - ProbUtils.lngamma(a));
+            return TMath.exp(TMath.log(x) * (a - 1) - x - ProbUtils.lngamma(a));
         }
     }
 
@@ -1528,7 +1528,7 @@ public class ProbUtils {
      * @return a double
      */
     public static double normalPdf(double x) {
-        return (FastMath.exp(-0.5 * x * x) / FastMath.sqrt(2.0 * FastMath.PI));
+        return (TMath.exp(-0.5 * x * x) / TMath.sqrt(2.0 * TMath.PI));
     }
 
     /**
@@ -1545,7 +1545,7 @@ public class ProbUtils {
         } else if (k < 0) {
             return 0.0;
         } else {
-            return (FastMath.exp(k * FastMath.log(lambda) - lambda - ProbUtils.lngamma(k + 1.0)));
+            return (TMath.exp(k * TMath.log(lambda) - lambda - ProbUtils.lngamma(k + 1.0)));
         }
     }
 
@@ -1559,9 +1559,9 @@ public class ProbUtils {
     @SuppressWarnings("SameParameterValue")
     public static double tPdf(double x, double a) {
 
-        return ((1.0 / FastMath.sqrt(a * FastMath.PI)) * FastMath.exp(ProbUtils.lngamma(
+        return ((1.0 / TMath.sqrt(a * TMath.PI)) * TMath.exp(ProbUtils.lngamma(
                 0.5 * (a + 1)) - ProbUtils.lngamma(0.5 * a) -
-                                                                      0.5 * (a + 1) * FastMath.log(1.0 + x * x / a)));
+                                                                      0.5 * (a + 1) * TMath.log(1.0 + x * x / a)));
     }
 
     /**
@@ -1587,7 +1587,7 @@ public class ProbUtils {
         ProbUtils.seedj ^= (ProbUtils.seedj >> 17) & ProbUtils.MASK;
         ProbUtils.seedj ^= (ProbUtils.seedj << 5) & ProbUtils.MASK;
 
-        return ((double) ((ProbUtils.seedi + ProbUtils.seedj) & ProbUtils.MASK) * FastMath.pow(2.0, -32.0));
+        return ((double) ((ProbUtils.seedi + ProbUtils.seedj) & ProbUtils.MASK) * TMath.pow(2.0, -32.0));
     }
 
     /**
@@ -1617,7 +1617,7 @@ public class ProbUtils {
         int k;
 
         if (xm < 12.0) {
-            expxm = FastMath.exp(-xm);
+            expxm = TMath.exp(-xm);
             k = -1;
             t = 1.0;
 
@@ -1627,18 +1627,18 @@ public class ProbUtils {
                 t *= ProbUtils.uniformRand();
             } while (t > expxm);
         } else {
-            sqrt2xm = FastMath.sqrt(2.0 * xm);
-            logxm = FastMath.log(xm);
+            sqrt2xm = TMath.sqrt(2.0 * xm);
+            logxm = TMath.log(xm);
             g = xm * logxm - ProbUtils.lngamma(xm + 1.0);
 
             do {
                 do {
-                    y = FastMath.tan(FastMath.PI * ProbUtils.uniformRand());
-                    k = (int) FastMath.floor(sqrt2xm * y + xm);
+                    y = TMath.tan(TMath.PI * ProbUtils.uniformRand());
+                    k = (int) TMath.floor(sqrt2xm * y + xm);
                 } while (k < 0);
 
                 t = 0.9 * (1.0 + y * y) *
-                    FastMath.exp(k * logxm - ProbUtils.lngamma((double) k + 1.0) - g);
+                    TMath.exp(k * logxm - ProbUtils.lngamma((double) k + 1.0) - g);
             } while (ProbUtils.uniformRand() > t);
         }
 
@@ -1683,7 +1683,7 @@ public class ProbUtils {
                 }
             }
         } else if (am < 1.0) {
-            g = FastMath.exp(-am);
+            g = TMath.exp(-am);
             t = 1.0;
             k = -1;
 
@@ -1700,18 +1700,18 @@ public class ProbUtils {
             en = n;
             g = ProbUtils.lngamma(en + 1.0);
             pc = 1.0 - p;
-            plog = FastMath.log(p);
-            pclog = FastMath.log(pc);
-            sq = FastMath.sqrt(2.0 * am * pc);
+            plog = TMath.log(p);
+            pclog = TMath.log(pc);
+            sq = TMath.sqrt(2.0 * am * pc);
 
             do {
                 do {
-                    y = FastMath.tan(FastMath.PI * ProbUtils.uniformRand());
+                    y = TMath.tan(TMath.PI * ProbUtils.uniformRand());
                     em = sq * y + am;
                 } while ((em < 0.0) || (em >= en + 1.0));
 
-                em = FastMath.floor(em);
-                t = 1.2 * sq * (1.0 + y * y) * FastMath.exp(g - ProbUtils.lngamma(em + 1.0) -
+                em = TMath.floor(em);
+                t = 1.2 * sq * (1.0 + y * y) * TMath.exp(g - ProbUtils.lngamma(em + 1.0) -
                                                             ProbUtils.lngamma(en - em + 1.0) + em * plog + (en - em) * pclog);
             } while (ProbUtils.uniformRand() > t);
 
@@ -1739,7 +1739,7 @@ public class ProbUtils {
         double u1;
         double v;
 
-        c = FastMath.sqrt(2.0 / FastMath.exp(1.0));
+        c = TMath.sqrt(2.0 / TMath.exp(1.0));
 
         /* ratio of uniforms with linear pretest */
         do {
@@ -1748,7 +1748,7 @@ public class ProbUtils {
             v = c * (2 * u1 - 1);
             x = v / u;
             y = x * x / 4.0;
-        } while ((y > (1 - u)) && (y > -FastMath.log(u)));
+        } while ((y > (1 - u)) && (y > -TMath.log(u)));
 
         return (x);
     }
@@ -1796,7 +1796,7 @@ public class ProbUtils {
         double c5;
         boolean done;
 
-        e = FastMath.exp(1.0);
+        e = TMath.exp(1.0);
 
         if (a < 1.0) {
 
@@ -1810,21 +1810,21 @@ public class ProbUtils {
                 v = c * u0;
 
                 if (v <= 1.0) {
-                    x = FastMath.exp(FastMath.log(v) / a);
+                    x = TMath.exp(TMath.log(v) / a);
 
-                    if (u1 <= FastMath.exp(-x)) {
+                    if (u1 <= TMath.exp(-x)) {
                         done = true;
                     }
                 } else {
-                    x = -FastMath.log((c - v) / a);
+                    x = -TMath.log((c - v) / a);
 
-                    if ((x > 0.0) && (u1 < FastMath.exp((a - 1.0) * FastMath.log(x)))) {
+                    if ((x > 0.0) && (u1 < TMath.exp((a - 1.0) * TMath.log(x)))) {
                         done = true;
                     }
                 }
             } while (!done);
         } else if (a == 1.0) {
-            x = -FastMath.log(ProbUtils.uniformRand());
+            x = -TMath.log(ProbUtils.uniformRand());
         } else {
 
             /* Cheng and Feast algorithm */
@@ -1832,7 +1832,7 @@ public class ProbUtils {
             c2 = (a - 1.0 / (6.0 * a)) / c1;
             c3 = 2.0 / c1;
             c4 = 2.0 / (a - 1.0) + 2.0;
-            c5 = 1.0 / FastMath.sqrt(a);
+            c5 = 1.0 / TMath.sqrt(a);
 
             do {
                 do {
@@ -1846,7 +1846,7 @@ public class ProbUtils {
 
                 w = c2 * u2 / u1;
             } while ((c3 * u1 + w + 1.0 / w) > c4 &&
-                     (c3 * FastMath.log(u1) - FastMath.log(w) + w) > 1.0);
+                     (c3 * TMath.log(u1) - TMath.log(w) + w) > 1.0);
 
             x = c1 * w;
         }
@@ -1871,7 +1871,7 @@ public class ProbUtils {
      * @return a double
      */
     public static double tRand(double df) {
-        return (ProbUtils.normalRand() / FastMath.sqrt(ProbUtils.chisqRand(df) / df));
+        return (ProbUtils.normalRand() / TMath.sqrt(ProbUtils.chisqRand(df) / df));
     }
 
     /**
@@ -1946,7 +1946,7 @@ public class ProbUtils {
         double wk = 0;
         int is = 0;
         int myflag = 1;
-        final double con = (2.0 * FastMath.PI / 2.0) * 0.0000000001;// 10.0e-10;
+        final double con = (2.0 * TMath.PI / 2.0) * 0.0000000001;// 10.0e-10;
         temp = -ah;
         gh = ProbUtils.normalCdf(temp);
         gh = gh / 2.0;
@@ -1963,10 +1963,10 @@ public class ProbUtils {
             rr = 1 - r * r;
             assert rr >= 0;
             if (rr != 0) {
-                sqr = FastMath.sqrt(rr);
+                sqr = TMath.sqrt(rr);
                 if (ah == 0) {
                     if (ak == 0) {
-                        b = FastMath.atan(r / sqr) / (2 * FastMath.PI) + .25;
+                        b = TMath.atan(r / sqr) / (2 * TMath.PI) + .25;
                         if (b < 0) {
                             b = 0;
                         }
@@ -2002,8 +2002,8 @@ public class ProbUtils {
                     sgn = -1;
                     t = 0;
                     if (wk != 0) {
-                        if (FastMath.abs(wk) != 1) {
-                            if (FastMath.abs(wk) > 1) {
+                        if (TMath.abs(wk) != 1) {
+                            if (TMath.abs(wk) > 1) {
                                 sgn = -sgn;
                                 wh = wh * wk;
                                 g2 = ProbUtils.normalCdf(wh);
@@ -2018,7 +2018,7 @@ public class ProbUtils {
                             h4 = h2 * .5;
                             ex = 0;
                             if (h4 < 150.0) {
-                                ex = FastMath.exp(-h4);
+                                ex = TMath.exp(-h4);
                             }
                             w2 = h4 * ex;
                             ap = 1;
@@ -2026,11 +2026,11 @@ public class ProbUtils {
                             sp = ap;
                             s1 = 0;
                             sn = s1;
-                            conex = FastMath.abs(con / wk);
+                            conex = TMath.abs(con / wk);
                             do {
                                 cn = ap * s2 / (sn + sp);
                                 s1 = s1 + cn;
-                                if (FastMath.abs(cn) <= conex) {
+                                if (TMath.abs(cn) <= conex) {
                                     break;
                                 }
                                 sn = sp;
@@ -2039,7 +2039,7 @@ public class ProbUtils {
                                 w2 = w2 * h4 / sp;
                                 ap = -ap * a2;
                             } while (true);
-                            t = (FastMath.atan(wk) - wk * s1) / (2 * FastMath.PI);
+                            t = (TMath.atan(wk) - wk * s1) / (2 * TMath.PI);
                         } else {
                             t = wk * gw * (1 - gw) / 2;
                         }
@@ -2073,7 +2073,7 @@ public class ProbUtils {
     /**
      * Compute the probability over a rectangular region with correlation matrix c. Algorithm extracted from Alan Genz:
      * Numerical Computation of Multivariate Normal Probabilities; revised version published in J. Comp. Graph Stat. 1
-     * (1992), pp. 141-149. http://www.FastMath.wsu.edu/faculty/genz/homepage Warning: this method has the side effect of
+     * (1992), pp. 141-149. http://www.TMath.wsu.edu/faculty/genz/homepage Warning: this method has the side effect of
      * changing the order of the elements in the arrays given as input. --November 3st 2003, Ricardo Silva
      *
      * @param a   lower bounds (use Double.NEGATIVE_INFINITY if necessary)
@@ -2144,7 +2144,7 @@ public class ProbUtils {
             intSum += f[f.length - 1];
             varSum += f[f.length - 1] * f[f.length - 1];
             n++;
-            //error = 2.5 * FastMath.sqrt((varSum / n - (intSum / n) * (intSum / n)) / n);
+            //error = 2.5 * TMath.sqrt((varSum / n - (intSum / n) * (intSum / n)) / n);
             error = 2;
         } while ((error > 0.0001 && n < 5000) || n < 50);
         return intSum / n;
@@ -2187,8 +2187,8 @@ public class ProbUtils {
                 } else if (!Double.isInfinite(a[smallest]) &&
                            !Double.isInfinite(b[smallest]) &&
                            !Double.isInfinite(a[j]) && !Double.isInfinite(b[j]) &&
-                           FastMath.abs(b[j] - a[j]) <
-                           FastMath.abs(b[smallest] - a[smallest])) {
+                           TMath.abs(b[j] - a[j]) <
+                           TMath.abs(b[smallest] - a[smallest])) {
                     smallest = j;
                 }
             }
