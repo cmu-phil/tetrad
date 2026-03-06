@@ -215,7 +215,13 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         for (int i = 0; i < list.size(); i++) {
             DataModel dm = list.get(i);
             displayedModels.add(dm);
-            tabbedPane.addTab("" + (i + 1), dataDisplay(dm));
+
+            String name = dm.getName();
+            if (name == null) {
+                name = "" + (i + 1);
+            }
+
+            tabbedPane.addTab(name, dataDisplay(dm));
             if (dm == selectedModel) selectedIndex = i;
         }
 

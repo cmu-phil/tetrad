@@ -244,13 +244,13 @@ public class GeneralNoiseSimulation {
             for (int l = 0; l < H.length; l++) {
                 W[l] = new DMatrixRMaj(H[l], prev);
                 b[l] = new double[H[l]];
-                heInit(W[l], r, inputScale);
+                xavierInit(W[l], r, inputScale);
                 // biases default to 0; you can randomize later if you want
                 prev = H[l];
             }
             W[L - 1] = new DMatrixRMaj(Dout, prev);
             b[L - 1] = new double[Dout];
-            heInit(W[L - 1], r, inputScale * 0.5);
+            xavierInit(W[L - 1], r, inputScale * 0.5);
         }
 
         private static void heInit(DMatrixRMaj W, Random r, double scale) {
@@ -261,11 +261,6 @@ public class GeneralNoiseSimulation {
         }
 
         private static void xavierInit(DMatrixRMaj W, Random r, double scale) {
-//            if (true) {
-//                heInit(W, r, scale);
-//                return;
-//            }
-
             int fanIn = Math.max(1, W.numCols);
             int fanOut = Math.max(1, W.numRows);
 

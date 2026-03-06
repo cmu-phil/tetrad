@@ -133,6 +133,7 @@ public final class BoxDataSet implements DataSet {
     public BoxDataSet(DataBox dataBox, List<Node> variables) {
         this.dataBox = dataBox;
         this.variables = new ArrayList<>(variables);
+        this.nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         if (dataBox.numCols() != variables.size()) {
             throw new IllegalArgumentException("Number of columns must match the number of variables.");
@@ -151,6 +152,7 @@ public final class BoxDataSet implements DataSet {
         this.selection = new HashSet<>(dataSet.selection);
         this.multipliers = new HashMap<>(dataSet.multipliers);
         this.knowledge = dataSet.knowledge.copy();
+        this.nf = NumberFormatUtil.getInstance().getNumberFormat();
     }
 
     /**
@@ -219,6 +221,7 @@ public final class BoxDataSet implements DataSet {
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         try {
             in.defaultReadObject();
+            this.nf = NumberFormatUtil.getInstance().getNumberFormat();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
                                            + ", " + e.getMessage());

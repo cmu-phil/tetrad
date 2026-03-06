@@ -60,9 +60,12 @@ public final class DagFactorizationCompare extends DataWrapper implements Sessio
         // Optionally: expose both datasets from this wrapper (handy for downstream tooling)
         // If your DataWrapper already has a setter, use it; otherwise remove this block.
         try {
+            simulatedData.setName("Simulated");
+            inputData.setName("Observed");
             DataModelList list = new DataModelList();
             list.add(inputData);
             list.add(simulatedData);
+             list.setSelectedModel(simulatedData);
             setDataModelList(list);
         } catch (Throwable ignored) {
             // If your DataWrapper doesn’t allow setting the list, that’s fine.
@@ -134,4 +137,12 @@ public final class DagFactorizationCompare extends DataWrapper implements Sessio
 
         return simData.toDataSet();
     }
+//
+//    @Override
+//    public DataModelList getDataModelList() {
+//        DataModelList list = new DataModelList();
+//        if (simulatedData != null) list.add(simulatedData);
+//        else list.add(inputData);
+//        return list;
+//    }
 }

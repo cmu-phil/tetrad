@@ -307,8 +307,8 @@ public class GeneralNoiseSimulation implements Simulation {
                     hiddenDimensions,
                     parameters.getDouble(Params.INPUT_SCALE),
                     Math::tanh,
-                    true,   // reportSaturation
-                    1     // saturation threshold on |tanh activation|
+                    false,   // reportSaturation
+                    .999     // saturation threshold on |tanh activation|
             );
 
             return generator.generateData();
