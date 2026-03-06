@@ -296,9 +296,20 @@ public class GeneralNoiseSimulation implements Simulation {
         try {
             Sampler sampler = new ExpressionSampler(parameters.getString("noiseExpression"));
 
+//            edu.cmu.tetrad.sem.GeneralNoiseSimulation generator = new edu.cmu.tetrad.sem.GeneralNoiseSimulation(
+//                    graph, parameters.getInt(Params.SAMPLE_SIZE), sampler,
+//                    hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
+
             edu.cmu.tetrad.sem.GeneralNoiseSimulation generator = new edu.cmu.tetrad.sem.GeneralNoiseSimulation(
-                    graph, parameters.getInt(Params.SAMPLE_SIZE), sampler,
-                    hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
+                    graph,
+                    parameters.getInt(Params.SAMPLE_SIZE),
+                    sampler,
+                    hiddenDimensions,
+                    parameters.getDouble(Params.INPUT_SCALE),
+                    Math::tanh,
+                    true,   // reportSaturation
+                    1     // saturation threshold on |tanh activation|
+            );
 
             return generator.generateData();
         } catch (ParseException e) {

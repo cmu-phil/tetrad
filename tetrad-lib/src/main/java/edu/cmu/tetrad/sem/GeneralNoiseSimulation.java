@@ -31,12 +31,51 @@ public class GeneralNoiseSimulation {
     // Keep simple per-node seeding (still random overall)
     private final Random seeder = new Random();
 
+    private final boolean reportSaturation;
+    private final double saturationAbsActivationThreshold;
+
+//    public GeneralNoiseSimulation(Graph graph,
+//                                  int numSamples,
+//                                  Sampler sampler,
+//                                  int[] hiddenDimensions,
+//                                  double inputScale,
+//                                  Function<Double, Double> activationFunction) {
+//        if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycles.");
+//        if (numSamples < 1) throw new IllegalArgumentException("numSamples must be positive.");
+//        Objects.requireNonNull(sampler, "sampler");
+//        Objects.requireNonNull(hiddenDimensions, "hiddenDimensions");
+//        Objects.requireNonNull(activationFunction, "activationFunction");
+//        for (int h : hiddenDimensions) if (h < 1) throw new IllegalArgumentException("Hidden dims must be >= 1");
+//
+//        this.graph = graph;
+//        this.numSamples = numSamples;
+//        this.sampler = sampler;
+//        this.hiddenDimensions = hiddenDimensions.clone();
+//        this.inputScale = inputScale;
+//        this.activationFunction = activationFunction;
+//
+//        // Robust functional check for tanh (instead of broken reference equality).
+//        this.useFastTanh = isTanhLike(activationFunction);
+//    }
+
     public GeneralNoiseSimulation(Graph graph,
                                   int numSamples,
                                   Sampler sampler,
                                   int[] hiddenDimensions,
                                   double inputScale,
                                   Function<Double, Double> activationFunction) {
+        this(graph, numSamples, sampler, hiddenDimensions, inputScale, activationFunction,
+                false, 0.95);
+    }
+
+    public GeneralNoiseSimulation(Graph graph,
+                                  int numSamples,
+                                  Sampler sampler,
+                                  int[] hiddenDimensions,
+                                  double inputScale,
+                                  Function<Double, Double> activationFunction,
+                                  boolean reportSaturation,
+                                  double saturationAbsActivationThreshold) {
         if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycles.");
         if (numSamples < 1) throw new IllegalArgumentException("numSamples must be positive.");
         Objects.requireNonNull(sampler, "sampler");
@@ -50,8 +89,9 @@ public class GeneralNoiseSimulation {
         this.hiddenDimensions = hiddenDimensions.clone();
         this.inputScale = inputScale;
         this.activationFunction = activationFunction;
+        this.reportSaturation = reportSaturation;
+        this.saturationAbsActivationThreshold = saturationAbsActivationThreshold;
 
-        // Robust functional check for tanh (instead of broken reference equality).
         this.useFastTanh = isTanhLike(activationFunction);
     }
 
@@ -97,6 +137,26 @@ public class GeneralNoiseSimulation {
         } else {
             for (int i = 0; i < n; i++) A.data[i] = f.apply(A.data[i]);
         }
+    }
+
+    private static void printSaturationStats(String nodeName,
+                                             int layerIndex,
+                                             DMatrixRMaj activations,
+                                             double absThreshold) {
+        int total = activations.getNumElements();
+        int sat = 0;
+
+        for (int i = 0; i < total; i++) {
+            if (Math.abs(activations.data[i]) >= absThreshold) sat++;
+        }
+
+        double pct = 100.0 * sat / Math.max(1, total);
+
+        System.out.printf(
+                Locale.US,
+                "GeneralNoiseSimulation saturation: node=%s layer=%d threshold=|a|>=%.3f saturated=%d/%d (%.2f%%)%n",
+                nodeName, layerIndex, absThreshold, sat, total, pct
+        );
     }
 
     public DataSet generateData() {
@@ -149,7 +209,15 @@ public class GeneralNoiseSimulation {
             RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale, seeder);
 
             // Forward pass: Y = mlp(A)
-            Y = mlp.forward(A, S1, S2, Y, activationFunction, useFastTanh);
+//            Y = mlp.forward(A, S1, S2, Y, activationFunction, useFastTanh);
+
+            Y = mlp.forward(
+                    A, S1, S2, Y,
+                    activationFunction, useFastTanh,
+                    reportSaturation,
+                    saturationAbsActivationThreshold,
+                    topo.get(j).getName()
+            );
 
             // write column
             for (int i = 0; i < N; i++) raw[i][j] = Y.data[i];
@@ -216,7 +284,10 @@ public class GeneralNoiseSimulation {
                             DMatrixRMaj scratch2,
                             DMatrixRMaj out,
                             Function<Double, Double> act,
-                            boolean fastTanh) {
+                            boolean fastTanh,
+                            boolean reportSaturation,
+                            double saturationAbsActivationThreshold,
+                            String nodeName) {
 
             DMatrixRMaj cur = X;
             DMatrixRMaj bufA = scratch1;
@@ -232,6 +303,10 @@ public class GeneralNoiseSimulation {
                 CommonOps_DDRM.multTransB(cur, W[l], dest);
                 addBiasRowsInPlace(dest, b[l]);
                 applyActivationInPlace(dest, act, fastTanh);
+
+                if (reportSaturation) {
+                    printSaturationStats(nodeName, l + 1, dest, saturationAbsActivationThreshold);
+                }
 
                 cur = dest;
             }
