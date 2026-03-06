@@ -9,6 +9,8 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
+import static java.lang.Math.abs;
+
 /**
  * <b>BlocksBicScoreTrekSoft</b>
  *
@@ -68,7 +70,7 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
 
     private final int[][] blockAllCols;
 
-    private double trekPenaltyMultiplier = 2.0; // default: 1
+    private double trekPenaltyMultiplier = 4.0; // default: 1
 
     private final Map<FamilyKey, Double> scoreCache =
             new LinkedHashMap<>(2048, 0.75f, true) {
@@ -282,13 +284,17 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
 
             int k = r * (p + q - r);
 
-            double pen = penaltyDiscount * k * logN;
+            double cEff = penaltyDiscount * (yRank * yRank);
+
+            double pen = cEff * k * logN;
 
             double trekPen = 0.0;
             if (penaltyDiscount > 0.0) {
                 double d = (double) r - (double) rStar;
-                trekPen = trekPenaltyMultiplier * penaltyDiscount * logN * d * d;
+                trekPen = trekPenaltyMultiplier * cEff * logN * d * d;
             }
+
+            System.out.println("r=" + r + " fit=" + fit + " pen=" + pen + " trekPen=" + trekPen);
 
             double sc = fit - pen - trekPen;
             if (Double.isNaN(sc) || Double.isInfinite(sc)) continue;

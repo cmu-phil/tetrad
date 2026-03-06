@@ -823,7 +823,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             if (cached != null) return cached;
         }
 
-        final double[] mult = {0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0, 8.0, 16.0, 32.0, 64.0};
+        final double[] mult = {.5, 1, 1.5};// {0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0, 8.0, 16.0, 32.0, 64.0};
 //        final double[] mult = {.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0};
 
         // Precompute things that do NOT depend on bw2
