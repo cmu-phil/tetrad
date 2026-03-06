@@ -37,9 +37,7 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static java.lang.StrictMath.log;
-import static edu.cmu.tetrad.util.TMath.abs;
-import static edu.cmu.tetrad.util.TMath.sqrt;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Fisher's Z CI test with shrinkage (RIDGE/LedoitâWolf) and optional pseudoinverse fallback.
@@ -340,7 +338,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      *         and the correlation coefficient squared.
      */
     public double getBic() {
-        return -getEffectiveSampleSize() * TMath.log(1.0 - this.r * this.r) - TMath.log(getEffectiveSampleSize());
+        return -getEffectiveSampleSize() * log(1.0 - this.r * this.r) - log(getEffectiveSampleSize());
     }
 
     /**

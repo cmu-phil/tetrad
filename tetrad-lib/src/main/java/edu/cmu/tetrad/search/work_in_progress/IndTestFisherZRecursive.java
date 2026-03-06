@@ -39,9 +39,7 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static java.lang.StrictMath.log;
-import static edu.cmu.tetrad.util.TMath.abs;
-import static edu.cmu.tetrad.util.TMath.sqrt;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Checks conditional independence of variable in a continuous data set using Fisher's Z test. See Spirtes, Glymour, and
@@ -201,7 +199,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
 //            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN, Double.NaN);
         }
 
-        double q = 0.5 * (log(1.0 + r) - TMath.log(1.0 - r));
+        double q = 0.5 * (log(1.0 + r) - log(1.0 - r));
         double fisherZ = sqrt(n - 3 - z.size()) * abs(q);
         this.fisherZ = fisherZ;
 
