@@ -23,7 +23,7 @@ public final class TMath {
         FAST
     }
 
-    private static final Impl IMPL = Impl.STRICT;
+    private static final Impl IMPL = Impl.MATH;
 
     private TMath() {}
 
