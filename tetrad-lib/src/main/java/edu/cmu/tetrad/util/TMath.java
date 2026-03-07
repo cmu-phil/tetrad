@@ -13,10 +13,6 @@ import org.apache.commons.math3.util.FastMath;
  */
 public final class TMath {
 
-    public static double copySign(double sqrt, double tStar) {
-        return Math.copySign(sqrt, tStar);
-    }
-
     public enum Impl {
         MATH,
         STRICT,
@@ -434,4 +430,11 @@ public final class TMath {
         }
     }
 
+    public static double copySign(double magnitude, double sign) {
+        switch (IMPL) {
+            case STRICT: return StrictMath.copySign(magnitude, sign);
+            case FAST: return FastMath.copySign(magnitude, sign);
+            default: return Math.copySign(magnitude, sign);
+        }
+    }
 }
