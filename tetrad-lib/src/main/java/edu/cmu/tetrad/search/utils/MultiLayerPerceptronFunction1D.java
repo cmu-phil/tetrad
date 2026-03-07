@@ -54,9 +54,9 @@ public class MultiLayerPerceptronFunction1D {
 
         // Initialize weights and biases randomly
         for (int i = 0; i < hiddenDimension; i++) {
-            this.W1[i][0] = RandomUtil.getInstance().nextGaussian(0, 1); // Gaussian weights
-            this.b1[i] = RandomUtil.getInstance().nextGaussian(0, 1);   // Gaussian biases
-            this.W2[i] = RandomUtil.getInstance().nextGaussian(0, 1);   // Gaussian weights
+            this.W1[i][0] = RandomUtil.getInstance().nextGaussian(); // Gaussian weights
+            this.b1[i] = RandomUtil.getInstance().nextGaussian();   // Gaussian biases
+            this.W2[i] = RandomUtil.getInstance().nextGaussian();   // Gaussian weights
         }
     }
 

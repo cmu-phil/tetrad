@@ -568,7 +568,7 @@ public final class NonlinearityTests {
 
         double wStd = 1.0 / sigma;
         for (int i = 0; i < mf; i++) {
-            for (int j = 0; j < d; j++) W[i][j] = RandomUtil.getInstance().nextGaussian(0, 1) * wStd;
+            for (int j = 0; j < d; j++) W[i][j] = RandomUtil.getInstance().nextGaussian() * wStd;
             b[i] = RandomUtil.getInstance().nextDouble() * 2.0 * TMath.PI;
         }
 
@@ -1110,7 +1110,7 @@ public final class NonlinearityTests {
                 this.b = new double[outM];
                 double wStd = 1.0 / sigma;
                 for (int i = 0; i < outM; i++) {
-                    for (int j = 0; j < d; j++) W[i][j] = RandomUtil.getInstance().nextGaussian(0, 1) * wStd;
+                    for (int j = 0; j < d; j++) W[i][j] = RandomUtil.getInstance().nextGaussian() * wStd;
                     b[i] = RandomUtil.getInstance().nextDouble() * 2.0 * TMath.PI;
                 }
                 this.scale = TMath.sqrt(2.0 / outM);
@@ -1121,7 +1121,7 @@ public final class NonlinearityTests {
                 this.b = new double[mf];
                 double wStd = 1.0 / sigma;
                 for (int i = 0; i < mf; i++) {
-                    for (int j = 0; j < d; j++) W[i][j] = RandomUtil.getInstance().nextGaussian(0, 1) * wStd;
+                    for (int j = 0; j < d; j++) W[i][j] = RandomUtil.getInstance().nextGaussian() * wStd;
                     b[i] = RandomUtil.getInstance().nextDouble() * 2.0 * TMath.PI;
                 }
                 this.scale = TMath.sqrt(2.0 / outM);

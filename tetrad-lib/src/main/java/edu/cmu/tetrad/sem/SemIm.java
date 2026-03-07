@@ -1676,7 +1676,7 @@ public final class SemIm implements Im, ISemIm {
             double[] exoData = new double[cholesky.getNumRows()];
 
             for (int i = 0; i < exoData.length; i++) {
-                exoData[i] = RandomUtil.getInstance().nextGaussian(0, 1);
+                exoData[i] = RandomUtil.getInstance().nextGaussian();
                 //            exoData[i] = randomUtil.nextUniform(-1, 1);
             }
 

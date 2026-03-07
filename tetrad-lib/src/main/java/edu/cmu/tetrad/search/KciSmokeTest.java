@@ -75,9 +75,9 @@ public class KciSmokeTest {
     private static SimpleMatrix makeDataVxN(int n, double depNoise) {
         double[] x = new double[n], z = new double[n], e = new double[n], y = new double[n];
         for (int i = 0; i < n; i++) {
-            x[i] = RandomUtil.getInstance().nextGaussian(0, 1);
-            z[i] = RandomUtil.getInstance().nextGaussian(0, 1);
-            e[i] = RandomUtil.getInstance().nextGaussian(0, 1);
+            x[i] = RandomUtil.getInstance().nextGaussian();
+            z[i] = RandomUtil.getInstance().nextGaussian();
+            e[i] = RandomUtil.getInstance().nextGaussian();
         }
         // independent case uses depNoise = +Inf sentinel (we'll overwrite y below)
         if (Double.isInfinite(depNoise)) System.arraycopy(e, 0, y, 0, n);

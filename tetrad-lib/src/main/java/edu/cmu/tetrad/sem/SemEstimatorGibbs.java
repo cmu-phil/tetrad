@@ -259,7 +259,7 @@ public final class SemEstimatorGibbs {
                     double rj = 0.0, accept = 0.0, cand = 0.0;
 
                     while (!realdraw || rj <= accept) {
-                        cand = mean[0] + TMath.max(RandomUtil.getInstance().nextGaussian(0, 1) * TMath.sqrt(vr), 0);
+                        cand = mean[0] + TMath.max(RandomUtil.getInstance().nextGaussian() * TMath.sqrt(vr), 0);
                         realdraw = (constraint.wouldBeSatisfied(cand));
                         if (realdraw) {
 

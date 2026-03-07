@@ -58,9 +58,9 @@ public class MultiLayerPerceptron {
             biases[layer] = new double[currentLayerSize];
             for (int i = 0; i < currentLayerSize; i++) {
                 for (int j = 0; j < prevLayerSize; j++) {
-                    weights[layer][i][j] = RandomUtil.getInstance().nextGaussian(0, 1);
+                    weights[layer][i][j] = RandomUtil.getInstance().nextGaussian();
                 }
-                biases[layer][i] = RandomUtil.getInstance().nextGaussian(0, 1);
+                biases[layer][i] = RandomUtil.getInstance().nextGaussian();
             }
             prevLayerSize = currentLayerSize;
         }
@@ -69,9 +69,9 @@ public class MultiLayerPerceptron {
         weights[numLayers] = new double[1][prevLayerSize];
         biases[numLayers] = new double[1];
         for (int j = 0; j < prevLayerSize; j++) {
-            weights[numLayers][0][j] = RandomUtil.getInstance().nextGaussian(0, 1);
+            weights[numLayers][0][j] = RandomUtil.getInstance().nextGaussian();
         }
-        biases[numLayers][0] = RandomUtil.getInstance().nextGaussian(0, 1);
+        biases[numLayers][0] = RandomUtil.getInstance().nextGaussian();
     }
 
     /**

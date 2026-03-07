@@ -270,7 +270,7 @@ public class AdditiveNoiseSimulation {
             double base = tanhLike ? 1.0 : 2.0;
             double s = scale * TMath.sqrt(base / TMath.max(1, W.numCols));
             for (int i = 0, n = W.getNumElements(); i < n; i++) {
-                W.data[i] = RandomUtil.getInstance().nextGaussian(0, 1) * s;
+                W.data[i] = RandomUtil.getInstance().nextGaussian() * s;
             }
         }
 

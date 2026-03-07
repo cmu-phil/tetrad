@@ -208,7 +208,7 @@ public class PostnonlinearSem {
 
             // Draw parameters for this node's f2
             double a = 0.5 + TMath.abs(RandomUtil.getInstance().nextGaussian(0, 1)); // ensure strictly positive
-            double b = RandomUtil.getInstance().nextGaussian(0, 1);
+            double b = RandomUtil.getInstance().nextGaussian();
 
             // g is the activationFunction (default  cubic-perturbation-of-identity), assumed strictly monotone
 

@@ -123,7 +123,7 @@ public class GaussianProcessRBF {
         // Generate random Gaussian noise
         double[] noise = new double[n];
         for (int i = 0; i < n; i++) {
-            noise[i] = RandomUtil.getInstance().nextGaussian(0, 1);
+            noise[i] = RandomUtil.getInstance().nextGaussian();
         }
 
         // Simulate function values by applying the covariance matrix

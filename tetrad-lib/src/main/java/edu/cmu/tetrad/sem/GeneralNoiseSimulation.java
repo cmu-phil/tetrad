@@ -265,7 +265,7 @@ public class GeneralNoiseSimulation {
             double std = scale * TMath.sqrt(2.0 / (fanIn + fanOut));
 
             for (int i = 0, n = W.getNumElements(); i < n; i++) {
-                W.data[i] = RandomUtil.getInstance().nextGaussian(0, 1) * std;
+                W.data[i] = RandomUtil.getInstance().nextGaussian() * std;
             }
         }
 

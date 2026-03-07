@@ -215,9 +215,9 @@ public class BlockClusteringWizard extends JPanel {
 
         for (int t = 0; t < n; t++) {
             // Latent disturbances (std normal scaled)
-            double e1 = sdLatent * RandomUtil.getInstance().nextGaussian(0, 1);
-            double e2 = sdLatent * RandomUtil.getInstance().nextGaussian(0, 1);
-            double e3 = sdLatent * RandomUtil.getInstance().nextGaussian(0, 1);
+            double e1 = sdLatent * RandomUtil.getInstance().nextGaussian();
+            double e2 = sdLatent * RandomUtil.getInstance().nextGaussian();
+            double e3 = sdLatent * RandomUtil.getInstance().nextGaussian();
 
             // Latents (structural)
             double L1 = e1;
