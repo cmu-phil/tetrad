@@ -293,15 +293,9 @@ public class GeneralNoiseSimulation implements Simulation {
         }
 
         Function<Double, Double> activation = Math::tanh;// x -> TMath.max(0.1 * x, x);
-//        Function<Double, Double> activation = x -> TMath.max(0.1 * x, x);
-//        Function<Double, Double> activation = x -> (1 + tanh(x / 2)) / 2;
 
         try {
             Sampler sampler = new ExpressionSampler(parameters.getString("noiseExpression"));
-
-//            edu.cmu.tetrad.sem.GeneralNoiseSimulation generator = new edu.cmu.tetrad.sem.GeneralNoiseSimulation(
-//                    graph, parameters.getInt(Params.SAMPLE_SIZE), sampler,
-//                    hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
 
             edu.cmu.tetrad.sem.GeneralNoiseSimulation generator = new edu.cmu.tetrad.sem.GeneralNoiseSimulation(
                     graph,
