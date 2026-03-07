@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import edu.cmu.tetrad.util.TMath;
@@ -232,19 +233,8 @@ public final class Rcit implements IndependenceTest, RowsSettable {
         return C.scale(1.0 / (n - 1));
     }
 
-    // Marsaglia polar gaussian from SplittableRandom (same as FfCiContinuous)
-    private static double nextGaussian(SplittableRandom rng) {
-        double u, v, s;
-        do {
-            u = 2.0 * rng.nextDouble() - 1.0;
-            v = 2.0 * rng.nextDouble() - 1.0;
-            s = u * u + v * v;
-        } while (s >= 1.0 || s == 0.0);
-        return u * TMath.sqrt(-2.0 * TMath.log(s) / s);
-    }
-
     /** ORF: block-orthogonal rows in blocks of size d. */
-    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd, SplittableRandom rng) {
+    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd) {
         double[][] W = new double[mFeatures][d];
         if (d <= 0) return W;
 
@@ -254,7 +244,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
 
             double[][] Q = new double[block][d];
             for (int i = 0; i < block; i++) {
-                for (int j = 0; j < d; j++) Q[i][j] = nextGaussian(rng);
+                for (int j = 0; j < d; j++) Q[i][j] = RandomUtil.getInstance().nextGaussian();
             }
 
             // Gram–Schmidt rows of Q
@@ -271,7 +261,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
             }
 
             for (int i = 0; i < block; i++) {
-                double r = chiRadius(d, rng);
+                double r = chiRadius(d);
                 double s = wStd * r;
                 int outRow = filled + i;
                 for (int j = 0; j < d; j++) W[outRow][j] = s * Q[i][j];
@@ -283,10 +273,10 @@ public final class Rcit implements IndependenceTest, RowsSettable {
         return W;
     }
 
-    private static double chiRadius(int d, SplittableRandom rng) {
+    private static double chiRadius(int d) {
         double ss = 0.0;
         for (int k = 0; k < d; k++) {
-            double g = nextGaussian(rng);
+            double g = RandomUtil.getInstance().nextGaussian();
             ss += g * g;
         }
         return TMath.sqrt(TMath.max(1e-18, ss));
@@ -454,13 +444,12 @@ public final class Rcit implements IndependenceTest, RowsSettable {
 
             // Deterministic per-fact permutation RNG (stable across calls)
             long permSeed = seedForPermutation(x, y, Z);
-            SplittableRandom prng = new SplittableRandom(permSeed);
 
             for (int b = 0; b < permutations; b++) {
                 if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
 
                 for (int i = n - 1; i > 0; i--) {
-                    int j = prng.nextInt(i + 1);
+                    int j = RandomUtil.getInstance().nextInt(i + 1);
                     int t = perm[i];
                     perm[i] = perm[j];
                     perm[j] = t;
@@ -813,10 +802,9 @@ public final class Rcit implements IndependenceTest, RowsSettable {
 
         // Handle d=0: constant features (cos(b))
         if (d == 0) {
-            SplittableRandom rng0 = new SplittableRandom(seed);
             double scale0 = TMath.sqrt(2.0 / mFeatures);
             double[] b0 = new double[mFeatures];
-            for (int j = 0; j < mFeatures; j++) b0[j] = 2.0 * TMath.PI * rng0.nextDouble();
+            for (int j = 0; j < mFeatures; j++) b0[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < mFeatures; j++) Phi[i][j] = scale0 * TMath.cos(b0[j]);
             }
@@ -827,7 +815,6 @@ public final class Rcit implements IndependenceTest, RowsSettable {
 
         final double wStd = TMath.sqrt(2.0 / bw2);
         final double scale = TMath.sqrt(2.0 / mFeatures);
-        SplittableRandom rng = new SplittableRandom(seed);
 
         double[][] W;
         double[] b = new double[mFeatures];
@@ -835,12 +822,12 @@ public final class Rcit implements IndependenceTest, RowsSettable {
         if (featureType == FeatureType.RFF) {
             W = new double[mFeatures][d];
             for (int j = 0; j < mFeatures; j++) {
-                for (int k = 0; k < d; k++) W[j][k] = wStd * nextGaussian(rng);
-                b[j] = 2.0 * TMath.PI * rng.nextDouble();
+                for (int k = 0; k < d; k++) W[j][k] = wStd * RandomUtil.getInstance().nextGaussian();
+                b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
             }
         } else if (featureType == FeatureType.ORF) {
-            W = sampleOrthogonalW(mFeatures, d, wStd, rng);
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
+            W = sampleOrthogonalW(mFeatures, d, wStd);
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
         } else {
             throw new IllegalArgumentException("featureType must be RFF or ORF");
         }

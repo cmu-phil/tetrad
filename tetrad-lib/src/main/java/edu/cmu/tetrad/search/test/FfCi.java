@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleEVD;
@@ -796,10 +797,9 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
         if (d == 0) {
             double[][] Phi = new double[n][mFeatures];
-            SplittableRandom rng0 = new SplittableRandom(seed);
             double scale0 = TMath.sqrt(2.0 / mFeatures);
             double[] b0 = new double[mFeatures];
-            for (int j = 0; j < mFeatures; j++) b0[j] = 2.0 * TMath.PI * rng0.nextDouble();
+            for (int j = 0; j < mFeatures; j++) b0[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
             for (int i = 0; i < n; i++)
                 for (int j = 0; j < mFeatures; j++)
                     Phi[i][j] = scale0 * TMath.cos(b0[j]);
@@ -811,20 +811,18 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         final double wStd = TMath.sqrt(2.0 / bw2);
         final double scale = TMath.sqrt(2.0 / mFeatures);
 
-        SplittableRandom rng = new SplittableRandom(seed);
-
         double[][] W;
         double[] b = new double[mFeatures];
 
         if (featureType == FfCiContinuous.FeatureType.RFF) {
             W = new double[mFeatures][d];
             for (int j = 0; j < mFeatures; j++) {
-                for (int k = 0; k < d; k++) W[j][k] = wStd * nextGaussian(rng);
+                for (int k = 0; k < d; k++) W[j][k] = wStd * RandomUtil.getInstance().nextGaussian();
                 b[j] = 2.0 * TMath.PI * rng.nextDouble();
             }
         } else {
-            W = sampleOrthogonalW(mFeatures, d, wStd, rng);
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
+            W = sampleOrthogonalW(mFeatures, d, wStd);
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
         }
 
         double[][] Phi = new double[n][mFeatures];
@@ -840,17 +838,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         return Phi;
     }
 
-    private static double nextGaussian(SplittableRandom rng) {
-        double u, v, s;
-        do {
-            u = 2.0 * rng.nextDouble() - 1.0;
-            v = 2.0 * rng.nextDouble() - 1.0;
-            s = u * u + v * v;
-        } while (s >= 1.0 || s == 0.0);
-        return u * TMath.sqrt(-2.0 * TMath.log(s) / s);
-    }
-
-    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd, SplittableRandom rng) {
+    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd) {
         double[][] W = new double[mFeatures][d];
         if (d <= 0) return W;
 
@@ -861,7 +849,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
             double[][] Q = new double[block][d];
             for (int i = 0; i < block; i++)
                 for (int j = 0; j < d; j++)
-                    Q[i][j] = nextGaussian(rng);
+                    Q[i][j] = RandomUtil.getInstance().nextGaussian();
 
             for (int i = 0; i < block; i++) {
                 for (int k = 0; k < i; k++) {
@@ -876,7 +864,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
             }
 
             for (int i = 0; i < block; i++) {
-                double r = chiRadius(d, rng);
+                double r = chiRadius(d);
                 double s = wStd * r;
                 int outRow = filled + i;
                 for (int j = 0; j < d; j++) W[outRow][j] = s * Q[i][j];
@@ -887,10 +875,10 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         return W;
     }
 
-    private static double chiRadius(int d, SplittableRandom rng) {
+    private static double chiRadius(int d) {
         double ss = 0.0;
         for (int k = 0; k < d; k++) {
-            double g = nextGaussian(rng);
+            double g = RandomUtil.getInstance().nextGaussian();
             ss += g * g;
         }
         return TMath.sqrt(TMath.max(1e-18, ss));
@@ -1043,11 +1031,9 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 //            return (greater + 1.0) / (permutations + 1.0);
 
             // IMPORTANT: per-query RNG, NOT shared rng.
-            SplittableRandom prng = new SplittableRandom(seedForPermutation(fact));
-
             int greater = 0;
             for (int b = 0; b < permutations; b++) {
-                int[] perm = randomPermutation(rY.getNumRows(), prng);
+                int[] perm = randomPermutation(rY.getNumRows());
                 SimpleMatrix rYp = permuteRows(rY, perm);
                 SimpleMatrix C = covCentered(rX, rYp);
                 double s = rY.getNumRows() * frob2(C);
@@ -1165,23 +1151,11 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         return e;
     }
 
-    private static int[] randomPermutation(int n, Random rng) {
+    private static int[] randomPermutation(int n) {
         int[] p = new int[n];
         for (int i = 0; i < n; i++) p[i] = i;
         for (int i = n - 1; i > 0; i--) {
-            int j = rng.nextInt(i + 1);
-            int t = p[i];
-            p[i] = p[j];
-            p[j] = t;
-        }
-        return p;
-    }
-
-    private static int[] randomPermutation(int n, SplittableRandom rng) {
-        int[] p = new int[n];
-        for (int i = 0; i < n; i++) p[i] = i;
-        for (int i = n - 1; i > 0; i--) {
-            int j = rng.nextInt(i + 1);
+            int j = RandomUtil.getInstance().nextInt(i + 1);
             int t = p[i];
             p[i] = p[j];
             p[j] = t;

@@ -12,12 +12,9 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.sem.GeneralNoiseSimulation;
 import edu.cmu.tetrad.sem.DistributionSampler;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.UniformityTest;
+import edu.cmu.tetrad.sem.GeneralNoiseSimulation;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 
@@ -513,15 +510,14 @@ public final class CiTestHarness {
      * Generates a pseudo-random sample of integers from a set of eligible indices
      * based on the input parameters, excluding specified indices.
      *
-     * @param rng the {@code SplittableRandom} instance used to generate random numbers
-     * @param p   the size of the original set of indices from which sampling is performed
-     * @param x   the index to exclude from the sampling pool
-     * @param y   another index to exclude from the sampling pool
-     * @param k   the number of indices to sample, subject to adjustment if {@code k > p - 2}
+     * @param p the size of the original set of indices from which sampling is performed
+     * @param x the index to exclude from the sampling pool
+     * @param y another index to exclude from the sampling pool
+     * @param k the number of indices to sample, subject to adjustment if {@code k > p - 2}
      * @return an array of {@code k} distinct pseudo-randomly sampled, sorted integers
      * from the eligible indices, or an empty array if {@code k == 0}
      */
-    private int[] sampleConditioningSet(SplittableRandom rng, int p, int x, int y, int k) {
+    private int[] sampleConditioningSet(int p, int x, int y, int k) {
         if (k == 0) return new int[0];
         if (k > p - 2) k = p - 2;
 
@@ -535,7 +531,7 @@ public final class CiTestHarness {
 
         // Fisher–Yates partial shuffle for first k elements
         for (int i = 0; i < k; i++) {
-            int j = i + rng.nextInt(pool.length - i);
+            int j = i + RandomUtil.getInstance().nextInt(pool.length - i);
             int tmp = pool[i];
             pool[i] = pool[j];
             pool[j] = tmp;
@@ -660,8 +656,6 @@ public final class CiTestHarness {
      * interpreted here as "max attempts per requested fact" across both buckets).
      */
     private Buckets sampleAndBucketFacts(MsepTest implied, int p, Config cfg) {
-        SplittableRandom rng = new SplittableRandom(cfg.seed);
-
         int targetIndep = cfg.nFactsIndep;
         int targetDep = cfg.nFactsDep;// (cfg.nFactsDep <= 0) ? cfg.nFactsIndep : cfg.nFactsDep;
 
@@ -678,8 +672,8 @@ public final class CiTestHarness {
         while ((indep.size() < targetIndep || dep.size() < targetDep) && attempts < maxAttempts) {
             attempts++;
 
-            int x = rng.nextInt(p);
-            int y = rng.nextInt(p - 1);
+            int x = RandomUtil.getInstance().nextInt(p);
+            int y = RandomUtil.getInstance().nextInt(p - 1);
             if (y >= x) y++;
             if (x > y) {
                 int tmp = x;
@@ -687,8 +681,8 @@ public final class CiTestHarness {
                 y = tmp;
             }
 
-            int k = (cfg.kMin == cfg.kMax) ? cfg.kMin : (cfg.kMin + rng.nextInt(cfg.kMax - cfg.kMin + 1));
-            int[] z = sampleConditioningSet(rng, p, x, y, k);
+            int k = (cfg.kMin == cfg.kMax) ? cfg.kMin : (cfg.kMin + RandomUtil.getInstance().nextInt(cfg.kMax - cfg.kMin + 1));
+            int[] z = sampleConditioningSet(p, x, y, k);
 
             String key = canonicalKey(x, y, z);
             if (!seen.add(key)) continue;

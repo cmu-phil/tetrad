@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
@@ -15,7 +16,6 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.SplittableRandom;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -502,19 +502,17 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
         // omega_k ~ N(0, 1/sigma^2). Return length D.
         long key = omegaKey(child, parent);
         return omegaCache.computeIfAbsent(key, kk -> {
-            SplittableRandom rng = new SplittableRandom(mix64(rffSeed ^ kk));
             double[] w = new double[D];
             double invSigma = 1.0 / rffSigma;
-            for (int k = 0; k < D; k++) w[k] = rng.nextGaussian() * invSigma;
+            for (int k = 0; k < D; k++) w[k] = RandomUtil.getInstance().nextGaussian() * invSigma;
             return w;
         });
     }
 
     private double[] getPhase(int child, int D) {
         return phaseCache.computeIfAbsent(child, cc -> {
-            SplittableRandom rng = new SplittableRandom(mix64(rffSeed ^ (long) cc * 0x9E3779B97F4A7C15L));
             double[] phase = new double[D];
-            for (int k = 0; k < D; k++) phase[k] = 2.0 * TMath.PI * rng.nextDouble();
+            for (int k = 0; k < D; k++) phase[k] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
             return phase;
         });
     }

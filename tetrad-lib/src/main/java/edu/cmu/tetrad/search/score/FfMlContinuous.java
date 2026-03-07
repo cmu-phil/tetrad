@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
@@ -13,7 +14,6 @@ import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.SplittableRandom;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -433,7 +433,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
      * <p>
      * If mFeatures > d, rows are generated in blocks of size d; orthogonality holds within each block.
      */
-    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd, SplittableRandom rng) {
+    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd) {
         double[][] W = new double[mFeatures][d];
         if (d <= 0) return W;
 
@@ -447,7 +447,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
             double[][] Q = new double[block][d];
             for (int i = 0; i < block; i++) {
                 for (int j = 0; j < d; j++) {
-                    Q[i][j] = nextGaussian(rng);
+                    Q[i][j] = RandomUtil.getInstance().nextGaussian();
                 }
             }
 
@@ -468,7 +468,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
 
             // Step 3: scale each row by chi(d) radius (approximate Gaussian row norm)
             for (int i = 0; i < block; i++) {
-                double r = chiRadius(d, rng);     // ~ ||N(0,I_d)||
+                double r = chiRadius(d);     // ~ ||N(0,I_d)||
 
                 double s = wStd * r;
                 int outRow = filled + i;
@@ -486,25 +486,13 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
     /**
      * Radius r ~ chi(d) via sqrt(sum_k g_k^2), g_k ~ N(0,1).
      */
-    private static double chiRadius(int d, SplittableRandom rng) {
+    private static double chiRadius(int d) {
         double ss = 0.0;
         for (int k = 0; k < d; k++) {
-            double g = nextGaussian(rng);
+            double g = RandomUtil.getInstance().nextGaussian();
             ss += g * g;
         }
         return TMath.sqrt(TMath.max(1e-18, ss));
-    }
-
-    // Box–Muller-ish gaussian from SplittableRandom (fast enough)
-    private static double nextGaussian(SplittableRandom rng) {
-        // Use Marsaglia polar
-        double u, v, s;
-        do {
-            u = 2.0 * rng.nextDouble() - 1.0;
-            v = 2.0 * rng.nextDouble() - 1.0;
-            s = u * u + v * v;
-        } while (s >= 1.0 || s == 0.0);
-        return u * TMath.sqrt(-2.0 * TMath.log(s) / s);
     }
 
     private static void centerInPlace(double[] y) {
@@ -905,9 +893,6 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
         final double wStd = TMath.sqrt(2.0 / bw2);
         final double scale = TMath.sqrt(2.0 / mFeatures);
 
-        // Deterministic RNG per (target, parentset) key:
-        SplittableRandom rng = new SplittableRandom(seed);
-
         // Sample W (m x d) and b (m)
         // Store as [m][d] for fast dot(row,d) per feature.
         double[][] W;
@@ -920,16 +905,16 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
 
             for (int j = 0; j < mFeatures; j++) {
                 for (int k = 0; k < d; k++) {
-                    W[j][k] = wStd * nextGaussian(rng);
+                    W[j][k] = wStd * RandomUtil.getInstance().nextGaussian();
                 }
-                b[j] = 2.0 * TMath.PI * rng.nextDouble();
+                b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
             }
         } else if (featureType == FeatureType.ORF) {
-            W = sampleOrthogonalW(mFeatures, d, wStd, rng);
+            W = sampleOrthogonalW(mFeatures, d, wStd);
 
             b = new double[mFeatures];
             for (int j = 0; j < mFeatures; j++) {
-                b[j] = 2.0 * TMath.PI * rng.nextDouble();
+                b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
             }
         } else {
             throw new IllegalArgumentException("featureType must be RFF or ORF");
@@ -1137,9 +1122,8 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
 
         final ConcurrentHashMap<Long, double[]> cache = phaseCacheRef.get();
         return cache.computeIfAbsent(key, k -> {
-            SplittableRandom rng = new SplittableRandom(k);
             double[] b = new double[mFeatures];
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
             return b;
         });
     }
@@ -1149,9 +1133,8 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
         final ConcurrentHashMap<Long, double[]> cache = omegaCacheRef.get();
 
         return cache.computeIfAbsent(key, k -> {
-            SplittableRandom rng = new SplittableRandom(mix64(k));
             double[] g = new double[mFeatures];
-            for (int j = 0; j < mFeatures; j++) g[j] = nextGaussian(rng); // N(0,1)
+            for (int j = 0; j < mFeatures; j++) g[j] = RandomUtil.getInstance().nextGaussian(); // N(0,1)
             return g;
         });
     }

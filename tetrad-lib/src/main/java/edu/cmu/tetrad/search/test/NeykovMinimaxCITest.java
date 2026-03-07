@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 
@@ -190,14 +191,13 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
         if (!Double.isFinite(tObs)) return 1.0;
 
         // permutation calibration: shuffle Y within each stratum, recompute T
-        SplittableRandom rng = new SplittableRandom(seed);
         int BB = TMath.max(50, permutations);
 
         int ge = 0;
         int valid = 0;
 
         for (int b = 0; b < BB; b++) {
-            double tPerm = aggregateWeightedSumPermuted(plans, rng);
+            double tPerm = aggregateWeightedSumPermuted(plans);
             if (!Double.isFinite(tPerm)) continue;
             valid++;
             if (tPerm >= tObs) ge++;
@@ -223,11 +223,11 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
         return T;
     }
 
-    private double aggregateWeightedSumPermuted(GroupPlan[] plans, SplittableRandom rng) {
+    private double aggregateWeightedSumPermuted(GroupPlan[] plans) {
         double T = 0.0;
         for (GroupPlan gp : plans) {
             if (gp.sigma < 4) continue;
-            double Um = gp.statisticPermuted(rng);
+            double Um = gp.statisticPermuted();
             if (!Double.isFinite(Um)) continue;
             T += gp.sigma * gp.omega * Um;
         }
@@ -997,9 +997,8 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
             int[] perm = new int[sigma];
             for (int i = 0; i < sigma; i++) perm[i] = i;
 
-            SplittableRandom rng = new SplittableRandom(mix64(seed ^ (long) binId * 0x9E3779B97F4A7C15L));
             for (int i = sigma - 1; i > 0; i--) {
-                int j = rng.nextInt(i + 1);
+                int j = RandomUtil.getInstance().nextInt(i + 1);
                 int tmp = perm[i];
                 perm[i] = perm[j];
                 perm[j] = tmp;
@@ -1026,13 +1025,13 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
             return flattenedChiSqFromSplit(xObs, yObs, Kx, Ky, splitC, pXhat, pYhat, epsProb);
         }
 
-        double statisticPermuted(SplittableRandom rng) {
+        double statisticPermuted() {
             if (Kx < 2 || Ky < 2) return 0.0;
 
             // yPerm = observed then shuffle within this bin
             System.arraycopy(yObs, 0, yPerm, 0, sigma);
             for (int i = sigma - 1; i > 0; i--) {
-                int j = rng.nextInt(i + 1);
+                int j = RandomUtil.getInstance().nextInt(i + 1);
                 int tmp = yPerm[i];
                 yPerm[i] = yPerm[j];
                 yPerm[j] = tmp;

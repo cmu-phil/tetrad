@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
@@ -241,10 +242,8 @@ public final class PlotMatrixMimicSimulator {
         int n = Z.length;
         int p = Z[0].length;
 
-        SplittableRandom rng = new SplittableRandom(seed);
-
         for (int j = 0; j < p; j++) {
-            double q = 1.0 + (2.0 * rng.nextDouble() - 1.0) * s; // [1-s, 1+s]
+            double q = 1.0 + (2.0 * RandomUtil.getInstance().nextDouble() - 1.0) * s; // [1-s, 1+s]
             if (q < 0.2) q = 0.2;
 
             // transform
@@ -338,13 +337,6 @@ public final class PlotMatrixMimicSimulator {
     }
 
     // ---------------- core: copula fitting ----------------
-
-    private static double nextGaussian(SplittableRandom rng) {
-        // Box-Muller
-        double u1 = TMath.max(1e-12, rng.nextDouble());
-        double u2 = rng.nextDouble();
-        return TMath.sqrt(-2.0 * TMath.log(u1)) * TMath.cos(2.0 * TMath.PI * u2);
-    }
 
     private static void standardizeInPlace(double[] x) {
         int n = x.length;
@@ -515,14 +507,12 @@ public final class PlotMatrixMimicSimulator {
 
         DMatrixRMaj L = chol.getT(null); // lower-tri
 
-        SplittableRandom rng = new SplittableRandom(seed);
-
         double[][] Z = new double[m][p];
 
         // For each row: g ~ N(0,I), z = L g
         double[] g = new double[p];
         for (int i = 0; i < m; i++) {
-            for (int j = 0; j < p; j++) g[j] = nextGaussian(rng);
+            for (int j = 0; j < p; j++) g[j] = RandomUtil.getInstance().nextGaussian();
 
             for (int a = 0; a < p; a++) {
                 double s = 0;

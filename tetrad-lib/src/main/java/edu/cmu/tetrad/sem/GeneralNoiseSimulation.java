@@ -251,10 +251,10 @@ public class GeneralNoiseSimulation {
             xavierInit(W[L - 1], inputScale * 0.5);
         }
 
-        private static void heInit(DMatrixRMaj W, SplittableRandom r, double scale) {
+        private static void heInit(DMatrixRMaj W,  double scale) {
             double s = scale * TMath.sqrt(2.0 / TMath.max(1, W.numCols));
             for (int i = 0, n = W.getNumElements(); i < n; i++) {
-                W.data[i] = r.nextGaussian() * s;
+                W.data[i] = RandomUtil.getInstance().nextGaussian() * s;
             }
         }
 

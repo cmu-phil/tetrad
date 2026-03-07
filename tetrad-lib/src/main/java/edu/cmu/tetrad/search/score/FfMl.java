@@ -5,8 +5,9 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
@@ -17,7 +18,6 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.SplittableRandom;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -488,7 +488,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         }
     }
 
-    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd, SplittableRandom rng) {
+    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd) {
         double[][] W = new double[mFeatures][d];
         if (d <= 0) return W;
 
@@ -498,7 +498,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
             double[][] Q = new double[block][d];
             for (int i = 0; i < block; i++) {
-                for (int j = 0; j < d; j++) Q[i][j] = nextGaussian(rng);
+                for (int j = 0; j < d; j++) Q[i][j] = RandomUtil.getInstance().nextGaussian();
             }
 
             for (int i = 0; i < block; i++) {
@@ -514,7 +514,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             }
 
             for (int i = 0; i < block; i++) {
-                double r = chiRadius(d, rng);
+                double r = chiRadius(d);
                 double s = wStd * r;
                 int outRow = filled + i;
                 for (int j = 0; j < d; j++) W[outRow][j] = s * Q[i][j];
@@ -526,23 +526,13 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return W;
     }
 
-    private static double chiRadius(int d, SplittableRandom rng) {
+    private static double chiRadius(int d) {
         double ss = 0.0;
         for (int k = 0; k < d; k++) {
-            double g = nextGaussian(rng);
+            double g = RandomUtil.getInstance().nextGaussian();
             ss += g * g;
         }
         return TMath.sqrt(TMath.max(1e-18, ss));
-    }
-
-    private static double nextGaussian(SplittableRandom rng) {
-        double u, v, s;
-        do {
-            u = 2.0 * rng.nextDouble() - 1.0;
-            v = 2.0 * rng.nextDouble() - 1.0;
-            s = u * u + v * v;
-        } while (s >= 1.0 || s == 0.0);
-        return u * TMath.sqrt(-2.0 * TMath.log(s) / s);
     }
 
     private static double medianDistanceSquaredND(double[][] Z, int maxRows) {
@@ -565,10 +555,11 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         int[] idx = new int[n];
         for (int i = 0; i < n; i++) idx[i] = i;
 
-        SplittableRandom rng = new SplittableRandom(seed);
         for (int i = 0; i < m; i++) {
-            int j = i + rng.nextInt(n - i);
-            int tmp = idx[i]; idx[i] = idx[j]; idx[j] = tmp;
+            int j = i + RandomUtil.getInstance().nextInt(n - i);
+            int tmp = idx[i];
+            idx[i] = idx[j];
+            idx[j] = tmp;
         }
         // idx[0..m-1] now holds m distinct random row indices.
 
@@ -1271,9 +1262,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             bw2 = 1.0;
         }
 
-        // Deterministic RNG per (target, parents)
-        SplittableRandom rng = new SplittableRandom(seed);
-
         // Sample W,b exactly like your existing code
         double wStd = (dc > 0) ? TMath.sqrt(2.0 / bw2) : 1.0;
         double[][] W;
@@ -1283,17 +1271,17 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             if (featureType == FeatureType.RFF) {
                 W = new double[mFeatures][dc];
                 for (int j = 0; j < mFeatures; j++) {
-                    for (int k = 0; k < dc; k++) W[j][k] = wStd * nextGaussian(rng);
-                    b[j] = 2.0 * TMath.PI * rng.nextDouble();
+                    for (int k = 0; k < dc; k++) W[j][k] = wStd * RandomUtil.getInstance().nextGaussian();
+                    b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
                 }
             } else { // ORF
-                W = sampleOrthogonalW(mFeatures, dc, wStd, rng);
-                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
+                W = sampleOrthogonalW(mFeatures, dc, wStd);
+                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
             }
         } else {
             // no continuous parents: phi_cont is constant cos(b)
             W = null;
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
         }
 
         final double contScale = TMath.sqrt(2.0 / mFeatures);
@@ -1421,22 +1409,20 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         }
         final double contScale = TMath.sqrt(2.0 / mFeatures);
 
-        SplittableRandom rng = new SplittableRandom(seed);
-
         b = new double[mFeatures];
         if (dc > 0) {
             if (featureType == FeatureType.RFF) {
                 W = new double[mFeatures][dc];
                 for (int j = 0; j < mFeatures; j++) {
-                    for (int k = 0; k < dc; k++) W[j][k] = wStd * nextGaussian(rng);
-                    b[j] = 2.0 * TMath.PI * rng.nextDouble();
+                    for (int k = 0; k < dc; k++) W[j][k] = wStd * RandomUtil.getInstance().nextGaussian();
+                    b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
                 }
             } else {
-                W = sampleOrthogonalW(mFeatures, dc, wStd, rng);
-                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
+                W = sampleOrthogonalW(mFeatures, dc, wStd);
+                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
             }
         } else {
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
         }
 
         final CatFeatureMap[] catMaps = new CatFeatureMap[discParents.length];
@@ -1462,7 +1448,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         double yTy = 0.0;
 
         double[] phiCont = new double[mFeatures];
-        double[] phiMix  = new double[mTotal];
+        double[] phiMix = new double[mTotal];
         double[] kronTmp = (discParents.length == 1) ? new double[mTotal] : null;
 
         for (int ii = 0; ii < n; ii++) {
@@ -1711,8 +1697,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * For ORF: Wbase is what sampleOrthogonalW would produce with wStd=1 (so it already has chi radii).
      */
     private BaseWB buildBaseWB(int mFeatures, int dc, long seed) {
-        SplittableRandom rng = new SplittableRandom(seed);
-
         double[][] Wbase;
         double[] b = new double[mFeatures];
 
@@ -1720,17 +1704,17 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             if (featureType == FeatureType.RFF) {
                 Wbase = new double[mFeatures][dc];
                 for (int j = 0; j < mFeatures; j++) {
-                    for (int k = 0; k < dc; k++) Wbase[j][k] = nextGaussian(rng);
-                    b[j] = 2.0 * TMath.PI * rng.nextDouble();
+                    for (int k = 0; k < dc; k++) Wbase[j][k] = RandomUtil.getInstance().nextGaussian();
+                    b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
                 }
             } else {
                 // ORF base: same ORF sampling, but with wStd=1.0 so we can later multiply by wStd
-                Wbase = sampleOrthogonalW(mFeatures, dc, 1.0, rng);
-                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
+                Wbase = sampleOrthogonalW(mFeatures, dc, 1.0);
+                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
             }
         } else {
             Wbase = null;
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
         }
 
         return new BaseWB(Wbase, b);
