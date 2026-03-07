@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.RealDistribution;
 import edu.cmu.tetrad.util.TMath;
 
@@ -37,8 +38,8 @@ import java.util.*;
  *       .setNumUnitsPerEdge(6)
  *       .setInputStandardize(true)
  *       .setEdgeScale(1.0)
- *       .setSeed(1234L);
  *   DataSet ds = gen.generate();
+ * </pre>
  * </pre>
  */
 public class AdditiveAnmSimulator {
@@ -49,9 +50,6 @@ public class AdditiveAnmSimulator {
     private int numUnitsPerEdge = 6;      // K: #basis per edge
     private boolean inputStandardize = true; // z-score inputs before f(x)
     private double edgeScale = 1.0;       // global multiplier for sum_k f_{jk}(x_k)
-    private long seed = System.nanoTime();
-    // internal
-    private Random rng;
 
     /**
      * Constructs an AdditiveAnmSimulator, which generates synthetic datasets
@@ -77,7 +75,6 @@ public class AdditiveAnmSimulator {
         this.graph = Objects.requireNonNull(graph, "graph");
         this.numSamples = numSamples;
         this.noise = Objects.requireNonNull(sampler, "sampler");
-        this.rng = new Random(seed);
     }
 
     private static void zscoreInPlace(double[] x) {
@@ -180,9 +177,9 @@ public class AdditiveAnmSimulator {
         double[] s = new double[K];
 
         for (int u = 0; u < K; u++) {
-            a[u] = rng.nextGaussian() / TMath.sqrt(K);     // variance-normalized
-            c[u] = rng.nextGaussian() * 0.75;             // centers near 0
-            s[u] = 0.4 + TMath.abs(rng.nextGaussian()) * 0.6; // widths in [~0.1, ~1.5]
+            a[u] = RandomUtil.getInstance().nextGaussian() / TMath.sqrt(K);     // variance-normalized
+            c[u] = RandomUtil.getInstance().nextGaussian() * 0.75;             // centers near 0
+            s[u] = 0.4 + TMath.abs(RandomUtil.getInstance().nextGaussian()) * 0.6; // widths in [~0.1, ~1.5]
         }
         return x -> {
             double sum = 0.0;
@@ -202,9 +199,9 @@ public class AdditiveAnmSimulator {
         double[] b = new double[K];
 
         for (int u = 0; u < K; u++) {
-            a[u] = rng.nextGaussian() / TMath.sqrt(K);
-            w[u] = rng.nextGaussian();
-            b[u] = rng.nextGaussian();
+            a[u] = RandomUtil.getInstance().nextGaussian() / TMath.sqrt(K);
+            w[u] = RandomUtil.getInstance().nextGaussian();
+            b[u] = RandomUtil.getInstance().nextGaussian();
         }
         return x -> {
             double sum = 0.0;
@@ -219,7 +216,7 @@ public class AdditiveAnmSimulator {
     private EdgeFunction randomPoly() {
         int deg = TMath.max(1, numUnitsPerEdge);
         double[] a = new double[deg + 1]; // a[0] unused to avoid constant shift
-        for (int r = 1; r <= deg; r++) a[r] = rng.nextGaussian() / TMath.pow(2.0, r); // damp high degrees
+        for (int r = 1; r <= deg; r++) a[r] = RandomUtil.getInstance().nextGaussian() / TMath.pow(2.0, r); // damp high degrees
         return x -> {
             double xr = x, sum = 0.0;
             for (int r = 1; r <= deg; r++) {
@@ -295,28 +292,6 @@ public class AdditiveAnmSimulator {
      */
     public AdditiveAnmSimulator setEdgeScale(double s) {
         this.edgeScale = s;
-        return this;
-    }
-
-    /**
-     * Retrieves the seed used for random number generation in the simulator.
-     *
-     * @return the seed value currently used by the simulator.
-     */
-    public long getSeed() {
-        return seed;
-    }
-
-    /**
-     * Sets the seed for the random number generator used in the simulator. This ensures reproducibility of random
-     * processes within the simulation.
-     *
-     * @param seed the seed value to initialize the random number generator.
-     * @return this simulator instance, allowing for method chaining.
-     */
-    public AdditiveAnmSimulator setSeed(long seed) {
-        this.seed = seed;
-        this.rng = new Random(seed);
         return this;
     }
 

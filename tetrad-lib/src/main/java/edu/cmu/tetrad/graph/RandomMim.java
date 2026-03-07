@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
@@ -63,9 +64,6 @@ public final class RandomMim {
      *                                              nodes.
      * @param latentLinkMode                        the mode of linking latents between groups in the meta-DAG, either
      *                                              via Cartesian product or corresponding positions.
-     * @param rng                                   the random generator used to make stochastic decisions during graph
-     *                                              construction; can be null to use a default Random instance with a
-     *                                              seed of 0.
      * @return the constructed graph representing the random MIM with all specified constraints and impurities.
      * @throws IllegalArgumentException if the specifications are null, empty, or malformed, if the number of meta-edges
      *                                  is out of valid range, or if the latentLinkMode is unrecognized.
@@ -76,13 +74,11 @@ public final class RandomMim {
             int numLatentMeasuredImpureParents,
             int numMeasuredMeasuredImpureParents,
             int numMeasuredMeasuredImpureAssociations,
-            LatentLinkMode latentLinkMode,
-            Random rng
+            LatentLinkMode latentLinkMode
     ) {
         if (specs == null || specs.isEmpty()) {
             throw new IllegalArgumentException("Specs cannot be empty.");
         }
-        if (rng == null) rng = new Random(0);
 
         // ----- 1) Expand specs into concrete groups (structural nodes in the meta-DAG)
         final List<Group> groups = new ArrayList<>();
@@ -108,14 +104,14 @@ public final class RandomMim {
             // choose ~20% of forward pairs
             double p = 0.20;
             for (int[] e : possibleForward) {
-                if (rng.nextDouble() < p) metaEdges.add(e);
+                if (RandomUtil.getInstance().nextDouble() < p) metaEdges.add(e);
             }
         } else {
             // choose exactly metaEdgeCount forward edges without replacement
             if (metaEdgeCount < 0 || metaEdgeCount > possibleForward.size()) {
                 throw new IllegalArgumentException("metaEdgeCount out of range [0, " + possibleForward.size() + "]");
             }
-            Collections.shuffle(possibleForward, rng);
+            Collections.shuffle(possibleForward);
             metaEdges.addAll(possibleForward.subList(0, metaEdgeCount));
         }
 
@@ -199,7 +195,7 @@ public final class RandomMim {
                 }
 
                 if (!candidates.isEmpty()) {
-                    Collections.shuffle(candidates, rng);
+                    RandomUtil.shuffle(candidates);
                     // âPatchyâ = pick about half of the possible connections, but at least one.
                     final int k = TMath.max(1, candidates.size() / 2);
                     for (int i = 0; i < k; i++) {
@@ -217,13 +213,13 @@ public final class RandomMim {
         // ----- 5) Add impurities
 
         // 5a) extra latent -> measured cross-loadings (avoid duplicating existing parent edges)
-        addLatentMeasuredImpurities(graph, allLatents, allMeasured, numLatentMeasuredImpureParents, rng);
+        addLatentMeasuredImpurities(graph, allLatents, allMeasured, numLatentMeasuredImpureParents);
 
         // 5b) measured -> measured directed impurities (avoid cycles as much as possible by preferring âforwardâ indices)
-        addMeasuredMeasuredParents(graph, allMeasured, numMeasuredMeasuredImpureParents, rng);
+        addMeasuredMeasuredParents(graph, allMeasured, numMeasuredMeasuredImpureParents);
 
         // 5c) measured <-> measured bidirected âerror correlationsâ
-        addMeasuredMeasuredAssociations(graph, allMeasured, numMeasuredMeasuredImpureAssociations, rng);
+        addMeasuredMeasuredAssociations(graph, allMeasured, numMeasuredMeasuredImpureAssociations);
 
         // layout (nice to have)
         try {
@@ -235,12 +231,12 @@ public final class RandomMim {
     }
 
     private static void addLatentMeasuredImpurities(Graph g, List<Node> latents, List<Node> measured,
-                                                    int count, Random rng) {
+                                                    int count) {
         if (count <= 0 || latents.isEmpty() || measured.isEmpty()) return;
         int tries = 0, added = 0, maxTries = count * 20;
         while (added < count && tries++ < maxTries) {
-            Node L = latents.get(rng.nextInt(latents.size()));
-            Node X = measured.get(rng.nextInt(measured.size()));
+            Node L = latents.get(RandomUtil.getInstance().nextInt(latents.size()));
+            Node X = measured.get(RandomUtil.getInstance().nextInt(measured.size()));
             if (g.isParentOf(L, X)) continue;              // already a parent
             if (L == X) continue;
             if (g.isAdjacentTo(X, L)) continue;
@@ -249,12 +245,12 @@ public final class RandomMim {
         }
     }
 
-    private static void addMeasuredMeasuredParents(Graph g, List<Node> measured, int count, Random rng) {
+    private static void addMeasuredMeasuredParents(Graph g, List<Node> measured, int count) {
         if (count <= 0 || measured.size() < 2) return;
         int tries = 0, added = 0, maxTries = count * 50;
         while (added < count && tries++ < maxTries) {
-            int i = rng.nextInt(measured.size());
-            int j = rng.nextInt(measured.size());
+            int i = RandomUtil.getInstance().nextInt(measured.size());
+            int j = RandomUtil.getInstance().nextInt(measured.size());
             if (i == j) continue;
 
             Node A = measured.get(TMath.min(i, j)); // bias lower -> higher
@@ -287,12 +283,12 @@ public final class RandomMim {
 
     // ========= helpers =========
 
-    private static void addMeasuredMeasuredAssociations(Graph g, List<Node> measured, int count, Random rng) {
+    private static void addMeasuredMeasuredAssociations(Graph g, List<Node> measured, int count) {
         if (count <= 0 || measured.size() < 2) return;
         int tries = 0, added = 0, maxTries = count * 30;
         while (added < count && tries++ < maxTries) {
-            Node A = measured.get(rng.nextInt(measured.size()));
-            Node B = measured.get(rng.nextInt(measured.size()));
+            Node A = measured.get(RandomUtil.getInstance().nextInt(measured.size()));
+            Node B = measured.get(RandomUtil.getInstance().nextInt(measured.size()));
             if (A == B) continue;
             if (g.isAdjacentTo(A, B)) continue;
             g.addBidirectedEdge(A, B); // error correlation style impurity

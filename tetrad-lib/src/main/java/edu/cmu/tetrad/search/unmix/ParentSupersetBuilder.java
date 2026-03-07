@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search.unmix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
@@ -87,11 +88,10 @@ public final class ParentSupersetBuilder {
 
         // 2) Optional: union with shallow-search parents on bagged subsamples
         if (cfg.useBagging && cfg.shallowSearch != null && cfg.bags > 0 && cfg.bagFraction > 0.0) {
-            Random rnd = new Random(cfg.seed);
             int n = data.getNumRows();
             int m = TMath.max(1, (int) TMath.round(cfg.bagFraction * n));
             for (int b = 0; b < cfg.bags; b++) {
-                List<Integer> rows = sampleWithoutReplacement(n, m, rnd);
+                List<Integer> rows = sampleWithoutReplacement(n, m);
                 int[] rowArray = rows.stream().mapToInt(Integer::intValue).toArray();
                 DataSet sub = data.subsetRows(rowArray);
                 Graph G = cfg.shallowSearch.apply(sub);
@@ -142,11 +142,11 @@ public final class ParentSupersetBuilder {
         return idxs;
     }
 
-    private static List<Integer> sampleWithoutReplacement(int n, int m, Random rnd) {
+    private static List<Integer> sampleWithoutReplacement(int n, int m) {
         int[] arr = new int[n];
         for (int i = 0; i < n; i++) arr[i] = i;
         for (int i = 0; i < m; i++) {
-            int j = i + rnd.nextInt(n - i);
+            int j = i + RandomUtil.getInstance().nextInt(n - i);
             int tmp = arr[i];
             arr[i] = arr[j];
             arr[j] = tmp;

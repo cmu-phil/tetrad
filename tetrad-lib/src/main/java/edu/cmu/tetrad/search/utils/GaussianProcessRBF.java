@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,9 +20,8 @@
 
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
-
-import java.util.Random;
 
 /**
  * GaussianProcessRBF simulates a Gaussian Process (GP) with a Radial Basis Function (RBF) kernel. It provides
@@ -33,7 +32,6 @@ public class GaussianProcessRBF {
     private final double[] xValues;        // Input points
     private final double[][] covarianceMatrix; // Covariance matrix
     private final double[] functionValues;     // Simulated function values
-    private final Random random;               // Random number generator
 
     private final double lengthScale;  // Length scale parameter for the RBF kernel
     private final double amplitude;    // Amplitude parameter for the RBF kernel
@@ -52,7 +50,6 @@ public class GaussianProcessRBF {
         this.lengthScale = lengthScale;
         this.amplitude = amplitude;
         this.noiseStd = noiseStd;
-        this.random = new Random();
 
         // Compute the covariance matrix
         this.covarianceMatrix = computeCovarianceMatrix(xValues);
@@ -126,7 +123,7 @@ public class GaussianProcessRBF {
         // Generate random Gaussian noise
         double[] noise = new double[n];
         for (int i = 0; i < n; i++) {
-            noise[i] = random.nextGaussian();
+            noise[i] = RandomUtil.getInstance().nextGaussian(0, 1);
         }
 
         // Simulate function values by applying the covariance matrix

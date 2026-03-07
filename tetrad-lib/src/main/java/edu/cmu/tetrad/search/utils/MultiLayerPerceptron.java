@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,7 +20,8 @@
 
 package edu.cmu.tetrad.search.utils;
 
-import java.util.Random;
+import edu.cmu.tetrad.util.RandomUtil;
+
 import java.util.function.Function;
 
 /**
@@ -41,11 +42,8 @@ public class MultiLayerPerceptron {
      * @param hiddenLayers Array specifying the number of neurons in each hidden layer.
      * @param activation   Activation function (e.g., Math::tanh or Math::sin).
      * @param inputScale   Scaling factor for the input to create bumpiness.
-     * @param seed         Random seed for reproducibility.
      */
-    public MultiLayerPerceptron(int inputDim, int[] hiddenLayers, Function<Double, Double> activation, double inputScale, long seed) {
-        Random random = new Random(seed);
-
+    public MultiLayerPerceptron(int inputDim, int[] hiddenLayers, Function<Double, Double> activation, double inputScale) {
         int numLayers = hiddenLayers.length;
         this.weights = new double[numLayers + 1][][]; // Includes input-to-hidden and hidden-to-output
         this.biases = new double[numLayers + 1][];    // Includes all layer biases
@@ -60,9 +58,9 @@ public class MultiLayerPerceptron {
             biases[layer] = new double[currentLayerSize];
             for (int i = 0; i < currentLayerSize; i++) {
                 for (int j = 0; j < prevLayerSize; j++) {
-                    weights[layer][i][j] = random.nextGaussian();
+                    weights[layer][i][j] = RandomUtil.getInstance().nextGaussian(0, 1);
                 }
-                biases[layer][i] = random.nextGaussian();
+                biases[layer][i] = RandomUtil.getInstance().nextGaussian(0, 1);
             }
             prevLayerSize = currentLayerSize;
         }
@@ -71,9 +69,9 @@ public class MultiLayerPerceptron {
         weights[numLayers] = new double[1][prevLayerSize];
         biases[numLayers] = new double[1];
         for (int j = 0; j < prevLayerSize; j++) {
-            weights[numLayers][0][j] = random.nextGaussian();
+            weights[numLayers][0][j] = RandomUtil.getInstance().nextGaussian(0, 1);
         }
-        biases[numLayers][0] = random.nextGaussian();
+        biases[numLayers][0] = RandomUtil.getInstance().nextGaussian(0, 1);
     }
 
     /**
@@ -89,8 +87,7 @@ public class MultiLayerPerceptron {
                 3, // Input dimension (R^3 -> R)
                 new int[]{10, 15, 5}, // Three hidden layers with specified neurons
                 Math::tanh, // Activation function
-                10.0, // Input scale for bumpiness
-                42 // Random seed
+                10.0 // Input scale for bumpiness
         );
 
         double[][] sampleInputs = {

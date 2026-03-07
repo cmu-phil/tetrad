@@ -217,8 +217,7 @@ public class AdditiveNoiseSimulationOld {
                     parents.size() + 1, // Input dimension (R^3 -> R)
                     hiddenDimensions, // Number of hidden neurons
                     this.activationFunction, // Activation function
-                    this.inputScale, // Input scale for bumpiness
-                    -1 // Random seed
+                    this.inputScale // Input scale for bumpiness
             );
 
             for (int sample = 0; sample < numSamples; sample++) {

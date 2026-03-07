@@ -23,13 +23,13 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.Kci;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.ejml.simple.SimpleMatrix;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import static org.ejml.UtilEjml.assertTrue;
 
@@ -73,12 +73,11 @@ public class KciSmokeTest {
     }
 
     private static SimpleMatrix makeDataVxN(int n, double depNoise) {
-        Random r = new Random(42);
         double[] x = new double[n], z = new double[n], e = new double[n], y = new double[n];
         for (int i = 0; i < n; i++) {
-            x[i] = r.nextGaussian();
-            z[i] = r.nextGaussian();
-            e[i] = r.nextGaussian();
+            x[i] = RandomUtil.getInstance().nextGaussian(0, 1);
+            z[i] = RandomUtil.getInstance().nextGaussian(0, 1);
+            e[i] = RandomUtil.getInstance().nextGaussian(0, 1);
         }
         // independent case uses depNoise = +Inf sentinel (we'll overwrite y below)
         if (Double.isInfinite(depNoise)) System.arraycopy(e, 0, y, 0, n);
@@ -198,7 +197,6 @@ public class KciSmokeTest {
         // independent: Y = e  (Y â X | Z)
         Kci kInd = makeKci(makeDataVxN(600, Double.POSITIVE_INFINITY), /*approximate=*/false);
         kInd.setNumPermutations(4000);    // min p â 1/4001 â 2.5e-4
-        kInd.rng = new Random(123);     // determinism
         double pInd = kInd.isIndependenceConditional(new GraphNode("X"), new GraphNode("Y"),
                 List.of(new GraphNode("Z")));
         assertTrue(0.0 <= pInd && pInd <= 1.0, "p in [0,1]");
@@ -207,7 +205,6 @@ public class KciSmokeTest {
         // dependent: Y = X + 0.05*e  (strong dependence)
         Kci kDep = makeKci(makeDataVxN(600, 0.05), /*approximate=*/false);
         kDep.setNumPermutations(4000);
-        kDep.rng = new Random(123);
         double pDep = kDep.isIndependenceConditional(new GraphNode("X"), new GraphNode("Y"),
                 List.of(new GraphNode("Z")));
         // Can't be smaller than 1/(B+1); use a realistic bound or just alpha
@@ -256,13 +253,11 @@ public class KciSmokeTest {
     public void permutation_independent_vs_dependent() {
         double alpha = 0.01;
         Kci kInd = makeKci(makeDataVxN(400, Double.POSITIVE_INFINITY), false);
-        kInd.rng = new Random(123); // determinism
         double pInd = kInd.isIndependenceConditional(new GraphNode("X"), new GraphNode("Y"),
                 List.of(new GraphNode("Z")));
         assertTrue(pInd > alpha, "perm: independent should fail to reject");
 
         Kci kDep = makeKci(makeDataVxN(400, 0.05), false);
-        kDep.rng = new Random(123);
         double pDep = kDep.isIndependenceConditional(new GraphNode("X"), new GraphNode("Y"),
                 List.of(new GraphNode("Z")));
         assertTrue(pDep < 1e-3, "perm: dependent should be significant");

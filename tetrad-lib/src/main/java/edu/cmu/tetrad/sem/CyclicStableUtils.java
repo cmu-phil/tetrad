@@ -47,19 +47,12 @@ public final class CyclicStableUtils {
      * @param s the fixed spectral radius for each SCC
      * @param coefLow the lower bound for coefficient values
      * @param coefHigh the upper bound for coefficient values
-     * @param seed the random seed for reproducibility, or -1 for random seed
      * @param params the parameters for the SEM model
      * @return the simulated data and SEM model
      */
     public static SemIm.CyclicSimResult simulateStableFixedRadius(
             Graph g, int n, double s, double coefLow, double coefHigh,
-            long seed, Parameters params) {
-
-        if (seed != -1) {
-            RandomUtil.getInstance().setSeed(seed);
-        } else {
-            RandomUtil.getInstance().setSeed(RandomUtil.getInstance().nextLong());
-        }
+            Parameters params) {
 
         SemPm pm = new SemPm(g);
         SemIm im = new SemIm(pm, params);
@@ -86,7 +79,7 @@ public final class CyclicStableUtils {
             long seed, Parameters params) {
 
         double targetRadius = TMath.sqrt(maxProd); // exact for 2-node cycles; safe upper bound otherwise
-        return simulateStableFixedRadius(g, n, targetRadius, coefLow, coefHigh, seed, params);
+        return simulateStableFixedRadius(g, n, targetRadius, coefLow, coefHigh, params);
     }
 
     // Scale-only: do not redraw; just rescale SCCs to target radius
@@ -341,6 +334,6 @@ public final class CyclicStableUtils {
 
         Parameters p = new Parameters();
         long seed = 42L;
-        return simulateStableFixedRadius(g, 10000, 0.6, 0.2, 1.0, seed, p);
+        return simulateStableFixedRadius(g, 10000, 0.6, 0.2, 1.0, p);
     }
 }

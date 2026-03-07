@@ -22,6 +22,7 @@ package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
@@ -127,11 +128,10 @@ public final class UnmixDiagnostics {
     public static StabilityResult stabilityAcrossRestarts(DataSet data, EmUnmix.Config cfg, ResidualRegressor regressor, Function<DataSet, Graph> pooled, Function<DataSet, Graph> perCluster, int repeats, long seedBase) {
 
         List<int[]> labelings = new ArrayList<>(repeats);
-        Random rnd = new Random(seedBase);
 
         for (int r = 0; r < repeats; r++) {
             EmUnmix.Config c = cfg.copy();
-            c.randomSeed = rnd.nextLong();    // if you support seeds
+            c.randomSeed = RandomUtil.getInstance().nextLong();    // if you support seeds
             UnmixResult res = EmUnmix.run(data, c, regressor, pooled, perCluster);
             labelings.add(res.labels);
         }

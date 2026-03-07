@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,14 +20,14 @@
 
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TMath;
 import org.apache.commons.math3.distribution.MultivariateNormalDistribution;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.CholeskyDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
-import edu.cmu.tetrad.util.TMath;
 
 import java.util.Arrays;
-import java.util.Random;
 
 /**
  * A utility class for generating and evaluating random mathematical functions, including polynomials, Fourier series,
@@ -35,8 +35,6 @@ import java.util.Random;
  * properties such as scaling and ensuring the function passes through the origin.
  */
 public class RandomFunctions {
-
-    private static final Random RANDOM = new Random();
 
     private RandomFunctions() {
         throw new IllegalStateException("Utility class");
@@ -57,7 +55,7 @@ public class RandomFunctions {
     public static double randomPolynomial(double x, int degree, double scale, boolean passThroughOrigin) {
         double[] coefficients = new double[degree + 1];
         for (int i = 0; i < coefficients.length; i++) {
-            coefficients[i] = (passThroughOrigin && i == 0) ? 0 : scale * (2 * RANDOM.nextDouble() - 1);
+            coefficients[i] = (passThroughOrigin && i == 0) ? 0 : scale * (2 * RandomUtil.getInstance().nextDouble() - 1);
         }
         double result = 0;
         for (int i = 0; i < coefficients.length; i++) {
@@ -82,8 +80,8 @@ public class RandomFunctions {
         double[] a = new double[numTerms];
         double[] b = new double[numTerms];
         for (int i = 0; i < numTerms; i++) {
-            a[i] = scale * (2 * RANDOM.nextDouble() - 1);
-            b[i] = scale * (2 * RANDOM.nextDouble() - 1);
+            a[i] = scale * (2 * RandomUtil.getInstance().nextDouble() - 1);
+            b[i] = scale * (2 * RandomUtil.getInstance().nextDouble() - 1);
         }
         if (passThroughOrigin) {
             b[0] = 0; // Adjust to pass through origin
@@ -112,8 +110,8 @@ public class RandomFunctions {
         double[] yPoints = new double[numPoints];
 
         for (int i = 0; i < numPoints; i++) {
-            xPoints[i] = min + (max - min) * RANDOM.nextDouble();
-            yPoints[i] = 2 * (RANDOM.nextDouble() - 0.5); // Random values in [-1, 1]
+            xPoints[i] = min + (max - min) * RandomUtil.getInstance().nextDouble();
+            yPoints[i] = 2 * (RandomUtil.getInstance().nextDouble() - 0.5); // Random values in [-1, 1]
         }
 
         if (passThroughOrigin) {
@@ -152,8 +150,8 @@ public class RandomFunctions {
         double[] amplitudes = new double[numCenters];
 
         for (int i = 0; i < numCenters; i++) {
-            centers[i] = min + (max - min) * RANDOM.nextDouble();
-            amplitudes[i] = 2 * (RANDOM.nextDouble() - 0.5); // Random values in [-1, 1]
+            centers[i] = min + (max - min) * RandomUtil.getInstance().nextDouble();
+            amplitudes[i] = 2 * (RandomUtil.getInstance().nextDouble() - 0.5); // Random values in [-1, 1]
         }
 
         double fAtZero = 0;

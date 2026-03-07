@@ -64,8 +64,7 @@ public class TestCliqueDetection {
                 List.of(spec1),
                 5, 0,
                 0, 0,
-                RandomMim.LatentLinkMode.CARTESIAN_PRODUCT,
-                rng
+                RandomMim.LatentLinkMode.CARTESIAN_PRODUCT
         );
 
         Parameters params = new Parameters();

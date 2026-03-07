@@ -26,14 +26,11 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.*;
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.simulation.ParameterTab;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.ParameterComponents;
 import edu.cmu.tetradapp.util.WatchedProcess;
-import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -213,15 +210,14 @@ public class BlockClusteringWizard extends JPanel {
         // Allocate data box
         VerticalDoubleDataBox box = new VerticalDoubleDataBox(n, p);
 
-        Random rnd = new Random(42);
         double sdLatent = TMath.sqrt(latentVar);
         double sdNoiseIndicator = TMath.sqrt(1.0 - loading * loading); // ensure Var(X) â 1
 
         for (int t = 0; t < n; t++) {
             // Latent disturbances (std normal scaled)
-            double e1 = sdLatent * rnd.nextGaussian();
-            double e2 = sdLatent * rnd.nextGaussian();
-            double e3 = sdLatent * rnd.nextGaussian();
+            double e1 = sdLatent * RandomUtil.getInstance().nextGaussian(0, 1);
+            double e2 = sdLatent * RandomUtil.getInstance().nextGaussian(0, 1);
+            double e3 = sdLatent * RandomUtil.getInstance().nextGaussian(0, 1);
 
             // Latents (structural)
             double L1 = e1;
@@ -231,15 +227,15 @@ public class BlockClusteringWizard extends JPanel {
             // Indicators: m each
             int col = 0;
             for (int j = 0; j < m; j++, col++) {
-                double x = loading * L1 + sdNoiseIndicator * rnd.nextGaussian();
+                double x = loading * L1 + sdNoiseIndicator * RandomUtil.getInstance().nextGaussian();
                 box.set(t, col, x);
             }
             for (int j = 0; j < m; j++, col++) {
-                double x = loading * L2 + sdNoiseIndicator * rnd.nextGaussian();
+                double x = loading * L2 + sdNoiseIndicator * RandomUtil.getInstance().nextGaussian();
                 box.set(t, col, x);
             }
             for (int j = 0; j < m; j++, col++) {
-                double x = loading * L3 + sdNoiseIndicator * rnd.nextGaussian();
+                double x = loading * L3 + sdNoiseIndicator * RandomUtil.getInstance().nextGaussian();
                 box.set(t, col, x);
             }
         }

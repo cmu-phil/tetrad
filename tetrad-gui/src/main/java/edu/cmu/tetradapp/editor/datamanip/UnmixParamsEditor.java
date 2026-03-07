@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -53,7 +53,7 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
 
     // EM stability
     private JSpinner restartsSpinner, itersSpinner, ridgeSpinner, shrinkageSpinner,
-            annealStepsSpinner, annealTSpinner, seedSpinner;
+            annealStepsSpinner, annealTSpinner;
 
     // Diagnostics
     private JCheckBox diagCheck;
@@ -247,18 +247,12 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
             pushToParams();
         });
 
-        seedSpinner = intSpinner((int) spec.getRandomSeed(), Integer.MIN_VALUE, Integer.MAX_VALUE, 1, v -> {
-            spec.setRandomSeed(v);
-            pushToParams();
-        });
-
         JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
         row1.add(new JLabel("K-means restarts:"));
         row1.add(restartsSpinner);
         row1.add(new JLabel("EM iters:"));
         row1.add(itersSpinner);
         row1.add(new JLabel("Seed:"));
-        row1.add(seedSpinner);
 
         JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
         row2.add(new JLabel("Ridge:"));

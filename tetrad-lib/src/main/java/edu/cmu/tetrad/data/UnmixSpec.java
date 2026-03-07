@@ -609,26 +609,6 @@ public final class UnmixSpec implements Serializable {
     }
 
     /**
-     * Retrieves the random seed.
-     *
-     * @return the random seed.
-     */
-    public long getRandomSeed() {
-        return randomSeed;
-    }
-
-    /**
-     * Sets the random seed.
-     *
-     * @param s the random seed to set; must be non-negative.
-     * @return the current instance of UnmixSpec for method chaining.
-     */
-    public UnmixSpec setRandomSeed(long s) {
-        this.randomSeed = s;
-        return this;
-    }
-
-    /**
      * Retrieves whether to save diagnostics.
      *
      * @return true if diagnostics are saved, false otherwise.

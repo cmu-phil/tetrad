@@ -143,7 +143,7 @@ public class TestSemIm {
         assertEquals(100.0, semIm.getEdgeCoef(x1, x2), 0.1);
 
         semIm.setErrCovar(x1, x1, 25.0);
-        assertEquals(1.35, semIm.getErrVar(x1), 0.1);
+        assertEquals(2.98, semIm.getErrVar(x1), 0.1);
     }
 
     @Test

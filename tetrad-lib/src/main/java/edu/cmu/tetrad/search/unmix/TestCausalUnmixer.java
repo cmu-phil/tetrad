@@ -87,12 +87,11 @@ public class TestCausalUnmixer {
      */
     private static @NotNull TestCausalUnmixer.LabeledData getMixOutTopoDiff() {
         int p = 12, n1 = 800, n2 = 800;
-        long seed = 7;
 
         List<Node> vars = new ArrayList<>();
         for (int i = 0; i < p; i++) vars.add(new ContinuousVariable("X" + i));
         Graph gA = RandomGraph.randomGraph(vars, 0, 14, 100, 100, 100, false);
-        Graph gB = copyWithFlippedDirections(gA, 4, new Random(seed)); // flip ~4 edges
+        Graph gB = copyWithFlippedDirections(gA, 4); // flip ~4 edges
 
         // Non-Gaussian errors (e.g., Laplace): SIMULATION_ERROR_TYPE = 3
         Parameters params = new Parameters();
@@ -110,17 +109,17 @@ public class TestCausalUnmixer {
         Arrays.fill(labels, 0, n1, 0);
         Arrays.fill(labels, n1, n1 + n2, 1);
 
-        return shuffleWithLabels(concat, labels, seed);
+        return shuffleWithLabels(concat, labels);
     }
 
     /**
      * Correctly copy g and flip a few directions while preserving skeleton.
      */
-    private static Graph copyWithFlippedDirections(Graph g, int flips, Random rnd) {
+    private static Graph copyWithFlippedDirections(Graph g, int flips) {
         Graph h = new EdgeListGraph(g); // copy nodes + edges (or: new EdgeListGraph(g))
         List<Edge> dir = h.getEdges().stream().filter(Edge::isDirected).collect(Collectors.toList());
         if (dir.isEmpty()) return h;
-        Collections.shuffle(dir, rnd);
+        Collections.shuffle(dir);
         int done = 0;
         for (Edge e : dir) {
             if (done >= flips) break;
@@ -309,11 +308,11 @@ public class TestCausalUnmixer {
     }
 
     // Shuffle helper identical to your earlier version
-    private static LabeledData shuffleWithLabels(DataSet concat, int[] labels, long seed) {
+    private static LabeledData shuffleWithLabels(DataSet concat, int[] labels) {
         int n = concat.getNumRows();
         List<Integer> perm = new ArrayList<>(n);
         for (int i = 0; i < n; i++) perm.add(i);
-        Collections.shuffle(perm, new Random(seed));
+        Collections.shuffle(perm);
         DataSet shuffled = concat.subsetRows(perm);
         int[] y = new int[n];
         for (int i = 0; i < n; i++) y[i] = labels[perm.get(i)];
@@ -355,7 +354,6 @@ public class TestCausalUnmixer {
     public void phase3_semisynthetic() {
         // Use a backbone covariance from a single SEM sample, then inject shifts.
         int p = 15, n1 = 900, n2 = 900, flips = 10;
-        long seed = 33;
 
         // Backbone DAG & sample (Laplace errors for heavier tails)
         List<Node> vars = new ArrayList<>();
@@ -371,7 +369,7 @@ public class TestCausalUnmixer {
 
         // Two regimes: (A) keep backbone; (B) flip edges & scale some parameters
         Graph gA = gBackbone.copy();
-        Graph gB = copyWithFlippedDirections(gBackbone, flips, new Random(seed));
+        Graph gB = copyWithFlippedDirections(gBackbone, flips);
         SemIm imA = new SemIm(new SemPm(gA), params);
         SemIm imB = new SemIm(new SemPm(gB), params);
 
@@ -395,7 +393,7 @@ public class TestCausalUnmixer {
         Arrays.fill(lab, n1, n1 + n2, 1);
 
         // Shuffle rows + labels together (local helper)
-        LabeledData mixed = shuffleWithLabels(concat, lab, seed);
+        LabeledData mixed = shuffleWithLabels(concat, lab);
 
         // === Run the causal unmixer (EM-based) ===
         UnmixResult rEM = CausalUnmixer.getUnmixedResult(mixed.data, CausalUnmixer.defaults());

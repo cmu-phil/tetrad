@@ -83,10 +83,6 @@ public final class MlBayesIm implements BayesIm {
      */
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-3;
     /**
-     * Random number generator.
-     */
-    static private final Random random = new Random();
-    /**
      * The associated Bayes PM model.
      */
     private final BayesPm bayesPm;
@@ -316,7 +312,7 @@ public final class MlBayesIm implements BayesIm {
         double[] row = new double[size];
         double sum = 0.0;
 
-        int strong = (int) TMath.floor(random.nextDouble() * size);
+        int strong = (int) TMath.floor(RandomUtil.getInstance().nextDouble() * size);
 
         for (int i = 0; i < size; i++) {
             if (i == strong) {

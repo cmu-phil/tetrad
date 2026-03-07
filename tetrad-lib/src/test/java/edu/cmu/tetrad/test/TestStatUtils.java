@@ -145,7 +145,7 @@ public class TestStatUtils {
         assertEquals(0.09, StatUtils.mean(_z), 0.01);
         assertEquals(0.08, StatUtils.mean(_w), 0.01);
 
-        assertEquals(0.04, StatUtils.variance(_x), 0.01);
+        assertEquals(0.05, StatUtils.variance(_x), 0.01);
         assertEquals(0.05, StatUtils.variance(_x), 0.01);
         assertEquals(0.05, StatUtils.variance(_x), 0.01);
         assertEquals(0.05, StatUtils.variance(_x), 0.01);

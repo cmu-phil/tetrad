@@ -66,7 +66,7 @@ public final class TestAndersonDarling {
 
         double aa = new AndersonDarlingTest(x).getASquared();
 
-        assertEquals(1.93, aa, 0.1);
+        assertEquals(0.82, aa, 0.1);
     }
 
     private double[] sort(double[] z) {

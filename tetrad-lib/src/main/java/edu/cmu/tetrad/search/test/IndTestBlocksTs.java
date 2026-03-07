@@ -26,13 +26,9 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
-import edu.cmu.tetrad.util.RankTests;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.util.*;
 import org.ejml.simple.SimpleMatrix;
 
-import javax.net.ssl.SSLContext;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -147,35 +143,19 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
     /**
      * Deterministic alternating split; if rng!=null, shuffle then half/half.
      */
-    private static int[][] splitCols(int[] cols, Random rng, boolean leftGetsSmaller) {
+    private static int[][] splitCols(int[] cols, boolean leftGetsSmaller) {
         if (cols == null || cols.length == 0) return new int[][]{new int[0], new int[0]};
         int[] idx = Arrays.copyOf(cols, cols.length);
-        if (rng == null) {
-            // Alternate indices. If leftGetsSmaller and odd length, give left the smaller half (floor).
-            boolean leftGetsOddPositions = leftGetsSmaller; // odd positions count = floor(n/2)
-            int aCount = leftGetsOddPositions ? (idx.length / 2) : ((idx.length + 1) / 2);
-            int bCount = idx.length - aCount;
-            int[] A = new int[aCount];
-            int[] B = new int[bCount];
-            int ai = 0, bi = 0;
-            for (int i = 0; i < idx.length; i++) {
-                boolean toA = ((i & 1) == 1) == leftGetsOddPositions;
-                if (toA) A[ai++] = idx[i];
-                else B[bi++] = idx[i];
-            }
-            return new int[][]{A, B};
-        } else {
-            for (int i = idx.length - 1; i > 0; i--) {
-                int j = rng.nextInt(i + 1);
-                int tmp = idx[i];
-                idx[i] = idx[j];
-                idx[j] = tmp;
-            }
-            int half = idx.length / 2; // smaller half size when odd
-            int[] A = Arrays.copyOfRange(idx, 0, half);
-            int[] B = Arrays.copyOfRange(idx, half, idx.length);
-            return new int[][]{A, B};
+        for (int i = idx.length - 1; i > 0; i--) {
+            int j = RandomUtil.getInstance().nextInt(i + 1);
+            int tmp = idx[i];
+            idx[i] = idx[j];
+            idx[j] = tmp;
         }
+        int half = idx.length / 2; // smaller half size when odd
+        int[] A = Arrays.copyOfRange(idx, 0, half);
+        int[] B = Arrays.copyOfRange(idx, half, idx.length);
+        return new int[][]{A, B};
     }
 
     private static List<Node> indicesToNodes(int[] idxs, List<Node> all) {
@@ -422,10 +402,9 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
         Rb.addAll(allCols[yiVar]);
 
         // Split each Zi into (Ai,Bi) and append
-        Random rng = randomizeSplits ? new Random(splitSeed) : null;
         for (int zv : zVars) {
             int[] Zcols = allCols[zv];
-            int[][] AB = splitCols(Zcols, rng, leftGetsSmallerHalfWhenOdd);
+            int[][] AB = splitCols(Zcols, leftGetsSmallerHalfWhenOdd);
             Lb.addAll(AB[0]);
             Rb.addAll(AB[1]);
         }

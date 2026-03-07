@@ -52,8 +52,7 @@ public class TestClusterFinder {
                 numLatentMeasuredImpureParents,
                 numMeasuredMeasuredImpureParents,
                 numMeasuredMeasuredImpureAssociations,
-                RandomMim.LatentLinkMode.CARTESIAN_PRODUCT,
-                new Random());
+                RandomMim.LatentLinkMode.CARTESIAN_PRODUCT);
     }
 
     @Test

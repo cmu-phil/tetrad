@@ -328,13 +328,12 @@ public final class HybridCgImEditor extends JPanel {
 
     private void randomizeDiscreteTable(int y) {
         if (y < 0 || !pm.isDiscrete(y)) return;
-        Random rng = new Random();
         int rows = pm.getNumRows(y);
         int K = pm.getCardinality(y);
         for (int r = 0; r < rows; r++) {
             double[] e = new double[K];
             double sum = 0.0;
-            for (int k = 0; k < K; k++) { e[k] = -TMath.log(1.0 - rng.nextDouble()); sum += e[k]; }
+            for (int k = 0; k < K; k++) { e[k] = -TMath.log(1.0 - RandomUtil.getInstance().nextDouble()); sum += e[k]; }
             for (int k = 0; k < K; k++) im.setProbability(y, r, k, e[k] / sum);
         }
         firePropertyChange("modelChanged", null, null);
@@ -342,13 +341,12 @@ public final class HybridCgImEditor extends JPanel {
 
     private void randomizeContinuousTable(int y) {
         if (y < 0 || pm.isDiscrete(y)) return;
-        Random rng = new Random();
         int rows = pm.getNumRows(y);
         int m = pm.getContinuousParents(y).length;
         for (int r = 0; r < rows; r++) {
-            im.setMean(y, r, rng.nextGaussian() * 0.25);
+            im.setMean(y, r, RandomUtil.getInstance().nextGaussian(0, 1) * 0.25);
             for (int j = 0; j < m; j++) im.setCoefficient(y, r, j, RandomUtil.getInstance().nextUniform(-1, 1));
-            im.setVariance(y, r, 0.25 + 0.75 * rng.nextDouble());
+            im.setVariance(y, r, 0.25 + 0.75 * RandomUtil.getInstance().nextDouble());
         }
         firePropertyChange("modelChanged", null, null);
     }

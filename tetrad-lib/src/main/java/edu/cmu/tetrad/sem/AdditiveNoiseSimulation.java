@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.RealDistribution;
 import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
@@ -36,9 +37,6 @@ public class AdditiveNoiseSimulation {
     private final double inputScale;
     private final Function<Double, Double> activationFunction;
     private final boolean useFastTanh;
-
-    // Keep simple per-node seeding (still random overall)
-    private final Random seeder = new Random();
 
     /**
      * Constructs a new AdditiveNoiseSimulation instance with the specified parameters.
@@ -226,7 +224,7 @@ public class AdditiveNoiseSimulation {
                 applyActivationInPlace(A, activationFunction, useFastTanh);
 
                 // Random MLP for this node
-                RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale, seeder);
+                RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale);
 
                 // signal = f_j(Pa)
                 Y = mlp.forward(A, Z, Y, activationFunction, useFastTanh);
@@ -245,7 +243,7 @@ public class AdditiveNoiseSimulation {
         final DMatrixRMaj[] W;   // layer weights: (out x in)
         final double[][] b;      // biases per layer
 
-        RandomMLP(int Din, int[] hidden, int Dout, double inputScale, Random r) {
+        RandomMLP(int Din, int[] hidden, int Dout, double inputScale) {
             this.Din = Din;
             this.Dout = Dout;
             this.H = hidden == null ? new int[0] : hidden.clone();
@@ -257,22 +255,22 @@ public class AdditiveNoiseSimulation {
             for (int l = 0; l < H.length; l++) {
                 W[l] = new DMatrixRMaj(H[l], prev);
                 b[l] = new double[H[l]];
-                heInit(W[l], r, inputScale, true);  // tanh-friendly
+                heInit(W[l], inputScale, true);  // tanh-friendly
                 prev = H[l];
             }
             W[L - 1] = new DMatrixRMaj(Dout, prev);
             b[L - 1] = new double[Dout];
 //            heInit(W[L - 1], r, inputScale * 0.5);
-            heInit(W[L - 1], r, inputScale * 0.5, true);
+            heInit(W[L - 1],inputScale * 0.5, true);
 
         }
 
-        private static void heInit(DMatrixRMaj W, Random r, double scale, boolean tanhLike) {
+        private static void heInit(DMatrixRMaj W, double scale, boolean tanhLike) {
             // tanh prefers sqrt(1 / fan_in), ReLU prefers sqrt(2 / fan_in)
             double base = tanhLike ? 1.0 : 2.0;
             double s = scale * TMath.sqrt(base / TMath.max(1, W.numCols));
             for (int i = 0, n = W.getNumElements(); i < n; i++) {
-                W.data[i] = r.nextGaussian() * s;
+                W.data[i] = RandomUtil.getInstance().nextGaussian(0, 1) * s;
             }
         }
 

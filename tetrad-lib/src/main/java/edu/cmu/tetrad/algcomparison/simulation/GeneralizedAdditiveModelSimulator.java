@@ -369,9 +369,6 @@ public class GeneralizedAdditiveModelSimulator implements Simulation {
             ).setFunctionFamily(family).setNumUnitsPerEdge(unitsPerEdge).setInputStandardize(standardizeParents)
                     .setEdgeScale(edgeScale);
 
-            long seed = parameters.getLong(Params.SEED);
-            if (seed != -1L) gen.setSeed(seed);
-
             return gen.generate();
         } catch (ParseException e) {
             throw new RuntimeException(e);

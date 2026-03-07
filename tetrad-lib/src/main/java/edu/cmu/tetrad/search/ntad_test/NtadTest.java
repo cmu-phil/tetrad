@@ -20,13 +20,13 @@
 
 package edu.cmu.tetrad.search.ntad_test;
 
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -213,10 +213,9 @@ public abstract class NtadTest {
     protected SimpleMatrix sampleRows(SimpleMatrix matrix, double frac) {
         int numSamples = (int) TMath.ceil(frac * matrix.getNumRows());
         List<Integer> sampledIndices = new ArrayList<>();
-        Random rand = new Random();
 
         while (sampledIndices.size() < numSamples) {
-            int idx = rand.nextInt(matrix.getNumRows());
+            int idx = RandomUtil.getInstance().nextInt(matrix.getNumRows());
             if (!sampledIndices.contains(idx)) {
                 sampledIndices.add(idx);
             }

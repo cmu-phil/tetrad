@@ -683,8 +683,8 @@ public final class HybridCgModel {
             return order;
         }
 
-        private static int sampleCategorical(double[] probs, Random rng) {
-            double u = rng.nextDouble();
+        private static int sampleCategorical(double[] probs) {
+            double u = RandomUtil.getInstance().nextDouble();
             double c = 0.0;
             for (int k = 0; k < probs.length; k++) {
                 c += probs[k];
@@ -904,11 +904,9 @@ public final class HybridCgModel {
          * </ul>
          *
          * @param n   number of rows to sample
-         * @param rng random number generator
          * @return sample
          */
-        public Sample sample(int n, Random rng) {
-            if (rng == null) rng = new Random();
+        public Sample sample(int n) {
             final int p = pm.nodes.length;
 
             // Precompute topo order
@@ -949,7 +947,7 @@ public final class HybridCgModel {
                             }
                         }
                         int rowIndex = pm.getRowIndex(y, discVals, contBins);
-                        discCols[y][r] = sampleCategorical(discProbs[y][rowIndex], rng);
+                        discCols[y][r] = sampleCategorical(discProbs[y][rowIndex]);
                     } else {
                         // Continuous child
                         int[] discVals = new int[dps[y].length];
@@ -960,7 +958,7 @@ public final class HybridCgModel {
                             mean += getCoefficient(y, rowIndex, t) * contCols[cps[y][t]][r];
                         double var = getVariance(y, rowIndex);
                         double sd = var > 0 ? TMath.sqrt(var) : 0.0;
-                        contCols[y][r] = mean + sd * rng.nextGaussian();
+                        contCols[y][r] = mean + sd * RandomUtil.getInstance().nextGaussian();
                     }
                 }
             }

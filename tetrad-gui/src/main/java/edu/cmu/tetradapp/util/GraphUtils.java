@@ -34,7 +34,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 /**
@@ -96,8 +95,7 @@ public class GraphUtils {
                         numLatentMeasuredImpureParents,
                         numMeasuredMeasuredImpureParents,
                         numMeasuredMeasuredImpureAssociations,
-                        RandomMim.LatentLinkMode.values()[metaEdgeConnectionType - 1],
-                        new Random());
+                        RandomMim.LatentLinkMode.values()[metaEdgeConnectionType - 1]);
             }
             case "ScaleFree" -> GraphUtils.makeRandomScaleFree(newGraphNumMeasuredNodes,
                     newGraphNumLatents, alpha, beta, deltaIn, deltaOut);

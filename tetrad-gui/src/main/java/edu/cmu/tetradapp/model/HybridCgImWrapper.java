@@ -34,7 +34,6 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Random;
 
 /**
  * GUI wrapper for a {@link HybridCgIm}. Mirrors BayesImWrapper responsibilities: - Holds the instantiated parameters
@@ -124,7 +123,6 @@ public class HybridCgImWrapper implements SessionModel, Cloneable, Serializable 
      * rows get small random coefficients and positive variance.
      */
     private static void randomize(HybridCgIm im, long seed) {
-        Random rng = new Random(seed);
         HybridCgPm pm = im.getPm();
         int n = pm.getNodes().length;
 
@@ -137,7 +135,7 @@ public class HybridCgImWrapper implements SessionModel, Cloneable, Serializable 
                     double sum = 0.0;
                     double[] tmp = new double[K];
                     for (int k = 0; k < K; k++) {
-                        double v = -TMath.log(1.0 - rng.nextDouble());
+                        double v = -TMath.log(1.0 - RandomUtil.getInstance().nextDouble());
                         tmp[k] = v;
                         sum += v;
                     }
@@ -148,11 +146,11 @@ public class HybridCgImWrapper implements SessionModel, Cloneable, Serializable 
             } else {
                 int m = pm.getContinuousParents(y).length;
                 for (int r = 0; r < rows; r++) {
-                    im.setMean(y, r, rng.nextGaussian() * 0.25);
+                    im.setMean(y, r, RandomUtil.getInstance().nextGaussian(0, 1) * 0.25);
                     for (int j = 0; j < m; j++) {
                         im.setCoefficient(y, r, j, RandomUtil.getInstance().nextUniform(-1, 1));
                     }
-                    double var = 0.25 + 0.75 * rng.nextDouble(); // (0.25, 1.0]
+                    double var = 0.25 + 0.75 * RandomUtil.getInstance().nextDouble(); // (0.25, 1.0]
                     im.setVariance(y, r, var);
                 }
             }

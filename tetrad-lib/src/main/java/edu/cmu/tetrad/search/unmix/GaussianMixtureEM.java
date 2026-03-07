@@ -65,7 +65,7 @@ public final class GaussianMixtureEM {
         if (n == 0 || cfg.K <= 0) throw new IllegalArgumentException("Empty data or K<=0");
 
         // --- init via k-means (hard) then moments
-        int[] z = KMeans.clusterWithRestarts(X, cfg.K, /*iters*/50, cfg.seed, cfg.kmeansRestarts).labels;
+        int[] z = KMeans.clusterWithRestarts(X, cfg.K, /*iters*/50, cfg.kmeansRestarts).labels;
         double[] w = new double[cfg.K];
         double[][] mu = new double[cfg.K][d];
         double[][][] S = allocCov(cfg.K, d, cfg.covType);

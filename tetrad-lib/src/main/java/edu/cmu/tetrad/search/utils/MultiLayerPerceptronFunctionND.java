@@ -20,7 +20,8 @@
 
 package edu.cmu.tetrad.search.utils;
 
-import java.util.Random;
+import edu.cmu.tetrad.util.RandomUtil;
+
 import java.util.function.Function;
 
 /**
@@ -41,25 +42,22 @@ public class MultiLayerPerceptronFunctionND {
      * @param hiddenDimension Number of neurons in the hidden layer.
      * @param activation      Activation function (e.g., Math::sin or Math::tanh).
      * @param inputScale      Scaling factor for the input to create bumpiness.
-     * @param seed            Random seed for reproducibility.
      */
-    public MultiLayerPerceptronFunctionND(int inputDim, int hiddenDimension, Function<Double, Double> activation, double inputScale, long seed) {
-        Random random = new Random(seed);
-
+    public MultiLayerPerceptronFunctionND(int inputDim, int hiddenDimension, Function<Double, Double> activation, double inputScale) {
         this.W1 = new double[hiddenDimension][inputDim];
         this.b1 = new double[hiddenDimension];
         this.W2 = new double[hiddenDimension];
-        this.b2 = random.nextDouble() * 2 - 1; // Random value in [-1, 1]
+        this.b2 = RandomUtil.getInstance().nextDouble() * 2 - 1; // Random value in [-1, 1]
         this.activation = activation;
         this.inputScale = inputScale;
 
         // Initialize weights and biases randomly
         for (int i = 0; i < hiddenDimension; i++) {
             for (int j = 0; j < inputDim; j++) {
-                this.W1[i][j] = random.nextGaussian(); // Gaussian weights
+                this.W1[i][j] = RandomUtil.getInstance().nextGaussian(0, 1); // Gaussian weights
             }
-            this.b1[i] = random.nextGaussian();       // Gaussian biases
-            this.W2[i] = random.nextGaussian();       // Gaussian weights
+            this.b1[i] = RandomUtil.getInstance().nextGaussian(0, 1);      // Gaussian biases
+            this.W2[i] = RandomUtil.getInstance().nextGaussian(0, 1);       // Gaussian weights
         }
     }
 
@@ -76,8 +74,7 @@ public class MultiLayerPerceptronFunctionND {
                 3, // Input dimension (R^3 -> R)
                 20, // Number of hidden neurons
                 Math::tanh, // Activation function
-                10.0, // Input scale for bumpiness
-                42 // Random seed
+                10.0 // Input scale for bumpiness
         );
 
         // Evaluate and print the random function for some sample inputs

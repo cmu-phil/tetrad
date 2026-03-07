@@ -22,13 +22,13 @@ package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.TMath;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Random;
 
 /**
  * Uses expectation-maximization to sort a a data set with data sampled from two or more multivariate Gaussian
@@ -79,12 +79,10 @@ public class Demixer {
         variances = new Matrix[k];
         gammaArray = new double[k][numCases];
 
-        Random rand = new Random();
-
         //  initialize the means array to the mean of each variable plus noise
         for (int i = 0; i < numVars; i++) {
             for (int j = 0; j < k; j++) {
-                meansArray[j][i] = calcMean(data.getDoubleData().getColumn(i)) + (rand.nextGaussian());
+                meansArray[j][i] = calcMean(data.getDoubleData().getColumn(i)) + (RandomUtil.getInstance().nextGaussian());
             }
         }
 

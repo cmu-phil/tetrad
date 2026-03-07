@@ -54,7 +54,6 @@ import static edu.cmu.tetrad.util.TMath.*;
  * where {@code logLik_hat} is the maximized penalized log-likelihood,
  * {@code n} is the effective local sample size, and {@code edf}
  * is the ridge-based effective degrees of freedom.
- * </p>
  *
  * <p><b>Implementation notes:</b></p>
  * <ul>
@@ -859,12 +858,12 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
     /**
      * Sets the lower and upper quantile thresholds for mapping. The specified quantiles are used
      * to calculate the robust bounds for the data variables. This method validates the input quantiles
-     * to ensure they satisfy the conditions: 0 <= loQ < hiQ <= 1.
+     * to ensure they satisfy the conditions: 0 &lt;= loQ &lt; hiQ &lt;= 1.
      *
      * @param loQ The lower quantile threshold, a value between 0 (inclusive) and 1 (exclusive).
      * @param hiQ The upper quantile threshold, a value between 0 (exclusive) and 1 (inclusive),
      *            and greater than the specified loQ.
-     * @throws IllegalArgumentException If the quantiles do not satisfy 0 <= loQ < hiQ <= 1.
+     * @throws IllegalArgumentException If the quantiles do not satisfy 0 &lt;= loQ &lt; hiQ &lt;= 1.
      */
     public void setMapQuantiles(double loQ, double hiQ) {
         if (!(loQ >= 0 && loQ < hiQ && hiQ <= 1)) {

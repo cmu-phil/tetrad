@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
@@ -14,7 +15,6 @@ import org.ejml.dense.row.factory.LinearSolverFactory_DDRM;
 import org.ejml.interfaces.linsol.LinearSolverDense;
 
 import java.util.Arrays;
-import java.util.Random;
 
 /**
  * Practical nonlinearity tests for conditional mean E(Y|X).
@@ -474,9 +474,8 @@ public final class NonlinearityTests {
     private static int[] shuffledIndices(int n, long seed) {
         int[] idx = new int[n];
         for (int i = 0; i < n; i++) idx[i] = i;
-        Random r = new Random(seed);
         for (int i = n - 1; i > 0; i--) {
-            int j = r.nextInt(i + 1);
+            int j = RandomUtil.getInstance().nextInt(i + 1);
             int t = idx[i];
             idx[i] = idx[j];
             idx[j] = t;
@@ -564,14 +563,13 @@ public final class NonlinearityTests {
         int mf = TMath.max(1, m / 2);
         int outM = 2 * mf;
 
-        Random rng = new Random(seed);
         double[][] W = new double[mf][d];
         double[] b = new double[mf];
 
         double wStd = 1.0 / sigma;
         for (int i = 0; i < mf; i++) {
-            for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * wStd;
-            b[i] = rng.nextDouble() * 2.0 * TMath.PI;
+            for (int j = 0; j < d; j++) W[i][j] = RandomUtil.getInstance().nextGaussian(0, 1) * wStd;
+            b[i] = RandomUtil.getInstance().nextDouble() * 2.0 * TMath.PI;
         }
 
         double scale = TMath.sqrt(2.0 / outM);
@@ -708,7 +706,7 @@ public final class NonlinearityTests {
         // ---- make folds ----
         int[] perm = new int[n];
         for (int i = 0; i < n; i++) perm[i] = i;
-        shuffleInPlace(perm, new Random(seed));
+        shuffleInPlace(perm);
 
         int[] foldId = new int[n];
         for (int i = 0; i < n; i++) foldId[perm[i]] = i % folds;
@@ -761,8 +759,7 @@ public final class NonlinearityTests {
             double sigma = medianPairwiseDistanceND(XTr, TMath.min(400, XTr.length));
             if (!(sigma > 0) || !Double.isFinite(sigma)) sigma = 1.0;
 
-            Random rng = new Random(mix64(seed ^ (long) f));
-            RffMap rff = new RffMap(d, rffFeatures, sigma, rng, useCosSinPairs);
+            RffMap rff = new RffMap(d, rffFeatures, sigma, useCosSinPairs);
 
             DMatrixRMaj PhiTr = rff.transform(XTr);
             DMatrixRMaj PhiTe = rff.transform(XTe);
@@ -977,9 +974,9 @@ public final class NonlinearityTests {
         return sign * y;
     }
 
-    private static void shuffleInPlace(int[] a, Random rng) {
+    private static void shuffleInPlace(int[] a) {
         for (int i = a.length - 1; i > 0; i--) {
-            int j = rng.nextInt(i + 1);
+            int j = RandomUtil.getInstance().nextInt(i + 1);
             int tmp = a[i]; a[i] = a[j]; a[j] = tmp;
         }
     }
@@ -1103,7 +1100,7 @@ public final class NonlinearityTests {
         final boolean useCosSinPairs;
         final double scale;
 
-        RffMap(int d, int m, double sigma, Random rng, boolean useCosSinPairs) {
+        RffMap(int d, int m, double sigma, boolean useCosSinPairs) {
             this.d = d;
             this.useCosSinPairs = useCosSinPairs;
 
@@ -1113,8 +1110,8 @@ public final class NonlinearityTests {
                 this.b = new double[outM];
                 double wStd = 1.0 / sigma;
                 for (int i = 0; i < outM; i++) {
-                    for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * wStd;
-                    b[i] = rng.nextDouble() * 2.0 * TMath.PI;
+                    for (int j = 0; j < d; j++) W[i][j] = RandomUtil.getInstance().nextGaussian(0, 1) * wStd;
+                    b[i] = RandomUtil.getInstance().nextDouble() * 2.0 * TMath.PI;
                 }
                 this.scale = TMath.sqrt(2.0 / outM);
             } else {
@@ -1124,8 +1121,8 @@ public final class NonlinearityTests {
                 this.b = new double[mf];
                 double wStd = 1.0 / sigma;
                 for (int i = 0; i < mf; i++) {
-                    for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * wStd;
-                    b[i] = rng.nextDouble() * 2.0 * TMath.PI;
+                    for (int j = 0; j < d; j++) W[i][j] = RandomUtil.getInstance().nextGaussian(0, 1) * wStd;
+                    b[i] = RandomUtil.getInstance().nextDouble() * 2.0 * TMath.PI;
                 }
                 this.scale = TMath.sqrt(2.0 / outM);
             }

@@ -20,8 +20,9 @@
 
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.util.RandomUtil;
+
 import java.util.Arrays;
-import java.util.Random;
 
 /**
  * Represents a piecewise linear function with randomly generated breakpoints and values. This class allows computation
@@ -50,17 +51,15 @@ public class RandomPiecewiseLinear {
         this.xPoints = new double[numPoints];
         this.yPoints = new double[numPoints];
 
-        Random random = new Random();
-
         // Generate random breakpoints within the range [minX, maxX]
         for (int i = 0; i < numPoints; i++) {
-            xPoints[i] = minX + (maxX - minX) * random.nextDouble();
+            xPoints[i] = minX + (maxX - minX) * RandomUtil.getInstance().nextDouble();
         }
         Arrays.sort(xPoints); // Ensure xPoints are sorted
 
         // Generate random y-values for the breakpoints
         for (int i = 0; i < numPoints; i++) {
-            yPoints[i] = -2 + 4 * random.nextDouble(); // Random values in range [-2, 2]
+            yPoints[i] = -2 + 4 * RandomUtil.getInstance().nextDouble(); // Random values in range [-2, 2]
         }
     }
 

@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import edu.cmu.tetrad.util.TMath;
@@ -70,10 +71,6 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
      * framework.
      */
     private final List<Node> variables;
-    /**
-     * RNG for permutations; can be null (seeded later).
-     */
-    public Random rng = new Random(0);
     /**
      * Specifies the degree of the polynomial in the polynomial kernel function.
      * <p>
@@ -280,12 +277,12 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         return sb.toString();
     }
 
-    private static int[] uniformSample(int n, int m, Random rng) {
+    private static int[] uniformSample(int n, int m) {
         int[] idx = new int[n];
         for (int i = 0; i < n; i++) idx[i] = i;
         // Partial FisherâYates
         for (int i = 0; i < m; i++) {
-            int j = i + rng.nextInt(n - i);
+            int j = i + RandomUtil.getInstance().nextInt(n - i);
             int t = idx[i];
             idx[i] = idx[j];
             idx[j] = t;
@@ -305,7 +302,6 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
 
         // --- 1) Estimate null mean and variance via a small number of permutations
         final int Bmom = 500;               // 128â512 is a good range
-        final Random rng = new Random(7);   // fixed seed for stability in tests
 
         double mean = 0.0, m2 = 0.0;
         int[] idx = new int[N];
@@ -314,7 +310,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         for (int b = 0; b < Bmom; b++) {
             // FisherâYates shuffle of idx
             for (int i = N - 1; i > 0; i--) {
-                int j = rng.nextInt(i + 1);
+                int j = RandomUtil.getInstance().nextInt(i + 1);
                 int t = idx[i];
                 idx[i] = idx[j];
                 idx[j] = t;
@@ -359,9 +355,8 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
      * Permutation p-value for conditional KCI. Permute Y (equivalently, conjugate RY by P) and recompute S_perm = (1/n)
      * tr(RX * P RY Páµ).
      */
-    private static double permutationPValueConditional(SimpleMatrix RX, SimpleMatrix RY, double stat, int N, int numPermutations, Random rng) {
+    private static double permutationPValueConditional(SimpleMatrix RX, SimpleMatrix RY, double stat, int N, int numPermutations) {
         if (N <= 1 || numPermutations <= 0) return 1.0;
-        if (rng == null) rng = new Random(0);
 
         final double[] rx = RX.getDDRM().data;
         final double[] ry = RY.getDDRM().data;
@@ -374,7 +369,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         for (int b = 0; b < numPermutations; b++) {
             // Shuffle idx
             for (int i = N - 1; i > 0; i--) {
-                int j = rng.nextInt(i + 1);
+                int j = RandomUtil.getInstance().nextInt(i + 1);
                 int t = idx[i];
                 idx[i] = idx[j];
                 idx[j] = t;
@@ -637,7 +632,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
             p = pValueGammaConditional(RX, RY, stat, n);
         } else {
             p = permutationPValueConditional(
-                    RX, RY, stat, n, getNumPermutations(), rng);
+                    RX, RY, stat, n, getNumPermutations());
         }
 
         if (verbose) {
@@ -919,7 +914,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         DMatrixRMaj X = buildX(varRows, true, null);
 
         int m = TMath.min(n, 256);
-        int[] idx = uniformSample(n, m, rng);
+        int[] idx = uniformSample(n, m);
 
         List<Double> dists = new ArrayList<>(m * (m - 1) / 2);
         for (int a = 0; a < m; a++) {
@@ -1125,7 +1120,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
                 DMatrixRMaj X = buildX(cols, true, scales);
 
                 int m = TMath.min(n, 256);
-                int[] idx = uniformSample(n, m, rng);
+                int[] idx = uniformSample(n, m);
                 List<Double> dists = new ArrayList<>(m * (m - 1) / 2);
                 for (int a = 0; a < m; a++) {
                     int ii = idx[a];

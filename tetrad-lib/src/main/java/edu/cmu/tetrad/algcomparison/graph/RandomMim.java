@@ -27,7 +27,6 @@ import edu.cmu.tetrad.util.Params;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Creates a random graph by adding forward edges.
@@ -62,8 +61,7 @@ public class RandomMim implements RandomGraph {
                 numLatentMeasuredImpureParents,
                 numMeasuredMeasuredImpureParents,
                 numMeasuredMeasuredImpureAssociations,
-                edu.cmu.tetrad.graph.RandomMim.LatentLinkMode.values()[metaEdgeConnectionType - 1],
-                new Random());
+                edu.cmu.tetrad.graph.RandomMim.LatentLinkMode.values()[metaEdgeConnectionType - 1]);
     }
 
     /**

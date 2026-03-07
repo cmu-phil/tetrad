@@ -597,7 +597,6 @@ public final class SemIm implements Im, ISemIm {
                         params.getDouble(Params.CYCLIC_RADIUS),
                         params.getDouble(Params.CYCLIC_COEF_LOW),
                         params.getDouble(Params.CYCLIC_COEF_HIGH),
-                        params.getLong(Params.SEED),
                         params);
                 ds = result.dataSet();
                 im = result.semIm();

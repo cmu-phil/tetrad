@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
@@ -28,10 +29,6 @@ public class GeneralNoiseSimulation {
     private final double inputScale;
     private final Function<Double, Double> activationFunction;
     private final boolean useFastTanh;
-
-    // Keep simple per-node seeding (still random overall)
-    private final Random seeder = new Random();
-
     private final boolean reportSaturation;
     private final double saturationAbsActivationThreshold;
 
@@ -207,7 +204,7 @@ public class GeneralNoiseSimulation {
             for (int i = 0; i < N; i++, k += Din) A.data[k] = noise[i];
 
             // Random MLP for this node, supports H=[] (no hidden) too
-            RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale, seeder);
+            RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale);
 
             // Forward pass: Y = mlp(A)
 //            Y = mlp.forward(A, S1, S2, Y, activationFunction, useFastTanh);
@@ -233,7 +230,7 @@ public class GeneralNoiseSimulation {
         final DMatrixRMaj[] W;   // layer weights: (out x in)
         final double[][] b;      // biases per layer
 
-        RandomMLP(int Din, int[] hidden, int Dout, double inputScale, Random r) {
+        RandomMLP(int Din, int[] hidden, int Dout, double inputScale) {
             this.Din = Din;
             this.Dout = Dout;
             this.H = hidden == null ? new int[0] : hidden.clone();
@@ -245,30 +242,30 @@ public class GeneralNoiseSimulation {
             for (int l = 0; l < H.length; l++) {
                 W[l] = new DMatrixRMaj(H[l], prev);
                 b[l] = new double[H[l]];
-                xavierInit(W[l], r, inputScale);
+                xavierInit(W[l], inputScale);
                 // biases default to 0; you can randomize later if you want
                 prev = H[l];
             }
             W[L - 1] = new DMatrixRMaj(Dout, prev);
             b[L - 1] = new double[Dout];
-            xavierInit(W[L - 1], r, inputScale * 0.5);
+            xavierInit(W[L - 1], inputScale * 0.5);
         }
 
-        private static void heInit(DMatrixRMaj W, Random r, double scale) {
+        private static void heInit(DMatrixRMaj W, SplittableRandom r, double scale) {
             double s = scale * TMath.sqrt(2.0 / TMath.max(1, W.numCols));
             for (int i = 0, n = W.getNumElements(); i < n; i++) {
                 W.data[i] = r.nextGaussian() * s;
             }
         }
 
-        private static void xavierInit(DMatrixRMaj W, Random r, double scale) {
+        private static void xavierInit(DMatrixRMaj W, double scale) {
             int fanIn = TMath.max(1, W.numCols);
             int fanOut = TMath.max(1, W.numRows);
 
             double std = scale * TMath.sqrt(2.0 / (fanIn + fanOut));
 
             for (int i = 0, n = W.getNumElements(); i < n; i++) {
-                W.data[i] = r.nextGaussian() * std;
+                W.data[i] = RandomUtil.getInstance().nextGaussian(0, 1) * std;
             }
         }
 

@@ -63,15 +63,14 @@ public class RandomPiecewiseLinearBijective {
      * generation. This constructor generates control points that define the piecewise linear bijective function.
      *
      * @param numSegments the number of segments to divide the function into; must be at least 1
-     * @param seed        the seed value for random number generation, ensuring reproducibility
      * @throws IllegalArgumentException if the number of segments is less than 1
      */
-    public RandomPiecewiseLinearBijective(int numSegments, long seed) {
+    public RandomPiecewiseLinearBijective(int numSegments) {
         if (numSegments < 1) {
             throw new IllegalArgumentException("Number of segments must be at least 1.");
         }
 
-        this.controlPoints = generateControlPoints(numSegments, seed);
+        this.controlPoints = generateControlPoints(numSegments);
     }
 
     /**
@@ -83,9 +82,8 @@ public class RandomPiecewiseLinearBijective {
      */
     public static void main(String[] args) {
         int numSegments = 5;
-        long seed = new Date().getTime();
 
-        RandomPiecewiseLinearBijective function = new RandomPiecewiseLinearBijective(numSegments, seed);
+        RandomPiecewiseLinearBijective function = new RandomPiecewiseLinearBijective(numSegments);
         System.out.println("Control Points:");
         for (double[] point : function.getControlPoints()) {
             System.out.printf("(%.4f, %.4f)%n", point[0], point[1]);
@@ -111,22 +109,14 @@ public class RandomPiecewiseLinearBijective {
      * determined randomly based on the provided number of segments and a random seed for reproducibility.
      *
      * @param numSegments the number of segments into which the function is divided; must be at least 1
-     * @param seed        the seed value for the random number generator for reproducibility
      * @return a list of control points, where each control point is represented as a two-element double array
      */
-    private List<double[]> generateControlPoints(int numSegments, long seed) {
-        Random random;
-
-        if (seed == -1) {
-            random = new Random();
-        } else {
-            random = new Random(seed);
-        }
+    private List<double[]> generateControlPoints(int numSegments) {
 
         // Generate random x-coordinates in (0, 1), ensuring they are strictly increasing
         List<Double> xValues = new ArrayList<>();
         for (int i = 0; i < numSegments - 1; i++) {
-            xValues.add(random.nextDouble());
+            xValues.add(RandomUtil.getInstance().nextDouble());
         }
         xValues.add(0.0);
         xValues.add(1.0);
@@ -135,14 +125,14 @@ public class RandomPiecewiseLinearBijective {
         // Generate random y-coordinates in (0, 1), ensuring they are strictly increasing
         List<Double> yValues = new ArrayList<>();
         for (int i = 0; i < numSegments - 1; i++) {
-            yValues.add(random.nextDouble());
+            yValues.add(RandomUtil.getInstance().nextDouble());
         }
         yValues.add(0.0);
         yValues.add(1.0);
         Collections.sort(yValues);
 
         // Determine if the function should be increasing or decreasing
-        boolean isIncreasing = random.nextBoolean();
+        boolean isIncreasing = RandomUtil.getInstance().nextBoolean();
         if (!isIncreasing) {
             yValues.replaceAll(aDouble -> 1.0 - aDouble);
         }

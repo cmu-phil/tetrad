@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.AdditiveLocalScorer;
 import edu.cmu.tetrad.search.score.CamAdditivePsplineBic;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
@@ -44,7 +45,6 @@ public class Cam {
     private boolean verbose = false;
 
     // Order search restarts
-    private long seed = System.nanoTime();
     private int restarts = 10;
 
     // PNS candidates: top-k univariate per target
@@ -137,18 +137,6 @@ public class Cam {
     }
 
     /**
-     * Sets the seed value for the random processes in the current {@code Cam} instance. The seed ensures
-     * reproducibility in the algorithm's behavior across executions.
-     *
-     * @param seed the seed value to be set; must be a valid {@code long} value
-     * @return the current instance of {@code Cam} to allow method chaining
-     */
-    public Cam setSeed(long seed) {
-        this.seed = seed;
-        return this;
-    }
-
-    /**
      * Sets the number of restart attempts for the CAM algorithm. The value is constrained to be at least 1. If a number
      * less than 1 is provided, it will be adjusted to 1 automatically.
      *
@@ -198,8 +186,7 @@ public class Cam {
         double bestScore = Double.POSITIVE_INFINITY;
 
         for (int r = 0; r < restarts; r++) {
-            Random rnd = new Random(seed + 31L * r);
-            List<Node> order = incEdgeOrder(rnd);
+            List<Node> order = incEdgeOrder();
             double total = permutationScore(order);
             if (total < bestScore) {
                 bestScore = total;
@@ -249,9 +236,9 @@ public class Cam {
      * Build an order greedily by appending the best next variable (IncEdge). Predecessors considered for candidate y
      * are placed ∩ PNS(y).
      */
-    private List<Node> incEdgeOrder(Random rnd) {
+    private List<Node> incEdgeOrder() {
         List<Node> all = new ArrayList<>(data.getVariables());
-        Collections.shuffle(all, rnd); // randomized scan order; ties resolved deterministically below
+        RandomUtil.shuffle(all); // randomized scan order; ties resolved deterministically below
 
         List<Node> order = new ArrayList<>(all.size());
         Set<Node> placed = new LinkedHashSet<>();

@@ -304,7 +304,7 @@ public class RoadmapTest {
         int n = concat.getNumRows();
         List<Integer> perm = new ArrayList<>(n);
         for (int i = 0; i < n; i++) perm.add(i);
-        Collections.shuffle(perm, new Random(seed));
+        Collections.shuffle(perm);
         DataSet shuffled = concat.subsetRows(perm);
         int[] y = new int[n];
         for (int i = 0; i < n; i++) y[i] = labels[perm.get(i)];
@@ -314,11 +314,11 @@ public class RoadmapTest {
         return out;
     }
 
-    private static @NotNull Graph copyWithFlippedDirections(Graph g, int flips, Random rnd) {
+    private static @NotNull Graph copyWithFlippedDirections(Graph g, int flips) {
         Graph h = new EdgeListGraph(g);
         List<Edge> dir = h.getEdges().stream().filter(Edge::isDirected).collect(Collectors.toList());
         if (dir.isEmpty()) return h;
-        Collections.shuffle(dir, rnd);
+        Collections.shuffle(dir);
         int done = 0;
         for (Edge e : dir) {
             if (done >= flips) break;
@@ -650,7 +650,7 @@ public class RoadmapTest {
         // Now create two regimes by injecting controlled shifts on top of Drealâs covariance:
         // (A) keep backbone; (B) flip edges & scale some parameters â simulate from shifted SEMs.
         Graph gA = gBackbone.copy();
-        Graph gB = copyWithFlippedDirections(gBackbone, flips, new Random(seed));
+        Graph gB = copyWithFlippedDirections(gBackbone, flips);
         SemIm imA = new SemIm(new SemPm(gA), params);
         SemIm imB = new SemIm(new SemPm(gB), params);
         // Scale B
@@ -782,7 +782,7 @@ public class RoadmapTest {
             List<Node> vars = new ArrayList<>();
             for (int i = 0; i < p; i++) vars.add(new ContinuousVariable("X" + i));
             Graph gA = RandomGraph.randomGraph(vars, 0, 14, 100, 100, 100, false);
-            Graph gB = copyWithFlippedDirections(gA, flips, new Random(seed));
+            Graph gB = copyWithFlippedDirections(gA, flips);
             Parameters par = new Parameters();
             setNoise(par, nf);
             SemIm imA = new SemIm(new SemPm(gA), par);

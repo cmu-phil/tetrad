@@ -320,8 +320,7 @@ public class NonlinearFunctionOfLinear {
         Function<Double, Double> g = new MultiLayerPerceptronFunction1D(
                 this.hiddenDimension, // Number of hidden neurons
                 this.inputScale, // Input scaling, affects bumpiness of function
-                Math::tanh, // Activation function
-                -1 // Random seed
+                Math::tanh // Activation function
         )::evaluate;
 
 //        g = Math::tanh;

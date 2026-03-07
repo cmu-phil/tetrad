@@ -258,13 +258,12 @@ public class TscHarnessTest {
     private static double[][] impuritiesWithinBlocks(List<List<Integer>> blocks, long seed, int P, double eps) {
         double[][] R = new double[P][P];
         if (eps <= 0) return R;
-        Random rng = new Random(seed ^ 0x9E3779B97F4A7C15L);
         for (List<Integer> B : blocks) {
             List<int[]> pairs = new ArrayList<>();
             for (int i = 0; i < B.size(); i++)
                 for (int j = i + 1; j < B.size(); j++)
                     pairs.add(new int[]{B.get(i), B.get(j)});
-            Collections.shuffle(pairs, rng);
+            RandomUtil.shuffle(pairs);
             int keep = TMath.max(1, (int) TMath.round(0.10 * pairs.size()));
             for (int k = 0; k < keep; k++) {
                 int i = pairs.get(k)[0], j = pairs.get(k)[1];
@@ -397,11 +396,9 @@ public class TscHarnessTest {
      */
     @Test
     public void tsc_onMixedRankMIMs_hasHighQuality() {
-        Random topRng = new Random(SEED);
-
         for (int[] ranks : RANK_SPECS) {
             for (int t = 0; t < TRIALS; t++) {
-                long seed = topRng.nextLong();
+                long seed = RandomUtil.getInstance().nextLong();
                 RunSpec spec = new RunSpec(ranks, seed);
 
                 // Build truth vars & blocks

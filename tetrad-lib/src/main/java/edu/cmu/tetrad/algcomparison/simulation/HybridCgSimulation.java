@@ -39,7 +39,6 @@ import edu.cmu.tetrad.util.TMath;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * This class represents a Simulation using Structural Equation Modeling (SEM).
@@ -181,7 +180,7 @@ public class HybridCgSimulation implements Simulation {
             HybridCgModel.HybridCgIm im = this.im;
 
 
-            HybridCgModel.HybridCgIm.Sample sample = im.sample(parameters.getInt(Params.SAMPLE_SIZE), new Random());
+            HybridCgModel.HybridCgIm.Sample sample = im.sample(parameters.getInt(Params.SAMPLE_SIZE));
 
             List<Node> nodes = HybridCgVars.materializeDataVariables(im.getPm());
 

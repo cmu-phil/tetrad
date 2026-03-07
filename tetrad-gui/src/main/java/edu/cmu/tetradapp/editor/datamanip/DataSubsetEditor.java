@@ -3,6 +3,7 @@ package edu.cmu.tetradapp.editor.datamanip;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetrad.util.TMath;
 
@@ -548,7 +549,6 @@ public class DataSubsetEditor extends JPanel {
                 // If seed is invalid, just ignore and use default randomness.
             }
         }
-        Random random = (seed == null) ? new Random() : new Random(seed);
 
         switch (mode) {
             case USE_AS_IS:
@@ -556,7 +556,7 @@ public class DataSubsetEditor extends JPanel {
 
             case SHUFFLE: {
                 List<Integer> shuffled = new ArrayList<>(baseRows);
-                Collections.shuffle(shuffled, random);
+                RandomUtil.shuffle(shuffled);
                 return shuffled;
             }
 
@@ -566,14 +566,14 @@ public class DataSubsetEditor extends JPanel {
                     sampleSize = n;
                 }
                 List<Integer> temp = new ArrayList<>(baseRows);
-                Collections.shuffle(temp, random);
+                RandomUtil.shuffle(temp);
                 return new ArrayList<>(temp.subList(0, sampleSize));
             }
 
             case BOOTSTRAP: {
                 List<Integer> boot = new ArrayList<>(sampleSize);
                 for (int i = 0; i < sampleSize; i++) {
-                    int idx = random.nextInt(n);
+                    int idx = RandomUtil.getInstance().nextInt(n);
                     boot.add(baseRows.get(idx));
                 }
                 return boot;
