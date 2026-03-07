@@ -56,7 +56,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     /**
      * The data wrapper being displayed.
      */
-    private DataWrapper dataWrapper;
+    private DataWrapper dataWrapper = new DataWrapper(new Parameters());
 
     /**
      * A tabbed pane containing displays for all data models and displaying 'dataModel' currently.

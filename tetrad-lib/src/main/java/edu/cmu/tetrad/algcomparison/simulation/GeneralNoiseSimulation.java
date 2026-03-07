@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import static edu.cmu.tetrad.util.TMath.tanh;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * This class represents a Causal Perceptron Network.
@@ -292,7 +292,43 @@ public class GeneralNoiseSimulation implements Simulation {
             hiddenDimensions[i] = Integer.parseInt(hiddenDimensionsSplit[i].trim());
         }
 
-        Function<Double, Double> activation = Math::tanh;// x -> TMath.max(0.1 * x, x);
+        Function<Double, Double> activation = TMath::tanh;
+
+//        Function<Double, Double> activation = x -> signum(x) * TMath.max(.01 * abs(x), tanh(abs(x)));
+
+//        Function<Double, Double> activation = x -> {
+//            double margin = 0.04;
+//            double y = tanh(x);
+//            if (y > 0.0 && y < margin) y += margin;
+//            if (y < 0.0 && y > -margin) y -= margin;
+//            return y;
+//        };
+
+//        Function<Double, Double> activation = x -> {
+//            double margin = 0.01;
+//            double k = 20.0; // steepness
+//            double y = tanh(x);
+//            double v = y + margin * tanh(k * y);
+//            return v;
+//        };
+
+//        Function<Double, Double> activation = x -> {
+//            return tanh(x);
+//        };
+
+//        Function<Double, Double> activation = x -> {
+//            double margin = 0.02;
+//            x = tanh(x);
+//            if (abs(x) < margin) x = 0.0;
+//            return x;
+//        };
+
+//        Function<Double, Double> activation = x -> {
+//            double margin = 0.04;
+//            double k = 30.0;
+//            double y = tanh(x);
+//            return y + margin * (1.0 - exp(-k * y * y)) * tanh(k * y);
+//        };
 
         try {
             Sampler sampler = new ExpressionSampler(parameters.getString("noiseExpression"));
@@ -305,7 +341,7 @@ public class GeneralNoiseSimulation implements Simulation {
                     parameters.getDouble(Params.INPUT_SCALE),
                     activation,
                     false,   // reportSaturation
-                    .999     // saturation threshold on |tanh activation|
+                    .97     // saturation threshold on |tanh activation|
             );
 
             return generator.generateData();

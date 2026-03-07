@@ -2116,10 +2116,9 @@ Source:
             expression language.
         </span></li>
 
-        <li>Default Value: <span id="noiseExpression_default_value">Normal(0,1)</span></li>
+        <li>Default Value: <span id="noiseExpression_default_value">N(0,1) * 0.5</span></li>
         <li>Lower Bound: <span id="noiseExpression_lower_bound"></span></li>
-        <li>Upper
-            Bound: <span id="noiseExpression_upper_bound"></span></li>
+        <li>Upper Bound: <span id="noiseExpression_upper_bound"></span></li>
         <li>Value Type: <span id="noiseExpression_value_type">String</span></li>
     </ul>
 
@@ -2133,7 +2132,7 @@ Source:
                 For perceptrons, the number of nodes in hidden layers (comma separated)
         </span></li>
         <li>Default
-            Value: <span id="hiddenDimensions_default_value">100,100,100,100</span></li>
+            Value: <span id="hiddenDimensions_default_value">200,200,200,200,200,200</span></li>
         <li>Lower Bound: <span id="hiddenDimensions_lower_bound"></span></li>
         <li>Upper
             Bound: <span id="hiddenDimensions_upper_bound"></span></li>
@@ -2270,7 +2269,7 @@ Source:
                 For a shallow multilayer perception (MLP), the input scale (affects bumpiness)
             </span></li>
         <li>Long Description: <span id="inputScale_long_desc">
-                For a shallow multilayer perception (MLP), the input scale (affects bumpiness)
+                Input scale for the network--inputs into each node are scaled by this
         </span></li>
         <li>Default
             Value: <span id="inputScale_default_value">5.0</span></li>

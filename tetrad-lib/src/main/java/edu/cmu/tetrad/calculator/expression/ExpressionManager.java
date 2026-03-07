@@ -1904,53 +1904,24 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public MixtureDescriptor() {
-            super("Mixture", "Mixture", Position.PREFIX, false);
+            super("mixture", "mixture", Position.PREFIX, false);
         }
 
-        //=========================== Public Methods =========================//
-
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
-            if (!(expressions.length > 0 && expressions.length % 2 == 0)) {
-                throw new ExpressionInitializationException("Mixture must have an even expr of arguments, 2 or more.");
+            if (expressions.length == 0) {
+                throw new ExpressionInitializationException("Mixture must have at least one argument.");
             }
 
             return new AbstractExpression("Mixture", Position.PREFIX, expressions) {
                 @Serial
                 private static final long serialVersionUID = 23L;
 
+                @Override
                 public double evaluate(Context context) {
                     List<Expression> exp = getExpressions();
 
-                    int numMixed = exp.size() / 2;
-                    double[] a = new double[numMixed];
-                    double totalA = 0;
-
-                    for (int i = 0; i < numMixed; i++) {
-                        a[i] = exp.get(2 * i).evaluate(context);
-                        if (a[i] <= 0) throw new IllegalArgumentException("Coefficients must be > 0: " + a[i]);
-                        totalA += a[i];
-                    }
-
-                    if (TMath.abs(totalA - 1.0) > 1e-2) {
-                        throw new IllegalArgumentException("Coefficients must sum to 1.0: " + totalA);
-                    }
-
-                    for (int i = 0; i < numMixed; i++) {
-                        a[i] /= totalA;
-                    }
-
-                    double r = RandomUtil.getInstance().nextDouble();
-                    double sum = 0.0;
-
-                    for (int i = 0; i < numMixed; i++) {
-                        sum += a[i];
-
-                        if (r < sum) {
-                            return exp.get(2 * i + 1).evaluate(context);
-                        }
-                    }
-
-                    throw new IllegalStateException("Random expr did not choose one of the options: " + r);
+                    int choice = RandomUtil.getInstance().nextInt(exp.size());
+                    return exp.get(choice).evaluate(context);
                 }
             };
         }
