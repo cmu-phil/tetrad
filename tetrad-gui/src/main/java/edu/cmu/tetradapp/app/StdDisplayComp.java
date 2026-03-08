@@ -5,12 +5,11 @@ import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 
 /**
  * Appearance of session nodes for standard nodes.
- *
+ * <p>
  * Uses colors from the active Swing Look & Feel when available,
  * with Tetrad defaults as fallbacks.
  *
@@ -109,7 +108,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
         if (isDarkMode()) {
             // Make "no model" clearly dimmer and slightly grayer in dark mode.
-            return darken(blend(base, Color.BLACK   , 0.25), 0.18);
+            return darken(blend(base, Color.BLACK, 0.25), 0.18);
         }
 
         // In light mode, keep it muted but still clearly visible.
@@ -166,6 +165,20 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
     private static Color getSecondaryTextColor() {
         Color fg = getPrimaryTextColor();
         return isDarkMode() ? blend(fg, Color.GRAY, 0.30) : blend(fg, Color.WHITE, 0.20);
+    }
+
+    private static Color darker(Color c, double factor) {
+        int r = (int) (c.getRed() * (1 - factor));
+        int g = (int) (c.getGreen() * (1 - factor));
+        int b = (int) (c.getBlue() * (1 - factor));
+        return new Color(Math.max(r, 0), Math.max(g, 0), Math.max(b, 0));
+    }
+
+    private static Color lighter(Color c, double factor) {
+        int r = (int) (c.getRed() + (255 - c.getRed()) * factor);
+        int g = (int) (c.getGreen() + (255 - c.getGreen()) * factor);
+        int b = (int) (c.getBlue() + (255 - c.getBlue()) * factor);
+        return new Color(Math.min(r, 255), Math.min(g, 255), Math.min(b, 255));
     }
 
     private Color getUnselectedFillColor() {
@@ -251,20 +264,6 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         } finally {
             g2.dispose();
         }
-    }
-
-    private static Color darker(Color c, double factor) {
-        int r = (int) (c.getRed() * (1 - factor));
-        int g = (int) (c.getGreen() * (1 - factor));
-        int b = (int) (c.getBlue() * (1 - factor));
-        return new Color(Math.max(r,0), Math.max(g,0), Math.max(b,0));
-    }
-
-    private static Color lighter(Color c, double factor) {
-        int r = (int) (c.getRed() + (255 - c.getRed()) * factor);
-        int g = (int) (c.getGreen() + (255 - c.getGreen()) * factor);
-        int b = (int) (c.getBlue() + (255 - c.getBlue()) * factor);
-        return new Color(Math.min(r,255), Math.min(g,255), Math.min(b,255));
     }
 
     private void layoutComponents() {
