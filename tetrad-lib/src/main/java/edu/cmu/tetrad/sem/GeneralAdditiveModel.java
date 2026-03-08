@@ -31,9 +31,9 @@ import java.util.function.Function;
  * </p>
  *
  * <p>
- * Root nodes are generated as pure noise (optionally scaled by {@code noiseScale}).
- * For non-root nodes, each parent contributes through its own learned random subnet,
- * preserving additivity across parent effects.
+ * Root nodes are generated as pure noise. For non-root nodes, each parent
+ * contributes through its own learned random subnet, preserving additivity
+ * across parent effects.
  * </p>
  *
  * <p>
@@ -49,7 +49,6 @@ public final class GeneralAdditiveModel {
 
     private int[] hiddenDimensions = new int[]{8, 8};
     private double inputScale = 1.0;
-    private double noiseScale = 0.5;
     private boolean inputStandardize = true;
     private Function<Double, Double> activationFunction = TMath::tanh;
     private boolean useFastTanh = true;
@@ -104,9 +103,7 @@ public final class GeneralAdditiveModel {
         }
     }
 
-    private static void applyActivationInPlace(DMatrixRMaj A,
-                                               Function<Double, Double> f,
-                                               boolean fastTanh) {
+    private static void applyActivationInPlace(DMatrixRMaj A, Function<Double, Double> f, boolean fastTanh) {
         final int n = A.getNumElements();
         if (fastTanh) {
             for (int i = 0; i < n; i++) {
@@ -195,22 +192,6 @@ public final class GeneralAdditiveModel {
     // --------------------------------------------------------------------
 
     /**
-     * Updates the noise scale for the model. The noise scale determines the magnitude of
-     * the noise applied in the simulation. The value must be a finite, non-negative number.
-     *
-     * @param noiseScale the noise scaling factor to be applied, must be finite and >= 0
-     * @return the updated GeneralAdditiveModel instance with the specified noise scale
-     * @throws IllegalArgumentException if the noise scale is not finite or is less than 0
-     */
-    public GeneralAdditiveModel setNoiseScale(double noiseScale) {
-        if (!Double.isFinite(noiseScale) || noiseScale < 0.0) {
-            throw new IllegalArgumentException("noiseScale must be finite and >= 0.");
-        }
-        this.noiseScale = noiseScale;
-        return this;
-    }
-
-    /**
      * Sets whether the input data should be standardized for the model.
      * Standardizing inputs typically involves scaling them to have a mean of
      * zero and a standard deviation of one, which can improve model performance
@@ -285,7 +266,7 @@ public final class GeneralAdditiveModel {
 
             // draw additive error term e_j
             for (int i = 0; i < n; i++) {
-                noise[i] = noiseScale * sampler.sample();
+                noise[i] = sampler.sample();
             }
 
             if (pj.length == 0) {
@@ -316,8 +297,7 @@ public final class GeneralAdditiveModel {
                 // Optional pre-activation on raw input, matching the ANM style a bit.
                 applyActivationInPlace(xCol, activationFunction, useFastTanh);
 
-                RandomUnivariateMLP subnet =
-                        new RandomUnivariateMLP(hiddenDimensions, inputScale, activationFunction, useFastTanh);
+                RandomUnivariateMLP subnet = new RandomUnivariateMLP(hiddenDimensions, inputScale, activationFunction, useFastTanh);
 
                 out = subnet.forward(xCol, scratch, out);
 
@@ -344,10 +324,7 @@ public final class GeneralAdditiveModel {
         private final Function<Double, Double> activationFunction;
         private final boolean useFastTanh;
 
-        RandomUnivariateMLP(int[] hidden,
-                            double inputScale,
-                            Function<Double, Double> activationFunction,
-                            boolean useFastTanh) {
+        RandomUnivariateMLP(int[] hidden, double inputScale, Function<Double, Double> activationFunction, boolean useFastTanh) {
             this.hidden = hidden == null ? new int[0] : hidden.clone();
             this.activationFunction = activationFunction;
             this.useFastTanh = useFastTanh;
@@ -377,9 +354,7 @@ public final class GeneralAdditiveModel {
             }
         }
 
-        DMatrixRMaj forward(DMatrixRMaj X,
-                            DMatrixRMaj scratch1,
-                            DMatrixRMaj out) {
+        DMatrixRMaj forward(DMatrixRMaj X, DMatrixRMaj scratch1, DMatrixRMaj out) {
             DMatrixRMaj cur = X;
             DMatrixRMaj bufA = scratch1;
             DMatrixRMaj bufB = new DMatrixRMaj(1, 1);

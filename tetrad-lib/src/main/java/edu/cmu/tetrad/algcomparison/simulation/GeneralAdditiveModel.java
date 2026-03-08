@@ -63,7 +63,6 @@ import java.util.function.Function;
  *   <li>{@link Params#NOISE_EXPRESSION}</li>
  *   <li>{@link Params#HIDDEN_DIMENSIONS}</li>
  *   <li>{@link Params#INPUT_SCALE}</li>
- *   <li>{@link Params#ANM_NOISE_STRENGTH}</li>
  *   <li>{@link Params#SAMPLE_SIZE}</li>
  *   <li>{@link Params#STANDARDIZE}</li>
  *   <li>{@link Params#SEED}</li>
@@ -338,7 +337,6 @@ public class GeneralAdditiveModel implements Simulation {
         parameters.add(Params.NOISE_EXPRESSION);
         parameters.add(Params.HIDDEN_DIMENSIONS);
         parameters.add(Params.INPUT_SCALE);
-        parameters.add(Params.ANM_NOISE_STRENGTH);
 
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
@@ -385,7 +383,6 @@ public class GeneralAdditiveModel implements Simulation {
         int[] hiddenDimensions = parseHiddenDimensions(parameters.getString(Params.HIDDEN_DIMENSIONS));
 
         double inputScale = parameters.getDouble(Params.INPUT_SCALE, 1.0);
-        double noiseScale = parameters.getDouble(Params.ANM_NOISE_STRENGTH, 0.5);
         int sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
         // Keep the same default activation as the additive-noise simulator.
@@ -398,7 +395,6 @@ public class GeneralAdditiveModel implements Simulation {
                     new edu.cmu.tetrad.sem.GeneralAdditiveModel(graph, sampleSize, sampler)
                             .setHiddenDimensions(hiddenDimensions)
                             .setInputScale(inputScale)
-                            .setNoiseScale(noiseScale)
                             .setInputStandardize(true)
                             .setActivationFunction(activation);
 
