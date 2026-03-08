@@ -143,7 +143,7 @@ public class RandomUtil {
      * Constructs a new random number generator based on current time in nanoseconds.
      */
     private RandomUtil() {
-        setSeed(System.nanoTime());
+        setSeed(System.nanoTime() + randomUtils.size());
     }
 
     /**
