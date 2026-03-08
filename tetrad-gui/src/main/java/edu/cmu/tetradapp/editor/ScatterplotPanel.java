@@ -95,12 +95,17 @@ class ScatterplotPanel extends JPanel {
 
     private static Color getPointColor() {
         Color c = UIManager.getColor("Table.selectionBackground");
-        if (c != null) return c;
+        if (c != null) return c.brighter();
 
         c = UIManager.getColor("Component.focusColor");
-        if (c != null) return c;
+        if (c != null) return c.brighter();
 
         return Color.RED.darker();
+    }
+
+    private static boolean isDarkMode() {
+        LookAndFeel laf = UIManager.getLookAndFeel();
+        return laf != null && laf.getName().toLowerCase().contains("dar");
     }
 
     private static Color getFitLineColor() {

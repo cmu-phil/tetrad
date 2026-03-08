@@ -276,7 +276,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         b.setOpaque(false);
 
         if (isDarkMode()) {
-            b.add(Box.createRigidArea(new Dimension(0, 10)));
+            b.add(Box.createRigidArea(new Dimension(50, 10)));
         }
 
         if (!isDarkMode()) {
@@ -287,7 +287,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
             b1.add(Box.createHorizontalGlue());
             b.add(b1);
         } else {
-            b.add(Box.createRigidArea(new Dimension(0, 6)));
+            b.add(Box.createRigidArea(new Dimension(60, 6)));
         }
 
         Box b2 = Box.createHorizontalBox();
@@ -309,9 +309,9 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         b.add(b3);
 
         if (isDarkMode()) {
-            b.add(Box.createRigidArea(new Dimension(0, 10)));
+            b.add(Box.createRigidArea(new Dimension(60, 10)));
         } else {
-            b.add(Box.createRigidArea(new Dimension(0, 4)));
+            b.add(Box.createRigidArea(new Dimension(60, 4)));
         }
 
         add(b, BorderLayout.CENTER);

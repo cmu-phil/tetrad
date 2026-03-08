@@ -145,10 +145,10 @@ public class HistogramPanel extends JPanel {
      */
     private static Color getDefaultBarColor() {
         Color c = UIManager.getColor("Table.selectionBackground");
-        if (c != null) return c;
+        if (c != null) return c.brighter();
 
         c = UIManager.getColor("Focus.color");
-        if (c != null) return c;
+        if (c != null) return c.brighter();
 
         return isDarkMode() ? new Color(110, 170, 255) : Color.RED.darker();
     }
