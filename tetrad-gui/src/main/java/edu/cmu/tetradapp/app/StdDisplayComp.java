@@ -85,7 +85,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
             return brighten(blend(panel, button, 0.5), 0.01);
         }
 
-        Color button = UIManager.getColor("Button.background");
+//        Color button = UIManager.getColor("Button.background");
 //        if (button != null) {
 //            return blend(button, new Color(26, 113, 169, 255), 0.10);
 //            // In light mode, move AWAY from the background so nodes stand out more.
@@ -109,7 +109,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
         if (isDarkMode()) {
             // Make "no model" clearly dimmer and slightly grayer in dark mode.
-            return darken(blend(base, Color.DARK_GRAY   , 0.25), 0.18);
+            return darken(blend(base, Color.BLACK   , 0.25), 0.18);
         }
 
         // In light mode, keep it muted but still clearly visible.
