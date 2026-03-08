@@ -123,7 +123,11 @@ public final class Tetrad implements PropertyChangeListener {
 //                        UIManager.getSystemLookAndFeelClassName());
 //            }
 
-            FlatDarkLaf.setup();
+            if (Preferences.userRoot().getBoolean("darkMode", false)) {
+                FlatDarkLaf.setup();
+            } else {
+                FlatLightLaf.setup();
+            }
         } catch (Exception e) {
             TetradLogger.getInstance().log("Couldn't set look and feel.");
         }

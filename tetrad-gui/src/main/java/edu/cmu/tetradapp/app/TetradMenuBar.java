@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.Tetrad;
+import edu.cmu.tetradapp.ThemeUtils;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
@@ -147,9 +148,21 @@ final class TetradMenuBar extends JMenuBar {
             Tetrad.enableExperimental = box.isSelected();
         });
 
+        JCheckBoxMenuItem darkModeItem = new JCheckBoxMenuItem("Dark Mode");
+
+        boolean darkMode = Preferences.userRoot().getBoolean("darkMode", false);
+        darkModeItem.setSelected(darkMode);
+
+        darkModeItem.addActionListener(e -> {
+            boolean dark = darkModeItem.isSelected();
+            Preferences.userRoot().putBoolean("darkMode", dark);
+            ThemeUtils.applyTheme(dark);
+        });
+
         settingsMenu.add(loggingSettingMenuItem);
         settingsMenu.add(new JMenuItem(new NumberFormatAction()));
         settingsMenu.add(showExperimentalBox);
+        settingsMenu.add(darkModeItem);
 
         fileMenu.add(settingsMenu);
         fileMenu.addSeparator();
