@@ -26,6 +26,7 @@ import org.apache.commons.rng.UniformRandomProvider;
 import org.apache.commons.rng.simple.RandomSource;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Provides a common random number generator to be used throughout Tetrad, to avoid problems that happen when random
@@ -139,11 +140,11 @@ public class RandomUtil {
 
     //========================================CONSTRUCTORS===================================//
 
-    /**
-     * Constructs a new random number generator based on current time in nanoseconds.
-     */
+    private static final AtomicLong seedCounter =
+            new AtomicLong(System.nanoTime());
+
     private RandomUtil() {
-        setSeed(System.nanoTime() + randomUtils.size());
+        setSeed(seedCounter.getAndIncrement());
     }
 
     /**
