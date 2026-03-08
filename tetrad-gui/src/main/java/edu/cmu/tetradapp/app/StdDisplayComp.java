@@ -10,7 +10,7 @@ import java.awt.geom.RoundRectangle2D;
 /**
  * Appearance of session nodes for standard nodes.
  * <p>
- * Uses colors from the active Swing Look & Feel when available,
+ * Uses colors from the active Swing Look &amp; Feel when available,
  * with Tetrad defaults as fallbacks.
  *
  * @author josephramsey

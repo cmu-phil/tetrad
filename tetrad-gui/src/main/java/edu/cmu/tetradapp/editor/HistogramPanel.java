@@ -20,7 +20,7 @@ import java.util.Map;
  *  - draws x-axis min/max labels when drawAxes==true
  *
  * Theme-aware version:
- *  - uses Look & Feel colors where possible
+ *  - uses Look &amp; Feel colors where possible
  *
  * @author josephramsey
  */
