@@ -316,6 +316,8 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
         add(b, BorderLayout.CENTER);
 
+        setSize(getPreferredSize());
+
         revalidate();
         repaint();
     }

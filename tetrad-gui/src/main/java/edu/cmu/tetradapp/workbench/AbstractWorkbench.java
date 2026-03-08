@@ -240,9 +240,18 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         return c != null ? c : fallback;
     }
 
+//    private static boolean isDarkMode() {
+//        LookAndFeel laf = UIManager.getLookAndFeel();
+//        return laf != null && laf.getName().toLowerCase().contains("dar");
+//    }
+
+//    private static boolean isDarkMode() {
+//        LookAndFeel laf = UIManager.getLookAndFeel();
+//        return laf != null && laf.getName().toLowerCase().contains("dark");
+//    }
+
     private static boolean isDarkMode() {
-        LookAndFeel laf = UIManager.getLookAndFeel();
-        return laf != null && laf.getName().toLowerCase().contains("dark");
+        return com.formdev.flatlaf.FlatLaf.isLafDark();
     }
 
     private static Color blend(Color a, Color b, double t) {
@@ -269,10 +278,19 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         return Color.WHITE;// blend(panel, Color.WHITE, 0.5);
     }
 
+//    @Override
+//    public void updateUI() {
+//        super.updateUI();
+//        setBackground(getWorkbenchBackground());
+//        repaint();
+//    }
+
     @Override
     public void updateUI() {
         super.updateUI();
-        setBackground(getWorkbenchBackground());
+        Color workbenchBackground = getWorkbenchBackground();
+        setBackground(workbenchBackground);
+        revalidate();
         repaint();
     }
 
@@ -936,12 +954,23 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 //        super.paint(g);
 //    }
 
+//    @Override
+//    protected void paintComponent(Graphics g) {
+//        g.setColor(getWorkbenchBackground());
+//        g.fillRect(0, 0, getWidth(), getHeight());
+//        super.paintComponent(g);
+//    }
     @Override
     protected void paintComponent(Graphics g) {
-        g.setColor(getWorkbenchBackground());
+        Color background = getWorkbenchBackground();
+        g.setColor(background);
         g.fillRect(0, 0, getWidth(), getHeight());
         super.paintComponent(g);
     }
+//    @Override
+//    protected void paintComponent(Graphics g) {
+//        super.paintComponent(g);
+//    }
 
     /**
      * Scrolls the workbench image so that the given node is in view, then selects that node.
@@ -2804,6 +2833,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
          */
         public GraphEdgeLabel(IDisplayEdge edge, JComponent label) {
             this.label = label;
+            this.label.setBackground(getBackground());
+            this.label.setForeground(getForeground());
+
             this.edge = edge;
             setLayout(new BorderLayout());
             add(label, BorderLayout.CENTER);
@@ -2913,6 +2945,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         public GraphNodeLabel(DisplayNode node, JComponent label, int xOffset, int yOffset) {
 
             this.label = label;
+            this.label.setBackground(getBackground());
+            this.label.setForeground(getForeground());
 
             Rectangle rectangle = node.getBounds();
 

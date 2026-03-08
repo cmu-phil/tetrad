@@ -198,7 +198,7 @@ public final class VertexRepairPanel1 extends JPanel {
     // UI
     private final JComboBox<RepairGraphType> graphTypeCombo = new JComboBox<>(RepairGraphType.values());
     private final JButton searchButton = new JButton();              // label set violationsAfter x is known
-    private final JButton modelBestButton = new JButton("Node Sweep");
+    private final JButton modelBestButton = new JButton("Attempt Repair");
     // -------------------- numeric helpers --------------------
     private final JButton backButton = new JButton("Undo");
     private final JButton showGraphButton = new JButton("Graph");
