@@ -170,7 +170,7 @@ class EvidenceEditor extends JPanel {
                     getEvidence().setManipulated(variable, selected);
                 }
             });
-            checkbox.setBackground(Color.WHITE);
+//            checkbox.setBackground(Color.WHITE);
             checkbox.setBorder(null);
             c.add(checkbox);
             c.setMaximumSize(new Dimension(1000, 30));
@@ -188,7 +188,7 @@ class EvidenceEditor extends JPanel {
             if (proposition.isConditioned(_i) && proposition.isAllowed(_i, _j)) {
                 _button.setBackground(Color.LIGHT_GRAY);
             } else {
-                _button.setBackground(Color.WHITE);
+                _button.setBackground(super.getBackground());
             }
         }
     }

@@ -70,7 +70,7 @@ final class FontSelectionAction extends AbstractAction
         String[] fontFamilies =
                 graphicsEnvironment.getAvailableFontFamilyNames();
         this.fontFamilyBox = new JComboBox(fontFamilies);
-        this.fontFamilyBox.setBackground(Color.white);
+//        this.fontFamilyBox.setBackground(Color.white);
         this.fontFamilyBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 resetFont();
@@ -79,7 +79,7 @@ final class FontSelectionAction extends AbstractAction
 
         String[] styles = {"Plain", "Italic", "Bold"};
         this.styleBox = new JComboBox(styles);
-        this.styleBox.setBackground(Color.white);
+//        this.styleBox.setBackground(Color.white);
         this.styleBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 resetFont();

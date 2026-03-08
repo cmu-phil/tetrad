@@ -161,7 +161,7 @@ final class DirichletBayesImProbsWizard extends JPanel {
 
     private JComboBox<Node> createVarNamesComboBox(DirichletBayesIm bayesIm) {
         JComboBox<Node> varNameComboBox = new JComboBox<>();
-        varNameComboBox.setBackground(Color.white);
+//        varNameComboBox.setBackground(Color.white);
 
         Graph graph = bayesIm.getBayesPm().getDag();
 

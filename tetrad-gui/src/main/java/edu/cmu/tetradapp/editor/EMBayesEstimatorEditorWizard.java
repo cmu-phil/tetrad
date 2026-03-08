@@ -164,7 +164,7 @@ final class EMBayesEstimatorEditorWizard extends JPanel {
 
     private JComboBox<Node> createVarNamesComboBox(BayesPm bayesPm) {
         JComboBox<Node> varNameComboBox = new JComboBox<>();
-        varNameComboBox.setBackground(Color.white);
+//        varNameComboBox.setBackground(Color.white);
 
         Graph graph = bayesPm.getDag();
 

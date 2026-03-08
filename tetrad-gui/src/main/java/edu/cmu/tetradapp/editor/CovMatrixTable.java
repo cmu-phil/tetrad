@@ -99,7 +99,7 @@ class CovMatrixTable extends AbstractTableModel {
         int lastDataCol = firstDataCol + getNumVariables();
 
         if (row == 1 && col == 0) {
-            return "Sample Size";
+            return "N =";
         }
 
         if (row == 1 && col == 1) {

@@ -170,8 +170,8 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
         }
 
         JLabel label = new JLabel();
-        label.setForeground(Color.BLACK);
-        label.setBackground(Color.WHITE);
+//        label.setForeground(Color.BLACK);
+//        label.setBackground(Color.WHITE);
         label.setText(expressionString);
         label.addMouseListener(new NodeMouseListener(node, this));
 

@@ -355,7 +355,7 @@ final class BayesPmEditorWizard extends JPanel {
 
     private void createVariableChooser(BayesPm bayesPm, GraphWorkbench workbench) {
         this.variableChooser = new JComboBox<>();
-        this.variableChooser.setBackground(Color.white);
+//        this.variableChooser.setBackground(Color.white);
 
         Graph graphModel = bayesPm.getDag();
 
