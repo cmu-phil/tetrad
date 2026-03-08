@@ -19,38 +19,29 @@ import java.util.Map;
  *  - optional forced x-axis bounds (delegates to Histogram)
  *  - draws x-axis min/max labels when drawAxes==true
  *
+ * Theme-aware version:
+ *  - uses Look & Feel colors where possible
+ *
  * @author josephramsey
  */
 public class HistogramPanel extends JPanel {
 
-    /**
-     * An array of predefined tile labels representing different segment names or quantile divisions,
-     * commonly used in statistical or graphical displays. Each entry in the array corresponds to
-     * a specific type of tile or quantile, ranging from "1-tile" to "decile".
-     */
     public static final String[] tiles = {"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
             "septile", "octile", "nontile", "decile"};
-
-    private static final Color LINE_COLOR = Color.GRAY.darker();
 
     private final Histogram histogram;
     private final Map<Rectangle, Integer> rectMap = new LinkedHashMap<>();
     private final boolean drawAxes;
     private final int paddingX;
 
-    private Color barColor = Color.RED.darker();
+    /**
+     * Optional override for bar color. If null, theme color is used.
+     */
+    private Color barColor;
 
-    // Popup bin choices (you can tweak)
+    // Popup bin choices
     private int[] binChoices = new int[]{5, 10, 15, 20, 30, 40};
 
-    /**
-     * Constructs a HistogramPanel to display a histogram visualization.
-     *
-     * @param histogram the Histogram object to be displayed; must not be null
-     * @param drawAxes a boolean indicating whether axes should be drawn on the panel;
-     *                 if true, extra padding is added to accommodate the axes
-     * @throws NullPointerException if the provided histogram is null
-     */
     public HistogramPanel(Histogram histogram, boolean drawAxes) {
         this.drawAxes = drawAxes;
         this.paddingX = drawAxes ? 40 : 5;
@@ -61,38 +52,133 @@ public class HistogramPanel extends JPanel {
 
         this.histogram = histogram;
 
+        setOpaque(true);
+        refreshTheme();
         installBinsPopup();
-        this.setToolTipText(" ");
+        setToolTipText(" ");
+    }
+
+    // ============================================================
+    // Theme helpers
+    // ============================================================
+
+    private static Color uiColor(String key, Color fallback) {
+        Color c = UIManager.getColor(key);
+        return c != null ? c : fallback;
+    }
+
+    private static boolean isDarkMode() {
+        LookAndFeel laf = UIManager.getLookAndFeel();
+        return laf != null && laf.getName().toLowerCase().contains("dark");
+    }
+
+    private static Color blend(Color a, Color b, double t) {
+        t = Math.max(0.0, Math.min(1.0, t));
+        int r = (int) Math.round((1.0 - t) * a.getRed() + t * b.getRed());
+        int g = (int) Math.round((1.0 - t) * a.getGreen() + t * b.getGreen());
+        int b2 = (int) Math.round((1.0 - t) * a.getBlue() + t * b.getBlue());
+        return new Color(
+                Math.max(0, Math.min(255, r)),
+                Math.max(0, Math.min(255, g)),
+                Math.max(0, Math.min(255, b2))
+        );
+    }
+
+    private static Color brighten(Color c, double amount) {
+        return blend(c, Color.WHITE, amount);
+    }
+
+    private static Color darken(Color c, double amount) {
+        return blend(c, Color.BLACK, amount);
     }
 
     /**
-     * Sets the bin choices for the histogram panel. This method updates the
-     * available bin options and reconfigures the associated popup menu to
-     * reflect the new bin choices. If the provided array of choices is null
-     * or empty, the method returns without making changes.
-     *
-     * @param choices an array of integers representing the possible numbers
-     *                of bins available for the histogram. Each element must
-     *                be a positive integer; negative or non-positive values
-     *                will be ignored during internal processing.
+     * Background outside the plot rectangle.
      */
+    private static Color getPanelBg() {
+        return uiColor("Panel.background", new Color(238, 238, 238));
+    }
+
+    /**
+     * Background inside the plot rectangle.
+     */
+    private static Color getPlotBg() {
+        if (isDarkMode()) {
+            Color panel = getPanelBg();
+            Color textField = uiColor("TextField.background", panel);
+            return brighten(blend(panel, textField, 0.5), 0.03);
+        }
+
+        Color c = UIManager.getColor("TextField.background");
+        if (c != null) return c;
+
+        return Color.WHITE;
+    }
+
+    /**
+     * Border/axis/tick/label color.
+     */
+    private static Color getLineColor() {
+        Color c = UIManager.getColor("Component.borderColor");
+        if (c != null) return c;
+
+        c = UIManager.getColor("Separator.foreground");
+        if (c != null) return c;
+
+        c = UIManager.getColor("Label.foreground");
+        if (c != null) {
+            return isDarkMode() ? blend(c, Color.GRAY, 0.35) : darken(c, 0.20);
+        }
+
+        return Color.GRAY.darker();
+    }
+
+    /**
+     * Text color for labels.
+     */
+    private static Color getTextColor() {
+        return uiColor("Label.foreground", isDarkMode() ? new Color(230, 230, 230) : Color.BLACK);
+    }
+
+    /**
+     * Default bar color when no override is set.
+     */
+    private static Color getDefaultBarColor() {
+        Color c = UIManager.getColor("Table.selectionBackground");
+        if (c != null) return c;
+
+        c = UIManager.getColor("Focus.color");
+        if (c != null) return c;
+
+        return isDarkMode() ? new Color(110, 170, 255) : Color.RED.darker();
+    }
+
+    private Color getBarColor() {
+        return this.barColor != null ? this.barColor : getDefaultBarColor();
+    }
+
+    private void refreshTheme() {
+        setBackground(getPanelBg());
+        setForeground(getTextColor());
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        refreshTheme();
+        repaint();
+    }
+
+    // ============================================================
+    // Public API
+    // ============================================================
+
     public void setBinChoices(int[] choices) {
         if (choices == null || choices.length == 0) return;
         this.binChoices = choices.clone();
-        // Reinstall to reflect new choices
         installBinsPopup();
     }
 
-    /**
-     * Sets the bounds for the x-axis of the histogram and specifies whether
-     * data points outside these bounds should be ignored. This configuration
-     * will be applied to the underlying histogram visualization.
-     *
-     * @param min the minimum value (lower bound) for the x-axis; inclusive
-     * @param max the maximum value (upper bound) for the x-axis; inclusive
-     * @param ignoreOutside a boolean indicating whether data points outside
-     *                      the specified bounds should be excluded
-     */
     public void setXAxisBounds(double min, double max, boolean ignoreOutside) {
         try {
             this.histogram.setContinuousBounds(min, max, ignoreOutside);
@@ -102,21 +188,6 @@ public class HistogramPanel extends JPanel {
         repaint();
     }
 
-    /**
-     * Clears the x-axis bounds for the histogram visualization.
-     *
-     * This method removes any previously set bounds on the x-axis of the histogram,
-     * effectively resetting it to display the full range of data. The underlying
-     * histogram's continuous bounds are cleared through the associated method, and
-     * any graphical updates are immediately triggered by invoking the repaint method.
-     *
-     * If an exception occurs during the process of clearing the bounds, it is ignored,
-     * ensuring that the visualization continues to update without interruption.
-     *
-     * Note: This method primarily serves as a utility for resetting the bounds on
-     * the histogram's x-axis, and is typically used in scenarios where dynamic
-     * modifications to the histogram display are required.
-     */
     public void clearXAxisBounds() {
         try {
             this.histogram.clearContinuousBounds();
@@ -125,37 +196,8 @@ public class HistogramPanel extends JPanel {
         repaint();
     }
 
-    /**
-     * Installs a popup menu for configuring the number of bins displayed in the histogram.
-     *
-     * This method is specifically designed for histograms that target continuous variables.
-     * If the histogram's target is not a continuous variable, the method exits without
-     * performing any configuration.
-     *
-     * The popup menu contains a submenu labeled "Bins," which provides choices for the
-     * number of bins to display in the histogram. Users can select the desired number of
-     * bins from a list of positive integer options. If the selected bin count triggers
-     * a runtime exception when applied to the histogram, the exception is ignored, and
-     * the component is repainted regardless.
-     *
-     * For continuous interaction, the popup menu is triggered on platform-specific
-     * mouse events (such as right-clicking). Mouse listeners are dynamically added and
-     * replaced, ensuring the popup operates consistently while avoiding duplicate listeners.
-     *
-     * Key functionality:
-     * - The number of bins is determined by an internal array of options (`binChoices`).
-     * - Invalid or non-positive bin counts in the array are ignored.
-     * - The menu dynamically updates to reflect the current bin selection.
-     *
-     * Note: The method relies on the histogram's state and UI infrastructure to integrate
-     * the popup menu behavior. It does not expose or validate the current number of bins
-     * due to limitations in the underlying histogram API.
-     */
     private void installBinsPopup() {
-        // Only meaningful for continuous targets.
         if (!(histogram.getTargetNode() instanceof ContinuousVariable)) {
-            // Still install a popup so the component can show "N/A" if you want,
-            // but simplest: do nothing.
             return;
         }
 
@@ -182,25 +224,23 @@ public class HistogramPanel extends JPanel {
 
         menu.add(binsMenu);
 
-        // Mouse listener for cross-platform popup triggers
         MouseAdapter ma = new MouseAdapter() {
             private void maybeShow(MouseEvent e) {
                 if (!e.isPopupTrigger()) return;
-                // Update selection checks to current bins if we can infer it:
-                // Histogram doesn't expose numBins; so we just show menu without checks.
                 menu.show(HistogramPanel.this, e.getX(), e.getY());
             }
 
-            @Override public void mousePressed(MouseEvent e) { maybeShow(e); }
-            @Override public void mouseReleased(MouseEvent e) { maybeShow(e); }
+            @Override
+            public void mousePressed(MouseEvent e) {
+                maybeShow(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                maybeShow(e);
+            }
         };
 
-        // Remove prior listeners of same type (avoid duplicates if reinstalling)
-        for (var l : getMouseListeners()) {
-            if (l instanceof MouseAdapter) {
-                // best-effort: don't remove unrelated adapters; but this is fine for your use case
-            }
-        }
         addMouseListener(ma);
     }
 
@@ -212,14 +252,6 @@ public class HistogramPanel extends JPanel {
         return max;
     }
 
-    /**
-     * Retrieves the tooltip text for the histogram panel based on the location of the mouse event.
-     * The tooltip displays the value associated with the rectangular area containing the mouse pointer.
-     *
-     * @param evt the MouseEvent object representing the mouse pointer's location and event information
-     * @return a String representing the tooltip text for the hovered rectangular area, or null if
-     *         the mouse pointer is not contained within any rectangle or no value is associated with it
-     */
     @Override
     public String getToolTipText(MouseEvent evt) {
         Point point = evt.getPoint();
@@ -232,18 +264,11 @@ public class HistogramPanel extends JPanel {
         return null;
     }
 
-    /**
-     * Renders the component by drawing a histogram, axes, and labels.
-     * This method overrides the default paintComponent behavior to provide
-     * customized histogram rendering based on the data and display settings.
-     *
-     * @param graphics the graphics context used for rendering the component
-     */
     @Override
     public void paintComponent(Graphics graphics) {
         super.paintComponent(graphics);
 
-        int paddingY = drawAxes ? 20 : 5; // a bit more room for x labels
+        int paddingY = drawAxes ? 20 : 5;
         int height = getHeight() - 2;
         int width = getWidth() - (drawAxes ? 4 : 2);
         int displayedHeight = height - paddingY;
@@ -253,108 +278,105 @@ public class HistogramPanel extends JPanel {
 
         rectMap.clear();
 
-        Graphics2D g2d = (Graphics2D) graphics;
-        Histogram histogram = getHistogram();
+        Graphics2D g2d = (Graphics2D) graphics.create();
+        try {
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        int[] freqs = histogram.getFrequencies();
-        int categories = freqs.length;
+            Histogram histogram = getHistogram();
+            int[] freqs = histogram.getFrequencies();
+            int categories = freqs.length;
 
-        // Background / box
-        g2d.setColor(getBackground());
-        g2d.fillRect(0, 0, width + 2 * space, height);
+            Color panelBg = getBackground();
+            Color plotBg = getPlotBg();
+            Color lineColor = getLineColor();
+            Color textColor = getTextColor();
+            Color bar = getBarColor();
 
-        g2d.setColor(Color.WHITE);
-        g2d.fillRect(0, 0, width, height);
+            // Background outside plot
+            g2d.setColor(panelBg);
+            g2d.fillRect(0, 0, getWidth(), getHeight());
 
-        if (categories <= 0) {
-            // Nothing to draw
-            g2d.setColor(LINE_COLOR);
+            // Plot rectangle background
+            g2d.setColor(plotBg);
+            g2d.fillRect(0, 0, width, height);
+
+            if (categories <= 0) {
+                g2d.setColor(lineColor);
+                g2d.drawRect(paddingX, 0, width - paddingX, height - paddingY);
+                return;
+            }
+
+            int barWidth = TMath.max((width - paddingX) / categories, 2) - space;
+            int topFreq = getMax(freqs);
+            double scale = (topFreq == 0) ? 0.0 : (displayedHeight / (double) topFreq);
+
+            FontMetrics fm = g2d.getFontMetrics();
+
+            // Bars
+            for (int i = 0; i < categories; i++) {
+                int freq = freqs[i];
+                int y = (int) TMath.ceil(scale * freq);
+                int x = space * (i + 1) + barWidth * i + paddingX;
+
+                g2d.setColor(bar);
+                Rectangle rect = new Rectangle(x, (height - paddingY - y - space), barWidth, y);
+                g2d.fill(rect);
+                rectMap.put(rect, freq);
+            }
+
+            // Border around plot area
+            g2d.setColor(lineColor);
             g2d.drawRect(paddingX, 0, width - paddingX, height - paddingY);
-            return;
-        }
 
-        int barWidth = TMath.max((width - paddingX) / categories, 2) - space;
-        int topFreq = getMax(freqs);
-        double scale = (topFreq == 0) ? 0.0 : (displayedHeight / (double) topFreq);
+            if (drawAxes) {
+                g2d.setColor(lineColor);
 
-        FontMetrics fm = g2d.getFontMetrics();
+                int topY = height - paddingY - (int) TMath.ceil(scale * topFreq) + 1;
+                String top = String.valueOf(topFreq);
+                g2d.drawString(top, paddingX - fm.stringWidth(top), TMath.max(10, topY - 2));
+                g2d.drawLine(paddingX - dash, topY, paddingX, topY);
 
-        // Bars
-        for (int i = 0; i < categories; i++) {
-            int freq = freqs[i];
-            int y = (int) TMath.ceil(scale * freq);
-            int x = space * (i + 1) + barWidth * i + paddingX;
+                g2d.drawString("0", paddingX - fm.stringWidth("0"), height - paddingY + fm.getAscent() / 2);
+                g2d.drawLine(paddingX - dash, height - paddingY, paddingX, height - paddingY);
 
-            g2d.setColor(barColor);
-            Rectangle rect = new Rectangle(x, (height - paddingY - y - space), barWidth, y);
-            g2d.fill(rect);
-            rectMap.put(rect, freq);
-        }
+                int hSize = (height - paddingY - topY) / 4;
+                for (int i = 1; i < 4; i++) {
+                    int yTick = height - paddingY - hSize * i;
+                    g2d.drawLine(paddingX - dash, yTick, paddingX, yTick);
+                }
 
-        // Border around plot area
-        g2d.setColor(LINE_COLOR);
-        g2d.drawRect(paddingX, 0, width - paddingX, height - paddingY);
+                if (histogram.getTargetNode() instanceof ContinuousVariable) {
+                    double xmin = histogram.getDisplayMin();
+                    double xmax = histogram.getDisplayMax();
 
-        if (drawAxes) {
-            // Y-axis ticks/labels (existing behavior)
-            g2d.setColor(LINE_COLOR);
+                    String sMin = formatAxis(xmin);
+                    String sMax = formatAxis(xmax);
 
-            int topY = height - paddingY - (int) TMath.ceil(scale * topFreq) + 1;
-            String top = String.valueOf(topFreq);
-            g2d.drawString(top, paddingX - fm.stringWidth(top), TMath.max(10, topY - 2));
-            g2d.drawLine(paddingX - dash, topY, paddingX, topY);
-
-            g2d.drawString("0", paddingX - fm.stringWidth("0"), height - paddingY + fm.getAscent() / 2);
-            g2d.drawLine(paddingX - dash, height - paddingY, paddingX, height - paddingY);
-
-            int hSize = (height - paddingY - topY) / 4;
-            for (int i = 1; i < 4; i++) {
-                int yTick = height - paddingY - hSize * i;
-                g2d.drawLine(paddingX - dash, yTick, paddingX, yTick);
+                    int yLabel = height - 2;
+                    g2d.setColor(textColor);
+                    g2d.drawString(sMin, paddingX, yLabel);
+                    int maxX = width - fm.stringWidth(sMax);
+                    g2d.drawString(sMax, TMath.max(paddingX + 5, maxX), yLabel);
+                }
             }
-
-            // NEW: x-axis min/max labels when continuous
-            if (histogram.getTargetNode() instanceof ContinuousVariable) {
-                double xmin = histogram.getDisplayMin();
-                double xmax = histogram.getDisplayMax();
-
-                String sMin = formatAxis(xmin);
-                String sMax = formatAxis(xmax);
-
-                int yLabel = height - 2; // bottom
-                g2d.drawString(sMin, paddingX, yLabel);
-                int maxX = width - fm.stringWidth(sMax);
-                g2d.drawString(sMax, TMath.max(paddingX + 5, maxX), yLabel);
-            }
+        } finally {
+            g2d.dispose();
         }
     }
 
     private String formatAxis(double v) {
         if (Double.isNaN(v)) return "";
-        // Keep it simple; you can swap for NumberFormatUtil if you prefer
-        // For p-values, this will show nicely as 0 and 1.
         if (TMath.abs(v) < 1e-9) return "0";
         if (TMath.abs(v - 1.0) < 1e-9) return "1";
         return String.format("%.3g", v);
     }
 
-    /**
-     * Retrieves the current {@code Histogram} object associated with this panel.
-     *
-     * @return the {@code Histogram} object being displayed in the panel
-     */
     public Histogram getHistogram() {
         return this.histogram;
     }
 
-    /**
-     * Sets the color used to draw the bars in the histogram.
-     *
-     * @param barColor the {@code Color} object representing the desired color for the histogram bars.
-     *                 This value must not be null, as it directly affects the rendering appearance
-     *                 of the histogram bars.
-     */
     public void setBarColor(Color barColor) {
         this.barColor = barColor;
+        repaint();
     }
 }

@@ -298,42 +298,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     /**
      * Sets this editor to display contents of the given data model wrapper.
      */
-//    public void reset() {
-//        tabbedPane.removeAll();
-//        setPreferredSize(new Dimension(600, 400));
-//
-//        DataModelList dataModelList = dataWrapper.getDataModelList();
-//        DataModel selectedModel = dataModelList.getSelectedModel();
-//
-//        removeAll();
-//        removeEmptyModels(dataModelList);
-//
-//        int selectedIndex = -1;
-//
-//        for (int i = 0; i < dataModelList.size(); i++) {
-//            DataModel dm = dataModelList.get(i);
-//            tabbedPane.addTab("" + (i + 1), dataDisplay(dm));
-//            if (selectedModel == dm) selectedIndex = i;
-//        }
-//
-//        if (tabbedPane.getTabCount() > 0) {
-//            if (selectedIndex < 0) selectedIndex = 0;
-//            tabbedPane.setSelectedIndex(selectedIndex);
-//            dataModelList.setSelectedModel(dataModelList.get(selectedIndex));
-//        }
-//
-//        tabbedPane.addChangeListener(e -> {
-//            DataModel m = getSelectedDataModel();
-//            if (m != null) dataWrapper.getDataModelList().setSelectedModel(m);
-//            firePropertyChange("modelChanged", null, null);
-//        });
-//
-//        add(tabbedPane, BorderLayout.CENTER);
-//        if (showMenus) add(menuBar(), BorderLayout.NORTH);
-//        revalidate();
-//        repaint();
-//    }
-
     public void reset() {
         setPreferredSize(new Dimension(600, 400));
 
@@ -357,35 +321,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      *
      * @param extraModels a {@link edu.cmu.tetrad.data.DataModelList} object
      */
-//    public void reset(DataModelList extraModels) {
-//        tabbedPane().removeAll();
-//        setPreferredSize(new Dimension(600, 400));
-//
-//        DataModelList dataModelList = this.dataWrapper.getDataModelList();
-//        dataModelList.addAll(extraModels);
-//
-//        removeAll();
-//        tabbedPane().removeAll();
-//        DataEditor.removeEmptyModels(dataModelList);
-//
-//        int tabIndex = 0;
-//
-//        for (DataModel dataModel : dataModelList) {
-//            tabbedPane().addTab(DataEditor.tabName(dataModel, ++tabIndex),
-//                    dataDisplay(dataModel));
-//        }
-//
-//        add(tabbedPane(), BorderLayout.CENTER);
-//
-//        if (this.showMenus) {
-//            add(menuBar(), BorderLayout.NORTH);
-//        }
-//
-//        validate();
-//
-//        firePropertyChange("modelChanged", null, null);
-//    }
-
     public void reset(DataModelList extraModels) {
         tabbedPane.removeAll();
         setPreferredSize(new Dimension(600, 400));
@@ -412,34 +347,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      *
      * @param dataModel a {@link edu.cmu.tetrad.data.DataModel} object
      */
-//    public void reset(DataModel dataModel) {
-//        tabbedPane().removeAll();
-//        setPreferredSize(new Dimension(600, 400));
-//
-//        DataModelList dataModelList = this.dataWrapper.getDataModelList();
-//        dataModelList.clear();
-//        dataModelList.add(dataModel);
-//
-//        DataEditor.removeEmptyModels(dataModelList);
-//        tabbedPane().removeAll();
-//
-//        for (int i = 0; i < dataModelList.size(); i++) {
-//            Object _dataModel = dataModelList.get(i);
-//            tabbedPane().addTab(DataEditor.tabName(dataModel, i + 1),
-//                    dataDisplay(_dataModel));
-//        }
-//
-//        add(tabbedPane(), BorderLayout.CENTER);
-//
-//        if (this.showMenus) {
-//            add(menuBar(), BorderLayout.NORTH);
-//        }
-//
-//        validate();
-//
-//        firePropertyChange("modelChanged", null, null);
-//    }
-
     public void reset(DataModel dataModel) {
         tabbedPane.removeAll();
         setPreferredSize(new Dimension(600, 400));
@@ -467,14 +374,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      *
      * @return the data sets that's currently in front.
      */
-//    public DataModel getSelectedDataModel() {
-//        int idx = tabbedPane.getSelectedIndex();
-//        if (idx < 0) return null;
-//        DataModelList list = dataWrapper.getDataModelList();
-//        if (idx >= list.size()) return null;
-//        return list.get(idx);
-//    }
-
     public DataModel getSelectedDataModel() {
         int idx = tabbedPane.getSelectedIndex();
         if (idx < 0) return null;

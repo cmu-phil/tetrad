@@ -70,7 +70,7 @@ public class CheckIndependenceFacts extends AbstractAction {
 //        JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), editor, "Independence Facts DSL Editor",
 //                JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
 
-        EditorWindow editorWindow = new EditorWindow(editor, "Nonlinearity Checks", null,
+        EditorWindow editorWindow = new EditorWindow(editor, "Check Independence Facts", null,
                 false, JOptionUtils.centeringComp());
 
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);

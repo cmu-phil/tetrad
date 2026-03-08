@@ -20,6 +20,10 @@
 
 package edu.cmu.tetradapp;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
@@ -114,11 +118,13 @@ public final class Tetrad implements PropertyChangeListener {
      */
     private static void setLookAndFeel() {
         try {
-            String os = System.getProperties().getProperty("os.name");
-            if (os.equals("Windows XP")) {
-                UIManager.setLookAndFeel(
-                        UIManager.getSystemLookAndFeelClassName());
-            }
+//            String os = System.getProperties().getProperty("os.name");
+//            if (os.equals("Windows XP")) {
+//                UIManager.setLookAndFeel(
+//                        UIManager.getSystemLookAndFeelClassName());
+//            }
+
+            FlatLightLaf.setup();
         } catch (Exception e) {
             TetradLogger.getInstance().log("Couldn't set look and feel.");
         }

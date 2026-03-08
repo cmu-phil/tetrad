@@ -204,6 +204,11 @@
 <!--            <version>5.10.2</version>-->
 <!--            <scope>test</scope>-->
 <!--        </dependency>-->
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>3.4</version>
+        </dependency>
     </dependencies>
 
     <properties>
