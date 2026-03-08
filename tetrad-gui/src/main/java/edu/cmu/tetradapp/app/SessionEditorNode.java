@@ -561,8 +561,8 @@ public final class SessionEditorNode extends DisplayNode {
 
         this.popup = new JPopupMenu();
 
-        JMenuItem createModel = new JMenuItem("Create Model");
-        createModel.setToolTipText("<html>Creates a new model for this node"
+        JMenuItem createModel = new JMenuItem("Create Contents");
+        createModel.setToolTipText("<html>Creates new contents for this node"
                                    + "<br>of the type selected.</html>");
 
         createModel.addActionListener((e) -> {
@@ -582,8 +582,8 @@ public final class SessionEditorNode extends DisplayNode {
             }
         });
 
-        JMenuItem editModel = new JMenuItem("Edit Model");
-        editModel.setToolTipText("<html>Edits the model in this node.</html>");
+        JMenuItem editModel = new JMenuItem("Edit Contents");
+        editModel.setToolTipText("<html>Edits the contents of this node.</html>");
 
         editModel.addActionListener((e) -> {
             try {
@@ -602,8 +602,8 @@ public final class SessionEditorNode extends DisplayNode {
             }
         });
 
-        JMenuItem destroyModel = new JMenuItem("Destroy Model");
-        destroyModel.setToolTipText("<html>Destroys the model for this node, "
+        JMenuItem destroyModel = new JMenuItem("Destroy Contents");
+        destroyModel.setToolTipText("<html>Destroys the contents of this node, "
                                     + "<br>if it has one, destroying any "
                                     + "<br>downstream models as well.</html>");
 
