@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.algcomparison.simulation;
 
@@ -81,9 +81,37 @@ public class GeneralAdditiveModel implements Simulation {
     @Serial
     private static final long serialVersionUID = 24L;
 
+    /**
+     * Represents the random graph used within the General Additive Model (GAM).
+     * This graph serves as the foundation for data generation, simulations, and
+     * various dependent operations in the model.
+     * <p>
+     * The associated {@link RandomGraph} instance dictates the structure and
+     * characteristics of the graph, and its description and parameters are
+     * utilized in configuring the model.
+     * <p>
+     * This variable is immutable and must be initialized at the time of object
+     * construction, ensuring consistency and preventing unintended modifications
+     * to the underlying graph.
+     */
     private final RandomGraph randomGraph;
-
+    /**
+     * A collection of data models used within the General Additive Model (GAM).
+     * <p>
+     * This field stores a list of {@code DataSet} objects, which represent the
+     * datasets generated or used during the execution of the model. The list is
+     * initialized as an empty {@code ArrayList} and is populated through data
+     * generation, simulation, or external interaction with the class.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
+    /**
+     * A list of Graph objects used within the General Additive Model.
+     * <p>
+     * This list serves as a central collection of graphs, where each graph
+     * represents a distinct structure used for data modeling or simulations.
+     * Graphs stored in this list are typically generated or modified through
+     * various operations within the model.
+     */
     private List<Graph> graphs = new ArrayList<>();
 
     /**
@@ -107,11 +135,11 @@ public class GeneralAdditiveModel implements Simulation {
      *                   Relevant keys include:
      *                   - Params.STANDARDIZE: Boolean flag indicating whether to standardize the data.
      *                   - Params.MEASUREMENT_VARIANCE: Double value representing the variance of
-     *                     the Gaussian noise to add to the data. Default is 0.0.
+     *                   the Gaussian noise to add to the data. Default is 0.0.
      *                   - Params.RANDOMIZE_COLUMNS: Boolean flag specifying whether to shuffle columns.
      *                   - Params.PROB_REMOVE_COLUMN: Double value representing the probability of
-     *                     removing random columns. Default is 0.0.
-     * @param dataSet The dataset to be post-processed.
+     *                   removing random columns. Default is 0.0.
+     * @param dataSet    The dataset to be post-processed.
      * @return A new DataSet instance with the applied transformations.
      */
     private static DataSet postProcess(Parameters parameters, DataSet dataSet) {
@@ -144,11 +172,38 @@ public class GeneralAdditiveModel implements Simulation {
     }
 
     /**
+     * Parses a comma-separated hidden-dimension string such as "8,8" or "16".
+     */
+    private static int[] parseHiddenDimensions(String spec) {
+        if (spec == null || spec.trim().isEmpty()) {
+            return new int[]{8, 8};
+        }
+
+        String[] parts = spec.split(",");
+        int[] dims = new int[parts.length];
+
+        for (int i = 0; i < parts.length; i++) {
+            String s = parts[i].trim();
+            if (s.isEmpty()) {
+                throw new IllegalArgumentException("Malformed hidden-dimensions string: \"" + spec + "\"");
+            }
+
+            int h = Integer.parseInt(s);
+            if (h < 1) {
+                throw new IllegalArgumentException("Hidden dimensions must be >= 1: \"" + spec + "\"");
+            }
+            dims[i] = h;
+        }
+
+        return dims;
+    }
+
+    /**
      * Creates data models and their corresponding graphs based on the provided parameters.
      * This method initializes a series of data sets and graphs by repeatedly generating
      * random graphs, modifying them, and simulating data. The number of simulations
      * executed is determined by the number of runs specified in the parameters.
-     *
+     * <p>
      * If a seed is provided in the parameters, it will be used to initialize the random
      * number generator, ensuring reproducibility.
      *
@@ -156,10 +211,10 @@ public class GeneralAdditiveModel implements Simulation {
      *                   data generation, including:
      *                   - Params.NUM_RUNS: The number of data models to generate.
      *                   - Params.SEED: A long value specifying the random seed for
-     *                     reproducibility (optional).
-     * @param newModel A boolean flag indicating whether to generate a new model. If set
-     *                 to true, additional operations might be performed based on the
-     *                 application's logic.
+     *                   reproducibility (optional).
+     * @param newModel   A boolean flag indicating whether to generate a new model. If set
+     *                   to true, additional operations might be performed based on the
+     *                   application's logic.
      */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
@@ -207,7 +262,7 @@ public class GeneralAdditiveModel implements Simulation {
      * Retrieves the number of data models currently stored in the class.
      *
      * @return The total number of data models present, determined by the size
-     *         of the internal dataSets list.
+     * of the internal dataSets list.
      */
     @Override
     public int getNumDataModels() {
@@ -244,7 +299,7 @@ public class GeneralAdditiveModel implements Simulation {
      * utilized in the model.
      *
      * @return A string containing a description of the Generalized Additive Model,
-     *         including the description of the associated random graph.
+     * including the description of the associated random graph.
      */
     public String getDescription() {
         return "Generalized Additive Model (Deep Net) using " + this.randomGraph.getDescription();
@@ -263,14 +318,14 @@ public class GeneralAdditiveModel implements Simulation {
      * Retrieves a list of configuration parameters used by the model, including both
      * parameters from the associated random graph (if applicable) and those specific
      * to this implementation.
-     *
+     * <p>
      * The parameters include various configuration options such as noise expression,
      * dimensional settings, and simulation controls. If the random graph associated
      * with the model is not an instance of {@code SingleGraph}, its parameters are
      * also included.
      *
      * @return A list of parameter names as {@code String}, containing both graph-specific
-     *         parameters and additional parameters specific to the General Additive Model.
+     * parameters and additional parameters specific to the General Additive Model.
      */
     @Override
     public List<String> getParameters() {
@@ -302,7 +357,7 @@ public class GeneralAdditiveModel implements Simulation {
      * Retrieves the class type of the random graph associated with the model.
      *
      * @return A {@code Class} object representing the type of the random graph
-     *         associated with the model, which extends {@code RandomGraph}.
+     * associated with the model, which extends {@code RandomGraph}.
      */
     @Override
     public Class<? extends RandomGraph> getRandomGraphClass() {
@@ -352,32 +407,5 @@ public class GeneralAdditiveModel implements Simulation {
             throw new RuntimeException("Could not parse noise expression: "
                     + parameters.getString(Params.NOISE_EXPRESSION), e);
         }
-    }
-
-    /**
-     * Parses a comma-separated hidden-dimension string such as "8,8" or "16".
-     */
-    private static int[] parseHiddenDimensions(String spec) {
-        if (spec == null || spec.trim().isEmpty()) {
-            return new int[]{8, 8};
-        }
-
-        String[] parts = spec.split(",");
-        int[] dims = new int[parts.length];
-
-        for (int i = 0; i < parts.length; i++) {
-            String s = parts[i].trim();
-            if (s.isEmpty()) {
-                throw new IllegalArgumentException("Malformed hidden-dimensions string: \"" + spec + "\"");
-            }
-
-            int h = Integer.parseInt(s);
-            if (h < 1) {
-                throw new IllegalArgumentException("Hidden dimensions must be >= 1: \"" + spec + "\"");
-            }
-            dims[i] = h;
-        }
-
-        return dims;
     }
 }

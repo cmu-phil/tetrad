@@ -333,12 +333,14 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
     // --- knobs ---
 
     /**
-     * Sets the BIC penalty discount coefficient <code>c</code>.
-     * Larger values encourage sparser graphs by increasing the complexity penalty.
+     * Sets the penalty discount value used in score calculation.
+     * The penalty discount adjusts the penalties applied during the
+     * scoring process, allowing control over how penalties influence the
+     * computed scores.
      *
-     * <p>
-     * This coefficient is also used (coupled) in the trek-rank mismatch penalty.
-     * </p>
+     * @param c the penalty discount value to set. Must be a finite, non-negative number.
+     *          Higher values reduce the impact of penalties, while lower values
+     *          increase their effect during calculations.
      */
     public void setPenaltyDiscount(double c) {
         this.penaltyDiscount = c;
@@ -346,12 +348,14 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
     }
 
     /**
-     * Sets the multiplier applied to the trek-rank mismatch penalty.
-     * Default is 1.0. Values &lt; 1 weaken the trek preference; values &gt; 1 strengthen it.
+     * Sets the penalty multiplier for trek mismatch penalties.
+     * The multiplier scales the penalty applied during the computation
+     * of scores when there are mismatches or inconsistencies in trek relationships.
      *
-     * <p>
-     * Note: this affects cached local scores, so the score cache is cleared.
-     * </p>
+     * @param mult the penalty multiplier to set. Must be a finite, non-negative value.
+     *             Values greater than zero increase the penalty weight,
+     *             while zero disables the penalty effect.
+     * @throws IllegalArgumentException if the provided value is not finite or is less than zero.
      */
     public void setTrekPenaltyMultiplier(double mult) {
         if (!Double.isFinite(mult) || mult < 0.0) {

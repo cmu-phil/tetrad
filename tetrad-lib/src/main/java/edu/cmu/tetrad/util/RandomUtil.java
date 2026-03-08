@@ -224,6 +224,12 @@ public class RandomUtil {
         System.out.println(deterministic ? "Deterministic" : "Not deterministic");
     }
 
+    /**
+     * The main method serves as the entry point for the program execution.
+     *
+     * @param args Command-line arguments passed to the program. These arguments
+     *             are not used in this implementation.
+     */
     public static void main(String[] args) {
         testDeterminism();
     }

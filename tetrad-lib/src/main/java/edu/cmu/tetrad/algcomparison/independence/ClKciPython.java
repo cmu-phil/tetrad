@@ -18,6 +18,18 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The ClKciPython class is an implementation of the IndependenceWrapper interface that
+ * utilizes the Kernel-based Independence Criterion with Causal Learning (KCI-CL)
+ * test in a Python environment. This implementation integrates a Python server
+ * script to perform independence testing on continuous data. The class supports
+ * configuration of parameters, such as the Python executable path, server script path,
+ * significance level (alpha), and verbosity.
+ *
+ * The main purpose of this class is to facilitate the execution of independence
+ * tests using Python-based statistical tools, while managing execution and resource
+ * configuration seamlessly within a Java environment.
+ */
 @TestOfIndependence(
         name = "KCI, Causal Learn (Python)",
         command = "kci-cl-test",
@@ -38,9 +50,27 @@ public class ClKciPython implements IndependenceWrapper {
     private static final String BUNDLED_CACHE_NAME = "kci_server.py";
     private static final String USE_BUNDLED = "Use bundled script";
 
+    /**
+     * Default constructor for the ClKciPython class.
+     * This constructor initializes an instance of the ClKciPython class.
+     */
     public ClKciPython() {
     }
 
+    /**
+     * Creates and returns an IndependenceTest instance using the provided DataModel and Parameters.
+     * The method ensures that the appropriate Python executable and server script are properly configured,
+     * resolving paths as necessary. A ProcessPythonCiService instance is initialized, and its output is
+     * used to create a PythonKciIndependenceTest with configurable settings such as alpha and verbosity.
+     *
+     * @param dataModel The data model to be analyzed. Must be an instance of DataSet (continuous).
+     * @param parameters Configuration parameters for the test, including paths for the Python executable
+     *                   and server script, as well as settings like alpha and verbosity.
+     * @return An IndependenceTest instance configured using the provided dataModel and parameters.
+     * @throws IllegalArgumentException If the dataModel is not an instance of DataSet, the Python executable
+     *                                  path is invalid or missing, or the server script path is invalid.
+     * @throws RuntimeException If there is an error extracting the bundled Python server script.
+     */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
 
@@ -131,16 +161,36 @@ public class ClKciPython implements IndependenceWrapper {
         return test;
     }
 
+    /**
+     * Provides a description of the test being implemented by the ClKciPython class.
+     *
+     * @return A string representing the description of the test, specifically "KCI-CL (Python)".
+     */
     @Override
     public String getDescription() {
         return "KCI-CL (Python)";
     }
 
+    /**
+     * Returns the data type associated with this implementation. The data type
+     * indicates the type of data that the method operates on or supports.
+     *
+     * @return The data type of this implementation. In this case, the data type
+     *         is {@code DataType.Continuous}.
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * Retrieves the list of parameters required for the configuration of the ClKciPython test.
+     * These parameters may include settings such as the alpha level, Python executable,
+     * Python CI server path, and verbosity.
+     *
+     * @return A list of strings representing the names of parameters necessary
+     *         for configuring the test implemented by the ClKciPython class.
+     */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();

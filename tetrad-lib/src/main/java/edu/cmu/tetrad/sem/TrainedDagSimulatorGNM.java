@@ -426,26 +426,138 @@ public final class TrainedDagSimulatorGNM {
         ));
     }
 
+    /**
+     * Represents a configuration class containing various hyperparameters and settings
+     * used for the simulation and training of a directed acyclic graph (DAG) model.
+     * This class provides default values for all parameters, which can be modified as needed.
+     */
     public static final class Params {
+        /**
+         * Specifies the default number of hidden units in a single layer of the model.
+         * This parameter is used to define the size of a hidden layer when no explicit
+         * layer configuration is provided through the hiddenLayers parameter.
+         */
         public int hidden = 64;
+        /**
+         * Specifies the layer configuration of a neural network by defining the number
+         * of hidden units for each layer. This variable is used to explicitly set
+         * the size and number of hidden layers in the model.
+         *
+         * If the value is null or an empty array, a default configuration with a single
+         * hidden layer, as specified by the {@code hidden} parameter, will be used instead.
+         *
+         * Each element in the array represents the number of neurons for one hidden layer,
+         * ordered sequentially from the first to the last hidden layer.
+         */
         public int[] hiddenLayers = null;
-
+        /**
+         * Specifies the number of training iterations or epochs, which represent one complete pass
+         * through the entire training dataset during model training.
+         *
+         * This value determines how many times the model will see the entire dataset for learning
+         * and optimization. A higher number of epochs typically allows the model to train longer
+         * and potentially achieve better performance, but it may also increase the risk of overfitting.
+         * It is important to tune this parameter according to the dataset and problem at hand.
+         *
+         * Default value: 200
+         */
         public int epochs = 200;
+        /**
+         * Specifies the learning rate used in the optimization algorithm during training.
+         *
+         * The learning rate determines the step size at which the optimization algorithm adjusts
+         * the model parameters in response to the estimated gradient during training.
+         *
+         * A smaller learning rate may result in slower convergence but can offer more precise
+         * adjustments to model parameters, while a larger learning rate can speed up convergence
+         * but risks overshooting optimal parameter values or failing to converge.
+         *
+         * Default value: 0.01
+         */
         public double lr = 0.01;
+        /**
+         * L2 regularization parameter used to prevent overfitting during the training process.
+         * This value controls the penalty applied to the magnitude of model weights, encouraging
+         * smaller weights and promoting generalization.
+         */
         public double l2 = 1e-4;
+        /**
+         * Represents the number of samples to be processed together in a single batch during training.
+         * This variable is commonly used in machine learning and deep learning applications to control
+         * the size of data subsets passed to the model for each training iteration.
+         */
         public int batchSize = 64;
+        /**
+         * The initial seed value used for random number generation
+         * or other computational purposes within the application.
+         * This value can be customized to control repeatability in
+         * scenarios like machine learning model training, simulations,
+         * or other processes requiring stochastic behaviors.
+         */
         public long seed = 12345L;
+        /**
+         * The maximum number of discrete levels allowed for a variable or feature
+         * in the model or algorithm. It is used to impose a limit on the granularity
+         * of discrete variables, ensuring computational efficiency and preventing
+         * excessively fine categorizations.
+         */
         public int maxDiscreteLevels = 50;
+        /**
+         * Indicates whether bootstrap sampling should be used when initializing roots
+         * during the execution of certain algorithms. When set to {@code true}, the
+         * system will use bootstrap sampling to initialize roots; otherwise, it will
+         * not use bootstrap sampling.
+         */
         public boolean bootstrapRoots = true;
+        /**
+         * A parameter representing the regularization strength applied to parent nodes
+         * in a learning model. It is a double value used to control the contribution of
+         * parent nodes during training. A higher value increases the penalty, potentially
+         * discouraging overfitting, whereas a lower value reduces the penalty, allowing
+         * for greater flexibility in modeling the parent nodes' influence.
+         */
         public double lambdaParents = 1.0;
+        /**
+         * A threshold parameter used for controlling or warning about a specific
+         * condition or operation within the application. The exact purpose and
+         * usage are dependent on the broader context of the containing class.
+         * The value is initialized to 4.0 by default.
+         */
         public double zWarn1 = 4.0;
+        /**
+         * A configurable parameter used to define a specific warning threshold value.
+         * This parameter can be utilized in various computations or validations
+         * where such a threshold is required.
+         */
         public double zWarn2 = 6.0;
+        /**
+         * Indicates whether residuals should be stratified based on discrete parent variables.
+         * When set to {@code true}, the model will group residuals into strata according to the
+         * distinct values of discrete parent variables. This setting is typically used in models
+         * involving discrete data to provide finer granularity in analysis or computation.
+         */
         public boolean stratifyResidualsByDiscreteParents = true;
+        /**
+         * The maximum number of residual strata to consider for stratification.
+         * This parameter controls the maximum number of distinct strata that residuals
+         * can be grouped into based on discrete parent variables. It helps manage memory
+         * usage and computational complexity, especially in large datasets.
+         */
         public int maxResidualStrata = 5000;
 
+        /**
+         * Constructs a new parameter set for the trained DAG simulator.
+         */
         public Params() {
         }
 
+        /**
+         * Retrieves the configuration for the hidden layers.
+         *
+         * @return an array of integers representing the sizes of the hidden layers.
+         *         If no explicit configuration for hidden layers exists, an array
+         *         containing the single value of the default hidden size is returned.
+         */
         public int[] getHiddenLayers() {
             if (hiddenLayers != null && hiddenLayers.length > 0) {
                 return hiddenLayers.clone();
@@ -477,7 +589,6 @@ public final class TrainedDagSimulatorGNM {
          */
         public final int trainingRowsUsed;
 
-        // Continuous-only
         /**
          * Mean Squared Error (MSE) for the training dataset associated with the node.
          * This metric is relevant only for nodes representing continuous variables.
@@ -497,7 +608,6 @@ public final class TrainedDagSimulatorGNM {
          */
         public final double residualSd;        // NaN if discrete child
 
-        // Discrete-only
         /**
          * Cross-entropy loss for the training dataset associated with the node.
          * This metric is relevant only for nodes representing discrete variables.
@@ -511,6 +621,19 @@ public final class TrainedDagSimulatorGNM {
          */
         public final int numLevels;            // 0 if continuous child
 
+        /**
+         * Constructs an instance of NodeReport with the specified attributes.
+         *
+         * @param node The name or identifier of the node for which the report is generated.
+         * @param discreteChild A boolean indicating whether the node represents a discrete child.
+         * @param parents A list of parent nodes associated with the node.
+         * @param trainingRowsUsed The number of training rows used to generate this report.
+         * @param mseTrain The mean squared error (MSE) computed during training.
+         * @param residualMean The mean of residuals computed during training.
+         * @param residualSd The standard deviation of residuals computed during training.
+         * @param xentTrain The cross-entropy value computed during training.
+         * @param numLevels The number of levels associated with the node.
+         */
         NodeReport(String node,
                    boolean discreteChild,
                    List<String> parents,
@@ -570,6 +693,19 @@ public final class TrainedDagSimulatorGNM {
         final int[] contParents;      // indices of continuous parents (subset of parentIdx)
         final int[] discParents;      // indices of discrete parents (subset of parentIdx)
 
+        /**
+         * Constructs an InputEncoder to encode the input variables using the provided dataset, parent indices,
+         * and a maximum threshold for discrete levels. It partitions the parents into discrete and continuous
+         * variables, computes z-score statistics for continuous parents, and sets the offsets for discrete parent
+         * encodings.
+         *
+         * @param data The dataset containing input variables.
+         * @param parentIdx An array of integer indices referring to the parent variables in the dataset.
+         * @param maxDiscreteLevels The maximum allowed number of discrete levels for any discrete parent. Parents
+         *                          with discrete levels exceeding this threshold will throw an exception.
+         * @throws IllegalArgumentException If a discrete parent variable contains more levels than allowed by
+         *                                  maxDiscreteLevels.
+         */
         InputEncoder(DataSet data, int[] parentIdx, int maxDiscreteLevels) {
             this.data = data;
             this.parentIdx = parentIdx.clone();
@@ -662,33 +798,14 @@ public final class TrainedDagSimulatorGNM {
             }
         }
 
-        double[] encodeFromGenerated(double[] contRow, int[] discRow) {
-            double[] out = new double[featureDim];
-            encodeFromGenerated(contRow, discRow, out);
-            return out;
-        }
-
-//        double[] encodeFromGenerated(double[] contRow, int[] discRow) {
-//            double[] out = new double[featureDim];
-//            // continuous
-//            for (int k = 0; k < contParents.length; k++) {
-//                int col = contParents[k];
-//                double x = contRow[col];
-//                out[k] = (x - mean[k]) / sd[k];
-//            }
-//            // discrete
-//            for (int j = 0; j < parentIdx.length; j++) {
-//                if (!parentIsDisc[j]) continue;
-//                int col = parentIdx[j];
-//                int L = discLevels[j];
-//                int off = discOffset[j];
-//                int v = discRow[col];
-//                if (v < 0 || v >= L) continue;
-//                out[off + v] = 1.0;
-//            }
-//            return out;
-//        }
-
+        /**
+         * Encodes input data into a standardized format based on continuous and discrete parent variables.
+         * Continuous variables are scaled using z-scores, while discrete variables are encoded using one-hot encoding.
+         *
+         * @param contRow An array containing the continuous input variables for the current row.
+         * @param discRow An array containing the discrete input variables for the current row.
+         * @param out An array where the encoded output will be stored. It must be preallocated with the correct size.
+         */
         void encodeFromGenerated(double[] contRow, int[] discRow, double[] out) {
             Arrays.fill(out, 0.0);
 
@@ -709,17 +826,6 @@ public final class TrainedDagSimulatorGNM {
                 if (v < 0 || v >= L) continue;
                 out[off + v] = 1.0;
             }
-        }
-
-        double maxAbsZFromGenerated(double[] contRow) {
-            double m = 0.0;
-            for (int k = 0; k < contParents.length; k++) {
-                int col = contParents[k];
-                double z = (contRow[col] - mean[k]) / sd[k];
-                double az = TMath.abs(z);
-                if (az > m) m = az;
-            }
-            return m;
         }
 
         boolean hasAnyContinuousParents() {

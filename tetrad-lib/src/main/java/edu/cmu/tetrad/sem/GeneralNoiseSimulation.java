@@ -32,30 +32,16 @@ public class GeneralNoiseSimulation {
     private final boolean reportSaturation;
     private final double saturationAbsActivationThreshold;
 
-//    public GeneralNoiseSimulation(Graph graph,
-//                                  int numSamples,
-//                                  Sampler sampler,
-//                                  int[] hiddenDimensions,
-//                                  double inputScale,
-//                                  Function<Double, Double> activationFunction) {
-//        if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycles.");
-//        if (numSamples < 1) throw new IllegalArgumentException("numSamples must be positive.");
-//        Objects.requireNonNull(sampler, "sampler");
-//        Objects.requireNonNull(hiddenDimensions, "hiddenDimensions");
-//        Objects.requireNonNull(activationFunction, "activationFunction");
-//        for (int h : hiddenDimensions) if (h < 1) throw new IllegalArgumentException("Hidden dims must be >= 1");
-//
-//        this.graph = graph;
-//        this.numSamples = numSamples;
-//        this.sampler = sampler;
-//        this.hiddenDimensions = hiddenDimensions.clone();
-//        this.inputScale = inputScale;
-//        this.activationFunction = activationFunction;
-//
-//        // Robust functional check for tanh (instead of broken reference equality).
-//        this.useFastTanh = isTanhLike(activationFunction);
-//    }
-
+    /**
+     * Constructs a GeneralNoiseSimulation instance based on the provided parameters.
+     *
+     * @param graph The graph structure representing the network or model to be simulated.
+     * @param numSamples The number of data samples to generate during the simulation.
+     * @param sampler The sampler instance used to generate noise or random data.
+     * @param hiddenDimensions An array defining the number of hidden units in each layer of the network.
+     * @param inputScale A scaling factor applied to the input data.
+     * @param activationFunction The activation function applied to the network's nodes.
+     */
     public GeneralNoiseSimulation(Graph graph,
                                   int numSamples,
                                   Sampler sampler,
@@ -66,6 +52,31 @@ public class GeneralNoiseSimulation {
                 false, 0.95);
     }
 
+    /**
+     * Constructs a GeneralNoiseSimulation instance based on the provided parameters.
+     *
+     * @param graph The graph structure representing the network or model to be simulated.
+     *              The graph must be acyclic; otherwise, an exception will be thrown.
+     * @param numSamples The number of data samples to generate during the simulation.
+     *                   Must be a positive integer.
+     * @param sampler The sampler instance used to generate noise or random data.
+     *                Cannot be null.
+     * @param hiddenDimensions An array defining the number of hidden units in each layer of the network.
+     *                         Each value must be a positive integer. Cannot be null.
+     * @param inputScale A scaling factor applied to the input data.
+     * @param activationFunction The activation function applied to the network's nodes.
+     *                           Typically used to introduce non-linearity. Cannot be null.
+     * @param reportSaturation A boolean flag indicating whether to report saturation statistics
+     *                         during the simulation.
+     * @param saturationAbsActivationThreshold The absolute activation threshold used to determine
+     *                                         activation saturation. Only applicable if
+     *                                         {@code reportSaturation} is set to {@code true}.
+     *                                         Must be a non-negative value.
+     * @throws IllegalArgumentException If the graph contains cycles, if {@code numSamples} is less than 1,
+     *                                  if any element in {@code hiddenDimensions} is less than 1, or if
+     *                                  {@code saturationAbsActivationThreshold} is negative.
+     * @throws NullPointerException If {@code sampler}, {@code hiddenDimensions}, or {@code activationFunction} is null.
+     */
     public GeneralNoiseSimulation(Graph graph,
                                   int numSamples,
                                   Sampler sampler,
@@ -94,11 +105,11 @@ public class GeneralNoiseSimulation {
     }
 
     /**
-     * Your requested noise model:
-     * - make it positive (abs)
-     * - clip to [NOISE_MIN, NOISE_MAX] to avoid tanh saturation via the noise channel
-     * <p>
-     * Note: this is still NOT additive noise; it's an input column to f_j.
+     * Fills the provided noise array with sampled values using the specified sampler.
+     *
+     * @param noise The array to be populated with sampled values.
+     * @param N The number of samples to generate and store in the noise array.
+     * @param sampler The sampling strategy used to generate the noise values.
      */
     private static void drawNoise(double[] noise, int N, Sampler sampler) {
         for (int i = 0; i < N; i++) {
@@ -157,6 +168,15 @@ public class GeneralNoiseSimulation {
         );
     }
 
+    /**
+     * Generates a dataset based on the current graph structure, incorporating
+     * random noise and a multi-layer perceptron (MLP) for each node in the graph.
+     * The method uses topological sorting to determine the order of computation,
+     * propagates values through the graph, and applies noise to ensure variability.
+     *
+     * @return A DataSet containing the computed values for all nodes in the graph
+     *         and their corresponding topological order.
+     */
     public DataSet generateData() {
         final List<Node> topo = graph.paths().getValidOrder(graph.getNodes(), true);
         final int P = topo.size(), N = numSamples;
