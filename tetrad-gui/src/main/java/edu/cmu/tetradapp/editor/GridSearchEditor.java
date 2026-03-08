@@ -1091,7 +1091,7 @@ public class GridSearchEditor extends JPanel {
             case 0 -> BayesNetSimulation.class;
             case 1 -> SemSimulation.class;
             case 2 -> LinearFisherModel.class;
-            case 3 -> GeneralizedAdditiveModelSimulator.class;
+            case 3 -> GeneralAdditiveModel.class;
             case 4 -> GeneralNoiseSimulation.class;
             case 5 -> AdditiveNoiseSimulation.class;
             case 6 -> PostnonlinearSem.class;
