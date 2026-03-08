@@ -94,7 +94,7 @@ public class EdgeTypeTable extends JPanel {
 
     private static boolean isDarkMode() {
         LookAndFeel laf = UIManager.getLookAndFeel();
-        return laf != null && laf.getName().toLowerCase().contains("dark");
+        return laf != null && laf.getName().toLowerCase().contains("dar");
     }
 
     private static Color blend(Color a, Color b, double t) {
@@ -350,7 +350,7 @@ public class EdgeTypeTable extends JPanel {
 
         private static boolean isDarkMode() {
             LookAndFeel laf = UIManager.getLookAndFeel();
-            return laf != null && laf.getName().toLowerCase().contains("dark");
+            return laf != null && laf.getName().toLowerCase().contains("dar");
         }
 
         private static Color blend(Color a, Color b, double t) {

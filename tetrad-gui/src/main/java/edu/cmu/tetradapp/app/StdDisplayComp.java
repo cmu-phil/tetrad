@@ -5,6 +5,7 @@ import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 
 /**
@@ -51,7 +52,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
     private static boolean isDarkMode() {
         LookAndFeel laf = UIManager.getLookAndFeel();
-        return laf != null && laf.getName().toLowerCase().contains("dark");
+        return laf != null && laf.getName().toLowerCase().contains("dar");
     }
 
     private static Color blend(Color a, Color b, double t) {
@@ -81,21 +82,21 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         if (isDarkMode()) {
             Color panel = uiColor("Panel.background", new Color(60, 63, 65));
             Color button = uiColor("Button.background", panel);
-            return brighten(blend(panel, button, 0.5), 0.08);
+            return brighten(blend(panel, button, 0.5), 0.01);
         }
 
         Color button = UIManager.getColor("Button.background");
-        if (button != null) {
-            return button;
-            // In light mode, move AWAY from the background so nodes stand out more.
-//            return brighten(button, 0.05);
-        }
+//        if (button != null) {
+//            return blend(button, new Color(26, 113, 169, 255), 0.10);
+//            // In light mode, move AWAY from the background so nodes stand out more.
+////            return brighten(button, 0.05);
+//        }
 
-        Color panel = UIManager.getColor("Panel.background");
-        if (panel != null) {
-            return panel;
-//            return brighten(panel, 0.10);
-        }
+//        Color panel = UIManager.getColor("Panel.background");
+//        if (panel != null) {
+//            return blend(panel, DisplayNodeUtils.getNodeFillColor(), 0.10);// new Color(26, 113, 169, 255), 0.10);
+////            return brighten(panel, 0.10);
+//        }
 
         return DisplayNodeUtils.getNodeFillColor();
     }
@@ -112,14 +113,18 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         }
 
         // In light mode, keep it muted but still clearly visible.
-        return darken(blend(base, Color.GRAY, 0.10), 0.06);
+        return Color.LIGHT_GRAY;// darken(Color.LIGHT_GRAY, 0.20);
     }
 
     /**
      * Selected node fill.
      */
     private static Color getSelectedFillColor() {
-        return uiColor("Table.selectionBackground", DisplayNodeUtils.getNodeSelectedFillColor());
+        if (isDarkMode()) {
+            return uiColor("Table.selectionBackground", DisplayNodeUtils.getNodeSelectedFillColor());
+        }
+
+        return DisplayNodeUtils.getNodeSelectedFillColor();
     }
 
     private static Color getEdgeColor() {
@@ -197,7 +202,8 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
     }
 
     private Shape getShape() {
-        return new RoundRectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+        return new RoundRectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1, 5, 5);
+//        return new Rectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1);
     }
 
     @Override
@@ -236,11 +242,29 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
             g2.setColor(isSelected() ? getSelectedFillColor() : getUnselectedFillColor());
             g2.fill(shape);
 
-            g2.setColor(isSelected() ? getSelectedEdgeColor() : getEdgeColor());
+            if (isDarkMode()) {
+                g2.setColor(lighter(isSelected() ? getSelectedEdgeColor() : getEdgeColor(), 0.25));
+            } else {
+                g2.setColor(darker(isSelected() ? getSelectedEdgeColor() : getEdgeColor(), .25));
+            }
             g2.draw(shape);
         } finally {
             g2.dispose();
         }
+    }
+
+    private static Color darker(Color c, double factor) {
+        int r = (int) (c.getRed() * (1 - factor));
+        int g = (int) (c.getGreen() * (1 - factor));
+        int b = (int) (c.getBlue() * (1 - factor));
+        return new Color(Math.max(r,0), Math.max(g,0), Math.max(b,0));
+    }
+
+    private static Color lighter(Color c, double factor) {
+        int r = (int) (c.getRed() + (255 - c.getRed()) * factor);
+        int g = (int) (c.getGreen() + (255 - c.getGreen()) * factor);
+        int b = (int) (c.getBlue() + (255 - c.getBlue()) * factor);
+        return new Color(Math.min(r,255), Math.min(g,255), Math.min(b,255));
     }
 
     private void layoutComponents() {

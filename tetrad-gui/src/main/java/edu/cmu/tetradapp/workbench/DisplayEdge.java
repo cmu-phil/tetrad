@@ -202,14 +202,14 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     private static Color getDefaultLineColor() {
-        Color c = UIManager.getColor("Component.borderColor");
-        if (c != null) return c;
-
-        c = UIManager.getColor("Label.foreground");
-        if (c != null) return c;
+//        Color c = UIManager.getColor("Component.borderColor");
+//        if (c != null) return c;
+//
+//        Color c = UIManager.getColor("Label.foreground");
+//        if (c != null) return c;
 
         return isDarkLaf()
-                ? new Color(180, 190, 205)
+                ? new Color(180, 190, 205).darker()
                 : new Color(26, 113, 169, 255);
     }
 
@@ -712,7 +712,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         if (isDarkLaf()) {
             color = color.brighter();
         } else {
-            color = color.darker();
+//            color = color.darker();
         }
 
         return color;

@@ -20,10 +20,9 @@
 
 package edu.cmu.tetradapp;
 
-import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatIntelliJLaf;
-import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.*;
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
@@ -124,7 +123,7 @@ public final class Tetrad implements PropertyChangeListener {
 //                        UIManager.getSystemLookAndFeelClassName());
 //            }
 
-            FlatLightLaf.setup();
+            FlatDarkLaf.setup();
         } catch (Exception e) {
             TetradLogger.getInstance().log("Couldn't set look and feel.");
         }

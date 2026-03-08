@@ -220,7 +220,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         addMouseListener(this.mouseHandler);
         addMouseMotionListener(this.mouseMotionHandler);
         // setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-        setBackground(new Color(254, 254, 255));
+//        setBackground(new Color(254, 254, 255));
+        setBackground(getWorkbenchBackground());
+        setOpaque(true);
         setFocusable(true);
 
         addMouseListener(new MouseAdapter() {
@@ -231,6 +233,47 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         setEnabled(this.enableEditing);
 
         new PasteLayoutAction(this).actionPerformed(null);
+    }
+
+    private static Color uiColor(String key, Color fallback) {
+        Color c = UIManager.getColor(key);
+        return c != null ? c : fallback;
+    }
+
+    private static boolean isDarkMode() {
+        LookAndFeel laf = UIManager.getLookAndFeel();
+        return laf != null && laf.getName().toLowerCase().contains("dark");
+    }
+
+    private static Color blend(Color a, Color b, double t) {
+        t = Math.max(0.0, Math.min(1.0, t));
+        int r = (int) Math.round((1.0 - t) * a.getRed() + t * b.getRed());
+        int g = (int) Math.round((1.0 - t) * a.getGreen() + t * b.getGreen());
+        int b2 = (int) Math.round((1.0 - t) * a.getBlue() + t * b.getBlue());
+        return new Color(
+                Math.max(0, Math.min(255, r)),
+                Math.max(0, Math.min(255, g)),
+                Math.max(0, Math.min(255, b2))
+        );
+    }
+
+    private static Color getWorkbenchBackground() {
+        Color panel = uiColor("Panel.background", new Color(245, 245, 245));
+
+        if (isDarkMode()) {
+            return panel;
+        }
+
+        // In light mode, give the canvas just a tiny bit of separation from the app background.
+//        return blend(panel, Color.WHITE, 0.18);
+        return Color.WHITE;// blend(panel, Color.WHITE, 0.5);
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        setBackground(getWorkbenchBackground());
+        repaint();
     }
 
     // ============================PUBLIC METHODS==========================//
@@ -887,10 +930,17 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      *
      * @param g the Graphics context in which to paint
      */
-    public final void paint(Graphics g) {
-//        g.setColor(getBackground());
-//        g.fillRect(0, 0, getWidth(), getHeight());
-        super.paint(g);
+//    public final void paint(Graphics g) {
+////        g.setColor(getBackground());
+////        g.fillRect(0, 0, getWidth(), getHeight());
+//        super.paint(g);
+//    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        g.setColor(getWorkbenchBackground());
+        g.fillRect(0, 0, getWidth(), getHeight());
+        super.paintComponent(g);
     }
 
     /**
@@ -922,15 +972,15 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         return super.getBackground();
     }
 
-    /**
-     * Sets the background color of this component.
-     *
-     * @param color the desired background color
-     */
-    public void setBackground(Color color) {
-        super.setBackground(color);
-//        repaint();
-    }
+//    /**
+//     * Sets the background color of this component.
+//     *
+//     * @param color the desired background color
+//     */
+//    public void setBackground(Color color) {
+//        super.setBackground(color);
+////        repaint();
+//    }
 
     /**
      * Layouts the graph nodes using the given layout graph.
