@@ -190,15 +190,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         return c != null ? c : fallback;
     }
 
-    private static boolean isDarkLaf() {
-        Color bg = UIManager.getColor("Panel.background");
-        if (bg == null) return false;
-
-        double luminance = 0.2126 * bg.getRed()
-                + 0.7152 * bg.getGreen()
-                + 0.0722 * bg.getBlue();
-
-        return luminance < 128.0;
+    private static boolean isDarkMode() {
+        return com.formdev.flatlaf.FlatLaf.isLafDark();
     }
 
     private static Color getDefaultLineColor() {
@@ -208,7 +201,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 //        Color c = UIManager.getColor("Label.foreground");
 //        if (c != null) return c;
 
-        return isDarkLaf()
+        return isDarkMode()
                 ? new Color(180, 190, 205).darker()
                 : new Color(26, 113, 169, 255);
     }
@@ -220,7 +213,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         c = UIManager.getColor("Table.selectionBackground");
         if (c != null) return c;
 
-        return isDarkLaf()
+        return isDarkMode()
                 ? new Color(110, 170, 255)
                 : new Color(244, 0, 20);
     }
@@ -232,7 +225,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         c = UIManager.getColor("TextField.caretForeground");
         if (c != null) return c;
 
-        return isDarkLaf()
+        return isDarkMode()
                 ? new Color(255, 210, 90)
                 : new Color(238, 180, 34);
     }
@@ -244,7 +237,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         c = UIManager.getColor("TextField.background");
         if (c != null) return c;
 
-        return isDarkLaf() ? new Color(43, 45, 48) : Color.white;
+        return isDarkMode() ? new Color(43, 45, 48) : Color.white;
     }
 
     @Override
@@ -709,7 +702,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     public Color getLineColor() {
         Color color = this.highlighted ? getHighlightedColor() : (this.lineColor != null ? this.lineColor : getDefaultLineColor());
 
-        if (isDarkLaf()) {
+        if (isDarkMode()) {
             color = color.brighter();
         } else {
 //            color = color.darker();
@@ -749,7 +742,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     public Color getHighlightedColor() {
         Color color = this.highlightedColor != null ? this.highlightedColor : getDefaultHighlightedColor();
 
-        if (isDarkLaf()) {
+        if (isDarkMode()) {
             color = color.brighter();
         } else {
             color = color.darker();

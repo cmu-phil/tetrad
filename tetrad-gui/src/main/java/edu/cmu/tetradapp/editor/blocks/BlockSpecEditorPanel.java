@@ -67,7 +67,6 @@ public final class BlockSpecEditorPanel extends JPanel {
     private final JButton btnExport = new JButton("Exportâ¦");
     private final JButton btnVars = new JButton("List Variables");
     private final JButton btnAlphatize = new JButton("Alphabetize");
-    private final JButton btnApply = new JButton("Keep Changes");
     private final JPopupMenu completionPopup = new JPopupMenu();
     private final JList<String> completionList = new JList<>();
     private final DefaultListModel<String> completionModel = new DefaultListModel<>();
@@ -83,6 +82,7 @@ public final class BlockSpecEditorPanel extends JPanel {
     private List<BlockSpecTextCodec.Issue> issues; // last issues
     private Consumer<BlockSpec> onApply;           // user callback
     private String originalText = "";
+    private String lastAppliedText = null;
 
     public BlockSpecEditorPanel(DataSet dataSet, String blockText) {
         super(new BorderLayout());
@@ -139,15 +139,6 @@ public final class BlockSpecEditorPanel extends JPanel {
             }
         });
 
-        // Apply binding (Shift+Enter)
-        textPane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK), "APPLY_SPEC");
-        textPane.getActionMap().put("APPLY_SPEC", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                applyIfClean();
-            }
-        });
-
         // Completion popup
         completionList.setModel(completionModel);
         completionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -173,24 +164,16 @@ public final class BlockSpecEditorPanel extends JPanel {
         JPanel buttonsRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
 //        buttonsRight.add(btnImport);
 //        buttonsRight.add(btnExport);
-        buttonsRight.add(btnVars);        // <= add here
+        buttonsRight.add(btnVars);
         buttonsRight.add(btnAlphatize);
-        buttonsRight.add(btnApply);
         bottom.add(status, BorderLayout.CENTER);
 //        bottom.add(buttonsLeft, BorderLayout.WEST);
         bottom.add(buttonsRight, BorderLayout.EAST);
 
-        btnApply.addActionListener(e -> applyIfClean());
         btnAlphatize.addActionListener(e -> canonicalizePreservingComments());
         btnImport.addActionListener(e -> doImport());
         btnExport.addActionListener(e -> doExport());
         btnVars.addActionListener(e -> insertVariableListComment());
-
-        btnApply.addActionListener(e -> applyIfClean());
-        btnAlphatize.addActionListener(e -> canonicalizePreservingComments());
-        btnImport.addActionListener(e -> doImport());
-        btnExport.addActionListener(e -> doExport());
-
         add(new JScrollPane(textPane,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
@@ -291,6 +274,7 @@ public final class BlockSpecEditorPanel extends JPanel {
         textPane.setText(text == null ? "" : text);
         textPane.setCaretPosition(textPane.getDocument().getLength());
         if (markOriginal) originalText = textPane.getText();
+        lastAppliedText = null;
         undo.discardAllEdits();
         parseAndRender();
     }
@@ -337,7 +321,6 @@ public final class BlockSpecEditorPanel extends JPanel {
             }
         }
 
-        // Status + spec
         long nErr = issues.stream().filter(i -> i.severity() == BlockSpecTextCodec.Severity.ERROR).count();
         long nWarn = issues.stream().filter(i -> i.severity() == BlockSpecTextCodec.Severity.WARNING).count();
 
@@ -346,26 +329,31 @@ public final class BlockSpecEditorPanel extends JPanel {
             try {
                 BlocksUtil.validateBlocks(currentSpec.blocks(), currentSpec.dataSet());
             } catch (RuntimeException ex) {
-                // Surface unexpected validation problems as errors in the status
+                this.currentSpec = null;
                 status.setText("Validation error: " + ex.getMessage());
                 status.setForeground(new Color(220, 50, 47));
-                btnApply.setEnabled(false);
+                colorCommentLines();
                 return;
             }
 
-//            double p = new BlockSpecSemFit(currentSpec).fit();
-//            NumberFormat formatter = new DecimalFormat("0.00");
-
-            status.setText("OK: " + currentSpec.blocks().size() + " blocks"// + " p = " +  formatter.format(p)
-                           + (nWarn > 0 ? (" â¢ " + nWarn + " warning(s)") : ""));
-            status.setForeground(new Color(38, 139, 210)); // blue
+            status.setText("OK: " + currentSpec.blocks().size() + " blocks"
+                    + (nWarn > 0 ? (" • " + nWarn + " warning(s)") : ""));
+            status.setForeground(new Color(38, 139, 210));
         } else {
             this.currentSpec = null;
-            status.setText("Errors: " + nErr + (nWarn > 0 ? (" â¢ Warnings: " + nWarn) : ""));
-            status.setForeground(new Color(220, 50, 47)); // red
+            status.setText("Errors: " + nErr + (nWarn > 0 ? (" • Warnings: " + nWarn) : ""));
+            status.setForeground(new Color(220, 50, 47));
         }
-        btnApply.setEnabled(nErr == 0);
+
         colorCommentLines();
+
+        // Auto-apply after every clean change, but only if the valid text is new.
+        if (nErr == 0) {
+            String currentText = textPane.getText();
+            if (!Objects.equals(currentText, lastAppliedText)) {
+                applyIfClean();
+            }
+        }
     }
 
     // call this at the end of parseAndRender()
@@ -424,7 +412,8 @@ public final class BlockSpecEditorPanel extends JPanel {
         if (isClean() && currentSpec != null) {
             try {
                 if (onApply != null) onApply.accept(currentSpec);
-                status.setText("Applied â¢ " + currentSpec.blocks().size() + " blocks");
+                lastAppliedText = textPane.getText();
+                status.setText("Applied • " + currentSpec.blocks().size() + " blocks");
                 status.setForeground(new Color(38, 139, 210));
             } catch (Exception ex) {
                 status.setText("Apply failed: " + ex.getMessage());

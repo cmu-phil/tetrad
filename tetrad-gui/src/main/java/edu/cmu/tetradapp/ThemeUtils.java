@@ -12,11 +12,8 @@ public final class ThemeUtils {
     private ThemeUtils() {
     }
 
-    public static boolean isDarkMode() {
-        LookAndFeel laf = UIManager.getLookAndFeel();
-        if (laf == null) return false;
-        String name = laf.getName().toLowerCase();
-        return name.contains("dark") || name.contains("darcula");
+    private static boolean isDarkMode() {
+        return com.formdev.flatlaf.FlatLaf.isLafDark();
     }
 
     public static void applyTheme(boolean dark) {

@@ -86,8 +86,7 @@ class OtherGroupsEditor extends JPanel {
     }
 
     private static boolean isDarkMode() {
-        LookAndFeel laf = UIManager.getLookAndFeel();
-        return laf != null && laf.getName().toLowerCase().contains("dar");
+        return com.formdev.flatlaf.FlatLaf.isLafDark();
     }
 
     private static Color blend(Color a, Color b, double t) {
