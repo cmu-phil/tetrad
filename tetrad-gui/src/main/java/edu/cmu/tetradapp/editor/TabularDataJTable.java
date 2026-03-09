@@ -120,7 +120,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 
         FontMetrics metrics = getFontMetrics(getFont());
 
-        getColumnModel().getColumn(0).setMaxWidth(9 * max);
+        getColumnModel().getColumn(0).setMaxWidth(10 * max);
         setRowHeight(metrics.getHeight() + 3);
 
         setRowSelectionAllowed(true);

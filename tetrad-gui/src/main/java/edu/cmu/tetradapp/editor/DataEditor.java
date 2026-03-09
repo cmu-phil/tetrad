@@ -94,6 +94,13 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         this.parameters = new Parameters();
     }
 
+    public DataEditor(int tabPlacement, boolean showMenus) {
+        this.tabbedPane = new JTabbedPane(tabPlacement);
+        this.tabbedPane.setPreferredSize(new Dimension(1000, 800));
+        this.parameters = new Parameters();
+        this.showMenus = showMenus;
+    }
+
     /**
      * Constructs the data editor with an empty list of data displays, showing menus optionally.
      *
@@ -218,25 +225,38 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             }
 
             tabbedPane.addTab(name, dataDisplay(dm));
-            if (dm == selectedModel) selectedIndex = i;
+            if (dm == selectedModel) {
+                selectedIndex = i;
+            }
         }
 
         if (tabbedPane.getTabCount() > 0) {
             if (selectedIndex < 0) {
                 selectedIndex = 0;
-                list.setSelectedModel(list.get(0)); // only repair if needed
+                list.setSelectedModel(list.get(0));
             }
             tabbedPane.setSelectedIndex(selectedIndex);
         }
+
+        updateTabbedPanePreferredSize();
     }
 
     private void ensureSelectionListener() {
         if (selectionListenerInstalled) return;
+
         tabbedPane.addChangeListener(e -> {
             DataModel m = getSelectedDataModel();
-            if (m != null) dataWrapper.getDataModelList().setSelectedModel(m);
+            if (m != null) {
+                dataWrapper.getDataModelList().setSelectedModel(m);
+            }
+
+            updateTabbedPanePreferredSize();
+            revalidate();
+            repaint();
+
             firePropertyChange("modelChanged", null, null);
         });
+
         selectionListenerInstalled = true;
     }
 
@@ -272,8 +292,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     public void replace(DataModel model) {
         if (model == null) throw new NullPointerException("The given model must not be null");
 
-        setPreferredSize(new Dimension(600, 400));
-
         DataModelList dataModelList = dataWrapper.getDataModelList();
         dataModelList.clear();
 
@@ -299,8 +317,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      * Sets this editor to display contents of the given data model wrapper.
      */
     public void reset() {
-        setPreferredSize(new Dimension(600, 400));
-
         DataModelList dataModelList = dataWrapper.getDataModelList();
         DataModel selectedModel = dataModelList.getSelectedModel();
 
@@ -323,7 +339,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      */
     public void reset(DataModelList extraModels) {
         tabbedPane.removeAll();
-        setPreferredSize(new Dimension(600, 400));
 
         DataModelList dataModelList = dataWrapper.getDataModelList();
         dataModelList.addAll(extraModels);
@@ -349,7 +364,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      */
     public void reset(DataModel dataModel) {
         tabbedPane.removeAll();
-        setPreferredSize(new Dimension(600, 400));
 
         DataModelList dataModelList = dataWrapper.getDataModelList();
         dataModelList.clear();
@@ -453,6 +467,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
     private JTable getSelectedJTable() {
         Object display = tabbedPane().getSelectedComponent();
+
+        if (display == null && getNumJTables() > 0) {
+            display = tabbedPane().getComponentAt(0);
+            tabbedPane.setSelectedIndex(0);
+        }
 
         if (display instanceof DataDisplay) {
             return ((DataDisplay) display).getDataDisplayJTable();
@@ -810,6 +829,27 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      */
     public Parameters getParameters() {
         return this.parameters;
+    }
+
+    private void updateTabbedPanePreferredSize() {
+        Component selected = this.tabbedPane.getSelectedComponent();
+
+        if (selected == null && this.tabbedPane.getTabCount() > 0) {
+            selected = this.tabbedPane.getComponentAt(0);
+        }
+
+        Dimension d;
+
+        if (selected != null) {
+            d = selected.getPreferredSize();
+        } else {
+            d = new Dimension(800, 800);
+        }
+
+        this.tabbedPane.setPreferredSize(new Dimension(
+                Math.max(800, d.width),
+                Math.max(600, d.height)
+        ));
     }
 }
 
