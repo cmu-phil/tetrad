@@ -78,7 +78,7 @@ public class FfCiContinuous implements IndependenceWrapper {
 
         edu.cmu.tetrad.search.test.FfCiContinuous.Approx[] approxes
                 = edu.cmu.tetrad.search.test.FfCiContinuous.Approx.values();
-        test.setApproximation(approxes[parameters.getInt(Params.RCIT_APPROX) - 1]);
+        test.setApprox(approxes[parameters.getInt(Params.RCIT_APPROX) - 1]);
 
 //        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));

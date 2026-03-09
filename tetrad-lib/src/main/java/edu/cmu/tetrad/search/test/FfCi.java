@@ -56,8 +56,6 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
     // ---------------- feature representation ----------------
 
-//    public enum FeatureType { RFF, ORF }
-
     // ---------------- core data ----------------
     private final DataSet data;
     private final List<Node> vars;
@@ -74,7 +72,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     private double lambda = 1.0;
     private boolean centerFeatures = true;
 
-    private FfCiContinuous.Approx pValueMethod = FfCiContinuous.Approx.GAMMA; // same enum as IndTestFfCi
+    private FfCiContinuous.Approx pValueMethod = FfCiContinuous.Approx.GAMMA;
 
     // Mixed-only knobs
     private double bandwidthMultiplier = 1.0;
@@ -105,37 +103,35 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     // ---------------- ctor ----------------
 
     /**
-     * Constructs an instance of FfCiMixed with the specified dataset and default parameters.
+     * Constructs a new FfCi instance for conducting conditional independence tests on a dataset that may contain both
+     * continuous and discrete variables.
      *
-     * @param dataSet the dataset to be used for initializing the instance
+     * @param dataSet the dataset containing the variables and data to be analyzed; must not be null
      */
     public FfCi(DataSet dataSet) {
         this(dataSet, new Parameters());
-        // ensure dataVersion is set consistently even when someone calls the 1-arg ctor
-        this.dataVersion = System.identityHashCode(dataSet);
     }
 
     /**
-     * Constructs a new FfCiMixed instance for conducting conditional independence tests
-     * on a dataset that may contain both continuous and discrete variables. This class
-     * initializes the necessary delegates and configuration parameters for the mixed data setting.
+     * Constructs a new FfCi instance for conducting conditional independence tests on a dataset that may contain both
+     * continuous and discrete variables.
      *
-     * @param dataSet the dataset containing the variables and data to be analyzed;
-     *                must not be null
-     * @param params  configuration parameters for the conditional independence tests;
-     *                should contain relevant key-value pairs, including optional "rcit.seed"
-     *                for random seed initialization
+     * @param dataSet the dataset containing the variables and data to be analyzed; must not be null
+     * @param params  configuration parameters for the conditional independence tests; should contain relevant
+     *                key-value pairs, including optional "rcit.seed" for random seed initialization
      */
     public FfCi(DataSet dataSet, Parameters params) {
         DataSet _data = Objects.requireNonNull(dataSet, "data");
         this.data = DataTransforms.standardizeData(_data);
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
-        // set initial active row count (will be updated by setRows if used)
         this.n = getActiveRowCount();
 
         boolean anyDisc = false;
         for (Node v : this.vars) {
-            if (v instanceof DiscreteVariable) { anyDisc = true; break; }
+            if (v instanceof DiscreteVariable) {
+                anyDisc = true;
+                break;
+            }
         }
         this.dataHasAnyDiscrete = anyDisc;
 
@@ -151,7 +147,6 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
         // Initialize delegate from current knobs (and propagate seed)
         syncDelegateToThis();
-        this.continuousDelegate.setSeed(this.seed);
     }
 
     // ---------------- public setters (wrapper-friendly) ----------------
@@ -191,7 +186,9 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      * @return The alpha value as a double.
      */
     @Override
-    public double getAlpha() { return alpha; }
+    public double getAlpha() {
+        return alpha;
+    }
 
     /**
      * Determines whether the verbose mode is enabled or not.
@@ -199,7 +196,9 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      * @return true if verbose mode is enabled, false otherwise.
      */
     @Override
-    public boolean isVerbose() { return verbose; }
+    public boolean isVerbose() {
+        return verbose;
+    }
 
     /**
      * Sets the verbosity level for the current instance and its delegate.
@@ -226,12 +225,6 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         this.continuousDelegate.setLambda(this.lambda);
     }
 
-//    public void setCenterFeatures(boolean centerFeatures) {
-//        this.centerFeatures = centerFeatures;
-//        this.featCache.clear();
-////        this.continuousDelegate.setCenterFeatures(centerFeatures);
-//    }
-
     /**
      * Sets the number of features in the XY dimension. Ensures the value is at least 1.
      * Invalidates any cached data and updates the continuous delegate with the new value.
@@ -257,25 +250,40 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Invalidates and clears all cached data to ensure that outdated or stale
-     * entries are removed. This method clears the contents of the `featCache`
-     * and `bw2Cache` collections, effectively resetting their state.
-     *
-     * Intended to be used when the cached data becomes unreliable or requires
-     * a refresh to ensure correctness.
+     * Invalidates and clears all cached data to ensure that outdated or stale entries are removed. This method clears
+     * the contents of the `featCache` and `bw2Cache` collections, effectively resetting their state.
+     * <p>
+     * Intended to be used when the cached data becomes unreliable or requires a refresh to ensure correctness.
      */
     private void invalidateCaches() {
-        getFeatureCache().clear();
-        getBw2Cache().clear();
+        if (featCache != null) {
+            featCache.clear();
+        }
+        if (bw2Cache != null) {
+            bw2Cache.clear();
+        }
+        if (this.continuousDelegate != null) {
+            this.continuousDelegate.invalidateFeatureCache();
+        }
     }
 
+    /**
+     * @return the bandwidth cache.
+     */
     private Map<String, Double> getBw2Cache() {
-        if (bw2Cache == null) bw2Cache = new ConcurrentHashMap<>();
+        if (bw2Cache == null) {
+            bw2Cache = new ConcurrentHashMap<>();
+        }
         return bw2Cache;
     }
 
+    /**
+     * @return the feature cache.
+     */
     private Map<String, SimpleMatrix> getFeatureCache() {
-        if (featCache == null) featCache = new ConcurrentHashMap<>();
+        if (featCache == null) {
+            featCache = new ConcurrentHashMap<>();
+        }
         return featCache;
     }
 
@@ -302,7 +310,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     public void setApproximation(FfCiContinuous.Approx method) {
         this.pValueMethod = Objects.requireNonNull(method, "method");
         invalidateCaches();
-        this.continuousDelegate.setApproximation(method);
+        this.continuousDelegate.setApprox(method);
     }
 
     // Mixed-only knobs (safe no-ops for continuous delegate; they just affect mixed path)
@@ -348,7 +356,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     public void setFeatureType(FfCiContinuous.FeatureType featureType) {
         this.featureType = Objects.requireNonNull(featureType, "featureType");
         this.continuousDelegate.setFeatureType(featureType);
-        getFeatureCache().clear(); // null-safe
+        invalidateCaches();
     }
 
     /**
@@ -375,24 +383,22 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Retrieves the current categorical feature correlation coefficient (catRho)
-     * used in the mixed independence test. This coefficient reflects the assumed
-     * correlation structure for categorical variables and impacts statistical computations
-     * within the model.
+     * Retrieves the current categorical feature correlation coefficient (catRho) used in the mixed independence test.
+     * This coefficient reflects the assumed correlation structure for categorical variables and impacts statistical
+     * computations within the model.
      *
      * @return the categorical correlation coefficient (catRho), a value in the range [0, 1).
      */
-    public double getCatRho() { return catRho; }
+    public double getCatRho() {
+        return catRho;
+    }
 
     // ---------------- RowsSettable ----------------
 
-    /**
-     * Retrieves the list of integers representing the rows used in the mixed independence test.
-     *
-     * @return a list of integers corresponding to the rows currently considered in the test
-     */
     @Override
-    public List<Integer> getRows() { return rows; }
+    public List<Integer> getRows() {
+        return rows;
+    }
 
     /**
      * Sets the rows to be used in computations. Validates that the provided list of rows
@@ -408,33 +414,32 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      */
     @Override
     public void setRows(List<Integer> rows) {
-        if (rows == null) {
+        if (rows != null) {
+            for (int i = 0; i < rows.size(); i++) {
+                Integer r = rows.get(i);
+                if (r == null) throw new NullPointerException("Row " + i + " is null.");
+                if (r < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
+                if (r >= data.getNumRows()) throw new IllegalArgumentException("Row " + i + " out of bounds: " + r);
+            }
+            this.rows = new ArrayList<>(rows);
+        } else {
             this.rows = null;
-            this.n = data.getNumRows();
-            getFeatureCache().clear();
-            getBw2Cache().clear();
-            // critical for parity
-            this.continuousDelegate.setRows(null);
-            return;
         }
 
-        for (int i = 0; i < rows.size(); i++) {
-            Integer r = rows.get(i);
-            if (r == null) throw new NullPointerException("Row " + i + " is null.");
-            if (r < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
-            if (r >= data.getNumRows()) throw new IllegalArgumentException("Row " + i + " out of bounds: " + r);
-        }
+        this.n = getActiveRowCount();
+        invalidateCaches();
 
-        this.rows = new ArrayList<>(rows);
-        this.n = this.rows.size();
-        getFeatureCache().clear();
-        getBw2Cache().clear();
         // critical for parity
         this.continuousDelegate.setRows(this.rows);
     }
 
-    private int getActiveRowCount() { return (rows == null) ? data.getNumRows() : rows.size(); }
-    private int activeRowIndex(int i) { return (rows == null) ? i : rows.get(i); }
+    private int getActiveRowCount() {
+        return (rows == null) ? data.getNumRows() : rows.size();
+    }
+
+    private int activeRowIndex(int i) {
+        return (rows == null) ? i : rows.get(i);
+    }
 
     // ---------------- IndependenceTest interface ----------------
 
@@ -444,7 +449,9 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      * @return the current DataSet object
      */
     @Override
-    public DataSet getData() { return data; }
+    public DataSet getData() {
+        return data;
+    }
 
     /**
      * Retrieves a list of variable nodes.
@@ -452,7 +459,9 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      * @return a list of Node objects representing the variables.
      */
     @Override
-    public List<Node> getVariables() { return vars; }
+    public List<Node> getVariables() {
+        return vars;
+    }
 
     /**
      * Checks the independence between two nodes, x and y, given a set of conditioning nodes, z.
@@ -472,14 +481,14 @@ public final class FfCi implements IndependenceTest, RowsSettable {
      */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException();
+        }
         Objects.requireNonNull(x, "x");
         Objects.requireNonNull(y, "y");
 
         // Hard guarantee: if dataset has no discrete vars, behave exactly like FF-CI (IndTestFfCi).
         if (!dataHasAnyDiscrete) {
-            // Keep delegate aligned with current knobs (mostly redundant since setters forward,
-            // but safe if something was set via constructor/params)
             syncDelegateToThis();
             return continuousDelegate.checkIndependence(x, y, z);
         }
@@ -490,17 +499,20 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         Z.sort(Comparator.comparing(Node::getName));
         IndependenceFact fact = new IndependenceFact(x, y, new HashSet<>(Z));
 
-        // --- mixed stack path ---
-        return checkIndependenceMixedStack(x, y, Z, fact);
+        return checkIndependenceMixed(x, y, Z, fact);
     }
 
-    private IndependenceResult checkIndependenceMixedStack(Node x, Node y, List<Node> Z, IndependenceFact fact)
+    private IndependenceResult checkIndependenceMixed(Node x, Node y, List<Node> Z, IndependenceFact fact)
             throws InterruptedException {
 
-        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException();
+        }
 
         if (x.equals(y)) {
-            if (verbose) TetradLogger.getInstance().log(fact + " x == y");
+            if (verbose) {
+                TetradLogger.getInstance().log(fact + " x == y");
+            }
             double p_ = 0.0;
             return new IndependenceResult(fact, false, p_, alpha - p_, false);
         }
@@ -508,24 +520,25 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         this.n = getActiveRowCount();
 
         if (n < 5) {
-            if (verbose) TetradLogger.getInstance().log(fact + " n < 5");
+            if (verbose) {
+                TetradLogger.getInstance().log(fact + " n < 5");
+            }
             double p_ = 1.0;
             return new IndependenceResult(fact, true, p_, alpha - p_, false);
         }
 
-        // RCIT-style augmentation (same pattern as your mixed code)
         final List<Node> yKeyVars = (!Z.isEmpty()) ? hstackVarList(y, Z) : Collections.singletonList(y);
 
         long seedX = seedForX(x) ^ 1729L;
         long seedY = seedForBlock("Y", yKeyVars) ^ 1729L;
         long seedZ = seedForBlock("Z", Z) ^ 1729L;
 
-        SimpleMatrix fX = kffFeatMixedCached("X", Collections.singletonList(x), numFeatXY, seedX);
-        SimpleMatrix fY = kffFeatMixedCached("Y", yKeyVars, numFeatXY, seedY);
-        SimpleMatrix fZ = Z.isEmpty() ? null : kffFeatMixedCached("Z", Z, numFeatZ, seedZ);
+        SimpleMatrix fX = getMixedFeatures("X", Collections.singletonList(x), numFeatXY, seedX);
+        SimpleMatrix fY = getMixedFeatures("Y", yKeyVars, numFeatXY, seedY);
+        SimpleMatrix fZ = Z.isEmpty() ? null : getMixedFeatures("Z", Z, numFeatZ, seedZ);
 
         final double stat;
-        double p = NaN;
+        double p;
 
         if (fZ == null || fZ.getNumCols() == 0) {
             // -------- RIT --------
@@ -540,11 +553,10 @@ public final class FfCi implements IndependenceTest, RowsSettable {
             SimpleMatrix Cov = kronResCov(resX, resY);
             double[] eig = positiveEigs(Cov);
 
-//            p = pValueFromMethod(stat, eig, fX, fY, null);
-            p = pValueFromMethod(fact, stat, eig, fX, fY, null);
+            p = pValueFromMethod(fact, stat, eig, fX, fY);
         } else {
             // -------- Conditional: ridge residualization --------
-            final double alphaRidge = TMath.max(1e-18, lambda);// / TMath.max(1.0, (n - 1.0)));
+            final double alphaRidge = TMath.max(1e-18, lambda);
             SimpleMatrix rX = ridgeResidual(fX, fZ, alphaRidge);
             SimpleMatrix rY = ridgeResidual(fY, fZ, alphaRidge);
 
@@ -562,22 +574,16 @@ public final class FfCi implements IndependenceTest, RowsSettable {
             SimpleMatrix Cov = kronResCov(resX, resY);
             double[] eig = positiveEigs(Cov);
 
-//            p = pValueFromMethod(stat, eig, rX, rY, null);
-            p = pValueFromMethod(fact, stat, eig, rX, rY, null);
+            p = pValueFromMethod(fact, stat, eig, rX, rY);
         }
 
         double p_ = clamp01(p);
-        boolean indep = (p_ > alpha);
 
         if (verbose) {
-            TetradLogger.getInstance().log(fact + " p=" + p_ + " stat=" + stat
-                    + " method=" + pValueMethod
-                    + " Fx=" + numFeatXY + " Fz=" + numFeatZ
-                    + " ft=" + featureType + " bwMult=" + bandwidthMultiplier + " lam=" + lambda
-                    + " catRho=" + catRho + " perms=" + permutations);
+            TetradLogger.getInstance().log(fact + " p=" + p_ + " stat=" + stat + " n=" + n);
         }
 
-        return new IndependenceResult(fact, indep, p_, alpha - p_);
+        return new IndependenceResult(fact, p_ > alpha, p_, alpha - p_);
     }
 
     // ---------------- continuous delegate sync ----------------
@@ -587,11 +593,10 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         continuousDelegate.setAlpha(alpha);
         continuousDelegate.setVerbose(verbose);
         continuousDelegate.setLambda(lambda);
-//    continuousDelegate.setCenterFeatures(centerFeatures);
         continuousDelegate.setNumFeaturesXY(numFeatXY);
         continuousDelegate.setNumFeaturesZ(numFeatZ);
         continuousDelegate.setPermutations(permutations);
-        continuousDelegate.setApproximation(pValueMethod);
+        continuousDelegate.setApprox(pValueMethod);
         continuousDelegate.setRows(rows);
         // Make sure the delegate uses the same RNG seed for reproducibility
         continuousDelegate.setSeed(this.seed);
@@ -600,9 +605,11 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
     // ---------------- Mixed feature construction ----------------
 
-    private SimpleMatrix kffFeatMixedCached(String tag, List<Node> varsForKey, int mFeaturesCont, long seed)
+    private SimpleMatrix getMixedFeatures(String tag, List<Node> varsForKey, int mFeaturesCont, long seed)
             throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException();
+        }
 
         String key = keyFeat(tag, varsForKey, mFeaturesCont, seed);
 
@@ -621,8 +628,11 @@ public final class FfCi implements IndependenceTest, RowsSettable {
             double[][] Phi = hstackRaw(PhiC, PhiD);
             SimpleMatrix M = new SimpleMatrix(Phi);
 
-            if (centerFeatures) zscoreInPlace(M);
-            else subtractColumnMeansInPlace(M);
+            if (centerFeatures) {
+                zscoreInPlace(M);
+            } else {
+                subtractColumnMeansInPlace(M);
+            }
 
             return M;
         });
@@ -691,7 +701,8 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         return new MixedBlock(cont, discFeat);
     }
 
-    private record MixedBlock(double[][] cont, double[][] discFeat) { }
+    private record MixedBlock(double[][] cont, double[][] discFeat) {
+    }
 
     private double bw2For(String tag, List<Node> varsForKey, double[][] Zcont) {
         String key = keyBw2ContinuousOnly(tag, varsForKey);
@@ -1005,9 +1016,21 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
     // ---------------- ridge residualization ----------------
 
+    /**
+     * Ridge residualization on covariance scale: X - Z (Z^T Z + λI)^{-1} Z^T X.
+     *
+     * @param X     The matrix to be residualized.
+     * @param Z     The conditioning matrix.
+     * @param alpha The ridge parameter.
+     * @return The residualized matrix.
+     */
     private static SimpleMatrix ridgeResidual(SimpleMatrix X, SimpleMatrix Z, double alpha) {
-        if (Z == null || Z.getNumCols() == 0) return X;
-        if (!(alpha > 0) || !Double.isFinite(alpha)) alpha = 1e-18;
+        if (Z == null || Z.getNumCols() == 0) {
+            return X;
+        }
+        if (!(alpha > 0) || !Double.isFinite(alpha)) {
+            alpha = 1e-18;
+        }
 
         SimpleMatrix ZtZ = Z.transpose().mult(Z);
         SimpleMatrix A = ZtZ.plus(SimpleMatrix.identity(ZtZ.getNumRows()).scale(alpha));
@@ -1018,36 +1041,26 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     // ---------------- p-values ----------------
 
     private double pValueFromMethod(IndependenceFact fact, double stat, double[] eig,
-                                    SimpleMatrix rX, SimpleMatrix rY, SimpleMatrix ignored) {       // Permutation (if requested and available)
+                                    SimpleMatrix rX, SimpleMatrix rY) {
         if (pValueMethod == FfCiContinuous.Approx.PERMUTATION && permutations > 0) {
-//            int greater = 0;
-//            for (int b = 0; b < permutations; b++) {
-//                int[] perm = randomPermutation(rY.getNumRows(), rng);
-//                SimpleMatrix rYp = permuteRows(rY, perm);
-//                SimpleMatrix C = covCentered(rX, rYp);
-//                double s = rY.getNumRows() * frob2(C);
-//                if (s >= stat) greater++;
-//            }
-//            return (greater + 1.0) / (permutations + 1.0);
-
-            // IMPORTANT: per-query RNG, NOT shared rng.
             int greater = 0;
             for (int b = 0; b < permutations; b++) {
                 int[] perm = randomPermutation(rY.getNumRows());
                 SimpleMatrix rYp = permuteRows(rY, perm);
                 SimpleMatrix C = covCentered(rX, rYp);
                 double s = rY.getNumRows() * frob2(C);
-                if (s >= stat) greater++;
+                if (s >= stat) {
+                    greater++;
+                }
             }
             return (greater + 1.0) / (permutations + 1.0);
         }
 
-        // Otherwise use quadratic-form approximations (same as your mixed code calls)
+        // Otherwise use quadratic-form approximations
         return switch (pValueMethod) {
             case GAMMA -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
             case SADDLEPOINT -> QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig);
             case DAVIES_IMHOF -> QuadraticFormPValues.daviesP(stat, eig);
-            // If PERMUTATION requested but permutations==0, fall back to GAMMA for safety
             case PERMUTATION -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
         };
     }
@@ -1056,34 +1069,46 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
     private static void zscoreInPlace(double[][] M) {
         int n = M.length;
-        if (n == 0) return;
+        if (n == 0) {
+            return;
+        }
         int d = M[0].length;
-        if (d == 0) return;
+        if (d == 0) {
+            return;
+        }
 
         for (int j = 0; j < d; j++) {
             double sum = 0.0;
-            for (int i = 0; i < n; i++) sum += M[i][j];
+            for (double[] doubles : M) {
+                sum += doubles[j];
+            }
             double mean = sum / n;
 
             double var = 0.0;
-            for (int i = 0; i < n; i++) {
-                double u = M[i][j] - mean;
+            for (double[] doubles : M) {
+                double u = doubles[j] - mean;
                 var += u * u;
             }
             var /= TMath.max(1, n - 1);
             double sd = TMath.sqrt(var);
 
             if (!(sd > 0) || !Double.isFinite(sd)) {
-                for (int i = 0; i < n; i++) M[i][j] = 0.0;
+                for (int i = 0; i < n; i++) {
+                    M[i][j] = 0.0;
+                }
             } else {
-                for (int i = 0; i < n; i++) M[i][j] = (M[i][j] - mean) / sd;
+                for (int i = 0; i < n; i++) {
+                    M[i][j] = (M[i][j] - mean) / sd;
+                }
             }
         }
     }
 
     private static void zscoreInPlace(SimpleMatrix M) {
         int n = M.getNumRows(), d = M.getNumCols();
-        if (n < 2 || d == 0) return;
+        if (n < 2 || d == 0) {
+            return;
+        }
         for (int j = 0; j < d; j++) {
             double sum = 0, sumsq = 0;
             for (int i = 0; i < n; i++) {
@@ -1094,18 +1119,26 @@ public final class FfCi implements IndependenceTest, RowsSettable {
             double mean = sum / n;
             double var = (sumsq - n * mean * mean) / (n - 1);
             double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
-            for (int i = 0; i < n; i++) M.set(i, j, (M.get(i, j) - mean) / sd);
+            for (int i = 0; i < n; i++) {
+                M.set(i, j, (M.get(i, j) - mean) / sd);
+            }
         }
     }
 
     private static void subtractColumnMeansInPlace(SimpleMatrix M) {
         int n = M.getNumRows(), d = M.getNumCols();
-        if (n == 0 || d == 0) return;
+        if (n == 0 || d == 0) {
+            return;
+        }
         for (int j = 0; j < d; j++) {
             double s = 0.0;
-            for (int i = 0; i < n; i++) s += M.get(i, j);
+            for (int i = 0; i < n; i++) {
+                s += M.get(i, j);
+            }
             double mean = s / n;
-            for (int i = 0; i < n; i++) M.set(i, j, M.get(i, j) - mean);
+            for (int i = 0; i < n; i++) {
+                M.set(i, j, M.get(i, j) - mean);
+            }
         }
     }
 
@@ -1166,12 +1199,16 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     private static SimpleMatrix permuteRows(SimpleMatrix M, int[] perm) {
         SimpleMatrix out = new SimpleMatrix(M.getNumRows(), M.getNumCols());
         for (int i = 0; i < perm.length; i++) {
-            for (int j = 0; j < M.getNumCols(); j++) out.set(i, j, M.get(perm[i], j));
+            for (int j = 0; j < M.getNumCols(); j++) {
+                out.set(i, j, M.get(perm[i], j));
+            }
         }
         return out;
     }
 
-    private static double clamp01(double v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
+    private static double clamp01(double v) {
+        return v < 0 ? 0 : (v > 1 ? 1 : v);
+    }
 
 
     /** Call this after any operation that changes the contents of `data` (resimulate, edit, reload, etc.). */

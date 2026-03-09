@@ -278,7 +278,7 @@ public final class FfCi1 implements IndependenceTest, RowsSettable {
     public void setApproximation(FfCiContinuous.Approx method) {
         this.pValueMethod = Objects.requireNonNull(method, "method");
         invalidateCaches();
-        this.continuousDelegate.setApproximation(method);
+        this.continuousDelegate.setApprox(method);
     }
 
     // Mixed-only knobs (safe no-ops for continuous delegate; they just affect mixed path)
@@ -565,7 +565,7 @@ public final class FfCi1 implements IndependenceTest, RowsSettable {
 //        continuousDelegate.setNumFeaturesXY(numFeatXY);
 //        continuousDelegate.setNumFeaturesZ(numFeatZ);
         continuousDelegate.setPermutations(permutations);
-        continuousDelegate.setApproximation(pValueMethod);
+        continuousDelegate.setApprox(pValueMethod);
         continuousDelegate.setRows(rows);
         // NOTE: bandwidthMultiplier/bwMaxRows/featureType/catRho are mixed-only here.
     }
