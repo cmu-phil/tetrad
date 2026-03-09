@@ -323,6 +323,8 @@ public class IdaCheck {
      * Calculates the squared distance of the true total effect to the [min, max] IDA effect range of the given (x, y)
      * node pair, for x predicting y. If the true effect falls within [min, max], the method returns 0. Otherwise, the
      * squared distance to the nearest endpoint of the [min, max] range is returned.
+     * <p>
+     * If no IDA effects are available for this pair, returns {@link Double#NaN}.
      *
      * @param pair the pair of nodes.
      * @return the squared distance between the two nodes.
@@ -380,7 +382,7 @@ public class IdaCheck {
 
     /**
      * Returns the squared difference between the minimum total effect and the true total effect for the given pair of
-     * nodes.
+     * nodes. If no IDA effects are available for this pair, returns {@link Double#NaN}.
      *
      * @param pair the pair of nodes.
      * @return the squared difference between the minimum total effect and the true total effect.
@@ -388,21 +390,15 @@ public class IdaCheck {
     public double getSquaredMinTrueDistance(OrderedPair<Node> pair) {
         if (this.trueSemIm == null) return Double.NaN;
 
-        Node x = pair.getFirst();
-        Node y = pair.getSecond();
-
-        // We intentionally call ida directly here (as in your version),
-        // but we still keep the cached maps in sync via ensurePairComputed.
         ensurePairComputed(pair);
 
         List<Double> totalEffects = this.totalEffects.get(pair);
-        double trueTotalEffect = getTrueTotalEffect(pair);
-
-        double min = Double.MAX_VALUE;
-
-        if (totalEffects.isEmpty()) {
-            return trueTotalEffect;
+        if (totalEffects == null || totalEffects.isEmpty()) {
+            return Double.NaN;
         }
+
+        double trueTotalEffect = getTrueTotalEffect(pair);
+        double min = Double.MAX_VALUE;
 
         for (double totalEffect : totalEffects) {
             double diff = totalEffect - trueTotalEffect;
@@ -451,7 +447,7 @@ public class IdaCheck {
 
     /**
      * Returns the squared difference between the maximum total effect and the true total effect for the given pair of
-     * nodes.
+     * nodes. If no IDA effects are available for this pair, returns {@link Double#NaN}.
      *
      * @param pair the pair of nodes.
      * @return the squared difference between the maximum total effect and the true total effect.
@@ -459,19 +455,15 @@ public class IdaCheck {
     public double getSquaredMaxTrueDist(OrderedPair<Node> pair) {
         if (this.trueSemIm == null) return Double.NaN;
 
-        Node x = pair.getFirst();
-        Node y = pair.getSecond();
-
         ensurePairComputed(pair);
 
         List<Double> totalEffects = this.totalEffects.get(pair);
-        double trueTotalEffect = getTrueTotalEffect(pair);
-
-        double max = 0;
-
-        if (totalEffects.isEmpty()) {
-            return trueTotalEffect;
+        if (totalEffects == null || totalEffects.isEmpty()) {
+            return Double.NaN;
         }
+
+        double trueTotalEffect = getTrueTotalEffect(pair);
+        double max = -1.0;
 
         for (double totalEffect : totalEffects) {
             double diff = totalEffect - trueTotalEffect;
@@ -545,12 +537,6 @@ public class IdaCheck {
      *
      * @param currentPairs The list of ordered pairs for which effects should be recomputed.
      */
-//    public void recompute(List<OrderedPair<Node>> currentPairs) {
-//        for (OrderedPair<Node> pair : currentPairs) {
-//            ensurePairComputed(pair);
-//        }
-//    }
-
     public void recompute(List<OrderedPair<Node>> currentPairs) {
         for (OrderedPair<Node> pair : currentPairs) {
             this.totalEffects.remove(pair);
