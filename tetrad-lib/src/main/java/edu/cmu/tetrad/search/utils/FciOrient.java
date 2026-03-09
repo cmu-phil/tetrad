@@ -913,44 +913,24 @@ public class FciOrient {
      * @param graph The {@link edu.cmu.tetrad.graph.Graph} being oriented.
      */
     public void ruleR6(Graph graph) {
-
-        // We first look for undirected edges x â- y and the look for Î³ adjacent to either the x or the
-        // y endpoint.
-
         for (Edge edge : graph.getEdges()) {
             if (!Edges.isUndirectedEdge(edge)) {
                 continue;
             }
 
-            {
-                Node a = edge.getNode1();
-                Node b = edge.getNode2();
+            orientR6(graph, edge.getNode1(), edge.getNode2());
+            orientR6(graph, edge.getNode2(), edge.getNode1());
+        }
+    }
 
-                for (Node c : graph.getAdjacentNodes(b)) {
-                    if (c != a && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-                        setEndpoint(graph, c, b, Endpoint.TAIL);
-                        changeFlag = true;
+    private void orientR6(Graph graph, Node a, Node b) {
+        for (Node c : graph.getAdjacentNodes(b)) {
+            if (c != a && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
+                setEndpoint(graph, c, b, Endpoint.TAIL);
+                changeFlag = true;
 
-                        if (verbose) {
-                            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R6: Single tails (tail)", graph.getEdge(c, b)));
-                        }
-                    }
-                }
-            }
-
-            {
-                Node a = edge.getNode2();
-                Node b = edge.getNode1();
-
-                for (Node c : graph.getAdjacentNodes(b)) {
-                    if (c != a && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-                        setEndpoint(graph, c, b, Endpoint.TAIL);
-                        changeFlag = true;
-
-                        if (verbose) {
-                            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R6: Single tails (tail)", graph.getEdge(c, b)));
-                        }
-                    }
+                if (verbose) {
+                    this.logger.log(LogUtilsSearch.edgeOrientedMsg("R6: Single tails (tail)", graph.getEdge(c, b)));
                 }
             }
         }
@@ -966,40 +946,20 @@ public class FciOrient {
      */
     public void ruleR7(Graph graph) {
         for (Edge edge : graph.getEdges()) {
-            {
-                Node a = edge.getNode1();
-                Node b = edge.getNode2();
+            orientR7(graph, edge.getNode1(), edge.getNode2());
+            orientR7(graph, edge.getNode2(), edge.getNode1());
+        }
+    }
 
-                if (graph.getEndpoint(a, b) == Endpoint.CIRCLE && graph.getEndpoint(b, a) == Endpoint.TAIL) {
-                    for (Node c : graph.getAdjacentNodes(b)) {
-                        if (c != a && !graph.isAdjacentTo(a, c) && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-                            setEndpoint(graph, c, b, Endpoint.TAIL);
-                            changeFlag = true;
+    private void orientR7(Graph graph, Node a, Node b) {
+        if (graph.getEndpoint(a, b) == Endpoint.CIRCLE && graph.getEndpoint(b, a) == Endpoint.TAIL) {
+            for (Node c : graph.getAdjacentNodes(b)) {
+                if (c != a && !graph.isAdjacentTo(a, c) && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
+                    setEndpoint(graph, c, b, Endpoint.TAIL);
+                    changeFlag = true;
 
-                            if (verbose) {
-                                TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("R7: Single tails (tail)", graph.getEdge(c, b)));
-                            }
-                        }
-                    }
-                }
-            }
-
-            {
-                Node a = edge.getNode2();
-                Node b = edge.getNode1();
-
-                if (graph.getEndpoint(a, b) == Endpoint.CIRCLE && graph.getEndpoint(b, a) == Endpoint.TAIL) {
-                    for (Node c : graph.getAdjacentNodes(b)) {
-                        if (c != a && !graph.isAdjacentTo(a, c) && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-                            Endpoint tail = Endpoint.TAIL;
-
-                            setEndpoint(graph, c, b, tail);
-                            changeFlag = true;
-
-                            if (verbose) {
-                                TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("R7: Single tails (tail)", graph.getEdge(c, b)));
-                            }
-                        }
+                    if (verbose) {
+                        TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("R7: Single tails (tail)", graph.getEdge(c, b)));
                     }
                 }
             }
@@ -1192,74 +1152,6 @@ public class FciOrient {
      * @param gamma the node γ
      * @param graph the working {@link edu.cmu.tetrad.graph.Graph}
      */
-//    public void ruleR10(Node alpha, Node gamma, Graph graph) {
-//
-//        // We are aiming to orient the tails on certain partially oriented edges alpha o-> gamma, so we first
-//        // need to make sure we have such an edge.
-//        Edge edge = graph.getEdge(alpha, gamma);
-//
-//        if (edge == null) {
-//            return;
-//        }
-//
-//        if (!edge.equals(Edges.partiallyOrientedEdge(alpha, gamma))) {
-//            return;
-//        }
-//
-//        // Now we are sure we have an alpha o-> gamma edge. Next, we need to find directed edges beta -> gamma <- theta.
-//
-//        List<Node> into = graph.getNodesInTo(gamma, Endpoint.ARROW);
-//        into.remove(alpha);
-//
-//        for (int i = 0; i < into.size(); i++) {
-//            for (int j = i + 1; j < into.size(); j++) {
-//                Node beta = into.get(i);
-//                Node theta = into.get(j);
-//
-//                if (graph.getEndpoint(gamma, beta) != Endpoint.TAIL || graph.getEndpoint(gamma, theta) != Endpoint.TAIL) {
-//                    continue;
-//                }
-//
-//                // At this point we have beta -> gamma <- theta, with alpha o-> gamma. Next we need to find the
-//                // a novel adjacent nu to alpha and a novel adjacent omega to alpha such that nu and omega are not
-//                // adjacent.
-//
-//                List<Node> adj1 = graph.getAdjacentNodes(alpha);
-//                adj1.remove(beta);
-//                adj1.remove(theta);
-//                adj1.remove(beta);
-//
-//                for (int k = 0; k < adj1.size(); k++) {
-//                    for (int l = k + 1; l < adj1.size(); l++) {
-//                        Node nu = adj1.get(k);
-//                        Node omega = adj1.get(l);
-//
-//                        if (graph.isAdjacentTo(nu, omega)) {
-//                            continue;
-//                        }
-//
-//                        // Now we have our beta, theta, nu, and omega for R10. Next we need to try to find
-//                        // alpha potentially directed path p1 starting with <alpha, nu>, and ending with beta, and alpha path
-//                        // p2 starting with <alpha, omega> and ending with theta.
-//
-//                        if (graph.paths().existsPotentiallyDirectedPath(nu, beta) && graph.paths().existsPotentiallyDirectedPath(omega, theta)) {
-//
-//                            // Now we know we have the paths p1 and p2 as required, so R10 applies! We now need to
-//                            // orient the circle of the alpha o-> gamma edge as a tail.
-//                            setEndpoint(graph, gamma, alpha, Endpoint.TAIL);
-//
-//                            if (verbose) {
-//                                this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(gamma, alpha)));
-//                            }
-//
-//                            this.changeFlag = true;
-//                            return;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
     public void ruleR10(Node alpha, Node gamma, Graph graph) {
         // Require alpha o-> gamma
         Edge e = graph.getEdge(alpha, gamma);
