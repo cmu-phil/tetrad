@@ -391,64 +391,65 @@ public class Boss implements SuborderSearch {
      *
      * @param prefix   The list of nodes that must precede the suborder.
      * @param suborder The list of nodes to be ordered.
-     * @param x        The node to be moved in the suborder.
+     * @param nodeToMove The node to be moved in the suborder.
      * @return true if the suborder was modified, false otherwise.
      * @throws InterruptedException if any
      */
-    private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x)
+    private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node nodeToMove)
             throws InterruptedException {
 
         List<Callable<Void>> tasks = new ArrayList<>();
 
-        int n = suborder.size();
-        if (n <= 1) return false;
+        int numNodes = suborder.size();
+        if (numNodes <= 1) return false;
 
-        double[] scores = new double[n + 1];
-        double[] with = new double[n];
-        double[] without = new double[n];
+        double[] insertionScores = new double[numNodes + 1];
+        double[] scoreWithNode = new double[numNodes];
+        double[] scoreWithoutNode = new double[numNodes];
 
-        Set<Node> Z = new HashSet<>(prefix);
+        Set<Node> currentPrefix = new HashSet<>(prefix);
 
-        int i = 0;
-        int curr = 0;
+        int index = 0;
+        int originalPosition = 0;
 
-        // ---- Forward scan: IDENTICAL logic to sequential version ----
-        ListIterator<Node> itr = suborder.listIterator();
+        // ---- Forward scan: identify valid insertion points and collect scoring tasks ----
+        ListIterator<Node> iterator = suborder.listIterator();
 
-        tasks.add(new Trace(this.gsts.get(x), this.all, Z, scores, i));
+        tasks.add(new Trace(this.gsts.get(nodeToMove), this.all, currentPrefix, insertionScores, index));
 
-        while (itr.hasNext()) {
+        while (iterator.hasNext()) {
 
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
                 throw new InterruptedException();
             }
 
-            Node z = itr.next();
+            Node neighborNode = iterator.next();
 
-            if (this.knowledge.isRequired(x.getName(), z.getName())) {
-                itr.previous(); // <-- critical rewind to match sequential behavior
+            // Constraint: nodeToMove must precede neighborNode.
+            if (this.knowledge.isRequired(nodeToMove.getName(), neighborNode.getName())) {
+                iterator.previous(); // <-- critical rewind to match sequential behavior
                 break;
             }
 
-            if (z == x) {
-                curr = i;
+            if (neighborNode == nodeToMove) {
+                originalPosition = index;
                 continue;
             }
 
-            Z.add(x);
-            tasks.add(new Trace(this.gsts.get(z), this.all, Z, with, i));
-            Z.remove(x);
+            currentPrefix.add(nodeToMove);
+            tasks.add(new Trace(this.gsts.get(neighborNode), this.all, currentPrefix, scoreWithNode, index));
+            currentPrefix.remove(nodeToMove);
 
-            tasks.add(new Trace(this.gsts.get(z), this.all, Z, without, i));
+            tasks.add(new Trace(this.gsts.get(neighborNode), this.all, currentPrefix, scoreWithoutNode, index));
 
-            Z.add(z);
-            tasks.add(new Trace(this.gsts.get(x), this.all, Z, scores, ++i));
+            currentPrefix.add(neighborNode);
+            tasks.add(new Trace(this.gsts.get(nodeToMove), this.all, currentPrefix, insertionScores, ++index));
         }
 
-        int lastIndex = i;
+        int lastValidIndex = index;
 
-        // ---- Run tasks ----
+        // ---- Execute tasks in parallel ----
         try {
             pool.invokeAll(tasks);
         } catch (Exception e) {
@@ -456,42 +457,42 @@ public class Boss implements SuborderSearch {
             throw e;
         }
 
-        if (this.resetAfterBM) this.gsts.get(x).reset();
+        if (this.resetAfterBM) this.gsts.get(nodeToMove).reset();
 
-        // ---- Accumulate from right (with) ----
-        double runningScore = 0.0;
-        for (int j = lastIndex - 1; j >= 0; j--) {
-            runningScore += with[j];
-            scores[j] += runningScore;
+        // ---- Accumulate relative scores from right (with nodeToMove) ----
+        double runningScoreSum = 0.0;
+        for (int j = lastValidIndex - 1; j >= 0; j--) {
+            runningScoreSum += scoreWithNode[j];
+            insertionScores[j] += runningScoreSum;
         }
 
-        // ---- Accumulate from left (without) ----
-        runningScore = 0.0;
-        for (int j = 0; j < lastIndex; j++) {
-            runningScore += without[j];
-            scores[j + 1] += runningScore;
+        // ---- Accumulate relative scores from left (without nodeToMove) ----
+        runningScoreSum = 0.0;
+        for (int j = 0; j < lastValidIndex; j++) {
+            runningScoreSum += scoreWithoutNode[j];
+            insertionScores[j + 1] += runningScoreSum;
         }
 
-        // ---- Backward constraint scan (same logic as sequential) ----
-        int best = curr;
+        // ---- Backward constraint scan to find the best insertion position ----
+        int bestPosition = originalPosition;
 
-        for (int j = lastIndex; j >= 0; j--) {
+        for (int j = lastValidIndex; j >= 0; j--) {
 
-            // Only check required(z → x) for real boundary nodes
+            // Constraint: neighborNode must precede nodeToMove.
             if (j < suborder.size()) {
-                Node z = suborder.get(j);
-                if (this.knowledge.isRequired(z.getName(), x.getName())) break;
+                Node neighborNode = suborder.get(j);
+                if (this.knowledge.isRequired(neighborNode.getName(), nodeToMove.getName())) break;
             }
 
-            if (scores[j] + 1e-6 > scores[best]) best = j;
+            if (insertionScores[j] + 1e-6 > insertionScores[bestPosition]) bestPosition = j;
         }
 
-        if (scores[curr] + 1e-6 > scores[best]) return false;
+        if (insertionScores[originalPosition] + 1e-6 > insertionScores[bestPosition]) return false;
 
-        if (best > curr) best--;
+        if (bestPosition > originalPosition) bestPosition--;
 
-        suborder.remove(x);
-        suborder.add(best, x);
+        suborder.remove(nodeToMove);
+        suborder.add(bestPosition, nodeToMove);
 
         return true;
     }
@@ -501,63 +502,80 @@ public class Boss implements SuborderSearch {
      *
      * @param prefix   The list of nodes that must precede the suborder.
      * @param suborder The list of nodes to be ordered.
-     * @param x        The node to be moved in the suborder.
+     * @param nodeToMove The node to be moved in the suborder.
      * @return true if the suborder was modified, false otherwise.
      */
-    private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) throws InterruptedException {
-        ListIterator<Node> itr = suborder.listIterator();
+    private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node nodeToMove) throws InterruptedException {
+        ListIterator<Node> iterator = suborder.listIterator();
         double[] scores = new double[suborder.size() + 1];
-        Set<Node> Z = new HashSet<>(prefix);
+        Set<Node> currentPrefix = new HashSet<>(prefix);
 
-        int i = 0;
-        double score = 0;
-        int curr = 0;
+        int index = 0;
+        double scoreSum = 0;
+        int originalPosition = 0;
 
-        while (itr.hasNext()) {
+        // Forward pass: find valid insertion positions from the left up to any required edge constraint.
+        while (iterator.hasNext()) {
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
                 Thread.currentThread().interrupt();
                 throw new InterruptedException("Interrupted");
             }
 
-            Node z = itr.next();
+            Node neighborNode = iterator.next();
 
-            if (this.knowledge.isRequired(x.getName(), z.getName())) {
-                itr.previous();
+            // Constraint: nodeToMove must precede neighborNode.
+            if (this.knowledge.isRequired(nodeToMove.getName(), neighborNode.getName())) {
+                iterator.previous();
                 break;
             }
 
-            scores[i++] = this.gsts.get(x).trace(Z, this.all) + score;
-            if (z != x) {
-                score += this.gsts.get(z).trace(Z, this.all);
-                Z.add(z);
-            } else curr = i - 1;
+            scores[index++] = this.gsts.get(nodeToMove).trace(currentPrefix, this.all) + scoreSum;
+            if (neighborNode != nodeToMove) {
+                scoreSum += this.gsts.get(neighborNode).trace(currentPrefix, this.all);
+                currentPrefix.add(neighborNode);
+            } else {
+                originalPosition = index - 1;
+            }
         }
 
-        scores[i] = this.gsts.get(x).trace(Z, this.all) + score;
-        int best = i;
+        // The position after the last valid neighborNode.
+        scores[index] = this.gsts.get(nodeToMove).trace(currentPrefix, this.all) + scoreSum;
+        int bestPosition = index;
 
-        Z.add(x);
-        score = 0;
+        currentPrefix.add(nodeToMove);
+        scoreSum = 0;
 
-        while (itr.hasPrevious()) {
-            Node z = itr.previous();
+        // Backward pass: find valid insertion positions from the right up to any required edge constraint.
+        while (iterator.hasPrevious()) {
+            Node neighborNode = iterator.previous();
 
-            if (this.knowledge.isRequired(z.getName(), x.getName())) break;
-
-            if (z != x) {
-                Z.remove(z);
-                score += gsts.get(z).trace(Z, this.all);
+            // Constraint: neighborNode must precede nodeToMove.
+            if (this.knowledge.isRequired(neighborNode.getName(), nodeToMove.getName())) {
+                break;
             }
 
-            scores[--i] += score;
-            if (scores[i] + 1e-6 > scores[best]) best = i;
+            if (neighborNode != nodeToMove) {
+                currentPrefix.remove(neighborNode);
+                scoreSum += gsts.get(neighborNode).trace(currentPrefix, this.all);
+            }
+
+            scores[--index] += scoreSum;
+            if (scores[index] + 1e-6 > scores[bestPosition]) {
+                bestPosition = index;
+            }
         }
 
-        if (scores[curr] + 1e-6 > scores[best]) return false;
-        if (best > curr) best--;
-        suborder.remove(x);
-        suborder.add(best, x);
+        if (scores[originalPosition] + 1e-6 > scores[bestPosition]) {
+            return false;
+        }
+
+        if (bestPosition > originalPosition) {
+            bestPosition--;
+        }
+
+        suborder.remove(nodeToMove);
+        suborder.add(bestPosition, nodeToMove);
 
         return true;
     }
