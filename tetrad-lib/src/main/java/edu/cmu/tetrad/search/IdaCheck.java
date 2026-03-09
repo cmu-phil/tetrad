@@ -193,6 +193,14 @@ public class IdaCheck {
         }
     }
 
+    /**
+     * Sets the IDA (Intervention Distribution Approximation) type for the current instance.
+     * This method updates the current IDA type and recalculates the results for
+     * total effects and absolute total effects as needed.
+     *
+     * @param idaType the IDA type to be set. Must not be null. Valid values are defined in {@code Ida.IDA_TYPE}.
+     * @throws NullPointerException if {@code idaType} is null.
+     */
     public void setIdaType(Ida.IDA_TYPE idaType) {
         if (idaType == null) {
             throw new NullPointerException("IDA type must not be null.");
