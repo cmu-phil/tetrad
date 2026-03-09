@@ -276,30 +276,20 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
         Box b = Box.createVerticalBox();
         b.setOpaque(false);
-
-        //        if (isDarkMode()) {
-        //            b.add(Box.createRigidArea(new Dimension(50, 10)));f
-        //        }
-
-        //        if (!isDarkMode()) {
         refreshIcon();
 
         Box b1 = Box.createHorizontalBox();
         b1.setOpaque(false);
         b1.add(Box.createHorizontalGlue());
-        b1.add(this.iconLabel);
+        b1.add(getIconLabel());
         b1.add(Box.createHorizontalGlue());
         b.add(b1);
-
-        //        } else {
-        //            b.add(Box.createRigidArea(new Dimension(60, 6)));
-        //        }
 
         Box b2 = Box.createHorizontalBox();
         b2.setOpaque(false);
         b2.add(Box.createHorizontalGlue());
         b2.add(Box.createHorizontalStrut(6));
-        b2.add(this.nameLabel);
+        b2.add(getNameLabel());
         b2.add(Box.createHorizontalStrut(6));
         b2.add(Box.createHorizontalGlue());
         b.add(b2);
@@ -308,16 +298,12 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         b3.setOpaque(false);
         b3.add(Box.createHorizontalGlue());
         b3.add(Box.createHorizontalStrut(6));
-        b3.add(this.acronymLabel);
+        b3.add(getAcronymLabel());
         b3.add(Box.createHorizontalStrut(6));
         b3.add(Box.createHorizontalGlue());
         b.add(b3);
 
-        //        if (isDarkMode()) {
-        //            b.add(Box.createRigidArea(new Dimension(60, 10)));
-        //        } else {
         b.add(Box.createRigidArea(new Dimension(60, 4)));
-        //        }
 
         add(b, BorderLayout.CENTER);
 
@@ -325,6 +311,18 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
         revalidate();
         repaint();
+    }
+
+    private JLabel getAcronymLabel() {
+        return this.acronymLabel;
+    }
+
+    private JLabel getNameLabel() {
+        return this.nameLabel;
+    }
+
+    private JLabel getIconLabel() {
+        return this.iconLabel;
     }
 
     private void refreshIcon() {
