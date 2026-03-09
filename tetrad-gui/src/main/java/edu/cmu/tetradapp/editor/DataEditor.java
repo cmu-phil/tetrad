@@ -716,7 +716,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         editMenu.add(setToMissingCells);
 
         menuBar.add(editMenu);
-//        menuBar.add(new Knowledge2Menu(this));
 
         JMenu tools = new JMenu("Tools");
         menuBar.add(tools);
