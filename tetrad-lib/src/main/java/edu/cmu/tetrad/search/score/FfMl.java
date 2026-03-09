@@ -97,6 +97,18 @@ import java.util.concurrent.atomic.AtomicReference;
 public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
     /**
+     * The minimum number of samples required to calculate a local score.
+     */
+    private static final int MIN_SAMPLES_FOR_SCORE = 5;
+    /**
+     * The maximum number of levels allowed for a single discrete parent in the Kronecker-expanded feature map.
+     */
+    private static final int MAX_DISCRETE_LEVELS_FOR_KRONECKER = 50;
+    /**
+     * The maximum total dimension of the Kronecker-expanded feature map.
+     */
+    private static final long MAX_KRONECKER_DIMENSION = 200_000L;
+    /**
      * If true, use valid row subsets when missing exists.
      */
     private final boolean calculateRowSubsets;
@@ -653,7 +665,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 int[] rows = calculateRowSubsets ? validRowsMixed(all) : null;
 
                 int n = (rows == null) ? nEff : rows.length;
-                if (n < 5) return Double.NaN;
+                if (n < MIN_SAMPLES_FOR_SCORE) return Double.NaN;
 
                 double sigma2 = lambda;
                 if (!(sigma2 > 0) || !Double.isFinite(sigma2)) return Double.NaN;
@@ -680,7 +692,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                     int[] bwVars = concat(i, contParents);
                     int[] rowsBw = calculateRowSubsets ? validRowsMixed(bwVars) : null;
                     int nBw = (rowsBw == null) ? nEff : rowsBw.length;
-                    if (nBw < 5) return Double.NaN;
+                    if (nBw < MIN_SAMPLES_FOR_SCORE) return Double.NaN;
 
                     final int finalNc = nc;
                     final int[] finalContParents = contParents;
@@ -816,9 +828,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         }
 
         final double[] mult = {0.35, 0.7, 1.4, 2.8};
-//        final double[] mult = {0.5, 1.0, 2.0, 4.0};
-//        final double[] mult = {.5, 1, 2};// {0.25, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0, 8.0, 16.0, 32.0, 64.0};
-//        final double[] mult = {.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0};
 
         // Precompute things that do NOT depend on bw2
         final boolean useNxN = (discParents != null && discParents.length >= 2);
@@ -826,38 +835,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         final BaseWB base = buildBaseWB(mFeatures, contParents.length, seed);
         final double[] kcatLowerPacked = useNxN ? precomputeKcatLowerPacked(discParents, rows, n) : null;
 
-
-//        // --- Option A: sequential (simplest, still big win) ---
-//        double bestBw2 = bw2Med;
-//        double best = Double.NEGATIVE_INFINITY;
-//
-//        {
-//            for (double m : mult) {
-//                double bw2 = bw2Med * (m * m);
-//                if (!(bw2 > 0) || !Double.isFinite(bw2)) continue;
-//
-//                final double ll;
-//                if (useNxN) {
-//                    ll = gpLogML_mixedKernelNxN_precomp(
-//                            yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked
-//                    );
-//                } else {
-//                    // keep existing path unchanged
-//                    ll = gpLogMarginalLikelihoodRFFMixed(
-//                            yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed
-//                    );
-//                }
-//
-//                if (Double.isFinite(ll) && ll > best) {
-//                    best = ll;
-//                    bestBw2 = bw2;
-//                }
-//            }
-//        }
-
-        // --- Option B: parallel grid (uncomment if you want) ---
         double bestBw2;
-        double best;
 
         {
             record Cand(int idx, double bw2, double ll) {
@@ -883,16 +861,17 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                     .reduce((a, c) -> {
                         if (c.ll() > a.ll()) return c;
                         if (c.ll() < a.ll()) return a;
-                        // tie: keep earlier (matches Option A’s first-max behavior)
+                        // tie: keep earlier (matches first-max behavior)
                         return (c.idx() < a.idx()) ? c : a;
                     })
                     .orElse(new Cand(-1, bw2Med, Double.NEGATIVE_INFINITY));
 
             bestBw2 = bestCand.bw2();
-            best = bestCand.ll();
         }
 
-        if (!Double.isFinite(best) || !(bestBw2 > 0) || !Double.isFinite(bestBw2)) bestBw2 = bw2Med;
+        if (!(bestBw2 > 0) || !Double.isFinite(bestBw2)) {
+            bestBw2 = bw2Med;
+        }
 
         if (bwCoupleByTarget) bw2OptByTargetContCache.put(fullKey, bestBw2);
         else bw2OptCache.put(fullKey, bestBw2);
@@ -1216,7 +1195,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             double sigma2,
             long seed
     ) {
-        if (n < 5) return Double.NaN;
+        if (n < MIN_SAMPLES_FOR_SCORE) return Double.NaN;
         if (!(sigma2 > 0) || !Double.isFinite(sigma2)) return Double.NaN;
 
         // TODO: I am using the n x n formulation for all discrete variables here
@@ -1240,6 +1219,45 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         );
     }
 
+    /**
+     * Samples random Fourier features (W, b) for the given continuous parents.
+     *
+     * @param mFeatures the number of features to sample
+     * @param dc        the number of continuous parents
+     * @param bw2       the bandwidth squared
+     * @param seed      the seed for random number generation
+     * @return a BaseWB object containing the sampled W and b
+     */
+    private BaseWB sampleFeatures(int mFeatures, int dc, double bw2, long seed) {
+        RandomUtil.getInstance().setSeed(seed);
+        double wStd = (dc > 0) ? TMath.sqrt(2.0 / bw2) : 1.0;
+        double[][] W = null;
+        double[] b = new double[mFeatures];
+
+        if (dc > 0) {
+            if (featureType == FeatureType.RFF) {
+                W = new double[mFeatures][dc];
+                for (int j = 0; j < mFeatures; j++) {
+                    for (int k = 0; k < dc; k++) {
+                        W[j][k] = wStd * RandomUtil.getInstance().nextGaussian();
+                    }
+                    b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+                }
+            } else { // ORF
+                W = sampleOrthogonalW(mFeatures, dc, wStd);
+                for (int j = 0; j < mFeatures; j++) {
+                    b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+                }
+            }
+        } else {
+            // no continuous parents: phi_cont is constant cos(b)
+            for (int j = 0; j < mFeatures; j++) {
+                b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+            }
+        }
+        return new BaseWB(W, b);
+    }
+
     private double gpLogML_mixedKernelNxN(
             double[] yCentered,
             int[] contParents,
@@ -1255,34 +1273,11 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         final int dc = contParents.length;
 
         // Bandwidth sanity
-        if (dc > 0) {
-            if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
-        } else {
-            // no continuous inputs; bw2 irrelevant
-            bw2 = 1.0;
-        }
+        double bw2Clean = (dc > 0 && (bw2 > 0 && Double.isFinite(bw2))) ? bw2 : 1.0;
 
-        // Sample W,b exactly like your existing code
-        double wStd = (dc > 0) ? TMath.sqrt(2.0 / bw2) : 1.0;
-        double[][] W;
-        double[] b = new double[mFeatures];
-
-        if (dc > 0) {
-            if (featureType == FeatureType.RFF) {
-                W = new double[mFeatures][dc];
-                for (int j = 0; j < mFeatures; j++) {
-                    for (int k = 0; k < dc; k++) W[j][k] = wStd * RandomUtil.getInstance().nextGaussian();
-                    b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
-                }
-            } else { // ORF
-                W = sampleOrthogonalW(mFeatures, dc, wStd);
-                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
-            }
-        } else {
-            // no continuous parents: phi_cont is constant cos(b)
-            W = null;
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
-        }
+        BaseWB wb = sampleFeatures(mFeatures, dc, bw2Clean, seed);
+        double[][] W = wb.Wbase;
+        double[] b = wb.b;
 
         final double contScale = TMath.sqrt(2.0 / mFeatures);
 
@@ -1399,31 +1394,14 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     ) {
         final int dc = contParents.length;
 
-        double[][] W = null;
-        double[] b;
+        // Bandwidth sanity
+        double bw2Clean = (dc > 0 && (bw2 > 0 && Double.isFinite(bw2))) ? bw2 : 1.0;
 
-        double wStd = 1.0;
-        if (dc > 0) {
-            if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
-            wStd = TMath.sqrt(2.0 / bw2);
-        }
+        BaseWB wb = sampleFeatures(mFeatures, dc, bw2Clean, seed);
+        double[][] W = wb.Wbase;
+        double[] b = wb.b;
+
         final double contScale = TMath.sqrt(2.0 / mFeatures);
-
-        b = new double[mFeatures];
-        if (dc > 0) {
-            if (featureType == FeatureType.RFF) {
-                W = new double[mFeatures][dc];
-                for (int j = 0; j < mFeatures; j++) {
-                    for (int k = 0; k < dc; k++) W[j][k] = wStd * RandomUtil.getInstance().nextGaussian();
-                    b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
-                }
-            } else {
-                W = sampleOrthogonalW(mFeatures, dc, wStd);
-                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
-            }
-        } else {
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
-        }
 
         final CatFeatureMap[] catMaps = new CatFeatureMap[discParents.length];
         for (int t = 0; t < discParents.length; t++) {
@@ -1435,9 +1413,9 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
         int catDim = 1;
         for (CatFeatureMap fm : catMaps) {
-            if (fm.L > 50) return Double.NaN;
+            if (fm.L > MAX_DISCRETE_LEVELS_FOR_KRONECKER) return Double.NaN;
             long prod = (long) catDim * (long) fm.L;
-            if (prod > 200_000L) return Double.NaN;
+            if (prod > MAX_KRONECKER_DIMENSION) return Double.NaN;
             catDim *= fm.L;
         }
         final int mTotal = mFeatures * catDim;
