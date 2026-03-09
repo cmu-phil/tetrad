@@ -724,6 +724,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         tools.add(new DescriptiveStatsAction(this));
         tools.add(new QQPlotAction(this));
         tools.add(new NonlinearityChecksAction(this));
+        tools.add(new CheckIndependenceFacts(this));
 
         return menuBar;
     }
