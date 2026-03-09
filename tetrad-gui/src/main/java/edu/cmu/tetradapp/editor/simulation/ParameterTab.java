@@ -36,6 +36,7 @@ import java.io.Serial;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.prefs.Preferences;
 
 /**
  * May 23, 2019 3:59:42 PM
@@ -103,6 +104,12 @@ public class ParameterTab extends JPanel {
      */
     private boolean initial = true;
 
+    private static final String GRAPH_PREF_PARAM = "graphsDropdownPreference";
+    private static final String SIM_PREF_PARAM   = "simulationsDropdownPreference";
+
+    private static final String PREF_GRAPH_TYPE = "simulation.lastGraphType";
+    private static final String PREF_SIM_TYPE   = "simulation.lastSimulationType";
+
     /**
      * <p>Constructor for ParameterTab.</p>
      *
@@ -122,6 +129,16 @@ public class ParameterTab extends JPanel {
         }
 
         initComponents();
+
+        Object graphSel = this.graphsDropdown.getSelectedItem();
+        if (graphSel instanceof String s) {
+            persistGraphSelection(s);
+        }
+
+        Object simSel = this.simulationsDropdown.getSelectedItem();
+        if (simSel instanceof String s) {
+            persistSimulationSelection(s);
+        }
 
         if (simulation.getDataModelList().isEmpty()) {
             refreshParameters();
@@ -167,7 +184,7 @@ public class ParameterTab extends JPanel {
 
         if (!this.simulation.isFixedGraph()) {
             String graphItem = this.graphsDropdown.getItemAt(this.graphsDropdown.getSelectedIndex());
-            this.simulation.getParams().set("graphsDropdownPreference", graphItem);
+            persistGraphSelection(graphItem);
 
             randomGraph = switch (graphItem) {
                 case GraphTypes.RANDOM_FOWARD_DAG -> new RandomForward();
@@ -180,13 +197,14 @@ public class ParameterTab extends JPanel {
                 default -> throw new IllegalArgumentException("Unrecognized simulation type: " + graphItem);
             };
         }
+
         return randomGraph;
     }
 
     private void newSimulation(RandomGraph randomGraph) {
         if (!this.simulation.isFixedSimulation()) {
             String simulationItem = this.simulationsDropdown.getItemAt(this.simulationsDropdown.getSelectedIndex());
-            this.simulation.getParams().set("simulationsDropdownPreference", simulationItem);
+            persistSimulationSelection(simulationItem);
             this.simulation.setFixedGraph(randomGraph instanceof SingleGraph);
 
             if (this.simulation.getSourceGraph() == null) {
@@ -356,8 +374,14 @@ public class ParameterTab extends JPanel {
         if (!this.simulation.isFixedGraph()) {
             Arrays.stream(ParameterTab.GRAPH_TYPE_ITEMS).forEach(this.graphsDropdown::addItem);
             this.graphsDropdown.setMaximumSize(this.graphsDropdown.getPreferredSize());
-            this.graphsDropdown.setSelectedItem(this.simulation.getParams().getString("graphsDropdownPreference", ParameterTab.GRAPH_TYPE_ITEMS[0]));
-            this.graphsDropdown.addActionListener(e -> refreshParameters());
+            this.graphsDropdown.setSelectedItem(resolveInitialGraphSelection());
+            this.graphsDropdown.addActionListener(e -> {
+                Object selected = this.graphsDropdown.getSelectedItem();
+                if (selected instanceof String s) {
+                    persistGraphSelection(s);
+                }
+                refreshParameters();
+            });
 
             simOptBox.add(createLabeledComponent("Type of Graph: ", this.graphsDropdown));
             simOptBox.add(Box.createVerticalStrut(10));
@@ -369,13 +393,17 @@ public class ParameterTab extends JPanel {
         } else {
             String[] simulationItems = getSimulationItems();
             Arrays.stream(simulationItems).forEach(this.simulationsDropdown::addItem);
-            this.simulationsDropdown.setSelectedItem(
-                    this.simulation.getParams().getString("simulationsDropdownPreference", simulationItems[0]));
-
+            this.simulationsDropdown.setSelectedItem(resolveInitialSimulationSelection());
         }
 
         this.simulationsDropdown.setMaximumSize(this.simulationsDropdown.getPreferredSize());
-        this.simulationsDropdown.addActionListener(e -> refreshParameters());
+        this.simulationsDropdown.addActionListener(e -> {
+            Object selected = this.simulationsDropdown.getSelectedItem();
+            if (selected instanceof String s) {
+                persistSimulationSelection(s);
+            }
+            refreshParameters();
+        });
 
         simOptBox.add(createLabeledComponent("Type of Simulation: ", this.simulationsDropdown));
         simOptBox.add(Box.createVerticalStrut(20));
@@ -448,6 +476,74 @@ public class ParameterTab extends JPanel {
      */
     public boolean isInitial() {
         return initial;
+    }
+
+    private Preferences prefs() {
+        return Preferences.userRoot().node("edu.cmu.tetradapp.editor.simulation");
+    }
+
+    private String resolveInitialGraphSelection() {
+        String[] allowed = ParameterTab.GRAPH_TYPE_ITEMS;
+
+        String fromParams = this.simulation.getParams().getString(GRAPH_PREF_PARAM, null);
+        if (isAllowed(fromParams, allowed)) {
+            return fromParams;
+        }
+
+        String fromPrefs = prefs().get(PREF_GRAPH_TYPE, null);
+        if (isAllowed(fromPrefs, allowed)) {
+            return fromPrefs;
+        }
+
+        return allowed[0];
+    }
+
+    private String resolveInitialSimulationSelection() {
+        String[] allowed = getSimulationItems();
+
+        String fromParams = this.simulation.getParams().getString(SIM_PREF_PARAM, null);
+        if (isAllowed(fromParams, allowed)) {
+            return fromParams;
+        }
+
+        String fromPrefs = prefs().get(PREF_SIM_TYPE, null);
+        if (isAllowed(fromPrefs, allowed)) {
+            return fromPrefs;
+        }
+
+        return allowed[0];
+    }
+
+    private boolean isAllowed(String value, String[] allowed) {
+        if (value == null) {
+            return false;
+        }
+
+        for (String s : allowed) {
+            if (s.equals(value)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void persistGraphSelection(String graphItem) {
+        if (graphItem == null) {
+            return;
+        }
+
+        this.simulation.getParams().set(GRAPH_PREF_PARAM, graphItem);
+        prefs().put(PREF_GRAPH_TYPE, graphItem);
+    }
+
+    private void persistSimulationSelection(String simulationItem) {
+        if (simulationItem == null) {
+            return;
+        }
+
+        this.simulation.getParams().set(SIM_PREF_PARAM, simulationItem);
+        prefs().put(PREF_SIM_TYPE, simulationItem);
     }
 }
 
