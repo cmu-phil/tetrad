@@ -139,7 +139,6 @@ public class FaskVote {
             double mean1 = sum1 / (double) count;
             double mean2 = sum2 / (double) count;
 
-            System.out.println(X + " " + Y + " " + mean1 + " " + mean2);
 
             if (mean1 == 0.5 && mean2 == 0.5) {
                 G.addUndirectedEdge(X, Y);

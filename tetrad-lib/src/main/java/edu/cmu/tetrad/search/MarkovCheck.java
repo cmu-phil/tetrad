@@ -607,7 +607,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         NumberFormat nf = new DecimalFormat("0.00");
         // Classify nodes into accepts and rejects base on ADTest result, and  update confusion stats lists accordingly.
         for (Node x : allNodes) {
-            System.out.println("Target Node: " + x);
+            TetradLogger.getInstance().log("Target Node: " + x);
             List<IndependenceFact> localIndependenceFacts = checkIndependenceForTargetNode(x);
             List<Double> ap_ar_ahp_ahr = getPrecisionAndRecallOnMarkovBlanketGraphPlotData(x, estimatedCpdag, trueGraph);
             Double ap = ap_ar_ahp_ahr.getFirst();
@@ -657,7 +657,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     }
                 }
             }
-            System.out.println("-----------------------------");
         }
         accepts_rejects_lowRecalls.add(accepts);
         accepts_rejects_lowRecalls.add(rejects);
@@ -729,7 +728,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     default:
                         break;
                 }
-                System.out.println("Successfully written to " + entry.getKey());
+                TetradLogger.getInstance().log("Successfully written to " + entry.getKey());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -779,7 +778,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         NumberFormat nf = new DecimalFormat("0.00");
         // Classify nodes into accepts and rejects base on ADTest result, and  update confusion stats lists accordingly.
         for (Node x : allNodes) {
-            System.out.println("Target Node: " + x);
+            TetradLogger.getInstance().log("Target Node: " + x);
             List<IndependenceFact> localIndependenceFacts = checkIndependenceForTargetNode(x);
             List<Double> lgp_lgr = getPrecisionAndRecallOnMarkovBlanketGraphPlotData2(x, estimatedCpdag, trueGraph);
             Double lgp = lgp_lgr.getFirst();
@@ -793,7 +792,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 List<Double> flatList = shuffledlocalPValues.stream()
                         .flatMap(List::stream)
                         .collect(Collectors.toList());
-                System.out.println("# p values feed into ADTest: " + flatList.size());
+                TetradLogger.getInstance().log("# p values feed into ADTest: " + flatList.size());
                 Double ADTestPValue = checkAgainstAndersonDarlingTest(flatList);
                 if (ADTestPValue <= threshold) {
                     rejects.add(x);
@@ -813,7 +812,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     }
                 }
             }
-            System.out.println("-----------------------------");
+            TetradLogger.getInstance().log("-----------------------------");
         }
         accepts_rejects_lowRecall.add(accepts);
         accepts_rejects_lowRecall.add(rejects);
@@ -855,7 +854,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     default:
                         break;
                 }
-                System.out.println("Successfully written to " + entry.getKey());
+                TetradLogger.getInstance().log("Successfully written to " + entry.getKey());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -885,7 +884,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         double cr = new CircleRecall().getValue(lookupGraph, estimatedGraph, null, new Parameters());
 
         NumberFormat nf = new DecimalFormat("0.00");
-        System.out.println("Whole graph statistics: " + " \n" +
+        TetradLogger.getInstance().log("Whole graph statistics: " + " \n" +
                 " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
                 " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr) + " \n" +
                 " TailPrecision = " + nf.format(tp) + " TailRecall = " + nf.format(tr) + " \n" +
@@ -1003,9 +1002,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
         Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
-        System.out.println("xMBLookupGraph:" + xMBLookupGraph);
+        TetradLogger.getInstance().log("xMBLookupGraph:" + xMBLookupGraph);
         Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
-        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
+        TetradLogger.getInstance().log("xMBEstimatedGraph:" + xMBEstimatedGraph);
 
         // TODO VBC: validate
         double ap = new AdjacencyPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
@@ -1014,7 +1013,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         double ahr = new ArrowheadRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
 
         NumberFormat nf = new DecimalFormat("0.00");
-        System.out.println("Node " + x + "'s statistics: " + " \n" +
+        TetradLogger.getInstance().log("Node " + x + "'s statistics: " + " \n" +
                 " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
                 " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr));
     }
@@ -1032,9 +1031,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
         Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
-        System.out.println("xMBLookupGraph:" + xMBLookupGraph);
+        TetradLogger.getInstance().log("xMBLookupGraph:" + xMBLookupGraph);
         Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
-        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
+        TetradLogger.getInstance().log("xMBEstimatedGraph:" + xMBEstimatedGraph);
 
         double ap = new AdjacencyPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
         double ar = new AdjacencyRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
@@ -1066,19 +1065,19 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         // A more general definition of what "local subgraph" means
         if (subgraphFeature.equals("MB")) { // TODO VBC: create a enum for subgraph features
             xConditioningSetTypeLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
-            System.out.println("xMBLookupGraph:" + xConditioningSetTypeLookupGraph);
+            TetradLogger.getInstance().log("xMBLookupGraph:" + xConditioningSetTypeLookupGraph);
             xConditioningSetTypeEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
-            System.out.println("xMBEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
+            TetradLogger.getInstance().log("xMBEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
         } else if (subgraphFeature.equals("parents")) {
             xConditioningSetTypeLookupGraph = GraphUtils.getParentsSubgraphWithTargetNode(lookupGraph, x);
-            System.out.println("xParentsLookupGraph:" + xConditioningSetTypeLookupGraph);
+            TetradLogger.getInstance().log("xParentsLookupGraph:" + xConditioningSetTypeLookupGraph);
             xConditioningSetTypeEstimatedGraph = GraphUtils.getParentsSubgraphWithTargetNode(estimatedGraph, x);
-            System.out.println("xParentsEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
+            TetradLogger.getInstance().log("xParentsEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
         } else if (subgraphFeature.equals("adjacency")) {
             xConditioningSetTypeLookupGraph = GraphUtils.getAdjacencySubgraphWithTargetNode(lookupGraph, x);
-            System.out.println("xParentsLookupGraph:" + xConditioningSetTypeLookupGraph);
+            TetradLogger.getInstance().log("xParentsLookupGraph:" + xConditioningSetTypeLookupGraph);
             xConditioningSetTypeEstimatedGraph = GraphUtils.getAdjacencySubgraphWithTargetNode(estimatedGraph, x);
-            System.out.println("xParentsEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
+            TetradLogger.getInstance().log("xParentsEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
 
         } else {
             throw new IllegalArgumentException("Unsupported subgraph feature: " + subgraphFeature);
@@ -1102,15 +1101,15 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
         Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
-        System.out.println("xMBLookupGraph:" + xMBLookupGraph);
+        TetradLogger.getInstance().log("xMBLookupGraph:" + xMBLookupGraph);
         Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
-        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
+        TetradLogger.getInstance().log("xMBEstimatedGraph:" + xMBEstimatedGraph);
 
         double lgp = new LocalGraphPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
         double lgr = new LocalGraphRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
 
         NumberFormat nf = new DecimalFormat("0.00");
-        System.out.println("Node " + x + "'s statistics: " + " \n" +
+        TetradLogger.getInstance().log("Node " + x + "'s statistics: " + " \n" +
                 " LocalGraphPrecision = " + nf.format(lgp) + " LocalGraphRecall = " + nf.format(lgr) + " \n");
     }
 
@@ -1126,9 +1125,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
         Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
-        System.out.println("xMBLookupGraph:" + xMBLookupGraph);
+        TetradLogger.getInstance().log("xMBLookupGraph:" + xMBLookupGraph);
         Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
-        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
+        TetradLogger.getInstance().log("xMBEstimatedGraph:" + xMBEstimatedGraph);
 
         double lgp = new LocalGraphPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
         double lgr = new LocalGraphRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());

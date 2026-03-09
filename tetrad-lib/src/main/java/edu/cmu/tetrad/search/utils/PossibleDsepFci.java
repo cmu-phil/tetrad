@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 
 import java.util.ArrayList;
@@ -96,15 +97,9 @@ public class PossibleDsepFci {
             Set<Node> condSet = getSepset(this.test, x, y);
 
             if (condSet != null) {
-                for (Node n : condSet) {
-                    if (!(this.graph.getAdjacentNodes(n).contains(x) || this.graph.getAdjacentNodes(n).contains(y))) {
-                        System.out.println("Not adjacent");
-                    }
-                }
-
                 this.graph.removeEdge(x, y);
                 this.sepset.set(x, y, condSet);
-                System.out.println("Removed " + x + "--- " + y + " sepset = " + condSet);
+                TetradLogger.getInstance().log("Removed " + x + "--- " + y + " sepset = " + condSet);
             }
 
         }

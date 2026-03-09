@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.RankTests;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
@@ -226,8 +227,8 @@ public final class ScoredClusterFinder {
         if (size >= Vsub.size() - size) {
             // D would be empty or smaller than C in a way that may collapse RCCA trivially.
             // We still allow, but warn in verbose mode.
-            if (verbose) System.out.printf("[ScoredClusterFinder] Warning: size=%d, |Vsub|=%d -> |D|=%d%n",
-                    size, Vsub.size(), (Vsub.size() - size));
+            if (verbose) TetradLogger.getInstance().log(String.format("[ScoredClusterFinder] Warning: size=%d, |Vsub|=%d -> |D|=%d",
+                    size, Vsub.size(), (Vsub.size() - size)));
         }
 
         final int nVars = Vsub.size();
@@ -247,7 +248,7 @@ public final class ScoredClusterFinder {
 
             int _c = counter.incrementAndGet();
             if (verbose && (_c % 5000 == 0)) {
-                System.out.printf("[ScoredClusterFinder] Examined %d / %d subsets%n", _c, total);
+                TetradLogger.getInstance().log(String.format("[ScoredClusterFinder] Examined %d / %d subsets", _c, total));
             }
 
             // Decode k-combination (colex order) -> local indices 0..nVars-1

@@ -223,7 +223,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
             Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank);
 
             if (verbose) {
-                System.out.println("Base clusters for size " + size + " rank " + rank + ": " + (P.isEmpty() ? "NONE" : toNamesClusters(P, nodes)));
+                TetradLogger.getInstance().log("Base clusters for size " + size + " rank " + rank + ": " + (P.isEmpty() ? "NONE" : toNamesClusters(P, nodes)));
             }
 
             Set<Set<Integer>> P1 = new HashSet<>(P);

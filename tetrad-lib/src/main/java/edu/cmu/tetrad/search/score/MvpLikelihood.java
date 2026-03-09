@@ -194,10 +194,6 @@ public class MvpLikelihood {
                     var[i] /= r;
                     var[i] -= TMath.pow(mean[i], 2);
                     var[i] = TMath.sqrt(var[i]);
-
-                    if (Double.isNaN(var[i])) {
-                        System.out.println(var[i]);
-                    }
                 }
 
                 int degree = this.fDegree;
@@ -357,10 +353,6 @@ public class MvpLikelihood {
         }
 
 
-        if (Double.isInfinite(lik) || Double.isNaN(lik)) {
-            System.out.println(lik);
-        }
-
         return lik;
     }
 
@@ -448,10 +440,6 @@ public class MvpLikelihood {
 
         for (int i = 0; i < n; i++) {
             lik += TMath.log(P.row(i).dotProduct(Y.row(i)));
-        }
-
-        if (Double.isInfinite(lik) || Double.isNaN(lik)) {
-            System.out.println(lik);
         }
 
         return lik;

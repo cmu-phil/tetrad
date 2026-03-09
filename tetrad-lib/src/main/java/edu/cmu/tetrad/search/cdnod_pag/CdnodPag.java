@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
@@ -227,7 +228,7 @@ public final class CdnodPag {
         // Resolve Node handles
         List<Node> contexts = resolveNodes(pag, contextNames);
         if (contexts.isEmpty()) {
-            System.out.println("[CD-NOD-PAG] No context variables provided; skipping change-based orientation.");
+            TetradLogger.getInstance().log("[CD-NOD-PAG] No context variables provided; skipping change-based orientation.");
             return pag;
         }
 

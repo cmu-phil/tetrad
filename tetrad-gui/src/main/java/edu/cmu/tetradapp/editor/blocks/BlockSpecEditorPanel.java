@@ -148,7 +148,7 @@ public final class BlockSpecEditorPanel extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) insertSelectedCompletion();
             }
-        });
+    });
         completionList.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {

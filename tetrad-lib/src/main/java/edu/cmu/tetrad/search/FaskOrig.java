@@ -456,7 +456,7 @@ public final class FaskOrig implements IGraphSearch {
         double[][] lrs = getLrScores(); // Sets D.
 
         for (int i = 0; i < variables.size(); i++) {
-            System.out.println("Skewness of " + variables.get(i) + " = " + skewness(this.D[i]));
+            TetradLogger.getInstance().log("Skewness of " + variables.get(i) + " = " + skewness(this.D[i]));
         }
 
         TetradLogger.getInstance().log("FASK v. 2.0");

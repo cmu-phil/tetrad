@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 
@@ -269,13 +270,11 @@ final class Phase1 {
 
     // In Phase1 (or a small debug utility)
     static void logPartitions(Phase1Result res) {
-        System.out.println("RLCD Phase 1 partitions:");
+        TetradLogger.getInstance().log("RLCD Phase 1 partitions:");
         int i = 1;
         for (List<Node> group : res.getPartitions()) {
-            System.out.print("  Group " + (i++) + " (" + group.size() + " vars): ");
-            System.out.println(
-                    group.stream().map(Node::getName).reduce((a, b) -> a + ", " + b).orElse("")
-            );
+            TetradLogger.getInstance().log("  Group " + (i++) + " (" + group.size() + " vars): " +
+                    group.stream().map(Node::getName).reduce((a, b) -> a + ", " + b).orElse(""));
         }
     }
 }

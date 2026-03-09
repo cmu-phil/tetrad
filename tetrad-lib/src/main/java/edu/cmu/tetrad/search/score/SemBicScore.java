@@ -608,7 +608,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            System.out.println("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
+            TetradLogger.getInstance().log("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
             return Double.NaN;
         }
 
@@ -649,7 +649,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            System.out.println("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
+            TetradLogger.getInstance().log("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
             return new LikelihoodResult(Double.NaN, -1, penaltyDiscount, nEff);
         }
 
@@ -674,7 +674,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            System.out.println("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
+            TetradLogger.getInstance().log("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
             return Double.NaN;
         }
 

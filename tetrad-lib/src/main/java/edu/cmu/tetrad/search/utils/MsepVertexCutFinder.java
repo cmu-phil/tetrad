@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 
@@ -70,9 +71,9 @@ public class MsepVertexCutFinder {
 
                     if (chokePoint != null && !chokePoint.contains(x) && !chokePoint.contains(y)) {
                         if (msep.checkIndependence(x, y, chokePoint).isIndependent()) {
-                            System.out.println("Verified choke point (m-separation) from " + x + " to " + y + ": " + chokePoint);
+                            TetradLogger.getInstance().log("Verified choke point (m-separation) from " + x + " to " + y + ": " + chokePoint);
                         } else {
-                            System.out.println("#### NOT VERIFIED! choke point (m-separation) from " + x + " to " + y + ": " + chokePoint);
+                            TetradLogger.getInstance().log("#### NOT VERIFIED! choke point (m-separation) from " + x + " to " + y + ": " + chokePoint);
                         }
                     }
                 }

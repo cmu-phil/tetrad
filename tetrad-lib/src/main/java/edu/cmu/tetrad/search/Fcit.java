@@ -437,7 +437,7 @@ public final class Fcit implements IGraphSearch {
         int round = 0;
 
         do {
-            System.out.println("Round: " + (++round));
+            TetradLogger.getInstance().log("Round: " + (++round));
         } while (removeEdgesRecursively(checks, excludeSelectionBias));
 
         if (superVerbose) {
@@ -445,10 +445,6 @@ public final class Fcit implements IGraphSearch {
         }
 
         long stop2 = System.currentTimeMillis();
-
-        if (verbose) {
-            System.out.println();
-        }
 
         // Revert nodes made latent to latent.
         for (Node node : latents) {
@@ -546,10 +542,6 @@ public final class Fcit implements IGraphSearch {
 
         List<Result> results = findIndependenceChecksRecursive(edgePool, pathsByEdge, checks);
 
-        if (verbose) {
-            System.out.println();
-        }
-
         for (Result result : results) {
             Edge edge = result.edge();
             Set<Node> b = result.cond();
@@ -580,8 +572,6 @@ public final class Fcit implements IGraphSearch {
     }
 
     private IndependenceCheck findIndependenceCheckRecursive(Edge edge, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) throws InterruptedException {
-        if (verbose) System.out.print(".");
-
         final Node x = edge.getNode1();
         final Node y = edge.getNode2();
 

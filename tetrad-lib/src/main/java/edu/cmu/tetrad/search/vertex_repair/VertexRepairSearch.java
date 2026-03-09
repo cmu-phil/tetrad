@@ -11,6 +11,7 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.table.AbstractTableModel;
@@ -460,7 +461,7 @@ public class VertexRepairSearch implements IGraphSearch {
     }
 
     private static void vlog(String fmt, Object... args) {
-        System.out.println("[VertexAutoRepair] " + String.format(fmt, args));
+        TetradLogger.getInstance().log("[VertexAutoRepair] " + String.format(fmt, args));
     }
 
     private static Endpoint endpointAt(Edge e, Node n) {

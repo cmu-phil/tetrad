@@ -497,13 +497,6 @@ public class IsBDeuScore2 implements IsScore {
         List<Integer> removed = new ArrayList<>();
         for (int p : parents_pop) if (!isParents.contains(p)) removed.add(p);
 
-        if (verbose) {
-            System.out.println("node: " + nodeIndex);
-            System.out.println("parents is:   " + Arrays.toString(parents));
-            System.out.println("parents pop:  " + Arrays.toString(parents_pop));
-            System.out.println("children pop: " + Arrays.toString(children_pop));
-            System.out.println("added=" + added + ", removed=" + removed + ", reversed=" + reversed);
-        }
         return added.size()   * TMath.log(getKAddition())
                + removed.size() * TMath.log(getKDeletion())
                + reversed.size()* TMath.log(getKReorientation());

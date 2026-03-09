@@ -192,7 +192,6 @@ public final class GraphSearchUtils {
                 graph.setEndpoint(x, y, Endpoint.ARROW);
                 graph.setEndpoint(z, y, Endpoint.ARROW);
 
-                System.out.println(LogUtilsSearch.colliderOrientedMsg(x, y, z) + " sepset = " + sepset);
                 String message = LogUtilsSearch.colliderOrientedMsg(x, y, z);
                 TetradLogger.getInstance().log(message);
             }
@@ -663,7 +662,6 @@ public final class GraphSearchUtils {
             int x = 60;
 
             for (Node node : tier) {
-                System.out.println(node + " " + x + " " + y);
                 node.setCenterX(x);
                 node.setCenterY(y);
                 x += 90;

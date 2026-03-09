@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -75,7 +76,7 @@ public class PurifySextadBased {
 
         List<List<Integer>> convertedResult = new ArrayList<>(result);
 
-        System.out.println(convertedResult);
+        TetradLogger.getInstance().log(convertedResult.toString());
 
         return convertedResult;
     }
@@ -88,7 +89,7 @@ public class PurifySextadBased {
         int count = 0;
 
         for (List<Integer> cluster : clustering) {
-            System.out.println("Within cluster: " + ++count);
+            TetradLogger.getInstance().log("Within cluster: " + ++count);
             Set<Sextad> impurities = listSextads(cluster, eliminated, cutoff);
 
             if (impurities != null) {
@@ -145,7 +146,7 @@ public class PurifySextadBased {
 
             impuritiesPerNode.remove(maxNode);
             eliminated.add(maxNode);
-            System.out.println("Eliminated " + maxNode + " impurities = " + max +
+            TetradLogger.getInstance().log("Eliminated " + maxNode + " impurities = " + max +
                                "q = " + nf.format(minP) + " maxP = " + nf.format(maxP));
         }
 

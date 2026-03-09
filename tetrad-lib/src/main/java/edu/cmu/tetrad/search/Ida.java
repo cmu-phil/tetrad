@@ -220,7 +220,7 @@ public class Ida {
                     _regressors.addAll(siblingsChoice);
                     List<Node> regressors = new ArrayList<>(_regressors);
 
-                    System.out.println(x + " to " + y + " regressors (REGULAR IDA): " + regressors);
+                        TetradLogger.getInstance().log(x + " to " + y + " regressors (REGULAR IDA): " + regressors);
 
                     if (regressors.contains(y)) {
                         beta = 0.0;
@@ -263,7 +263,7 @@ public class Ida {
                         }
                     } catch (Exception e) {
                         // If O-set computation fails, treat this orientation as yielding no effect
-                        System.out.println("O-set computation failed for " + x + " ~~> " + y + ": " + e);
+                        TetradLogger.getInstance().log("O-set computation failed for " + x + " ~~> " + y + ": " + e);
                         beta = 0.0;
                         totalEffects.add(beta);
                         continue;
@@ -298,7 +298,7 @@ public class Ida {
 
                     List<Node> regressors = new ArrayList<>(regressorsSet);
 
-                    System.out.println(x + " to " + y + " regressors (OPTIMAL IDA): " + regressors
+                    TetradLogger.getInstance().log(x + " to " + y + " regressors (OPTIMAL IDA): " + regressors
                                        + "   O-set=" + oSet);
 
                     beta = getBeta(regressors, x, y);
@@ -380,7 +380,7 @@ public class Ida {
             try {
                 bStar = rX.inverse().times(rY);
             } catch (SingularMatrixException e) {
-                System.out.println("Singularity encountered when regressing " + LogUtilsSearch.getScoreFact(child, regressors));
+                TetradLogger.getInstance().log("Singularity encountered when regressing " + LogUtilsSearch.getScoreFact(child, regressors));
             }
 
             return bStar != null ? bStar.get(xIndex, 0) : 0.0;

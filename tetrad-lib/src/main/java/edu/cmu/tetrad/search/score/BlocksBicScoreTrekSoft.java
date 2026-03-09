@@ -295,7 +295,6 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
                 trekPen = trekPenaltyMultiplier * cEff * logN * d * d;
             }
 
-            System.out.println("r=" + r + " fit=" + fit + " pen=" + pen + " trekPen=" + trekPen);
 
             double sc = fit - pen - trekPen;
             if (Double.isNaN(sc) || Double.isInfinite(sc)) continue;

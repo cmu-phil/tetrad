@@ -140,7 +140,6 @@ public class DiscreteBicScore implements DiscreteScore {
             }
         }
 
-        System.out.println("DiscreteBicScore: attestedCategories = " + attestedCategories);
     }
 
     private static int getRowIndex(int[] dim, int[] values) {

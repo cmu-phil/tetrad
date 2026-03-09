@@ -120,20 +120,6 @@ public class SepsetFinder {
     public static Set<Node> getSepsetContainingGreedySubsetMb(Graph graph, Graph cpdag, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth) {
         List<Node> mbx = new ArrayList<>(cpdag.paths().markovBlanket(x));
 
-        if (("A".equals(x.getName()) && "E".equals(y.getName()))
-            || ("E".equals(x.getName()) && "A".equals(y.getName()))) {
-            System.out.println("mb(x) = " + graph.paths().markovBlanket(x));
-            System.out.println("mb(y) = " + graph.paths().markovBlanket(y));
-
-            MsepTest msepTest = new MsepTest(graph);
-
-            Set<Node> bd = new HashSet<>();
-            bd.add(graph.getNode("B"));
-            bd.add(graph.getNode("D"));
-
-            System.out.println("dsep(x, y | BD" + msepTest.checkIndependence(x, y, bd).isIndependent());
-        }
-
         mbx.remove(y);
         List<Node> mby = new ArrayList<>(cpdag.paths().markovBlanket(y));
         mby.remove(x);

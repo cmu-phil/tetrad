@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -205,7 +206,7 @@ public final class ProcessPythonCiService implements PythonCiService {
         if (fromPy == null) throw new IOException("Python process not started (fromPy == null)");
         String line = fromPy.readLine();
         if (line == null) throw new EOFException("Python process terminated");
-        if (verbose) System.out.println("[py] " + line);
+        if (verbose) TetradLogger.getInstance().log("[py] " + line);
         return parseFlatJson(line);
     }
 

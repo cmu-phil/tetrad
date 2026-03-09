@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.ArrayList;
@@ -214,7 +215,7 @@ public class ZsbScore implements Score, EffectiveSampleSizeSettable {
                 if (i == j) continue;
                 double r = correlations.getValue(i, j);
                 if (abs(r) > correlationThreshold) {
-                    System.out.println("Absolute correlation too high: " + r);
+                    TetradLogger.getInstance().log("Absolute correlation too high: " + r);
                     exists = true;
                 }
             }

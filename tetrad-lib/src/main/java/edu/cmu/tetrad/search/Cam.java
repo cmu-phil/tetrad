@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.AdditiveLocalScorer;
 import edu.cmu.tetrad.search.score.CamAdditivePsplineBic;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
@@ -196,7 +197,7 @@ public class Cam {
         }
 
         if (verbose) {
-            System.out.printf("CAM order best score: %.3f (over %d restarts)%n", bestScore, restarts);
+            TetradLogger.getInstance().log(String.format("CAM order best score: %.3f (over %d restarts)", bestScore, restarts));
         }
 
         // Stage 3: Prune (forward+backward) restricted to PNS

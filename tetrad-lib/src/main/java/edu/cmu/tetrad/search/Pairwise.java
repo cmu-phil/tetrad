@@ -221,7 +221,6 @@ public class Pairwise {
             FastIca fastIca = new FastIca(this.dataSets.getFirst().getDoubleData(),
                     this.dataSets.getFirst().getNumColumns());
             FastIca.IcaResult result = fastIca.findComponents();
-            System.out.println(result.W());
             return new EdgeListGraph();
         }
 
@@ -1193,8 +1192,6 @@ public class Pairwise {
             }
         }
 
-        System.out.println(_graph);
-
         return _graph;
     }
 
@@ -2075,8 +2072,7 @@ public class Pairwise {
         double abs2 = abs(sdY - sdYX);
 
         if (abs(abs1 - abs2) < this.epsilon) {
-            System.out.println("Orienting by non-Gaussianity " + abs(abs1 - abs2) + " epsilon = " + this.epsilon);
-            System.out.println(x + "===" + y);
+            TetradLogger.getInstance().log("Orienting by non-Gaussianity " + abs(abs1 - abs2) + " epsilon = " + this.epsilon);
             double v = resolveOneEdgeMaxR3b(xCol, yCol);
 
             if (v < 0) {
@@ -2090,8 +2086,7 @@ public class Pairwise {
             return;
         }
 
-        System.out.println("Orienting by variances " + abs(abs1 - abs2));
-        System.out.println(x + "===" + y);
+        TetradLogger.getInstance().log("Orienting by variances " + abs(abs1 - abs2));
 
         if (sdXY + ngY < sdYX + ngX) {
             graph.addDirectedEdge(x, y);

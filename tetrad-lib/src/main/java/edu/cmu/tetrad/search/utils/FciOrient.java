@@ -1158,11 +1158,11 @@ public class FciOrient {
 
             for (int i = 2; i < path.size(); i++) {
                 if (graph.isAdjacentTo(path.get(i), path.get(i - 2))) {
-                    System.out.println("adjacent " + path.get(i) + " to " + path.get(i - 2));
+                    this.logger.log("adjacent " + path.get(i) + " to " + path.get(i - 2));
                 }
 
                 if (graph.isAdjacentTo(path.getLast(), path.get(1))) {
-                    System.out.println("adjacent gamma = " + path.getLast() + " to beta = " + path.get(1));
+                    this.logger.log("adjacent gamma = " + path.getLast() + " to beta = " + path.get(1));
                 }
             }
         }

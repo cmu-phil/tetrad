@@ -626,8 +626,8 @@ public class Grasp {
                 double sNew = scorer.score();
                 if (sNew > sOld) {
                     if (verbose) {
-                        System.out.printf("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s \n",
-                                scorer.getNumEdges(), sNew - sOld, tucks, tuck);
+                        TetradLogger.getInstance().log(String.format("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s",
+                                scorer.getNumEdges(), sNew - sOld, tucks, tuck));
                     }
                     return;
                 }

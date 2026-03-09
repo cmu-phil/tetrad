@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.BesPermutation;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -213,7 +214,7 @@ public class Boss implements SuborderSearch {
                 improved = false;
                 for (Node x : new ArrayList<>(suborder)) {
 
-                    if (this.verbose && (suborder.size() > 1)) System.out.println(x);
+                    if (this.verbose && (suborder.size() > 1)) TetradLogger.getInstance().log(x.toString());
 
                     if (this.numThreads == 1) improved |= betterMutation(prefix, suborder, x);
                     else {
@@ -222,7 +223,7 @@ public class Boss implements SuborderSearch {
                 }
 
                 if (this.verbose && (suborder.size() > 1)) {
-                    System.out.printf("\nScore: %.3f\n\n", update(prefix, suborder));
+                    TetradLogger.getInstance().log(String.format("Score: %.3f", update(prefix, suborder)));
                 }
 
             } while (improved);
@@ -236,7 +237,7 @@ public class Boss implements SuborderSearch {
                 this.bics.add(score);
                 this.times.add(time);
                 if (this.verbose) {
-                    System.out.printf("\nRestart: %d\t Score: %.3f\t Time: %.3f\n\n", i, score, time / 1e3);
+                    TetradLogger.getInstance().log(String.format("Restart: %d\t Score: %.3f\t Time: %.3f", i, score, time / 1e3));
                 }
             }
 

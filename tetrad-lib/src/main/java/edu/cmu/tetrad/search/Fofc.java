@@ -171,7 +171,7 @@ public class Fofc {
         int size = rank + 1;
 
         Set<Set<Integer>> tscClusters = tsc.findClustersAtRank(variables, size, rank);
-        System.out.println("TSC Clusters: " + Tsc.toNamesClusters(tscClusters, this.variables));
+        TetradLogger.getInstance().log("TSC Clusters: " + Tsc.toNamesClusters(tscClusters, this.variables));
 
         if (new HashSet<>(variables).size() != variables.size()) {
             throw new IllegalArgumentException("Variables must be unique.");

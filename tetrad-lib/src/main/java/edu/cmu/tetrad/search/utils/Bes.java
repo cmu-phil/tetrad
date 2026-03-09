@@ -193,7 +193,7 @@ public class Bes {
 
         int numEdges = graph.getNumEdges();
         if (numEdges % 1000 == 0 && numEdges > 0) {
-            System.out.println("Num edges (backwards) = " + numEdges);
+            TetradLogger.getInstance().log("Num edges (backwards) = " + numEdges);
         }
 
         if (verbose) {

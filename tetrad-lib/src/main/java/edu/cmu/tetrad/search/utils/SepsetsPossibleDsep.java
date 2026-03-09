@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.SublistGenerator;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 
 import java.util.ArrayList;
@@ -231,7 +232,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         List<Node> msep = this.graph.paths().possibleDsep(x, maxPossibleDsepPathLength);
 
         if (this.verbose) {
-            System.out.println("Possible-D-Sep(" + x + ") = " + msep);
+            TetradLogger.getInstance().log("Possible-D-Sep(" + x + ") = " + msep);
         }
 
         return msep;

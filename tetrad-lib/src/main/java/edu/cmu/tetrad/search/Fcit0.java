@@ -446,9 +446,6 @@ public final class Fcit0 implements IGraphSearch {
 
         long stop2 = System.currentTimeMillis();
 
-        if (verbose) {
-            System.out.println();
-        }
 
         // Revert nodes made latent to latent.
         for (Node node : latents) {
@@ -584,7 +581,6 @@ public final class Fcit0 implements IGraphSearch {
     }
 
     private IndependenceCheck findIndependenceCheckRecursive(Edge edge, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) throws InterruptedException {
-        if (verbose) System.out.print(".");
 
         final Node x = edge.getNode1();
         final Node y = edge.getNode2();
