@@ -39,7 +39,7 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Edits fobiddings or requirings of groups of node to other groups of nodes.
+ * Edits forbidding or requiring of groups of nodes to other groups of nodes.
  *
  * @author Tyler Gibson
  */
