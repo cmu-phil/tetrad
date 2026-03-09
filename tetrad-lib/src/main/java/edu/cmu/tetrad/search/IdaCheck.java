@@ -81,7 +81,7 @@ public class IdaCheck {
     /**
      * The instance of IDA used in this class to calculate node effects and distances.
      */
-    private final PdagPagIda ida;
+    private final Ida ida;
 
     /**
      * The true SEM IM, if given.
@@ -103,6 +103,8 @@ public class IdaCheck {
      * copy" behavior without repeatedly copying.
      */
     private Graph cachedGraphCopy;
+
+    private Ida.IDA_TYPE currentIdaType = Ida.IDA_TYPE.OPTIMAL;
 
     /**
      * Constructs a new IDA check for the given PDAG and data set.
@@ -134,7 +136,7 @@ public class IdaCheck {
         this.nodes = dataSet.getVariables();
         this.totalEffects = new HashMap<>();
         this.absTotalEffects = new HashMap<>();
-        this.ida = new PdagPagIda(dataSet, graph, List.of());
+        this.ida = new Ida(dataSet, graph, List.of());
         this.pairs = calcOrderedPairs();
 
         this.trueSemIm = trueSemIm;
@@ -150,6 +152,8 @@ public class IdaCheck {
                 nodeMap.put(node, _node);
             }
         }
+
+        this.ida.setIdaType(currentIdaType);
 
         // NOTE: Do NOT compute IDA results here. The UI may open this object even when it needs an empty table.
         // Results are computed either by calling recompute() or lazily when getters are called.
@@ -186,6 +190,19 @@ public class IdaCheck {
             if (!this.totalEffects.containsKey(pair)) {
                 ensurePairComputed(pair);
             }
+        }
+    }
+
+    public void setIdaType(Ida.IDA_TYPE idaType) {
+        if (idaType == null) {
+            throw new NullPointerException("IDA type must not be null.");
+        }
+
+        if (this.currentIdaType != idaType) {
+            this.currentIdaType = idaType;
+            this.ida.setIdaType(idaType);
+            this.totalEffects.clear();
+            this.absTotalEffects.clear();
         }
     }
 
@@ -520,8 +537,16 @@ public class IdaCheck {
      *
      * @param currentPairs The list of ordered pairs for which effects should be recomputed.
      */
+//    public void recompute(List<OrderedPair<Node>> currentPairs) {
+//        for (OrderedPair<Node> pair : currentPairs) {
+//            ensurePairComputed(pair);
+//        }
+//    }
+
     public void recompute(List<OrderedPair<Node>> currentPairs) {
         for (OrderedPair<Node> pair : currentPairs) {
+            this.totalEffects.remove(pair);
+            this.absTotalEffects.remove(pair);
             ensurePairComputed(pair);
         }
     }

@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.OrderedPair;
+import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.search.IdaCheck;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -252,25 +253,43 @@ public class IdaEditor extends JPanel {
         runButton.addActionListener(e -> {
             try {
                 idaModel.setOptimalIdaSelected(showOptimalIda.isSelected());
-                recomputeTable(); // sets currentPairs
-                idaCheckEst.recompute(currentPairs); // compute only those pairs
+                idaModel.setTreatmentsText(treatmentsField.getText());
+                idaModel.setOutcomesText(outcomesField.getText());
+                idaModel.setHideZeroEffects(hideZeroEffects.isSelected());
 
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
+                idaCheckEst.setIdaType(
+                        showOptimalIda.isSelected()
+                                ? Ida.IDA_TYPE.OPTIMAL
+                                : Ida.IDA_TYPE.REGULAR);
 
-                        // then rebuild model, or (better) rebuild after computing
-                        tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
-                        table.setModel(tableModel);
+                List<OrderedPair<Node>> newPairs = computeCurrentPairs(); // synchronous
+                currentPairs = newPairs;
+                idaModel.setCurrentPairs(currentPairs);
+
+                idaCheckEst.recompute(currentPairs);
+
+                tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
+                table.setModel(tableModel);
+
+                sorter = new TableRowSorter<>(tableModel);
+                table.setRowSorter(sorter);
+
+                sorter.addRowSorterListener(e2 -> {
+                    if (e2.getType() == RowSorterEvent.Type.SORTED) {
+                        updateStatsForVisibleRows();
                     }
                 });
+
+                if (idaModel.getTrueSemIm() != null) {
+                    setSummaryText(numberFormat, idaCheckEst, currentPairs);
+                }
+
             } catch (IllegalArgumentException ex) {
                 JOptionPane.showMessageDialog(this,
                         ex.getMessage(),
                         "Invalid selection",
                         JOptionPane.ERROR_MESSAGE);
             }
-
         });
 
         // ---- Tabbed pane with Table + Help ----
@@ -293,6 +312,46 @@ public class IdaEditor extends JPanel {
 
         revalidate();
         repaint();
+    }
+
+    private List<OrderedPair<Node>> computeCurrentPairs() {
+        Graph graph = idaCheckEst.getGraph();
+
+        Set<Node> X = parseNodeList(graph, treatmentsField.getText().trim());
+        Set<Node> Y = parseNodeList(graph, outcomesField.getText().trim());
+
+        if (X.isEmpty() || Y.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Treatments (X) and outcomes (Y) sets must not be empty.");
+        }
+
+        List<OrderedPair<Node>> newPairs = new ArrayList<>();
+        boolean filterZeros = hideZeroEffects.isSelected();
+
+        for (OrderedPair<Node> pair : allPairs) {
+            Node x = pair.getFirst();
+            Node y = pair.getSecond();
+
+            if (X.contains(x) && Y.contains(y)) {
+                if (filterZeros) {
+                    double min = idaCheckEst.getMinTotalEffect(x, y);
+                    double max = idaCheckEst.getMaxTotalEffect(x, y);
+
+                    if (min == 0.0 && max == 0.0) {
+                        continue;
+                    }
+                }
+
+                newPairs.add(pair);
+            }
+        }
+
+        if (newPairs.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "No ordered pairs (X, Y) matched the given treatments/outcomes.");
+        }
+
+        return newPairs;
     }
 
     /**
