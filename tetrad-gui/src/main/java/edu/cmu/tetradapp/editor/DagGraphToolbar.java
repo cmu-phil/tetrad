@@ -68,6 +68,8 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
      */
     private final GraphWorkbench workbench;
 
+    private final java.util.Map<JToggleButton, String> buttonImagePaths = new java.util.HashMap<>();
+
     /**
      * Constructs a new Graph toolbar governing the modes of the given GraphWorkbench.
      *
@@ -167,11 +169,13 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
      * Adds the various buttons to the toolbar, setting their properties appropriately.
      */
     private void addButton(JToggleButton button, String name) {
-        button.setIcon(
-                new ImageIcon(ImageUtils.getImage(this, name + "3.gif")));
-        button.setMaximumSize(new Dimension(80, 40));
+        String imagePath = name + "3.gif";
+        button.setIcon(new ImageIcon(ImageUtils.getImage(this, imagePath)));
+        this.buttonImagePaths.put(button, imagePath);
+
         button.setMaximumSize(new Dimension(80, 40));
         button.setPreferredSize(new Dimension(80, 40));
+
         this.buttonsPanel.add(button);
         this.buttonsPanel.add(Box.createVerticalStrut(5));
         this.group.add(button);
@@ -195,6 +199,25 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
         this.addDirectedEdge.setEnabled(true);
     }
 
+    private void refreshButtonIcons() {
+        for (java.util.Map.Entry<JToggleButton, String> entry : this.buttonImagePaths.entrySet()) {
+            JToggleButton button = entry.getKey();
+            String imagePath = entry.getValue();
+            button.setIcon(new ImageIcon(ImageUtils.getImage(this, imagePath)));
+        }
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+
+        if (this.buttonImagePaths != null) {
+            refreshButtonIcons();
+        }
+
+        revalidate();
+        repaint();
+    }
 
 }
 

@@ -22,7 +22,8 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
     private final JLabel nameLabel;
     private final JLabel acronymLabel;
-    private final Image image;
+    private final String imagePath;
+    private final JLabel iconLabel;
 
     private boolean hasModel;
     private boolean selected;
@@ -30,11 +31,13 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
     public StdDisplayComp(String imagePath) {
         this.nameLabel = new JLabel(" ");
         this.acronymLabel = new JLabel("No model");
-        this.image = ImageUtils.getImage(this, imagePath);
+        this.iconLabel = new JLabel();
+        this.imagePath = imagePath;
 
         setOpaque(false);
         nameLabel.setOpaque(false);
         acronymLabel.setOpaque(false);
+        iconLabel.setOpaque(false);
 
         layoutComponents();
     }
@@ -84,18 +87,18 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
             return brighten(blend(panel, button, 0.5), 0.01);
         }
 
-//        Color button = UIManager.getColor("Button.background");
-//        if (button != null) {
-//            return blend(button, new Color(26, 113, 169, 255), 0.10);
-//            // In light mode, move AWAY from the background so nodes stand out more.
-////            return brighten(button, 0.05);
-//        }
+        //        Color button = UIManager.getColor("Button.background");
+        //        if (button != null) {
+        //            return blend(button, new Color(26, 113, 169, 255), 0.10);
+        //            // In light mode, move AWAY from the background so nodes stand out more.
+        ////            return brighten(button, 0.05);
+        //        }
 
-//        Color panel = UIManager.getColor("Panel.background");
-//        if (panel != null) {
-//            return blend(panel, DisplayNodeUtils.getNodeFillColor(), 0.10);// new Color(26, 113, 169, 255), 0.10);
-////            return brighten(panel, 0.10);
-//        }
+        //        Color panel = UIManager.getColor("Panel.background");
+        //        if (panel != null) {
+        //            return blend(panel, DisplayNodeUtils.getNodeFillColor(), 0.10);// new Color(26, 113, 169, 255), 0.10);
+        ////            return brighten(panel, 0.10);
+        //        }
 
         return DisplayNodeUtils.getNodeFillColor();
     }
@@ -216,7 +219,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
     private Shape getShape() {
         return new RoundRectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1, 5, 5);
-//        return new Rectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1);
+        //        return new Rectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1);
     }
 
     @Override
@@ -227,10 +230,9 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
     @Override
     public void updateUI() {
         super.updateUI();
-        if (nameLabel != null && acronymLabel != null) {
-            refreshTheme();
-            layoutComponents();
-        }
+        refreshTheme();
+        refreshIcon();
+        layoutComponents();
     }
 
     private void refreshTheme() {
@@ -275,20 +277,23 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         Box b = Box.createVerticalBox();
         b.setOpaque(false);
 
-        if (isDarkMode()) {
-            b.add(Box.createRigidArea(new Dimension(50, 10)));
-        }
+        //        if (isDarkMode()) {
+        //            b.add(Box.createRigidArea(new Dimension(50, 10)));f
+        //        }
 
-        if (!isDarkMode()) {
-            Box b1 = Box.createHorizontalBox();
-            b1.setOpaque(false);
-            b1.add(Box.createHorizontalGlue());
-            b1.add(new JLabel(new ImageIcon(this.image)));
-            b1.add(Box.createHorizontalGlue());
-            b.add(b1);
-        } else {
-            b.add(Box.createRigidArea(new Dimension(60, 6)));
-        }
+        //        if (!isDarkMode()) {
+        refreshIcon();
+
+        Box b1 = Box.createHorizontalBox();
+        b1.setOpaque(false);
+        b1.add(Box.createHorizontalGlue());
+        b1.add(this.iconLabel);
+        b1.add(Box.createHorizontalGlue());
+        b.add(b1);
+
+        //        } else {
+        //            b.add(Box.createRigidArea(new Dimension(60, 6)));
+        //        }
 
         Box b2 = Box.createHorizontalBox();
         b2.setOpaque(false);
@@ -308,11 +313,11 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         b3.add(Box.createHorizontalGlue());
         b.add(b3);
 
-        if (isDarkMode()) {
-            b.add(Box.createRigidArea(new Dimension(60, 10)));
-        } else {
-            b.add(Box.createRigidArea(new Dimension(60, 4)));
-        }
+        //        if (isDarkMode()) {
+        //            b.add(Box.createRigidArea(new Dimension(60, 10)));
+        //        } else {
+        b.add(Box.createRigidArea(new Dimension(60, 4)));
+        //        }
 
         add(b, BorderLayout.CENTER);
 
@@ -320,5 +325,10 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
         revalidate();
         repaint();
+    }
+
+    private void refreshIcon() {
+        Image image = ImageUtils.getImage(this, imagePath);
+        iconLabel.setIcon(new ImageIcon(image));
     }
 }

@@ -65,6 +65,8 @@ final class SessionEditorToolbar extends JPanel {
      */
     private boolean shiftDown;
 
+    private final Map<JToggleButton, String> buttonImagePaths = new HashMap<>();
+
     /**
      * Constructs a new session toolbar.
      *
@@ -295,10 +297,13 @@ final class SessionEditorToolbar extends JPanel {
         });
 
         if ("Select".equals(buttonInfo.getNodeTypeName())) {
-            button.setIcon(new ImageIcon(ImageUtils.getImage(this, "move.gif")));
+            String imagePath = "move.gif";
+            button.setIcon(new ImageIcon(ImageUtils.getImage(this, imagePath)));
+            this.buttonImagePaths.put(button, imagePath);
         } else if ("Edge".equals(buttonInfo.getNodeTypeName())) {
-            button.setIcon(
-                    new ImageIcon(ImageUtils.getImage(this, "flow.gif")));
+            String imagePath = "flow.gif";
+            button.setIcon(new ImageIcon(ImageUtils.getImage(this, imagePath)));
+            this.buttonImagePaths.put(button, imagePath);
         } else {
             button.setName(buttonInfo.getNodeTypeName());
             button.setText("<html><center>" + buttonInfo.getDisplayName()
@@ -417,6 +422,26 @@ final class SessionEditorToolbar extends JPanel {
         public String getToolTipText() {
             return this.toolTipText;
         }
+    }
+
+    private void refreshButtonIcons() {
+        for (Map.Entry<JToggleButton, String> entry : this.buttonImagePaths.entrySet()) {
+            JToggleButton button = entry.getKey();
+            String imagePath = entry.getValue();
+            button.setIcon(new ImageIcon(ImageUtils.getImage(this, imagePath)));
+        }
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+
+        if (this.buttonImagePaths != null) {
+            refreshButtonIcons();
+        }
+
+        revalidate();
+        repaint();
     }
 }
 
