@@ -1,103 +1,167 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-    <title>Introduction to TETRAD</title>
-    <meta content="text/html; charset=iso-8859-1"
-          http-equiv="Content-Type">
+    <title>PAG Edge Types</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
+
 <body>
-<table bgcolor="blue" border="1" width="95%">
-    <tbody>
+
+<table bgcolor="#3F5E7A" border="1" width="95%">
     <tr>
         <td>
-            <h2><font color="white">PAG Edge Types</font></h2>
+            <h2><font color="white">Understanding PAG Edge Types</font></h2>
         </td>
     </tr>
-    </tbody>
 </table>
+
+<p>
+    A PAG (Partial Ancestral Graph) summarizes causal relationships that are
+    consistent with the observed data when some variables may be unmeasured.
+    Edges indicate which causal relationships are <b>possible</b> and which are
+    <b>ruled out</b>.
+</p>
 
 <table border="1" width="95%">
     <thead>
     <tr>
-        <th nowrap>Edge Types</th>
-        <th>Present Relationships</th>
-        <th>Absent Relationships</th>
+        <th>Edge</th>
+        <th>What This Means</th>
+        <th>What Is Ruled Out</th>
     </tr>
     </thead>
+
     <tbody>
+
     <tr>
-        <td>A --&gt; B</td>
+        <td><b>A--&gt;B</b></td>
         <td>
-            A is a cause of B.<br/>
-            It may be a direct or indirect cause that may include other measured variables. Also, there may be an
-            unmeasured confounder of A and B.
+            A is a cause of B. The effect may be direct or indirect (possibly through other
+            measured variables). There may still be an unmeasured confounder affecting both
+            A and B.
         </td>
-        <td>B is not a cause of A</td>
+        <td>
+            B is <b>not</b> a cause of A.
+        </td>
     </tr>
+
     <tr>
-        <td>A &lt;-&gt; B</td>
-        <td>There is an unmeasured confounder (call it L) of A and B. There may be measured variables along the causal
-            pathway from L to A or from L to B.
+        <td><b>A&lt;-&gt;B</b></td>
+        <td>
+            A and B share an unmeasured common cause (a latent confounder). This confounder
+            may influence A and B through additional measured variables.
         </td>
         <td>
-            A is not a cause of B.<br/>
+            A is not a cause of B.<br>
             B is not a cause of A.
         </td>
     </tr>
+
     <tr>
-        <td>A o-&gt; B</td>
-        <td>Either A is a cause of B (i.e, A --&gt; B) or there is an unmeasured confounder of A and B (i.e, A &lt;-&gt;
-            B) or both.
-        </td>
-        <td>B is not a cause of A.</td>
-    </tr>
-    <tr>
-        <td>A o-o B</td>
+        <td><b>Ao-&gt;B</b></td>
         <td>
-            Exactly one of the following holds:
+            One of the following is true:
+            <ul>
+                <li>A causes B</li>
+                <li>There is an unmeasured confounder affecting A and B</li>
+                <li>Both of the above</li>
+            </ul>
+        </td>
+        <td>
+            B is <b>not</b> a cause of A.
+        </td>
+    </tr>
+
+    <tr>
+        <td><b>Ao-oB</b></td>
+        <td>
+            The relationship between A and B is not determined. Exactly one of the following
+            holds:
             <ol>
-                <li>A is a cause of B</li>
-                <li>B is a cause of A</li>
-                <li>there is an unmeasured confounder of A and B</li>
-                <li>both a and c</li>
-                <li>both b and c</li>
+                <li>A causes B</li>
+                <li>B causes A</li>
+                <li>A and B share an unmeasured confounder</li>
+                <li>A causes B and there is also a confounder</li>
+                <li>B causes A and there is also a confounder</li>
             </ol>
         </td>
-        <td></td>
+        <td>
+            No direction of causation can yet be ruled out.
+        </td>
     </tr>
+
     </tbody>
-    <tfoot>
+</table>
+
+<br>
+
+<table border="1" width="95%">
     <tr>
-        <td colspan="3"><b>PAG Edge Specialization Markups:</b> If the graph is a PAG and PAG
-            edge-specialization markup is turned on, then the following are also true of
-            directed edges in the graph. (1) If a directed edge is solid, that means there is
-            no latent confounder for that directed edge (i.e., the edge is visible, which means
-            that for linear models its coefficient can be estimated); (2) If a directed edge is dashed,
-            there is possibly a latent confounder (so that its coefficient *may not* be estimable).
-            In addition, (3) If a directed edge is thickened, that means the edge is definitely
-            direct (which means that the directed edge appears in the true DAG). (4) Otherwise, if
-            the directed edges is not thickened, then it is edge is *possibly direct* (which means
-            there may be an indirected directed path).
+        <td>
+
+            <b>PAG Edge Specialization Markups</b>
+
+            <p>
+                If PAG edge-specialization markup is enabled, directed edges may contain
+                additional visual information:
+            </p>
+
+            <ul>
+                <li>
+                    <b>Solid directed edge (A--&gt;B)</b><br>
+                    No latent confounder is present for this relationship. The edge is
+                    <i>visible</i>. In linear models its coefficient can be estimated.
+                </li>
+
+                <li>
+                    <b>Dashed directed edge</b><br>
+                    There may be an unmeasured confounder affecting the relationship,
+                    so the causal coefficient may not be identifiable.
+                </li>
+
+                <li>
+                    <b>Thick directed edge</b><br>
+                    The relationship is definitely <b>direct</b>. A directed path connecting the
+                    endpoints appears in the true underlying DAG.
+                </li>
+
+                <li>
+                    <b>Thin directed edge</b><br>
+                    The relationship is <b>possibly indirect</b>. There may be intermediate
+                    variables along the causal pathway.
+                </li>
+            </ul>
+
         </td>
     </tr>
+
     <tr>
-        <td colspan="3">Also, the above breakdown of types assume there is no
-            <b>selection bias</b>. Selection bias occurs when there is
-            a common latent child of two measured nodes, thus: X&rarr;(L)&larr;Y and
-            is indicated in an PAG as X&mdash;Y.
+        <td>
+
+            <b>Selection Bias</b>
+
+            <p>
+                The interpretations above assume there is no selection bias.
+                Selection bias can occur when two measured variables share a
+                common latent <i>child</i> rather than a common cause, which is
+                conditioned on by selection in the observed data:
+            </p>
+
+            <p align="center">
+                X--&gt;(L)&lt;--Y
+            </p>
+
+            <p>
+                In a PAG this situation is represented by:
+            </p>
+
+            <p align="center">
+                X---Y
+            </p>
+
         </td>
     </tr>
-    <!--    <tr>-->
-    <!--        <td colspan="3">If an edge is solid, that means there is no latent-->
-    <!--            confounder (i.e., is visible). If dashed, there is possibly latent confounder.-->
-    <!--        </td>-->
-    <!--    </tr>-->
-    <!--    <tr>-->
-    <!--        <td colspan="3">If an edge is thickened, that means it is-->
-    <!--            definitely direct. Otherwise, it is possibly direct.-->
-    <!--        </td>-->
-    <!--    </tr>-->
-    </tfoot>
+
 </table>
 
 </body>
