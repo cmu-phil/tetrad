@@ -49,7 +49,6 @@ public final class Fci implements IGraphSearch {
     // Existing fields (unchanged)
     // -------------------------
     private final List<Node> variables = new ArrayList<>();
-    private final TetradLogger logger = TetradLogger.getInstance();
     private IndependenceTest test;
     private SepsetMap sepsets;
     private Knowledge knowledge = new Knowledge();
