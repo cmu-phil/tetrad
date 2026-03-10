@@ -22,6 +22,7 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.algcomparison.CompareTwoGraphs;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciCyclicPw;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
@@ -1188,6 +1189,10 @@ public final class GraphSearchUtils {
         try {
             Method method = annotation.annotationType().getDeclaredMethod("algoType");
             AlgType ret = (AlgType) method.invoke(annotation);
+
+            if (algorithm instanceof FciCyclicPw) {
+                return false;
+            }
 
             if (ret == AlgType.allow_latent_common_causes) {
                 return true;
