@@ -69,7 +69,7 @@ import java.util.Map;
 @edu.cmu.tetrad.annotation.Algorithm(name = "FCI-CPW", command = "fci-cpw", algoType = AlgType.allow_latent_common_causes)
 @Bootstrapping
 @Experimental
-public class FciCyclicPw extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+public class    FciCyclicPw extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -142,7 +142,7 @@ public class FciCyclicPw extends AbstractBootstrapAlgorithm implements Algorithm
         }
 
         // Pairwise rule: default 3 (RSKEW). Read PARAM_PAIRWISE_RULE if provided.
-        int pwRule = 3;
+        int pwRule = 1;
         try {
             pwRule = parameters.getInt(PARAM_PAIRWISE_RULE);
         } catch (Throwable ignored) {

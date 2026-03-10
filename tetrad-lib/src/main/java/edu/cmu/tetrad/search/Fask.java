@@ -96,7 +96,8 @@ public final class Fask {
     // ------------ Public static utilities (unchanged signatures) ------------
 
     /**
-     * E[x y | condition > 0].
+     * E[x * y | condition > 0]. This is a helper for calculating expectations over a sub-population defined by a
+     * positive condition.
      *
      * @param x         the first array of data points
      * @param y         the second array of data points
@@ -115,7 +116,7 @@ public final class Fask {
     }
 
     /**
-     * corrExp(x,y|z) = E(xy|z>0) / sqrt(E(x^2|z>0) E(y^2|z>0)).
+     * Calculates the correlation expectation: corrExp(x,y|z) = E(xy|z>0) / sqrt(E(x^2|z>0) E(y^2|z>0)).
      *
      * @param x the first array of data points
      * @param y the second array of data points
@@ -127,7 +128,7 @@ public final class Fask {
     }
 
     /**
-     * E(xy | z>0).
+     * E(xy | z>0). This is a duplicate of the `cu` method but specifically naming the condition as `z`.
      *
      * @param x the first array of data points
      * @param y the second array of data points
@@ -135,14 +136,7 @@ public final class Fask {
      * @return the expected value of the product of x and y given z
      */
     public static double E(double[] x, double[] y, double[] z) {
-        double exy = 0.0;
-        int n = 0;
-        for (int k = 0; k < x.length; k++)
-            if (z[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        return exy / n;
+        return cu(x, y, z);
     }
 
     /**
@@ -167,7 +161,8 @@ public final class Fask {
     // ------------ Rule score implementations (double-signed) ------------
 
     /**
-     * FASK1: signed lr after skew/corr sign alignment and delta flip if r<delta.
+     * FASK1 scoring method: signed left-right score after skewness and correlation sign alignment. If the correlation
+     * is below a certain threshold (delta), the direction is flipped.
      *
      * @param x standardized (recommended) series for X
      * @param y standardized (recommended) series for Y
@@ -191,7 +186,7 @@ public final class Fask {
     }
 
     /**
-     * FASK2: corrExp(x,y|x) − corrExp(x,y|y).
+     * FASK2 scoring method: corrExp(x,y|x) − corrExp(x,y|y).
      *
      * @param x standardized (recommended) series for X
      * @param y standardized (recommended) series for Y
@@ -327,17 +322,17 @@ public final class Fask {
                 final double[] x = colData[i];
                 final double[] y = colData[j];
 
-                double c1 = StatUtils.cov(x, y, x, 0, +1)[1];
-                double c2 = StatUtils.cov(x, y, y, 0, +1)[1];
+                double skewX = StatUtils.cov(x, y, x, 0, +1)[1];
+                double skewY = StatUtils.cov(x, y, y, 0, +1)[1];
 
                 if ((useFasAdjacencies && G0.isAdjacentTo(X, Y)) ||
-                    (useSkewAdjacencies && TMath.abs(c1 - c2) > extraEdgeThreshold)) {
+                    (useSkewAdjacencies && TMath.abs(skewX - skewY) > extraEdgeThreshold)) {
 
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
                         graph.addDirectedEdge(Y, X);
-                    } else if (bidirected(x, y, G0, X, Y)) {
+                    } else if (isBidirected(x, y, G0, X, Y)) {
                         graph.addEdge(Edges.directedEdge(X, Y));
                         graph.addEdge(Edges.directedEdge(Y, X));
                     } else {
@@ -457,7 +452,7 @@ public final class Fask {
 
     // ------------ Internals ------------
 
-    private boolean bidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
+    private boolean isBidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
         // -------------------- Candidate Z pool: neighbors of X or Y (excluding X,Y) --------------------
         Set<Node> pool = new HashSet<>(G0.getAdjacentNodes(X));
         pool.addAll(G0.getAdjacentNodes(Y));
@@ -494,7 +489,12 @@ public final class Fask {
         return true;
     }
 
-    // === Returns true if the (X,Y) pair exhibits the "cycle opposition pattern" under conditioning Z ===
+    /**
+     * Checks if the (X,Y) pair exhibits the "cycle opposition pattern" under conditioning Z.
+     * <p>
+     * The cycle opposition pattern is characterized by significant shifts in partial correlations when conditioning on
+     * X > 0 versus Y > 0, which suggests a feedback loop (X <-> Y).
+     */
     private boolean showsCyclePattern(double[] x, double[] y, List<Node> zNodes,
                                       int minPart, double ridge, double clampEps) {
 

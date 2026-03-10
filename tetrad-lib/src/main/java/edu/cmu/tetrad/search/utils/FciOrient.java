@@ -160,9 +160,8 @@ public class FciOrient {
         // If knowledge REQUIRES y->x, disallow arrowhead at Y (bidirected would violate the requirement).
         if (K != null && K.isRequired(y.getName(), x.getName())) return false;
 
-        // If knowledge FORBIDS x->y, only allow an arrowhead at Y when we ALREADY have an arrowhead at X
-        // (so we'd make x <-> y). Otherwise, block to avoid x->y.
-        if (K != null && K.isForbidden(x.getName(), y.getName()) && eYX != Endpoint.ARROW) return false;
+        // If knowledge FORBIDS x->y, disallow arrowhead at Y.
+        if (K != null && K.isForbidden(x.getName(), y.getName())) return false;
 
         // Otherwise, circle at Y is orientable.
         return eXY == Endpoint.CIRCLE;
