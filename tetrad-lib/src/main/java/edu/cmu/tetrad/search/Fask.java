@@ -66,8 +66,6 @@ import static edu.cmu.tetrad.util.TMath.*;
  * @author Joseph Ramsey
  */
 public final class Fask {
-    private static double delta = -0.1;
-    // ------------ Fields ------------
     private final Score score;
     private final double[][] data;
     private final DataSet dataSet;
@@ -169,19 +167,21 @@ public final class Fask {
      * @return signed left-right score
      */
     private static double fask1Score(double[] x, double[] y) {
+        x = correctSkewness(x, skewness(x));
+        y = correctSkewness(y, skewness(y));
         double left = cu(x, y, x) / (sqrt(cu(x, x, x) * cu(y, y, x)));
         double right = cu(x, y, y) / (sqrt(cu(x, x, y) * cu(y, y, y)));
         double lr = left - right;
 
         double r = StatUtils.correlation(x, y);
-        double sx = StatUtils.skewness(x);
-        double sy = StatUtils.skewness(y);
+//        double sx = StatUtils.skewness(x);
+//        double sy = StatUtils.skewness(y);
 
-        r *= signum(sx) * signum(sy);
-        lr *= signum(r);
+//        r *= signum(sx) * signum(sy);
+//        lr *=  signum(r);
 
         // Use the same default delta as instance (−0.1) for static scoring.
-        if (r < delta) lr *= -1;
+        if (r < 0.0) lr *= -1;
         return lr;
     }
 
@@ -193,7 +193,10 @@ public final class Fask {
      * @return signed left-right score
      */
     private static double fask2Score(double[] x, double[] y) {
-        return corrExp(x, y, x) - corrExp(x, y, y);
+        double lr = corrExp(x, y, x) - corrExp(x, y, y);
+        double r = StatUtils.correlation(x, y);
+        if (r < 0.0) lr *= -1;
+        return lr;
     }
 
     /**
@@ -259,15 +262,6 @@ public final class Fask {
     }
 
     // ------------ Main search ------------
-
-    /**
-     * Set the delta parameter for FASK search.
-     *
-     * @param _delta The new delta value to be set for the FASK algorithm.
-     */
-    public static void setDelta(double _delta) {
-        delta = _delta;
-    }
 
     /**
      * Executes the FASK (Fast Adjacency Skewness) algorithm to search for a causal graph based on the provided dataset,

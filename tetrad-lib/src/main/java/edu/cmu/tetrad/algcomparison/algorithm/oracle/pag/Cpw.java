@@ -140,15 +140,8 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
             throw new IllegalArgumentException("CPW currently supports linear data (skewed).");
         }
 
-        // Pairwise rule: default 3 (RSKEW). Read PARAM_PAIRWISE_RULE if provided.
-        int pwRule = 1;
-//        try {
-//            pwRule = parameters.getInt(PARAM_PAIRWISE_RULE);
-//        } catch (Throwable ignored) {
-//            // keep default 2
-//        }
-//        if (pwRule < 1 || pwRule > 5) pwRule = 2;
-
+        // Default rule is FASK 2 from harness.
+        int pwRule = 2;
         boolean verbose = parameters.getBoolean(Params.VERBOSE);
 
         // Standardize once; reuse for knowledge + all pairwise decisions
@@ -288,7 +281,7 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
                 Node xi = nodes.get(i);
                 Node yj = nodes.get(j);
 
-                Fask.setDelta(-0.1);
+//                Fask.setDelta(-0.1);
 
                 double diff = Fask.leftRightDiff(data[i], data[j], pwRule);
 

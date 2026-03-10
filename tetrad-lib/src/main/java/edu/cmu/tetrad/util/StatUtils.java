@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -23,7 +23,6 @@ package edu.cmu.tetrad.util;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
-import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
@@ -31,8 +30,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static java.lang.Double.NaN;
 import static edu.cmu.tetrad.util.TMath.*;
+import static java.lang.Double.NaN;
 
 
 /**
@@ -106,6 +105,7 @@ public final class StatUtils {
      * @param N     the number of values of array which should be considered.
      * @return the mean of the first N values in this array.
      */
+
     public static double mean(double[] array, int N) {
         double sum = 0.0;
         int count = 0;
@@ -117,7 +117,7 @@ public final class StatUtils {
             }
         }
 
-        return sum / (double) count;
+        return count == 0 ? Double.NaN : sum / (double) count;
     }
 
     /**
@@ -653,15 +653,49 @@ public final class StatUtils {
      * values in array1 and array2..
      */
     public static double sxy(double[] array1, double[] array2, int N) {
-        double sum = 0.0;
-        double meanX = StatUtils.mean(array1, N);
-        double meanY = StatUtils.mean(array2, N);
+        double meanX = meanPairwise(array1, array2, N, true);
+        double meanY = meanPairwise(array1, array2, N, false);
 
-        for (int i = 0; i < N; i++) {
-            sum += (array1[i] - meanX) * (array2[i] - meanY);
+        if (Double.isNaN(meanX) || Double.isNaN(meanY)) {
+            return Double.NaN;
         }
 
-        return sum;
+        double sum = 0.0;
+        int count = 0;
+
+        for (int i = 0; i < N; i++) {
+            double x = array1[i];
+            double y = array2[i];
+
+            if (Double.isNaN(x) || Double.isNaN(y)) {
+                continue;
+            }
+
+            sum += (x - meanX) * (y - meanY);
+            count++;
+        }
+
+        return count == 0 ? Double.NaN : sum;
+    }
+
+
+    private static double meanPairwise(double[] array1, double[] array2, int N, boolean first) {
+        double sum = 0.0;
+        int count = 0;
+
+        for (int i = 0; i < N; i++) {
+            double x = array1[i];
+            double y = array2[i];
+
+            if (Double.isNaN(x) || Double.isNaN(y)) {
+                continue;
+            }
+
+            sum += first ? x : y;
+            count++;
+        }
+
+        return count == 0 ? Double.NaN : sum / count;
     }
 
     /**
@@ -796,14 +830,13 @@ public final class StatUtils {
      * @return the covariance of the values in array.
      */
     public static double covariance(double[] array1, double[] array2) {
-        int N1 = array1.length;
-        int N2 = array2.length;
+        int N = array1.length;
 
-        if (N1 != N2) {
-            throw new IllegalArgumentException("Arrays passed (or lengths specified) of " + "unequal lengths.");
+        if (N != array2.length) {
+            throw new IllegalArgumentException("Arrays have unequal lengths.");
         }
 
-        return StatUtils.covariance(array1, array2, N1);
+        return covariance(array1, array2, N);
     }
 
     /**
@@ -827,7 +860,21 @@ public final class StatUtils {
      * @return the covariance of the first N values in array1 and array2.
      */
     public static double covariance(double[] array1, double[] array2, int N) {
-        return StatUtils.sxy(array1, array2, N) / (N - 1);
+
+        if (N < 2) {
+            return Double.NaN;
+        }
+
+        double meanX = StatUtils.mean(array1, N);
+        double meanY = StatUtils.mean(array2, N);
+
+        double sum = 0.0;
+
+        for (int i = 0; i < N; i++) {
+            sum += (array1[i] - meanX) * (array2[i] - meanY);
+        }
+
+        return sum / (N - 1);
     }
 
     /**
@@ -918,14 +965,22 @@ public final class StatUtils {
      * @return the Pearson correlation of the first N values in array1 and array2.
      */
     public static double correlation(double[] array1, double[] array2, int N) {
-
         double covXY = StatUtils.sxy(array1, array2, N);
         double covXX = StatUtils.sxy(array1, array1, N);
         double covYY = StatUtils.sxy(array2, array2, N);
+
+        if (Double.isNaN(covXY) || Double.isNaN(covXX) || Double.isNaN(covYY)) {
+            return Double.NaN;
+        }
+
+        if (covXX <= 0.0 || covYY <= 0.0) {
+            return Double.NaN;
+        }
+
         double r = covXY / (sqrt(covXX) * sqrt(covYY));
 
-        if (r < -1) r = -1;
-        if (r > 1) r = 1;
+        if (r < -1.0) r = -1.0;
+        if (r > 1.0) r = 1.0;
 
         return r;
     }
@@ -1382,25 +1437,26 @@ public final class StatUtils {
      */
     public static double skewness(double[] array, int N) {
         double mean = StatUtils.mean(array, N);
-        double secondMoment = 0.0;
-        double thirdMoment = 0.0;
+
+        double m2 = 0.0;
+        double m3 = 0.0;
 
         for (int j = 0; j < N; j++) {
-            double s = array[j] - mean;
-            secondMoment += s * s;
-            thirdMoment += s * s * s;
+            double d = array[j] - mean;
+            double d2 = d * d;
+
+            m2 += d2;
+            m3 += d2 * d;
         }
 
-        double ess = secondMoment / N;
-        double esss = thirdMoment / N;
+        m2 /= N;
+        m3 /= N;
 
-        if (secondMoment == 0) {
+        if (Math.abs(m2) < 1e-12) {
             return Double.NaN;
-//            throw new ArithmeticException("StatUtils.skew:  There is no skew " +
-//                    "when the variance is zero.");
         }
 
-        return esss / TMath.pow(ess, 1.5);
+        return m3 / TMath.pow(m2, 1.5);
     }
 
     /**
