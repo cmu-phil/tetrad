@@ -85,9 +85,11 @@ public final class TestCollisions {
         graph.addUndirectedEdge(x3, x2);
 
         //shielded, one edge in
-        assertFalse(graph.isDefNoncollider(x1, x2, x3));
+        // If it's shielded, it shouldn't be a def collider.
         assertFalse(graph.isDefCollider(x1, x2, x3));
 
+        // It is currently a definite non-collider because x3 --- x2 has a tail at x2.
+        assertTrue(graph.isDefNoncollider(x1, x2, x3));
     }
 }
 
