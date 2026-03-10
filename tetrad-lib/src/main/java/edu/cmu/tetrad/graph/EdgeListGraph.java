@@ -1574,7 +1574,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
                 continue;
             }
 
-            if (!isAdjacentTo(triple.getX(), triple.getY()) || isAdjacentTo(triple.getY(), triple.getZ())) {
+            if (!isAdjacentTo(triple.getX(), triple.getY()) || !isAdjacentTo(triple.getY(), triple.getZ())) {
                 this.dottedUnderLineTriples.remove(triple);
             }
         }

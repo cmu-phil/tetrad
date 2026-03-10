@@ -250,6 +250,14 @@ public final class Ccd implements IGraphSearch {
                     boolean ok1 = addDirectedIfAllowed(psi, a, b);
                     boolean ok2 = addDirectedIfAllowed(psi, c, b);
 
+                    // If an arrowhead was forbidden, we must still record the collider semantic
+                    // for subsequent steps that check for colliders. We use ambiguous triples
+                    // to store this semantic since CCD doesn't have a dedicated collider set
+                    // and psi.isDefCollider will fail if the arrowhead is missing.
+                    if (!ok1 || !ok2) {
+                        psi.addAmbiguousTriple(a, b, c);
+                    }
+
                     if (verbose) {
                         if (ok1 && ok2)
                             TetradLogger.getInstance().log("StepB: collider " + a + "->" + b + "<-" + c + " ; S(a,c)=" + S);
@@ -259,7 +267,6 @@ public final class Ccd implements IGraphSearch {
                         else
                             TetradLogger.getInstance().log("StepB: collider semantic recorded but both incoming arrows vetoed by knowledge at " + b);
                     }
-                    // Even if both arrows vetoed, the collider semantic is effectively known to Steps D–F via CCD logic.
                 }
             }
         }
@@ -356,7 +363,7 @@ public final class Ccd implements IGraphSearch {
             Node a = _adj.get(0);
             Node c = _adj.get(1);
 
-            if (!psi.isDefCollider(a, b, c)) continue;
+            if (!psi.isDefCollider(a, b, c) && !psi.isAmbiguousTriple(a, b, c)) continue;
 
             Set<Node> S = sepsets.getSepset(a, c, -1, null);
             if (S == null) continue;
@@ -487,13 +494,13 @@ public final class Ccd implements IGraphSearch {
     }
 
     /**
-     * Local expansion around x: adj(x) plus z where x-y-z is a definite collider.
+     * Local expansion around x: adj(x) plus z where x-y-z is a definite collider (or recorded collider semantic).
      */
     private List<Node> local(Graph psi, Node x) {
         Set<Node> nodes = new HashSet<>(psi.getAdjacentNodes(x));
         for (Node y : new HashSet<>(nodes)) {
             for (Node z : psi.getAdjacentNodes(y)) {
-                if (psi.isDefCollider(x, y, z) && z != x) {
+                if ((psi.isDefCollider(x, y, z) || psi.isAmbiguousTriple(x, y, z)) && z != x) {
                     nodes.add(z);
                 }
             }
