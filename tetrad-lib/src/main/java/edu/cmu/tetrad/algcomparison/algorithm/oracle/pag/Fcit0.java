@@ -143,14 +143,15 @@ public class Fcit0 extends AbstractBootstrapAlgorithm implements Algorithm, Take
         }
 
         IndependenceTest test = this.test.getTest(dataModel, parameters);
-        test = new CachedIndependenceQueries(test);
-        Score score = this.score.getScore(dataModel, parameters);
 
         if (test instanceof MsepTest) {
             if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
                 throw new IllegalArgumentException("For d-separation oracle input, please use the GRaSP option.");
             }
         }
+
+        test = new CachedIndependenceQueries(test);
+        Score score = this.score.getScore(dataModel, parameters);
 
         edu.cmu.tetrad.search.Fcit0 search = new edu.cmu.tetrad.search.Fcit0(test, score);
 
