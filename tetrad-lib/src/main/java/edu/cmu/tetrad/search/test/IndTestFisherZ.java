@@ -28,10 +28,10 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.*;
-import edu.cmu.tetrad.util.TMath;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -262,7 +262,11 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         try {
             p = getPValue(x, y, z);
         } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singular matrix encountered for test: " + LogUtilsSearch.independenceFact(x, y, z));
+            IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), false, 0.0, alpha);
+            if (this.verbose) {
+                TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, z, 0.0));
+            }
+            return result;
         }
 
         boolean independent = p > this.alpha;
@@ -301,6 +305,11 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         }
 
         this.r = r;
+
+        if (abs(r) >= 1.0) {
+            return 0.0;
+        }
+
         double q = .5 * (log(1.0 + abs(r)) - log(1.0 - abs(r)));
         double df = n - 3. - z.size();
         if (df < 1) {
@@ -557,10 +566,9 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
             case NONE -> { /* no-op */ }
         }
 
-        // Try standard inversion via Cholesky; fallback to pseudoinverse if requested.
         try {
             return partialViaCholesky(corSub);
-        } catch (RuntimeException e) {
+        } catch (SingularMatrixException | NonPositiveDefiniteMatrixException | NonSquareMatrixException e) {
             if (!usePseudoinverse) {
                 // Mirror previous behavior: surface as singular unless pinv allowed
                 throw new SingularMatrixException();
@@ -573,7 +581,19 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * Fast path: Cholesky on SPD correlation; throws if not SPD.
      */
     private double partialViaCholesky(Matrix corSub) {
+        if (corSub.getNumRows() == 2) {
+            double r = corSub.get(0, 1);
+            if (TMath.abs(r) >= 1.0) {
+                return r > 0 ? 1.0 : -1.0;
+            }
+        }
+        
         RealMatrix A = toReal(corSub);
+
+        if (TMath.abs(new LUDecomposition(A).getDeterminant()) < 1e-16) {
+            throw new SingularMatrixException();
+        }
+
         // The small "relativeSymmetryThreshold" & "absolutePositivityThreshold" keep it strict.
         CholeskyDecomposition chol = new CholeskyDecomposition(A, 1e-10, 1e-12);
         RealMatrix L = chol.getL();
