@@ -44,9 +44,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * FCI-CPW: Run FCI with internally constructed PW-forbidden knowledge, then orient edges
- * using a pairwise left-right rule on standardized data in cases that are safe under
- * no-selection-bias cyclic semantics:
+ * CPW: Run FCI for causally sufficient data with internally constructed PW-forbidden knowledge,
+ * then orient edge using a pairwise left-right rule on standardized data in cases that are safe under
+ * no-selection-bias cyclic causally sufficient semantics:
  *
  * <ol>
  *   <li>Tail–tail (—) edges
@@ -66,10 +66,10 @@ import java.util.Map;
  * <p><b>Parameter:</b> PAIRWISE_RULE ∈ {1..5}, default 3 (RSKEW).
  * 1=FASK1, 2=FASK2, 3=RSKEW, 4=SKEW, 5=TANH.</p>
  */
-@edu.cmu.tetrad.annotation.Algorithm(name = "FCI-CPW", command = "fci-cpw", algoType = AlgType.allow_latent_common_causes)
+@edu.cmu.tetrad.annotation.Algorithm(name = "CPW", command = "cpw", algoType = AlgType.forbid_latent_common_causes)
 @Bootstrapping
 @Experimental
-public class    FciCyclicPw extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -80,25 +80,25 @@ public class    FciCyclicPw extends AbstractBootstrapAlgorithm implements Algori
     private static final String PARAM_PAIRWISE_RULE = "PAIRWISE_RULE";
 
     /**
-     * Independence test wrapper (same as FCI wrapper).
+     * Independence test wrapper.
      */
     private IndependenceWrapper test;
 
     /**
-     * Default constructor for the FciCyclicPw class.
+     * Default constructor for the Cpw class.
      * This constructor initializes the instance without any specific parameters
-     * or configurations. It is typically used for*/
-    public FciCyclicPw() {
+     * or configurations. It is typically used for
+     */
+    public Cpw() {
     }
 
     /**
-     * Constructor for the FciCyclicPw class that initializes the algorithm with a specified
+     * Constructor for the Cpw class that initializes the algorithm with a specified
      * independence test wrapper.
      *
-     * @param test The IndependenceWrapper instance used for conditional independence testing
-     *             during the FCI algorithm execution.
+     * @param test The IndependenceWrapper instance used for conditional independence testing.
      */
-    public FciCyclicPw(IndependenceWrapper test) {
+    public Cpw(IndependenceWrapper test) {
         this.test = test;
     }
 
@@ -106,25 +106,24 @@ public class    FciCyclicPw extends AbstractBootstrapAlgorithm implements Algori
      * Executes the search algorithm on a given data model and set of parameters,
      * producing a partially directed acyclic graph (PAG) that represents the
      * causal structure inferred from the data.
-     *
+     * <p>
      * The underlying functionality includes handling time-lagged data, standardizing,
      * generating internal knowledge, performing conditional independence tests,
      * and refining the graph using pairwise adjustments based on standardization and rules.
      *
-     * @param dataModel The data model to analyze, typically a {@link DataSet}, which
-     *                  contains the data from which causal relationships are inferred.
-     *                  Must be continuous for proper functioning.
+     * @param dataModel  The data model to analyze, typically a {@link DataSet}, which
+     *                   contains the data from which causal relationships are inferred.
+     *                   Must be continuous for proper functioning.
      * @param parameters Algorithm parameter settings that control various aspects of the
      *                   computation, such as time lagging, collider orientation style,
      *                   pairwise rules, and limits on graph structure exploration.
      * @return A {@link Graph} representing the causal structure inferred by the search algorithm,
-     *         encoded as a PAG.
+     * encoded as a PAG.
      * @throws InterruptedException If the search process is interrupted during execution,
      *                              possibly due to thread interruption.
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
-        // --- Handle time-lagging exactly as in Fci wrapper ---
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Expecting a data set for time lagging.");
@@ -135,20 +134,20 @@ public class    FciCyclicPw extends AbstractBootstrapAlgorithm implements Algori
         }
 
         if (!(dataModel instanceof DataSet dataSet)) {
-            throw new IllegalArgumentException("FCI-CPW expects a DataSet.");
+            throw new IllegalArgumentException("CPW expects a DataSet.");
         }
         if (!dataSet.isContinuous()) {
-            throw new IllegalArgumentException("FCI-CPW currently supports linear data (skewed).");
+            throw new IllegalArgumentException("CPW currently supports linear data (skewed).");
         }
 
         // Pairwise rule: default 3 (RSKEW). Read PARAM_PAIRWISE_RULE if provided.
         int pwRule = 1;
-        try {
-            pwRule = parameters.getInt(PARAM_PAIRWISE_RULE);
-        } catch (Throwable ignored) {
-            // keep default 3
-        }
-        if (pwRule < 1 || pwRule > 5) pwRule = 3;
+//        try {
+//            pwRule = parameters.getInt(PARAM_PAIRWISE_RULE);
+//        } catch (Throwable ignored) {
+//            // keep default 2
+//        }
+//        if (pwRule < 1 || pwRule > 5) pwRule = 2;
 
         boolean verbose = parameters.getBoolean(Params.VERBOSE);
 
@@ -183,7 +182,6 @@ public class    FciCyclicPw extends AbstractBootstrapAlgorithm implements Algori
         fci.setDoPossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
         fci.setVerbose(verbose);
         fci.setStable(parameters.getBoolean(Params.STABLE_FAS));
-//        fci.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
 
         Graph pag;
         double fdrQ = parameters.getDouble(Params.FDR_Q);
@@ -219,44 +217,56 @@ public class    FciCyclicPw extends AbstractBootstrapAlgorithm implements Algori
         }
 
         // --- Phase 2b: Tail–circle (—o) and circle–tail (o—) safe refinements ---
-        for (Edge e : new ArrayList<>(pag.getEdges())) { // snapshot again; we'll mutate
-            Node x = e.getNode1();
-            Node y = e.getNode2();
+        for (int r = 0; r < 2; r++) {
+            for (Edge e : new ArrayList<>(pag.getEdges())) { // snapshot again; we'll mutate
+                Node x = e.getNode1();
+                Node y = e.getNode2();
 
-            Endpoint exy = pag.getEndpoint(x, y); // endpoint at y from x
-            Endpoint eyx = pag.getEndpoint(y, x); // endpoint at x from y
+                Endpoint exy = pag.getEndpoint(x, y); // endpoint at y from x
+                Endpoint eyx = pag.getEndpoint(y, x); // endpoint at x from y
 
-            Integer ix = nameToIdx.get(x.getName());
-            Integer iy = nameToIdx.get(y.getName());
-            if (ix == null || iy == null) continue;
+                Integer ix = nameToIdx.get(x.getName());
+                Integer iy = nameToIdx.get(y.getName());
+                if (ix == null || iy == null) continue;
 
-            double diff = Fask.leftRightDiff(data[ix], data[iy], pwRule);
+                double diff = Fask.leftRightDiff(data[ix], data[iy], pwRule);
 
-            // Case: x — o y  (TAIL at x→y; CIRCLE at y→x)
-            if (exy == Endpoint.TAIL && eyx == Endpoint.CIRCLE) {
-                if (diff > 0) { // x → y preferred
+                // Case: x — o y  (TAIL at x→y; CIRCLE at y→x)
+                if (exy == Endpoint.TAIL && eyx == Endpoint.CIRCLE) {
+//                    if (diff > 0) { // x → y preferred
                     pag.removeEdge(x, y);
                     pag.addDirectedEdge(x, y);
                     if (verbose) TetradLogger.getInstance().log("CPW —o: " + x + "→" + y + " (diff=" + diff + ")");
+//                    }
+                    continue;
                 }
-                continue;
-            }
 
-            // Case: x o — y  (CIRCLE at x→y; TAIL at y→x)
-            if (exy == Endpoint.CIRCLE && eyx == Endpoint.TAIL) {
-                if (diff < 0) { // y → x preferred
-                    pag.removeEdge(x, y);
-                    pag.addDirectedEdge(y, x);
-                    if (verbose) TetradLogger.getInstance().log("CPW o—: " + y + "→" + x + " (diff=" + diff + ")");
+                // Case: x o — y  (CIRCLE at x→y; TAIL at y→x)
+                if (exy == Endpoint.CIRCLE && eyx == Endpoint.TAIL) {
+                    if (diff < 0) { // y → x preferred
+                        pag.removeEdge(x, y);
+                        pag.addDirectedEdge(y, x);
+                        if (verbose) TetradLogger.getInstance().log("CPW o—: " + y + "→" + x + " (diff=" + diff + ")");
+                    }
                 }
-            }
 
-            // Case x o-o y
-            if (eyx == Endpoint.CIRCLE && exy == Endpoint.CIRCLE) {
-                if (diff > 0) {
-                    pag.setEndpoint(x, y, Endpoint.ARROW);
-                } else {
-                    pag.setEndpoint(y, x, Endpoint.ARROW);
+                // Case x o-o y
+                if (eyx == Endpoint.CIRCLE && exy == Endpoint.CIRCLE) {
+                    if (diff > 0) {
+                        pag.setEndpoint(x, y, Endpoint.ARROW);
+                    } else {
+                        pag.setEndpoint(y, x, Endpoint.ARROW);
+                    }
+                }
+
+                // Case x o-> y; if causally sufficient orient as x --> y
+                if (eyx == Endpoint.CIRCLE && exy == Endpoint.ARROW) {
+                    pag.setEndpoint(e.getNode2(), e.getNode1(), Endpoint.TAIL);
+                }
+
+                // Case x <-o y; if causally sufficient orient as x <-- y
+                if (eyx == Endpoint.ARROW && exy == Endpoint.CIRCLE) {
+                    pag.setEndpoint(e.getNode1(), e.getNode2(), Endpoint.TAIL);
                 }
             }
         }
@@ -277,6 +287,8 @@ public class    FciCyclicPw extends AbstractBootstrapAlgorithm implements Algori
             for (int j = i + 1; j < nodes.size(); j++) {
                 Node xi = nodes.get(i);
                 Node yj = nodes.get(j);
+
+                Fask.setDelta(-0.1);
 
                 double diff = Fask.leftRightDiff(data[i], data[j], pwRule);
 
@@ -305,7 +317,7 @@ public class    FciCyclicPw extends AbstractBootstrapAlgorithm implements Algori
      * @param graph The input {@link Graph} to be transformed into a comparison graph.
      *              This graph serves as the basis for creating the resulting PAG.
      * @return A {@link Graph} representing the transformed partially directed
-     *         acyclic graph (PAG) based on the input graph.
+     * acyclic graph (PAG) based on the input graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -314,15 +326,15 @@ public class    FciCyclicPw extends AbstractBootstrapAlgorithm implements Algori
     }
 
     /**
-     * Provides a textual description of the FCI-CPW algorithm, including its
+     * Provides a textual description of the CPW algorithm, including its
      * functionality and distinguishing features, such as the use of pairwise-derived
      * forbidden knowledge and pairwise orientation for certain edges.
      *
-     * @return A string describing the FCI-CPW algorithm and its characteristics.
+     * @return A string describing the CPW algorithm and its characteristics.
      */
     @Override
     public String getDescription() {
-        return "FCI-CPW: FCI with pairwise-derived forbidden knowledge and pairwise orientation of —, —o, and o— edges (rule selectable)";
+        return "CPW: Causal Pairwise (causally sufficient case)";
     }
 
     /**
@@ -338,12 +350,12 @@ public class    FciCyclicPw extends AbstractBootstrapAlgorithm implements Algori
 
     /**
      * Retrieves a list of parameter names required for the configuration of the
-     * FCI-Cyclic-PW algorithm. These parameters control various aspects of the
+     * CPW algorithm. These parameters control various aspects of the
      * algorithm's execution, such as graph exploration limits, orientation styles,
      * and additional settings affecting the causal inference process.
      *
      * @return A list of strings, where each string represents a parameter name
-     *         used by the FCI-Cyclic-PW algorithm.
+     * used by the CPW algorithm.
      */
     @Override
     public List<String> getParameters() {
