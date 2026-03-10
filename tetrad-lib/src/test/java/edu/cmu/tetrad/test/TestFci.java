@@ -431,6 +431,22 @@ public class TestFci {
         }
     }
 
+
+    @Test
+    public void testFcit0() {
+        String inputGraph = "Latent(L1),Latent(L2),L1-->X1,L1-->X2,L2-->X2,L2-->X3";
+        Graph graph = GraphUtils.convert(inputGraph);
+        IndependenceTest independence = new MsepTest(graph);
+        Score score = new GraphScore(graph);
+
+        Fcit0 search = new Fcit0(independence, score);
+        try {
+            search.search();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     //    @Test
     public void testFciAnc() {
         final int numMeasures = 50;
