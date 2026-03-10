@@ -372,7 +372,7 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
 
             // edf = trace( M^{-1} * BtB )
             DMatrixRMaj S = solveSPDForRight(M, XtX);
-            double edf = trace(S);
+            double edf = (S != null) ? trace(S) : 0.0;
 
             // Keep edf within sensible bounds to avoid N - edf → 0
             edf = TMath.max(0.0, TMath.min(edf, TMath.min(pb.M - edfEps, N - 2.0)));
