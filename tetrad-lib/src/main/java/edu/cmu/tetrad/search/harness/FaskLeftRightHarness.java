@@ -54,7 +54,7 @@ public final class FaskLeftRightHarness {
     /**
      * Average degree used in the graph generator.
      */
-    private static final int AVG_DEGREE = 2;
+    private static final int AVG_DEGREE = 3;
 
     private static final DecimalFormat DF = new DecimalFormat("0.000");
 
