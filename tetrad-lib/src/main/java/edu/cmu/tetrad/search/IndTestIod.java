@@ -62,12 +62,22 @@ public class IndTestIod implements IndependenceTest {
      */
     private boolean verbose;
 
+    private double alpha;
+
     /**
      * Constructs a new pooled independence test from the given list of independence tests.
      *
      * @param tests a {@link java.util.List} object
      */
     public IndTestIod(List<IndependenceTest> tests) {
+        if (tests == null) {
+            throw new NullPointerException("Tests list is null");
+        }
+
+        if (tests.isEmpty()) {
+            throw new IllegalArgumentException("Tests list is empty");
+        }
+
         for (IndependenceTest test : tests) {
             if (test == null) {
                 throw new NullPointerException("Test is null");
@@ -79,12 +89,7 @@ public class IndTestIod implements IndependenceTest {
         }
 
         this.tests = tests;
-
-        for (IndependenceTest test : tests) {
-            if (test instanceof IndTestIod) {
-                throw new IllegalArgumentException("Cannot have IndTestIod as a test");
-            }
-        }
+        this.alpha = tests.get(0).getAlpha();
 
         Set<String> nameSet = new HashSet<>();
         List<Node> nodeList = new ArrayList<>();
@@ -132,9 +137,10 @@ public class IndTestIod implements IndependenceTest {
             }
         }
 
-        boolean independent = ResolveSepsets.isIndependentPooled(ResolveSepsets.Method.fisher, tests, x, y, z);
+        double p = ResolveSepsets.getPValuePooled(ResolveSepsets.Method.fisher, tests, x, y, z);
+        boolean independent = p > alpha;
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, Double.NaN, Double.NaN);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, Double.NaN);
     }
 
     /**
@@ -159,17 +165,24 @@ public class IndTestIod implements IndependenceTest {
     }
 
     /**
-     * @throws java.lang.UnsupportedOperationException since the method is not implemented.
+     * Returns the alpha level for the independence test.
+     *
+     * @return the alpha level
      */
     public double getAlpha() {
-        throw new UnsupportedOperationException();
+        return this.alpha;
     }
 
     /**
-     * @throws java.lang.UnsupportedOperationException since the method is not implemented.
+     * Sets the alpha level for the independence test.
+     *
+     * @param alpha the alpha level to set
      */
     public void setAlpha(double alpha) {
-        throw new UnsupportedOperationException();
+        this.alpha = alpha;
+        for (IndependenceTest test : tests) {
+            test.setAlpha(alpha);
+        }
     }
 
     /**

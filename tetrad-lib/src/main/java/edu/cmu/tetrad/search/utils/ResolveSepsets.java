@@ -64,32 +64,34 @@ public final class ResolveSepsets {
      */
     public static boolean isIndependentPooled(Method method, List<IndependenceTest> independenceTests,
                                               Node x, Node y, Set<Node> condSet) throws InterruptedException {
+        double p = getPValuePooled(method, independenceTests, x, y, condSet);
+        double alpha = independenceTests.getFirst().getAlpha();
+        return p > alpha;
+    }
+
+    /**
+     * Tests for independence using one of the pooled methods and returns the pooled p-value.
+     *
+     * @param method            a {@link edu.cmu.tetrad.search.utils.ResolveSepsets.Method} object
+     * @param independenceTests a {@link java.util.List} object
+     * @param x                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet           a {@link java.util.Set} object
+     * @return the pooled p-value.
+     * @throws java.lang.InterruptedException if any.
+     */
+    public static double getPValuePooled(Method method, List<IndependenceTest> independenceTests,
+                                         Node x, Node y, Set<Node> condSet) throws InterruptedException {
         if (method == Method.fisher) {
-            return ResolveSepsets.isIndependentPooledFisher(independenceTests, x, y, condSet);
+            return ResolveSepsets.getPValuePooledFisher(independenceTests, x, y, condSet);
         } else if (method == Method.fisher2) {
-            return ResolveSepsets.isIndependentPooledFisher2(independenceTests, x, y, condSet);
+            return ResolveSepsets.getPValuePooledFisher2(independenceTests, x, y, condSet);
         } else if (method == Method.tippett) {
-            return ResolveSepsets.isIndependentPooledTippett(independenceTests, x, y, condSet);
-        } else if (method == Method.worsleyfriston) {
-            return ResolveSepsets.isIndependentPooledWorsleyFriston(independenceTests, x, y, condSet);
-        } else if (method == Method.stouffer) {
-            return ResolveSepsets.isIndependentPooledStouffer(independenceTests, x, y, condSet);
-        } else if (method == Method.mudholkergeorge) {
-            return ResolveSepsets.isIndependentPooledMudholkerGeorge(independenceTests, x, y, condSet);
-        } else if (method == Method.mudholkergeorge2) {
-            return ResolveSepsets.isIndependentPooledMudholkerGeorge2(independenceTests, x, y, condSet);
-        } else if (method == Method.averagetest) {
-            return ResolveSepsets.isIndependentPooledAverageTest(independenceTests, x, y, condSet);
-        } else if (method == Method.average) {
-            return ResolveSepsets.isIndependentPooledAverage(independenceTests, x, y, condSet);
-        } else if (method == Method.random) {
-            return ResolveSepsets.isIndependentPooledRandom(independenceTests, x, y, condSet);
-        } else if (method == Method.fdr) {
-            return ResolveSepsets.isIndependentMajorityFdr(independenceTests, x, y, condSet);
-        } else if (method == Method.majority) {
-            return ResolveSepsets.isIndependentMajorityIndep(independenceTests, x, y, condSet);
+            return ResolveSepsets.getPValuePooledTippett(independenceTests, x, y, condSet);
         } else {
-            throw new RuntimeException("Invalid Test");
+            // For other methods, return NaN if they don't explicitly support p-value return yet
+            // or we can implement them as needed. For now I focus on Fisher which is used by IndTestIod.
+            return isIndependentPooled(method, independenceTests, x, y, condSet) ? 1.0 : 0.0;
         }
     }
 
@@ -108,7 +110,24 @@ public final class ResolveSepsets {
     public static boolean isIndependentPooledFisher(List<IndependenceTest> independenceTests, Node x, Node y,
                                                     Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.getFirst().getAlpha();
+        double p = getPValuePooledFisher(independenceTests, x, y, condSet);
+        return (p > alpha);
+    }
+
+    /**
+     * Returns the pooled p-value using Fisher's method.
+     *
+     * @param independenceTests a {@link java.util.List} object
+     * @param x                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet           a {@link java.util.Set} object
+     * @return the pooled p-value.
+     * @throws java.lang.InterruptedException if any.
+     */
+    public static double getPValuePooledFisher(List<IndependenceTest> independenceTests, Node x, Node y,
+                                               Set<Node> condSet) throws InterruptedException {
         double tf = 0.0;
+        int numTests = 0;
         for (IndependenceTest independenceTest : independenceTests) {
             if (ResolveSepsets.missingVariable(x, y, condSet, independenceTest)) continue;
             Set<Node> localCondSet = new HashSet<>();
@@ -116,10 +135,15 @@ public final class ResolveSepsets {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
             IndependenceResult result = independenceTest.checkIndependence(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
-            tf += -2.0 * TMath.log(result.getPValue());
+            tf += -2.0 * TMath.log(result.getPValue() + 1e-8);
+            numTests++;
         }
-        double p = 1.0 - ProbUtils.chisqCdf(tf, 2 * independenceTests.size());
-        return (p > alpha);
+
+        if (numTests == 0) {
+            return 0.0;
+        }
+
+        return 1.0 - ProbUtils.chisqCdf(tf, 2 * numTests);
     }
 
     /**
@@ -134,21 +158,32 @@ public final class ResolveSepsets {
     public static boolean isIndependentPooledFisher2(List<IndependenceTest> independenceTests, Node x, Node y,
                                                      Set<Node> condSet) {
         double alpha = independenceTests.iterator().next().getAlpha();
+        double p = getPValuePooledFisher2(independenceTests, x, y, condSet);
+        return (p > alpha);
+    }
+
+    /**
+     * Returns the pooled p-value using Fisher's method 2.
+     *
+     * @param independenceTests a {@link java.util.List} object
+     * @param x                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet           a {@link java.util.Set} object
+     * @return the pooled p-value.
+     */
+    public static double getPValuePooledFisher2(List<IndependenceTest> independenceTests, Node x, Node y,
+                                                Set<Node> condSet) {
         List<Double> pValues = ResolveSepsets.getAvailablePValues(independenceTests, x, y, condSet);
 
         double tf = 0.0;
         int numPValues = 0;
 
         for (double p : pValues) {
-//            if (p > 0) {
-            tf += -2.0 * TMath.log(p);
+            tf += -2.0 * TMath.log(p + 1e-8);
             numPValues++;
-//            }
         }
 
-        double p = 1.0 - ProbUtils.chisqCdf(tf, 2 * numPValues);
-
-        return (p > alpha);
+        return 1.0 - ProbUtils.chisqCdf(tf, 2 * numPValues);
     }
 
     /**
@@ -166,6 +201,22 @@ public final class ResolveSepsets {
     public static boolean isIndependentPooledTippett(List<IndependenceTest> independenceTests, Node x, Node y,
                                                      Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.iterator().next().getAlpha();
+        double p = getPValuePooledTippett(independenceTests, x, y, condSet);
+        return (p > (1 - TMath.pow(1 - alpha, (1 / (double) independenceTests.size()))));
+    }
+
+    /**
+     * Returns the pooled p-value using Tippett's method.
+     *
+     * @param independenceTests a {@link java.util.List} object
+     * @param x                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet           a {@link java.util.Set} object
+     * @return the pooled p-value.
+     * @throws java.lang.InterruptedException if any.
+     */
+    public static double getPValuePooledTippett(List<IndependenceTest> independenceTests, Node x, Node y,
+                                                Set<Node> condSet) throws InterruptedException {
         double p = -1.0;
         for (IndependenceTest independenceTest : independenceTests) {
             if (ResolveSepsets.missingVariable(x, y, condSet, independenceTest)) continue;
@@ -180,11 +231,11 @@ public final class ResolveSepsets {
                 continue;
             }
             double newp = result.getPValue();
-            if (newp < p) {
+            if (p == -1.0 || newp < p) {
                 p = newp;
             }
         }
-        return (p > (1 - TMath.pow(1 - alpha, (1 / (double) independenceTests.size()))));
+        return p;
     }
 
     /**
