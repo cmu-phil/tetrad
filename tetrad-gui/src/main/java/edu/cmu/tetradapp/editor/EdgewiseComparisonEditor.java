@@ -100,7 +100,7 @@ public class EdgewiseComparisonEditor extends JPanel {
     private JMenuBar menubar() {
         JMenuBar menubar = new JMenuBar();
         JMenu menu = new JMenu("Compare To...");
-        JMenuItem graph = new JCheckBoxMenuItem("DAG");
+        JMenuItem graph = new JCheckBoxMenuItem("Truth");
 //        graph.setBackground(Color.WHITE);
         JMenuItem cpdag = new JCheckBoxMenuItem("CPDAG");
         cpdag.setBackground(Color.YELLOW);
@@ -134,7 +134,7 @@ public class EdgewiseComparisonEditor extends JPanel {
         }
 
         graph.addActionListener(e -> {
-            this.params.set("graphComparisonType", "DAG");
+            this.params.set("graphComparisonType", "Truth");
             menu.setText("Compare to Truth...");
 //            menu.setBackground(Color.WHITE);
 

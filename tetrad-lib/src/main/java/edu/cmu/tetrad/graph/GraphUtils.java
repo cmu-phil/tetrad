@@ -1790,8 +1790,8 @@ public final class GraphUtils {
         String type = params.getString("graphComparisonType");
 
         switch (type) {
-            case "DAG" -> {
-                params.set("graphComparisonType", "DAG");
+            case "Truth" -> {
+                params.set("graphComparisonType", "Truth");
                 return new EdgeListGraph(graph);
             }
             case "CPDAG" -> {
@@ -1803,7 +1803,7 @@ public final class GraphUtils {
                 return GraphTransforms.dagToPag(graph, params.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
             }
             case null, default -> {
-                params.set("graphComparisonType", "DAG");
+                params.set("graphComparisonType", "Truth");
                 return new EdgeListGraph(graph);
             }
         }
