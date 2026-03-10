@@ -101,7 +101,7 @@ public abstract class StarFci implements IGraphSearch {
     private boolean excludeSelectionBias = false;
 
     /**
-     * Constructs a new GFci algorithm with the given independence test and score.
+     * Constructs a new StarFci algorithm with the given independence test.
      *
      * @param test The independence test to use.
      */
@@ -213,32 +213,6 @@ public abstract class StarFci implements IGraphSearch {
         }
     }
 
-    /**
-     * Checks if three nodes in a graph form an unshielded triple. An unshielded triple is a configuration where node a
-     * is adjacent to node b, node b is adjacent to node c, but node a is not adjacent to node c.
-     *
-     * @param graph The graph in which the nodes reside.
-     * @param a     The first node in the triple.
-     * @param b     The second node in the triple.
-     * @param c     The third node in the triple.
-     * @return {@code true} if the nodes form an unshielded triple, {@code false} otherwise.
-     */
-    private static boolean unshieldedTriple(Graph graph, Node a, Node b, Node c) {
-        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
-    }
-
-    /**
-     * Checks if the given nodes are unshielded colliders when considering the given graph.
-     *
-     * @param graph the graph to consider
-     * @param a     the first node
-     * @param b     the second node
-     * @param c     the third node
-     * @return true if the nodes are unshielded colliders, false otherwise
-     */
-    private static boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
-        return a != c && unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
-    }
 
     /**
      * Generates a list of all possible choices for sublists from the adjacency list with sizes up to the given depth
@@ -285,7 +259,6 @@ public abstract class StarFci implements IGraphSearch {
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
         Graph cpdag = getMarkovCpdag();
-//        Graph pag = new EdgeListGraph(cpdag);
         Graph pag = wrapWorkingGraph(cpdag);
         Set<Triple> unshieldedColliders = new HashSet<>();
         SepsetMap sepsetMap = new SepsetMap();
@@ -310,9 +283,6 @@ public abstract class StarFci implements IGraphSearch {
             if (sepset != null) {
                 pag.removeEdge(a, c);
                 sepsetMap.set(a, c, sepset);
-
-                List<Node> adj = pag.getAdjacentNodes(a);
-                adj.retainAll(pag.getAdjacentNodes(c));
 
                 if (verbose) {
                     IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);

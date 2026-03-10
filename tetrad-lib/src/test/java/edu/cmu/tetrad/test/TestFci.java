@@ -432,6 +432,7 @@ public class TestFci {
     }
 
 
+
     @Test
     public void testFcit0() {
         String inputGraph = "Latent(L1),Latent(L2),L1-->X1,L1-->X2,L2-->X2,L2-->X3";
