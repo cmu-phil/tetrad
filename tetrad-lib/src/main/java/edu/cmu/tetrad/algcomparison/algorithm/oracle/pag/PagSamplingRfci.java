@@ -44,7 +44,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "dPAG-Sampling-RFCI",
+        name = "PAG-Sampling-RFCI",
         command = "pag-sampling-rfci",
         algoType = AlgType.allow_latent_common_causes
 )

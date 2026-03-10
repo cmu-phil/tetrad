@@ -42,8 +42,8 @@ import java.util.concurrent.*;
  */
 public class PagSamplingRfci implements IGraphSearch {
 
-    private final int NUM_THREADS = 10;
     private final DataSet dataSet;
+    private int numThreads = 10;
     // PagSamplingRfci
     private int numRandomizedSearchModels = 10;
     private boolean verbose = false;
@@ -99,7 +99,7 @@ public class PagSamplingRfci implements IGraphSearch {
     private List<Graph> runSearches() {
         List<Graph> graphs = new LinkedList<>();
 
-        ForkJoinPool pool = new ForkJoinPool(NUM_THREADS);
+        ForkJoinPool pool = new ForkJoinPool(numThreads);
         try {
             while (graphs.size() < numRandomizedSearchModels && !Thread.currentThread().isInterrupted()) {
                 List<Callable<Graph>> callableTasks = createTasks(numRandomizedSearchModels - graphs.size());
@@ -131,11 +131,9 @@ public class PagSamplingRfci implements IGraphSearch {
     private void shutdownAndAwaitTermination(ForkJoinPool pool) {
         pool.shutdown();
         try {
-            if (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
+            if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
                 pool.shutdownNow();
-                Thread.currentThread().interrupt();
-                if (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
-//                    System.err.println("Pool did not terminate");
+                if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
                     throw new RuntimeException("Pool did not terminate");
                 }
             }
@@ -144,6 +142,18 @@ public class PagSamplingRfci implements IGraphSearch {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Interrupted");
         }
+    }
+
+    /**
+     * Set the number of threads for parallel execution.
+     *
+     * @param numThreads the number of threads.
+     */
+    public void setNumThreads(int numThreads) {
+        if (numThreads < 1) {
+            throw new IllegalArgumentException("Number of threads must be >= 1: " + numThreads);
+        }
+        this.numThreads = numThreads;
     }
 
     /**
