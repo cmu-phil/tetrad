@@ -195,6 +195,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWr
         parameters.addAll(new SemBicScore().getParameters());
 
         parameters.addAll((new Fges()).getParameters());
+        parameters.addAll((new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Boss()).getParameters());
         parameters.add(Params.RANDOM_SELECTION_SIZE);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.IMAGES_META_ALG);

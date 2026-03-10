@@ -97,8 +97,6 @@ public class ImagesBoss implements MultiDataSetAlgorithm, HasKnowledge, TakesSco
      */
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
-        int meta = parameters.getInt(Params.IMAGES_META_ALG);
-
         List<DataModel> _dataSets = new ArrayList<>();
 
         if (parameters.getInt(Params.TIME_LAG) > 0) {
@@ -122,25 +120,13 @@ public class ImagesBoss implements MultiDataSetAlgorithm, HasKnowledge, TakesSco
 
         ImagesScore score = new ImagesScore(scores);
 
-        if (meta == 1) {
-            PermutationSearch search = new PermutationSearch(new Boss(score));
-            search.setSeed(parameters.getLong(Params.SEED));
-            search.setKnowledge(this.knowledge);
-            try {
-                return search.search();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        } else if (meta == 2) {
-            PermutationSearch search = new PermutationSearch(new Boss(score));
-            search.setKnowledge(this.knowledge);
-            try {
-                return search.search();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            throw new IllegalArgumentException("Unrecognized meta option: " + meta);
+        PermutationSearch search = new PermutationSearch(new Boss(score));
+        search.setSeed(parameters.getLong(Params.SEED));
+        search.setKnowledge(this.knowledge);
+        try {
+            return search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -165,7 +151,7 @@ public class ImagesBoss implements MultiDataSetAlgorithm, HasKnowledge, TakesSco
      */
     @Override
     public String getDescription() {
-        return "IMaGES";
+        return "IMaGES-BOSS";
     }
 
     /**
@@ -184,10 +170,9 @@ public class ImagesBoss implements MultiDataSetAlgorithm, HasKnowledge, TakesSco
         List<String> parameters = new LinkedList<>();
         parameters.addAll(new SemBicScore().getParameters());
 
-        parameters.addAll((new Fges()).getParameters());
+        parameters.addAll((new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Boss()).getParameters());
         parameters.add(Params.RANDOM_SELECTION_SIZE);
         parameters.add(Params.TIME_LAG);
-        parameters.add(Params.IMAGES_META_ALG);
         parameters.add(Params.SEED);
         parameters.add(Params.VERBOSE);
 
