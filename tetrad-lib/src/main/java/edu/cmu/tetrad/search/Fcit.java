@@ -256,10 +256,8 @@ public final class Fcit implements IGraphSearch {
                 }
 
                 if (!sepsets.get(x, y).contains(node)) {
-                    if (!pag.isDefCollider(x, node, y)) {
-                        pag.setEndpoint(x, node, Endpoint.ARROW);
-                        pag.setEndpoint(y, node, Endpoint.ARROW);
-                    }
+                    pag.setEndpoint(x, node, Endpoint.ARROW);
+                    pag.setEndpoint(y, node, Endpoint.ARROW);
                 }
             }
         }
@@ -280,7 +278,9 @@ public final class Fcit implements IGraphSearch {
             nodes = new ArrayList<>(test.getVariables());
         }
 
-        TetradLogger.getInstance().log("===Starting FCIT===");
+        if (verbose) {
+            TetradLogger.getInstance().log("===Starting FCIT===");
+        }
 
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
         strategy.setSepsetMap(sepsets);
@@ -391,10 +391,8 @@ public final class Fcit implements IGraphSearch {
 
         long start2 = System.currentTimeMillis();
 
-        TeyssierScorer scorer = null;
-
         if (score != null) {
-            scorer = new TeyssierScorer(test, score);
+            TeyssierScorer scorer = new TeyssierScorer(test, score);
             scorer.score(best);
             scorer.setKnowledge(knowledge);
             scorer.setUseScore(!(score instanceof GraphScore));
@@ -402,32 +400,8 @@ public final class Fcit implements IGraphSearch {
             scorer.bookmark();
         }
 
-        if (superVerbose) {
-            TetradLogger.getInstance().log("Initializing PAG to PAG of BOSS DAG.");
-            TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
-        }
-
-        if (scorer != null) {
-            scorer.score(best);
-        }
-
-        if (superVerbose) {
-            TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
-        }
-
-        // We make all latent variables at this point measured for the duration of the
-        // procedure so that the latent structure search will work.
-        List<Node> latents = new ArrayList<>();
-        for (Node node : dag.getNodes()) {
-            if (node.getNodeType() == NodeType.LATENT) {
-                latents.add(node);
-                node.setNodeType(NodeType.MEASURED);
-            }
-        }
-
-        // The main procedure.
+        // Initializing the PAG and identifying initial colliders.
         this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias);
-
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
         // In what follows, we look for sepsets to remove edges. After every removal we rebuild the PAG and
@@ -437,7 +411,9 @@ public final class Fcit implements IGraphSearch {
         int round = 0;
 
         do {
-            TetradLogger.getInstance().log("Round: " + (++round));
+            if (verbose) {
+                TetradLogger.getInstance().log("Round: " + (++round));
+            }
         } while (removeEdgesRecursively(checks, excludeSelectionBias));
 
         if (superVerbose) {
@@ -446,15 +422,12 @@ public final class Fcit implements IGraphSearch {
 
         long stop2 = System.currentTimeMillis();
 
-        // Revert nodes made latent to latent.
-        for (Node node : latents) {
-            node.setNodeType(NodeType.LATENT);
+        if (verbose) {
+            TetradLogger.getInstance().log("FCIT finished.");
+            TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
+            TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
+            TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
         }
-
-        TetradLogger.getInstance().log("FCIT finished.");
-        TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
-        TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
-        TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
 
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
@@ -517,8 +490,8 @@ public final class Fcit implements IGraphSearch {
      * @return true if at least one edge was removed, false otherwise
      */
     private boolean removeEdgesRecursively(Set<IndependenceCheck> checks, boolean excludeSelectionBias) {
-        if (superVerbose) {
-            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
+        if (verbose) {
+            TetradLogger.getInstance().log("Searching for removable edges using discriminating paths.");
         }
 
         boolean changed = false;
@@ -545,6 +518,11 @@ public final class Fcit implements IGraphSearch {
         for (Result result : results) {
             Edge edge = result.edge();
             Set<Node> b = result.cond();
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Found independence for " + edge + " given " + b + ". Attempting removal.");
+            }
+
             boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "recursive", excludeSelectionBias);
             changed |= didChange;
         }
@@ -655,27 +633,27 @@ public final class Fcit implements IGraphSearch {
     }
 
     private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type, boolean excludeSelectionBias) {
-        Edge _edge = pag.getEdge(x, y);
-        Graph _pag = new EdgeListGraph(pag);
+        Edge edgeToRemove = pag.getEdge(x, y);
+        Graph originalPag = new EdgeListGraph(pag);
+        Set<Node> originalSepset = sepsets.get(x, y);
 
-        this.pag.removeEdge(_edge);
-        Set<Node> sepset = sepsets.get(x, y);
+        this.pag.removeEdge(edgeToRemove);
         sepsets.set(x, y, b);
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, excludeSelectionBias, superVerbose);
 
         if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
             if (verbose) {
-                TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
-                        + " reasons, but it didn't lead to a PAG");
+                TetradLogger.getInstance().log("Tried removing " + edgeToRemove + " given " + b + " for " + type
+                        + " reasons, but it didn't lead to a legal PAG. Reverting.");
             }
 
-            this.pag = _pag;
-            sepsets.set(x, y, sepset);
+            this.pag = originalPag;
+            sepsets.set(x, y, originalSepset);
             return false;
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Removing " + _edge + " for " + type + " reasons.");
+            TetradLogger.getInstance().log("Removing " + edgeToRemove + " given " + b + " for " + type + " reasons.");
         }
 
         return true;
