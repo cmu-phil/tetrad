@@ -38,8 +38,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static edu.cmu.tetrad.util.TMath.abs;
 import static edu.cmu.tetrad.util.TMath.sqrt;
@@ -198,13 +197,19 @@ public class IcaLingD {
      * @return true if the spectral radius of the matrix is less than 1 - STAB_TOL, false otherwise
      */
     public static boolean isStable(Matrix bHat) {
-        SimpleEVD<SimpleMatrix> eig = bHat.getSimpleMatrix().eig();
-        for (int i = 0; i < eig.getNumberOfEigenvalues(); i++) {
-            double real = eig.getEigenvalue(i).getReal();
-            double imag = eig.getEigenvalue(i).getImaginary();
-            double rho = sqrt(real * real + imag * imag);
-            if (rho >= 1.0 - STAB_TOL) return false;
+        SimpleMatrix B = bHat.getSimpleMatrix();
+        SimpleEVD<SimpleMatrix> evd = B.eig();
+
+        for (int i = 0; i < evd.getNumberOfEigenvalues(); i++) {
+            double real = evd.getEigenvalue(i).getReal();
+            double imag = evd.getEigenvalue(i).getImaginary();
+            double mod = TMath.hypot(real, imag);
+
+            if (!(mod < 1.0 - STAB_TOL)) {
+                return false;
+            }
         }
+
         return true;
     }
 
@@ -214,16 +219,31 @@ public class IcaLingD {
      * @param M the matrix to scale
      * @return the scaled matrix
      */
+    /**
+     * Normalize each ROW by its diagonal entry, guarding tiny/zero diagonals.
+     * This matches the LiNGAM / LiNG-D normalization step in the paper.
+     */
     public static Matrix scale(Matrix M) {
-        Matrix _M = M.like();
-        for (int i = 0; i < _M.getNumRows(); i++) {
-            for (int j = 0; j < _M.getNumColumns(); j++) {
-                double d = M.get(j, j);
-                if (abs(d) < DIAG_EPS) d = (d >= 0 ? DIAG_EPS : -DIAG_EPS);
-                _M.set(i, j, M.get(i, j) / d);
+        SimpleMatrix A = M.getSimpleMatrix().copy();
+        int n = A.numRows();
+        int m = A.numCols();
+
+        if (n != m) {
+            throw new IllegalArgumentException("Expected a square matrix, got " + n + "x" + m);
+        }
+
+        for (int i = 0; i < n; i++) {
+            double d = A.get(i, i);
+            if (Math.abs(d) < DIAG_EPS) {
+                d = (d >= 0.0 ? DIAG_EPS : -DIAG_EPS);
+            }
+
+            for (int j = 0; j < m; j++) {
+                A.set(i, j, A.get(i, j) / d);
             }
         }
-        return _M;
+
+        return new Matrix(A);
     }
 
     /**
@@ -250,17 +270,46 @@ public class IcaLingD {
      * @param pair the permutation matrix pair
      * @return the scaled B̂ matrix
      */
+    /**
+     * Build B-hat from a permutation result:
+     * 1) permute W,
+     * 2) transpose into the convention used here,
+     * 3) normalize rows so diag = 1,
+     * 4) form B-hat = I - W-tilde,
+     * 5) undo the row permutation back to original variable order.
+     */
     public static Matrix getScaledBHat(PermutationMatrixPair pair) {
-        Matrix WTilde = pair.getPermutedMatrix().transpose();
-        WTilde = IcaLingD.scale(WTilde); // normalize diagonal to ~1
-        int p = WTilde.getNumColumns();
-        Matrix BHat = Matrix.identity(p).minus(WTilde);
+        Matrix permuted = pair.getPermutedMatrix();
+        SimpleMatrix wTilde = permuted.transpose().getSimpleMatrix().copy();
 
-        // Return B̂ in the original variable order by undoing the row permutation we applied to W
+        int p = wTilde.numRows();
+        if (p != wTilde.numCols()) {
+            throw new IllegalArgumentException("Expected square W, got " + p + "x" + wTilde.numCols());
+        }
+
+        // Normalize rows by their diagonal entries.
+        for (int i = 0; i < p; i++) {
+            double d = wTilde.get(i, i);
+            if (Math.abs(d) < DIAG_EPS) {
+                d = (d >= 0.0 ? DIAG_EPS : -DIAG_EPS);
+            }
+
+            for (int j = 0; j < p; j++) {
+                wTilde.set(i, j, wTilde.get(i, j) / d);
+            }
+        }
+
+        SimpleMatrix bHat = SimpleMatrix.identity(p).minus(wTilde);
+
+        // Undo row permutation back to original variable order.
         int[] perm = pair.getRowPerm();
-        int[] inverse = IcaLingD.inversePermutation(perm);
-        PermutationMatrixPair inversePair = new PermutationMatrixPair(BHat, inverse, inverse);
-        return inversePair.getPermutedMatrix();
+        if (perm != null) {
+            int[] inverse = inversePermutation(perm);
+            PermutationMatrixPair inversePair = new PermutationMatrixPair(new Matrix(bHat), inverse, inverse);
+            return inversePair.getPermutedMatrix();
+        }
+
+        return new Matrix(bHat);
     }
 
     @NotNull
@@ -323,39 +372,51 @@ public class IcaLingD {
      * @return the list of scaled B̂ matrices
      */
     public List<Matrix> getScaledBHats(Matrix W) {
-        // 1) Threshold W
         W = new Matrix(W);
+
         double wt = TMath.max(0.0, this.wThreshold);
         for (int i = 0; i < W.getNumRows(); i++) {
             for (int j = 0; j < W.getNumColumns(); j++) {
-                if (abs(W.get(i, j)) < wt) W.set(i, j, 0.0);
+                if (abs(W.get(i, j)) < wt) {
+                    W.set(i, j, 0.0);
+                }
             }
         }
 
-        // 2) Build permutation candidates: best-diagonal + NRooks set (dedup simple way)
         List<PermutationMatrixPair> pairs = new ArrayList<>();
-        try {
-            pairs.add(maximizeDiagonalSum(W));
-        } catch (Exception ignore) {
-            // fall through to NRooks only
-        }
-        for (PermutationMatrixPair p : pairsNRook(W)) {
-            pairs.add(p);
-        }
-        if (pairs.isEmpty())
-            throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");
+        Set<String> seen = new HashSet<>();
 
-        // 3) Build B̂ per permutation with robust scaling & threshold
+        try {
+            PermutationMatrixPair best = maximizeDiagonalSum(W);
+            String key = Arrays.toString(best.getRowPerm()) + "|" + Arrays.toString(best.getColPerm());
+            if (seen.add(key)) {
+                pairs.add(best);
+            }
+        } catch (Exception ignore) {
+        }
+
+        for (PermutationMatrixPair p : pairsNRook(W)) {
+            String key = Arrays.toString(p.getRowPerm()) + "|" + Arrays.toString(p.getColPerm());
+            if (seen.add(key)) {
+                pairs.add(p);
+            }
+        }
+
+        if (pairs.isEmpty()) {
+            throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");
+        }
+
         List<Matrix> results = new ArrayList<>();
         double bt = TMath.max(0.0, this.bThreshold);
 
         for (PermutationMatrixPair pair : pairs) {
-            Matrix bHat = IcaLingD.getScaledBHat(pair);
+            Matrix bHat = getScaledBHat(pair);
 
-            // threshold B̂
             for (int i = 0; i < bHat.getNumRows(); i++) {
                 for (int j = 0; j < bHat.getNumColumns(); j++) {
-                    if (abs(bHat.get(i, j)) < bt) bHat.set(i, j, 0.0);
+                    if (abs(bHat.get(i, j)) < bt) {
+                        bHat.set(i, j, 0.0);
+                    }
                 }
             }
 
