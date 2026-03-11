@@ -218,8 +218,8 @@ public final class Fask {
 
             z.addAll(z2);
 
-//            z.remove(xi);
-//            z.remove(xj);
+            z.remove(xi);
+            z.remove(xj);
 
             return z;
         } catch (InterruptedException e) {
@@ -275,11 +275,6 @@ public final class Fask {
         double lr = left - right;
 
         double r = StatUtils.correlation(x, y);
-//        double sx = StatUtils.skewness(x);
-//        double sy = StatUtils.skewness(y);
-
-//        r *= signum(sx) * signum(sy);
-//        lr *=  signum(r);
 
         // Use the same default delta as instance (−0.1) for static scoring.
         if (r < 0.0) lr *= -1;
