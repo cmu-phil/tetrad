@@ -218,25 +218,11 @@ public final class CdnodPagOrienter {
     }
 
     /**
+     * Executes the orientation process.
      * <p>
-     * Executes the process of orienting edges in a PAG (Partial Ancestral Graph) based on specific rules and
-     * constraints while maintaining <i>strong legality</i>. The method iterates through nodes and applies C1-like
-     * orientation attempts, ensures protected nodes are not modified, respects tier constraints, and optionally
-     * excludes certain nodes from being considered during the orientation steps.
-     * </p>
-     *
-     * <p><b>Core responsibilities of the method:</b></p>
-     *
-     * <ul>
-     *   <li>Iterates through the nodes in the PAG and their adjacent nodes.</li>
-     *   <li>Skips nodes marked as protected or nodes that do not meet specific orientation guards,
-     *       such as directed edges or tier constraints.</li>
-     *   <li>Determines the neighborhood set for each node, considering configuration options
-     *       such as excluding context nodes.</li>
-     *   <li>Attempts to orient edges using a per-edge strong legality gating mechanism.</li>
-     *   <li>Applies a safety net using a propagator to ensure the strong legality of the resulting PAG.</li>
-     *   <li>Supports an undo mechanism to revert changes if the PAG violates strong legality rules after propagation.</li>
-     * </ul>
+     * It iterates through the edges in the PAG and attempts to orient them using context-based stability checks.
+     * The process maintains strong legality by checking the PAG's legality after each orientation and
+     * rolling back if it violates the rules.
      */
     public void run() {
         final List<Node> ctx = oracle.contexts();
@@ -274,16 +260,15 @@ public final class CdnodPagOrienter {
 
     // ---- Internals ----
 
-    // Attempt C1-like orientation for (x,y) using per-edge strong legality gating.
     private void tryOrientC1PerEdgeStrong(Node x, Node y, List<Node> neigh, List<Node> contexts) {
         for (Set<Node> S0 : SmallSubsetIter.subsets(neigh, maxSubsetSize)) {
             // Work on a copy; never mutate iterator's set
             Set<Node> S = new LinkedHashSet<>(S0);
 
-            // Require: Y shows change under S
+            // Require: Y shows change under S (w.r.t. some context)
             if (!oracle.changes(y, S)) continue;
 
-            // If adding X stabilizes across all contexts, propose X o-> Y
+            // If adding X stabilizes Y across all contexts, propose X o-> Y
             Set<Node> SplusX = plus(S, x);
             if (!oracle.stable(y, SplusX)) continue;
 
