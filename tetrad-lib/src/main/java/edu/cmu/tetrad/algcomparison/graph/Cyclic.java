@@ -52,7 +52,7 @@ public class Cyclic implements RandomGraph {
         return edu.cmu.tetrad.graph.RandomGraph.randomCyclicGraph3(parameters.getInt("numMeasures"),
                 parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
                 parameters.getInt("maxDegree"), parameters.getDouble("probCycle"),
-                parameters.getInt("probTwoCycle"));
+                parameters.getDouble("probTwoCycle"));
     }
 
     /**

@@ -24,7 +24,7 @@ public class FaskConsistencyTest {
         DataSet dataSet = im.simulateData(nData, false);
         
         Fask fask = new Fask(dataSet, new SemBicScore(dataSet, true));
-        fask.setAlpha(0.01);
+        fask.setTwoCycleAlpha(0.01);
         Graph result1 = fask.search();
         
         // Ensure it runs and returns a graph

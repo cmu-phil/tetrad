@@ -102,7 +102,7 @@ public class FaskVote {
             fask.setExtraEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
             fask.setDepth(parameters.getInt(DEPTH));
 //            fask.setDelta(parameters.getDouble(FASK_DELTA));
-            fask.setAlpha(parameters.getDouble(ORIENTATION_ALPHA));
+            fask.setTwoCycleAlpha(parameters.getDouble(ORIENTATION_ALPHA));
             fask.setKnowledge(this.knowledge);
 
 

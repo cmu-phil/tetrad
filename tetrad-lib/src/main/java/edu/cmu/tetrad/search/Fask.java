@@ -630,7 +630,7 @@ public final class Fask {
      *
      * @param alpha the significance level, must be between 0.0 and 1.0
      */
-    public void setAlpha(double alpha) {
+    public void setTwoCycleAlpha(double alpha) {
         this.alpha = alpha;
     }
 
@@ -709,7 +709,7 @@ public final class Fask {
         final int maxSize = (depth < 0) ? cand.size() : TMath.min(depth, cand.size());
 
         // -------------------- 1) Baseline: does the unconditioned pattern look cyclic? --------------------
-        if (!showsCyclePattern(x, y, /*Z=*/null, minPart, ridge, clampEps)) {
+        if (!showsTwoCyclePattern(x, y, /*Z=*/null, minPart, ridge, clampEps)) {
             // If even without Z we don't see the cycle opposition pattern, it's not a 2-cycle.
             return false;
         }
@@ -736,7 +736,7 @@ public final class Fask {
      * The cycle opposition pattern is characterized by significant shifts in partial correlations when conditioning on
      * X > 0 versus Y > 0, which suggests a feedback loop (X <-> Y).
      */
-    private boolean showsCyclePattern(double[] x, double[] y, List<Node> zNodes,
+    private boolean showsTwoCyclePattern(double[] x, double[] y, List<Node> zNodes,
                                       int minPart, double ridge, double clampEps) {
 
         double[][] Z = (zNodes == null) ? new double[0][] : buildZ(zNodes);
@@ -788,7 +788,7 @@ public final class Fask {
     private boolean breaksCyclePattern(double[] x, double[] y, List<Node> zNodes,
                                        int minPart, double ridge, double clampEps) {
         // We “break” if the cycle pattern is NOT present under Z.
-        return !showsCyclePattern(x, y, zNodes, minPart, ridge, clampEps);
+        return !showsTwoCyclePattern(x, y, zNodes, minPart, ridge, clampEps);
     }
 
     // === Utility to build Z matrix ===

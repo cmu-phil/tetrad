@@ -197,11 +197,11 @@ public final class FaskLeftRightHarness {
 //        parameters.set(Params.CYCLIC_COEF_HIGH, 0.7);
 
         return RandomGraph.randomCyclicGraph3(
-                parameters.getInt("numMeasures"),
-                parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
-                parameters.getInt("maxDegree"),
-                parameters.getDouble("probCycle"),
-                parameters.getInt("probTwoCycle")
+                parameters.getInt(Params.NUM_MEASURES),
+                parameters.getInt(Params.AVG_DEGREE) * parameters.getInt(Params.NUM_MEASURES) / 2,
+                parameters.getInt(Params.MAX_DEGREE),
+                parameters.getDouble(Params.PROB_CYCLE),
+                parameters.getDouble(Params.PROB_TWO_CYCLE)
         );
     }
 
