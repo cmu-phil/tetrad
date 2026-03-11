@@ -192,7 +192,7 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
             Integer iy = nameToIdx.get(y.getName());
             if (ix == null || iy == null) continue; // defensive: mismatch
 
-            double diff = Fask.leftRightDiffCyclic(pwRule, pag, x, y, nodes, data);
+            double diff = Fask.leftRightDiffResidualized(pwRule, pag, x, y, nodes, data);
 
             if (Edges.isUndirectedEdge(e)) { // x — y
                 pag.removeEdge(x, y);

@@ -155,8 +155,20 @@ public final class Fask {
         };
     }
 
-    public static double leftRightDiffCyclic(int ruleIndex, Graph graph, Node xi, Node xj, List<Node> nodes,
-                                              double[][] data) {
+    /**
+     * Returns a signed left-right score after first residualizing both variables on
+     * a common covariate set intended to block alternative paths between them.
+     *
+     * <p>The covariate set is obtained using {@link #orientationCovariates(Graph, Node, Node, int)}.
+     * If recursive blocking fails to produce a set, the fallback is
+     * Adj(xi) ∪ Adj(xj) \ {xi, xj}. The selected left-right rule is then applied
+     * to standardized residuals.</p>
+     *
+     * <p>This method is intended especially for cyclic settings, where applying the
+     * left-right rule directly to the raw variables may be distorted by feedback paths.</p>
+     */
+    public static double leftRightDiffResidualized(int ruleIndex, Graph graph, Node xi, Node xj, List<Node> nodes,
+                                                   double[][] data) {
         double[][] z = covariates(graph, xi, xj, nodes, data, -1);
 
         double[] x = data[nodes.indexOf(xi)];
@@ -164,7 +176,7 @@ public final class Fask {
 
         double[] rx = residualize(x, z);
         double[] ry = residualize(y, z);
-
+//                        double score = leftRightDiff(x, y, ruleIndex);
         standardize(rx);
         standardize(ry);
 
@@ -184,8 +196,10 @@ public final class Fask {
      *
      * <p>Strategy:
      * <ol>
-     *   <li>Try RecursiveBlocking to get a path-blocking set.</li>
-     *   <li>If that fails (null), fall back to Adj(xi) ∪ Adj(xj) \ {xi, xj}.</li>
+     *   <li>Try {@code RecursiveBlocking} to obtain a covariate set that blocks
+     *       alternative paths between xi and xj.</li>
+     *   <li>If that fails ({@code null}), fall back heuristically to
+     *       Adj(xi) ∪ Adj(xj) \ {xi, xj}.</li>
      *   <li>Optionally, if desired later, this can be extended with filtering.</li>
      * </ol>
      *
@@ -235,13 +249,13 @@ public final class Fask {
                                         int maxPathLength) {
         Set<Node> z = orientationCovariates(graph, xi, xj, maxPathLength);
 
-        List<Node> adj = new ArrayList<>(z);
-        double[][] covariates = new double[adj.size()][];
+        List<Node> covariateNodes = new ArrayList<>(z);
+        double[][] covariates = new double[covariateNodes.size()][];
 
-        for (int k = 0; k < adj.size(); k++) {
-            int index = nodes.indexOf(adj.get(k));
+        for (int k = 0; k < covariateNodes.size(); k++) {
+            int index = nodes.indexOf(covariateNodes.get(k));
             if (index < 0) {
-                throw new IllegalArgumentException("Node not found in nodes list: " + adj.get(k));
+                throw new IllegalArgumentException("Node not found in nodes list: " + covariateNodes.get(k));
             }
             covariates[k] = data[index];
         }
@@ -293,7 +307,7 @@ public final class Fask {
     }
 
     /**
-     * Standardizes the array in place (mean 0, variance 1).
+     * Standardizes the array in place to mean 0 and sample standard deviation 1.
      */
     public static void standardize(double[] x) {
         int n = x.length;
@@ -319,9 +333,13 @@ public final class Fask {
     }
 
     /**
-     * Returns residuals of x after regressing on covariates.
-     * <p>
-     * covariates[j][i] = j-th covariate at observation i.
+     * Returns linear least-squares residuals of x after regressing on the supplied covariates.
+     *
+     * <p>The covariates are interpreted column-wise:
+     * covariates[j][i] is the value of the j-th covariate in row i.</p>
+     *
+     * <p>No intercept is added internally, so callers should standardize or center
+     * variables beforehand if that is desired.</p>
      */
     public static double[] residualize(double[] x, double[][] covariates) {
 
@@ -558,8 +576,10 @@ public final class Fask {
                         graph.addEdge(Edges.directedEdge(Y, X));
                     } else {
                         int ruleIndex = leftRight.ordinal() + 1;
-//                        double score = leftRightDiff(x, y, ruleIndex); // Acyclic, but the cyclic versio works better there too.
-                        double score = leftRightDiffCyclic(ruleIndex, G0, X, Y, variables, data);
+                        // Raw left-right score on x and y.
+                        // The residualized cyclic version appears to work better in both cyclic and acyclic settings.
+//                        double score = leftRightDiff(x, y, ruleIndex);
+                        double score = leftRightDiffResidualized(ruleIndex, G0, X, Y, variables, data);
                         if (score > 0) graph.addDirectedEdge(X, Y);
                         else graph.addDirectedEdge(Y, X);
                     }

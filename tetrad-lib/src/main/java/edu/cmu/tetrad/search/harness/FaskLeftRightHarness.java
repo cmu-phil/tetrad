@@ -153,7 +153,7 @@ public final class FaskLeftRightHarness {
 
                 if (pwRule >= 1 && pwRule <= 5) {
                     if (cyclic) {
-                        diff = Fask.leftRightDiffCyclic(pwRule, graph, xi, xj, nodes, data);
+                        diff = Fask.leftRightDiffResidualized(pwRule, graph, xi, xj, nodes, data);
                     } else {
                         diff = Fask.leftRightDiff(data[i], data[j], pwRule);
                     }
