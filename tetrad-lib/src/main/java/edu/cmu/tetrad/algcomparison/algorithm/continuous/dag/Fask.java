@@ -131,7 +131,7 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 //        }
 
         fask.setDepth(parameters.getInt(DEPTH));
-        fask.setTwoCycleAlpha(parameters.getDouble(TWO_CYCLE_ALPHA));
+//        fask.setTwoCycleAlpha(parameters.getDouble(TWO_CYCLE_ALPHA));
         fask.setExtraEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
         fask.setUseFasAdjacencies(true);
         fask.setUseSkewAdjacencies(true);
@@ -192,7 +192,7 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
         parameters.add(DEPTH);
         parameters.add(SKEW_EDGE_THRESHOLD);
-        parameters.add(TWO_CYCLE_ALPHA);
+//        parameters.add(TWO_CYCLE_ALPHA);
 //        parameters.add(FASK_LEFT_RIGHT_RULE);
 
         return parameters;

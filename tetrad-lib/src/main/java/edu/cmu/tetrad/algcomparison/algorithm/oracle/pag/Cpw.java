@@ -153,116 +153,124 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         Map<String, Integer> nameToIdx = new HashMap<>();
         for (int k = 0; k < nodes.size(); k++) nameToIdx.put(nodes.get(k).getName(), k);
 
-        // --- Phase 0: Build PW-forbidden knowledge (internal only) ---
-        Knowledge internalKnowledge = buildPwForbiddenKnowledge(data, nodes, pwRule, verbose);
+        Graph pag = new EdgeListGraph();
 
-        // --- Phase 1: Run FCI with that knowledge ---
-        edu.cmu.tetrad.search.Fci.ColliderRule colliderOrientationStyle = switch (parameters.getInt(Params.COLLIDER_ORIENTATION_STYLE)) {
-            case 1 -> edu.cmu.tetrad.search.Fci.ColliderRule.SEPSETS;
-            case 2 -> edu.cmu.tetrad.search.Fci.ColliderRule.CONSERVATIVE;
-            case 3 -> edu.cmu.tetrad.search.Fci.ColliderRule.MAX_P;
-            default -> throw new IllegalArgumentException("Invalid collider orientation style");
-        };
+        Graph _pag = new EdgeListGraph(pag);
 
-        IndependenceTest test1 = this.test.getTest(dataModel, parameters);
-        test1 = new CachedIndependenceQueries(test1);
-        edu.cmu.tetrad.search.Fci fci = new edu.cmu.tetrad.search.Fci(test1);
-        fci.setDepth(parameters.getInt(Params.DEPTH));
-        fci.setR0ColliderRule(colliderOrientationStyle);
-        fci.setKnowledge(internalKnowledge);
-        fci.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
-        fci.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        fci.setDoPossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
-        fci.setVerbose(verbose);
-        fci.setStable(parameters.getBoolean(Params.STABLE_FAS));
+        do {
+            _pag = new EdgeListGraph(pag);
 
-        Graph pag;
-        double fdrQ = parameters.getDouble(Params.FDR_Q);
-        if (fdrQ == 0.0) {
-            pag = fci.search();
-        } else {
-            boolean negativelyCorrelated = true;
-            double alpha = parameters.getDouble(Params.ALPHA);
-            pag = IndTestFdrWrapper.doFdrLoop(fci, negativelyCorrelated, alpha, fdrQ, verbose);
-        }
+            // --- Phase 0: Build PW-forbidden knowledge (internal only) ---
+            Knowledge internalKnowledge = buildPwForbiddenKnowledge(data, nodes, pwRule, verbose);
 
-        // --- Phase 2a: Orient tail–tail (—) edges using PW left-right on standardized data ---
-        for (Edge e : new ArrayList<>(pag.getEdges())) { // snapshot to allow mutation
-            Node x = e.getNode1();
-            Node y = e.getNode2();
+            // --- Phase 1: Run FCI with that knowledge ---
+            edu.cmu.tetrad.search.Fci.ColliderRule colliderOrientationStyle = switch (parameters.getInt(Params.COLLIDER_ORIENTATION_STYLE)) {
+                case 1 -> edu.cmu.tetrad.search.Fci.ColliderRule.SEPSETS;
+                case 2 -> edu.cmu.tetrad.search.Fci.ColliderRule.CONSERVATIVE;
+                case 3 -> edu.cmu.tetrad.search.Fci.ColliderRule.MAX_P;
+                default -> throw new IllegalArgumentException("Invalid collider orientation style");
+            };
 
-            Integer ix = nameToIdx.get(x.getName());
-            Integer iy = nameToIdx.get(y.getName());
-            if (ix == null || iy == null) continue; // defensive: mismatch
+            IndependenceTest test1 = this.test.getTest(dataModel, parameters);
+            test1 = new CachedIndependenceQueries(test1);
+            edu.cmu.tetrad.search.Fci fci = new edu.cmu.tetrad.search.Fci(test1);
+            fci.setDepth(parameters.getInt(Params.DEPTH));
+            fci.setR0ColliderRule(colliderOrientationStyle);
+            fci.setKnowledge(internalKnowledge);
+            fci.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
+            fci.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+            fci.setDoPossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
+            fci.setVerbose(verbose);
+            fci.setStable(parameters.getBoolean(Params.STABLE_FAS));
 
-            double diff = Fask.leftRightDiffResidualized(pwRule, pag, x, y, nodes, data);
-
-            if (Edges.isUndirectedEdge(e)) { // x — y
-                pag.removeEdge(x, y);
-                if (diff > 0) {
-                    pag.addDirectedEdge(x, y);  // x → y
-                    if (verbose) TetradLogger.getInstance().log("CPW — : " + x + "→" + y + " (diff=" + diff + ")");
-                } else {
-                    pag.addDirectedEdge(y, x);  // y → x
-                    if (verbose) TetradLogger.getInstance().log("CPW — : " + y + "→" + x + " (diff=" + diff + ")");
-                }
+            double fdrQ = parameters.getDouble(Params.FDR_Q);
+            if (fdrQ == 0.0) {
+                pag = fci.search();
+            } else {
+                boolean negativelyCorrelated = true;
+                double alpha = parameters.getDouble(Params.ALPHA);
+                pag = IndTestFdrWrapper.doFdrLoop(fci, negativelyCorrelated, alpha, fdrQ, verbose);
             }
-        }
 
-        // --- Phase 2b: Tail–circle (—o) and circle–tail (o—) safe refinements ---
-        for (int r = 0; r < 2; r++) {
-            for (Edge e : new ArrayList<>(pag.getEdges())) { // snapshot again; we'll mutate
+            // --- Phase 2a: Orient tail–tail (—) edges using PW left-right on standardized data ---
+            for (Edge e : new ArrayList<>(pag.getEdges())) { // snapshot to allow mutation
                 Node x = e.getNode1();
                 Node y = e.getNode2();
 
-                Endpoint exy = pag.getEndpoint(x, y); // endpoint at y from x
-                Endpoint eyx = pag.getEndpoint(y, x); // endpoint at x from y
-
                 Integer ix = nameToIdx.get(x.getName());
                 Integer iy = nameToIdx.get(y.getName());
-                if (ix == null || iy == null) continue;
+                if (ix == null || iy == null) continue; // defensive: mismatch
 
-                double diff = Fask.leftRightDiff(data[ix], data[iy], pwRule);
+                double diff = Fask.leftRightDiffResidualized(pwRule, pag, x, y, nodes, data);
 
-                // Case: x — o y  (TAIL at x→y; CIRCLE at y→x)
-                if (exy == Endpoint.TAIL && eyx == Endpoint.CIRCLE) {
-//                    if (diff > 0) { // x → y preferred
+                if (Edges.isUndirectedEdge(e)) { // x — y
                     pag.removeEdge(x, y);
-                    pag.addDirectedEdge(x, y);
-                    if (verbose) TetradLogger.getInstance().log("CPW —o: " + x + "→" + y + " (diff=" + diff + ")");
-//                    }
-                    continue;
-                }
-
-                // Case: x o — y  (CIRCLE at x→y; TAIL at y→x)
-                if (exy == Endpoint.CIRCLE && eyx == Endpoint.TAIL) {
-                    if (diff < 0) { // y → x preferred
-                        pag.removeEdge(x, y);
-                        pag.addDirectedEdge(y, x);
-                        if (verbose) TetradLogger.getInstance().log("CPW o—: " + y + "→" + x + " (diff=" + diff + ")");
-                    }
-                }
-
-                // Case x o-o y
-                if (eyx == Endpoint.CIRCLE && exy == Endpoint.CIRCLE) {
                     if (diff > 0) {
-                        pag.setEndpoint(x, y, Endpoint.ARROW);
+                        pag.addDirectedEdge(x, y);  // x → y
+                        if (verbose) TetradLogger.getInstance().log("CPW — : " + x + "→" + y + " (diff=" + diff + ")");
                     } else {
-                        pag.setEndpoint(y, x, Endpoint.ARROW);
+                        pag.addDirectedEdge(y, x);  // y → x
+                        if (verbose) TetradLogger.getInstance().log("CPW — : " + y + "→" + x + " (diff=" + diff + ")");
                     }
-                }
-
-                // Case x o-> y; if causally sufficient orient as x --> y
-                if (eyx == Endpoint.CIRCLE && exy == Endpoint.ARROW) {
-                    pag.setEndpoint(e.getNode2(), e.getNode1(), Endpoint.TAIL);
-                }
-
-                // Case x <-o y; if causally sufficient orient as x <-- y
-                if (eyx == Endpoint.ARROW && exy == Endpoint.CIRCLE) {
-                    pag.setEndpoint(e.getNode1(), e.getNode2(), Endpoint.TAIL);
                 }
             }
-        }
+
+            // --- Phase 2b: Tail–circle (—o) and circle–tail (o—) safe refinements ---
+            for (int s = 0; s < 2; s++) {
+                for (Edge e : new ArrayList<>(pag.getEdges())) { // snapshot again; we'll mutate
+                    Node x = e.getNode1();
+                    Node y = e.getNode2();
+
+                    Endpoint exy = pag.getEndpoint(x, y); // endpoint at y from x
+                    Endpoint eyx = pag.getEndpoint(y, x); // endpoint at x from y
+
+                    Integer ix = nameToIdx.get(x.getName());
+                    Integer iy = nameToIdx.get(y.getName());
+                    if (ix == null || iy == null) continue;
+
+                    double diff = Fask.leftRightDiff(data[ix], data[iy], pwRule);
+
+                    // Case: x — o y  (TAIL at x→y; CIRCLE at y→x)
+                    if (exy == Endpoint.TAIL && eyx == Endpoint.CIRCLE) {
+//                    if (diff > 0) { // x → y preferred
+                        pag.removeEdge(x, y);
+                        pag.addDirectedEdge(x, y);
+                        if (verbose) TetradLogger.getInstance().log("CPW —o: " + x + "→" + y + " (diff=" + diff + ")");
+//                    }
+                        continue;
+                    }
+
+                    // Case: x o — y  (CIRCLE at x→y; TAIL at y→x)
+                    if (exy == Endpoint.CIRCLE && eyx == Endpoint.TAIL) {
+                        if (diff < 0) { // y → x preferred
+                            pag.removeEdge(x, y);
+                            pag.addDirectedEdge(y, x);
+                            if (verbose)
+                                TetradLogger.getInstance().log("CPW o—: " + y + "→" + x + " (diff=" + diff + ")");
+                        }
+                    }
+
+                    // Case x o-o y
+                    if (eyx == Endpoint.CIRCLE && exy == Endpoint.CIRCLE) {
+                        if (diff > 0) {
+                            pag.setEndpoint(x, y, Endpoint.ARROW);
+                        } else {
+                            pag.setEndpoint(y, x, Endpoint.ARROW);
+                        }
+                    }
+
+                    // Case x o-> y; if causally sufficient orient as x --> y
+                    if (eyx == Endpoint.CIRCLE && exy == Endpoint.ARROW) {
+                        pag.setEndpoint(e.getNode2(), e.getNode1(), Endpoint.TAIL);
+                    }
+
+                    // Case x <-o y; if causally sufficient orient as x <-- y
+                    if (eyx == Endpoint.ARROW && exy == Endpoint.CIRCLE) {
+                        pag.setEndpoint(e.getNode1(), e.getNode2(), Endpoint.TAIL);
+                    }
+                }
+            }
+        }  while (!pag.equals(_pag));
 
         return pag;
     }

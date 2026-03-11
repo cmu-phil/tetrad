@@ -214,7 +214,11 @@ public final class Fask {
                     graph, xj, xi, Set.of(), Set.of(), maxPathLength
             );
 
-            if (z2 == null) z2 = new HashSet();
+            if (z2 == null) {
+                List<Node> adj = graph.getAdjacentNodes(xi);
+                adj.addAll(graph.getAdjacentNodes(xj));
+                z2 = new HashSet<>(adj);
+            }
 
             z.addAll(z2);
 
@@ -557,40 +561,45 @@ public final class Fask {
         GraphSearchUtils.pcOrientbk(knowledge, G0, G0.getNodes(), false);
 
         Graph graph = new EdgeListGraph(variables);
+        Graph _graph = new EdgeListGraph();
 
-        for (int i = 0; i < variables.size(); i++) {
-            for (int j = i + 1; j < variables.size(); j++) {
-                Node X = variables.get(i);
-                Node Y = variables.get(j);
+        do {
+            _graph = new EdgeListGraph(graph);
 
-                final double[] x = colData[i];
-                final double[] y = colData[j];
+            for (int i = 0; i < variables.size(); i++) {
+                for (int j = i + 1; j < variables.size(); j++) {
+                    Node X = variables.get(i);
+                    Node Y = variables.get(j);
 
-                double skewX = StatUtils.cov(x, y, x, 0, +1)[1];
-                double skewY = StatUtils.cov(x, y, y, 0, +1)[1];
+                    final double[] x = colData[i];
+                    final double[] y = colData[j];
 
-                if ((useFasAdjacencies && G0.isAdjacentTo(X, Y)) ||
-                        (useSkewAdjacencies && TMath.abs(skewX - skewY) > extraEdgeThreshold)) {
-                    if (knowledgeOrients(X, Y)) {
-                        graph.addDirectedEdge(X, Y);
-                    } else if (knowledgeOrients(Y, X)) {
-                        graph.addDirectedEdge(Y, X);
-                    } else if (isBidirected(x, y, G0, X, Y)) {
-                        graph.addEdge(Edges.directedEdge(X, Y));
-                        graph.addEdge(Edges.directedEdge(Y, X));
-                    } else {
-                        int ruleIndex = leftRight.ordinal() + 1;
-                        // Raw left-right score on x and y.
-                        // The residualized cyclic version of FASK v2 works best in both cyclic and acyclic
-                        // settings in the harness, edu.cmu.tetrad.search.harness.FaskLeftRightHarness.
+                    double skewX = StatUtils.cov(x, y, x, 0, +1)[1];
+                    double skewY = StatUtils.cov(x, y, y, 0, +1)[1];
+
+                    if ((useFasAdjacencies && G0.isAdjacentTo(X, Y)) ||
+                            (useSkewAdjacencies && TMath.abs(skewX - skewY) > extraEdgeThreshold)) {
+                        if (knowledgeOrients(X, Y)) {
+                            graph.addDirectedEdge(X, Y);
+                        } else if (knowledgeOrients(Y, X)) {
+                            graph.addDirectedEdge(Y, X);
+                        } else if (isBidirected(x, y, G0, X, Y)) {
+                            graph.addEdge(Edges.directedEdge(X, Y));
+                            graph.addEdge(Edges.directedEdge(Y, X));
+                        } else {
+                            int ruleIndex = leftRight.ordinal() + 1;
+                            // Raw left-right score on x and y.
+                            // The residualized cyclic version of FASK v2 works best in both cyclic and acyclic
+                            // settings in the harness, edu.cmu.tetrad.search.harness.FaskLeftRightHarness.
 //                        double score = leftRightDiff(x, y, ruleIndex);
-                        double score = leftRightDiffResidualized(ruleIndex, G0, X, Y, variables, data);
-                        if (score > 0) graph.addDirectedEdge(X, Y);
-                        else graph.addDirectedEdge(Y, X);
+                            double score = leftRightDiffResidualized(ruleIndex, G0, X, Y, variables, data);
+                            if (score > 0) graph.addDirectedEdge(X, Y);
+                            else graph.addDirectedEdge(Y, X);
+                        }
                     }
                 }
             }
-        }
+        } while (!graph.equals(_graph));
 
         return graph;
     }
