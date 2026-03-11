@@ -176,18 +176,11 @@ public final class Fask {
 
         double[] rx = residualize(x, z);
         double[] ry = residualize(y, z);
-//                        double score = leftRightDiff(x, y, ruleIndex);
+
         standardize(rx);
         standardize(ry);
 
-        return switch (ruleIndex) {
-            case 1 -> fask1Score(rx, ry);
-            case 2 -> fask2Score(rx, ry);
-            case 3 -> rskewScore(rx, ry);
-            case 4 -> skewScore(rx, ry);
-            case 5 -> tanhScore(rx, ry);
-            default -> throw new IllegalArgumentException("Unknown ruleIndex (1..5): " + ruleIndex);
-        };
+        return leftRightDiff(rx, ry, ruleIndex);
     }
 
     /**
@@ -211,25 +204,22 @@ public final class Fask {
                                                   Node xj,
                                                   int maxPathLength) {
         try {
-            Set z = RecursiveBlocking.blockPathsRecursively(
+            Set<Node> z = RecursiveBlocking.blockPathsRecursively(
                     graph, xi, xj, Set.of(), Set.of(), maxPathLength
             );
 
-            if (z == null) {
-                z = RecursiveBlocking.blockPathsRecursively(
-                        graph, xj, xi, Set.of(), Set.of(), maxPathLength
-                );
-            }
+            if (z == null) z = new HashSet();
 
-            if (z == null) {
-                z = new HashSet<>(graph.getAdjacentNodes(xi));
-                z.addAll(graph.getAdjacentNodes(xj));
-            } else {
-                z = new HashSet<>(z);
-            }
+            Set<Node> z2 = RecursiveBlocking.blockPathsRecursively(
+                    graph, xj, xi, Set.of(), Set.of(), maxPathLength
+            );
 
-            z.remove(xi);
-            z.remove(xj);
+            if (z2 == null) z2 = new HashSet();
+
+            z.addAll(z2);
+
+//            z.remove(xi);
+//            z.remove(xj);
 
             return z;
         } catch (InterruptedException e) {
@@ -333,6 +323,21 @@ public final class Fask {
 
         for (int i = 0; i < n; i++) {
             x[i] = (x[i] - mean) / sd;
+        }
+    }
+
+    /**
+     * Standardizes the array in place to mean 0 and sample standard deviation 1.
+     */
+    public static void center(double[] x) {
+        int n = x.length;
+
+        double mean = 0.0;
+        for (double v : x) mean += v;
+        mean /= n;
+
+        for (int i = 0; i < n; i++) {
+            x[i] = (x[i] - mean);
         }
     }
 

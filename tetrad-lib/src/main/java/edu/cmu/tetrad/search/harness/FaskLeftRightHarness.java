@@ -15,11 +15,11 @@ import java.util.List;
 
 /**
  * Harness for tuning and comparing FASK left-right pairwise orientation rules
- * on random cyclic linear SEMs with skewed errors.
+ * on random residualized linear SEMs with skewed errors.
  *
  * <p>Protocol:
  * <ul>
- *   <li>Generate a random cyclic graph using RandomGraph.randomCyclicGraph3(...)</li>
+ *   <li>Generate a random residualized graph using RandomGraph.randomCyclicGraph3(...)</li>
  *   <li>Simulate data from a linear SEM with Exp(1) errors</li>
  *   <li>Standardize the data</li>
  *   <li>For each singly-directed true edge Xi -> Xj, evaluate
@@ -112,7 +112,7 @@ public final class FaskLeftRightHarness {
         List<Double> replicateErrorRates = new ArrayList<>();
 
         for (int r = 0; r < replicates; r++) {
-            Graph graph = generateRandomAcyclicGraph();
+            Graph graph = generateRandomCyclicGraph();
 
             DataSet dataSet = simulateData(graph);
 
@@ -181,7 +181,7 @@ public final class FaskLeftRightHarness {
     }
 
     /**
-     * Generates a random cyclic graph using the settings described by the user.
+     * Generates a random residualized graph using the settings described by the user.
      */
     private static Graph generateRandomCyclicGraph() {
         Parameters parameters = new Parameters();
@@ -251,7 +251,7 @@ public final class FaskLeftRightHarness {
         System.out.println(
                 label
                         + " | " + (summary.standardize ? "standardized" : "center")
-                        + " | " + (summary.cyclic ? "cyclic" : "acyclic")
+                        + " | " + (summary.residualized ? "residualized" : "non-residualized")
                         + " | misoriented=" + summary.totalMisoriented
                         + " / eligible=" + summary.totalEligible
                         + " | overallError=" + DF.format(overallErrorRate)
@@ -296,7 +296,7 @@ public final class FaskLeftRightHarness {
 
     private record HarnessSummary(
             boolean standardize,
-            boolean cyclic,
+            boolean residualized,
             long totalMisoriented,
             long totalEligible,
             long totalSkippedTwoCycles,
