@@ -33,6 +33,8 @@ import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.text.ParseException;
+
 /**
  * Pulling this test out for Madelyn.
  *
@@ -93,7 +95,11 @@ public class TestKunMeasurementError {
         comparison.setSaveGraphs(false);
         comparison.setTabDelimitedTables(false);
 
-        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+        try {
+            comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

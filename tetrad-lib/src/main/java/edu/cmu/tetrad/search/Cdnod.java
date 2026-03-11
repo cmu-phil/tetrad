@@ -28,13 +28,13 @@ import java.util.*;
  */
 public final class Cdnod implements IGraphSearch {
 
-    private final double alpha;              // left for parity; not directly used unless Fas exposes setAlpha
     private final boolean stable;
     private final ColliderOrientationStyle colliderStyle;
     private final Knowledge knowledge;
     private final boolean verbose;
     private final double maxPMargin;         // tie-guard for MAX_P (0.0 = classic)
     private final int depth;                 // S-size cap; also applied to FAS for consistency
+    private final double alpha;              // significance level (though not always used by Fas)
 
     // --- core config ---
     private IndependenceTest test;
@@ -53,22 +53,22 @@ public final class Cdnod implements IGraphSearch {
 
     private Cdnod(IndependenceTest test,
                   DataSet data,
-                  double alpha,
                   boolean stable,
                   ColliderOrientationStyle colliderStyle,
                   Knowledge knowledge,
                   boolean verbose,
                   double maxPMargin,
-                  int depth) {
+                  int depth,
+                  double alpha) {
         this.test = test;
         this.data = data; // may be null; user can set later
-        this.alpha = alpha;
         this.stable = stable;
         this.colliderStyle = colliderStyle;
         this.knowledge = knowledge == null ? new Knowledge() : knowledge;
         this.verbose = verbose;
         this.maxPMargin = maxPMargin;
         this.depth = depth;
+        this.alpha = alpha;
     }
 
     /**
@@ -91,9 +91,15 @@ public final class Cdnod implements IGraphSearch {
 
         DoubleDataBox box = new DoubleDataBox(n, p + 1);
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < p; j++) box.set(i, j, dataX.getDouble(i, j));
+            for (int j = 0; j < p; j++) {
+                box.set(i, j, dataX.getDouble(i, j));
+            }
+        }
+
+        for (int i = 0; i < n; i++) {
             box.set(i, p, cIndex[i]);
         }
+
         return new BoxDataSet(box, vars);
     }
 
@@ -180,8 +186,16 @@ public final class Cdnod implements IGraphSearch {
         fas.setVerbose(verbose);
         if (knowledge != null && !knowledge.isEmpty()) fas.setKnowledge(knowledge);
         if (depth >= 0) fas.setDepth(depth);
-        // If Fas exposes alpha, you can uncomment:
-        // fas.setAlpha(alpha);
+
+        // PC/FAS usually uses an alpha for its internal tests.
+        // We try to set it via reflection if the Fas class (or its superclass) has it,
+        // as IFas doesn't explicitly have it.
+        try {
+            Method setAlpha = fas.getClass().getMethod("setAlpha", double.class);
+            setAlpha.invoke(fas, alpha);
+        } catch (Exception ignored) {
+            // If it doesn't have it, that's fine.
+        }
 
         if (verbose) TetradLogger.getInstance().log("CD-NOD: FAS skeleton...");
         Graph g = fas.search();
@@ -229,16 +243,14 @@ public final class Cdnod implements IGraphSearch {
      * Any Tier-0 names not present in the DataSet are silently ignored (matches the PAG runner style).
      */
     private Set<Node> resolveContextNodesTier0(DataSet dataAll) {
-        if (knowledge == null) return Collections.emptySet();
+        if (knowledge == null || knowledge.getTier(0).isEmpty()) return Collections.emptySet();
         Set<Node> out = new LinkedHashSet<>();
-        try {
-            List<String> tier0 = knowledge.getTier(0);
-            for (String name : tier0) {
-                Node v = dataAll.getVariable(name);
-                if (v != null) out.add(v);
+        List<String> tier0 = knowledge.getTier(0);
+        for (String name : tier0) {
+            Node v = dataAll.getVariable(name);
+            if (v != null) {
+                out.add(v);
             }
-        } catch (Throwable ignored) {
-            // If tier APIs aren't available in this Knowledge version, fall back to empty.
         }
         return out;
     }
@@ -341,12 +353,14 @@ public final class Cdnod implements IGraphSearch {
         boolean hasExcl = bestExcl > Double.NEGATIVE_INFINITY;
 
         if (hasIncl && hasExcl) {
-            if (bestExcl >= bestIncl + maxPMargin)
+            if (bestExcl >= bestIncl + maxPMargin) {
                 return new MaxPDecision(ColliderOutcome.INDEPENDENT, bestExcl, bestS_excl);
-            if (bestIncl >= bestExcl + maxPMargin)
+            } else if (bestIncl >= bestExcl + maxPMargin) {
                 return new MaxPDecision(ColliderOutcome.DEPENDENT, bestIncl, bestS_incl);
-            return new MaxPDecision(ColliderOutcome.AMBIGUOUS, TMath.max(bestIncl, bestExcl),
-                    (bestIncl >= bestExcl ? bestS_incl : bestS_excl));
+            } else {
+                return new MaxPDecision(ColliderOutcome.AMBIGUOUS, TMath.max(bestIncl, bestExcl),
+                        (bestIncl >= bestExcl ? bestS_incl : bestS_excl));
+            }
         } else if (hasExcl) {
             return new MaxPDecision(ColliderOutcome.INDEPENDENT, bestExcl, bestS_excl);
         } else if (hasIncl) {
@@ -378,8 +392,11 @@ public final class Cdnod implements IGraphSearch {
         int cap = (depth < 0 ? maxAdj : TMath.min(depth, maxAdj));
 
         for (int d = 0; d <= cap; d++) {
-            for (List<Node> adj : new List[]{adjx, adjy}) {
-                if (d > adj.size()) continue;
+            List<List<Node>> both = new ArrayList<>();
+            if (d <= adjx.size()) both.add(adjx);
+            if (d <= adjy.size()) both.add(adjy);
+
+            for (List<Node> adj : both) {
                 ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
                 int[] choice;
                 while ((choice = gen.next()) != null) {
@@ -413,39 +430,13 @@ public final class Cdnod implements IGraphSearch {
 
     private boolean knowledgeForbids(String from, String to) {
         if (knowledge == null || knowledge.isEmpty()) return false;
-        try {
-            if (knowledge.isForbidden(from, to)) return true;
-        } catch (Throwable ignored) {
-        }
-        // If tiers are defined and tier(from) > tier(to), treat as forbidden
-        try {
-            Method mNum = Knowledge.class.getMethod("getNumTiers");
-            int T = (Integer) mNum.invoke(knowledge);
-            if (T > 0) {
-                Method mTier = Knowledge.class.getMethod("getTier", String.class);
-                int tf = (Integer) mTier.invoke(knowledge, from);
-                int tt = (Integer) mTier.invoke(knowledge, to);
-                if (tf >= 0 && tt >= 0 && tf > tt) return true;
-            }
-        } catch (Throwable ignored) {
-        }
-        // If Knowledge exposes isForbiddenByTiers(String,String)
-        try {
-            Method m = Knowledge.class.getMethod("isForbiddenByTiers", String.class, String.class);
-            Object v = m.invoke(knowledge, from, to);
-            if (v instanceof Boolean && (Boolean) v) return true;
-        } catch (Throwable ignored) {
-        }
-        return false;
+        if (knowledge.isForbidden(from, to)) return true;
+        return knowledge.isForbiddenByTiers(from, to);
     }
 
     private boolean knowledgeRequires(String from, String to) {
         if (knowledge == null || knowledge.isEmpty()) return false;
-        try {
-            return knowledge.isRequired(from, to);
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return knowledge.isRequired(from, to);
     }
 
     private String labelSet(Set<Node> S) {
@@ -584,6 +575,17 @@ public final class Cdnod implements IGraphSearch {
         }
 
         /**
+         * Sets the significance level for statistical tests.
+         * @param a The significance level (alpha) for statistical tests.
+         * @return The builder instance for method chaining.
+         * @deprecated Use {@link #alpha(double)} instead.
+         */
+        @Deprecated
+        public Builder setAlpha(double a) {
+            return alpha(a);
+        }
+
+        /**
          * Sets the stability parameter for the algorithm.
          * @param s The stability parameter for the algorithm.
          * @return The builder instance for method chaining.
@@ -663,7 +665,7 @@ public final class Cdnod implements IGraphSearch {
             if (working == null && dataX != null && cIndex != null) {
                 working = appendChangeIndexAsLastColumn(dataX, cIndex, cName);
             }
-            return new Cdnod(test, working, alpha, stable, colliderStyle, knowledge, verbose, maxPMargin, depth);
+            return new Cdnod(test, working, stable, colliderStyle, knowledge, verbose, maxPMargin, depth, alpha);
         }
     }
 

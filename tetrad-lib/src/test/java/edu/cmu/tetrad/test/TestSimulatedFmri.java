@@ -192,7 +192,11 @@ public class TestSimulatedFmri {
             directory = "comparison_testing";
         }
 
-        comparison.compareFromSimulations(directory, simulations, algorithms, statistics, parameters);
+        try {
+            comparison.compareFromSimulations(directory, simulations, algorithms, statistics, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //    @Test
@@ -249,7 +253,11 @@ public class TestSimulatedFmri {
 
         final String directory = "smithsim";
 
-        comparison.compareFromSimulations(directory, simulations, algorithms, statistics, parameters);
+        try {
+            comparison.compareFromSimulations(directory, simulations, algorithms, statistics, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //    @Test
@@ -308,7 +316,11 @@ public class TestSimulatedFmri {
         comparison.setSaveGraphs(false);
         comparison.setTabDelimitedTables(false);
 
-        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+        try {
+            comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //    @Test

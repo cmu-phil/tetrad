@@ -55,6 +55,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.text.ParseException;
 import java.util.*;
 
 import static junit.framework.TestCase.assertFalse;
@@ -103,7 +104,11 @@ public class TestFges {
 
             RandomGraph graph = new RandomForward();
             Simulation sim = new SemSimulation(graph);
-            sim.createData(parameters, false);
+            try {
+                sim.createData(parameters, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
             ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
             Algorithm alg = new Fges(score);
 
@@ -391,7 +396,11 @@ public class TestFges {
 
         Parameters parameters = getParameters();
 
-        simulation.createData(parameters, false);
+        try {
+            simulation.createData(parameters, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         DataSet dataSet = (DataSet) simulation.getDataModel(0);
         Graph trueGraph = simulation.getTrueGraph(0);

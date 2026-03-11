@@ -29,6 +29,8 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.text.ParseException;
+
 /**
  * Pulling this test out for Madelyn.
  *
@@ -140,7 +142,11 @@ public class TestSimulatedFmri3 {
         comparison.setSaveGraphs(false);
         comparison.setTabDelimitedTables(false);
 
-        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+        try {
+            comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void TestMadelynDAta() {
@@ -225,7 +231,11 @@ public class TestSimulatedFmri3 {
             comparison.setTabDelimitedTables(false);
             comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
-            comparison.compareFromSimulations("comparison_" + dirs[i], simulations, algorithms, statistics, parameters);
+            try {
+                comparison.compareFromSimulations("comparison_" + dirs[i], simulations, algorithms, statistics, parameters);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }

@@ -31,6 +31,8 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.text.ParseException;
+
 /**
  * Tests to make sure the DelimiterType enumeration hasn't been tampered with.
  *
@@ -86,7 +88,11 @@ public final class TestCopy {
         comparison.setSortByUtility(true);
         comparison.setShowUtilities(true);
 
-        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+        try {
+            comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 
