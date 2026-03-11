@@ -31,8 +31,8 @@ import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.SublistGenerator;
-import org.apache.commons.math3.linear.SingularMatrixException;
 import edu.cmu.tetrad.util.TMath;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Set;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
-import static edu.cmu.tetrad.util.TMath.signum;
 import static edu.cmu.tetrad.util.TMath.*;
 
 /**
@@ -156,6 +155,100 @@ public final class Fask {
         };
     }
 
+    public static double leftRightDiffCyclic(int ruleIndex, Graph graph, Node xi, Node xj, List<Node> nodes,
+                                              double[][] data) {
+        double[][] z = covariates(graph, xi, xj, nodes, data, -1);
+
+        double[] x = data[nodes.indexOf(xi)];
+        double[] y = data[nodes.indexOf(xj)];
+
+        double[] rx = residualize(x, z);
+        double[] ry = residualize(y, z);
+
+        standardize(rx);
+        standardize(ry);
+
+        return switch (ruleIndex) {
+            case 1 -> fask1Score(rx, ry);
+            case 2 -> fask2Score(rx, ry);
+            case 3 -> rskewScore(rx, ry);
+            case 4 -> skewScore(rx, ry);
+            case 5 -> tanhScore(rx, ry);
+            default -> throw new IllegalArgumentException("Unknown ruleIndex (1..5): " + ruleIndex);
+        };
+    }
+
+    /**
+     * Returns a covariate set for residualizing xi and xj before applying an
+     * orientation rule.
+     *
+     * <p>Strategy:
+     * <ol>
+     *   <li>Try RecursiveBlocking to get a path-blocking set.</li>
+     *   <li>If that fails (null), fall back to Adj(xi) ∪ Adj(xj) \ {xi, xj}.</li>
+     *   <li>Optionally, if desired later, this can be extended with filtering.</li>
+     * </ol>
+     *
+     * <p>This method never returns null; it returns an empty set if no covariates
+     * are available.</p>
+     */
+    public static Set<Node> orientationCovariates(Graph graph,
+                                                  Node xi,
+                                                  Node xj,
+                                                  int maxPathLength) {
+        Set<Node> z;
+
+        try {
+            z = RecursiveBlocking.blockPathsRecursively(
+                    graph, xi, xj, Set.of(), Set.of(), maxPathLength
+            );
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            z = null;
+        }
+
+        if (z == null) {
+            z = new HashSet<>(graph.getAdjacentNodes(xi));
+            z.addAll(graph.getAdjacentNodes(xj));
+        } else {
+            z = new HashSet<>(z);
+        }
+
+        z.remove(xi);
+        z.remove(xj);
+
+        return z;
+    }
+
+    /**
+     * Returns covariate columns in the format expected by residualize():
+     * covariates[k] is the data column for the k-th covariate node.
+     *
+     * <p>The input data are assumed to be column-major:
+     * data[nodeIndex][rowIndex].</p>
+     */
+    public static double[][] covariates(Graph graph,
+                                        Node xi,
+                                        Node xj,
+                                        List<Node> nodes,
+                                        double[][] data,
+                                        int maxPathLength) {
+        Set<Node> z = orientationCovariates(graph, xi, xj, maxPathLength);
+
+        List<Node> adj = new ArrayList<>(z);
+        double[][] covariates = new double[adj.size()][];
+
+        for (int k = 0; k < adj.size(); k++) {
+            int index = nodes.indexOf(adj.get(k));
+            if (index < 0) {
+                throw new IllegalArgumentException("Node not found in nodes list: " + adj.get(k));
+            }
+            covariates[k] = data[index];
+        }
+
+        return covariates;
+    }
+
     // ------------ Rule score implementations (double-signed) ------------
 
     /**
@@ -197,6 +290,141 @@ public final class Fask {
         double r = StatUtils.correlation(x, y);
         if (r < 0.0) lr *= -1;
         return lr;
+    }
+
+    /**
+     * Standardizes the array in place (mean 0, variance 1).
+     */
+    public static void standardize(double[] x) {
+        int n = x.length;
+
+        double mean = 0.0;
+        for (double v : x) mean += v;
+        mean /= n;
+
+        double var = 0.0;
+        for (double v : x) {
+            double d = v - mean;
+            var += d * d;
+        }
+
+        var /= (n - 1);
+        double sd = Math.sqrt(var);
+
+        if (sd == 0) sd = 1.0;
+
+        for (int i = 0; i < n; i++) {
+            x[i] = (x[i] - mean) / sd;
+        }
+    }
+
+    /**
+     * Returns residuals of x after regressing on covariates.
+     * <p>
+     * covariates[j][i] = j-th covariate at observation i.
+     */
+    public static double[] residualize(double[] x, double[][] covariates) {
+
+        int n = x.length;
+
+        if (covariates == null || covariates.length == 0) {
+            return x.clone();
+        }
+
+        int p = covariates.length;
+
+        // Build normal equation matrices
+        double[][] xtx = new double[p][p];
+        double[] xty = new double[p];
+
+        for (int j = 0; j < p; j++) {
+            for (int k = j; k < p; k++) {
+                double sum = 0.0;
+                for (int i = 0; i < n; i++) {
+                    sum += covariates[j][i] * covariates[k][i];
+                }
+                xtx[j][k] = sum;
+                xtx[k][j] = sum;
+            }
+
+            double sum = 0.0;
+            for (int i = 0; i < n; i++) {
+                sum += covariates[j][i] * x[i];
+            }
+            xty[j] = sum;
+        }
+
+        // Solve xtx * beta = xty
+        double[] beta = solve(xtx, xty);
+
+        // Compute residuals
+        double[] r = new double[n];
+
+        for (int i = 0; i < n; i++) {
+
+            double pred = 0.0;
+
+            for (int j = 0; j < p; j++) {
+                pred += beta[j] * covariates[j][i];
+            }
+
+            r[i] = x[i] - pred;
+        }
+
+        return r;
+    }
+
+    private static double[] solve(double[][] A, double[] b) {
+
+        int n = b.length;
+
+        double[][] M = new double[n][n + 1];
+
+        for (int i = 0; i < n; i++) {
+            System.arraycopy(A[i], 0, M[i], 0, n);
+            M[i][n] = b[i];
+        }
+
+        // Forward elimination
+        for (int k = 0; k < n; k++) {
+
+            int max = k;
+            for (int i = k + 1; i < n; i++) {
+                if (Math.abs(M[i][k]) > Math.abs(M[max][k])) {
+                    max = i;
+                }
+            }
+
+            double[] temp = M[k];
+            M[k] = M[max];
+            M[max] = temp;
+
+            double pivot = M[k][k];
+
+            if (Math.abs(pivot) < 1e-12) continue;
+
+            for (int j = k; j <= n; j++) {
+                M[k][j] /= pivot;
+            }
+
+            for (int i = 0; i < n; i++) {
+                if (i == k) continue;
+
+                double factor = M[i][k];
+
+                for (int j = k; j <= n; j++) {
+                    M[i][j] -= factor * M[k][j];
+                }
+            }
+        }
+
+        double[] x = new double[n];
+
+        for (int i = 0; i < n; i++) {
+            x[i] = M[i][n];
+        }
+
+        return x;
     }
 
     /**
@@ -320,8 +548,7 @@ public final class Fask {
                 double skewY = StatUtils.cov(x, y, y, 0, +1)[1];
 
                 if ((useFasAdjacencies && G0.isAdjacentTo(X, Y)) ||
-                    (useSkewAdjacencies && TMath.abs(skewX - skewY) > extraEdgeThreshold)) {
-
+                        (useSkewAdjacencies && TMath.abs(skewX - skewY) > extraEdgeThreshold)) {
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
@@ -330,14 +557,9 @@ public final class Fask {
                         graph.addEdge(Edges.directedEdge(X, Y));
                         graph.addEdge(Edges.directedEdge(Y, X));
                     } else {
-                        // Use the enum-selected rule but via score>0
-                        double score = switch (leftRight) {
-                            case FASK1 -> fask1Score(x, y);
-                            case FASK2 -> fask2Score(x, y);
-                            case RSKEW -> rskewScore(x, y);
-                            case SKEW -> skewScore(x, y);
-                            case TANH -> tanhScore(x, y);
-                        };
+                        int ruleIndex = leftRight.ordinal() + 1;
+//                        double score = leftRightDiff(x, y, ruleIndex); // Acyclic, but the cyclic versio works better there too.
+                        double score = leftRightDiffCyclic(ruleIndex, G0, X, Y, variables, data);
                         if (score > 0) graph.addDirectedEdge(X, Y);
                         else graph.addDirectedEdge(Y, X);
                     }
@@ -564,7 +786,7 @@ public final class Fask {
 
     private boolean knowledgeOrients(Node left, Node right) {
         return knowledge.isForbidden(right.getName(), left.getName())
-               || knowledge.isRequired(left.getName(), right.getName());
+                || knowledge.isRequired(left.getName(), right.getName());
     }
 
     /**

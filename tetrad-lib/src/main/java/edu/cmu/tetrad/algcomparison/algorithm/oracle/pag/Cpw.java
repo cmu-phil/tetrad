@@ -23,9 +23,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fask;
@@ -66,9 +63,9 @@ import java.util.Map;
  * <p><b>Parameter:</b> PAIRWISE_RULE ∈ {1..5}, default 3 (RSKEW).
  * 1=FASK1, 2=FASK2, 3=RSKEW, 4=SKEW, 5=TANH.</p>
  */
-@edu.cmu.tetrad.annotation.Algorithm(name = "CPW", command = "cpw", algoType = AlgType.forbid_latent_common_causes)
-@Bootstrapping
-@Experimental
+//@edu.cmu.tetrad.annotation.Algorithm(name = "CPW", command = "cpw", algoType = AlgType.forbid_latent_common_causes)
+//@Bootstrapping
+//@Experimental
 public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
@@ -195,7 +192,7 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
             Integer iy = nameToIdx.get(y.getName());
             if (ix == null || iy == null) continue; // defensive: mismatch
 
-            double diff = Fask.leftRightDiff(data[ix], data[iy], pwRule);
+            double diff = Fask.leftRightDiffCyclic(pwRule, pag, x, y, nodes, data);
 
             if (Edges.isUndirectedEdge(e)) { // x — y
                 pag.removeEdge(x, y);

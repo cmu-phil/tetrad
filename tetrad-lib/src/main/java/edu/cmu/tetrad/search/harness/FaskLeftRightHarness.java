@@ -70,14 +70,28 @@ public final class FaskLeftRightHarness {
         System.out.println();
 
         for (int rule = 1; rule <= 5; rule++) {
-            HarnessSummary summary = runHarness(rule, NUM_REPLICATES, true);
+            HarnessSummary summary = runHarness(rule, NUM_REPLICATES, true, true);
             printSummary("rule=" + rule, summary);
         }
 
         System.out.println();
 
         for (int rule = 1; rule <= 5; rule++) {
-            HarnessSummary summary = runHarness(rule, NUM_REPLICATES, false);
+            HarnessSummary summary = runHarness(rule, NUM_REPLICATES, false, true);
+            printSummary("rule=" + rule, summary);
+        }
+
+        System.out.println();
+
+        for (int rule = 1; rule <= 5; rule++) {
+            HarnessSummary summary = runHarness(rule, NUM_REPLICATES, true, false);
+            printSummary("rule=" + rule, summary);
+        }
+
+        System.out.println();
+
+        for (int rule = 1; rule <= 5; rule++) {
+            HarnessSummary summary = runHarness(rule, NUM_REPLICATES, false, false);
             printSummary("rule=" + rule, summary);
         }
     }
@@ -90,7 +104,7 @@ public final class FaskLeftRightHarness {
      * @param standardize
      * @return aggregated summary
      */
-    private static HarnessSummary runHarness(int pwRule, int replicates, boolean standardize) {
+    private static HarnessSummary runHarness(int pwRule, int replicates, boolean cyclic, boolean standardize) {
         long totalMisoriented = 0L;
         long totalEligible = 0L;
         long totalSkippedTwoCycles = 0L;
@@ -98,7 +112,7 @@ public final class FaskLeftRightHarness {
         List<Double> replicateErrorRates = new ArrayList<>();
 
         for (int r = 0; r < replicates; r++) {
-            Graph graph = generateRandomCyclicGraph();
+            Graph graph = generateRandomAcyclicGraph();
 
             DataSet dataSet = simulateData(graph);
 
@@ -135,7 +149,17 @@ public final class FaskLeftRightHarness {
 
                 eligible++;
 
-                double diff = Fask.leftRightDiff(data[i], data[j], pwRule);
+                double diff;
+
+                if (pwRule >= 1 && pwRule <= 5) {
+                    if (cyclic) {
+                        diff = Fask.leftRightDiffCyclic(pwRule, graph, xi, xj, nodes, data);
+                    } else {
+                        diff = Fask.leftRightDiff(data[i], data[j], pwRule);
+                    }
+                } else {
+                    throw new IllegalArgumentException("Invalid pairwise rule: " + pwRule);
+                }
 
                 boolean predictIToJ = diff > 0.0;
                 boolean correct = (predictIToJ && iToJ) || (!predictIToJ && jToI);
@@ -153,7 +177,7 @@ public final class FaskLeftRightHarness {
             replicateErrorRates.add(replicateRate);
         }
 
-        return new HarnessSummary(standardize, totalMisoriented, totalEligible, totalSkippedTwoCycles, replicateErrorRates);
+        return new HarnessSummary(standardize, cyclic, totalMisoriented, totalEligible, totalSkippedTwoCycles, replicateErrorRates);
     }
 
     /**
@@ -227,6 +251,7 @@ public final class FaskLeftRightHarness {
         System.out.println(
                 label
                         + " | " + (summary.standardize ? "standardized" : "center")
+                        + " | " + (summary.cyclic ? "cyclic" : "acyclic")
                         + " | misoriented=" + summary.totalMisoriented
                         + " / eligible=" + summary.totalEligible
                         + " | overallError=" + DF.format(overallErrorRate)
@@ -271,6 +296,7 @@ public final class FaskLeftRightHarness {
 
     private record HarnessSummary(
             boolean standardize,
+            boolean cyclic,
             long totalMisoriented,
             long totalEligible,
             long totalSkippedTwoCycles,
