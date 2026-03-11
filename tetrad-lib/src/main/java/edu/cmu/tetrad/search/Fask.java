@@ -210,28 +210,32 @@ public final class Fask {
                                                   Node xi,
                                                   Node xj,
                                                   int maxPathLength) {
-        Set<Node> z;
-
         try {
-            z = RecursiveBlocking.blockPathsRecursively(
+            Set z = RecursiveBlocking.blockPathsRecursively(
                     graph, xi, xj, Set.of(), Set.of(), maxPathLength
             );
+
+            if (z == null) {
+                z = RecursiveBlocking.blockPathsRecursively(
+                        graph, xj, xi, Set.of(), Set.of(), maxPathLength
+                );
+            }
+
+            if (z == null) {
+                z = new HashSet<>(graph.getAdjacentNodes(xi));
+                z.addAll(graph.getAdjacentNodes(xj));
+            } else {
+                z = new HashSet<>(z);
+            }
+
+            z.remove(xi);
+            z.remove(xj);
+
+            return z;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            z = null;
+            return Set.of();
         }
-
-        if (z == null) {
-            z = new HashSet<>(graph.getAdjacentNodes(xi));
-            z.addAll(graph.getAdjacentNodes(xj));
-        } else {
-            z = new HashSet<>(z);
-        }
-
-        z.remove(xi);
-        z.remove(xj);
-
-        return z;
     }
 
     /**
@@ -526,7 +530,7 @@ public final class Fask {
     public Graph search() throws InterruptedException {
         setCutoff(alpha);
 
-        DataSet dataSet = DataTransforms.standardizeData(this.dataSet);
+        DataSet dataSet = DataTransforms.center(this.dataSet);
         List<Node> variables = dataSet.getVariables();
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
         Graph G0;

@@ -114,7 +114,7 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
         edu.cmu.tetrad.search.Fask fask = new edu.cmu.tetrad.search.Fask(dataSet, this.score.getScore(dataSet, parameters));
 
-        int lrRule = parameters.getInt(FASK_LEFT_RIGHT_RULE);
+        int lrRule = 2;//parameters.getInt(FASK_LEFT_RIGHT_RULE);
 
         if (lrRule == 1) {
             fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK1);
@@ -193,7 +193,7 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(DEPTH);
         parameters.add(SKEW_EDGE_THRESHOLD);
         parameters.add(ALPHA);
-        parameters.add(FASK_LEFT_RIGHT_RULE);
+//        parameters.add(FASK_LEFT_RIGHT_RULE);
 
         return parameters;
     }
