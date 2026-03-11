@@ -2376,7 +2376,7 @@ public final class StatUtils {
                     n++;
                 }
             } else if (direction < threshold) {
-                if (condition[k] > threshold) {
+                if (condition[k] < threshold) { // check this TODO. Shoudl be >?
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];

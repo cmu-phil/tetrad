@@ -54,7 +54,7 @@ public class AdditiveNoiseSimulation {
                                    int[] hiddenDimensions,
                                    double inputScale,
                                    Function<Double, Double> activationFunction) {
-        if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycles.");
+        if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycle; need a causal order to simulate.");
         if (numSamples < 1) throw new IllegalArgumentException("numSamples must be positive.");
         Objects.requireNonNull(sampler, "sampler");
         Objects.requireNonNull(hiddenDimensions, "hiddenDimensions");

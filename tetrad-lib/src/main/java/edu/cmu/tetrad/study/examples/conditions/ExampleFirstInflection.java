@@ -32,6 +32,8 @@ import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.text.ParseException;
+
 /**
  * An example script to simulate data and run a comparison analysis on it.
  *
@@ -133,7 +135,11 @@ public class ExampleFirstInflection {
         comparison.setShowUtilities(false);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
-        comparison.compareFromSimulations("first.inflection", simulations, algorithms, statistics, parameters);
+        try {
+            comparison.compareFromSimulations("first.inflection", simulations, algorithms, statistics, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

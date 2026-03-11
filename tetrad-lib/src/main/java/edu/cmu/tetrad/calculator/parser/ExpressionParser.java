@@ -470,7 +470,7 @@ public class ExpressionParser {
      */
     private void expect(Token token) throws ParseException {
         if (token != this.token) {
-            throw new ParseException("Unexpected token: " + getTokenString(), this.lexer.getCurrentOffset());
+            throw new ParseException("Unexpected token, '" + getTokenString() + "', in " + lexer.getCharSequence(), this.lexer.getCurrentOffset());
         }
         nextToken();
     }

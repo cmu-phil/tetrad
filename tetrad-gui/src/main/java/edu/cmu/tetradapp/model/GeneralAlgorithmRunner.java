@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.model;
 
@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -120,8 +121,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      *
      * @param runner     a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @throws ParseException if any.
      */
-    public GeneralAlgorithmRunner(GeneralAlgorithmRunner runner, Parameters parameters) {
+    public GeneralAlgorithmRunner(GeneralAlgorithmRunner runner, Parameters parameters)
+            throws ParseException {
         this(runner.getDataWrapper(), runner, parameters, null, null);
         this.sourceGraph = runner.sourceGraph;
         this.knowledge = runner.knowledge;
@@ -138,8 +141,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      *
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
+     * @throws ParseException if any.
      */
-    public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters) {
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters)
+            throws ParseException {
         this(dataWrapper, null, parameters, null, null);
     }
 
@@ -150,9 +155,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @param dataWrapper       a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @throws ParseException if any.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel,
-                                  Parameters parameters) {
+                                  Parameters parameters) throws ParseException {
         this(dataWrapper, null, parameters, knowledgeBoxModel, null);
     }
 
@@ -162,8 +168,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
+     * @throws ParseException if any.
      */
-    public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters) {
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters)
+            throws ParseException {
         this(dataWrapper, graphSource, parameters, null, null);
     }
 
@@ -174,10 +182,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @param graphSource       a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
+     * @throws ParseException if any.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource,
                                   KnowledgeBoxModel knowledgeBoxModel,
-                                  Parameters parameters) {
+                                  Parameters parameters) throws ParseException {
         this(dataWrapper, graphSource, parameters, knowledgeBoxModel, null);
     }
 
@@ -189,9 +198,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      * @param facts             a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @throws ParseException if any.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
+                                  KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts)
+            throws ParseException {
         this(dataWrapper, null, parameters, knowledgeBoxModel, facts);
     }
 
@@ -201,8 +212,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param runner      a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
      * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
+     * @throws ParseException if any.
      */
-    public GeneralAlgorithmRunner(DataWrapper dataWrapper, GeneralAlgorithmRunner runner, Parameters parameters) {
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, GeneralAlgorithmRunner runner, Parameters parameters)
+            throws ParseException {
         this(dataWrapper, null, parameters, null, null);
         this.algorithm = runner.algorithm;
 
@@ -217,9 +230,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @param runner            a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
      * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @throws ParseException if any.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GeneralAlgorithmRunner runner, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
+                                  KnowledgeBoxModel knowledgeBoxModel) throws ParseException {
         this(dataWrapper, null, parameters, knowledgeBoxModel, null);
         this.algorithm = runner.algorithm;
 
@@ -233,9 +247,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param runner      a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
      * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
+     * @throws ParseException if any.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, GeneralAlgorithmRunner runner,
-                                  Parameters parameters) {
+                                  Parameters parameters) throws ParseException {
         this(dataWrapper, graphSource, parameters, null, null);
         this.algorithm = runner.algorithm;
 
@@ -251,10 +266,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @param runner            a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
      * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @throws ParseException if any
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, GeneralAlgorithmRunner runner,
                                   Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
+                                  KnowledgeBoxModel knowledgeBoxModel) throws ParseException {
         this(dataWrapper, graphSource, parameters, knowledgeBoxModel, null);
         this.algorithm = runner.algorithm;
 
@@ -267,8 +283,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param runner      a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
      * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
+     * @throws ParseException
      */
-    public GeneralAlgorithmRunner(GraphSource graphSource, GeneralAlgorithmRunner runner, Parameters parameters) {
+    public GeneralAlgorithmRunner(GraphSource graphSource, GeneralAlgorithmRunner runner, Parameters parameters)
+            throws ParseException {
         this(null, graphSource, parameters, null, null);
         this.algorithm = runner.algorithm;
 
@@ -281,9 +299,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @param graphSource       a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @throws ParseException
      */
     public GeneralAlgorithmRunner(GraphSource graphSource, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
+                                  KnowledgeBoxModel knowledgeBoxModel)
+            throws ParseException {
         this(null, graphSource, parameters, knowledgeBoxModel, null);
     }
 
@@ -293,9 +313,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @param model             a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
      * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @throws ParseException
      */
     public GeneralAlgorithmRunner(IndependenceFactsModel model,
-                                  Parameters parameters, KnowledgeBoxModel knowledgeBoxModel) {
+                                  Parameters parameters, KnowledgeBoxModel knowledgeBoxModel)
+    throws ParseException {
         this(null, null, parameters, knowledgeBoxModel, model);
     }
 
@@ -304,8 +326,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      *
      * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
+     * @throws ParseException
      */
-    public GeneralAlgorithmRunner(GraphSource graphSource, Parameters parameters) {
+    public GeneralAlgorithmRunner(GraphSource graphSource, Parameters parameters) throws ParseException {
         this(null, graphSource, parameters, null, null);
     }
 
@@ -318,9 +341,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      * @param facts             a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @throws ParseException if any.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
+                                  KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts)
+            throws ParseException {
         if (parameters == null) {
             throw new NullPointerException();
         }
@@ -499,7 +524,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     }
                     if (dataSets.size() < randomSelectionSize) {
                         throw new IllegalArgumentException("Sorry, the 'random selection size' is greater than "
-                                                           + "the number of data sets: " + randomSelectionSize + " > " + dataSets.size());
+                                + "the number of data sets: " + randomSelectionSize + " > " + dataSets.size());
                     }
                     RandomUtil.shuffle(dataSets);
 
@@ -579,8 +604,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     // Type compatibility checks & run
                     boolean ok =
                             (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) ||
-                            (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) ||
-                            (data.isMixed() && algDataType == DataType.Mixed);
+                                    (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) ||
+                                    (data.isMixed() && algDataType == DataType.Mixed);
 
                     if (!ok) {
                         throw new IllegalArgumentException("The algorithm was not expecting that type of data.");
@@ -810,7 +835,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             out.defaultWriteObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
@@ -829,7 +854,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             in.defaultReadObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
@@ -896,7 +921,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         if (this.independenceTests.isEmpty()) {
             throw new IllegalArgumentException("One or more of the parents was a search that didn't use "
-                                               + "a test or a score.");
+                    + "a test or a score.");
         }
 
         return this.independenceTests.get(0);

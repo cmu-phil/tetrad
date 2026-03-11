@@ -242,7 +242,12 @@ public class ExpressionLexer {
         return found;
     }
 
-
+    /**
+     * The car sequenced being lexed.
+     */
+    public CharSequence getCharSequence() {
+        return charSequence;
+    }
 }
 
 

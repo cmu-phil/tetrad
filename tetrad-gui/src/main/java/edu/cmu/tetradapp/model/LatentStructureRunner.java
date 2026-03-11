@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.Objects;
 
@@ -49,27 +50,78 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
      *                             null
      * @param parameters           parameters for the block search session node
      * @throws NullPointerException if the latentClustersRunner argument is null
+     * @throws ParseException       if any
      */
-    public LatentStructureRunner(DataWrapper data, LatentClustersRunner latentClustersRunner, Parameters parameters) {
+    public LatentStructureRunner(DataWrapper data, LatentClustersRunner latentClustersRunner, Parameters parameters)
+            throws ParseException {
         super(data, parameters);
         this.runner = Objects.requireNonNull(latentClustersRunner, "ClusterRunner required");
         super.blockSpec = latentClustersRunner.getBlockSpec();
     }
 
-    public LatentStructureRunner(DataWrapper data, LatentClustersRunner latentClustersRunner, LatentStructureRunner latentStructureRunner, Parameters parameters) {
+    /**
+     * Constructs a LatentStructureRunner instance, utilizing a data wrapper, a latent clusters runner,
+     * a latent structure runner, and search parameters. The latent clusters runner is required to provide
+     * an upstream BlockSpec, and the algorithm is set based on the provided latent structure runner.
+     *
+     * @param data                 the data wrapper containing the dataset to be processed
+     * @param latentClustersRunner the instance of LatentClustersRunner providing the upstream BlockSpec;
+     *                              must not be null
+     * @param latentStructureRunner the instance of LatentStructureRunner providing the algorithm to be used;
+     *                               must not be null
+     * @param parameters           parameters for the block search session node
+     * @throws NullPointerException if the latentClustersRunner or latentStructureRunner argument is null
+     * @throws ParseException       if a parsing error occurs during initialization
+     */
+    public LatentStructureRunner(DataWrapper data, LatentClustersRunner latentClustersRunner,
+                                 LatentStructureRunner latentStructureRunner, Parameters parameters)
+    throws ParseException{
         super(data, parameters);
         this.runner = Objects.requireNonNull(latentClustersRunner, "ClusterRunner required");
         super.blockSpec = latentClustersRunner.getBlockSpec();
         setAlgorithm(latentStructureRunner.getAlgorithm());
     }
 
-    public LatentStructureRunner(DataWrapper data, LatentClustersRunner latentClustersRunner, KnowledgeBoxModel knowledge, Parameters parameters) {
+    /**
+     * Constructs a LatentStructureRunner instance, which is responsible for executing the latent structure
+     * analysis using the provided data, latent clusters runner, and parameters. This constructor ensures
+     * that an upstream BlockSpec is provided by the latentClustersRunner, and initializes the object accordingly.
+     *
+     * @param data                 the DataWrapper containing the dataset to be processed
+     * @param latentClustersRunner the instance of LatentClustersRunner providing the upstream BlockSpec;
+     *                              must not be null
+     * @param knowledge            the KnowledgeBoxModel containing background knowledge relevant to the process
+     * @param parameters           the Parameters object defining the search parameters for the run
+     * @throws NullPointerException if the latentClustersRunner argument is null
+     * @throws ParseException       if an error occurs while parsing the provided parameters or during initialization
+     */
+    public LatentStructureRunner(DataWrapper data, LatentClustersRunner latentClustersRunner, KnowledgeBoxModel knowledge,
+                                 Parameters parameters) throws ParseException {
         super(data, knowledge, parameters);
         this.runner = Objects.requireNonNull(latentClustersRunner, "ClusterRunner required");
         super.blockSpec = latentClustersRunner.getBlockSpec();
     }
 
-    public LatentStructureRunner(DataWrapper data, LatentClustersRunner latentClustersRunner, LatentStructureRunner latentStructureRunner, KnowledgeBoxModel knowledge, Parameters parameters) {
+    /**
+     * Constructs a LatentStructureRunner instance, which is responsible for executing
+     * the latent structure analysis using the provided data wrapper, latent clusters
+     * runner, latent structure runner, knowledge box model, and parameters. This constructor
+     * ensures proper initialization by validating the required dependencies and setting
+     * the appropriate algorithm.
+     *
+     * @param data                 the DataWrapper containing the dataset to be processed
+     * @param latentClustersRunner the instance of LatentClustersRunner providing the upstream BlockSpec;
+     *                              must not be null
+     * @param latentStructureRunner the instance of LatentStructureRunner providing the algorithm to be used;
+     *                               must not be null
+     * @param knowledge            the KnowledgeBoxModel containing background knowledge relevant to the process
+     * @param parameters           the Parameters object defining the search parameters for the run
+     * @throws NullPointerException if the latentClustersRunner or latentStructureRunner argument is null
+     * @throws ParseException       if any
+     */
+    public LatentStructureRunner(DataWrapper data, LatentClustersRunner latentClustersRunner,
+                                 LatentStructureRunner latentStructureRunner, KnowledgeBoxModel knowledge,
+                                 Parameters parameters) throws ParseException{
         super(data, knowledge, parameters);
         this.runner = Objects.requireNonNull(latentClustersRunner, "ClusterRunner required");
         super.blockSpec = latentClustersRunner.getBlockSpec();
@@ -86,7 +138,7 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
         if (specNames.size() != runNames.size() || !specNames.equals(runNames)) {
             throw new IllegalStateException(
                     "BlockSpec dataset does not match the runnerâs dataset. " +
-                    "Ensure the clusters were derived from the same data used for this search node.");
+                            "Ensure the clusters were derived from the same data used for this search node.");
         }
     }
 
@@ -104,7 +156,7 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
 
         if (!spec.dataSet().equals(getDataModel())) {
             throw new IllegalStateException("The dataset for the supplied latent clusters is not the " +
-                                            "dataset given as a parent to this box.");
+                    "dataset given as a parent to this box.");
         }
 
         // 2) Defensive validations

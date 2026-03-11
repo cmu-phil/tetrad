@@ -63,7 +63,7 @@ public final class GeneralAdditiveModel {
     public GeneralAdditiveModel(Graph graph, int numSamples, Sampler sampler) {
         if (graph == null) throw new NullPointerException("graph");
         if (!graph.paths().isAcyclic()) {
-            throw new IllegalArgumentException("Graph contains cycles.");
+            throw new IllegalArgumentException("Graph contains cycles; need a causal order to simulate.");
         }
         if (numSamples < 1) {
             throw new IllegalArgumentException("numSamples must be positive.");

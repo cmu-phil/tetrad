@@ -56,6 +56,7 @@ import org.reflections.scanners.Scanners;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
 import java.util.*;
 import java.util.prefs.Preferences;
 
@@ -481,7 +482,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * @param ps1 A print stream to write the verbose output.
      * @param ps2 A print stream to write the verbose output.
      */
-    public void runComparison(PrintStream ps1, PrintStream ps2) {
+    public void runComparison(PrintStream ps1, PrintStream ps2) throws ParseException {
         initializeIfNull();
 
         Simulations simulations = new Simulations();

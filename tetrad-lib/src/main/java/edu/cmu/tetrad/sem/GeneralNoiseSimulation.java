@@ -85,7 +85,7 @@ public class GeneralNoiseSimulation {
                                   Function<Double, Double> activationFunction,
                                   boolean reportSaturation,
                                   double saturationAbsActivationThreshold) {
-        if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycles.");
+        if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycles; need a causal order to simulate.");
         if (numSamples < 1) throw new IllegalArgumentException("numSamples must be positive.");
         Objects.requireNonNull(sampler, "sampler");
         Objects.requireNonNull(hiddenDimensions, "hiddenDimensions");

@@ -36,6 +36,8 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.text.ParseException;
+
 /**
  * An example script to simulate data and run a comparison analysis on it.
  *
@@ -88,8 +90,11 @@ public class LingamStudy {
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
 
-        comparison.compareFromSimulations("lingam", simulations, algorithms, statistics, LingamStudy.getParameters());
-
+        try {
+            comparison.compareFromSimulations("lingam", simulations, algorithms, statistics, LingamStudy.getParameters());
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static Parameters getParameters() {

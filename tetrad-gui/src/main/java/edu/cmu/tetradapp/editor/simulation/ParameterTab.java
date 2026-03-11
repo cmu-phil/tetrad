@@ -33,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -444,11 +445,19 @@ public class ParameterTab extends JPanel {
                                         ? "Exception in creating data. Check model setup or parameter settings."
                                         : error.getMessage();
 
+                        String _msg = msg;
+
+                        if (error instanceof ParseException) {
+                            _msg += " (Parse error)";
+                        }
+
+                        String finalMsg = _msg;
+
                         // Let WatchedProcess finish & close its dialog, then show the error.
                         SwingUtilities.invokeLater(() ->
                                 SwingUtilities.invokeLater(() ->
                                         JOptionPane.showMessageDialog(
-                                                getPanel(), msg + " (This could be a parse error)", "Error", JOptionPane.ERROR_MESSAGE)));
+                                                getPanel(), finalMsg, "Error", JOptionPane.ERROR_MESSAGE)));
                     }
                 }
             }
