@@ -114,21 +114,21 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
         edu.cmu.tetrad.search.Fask fask = new edu.cmu.tetrad.search.Fask(dataSet, this.score.getScore(dataSet, parameters));
 
-        int lrRule = 2;//parameters.getInt(FASK_LEFT_RIGHT_RULE);
-
-        if (lrRule == 1) {
-            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK1);
-        } else if (lrRule == 2) {
-            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK2);
-        } else if (lrRule == 3) {
-            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.RSKEW);
-        } else if (lrRule == 4) {
-            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.SKEW);
-        } else if (lrRule == 5) {
-            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.TANH);
-        } else {
-            throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
-        }
+//        int lrRule = 2;//parameters.getInt(FASK_LEFT_RIGHT_RULE);
+//
+//        if (lrRule == 1) {
+//            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK1);
+//        } else if (lrRule == 2) {
+//            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK2);
+//        } else if (lrRule == 3) {
+//            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.RSKEW);
+//        } else if (lrRule == 4) {
+//            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.SKEW);
+//        } else if (lrRule == 5) {
+//            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.TANH);
+//        } else {
+//            throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
+//        }
 
         fask.setDepth(parameters.getInt(DEPTH));
         fask.setAlpha(parameters.getDouble(ALPHA));

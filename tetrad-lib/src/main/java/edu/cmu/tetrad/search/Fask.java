@@ -76,7 +76,7 @@ public final class Fask {
     private double extraEdgeThreshold = 0.3;
     private boolean useFasAdjacencies = true;
     private boolean useSkewAdjacencies = true;
-    private Fask.LeftRight leftRight = LeftRight.RSKEW;
+    private Fask.LeftRight leftRight = LeftRight.FASK2;
 
     /**
      * Constructs a new Fask instance with the specified data set and score.
@@ -581,7 +581,8 @@ public final class Fask {
                     } else {
                         int ruleIndex = leftRight.ordinal() + 1;
                         // Raw left-right score on x and y.
-                        // The residualized cyclic version appears to work better in both cyclic and acyclic settings.
+                        // The residualized cyclic version of FASK v2 works best in both cyclic and acyclic
+                        // settings in the harness, edu.cmu.tetrad.search.harness.FaskLeftRightHarness.
 //                        double score = leftRightDiff(x, y, ruleIndex);
                         double score = leftRightDiffResidualized(ruleIndex, G0, X, Y, variables, data);
                         if (score > 0) graph.addDirectedEdge(X, Y);
