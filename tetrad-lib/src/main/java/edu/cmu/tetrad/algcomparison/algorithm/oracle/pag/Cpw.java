@@ -155,13 +155,13 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
 
         Graph pag = new EdgeListGraph();
 
-        Graph _pag = new EdgeListGraph(pag);
+        Graph _pag;
 
         do {
             _pag = new EdgeListGraph(pag);
 
             // --- Phase 0: Build PW-forbidden knowledge (internal only) ---
-            Knowledge internalKnowledge = buildPwForbiddenKnowledge(data, nodes, pwRule, verbose);
+            Knowledge internalKnowledge = buildPwForbiddenKnowledge(pwRule, pag, nodes, data, verbose);
 
             // --- Phase 1: Run FCI with that knowledge ---
             edu.cmu.tetrad.search.Fci.ColliderRule colliderOrientationStyle = switch (parameters.getInt(Params.COLLIDER_ORIENTATION_STYLE)) {
@@ -281,28 +281,29 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
      * Build forbidden knowledge from standardized data using pairwise left-right: For each pair (i,j), if
      * diff(i,j,pwRule) > 0 forbid j->i; else forbid i->j. (No thresholding.)
      */
-    private Knowledge buildPwForbiddenKnowledge(double[][] data, List<Node> nodes, int pwRule, boolean verbose) {
+    private Knowledge buildPwForbiddenKnowledge(int pwRule, Graph graph,
+                                                List<Node> nodes, double[][] data, boolean verbose) {
         Knowledge knowledge = new Knowledge();
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
                 Node xi = nodes.get(i);
-                Node yj = nodes.get(j);
+                Node xj = nodes.get(j);
 
 //                Fask.setDelta(-0.1);
 
-                double diff = Fask.leftRightDiff(data[i], data[j], pwRule);
+                double diff = Fask.leftRightDiffResidualized(pwRule, graph, xi, xj, nodes, data);
 
                 if (diff > 0) {
                     // prefer xi -> yj  ⇒ forbid yj -> xi
-                    knowledge.setForbidden(yj.getName(), xi.getName());
+                    knowledge.setForbidden(xj.getName(), xi.getName());
                     if (verbose)
-                        TetradLogger.getInstance().log("CPW-K: forbid " + yj + "→" + xi + " (prefer " + xi + "→" + yj + ", diff=" + diff + ")");
+                        TetradLogger.getInstance().log("CPW-K: forbid " + xj + "→" + xi + " (prefer " + xi + "→" + xj + ", diff=" + diff + ")");
                 } else {
                     // prefer yj -> xi  ⇒ forbid xi -> yj
-                    knowledge.setForbidden(xi.getName(), yj.getName());
+                    knowledge.setForbidden(xi.getName(), xj.getName());
                     if (verbose)
-                        TetradLogger.getInstance().log("CPW-K: forbid " + xi + "→" + yj + " (prefer " + yj + "→" + xi + ", diff=" + diff + ")");
+                        TetradLogger.getInstance().log("CPW-K: forbid " + xi + "→" + xj + " (prefer " + xj + "→" + xi + ", diff=" + diff + ")");
                 }
             }
         }
