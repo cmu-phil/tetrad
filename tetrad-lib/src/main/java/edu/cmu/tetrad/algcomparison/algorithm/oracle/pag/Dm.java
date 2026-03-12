@@ -24,9 +24,9 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
@@ -35,9 +35,8 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -60,36 +59,35 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper,
+public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,
+        TakesScoreWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
-
-    /**
-     * The independence test to use.
-     */
-    private IndependenceWrapper test;
-
     /**
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
+    /**
+     * The score to use.
+     */
+    private ScoreWrapper score;
 
     /**
      * <p>Constructor for DM-PC.</p>
      */
-    public DmPc() {
+    public Dm() {
         // Used for reflection; do not delete.
     }
 
     /**
-     * <p>Constructor for DM-PC.</p>
+     * Constructor for the Dm class that initializes it with a given score wrapper.
      *
-     * @param test a {@link IndependenceWrapper} object
+     * @param score the ScoreWrapper instance to be used by this object
      */
-    public DmPc(IndependenceWrapper test) {
-        this.test = test;
+    public Dm(ScoreWrapper score) {
+        this.score = score;
     }
 
     /**
@@ -114,12 +112,10 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, Takes
             knowledge = timeSeries.getKnowledge();
         }
 
-        IndependenceTest test = this.test.getTest(dataModel, parameters);
-        test = new CachedIndependenceQueries(test);
+        Score _score = this.score.getScore(dataModel, parameters);
 
-        test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        edu.cmu.tetrad.search.DmPcRobust search = new edu.cmu.tetrad.search.DmPcRobust(test);
-        search.setKnowledge(knowledge);
+//        edu.cmu.tetrad.search.DmPcRobust search = new edu.cmu.tetrad.search.DmPcRobust(test);
+        edu.cmu.tetrad.search.DmBossRobust search = new edu.cmu.tetrad.search.DmBossRobust(_score, knowledge);
 
         Graph graph;
         double fdrQ = parameters.getDouble(Params.FDR_Q);
@@ -155,7 +151,7 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, Takes
      */
     @Override
     public String getDescription() {
-        return "DM using " + this.test.getDescription();
+        return "DM using " + this.score.getDescription();
     }
 
     /**
@@ -165,7 +161,7 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, Takes
      */
     @Override
     public DataType getDataType() {
-        return this.test.getDataType();
+        return this.score.getDataType();
     }
 
     /**
@@ -205,25 +201,25 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     }
 
     /**
-     * Retrieves the IndependenceWrapper object associated with this method. The IndependenceWrapper object contains an
-     * IndependenceTest that checks the independence of two variables conditional on a set of variables using a given
-     * dataset and parameters .
+     * Retrieves the current ScoreWrapper instance associated with this object.
      *
-     * @return The IndependenceWrapper object associated with this method.
+     * @return The ScoreWrapper instance used by this object.
      */
     @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
+    public ScoreWrapper getScoreWrapper() {
+        return this.score;
     }
 
     /**
-     * Sets the independence wrapper.
+     * Sets the ScoreWrapper instance associated with this object. The ScoreWrapper
+     * represents a scoring mechanism that can be used by this algorithm for evaluating
+     * data models and obtaining scores based on specific parameters.
      *
-     * @param test the independence wrapper.
+     * @param score the ScoreWrapper instance to be set
      */
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper test) {
-        this.test = test;
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
     }
 }
 
