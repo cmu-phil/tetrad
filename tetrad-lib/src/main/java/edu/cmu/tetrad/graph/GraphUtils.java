@@ -3375,6 +3375,35 @@ public final class GraphUtils {
         g.setEndpoint(y, z, Endpoint.ARROW);
     }
 
+    public static List<Set<Node>> connectedComponents(Graph g) {
+        List<Set<Node>> comps = new ArrayList<>();
+        Set<Node> visited = new HashSet<>();
+
+        for (Node start : g.getNodes()) {
+            if (visited.contains(start)) continue;
+
+            Set<Node> comp = new LinkedHashSet<>();
+            Deque<Node> queue = new ArrayDeque<>();
+            queue.add(start);
+            visited.add(start);
+
+            while (!queue.isEmpty()) {
+                Node v = queue.remove();
+                comp.add(v);
+
+                for (Node w : g.getAdjacentNodes(v)) {
+                    if (!visited.contains(w)) {
+                        visited.add(w);
+                        queue.add(w);
+                    }
+                }
+            }
+
+            comps.add(comp);
+        }
+
+        return comps;
+    }
 
     /**
      * Compute strongly connected components (SCCs) of a directed graph. Uses Tarjan's algorithm. Each SCC is returned

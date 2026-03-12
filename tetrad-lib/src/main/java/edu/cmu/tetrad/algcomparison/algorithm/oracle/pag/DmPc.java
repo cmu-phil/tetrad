@@ -118,7 +118,7 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         test = new CachedIndependenceQueries(test);
 
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        edu.cmu.tetrad.search.DmPc search = new edu.cmu.tetrad.search.DmPc(test);
+        edu.cmu.tetrad.search.DmPcRobust search = new edu.cmu.tetrad.search.DmPcRobust(test);
         search.setKnowledge(knowledge);
 
         Graph graph;
