@@ -179,14 +179,15 @@ public class Cstar {
     }
 
     /**
-     * Calculates the PCER (Per Comparison Error Rate) based on the given parameters. See Meinhausen and Buhlman.
+     * Calculates the PCER (Per Comparison Error Rate) based on the given parameters. See Meinhausen and Buhlmann (2010).
      *
-     * @param pi The pi value.
-     * @param q  The q value.
-     * @param p  The p value.
-     * @return The calculated PCER value.
+     * @param pi The stability (selection probability).
+     * @param q  The expected number of false positives (top bracket size).
+     * @param p  The total number of possible causes.
+     * @return The calculated PCER bound.
      */
     private static double pcer(double pi, double q, double p) {
+        if (pi <= 0.5) return 1.0;
         return (1.0 / ((2. * pi - 1.))) * ((q * q) / (p * p));
     }
 
@@ -203,14 +204,14 @@ public class Cstar {
     /**
      * Returns records for a set of variables with expected number of false positives bounded by q.
      *
-     * @param dataSet         The full datasets to search over.
-     * @param possibleCauses  A set of variables in the datasets over which to search.
-     * @param possibleEffects The effect variables.
+     * @param dataSet         The full dataset to search over.
+     * @param possibleCauses  A set of variables in the dataset over which to search (predictors X).
+     * @param possibleEffects The effect variables (targets Y).
      * @param path            A path where interim results are to be stored. If null, interim results will not be
      *                        stored. If the path is specified, then if the process is stopped and restarted, previously
      *                        computed interim results will be loaded.
-     * @param topBracket      a int
-     * @return a {@link java.util.LinkedList} object
+     * @param topBracket      The expected number of false positives (q).
+     * @return A list of records, one for each subsample (though normally one would aggregate these).
      * @see Record
      */
     public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects, int topBracket, String path) {
