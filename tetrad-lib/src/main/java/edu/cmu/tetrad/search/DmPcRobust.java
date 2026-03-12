@@ -91,9 +91,19 @@ public class DmPcRobust implements IGraphSearch {
         Graph graph = buildLatentGraph(candidates);
 
         pruneInheritedMeasuredParentsStructurally(graph);
-        removeDegenerateLatents(graph);
+        removeTransitiveLatentEdges(graph);
+//        removeDegenerateLatents(graph);
 
         return graph;
+
+//        Graph graph = buildLatentGraph(candidates);
+//
+//        pruneInheritedMeasuredParentsStructurally(graph);
+//        removeLatentToLatentEdges(graph);
+//        addLatentToLatentEdges(graph);
+//        removeDegenerateLatents(graph);
+//
+//        return graph;
     }
 
     public void setKnowledge(Knowledge knowledge) {
@@ -345,16 +355,6 @@ public class DmPcRobust implements IGraphSearch {
         return intersection.size() / (double) union.size();
     }
 
-    private static final class LatentCandidate {
-        private final Set<Node> parents;
-        private final Set<Node> children;
-
-        private LatentCandidate(Set<Node> parents, Set<Node> children) {
-            this.parents = new HashSet<>(parents);
-            this.children = new HashSet<>(children);
-        }
-    }
-
     private void pruneIndirectMeasuredParents(Graph graph) {
         for (Node latent : new ArrayList<>(graph.getNodes())) {
             if (latent.getNodeType() != NodeType.LATENT) {
@@ -421,7 +421,7 @@ public class DmPcRobust implements IGraphSearch {
      *
      * <p>Only non-latent parents are returned.</p>
      *
-     * @param node the node whose measured parents are requested
+     * @param node  the node whose measured parents are requested
      * @param graph the graph containing the node
      * @return the measured parents of the node
      */
@@ -442,7 +442,7 @@ public class DmPcRobust implements IGraphSearch {
      *
      * <p>Only non-latent children are returned.</p>
      *
-     * @param node the node whose measured children are requested
+     * @param node  the node whose measured children are requested
      * @param graph the graph containing the node
      * @return the measured children of the node
      */
@@ -558,16 +558,6 @@ public class DmPcRobust implements IGraphSearch {
      * Removes measured-parent edges that are inherited through an already discovered
      * latent-to-latent path.
      *
-     * <p>If x is a measured parent of a latent ancestor U of L, and x is also a measured
-     * parent of L, then the edge x -> L is removed. This treats x -> L as an inherited
-     * effect of the path x -> U -> ... -> L rather than as a separate direct parent edge.</p>
-     *
-     * @param graph the graph to refine
-     */
-    /**
-     * Removes measured-parent edges that are inherited through an already discovered
-     * latent-to-latent path.
-     *
      * <p>If x is a measured parent of an immediate latent parent U of L, and x is also
      * a measured parent of L, then x -> L is treated as inherited and is removed, but
      * only if removing it leaves at least one other measured parent for L. This guard
@@ -611,10 +601,21 @@ public class DmPcRobust implements IGraphSearch {
     }
 
     /**
+     * Removes measured-parent edges that are inherited through an already discovered
+     * latent-to-latent path.
+     *
+     * <p>If x is a measured parent of a latent ancestor U of L, and x is also a measured
+     * parent of L, then the edge x -> L is removed. This treats x -> L as an inherited
+     * effect of the path x -> U -> ... -> L rather than as a separate direct parent edge.</p>
+     *
+     * @param graph the graph to refine
+     */
+
+    /**
      * Returns all latent ancestors of the given latent node.
      *
      * @param latent the latent node
-     * @param graph the graph containing the node
+     * @param graph  the graph containing the node
      * @return the set of latent ancestors
      */
     private Set<Node> getLatentAncestors(Node latent, Graph graph) {
@@ -642,5 +643,79 @@ public class DmPcRobust implements IGraphSearch {
         }
 
         return ancestors;
+    }
+
+    private void removeLatentToLatentEdges(Graph graph) {
+        for (Edge edge : new ArrayList<>(graph.getEdges())) {
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+
+            if (a.getNodeType() == NodeType.LATENT && b.getNodeType() == NodeType.LATENT) {
+                graph.removeEdge(edge);
+            }
+        }
+    }
+
+    private void addLatentToLatentEdges(Graph graph) {
+        List<Node> latents = new ArrayList<>();
+
+        for (Node node : graph.getNodes()) {
+            if (node.getNodeType() == NodeType.LATENT) {
+                latents.add(node);
+            }
+        }
+
+        for (Node a : latents) {
+            Set<Node> parentsA = getMeasuredParents(a, graph);
+
+            for (Node b : latents) {
+                if (a == b) {
+                    continue;
+                }
+
+                Set<Node> parentsB = getMeasuredParents(b, graph);
+
+                if (parentsB.containsAll(parentsA) && !parentsA.equals(parentsB)) {
+                    if (!graph.isAdjacentTo(a, b)) {
+                        graph.addDirectedEdge(a, b);
+                    }
+                }
+            }
+        }
+    }
+
+    private void removeTransitiveLatentEdges(Graph graph) {
+        List<Edge> edges = new ArrayList<>(graph.getEdges());
+
+        for (Edge edge : edges) {
+            Node from = edge.getNode1();
+            Node to = edge.getNode2();
+
+            if (from.getNodeType() != NodeType.LATENT || to.getNodeType() != NodeType.LATENT) {
+                continue;
+            }
+
+            if (!Edges.isDirectedEdge(edge)) {
+                continue;
+            }
+
+            graph.removeEdge(edge);
+
+            boolean reachable = graph.paths().existsDirectedPath(from, to);
+
+            if (!reachable) {
+                graph.addEdge(edge);
+            }
+        }
+    }
+
+    private static final class LatentCandidate {
+        private final Set<Node> parents;
+        private final Set<Node> children;
+
+        private LatentCandidate(Set<Node> parents, Set<Node> children) {
+            this.parents = new HashSet<>(parents);
+            this.children = new HashSet<>(children);
+        }
     }
 }

@@ -101,13 +101,13 @@ import java.util.Set;
  *
  * @author josephramsey
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "DM-FCIT",
-//        command = "dm-fcit",
-//        algoType = AlgType.allow_latent_common_causes
-//)
-//@Bootstrapping
-//@Experimental
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "DM-FCIT",
+        command = "dm-fcit",
+        algoType = AlgType.allow_latent_common_causes
+)
+@Bootstrapping
+@Experimental
 public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
         TakesIndependenceWrapper, HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
