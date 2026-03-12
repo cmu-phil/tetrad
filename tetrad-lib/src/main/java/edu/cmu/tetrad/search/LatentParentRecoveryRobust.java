@@ -105,6 +105,17 @@ public final class LatentParentRecoveryRobust {
     private double semBicPenaltyDiscount = 2.0;
 
     /**
+     * Maximum allowed fraction of parents of an upstream latent that may be missing
+     * from the downstream latent's parent set when orienting latent edges.
+     */
+    private double latentOrientationMissingFraction = 0.25;
+
+    /**
+     * Maximum allowed absolute number of missing parents when orienting latent edges.
+     */
+    private int latentOrientationMissingCount = 1;
+
+    /**
      * Constructs a robust latent-parent recovery procedure.
      *
      * @param data the dataset
@@ -193,6 +204,22 @@ public final class LatentParentRecoveryRobust {
         this.semBicPenaltyDiscount = semBicPenaltyDiscount;
     }
 
+    public void setLatentOrientationMissingFraction(double latentOrientationMissingFraction) {
+        if (latentOrientationMissingFraction < 0.0 || latentOrientationMissingFraction > 1.0) {
+            throw new IllegalArgumentException("Missing fraction must be between 0 and 1.");
+        }
+
+        this.latentOrientationMissingFraction = latentOrientationMissingFraction;
+    }
+
+    public void setLatentOrientationMissingCount(int latentOrientationMissingCount) {
+        if (latentOrientationMissingCount < 0) {
+            throw new IllegalArgumentException("Missing count must be nonnegative.");
+        }
+
+        this.latentOrientationMissingCount = latentOrientationMissingCount;
+    }
+
     /**
      * Runs robust latent-parent recovery and returns the augmented graph.
      *
@@ -207,8 +234,6 @@ public final class LatentParentRecoveryRobust {
             removeMeasuredParentEdges(result);
             runOnePass(result);
         }
-
-//        new MeekRules().orientImplied(result);
 
         orientLatentEdgesToPreserveNoncolliders(result);
 

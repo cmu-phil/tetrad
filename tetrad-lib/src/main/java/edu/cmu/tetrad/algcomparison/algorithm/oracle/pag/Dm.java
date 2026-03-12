@@ -59,7 +59,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "DM",
         command = "dm",
-        algoType = AlgType.allow_latent_common_causes
+        algoType = AlgType.search_for_structure_over_latents
 )
 @Bootstrapping
 public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,

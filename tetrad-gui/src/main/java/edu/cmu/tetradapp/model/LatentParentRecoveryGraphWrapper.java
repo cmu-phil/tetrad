@@ -39,6 +39,7 @@ import java.util.ArrayList;
  * @author Tyler Gibson
  * @version $Id: $Id
  */
+@Deprecated
 public class LatentParentRecoveryGraphWrapper extends GraphWrapper implements DoNotAddOldModel {
     private static final long serialVersionUID = 23L;
 

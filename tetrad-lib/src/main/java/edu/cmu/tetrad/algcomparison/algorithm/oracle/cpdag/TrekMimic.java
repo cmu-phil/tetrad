@@ -1,0 +1,236 @@
+/// ////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
+package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
+
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
+import edu.cmu.tetrad.algcomparison.independence.BlocksIndTestTs;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.LatentParentRecoveryRobust;
+import edu.cmu.tetrad.search.Tsc;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.search.blocks.BlocksUtil;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
+import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.TsUtils;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
+
+import java.io.Serial;
+import java.util.*;
+
+import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
+
+/**
+ * Peter/Clark algorithm (PC).
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "TrekMimic",
+        command = "trek-mimic",
+        algoType = AlgType.forbid_latent_common_causes
+)
+@Bootstrapping
+public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
+
+    @Serial
+    private static final long serialVersionUID = 23L;
+
+    /**
+     * The independence test to use.
+     */
+    private IndependenceWrapper test;
+
+    /**
+     * The knowledge.
+     */
+    private Knowledge knowledge = new Knowledge();
+
+    /**
+     * <p>Constructor for Pc.</p>
+     */
+    public TrekMimic() {
+        this.test = new BlocksIndTestTs();
+    }
+
+    @Override
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
+        if (parameters.getInt(Params.TIME_LAG) > 0) {
+            if (!(dataModel instanceof DataSet dataSet)) {
+                throw new IllegalArgumentException("Expecting a data set for time lagging.");
+            }
+
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            if (dataSet.getName() != null) {
+                timeSeries.setName(dataSet.getName());
+            }
+            dataModel = timeSeries;
+            knowledge = timeSeries.getKnowledge();
+        }
+
+        DataSet data = (DataSet) dataModel;
+        Tsc tsc = new Tsc(dataModel.getVariables(), new CovarianceMatrix(data));
+        Map<Set<Integer>, Integer> clusters = tsc.findClusters();
+        List<List<Integer>> blocks = new ArrayList<>();
+        List<Integer> ranks = new ArrayList<>();
+
+        for (Set<Integer> block : clusters.keySet()) {
+            List<Integer> blockList = new ArrayList<>(block);
+            Collections.sort(blockList);
+            blocks.add(blockList);
+            ranks.add(clusters.get(block));
+        }
+
+        BlocksUtil.validateBlocks(blocks, data);
+        blocks = BlocksUtil.canonicalizeBlocks(blocks);
+        BlockSpec spec = BlocksUtil.toSpec(blocks, ranks, data);
+
+        ((BlocksIndTestTs) this.test).setBlockSpec(spec);
+
+        boolean allowBidirected = parameters.getBoolean(Params.ALLOW_BIDIRECTED);
+
+        edu.cmu.tetrad.search.Pc.ColliderOrientationStyle colliderOrientationStyle = switch (parameters.getInt(Params.COLLIDER_ORIENTATION_STYLE)) {
+            case 1 -> edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.SEPSETS;
+            case 2 -> edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.CONSERVATIVE;
+            case 3 -> edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.MAX_P;
+            default -> throw new IllegalArgumentException("Invalid collider orientation style");
+        };
+
+        IndependenceTest test = this.test.getTest(dataModel, parameters);
+
+        Graph graph;
+
+        test = new CachedIndependenceQueries(test);
+        edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(test);
+        search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
+        search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        search.setKnowledge(this.knowledge);
+        search.setFasStable(parameters.getBoolean(Params.STABLE_FAS));
+        search.setColliderOrientationStyle(colliderOrientationStyle);
+        search.setAllowBidirected(allowBidirected ? edu.cmu.tetrad.search.Pc.AllowBidirected.ALLOW
+                : edu.cmu.tetrad.search.Pc.AllowBidirected.DISALLOW);
+
+        double fdrQ = parameters.getDouble(Params.FDR_Q);
+
+        if (fdrQ == 0.0) {
+            graph = search.search();
+        } else {
+            boolean negativelyCorrelated = true;
+            boolean verbose = parameters.getBoolean(Params.VERBOSE);
+            double alpha = parameters.getDouble(Params.ALPHA);
+            graph = IndTestFdrWrapper.doFdrLoop(search, negativelyCorrelated, alpha, fdrQ, verbose);
+        }
+
+        for (int i = 0; i < spec.blocks().size(); i++) {
+            Node var = spec.blockVariables().get(i);
+
+            for (int j : spec.blocks().get(i)) {
+                Node node2 = spec.dataSet().getVariables().get(j);
+                graph.addNode(node2);
+                graph.addDirectedEdge(var, node2);
+            }
+        }
+
+        graph = GraphUtils.replaceNodes(graph, data.getVariables());
+
+        for (Node node : data.getVariables()) {
+            if (graph.getNode(node.getName()) == null) {
+                graph.addNode(node);
+            }
+        }
+
+        LatentParentRecoveryRobust latentParentRecovery = new LatentParentRecoveryRobust(data, graph);
+        graph = latentParentRecovery.search();
+
+        return graph;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Graph getComparisonGraph(Graph graph) {
+        Graph dag = new EdgeListGraph(graph);
+        return GraphTransforms.dagToCpdag(dag);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getDescription() {
+        return "Trek-Mimic using " + this.test.getDescription();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DataType getDataType() {
+        return this.test.getDataType();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> getParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add(Params.STABLE_FAS);
+        parameters.add(Params.COLLIDER_ORIENTATION_STYLE);
+        parameters.add(Params.ALLOW_BIDIRECTED);
+        parameters.add(Params.DEPTH);
+        parameters.add(Params.FDR_Q);
+        parameters.add(Params.TIME_LAG);
+        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
+        parameters.add(Params.VERBOSE);
+        return parameters;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge(knowledge);
+    }
+}
+
