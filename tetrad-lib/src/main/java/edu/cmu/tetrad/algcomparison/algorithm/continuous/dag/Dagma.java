@@ -49,13 +49,13 @@ import java.util.List;
  * @author bryanandrews
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "DAGMA",
-        command = "dagma",
-        algoType = AlgType.forbid_latent_common_causes,
-        dataType = DataType.Continuous
-)
-@Bootstrapping
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "DAGMA",
+//        command = "dagma",
+//        algoType = AlgType.forbid_latent_common_causes,
+//        dataType = DataType.Continuous
+//)
+//@Bootstrapping
 public class Dagma extends AbstractBootstrapAlgorithm implements Algorithm, ReturnsBootstrapGraphs {
 
     @Serial
