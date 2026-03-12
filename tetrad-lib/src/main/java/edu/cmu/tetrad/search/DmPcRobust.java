@@ -564,6 +564,18 @@ public class DmPcRobust implements IGraphSearch {
      *
      * @param graph the graph to refine
      */
+    /**
+     * Removes measured-parent edges that are inherited through an already discovered
+     * latent-to-latent path.
+     *
+     * <p>If x is a measured parent of an immediate latent parent U of L, and x is also
+     * a measured parent of L, then x -> L is treated as inherited and is removed, but
+     * only if removing it leaves at least one other measured parent for L. This guard
+     * makes the pruning less aggressive in cases where a measured variable may truly
+     * feed both latents.</p>
+     *
+     * @param graph the graph to refine
+     */
     private void pruneInheritedMeasuredParentsStructurally(Graph graph) {
         for (Node latent : new ArrayList<>(graph.getNodes())) {
             if (latent.getNodeType() != NodeType.LATENT) {
@@ -571,20 +583,28 @@ public class DmPcRobust implements IGraphSearch {
             }
 
             Set<Node> measuredParents = getMeasuredParents(latent, graph);
-            Set<Node> ancestorLatents = getLatentAncestors(latent, graph);
 
-            if (ancestorLatents.isEmpty()) {
+            if (measuredParents.size() <= 1) {
                 continue;
             }
 
             Set<Node> inheritedMeasuredParents = new LinkedHashSet<>();
-            for (Node ancestorLatent : ancestorLatents) {
-                inheritedMeasuredParents.addAll(getMeasuredParents(ancestorLatent, graph));
+
+            for (Node parent : graph.getParents(latent)) {
+                if (parent.getNodeType() == NodeType.LATENT) {
+                    inheritedMeasuredParents.addAll(getMeasuredParents(parent, graph));
+                }
             }
 
-            for (Node parent : new ArrayList<>(measuredParents)) {
-                if (inheritedMeasuredParents.contains(parent)) {
-                    graph.removeEdge(parent, latent);
+            for (Node measuredParent : new ArrayList<>(measuredParents)) {
+                if (!inheritedMeasuredParents.contains(measuredParent)) {
+                    continue;
+                }
+
+                // Safety guard: only remove the inherited parent if some other measured
+                // parent still remains for this latent.
+                if (getMeasuredParents(latent, graph).size() > 1) {
+                    graph.removeEdge(measuredParent, latent);
                 }
             }
         }
