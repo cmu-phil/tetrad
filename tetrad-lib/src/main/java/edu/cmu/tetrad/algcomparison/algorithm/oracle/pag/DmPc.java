@@ -48,15 +48,15 @@ import java.util.List;
 
 
 /**
- * Detect-Mimic-PC (DM-PC) algorithm. This is intended to detect intermediate latent variables for Multiple Input
+ * Detect-Mimic-PC (DM) algorithm. This is intended to detect intermediate latent variables for Multiple Input
  * Multiple IndiCator (MIMIC) models. models.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "DM-PC",
-        command = "dm-pc",
+        name = "DM",
+        command = "dm",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
@@ -155,7 +155,7 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, Takes
      */
     @Override
     public String getDescription() {
-        return "DM-PC using " + this.test.getDescription();
+        return "DM using " + this.test.getDescription();
     }
 
     /**

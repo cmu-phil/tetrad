@@ -21,21 +21,53 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * The Detect-Mimic-PC (DM-PC) algorithm. This is intended to detect intermediate latent variables for Multiple Input *
- * Multiple IndiCator (MIMIC) models. models. This implements a causal discovery algorithm for detecting and
- * representing intermediate latent variables and their causal relationships in a dataset. The algorithm utilizes
- * constraint-based causal discovery techniques, clustering, and structure refinement to build a causal graph that
- * incorporates latent variables.
- * <p>
- * The class requires an `IndependenceTest` to perform statistical independence checks on variable pairs or groups,
- * which is central to its operation.
+ * Implements the Detect-Mimic-PC algorithm.
+ *
+ * <p>This procedure is intended for settings resembling Multiple Input Multiple Indicator
+ * models, where measured input variables may act through one or more intermediate latent
+ * variables that then influence measured output variables. The algorithm is a heuristic
+ * construction built on top of PC searches over the measured variables.</p>
+ *
+ * <p>The procedure is:</p>
+ *
+ * <ol>
+ *   <li>Run PC with depth 0 on the measured variables.</li>
+ *   <li>Classify measured variables into tentative inputs and outputs using the depth-0
+ *   graph. Variables with indegree 0 and positive outdegree are treated as inputs.
+ *   Variables with positive indegree are treated as outputs.</li>
+ *   <li>For each output, collect the set of adjacent input variables in the depth-0 graph.</li>
+ *   <li>Cluster outputs by identical associated-input sets.</li>
+ *   <li>For each nonempty cluster, create a latent variable. Add directed edges from the
+ *   associated measured inputs into that latent, and from the latent into the outputs in
+ *   that cluster.</li>
+ *   <li>For two latent variables whose associated input sets are in a strict subset relation,
+ *   add a directed edge from the latent with the smaller input set to the latent with the
+ *   larger input set.</li>
+ *   <li>Refine latent-to-latent edges by removing a latent edge when every measured output
+ *   child of one latent is conditionally independent of every measured output child of the
+ *   other latent, given the union of the measured input parents of the two latents.</li>
+ *   <li>Run a full-depth PC search and use it for a final cleanup of output relationships
+ *   and for removal of degenerate latent variables.</li>
+ * </ol>
+ *
+ * <p>This class does not claim to be a general-purpose latent-variable discovery method.
+ * It is specialized to the detect-mimic construction described above.</p>
  *
  * @author murraywaters
  * @author josephramsey
@@ -43,158 +75,212 @@ import java.util.stream.Collectors;
 public class DmPc implements IGraphSearch {
 
     /**
-     * A list of input nodes used within the algorithm. These nodes represent the variables that are considered as
-     * potential causes or predictors within the graph structure.
-     * <p>
-     * This list is immutable after initialization and is populated with instances of {@link Node}, which serve as
-     * elements in the causal structure learning process.
+     * Tentative measured input variables identified during the current search.
      */
     private final List<Node> inputs = new ArrayList<>();
+
     /**
-     * A list of output {@link Node} objects associated with the search or classification process. This collection
-     * stores nodes that are identified as outputs within the context of the graph manipulation and structure learning
-     * procedures.
+     * Tentative measured output variables identified during the current search.
      */
     private final List<Node> outputs = new ArrayList<>();
+
     /**
-     * An instance of {@link IndependenceTest} used to perform conditional independence tests. This variable serves as
-     * the primary testing mechanism within the constraint-based search algorithms of the containing class.
-     * <p>
-     * It is initialized through constructor dependency injection and is expected to implement methods for testing
-     * independence, retrieving variables, and managing the configuration (such as significance level) necessary for the
-     * tests.
+     * The conditional independence test used throughout the procedure.
      */
     private IndependenceTest test;
+
     /**
-     * Represents domain-specific knowledge used during the causal discovery process in the DmPc class. This variable is
-     * utilized to impose background knowledge and constraints on the structural search process, such as required or
-     * forbidden edges in the output graph.
-     * <p>
-     * The `knowledge` field stores predefined information that is essential for guiding the algorithm to refine its
-     * search space according to user or domain constraints.
+     * Background knowledge supplied by the caller.
      */
     private Knowledge knowledge = new Knowledge();
+
     /**
-     * Represents the index value used to identify or differentiate latent variables during the structure search process
-     * within the PC algorithm implementation. The index is initialized to 1 and may be incremented or updated
-     * dynamically as latent variables are created or managed throughout the execution of the algorithm.
+     * Counter used to generate unique latent names.
      */
     private int latentIndex = 1;
 
     /**
-     * Constructs an instance of the DmPc class using the specified independence test.
+     * Constructs a new DM-PC search using the given independence test.
      *
-     * @param test An instance of the {@link IndependenceTest} interface, used to perform conditional independence tests
-     *             as part of the algorithm.
+     * @param test the independence test to use
      */
     public DmPc(IndependenceTest test) {
+        if (test == null) {
+            throw new NullPointerException("Independence test must not be null.");
+        }
+
         this.test = test;
     }
 
     /**
-     * Executes the Directed Maximal PC (DmPc) algorithm to identify a causal graph structure that represents the
-     * relationships between observed and latent variables. The method performs several steps including initialization,
-     * clustering, introducing latent nodes, refining edges, and final adjustments to produce the resultant graph.
+     * Runs the DM-PC search and returns the resulting graph.
      *
-     * @return A causal {@link Graph} that represents the inferred structure of relationships among variables,
-     * incorporating both observed and latent variables.
+     * <p>The search always starts from a fresh internal state. In particular, the
+     * internally stored lists of tentative inputs and outputs are cleared, and latent
+     * variable names are regenerated starting at L1 for each call.</p>
+     *
+     * @return the graph constructed by the DM-PC procedure
      */
+    @Override
     public Graph search() {
+        resetState();
 
-        // Step 1: Identify inputs and outputs.
-        Graph result;
+        Graph depth0Pattern = runPc(0);
+        classifyVariables(depth0Pattern);
 
-        try {
-            Pc pc = new Pc(test);
-            pc.setDepth(0);
-            pc.setKnowledge(knowledge);
-            result = pc.search();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        Map<Set<Node>, Set<Node>> clusters = clusterOutputs(depth0Pattern);
+        Graph latentGraph = buildLatentStructure(clusters);
 
-        Graph initialGraph = result;
-
-        classifyVariables(initialGraph);
-
-        // Step 2: Build sets of outputs for each input.
-        Map<Set<Node>, Set<Node>> latentOutputClusters = clusterOutputs(initialGraph);
-
-        // Step 3: Introduce latent nodes and build graph.
-        Graph latentGraph = buildLatentStructure(latentOutputClusters);
-
-        // Step 4: Refine latent-latent edges using conditional xindependence.
         refineLatentEdges(latentGraph);
-
-        // Step 5: Final refinement using PC algorithm (full depth).
         finalRefinement(latentGraph);
 
         return latentGraph;
     }
 
+    /**
+     * Returns the independence test currently used by this search.
+     *
+     * @return the independence test
+     */
     public IndependenceTest getTest() {
-        return test;
+        return this.test;
     }
 
+    /**
+     * Replaces the independence test used by this search.
+     *
+     * <p>The replacement test must be defined over exactly the same variable list, in the
+     * same order, as the current test. This prevents accidental replacement by a test over
+     * a different dataset or variable order.</p>
+     *
+     * @param test the replacement independence test
+     * @throws NullPointerException if the supplied test is null
+     * @throws IllegalArgumentException if the variable lists are not equal list-wise
+     */
     public void setTest(IndependenceTest test) {
-        List<Node> nodes = this.test.getVariables();
-        List<Node> _nodes = test.getVariables();
+        if (test == null) {
+            throw new NullPointerException("Independence test must not be null.");
+        }
 
-        if (!nodes.equals(_nodes)) {
-            throw new IllegalArgumentException(String.format("The nodes of the proposed new test are not equal list-wise\n" +
-                                                             "to the nodes of the existing test."));
+        List<Node> nodes = this.test.getVariables();
+        List<Node> newNodes = test.getVariables();
+
+        if (!nodes.equals(newNodes)) {
+            throw new IllegalArgumentException(
+                    "The nodes of the proposed new test are not equal list-wise to the nodes of the existing test."
+            );
         }
 
         this.test = test;
     }
 
     /**
-     * Classifies the variables in the given graph into input or output nodes based on their indegree and outdegree.
-     * Nodes with zero indegree and non-zero outdegree are classified as input nodes, while nodes with a non-zero
-     * indegree are classified as output nodes.
+     * Sets the background knowledge used by this search.
      *
-     * @param pattern The graph whose nodes are to be classified into input and output variables.
+     * <p>A defensive copy is stored so later external modifications to the supplied
+     * knowledge object do not change the behavior of this search unexpectedly.</p>
+     *
+     * @param knowledge the background knowledge to use
+     * @throws NullPointerException if the supplied knowledge is null
      */
-    private void classifyVariables(Graph pattern) {
-        for (Node node : pattern.getNodes()) {
-            int indegree = pattern.getIndegree(node);
-            int outdegree = pattern.getOutdegree(node);
+    public void setKnowledge(Knowledge knowledge) {
+        if (knowledge == null) {
+            throw new NullPointerException("Knowledge must not be null.");
+        }
 
-            if (indegree == 0 && outdegree > 0) {
-                inputs.add(node);
-            } else if (indegree > 0) {
-                outputs.add(node);
-            }
-            // Variables with no edges can be handled separately if needed.
+        this.knowledge = new Knowledge(knowledge);
+    }
+
+    /**
+     * Clears state that should not persist across repeated calls to {@link #search()}.
+     */
+    private void resetState() {
+        this.inputs.clear();
+        this.outputs.clear();
+        this.latentIndex = 1;
+    }
+
+    /**
+     * Runs PC with the given depth using the current test and knowledge.
+     *
+     * @param depth the PC depth, where -1 means unrestricted depth
+     * @return the graph returned by PC
+     */
+    private Graph runPc(int depth) {
+        try {
+            Pc pc = new Pc(this.test);
+            pc.setDepth(depth);
+            pc.setKnowledge(this.knowledge);
+            return pc.search();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("PC search was interrupted.", e);
         }
     }
 
     /**
-     * Groups output nodes into clusters based on their associated input nodes. Each cluster is represented as an entry
-     * in the resulting map, where the key is a set of associated input nodes, and the value is a list of output nodes
-     * that share those inputs.
+     * Classifies measured variables into tentative inputs and outputs using the given graph.
      *
-     * @return A map where each key is a set of input nodes and the corresponding value is a list of output nodes that
-     * are associated with those input nodes.
+     * <p>The classification rule is simple:</p>
+     *
+     * <ul>
+     *   <li>indegree 0 and outdegree greater than 0 implies input</li>
+     *   <li>indegree greater than 0 implies output</li>
+     * </ul>
+     *
+     * <p>Isolated variables are ignored by this procedure.</p>
+     *
+     * @param graph the graph used for classification
+     */
+    private void classifyVariables(Graph graph) {
+        for (Node node : graph.getNodes()) {
+            int indegree = graph.getIndegree(node);
+            int outdegree = graph.getOutdegree(node);
+
+            if (indegree == 0 && outdegree > 0) {
+                this.inputs.add(node);
+            } else if (indegree > 0) {
+                this.outputs.add(node);
+            }
+        }
+    }
+
+    /**
+     * Groups outputs by the set of measured inputs adjacent to them in the given graph.
+     *
+     * <p>Each key is a set of associated inputs, and each value is the set of outputs that
+     * share exactly that associated-input set.</p>
+     *
+     * @param initialGraph the depth-0 PC graph
+     * @return a map from associated-input sets to output clusters
      */
     private Map<Set<Node>, Set<Node>> clusterOutputs(Graph initialGraph) {
         Map<Set<Node>, Set<Node>> clusters = new HashMap<>();
 
-        for (Node output : outputs) {
-            if (output.getNodeType() != NodeType.LATENT) {
-                Set<Node> associatedInputs = getAssociatedInputs(output, initialGraph);
-                clusters.computeIfAbsent(associatedInputs, k -> new HashSet<>()).add(output);
+        for (Node output : this.outputs) {
+            if (output.getNodeType() == NodeType.LATENT) {
+                continue;
             }
+
+            Set<Node> associatedInputs = getAssociatedInputs(output, initialGraph);
+            clusters.computeIfAbsent(associatedInputs, k -> new HashSet<>()).add(output);
         }
 
         return clusters;
     }
 
-    private Set<Node> getAssociatedInputs(Node output, Graph pcDepth0) {
+    /**
+     * Returns the measured inputs adjacent to the given output in the supplied graph.
+     *
+     * @param output the output node
+     * @param graph the graph in which adjacency is checked
+     * @return the set of adjacent measured inputs
+     */
+    private Set<Node> getAssociatedInputs(Node output, Graph graph) {
         Set<Node> associatedInputs = new HashSet<>();
 
-        for (Node input : inputs) {
-            if (pcDepth0.isAdjacentTo(input, output)) {
+        for (Node input : this.inputs) {
+            if (graph.isAdjacentTo(input, output)) {
                 associatedInputs.add(input);
             }
         }
@@ -203,44 +289,69 @@ public class DmPc implements IGraphSearch {
     }
 
     /**
-     * Constructs a graph that incorporates latent variables, connecting them to input and output nodes based on the
-     * provided clusters of variables. Latent variables are created based on sets of input nodes, and directed edges are
-     * established between related nodes. Additionally, hierarchical relationships between latent variables are added
-     * based on subset relations within the clusters.
+     * Builds the initial latent structure from the clustered outputs.
      *
-     * @param clusters A map where each key is a set of input {@link Node} objects and the corresponding value is a list
-     *                 of output {@link Node} objects associated with those inputs.
-     * @return A {@link Graph} containing the latent structure, including the input and output nodes, latent variables,
-     * and directed edges connecting them based on their relationships.
+     * <p>For each nonempty cluster, a latent variable is created. The measured inputs in the
+     * key set point to the latent, and the latent points to the measured outputs in the value
+     * set.</p>
+     *
+     * <p>After this, latent-to-latent edges are added for strict subset relations among the
+     * associated-input sets. If input set B is a strict subset of input set A, the latent for
+     * B points to the latent for A. This follows the convention used by the existing DM-PC
+     * construction.</p>
+     *
+     * @param clusters the clustered outputs
+     * @return the initial graph containing measured and latent nodes
      */
     private Graph buildLatentStructure(Map<Set<Node>, Set<Node>> clusters) {
         Graph graph = new EdgeListGraph();
 
-        // Add input and output nodes.
-        for (Node input : inputs) graph.addNode(input);
-        for (Node output : outputs) graph.addNode(output);
+        for (Node input : this.inputs) {
+            graph.addNode(input);
+        }
+
+        for (Node output : this.outputs) {
+            graph.addNode(output);
+        }
 
         Map<Set<Node>, Node> latentNodes = new HashMap<>();
 
-        // Create latents and connect them.
-        for (Set<Node> inputSet : clusters.keySet()) {
-            Set<Node> outputSet = clusters.get(inputSet);
+        for (Map.Entry<Set<Node>, Set<Node>> entry : clusters.entrySet()) {
+            Set<Node> inputSet = entry.getKey();
+            Set<Node> outputSet = entry.getValue();
 
-            if (!inputSet.isEmpty() && !outputSet.isEmpty()) {
-                Node latent = createLatentNode();
-                latentNodes.put(inputSet, latent);
-                graph.addNode(latent);
+            if (inputSet.isEmpty() || outputSet.isEmpty()) {
+                continue;
+            }
 
-                for (Node input : inputSet) graph.addDirectedEdge(input, latent);
-                for (Node output : outputSet) graph.addDirectedEdge(latent, output);
+            Node latent = createLatentNode();
+            latentNodes.put(inputSet, latent);
+            graph.addNode(latent);
+
+            for (Node input : inputSet) {
+                graph.addDirectedEdge(input, latent);
+            }
+
+            for (Node output : outputSet) {
+                graph.addDirectedEdge(latent, output);
             }
         }
 
-        // Connect latent-latent based on subset relations.
-        for (Set<Node> setA : clusters.keySet()) {
-            for (Set<Node> setB : clusters.keySet()) {
-                if (!setA.equals(setB) && setA.containsAll(setB)) {
-                    graph.addDirectedEdge(latentNodes.get(setB), latentNodes.get(setA));
+        List<Set<Node>> inputSets = new ArrayList<>(latentNodes.keySet());
+
+        for (Set<Node> setA : inputSets) {
+            for (Set<Node> setB : inputSets) {
+                if (setA.equals(setB)) {
+                    continue;
+                }
+
+                if (setA.containsAll(setB)) {
+                    Node latentB = latentNodes.get(setB);
+                    Node latentA = latentNodes.get(setA);
+
+                    if (latentB != null && latentA != null && !graph.isAdjacentTo(latentB, latentA)) {
+                        graph.addDirectedEdge(latentB, latentA);
+                    }
                 }
             }
         }
@@ -249,129 +360,35 @@ public class DmPc implements IGraphSearch {
     }
 
     /**
-     * Creates a latent node with a unique name and sets its type to latent. This method is typically used to introduce
-     * a latent variable into the causal graph being constructed.
+     * Creates a new latent node with a unique name.
      *
-     * @return A newly created {@link Node} object representing the latent variable.
+     * @return the newly created latent node
      */
     private Node createLatentNode() {
-        String latentName = "L" + latentIndex++;
+        String latentName = "L" + this.latentIndex++;
         Node latent = new GraphNode(latentName);
         latent.setNodeType(NodeType.LATENT);
         return latent;
     }
 
     /**
-     * Determines whether a latent edge can be removed between two latent nodes in a graph. The method evaluates if the
-     * output nodes of the two latent nodes are conditionally independent given their combined input nodes. If
-     * independence holds, the latent edge can be removed.
+     * Refines latent-to-latent edges in the given graph.
      *
-     * @param latentA The first latent node being evaluated.
-     * @param latentB The second latent node being evaluated.
-     * @param graph   The graph structure containing the latent nodes and their relationships.
-     * @return {@code true} if the edge between the two latent nodes can be removed based on conditional independence;
-     * {@code false} otherwise.
-     */
-    private boolean canRemoveLatentEdge(Node latentA, Node latentB, Graph graph) {
-        Set<Node> inputsToA = getInputNodes(latentA, graph);
-        Set<Node> inputsToB = getInputNodes(latentB, graph);
-
-        Set<Node> combinedInputs = new HashSet<>();
-        combinedInputs.addAll(inputsToA);
-        combinedInputs.addAll(inputsToB);
-
-        Set<Node> outputsA = getOutputNodes(latentA, graph);
-        Set<Node> outputsB = getOutputNodes(latentB, graph);
-
-        return conditionalIndependent(outputsA, outputsB, combinedInputs);
-    }
-
-    /**
-     * Removes nodes of type {@link NodeType#LATENT} from the provided set of nodes.
+     * <p>A latent edge is removed if every measured output child of one latent is conditionally
+     * independent of every measured output child of the other latent, given the union of the
+     * measured input parents of the two latents.</p>
      *
-     * @param set A set of {@link Node} objects to be filtered, potentially containing latent nodes.
-     * @return A set of {@link Node} objects excluding any nodes of type {@link NodeType#LATENT}.
-     */
-    private Set<Node> removeLatents(Set<Node> set) {
-        return set.stream()
-                .filter(n -> n.getNodeType() != NodeType.LATENT)
-                .collect(Collectors.toSet());
-    }
-
-    /**
-     * Retrieves the input nodes of a specified node in a given graph. An input node is defined as a parent of the
-     * specified node in the graph.
-     *
-     * @param node  The node for which input nodes are to be retrieved.
-     * @param graph The graph structure containing the relationships between nodes.
-     * @return A set of nodes representing the input nodes (parents) of the specified node in the graph.
-     */
-    private Set<Node> getInputNodes(Node node, Graph graph) {
-        Set<Node> nodes = new HashSet<>(graph.getParents(node));
-        nodes = removeLatents(nodes);
-        return nodes;
-    }
-
-    /**
-     * Retrieves the output nodes of a specified node in a given graph. An output node is defined as a child of the
-     * specified node node in the graph.
-     *
-     * @param node  The node {@link Node} for which output nodes are to be retrieved.
-     * @param graph The {@link Graph} structure containing the relationships between nodes.
-     * @return A set of {@link Node} objects representing the output nodes (children) of the specified node in the
-     * graph.
-     */
-    private Set<Node> getOutputNodes(Node node, Graph graph) {
-        Set<Node> nodes = new HashSet<>(graph.getChildren(node));
-        nodes = removeLatents(nodes);
-        return nodes;
-    }
-
-    /**
-     * Determines whether all pairs of nodes between two sets are conditionally independent given a third "conditioning"
-     * set. Latent variables are removed from all input sets before performing the conditional independence check.
-     *
-     * @param setA     The first set of {@link Node} objects to be tested for independence against the second set.
-     * @param setB     The second set of {@link Node} objects to be tested for independence against the first set.
-     * @param givenSet The set of {@link Node} objects that serves as the conditioning set for the independence test.
-     * @return {@code true} if all pairs of nodes between the first and second sets are found to be conditionally
-     * independent given the conditioning set; {@code false} otherwise.
-     */
-    private boolean conditionalIndependent(Set<Node> setA, Set<Node> setB, Set<Node> givenSet) {
-        Set<Node> cleanSetA = removeLatents(setA);
-        Set<Node> cleanSetB = removeLatents(setB);
-        Set<Node> cleanGivenSet = removeLatents(givenSet);
-
-        try {
-            for (Node a : cleanSetA) {
-                for (Node b : cleanSetB) {
-                    if (!test.checkIndependence(a, b, cleanGivenSet).isIndependent()) {
-                        return false; // dependent pair found
-                    }
-                }
-            }
-            return true; // all pairs independent
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Refines the latent edges in the given graph by iterating through all edges and removing edges between latent
-     * nodes if they meet certain conditions for removal.
-     *
-     * @param graph The graph in which latent edges are to be refined. The graph contains nodes and edges representing
-     *              relationships between variables, including latent variables.
+     * @param graph the graph whose latent edges are to be refined
      */
     private void refineLatentEdges(Graph graph) {
-        List<Edge> latentEdges = new ArrayList<>(graph.getEdges());
+        List<Edge> edges = new ArrayList<>(graph.getEdges());
 
-        for (Edge edge : latentEdges) {
-            Node latentA = edge.getNode1();
-            Node latentB = edge.getNode2();
+        for (Edge edge : edges) {
+            Node node1 = edge.getNode1();
+            Node node2 = edge.getNode2();
 
-            if (latentA.getNodeType() == NodeType.LATENT && latentB.getNodeType() == NodeType.LATENT) {
-                if (canRemoveLatentEdge(latentA, latentB, graph)) {
+            if (node1.getNodeType() == NodeType.LATENT && node2.getNodeType() == NodeType.LATENT) {
+                if (canRemoveLatentEdge(node1, node2, graph)) {
                     graph.removeEdge(edge);
                 }
             }
@@ -379,63 +396,180 @@ public class DmPc implements IGraphSearch {
     }
 
     /**
-     * Performs the final refinement step in the Directed Maximal PC (DmPc) algorithm, refining the graph structure by
-     * updating connections based on outputs from the PC algorithm. This method adjusts edges between latent and output
-     * nodes and modifies edges among output nodes to align with the output of the PC algorithm.
+     * Returns true if the latent edge between the two supplied latents should be removed.
      *
-     * @param graph The {@link Graph} being refined. This graph contains nodes and edges representing the relationships
-     *              between variables, including both observed and latent variables.
+     * @param latentA the first latent
+     * @param latentB the second latent
+     * @param graph the graph containing the latents
+     * @return true if the edge should be removed
      */
-    private void finalRefinement(Graph graph) {
+    private boolean canRemoveLatentEdge(Node latentA, Node latentB, Graph graph) {
+        Set<Node> inputsToA = getMeasuredParents(latentA, graph);
+        Set<Node> inputsToB = getMeasuredParents(latentB, graph);
+
+        Set<Node> conditioningSet = new HashSet<>(inputsToA);
+        conditioningSet.addAll(inputsToB);
+
+        Set<Node> outputsOfA = getMeasuredChildren(latentA, graph);
+        Set<Node> outputsOfB = getMeasuredChildren(latentB, graph);
+
+        return areConditionallyIndependent(outputsOfA, outputsOfB, conditioningSet);
+    }
+
+    /**
+     * Returns the measured parents of the given node in the given graph.
+     *
+     * @param node the node of interest
+     * @param graph the graph containing the node
+     * @return the measured parents of the node
+     */
+    private Set<Node> getMeasuredParents(Node node, Graph graph) {
+        return removeLatents(new HashSet<>(graph.getParents(node)));
+    }
+
+    /**
+     * Returns the measured children of the given node in the given graph.
+     *
+     * @param node the node of interest
+     * @param graph the graph containing the node
+     * @return the measured children of the node
+     */
+    private Set<Node> getMeasuredChildren(Node node, Graph graph) {
+        return removeLatents(new HashSet<>(graph.getChildren(node)));
+    }
+
+    /**
+     * Removes latent nodes from the given set.
+     *
+     * @param nodes the input set
+     * @return a new set containing only measured nodes
+     */
+    private Set<Node> removeLatents(Set<Node> nodes) {
+        Set<Node> measured = new HashSet<>();
+
+        for (Node node : nodes) {
+            if (node.getNodeType() != NodeType.LATENT) {
+                measured.add(node);
+            }
+        }
+
+        return measured;
+    }
+
+    /**
+     * Returns true if every cross-pair from the two supplied sets is conditionally independent
+     * given the supplied conditioning set.
+     *
+     * @param setA the first measured-node set
+     * @param setB the second measured-node set
+     * @param conditioningSet the conditioning set
+     * @return true if all tested cross-pairs are conditionally independent
+     */
+    private boolean areConditionallyIndependent(Set<Node> setA, Set<Node> setB, Set<Node> conditioningSet) {
+        Set<Node> cleanSetA = removeLatents(setA);
+        Set<Node> cleanSetB = removeLatents(setB);
+        Set<Node> cleanConditioningSet = removeLatents(conditioningSet);
+
         try {
-            Pc pc = new Pc(test);
-            pc.setDepth(-1);
-            pc.setKnowledge(knowledge);
-            Graph fullPattern = pc.search();
-
-            for (Node output : outputs) {
-                if (fullPattern.getAdjacentNodes(output).stream().noneMatch(inputs::contains)) {
-                    // Remove latent-output edge and instead use PC output edges among outputs.
-                    for (Node parent : new ArrayList<>(graph.getParents(output))) {
-                        if (parent.getNodeType() == NodeType.LATENT) {
-                            graph.removeEdge(parent, output);
-                        }
-                    }
-
-                    // Add edges among outputs according to fullPattern.
-                    for (Node neighbor : fullPattern.getAdjacentNodes(output)) {
-                        if (outputs.contains(neighbor)) {
-                            if (!graph.isAdjacentTo(output, neighbor)) {
-                                graph.addUndirectedEdge(output, neighbor);
-                            }
-                        }
+            for (Node a : cleanSetA) {
+                for (Node b : cleanSetB) {
+                    if (!this.test.checkIndependence(a, b, cleanConditioningSet).isIndependent()) {
+                        return false;
                     }
                 }
             }
 
-            for (Node node : graph.getNodes()) {
-                if (node.getNodeType() == NodeType.LATENT) {
-                    Set<Node> measuredParents = removeLatents(new HashSet<>(graph.getParents(node)));
-                    Set<Node> measuredChildren = removeLatents(new HashSet<>(graph.getChildren(node)));
-
-                    if (measuredParents.isEmpty() || measuredChildren.isEmpty()) {
-                        graph.removeNode(node);
-                    }
-                }
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException("Conditional independence testing failed.", e);
         }
     }
 
     /**
-     * Sets the knowledge for the current instance. The provided knowledge is used in the context of the DmPc algorithm
-     * to guide the structure learning process by incorporating prior information or constraints.
+     * Performs the final cleanup step using a full-depth PC graph on the measured variables.
      *
-     * @param knowledge An instance of the {@link Knowledge} class that encapsulates domain-specific rules, constraints,
-     *                  or prior knowledge to be applied.
+     * <p>For each measured output, if the full PC graph shows no adjacency from that output to
+     * any tentative input, latent-to-output edges into that output are removed. Measured
+     * output-to-output adjacencies from the full PC graph are then added back as undirected
+     * edges if they are missing.</p>
+     *
+     * <p>Finally, latent variables with no measured parents or no measured children are removed.</p>
+     *
+     * @param graph the graph to refine
      */
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = knowledge;
+    private void finalRefinement(Graph graph) {
+        Graph fullPattern = runPc(-1);
+
+        for (Node output : this.outputs) {
+            boolean adjacentToAnyInput = false;
+
+            for (Node neighbor : fullPattern.getAdjacentNodes(output)) {
+                if (this.inputs.contains(neighbor)) {
+                    adjacentToAnyInput = true;
+                    break;
+                }
+            }
+
+            if (!adjacentToAnyInput) {
+                removeLatentParents(output, graph);
+                addMeasuredOutputAdjacencies(output, fullPattern, graph);
+            }
+        }
+
+        removeDegenerateLatents(graph);
+    }
+
+    /**
+     * Removes all latent-to-output edges into the given measured output.
+     *
+     * @param output the measured output
+     * @param graph the graph to modify
+     */
+    private void removeLatentParents(Node output, Graph graph) {
+        List<Node> parents = new ArrayList<>(graph.getParents(output));
+
+        for (Node parent : parents) {
+            if (parent.getNodeType() == NodeType.LATENT) {
+                graph.removeEdge(parent, output);
+            }
+        }
+    }
+
+    /**
+     * Adds undirected measured-output adjacencies for the given output based on the supplied
+     * full PC graph.
+     *
+     * @param output the output whose measured-output adjacencies are to be added
+     * @param fullPattern the full-depth PC graph
+     * @param graph the graph being refined
+     */
+    private void addMeasuredOutputAdjacencies(Node output, Graph fullPattern, Graph graph) {
+        for (Node neighbor : fullPattern.getAdjacentNodes(output)) {
+            if (this.outputs.contains(neighbor) && !graph.isAdjacentTo(output, neighbor)) {
+                graph.addUndirectedEdge(output, neighbor);
+            }
+        }
+    }
+
+    /**
+     * Removes latent variables that no longer have both measured parents and measured children.
+     *
+     * @param graph the graph to modify
+     */
+    private void removeDegenerateLatents(Graph graph) {
+        List<Node> nodes = new ArrayList<>(graph.getNodes());
+
+        for (Node node : nodes) {
+            if (node.getNodeType() != NodeType.LATENT) {
+                continue;
+            }
+
+            Set<Node> measuredParents = getMeasuredParents(node, graph);
+            Set<Node> measuredChildren = getMeasuredChildren(node, graph);
+
+            if (measuredParents.isEmpty() || measuredChildren.isEmpty()) {
+                graph.removeNode(node);
+            }
+        }
     }
 }

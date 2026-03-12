@@ -11,11 +11,11 @@
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
 // but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the              //
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+// along with this program. If not, see <https://www.gnu.org/licenses/>.     //
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
@@ -36,7 +36,15 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.Fcit;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.score.Score;
@@ -52,72 +60,87 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.SublistGenerator;
 
 import java.io.Serial;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * This class represents the Detect-Mimic-FCIT (DM-FCIT) algorithm, a specialized variant of the DM-PC and FCIT
- * algorithms designed to identify intermediate latent variables. DM-FCIT enhances accuracy and computational efficiency
- * by recursively maintaining complete PAG orientations during the search process. At each step, it uses these
- * orientations to substantially reduce the required size of conditioning sets when testing independence. This approach
- * leads to more precise identification of latent variables and better orientation accuracy overall.
+ * Implements the Detect-Mimic-FCIT algorithm.
+ *
+ * <p>This class is an algcomparison wrapper around an FCIT search followed by a
+ * detect-mimic post-processing step. The intended use case is the discovery of
+ * intermediate latent variables in settings resembling Multiple Input Multiple
+ * Indicator models.</p>
+ *
+ * <p>The overall procedure is:</p>
+ *
+ * <ol>
+ *   <li>Run FCIT on the measured variables using the supplied score, independence
+ *   test, knowledge, and search parameters.</li>
+ *   <li>Extract the directed part of the resulting graph as a graph of candidate
+ *   parent-to-child relations.</li>
+ *   <li>Search for parent sets and child sets that form a complete directed
+ *   bipartite pattern in that directed graph.</li>
+ *   <li>For each candidate parent set and child set, check whether the candidate
+ *   latent remains plausible using independence tests among the children, with
+ *   conditioning sets chosen by recursive blocking from the current partially
+ *   oriented graph.</li>
+ *   <li>If the candidate passes the check, introduce a latent variable between
+ *   the measured parents and measured children, remove the corresponding direct
+ *   measured edges, and re-orient the graph.</li>
+ *   <li>After all such replacements, add latent-to-latent edges using the same
+ *   subset-inclusion convention used by the detect-mimic construction.</li>
+ * </ol>
+ *
+ * <p>This class is experimental. It is not presented here as a general latent
+ * discovery method, but rather as a specialized detect-mimic variant built on
+ * top of FCIT.</p>
  *
  * @author josephramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "DM-FCIT",
-        command = "dm-fcit",
-        algoType = AlgType.allow_latent_common_causes
-)
-@Bootstrapping
-@Experimental
-public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, TakesIndependenceWrapper,
-        HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "DM-FCIT",
+//        command = "dm-fcit",
+//        algoType = AlgType.allow_latent_common_causes
+//)
+//@Bootstrapping
+//@Experimental
+public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
+        TakesIndependenceWrapper, HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
+
     /**
-     * The independence test to use.
+     * The independence test wrapper used to construct the working independence test.
      */
     private IndependenceWrapper test;
+
     /**
-     * The score to use.
+     * The score wrapper used to construct the working score.
      */
     private ScoreWrapper score;
+
     /**
-     * The knowledge.
+     * Background knowledge used by the FCIT search.
      */
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * This class represents a DM-FCIT algorithm.
-     *
-     * <p>
-     * The DM-FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
-     * given data set and parameters. It is a subclass of the Abstract BootstrapAlgorithm class and implements the
-     * Algorithm interface.
-     * </p>
-     *
-     * @see AbstractBootstrapAlgorithm
-     * @see Algorithm
+     * Constructs a DM-FCIT algorithm instance for reflective creation.
      */
     public DmFcit() {
         // Used for reflection; do not delete.
     }
 
     /**
-     * Represents a DM-FCIT algorithm.
+     * Constructs a DM-FCIT algorithm instance with the given independence-test and score wrappers.
      *
-     * <p>
-     * The DM-FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
-     * given data set and parameters. It is a subclass of the AbstractBootstrapAlgorithm class and implements the
-     * Algorithm interface.
-     * </p>
-     *
-     * @param test  The independence test to use.
-     * @param score The score to use.
-     * @see AbstractBootstrapAlgorithm
-     * @see Algorithm
+     * @param test the independence-test wrapper
+     * @param score the score wrapper
      */
     public DmFcit(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
@@ -125,208 +148,19 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * Constructs and modifies a graph to identify latent variables and adjust directed edges based on the provided
-     * independence test. Applies orientation rules and models relationships between observed and latent variables.
+     * Runs the DM-FCIT search on the supplied data model using the supplied parameters.
      *
-     * @param graph The input graph that represents the relationships among the observed variables.
-     * @param test  An independence test used for determining conditional independencies in the graph.
-     * @return A modified graph with latent variables identified and directed edges appropriately adjusted.
-     */
-    private static Graph getDmGraph(Graph graph, IndependenceTest test) {
-        FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(test));
-        graph = new EdgeListGraph(graph);
-
-        Graph potentiallyDirected = new EdgeListGraph(graph.getNodes());
-
-        for (Edge edge : graph.getEdges()) {
-            if (edge.pointsTowards(edge.getNode2())) {
-                potentiallyDirected.addDirectedEdge(edge.getNode1(), edge.getNode2());
-            }
-        }
-
-        int latentCounter = 1;
-        Map<Set<Node>, Node> latentNodes = new HashMap<>();
-
-        for (Node x : potentiallyDirected.getNodes()) {
-            Set<Node> possibleChildren = new HashSet<>(potentiallyDirected.getChildren(x));
-            Set<Node> possibleParents = new HashSet<>();
-
-            for (Node p : possibleChildren) {
-                possibleParents.addAll(potentiallyDirected.getParents(p));
-            }
-
-            for (Node c : possibleParents) {
-                possibleChildren.addAll(potentiallyDirected.getChildren(c));
-            }
-
-            List<Node> _possibleParents = new ArrayList<>(possibleParents);
-            List<Node> _possibleChildren = new ArrayList<>(possibleChildren);
-
-            SublistGenerator gen1 = new SublistGenerator(_possibleParents.size(), _possibleParents.size());
-            int[] choice1;
-
-            W:
-            while ((choice1 = gen1.next()) != null) {
-                List<Node> a1 = GraphUtils.asList(choice1, _possibleParents);
-                Set<Node> parents = new HashSet<>(_possibleParents);
-                a1.forEach(parents::remove);
-                if (parents.isEmpty()) continue;
-
-                SublistGenerator gen2 = new SublistGenerator(_possibleChildren.size(), _possibleChildren.size());
-                int[] choice2;
-
-                C:
-                while ((choice2 = gen2.next()) != null) {
-                    List<Node> a2 = GraphUtils.asList(choice2, _possibleChildren);
-                    Set<Node> children = new HashSet<>(_possibleChildren);
-                    a2.forEach(children::remove);
-                    if (children.isEmpty()) continue;
-
-                    if (!cartesianProduct(parents, children, potentiallyDirected)) continue;
-
-                    // Verify that the candidate latent node meets orientation-based legitimacy criteria.
-                    if (confirmLatentUsingOrientation(graph, parents, children, test)) {
-                        if (!parents.isEmpty() && !children.isEmpty()) {
-                            GraphNode newLatent = new GraphNode("L" + latentCounter++);
-                            newLatent.setNodeType(NodeType.LATENT);
-                            graph.addNode(newLatent);
-
-                            latentNodes.put(parents, newLatent);
-
-                            for (Node p : parents) {
-                                for (Node c : children) {
-                                    graph.removeEdge(p, c);
-                                    graph.addDirectedEdge(p, newLatent);
-                                    graph.addDirectedEdge(newLatent, c);
-                                }
-                            }
-
-                            fciOrient.finalOrientation(graph);
-                        }
-
-                        // Remove edges from parents to children from potentiallyDirected
-                        for (Node p : parents) {
-                            for (Node c : children) {
-                                potentiallyDirected.removeEdge(p, c);
-                            }
-                        }
-
-                        break W;
-                    }
-                }
-            }
-        }
-
-        // Add latent-to-latent edges based on subset-inclusion logic.
-        orientLatentEdges(graph, latentNodes);
-        LayoutUtil.repositionLatents(graph);
-        return graph;
-    }
-
-    /**
-     * Checks if there is an edge in the given graph for every pair of nodes from the Cartesian product of the provided
-     * parents and children sets.
+     * <p>If time lagging is requested, the data are first expanded into lagged form and the
+     * resulting knowledge is taken from that lagged dataset. FCIT is then run on the measured
+     * variables. The resulting graph is passed through the detect-mimic post-processing step
+     * that introduces latent variables.</p>
      *
-     * @param parents          The set of parent nodes to be considered.
-     * @param children         The set of child nodes to be considered.
-     * @param potentiallyDirected The graph in which the edges are checked. The graph may or may not be directed.
-     * @return True if there is an edge in the graph for every pair of nodes from the Cartesian product of parents and
-     * children; false otherwise.
-     */
-    private static boolean cartesianProduct(Set<Node> parents, Set<Node> children, Graph potentiallyDirected) {
-        for (Node p : parents) {
-            for (Node c : children) {
-                Edge e = potentiallyDirected.getEdge(p, c);
-                if (e == null) return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Orients the edges between latent nodes in the given graph based on the relationships among sets of observed
-     * variables associated with latent nodes. Ensures that directed edges from less inclusive to more inclusive sets
-     * are added, maintaining consistency in the graph structure.
-     *
-     * @param graph       The graph in which the latent node edges are to be oriented. The graph represents
-     *                    relationships among observed and latent variables.
-     * @param latentNodes A mapping of sets of observed variables to their corresponding latent node in the graph. Keys
-     *                    are sets of observed variables, and values are the associated latent nodes.
-     */
-    private static void orientLatentEdges(Graph graph, Map<Set<Node>, Node> latentNodes) {
-        List<Set<Node>> keys = new ArrayList<>(latentNodes.keySet());
-        for (Set<Node> setA : keys) {
-            for (Set<Node> setB : keys) {
-                if (setA.equals(setB)) continue;
-                if (setA.containsAll(setB)) {
-                    Node latentFrom = latentNodes.get(setB);
-                    Node latentTo = latentNodes.get(setA);
-
-                    if (!graph.isAncestorOf(latentTo, latentFrom)) {
-                        graph.addDirectedEdge(latentFrom, latentTo);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Checks if a candidate latent is legitimate, using recursively maintained PAG orientation to dramatically reduce
-     * the conditioning set.
-     *
-     * @param graph    The current oriented PAG structure.
-     * @param parents  The candidate parents.
-     * @param children The candidate children.
-     * @param test     The independence test.
-     * @return True if the latent is legitimate, false otherwise.
-     */
-    private static boolean confirmLatentUsingOrientation(Graph graph, Set<Node> parents, Set<Node> children, IndependenceTest test) {
-        try {
-            for (Node childA : children) {
-                for (Node childB : children) {
-                    if (childA.equals(childB)) continue;
-
-                    // Identify minimal conditioning set using the current PAG orientation
-                    Set<Node> minimalParents = getMinimalConditioningSet(graph, childA, childB, parents);
-
-                    // Perform independence test using a minimal conditioning set
-                    IndependenceResult result = test.checkIndependence(childA, childB, minimalParents);
-
-                    if (result.isIndependent()) {
-                        return false;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        // No independence found, latent is legitimate
-        return true;
-    }
-
-    /**
-     * Identifies a minimal conditioning subset from parents sufficient to block all back-door paths between childA and
-     * childB based on the current orientation of the PAG.
-     *
-     * @param graph   The oriented PAG structure.
-     * @param childA  First child node.
-     * @param childB  Second child node.
-     * @param parents Set of potential parent nodes.
-     * @return A minimal conditioning subset of parents.
-     */
-    private static Set<Node> getMinimalConditioningSet(Graph graph, Node childA, Node childB, Set<Node> parents)
-            throws InterruptedException {
-        return RecursiveBlocking.blockPathsRecursively(graph, childA, childB, new HashSet<>(), new HashSet<>(), -1);
-    }
-
-    /**
-     * Runs the search algorithm to find a graph structure based on a given data model and parameters.
-     *
-     * @param dataModel  The data model to use for the search algorithm.
-     * @param parameters The parameters to configure the search algorithm.
-     * @return The resulting graph structure.
-     * @throws IllegalArgumentException if the time lag is greater than 0 and the data model is not an instance of
-     *                                  DataSet.
+     * @param dataModel the data model to analyze
+     * @param parameters the search parameters
+     * @return the resulting graph after FCIT followed by detect-mimic processing
+     * @throws InterruptedException if the search is interrupted
+     * @throws IllegalArgumentException if time lagging is requested for a non-dataset input,
+     * or if an invalid FCIT start option is supplied
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
@@ -336,58 +170,60 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Tak
             }
 
             DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
+
             dataModel = timeSeries;
-            knowledge = timeSeries.getKnowledge();
+            this.knowledge = new Knowledge(timeSeries.getKnowledge());
         }
 
-        IndependenceTest test = this.test.getTest(dataModel, parameters);
-        test = new CachedIndependenceQueries(test);
-        Score score = this.score.getScore(dataModel, parameters);
+        IndependenceTest independenceTest = this.test.getTest(dataModel, parameters);
+        independenceTest = new CachedIndependenceQueries(independenceTest);
 
-        if (test instanceof MsepTest) {
-            if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
-                throw new IllegalArgumentException("For d-separation oracle input, please use the GRaSP option.");
-            }
+        Score searchScore = this.score.getScore(dataModel, parameters);
+
+        if (independenceTest instanceof MsepTest && parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
+            throw new IllegalArgumentException(
+                    "For d-separation oracle input, please use the GRaSP option."
+            );
         }
 
-        Fcit search = new Fcit(test, score);
+        Fcit search = new Fcit(independenceTest, searchScore);
 
-        // BOSS
+        // BOSS-related settings used by FCIT.
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setUseBes(parameters.getBoolean(Params.USE_BES));
 
-        // FCIT
-//        search.setDepth(parameters.getInt(Params.DEPTH));
-//        search.setPreserveMarkov(parameters.getBoolean(Params.PRESERVE_MARKOV));
+        int startOption = parameters.getInt(Params.FCIT_STARTS_WITH);
 
-        if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
+        if (startOption == 1) {
             search.setStartWith(Fcit.START_WITH.BOSS);
-        } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 2) {
+        } else if (startOption == 2) {
             search.setStartWith(Fcit.START_WITH.GRASP);
-        } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 3) {
+        } else if (startOption == 3) {
             search.setStartWith(Fcit.START_WITH.SP);
         } else {
-            throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCIT_STARTS_WITH));
+            throw new IllegalArgumentException("Unknown start with option: " + startOption);
         }
 
-        // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
 
         Graph graph = search.search();
 
-        return getDmGraph(graph, test);
+        return getDmGraph(graph, independenceTest);
     }
 
     /**
-     * Retrieves a comparison graph by transforming a true directed graph into a partially directed graph (PAG).
+     * Returns the comparison graph used for algorithm-comparison evaluation.
      *
-     * @param graph The true directed graph, if there is one.
-     * @return The comparison graph.
+     * <p>The supplied true DAG is converted to a PAG.</p>
+     *
+     * @param graph the true directed graph, if there is one
+     * @return the comparison PAG
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -395,20 +231,20 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * Returns a short, one-line description of this algorithm. The description is generated by concatenating the
-     * descriptions of the test and score objects associated with this algorithm.
+     * Returns a short one-line description of this algorithm.
      *
-     * @return The description of this algorithm.
+     * @return a one-line description of the algorithm
      */
     @Override
     public String getDescription() {
-        return "DM-FCIT using " + this.score.getDescription();
+        String scoreDescription = this.score == null ? "no score specified" : this.score.getDescription();
+        return "DM-FCIT using " + scoreDescription;
     }
 
     /**
-     * Retrieves the data type required by the search algorithm.
+     * Returns the data type expected by this algorithm.
      *
-     * @return The data type required by the search algorithm.
+     * @return the required data type
      */
     @Override
     public DataType getDataType() {
@@ -416,29 +252,29 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * Retrieves the list of parameters used by the algorithm.
+     * Returns the list of parameters used by this algorithm.
      *
-     * @return The list of parameters used by the algorithm.
+     * @return the list of parameter names
      */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
 
-        // BOSS
+        // BOSS-related settings used by FCIT.
         params.add(Params.USE_BES);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
 
-        // FCI-ORIENT
+        // FCI orientation settings.
         params.add(Params.COMPLETE_RULE_SET_USED);
 
-        // FCIT
+        // FCIT settings.
         params.add(Params.FCIT_STARTS_WITH);
         params.add(Params.GRASP_DEPTH);
         params.add(Params.GUARANTEE_PAG);
         params.add(Params.PRESERVE_MARKOV);
 
-        // General
+        // General settings.
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
         params.add(Params.TEST_TIMEOUT);
@@ -447,9 +283,9 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * Retrieves the knowledge object associated with this method.
+     * Returns the current background knowledge.
      *
-     * @return The knowledge object.
+     * @return the current background knowledge
      */
     @Override
     public Knowledge getKnowledge() {
@@ -457,9 +293,12 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * Sets the knowledge object associated with this method.
+     * Sets the background knowledge for this algorithm.
      *
-     * @param knowledge the knowledge object to be set
+     * <p>A defensive copy is stored so later changes to the supplied knowledge object
+     * do not unexpectedly affect this algorithm.</p>
+     *
+     * @param knowledge the background knowledge to use
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -467,9 +306,9 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * Retrieves the ScoreWrapper object associated with this method.
+     * Returns the score wrapper currently used by this algorithm.
      *
-     * @return The ScoreWrapper object associated with this method.
+     * @return the score wrapper
      */
     @Override
     public ScoreWrapper getScoreWrapper() {
@@ -477,9 +316,9 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * Sets the score wrapper for the algorithm.
+     * Sets the score wrapper for this algorithm.
      *
-     * @param score the score wrapper.
+     * @param score the score wrapper
      */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
@@ -487,25 +326,310 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     }
 
     /**
-     * Retrieves the IndependenceWrapper object associated with this instance.
+     * Returns the independence-test wrapper currently used by this algorithm.
      *
-     * @return The IndependenceWrapper object that represents the independence test used.
+     * @return the independence-test wrapper
      */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 
     /**
-     * Sets the IndependenceWrapper object for this algorithm. The IndependenceWrapper represents the independence test
-     * to be used in the algorithm's operations.
+     * Sets the independence-test wrapper for this algorithm.
      *
-     * @param independenceWrapper the IndependenceWrapper object to set
+     * @param independenceWrapper the independence-test wrapper
      */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
     }
+
+    /**
+     * Applies the detect-mimic post-processing step to an already computed graph.
+     *
+     * <p>The directed part of the graph is treated as a source of candidate parent-to-child
+     * relations. The method searches for complete directed bipartite patterns between a
+     * candidate measured-parent set and a candidate measured-child set. When such a candidate
+     * also passes an orientation-based legitimacy test, a new latent variable is inserted
+     * between the parent set and child set, the direct measured edges are removed, and FCI
+     * orientation is re-applied. Finally, latent-to-latent edges are added using subset
+     * inclusion of the parent sets.</p>
+     *
+     * @param graph the graph produced by FCIT
+     * @param test the independence test used to assess latent plausibility
+     * @return the graph after detect-mimic latent insertion
+     */
+    private static Graph getDmGraph(Graph graph, IndependenceTest test) {
+        FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(test));
+        Graph dmGraph = new EdgeListGraph(graph);
+
+        Graph potentiallyDirected = new EdgeListGraph(dmGraph.getNodes());
+
+        for (Edge edge : dmGraph.getEdges()) {
+            if (edge.pointsTowards(edge.getNode2())) {
+                potentiallyDirected.addDirectedEdge(edge.getNode1(), edge.getNode2());
+            }
+        }
+
+        int latentCounter = 1;
+        Map<Set<Node>, Node> latentNodes = new HashMap<>();
+
+        for (Node node : potentiallyDirected.getNodes()) {
+            Set<Node> possibleChildren = new HashSet<>(potentiallyDirected.getChildren(node));
+            Set<Node> possibleParents = collectPossibleParents(possibleChildren, potentiallyDirected);
+
+            expandPossibleChildrenFromParents(possibleChildren, possibleParents, potentiallyDirected);
+
+            List<Node> parentList = new ArrayList<>(possibleParents);
+            List<Node> childList = new ArrayList<>(possibleChildren);
+
+            SublistGenerator parentGenerator = new SublistGenerator(parentList.size(), parentList.size());
+            int[] parentChoice;
+
+            searchForLatent:
+            while ((parentChoice = parentGenerator.next()) != null) {
+                Set<Node> parents = complement(parentChoice, parentList);
+
+                if (parents.isEmpty()) {
+                    continue;
+                }
+
+                SublistGenerator childGenerator = new SublistGenerator(childList.size(), childList.size());
+                int[] childChoice;
+
+                while ((childChoice = childGenerator.next()) != null) {
+                    Set<Node> children = complement(childChoice, childList);
+
+                    if (children.isEmpty()) {
+                        continue;
+                    }
+
+                    if (!formsCompleteParentChildPattern(parents, children, potentiallyDirected)) {
+                        continue;
+                    }
+
+                    if (!confirmLatentUsingOrientation(dmGraph, parents, children, test)) {
+                        continue;
+                    }
+
+                    GraphNode latent = new GraphNode("L" + latentCounter++);
+                    latent.setNodeType(NodeType.LATENT);
+                    dmGraph.addNode(latent);
+
+                    latentNodes.put(new HashSet<>(parents), latent);
+
+                    insertLatentBetweenParentsAndChildren(dmGraph, latent, parents, children);
+
+                    for (Node parent : parents) {
+                        for (Node child : children) {
+                            potentiallyDirected.removeEdge(parent, child);
+                        }
+                    }
+
+                    fciOrient.finalOrientation(dmGraph);
+                    break searchForLatent;
+                }
+            }
+        }
+
+        orientLatentEdges(dmGraph, latentNodes);
+        LayoutUtil.repositionLatents(dmGraph);
+
+        return dmGraph;
+    }
+
+    /**
+     * Collects candidate parents by taking the union of the parents of the supplied
+     * candidate children in the potentially directed graph.
+     *
+     * @param possibleChildren the current candidate children
+     * @param potentiallyDirected the graph containing only directed candidate edges
+     * @return the union of parents of the candidate children
+     */
+    private static Set<Node> collectPossibleParents(Set<Node> possibleChildren, Graph potentiallyDirected) {
+        Set<Node> possibleParents = new HashSet<>();
+
+        for (Node child : possibleChildren) {
+            possibleParents.addAll(potentiallyDirected.getParents(child));
+        }
+
+        return possibleParents;
+    }
+
+    /**
+     * Expands the candidate-child set by taking the union of the children of the supplied
+     * candidate parents in the potentially directed graph.
+     *
+     * @param possibleChildren the current candidate-child set, updated in place
+     * @param possibleParents the current candidate-parent set
+     * @param potentiallyDirected the graph containing only directed candidate edges
+     */
+    private static void expandPossibleChildrenFromParents(Set<Node> possibleChildren, Set<Node> possibleParents,
+                                                          Graph potentiallyDirected) {
+        for (Node parent : possibleParents) {
+            possibleChildren.addAll(potentiallyDirected.getChildren(parent));
+        }
+    }
+
+    /**
+     * Returns the complement subset determined by removing the chosen indices from the supplied list.
+     *
+     * <p>The original code enumerates complements in this way by starting from the full set and
+     * removing the chosen elements.</p>
+     *
+     * @param choice the indices to remove
+     * @param nodes the base list of nodes
+     * @return the complement subset
+     */
+    private static Set<Node> complement(int[] choice, List<Node> nodes) {
+        List<Node> removed = GraphUtils.asList(choice, nodes);
+        Set<Node> kept = new HashSet<>(nodes);
+        removed.forEach(kept::remove);
+        return kept;
+    }
+
+    /**
+     * Inserts a latent variable between each parent in the supplied parent set and each child
+     * in the supplied child set.
+     *
+     * <p>For each parent-child pair, any direct edge is removed. Then directed edges are added
+     * from the parent to the latent and from the latent to the child.</p>
+     *
+     * @param graph the graph to modify
+     * @param latent the new latent variable
+     * @param parents the measured parents
+     * @param children the measured children
+     */
+    private static void insertLatentBetweenParentsAndChildren(Graph graph, Node latent, Set<Node> parents,
+                                                              Set<Node> children) {
+        for (Node parent : parents) {
+            for (Node child : children) {
+                graph.removeEdge(parent, child);
+
+                if (!graph.isAdjacentTo(parent, latent)) {
+                    graph.addDirectedEdge(parent, latent);
+                }
+
+                if (!graph.isAdjacentTo(latent, child)) {
+                    graph.addDirectedEdge(latent, child);
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns true if every parent-child pair in the Cartesian product of the supplied
+     * parent and child sets appears as an edge in the potentially directed graph.
+     *
+     * @param parents the candidate parents
+     * @param children the candidate children
+     * @param potentiallyDirected the graph containing only directed candidate edges
+     * @return true if the parent-child pattern is complete, false otherwise
+     */
+    private static boolean formsCompleteParentChildPattern(Set<Node> parents, Set<Node> children,
+                                                           Graph potentiallyDirected) {
+        for (Node parent : parents) {
+            for (Node child : children) {
+                Edge edge = potentiallyDirected.getEdge(parent, child);
+
+                if (edge == null) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Orients edges among latent nodes using subset inclusion of the measured parent sets
+     * associated with those latents.
+     *
+     * <p>If one measured-parent set is a strict subset of another, the latent corresponding
+     * to the smaller set is directed into the latent corresponding to the larger set, unless
+     * doing so would create an ancestor conflict.</p>
+     *
+     * @param graph the graph to modify
+     * @param latentNodes a map from measured-parent sets to their latent nodes
+     */
+    private static void orientLatentEdges(Graph graph, Map<Set<Node>, Node> latentNodes) {
+        List<Set<Node>> parentSets = new ArrayList<>(latentNodes.keySet());
+
+        for (Set<Node> setA : parentSets) {
+            for (Set<Node> setB : parentSets) {
+                if (setA.equals(setB)) {
+                    continue;
+                }
+
+                if (setA.containsAll(setB)) {
+                    Node latentFrom = latentNodes.get(setB);
+                    Node latentTo = latentNodes.get(setA);
+
+                    if (latentFrom != null && latentTo != null && !graph.isAncestorOf(latentTo, latentFrom)) {
+                        graph.addDirectedEdge(latentFrom, latentTo);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns true if the candidate latent remains plausible according to orientation-guided
+     * child-child dependence checks.
+     *
+     * <p>For each ordered pair of distinct candidate children, a conditioning set is chosen
+     * using recursive blocking from the current graph. The two children are then tested for
+     * independence given that conditioning set. If any such child pair is found independent,
+     * the candidate latent is rejected. Otherwise the candidate latent is accepted.</p>
+     *
+     * @param graph the current graph
+     * @param parents the candidate measured parents
+     * @param children the candidate measured children
+     * @param test the independence test
+     * @return true if the candidate latent passes the check, false otherwise
+     */
+    private static boolean confirmLatentUsingOrientation(Graph graph, Set<Node> parents, Set<Node> children,
+                                                         IndependenceTest test) {
+        try {
+            for (Node childA : children) {
+                for (Node childB : children) {
+                    if (childA.equals(childB)) {
+                        continue;
+                    }
+
+                    Set<Node> conditioningSet = getMinimalConditioningSet(graph, childA, childB, parents);
+                    IndependenceResult result = test.checkIndependence(childA, childB, conditioningSet);
+
+                    if (result.isIndependent()) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed while confirming a latent candidate.", e);
+        }
+    }
+
+    /**
+     * Computes a conditioning set used to test a pair of candidate children.
+     *
+     * <p>The current implementation delegates to recursive blocking on the current graph.
+     * The supplied parent set is not directly used here, but it is retained in the method
+     * signature because it is conceptually part of the candidate latent specification and
+     * may be useful for later refinements.</p>
+     *
+     * @param graph the current graph
+     * @param childA the first child
+     * @param childB the second child
+     * @param parents the candidate measured parents
+     * @return a conditioning set returned by recursive blocking
+     * @throws InterruptedException if recursive blocking is interrupted
+     */
+    private static Set<Node> getMinimalConditioningSet(Graph graph, Node childA, Node childB, Set<Node> parents)
+            throws InterruptedException {
+        return RecursiveBlocking.blockPathsRecursively(graph, childA, childB, new HashSet<>(), new HashSet<>(), -1);
+    }
 }
-
-
