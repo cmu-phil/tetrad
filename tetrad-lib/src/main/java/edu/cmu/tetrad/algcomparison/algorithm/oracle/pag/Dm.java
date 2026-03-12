@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -24,8 +24,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -37,6 +39,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -60,7 +63,7 @@ import java.util.List;
 )
 @Bootstrapping
 public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,
-        TakesScoreWrapper,
+        TakesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -73,6 +76,7 @@ public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,
      * The score to use.
      */
     private ScoreWrapper score;
+    private IndependenceWrapper test;
 
     /**
      * <p>Constructor for DM-PC.</p>
@@ -86,7 +90,8 @@ public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,
      *
      * @param score the ScoreWrapper instance to be used by this object
      */
-    public Dm(ScoreWrapper score) {
+    public Dm(IndependenceWrapper test, ScoreWrapper score) {
+        this.test = test;
         this.score = score;
     }
 
@@ -112,14 +117,15 @@ public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,
             knowledge = timeSeries.getKnowledge();
         }
 
+        IndependenceTest test = this.test.getTest(dataModel, parameters);
         Score _score = this.score.getScore(dataModel, parameters);
 
-//        edu.cmu.tetrad.search.DmPcRobust search = new edu.cmu.tetrad.search.DmPcRobust(test);
-        edu.cmu.tetrad.search.DmBossRobust search = new edu.cmu.tetrad.search.DmBossRobust(_score, knowledge);
+        edu.cmu.tetrad.search.DmPcRobust search = new edu.cmu.tetrad.search.DmPcRobust(test, knowledge);
+//        edu.cmu.tetrad.search.DmBossRobust search = new edu.cmu.tetrad.search.DmBossRobust(_score, knowledge);
 
         Graph graph;
-//        double fdrQ = parameters.getDouble(Params.FDR_Q);
-
+        double fdrQ = parameters.getDouble(Params.FDR_Q);
+//
 //        if (fdrQ == 0.0) {
             graph = search.search();
 //        } else {
@@ -140,7 +146,7 @@ public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphTransforms.dagToPag(graph, false);
+        return graph;
     }
 
     /**
@@ -151,7 +157,7 @@ public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,
      */
     @Override
     public String getDescription() {
-        return "DM using " + this.score.getDescription();
+        return "DM using " + this.test.getDescription() + " or " + this.score.getDescription();
     }
 
     /**
@@ -221,5 +227,22 @@ public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public IndependenceWrapper getIndependenceWrapper() {
+        return this.test;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
+    }
+
 }
 

@@ -50,12 +50,13 @@ public class DmPcRobust implements IGraphSearch {
      *
      * @param test the independence test
      */
-    public DmPcRobust(IndependenceTest test) {
+    public DmPcRobust(IndependenceTest test, Knowledge knowledge) {
         if (test == null) {
             throw new NullPointerException("Independence test must not be null.");
         }
 
         this.test = test;
+        this.knowledge = knowledge.copy();
     }
 
     @Override
@@ -63,6 +64,9 @@ public class DmPcRobust implements IGraphSearch {
         resetState();
 
         Graph depth0Pattern = runPc(0);
+
+        depth0Pattern = GraphUtils.replaceNodes(depth0Pattern, test.getVariables());
+
         classifyVariables(depth0Pattern);
 
         Map<Node, Set<Node>> outputSignatures = computeOutputSignatures(depth0Pattern);
