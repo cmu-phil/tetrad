@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;

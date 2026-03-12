@@ -772,7 +772,7 @@ public final class SessionEditorNode extends DisplayNode {
 
         this.popup.addSeparator();
 
-        addEditLoggerSettings(this.popup);
+//        addEditLoggerSettings(this.popup);
         this.popup.add(propagateDownstream);
 
         return this.popup;
@@ -783,19 +783,19 @@ public final class SessionEditorNode extends DisplayNode {
         return modelConfig.getParameterEditorInstance();
     }
 
-    /**
-     * Adds the "Edit logger" option if applicable.
-     */
-    private void addEditLoggerSettings(JPopupMenu menu) {
-        SessionNodeWrapper modelNode = (SessionNodeWrapper) getModelNode();
-        SessionNode sessionNode = modelNode.getSessionNode();
-        TetradLoggerConfig config = sessionNode.getLoggerConfig();
-        if (config != null) {
-            JMenuItem item = new JMenuItem("Edit Logger Settings ...");
-            item.addActionListener((e) -> showLogConfig(config));
-            menu.add(item);
-        }
-    }
+//    /**
+//     * Adds the "Edit logger" option if applicable.
+//     */
+//    private void addEditLoggerSettings(JPopupMenu menu) {
+//        SessionNodeWrapper modelNode = (SessionNodeWrapper) getModelNode();
+//        SessionNode sessionNode = modelNode.getSessionNode();
+//        TetradLoggerConfig config = sessionNode.getLoggerConfig();
+//        if (config != null) {
+//            JMenuItem item = new JMenuItem("Edit Logger Settings ...");
+//            item.addActionListener((e) -> showLogConfig(config));
+//            menu.add(item);
+//        }
+//    }
 
     /**
      * Shows a dialog that allows the user to change the settings for the box's model logger.

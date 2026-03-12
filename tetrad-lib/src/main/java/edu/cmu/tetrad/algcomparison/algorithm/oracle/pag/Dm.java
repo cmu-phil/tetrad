@@ -118,16 +118,16 @@ public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,
         edu.cmu.tetrad.search.DmBossRobust search = new edu.cmu.tetrad.search.DmBossRobust(_score, knowledge);
 
         Graph graph;
-        double fdrQ = parameters.getDouble(Params.FDR_Q);
+//        double fdrQ = parameters.getDouble(Params.FDR_Q);
 
-        if (fdrQ == 0.0) {
+//        if (fdrQ == 0.0) {
             graph = search.search();
-        } else {
-            boolean negativelyCorrelated = true;
-            boolean verbose = parameters.getBoolean(Params.VERBOSE);
-            double alpha = parameters.getDouble(Params.ALPHA);
-            graph = IndTestFdrWrapper.doFdrLoop(search, negativelyCorrelated, alpha, fdrQ, verbose);
-        }
+//        } else {
+//            boolean negativelyCorrelated = true;
+//            boolean verbose = parameters.getBoolean(Params.VERBOSE);
+//            double alpha = parameters.getDouble(Params.ALPHA);
+//            graph = IndTestFdrWrapper.doFdrLoop(search, negativelyCorrelated, alpha, fdrQ, verbose);
+//        }
 
         return graph;
     }

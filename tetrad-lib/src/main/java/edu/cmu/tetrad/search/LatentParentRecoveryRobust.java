@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,27 +16,18 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program. If not, see <https://www.gnu.org/licenses/>.     //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TMath;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Recovers measured parents of already recovered latent variables and cleans
@@ -72,44 +63,46 @@ public final class LatentParentRecoveryRobust {
      * The dataset used to estimate latent proxies and measured-parent relations.
      */
     private final DataSet data;
-
     /**
      * The input graph containing latent variables, indicators, and possibly
      * latent-to-latent edges.
      */
     private final Graph latentGraph;
-
     /**
      * Background knowledge, if any.
      */
     private Knowledge knowledge = new Knowledge();
-
     /**
      * Minimum absolute correlation required to add a measured parent in the
      * forward stepwise selection procedure.
      */
     private double enterThreshold = 0.20;
-
     /**
      * Whether inherited measured-parent edges should be pruned.
      */
     private boolean pruneInheritedParents = true;
-
     /**
      * Whether latent-to-latent edges should be oriented from measured-parent
      * inclusion relations.
      */
     private boolean orientLatentEdges = true;
-
     /**
      * Whether transitive latent-to-latent shortcuts should be removed.
      */
     private boolean removeTransitiveLatentEdges = false;
-
     /**
      * Whether to run a second pass after latent-edge cleanup.
      */
     private boolean secondPass = false;
+    /**
+     * Whether measured-parent selection should use a greedy local SemBIC search
+     * rather than forward residual-correlation screening.
+     */
+    private boolean useSemBicParentSelection = true;
+    /**
+     * Penalty discount for SemBIC parent selection.
+     */
+    private double semBicPenaltyDiscount = 2.0;
 
     /**
      * Constructs a robust latent-parent recovery procedure.
@@ -192,6 +185,14 @@ public final class LatentParentRecoveryRobust {
         this.secondPass = secondPass;
     }
 
+    public void setUseSemBicParentSelection(boolean useSemBicParentSelection) {
+        this.useSemBicParentSelection = useSemBicParentSelection;
+    }
+
+    public void setSemBicPenaltyDiscount(double semBicPenaltyDiscount) {
+        this.semBicPenaltyDiscount = semBicPenaltyDiscount;
+    }
+
     /**
      * Runs robust latent-parent recovery and returns the augmented graph.
      *
@@ -207,9 +208,141 @@ public final class LatentParentRecoveryRobust {
             runOnePass(result);
         }
 
+//        new MeekRules().orientImplied(result);
+
+        orientLatentEdgesToPreserveNoncolliders(result);
+
+        pruneInheritedMeasuredParentsStructurally(result);
+
         removeDegenerateLatents(result);
 
         return result;
+    }
+
+    private void orientLatentEdgesToPreserveNoncolliders(Graph graph) {
+        boolean changed = true;
+
+        while (changed) {
+            changed = false;
+
+            List<Node> latents = getLatentNodes(graph);
+
+            for (Node b : latents) {
+                List<Node> adj = new ArrayList<>();
+
+                for (Node x : graph.getAdjacentNodes(b)) {
+                    if (x.getNodeType() == NodeType.LATENT) {
+                        adj.add(x);
+                    }
+                }
+
+                for (int i = 0; i < adj.size(); i++) {
+                    for (int j = 0; j < adj.size(); j++) {
+                        if (i == j) {
+                            continue;
+                        }
+
+                        Node a = adj.get(i);
+                        Node c = adj.get(j);
+
+                        if (graph.isAdjacentTo(a, c)) {
+                            continue;
+                        }
+
+                        Edge ab = graph.getEdge(a, b);
+                        Edge bc = graph.getEdge(b, c);
+
+                        if (ab == null || bc == null) {
+                            continue;
+                        }
+
+                        boolean aIntoB =
+                                Edges.isDirectedEdge(ab) &&
+                                        ab.getNode1().equals(a) &&
+                                        ab.getNode2().equals(b);
+
+                        boolean bUndirectedC = !Edges.isDirectedEdge(bc);
+
+                        if (aIntoB && bUndirectedC) {
+                            graph.removeEdge(bc);
+                            graph.addDirectedEdge(b, c);
+                            changed = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Removes measured-parent edges that are inherited through an already discovered
+     * latent-to-latent path.
+     *
+     * <p>If x is a measured parent of an immediate latent parent U of L, and x is also
+     * a measured parent of L, then x -> L is treated as inherited and is removed, but
+     * only if removing it leaves at least one other measured parent for L. This guard
+     * makes the pruning less aggressive in cases where a measured variable may truly
+     * feed both latents.</p>
+     *
+     * @param graph the graph to refine
+     */
+    private void pruneInheritedMeasuredParentsStructurally(Graph graph) {
+        for (Node latent : new ArrayList<>(graph.getNodes())) {
+            if (latent.getNodeType() != NodeType.LATENT) {
+                continue;
+            }
+
+            Set<Node> measuredParents = getMeasuredParents(latent, graph);
+
+            if (measuredParents.size() <= 1) {
+                continue;
+            }
+
+            Set<Node> inheritedMeasuredParents = new LinkedHashSet<>();
+
+            for (Node ancestor : getLatentAncestors(latent, graph)) {
+                inheritedMeasuredParents.addAll(getMeasuredParents(ancestor, graph));
+            }
+
+            for (Node measuredParent : new ArrayList<>(measuredParents)) {
+                if (!inheritedMeasuredParents.contains(measuredParent)) {
+                    continue;
+                }
+
+                // Safety guard: only remove the inherited parent if some other measured
+                // parent still remains for this latent.
+                if (getMeasuredParents(latent, graph).size() > 1) {
+                    graph.removeEdge(measuredParent, latent);
+                }
+            }
+        }
+    }
+
+    private Set<Node> getLatentAncestors(Node latent, Graph graph) {
+        Set<Node> ancestors = new LinkedHashSet<>();
+        Deque<Node> stack = new ArrayDeque<>();
+
+        for (Node parent : graph.getParents(latent)) {
+            if (parent.getNodeType() == NodeType.LATENT) {
+                stack.push(parent);
+            }
+        }
+
+        while (!stack.isEmpty()) {
+            Node current = stack.pop();
+
+            if (!ancestors.add(current)) {
+                continue;
+            }
+
+            for (Node parent : graph.getParents(current)) {
+                if (parent.getNodeType() == NodeType.LATENT) {
+                    stack.push(parent);
+                }
+            }
+        }
+
+        return ancestors;
     }
 
     /**
@@ -226,7 +359,16 @@ public final class LatentParentRecoveryRobust {
 
         for (Node latent : latents) {
             double[] target = residualizeOnLatentParents(latent, graph, latentScores);
-            Set<Node> parents = selectMeasuredParents(latent, target, candidateMeasuredParents);
+//            Set<Node> parents = selectMeasuredParents(latent, target, candidateMeasuredParents);
+
+            Set<Node> parents;
+
+            if (this.useSemBicParentSelection) {
+                parents = selectMeasuredParentsSemBic(latent, target, candidateMeasuredParents);
+            } else {
+                parents = selectMeasuredParents(latent, target, candidateMeasuredParents);
+            }
+
             selectedParents.put(latent, parents);
         }
 
@@ -593,15 +735,6 @@ public final class LatentParentRecoveryRobust {
     }
 
     /**
-     * Orients latent-to-latent edges using measured-parent set inclusion.
-     *
-     * <p>If the measured-parent set of A is a strict subset of the measured-parent set
-     * of B, then A is oriented into B. Existing latent-to-latent edges are removed and
-     * rebuilt from these inclusion relations.</p>
-     *
-     * @param graph the graph to refine
-     */
-    /**
      * Orients existing latent-to-latent adjacencies using measured-parent set inclusion.
      *
      * <p>This method preserves the latent-to-latent adjacency structure already present
@@ -638,6 +771,16 @@ public final class LatentParentRecoveryRobust {
             }
         }
     }
+
+    /**
+     * Orients latent-to-latent edges using measured-parent set inclusion.
+     *
+     * <p>If the measured-parent set of A is a strict subset of the measured-parent set
+     * of B, then A is oriented into B. Existing latent-to-latent edges are removed and
+     * rebuilt from these inclusion relations.</p>
+     *
+     * @param graph the graph to refine
+     */
 
     /**
      * Orients the existing latent-to-latent adjacency from fromNode to toNode.
@@ -796,5 +939,183 @@ public final class LatentParentRecoveryRobust {
         }
 
         return sxy / sxx;
+    }
+
+    /**
+     * Selects measured parents of a latent residual using a greedy local SemBIC search.
+     *
+     * <p>A temporary dataset is constructed containing the candidate measured parents
+     * and one additional continuous target variable representing the residualized latent
+     * proxy. Starting from the empty parent set, candidate parents are added greedily
+     * whenever they improve the SemBIC local score of the target variable.</p>
+     *
+     * @param latent the latent whose parents are being selected
+     * @param target the residualized latent proxy
+     * @param candidateMeasuredParents the pool of candidate measured parents
+     * @return the selected measured parents
+     */
+    private Set<Node> selectMeasuredParentsSemBic(Node latent,
+                                                  double[] target,
+                                                  List<Node> candidateMeasuredParents) {
+        Set<Node> allowedCandidates = new LinkedHashSet<>();
+
+        for (Node candidate : candidateMeasuredParents) {
+            if (isAllowedParent(candidate, latent)) {
+                allowedCandidates.add(candidate);
+            }
+        }
+
+        if (target.length == 0 || allowedCandidates.isEmpty()) {
+            return new LinkedHashSet<>();
+        }
+
+        DataSet augmented = buildAugmentedParentSelectionData(target, new ArrayList<>(allowedCandidates));
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(augmented));
+        score.setPenaltyDiscount(this.semBicPenaltyDiscount);
+
+        List<Node> vars = augmented.getVariables();
+        Node targetNode = augmented.getVariable("__TARGET__");
+
+        if (targetNode == null) {
+            throw new IllegalStateException("Target variable __TARGET__ was not found in the augmented dataset.");
+        }
+
+        int targetIndex = vars.indexOf(targetNode);
+
+        Map<Integer, Node> indexToOriginalNode = new LinkedHashMap<>();
+        List<Integer> candidateIndices = new ArrayList<>();
+
+        for (Node candidate : allowedCandidates) {
+            Node augmentedNode = augmented.getVariable(candidate.getName());
+
+            if (augmentedNode == null) {
+                continue;
+            }
+
+            int index = vars.indexOf(augmentedNode);
+
+            if (index >= 0) {
+                candidateIndices.add(index);
+                indexToOriginalNode.put(index, candidate);
+            }
+        }
+
+        Set<Integer> selected = new LinkedHashSet<>();
+        boolean changed = true;
+
+        while (changed) {
+            changed = false;
+
+            double bestScore = localSemBicScore(score, targetIndex, selected);
+            Integer bestAdd = null;
+            double bestAddScore = bestScore;
+
+            for (Integer candidateIndex : candidateIndices) {
+                if (selected.contains(candidateIndex)) {
+                    continue;
+                }
+
+                Set<Integer> proposed = new LinkedHashSet<>(selected);
+                proposed.add(candidateIndex);
+
+                double proposedScore = localSemBicScore(score, targetIndex, proposed);
+
+                if (proposedScore > bestAddScore) {
+                    bestAddScore = proposedScore;
+                    bestAdd = candidateIndex;
+                }
+            }
+
+            if (bestAdd != null) {
+                selected.add(bestAdd);
+                changed = true;
+            }
+        }
+
+        Set<Node> parents = new LinkedHashSet<>();
+
+        for (Integer index : selected) {
+            Node original = indexToOriginalNode.get(index);
+
+            if (original != null) {
+                parents.add(original);
+            }
+        }
+
+        return parents;
+    }
+
+    /**
+     * Returns the SemBIC local score for the given target and parent set.
+     *
+     * @param score the SemBIC score object
+     * @param targetIndex the index of the target variable
+     * @param parents the indices of the parent variables
+     * @return the local score
+     */
+    private double localSemBicScore(SemBicScore score, int targetIndex, Set<Integer> parents) {
+        int[] parentArray = new int[parents.size()];
+        int i = 0;
+
+        for (Integer parent : parents) {
+            parentArray[i++] = parent;
+        }
+
+        return score.localScore(targetIndex, parentArray);
+    }
+
+    /**
+     * Builds a temporary dataset for SemBIC parent selection.
+     *
+     * <p>The dataset contains one column for each candidate measured parent and one
+     * final continuous column named "__TARGET__" containing the supplied target vector.</p>
+     *
+     * @param target the residualized latent proxy
+     * @param candidateMeasuredParents the candidate measured parents
+     * @return the temporary augmented dataset
+     */
+    private DataSet buildAugmentedParentSelectionData(double[] target,
+                                                      List<Node> candidateMeasuredParents) {
+        int n = target.length;
+        int p = candidateMeasuredParents.size() + 1;
+
+        List<Node> variables = new ArrayList<>();
+
+        for (Node candidate : candidateMeasuredParents) {
+            variables.add(new ContinuousVariable(candidate.getName()));
+        }
+
+        variables.add(new ContinuousVariable("__TARGET__"));
+
+        DoubleDataBox box = new DoubleDataBox(n, p);
+        DataSet augmented = new BoxDataSet(box, variables);
+
+        for (int j = 0; j < candidateMeasuredParents.size(); j++) {
+            Node candidate = candidateMeasuredParents.get(j);
+            int column = this.data.getColumnIndex(candidate);
+
+            if (column < 0) {
+                throw new IllegalArgumentException("Candidate variable not found in data: " + candidate.getName());
+            }
+
+            double[] values = this.data.getDoubleData().getColumn(column).toArray();
+
+            for (int i = 0; i < n; i++) {
+                augmented.setDouble(i, j, values[i]);
+            }
+        }
+
+        int targetColumn = p - 1;
+
+        for (int i = 0; i < n; i++) {
+            augmented.setDouble(i, targetColumn, target[i]);
+        }
+
+        return augmented;
+    }
+
+    public enum ParentSelectionMethod {
+        STEPWISE_CORRELATION,
+        SEM_BIC
     }
 }
