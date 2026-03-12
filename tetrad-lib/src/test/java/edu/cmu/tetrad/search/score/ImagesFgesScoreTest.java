@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImagesScoreTest {
+public class ImagesFgesScoreTest {
 
     @Test
     public void testLocalScoreDiffBug() throws InterruptedException {

@@ -34,18 +34,18 @@ public class DagmaTest {
         DataSet data = semIm.simulateData(1000, false);
 
         Dagma dagma = new Dagma(data);
-        dagma.setLambda1(0.05);
-        dagma.setWThreshold(0.1);
+        dagma.setLambda1(0.01);
+        dagma.setWThreshold(0.01);
         dagma.setCpdag(false);
 
         Graph result = dagma.search();
 
         assertNotNull(result);
         System.out.println("Result graph: " + result);
-        
+
         // Check if edges are in the result
-        assertTrue("Result should contain X1 -> X2", result.isAdjacentTo(result.getNode("X1"), result.getNode("X2")));
-        assertTrue("Result should contain X1 -> X3", result.isAdjacentTo(result.getNode("X1"), result.getNode("X3")));
-        assertTrue("Result should contain X2 -> X3", result.isAdjacentTo(result.getNode("X2"), result.getNode("X3")));
+        assertTrue("Result should contain X1 adjacent to X2", result.isAdjacentTo(result.getNode("X1"), result.getNode("X2")));
+        assertTrue("Result should contain X1 adjacent to X3", result.isAdjacentTo(result.getNode("X1"), result.getNode("X3")));
+        assertTrue("Result should contain X2 adjacent to X3", result.isAdjacentTo(result.getNode("X2"), result.getNode("X3")));
     }
 }

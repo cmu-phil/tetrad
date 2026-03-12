@@ -150,14 +150,6 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
      * {@inheritDoc}
      */
     @Override
-    public void setIndTestWrapper(IndependenceWrapper test) {
-        // Not used.
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public Graph search(DataModel dataSet, Parameters parameters) throws InterruptedException {
         return search(Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet)), parameters);
     }

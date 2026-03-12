@@ -128,14 +128,6 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
      * {@inheritDoc}
      */
     @Override
-    public void setIndTestWrapper(IndependenceWrapper test) {
-        // Not used.
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public Graph search(DataModel dataSet, Parameters parameters) throws InterruptedException {
         return search(Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet)), parameters);
     }

@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -48,7 +49,14 @@ public class DmPcTest {
         FisherZ fisherZ = new FisherZ();
         Parameters parameters = new Parameters();
         
+        Knowledge knowledge = new Knowledge();
+        knowledge.addToTier(0, "X1");
+        knowledge.addToTier(1, "X2");
+        knowledge.addToTier(1, "X3");
+        knowledge.setTierForbiddenWithin(1, true);
+
         DmPc dmPc = new DmPc(fisherZ.getTest(data, parameters));
+        dmPc.setKnowledge(knowledge);
         Graph result = dmPc.search();
 
         assertNotNull(result);

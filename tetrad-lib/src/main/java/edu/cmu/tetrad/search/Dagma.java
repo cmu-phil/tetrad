@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.TMath;
@@ -485,14 +486,8 @@ public class Dagma {
             throw new RuntimeException("LU Decomposition failed!");
         }
 
-        double trace = 0.0;
-        for (int i = 0; i < TMath.min(P.getNumRows(), P.getNumCols()); i++) {
-            trace += M.get(i, i); // Add diagonal elements
-        }
-
-        double logDet = log(abs(d - trace - 1));
+        double logDet = 0.0;
         for (int i = 0; i < d; i++) {
-            logDet += log(abs(L.get(i, i)));
             logDet += log(abs(U.get(i, i)));
         }
 
@@ -547,30 +542,16 @@ public class Dagma {
      * @return The Graph representation of the input matrix.
      */
     private Graph toGraph(SimpleMatrix W) {
+        double wThreshold = this.wThreshold;
         SimpleMatrix W_ = new SimpleMatrix(this.d, this.d);
         for (int i = 0; i < this.d; i++) {
             for (int j = 0; j < this.d; j++) {
-                W_.set(i, j, abs(W.get(i, j)));
-            }
-        }
-
-        double wThreshold = this.wThreshold;
-        double wMin;
-
-        do {
-            wMin = Double.MAX_VALUE;
-            for (int i = 0; i < this.d; i++) {
-                for (int j = 0; j < this.d; j++) {
-                    double w_ = W_.get(i, j);
-                    if (w_ < wThreshold) {
-                        W_.set(i, j, 0);
-                    } else if (w_ < wMin) {
-                        wMin = w_;
-                    }
+                double w = abs(W.get(i, j));
+                if (w > wThreshold) {
+                    W_.set(i, j, w);
                 }
             }
-            wThreshold = wMin + 1e-6;
-        } while (power(W_, this.d).trace() > 0);
+        }
 
         Graph graph = new EdgeListGraph(this.variables);
         for (int i = 0; i < this.d; i++) {
@@ -581,9 +562,7 @@ public class Dagma {
         }
 
         if (this.cpdag) {
-            MeekRules rules = new MeekRules();
-            rules.setVerbose(false);
-            rules.orientImplied(graph);
+            graph = GraphTransforms.dagToCpdag(graph);
         }
 
         return graph;

@@ -146,14 +146,6 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
      * {@inheritDoc}
      */
     @Override
-    public void setIndTestWrapper(IndependenceWrapper test) {
-        this.test = test;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public Graph search(DataModel dataSet, Parameters parameters) throws InterruptedException {
         return search(Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet)), parameters);
     }
