@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.LatentParentRecovery;
+import edu.cmu.tetrad.search.LatentParentRecoveryRobust;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -69,7 +70,7 @@ public class LatentParentRecoveryGraphWrapper extends GraphWrapper implements Do
             }
         }
 
-        LatentParentRecovery latentParentRecovery = new LatentParentRecovery(data, graph);
+        LatentParentRecoveryRobust latentParentRecovery = new LatentParentRecoveryRobust(data, graph);
         setGraph(latentParentRecovery.search());
 
         TetradLogger.getInstance().log("\nLatent Parent Recovery.");
