@@ -119,7 +119,7 @@ public final class TrainedDagAdequacy {
     private static double estimateBaseline(DataSet data,
                                            TrainedDagSimulatorGNM.NodeReport r) {
 
-        int col = data.getColumn(data.getVariable(r.node));
+        int col = data.getColumnIndex(data.getVariable(r.node));
 
         if (!r.discreteChild) {
             double mean = 0.0;

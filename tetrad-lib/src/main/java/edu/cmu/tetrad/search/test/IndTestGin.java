@@ -184,8 +184,8 @@ public class IndTestGin implements IndependenceTest {
      */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> cond) {
-        int ix = data.getColumn(x);
-        int iy = data.getColumn(y);
+        int ix = data.getColumnIndex(x);
+        int iy = data.getColumnIndex(y);
 
         // Build S\{X} and S\{Y}
         List<Node> sMinusX = new ArrayList<>(cond);
@@ -256,7 +256,7 @@ public class IndTestGin implements IndependenceTest {
     private String cacheKey(int targetIdx, List<Node> preds) {
         int[] idxs = (preds == null || preds.isEmpty())
                 ? new int[0]
-                : preds.stream().mapToInt(data::getColumn).sorted().toArray();
+                : preds.stream().mapToInt(data::getColumnIndex).sorted().toArray();
         StringBuilder sb = new StringBuilder(8 + 3 * idxs.length);
         sb.append(targetIdx).append('|');
         for (int k = 0; k < idxs.length; k++) {
@@ -278,7 +278,7 @@ public class IndTestGin implements IndependenceTest {
         int n = data.getNumRows();
         double[][] X = new double[n][p];
         for (int k = 0; k < p; k++) {
-            int j = data.getColumn(vars.get(k));
+            int j = data.getColumnIndex(vars.get(k));
             for (int i = 0; i < n; i++) X[i][k] = data.getDouble(i, j);
         }
         return X;

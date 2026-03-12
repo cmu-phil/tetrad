@@ -107,7 +107,7 @@ public class IsGfci extends AbstractBootstrapAlgorithm implements Algorithm, Has
             if (instVar == null) {
                 throw new IllegalArgumentException("Instance dataset missing variable: " + name);
             }
-            cols[i] = other.getColumn(instVar);
+            cols[i] = other.getColumnIndex(instVar);
         }
 
         DataSet projected = other.subsetColumns(cols);

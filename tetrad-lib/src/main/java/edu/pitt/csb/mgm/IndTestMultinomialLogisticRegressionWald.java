@@ -199,11 +199,11 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
             variables.add(newVar);
 
             dataSet.addVariable(newVar);
-            int newVarIndex = dataSet.getColumn(newVar);
+            int newVarIndex = dataSet.getColumnIndex(newVar);
             int numCases = dataSet.getNumRows();
 
             for (int l = 0; l < numCases; l++) {
-                Object dataCell = dataSet.getObject(l, dataSet.getColumn(node));
+                Object dataCell = dataSet.getObject(l, dataSet.getColumnIndex(node));
                 int dataCellIndex = ((DiscreteVariable) node).getIndex(dataCell.toString());
 
                 if (dataCellIndex == ((DiscreteVariable) node).getIndex(cat))
@@ -313,7 +313,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     }
 
     private boolean isMissing(Node x, int i) {
-        int j = this.internalData.getColumn(x);
+        int j = this.internalData.getColumnIndex(x);
 
         if (x instanceof DiscreteVariable) {
             int v = this.internalData.getInt(i, j);

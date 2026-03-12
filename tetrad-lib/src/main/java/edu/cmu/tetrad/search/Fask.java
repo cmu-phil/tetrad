@@ -804,7 +804,7 @@ public final class Fask {
     private double[][] buildZ(List<Node> zNodes) {
         double[][] Z = new double[zNodes.size()][];
         for (int i = 0; i < zNodes.size(); i++) {
-            int col = dataSet.getColumn(zNodes.get(i));
+            int col = dataSet.getColumnIndex(zNodes.get(i));
             Z[i] = data[col];
         }
         return Z;

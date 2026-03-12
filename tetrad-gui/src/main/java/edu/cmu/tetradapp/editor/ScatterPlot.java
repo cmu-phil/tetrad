@@ -146,8 +146,8 @@ public class ScatterPlot {
         DataSet dataSet = getDataSet();
         Matrix data = dataSet.getDoubleData();
 
-        int _x = dataSet.getColumn(dataSet.getVariable(this.x));
-        int _y = dataSet.getColumn(dataSet.getVariable(this.y));
+        int _x = dataSet.getColumnIndex(dataSet.getVariable(this.x));
+        int _y = dataSet.getColumnIndex(dataSet.getVariable(this.y));
 
         double[] xdata = data.getColumn(_x).toArray();
         double[] ydata = data.getColumn(_y).toArray();
@@ -344,7 +344,7 @@ public class ScatterPlot {
     }
 
     private List<Double> getUnconditionedDataContinuous(String target) {
-        int index = this.dataSet.getColumn(this.dataSet.getVariable(target));
+        int index = this.dataSet.getColumnIndex(this.dataSet.getVariable(target));
 
         List<Double> _data = new ArrayList<>();
 
@@ -360,7 +360,7 @@ public class ScatterPlot {
 
         List<Integer> rows = getConditionedRows();
 
-        int index = this.dataSet.getColumn(this.dataSet.getVariable(target));
+        int index = this.dataSet.getColumnIndex(this.dataSet.getVariable(target));
 
         List<Double> _data = new ArrayList<>();
 
@@ -381,7 +381,7 @@ public class ScatterPlot {
         for (int i = 0; i < this.dataSet.getNumRows(); i++) {
             for (Node node : this.continuousIntervals.keySet()) {
                 double[] range = this.continuousIntervals.get(node);
-                int index = this.dataSet.getColumn(node);
+                int index = this.dataSet.getColumnIndex(node);
                 double value = this.dataSet.getDouble(i, index);
                 if (!(value >= range[0] && value <= range[1])) {
                     continue I;
@@ -390,7 +390,7 @@ public class ScatterPlot {
 
             for (Node node : this.discreteValues.keySet()) {
                 int value = this.discreteValues.get(node);
-                int index = this.dataSet.getColumn(node);
+                int index = this.dataSet.getColumnIndex(node);
                 int _value = this.dataSet.getInt(i, index);
                 if (!(value == _value)) {
                     continue I;

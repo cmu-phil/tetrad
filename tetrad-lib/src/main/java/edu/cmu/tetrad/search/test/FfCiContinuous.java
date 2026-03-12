@@ -7,7 +7,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.distribution.GammaDistribution;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
@@ -465,7 +464,7 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable {
 
         for (int j = 0; j < d; j++) {
             Node v = vs.get(j);
-            int col = data.getColumn(v);
+            int col = data.getColumnIndex(v);
             if (col < 0) {
                 throw new IllegalArgumentException("Variable not found: " + v.getName());
             }

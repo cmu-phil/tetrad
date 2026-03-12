@@ -77,7 +77,7 @@ public final class InstanceAugmentedSemBicScoreWrapper implements ScoreWrapper, 
         double[] x = new double[vars.size()];
         for (int j = 0; j < vars.size(); j++) {
             Node v = vars.get(j);
-            int col = testing.getColumn(testing.getVariable(v.getName()));
+            int col = testing.getColumnIndex(testing.getVariable(v.getName()));
             x[j] = testing.getDouble(row, col);
         }
 

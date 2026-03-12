@@ -51,7 +51,7 @@ public final class IsBDeuScoreWrapper implements ScoreWrapper, HasKnowledge {
             if (ov == null) {
                 throw new IllegalArgumentException("Testing dataset missing variable: " + name);
             }
-            cols[j] = other.getColumn(ov);
+            cols[j] = other.getColumnIndex(ov);
         }
 
         DataSet projected = other.subsetColumns(cols);

@@ -501,7 +501,7 @@ public final class NumberObjectDataSet implements DataSet {
     /**
      * {@inheritDoc}
      */
-    public int getColumn(Node variable) {
+    public int getColumnIndex(Node variable) {
         return this.variables.indexOf(variable);
     }
 

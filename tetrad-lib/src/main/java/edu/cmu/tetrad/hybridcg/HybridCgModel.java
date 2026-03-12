@@ -408,7 +408,7 @@ public final class HybridCgModel {
             double[][] cuts = new double[cps.length][];
             for (int t = 0; t < cps.length; t++) {
                 Node p = nodes[cps[t]];
-                int col = data.getColumn(p);
+                int col = data.getColumnIndex(p);
                 if (col < 0) throw new IllegalArgumentException("Data is missing column for parent: " + p.getName());
 
                 // collect non-missing
@@ -553,12 +553,12 @@ public final class HybridCgModel {
             int[] discStates = new int[dps.length];
             for (int i = 0; i < dps.length; i++) {
                 Node parent = nodes[dps[i]];
-                int col = data.getColumn(parent);
+                int col = data.getColumnIndex(parent);
                 if (col < 0) {
                     Node byName = data.getVariable(parent.getName());
                     if (byName == null)
                         throw new IllegalArgumentException("Dataset missing parent: " + parent.getName());
-                    col = data.getColumn(byName);
+                    col = data.getColumnIndex(byName);
                 }
                 discStates[i] = data.getInt(row, col);
             }
@@ -568,12 +568,12 @@ public final class HybridCgModel {
                 contVals = new double[cps.length];
                 for (int t = 0; t < cps.length; t++) {
                     Node parent = nodes[cps[t]];
-                    int col = data.getColumn(parent);
+                    int col = data.getColumnIndex(parent);
                     if (col < 0) {
                         Node byName = data.getVariable(parent.getName());
                         if (byName == null)
                             throw new IllegalArgumentException("Dataset missing parent: " + parent.getName());
-                        col = data.getColumn(byName);
+                        col = data.getColumnIndex(byName);
                     }
                     contVals[t] = data.getDouble(row, col);
                 }

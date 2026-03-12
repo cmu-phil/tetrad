@@ -550,8 +550,8 @@ public final class AdjustmentEffectEstimatorV1 {
             Objects.requireNonNull(y, "v1: y");
             Objects.requireNonNull(z, "v1: z");
 
-            int xCol = data.getColumn(x);
-            int yCol = data.getColumn(y);
+            int xCol = data.getColumnIndex(x);
+            int yCol = data.getColumnIndex(y);
 
             // v1: enforce binary discrete X
             if (!(x instanceof DiscreteVariable dx)) {
@@ -570,7 +570,7 @@ public final class AdjustmentEffectEstimatorV1 {
             List<Node> zList = z.stream().sorted(Comparator.comparing(Node::getName)).toList();
             List<ZColumnV1> zCols = new ArrayList<>(zList.size());
             for (Node zi : zList) {
-                int col = data.getColumn(zi);
+                int col = data.getColumnIndex(zi);
                 if (zi instanceof DiscreteVariable dz) {
                     zCols.add(ZColumnV1.discrete(zi.getName(), col, dz.getNumCategories()));
                 } else {
@@ -648,7 +648,7 @@ public final class AdjustmentEffectEstimatorV1 {
                 throw new IllegalArgumentException("v1.1: x01Full length must match data rows.");
             }
 
-            int yCol = data.getColumn(y);
+            int yCol = data.getColumnIndex(y);
 
             // v1.1: enforce continuous Y
             if (y instanceof DiscreteVariable) {
@@ -659,7 +659,7 @@ public final class AdjustmentEffectEstimatorV1 {
             List<Node> zList = z.stream().sorted(Comparator.comparing(Node::getName)).toList();
             List<ZColumnV1> zCols = new ArrayList<>(zList.size());
             for (Node zi : zList) {
-                int col = data.getColumn(zi);
+                int col = data.getColumnIndex(zi);
                 if (zi instanceof DiscreteVariable dz) {
                     zCols.add(ZColumnV1.discrete(zi.getName(), col, dz.getNumCategories()));
                 } else {

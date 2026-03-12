@@ -111,8 +111,8 @@ public class LinearQRRegressor implements ResidualRegressor {
      */
     @Override
     public void fit(DataSet data, Node target, List<Node> parents) {
-        this.yCol = data.getColumn(target);
-        this.parentCols = parents.stream().mapToInt(data::getColumn).toArray();
+        this.yCol = data.getColumnIndex(target);
+        this.parentCols = parents.stream().mapToInt(data::getColumnIndex).toArray();
 
         int n = data.getNumRows();
         int p = parentCols.length;
@@ -186,7 +186,7 @@ public class LinearQRRegressor implements ResidualRegressor {
 
         // If schema differs, recompute column indices defensively
         if (parents != null && (parentCols == null || parentCols.length != parents.size())) {
-            this.parentCols = parents.stream().mapToInt(data::getColumn).toArray();
+            this.parentCols = parents.stream().mapToInt(data::getColumnIndex).toArray();
         }
 
         double[] out = new double[n];

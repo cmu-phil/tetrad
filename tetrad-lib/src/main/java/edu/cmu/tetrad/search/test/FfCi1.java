@@ -615,7 +615,7 @@ public final class FfCi1 implements IndependenceTest, RowsSettable {
         final double[][] cont = new double[n][contVars.size()];
         for (int j = 0; j < contVars.size(); j++) {
             Node v = contVars.get(j);
-            int col = data.getColumn(v);
+            int col = data.getColumnIndex(v);
             if (col < 0) col = data.getVariableNames().indexOf(v.getName());
             if (col < 0) throw new IllegalArgumentException("Variable not found: " + v.getName());
             for (int i = 0; i < n; i++) cont[i][j] = data.getDouble(activeRowIndex(i), col);
@@ -637,7 +637,7 @@ public final class FfCi1 implements IndependenceTest, RowsSettable {
             for (int j = 0; j < discVars.size(); j++) {
                 DiscreteVariable dv = discVars.get(j);
 
-                int col = data.getColumn(dv);
+                int col = data.getColumnIndex(dv);
                 if (col < 0) col = data.getVariableNames().indexOf(dv.getName());
                 if (col < 0) throw new IllegalArgumentException("Variable not found: " + dv.getName());
 

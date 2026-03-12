@@ -347,7 +347,7 @@ class RegressionParamsEditorPanel extends JPanel {
 
     private void buildMap(DataSet model) {
         for (Node node : model.getVariables()) {
-            if (DataUtils.isBinary(model, model.getColumn(node))) {
+            if (DataUtils.isBinary(model, model.getColumnIndex(node))) {
                 RegressionParamsEditorPanel.getVarMap().put(node.getName(), 1);
             } else if (node instanceof DiscreteVariable) {
                 RegressionParamsEditorPanel.getVarMap().put(node.getName(), 2);

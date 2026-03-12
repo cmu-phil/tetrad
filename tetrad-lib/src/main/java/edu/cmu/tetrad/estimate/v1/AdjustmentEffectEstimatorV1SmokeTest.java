@@ -237,9 +237,9 @@ public class AdjustmentEffectEstimatorV1SmokeTest {
             // v1: Z -> X (propensity depends on Z); Z -> Y (backdoor); X -> Y (causal effect)
             double[] a = new double[]{-0.5, 0.4, 1.0};
 
-            int zCol = data.getColumn(Z);
-            int xCol = data.getColumn(X);
-            int yCol = data.getColumn(Y);
+            int zCol = data.getColumnIndex(Z);
+            int xCol = data.getColumnIndex(X);
+            int yCol = data.getColumnIndex(Y);
 
             for (int i = 0; i < n; i++) {
                 int z = rng.nextInt(3);
@@ -272,9 +272,9 @@ public class AdjustmentEffectEstimatorV1SmokeTest {
             // v1: near-positivity violation: Z strongly determines X
             double[] a = new double[]{-4.6, 0.0, 4.6};
 
-            int zCol = data.getColumn(Z);
-            int xCol = data.getColumn(X);
-            int yCol = data.getColumn(Y);
+            int zCol = data.getColumnIndex(Z);
+            int xCol = data.getColumnIndex(X);
+            int yCol = data.getColumnIndex(Y);
 
             for (int i = 0; i < n; i++) {
                 int z = rng.nextInt(3);

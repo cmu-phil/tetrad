@@ -777,7 +777,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
 
         for (int j = 0; j < d; j++) {
             Node v = vs.get(j);
-            int col = data.getColumn(v);
+            int col = data.getColumnIndex(v);
             if (col < 0) throw new IllegalArgumentException("Variable not found: " + v.getName());
 
             for (int i = 0; i < n; i++) {

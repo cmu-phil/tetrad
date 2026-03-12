@@ -394,7 +394,7 @@ public class ConditionalGaussianSimulation implements Simulation {
                         ContinuousVariable orig = erstatzNodesReverse.get(_parent.getName());
 
                         if (orig != null) {
-                            int mixedParentColumn = mixedData.getColumn(orig);
+                            int mixedParentColumn = mixedData.getColumnIndex(orig);
                             double d = mixedData.getDouble(i, mixedParentColumn);
                             double[] breakpoints = breakpointsMap.get(mixedParentColumn);
 
@@ -412,7 +412,7 @@ public class ConditionalGaussianSimulation implements Simulation {
                                 }
                             }
                         } else {
-                            int mixedColumn = mixedData.getColumn(bayesParent);
+                            int mixedColumn = mixedData.getColumnIndex(bayesParent);
                             value = mixedData.getInt(i, mixedColumn);
                         }
 
@@ -455,8 +455,8 @@ public class ConditionalGaussianSimulation implements Simulation {
                     Combination muComb = new Combination(muParam);
 
                     for (DiscreteVariable v : discreteParents) {
-                        varComb.addParamValue(v, mixedData.getInt(i, mixedData.getColumn(v)));
-                        muComb.addParamValue(v, mixedData.getInt(i, mixedData.getColumn(v)));
+                        varComb.addParamValue(v, mixedData.getInt(i, mixedData.getColumnIndex(v)));
+                        muComb.addParamValue(v, mixedData.getInt(i, mixedData.getColumnIndex(v)));
                     }
 
                     double value = RandomUtil.getInstance().nextGaussian(0, getParamValue(varComb, paramValues));
@@ -466,7 +466,7 @@ public class ConditionalGaussianSimulation implements Simulation {
                         Combination coefComb = new Combination(coefParam);
 
                         for (DiscreteVariable v : discreteParents) {
-                            coefComb.addParamValue(v, mixedData.getInt(i, mixedData.getColumn(v)));
+                            coefComb.addParamValue(v, mixedData.getInt(i, mixedData.getColumnIndex(v)));
                         }
 
                         int parent = nodes.indexOf(x);

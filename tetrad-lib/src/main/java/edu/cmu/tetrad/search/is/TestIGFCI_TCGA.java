@@ -148,7 +148,7 @@ public class TestIGFCI_TCGA {
             Path outDir
     ) {
         final int n = trainData.getNumRows();
-        final int nameColIndex = trainWithNames.getColumn(trainWithNames.getVariable(DEFAULT_NAME_COLUMN));
+        final int nameColIndex = trainWithNames.getColumnIndex(trainWithNames.getVariable(DEFAULT_NAME_COLUMN));
 
         BDeuScore populationScore = new BDeuScore(bs); // for structure prior only
 
@@ -213,7 +213,7 @@ public class TestIGFCI_TCGA {
 
     private static DataSet stripNameColumn(DataSet withNames, String nameCol) {
         DataSet copy = withNames.copy();
-        int idx = copy.getColumn(copy.getVariable(nameCol));
+        int idx = copy.getColumnIndex(copy.getVariable(nameCol));
         copy.removeColumn(idx);
         return copy;
     }

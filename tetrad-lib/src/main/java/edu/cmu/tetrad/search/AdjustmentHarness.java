@@ -290,17 +290,17 @@ public class AdjustmentHarness {
         for (int r = 0; r < n; r++) X[r][col] = 1.0; // intercept
         col++;
 
-        int xIdx = data.getColumn(data.getVariable(x.getName()));
+        int xIdx = data.getColumnIndex(data.getVariable(x.getName()));
         for (int r = 0; r < n; r++) X[r][col] = data.getDouble(r, xIdx);
         col++;
 
         for (Node z : zList) {
-            int zi = data.getColumn(data.getVariable(z.getName()));
+            int zi = data.getColumnIndex(data.getVariable(z.getName()));
             for (int r = 0; r < n; r++) X[r][col] = data.getDouble(r, zi);
             col++;
         }
 
-        int yIdx = data.getColumn(data.getVariable(y.getName()));
+        int yIdx = data.getColumnIndex(data.getVariable(y.getName()));
         for (int r = 0; r < n; r++) Y[r] = data.getDouble(r, yIdx);
 
         double lambda = 1e-8;

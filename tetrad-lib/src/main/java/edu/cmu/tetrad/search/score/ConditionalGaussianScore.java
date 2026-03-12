@@ -239,10 +239,10 @@ public class ConditionalGaussianScore implements Score {
      */
     private boolean isMissing(Node v, int row) {
         if (v instanceof DiscreteVariable) {
-            int val = this.dataSet.getInt(row, this.dataSet.getColumn(v));
+            int val = this.dataSet.getInt(row, this.dataSet.getColumnIndex(v));
             return val == -99; // project convention
         } else if (v instanceof ContinuousVariable) {
-            double val = this.dataSet.getDouble(row, this.dataSet.getColumn(v));
+            double val = this.dataSet.getDouble(row, this.dataSet.getColumnIndex(v));
             return Double.isNaN(val);
         } else {
             // default conservative

@@ -414,7 +414,7 @@ public final class IsGFci implements IGraphSearch {
             if (instVar == null) {
                 throw new IllegalArgumentException("Instance dataset is missing variable: " + name);
             }
-            cols[i] = instance.getColumn(instVar);
+            cols[i] = instance.getColumnIndex(instVar);
         }
 
         DataSet reordered = instance.subsetColumns(cols);

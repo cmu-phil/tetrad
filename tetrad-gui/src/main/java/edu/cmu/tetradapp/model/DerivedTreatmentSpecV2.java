@@ -79,7 +79,7 @@ public final class DerivedTreatmentSpecV2 implements Serializable {
         Node src = data.getVariable(sourceName);
         if (src == null) throw new IllegalArgumentException("v2.1: unknown source variable: " + sourceName);
 
-        int col = data.getColumn(src);
+        int col = data.getColumnIndex(src);
         int n = data.getNumRows();
         int[] out = new int[n];
         Arrays.fill(out, -1);

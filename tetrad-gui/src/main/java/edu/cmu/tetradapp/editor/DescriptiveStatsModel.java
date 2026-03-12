@@ -73,7 +73,7 @@ class DescriptiveStatsModel extends AbstractTableModel {
         List<String> names = new ArrayList<>();
         List<Object> stats = new ArrayList<>();
 
-        int col = dataSet.getColumn(variable);
+        int col = dataSet.getColumnIndex(variable);
 
         // Extract the data.
         double[] data = new double[dataSet.getNumRows()];

@@ -417,7 +417,7 @@ public final class IndTestRcotCcaWilkes implements IndependenceTest, RowsSettabl
         SimpleMatrix M = new SimpleMatrix(n, d);
 
         for (int j = 0; j < d; j++) {
-            int col = ds.getColumn(vv.get(j));
+            int col = ds.getColumnIndex(vv.get(j));
             if (col < 0) {
                 col = ds.getVariableNames().indexOf(vv.get(j).getName());
                 if (col < 0) throw new IllegalArgumentException("Variable not found: " + vv.get(j).getName());

@@ -282,11 +282,11 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             variables.add(newVar);
 
             dataSet.addVariable(newVar);
-            int newVarIndex = dataSet.getColumn(newVar);
+            int newVarIndex = dataSet.getColumnIndex(newVar);
             int numCases = dataSet.getNumRows();
 
             for (int l = 0; l < numCases; l++) {
-                Object dataCell = dataSet.getObject(l, dataSet.getColumn(node));
+                Object dataCell = dataSet.getObject(l, dataSet.getColumnIndex(node));
                 int dataCellIndex = ((DiscreteVariable) node).getIndex(dataCell.toString());
 
                 if (dataCellIndex == ((DiscreteVariable) node).getIndex(cat))

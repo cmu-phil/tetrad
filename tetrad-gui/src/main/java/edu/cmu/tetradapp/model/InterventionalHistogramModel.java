@@ -11,7 +11,6 @@ import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * Prototype model for displaying a histogram for Y | do(X=...).
@@ -214,7 +213,7 @@ public final class InterventionalHistogramModel implements SessionModel {
 
             // collect matching row indices
             int rows = data.getNumRows();
-            int yCol = data.getColumn(y);
+            int yCol = data.getColumnIndex(y);
 
             List<Integer> candidates = new ArrayList<>(rows);
 
@@ -224,7 +223,7 @@ public final class InterventionalHistogramModel implements SessionModel {
                 for (Map.Entry<Node, Integer> e : doSpec.entrySet()) {
                     Node xData = data.getVariable(e.getKey().getName());
                     if (xData == null) throw new IllegalArgumentException("X not found in data: " + e.getKey().getName());
-                    int xCol = data.getColumn(xData);
+                    int xCol = data.getColumnIndex(xData);
 
                     if (!(xData instanceof DiscreteVariable)) {
                         throw new IllegalArgumentException("Prototype sampler supports discrete X only: " + xData.getName());
@@ -307,7 +306,7 @@ public final class InterventionalHistogramModel implements SessionModel {
             }
 
             Node y = requireDataVar(data, yGraph.getName());
-            int yCol = data.getColumn(y);
+            int yCol = data.getColumnIndex(y);
 
             // --- build Z = union of parents of intervened X's
             LinkedHashSet<String> zNames = new LinkedHashSet<>();
@@ -331,7 +330,7 @@ public final class InterventionalHistogramModel implements SessionModel {
 
                 if (z instanceof DiscreteVariable dz) {
                     zVars.add(dz);
-                    zCols.add(data.getColumn(dz));
+                    zCols.add(data.getColumnIndex(dz));
                 } else {
                     TetradLogger.getInstance().log(
                             "InterventionalHistogram: ignoring continuous Z (prototype exact-matching sampler): " + zn);
@@ -354,7 +353,7 @@ public final class InterventionalHistogramModel implements SessionModel {
                 if (want < 0 || want >= k) throw new IllegalArgumentException("Bad do() value for " + xn + ": " + want);
 
                 xVars.add(dx);
-                xCols.add(data.getColumn(dx));
+                xCols.add(data.getColumnIndex(dx));
                 xWant.add(want);
             }
 
@@ -421,7 +420,7 @@ public final class InterventionalHistogramModel implements SessionModel {
         private static double[] bootstrapYFromAllRows(DataSet data, Node yGraph, int n, Random rng) {
             Node y = data.getVariable(yGraph.getName());
             if (y == null) throw new IllegalArgumentException("Y not found in data: " + yGraph.getName());
-            int yCol = data.getColumn(y);
+            int yCol = data.getColumnIndex(y);
 
             int rows = data.getNumRows();
             double[] out = new double[n];

@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.*;
 
@@ -336,7 +335,7 @@ public class Histogram {
         int[] counts = new int[dv.getNumCategories()];
         // Precompute condition arrays
         Cond cond = buildCond();
-        int tcol = dataSet.getColumn(target);
+        int tcol = dataSet.getColumnIndex(target);
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             if (!cond.passes(i)) continue;
@@ -349,7 +348,7 @@ public class Histogram {
     private int[] frequenciesContinuous() {
         int[] counts = new int[numBins];
         Cond cond = buildCond();
-        int tcol = dataSet.getColumn(target);
+        int tcol = dataSet.getColumnIndex(target);
 
         final boolean hasBounds = hasContinuousBounds();
         double min = hasBounds ? continuousBoundLow : Double.POSITIVE_INFINITY;
@@ -435,7 +434,7 @@ public class Histogram {
                 // Defensive: skip malformed ranges
                 if (range == null || range.length < 2) continue;
 
-                contCol[k] = dataSet.getColumn(node);
+                contCol[k] = dataSet.getColumnIndex(node);
                 contLow[k] = range[0];
                 contHigh[k] = range[1];
                 k++;
@@ -457,7 +456,7 @@ public class Histogram {
                 Integer val = e.getValue();
                 if (val == null) continue;
 
-                discCol[k] = dataSet.getColumn(node);
+                discCol[k] = dataSet.getColumnIndex(node);
                 discVal[k] = val;
                 k++;
             }
@@ -524,7 +523,7 @@ public class Histogram {
      * @return the maximum value in the unconditioned continuous data
      */
     public double getMax() {
-        int col = dataSet.getColumn(target);
+        int col = dataSet.getColumnIndex(target);
         double max = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             double v = dataSet.getDouble(i, col);
@@ -541,7 +540,7 @@ public class Histogram {
      * @return The minimum value from the unconditioned continuous data as a double.
      */
     public double getMin() {
-        int col = dataSet.getColumn(target);
+        int col = dataSet.getColumnIndex(target);
         double min = Double.POSITIVE_INFINITY;
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             double v = dataSet.getDouble(i, col);
@@ -559,7 +558,7 @@ public class Histogram {
      */
     public int getN() {
         Cond cond = buildCond();
-        int tcol = dataSet.getColumn(target);
+        int tcol = dataSet.getColumnIndex(target);
 
         int n = 0;
         for (int i = 0; i < dataSet.getNumRows(); i++) {
@@ -586,7 +585,7 @@ public class Histogram {
      * @return an array of double values representing the continuous data for the specified variable
      */
     public double[] getContinuousData(String variable) {
-        int index = this.dataSet.getColumn(this.dataSet.getVariable(variable));
+        int index = this.dataSet.getColumnIndex(this.dataSet.getVariable(variable));
         List<Double> data = new ArrayList<>(this.dataSet.getNumRows());
         for (int i = 0; i < this.dataSet.getNumRows(); i++) {
             data.add(this.dataSet.getDouble(i, index));
@@ -638,7 +637,7 @@ public class Histogram {
     }
 
     private List<Double> getUnconditionedDataContinuous() {
-        int index = this.dataSet.getColumn(this.target);
+        int index = this.dataSet.getColumnIndex(this.target);
         List<Double> data = new ArrayList<>(this.dataSet.getNumRows());
         for (int i = 0; i < this.dataSet.getNumRows(); i++) {
             data.add(this.dataSet.getDouble(i, index));
@@ -648,7 +647,7 @@ public class Histogram {
 
     private List<Double> getConditionedDataContinuous() {
         List<Integer> rows = getConditionedRows();
-        int index = this.dataSet.getColumn(this.target);
+        int index = this.dataSet.getColumnIndex(this.target);
 
         List<Double> data = new ArrayList<>(rows.size());
         for (Integer row : rows) {
@@ -659,7 +658,7 @@ public class Histogram {
 
     private List<Integer> getConditionedDataDiscrete() {
         List<Integer> rows = getConditionedRows();
-        int index = this.dataSet.getColumn(this.target);
+        int index = this.dataSet.getColumnIndex(this.target);
 
         List<Integer> data = new ArrayList<>(rows.size());
         for (Integer row : rows) {
@@ -676,7 +675,7 @@ public class Histogram {
         for (int i = 0; i < this.dataSet.getNumRows(); i++) {
             for (Node node : this.continuousIntervals.keySet()) {
                 double[] range = this.continuousIntervals.get(node);
-                int index = this.dataSet.getColumn(node);
+                int index = this.dataSet.getColumnIndex(node);
                 double value = this.dataSet.getDouble(i, index);
                 if (!(value >= range[0] && value <= range[1])) {
                     continue I;
@@ -685,7 +684,7 @@ public class Histogram {
 
             for (Node node : this.discreteValues.keySet()) {
                 int value = this.discreteValues.get(node);
-                int index = this.dataSet.getColumn(node);
+                int index = this.dataSet.getColumnIndex(node);
                 int _value = this.dataSet.getInt(i, index);
                 if (value != _value) {
                     continue I;

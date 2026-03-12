@@ -115,14 +115,14 @@ public final class HybridCgEstimator {
     private static void verifyAlignment(HybridCgPm pm, DataSet data) {
         var nodes = pm.getNodes();
         for (var v : nodes) {
-            int col = data.getColumn(v);
+            int col = data.getColumnIndex(v);
             if (col < 0) {
                 // Retry by name, safely
                 var byNameVar = data.getVariable(v.getName());
                 if (byNameVar == null) {
                     throw new IllegalArgumentException("Variable from PM not found in dataset: " + v.getName());
                 }
-                col = data.getColumn(byNameVar);
+                col = data.getColumnIndex(byNameVar);
                 if (col < 0) {
                     throw new IllegalArgumentException("Variable from PM not found in dataset: " + v.getName());
                 }
@@ -131,13 +131,13 @@ public final class HybridCgEstimator {
     }
 
     private static double[] columnAsDoubles(DataSet data, Node contVar) {
-        int c = data.getColumn(contVar);
+        int c = data.getColumnIndex(contVar);
         if (c < 0) {
             var byNameVar = data.getVariable(contVar.getName());
             if (byNameVar == null) {
                 throw new IllegalArgumentException("Variable not in dataset: " + contVar.getName());
             }
-            c = data.getColumn(byNameVar);
+            c = data.getColumnIndex(byNameVar);
             if (c < 0) {
                 throw new IllegalArgumentException("Variable not in dataset: " + contVar.getName());
             }

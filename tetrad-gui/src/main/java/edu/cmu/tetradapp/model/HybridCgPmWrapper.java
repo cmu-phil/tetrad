@@ -153,7 +153,7 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
         // Build name → column index map once
         Map<Node, Integer> col = new HashMap<>();
         for (Node n : nodes) {
-            int c = data.getColumn(n);
+            int c = data.getColumnIndex(n);
             if (c >= 0) col.put(n, c);
         }
 

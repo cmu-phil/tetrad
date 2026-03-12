@@ -45,7 +45,6 @@ import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -459,7 +458,7 @@ public class TestCliqueDetection {
                 for (Set<Node> clique : cliquesRaw) {
                     List<Integer> indices = new ArrayList<>();
                     for (Node node : clique) {
-                        indices.add(md.data().getColumn(node));
+                        indices.add(md.data().getColumnIndex(node));
                     }
 
                     List<Integer> remaining = new ArrayList<>(all);

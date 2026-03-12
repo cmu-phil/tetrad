@@ -213,6 +213,17 @@
                 <editor-class>edu.cmu.tetradapp.editor.GraphEditor
                 </editor-class>
             </model>
+            <model name="Latent Parents" acronym="Latent Parents"
+                   help="graph" category="Graph Manipulations">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="pag" description="PAG" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.LatentParentRecoveryGraphWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.GraphEditor
+                </editor-class>
+            </model>
         </models>
         <display-component image="graphIcon.gif"/>
         <model-chooser title="Graphs and Graph Manipulations">

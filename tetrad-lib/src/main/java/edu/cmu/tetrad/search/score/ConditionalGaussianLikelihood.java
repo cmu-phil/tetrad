@@ -298,8 +298,8 @@ public class ConditionalGaussianLikelihood {
         int[] continuousCols = new int[k];
         for (int j = 0; j < k; j++) {
             // Use original dataset columns for continuous data
-            int col = mixedDataSet.getColumn(X.get(j));
-            if (col < 0) col = mixedDataSet.getColumn(X.get(j).getName()); // you added this default method
+            int col = mixedDataSet.getColumnIndex(X.get(j));
+            if (col < 0) col = mixedDataSet.getColumnIndex(X.get(j).getName()); // you added this default method
             if (col < 0) throw new IllegalArgumentException("Cannot find continuous variable in dataset: " + X.get(j));
             continuousCols[j] = col;
         }
@@ -431,7 +431,7 @@ public class ConditionalGaussianLikelihood {
             List<Integer> key = new ArrayList<>();
 
             for (DiscreteVariable discrete_parent : discrete_parents) {
-                key.add((this.dataSet.getInt(i, this.dataSet.getColumn(discrete_parent))));
+                key.add((this.dataSet.getInt(i, this.dataSet.getColumnIndex(discrete_parent))));
             }
 
             if (!keys.containsKey(key)) {
