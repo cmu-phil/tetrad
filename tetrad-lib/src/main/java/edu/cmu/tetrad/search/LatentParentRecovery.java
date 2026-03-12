@@ -88,6 +88,12 @@ public final class LatentParentRecovery {
     private boolean pruneInheritedParents = true;
 
     /**
+     * Minimum absolute correlation improvement required to add a measured parent in
+     * the stepwise selection procedure.
+     */
+    private double enterThreshold = 0.20;
+
+    /**
      * Constructs a latent-parent recovery procedure.
      *
      * @param data the dataset
@@ -141,6 +147,14 @@ public final class LatentParentRecovery {
         this.pruneInheritedParents = pruneInheritedParents;
     }
 
+    public void setEnterThreshold(double enterThreshold) {
+        if (enterThreshold < 0.0 || enterThreshold > 1.0) {
+            throw new IllegalArgumentException("Enter threshold must be between 0 and 1.");
+        }
+
+        this.enterThreshold = enterThreshold;
+    }
+
     /**
      * Runs latent-parent recovery and returns the augmented graph.
      *
@@ -161,21 +175,13 @@ public final class LatentParentRecovery {
             selectedParents.put(latent, parents);
         }
 
-//        attachMeasuredParents(result, selectedParents);
-//
-//        if (this.pruneInheritedParents) {
-//            pruneInheritedMeasuredParents(result);
-//        }
-//
-//        removeDegenerateLatents(result);
-//
-//        return result;
-
         attachMeasuredParents(result, selectedParents);
 
         if (this.pruneInheritedParents) {
             pruneInheritedMeasuredParents(result);
         }
+
+        removeDegenerateLatents(result);
 
         return result;
     }
@@ -283,39 +289,120 @@ public final class LatentParentRecovery {
      * @param candidateMeasuredParents the pool of candidate measured parents
      * @return the selected measured parents
      */
+//    private Set<Node> selectMeasuredParents(Node latent, double[] target, List<Node> candidateMeasuredParents) {
+//        Set<Node> parents = new LinkedHashSet<>();
+//
+//        if (target.length == 0) {
+//            return parents;
+//        }
+//
+//        for (Node candidate : candidateMeasuredParents) {
+//            if (!isAllowedParent(candidate, latent)) {
+//                continue;
+//            }
+//
+//            int column = this.data.getColumnIndex(candidate);
+//
+//            if (column < 0) {
+//                continue;
+//            }
+//
+//            double[] predictor = this.data.getDoubleData().getColumn(column).toArray();
+//            predictor = standardize(predictor);
+//
+//            double r = correlation(predictor, target);
+//
+//            if (Double.isNaN(r)) {
+//                continue;
+//            }
+//
+//            if (TMath.abs(r) >= this.correlationThreshold) {
+//                parents.add(candidate);
+//            }
+//        }
+//
+//        return parents;
+//    }
+
+    /**
+     * Selects measured parents of a latent residual using a simple forward stepwise
+     * residual-correlation procedure.
+     *
+     * <p>At each step, the candidate whose standardized column has the largest absolute
+     * correlation with the current residual is added if that correlation exceeds the
+     * enter threshold. The residual is then updated by regressing it on the newly added
+     * predictor. This continues until no remaining candidate exceeds the threshold.</p>
+     *
+     * @param latent the latent whose parents are being selected
+     * @param target the residualized latent score
+     * @param candidateMeasuredParents the pool of candidate measured parents
+     * @return the selected measured parents
+     */
     private Set<Node> selectMeasuredParents(Node latent, double[] target, List<Node> candidateMeasuredParents) {
-        Set<Node> parents = new LinkedHashSet<>();
+        Set<Node> selected = new LinkedHashSet<>();
 
         if (target.length == 0) {
-            return parents;
+            return selected;
         }
+
+        double[] residual = target.clone();
+        Set<Node> remaining = new LinkedHashSet<>();
 
         for (Node candidate : candidateMeasuredParents) {
-            if (!isAllowedParent(candidate, latent)) {
-                continue;
-            }
-
-            int column = this.data.getColumnIndex(candidate);
-
-            if (column < 0) {
-                continue;
-            }
-
-            double[] predictor = this.data.getDoubleData().getColumn(column).toArray();
-            predictor = standardize(predictor);
-
-            double r = correlation(predictor, target);
-
-            if (Double.isNaN(r)) {
-                continue;
-            }
-
-            if (TMath.abs(r) >= this.correlationThreshold) {
-                parents.add(candidate);
+            if (isAllowedParent(candidate, latent)) {
+                remaining.add(candidate);
             }
         }
 
-        return parents;
+        boolean changed = true;
+
+        while (changed) {
+            changed = false;
+
+            Node bestNode = null;
+            double[] bestPredictor = null;
+            double bestAbsCorrelation = -1.0;
+
+            for (Node candidate : remaining) {
+                int column = this.data.getColumnIndex(candidate);
+
+                if (column < 0) {
+                    continue;
+                }
+
+                double[] predictor = this.data.getDoubleData().getColumn(column).toArray();
+                predictor = standardize(predictor);
+
+                double r = correlation(predictor, residual);
+
+                if (Double.isNaN(r)) {
+                    continue;
+                }
+
+                double absR = TMath.abs(r);
+
+                if (absR > bestAbsCorrelation) {
+                    bestAbsCorrelation = absR;
+                    bestNode = candidate;
+                    bestPredictor = predictor;
+                }
+            }
+
+            if (bestNode != null && bestAbsCorrelation >= this.enterThreshold) {
+                selected.add(bestNode);
+                remaining.remove(bestNode);
+
+                double beta = regressionCoefficient(bestPredictor, residual);
+
+                for (int i = 0; i < residual.length; i++) {
+                    residual[i] -= beta * bestPredictor[i];
+                }
+
+                changed = true;
+            }
+        }
+
+        return selected;
     }
 
     /**
