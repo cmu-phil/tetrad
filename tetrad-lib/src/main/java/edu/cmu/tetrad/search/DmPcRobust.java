@@ -89,7 +89,9 @@ public class DmPcRobust implements IGraphSearch {
         candidates = mergeRedundantCandidates(candidates);
 
         Graph graph = buildLatentGraph(candidates);
-        pruneIndirectMeasuredParents(graph);
+
+        pruneInheritedMeasuredParentsStructurally(graph);
+        removeDegenerateLatents(graph);
 
         return graph;
     }
@@ -454,5 +456,171 @@ public class DmPcRobust implements IGraphSearch {
         }
 
         return measuredChildren;
+    }
+
+    /**
+     * Removes measured-parent edges into a latent when that measured parent already feeds an
+     * upstream latent parent and does not add explanatory power for the downstream latent's
+     * measured children once the upstream latent's indicators are conditioned on.
+     *
+     * <p>This is a targeted cleanup for the common failure mode:
+     * x -> U -> L, together with an extra spurious edge x -> L.</p>
+     *
+     * @param graph the graph to refine
+     */
+    private void pruneInheritedMeasuredParents(Graph graph) {
+        for (Node downstreamLatent : new ArrayList<>(graph.getNodes())) {
+            if (downstreamLatent.getNodeType() != NodeType.LATENT) {
+                continue;
+            }
+
+            Set<Node> downstreamMeasuredChildren = getMeasuredChildren(downstreamLatent, graph);
+
+            if (downstreamMeasuredChildren.isEmpty()) {
+                continue;
+            }
+
+            Set<Node> downstreamMeasuredParents = getMeasuredParents(downstreamLatent, graph);
+
+            for (Node upstreamLatent : graph.getParents(downstreamLatent)) {
+                if (upstreamLatent.getNodeType() != NodeType.LATENT) {
+                    continue;
+                }
+
+                Set<Node> upstreamMeasuredParents = getMeasuredParents(upstreamLatent, graph);
+                Set<Node> upstreamMeasuredChildren = getMeasuredChildren(upstreamLatent, graph);
+
+                for (Node candidateParent : new ArrayList<>(downstreamMeasuredParents)) {
+                    if (!upstreamMeasuredParents.contains(candidateParent)) {
+                        continue;
+                    }
+
+                    Set<Node> conditioningSet = new LinkedHashSet<>();
+
+                    // Other measured parents of the downstream latent.
+                    for (Node parent : downstreamMeasuredParents) {
+                        if (!parent.equals(candidateParent)) {
+                            conditioningSet.add(parent);
+                        }
+                    }
+
+                    // Indicators of the upstream latent.
+                    conditioningSet.addAll(upstreamMeasuredChildren);
+
+                    // Never condition on the response variable itself.
+                    conditioningSet.remove(candidateParent);
+
+                    boolean independentOfAllChildren = true;
+
+                    try {
+                        for (Node child : downstreamMeasuredChildren) {
+                            Set<Node> cond = new LinkedHashSet<>(conditioningSet);
+                            cond.remove(child);
+
+                            if (!this.test.checkIndependence(candidateParent, child, cond).isIndependent()) {
+                                independentOfAllChildren = false;
+                                break;
+                            }
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed while pruning inherited measured parents.", e);
+                    }
+
+                    if (independentOfAllChildren) {
+                        graph.removeEdge(candidateParent, downstreamLatent);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Removes latent variables that no longer have both measured parents and measured children.
+     *
+     * @param graph the graph to modify
+     */
+    private void removeDegenerateLatents(Graph graph) {
+        for (Node node : new ArrayList<>(graph.getNodes())) {
+            if (node.getNodeType() != NodeType.LATENT) {
+                continue;
+            }
+
+            Set<Node> measuredParents = getMeasuredParents(node, graph);
+            Set<Node> measuredChildren = getMeasuredChildren(node, graph);
+
+            if (measuredParents.isEmpty() || measuredChildren.isEmpty()) {
+                graph.removeNode(node);
+            }
+        }
+    }
+
+    /**
+     * Removes measured-parent edges that are inherited through an already discovered
+     * latent-to-latent path.
+     *
+     * <p>If x is a measured parent of a latent ancestor U of L, and x is also a measured
+     * parent of L, then the edge x -> L is removed. This treats x -> L as an inherited
+     * effect of the path x -> U -> ... -> L rather than as a separate direct parent edge.</p>
+     *
+     * @param graph the graph to refine
+     */
+    private void pruneInheritedMeasuredParentsStructurally(Graph graph) {
+        for (Node latent : new ArrayList<>(graph.getNodes())) {
+            if (latent.getNodeType() != NodeType.LATENT) {
+                continue;
+            }
+
+            Set<Node> measuredParents = getMeasuredParents(latent, graph);
+            Set<Node> ancestorLatents = getLatentAncestors(latent, graph);
+
+            if (ancestorLatents.isEmpty()) {
+                continue;
+            }
+
+            Set<Node> inheritedMeasuredParents = new LinkedHashSet<>();
+            for (Node ancestorLatent : ancestorLatents) {
+                inheritedMeasuredParents.addAll(getMeasuredParents(ancestorLatent, graph));
+            }
+
+            for (Node parent : new ArrayList<>(measuredParents)) {
+                if (inheritedMeasuredParents.contains(parent)) {
+                    graph.removeEdge(parent, latent);
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns all latent ancestors of the given latent node.
+     *
+     * @param latent the latent node
+     * @param graph the graph containing the node
+     * @return the set of latent ancestors
+     */
+    private Set<Node> getLatentAncestors(Node latent, Graph graph) {
+        Set<Node> ancestors = new LinkedHashSet<>();
+        Deque<Node> stack = new ArrayDeque<>();
+
+        for (Node parent : graph.getParents(latent)) {
+            if (parent.getNodeType() == NodeType.LATENT) {
+                stack.push(parent);
+            }
+        }
+
+        while (!stack.isEmpty()) {
+            Node current = stack.pop();
+
+            if (!ancestors.add(current)) {
+                continue;
+            }
+
+            for (Node parent : graph.getParents(current)) {
+                if (parent.getNodeType() == NodeType.LATENT) {
+                    stack.push(parent);
+                }
+            }
+        }
+
+        return ancestors;
     }
 }
