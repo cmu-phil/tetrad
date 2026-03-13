@@ -183,222 +183,32 @@ public class TrekMimic2 extends AbstractBootstrapAlgorithm implements Algorithm,
 
         List<Node> variables = data.getVariables();
         SimpleMatrix S = new CorrelationMatrix(data).getMatrix().getSimpleMatrix();
-//
-//        ChoiceGenerator gen = new ChoiceGenerator(pool.size(), 2);
-//        int[] choice;
-//
-//        while ((choice = gen.next()) != null) {
-//            List<Node> xSet = GraphUtils.asList(choice, pool);
-//            int rank = estimateRank(xSet, allChildren, variables, S, data.getNumRows(), 0.01);
-//            if (rank == 1) {
-//                System.out.println("rank 1: " + xSet);
-//            }
-//        }
-
-//        List<Node> pool = new ArrayList<>(data.getVariables());
-//        pool.removeAll(allChildren);
 
         List<List<Node>> recoveredGroups =
                 recoverCliqueRankOneGroups(pool, allChildren, variables, S, data.getNumRows(), 0.01);
 
-        System.out.println("Recovered rank-1 groups:");
-        for (List<Node> set : recoveredGroups) {
-            System.out.println(set);
-        }
-
-        Map<List<Node>, Node> assignment = assignParentGroupsToLatents(
+        Map<Node, List<Node>> assignment = assignParentGroupsToLatents(
                 recoveredGroups, spec.blockVariables(), childSets, variables, S, data.getNumRows(), 0.01);
 
-        for (Map.Entry<List<Node>, Node> entry : assignment.entrySet()) {
-            System.out.println("Assign " + entry.getKey() + " -> " + entry.getValue());
-        }
-
-        for (List<Node> parents : assignment.keySet()) {
-            Node node = assignment.get(parents);
+        for (Node node : assignment.keySet()) {
+            List<Node> parents = assignment.get(node);
             graph.addNode(node);
             for (Node parent : parents) {
                 graph.addDirectedEdge(parent, node);
             }
         }
 
-//        findBestRankOneSetAgainstAllChildren(pool, allChildren, variables, S, data.getNumRows(), 0.01, 5);
-//
-
-
-//        graph = refineMeasuredParentsByRank(graph, data, spec, 5, 0.01);
-//        for (List<Node> childSet : childSets) {
-//            List<Node> best = findExpandedRankOneParentSet(pool, childSet, variables, S, data.getNumRows(), 0.01);
-//
-//            if (best == null) {
-//                continue;
-//            }
-//            for (Node node : best) {
-//                graph.addNode(node);
-//                graph.addDirectedEdge(childSet.get(0), node);
-//            }
-//        }
-//
-//        if (true) return graph;
-
-//        LatentParentRecoveryRobust latentParentRecovery = new LatentParentRecoveryRobust(data, graph);
-//        graph = latentParentRecovery.search();
-
-//        List<List<Node>> parentSets = new ArrayList<>();
-//
-//        for (Node node : spec.blockVariables()) {
-//            List<Node> parents = graph.getParents(node);
-//            parentSets.add(parents);
-//        }
-//
-//        List<List<Node>> randomTriplets = new ArrayList<>();
-//
-//        Random random = new Random();
-//        int numTriplets = Math.min(300, pool.size() * (pool.size() - 1) * (pool.size() - 2) / 6);
-//
-//        for (int i = 0; i < numTriplets; i++) {
-//            List<Node> triplet = new ArrayList<>();
-//            Set<Integer> usedIndices = new HashSet<>();
-//
-//            while (triplet.size() < 3) {
-//                int index = random.nextInt(pool.size());
-//                if (!usedIndices.contains(index)) {
-//                    usedIndices.add(index);
-//                    triplet.add(variables.get(index));
-//                }
-//            }
-//
-//            randomTriplets.add(triplet);
-//        }
-
-//        System.out.println("Parent sets versus parent sets:");
-//
-//        for (List<Node> xSet : parentSets) {
-//            for (List<Node> ySet : parentSets) {
-//                if (!Collections.disjoint(xSet, ySet)) continue;
-//                int[] xIndices = new int[xSet.size()];
-//                int[] yIndices = new int[ySet.size()];
-//                for (int i = 0; i < xSet.size(); i++) xIndices[i] = variables.indexOf(xSet.get(i));
-//                for (int i = 0; i < ySet.size(); i++) yIndices[i] = variables.indexOf(ySet.get(i));
-//                int rank = RankTests.estimateWilksRank(S, xIndices, yIndices, data.getNumRows(), 0.01);
-//                System.out.println("rank " + xSet + " vs " + ySet + " = " + rank);
-//            }
-//        }
-//
-//        System.out.println("Child sets versus child sets:");
-//
-//        for (List<Node> xSet : childSets) {
-//            for (List<Node> ySet : childSets) {
-//                if (!Collections.disjoint(xSet, ySet)) continue;
-//                int[] xIndices = new int[xSet.size()];
-//                int[] yIndices = new int[ySet.size()];
-//                for (int i = 0; i < xSet.size(); i++) xIndices[i] = variables.indexOf(xSet.get(i));
-//                for (int i = 0; i < ySet.size(); i++) yIndices[i] = variables.indexOf(ySet.get(i));
-//                int rank = RankTests.estimateWilksRank(S, xIndices, yIndices, data.getNumRows(), 0.01);
-//                System.out.println("rank " + xSet + " vs " + ySet + " = " + rank);
-//            }
-//        }
-//
-//        System.out.println("Parent sets versus child sets:");
-//
-//        for (List<Node> xSet : parentSets) {
-//            for (List<Node> ySet : childSets) {
-//                if (!Collections.disjoint(xSet, ySet)) continue;
-//                ;
-//                int[] xIndices = new int[xSet.size()];
-//                int[] yIndices = new int[ySet.size()];
-//                for (int i = 0; i < xSet.size(); i++) xIndices[i] = variables.indexOf(xSet.get(i));
-//                for (int i = 0; i < ySet.size(); i++) yIndices[i] = variables.indexOf(ySet.get(i));
-//                int rank = RankTests.estimateWilksRank(S, xIndices, yIndices, data.getNumRows(), 0.01);
-//                System.out.println("rank " + xSet + " vs " + ySet + " = " + rank);
-//            }
-//        }
-//
-//        System.out.println("Random triplets versus child sets:");
-//
-//        for (List<Node> xSet : randomTriplets) {
-//            for (List<Node> ySet : childSets) {
-//                if (!Collections.disjoint(xSet, ySet)) continue;
-//                int[] xIndices = new int[xSet.size()];
-//                int[] yIndices = new int[ySet.size()];
-//                for (int i = 0; i < xSet.size(); i++) xIndices[i] = variables.indexOf(xSet.get(i));
-//                for (int i = 0; i < ySet.size(); i++) yIndices[i] = variables.indexOf(ySet.get(i));
-//                int rank = RankTests.estimateWilksRank(S, xIndices, yIndices, data.getNumRows(), 0.01);
-//                System.out.println("rank " + xSet + " vs " + ySet + " = " + rank);
-//            }
-//        }
-//
-//        System.out.println("Random triplets versus parent sets:");
-//
-//        for (List<Node> xSet : randomTriplets) {
-//            for (List<Node> ySet : parentSets) {
-//                if (!Collections.disjoint(xSet, ySet)) continue;
-//                int[] xIndices = new int[xSet.size()];
-//                int[] yIndices = new int[ySet.size()];
-//                for (int i = 0; i < xSet.size(); i++) xIndices[i] = variables.indexOf(xSet.get(i));
-//                for (int i = 0; i < ySet.size(); i++) yIndices[i] = variables.indexOf(ySet.get(i));
-//                int rank = RankTests.estimateWilksRank(S, xIndices, yIndices, data.getNumRows(), 0.01);
-//                System.out.println("rank " + xSet + " vs " + ySet + " = " + rank);
-//            }
-//        }
-
-        /// ////////////////
-
-//        System.out.println("Parent versus all children:");
-//
-//        for (List<Node> xSet : parentSets) {
-//            List<Node> ySet = allChildren;
-//            if (!Collections.disjoint(xSet, ySet)) continue;
-//            int[] xIndices = new int[xSet.size()];
-//            int[] yIndices = new int[ySet.size()];
-//            for (int i = 0; i < xSet.size(); i++) xIndices[i] = variables.indexOf(xSet.get(i));
-//            for (int i = 0; i < ySet.size(); i++) yIndices[i] = variables.indexOf(ySet.get(i));
-//            int rank = RankTests.estimateWilksRank(S, xIndices, yIndices, data.getNumRows(), 0.01);
-//            System.out.println("rank " + xSet + " vs " + ySet + " = " + rank);
-//        }
-//
-//        System.out.println("Random triplets versus all children:");
-//
-//        for (List<Node> xSet : randomTriplets) {
-//            List<Node> ySet = allChildren;
-//            if (!Collections.disjoint(xSet, ySet)) continue;
-//            int[] xIndices = new int[xSet.size()];
-//            int[] yIndices = new int[ySet.size()];
-//            for (int i = 0; i < xSet.size(); i++) xIndices[i] = variables.indexOf(xSet.get(i));
-//            for (int i = 0; i < ySet.size(); i++) yIndices[i] = variables.indexOf(ySet.get(i));
-//            int rank = RankTests.estimateWilksRank(S, xIndices, yIndices, data.getNumRows(), 0.01);
-//            System.out.println("rank " + xSet + " vs " + ySet + " = " + rank);
-//        }
-//
-//        List<List<Node>> trueParents = List.of(
-//                List.of(data.getVariable("X1"), data.getVariable("X2"), data.getVariable("X3")),
-//                List.of(data.getVariable("X4"), data.getVariable("X5"), data.getVariable("X6")),
-//                List.of(data.getVariable("X7"), data.getVariable("X8"), data.getVariable("X9"))
-//        );
-//
-//        System.out.println("True parents versus all children:");
-//
-//        for (List<Node> xSet : trueParents) {
-//            List<Node> ySet = allChildren;
-//            if (!Collections.disjoint(xSet, ySet)) continue;
-//            int[] xIndices = new int[xSet.size()];
-//            int[] yIndices = new int[ySet.size()];
-//            for (int i = 0; i < xSet.size(); i++) xIndices[i] = variables.indexOf(xSet.get(i));
-//            for (int i = 0; i < ySet.size(); i++) yIndices[i] = variables.indexOf(ySet.get(i));
-//            int rank = RankTests.estimateWilksRank(S, xIndices, yIndices, data.getNumRows(), 0.01);
-//            System.out.println("rank " + xSet + " vs " + ySet + " = " + rank);
-//        }
-
         return graph;
     }
 
-    private Map<List<Node>, Node> assignParentGroupsToLatents(List<List<Node>> recoveredGroups,
+    private Map<Node, List<Node>> assignParentGroupsToLatents(List<List<Node>> recoveredGroups,
                                                               List<Node> latentNodes,
                                                               List<List<Node>> childSets,
                                                               List<Node> variables,
                                                               SimpleMatrix s,
                                                               int sampleSize,
                                                               double alpha) {
-        Map<List<Node>, Node> assignment = new LinkedHashMap<>();
+        Map<Node, List<Node>> assignment = new LinkedHashMap<>();
 
         for (List<Node> group : recoveredGroups) {
             Node bestLatent = null;
@@ -423,7 +233,7 @@ public class TrekMimic2 extends AbstractBootstrapAlgorithm implements Algorithm,
             }
 
             if (bestLatent != null) {
-                assignment.put(group, bestLatent);
+                assignment.put(bestLatent, group);
             }
         }
 
