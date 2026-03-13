@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
@@ -31,7 +31,6 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.LatentParentRecoveryRobust;
 import edu.cmu.tetrad.search.Tsc;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
@@ -39,13 +38,11 @@ import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.*;
+import org.ejml.simple.SimpleMatrix;
 
 import java.io.Serial;
 import java.util.*;
-
-import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
 
 /**
  * Peter/Clark algorithm (PC).
@@ -68,7 +65,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
     /**
      * The independence test to use.
      */
-    private IndependenceWrapper test;
+    private final IndependenceWrapper test;
 
     /**
      * The knowledge.
@@ -169,10 +166,400 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             }
         }
 
-        LatentParentRecoveryRobust latentParentRecovery = new LatentParentRecoveryRobust(data, graph);
-        graph = latentParentRecovery.search();
+        List<List<Node>> childSets = new ArrayList<>();
+        Set<Node> _allChildren = new HashSet<>();
+
+        for (Node node : spec.blockVariables()) {
+            List<Node> children = graph.getChildren(node);
+            childSets.add(children);
+            _allChildren.addAll(children);
+        }
+
+        List<Node> allChildren = new ArrayList<>(_allChildren);
+
+        List<Node> pool = new ArrayList<>(data.getVariables());
+        pool.removeAll(allChildren);
+
+        List<Node> variables = data.getVariables();
+        SimpleMatrix s = new CorrelationMatrix(data).getMatrix().getSimpleMatrix();
+
+        int sampleSize = data.getNumRows();
+        double alpha = 0.01;
+
+        List<List<Node>> recoveredGroups =
+                recoverCliqueRankOneGroups(pool, allChildren, variables, s, sampleSize, alpha);
+
+        Map<Node, List<Node>> assignment = assignParentGroupsToLatents(
+                recoveredGroups, spec.blockVariables(), childSets, variables, s, sampleSize, alpha);
+
+        for (Node node : assignment.keySet()) {
+            List<Node> parents = assignment.get(node);
+
+            graph.addNode(node);
+            for (Node parent : parents) {
+                graph.addDirectedEdge(parent, node);
+            }
+        }
+
+        Graph structureGraph = new EdgeListGraph(spec.blockVariables());
+
+        for (int i = 0; i < spec.blocks().size(); i++) {
+            for (int j = 0; j < spec.blocks().size(); j++) {
+                Edge edge = graph.getEdge(spec.blockVariables().get(i), spec.blockVariables().get(j));
+                if (edge == null) continue;
+                structureGraph.addEdge(edge);
+            }
+        }
+
+        for (Edge edge : structureGraph.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            List<Node> parentsx = graph.getParents(x);
+            List<Node> parentsy = graph.getParents(y);
+
+            List<Node> childrenx = graph.getChildren(x);
+            List<Node> childreny = graph.getChildren(y);
+
+            parentsx.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+            parentsy.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+
+            childrenx.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+            childreny.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+
+            boolean allUncorrelatedxy = true;
+
+            for (Node parentx : parentsx) {
+                for (Node childy : childreny) {
+                    if (!uncorrelated(parentx, childy, variables, s, sampleSize, alpha)) {
+                        allUncorrelatedxy = false;
+                    }
+                }
+            }
+
+            if (allUncorrelatedxy) {
+                graph.removeEdge(x, y);
+                graph.addDirectedEdge(y, x);
+                continue;
+            }
+
+            boolean allUncorrelatedyx = true;
+
+            for (Node parenty : parentsy) {
+                for (Node childx : childrenx) {
+                    if (!uncorrelated(parenty, childx, variables, s, sampleSize, alpha)) {
+                        allUncorrelatedyx = false;
+                    }
+                }
+            }
+
+            if (allUncorrelatedyx) {
+                graph.removeEdge(y, x);
+                graph.addDirectedEdge(x, y);
+            }
+        }
 
         return graph;
+    }
+
+    private boolean uncorrelated(Node a, Node b, List<Node> variables, SimpleMatrix s, int sampleSize, double alpha) {
+        int i = variables.indexOf(a);
+        int j = variables.indexOf(b);
+
+        double r = s.get(i, j);
+
+        if (Math.abs(r) >= 1.0) {
+            return false;
+        }
+
+        double z = 0.5 * Math.log((1.0 + r) / (1.0 - r)) * Math.sqrt(sampleSize - 3.0);
+        double cutoff = StatUtils.getZForAlpha(alpha);
+
+        return Math.abs(z) < cutoff;
+    }
+
+    private Map<Node, List<Node>> assignParentGroupsToLatents(List<List<Node>> recoveredGroups,
+                                                              List<Node> latentNodes,
+                                                              List<List<Node>> childSets,
+                                                              List<Node> variables,
+                                                              SimpleMatrix s,
+                                                              int sampleSize,
+                                                              double alpha) {
+        Map<Node, List<Node>> assignment = new LinkedHashMap<>();
+
+        for (List<Node> group : recoveredGroups) {
+            Node bestLatent = null;
+            double bestScore = Double.NEGATIVE_INFINITY;
+
+            for (int j = 0; j < latentNodes.size(); j++) {
+                Node latent = latentNodes.get(j);
+                List<Node> childSet = childSets.get(j);
+
+                int rank = estimateRank(group, childSet, variables, s, sampleSize, alpha);
+
+                if (rank != 1) {
+                    continue;
+                }
+
+                double score = blockStrength(group, childSet, variables, s);
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestLatent = latent;
+                }
+            }
+
+            if (bestLatent != null) {
+                assignment.put(bestLatent, group);
+            }
+        }
+
+        return assignment;
+    }
+
+    private Graph buildRankOnePairGraph(List<Node> pool,
+                                        List<Node> allChildren,
+                                        List<Node> variables,
+                                        SimpleMatrix s,
+                                        int sampleSize,
+                                        double alpha) {
+        Graph pairGraph = new EdgeListGraph(pool);
+
+        ChoiceGenerator gen = new ChoiceGenerator(pool.size(), 2);
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            List<Node> pair = GraphUtils.asList(choice, pool);
+
+            int rank = estimateRank(pair, allChildren, variables, s, sampleSize, alpha);
+
+            if (rank == 1) {
+                pairGraph.addUndirectedEdge(pair.get(0), pair.get(1));
+            }
+        }
+
+        return pairGraph;
+    }
+
+    private List<Node> findBestRankOnePair(List<Node> pool,
+                                           List<Node> allChildren,
+                                           List<Node> variables,
+                                           SimpleMatrix s,
+                                           int sampleSize,
+                                           double alpha) {
+        ChoiceGenerator gen = new ChoiceGenerator(pool.size(), 2);
+        int[] choice;
+
+        List<Node> bestPair = null;
+        double bestStrength = Double.NEGATIVE_INFINITY;
+
+        while ((choice = gen.next()) != null) {
+            List<Node> pair = GraphUtils.asList(choice, pool);
+
+            int rank = estimateRank(pair, allChildren, variables, s, sampleSize, alpha);
+
+            if (rank != 1) {
+                continue;
+            }
+
+            double strength = blockStrength(pair, allChildren, variables, s);
+
+            if (strength > bestStrength) {
+                bestStrength = strength;
+                bestPair = new ArrayList<>(pair);
+            }
+        }
+
+        return bestPair;
+    }
+
+    private List<Node> growCliqueRankOneSet(List<Node> seedPair,
+                                            List<Node> pool,
+                                            Graph pairGraph,
+                                            List<Node> allChildren,
+                                            List<Node> variables,
+                                            SimpleMatrix s) {
+        LinkedHashSet<Node> current = new LinkedHashSet<>(seedPair);
+        LinkedHashSet<Node> remaining = new LinkedHashSet<>(pool);
+        remaining.removeAll(current);
+
+        boolean changed = true;
+
+        while (changed) {
+            changed = false;
+
+            Node bestAdd = null;
+            double bestStrength = Double.NEGATIVE_INFINITY;
+
+            for (Node candidate : remaining) {
+                boolean adjacentToAll = true;
+
+                for (Node existing : current) {
+                    if (!pairGraph.isAdjacentTo(candidate, existing)) {
+                        adjacentToAll = false;
+                        break;
+                    }
+                }
+
+                if (!adjacentToAll) {
+                    continue;
+                }
+
+                List<Node> proposed = new ArrayList<>(current);
+                proposed.add(candidate);
+
+                double strength = blockStrength(proposed, allChildren, variables, s);
+
+                if (strength > bestStrength) {
+                    bestStrength = strength;
+                    bestAdd = candidate;
+                }
+            }
+
+            if (bestAdd != null) {
+                current.add(bestAdd);
+                remaining.remove(bestAdd);
+                changed = true;
+            }
+        }
+
+        return new ArrayList<>(current);
+    }
+
+    private List<List<Node>> recoverCliqueRankOneGroups(List<Node> initialPool,
+                                                        List<Node> allChildren,
+                                                        List<Node> variables,
+                                                        SimpleMatrix s,
+                                                        int sampleSize,
+                                                        double alpha) {
+        List<Node> pool = new ArrayList<>(initialPool);
+        List<List<Node>> groups = new ArrayList<>();
+
+        while (true) {
+            if (pool.size() < 2) {
+                break;
+            }
+
+            Graph pairGraph = buildRankOnePairGraph(pool, allChildren, variables, s, sampleSize, alpha);
+            List<Node> seedPair = findBestRankOnePair(pool, allChildren, variables, s, sampleSize, alpha);
+
+            if (seedPair == null) {
+                break;
+            }
+
+            List<Node> group = growCliqueRankOneSet(seedPair, pool, pairGraph, allChildren, variables, s);
+            groups.add(group);
+            pool.removeAll(group);
+        }
+
+        if (!pool.isEmpty()) {
+            System.out.println("Leftover variables: " + pool);
+        }
+
+        return groups;
+    }
+
+    private double blockStrength(List<Node> xSet,
+                                 List<Node> ySet,
+                                 List<Node> variables,
+                                 SimpleMatrix s) {
+        List<Node> x = new ArrayList<>(xSet);
+        List<Node> y = new ArrayList<>(ySet);
+
+        x.removeAll(y);
+
+        if (x.isEmpty() || y.isEmpty()) {
+            return Double.NEGATIVE_INFINITY;
+        }
+
+        int[] xIndices = new int[x.size()];
+        int[] yIndices = new int[y.size()];
+
+        for (int i = 0; i < x.size(); i++) {
+            xIndices[i] = variables.indexOf(x.get(i));
+        }
+
+        for (int i = 0; i < y.size(); i++) {
+            yIndices[i] = variables.indexOf(y.get(i));
+        }
+
+        double sumSquares = 0.0;
+
+        for (int xIndex : xIndices) {
+            for (int yIndex : yIndices) {
+                double v = s.get(xIndex, yIndex);
+                sumSquares += v * v;
+            }
+        }
+
+        return Math.sqrt(sumSquares);
+    }
+
+    private int estimateRank(List<Node> xSet,
+                             List<Node> ySet,
+                             List<Node> variables,
+                             SimpleMatrix s,
+                             int sampleSize,
+                             double alpha) {
+        List<Node> x = new ArrayList<>(xSet);
+        List<Node> y = new ArrayList<>(ySet);
+
+        x.removeAll(y);
+
+        if (x.isEmpty() || y.isEmpty()) {
+            return Integer.MAX_VALUE;
+        }
+
+        int[] xIndices = new int[x.size()];
+        int[] yIndices = new int[y.size()];
+
+        for (int i = 0; i < x.size(); i++) {
+            xIndices[i] = variables.indexOf(x.get(i));
+        }
+
+        for (int i = 0; i < y.size(); i++) {
+            yIndices[i] = variables.indexOf(y.get(i));
+        }
+
+        return RankTests.estimateWilksRank(s, xIndices, yIndices, sampleSize, alpha);
+    }
+
+    private double leadingSingularValue(List<Node> xSet,
+                                        List<Node> ySet,
+                                        List<Node> variables,
+                                        SimpleMatrix s) {
+        List<Node> x = new ArrayList<>(xSet);
+        List<Node> y = new ArrayList<>(ySet);
+
+        x.removeAll(y);
+
+        if (x.isEmpty() || y.isEmpty()) {
+            return Double.NEGATIVE_INFINITY;
+        }
+
+        int[] xIndices = new int[x.size()];
+        int[] yIndices = new int[y.size()];
+
+        for (int i = 0; i < x.size(); i++) {
+            xIndices[i] = variables.indexOf(x.get(i));
+        }
+
+        for (int i = 0; i < y.size(); i++) {
+            yIndices[i] = variables.indexOf(y.get(i));
+        }
+
+        SimpleMatrix sub = StatUtils.extractSubMatrix(s, xIndices, yIndices);
+
+        var svd = sub.svd();
+        SimpleMatrix w = svd.getW();
+
+        int d = Math.min(w.getNumRows(), w.getNumCols());
+
+        if (d == 0) {
+            return Double.NEGATIVE_INFINITY;
+        }
+
+        return w.get(0, 0);
     }
 
     /**

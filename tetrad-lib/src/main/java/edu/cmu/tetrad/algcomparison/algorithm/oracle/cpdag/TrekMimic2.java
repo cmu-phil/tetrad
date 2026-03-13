@@ -31,7 +31,6 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.LatentParentRecoveryRobust;
 import edu.cmu.tetrad.search.Tsc;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
@@ -57,6 +56,7 @@ import java.util.*;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
+@Deprecated
 public class TrekMimic2 extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
@@ -66,7 +66,7 @@ public class TrekMimic2 extends AbstractBootstrapAlgorithm implements Algorithm,
     /**
      * The independence test to use.
      */
-    private IndependenceWrapper test;
+    private final IndependenceWrapper test;
 
     /**
      * The knowledge.
@@ -178,27 +178,107 @@ public class TrekMimic2 extends AbstractBootstrapAlgorithm implements Algorithm,
 
         List<Node> allChildren = new ArrayList<>(_allChildren);
 
-        List<Node> pool = data.getVariables();
+        List<Node> pool = new ArrayList<>(data.getVariables());
         pool.removeAll(allChildren);
 
         List<Node> variables = data.getVariables();
-        SimpleMatrix S = new CorrelationMatrix(data).getMatrix().getSimpleMatrix();
+        SimpleMatrix s = new CorrelationMatrix(data).getMatrix().getSimpleMatrix();
+
+        int sampleSize = data.getNumRows();
+        double alpha = 0.01;
 
         List<List<Node>> recoveredGroups =
-                recoverCliqueRankOneGroups(pool, allChildren, variables, S, data.getNumRows(), 0.01);
+                recoverCliqueRankOneGroups(pool, allChildren, variables, s, sampleSize, alpha);
 
         Map<Node, List<Node>> assignment = assignParentGroupsToLatents(
-                recoveredGroups, spec.blockVariables(), childSets, variables, S, data.getNumRows(), 0.01);
+                recoveredGroups, spec.blockVariables(), childSets, variables, s, sampleSize, alpha);
 
         for (Node node : assignment.keySet()) {
             List<Node> parents = assignment.get(node);
+
+            System.out.println("Assigned parents of " + node + " to " + parents);
+
             graph.addNode(node);
             for (Node parent : parents) {
                 graph.addDirectedEdge(parent, node);
             }
         }
 
+        Graph structureGraph = new EdgeListGraph(spec.blockVariables());
+
+        for (int i = 0; i < spec.blocks().size(); i++) {
+            for (int j = 0; j < spec.blocks().size(); j++) {
+                Edge edge = graph.getEdge(spec.blockVariables().get(i), spec.blockVariables().get(j));
+                if (edge == null) continue;
+                structureGraph.addEdge(edge);
+            }
+        }
+
+        for (Edge edge : structureGraph.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            List<Node> parentsx = graph.getParents(x);
+            List<Node> parentsy = graph.getParents(y);
+
+            List<Node> childrenx = graph.getChildren(x);
+            List<Node> childreny = graph.getChildren(y);
+
+            parentsx.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+            parentsy.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+
+            childrenx.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+            childreny.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+
+            boolean allUncorrelatedxy = true;
+
+            for (Node parentx : parentsx) {
+                for (Node childy : childreny) {
+                    if (!uncorrelated(parentx, childy, variables, s, sampleSize, alpha)) {
+                        allUncorrelatedxy = false;
+                    }
+                }
+            }
+
+            if (allUncorrelatedxy) {
+                graph.removeEdge(x, y);
+                graph.addDirectedEdge(y, x);
+                continue;
+            }
+
+            boolean allUncorrelatedyx = true;
+
+            for (Node parenty : parentsy) {
+                for (Node childx : childrenx) {
+                    if (!uncorrelated(parenty, childx, variables, s, sampleSize, alpha)) {
+                        allUncorrelatedyx = false;
+                    }
+                }
+            }
+
+            if (allUncorrelatedyx) {
+                graph.removeEdge(y, x);
+                graph.addDirectedEdge(x, y);
+            }
+        }
+
         return graph;
+    }
+
+    private boolean uncorrelated(Node a, Node b, List<Node> variables, SimpleMatrix s, int sampleSize, double alpha) {
+        int i = variables.indexOf(a);
+        int j = variables.indexOf(b);
+
+        double r = s.get(i, j);
+
+        if (Math.abs(r) >= 1.0) {
+            return false;
+        }
+
+        double z = 0.5 * Math.log((1.0 + r) / (1.0 - r)) * Math.sqrt(sampleSize - 3.0);
+        double cutoff = StatUtils.getZForAlpha(alpha);
+
+        return Math.abs(z) < cutoff;
     }
 
     private Map<Node, List<Node>> assignParentGroupsToLatents(List<List<Node>> recoveredGroups,
@@ -371,10 +451,7 @@ public class TrekMimic2 extends AbstractBootstrapAlgorithm implements Algorithm,
             }
 
             List<Node> group = growCliqueRankOneSet(seedPair, pool, pairGraph, allChildren, variables, s);
-
             groups.add(group);
-            System.out.println("Recovered clique rank-1 group: " + group);
-
             pool.removeAll(group);
         }
 
@@ -383,162 +460,6 @@ public class TrekMimic2 extends AbstractBootstrapAlgorithm implements Algorithm,
         }
 
         return groups;
-    }
-
-    private List<List<Node>> recoverRankOneGroups(List<Node> initialPool,
-                                                  List<Node> allChildren,
-                                                  List<Node> variables,
-                                                  SimpleMatrix s,
-                                                  int sampleSize,
-                                                  double alpha) {
-        List<Node> pool = new ArrayList<>(initialPool);
-        List<List<Node>> groups = new ArrayList<>();
-
-        boolean foundAny = true;
-
-        while (foundAny) {
-            foundAny = false;
-
-            List<Node> seedPair = findFirstRankOnePair(pool, allChildren, variables, s, sampleSize, alpha);
-
-            if (seedPair == null) {
-                break;
-            }
-
-            foundAny = true;
-
-            LinkedHashSet<Node> currentSet = new LinkedHashSet<>(seedPair);
-            pool.removeAll(seedPair);
-
-            boolean added = true;
-
-            while (added) {
-                added = false;
-
-                Node bestAdd = null;
-
-                for (Node candidate : new ArrayList<>(pool)) {
-                    List<Node> proposed = new ArrayList<>(currentSet);
-                    proposed.add(candidate);
-
-                    int rank = estimateRank(proposed, allChildren, variables, s, sampleSize, alpha);
-
-                    if (rank == 1) {
-                        bestAdd = candidate;
-                        break;
-                    }
-                }
-
-                if (bestAdd != null) {
-                    currentSet.add(bestAdd);
-                    pool.remove(bestAdd);
-                    added = true;
-                }
-            }
-
-            groups.add(new ArrayList<>(currentSet));
-            System.out.println("Recovered rank-1 set: " + currentSet);
-        }
-
-        if (!pool.isEmpty()) {
-            System.out.println("Leftover variables with no rank-1 pair: " + pool);
-        }
-
-        return groups;
-    }
-
-    private List<Node> findFirstRankOnePair(List<Node> pool,
-                                            List<Node> allChildren,
-                                            List<Node> variables,
-                                            SimpleMatrix s,
-                                            int sampleSize,
-                                            double alpha) {
-        ChoiceGenerator gen = new ChoiceGenerator(pool.size(), 2);
-        int[] choice;
-
-        while ((choice = gen.next()) != null) {
-            List<Node> pair = GraphUtils.asList(choice, pool);
-
-            int rank = estimateRank(pair, allChildren, variables, s, sampleSize, alpha);
-
-            if (rank == 1) {
-                return pair;
-            }
-        }
-
-        return null;
-    }
-
-    private List<Node> findExpandedRankOneParentSet(List<Node> pool,
-                                                    List<Node> childSet,
-                                                    List<Node> variables,
-                                                    SimpleMatrix s,
-                                                    int sampleSize,
-                                                    double alpha) {
-        // Step 1: choose the best singleton seed with rank 1.
-        List<Node> bestSeed = null;
-        double bestStrength = Double.NEGATIVE_INFINITY;
-
-        for (Node candidate : pool) {
-            List<Node> singleton = Collections.singletonList(candidate);
-
-            int rank = estimateRank(singleton, childSet, variables, s, sampleSize, alpha);
-
-            if (rank != 1) {
-                continue;
-            }
-
-            double strength = blockStrength(singleton, childSet, variables, s);
-
-            if (strength > bestStrength) {
-                bestStrength = strength;
-                bestSeed = new ArrayList<>(singleton);
-            }
-        }
-
-        if (bestSeed == null) {
-            return null;
-        }
-
-        // Step 2: greedily enlarge while preserving rank 1.
-        LinkedHashSet<Node> current = new LinkedHashSet<>(bestSeed);
-        LinkedHashSet<Node> remaining = new LinkedHashSet<>(pool);
-        remaining.removeAll(current);
-
-        boolean changed = true;
-
-        while (changed) {
-            changed = false;
-
-            Node bestAdd = null;
-            double bestAddStrength = Double.NEGATIVE_INFINITY;
-
-            for (Node candidate : remaining) {
-                List<Node> proposed = new ArrayList<>(current);
-                proposed.add(candidate);
-
-                int rank = estimateRank(proposed, childSet, variables, s, sampleSize, alpha);
-
-                if (rank != 1) {
-                    continue;
-                }
-
-                double strength = blockStrength(proposed, childSet, variables, s);
-
-                if (strength > bestAddStrength) {
-                    bestAddStrength = strength;
-                    bestAdd = candidate;
-                }
-            }
-
-            if (bestAdd != null) {
-                current.add(bestAdd);
-                remaining.remove(bestAdd);
-                changed = true;
-            }
-        }
-
-        return new ArrayList<>(current);
     }
 
     private double blockStrength(List<Node> xSet,
@@ -567,135 +488,14 @@ public class TrekMimic2 extends AbstractBootstrapAlgorithm implements Algorithm,
 
         double sumSquares = 0.0;
 
-        for (int i = 0; i < xIndices.length; i++) {
-            for (int j = 0; j < yIndices.length; j++) {
-                double v = s.get(xIndices[i], yIndices[j]);
+        for (int xIndex : xIndices) {
+            for (int yIndex : yIndices) {
+                double v = s.get(xIndex, yIndex);
                 sumSquares += v * v;
             }
         }
 
         return Math.sqrt(sumSquares);
-    }
-
-    private Graph refineMeasuredParentsByRank(Graph graph,
-                                              DataSet data,
-                                              BlockSpec spec,
-                                              int maxSubsetSize,
-                                              double alpha) {
-        Graph refined = new EdgeListGraph(graph);
-
-        SimpleMatrix s = new CorrelationMatrix(data).getMatrix().getSimpleMatrix();
-        List<Node> variables = data.getVariables();
-
-        // Indicators of all latents.
-        Set<Node> allIndicators = new LinkedHashSet<>();
-        for (Node latent : spec.blockVariables()) {
-            allIndicators.addAll(refined.getChildren(latent));
-        }
-
-        // Candidate measured parents are measured variables not used as indicators.
-        List<Node> candidateMeasured = new ArrayList<>();
-        for (Node node : variables) {
-            if (node.getNodeType() == NodeType.LATENT) {
-                continue;
-            }
-            if (!allIndicators.contains(node)) {
-                candidateMeasured.add(node);
-            }
-        }
-
-        for (Node latent : spec.blockVariables()) {
-            List<Node> childSet = new ArrayList<>(refined.getChildren(latent));
-            childSet.removeIf(n -> n.getNodeType() == NodeType.LATENT);
-
-            if (childSet.isEmpty()) {
-                continue;
-            }
-
-            List<Node> currentParents = new ArrayList<>(refined.getParents(latent));
-            currentParents.removeIf(n -> n.getNodeType() == NodeType.LATENT);
-
-            List<Node> pool = buildCandidatePool(currentParents, candidateMeasured);
-
-            List<Node> best = findBestRankOneParentSet(pool, childSet, variables, s, data.getNumRows(),
-                    maxSubsetSize, alpha);
-//            List<Node> best = findExpandedRankOneParentSet(pool, childSet, variables, s, data.getNumRows(), 0.01);
-
-            if (best != null) {
-                // Remove current measured-parent edges into this latent.
-                for (Node parent : new ArrayList<>(refined.getParents(latent))) {
-                    if (parent.getNodeType() != NodeType.LATENT) {
-                        refined.removeEdge(parent, latent);
-                    }
-                }
-
-                // Add refined parent set.
-                for (Node parent : best) {
-                    if (!refined.isAdjacentTo(parent, latent)) {
-                        refined.addDirectedEdge(parent, latent);
-                    }
-                }
-            }
-        }
-
-        return refined;
-    }
-
-    private List<Node> buildCandidatePool(List<Node> currentParents, List<Node> candidateMeasured) {
-        LinkedHashSet<Node> pool = new LinkedHashSet<>();
-
-        // Always include the current measured parents first.
-        pool.addAll(currentParents);
-
-        // Then add the remaining candidates.
-        pool.addAll(candidateMeasured);
-
-        return new ArrayList<>(pool);
-    }
-
-    private List<Node> findBestRankOneParentSet(List<Node> pool,
-                                                List<Node> childSet,
-                                                List<Node> variables,
-                                                SimpleMatrix s,
-                                                int sampleSize,
-                                                int maxSubsetSize,
-                                                double alpha) {
-        List<Node> bestSet = null;
-        double bestLeadingSingularValue = Double.NEGATIVE_INFINITY;
-
-        int upperSize = Math.min(maxSubsetSize, pool.size());
-
-        for (int k = 1; k <= upperSize; k++) {
-            ChoiceGenerator gen = new ChoiceGenerator(pool.size(), k);
-            int[] choice;
-
-            while ((choice = gen.next()) != null) {
-                List<Node> parentSet = GraphUtils.asList(choice, pool);
-
-                int rank = estimateRank(parentSet, childSet, variables, s, sampleSize, alpha);
-
-                if (rank != 1) {
-                    continue;
-                }
-
-                double sigma1 = leadingSingularValue(parentSet, childSet, variables, s);
-
-                if (bestSet == null || parentSet.size() < bestSet.size()) {
-                    bestSet = new ArrayList<>(parentSet);
-                    bestLeadingSingularValue = sigma1;
-                } else if (parentSet.size() == bestSet.size() && sigma1 > bestLeadingSingularValue) {
-                    bestSet = new ArrayList<>(parentSet);
-                    bestLeadingSingularValue = sigma1;
-                }
-            }
-
-            // As soon as we find at least one rank-1 set of size k, stop.
-            if (bestSet != null) {
-                return bestSet;
-            }
-        }
-
-        return null;
     }
 
     private int estimateRank(List<Node> xSet,
@@ -751,18 +551,12 @@ public class TrekMimic2 extends AbstractBootstrapAlgorithm implements Algorithm,
             yIndices[i] = variables.indexOf(y.get(i));
         }
 
-        SimpleMatrix sub = new SimpleMatrix(xIndices.length, yIndices.length);
-
-        for (int i = 0; i < xIndices.length; i++) {
-            for (int j = 0; j < yIndices.length; j++) {
-                sub.set(i, j, s.get(xIndices[i], yIndices[j]));
-            }
-        }
+        SimpleMatrix sub = StatUtils.extractSubMatrix(s, xIndices, yIndices);
 
         var svd = sub.svd();
         SimpleMatrix w = svd.getW();
 
-        int d = Math.min(w.numRows(), w.numCols());
+        int d = Math.min(w.getNumRows(), w.getNumCols());
 
         if (d == 0) {
             return Double.NEGATIVE_INFINITY;
@@ -827,50 +621,6 @@ public class TrekMimic2 extends AbstractBootstrapAlgorithm implements Algorithm,
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
-    }
-
-    private List<Node> findBestRankOneSetAgainstAllChildren(List<Node> pool,
-                                                            List<Node> allChildren,
-                                                            List<Node> variables,
-                                                            SimpleMatrix s,
-                                                            int sampleSize,
-                                                            double alpha,
-                                                            int maxSubsetSize) {
-        List<Node> bestSet = null;
-        double bestStrength = Double.NEGATIVE_INFINITY;
-
-        int upper = Math.min(maxSubsetSize, pool.size());
-
-        for (int k = 1; k <= upper; k++) {
-            ChoiceGenerator gen = new ChoiceGenerator(pool.size(), k);
-            int[] choice;
-
-            while ((choice = gen.next()) != null) {
-                List<Node> candidateSet = GraphUtils.asList(choice, pool);
-
-                int rank = estimateRank(candidateSet, allChildren, variables, s, sampleSize, alpha);
-
-                if (rank != 1) {
-                    continue;
-                }
-
-                double strength = blockStrength(candidateSet, allChildren, variables, s);
-
-                if (bestSet == null || candidateSet.size() < bestSet.size()) {
-                    bestSet = new ArrayList<>(candidateSet);
-                    bestStrength = strength;
-                } else if (candidateSet.size() == bestSet.size() && strength > bestStrength) {
-                    bestSet = new ArrayList<>(candidateSet);
-                    bestStrength = strength;
-                }
-            }
-
-            if (bestSet != null) {
-                return bestSet;
-            }
-        }
-
-        return null;
     }
 }
 
