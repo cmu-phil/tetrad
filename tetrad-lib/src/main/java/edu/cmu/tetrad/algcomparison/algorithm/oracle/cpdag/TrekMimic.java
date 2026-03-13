@@ -405,26 +405,37 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
                                                         int sampleSize,
                                                         double alpha) {
         List<Node> pool = new ArrayList<>(initialPool);
-        List<List<Node>> groups = new ArrayList<>();
+        List<List<Node>> pairs = new ArrayList<>();
+        Set<Set<Node>> groups = new HashSet<>();
 
-        while (true) {
-            if (pool.size() < 2) {
-                break;
+        ChoiceGenerator gen = new ChoiceGenerator(pool.size(), 2);
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            List<Node> pair = GraphUtils.asList(choice, pool);
+            int rank = estimateRank(pair, allChildren, variables, s, sampleSize, alpha);
+
+            if (rank != 1) {
+                continue;
             }
 
-            Graph pairGraph = buildRankOnePairGraph(pool, allChildren, variables, s, sampleSize, alpha);
-            List<Node> seedPair = findBestRankOnePair(pool, allChildren, variables, s, sampleSize, alpha);
-
-            if (seedPair == null) {
-                break;
-            }
-
-            List<Node> group = growCliqueRankOneSet(seedPair, pool, pairGraph, allChildren, variables, s);
-            groups.add(group);
-            pool.removeAll(group);
+            pairs.add(pair);
         }
 
-        return groups;
+        Graph pairGraph = buildRankOnePairGraph(pool, allChildren, variables, s, sampleSize, alpha);
+
+        for (List<Node> seedPair : pairs) {
+            List<Node> group = growCliqueRankOneSet(seedPair, pool, pairGraph, allChildren, variables, s);
+            groups.add(new HashSet<>(group));
+        }
+
+        List<List<Node>> _groups = new ArrayList<>();
+
+        for (Set<Node> group : groups) {
+            _groups.add(new ArrayList<>(group));
+        }
+
+        return _groups;
     }
 
     private double blockStrength(List<Node> xSet,
