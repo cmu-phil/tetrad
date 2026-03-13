@@ -34,10 +34,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Tsc;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
-import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
-import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.*;
 import org.ejml.simple.SimpleMatrix;
 
@@ -81,19 +78,6 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
 
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
-        if (parameters.getInt(Params.TIME_LAG) > 0) {
-            if (!(dataModel instanceof DataSet dataSet)) {
-                throw new IllegalArgumentException("Expecting a data set for time lagging.");
-            }
-
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-            if (dataSet.getName() != null) {
-                timeSeries.setName(dataSet.getName());
-            }
-            dataModel = timeSeries;
-            knowledge = timeSeries.getKnowledge();
-        }
-
         DataSet data = (DataSet) dataModel;
         Tsc tsc = new Tsc(dataModel.getVariables(), new CovarianceMatrix(data));
         Map<Set<Integer>, Integer> clusters = tsc.findClusters();
@@ -113,40 +97,18 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
 
         ((BlocksIndTestTs) this.test).setBlockSpec(spec);
 
-        boolean allowBidirected = parameters.getBoolean(Params.ALLOW_BIDIRECTED);
-
-        edu.cmu.tetrad.search.Pc.ColliderOrientationStyle colliderOrientationStyle = switch (parameters.getInt(Params.COLLIDER_ORIENTATION_STYLE)) {
-            case 1 -> edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.SEPSETS;
-            case 2 -> edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.CONSERVATIVE;
-            case 3 -> edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.MAX_P;
-            default -> throw new IllegalArgumentException("Invalid collider orientation style");
-        };
+        edu.cmu.tetrad.search.Pc.ColliderOrientationStyle colliderOrientationStyle = edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.MAX_P;
 
         IndependenceTest test = this.test.getTest(dataModel, parameters);
+        test.setAlpha(parameters.getDouble(Params.ALPHA));
 
-        Graph graph;
-
-        test = new CachedIndependenceQueries(test);
         edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(test);
-        search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
-        search.setFasStable(parameters.getBoolean(Params.STABLE_FAS));
+        search.setFasStable(true);
         search.setColliderOrientationStyle(colliderOrientationStyle);
-        search.setAllowBidirected(allowBidirected ? edu.cmu.tetrad.search.Pc.AllowBidirected.ALLOW
-                : edu.cmu.tetrad.search.Pc.AllowBidirected.DISALLOW);
-
-        double fdrQ = parameters.getDouble(Params.FDR_Q);
-
-        if (fdrQ == 0.0) {
-            graph = search.search();
-        } else {
-            boolean negativelyCorrelated = true;
-            boolean verbose = parameters.getBoolean(Params.VERBOSE);
-            double alpha = parameters.getDouble(Params.ALPHA);
-            graph = IndTestFdrWrapper.doFdrLoop(search, negativelyCorrelated, alpha, fdrQ, verbose);
-        }
+        Graph graph = search.search();
 
         for (int i = 0; i < spec.blocks().size(); i++) {
             Node var = spec.blockVariables().get(i);
@@ -184,7 +146,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         SimpleMatrix s = new CorrelationMatrix(data).getMatrix().getSimpleMatrix();
 
         int sampleSize = data.getNumRows();
-        double alpha = 0.01;
+        double alpha = parameters.getDouble(Params.ALPHA);
 
         List<List<Node>> recoveredGroups =
                 recoverCliqueRankOneGroups(pool, allChildren, variables, s, sampleSize, alpha);
@@ -524,44 +486,6 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         return RankTests.estimateWilksRank(s, xIndices, yIndices, sampleSize, alpha);
     }
 
-    private double leadingSingularValue(List<Node> xSet,
-                                        List<Node> ySet,
-                                        List<Node> variables,
-                                        SimpleMatrix s) {
-        List<Node> x = new ArrayList<>(xSet);
-        List<Node> y = new ArrayList<>(ySet);
-
-        x.removeAll(y);
-
-        if (x.isEmpty() || y.isEmpty()) {
-            return Double.NEGATIVE_INFINITY;
-        }
-
-        int[] xIndices = new int[x.size()];
-        int[] yIndices = new int[y.size()];
-
-        for (int i = 0; i < x.size(); i++) {
-            xIndices[i] = variables.indexOf(x.get(i));
-        }
-
-        for (int i = 0; i < y.size(); i++) {
-            yIndices[i] = variables.indexOf(y.get(i));
-        }
-
-        SimpleMatrix sub = StatUtils.extractSubMatrix(s, xIndices, yIndices);
-
-        var svd = sub.svd();
-        SimpleMatrix w = svd.getW();
-
-        int d = Math.min(w.getNumRows(), w.getNumCols());
-
-        if (d == 0) {
-            return Double.NEGATIVE_INFINITY;
-        }
-
-        return w.get(0, 0);
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -593,13 +517,8 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.STABLE_FAS);
-        parameters.add(Params.COLLIDER_ORIENTATION_STYLE);
-        parameters.add(Params.ALLOW_BIDIRECTED);
+        parameters.add(Params.ALPHA);
         parameters.add(Params.DEPTH);
-        parameters.add(Params.FDR_Q);
-        parameters.add(Params.TIME_LAG);
-        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
         parameters.add(Params.VERBOSE);
         return parameters;
     }
