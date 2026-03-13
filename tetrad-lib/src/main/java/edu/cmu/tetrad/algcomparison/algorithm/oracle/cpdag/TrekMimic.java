@@ -34,6 +34,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Tsc;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
+import edu.cmu.tetrad.search.test.IndTestBlocksTs;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.*;
 import org.ejml.simple.SimpleMatrix;
@@ -54,7 +55,7 @@ import java.util.*;
 )
 @Bootstrapping
 public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
-        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
+        ReturnsBootstrapGraphs {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -80,6 +81,10 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
     protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         DataSet data = (DataSet) dataModel;
         Tsc tsc = new Tsc(dataModel.getVariables(), new CovarianceMatrix(data));
+        tsc.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+        tsc.setRmax(5);
+        tsc.setMinRedundancy(0);
+        tsc.setAlpha(parameters.getDouble(Params.ALPHA));
         Map<Set<Integer>, Integer> clusters = tsc.findClusters();
         List<List<Integer>> blocks = new ArrayList<>();
         List<Integer> ranks = new ArrayList<>();
@@ -101,6 +106,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
 
         IndependenceTest test = this.test.getTest(dataModel, parameters);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
+        ((IndTestBlocksTs) test).setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
 
         edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(test);
         search.setDepth(parameters.getInt(Params.DEPTH));
@@ -154,12 +160,12 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         Map<Node, List<Node>> assignment = assignParentGroupsToLatents(
                 recoveredGroups, spec.blockVariables(), childSets, variables, s, sampleSize, alpha);
 
-        for (Node node : assignment.keySet()) {
-            List<Node> parents = assignment.get(node);
+        for (Node latent : assignment.keySet()) {
+            List<Node> parents = assignment.get(latent);
 
-            graph.addNode(node);
+            graph.addNode(latent);
             for (Node parent : parents) {
-                graph.addDirectedEdge(parent, node);
+                graph.addDirectedEdge(parent, latent);
             }
         }
 
@@ -190,33 +196,37 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             childreny.removeIf(n -> n.getNodeType() == NodeType.LATENT);
 
             boolean allUncorrelatedxy = true;
+            boolean pairTestedxy = false;
 
             for (Node parentx : parentsx) {
                 for (Node childy : childreny) {
                     if (!uncorrelated(parentx, childy, variables, s, sampleSize, alpha)) {
                         allUncorrelatedxy = false;
                     }
+                    pairTestedxy = true;
                 }
             }
 
-            if (allUncorrelatedxy) {
-                graph.removeEdge(x, y);
+            if (allUncorrelatedxy && pairTestedxy) {
+                graph.removeEdge(edge);
                 graph.addDirectedEdge(y, x);
                 continue;
             }
 
             boolean allUncorrelatedyx = true;
+            boolean pairTestedyx = false;
 
             for (Node parenty : parentsy) {
                 for (Node childx : childrenx) {
                     if (!uncorrelated(parenty, childx, variables, s, sampleSize, alpha)) {
                         allUncorrelatedyx = false;
                     }
+                    pairTestedyx = true;
                 }
             }
 
-            if (allUncorrelatedyx) {
-                graph.removeEdge(y, x);
+            if (allUncorrelatedyx && pairTestedyx) {
+                graph.removeEdge(edge);
                 graph.addDirectedEdge(x, y);
             }
         }
@@ -414,10 +424,6 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             pool.removeAll(group);
         }
 
-        if (!pool.isEmpty()) {
-            System.out.println("Leftover variables: " + pool);
-        }
-
         return groups;
     }
 
@@ -519,6 +525,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.DEPTH);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.VERBOSE);
         return parameters;
     }
