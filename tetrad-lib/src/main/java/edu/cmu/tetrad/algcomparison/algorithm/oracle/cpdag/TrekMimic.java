@@ -34,7 +34,6 @@ import edu.cmu.tetrad.search.Tsc;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
 import edu.cmu.tetrad.search.test.IndTestBlocksTs;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.*;
 import org.ejml.simple.SimpleMatrix;
@@ -66,9 +65,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
     /**
      * The independence test to use.
      */
-    private IndependenceWrapper test;
-
-    private IndTestFisherZ fisherZ;
+    private final IndependenceWrapper test;
 
     /**
      * The knowledge.
@@ -109,8 +106,6 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         BlockSpec spec = BlocksUtil.toSpec(blocks, ranks, data);
 
         ((BlocksIndTestTs) this.test).setBlockSpec(spec);
-
-        this.fisherZ = new IndTestFisherZ(data, 0.01);
 
         edu.cmu.tetrad.search.Pc.ColliderOrientationStyle colliderOrientationStyle = edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.MAX_P;
 
@@ -320,7 +315,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
                     unused.remove(newParent);
                 }
 
-                removeExplainedLatentEdges(graph, latentSubset, newParents, fisherZ);
+                removeExplainedLatentEdges(graph, latentSubset, newParents, variables, s, sampleSize, alpha);
             }
         }
     }
@@ -328,7 +323,8 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
     private void removeExplainedLatentEdges(Graph graph,
                                             List<Node> latentSubset,
                                             List<Node> newParents,
-                                            IndTestFisherZ test) {
+                                            List<Node> variables, SimpleMatrix s,
+                                            int sampleSize, double alpha) {
         if (newParents.isEmpty()) {
             return;
         }
@@ -354,19 +350,12 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
                 }
             }
 
-            boolean indep = true;
+            int rank = estimateRankConditioned(getObservedChildren(graph, x), getObservedChildren(graph, y),
+                    newParents,
+                    variables,
+                    s, sampleSize, alpha);
 
-            for (Node n1 : getObservedChildren(graph, edge.getNode1())) {
-                for (Node n2 : getObservedChildren(graph, edge.getNode2())) {
-                    if (!test.checkIndependence(n1, n2, new HashSet<>(newParents)).isIndependent()) {
-                        indep = false;
-                        break;
-                    }
-                }
-            }
-
-
-            if (explained && indep) {
+            if (explained && rank == 0) {
                 graph.removeEdge(edge);
             }
         }
@@ -739,6 +728,41 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         }
 
         return RankTests.estimateWilksRank(s, xIndices, yIndices, sampleSize, alpha);
+    }
+
+    private int estimateRankConditioned(List<Node> xSet,
+                                        List<Node> ySet,
+                                        List<Node> cond,
+                                        List<Node> variables,
+                                        SimpleMatrix s,
+                                        int sampleSize,
+                                        double alpha) {
+        List<Node> x = new ArrayList<>(xSet);
+        List<Node> y = new ArrayList<>(ySet);
+
+        x.removeAll(y);
+
+        if (x.isEmpty() || y.isEmpty()) {
+            return Integer.MAX_VALUE;
+        }
+
+        int[] xIndices = new int[x.size()];
+        int[] yIndices = new int[y.size()];
+        int[] condIndices = new int[cond.size()];
+
+        for (int i = 0; i < x.size(); i++) {
+            xIndices[i] = variables.indexOf(x.get(i));
+        }
+
+        for (int i = 0; i < y.size(); i++) {
+            yIndices[i] = variables.indexOf(y.get(i));
+        }
+
+        for (int i = 0; i < cond.size(); i++) {
+            condIndices[i] = variables.indexOf(cond.get(i));
+        }
+
+        return RankTests.estimateWilksRankConditioned(s, xIndices, yIndices, condIndices, sampleSize, alpha);
     }
 
     /**
