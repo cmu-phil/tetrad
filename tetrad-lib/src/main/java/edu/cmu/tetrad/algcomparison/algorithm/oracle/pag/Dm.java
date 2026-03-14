@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
@@ -36,9 +36,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -118,24 +116,13 @@ public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,
         }
 
         IndependenceTest test = this.test.getTest(dataModel, parameters);
-        Score _score = this.score.getScore(dataModel, parameters);
+//        Score _score = this.score.getScore(dataModel, parameters);
 
-        edu.cmu.tetrad.search.DmPcRobust search = new edu.cmu.tetrad.search.DmPcRobust(test, knowledge);
+        edu.cmu.tetrad.search.DmPc search = new edu.cmu.tetrad.search.DmPc(test);
+        search.setKnowledge(knowledge);
 //        edu.cmu.tetrad.search.DmBossRobust search = new edu.cmu.tetrad.search.DmBossRobust(_score, knowledge);
 
-        Graph graph;
-        double fdrQ = parameters.getDouble(Params.FDR_Q);
-//
-//        if (fdrQ == 0.0) {
-            graph = search.search();
-//        } else {
-//            boolean negativelyCorrelated = true;
-//            boolean verbose = parameters.getBoolean(Params.VERBOSE);
-//            double alpha = parameters.getDouble(Params.ALPHA);
-//            graph = IndTestFdrWrapper.doFdrLoop(search, negativelyCorrelated, alpha, fdrQ, verbose);
-//        }
-
-        return graph;
+        return search.search();
     }
 
     /**
