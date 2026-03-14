@@ -23,7 +23,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
-import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.BlocksIndTestTs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -43,10 +42,13 @@ import java.io.Serial;
 import java.util.*;
 
 /**
- * Peter/Clark algorithm (PC).
+ * The TrekMimic class implements methods for performing advanced graph-based search algorithms
+ * using statistical and structural approaches. This class is an extension of various abstract
+ * and utility classes, combining functionalities to manipulate, recover, and analyze latent
+ * structures in a given data model. It includes methodologies to discover latent variables,
+ * assess relationships, and estimate statistical properties from data.
  *
  * @author josephramsey
- * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "TrekMimic",
@@ -71,7 +73,10 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * <p>Constructor for Pc.</p>
+     * Constructs a new instance of the TrekMimic class. This constructor initializes the
+     * critical independence test mechanism required for the algorithm's operation.
+     * Specifically, it instantiates a BlocksIndTestTs object and assigns it to the internal
+     * test field, which is used for performing independence tests based on "Blocks-Test-TS".
      */
     public TrekMimic() {
         this.test = new BlocksIndTestTs();
@@ -134,16 +139,8 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             }
         }
 
-        List<List<Node>> childSets = new ArrayList<>();
-        Set<Node> _allChildren = new HashSet<>();
-
-        for (Node node : spec.blockVariables()) {
-            List<Node> children = graph.getChildren(node);
-            childSets.add(children);
-            _allChildren.addAll(children);
-        }
-
-        List<Node> allChildren = new ArrayList<>(_allChildren);
+        List<Node> latentNodes = new ArrayList<>(spec.blockVariables());
+        List<Node> allChildren = getObservedChildrenUnion(graph, latentNodes);
 
         List<Node> pool = new ArrayList<>(data.getVariables());
         pool.removeAll(allChildren);
@@ -158,7 +155,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
                 recoverCliqueRankOneGroups(pool, allChildren, variables, s, sampleSize, alpha);
 
         Map<Node, List<Node>> assignment = assignParentGroupsToLatents(
-                recoveredGroups, spec.blockVariables(), childSets, variables, s, sampleSize, alpha);
+                recoveredGroups, latentNodes, graph, variables, s, sampleSize, alpha);
 
         for (Node latent : assignment.keySet()) {
             List<Node> parents = assignment.get(latent);
@@ -168,6 +165,14 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
                 graph.addDirectedEdge(parent, latent);
             }
         }
+
+        // Experimental higher-rank expansion stage.
+        // You can expose this as a parameter later if you want.
+        int maxLatentSubsetSize = Math.min(3, latentNodes.size());
+
+        expandHigherRankParentSets(
+                graph, latentNodes, pool, variables, s, sampleSize, alpha, maxLatentSubsetSize
+        );
 
         Graph structureGraph = new EdgeListGraph(spec.blockVariables());
 
@@ -186,14 +191,11 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             List<Node> parentsx = graph.getParents(x);
             List<Node> parentsy = graph.getParents(y);
 
-            List<Node> childrenx = graph.getChildren(x);
-            List<Node> childreny = graph.getChildren(y);
+            List<Node> childrenx = getObservedChildren(graph, x);
+            List<Node> childreny = getObservedChildren(graph, y);
 
             parentsx.removeIf(n -> n.getNodeType() == NodeType.LATENT);
             parentsy.removeIf(n -> n.getNodeType() == NodeType.LATENT);
-
-            childrenx.removeIf(n -> n.getNodeType() == NodeType.LATENT);
-            childreny.removeIf(n -> n.getNodeType() == NodeType.LATENT);
 
             boolean allUncorrelatedxy = true;
             boolean pairTestedxy = false;
@@ -234,6 +236,151 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         return graph;
     }
 
+    private List<Node> getObservedParentsUnion(Graph graph, Collection<Node> latents) {
+        LinkedHashSet<Node> parents = new LinkedHashSet<>();
+
+        for (Node latent : latents) {
+            for (Node parent : graph.getParents(latent)) {
+                if (parent.getNodeType() != NodeType.LATENT) {
+                    parents.add(parent);
+                }
+            }
+        }
+
+        return new ArrayList<>(parents);
+    }
+
+    private List<Node> getObservedParents(Graph graph, Node latent) {
+        return getObservedParentsUnion(graph, Collections.singletonList(latent));
+    }
+
+    private List<List<Node>> getLatentSubsets(List<Node> latentNodes, int subsetSize) {
+        List<List<Node>> subsets = new ArrayList<>();
+
+        if (subsetSize < 1 || subsetSize > latentNodes.size()) {
+            return subsets;
+        }
+
+        ChoiceGenerator gen = new ChoiceGenerator(latentNodes.size(), subsetSize);
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            subsets.add(GraphUtils.asList(choice, latentNodes));
+        }
+
+        return subsets;
+    }
+
+    private void expandHigherRankParentSets(Graph graph,
+                                            List<Node> latentNodes,
+                                            List<Node> initialPool,
+                                            List<Node> variables,
+                                            SimpleMatrix s,
+                                            int sampleSize,
+                                            double alpha,
+                                            int maxLatentSubsetSize) {
+        LinkedHashSet<Node> unused = new LinkedHashSet<>(initialPool);
+
+        // Remove any variables already used as observed parents of any latent
+        unused.removeAll(getObservedParentsUnion(graph, latentNodes));
+
+        int maxSize = Math.min(maxLatentSubsetSize, latentNodes.size());
+
+        for (int subsetSize = 2; subsetSize <= maxSize; subsetSize++) {
+            List<List<Node>> latentSubsets = getLatentSubsets(latentNodes, subsetSize);
+
+            for (List<Node> latentSubset : latentSubsets) {
+                List<Node> newParents = expandParentSetForLatentSubset(
+                        graph, latentSubset, unused, variables, s, sampleSize, alpha
+                );
+
+                if (newParents.isEmpty()) {
+                    continue;
+                }
+
+                for (Node newParent : newParents) {
+                    for (Node latent : latentSubset) {
+                        if (!graph.isParentOf(newParent, latent)) {
+                            graph.addDirectedEdge(newParent, latent);
+                        }
+                    }
+                    unused.remove(newParent);
+                }
+            }
+        }
+    }
+
+    private List<Node> expandParentSetForLatentSubset(Graph graph,
+                                                      List<Node> latentSubset,
+                                                      Set<Node> unused,
+                                                      List<Node> variables,
+                                                      SimpleMatrix s,
+                                                      int sampleSize,
+                                                      double alpha) {
+        int targetRank = latentSubset.size();
+
+        List<Node> childSet = getObservedChildrenUnion(graph, latentSubset);
+        LinkedHashSet<Node> currentParents = new LinkedHashSet<>(getObservedParentsUnion(graph, latentSubset));
+        List<Node> newlyAdded = new ArrayList<>();
+
+        boolean changed = true;
+
+        while (changed) {
+            changed = false;
+
+            Node bestAdd = null;
+            double bestStrength = Double.NEGATIVE_INFINITY;
+
+            for (Node candidate : unused) {
+                if (currentParents.contains(candidate)) {
+                    continue;
+                }
+
+                List<Node> proposed = new ArrayList<>(currentParents);
+                proposed.add(candidate);
+
+                int rank = estimateRank(proposed, childSet, variables, s, sampleSize, alpha);
+
+                if (rank != targetRank) {
+                    continue;
+                }
+
+                double strength = blockStrength(proposed, childSet, variables, s);
+
+                if (strength > bestStrength) {
+                    bestStrength = strength;
+                    bestAdd = candidate;
+                }
+            }
+
+            if (bestAdd != null) {
+                currentParents.add(bestAdd);
+                newlyAdded.add(bestAdd);
+                changed = true;
+            }
+        }
+
+        return newlyAdded;
+    }
+
+    private List<Node> getObservedChildrenUnion(Graph graph, Collection<Node> latents) {
+        LinkedHashSet<Node> children = new LinkedHashSet<>();
+
+        for (Node latent : latents) {
+            for (Node child : graph.getChildren(latent)) {
+                if (child.getNodeType() != NodeType.LATENT) {
+                    children.add(child);
+                }
+            }
+        }
+
+        return new ArrayList<>(children);
+    }
+
+    private List<Node> getObservedChildren(Graph graph, Node latent) {
+        return getObservedChildrenUnion(graph, Collections.singletonList(latent));
+    }
+
     private boolean uncorrelated(Node a, Node b, List<Node> variables, SimpleMatrix s, int sampleSize, double alpha) {
         int i = variables.indexOf(a);
         int j = variables.indexOf(b);
@@ -252,7 +399,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
 
     private Map<Node, List<Node>> assignParentGroupsToLatents(List<List<Node>> recoveredGroups,
                                                               List<Node> latentNodes,
-                                                              List<List<Node>> childSets,
+                                                              Graph graph,
                                                               List<Node> variables,
                                                               SimpleMatrix s,
                                                               int sampleSize,
@@ -263,9 +410,8 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             Node bestLatent = null;
             double bestScore = Double.NEGATIVE_INFINITY;
 
-            for (int j = 0; j < latentNodes.size(); j++) {
-                Node latent = latentNodes.get(j);
-                List<Node> childSet = childSets.get(j);
+            for (Node latent : latentNodes) {
+                List<Node> childSet = getObservedChildren(graph, latent);
 
                 int rank = estimateRank(group, childSet, variables, s, sampleSize, alpha);
 
@@ -313,44 +459,14 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         return pairGraph;
     }
 
-    private List<Node> findBestRankOnePair(List<Node> pool,
-                                           List<Node> allChildren,
-                                           List<Node> variables,
-                                           SimpleMatrix s,
-                                           int sampleSize,
-                                           double alpha) {
-        ChoiceGenerator gen = new ChoiceGenerator(pool.size(), 2);
-        int[] choice;
-
-        List<Node> bestPair = null;
-        double bestStrength = Double.NEGATIVE_INFINITY;
-
-        while ((choice = gen.next()) != null) {
-            List<Node> pair = GraphUtils.asList(choice, pool);
-
-            int rank = estimateRank(pair, allChildren, variables, s, sampleSize, alpha);
-
-            if (rank != 1) {
-                continue;
-            }
-
-            double strength = blockStrength(pair, allChildren, variables, s);
-
-            if (strength > bestStrength) {
-                bestStrength = strength;
-                bestPair = new ArrayList<>(pair);
-            }
-        }
-
-        return bestPair;
-    }
-
     private List<Node> growCliqueRankOneSet(List<Node> seedPair,
                                             List<Node> pool,
                                             Graph pairGraph,
                                             List<Node> allChildren,
                                             List<Node> variables,
-                                            SimpleMatrix s) {
+                                            SimpleMatrix s,
+                                            int sampleSize,
+                                            double alpha) {
         LinkedHashSet<Node> current = new LinkedHashSet<>(seedPair);
         LinkedHashSet<Node> remaining = new LinkedHashSet<>(pool);
         remaining.removeAll(current);
@@ -379,6 +495,11 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
 
                 List<Node> proposed = new ArrayList<>(current);
                 proposed.add(candidate);
+
+                int rank = estimateRank(proposed, allChildren, variables, s, sampleSize, alpha);
+                if (rank != 1) {
+                    continue;
+                }
 
                 double strength = blockStrength(proposed, allChildren, variables, s);
 
@@ -425,7 +546,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         Graph pairGraph = buildRankOnePairGraph(pool, allChildren, variables, s, sampleSize, alpha);
 
         for (List<Node> seedPair : pairs) {
-            List<Node> group = growCliqueRankOneSet(seedPair, pool, pairGraph, allChildren, variables, s);
+            List<Node> group = growCliqueRankOneSet(seedPair, pool, pairGraph, allChildren, variables, s, sampleSize, alpha);
             groups.add(new HashSet<>(group));
         }
 
@@ -472,6 +593,26 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         }
 
         return Math.sqrt(sumSquares);
+    }
+
+    private double blockStrengthToLatents(List<Node> group,
+                                          Graph graph,
+                                          Collection<Node> latents,
+                                          List<Node> variables,
+                                          SimpleMatrix s) {
+        List<Node> childSet = getObservedChildrenUnion(graph, latents);
+        return blockStrength(group, childSet, variables, s);
+    }
+
+    private int estimateRankToLatents(List<Node> group,
+                                      Graph graph,
+                                      Collection<Node> latents,
+                                      List<Node> variables,
+                                      SimpleMatrix s,
+                                      int sampleSize,
+                                      double alpha) {
+        List<Node> childSet = getObservedChildrenUnion(graph, latents);
+        return estimateRank(group, childSet, variables, s, sampleSize, alpha);
     }
 
     private int estimateRank(List<Node> xSet,
