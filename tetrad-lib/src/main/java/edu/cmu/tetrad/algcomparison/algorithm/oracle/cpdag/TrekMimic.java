@@ -34,6 +34,7 @@ import edu.cmu.tetrad.search.Tsc;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
 import edu.cmu.tetrad.search.test.IndTestBlocksTs;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.*;
 import org.ejml.simple.SimpleMatrix;
@@ -65,7 +66,9 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
     /**
      * The independence test to use.
      */
-    private final IndependenceWrapper test;
+    private IndependenceWrapper test;
+
+    private IndTestFisherZ fisherZ;
 
     /**
      * The knowledge.
@@ -87,7 +90,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         DataSet data = (DataSet) dataModel;
         Tsc tsc = new Tsc(dataModel.getVariables(), new CovarianceMatrix(data));
         tsc.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
-        tsc.setRmax(5);
+        tsc.setRmax(3);
         tsc.setMinRedundancy(0);
         tsc.setAlpha(parameters.getDouble(Params.ALPHA));
         Map<Set<Integer>, Integer> clusters = tsc.findClusters();
@@ -106,6 +109,8 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         BlockSpec spec = BlocksUtil.toSpec(blocks, ranks, data);
 
         ((BlocksIndTestTs) this.test).setBlockSpec(spec);
+
+        this.fisherZ = new IndTestFisherZ(data, 0.01);
 
         edu.cmu.tetrad.search.Pc.ColliderOrientationStyle colliderOrientationStyle = edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.MAX_P;
 
@@ -279,6 +284,12 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
                                             int sampleSize,
                                             double alpha,
                                             int maxLatentSubsetSize) {
+        int currentRank = estimateRank(new ArrayList<>(getObservedParentsUnion(graph, latentNodes)),
+                getObservedChildrenUnion(graph, latentNodes), variables, s, sampleSize, alpha);
+
+
+        System.out.println("Expanding higher rank parent sets for latent nodes: " + latentNodes + " current rank = " + currentRank);
+
         LinkedHashSet<Node> unused = new LinkedHashSet<>(initialPool);
 
         // Remove any variables already used as observed parents of any latent
@@ -290,8 +301,10 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             List<List<Node>> latentSubsets = getLatentSubsets(latentNodes, subsetSize);
 
             for (List<Node> latentSubset : latentSubsets) {
+                System.out.println("Expanding latent subset: " + latentSubset);
+
                 List<Node> newParents = expandParentSetForLatentSubset(
-                        graph, latentSubset, unused, variables, s, sampleSize, alpha
+                        graph, latentSubset, currentRank, unused, variables, s, sampleSize, alpha
                 );
 
                 if (newParents.isEmpty()) {
@@ -306,12 +319,62 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
                     }
                     unused.remove(newParent);
                 }
+
+                removeExplainedLatentEdges(graph, latentSubset, newParents, fisherZ);
+            }
+        }
+    }
+
+    private void removeExplainedLatentEdges(Graph graph,
+                                            List<Node> latentSubset,
+                                            List<Node> newParents,
+                                            IndTestFisherZ test) {
+        if (newParents.isEmpty()) {
+            return;
+        }
+
+        ChoiceGenerator gen = new ChoiceGenerator(latentSubset.size(), 2);
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            Node x = latentSubset.get(choice[0]);
+            Node y = latentSubset.get(choice[1]);
+
+            Edge edge = graph.getEdge(x, y);
+            if (edge == null) {
+                continue;
+            }
+
+            boolean explained = false;
+
+            for (Node parent : newParents) {
+                if (graph.isParentOf(parent, x) && graph.isParentOf(parent, y)) {
+                    explained = true;
+                    break;
+                }
+            }
+
+            boolean indep = true;
+
+            for (Node n1 : getObservedChildren(graph, edge.getNode1())) {
+                for (Node n2 : getObservedChildren(graph, edge.getNode2())) {
+                    if (!test.checkIndependence(n1, n2, new HashSet<>(newParents)).isIndependent()) {
+                        indep = false;
+                        break;
+                    }
+                }
+            }
+
+
+            if (explained && indep) {
+                graph.removeEdge(edge);
             }
         }
     }
 
     private List<Node> expandParentSetForLatentSubset(Graph graph,
                                                       List<Node> latentSubset,
+                                                      int currentRank,
                                                       Set<Node> unused,
                                                       List<Node> variables,
                                                       SimpleMatrix s,
@@ -323,6 +386,14 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         LinkedHashSet<Node> currentParents = new LinkedHashSet<>(getObservedParentsUnion(graph, latentSubset));
         List<Node> newlyAdded = new ArrayList<>();
 
+        System.out.println("Coming expandParentSetForLatentSubset " + latentSubset + " with current rank " + currentRank
+                + " target rank " + targetRank + " currentParents = " + currentParents + " childSet = " + childSet);
+
+        if (currentRank >= targetRank) {
+            System.out.println("Already at or above target rank; returning empty.");
+            return newlyAdded;
+        }
+
         boolean changed = true;
 
         while (changed) {
@@ -330,6 +401,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
 
             Node bestAdd = null;
             double bestStrength = Double.NEGATIVE_INFINITY;
+            int bestRank = -1;
 
             for (Node candidate : unused) {
                 if (currentParents.contains(candidate)) {
@@ -339,15 +411,27 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
                 List<Node> proposed = new ArrayList<>(currentParents);
                 proposed.add(candidate);
 
-                int rank = estimateRank(proposed, childSet, variables, s, sampleSize, alpha);
+                int proposedRank = estimateRank(proposed, childSet, variables, s, sampleSize, alpha);
 
-                if (rank != targetRank) {
-                    continue;
+                // Before reaching target rank, require a STRICT rank increase,
+                // but do not allow overshooting target rank.
+                if (currentRank < targetRank) {
+                    if (proposedRank <= currentRank || proposedRank > targetRank) {
+                        continue;
+                    }
+                } else {
+                    // Once at target rank, only allow additions that preserve exact target rank.
+                    if (proposedRank != targetRank) {
+                        continue;
+                    }
                 }
 
                 double strength = blockStrength(proposed, childSet, variables, s);
 
-                if (strength > bestStrength) {
+                // Prefer higher proposed rank first, then stronger block strength.
+                if (proposedRank > bestRank ||
+                        (proposedRank == bestRank && strength > bestStrength)) {
+                    bestRank = proposedRank;
                     bestStrength = strength;
                     bestAdd = candidate;
                 }
@@ -356,10 +440,20 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             if (bestAdd != null) {
                 currentParents.add(bestAdd);
                 newlyAdded.add(bestAdd);
+                currentRank = estimateRank(new ArrayList<>(currentParents), childSet, variables, s, sampleSize, alpha);
                 changed = true;
+
+                System.out.println("Added " + bestAdd + ", currentParents = " + currentParents +
+                        ", currentRank = " + currentRank);
             }
         }
 
+        if (currentRank != targetRank) {
+            System.out.println("Did not reach target rank; discarding additions.");
+            return new ArrayList<>();
+        }
+
+        System.out.println("Reached target rank; returning newlyAdded = " + newlyAdded);
         return newlyAdded;
     }
 
@@ -536,11 +630,14 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             List<Node> pair = GraphUtils.asList(choice, pool);
             int rank = estimateRank(pair, allChildren, variables, s, sampleSize, alpha);
 
+            System.out.println("Evaluating pair " + pair + " with rank " + rank);
+
             if (rank != 1) {
                 continue;
             }
 
             pairs.add(pair);
+            System.out.println("Added pair " + pair);
         }
 
         Graph pairGraph = buildRankOnePairGraph(pool, allChildren, variables, s, sampleSize, alpha);
