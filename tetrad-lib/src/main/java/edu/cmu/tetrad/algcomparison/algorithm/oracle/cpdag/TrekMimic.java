@@ -73,6 +73,34 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
     private Knowledge knowledge = new Knowledge();
 
     /**
+     * Represents a candidate higher-rank parent group together with the latent subset
+     * from which it was originally generated.
+     */
+    private static final class HigherRankCandidate {
+        private final List<Node> group;
+        private final List<Node> latentSubset;
+        private final int rank;
+
+        private HigherRankCandidate(List<Node> group, List<Node> latentSubset, int rank) {
+            this.group = new ArrayList<>(group);
+            this.latentSubset = new ArrayList<>(latentSubset);
+            this.rank = rank;
+        }
+
+        public List<Node> getGroup() {
+            return new ArrayList<>(this.group);
+        }
+
+        public List<Node> getLatentSubset() {
+            return new ArrayList<>(this.latentSubset);
+        }
+
+        public int getRank() {
+            return this.rank;
+        }
+    }
+
+    /**
      * Constructs a new instance of the TrekMimic class. This constructor initializes the
      * critical independence test mechanism required for the algorithm's operation.
      * Specifically, it instantiates a BlocksIndTestTs object and assigns it to the internal
@@ -139,8 +167,8 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             }
         }
 
-        List<Node> latentNodes = new ArrayList<>(spec.blockVariables());
-        List<Node> allChildren = getObservedChildrenUnion(graph, latentNodes);
+        List<Node> allLatentNodes = new ArrayList<>(spec.blockVariables());
+        List<Node> allChildren = getObservedChildrenUnion(graph, allLatentNodes);
 
         List<Node> pool = new ArrayList<>(data.getVariables());
         pool.removeAll(allChildren);
@@ -155,7 +183,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
                 recoverCliqueRankOneGroups(pool, allChildren, variables, s, sampleSize, alpha);
 
         Map<Node, List<Node>> assignment = assignParentGroupsToLatents(
-                recoveredGroups, latentNodes, graph, variables, s, sampleSize, alpha);
+                recoveredGroups, allLatentNodes, graph, variables, s, sampleSize, alpha);
 
         for (Node latent : assignment.keySet()) {
             List<Node> parents = assignment.get(latent);
@@ -168,10 +196,10 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
 
         // Experimental higher-rank expansion stage.
         // You can expose this as a parameter later if you want.
-        int maxLatentSubsetSize = Math.min(3, latentNodes.size());
+        int maxLatentSubsetSize = Math.min(3, allLatentNodes.size());
 
         expandHigherRankParentSets(
-                graph, latentNodes, pool, variables, s, sampleSize, alpha, maxLatentSubsetSize
+                graph, allLatentNodes, pool, variables, s, sampleSize, alpha, maxLatentSubsetSize
         );
 
         Graph structureGraph = new EdgeListGraph(spec.blockVariables());
@@ -254,7 +282,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         return getObservedParentsUnion(graph, Collections.singletonList(latent));
     }
 
-    private List<List<Node>> getLatentSubsets(List<Node> latentNodes, int subsetSize) {
+    private List<List<Node>> allLatentSubsetsOfSize(List<Node> latentNodes, int subsetSize) {
         List<List<Node>> subsets = new ArrayList<>();
 
         if (subsetSize < 1 || subsetSize > latentNodes.size()) {
@@ -268,56 +296,180 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             subsets.add(GraphUtils.asList(choice, latentNodes));
         }
 
+        System.out.println("All Latent subsets: " + subsets);
+
         return subsets;
     }
 
     private void expandHigherRankParentSets(Graph graph,
-                                            List<Node> latentNodes,
+                                            List<Node> allLatentNodes,
                                             List<Node> initialPool,
                                             List<Node> variables,
                                             SimpleMatrix s,
                                             int sampleSize,
                                             double alpha,
                                             int maxLatentSubsetSize) {
-        int currentRank = estimateRank(new ArrayList<>(getObservedParentsUnion(graph, latentNodes)),
-                getObservedChildrenUnion(graph, latentNodes), variables, s, sampleSize, alpha);
+        int currentRank = estimateRank(new ArrayList<>(getObservedParentsUnion(graph, allLatentNodes)),
+                getObservedChildrenUnion(graph, allLatentNodes), variables, s, sampleSize, alpha);
 
-
-        System.out.println("Expanding higher rank parent sets for latent nodes: " + latentNodes + " current rank = " + currentRank);
+        System.out.println("Expanding higher rank parent sets for latent nodes: " + allLatentNodes
+                + " current rank = " + currentRank);
 
         LinkedHashSet<Node> unused = new LinkedHashSet<>(initialPool);
 
-        // Remove any variables already used as observed parents of any latent
-        unused.removeAll(getObservedParentsUnion(graph, latentNodes));
+        // Remove any variables already used as observed parents of any latent.
+        getObservedParentsUnion(graph, allLatentNodes).forEach(unused::remove);
 
-        int maxSize = Math.min(maxLatentSubsetSize, latentNodes.size());
+        int maxSize = Math.min(maxLatentSubsetSize, allLatentNodes.size());
 
         for (int subsetSize = 2; subsetSize <= maxSize; subsetSize++) {
-            List<List<Node>> latentSubsets = getLatentSubsets(latentNodes, subsetSize);
+            List<List<Node>> allLatentSubsetsOfSize = allLatentSubsetsOfSize(allLatentNodes, subsetSize);
+            List<HigherRankCandidate> candidates = new ArrayList<>();
 
-            for (List<Node> latentSubset : latentSubsets) {
-                System.out.println("Expanding latent subset: " + latentSubset);
+            // Step 1: generate candidate groups for this rank.
+            for (List<Node> latentSubset : allLatentSubsetsOfSize) {
+                System.out.println("Generating candidate for latent subset: " + latentSubset);
+
+                int _currentRank = estimateRank(new ArrayList<>(getObservedParentsUnion(graph, latentSubset)),
+                        getObservedChildrenUnion(graph, allLatentNodes), variables, s, sampleSize, alpha);
+
+                System.out.println("Expanding higher rank parent sets for latent nodes: " + latentSubset
+                        + " current rank = " + _currentRank);
 
                 List<Node> newParents = expandParentSetForLatentSubset(
-                        graph, latentSubset, currentRank, unused, variables, s, sampleSize, alpha
+                        graph, latentSubset, _currentRank, unused, variables, s, sampleSize, alpha
                 );
 
                 if (newParents.isEmpty()) {
                     continue;
                 }
 
-                for (Node newParent : newParents) {
-                    for (Node latent : latentSubset) {
-                        if (!graph.isParentOf(newParent, latent)) {
-                            graph.addDirectedEdge(newParent, latent);
-                        }
-                    }
-                    unused.remove(newParent);
+                candidates.add(new HigherRankCandidate(newParents, latentSubset, subsetSize));
+            }
+
+            for (HigherRankCandidate candidate : candidates) {
+                System.out.println();
+                System.out.println("Candidate: " + candidate);
+                System.out.println("Candidate group: " + candidate.getGroup());
+                System.out.println("Candidate latent subset: " + candidate.getLatentSubset());
+                System.out.println("Candidate latent subset size: " + candidate.getLatentSubset().size());
+                System.out.println("Candidate rank: " + candidate.getRank());
+                System.out.println();
+            }
+
+            // Group candidates by canonicalized parent group.
+            Map<String, List<HigherRankCandidate>> candidateMap = new LinkedHashMap<>();
+            Map<String, List<Node>> keyToGroup = new LinkedHashMap<>();
+
+            for (HigherRankCandidate candidate : candidates) {
+                List<Node> group = new ArrayList<>(candidate.getGroup());
+                group.sort(Comparator.comparingInt(variables::indexOf));
+
+                String key = canonicalNodeListKey(group);
+
+                candidateMap.computeIfAbsent(key, k -> new ArrayList<>()).add(candidate);
+                keyToGroup.putIfAbsent(key, group);
+            }
+
+            // Step 2: assign each distinct group once, considering only the latent subsets
+            // that originally generated that group.
+            for (String key : candidateMap.keySet()) {
+                List<Node> group = keyToGroup.get(key);
+                List<List<Node>> candidateLatentSubsets = new ArrayList<>();
+
+                for (HigherRankCandidate candidate : candidateMap.get(key)) {
+                    candidateLatentSubsets.add(candidate.getLatentSubset());
                 }
 
-                removeExplainedLatentEdges(graph, latentSubset, newParents, variables, s, sampleSize, alpha);
+                System.out.println("For group " + group + ", candidate latent subsets: " + candidateLatentSubsets);
+
+                List<Node> bestSubset = assignHigherRankGroupToBestLatentSubset(
+                        group, candidateLatentSubsets, graph, variables, s, sampleSize, alpha
+                );
+
+                if (bestSubset == null) {
+                    continue;
+                }
+
+                System.out.println("Assigning higher-rank group " + group + " to latent subset " + bestSubset);
+
+                for (Node parent : group) {
+                    for (Node latent : bestSubset) {
+                        if (!graph.isParentOf(parent, latent)) {
+                            graph.addDirectedEdge(parent, latent);
+                        }
+                    }
+                    unused.remove(parent);
+                }
+
+                removeExplainedLatentEdges(graph, bestSubset, group, variables, s, sampleSize, alpha);
+            }
+
+            // Recompute the stage rank after successful additions at this size.
+            currentRank = estimateRank(new ArrayList<>(getObservedParentsUnion(graph, allLatentNodes)),
+                    getObservedChildrenUnion(graph, allLatentNodes), variables, s, sampleSize, alpha);
+
+            System.out.println("After subset size " + subsetSize + ", updated current rank = " + currentRank);
+        }
+    }
+
+    private List<Node> assignHigherRankGroupToBestLatentSubset(List<Node> group,
+                                                               List<List<Node>> latentSubsets,
+                                                               Graph graph,
+                                                               List<Node> variables,
+                                                               SimpleMatrix s,
+                                                               int sampleSize,
+                                                               double alpha) {
+
+        System.out.println("B: Assigning higher-rank group " + group + " to best latent subset");
+        System.out.println("B: Latent subsets: " + latentSubsets);
+
+        List<Node> bestSubset = null;
+        double bestScore = Double.NEGATIVE_INFINITY;
+        int targetRank = -1;
+
+        for (List<Node> latentSubset : latentSubsets) {
+            int r = latentSubset.size();
+
+            List<Node> childSet = getObservedChildrenUnion(graph, latentSubset);
+            List<Node> existingParents = getObservedParentsUnion(graph, latentSubset);
+
+            List<Node> proposedParents = new ArrayList<>(existingParents);
+            for (Node node : group) {
+                if (!proposedParents.contains(node)) {
+                    proposedParents.add(node);
+                }
+            }
+
+            int rank = estimateRank(proposedParents, childSet, variables, s, sampleSize, alpha);
+
+            if (rank != r) {
+                continue;
+            }
+
+            double score = blockStrength(proposedParents, childSet, variables, s);
+
+            System.out.println("B: Latent subset " + latentSubset + " rank " + rank + " score " + score);
+
+            // Slight preference for the subset from which the group explains the
+            // child set most strongly.
+            if (score > bestScore) {
+                bestScore = score;
+                bestSubset = latentSubset;
+                targetRank = r;
             }
         }
+
+        if (bestSubset != null) {
+            System.out.println("Best subset for higher-rank group " + group
+                    + " is " + bestSubset
+                    + " with target rank " + targetRank
+                    + " and score " + bestScore);
+        } else {
+            System.out.println("No admissible latent subset found for higher-rank group " + group);
+        }
+
+        return bestSubset;
     }
 
     private void removeExplainedLatentEdges(Graph graph,
@@ -361,6 +513,19 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         }
     }
 
+    private String canonicalNodeListKey(List<Node> nodes) {
+        StringBuilder buf = new StringBuilder();
+
+        for (int i = 0; i < nodes.size(); i++) {
+            if (i > 0) {
+                buf.append("|");
+            }
+            buf.append(nodes.get(i).getName());
+        }
+
+        return buf.toString();
+    }
+
     private List<Node> expandParentSetForLatentSubset(Graph graph,
                                                       List<Node> latentSubset,
                                                       int currentRank,
@@ -369,19 +534,20 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
                                                       SimpleMatrix s,
                                                       int sampleSize,
                                                       double alpha) {
-        int targetRank = latentSubset.size();
+//        int targetRank = latentSubset.size();
 
         List<Node> childSet = getObservedChildrenUnion(graph, latentSubset);
         LinkedHashSet<Node> currentParents = new LinkedHashSet<>(getObservedParentsUnion(graph, latentSubset));
         List<Node> newlyAdded = new ArrayList<>();
 
-        System.out.println("Coming expandParentSetForLatentSubset " + latentSubset + " with current rank " + currentRank
-                + " target rank " + targetRank + " currentParents = " + currentParents + " childSet = " + childSet);
 
-        if (currentRank >= targetRank) {
-            System.out.println("Already at or above target rank; returning empty.");
-            return newlyAdded;
-        }
+        System.out.println("Coming expandParentSetForLatentSubset " + latentSubset + " with current rank " + currentRank
+                + /*+ " target rank " + targetRank + "*/ "currentParents = " + currentParents + " childSet = " + childSet);
+
+//        if (currentRank >= targetRank) {
+//            System.out.println("Already at or above target rank; returning empty.");
+//            return newlyAdded;
+//        }
 
         boolean changed = true;
 
@@ -404,15 +570,8 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
 
                 // Before reaching target rank, require a STRICT rank increase,
                 // but do not allow overshooting target rank.
-                if (currentRank < targetRank) {
-                    if (proposedRank <= currentRank || proposedRank > targetRank) {
-                        continue;
-                    }
-                } else {
-                    // Once at target rank, only allow additions that preserve exact target rank.
-                    if (proposedRank != targetRank) {
-                        continue;
-                    }
+                if (proposedRank <= currentRank) {
+                    continue;
                 }
 
                 double strength = blockStrength(proposed, childSet, variables, s);
@@ -437,12 +596,13 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             }
         }
 
-        if (currentRank != targetRank) {
-            System.out.println("Did not reach target rank; discarding additions.");
-            return new ArrayList<>();
-        }
+//        if (currentRank != targetRank) {
+//            System.out.println("Did not reach target rank; discarding additions. (Newly added = " + newlyAdded + ")");
+//            return new ArrayList<>();
+//        }
 
-        System.out.println("Reached target rank; returning newlyAdded = " + newlyAdded);
+        System.out.println("Reached higher rank; returning newlyAdded = " + newlyAdded);
+
         return newlyAdded;
     }
 
