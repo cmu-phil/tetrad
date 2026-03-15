@@ -286,7 +286,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
                 if (clusterRank == rank && cluster.size() >= minSize) {
 
                     // --- Rule 3-lite (observed-mediator guard).
-                    // If â z â C such that rank(C\{z}, D | z) = 0, the cross-block dependence collapses when conditioning
+                    // If ∃ z ∈ C such that rank(C\{z}, D | z) = 0, the cross-block dependence collapses when conditioning
                     // on z. This is typical for pure DAGs without latents where z is a mediator/bottleneck. In true latent
                     // clusters with noisy indicators, conditioning on a single indicator cannot remove the latent effect
                     // generically, so this check is asymptotically safe under NOLAC.
@@ -363,9 +363,9 @@ public class Tsc implements EffectiveSampleSizeSettable {
                     // cross-rank to r-1 (often 1). We accept only that exact one-step drop.
                     int rankC1 = ranksByTest(C1);
                     if (C2.size() == _size + 1
-                        && rankC1 == rank
-                        && newRank == rank - 1
-                        && !removeClustersBecauseOfRank0Internally(S, C2, nEff, alpha)) {
+                            && rankC1 == rank
+                            && newRank == rank - 1
+                            && !removeClustersBecauseOfRank0Internally(S, C2, nEff, alpha)) {
 
                         if (newClusters.contains(C2)) continue;
 
@@ -378,7 +378,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
                         used.addAll(C2);
 
                         log("Augmenting cluster " + toNamesCluster(C1) + " to " + toNamesCluster(C2)
-                            + " (rank drop " + rank + "â" + newRank + " â bifactor signature).");
+                                + " (rank drop " + rank + "→" + newRank + " — bifactor signature).");
                         didAugment = true;
                         break;
                     }
@@ -401,13 +401,11 @@ public class Tsc implements EffectiveSampleSizeSettable {
             if (cluster.size() < minSize) {
                 clusterToRank.remove(cluster);
                 log("Removing cluster " + toNamesCluster(cluster) + " for insufficient redundancy: |C|="
-                    + cluster.size() + " < " + minSize + " = r+1+minRedundancy.");
+                        + cluster.size() + " < " + minSize + " = r+1+minRedundancy.");
             }
         }
 
         log("Penultimate clusters = " + toNamesClusters(clusterToRank.keySet(), nodes));
-
-
         log("Now we will refine penultimate clusters by conditional ranks.");
 
         boolean changedAny = false;
@@ -430,14 +428,14 @@ public class Tsc implements EffectiveSampleSizeSettable {
             if (refined.size() < minSize2) {
                 clusterToRank.remove(cluster);
                 changedAny = true;
-                log("Refined cluster " + toNamesCluster(cluster) + " â " + toNamesCluster(refined)
-                    + " rejected: |C| < r+1+minRedundancy (" + refined.size() + " < " + minSize2 + ").");
+                log("Refined cluster " + toNamesCluster(cluster) + " → " + toNamesCluster(refined)
+                        + " rejected: |C| < r+1+minRedundancy (" + refined.size() + " < " + minSize2 + ").");
                 continue;
             }
             clusterToRank.put(refined, newRank);
             changedAny = true;
-            log("Refined cluster " + toNamesCluster(cluster) + " â " + toNamesCluster(refined)
-                + " (rank now " + newRank + ").");
+            log("Refined cluster " + toNamesCluster(cluster) + " → " + toNamesCluster(refined)
+                    + " (rank now " + newRank + ").");
         }
         if (!changedAny) log("No cluster refinement was needed.");
 
@@ -454,8 +452,83 @@ public class Tsc implements EffectiveSampleSizeSettable {
         }
         if (!penultimateRemoved) log("No penultimate clusters were removed.");
 
+        // Narrow fallback: rescue isolated rank-1 triples only if the original algorithm found nothing.
+        if (clusterToRank.isEmpty()) {
+            Set<Set<Integer>> rescued = rescueIsolatedRank1Triples(allVariables());
+            for (Set<Integer> triple : rescued) {
+                clusterToRank.put(triple, 1);
+                log("Rescuing isolated rank-1 triple " + toNamesCluster(triple) + ".");
+            }
+        }
+
         log("Final clusters = " + toNamesClusters(clusterToRank.keySet(), nodes));
         return clusterToRank;
+    }
+
+    private Set<Set<Integer>> rescueIsolatedRank1Triples(List<Integer> vars) {
+        Set<Set<Integer>> rescued = new HashSet<>();
+
+        if (vars.size() < 3) return rescued;
+
+        SublistGenerator gen = new SublistGenerator(vars.size(), 3);
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            Set<Integer> triple = new HashSet<>();
+            for (int i : choice) {
+                triple.add(vars.get(i));
+            }
+
+            if (!allPairsAreRank1Seeds(triple)) continue;
+            if (!allSingletonSplitsHavePositiveInternalRank(triple)) continue;
+
+            rescued.add(triple);
+        }
+
+        return rescued;
+    }
+
+    private boolean allPairsAreRank1Seeds(Set<Integer> triple) {
+        if (triple == null || triple.size() != 3) return false;
+
+        List<Integer> t = new ArrayList<>(triple);
+
+        for (int i = 0; i < t.size(); i++) {
+            for (int j = i + 1; j < t.size(); j++) {
+                Set<Integer> pair = new HashSet<>();
+                pair.add(t.get(i));
+                pair.add(t.get(j));
+
+                if (ranksByTest(pair) != 1) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private boolean allSingletonSplitsHavePositiveInternalRank(Set<Integer> cluster) {
+        if (cluster == null || cluster.size() < 3) return false;
+
+        List<Integer> c = new ArrayList<>(cluster);
+
+        for (int v : c) {
+            List<Integer> rest = new ArrayList<>(c);
+            rest.remove((Integer) v);
+
+            if (rest.isEmpty()) return false;
+
+            int[] left = new int[]{v};
+            int[] right = rest.stream().mapToInt(Integer::intValue).toArray();
+
+            int r = RankTests.estimateWilksRank(S, left, right, nEff, alpha);
+            if (r == 0) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private List<Integer> allVariables() {
