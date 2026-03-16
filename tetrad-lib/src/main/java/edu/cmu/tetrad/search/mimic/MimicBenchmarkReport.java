@@ -116,12 +116,25 @@ public final class MimicBenchmarkReport {
         int evalCount = 0;
 
         double sumTrueLatentCount = 0.0;
+        double sumTrueLatentCountSq = 0.0;
+
         double sumEstimatedLatentCount = 0.0;
+        double sumEstimatedLatentCountSq = 0.0;
+
         double sumMatchedLatentCount = 0.0;
+        double sumMatchedLatentCountSq = 0.0;
+
         double sumLatentCountError = 0.0;
+        double sumLatentCountErrorSq = 0.0;
+
         double sumAverageLatentSimilarity = 0.0;
+        double sumAverageLatentSimilaritySq = 0.0;
+
         double sumAverageInputSimilarity = 0.0;
+        double sumAverageInputSimilaritySq = 0.0;
+
         double sumAverageOutputSimilarity = 0.0;
+        double sumAverageOutputSimilaritySq = 0.0;
 
         int pooledLatentTp = 0;
         int pooledLatentFp = 0;
@@ -135,12 +148,25 @@ public final class MimicBenchmarkReport {
             if (evaluation != null) {
                 evalCount++;
                 sumTrueLatentCount += evaluation.getTrueLatentCount();
+                sumTrueLatentCountSq += Math.pow(evaluation.getTrueLatentCount(), 2);
+
                 sumEstimatedLatentCount += evaluation.getEstimatedLatentCount();
+                sumEstimatedLatentCountSq += Math.pow(evaluation.getEstimatedLatentCount(), 2);
+
                 sumMatchedLatentCount += evaluation.getMatchedLatentCount();
+                sumMatchedLatentCountSq += Math.pow(evaluation.getMatchedLatentCount(), 2);
+
                 sumLatentCountError += evaluation.getLatentCountError();
+                sumLatentCountErrorSq += Math.pow(evaluation.getLatentCountError(), 2);
+
                 sumAverageLatentSimilarity += evaluation.getAverageLatentSimilarity();
+                sumAverageLatentSimilaritySq += Math.pow(evaluation.getAverageLatentSimilarity(), 2);
+
                 sumAverageInputSimilarity += evaluation.getAverageInputSimilarity();
+                sumAverageInputSimilaritySq += Math.pow(evaluation.getAverageInputSimilarity(), 2);
+
                 sumAverageOutputSimilarity += evaluation.getAverageOutputSimilarity();
+                sumAverageOutputSimilaritySq += Math.pow(evaluation.getAverageOutputSimilarity(), 2);
             }
 
             LatentLatentEvaluator.Report latentReport = trial.getLatentLatentReport(algorithm);
@@ -160,19 +186,25 @@ public final class MimicBenchmarkReport {
             sb.append("(no evaluations)\n");
         } else {
             sb.append("Average true latent count:      ")
-                    .append(nf.format(sumTrueLatentCount / evalCount)).append('\n');
+                    .append(formatMeanSd(sumTrueLatentCount, sumTrueLatentCountSq, evalCount)).append('\n');
+
             sb.append("Average estimated latent count: ")
-                    .append(nf.format(sumEstimatedLatentCount / evalCount)).append('\n');
+                    .append(formatMeanSd(sumEstimatedLatentCount, sumEstimatedLatentCountSq, evalCount)).append('\n');
+
             sb.append("Average matched latent count:   ")
-                    .append(nf.format(sumMatchedLatentCount / evalCount)).append('\n');
+                    .append(formatMeanSd(sumMatchedLatentCount, sumMatchedLatentCountSq, evalCount)).append('\n');
+
             sb.append("Average latent count error:     ")
-                    .append(nf.format(sumLatentCountError / evalCount)).append('\n');
+                    .append(formatMeanSd(sumLatentCountError, sumLatentCountErrorSq, evalCount)).append('\n');
+
             sb.append("Average latent similarity:      ")
-                    .append(nf.format(sumAverageLatentSimilarity / evalCount)).append('\n');
+                    .append(formatMeanSd(sumAverageLatentSimilarity, sumAverageLatentSimilaritySq, evalCount)).append('\n');
+
             sb.append("Average input similarity:       ")
-                    .append(nf.format(sumAverageInputSimilarity / evalCount)).append('\n');
+                    .append(formatMeanSd(sumAverageInputSimilarity, sumAverageInputSimilaritySq, evalCount)).append('\n');
+
             sb.append("Average output similarity:      ")
-                    .append(nf.format(sumAverageOutputSimilarity / evalCount)).append('\n');
+                    .append(formatMeanSd(sumAverageOutputSimilarity, sumAverageOutputSimilaritySq, evalCount)).append('\n');
         }
 
         sb.append("\nLatent-latent edge adequacy\n");
@@ -262,6 +294,27 @@ public final class MimicBenchmarkReport {
      */
     private String formatDouble(double value) {
         return Double.isNaN(value) ? "NaN" : nf.format(value);
+    }
+
+    /**
+     * Formats a mean and standard deviation pair.
+     *
+     * @param sum the sum of the values
+     * @param sumSq the sum of squares
+     * @param n the number of observations
+     * @return formatted mean (sd)
+     */
+    private String formatMeanSd(double sum, double sumSq, int n) {
+        if (n == 0) return "NaN";
+
+        double mean = sum / n;
+        double variance = sumSq / n - mean * mean;
+
+        if (variance < 0) variance = 0; // numerical safety
+
+        double sd = Math.sqrt(variance);
+
+        return nf.format(mean) + " (" + nf.format(sd) + ")";
     }
 
     /**

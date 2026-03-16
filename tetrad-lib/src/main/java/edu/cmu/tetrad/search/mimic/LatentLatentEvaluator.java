@@ -57,7 +57,7 @@ public final class LatentLatentEvaluator {
 
         Map<Node, Node> estToTrue = matchLatents(trueLatents, estLatents, trueSignatures, estSignatures);
 
-        Set<LatentPair> truePairs = latentPairs(trueLatents);
+        Set<LatentPair> truePairs = actualLatentPairs(trueGraph, trueLatents);
         Set<LatentPair> estPairsMapped = mappedEstimatedPairs(estGraph, estLatents, estToTrue);
 
         Set<LatentPair> trueOnly = new LinkedHashSet<>(truePairs);
@@ -93,6 +93,31 @@ public final class LatentLatentEvaluator {
                 precision,
                 recall
         );
+    }
+
+    /**
+     * Returns all unordered latent-latent adjacent pairs actually present in the graph.
+     *
+     * @param graph the graph
+     * @param latents the latent nodes
+     * @return latent adjacency pairs
+     */
+    private Set<LatentPair> actualLatentPairs(Graph graph, List<Node> latents) {
+        Set<LatentPair> pairs = new LinkedHashSet<>();
+        Set<Node> latentSet = new LinkedHashSet<>(latents);
+
+        for (Edge edge : graph.getEdges()) {
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+
+            if (!latentSet.contains(a) || !latentSet.contains(b)) {
+                continue;
+            }
+
+            pairs.add(new LatentPair(a.getName(), b.getName()));
+        }
+
+        return pairs;
     }
 
     /**

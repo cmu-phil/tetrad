@@ -113,6 +113,27 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             ranks.add(clusters.get(block));
         }
 
+        if (knowledge != null) {
+            List<String> tier0 = knowledge.getTier(0);
+            List<String> tier1 = knowledge.getTier(1);
+
+            List<Node> inputs = new ArrayList<>();
+            List<Node> outputs = new ArrayList<>();
+
+            for (String var : tier0) {
+                Node node = data.getVariable(var);
+                inputs.add(node);
+            }
+
+            for (String var : tier1) {
+                Node node = data.getVariable(var);
+                outputs.add(node);
+            }
+
+            setInputs(inputs);
+            setOutputs(outputs);
+        }
+
         BlocksUtil.validateBlocks(blocks, data);
         blocks = BlocksUtil.canonicalizeBlocks(blocks);
         BlockSpec spec = BlocksUtil.toSpec(blocks, ranks, data);
