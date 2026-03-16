@@ -49,7 +49,8 @@ public class RandomUtil {
     /**
      * Per-thread singleton instances.
      */
-    private static final Map<Thread, RandomUtil> randomUtils = new HashMap<>();
+    private static final ThreadLocal<RandomUtil> randomUtils =
+            ThreadLocal.withInitial(RandomUtil::new);
 
     private static final int SHUFFLE_THRESHOLD = 5;
 
@@ -149,18 +150,11 @@ public class RandomUtil {
 
     /**
      * Retrieves the singleton instance of RandomUtil associated with the current thread.
-     * If no instance exists for the current thread, a new one is created and stored.
      *
      * @return the RandomUtil instance associated with the current thread
      */
     public static RandomUtil getInstance() {
-        Thread thread = Thread.currentThread();
-
-        if (!randomUtils.containsKey(thread)) {
-            randomUtils.put(thread, new RandomUtil());
-        }
-
-        return randomUtils.get(thread);
+        return randomUtils.get();
     }
 
     /**
