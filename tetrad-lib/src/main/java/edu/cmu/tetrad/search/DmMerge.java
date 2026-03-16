@@ -617,9 +617,77 @@ public class DmMerge implements IGraphSearch {
             }
         }
 
+//        mergeEquivalentLatents(graph);
+////        removeExplainedMeasuredToLatentEdges(graph);
+//        removeDegenerateLatents(graph);
+
         mergeEquivalentLatents(graph);
-//        removeExplainedMeasuredToLatentEdges(graph);
+        removeExplainedMeasuredToLatentEdgesByImmediateParents(graph);
         removeDegenerateLatents(graph);
+    }
+
+    /**
+     * Removes measured-to-latent edges that are explained by an immediate latent parent.
+     *
+     * <p>Specifically, if X -> P, P -> L, and X -> L, where P is a latent parent of L,
+     * then X -> L is removed as redundant. This is a local pruning rule intended to
+     * reduce the tendency of measured parent sets to smear downward through the latent
+     * hierarchy.</p>
+     *
+     * @param graph the graph to modify
+     */
+    private void removeExplainedMeasuredToLatentEdgesByImmediateParents(Graph graph) {
+        boolean changed;
+
+        do {
+            changed = false;
+            List<Edge> edges = new ArrayList<>(graph.getEdges());
+
+            for (Edge edge : edges) {
+                Node x = edge.getNode1();
+                Node latent = edge.getNode2();
+
+                if (x.getNodeType() == NodeType.LATENT) {
+                    continue;
+                }
+
+                if (latent.getNodeType() != NodeType.LATENT) {
+                    continue;
+                }
+
+                if (!graph.isParentOf(x, latent)) {
+                    continue;
+                }
+
+                if (isExplainedByImmediateLatentParent(x, latent, graph)) {
+                    graph.removeEdge(edge);
+                    changed = true;
+                }
+            }
+        } while (changed);
+    }
+
+    /**
+     * Returns true if the measured-to-latent edge X -> L is explained by some immediate
+     * latent parent P of L such that X -> P.
+     *
+     * @param measuredParent the measured parent X
+     * @param latent the latent node L
+     * @param graph the graph
+     * @return true if X -> L is explained by an immediate latent parent
+     */
+    private boolean isExplainedByImmediateLatentParent(Node measuredParent, Node latent, Graph graph) {
+        for (Node parent : graph.getParents(latent)) {
+            if (parent.getNodeType() != NodeType.LATENT) {
+                continue;
+            }
+
+            if (graph.isParentOf(measuredParent, parent)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
