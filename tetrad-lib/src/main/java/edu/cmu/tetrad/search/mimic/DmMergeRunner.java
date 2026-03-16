@@ -56,6 +56,20 @@ public final class DmMergeRunner implements MimicSearchRunner {
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setVerbose(false);
 
+        knowledge = knowledge.copy();
+        knowledge.clear();
+
+        for (Node input : inputs) {
+            knowledge.addToTier(0, input.getName());
+        }
+
+        for (Node output : outputs) {
+            knowledge.addToTier(1, output.getName());
+        }
+
+        knowledge.setTierForbiddenWithin(0, true);
+        knowledge.setTierForbiddenWithin(1, true);
+
         DmMerge search = new DmMerge(test);
         search.setKnowledge(knowledge);
 

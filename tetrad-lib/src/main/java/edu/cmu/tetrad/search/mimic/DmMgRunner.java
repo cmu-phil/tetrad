@@ -56,6 +56,7 @@ public final class DmMgRunner implements MimicSearchRunner {
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setVerbose(false);
 
+        knowledge = knowledge.copy();
         knowledge.clear();
 
         for (Node input : inputs) {

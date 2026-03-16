@@ -618,7 +618,108 @@ public class DmMerge implements IGraphSearch {
         }
 
         mergeEquivalentLatents(graph);
+//        removeExplainedMeasuredToLatentEdges(graph);
         removeDegenerateLatents(graph);
+    }
+
+    /**
+     * Removes measured-to-latent edges that are explained by a path through an upstream latent.
+     *
+     * <p>Specifically, if X -> L1, L1 -> ... -> L2, and X -> L2, then X -> L2 is removed as
+     * redundant. This acts like a transitive reduction for measured-to-latent parent edges
+     * relative to the latent graph.</p>
+     *
+     * @param graph the graph to modify
+     */
+    private void removeExplainedMeasuredToLatentEdges(Graph graph) {
+        boolean changed;
+
+        do {
+            changed = false;
+
+            List<Edge> edges = new ArrayList<>(graph.getEdges());
+
+            for (Edge edge : edges) {
+                Node x = edge.getNode1();
+                Node latent = edge.getNode2();
+
+                if (x.getNodeType() == NodeType.LATENT) {
+                    continue;
+                }
+
+                if (latent.getNodeType() != NodeType.LATENT) {
+                    continue;
+                }
+
+                if (!graph.isParentOf(x, latent)) {
+                    continue;
+                }
+
+                if (hasExplainingLatentPath(x, latent, graph)) {
+                    graph.removeEdge(x, latent);
+                    changed = true;
+                }
+            }
+        } while (changed);
+    }
+
+    /**
+     * Returns true if the measured-to-latent edge X -> targetLatent is explained by some
+     * upstream latent L such that X -> L and L -> ... -> targetLatent.
+     *
+     * @param measuredParent the measured parent X
+     * @param targetLatent the downstream latent L2
+     * @param graph the graph
+     * @return true if the edge is explained by an upstream latent path
+     */
+    private boolean hasExplainingLatentPath(Node measuredParent, Node targetLatent, Graph graph) {
+        for (Node parent : graph.getParents(targetLatent)) {
+            if (parent.getNodeType() != NodeType.LATENT) {
+                continue;
+            }
+
+            if (graph.isParentOf(measuredParent, parent)) {
+                return true;
+            }
+
+            if (hasLatentPathFromMeasuredParent(measuredParent, parent, graph, new HashSet<>())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns true if there exists a directed path measuredParent -> L1 -> ... -> latent.
+     *
+     * @param measuredParent the measured parent X
+     * @param latent the latent node currently being tested
+     * @param graph the graph
+     * @param visited visited latent nodes
+     * @return true if such a path exists
+     */
+    private boolean hasLatentPathFromMeasuredParent(Node measuredParent,
+                                                    Node latent,
+                                                    Graph graph,
+                                                    Set<Node> visited) {
+        if (!visited.add(latent)) {
+            return false;
+        }
+
+        if (graph.isParentOf(measuredParent, latent)) {
+            return true;
+        }
+
+        for (Node parent : graph.getParents(latent)) {
+            if (parent.getNodeType() == NodeType.LATENT) {
+                if (hasLatentPathFromMeasuredParent(measuredParent, parent, graph, visited)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

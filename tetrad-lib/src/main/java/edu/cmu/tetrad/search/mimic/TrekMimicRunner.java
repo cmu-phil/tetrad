@@ -51,8 +51,8 @@ public final class TrekMimicRunner implements MimicSearchRunner {
     public Graph run(DataSet data, Knowledge knowledge, List<Node> inputs, List<Node> outputs, Parameters parameters) {
         TrekMimic search = new TrekMimic();
 
-        search.setInputs(inputs);
-        search.setOutputs(outputs);
+//        search.setInputs(inputs);
+//        search.setOutputs(outputs);
 
         try {
             return search.search(data, parameters);
