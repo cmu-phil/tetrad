@@ -143,8 +143,6 @@ public class TrekMimic2 extends AbstractBootstrapAlgorithm implements Algorithm,
 
         ((BlocksIndTestTs) this.test).setBlockSpec(spec);
 
-        System.out.println("Blocks: " + spec.blocks());
-
         edu.cmu.tetrad.search.Pc.ColliderOrientationStyle colliderOrientationStyle = edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.MAX_P;
 
         IndependenceTest test = this.test.getTest(dataModel, parameters);
