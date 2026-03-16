@@ -100,7 +100,7 @@ public class DmMerge implements IGraphSearch {
     private int latentIndex = 1;
 
     /**
-     * Constructs a new DM-PC search using the given independence test.
+     * Constructs a new DM-Merge search using the given independence test.
      *
      * @param test the independence test to use
      */
@@ -113,13 +113,13 @@ public class DmMerge implements IGraphSearch {
     }
 
     /**
-     * Runs the DM-PC search and returns the resulting graph.
+     * Runs the DM-Merge search and returns the resulting graph.
      *
      * <p>The search always starts from a fresh internal state. In particular, the
      * internally stored lists of tentative inputs and outputs are cleared, and latent
      * variable names are regenerated starting at L1 for each call.</p>
      *
-     * @return the graph constructed by the DM-PC procedure
+     * @return the graph constructed by the DM-Merge procedure
      */
     @Override
     public Graph search() {
@@ -481,7 +481,7 @@ public class DmMerge implements IGraphSearch {
      *
      * <p>After this, latent-to-latent edges are added for strict subset relations among the
      * associated-input sets. If input set B is a strict subset of input set A, the latent for
-     * B points to the latent for A. This follows the convention used by the existing DM-PC
+     * B points to the latent for A. This follows the convention used by the existing DM-Merge
      * construction.</p>
      *
      * @param clusters the clustered outputs
