@@ -128,13 +128,114 @@ public class DmPc implements IGraphSearch {
         Graph depth0Pattern = runPc(0);
         classifyVariables(depth0Pattern);
 
+//        Map<Set<Node>, Set<Node>> clusters = clusterOutputs(depth0Pattern);
+//        Graph latentGraph = buildLatentStructure(clusters);
+
         Map<Set<Node>, Set<Node>> clusters = clusterOutputs(depth0Pattern);
+        clusters = mergeSimilarClusters(clusters);
         Graph latentGraph = buildLatentStructure(clusters);
 
         refineLatentEdges(latentGraph);
         finalRefinement(latentGraph);
 
         return latentGraph;
+    }
+
+    /**
+     * Merges clusters whose associated-input sets are sufficiently similar.
+     *
+     * <p>This is intended to reduce overfragmentation caused by clustering outputs by
+     * exact associated-input sets. Two clusters are merged when their input sets have
+     * high Jaccard similarity. The merged cluster uses the union of the input sets and
+     * the union of the output sets.</p>
+     *
+     * @param clusters the initial clusters
+     * @return the merged clusters
+     */
+    private Map<Set<Node>, Set<Node>> mergeSimilarClusters(Map<Set<Node>, Set<Node>> clusters) {
+        List<ClusterRecord> records = new ArrayList<>();
+
+        for (Map.Entry<Set<Node>, Set<Node>> entry : clusters.entrySet()) {
+            records.add(new ClusterRecord(entry.getKey(), entry.getValue()));
+        }
+
+        double threshold = 0.8;
+        boolean changed;
+
+        do {
+            changed = false;
+
+            outer:
+            for (int i = 0; i < records.size(); i++) {
+                for (int j = i + 1; j < records.size(); j++) {
+                    ClusterRecord a = records.get(i);
+                    ClusterRecord b = records.get(j);
+
+                    double similarity = jaccard(a.inputSet(), b.inputSet());
+
+                    if (similarity >= threshold) {
+                        Set<Node> mergedInputs = new HashSet<>(a.inputSet());
+                        mergedInputs.addAll(b.inputSet());
+
+                        Set<Node> mergedOutputs = new HashSet<>(a.outputSet());
+                        mergedOutputs.addAll(b.outputSet());
+
+                        records.remove(j);
+                        records.remove(i);
+                        records.add(new ClusterRecord(mergedInputs, mergedOutputs));
+
+                        changed = true;
+                        break outer;
+                    }
+                }
+            }
+        } while (changed);
+
+        Map<Set<Node>, Set<Node>> merged = new HashMap<>();
+
+        for (ClusterRecord record : records) {
+            merged.put(record.inputSet(), record.outputSet());
+        }
+
+        return merged;
+    }
+
+    /**
+     * Returns the Jaccard similarity of two sets.
+     *
+     * @param a the first set
+     * @param b the second set
+     * @return the Jaccard similarity
+     */
+    private double jaccard(Set<Node> a, Set<Node> b) {
+        if (a.isEmpty() && b.isEmpty()) {
+            return 1.0;
+        }
+
+        Set<Node> intersection = new HashSet<>(a);
+        intersection.retainAll(b);
+
+        Set<Node> union = new HashSet<>(a);
+        union.addAll(b);
+
+        if (union.isEmpty()) {
+            return 1.0;
+        }
+
+        return (double) intersection.size() / union.size();
+    }
+
+    /**
+     * Small record type for cluster merging.
+     *
+     * @param inputSet the associated input set
+     * @param outputSet the associated output set
+     */
+    private record ClusterRecord(Set<Node> inputSet, Set<Node> outputSet) {
+        private ClusterRecord(Set<Node> inputSet, Set<Node> outputSet) {
+            this.inputSet = new HashSet<>(inputSet);
+            this.outputSet = new HashSet<>(outputSet);
+        }
     }
 
     /**
@@ -516,7 +617,56 @@ public class DmPc implements IGraphSearch {
             }
         }
 
+        mergeEquivalentLatents(graph);
         removeDegenerateLatents(graph);
+    }
+
+    /**
+     * Merges latent variables that have the same measured parents and measured children.
+     *
+     * @param graph the graph to modify
+     */
+    private void mergeEquivalentLatents(Graph graph) {
+        boolean changed;
+
+        do {
+            changed = false;
+            List<Node> latents = new ArrayList<>();
+
+            for (Node node : graph.getNodes()) {
+                if (node.getNodeType() == NodeType.LATENT) {
+                    latents.add(node);
+                }
+            }
+
+            outer:
+            for (int i = 0; i < latents.size(); i++) {
+                for (int j = i + 1; j < latents.size(); j++) {
+                    Node a = latents.get(i);
+                    Node b = latents.get(j);
+
+                    if (getMeasuredParents(a, graph).equals(getMeasuredParents(b, graph))
+                            && getMeasuredChildren(a, graph).equals(getMeasuredChildren(b, graph))) {
+
+                        for (Node parent : graph.getParents(b)) {
+                            if (graph.getEdge(parent, a) == null) {
+                                graph.addDirectedEdge(parent, a);
+                            }
+                        }
+
+                        for (Node child : graph.getChildren(b)) {
+                            if (graph.getEdge(child, a) == null) {
+                                graph.addDirectedEdge(a, child);
+                            }
+                        }
+
+                        graph.removeNode(b);
+                        changed = true;
+                        break outer;
+                    }
+                }
+            }
+        } while (changed);
     }
 
     /**
@@ -551,25 +701,83 @@ public class DmPc implements IGraphSearch {
         }
     }
 
+//    /**
+//     * Removes latent variables that no longer have both measured parents and measured children.
+//     *
+//     * @param graph the graph to modify
+//     */
+//    private void removeDegenerateLatents(Graph graph) {
+//        List<Node> nodes = new ArrayList<>(graph.getNodes());
+//
+//        for (Node node : nodes) {
+//            if (node.getNodeType() != NodeType.LATENT) {
+//                continue;
+//            }
+//
+//            Set<Node> measuredParents = getMeasuredParents(node, graph);
+//            Set<Node> measuredChildren = getMeasuredChildren(node, graph);
+//
+//            if (measuredParents.isEmpty() || measuredChildren.isEmpty()) {
+//                graph.removeNode(node);
+//            }
+//        }
+//    }
+
     /**
      * Removes latent variables that no longer have both measured parents and measured children.
+     *
+     * <p>In addition, removes latents that are completely disconnected from the rest of the
+     * latent structure, since these often represent over-fragmentation of the measurement
+     * model rather than meaningful intermediate latent structure.</p>
      *
      * @param graph the graph to modify
      */
     private void removeDegenerateLatents(Graph graph) {
-        List<Node> nodes = new ArrayList<>(graph.getNodes());
+        boolean changed;
 
-        for (Node node : nodes) {
-            if (node.getNodeType() != NodeType.LATENT) {
-                continue;
+        do {
+            changed = false;
+            List<Node> nodes = new ArrayList<>(graph.getNodes());
+
+            for (Node node : nodes) {
+                if (node.getNodeType() != NodeType.LATENT) {
+                    continue;
+                }
+
+                Set<Node> measuredParents = getMeasuredParents(node, graph);
+                Set<Node> measuredChildren = getMeasuredChildren(node, graph);
+                Set<Node> latentNeighbors = getLatentNeighbors(node, graph);
+
+                boolean structurallyDegenerate =
+                        measuredParents.isEmpty() || measuredChildren.isEmpty();
+
+                boolean weakIsolatedLatent =
+                        latentNeighbors.isEmpty()
+                                && (measuredParents.size() <= 1 || measuredChildren.size() <= 1);
+
+                if (structurallyDegenerate || weakIsolatedLatent) {
+                    graph.removeNode(node);
+                    changed = true;
+                }
             }
+        } while (changed);
+    }
+    /**
+     * Returns the latent neighbors of the given latent node.
+     *
+     * @param node the latent node
+     * @param graph the graph containing the node
+     * @return the latent neighbors of the node
+     */
+    private Set<Node> getLatentNeighbors(Node node, Graph graph) {
+        Set<Node> latentNeighbors = new HashSet<>();
 
-            Set<Node> measuredParents = getMeasuredParents(node, graph);
-            Set<Node> measuredChildren = getMeasuredChildren(node, graph);
-
-            if (measuredParents.isEmpty() || measuredChildren.isEmpty()) {
-                graph.removeNode(node);
+        for (Node adjacent : graph.getAdjacentNodes(node)) {
+            if (adjacent.getNodeType() == NodeType.LATENT) {
+                latentNeighbors.add(adjacent);
             }
         }
+
+        return latentNeighbors;
     }
 }
