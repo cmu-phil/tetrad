@@ -33,18 +33,18 @@ import edu.cmu.tetrad.util.Params;
 import java.util.List;
 
 /**
- * Benchmark runner for the DM-PC algorithm.
+ * Benchmark runner for the DM-Merge algorithm.
  *
  * @author josephramsey
  */
-public final class DmPcRunner implements MimicSearchRunner {
+public final class DmMergeRunner implements MimicSearchRunner {
 
     /**
      * {@inheritDoc}
      */
     @Override
     public String getName() {
-        return "DM-PC";
+        return "DM-Merge";
     }
 
     /**
