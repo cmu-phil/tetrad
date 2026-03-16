@@ -461,8 +461,88 @@ public class Tsc implements EffectiveSampleSizeSettable {
             }
         }
 
+        clusterToRank = removeOverlappingClusters(clusterToRank);
+
         log("Final clusters = " + toNamesClusters(clusterToRank.keySet(), nodes));
         return clusterToRank;
+    }
+
+    /**
+     * Removes overlapping clusters greedily, keeping the better of any two overlapping clusters.
+     *
+     * <p>The preference rule is:
+     * <ol>
+     *     <li>Prefer larger clusters.</li>
+     *     <li>If sizes tie, prefer lower-rank clusters.</li>
+     *     <li>If still tied, prefer the lexicographically smaller cluster for determinism.</li>
+     * </ol>
+     *
+     * <p>This method is intended as a final cleanup step when the cluster search has produced
+     * many overlapping small clusters, especially overlapping triples. It returns a new map
+     * and does not mutate the input map.</p>
+     *
+     * @param clustersToRank map from cluster to rank
+     * @return a new map with overlaps removed
+     */
+    private Map<Set<Integer>, Integer> removeOverlappingClusters(Map<Set<Integer>, Integer> clustersToRank) {
+        if (clustersToRank == null || clustersToRank.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<Set<Integer>> ordered = new ArrayList<>(clustersToRank.keySet());
+
+        ordered.sort((a, b) -> {
+            // Larger clusters first.
+            int c = Integer.compare(b.size(), a.size());
+            if (c != 0) return c;
+
+            // Lower rank first.
+            int ra = clustersToRank.getOrDefault(a, Integer.MAX_VALUE);
+            int rb = clustersToRank.getOrDefault(b, Integer.MAX_VALUE);
+            c = Integer.compare(ra, rb);
+            if (c != 0) return c;
+
+            // Deterministic lexical tie-break.
+            return compareClustersLex(a, b);
+        });
+
+        Map<Set<Integer>, Integer> kept = new LinkedHashMap<>();
+        Set<Integer> used = new HashSet<>();
+
+        for (Set<Integer> cluster : ordered) {
+            if (Collections.disjoint(cluster, used)) {
+                Set<Integer> copy = new HashSet<>(cluster);
+                kept.put(copy, clustersToRank.get(cluster));
+                used.addAll(cluster);
+            } else {
+                log("Removing overlapping cluster " + toNamesCluster(cluster)
+                        + " rank = " + clustersToRank.get(cluster));
+            }
+        }
+
+        return kept;
+    }
+
+    /**
+     * Lexicographically compares two clusters after sorting their members increasingly.
+     *
+     * @param a first cluster
+     * @param b second cluster
+     * @return negative, zero, or positive according to lexical order
+     */
+    private int compareClustersLex(Set<Integer> a, Set<Integer> b) {
+        List<Integer> aa = new ArrayList<>(a);
+        List<Integer> bb = new ArrayList<>(b);
+        Collections.sort(aa);
+        Collections.sort(bb);
+
+        int n = Math.min(aa.size(), bb.size());
+        for (int i = 0; i < n; i++) {
+            int c = Integer.compare(aa.get(i), bb.get(i));
+            if (c != 0) return c;
+        }
+
+        return Integer.compare(aa.size(), bb.size());
     }
 
     private Set<Set<Integer>> rescueIsolatedRank1Triples(List<Integer> vars) {
