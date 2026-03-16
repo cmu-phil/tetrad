@@ -106,17 +106,112 @@ public final class TrekMimic2 {
         // Phase 2: optional higher-rank / shared-parent expansion
         // ============================================================
         if (doHigherRankExpansion) {
-            expandHigherRankParentSets(
+            expandHigherRankParentSetsV2(
                     graph,
                     latents,
                     pool,
                     variables,
                     s,
                     sampleSize,
-                    alpha,
-                    maxLatentSubsetSize
+                    alpha
             );
         }
+    }
+
+    private void expandHigherRankParentSetsV2(Graph graph,
+                                              List<Node> allLatents,
+                                              List<Node> initialPool,
+                                              List<Node> variables,
+                                              SimpleMatrix s,
+                                              int sampleSize,
+                                              double alpha) {
+
+        LinkedHashSet<Node> unused = new LinkedHashSet<>(initialPool);
+        unused.removeAll(getObservedParentsUnion(graph, allLatents));
+
+        List<Node> allChildren = getObservedChildrenUnion(graph, allLatents);
+
+        List<List<Node>> latentSubsets = new ArrayList<>();
+        for (int subsetSize = 2; subsetSize <= Math.min(maxLatentSubsetSize, allLatents.size()); subsetSize++) {
+            latentSubsets.addAll(getLatentSubsets(allLatents, subsetSize));
+        }
+
+        double lambda = 2.0;
+
+        // First try singleton measured candidates.
+        for (Node node : new ArrayList<>(unused)) {
+            List<Node> group = Collections.singletonList(node);
+
+            List<Node> bestSubset = assignSharedGroupToBestLatentSubset(
+                    group, latentSubsets, graph, variables, s, sampleSize, alpha, lambda
+            );
+
+            if (bestSubset != null) {
+                addMeasuredGroupToLatentSubset(graph, group, bestSubset);
+                removeExplainedLatentEdges(graph, bestSubset, group, variables, s, sampleSize, alpha);
+                unused.remove(node);
+            }
+        }
+
+        // Then try pairs among the remaining unused variables.
+        List<Node> remaining = new ArrayList<>(unused);
+        ChoiceGenerator gen = new ChoiceGenerator(remaining.size(), 2);
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            List<Node> pair = GraphUtils.asList(choice, remaining);
+
+            int rankAboveAll = estimateRank(pair, allChildren, variables, s, sampleSize, alpha);
+
+            // Mild filter so we do not test hopeless pairs.
+            if (rankAboveAll < 1 || rankAboveAll == Integer.MAX_VALUE) {
+                continue;
+            }
+
+            List<Node> bestSubset = assignSharedGroupToBestLatentSubset(
+                    pair, latentSubsets, graph, variables, s, sampleSize, alpha, lambda
+            );
+
+            if (bestSubset != null) {
+                addMeasuredGroupToLatentSubset(graph, pair, bestSubset);
+                removeExplainedLatentEdges(graph, bestSubset, pair, variables, s, sampleSize, alpha);
+
+                unused.removeAll(pair);
+                remaining = new ArrayList<>(unused);
+                gen = new ChoiceGenerator(remaining.size(), 2);
+            }
+        }
+    }
+
+    private void addMeasuredGroupToLatentSubset(Graph graph,
+                                                List<Node> group,
+                                                List<Node> latentSubset) {
+        for (Node parent : group) {
+            for (Node latent : latentSubset) {
+                if (!graph.isParentOf(parent, latent)) {
+                    graph.addDirectedEdge(parent, latent);
+                }
+            }
+        }
+    }
+
+    private List<List<Node>> getLatentSubsets(List<Node> latentNodes, int subsetSize) {
+        List<List<Node>> subsets = new ArrayList<>();
+
+        if (subsetSize < 1 || subsetSize > latentNodes.size()) {
+            return subsets;
+        }
+
+        ChoiceGenerator gen = new ChoiceGenerator(latentNodes.size(), subsetSize);
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            List<Node> subset = GraphUtils.asList(choice, latentNodes);
+            subset.sort(Comparator.comparing(Node::getName));
+            subsets.add(subset);
+        }
+
+        return subsets;
     }
 
     /**
@@ -348,6 +443,148 @@ public final class TrekMimic2 {
         }
 
         return assignment;
+    }
+
+    private List<Node> assignSharedGroupToBestLatentSubset(List<Node> group,
+                                                           List<List<Node>> latentSubsets,
+                                                           Graph graph,
+                                                           List<Node> variables,
+                                                           SimpleMatrix s,
+                                                           int sampleSize,
+                                                           double alpha,
+                                                           double lambda) {
+        List<Node> bestSubset = null;
+        double bestScore = Double.NEGATIVE_INFINITY;
+        double secondBestScore = Double.NEGATIVE_INFINITY;
+
+        for (List<Node> latentSubset : latentSubsets) {
+            if (latentSubset.size() < 2) {
+                continue;
+            }
+
+            List<Node> existingParents = getObservedParentsUnion(graph, latentSubset);
+
+            List<Node> proposedParents = new ArrayList<>(existingParents);
+            for (Node node : group) {
+                if (!proposedParents.contains(node)) {
+                    proposedParents.add(node);
+                }
+            }
+
+            int rank = estimateRank(
+                    proposedParents,
+                    getObservedChildrenUnion(graph, latentSubset),
+                    variables,
+                    s,
+                    sampleSize,
+                    alpha
+            );
+
+            if (rank != latentSubset.size()) {
+                continue;
+            }
+
+            int explainedPairs = countExplainedExistingLatentPairs(
+                    graph,
+                    latentSubset,
+                    proposedParents,
+                    variables,
+                    s,
+                    sampleSize,
+                    alpha
+            );
+
+            if (explainedPairs == 0) {
+                continue;
+            }
+
+            double strength = blockStrength(
+                    proposedParents,
+                    getObservedChildrenUnion(graph, latentSubset),
+                    variables,
+                    s
+            );
+
+            double score = 1000.0 * explainedPairs
+                    + 100.0
+                    + strength
+                    - lambda * group.size() * latentSubset.size();
+
+            if (score > bestScore) {
+                secondBestScore = bestScore;
+                bestScore = score;
+                bestSubset = latentSubset;
+            } else if (score > secondBestScore) {
+                secondBestScore = score;
+            }
+        }
+
+        if (bestSubset == null) {
+            return null;
+        }
+
+        // Optional ambiguity check.
+        if (secondBestScore > Double.NEGATIVE_INFINITY && bestScore - secondBestScore < 50.0) {
+            return null;
+        }
+
+        return bestSubset;
+    }
+
+    private int countExplainedExistingLatentPairs(Graph graph,
+                                                  List<Node> latentSubset,
+                                                  List<Node> proposedParents,
+                                                  List<Node> variables,
+                                                  SimpleMatrix s,
+                                                  int sampleSize,
+                                                  double alpha) {
+
+        int explained = 0;
+
+        for (int i = 0; i < latentSubset.size(); i++) {
+            Node li = latentSubset.get(i);
+
+            for (int j = i + 1; j < latentSubset.size(); j++) {
+                Node lj = latentSubset.get(j);
+
+                // Only consider pairs that currently have a latent-latent edge
+                if (!graph.isAdjacentTo(li, lj)) {
+                    continue;
+                }
+
+                // Children of the two latents
+                List<Node> children = new ArrayList<>();
+
+                for (Node child : graph.getChildren(li)) {
+                    if (!children.contains(child)) {
+                        children.add(child);
+                    }
+                }
+
+                for (Node child : graph.getChildren(lj)) {
+                    if (!children.contains(child)) {
+                        children.add(child);
+                    }
+                }
+
+                // Estimate rank of parents above these indicators
+                int rank = estimateRank(
+                        proposedParents,
+                        children,
+                        variables,
+                        s,
+                        sampleSize,
+                        alpha
+                );
+
+                // If parents fully explain the two latent dimensions
+                if (rank == 2) {
+                    explained++;
+                }
+            }
+        }
+
+        return explained;
     }
 
     /**
