@@ -50,12 +50,12 @@ import java.util.*;
  *
  * @author josephramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "TrekMimic",
-        command = "trek-mimic",
-        algoType = AlgType.forbid_latent_common_causes
-)
-@Bootstrapping
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "TrekMimic",
+//        command = "trek-mimic",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
+//@Bootstrapping
 public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
         ReturnsBootstrapGraphs {
 

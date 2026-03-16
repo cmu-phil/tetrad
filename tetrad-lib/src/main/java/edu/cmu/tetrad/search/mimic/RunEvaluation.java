@@ -11,7 +11,7 @@ public class RunEvaluation {
         parameters.set("mimicNumInputs", 8);
         parameters.set("mimicNumLatents", 4);
         parameters.set("mimicNumOutputs", 12);
-        parameters.set("mimicSinglyConnected", false);
+        parameters.set("mimicSinglyConnected", true);
 
         parameters.set("mimicLatentEdgeProb", 0.25);
         parameters.set("mimicInputAttachProb", 0.35);
@@ -23,7 +23,7 @@ public class RunEvaluation {
         parameters.set(Params.COEF_HIGH, 1.2);
         parameters.set(Params.DEPTH, -1);
         parameters.set(Params.EFFECTIVE_SAMPLE_SIZE, 5000);
-        parameters.set(Params.VERBOSE, false);
+        parameters.set(Params.VERBOSE, true);
 
         MimicBenchmark benchmark = new MimicBenchmark();
         MimicBenchmarkResult result = benchmark.runTrials(parameters, 50);

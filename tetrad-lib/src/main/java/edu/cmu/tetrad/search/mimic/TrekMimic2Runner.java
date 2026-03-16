@@ -20,7 +20,6 @@
 
 package edu.cmu.tetrad.search.mimic;
 
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.TrekMimic;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.TrekMimic2;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
@@ -35,14 +34,14 @@ import java.util.List;
  *
  * @author josephramsey
  */
-public final class TrekMimicRunner implements MimicSearchRunner {
+public final class TrekMimic2Runner implements MimicSearchRunner {
 
     /**
      * {@inheritDoc}
      */
     @Override
     public String getName() {
-        return "Trek-MIMIC";
+        return "Trek-MIMIC2";
     }
 
     /**
@@ -50,7 +49,7 @@ public final class TrekMimicRunner implements MimicSearchRunner {
      */
     @Override
     public Graph run(DataSet data, Knowledge knowledge, List<Node> inputs, List<Node> outputs, Parameters parameters) {
-        TrekMimic search = new TrekMimic();
+        TrekMimic2 search = new TrekMimic2();
 
         search.setInputs(inputs);
         search.setOutputs(outputs);

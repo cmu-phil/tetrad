@@ -33,6 +33,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Tsc;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
+import edu.cmu.tetrad.search.blocks.SingleClusterPolicy;
 import edu.cmu.tetrad.search.test.IndTestBlocksTs;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.*;
@@ -138,6 +139,8 @@ public class TrekMimic2 extends AbstractBootstrapAlgorithm implements Algorithm,
         blocks = BlocksUtil.canonicalizeBlocks(blocks);
         BlockSpec spec = BlocksUtil.toSpec(blocks, ranks, data);
 
+        spec = BlocksUtil.applySingleClusterPolicy(spec, SingleClusterPolicy.EXCLUDE, parameters.getDouble(Params.ALPHA));
+
         ((BlocksIndTestTs) this.test).setBlockSpec(spec);
 
         edu.cmu.tetrad.search.Pc.ColliderOrientationStyle colliderOrientationStyle = edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.MAX_P;
@@ -183,7 +186,7 @@ public class TrekMimic2 extends AbstractBootstrapAlgorithm implements Algorithm,
 
         List<Node> allLatents = new ArrayList<>(spec.blockVariables());
         List<Node> allChildren = determineObservedChildren(graph, allLatents, data.getVariables());
-        List<Node> pool = determineParentPool(data.getVariables(), allChildren);
+        List<Node> initialPool = determineParentPool(data.getVariables(), allChildren);
 
         List<Node> variables = data.getVariables();
         SimpleMatrix s = new CorrelationMatrix(data).getMatrix().getSimpleMatrix();
@@ -192,11 +195,20 @@ public class TrekMimic2 extends AbstractBootstrapAlgorithm implements Algorithm,
         double alpha = parameters.getDouble(Params.ALPHA);
 
         Map<List<Node>, Integer> recoveredPairs =
-                evalutePairRanks(graph, pool, allLatents, variables, s, sampleSize, alpha);
+                evalutePairRanks(graph, initialPool, allLatents, variables, s, sampleSize, alpha);
 
-        for (List<Node> pair : recoveredPairs.keySet()) {
-            System.out.println("Pair " + pair + " rank = " + recoveredPairs.get(pair));
-        }
+        edu.cmu.tetrad.search.TrekMimic2 t2 = new edu.cmu.tetrad.search.TrekMimic2();
+        t2.setDoHigherRankExpansion(false);
+
+        t2.recoverMeasuredParentsHybrid(
+                graph,
+                initialPool,
+                allLatents,
+                variables,
+                s,
+                sampleSize,
+                alpha
+        );
 
         return graph;
     }

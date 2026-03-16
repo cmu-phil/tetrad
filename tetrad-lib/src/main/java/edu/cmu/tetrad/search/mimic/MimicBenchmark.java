@@ -79,6 +79,7 @@ public final class MimicBenchmark {
         this.runners.add(new DmBossRobustRunner());
         this.runners.add(new DmMgRunner());
         this.runners.add(new TrekMimicRunner());
+        this.runners.add(new TrekMimic2Runner());
     }
 
     /**
