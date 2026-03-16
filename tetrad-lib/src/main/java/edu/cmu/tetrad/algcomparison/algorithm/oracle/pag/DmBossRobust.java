@@ -55,13 +55,13 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "DM",
-        command = "dm",
+        name = "DM-Boss-Robust",
+        command = "dm-boss-robust",
         algoType = AlgType.search_for_structure_over_latents
 )
 @Bootstrapping
-public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,
-        TakesScoreWrapper, TakesIndependenceWrapper,
+public class DmBossRobust extends AbstractBootstrapAlgorithm implements Algorithm,
+        TakesScoreWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -74,12 +74,11 @@ public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,
      * The score to use.
      */
     private ScoreWrapper score;
-    private IndependenceWrapper test;
 
     /**
      * <p>Constructor for DM-PC.</p>
      */
-    public Dm() {
+    public DmBossRobust() {
         // Used for reflection; do not delete.
     }
 
@@ -88,8 +87,7 @@ public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,
      *
      * @param score the ScoreWrapper instance to be used by this object
      */
-    public Dm(IndependenceWrapper test, ScoreWrapper score) {
-        this.test = test;
+    public DmBossRobust(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -115,11 +113,8 @@ public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,
             knowledge = timeSeries.getKnowledge();
         }
 
-        IndependenceTest test = this.test.getTest(dataModel, parameters);
         Score _score = this.score.getScore(dataModel, parameters);
 
-//        edu.cmu.tetrad.search.DmPc search = new edu.cmu.tetrad.search.DmPc(test);
-//        search.setKnowledge(knowledge);
         edu.cmu.tetrad.search.DmBossRobust search = new edu.cmu.tetrad.search.DmBossRobust(_score, knowledge);
 
         return search.search();
@@ -144,7 +139,7 @@ public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,
      */
     @Override
     public String getDescription() {
-        return "DM using " + this.test.getDescription() + " or " + this.score.getDescription();
+        return "DM-BOSS-Robust using " + this.score.getDescription();
     }
 
     /**
@@ -214,22 +209,5 @@ public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
-        this.test = independenceWrapper;
-    }
-
 }
 
