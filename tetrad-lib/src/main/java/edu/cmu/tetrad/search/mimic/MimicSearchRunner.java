@@ -23,7 +23,10 @@ package edu.cmu.tetrad.search.mimic;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
+
+import java.util.List;
 
 /**
  * Interface for running a MIMIC-style search algorithm inside the benchmark harness.
@@ -48,5 +51,5 @@ public interface MimicSearchRunner {
      * @param parameters the runtime parameters
      * @return the estimated graph
      */
-    Graph run(DataSet data, Knowledge knowledge, Parameters parameters);
+    Graph run(DataSet data, Knowledge knowledge, List<Node> inputs, List<Node> outputs, Parameters parameters);
 }

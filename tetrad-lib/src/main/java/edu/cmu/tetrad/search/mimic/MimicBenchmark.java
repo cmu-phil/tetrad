@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search.mimic;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -116,7 +117,10 @@ public final class MimicBenchmark {
         Map<String, LatentLatentEvaluator.Report> latentLatentReports = new LinkedHashMap<>();
 
         for (MimicSearchRunner runner : this.runners) {
-            Graph estimated = runner.run(measuredData, knowledge, parameters);
+            List<Node> inputs = trueModel.getInputs();
+            List<Node> outputs = trueModel.getOutputs();
+
+            Graph estimated = runner.run(measuredData, knowledge, inputs, outputs, parameters);
             MimicEvaluation evaluation = this.evaluator.evaluate(trueModel, estimated);
             LatentLatentEvaluator.Report latentLatentReport =
                     this.latentLatentEvaluator.evaluate(trueModel.getGraph(), estimated);

@@ -73,6 +73,18 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
     private Knowledge knowledge = new Knowledge();
 
     /**
+     * Optional observed variables known to be inputs to the latent structure.
+     * These are stored by name so they remain stable across node replacement.
+     */
+    private final Set<String> inputNames = new LinkedHashSet<>();
+
+    /**
+     * Optional observed variables known to be outputs from the latent structure.
+     * These are stored by name so they remain stable across node replacement.
+     */
+    private final Set<String> outputNames = new LinkedHashSet<>();
+
+    /**
      * Constructs a new instance of the TrekMimic class. This constructor initializes the
      * critical independence test mechanism required for the algorithm's operation.
      * Specifically, it instantiates a BlocksIndTestTs object and assigns it to the internal
@@ -122,13 +134,31 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         search.setVerbose(false);
         Graph graph = search.search();
 
+//        for (int i = 0; i < spec.blocks().size(); i++) {
+//            Node var = spec.blockVariables().get(i);
+//
+//            for (int j : spec.blocks().get(i)) {
+//                Node node2 = spec.dataSet().getVariables().get(j);
+//                graph.addNode(node2);
+//                graph.addDirectedEdge(var, node2);
+//            }
+//        }
+
         for (int i = 0; i < spec.blocks().size(); i++) {
             Node var = spec.blockVariables().get(i);
 
             for (int j : spec.blocks().get(i)) {
                 Node node2 = spec.dataSet().getVariables().get(j);
+
+                if (!mayBeLatentChild(node2)) {
+                    continue;
+                }
+
                 graph.addNode(node2);
-                graph.addDirectedEdge(var, node2);
+
+                if (!graph.isParentOf(var, node2)) {
+                    graph.addDirectedEdge(var, node2);
+                }
             }
         }
 
@@ -140,11 +170,15 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             }
         }
 
-        List<Node> allLatentNodes = new ArrayList<>(spec.blockVariables());
-        List<Node> allChildren = getObservedChildrenUnion(graph, allLatentNodes);
+//        List<Node> allLatentNodes = new ArrayList<>(spec.blockVariables());
+//        List<Node> allChildren = getObservedChildrenUnion(graph, allLatentNodes);
+//
+//        List<Node> pool = new ArrayList<>(data.getVariables());
+//        pool.removeAll(allChildren);
 
-        List<Node> pool = new ArrayList<>(data.getVariables());
-        pool.removeAll(allChildren);
+        List<Node> allLatentNodes = new ArrayList<>(spec.blockVariables());
+        List<Node> allChildren = determineObservedChildren(graph, allLatentNodes, data.getVariables());
+        List<Node> pool = determineParentPool(data.getVariables(), allChildren);
 
         List<Node> variables = data.getVariables();
         SimpleMatrix s = new CorrelationMatrix(data).getMatrix().getSimpleMatrix();
@@ -1336,6 +1370,231 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         public int getRank() {
             return this.rank;
         }
+    }
+
+    /**
+     * Sets the observed variables known to be inputs to the latent structure.
+     *
+     * @param inputs the input variables
+     */
+    public void setInputs(Collection<Node> inputs) {
+        this.inputNames.clear();
+
+        if (inputs != null) {
+            for (Node node : inputs) {
+                if (node != null) {
+                    this.inputNames.add(node.getName());
+                }
+            }
+        }
+
+        validateInputOutputKnowledge();
+    }
+
+    /**
+     * Sets the observed variables known to be outputs from the latent structure.
+     *
+     * @param outputs the output variables
+     */
+    public void setOutputs(Collection<Node> outputs) {
+        this.outputNames.clear();
+
+        if (outputs != null) {
+            for (Node node : outputs) {
+                if (node != null) {
+                    this.outputNames.add(node.getName());
+                }
+            }
+        }
+
+        validateInputOutputKnowledge();
+    }
+
+    /**
+     * Sets the observed variable names known to be inputs to the latent structure.
+     *
+     * @param inputNames the input variable names
+     */
+    public void setInputNames(Collection<String> inputNames) {
+        this.inputNames.clear();
+
+        if (inputNames != null) {
+            for (String name : inputNames) {
+                if (name != null) {
+                    this.inputNames.add(name);
+                }
+            }
+        }
+
+        validateInputOutputKnowledge();
+    }
+
+    /**
+     * Sets the observed variable names known to be outputs from the latent structure.
+     *
+     * @param outputNames the output variable names
+     */
+    public void setOutputNames(Collection<String> outputNames) {
+        this.outputNames.clear();
+
+        if (outputNames != null) {
+            for (String name : outputNames) {
+                if (name != null) {
+                    this.outputNames.add(name);
+                }
+            }
+        }
+
+        validateInputOutputKnowledge();
+    }
+
+    /**
+     * Ensures that no observed variable is simultaneously declared as both an input and an output.
+     */
+    private void validateInputOutputKnowledge() {
+        Set<String> intersection = new LinkedHashSet<>(this.inputNames);
+        intersection.retainAll(this.outputNames);
+
+        if (!intersection.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "The same variables cannot be declared as both inputs and outputs: " + intersection
+            );
+        }
+    }
+
+    /**
+     * Returns true if the given node is known to be an input.
+     *
+     * @param node the node
+     * @return true if the node is known to be an input
+     */
+    private boolean isKnownInput(Node node) {
+        return node != null && this.inputNames.contains(node.getName());
+    }
+
+    /**
+     * Returns true if the given node is known to be an output.
+     *
+     * @param node the node
+     * @return true if the node is known to be an output
+     */
+    private boolean isKnownOutput(Node node) {
+        return node != null && this.outputNames.contains(node.getName());
+    }
+
+    /**
+     * Returns true if the given observed node may be treated as a child of a latent.
+     * <p>
+     * If the user has declared the node to be an input, it is not treated as a child.
+     * If the user has declared the node to be an output, it is treated as a child.
+     * Otherwise, the previous behavior is retained.
+     *
+     * @param node the node
+     * @return true if the node may be treated as a child of a latent
+     */
+    private boolean mayBeLatentChild(Node node) {
+        if (isKnownInput(node)) {
+            return false;
+        }
+
+        if (isKnownOutput(node)) {
+            return true;
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns the observed variables to treat as children of the supplied latents, incorporating
+     * any optional input/output role knowledge.
+     *
+     * @param graph the graph
+     * @param latents the latent nodes
+     * @param observedVariables the observed variables
+     * @return the observed child set
+     */
+    private List<Node> determineObservedChildren(Graph graph,
+                                                 Collection<Node> latents,
+                                                 List<Node> observedVariables) {
+        LinkedHashMap<String, Node> byName = new LinkedHashMap<>();
+
+        for (Node node : observedVariables) {
+            byName.put(node.getName(), node);
+        }
+
+        LinkedHashSet<Node> children = new LinkedHashSet<>();
+
+        // Start from the previous behavior.
+        for (Node child : getObservedChildrenUnion(graph, latents)) {
+            Node resolved = byName.get(child.getName());
+
+            if (resolved != null && !isKnownInput(resolved)) {
+                children.add(resolved);
+            }
+        }
+
+        // If outputs were explicitly supplied, make sure they are treated as children.
+        for (String name : this.outputNames) {
+            Node resolved = byName.get(name);
+
+            if (resolved != null) {
+                children.add(resolved);
+            }
+        }
+
+        return new ArrayList<>(children);
+    }
+
+    /**
+     * Returns the observed variables to treat as the parent pool, incorporating any optional
+     * input/output role knowledge.
+     *
+     * @param observedVariables the observed variables
+     * @param observedChildren the observed child variables
+     * @return the parent pool
+     */
+    private List<Node> determineParentPool(List<Node> observedVariables,
+                                           Collection<Node> observedChildren) {
+        LinkedHashSet<Node> pool = new LinkedHashSet<>(observedVariables);
+        pool.removeAll(observedChildren);
+
+        // Inputs should always be eligible for the parent pool if present in the data.
+        for (Node node : observedVariables) {
+            if (isKnownInput(node)) {
+                pool.add(node);
+            }
+        }
+
+        // Outputs should not appear in the parent pool.
+        pool.removeIf(this::isKnownOutput);
+
+        return new ArrayList<>(pool);
+    }
+
+    /**
+     * Returns the currently specified input variable names.
+     *
+     * @return the input variable names
+     */
+    public List<String> getInputNames() {
+        return new ArrayList<>(this.inputNames);
+    }
+
+    /**
+     * Returns the currently specified output variable names.
+     *
+     * @return the output variable names
+     */
+    public List<String> getOutputNames() {
+        return new ArrayList<>(this.outputNames);
+    }
+
+    /**
+     * Clears any supplied input/output role knowledge.
+     */
+    public void clearInputOutputKnowledge() {
+        this.inputNames.clear();
+        this.outputNames.clear();
     }
 
     private static final class ExpansionResult {

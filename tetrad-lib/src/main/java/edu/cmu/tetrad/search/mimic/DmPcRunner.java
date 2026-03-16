@@ -24,10 +24,13 @@ import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.DmPc;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+
+import java.util.List;
 
 /**
  * Benchmark runner for the DM-PC algorithm.
@@ -48,7 +51,7 @@ public final class DmPcRunner implements MimicSearchRunner {
      * {@inheritDoc}
      */
     @Override
-    public Graph run(DataSet data, Knowledge knowledge, Parameters parameters) {
+    public Graph run(DataSet data, Knowledge knowledge, List<Node> inputs, List<Node> outputs, Parameters parameters) {
         IndependenceTest test = new FisherZ().getTest(data, parameters);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setVerbose(false);

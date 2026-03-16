@@ -24,7 +24,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.TrekMimic;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
+
+import java.util.List;
 
 /**
  * Benchmark runner for Trek-MIMIC.
@@ -45,9 +48,11 @@ public final class TrekMimicRunner implements MimicSearchRunner {
      * {@inheritDoc}
      */
     @Override
-    public Graph run(DataSet data, Knowledge knowledge, Parameters parameters) {
+    public Graph run(DataSet data, Knowledge knowledge, List<Node> inputs, List<Node> outputs, Parameters parameters) {
         TrekMimic search = new TrekMimic();
-        search.setKnowledge(knowledge);
+
+        search.setInputs(inputs);
+        search.setOutputs(outputs);
 
         try {
             return search.search(data, parameters);
