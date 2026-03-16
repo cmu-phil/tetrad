@@ -128,9 +128,6 @@ public class DmMerge implements IGraphSearch {
         Graph depth0Pattern = runPc(0);
         classifyVariables(depth0Pattern);
 
-//        Map<Set<Node>, Set<Node>> clusters = clusterOutputs(depth0Pattern);
-//        Graph latentGraph = buildLatentStructure(clusters);
-
         Map<Set<Node>, Set<Node>> clusters = clusterOutputs(depth0Pattern);
         clusters = mergeSimilarClusters(clusters);
         Graph latentGraph = buildLatentStructure(clusters);
@@ -144,10 +141,9 @@ public class DmMerge implements IGraphSearch {
     /**
      * Merges clusters whose associated-input sets are sufficiently similar.
      *
-     * <p>This is intended to reduce overfragmentation caused by clustering outputs by
-     * exact associated-input sets. Two clusters are merged when their input sets have
-     * high Jaccard similarity. The merged cluster uses the union of the input sets and
-     * the union of the output sets.</p>
+     * <p>This version tracks the constituent clusters of each merged cluster and assigns
+     * the merged input set by voting: an input is retained if it appears in at least half
+     * of the constituent input sets. Outputs are merged by union.</p>
      *
      * @param clusters the initial clusters
      * @return the merged clusters
@@ -159,7 +155,7 @@ public class DmMerge implements IGraphSearch {
             records.add(new ClusterRecord(entry.getKey(), entry.getValue()));
         }
 
-        double threshold = 0.8;
+        double threshold = 0.78;
         boolean changed;
 
         do {
@@ -171,18 +167,12 @@ public class DmMerge implements IGraphSearch {
                     ClusterRecord a = records.get(i);
                     ClusterRecord b = records.get(j);
 
-                    double similarity = jaccard(a.inputSet(), b.inputSet());
+                    double similarity = jaccard(a.representativeInputSet(), b.representativeInputSet());
 
                     if (similarity >= threshold) {
-                        Set<Node> mergedInputs = new HashSet<>(a.inputSet());
-                        mergedInputs.addAll(b.inputSet());
-
-                        Set<Node> mergedOutputs = new HashSet<>(a.outputSet());
-                        mergedOutputs.addAll(b.outputSet());
-
                         records.remove(j);
                         records.remove(i);
-                        records.add(new ClusterRecord(mergedInputs, mergedOutputs));
+                        records.add(ClusterRecord.merge(a, b));
 
                         changed = true;
                         break outer;
@@ -194,7 +184,7 @@ public class DmMerge implements IGraphSearch {
         Map<Set<Node>, Set<Node>> merged = new HashMap<>();
 
         for (ClusterRecord record : records) {
-            merged.put(record.inputSet(), record.outputSet());
+            merged.put(record.representativeInputSet(), record.outputSet());
         }
 
         return merged;
@@ -226,15 +216,108 @@ public class DmMerge implements IGraphSearch {
     }
 
     /**
-     * Small record type for cluster merging.
+     * Internal cluster representation used during cluster merging.
      *
-     * @param inputSet the associated input set
-     * @param outputSet the associated output set
+     * <p>Each record stores the union of output variables and the list of constituent input
+     * sets from which the cluster was formed. The representative input set is obtained by
+     * a voting rule over those constituent input sets.</p>
      */
-    private record ClusterRecord(Set<Node> inputSet, Set<Node> outputSet) {
+    private static final class ClusterRecord {
+
+        /**
+         * The constituent input sets that were merged to form this cluster.
+         */
+        private final List<Set<Node>> constituentInputSets;
+
+        /**
+         * The outputs assigned to this cluster.
+         */
+        private final Set<Node> outputSet;
+
+        /**
+         * Constructs a cluster record from a single input/output cluster.
+         *
+         * @param inputSet the input set
+         * @param outputSet the output set
+         */
         private ClusterRecord(Set<Node> inputSet, Set<Node> outputSet) {
-            this.inputSet = new HashSet<>(inputSet);
+            this.constituentInputSets = new ArrayList<>();
+            this.constituentInputSets.add(new HashSet<>(inputSet));
             this.outputSet = new HashSet<>(outputSet);
+        }
+
+        /**
+         * Constructs a cluster record from constituent input sets and an output set.
+         *
+         * @param constituentInputSets the constituent input sets
+         * @param outputSet the output set
+         */
+        private ClusterRecord(List<Set<Node>> constituentInputSets, Set<Node> outputSet) {
+            this.constituentInputSets = new ArrayList<>();
+
+            for (Set<Node> set : constituentInputSets) {
+                this.constituentInputSets.add(new HashSet<>(set));
+            }
+
+            this.outputSet = new HashSet<>(outputSet);
+        }
+
+        /**
+         * Merges two cluster records.
+         *
+         * @param a the first cluster
+         * @param b the second cluster
+         * @return the merged cluster
+         */
+        public static ClusterRecord merge(ClusterRecord a, ClusterRecord b) {
+            List<Set<Node>> mergedInputs = new ArrayList<>();
+            mergedInputs.addAll(a.constituentInputSets);
+            mergedInputs.addAll(b.constituentInputSets);
+
+            Set<Node> mergedOutputs = new HashSet<>(a.outputSet);
+            mergedOutputs.addAll(b.outputSet);
+
+            return new ClusterRecord(mergedInputs, mergedOutputs);
+        }
+
+        /**
+         * Returns the representative input set for this cluster using a voting rule.
+         *
+         * <p>An input is retained if it appears in at least half of the constituent input
+         * sets. This is intended to reduce parent-set inflation caused by taking unions
+         * during merging.</p>
+         *
+         * @return the representative input set
+         */
+        public Set<Node> representativeInputSet() {
+            Map<Node, Integer> counts = new HashMap<>();
+
+            for (Set<Node> set : this.constituentInputSets) {
+                for (Node node : set) {
+                    counts.put(node, counts.getOrDefault(node, 0) + 1);
+                }
+            }
+
+            int threshold = (this.constituentInputSets.size() + 1) / 2;
+
+            Set<Node> result = new HashSet<>();
+
+            for (Map.Entry<Node, Integer> entry : counts.entrySet()) {
+                if (entry.getValue() >= threshold) {
+                    result.add(entry.getKey());
+                }
+            }
+
+            return result;
+        }
+
+        /**
+         * Returns the output set.
+         *
+         * @return the output set
+         */
+        public Set<Node> outputSet() {
+            return new HashSet<>(this.outputSet);
         }
     }
 
@@ -617,177 +700,8 @@ public class DmMerge implements IGraphSearch {
             }
         }
 
-//        mergeEquivalentLatents(graph);
-////        removeExplainedMeasuredToLatentEdges(graph);
-//        removeDegenerateLatents(graph);
-
         mergeEquivalentLatents(graph);
-        removeExplainedMeasuredToLatentEdgesByImmediateParents(graph);
         removeDegenerateLatents(graph);
-    }
-
-    /**
-     * Removes measured-to-latent edges that are explained by an immediate latent parent.
-     *
-     * <p>Specifically, if X -> P, P -> L, and X -> L, where P is a latent parent of L,
-     * then X -> L is removed as redundant. This is a local pruning rule intended to
-     * reduce the tendency of measured parent sets to smear downward through the latent
-     * hierarchy.</p>
-     *
-     * @param graph the graph to modify
-     */
-    private void removeExplainedMeasuredToLatentEdgesByImmediateParents(Graph graph) {
-        boolean changed;
-
-        do {
-            changed = false;
-            List<Edge> edges = new ArrayList<>(graph.getEdges());
-
-            for (Edge edge : edges) {
-                Node x = edge.getNode1();
-                Node latent = edge.getNode2();
-
-                if (x.getNodeType() == NodeType.LATENT) {
-                    continue;
-                }
-
-                if (latent.getNodeType() != NodeType.LATENT) {
-                    continue;
-                }
-
-                if (!graph.isParentOf(x, latent)) {
-                    continue;
-                }
-
-                if (isExplainedByImmediateLatentParent(x, latent, graph)) {
-                    graph.removeEdge(edge);
-                    changed = true;
-                }
-            }
-        } while (changed);
-    }
-
-    /**
-     * Returns true if the measured-to-latent edge X -> L is explained by some immediate
-     * latent parent P of L such that X -> P.
-     *
-     * @param measuredParent the measured parent X
-     * @param latent the latent node L
-     * @param graph the graph
-     * @return true if X -> L is explained by an immediate latent parent
-     */
-    private boolean isExplainedByImmediateLatentParent(Node measuredParent, Node latent, Graph graph) {
-        for (Node parent : graph.getParents(latent)) {
-            if (parent.getNodeType() != NodeType.LATENT) {
-                continue;
-            }
-
-            if (graph.isParentOf(measuredParent, parent)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Removes measured-to-latent edges that are explained by a path through an upstream latent.
-     *
-     * <p>Specifically, if X -> L1, L1 -> ... -> L2, and X -> L2, then X -> L2 is removed as
-     * redundant. This acts like a transitive reduction for measured-to-latent parent edges
-     * relative to the latent graph.</p>
-     *
-     * @param graph the graph to modify
-     */
-    private void removeExplainedMeasuredToLatentEdges(Graph graph) {
-        boolean changed;
-
-        do {
-            changed = false;
-
-            List<Edge> edges = new ArrayList<>(graph.getEdges());
-
-            for (Edge edge : edges) {
-                Node x = edge.getNode1();
-                Node latent = edge.getNode2();
-
-                if (x.getNodeType() == NodeType.LATENT) {
-                    continue;
-                }
-
-                if (latent.getNodeType() != NodeType.LATENT) {
-                    continue;
-                }
-
-                if (!graph.isParentOf(x, latent)) {
-                    continue;
-                }
-
-                if (hasExplainingLatentPath(x, latent, graph)) {
-                    graph.removeEdge(x, latent);
-                    changed = true;
-                }
-            }
-        } while (changed);
-    }
-
-    /**
-     * Returns true if the measured-to-latent edge X -> targetLatent is explained by some
-     * upstream latent L such that X -> L and L -> ... -> targetLatent.
-     *
-     * @param measuredParent the measured parent X
-     * @param targetLatent the downstream latent L2
-     * @param graph the graph
-     * @return true if the edge is explained by an upstream latent path
-     */
-    private boolean hasExplainingLatentPath(Node measuredParent, Node targetLatent, Graph graph) {
-        for (Node parent : graph.getParents(targetLatent)) {
-            if (parent.getNodeType() != NodeType.LATENT) {
-                continue;
-            }
-
-            if (graph.isParentOf(measuredParent, parent)) {
-                return true;
-            }
-
-            if (hasLatentPathFromMeasuredParent(measuredParent, parent, graph, new HashSet<>())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Returns true if there exists a directed path measuredParent -> L1 -> ... -> latent.
-     *
-     * @param measuredParent the measured parent X
-     * @param latent the latent node currently being tested
-     * @param graph the graph
-     * @param visited visited latent nodes
-     * @return true if such a path exists
-     */
-    private boolean hasLatentPathFromMeasuredParent(Node measuredParent,
-                                                    Node latent,
-                                                    Graph graph,
-                                                    Set<Node> visited) {
-        if (!visited.add(latent)) {
-            return false;
-        }
-
-        if (graph.isParentOf(measuredParent, latent)) {
-            return true;
-        }
-
-        for (Node parent : graph.getParents(latent)) {
-            if (parent.getNodeType() == NodeType.LATENT) {
-                if (hasLatentPathFromMeasuredParent(measuredParent, parent, graph, visited)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     /**
