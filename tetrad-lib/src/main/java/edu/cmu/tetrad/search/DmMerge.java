@@ -72,7 +72,7 @@ import java.util.Set;
  * @author murraywaters
  * @author josephramsey
  */
-public class DmPc implements IGraphSearch {
+public class DmMerge implements IGraphSearch {
 
     /**
      * Tentative measured input variables identified during the current search.
@@ -104,7 +104,7 @@ public class DmPc implements IGraphSearch {
      *
      * @param test the independence test to use
      */
-    public DmPc(IndependenceTest test) {
+    public DmMerge(IndependenceTest test) {
         if (test == null) {
             throw new NullPointerException("Independence test must not be null.");
         }
@@ -655,7 +655,7 @@ public class DmPc implements IGraphSearch {
                         }
 
                         for (Node child : graph.getChildren(b)) {
-                            if (graph.getEdge(child, a) == null) {
+                            if (graph.getEdge(a, child) == null) {
                                 graph.addDirectedEdge(a, child);
                             }
                         }

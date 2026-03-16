@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.DmPc;
+import edu.cmu.tetrad.search.DmMerge;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -56,7 +56,7 @@ public final class DmPcRunner implements MimicSearchRunner {
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setVerbose(false);
 
-        DmPc search = new DmPc(test);
+        DmMerge search = new DmMerge(test);
         search.setKnowledge(knowledge);
 
         return search.search();

@@ -25,10 +25,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
@@ -36,7 +34,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -48,19 +45,19 @@ import java.util.List;
 
 
 /**
- * Detect-Mimic-PC (DM) algorithm. This is intended to detect intermediate latent variables for Multiple Input
+ * Detect-Mimic-Marge (DM-Merge) algorithm. This is intended to detect intermediate latent variables for Multiple Input
  * Multiple IndiCator (MIMIC) models. models.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "DM-PC",
-        command = "dm-pc",
+        name = "DM-Merge",
+        command = "dm-merge",
         algoType = AlgType.search_for_structure_over_latents
 )
 @Bootstrapping
-public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm,
+public class DmMerge extends AbstractBootstrapAlgorithm implements Algorithm,
         TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
@@ -76,9 +73,9 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm,
     private IndependenceWrapper test;
 
     /**
-     * <p>Constructor for DM-PC.</p>
+     * <p>Constructor for DM-Merge.</p>
      */
-    public DmPc() {
+    public DmMerge() {
         // Used for reflection; do not delete.
     }
 
@@ -87,7 +84,7 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm,
      *
      * @param test the IndependenceWrapper instance
      */
-    public DmPc(IndependenceWrapper test) {
+    public DmMerge(IndependenceWrapper test) {
         this.test = test;
     }
 
@@ -115,7 +112,7 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm,
 
         IndependenceTest test = this.test.getTest(dataModel, parameters);
 
-        edu.cmu.tetrad.search.DmPc search = new edu.cmu.tetrad.search.DmPc(test);
+        edu.cmu.tetrad.search.DmMerge search = new edu.cmu.tetrad.search.DmMerge(test);
         search.setKnowledge(knowledge);
 
         return search.search();
@@ -140,7 +137,7 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm,
      */
     @Override
     public String getDescription() {
-        return "DM-PC using " + this.test.getDescription();
+        return "DM-Merge using " + this.test.getDescription();
     }
 
     /**

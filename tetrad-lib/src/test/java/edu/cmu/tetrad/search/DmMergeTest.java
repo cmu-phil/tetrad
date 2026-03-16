@@ -18,7 +18,7 @@ import java.util.Set;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class DmPcTest {
+public class DmMergeTest {
 
     @Test
     public void testDmPcBasic() {
