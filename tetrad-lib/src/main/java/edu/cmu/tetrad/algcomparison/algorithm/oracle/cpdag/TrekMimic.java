@@ -119,6 +119,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         search.setKnowledge(this.knowledge);
         search.setFasStable(true);
         search.setColliderOrientationStyle(colliderOrientationStyle);
+        search.setVerbose(false);
         Graph graph = search.search();
 
         for (int i = 0; i < spec.blocks().size(); i++) {
@@ -224,6 +225,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         System.out.println("Expanding higher rank parent sets for latent nodes: " + allLatentNodes);
 
         LinkedHashSet<Node> unused = new LinkedHashSet<>(initialPool);
+        // Keep this if you do not want already-attached parents rediscovered as "new".
         unused.removeAll(getObservedParentsUnion(graph, allLatentNodes));
 
         List<ExpansionState> currentStates = new ArrayList<>();
@@ -246,14 +248,15 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             }
         }
 
-        int maxSize = 2;// Math.min(maxLatentSubsetSize, allLatentNodes.size());
+        int maxSize = Math.min(maxLatentSubsetSize, allLatentNodes.size());
 
         for (int targetSize = 2; targetSize <= maxSize; targetSize++) {
             System.out.println("Expanding states to latent subset size " + targetSize);
 
-            List<ExpansionState> nextStates = new ArrayList<>();
-            Set<String> seen = new HashSet<>();
+            List<ExpansionProposal> proposals = new ArrayList<>();
+            Set<String> seenExpandedSubsets = new HashSet<>();
 
+            // Stage 1: discover proposals, but do not commit.
             for (ExpansionState state : currentStates) {
                 List<Node> currentSubset = state.getLatentSubset();
                 List<Node> currentParents = state.getParentSet();
@@ -267,14 +270,14 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
                     expandedSubset.add(newLatent);
                     expandedSubset.sort(Comparator.comparing(Node::getName));
 
-                    String key = canonicalNodeListKey(expandedSubset);
-//                    if (seen.contains(key)) {
-//                        continue;
-//                    }
+                    String subsetKey = canonicalNodeListKey(expandedSubset);
+                    if (seenExpandedSubsets.contains(subsetKey)) {
+                        continue;
+                    }
 
                     int targetRank = expandedSubset.size();
 
-                    // THIS is the important "both sides" union:
+                    // Expand from both sides: inherit current subset parents AND new latent's current parents.
                     LinkedHashSet<Node> baseParents = new LinkedHashSet<>(currentParents);
                     baseParents.addAll(getObservedParents(graph, newLatent));
 
@@ -294,50 +297,251 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
                         continue;
                     }
 
-                    System.out.println("Successful expansion: " + currentSubset
+                    if (result.newParents().isEmpty()) {
+                        // No newly discovered shared parents for this expansion step.
+                        // Skip proposal creation, since there is nothing to assign.
+                        continue;
+                    }
+
+                    System.out.println("Discovered proposal from " + currentSubset
                             + " + " + newLatent
                             + " -> " + result.expandedLatents()
                             + " newParents = " + result.newParents()
                             + " fullParentSet = " + result.fullParentSet());
 
-                    // Commit only once.
-                    for (Node parent : result.newParents()) {
-                        for (Node latent : result.expandedLatents()) {
-                            if (!graph.isParentOf(parent, latent)) {
-//                                graph.addDirectedEdge(parent, latent);
-                                System.out.println("Adding parent " + parent + " to latent " + latent);
-                            }
-                        }
-                        // Leave commented out if parents may be reused across multiple expansions.
-                        // unused.remove(parent);
-                    }
-
-                    removeExplainedLatentEdges(
-                            graph,
-                            result.expandedLatents(),
-                            result.newParents(),
-                            variables,
-                            s,
-                            sampleSize,
-                            alpha
-                    );
-
-                    nextStates.add(new ExpansionState(
+                    proposals.add(new ExpansionProposal(
+                            currentSubset,
                             result.expandedLatents(),
                             result.fullParentSet(),
+                            result.newParents(),
                             targetRank
                     ));
 
-//                    seen.add(key);
+                    seenExpandedSubsets.add(subsetKey);
                 }
             }
 
+            if (proposals.isEmpty()) {
+                System.out.println("No successful proposals at size " + targetSize);
+                currentStates = Collections.emptyList();
+                break;
+            }
+
+            // Group proposals by canonicalized NEW parent group.
+            Map<String, List<ExpansionProposal>> proposalMap = new LinkedHashMap<>();
+            Map<String, List<Node>> keyToGroup = new LinkedHashMap<>();
+
+            for (ExpansionProposal proposal : proposals) {
+                List<Node> group = new ArrayList<>(proposal.getNewParents());
+                group.sort(Comparator.comparing(Node::getName));
+
+                String key = canonicalNodeListKey(group);
+
+                proposalMap.computeIfAbsent(key, k -> new ArrayList<>()).add(proposal);
+                keyToGroup.putIfAbsent(key, group);
+            }
+
+            List<ExpansionState> nextStates = new ArrayList<>();
+
+            // Stage 2: assign each discovered group to the best latent subset of this target size.
+            for (String key : proposalMap.keySet()) {
+                List<Node> group = keyToGroup.get(key);
+                List<List<Node>> candidateSubsets = new ArrayList<>();
+                for (List<Node> subset : getLatentSubsets(allLatentNodes, targetSize)) {
+                    if (countCurrentLatentEdges(graph, subset) > 0) {
+                        candidateSubsets.add(subset);
+                    }
+                }
+
+                List<Node> bestSubset = assignHigherRankGroupToBestLatentSubset(
+                        group,
+                        candidateSubsets,
+                        graph,
+                        variables,
+                        s,
+                        sampleSize,
+                        alpha
+                );
+
+                if (bestSubset == null) {
+                    System.out.println("No admissible latent subset found for group " + group);
+                    continue;
+                }
+
+                System.out.println("Assigning higher-rank group " + group + " to latent subset " + bestSubset);
+
+                // The full parent set for the accepted next state is:
+                // current observed parents of bestSubset plus the newly assigned group.
+                LinkedHashSet<Node> fullParentSet = new LinkedHashSet<>(getObservedParentsUnion(graph, bestSubset));
+                fullParentSet.addAll(group);
+
+                for (Node parent : group) {
+                    for (Node latent : bestSubset) {
+                        if (!graph.isParentOf(parent, latent)) {
+                            graph.addDirectedEdge(parent, latent);
+                            System.out.println("Adding parent " + parent + " to latent " + latent);
+                        }
+                    }
+
+                    // Leave commented out if a measured parent may be reused across multiple subsets.
+                    // unused.remove(parent);
+                }
+
+                removeExplainedLatentEdges(graph, bestSubset, group, variables, s, sampleSize, alpha);
+
+                nextStates.add(new ExpansionState(bestSubset, new ArrayList<>(fullParentSet), bestSubset.size()));
+            }
+
             currentStates = nextStates;
+
             if (currentStates.isEmpty()) {
-                System.out.println("No successful expansions at size " + targetSize);
+                System.out.println("No assigned expansions at size " + targetSize);
                 break;
             }
         }
+    }
+
+    private int countCurrentLatentEdges(Graph graph, List<Node> latentSubset) {
+        int count = 0;
+
+        ChoiceGenerator gen = new ChoiceGenerator(latentSubset.size(), 2);
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            Node x = latentSubset.get(choice[0]);
+            Node y = latentSubset.get(choice[1]);
+
+            if (graph.getEdge(x, y) != null) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private List<Node> assignHigherRankGroupToBestLatentSubset(List<Node> group,
+                                                               List<List<Node>> latentSubsets,
+                                                               Graph graph,
+                                                               List<Node> variables,
+                                                               SimpleMatrix s,
+                                                               int sampleSize,
+                                                               double alpha) {
+        System.out.println("Assigning higher-rank group " + group + " to best latent subset");
+        System.out.println("Candidate latent subsets: " + latentSubsets);
+
+        List<Node> bestSubset = null;
+        int bestExplainedPairs = -1;
+        double bestScore = Double.NEGATIVE_INFINITY;
+
+        for (List<Node> latentSubset : latentSubsets) {
+            List<Node> existingParents = getObservedParentsUnion(graph, latentSubset);
+
+            List<Node> proposedParents = new ArrayList<>(existingParents);
+            for (Node node : group) {
+                if (!proposedParents.contains(node)) {
+                    proposedParents.add(node);
+                }
+            }
+
+            int rank = estimateRank(
+                    proposedParents,
+                    getObservedChildrenUnion(graph, latentSubset),
+                    variables,
+                    s,
+                    sampleSize,
+                    alpha
+            );
+
+            // The parent set must still realize the intended rank for this subset.
+            if (rank != latentSubset.size()) {
+                continue;
+            }
+
+            // Score by how many CURRENT latent-latent edges inside this subset are explained.
+            int explainedPairs = countExplainedExistingLatentPairs(
+                    graph,
+                    latentSubset,
+                    proposedParents,
+                    variables,
+                    s,
+                    sampleSize,
+                    alpha
+            );
+
+            if (explainedPairs == 0) {
+                System.out.println("Subset " + latentSubset + " explains no latent edges with group " + group);
+                continue;
+            }
+
+            double score = blockStrength(
+                    proposedParents,
+                    getObservedChildrenUnion(graph, latentSubset),
+                    variables,
+                    s
+            );
+
+            System.out.println("Subset " + latentSubset
+                    + " rank = " + rank
+                    + " explainedPairs = " + explainedPairs
+                    + " score = " + score);
+
+            if (explainedPairs > bestExplainedPairs ||
+                    (explainedPairs == bestExplainedPairs && score > bestScore)) {
+                bestExplainedPairs = explainedPairs;
+                bestScore = score;
+                bestSubset = latentSubset;
+            }
+        }
+
+        if (bestSubset != null) {
+            System.out.println("Best subset for higher-rank group " + group
+                    + " is " + bestSubset
+                    + " with explainedPairs = " + bestExplainedPairs
+                    + " and score = " + bestScore);
+        } else {
+            System.out.println("No admissible latent subset found for higher-rank group " + group);
+        }
+
+        return bestSubset;
+    }
+
+    private int countExplainedExistingLatentPairs(Graph graph,
+                                                  List<Node> latentSubset,
+                                                  List<Node> condSet,
+                                                  List<Node> variables,
+                                                  SimpleMatrix s,
+                                                  int sampleSize,
+                                                  double alpha) {
+        int explained = 0;
+
+        ChoiceGenerator gen = new ChoiceGenerator(latentSubset.size(), 2);
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            Node x = latentSubset.get(choice[0]);
+            Node y = latentSubset.get(choice[1]);
+
+            Edge edge = graph.getEdge(x, y);
+            if (edge == null) {
+                continue;
+            }
+
+            int rank = estimateRankConditioned(
+                    getObservedChildren(graph, x),
+                    getObservedChildren(graph, y),
+                    condSet,
+                    variables,
+                    s,
+                    sampleSize,
+                    alpha
+            );
+
+            if (rank == 0) {
+                explained++;
+            }
+        }
+
+        return explained;
     }
 
     private String canonicalNodeListKey(List<Node> nodes) {
@@ -406,10 +610,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         List<Node> expandedLatents = new ArrayList<>(latentSubset);
         List<Node> childSet = getObservedChildrenUnion(graph, expandedLatents);
 
-        // Start from inherited parents from both sides.
         LinkedHashSet<Node> fullParents = new LinkedHashSet<>(baseParents);
-
-        // These are only the parents newly discovered during this expansion step.
         List<Node> newParents = new ArrayList<>();
 
         int currentRank = estimateRank(
@@ -426,7 +627,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
                 + " currentRank = " + currentRank
                 + " targetRank = " + targetRank);
 
-        // Phase 1: If needed, add parents until the overall rank reaches targetRank.
+        // Phase 1: raise rank if needed.
         boolean changed = true;
 
         while (changed && currentRank < targetRank) {
@@ -492,7 +693,6 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             }
         }
 
-        // If we still didn't reach the required rank, fail.
         if (currentRank != targetRank) {
             System.out.println("Failed to reach target rank for expanded subset " + expandedLatents
                     + "; discarding new parents " + newParents);
@@ -504,28 +704,137 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             );
         }
 
-        // Phase 2: Look for additional SHARED parents that help explain internal latent-latent edges.
-        //
-        // For now, a candidate is considered useful if, after adding it to the conditioning set,
-        // it makes at least one latent-latent child-set conditional rank drop to 0 where it was
-        // previously positive. This is the "common parent" signal you were after.
+        // Phase 2: look for additional shared parents that explain existing latent edges.
         boolean foundShared;
         do {
             foundShared = false;
 
-            Node bestShared = null;
-            int bestExplainedPairs = 0;
-            double bestStrength = Double.NEGATIVE_INFINITY;
+            SharedParentCandidate bestCandidate = findBestSharedParentCandidate(
+                    graph, expandedLatents, fullParents, unused, variables, s, sampleSize, alpha
+            );
 
-            for (Node candidate : unused) {
-                if (fullParents.contains(candidate)) {
-                    continue;
+            if (bestCandidate != null) {
+                for (Node parent : bestCandidate.parents()) {
+                    if (!fullParents.contains(parent)) {
+                        fullParents.add(parent);
+                        newParents.add(parent);
+                    }
                 }
 
-                List<Node> proposedCond = new ArrayList<>(fullParents);
-                proposedCond.add(candidate);
+                foundShared = true;
 
-                int explainedPairs = countExplainedLatentPairs(
+                System.out.println("Phase 2 added shared parent set " + bestCandidate.parents()
+                        + ", fullParentSet = " + fullParents
+                        + ", explained latent pairs = "
+                        + countExplainedExistingLatentPairs(
+                        graph,
+                        expandedLatents,
+                        new ArrayList<>(fullParents),
+                        variables,
+                        s,
+                        sampleSize,
+                        alpha
+                ));
+            }
+        } while (foundShared);
+
+        System.out.println("Discovered expansion for subset " + expandedLatents
+                + "; fullParentSet = " + fullParents
+                + "; newParents = " + newParents);
+
+        return new ExpansionResult(
+                true,
+                expandedLatents,
+                new ArrayList<>(fullParents),
+                new ArrayList<>(newParents)
+        );
+    }
+
+    private static final class SharedParentCandidate {
+        private final List<Node> parents;
+        private final int explainedPairs;
+        private final double strength;
+
+        private SharedParentCandidate(List<Node> parents, int explainedPairs, double strength) {
+            this.parents = new ArrayList<>(parents);
+            this.explainedPairs = explainedPairs;
+            this.strength = strength;
+        }
+
+        public List<Node> parents() {
+            return new ArrayList<>(this.parents);
+        }
+
+        public int explainedPairs() {
+            return this.explainedPairs;
+        }
+
+        public double strength() {
+            return this.strength;
+        }
+    }
+
+    private SharedParentCandidate findBestSharedParentCandidate(Graph graph,
+                                                                List<Node> expandedLatents,
+                                                                Collection<Node> fullParents,
+                                                                Set<Node> unused,
+                                                                List<Node> variables,
+                                                                SimpleMatrix s,
+                                                                int sampleSize,
+                                                                double alpha) {
+        List<Node> childSet = getObservedChildrenUnion(graph, expandedLatents);
+
+        SharedParentCandidate best = null;
+
+        // First try singleton candidates.
+        for (Node candidate : unused) {
+            if (fullParents.contains(candidate)) {
+                continue;
+            }
+
+            List<Node> proposedCond = new ArrayList<>(fullParents);
+            proposedCond.add(candidate);
+
+            int explainedPairs = countExplainedExistingLatentPairs(
+                    graph,
+                    expandedLatents,
+                    proposedCond,
+                    variables,
+                    s,
+                    sampleSize,
+                    alpha
+            );
+
+            if (explainedPairs == 0) {
+                continue;
+            }
+
+            double strength = blockStrength(proposedCond, childSet, variables, s);
+
+            if (best == null
+                    || explainedPairs > best.explainedPairs()
+                    || (explainedPairs == best.explainedPairs() && strength > best.strength())) {
+                best = new SharedParentCandidate(Collections.singletonList(candidate), explainedPairs, strength);
+            }
+        }
+
+        // If latent subset is a pair, also try PAIRS of candidates.
+        if (expandedLatents.size() == 2) {
+            List<Node> candidates = new ArrayList<>(unused);
+            candidates.removeAll(fullParents);
+
+            ChoiceGenerator gen = new ChoiceGenerator(candidates.size(), 2);
+            int[] choice;
+
+            while ((choice = gen.next()) != null) {
+                Node c1 = candidates.get(choice[0]);
+                Node c2 = candidates.get(choice[1]);
+
+                List<Node> proposedCond = new ArrayList<>(fullParents);
+                proposedCond.add(c1);
+                proposedCond.add(c2);
+
+                int explainedPairs = countExplainedExistingLatentPairs(
                         graph,
                         expandedLatents,
                         proposedCond,
@@ -541,36 +850,55 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
 
                 double strength = blockStrength(proposedCond, childSet, variables, s);
 
-                if (explainedPairs > bestExplainedPairs ||
-                        (explainedPairs == bestExplainedPairs && strength > bestStrength)) {
-                    bestExplainedPairs = explainedPairs;
-                    bestStrength = strength;
-                    bestShared = candidate;
+                if (best == null
+                        || explainedPairs > best.explainedPairs()
+                        || (explainedPairs == best.explainedPairs() && strength > best.strength())) {
+                    best = new SharedParentCandidate(Arrays.asList(c1, c2), explainedPairs, strength);
                 }
             }
+        }
 
-            if (bestShared != null) {
-                fullParents.add(bestShared);
-                newParents.add(bestShared);
-                foundShared = true;
+        return best;
+    }
 
-                System.out.println("Phase 2 added shared parent " + bestShared
-                        + ", fullParentSet = " + fullParents
-                        + ", explained latent pairs = "
-                        + countExplainedLatentPairs(graph, expandedLatents, fullParents, variables, s, sampleSize, alpha));
-            }
-        } while (foundShared);
+    private static final class ExpansionProposal {
+        private final List<Node> originatingSubset;
+        private final List<Node> expandedSubset;
+        private final List<Node> fullParentSet;
+        private final List<Node> newParents;
+        private final int targetRank;
 
-        System.out.println("Reached target rank for expanded subset " + expandedLatents
-                + "; fullParentSet = " + fullParents
-                + "; newParents = " + newParents);
+        private ExpansionProposal(List<Node> originatingSubset,
+                                  List<Node> expandedSubset,
+                                  List<Node> fullParentSet,
+                                  List<Node> newParents,
+                                  int targetRank) {
+            this.originatingSubset = new ArrayList<>(originatingSubset);
+            this.expandedSubset = new ArrayList<>(expandedSubset);
+            this.fullParentSet = new ArrayList<>(fullParentSet);
+            this.newParents = new ArrayList<>(newParents);
+            this.targetRank = targetRank;
+        }
 
-        return new ExpansionResult(
-                true,
-                expandedLatents,
-                new ArrayList<>(fullParents),
-                new ArrayList<>(newParents)
-        );
+        public List<Node> getOriginatingSubset() {
+            return new ArrayList<>(this.originatingSubset);
+        }
+
+        public List<Node> getExpandedSubset() {
+            return new ArrayList<>(this.expandedSubset);
+        }
+
+        public List<Node> getFullParentSet() {
+            return new ArrayList<>(this.fullParentSet);
+        }
+
+        public List<Node> getNewParents() {
+            return new ArrayList<>(this.newParents);
+        }
+
+        public int getTargetRank() {
+            return this.targetRank;
+        }
     }
 
     private int countExplainedLatentPairs(Graph graph,

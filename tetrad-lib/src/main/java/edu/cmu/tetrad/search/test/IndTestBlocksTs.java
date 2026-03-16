@@ -346,10 +346,12 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
                     "? estRank(min over trials)=" + bestRank + ", target(sum ranks)=" + target + " -> " + (indep ? "INDEP" : "DEP"));
         }
 
-        if (indep) {
-            System.out.println(LogUtilsSearch.independenceFactMsg(x, y, z, Double.NaN));
-        } else {
-            System.out.println(LogUtilsSearch.dependenceFactMsg(x, y, z, Double.NaN));
+        if (verbose) {
+            if (indep) {
+                System.out.println(LogUtilsSearch.independenceFactMsg(x, y, z, Double.NaN));
+            } else {
+                System.out.println(LogUtilsSearch.dependenceFactMsg(x, y, z, Double.NaN));
+            }
         }
 
         return new IndependenceResult(new IndependenceFact(x, y, z), indep, Double.NaN, // p-value intentionally not exposed
