@@ -21,10 +21,14 @@
 package edu.cmu.tetrad.search.mimic;
 
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.annotation.Score;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.DmBossRobust;
 import edu.cmu.tetrad.search.DmPc;
+import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -34,14 +38,14 @@ import edu.cmu.tetrad.util.Params;
  *
  * @author josephramsey
  */
-public final class DmPcRunner implements MimicSearchRunner {
+public final class DmBossRobustRunner implements MimicSearchRunner {
 
     /**
      * {@inheritDoc}
      */
     @Override
     public String getName() {
-        return "DM-PC";
+        return "DM-BOSS-Robust";
     }
 
     /**
@@ -53,8 +57,10 @@ public final class DmPcRunner implements MimicSearchRunner {
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setVerbose(false);
 
-        DmPc search = new DmPc(test);
-        search.setKnowledge(knowledge);
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
+        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+
+        DmBossRobust search = new DmBossRobust(score, knowledge);
 
         return search.search();
     }

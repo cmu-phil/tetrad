@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search.mimic;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -56,6 +55,11 @@ public final class MimicBenchmark {
     private final MimicEvaluator evaluator;
 
     /**
+     * Evaluator for latent-latent edge adequacy.
+     */
+    private final LatentLatentEvaluator latentLatentEvaluator;
+
+    /**
      * Search runners to benchmark.
      */
     private final List<MimicSearchRunner> runners;
@@ -67,9 +71,11 @@ public final class MimicBenchmark {
     public MimicBenchmark() {
         this.generator = new RandomMimicGraphGenerator();
         this.evaluator = new MimicEvaluator();
+        this.latentLatentEvaluator = new LatentLatentEvaluator();
         this.runners = new ArrayList<>();
 
         this.runners.add(new DmPcRunner());
+        this.runners.add(new DmBossRobustRunner());
         this.runners.add(new DmMgRunner());
         this.runners.add(new TrekMimicRunner());
     }
@@ -90,6 +96,7 @@ public final class MimicBenchmark {
 
         this.generator = generator;
         this.evaluator = evaluator;
+        this.latentLatentEvaluator = new LatentLatentEvaluator();
         this.runners = new ArrayList<>(runners);
     }
 
@@ -106,16 +113,27 @@ public final class MimicBenchmark {
 
         Map<String, Graph> estimatedGraphs = new LinkedHashMap<>();
         Map<String, MimicEvaluation> evaluations = new LinkedHashMap<>();
+        Map<String, LatentLatentEvaluator.Report> latentLatentReports = new LinkedHashMap<>();
 
         for (MimicSearchRunner runner : this.runners) {
             Graph estimated = runner.run(measuredData, knowledge, parameters);
             MimicEvaluation evaluation = this.evaluator.evaluate(trueModel, estimated);
+            LatentLatentEvaluator.Report latentLatentReport =
+                    this.latentLatentEvaluator.evaluate(trueModel.getGraph(), estimated);
 
             estimatedGraphs.put(runner.getName(), estimated);
             evaluations.put(runner.getName(), evaluation);
+            latentLatentReports.put(runner.getName(), latentLatentReport);
         }
 
-        return new MimicTrialResult(trueModel, measuredData, knowledge, estimatedGraphs, evaluations);
+        return new MimicTrialResult(
+                trueModel,
+                measuredData,
+                knowledge,
+                estimatedGraphs,
+                evaluations,
+                latentLatentReports
+        );
     }
 
     /**

@@ -116,11 +116,11 @@ public class Dm extends AbstractBootstrapAlgorithm implements Algorithm,
         }
 
         IndependenceTest test = this.test.getTest(dataModel, parameters);
-//        Score _score = this.score.getScore(dataModel, parameters);
+        Score _score = this.score.getScore(dataModel, parameters);
 
-        edu.cmu.tetrad.search.DmPc search = new edu.cmu.tetrad.search.DmPc(test);
-        search.setKnowledge(knowledge);
-//        edu.cmu.tetrad.search.DmBossRobust search = new edu.cmu.tetrad.search.DmBossRobust(_score, knowledge);
+//        edu.cmu.tetrad.search.DmPc search = new edu.cmu.tetrad.search.DmPc(test);
+//        search.setKnowledge(knowledge);
+        edu.cmu.tetrad.search.DmBossRobust search = new edu.cmu.tetrad.search.DmBossRobust(_score, knowledge);
 
         return search.search();
     }

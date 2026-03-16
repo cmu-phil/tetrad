@@ -43,6 +43,10 @@ public final class MimicBenchmarkResult {
      * @param trials the trial results
      */
     public MimicBenchmarkResult(List<MimicTrialResult> trials) {
+        if (trials == null) {
+            throw new NullPointerException("Trials must not be null.");
+        }
+
         this.trials = new ArrayList<>(trials);
     }
 
@@ -100,5 +104,109 @@ public final class MimicBenchmarkResult {
         }
 
         return averages;
+    }
+
+    /**
+     * Returns the pooled number of true positive latent-latent edges by algorithm.
+     *
+     * @return pooled true positives by algorithm
+     */
+    public Map<String, Integer> getPooledLatentEdgeTruePositives() {
+        Map<String, Integer> totals = new LinkedHashMap<>();
+
+        for (MimicTrialResult trial : this.trials) {
+            for (Map.Entry<String, LatentLatentEvaluator.Report> entry : trial.getLatentLatentReports().entrySet()) {
+                String name = entry.getKey();
+                LatentLatentEvaluator.Report report = entry.getValue();
+
+                totals.put(name, totals.getOrDefault(name, 0) + report.getTruePositives());
+            }
+        }
+
+        return totals;
+    }
+
+    /**
+     * Returns the pooled number of false positive latent-latent edges by algorithm.
+     *
+     * @return pooled false positives by algorithm
+     */
+    public Map<String, Integer> getPooledLatentEdgeFalsePositives() {
+        Map<String, Integer> totals = new LinkedHashMap<>();
+
+        for (MimicTrialResult trial : this.trials) {
+            for (Map.Entry<String, LatentLatentEvaluator.Report> entry : trial.getLatentLatentReports().entrySet()) {
+                String name = entry.getKey();
+                LatentLatentEvaluator.Report report = entry.getValue();
+
+                totals.put(name, totals.getOrDefault(name, 0) + report.getFalsePositives());
+            }
+        }
+
+        return totals;
+    }
+
+    /**
+     * Returns the pooled number of false negative latent-latent edges by algorithm.
+     *
+     * @return pooled false negatives by algorithm
+     */
+    public Map<String, Integer> getPooledLatentEdgeFalseNegatives() {
+        Map<String, Integer> totals = new LinkedHashMap<>();
+
+        for (MimicTrialResult trial : this.trials) {
+            for (Map.Entry<String, LatentLatentEvaluator.Report> entry : trial.getLatentLatentReports().entrySet()) {
+                String name = entry.getKey();
+                LatentLatentEvaluator.Report report = entry.getValue();
+
+                totals.put(name, totals.getOrDefault(name, 0) + report.getFalseNegatives());
+            }
+        }
+
+        return totals;
+    }
+
+    /**
+     * Returns pooled latent-latent edge precision by algorithm.
+     *
+     * @return pooled latent-latent edge precision by algorithm
+     */
+    public Map<String, Double> getPooledLatentEdgePrecision() {
+        Map<String, Integer> tp = getPooledLatentEdgeTruePositives();
+        Map<String, Integer> fp = getPooledLatentEdgeFalsePositives();
+        Map<String, Double> precision = new LinkedHashMap<>();
+
+        for (String name : tp.keySet()) {
+            int tpCount = tp.getOrDefault(name, 0);
+            int fpCount = fp.getOrDefault(name, 0);
+
+            precision.put(name, tpCount + fpCount == 0
+                    ? Double.NaN
+                    : (double) tpCount / (tpCount + fpCount));
+        }
+
+        return precision;
+    }
+
+    /**
+     * Returns pooled latent-latent edge recall by algorithm.
+     *
+     * @return pooled latent-latent edge recall by algorithm
+     */
+    public Map<String, Double> getPooledLatentEdgeRecall() {
+        Map<String, Integer> tp = getPooledLatentEdgeTruePositives();
+        Map<String, Integer> fn = getPooledLatentEdgeFalseNegatives();
+        Map<String, Double> recall = new LinkedHashMap<>();
+
+        for (String name : tp.keySet()) {
+            int tpCount = tp.getOrDefault(name, 0);
+            int fnCount = fn.getOrDefault(name, 0);
+
+            recall.put(name, tpCount + fnCount == 0
+                    ? Double.NaN
+                    : (double) tpCount / (tpCount + fnCount));
+        }
+
+        return recall;
     }
 }
