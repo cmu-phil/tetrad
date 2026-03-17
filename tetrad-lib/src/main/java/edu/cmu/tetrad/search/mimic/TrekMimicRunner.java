@@ -41,7 +41,7 @@ public final class TrekMimicRunner implements MimicSearchRunner {
      */
     @Override
     public String getName() {
-        return "TM";
+        return "Trek-MIMIC";
     }
 
     /**
