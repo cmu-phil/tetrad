@@ -341,66 +341,6 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         return new ArrayList<>(children);
     }
 
-    private List<Node> getObservedChildren(Graph graph, Node latent) {
-        return getObservedChildrenUnion(graph, Collections.singletonList(latent));
-    }
-
-    private Map<List<Node>, Integer> evalutePairRanks(Graph graph, List<Node> initialPool,
-                                                      List<Node> allLatents,
-                                                      List<Node> variables,
-                                                      SimpleMatrix s,
-                                                      int sampleSize,
-                                                      double alpha) {
-        List<Node> pool = new ArrayList<>(initialPool);
-        Map<List<Node>, Integer> pairRanks = new HashMap<>();
-
-        ChoiceGenerator gen = new ChoiceGenerator(pool.size(), 2);
-        int[] choice;
-
-        while ((choice = gen.next()) != null) {
-            List<Node> pair = GraphUtils.asList(choice, pool);
-            int rank = getRankOfGroupAboveTheseLatents(graph, pair, allLatents, variables, s, sampleSize, alpha);
-            pairRanks.put(pair, rank);
-        }
-
-        return pairRanks;
-    }
-
-    private int getRankOfGroupAboveTheseLatents(Graph graph, List<Node> group, List<Node> latents, List<Node> measures, SimpleMatrix s,
-                                                int sampleSize, double alpha) {
-        List<Node> observedChildrenUnion = getObservedChildrenUnion(graph, latents);
-        return estimateRank(group, observedChildrenUnion, measures, s, sampleSize, alpha);
-    }
-
-    private int estimateRank(List<Node> xSet,
-                             List<Node> ySet,
-                             List<Node> variables,
-                             SimpleMatrix s,
-                             int sampleSize,
-                             double alpha) {
-        List<Node> x = new ArrayList<>(xSet);
-        List<Node> y = new ArrayList<>(ySet);
-
-        x.removeAll(y);
-
-        if (x.isEmpty() || y.isEmpty()) {
-            return Integer.MAX_VALUE;
-        }
-
-        int[] xIndices = new int[x.size()];
-        int[] yIndices = new int[y.size()];
-
-        for (int i = 0; i < x.size(); i++) {
-            xIndices[i] = variables.indexOf(x.get(i));
-        }
-
-        for (int i = 0; i < y.size(); i++) {
-            yIndices[i] = variables.indexOf(y.get(i));
-        }
-
-        return RankTests.estimateWilksRank(s, xIndices, yIndices, sampleSize, alpha);
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -486,44 +426,6 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             for (Node node : outputs) {
                 if (node != null) {
                     this.outputNames.add(node.getName());
-                }
-            }
-        }
-
-        validateInputOutputKnowledge();
-    }
-
-    /**
-     * Sets the observed variable names known to be inputs to the latent structure.
-     *
-     * @param inputNames the input variable names
-     */
-    public void setInputNames(Collection<String> inputNames) {
-        this.inputNames.clear();
-
-        if (inputNames != null) {
-            for (String name : inputNames) {
-                if (name != null) {
-                    this.inputNames.add(name);
-                }
-            }
-        }
-
-        validateInputOutputKnowledge();
-    }
-
-    /**
-     * Sets the observed variable names known to be outputs from the latent structure.
-     *
-     * @param outputNames the output variable names
-     */
-    public void setOutputNames(Collection<String> outputNames) {
-        this.outputNames.clear();
-
-        if (outputNames != null) {
-            for (String name : outputNames) {
-                if (name != null) {
-                    this.outputNames.add(name);
                 }
             }
         }
