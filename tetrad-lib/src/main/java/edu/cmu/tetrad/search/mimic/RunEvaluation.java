@@ -8,16 +8,16 @@ public class RunEvaluation {
     public static void main(String[] args) {
         Parameters parameters = new Parameters();
 
-        parameters.set("mimicNumInputs", 20);
-        parameters.set("mimicNumLatents", 6);
-        parameters.set("mimicNumOutputs", 20);
+        parameters.set("mimicNumInputs", 10);
+        parameters.set("mimicNumLatents", 4);
+        parameters.set("mimicNumOutputs", 10);
         parameters.set("mimicSinglyConnected", true);
 
-        parameters.set("mimicLatentEdgeProb", 0.4);
+        parameters.set("mimicLatentEdgeProb", 0.25);
         parameters.set("mimicInputAttachProb", 0.35);
         parameters.set("mimicOutputAttachProb", 0.35);
 
-        parameters.set("maxLatentSubsetSize", 6);
+        parameters.set("maxLatentSubsetSize", 3);
 
         parameters.set(Params.ALPHA, 0.01);
         parameters.set(Params.SAMPLE_SIZE, 10000);
@@ -31,6 +31,11 @@ public class RunEvaluation {
         MimicBenchmarkResult result = benchmark.runTrials(parameters, 50);
 
         MimicBenchmarkReport report = new MimicBenchmarkReport();
-        System.out.println(report.createReport(result));
+        System.out.println(report.createReport(result, parameters));
+//
+//        MimicBenchmarkReportTdf report = new MimicBenchmarkReportTdf();
+//        String text = report.createReport(result, parameters);
+//
+//        System.out.println(text);
     }
 }

@@ -20,11 +20,10 @@
 
 package edu.cmu.tetrad.search.mimic;
 
+import edu.cmu.tetrad.util.Parameters;
+
 import java.text.DecimalFormat;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Produces a readable text report for a MIMIC benchmark run.
@@ -69,7 +68,7 @@ public final class MimicBenchmarkReport {
      * @param result the benchmark result
      * @return the report text
      */
-    public String createReport(MimicBenchmarkResult result) {
+    public String createReport(MimicBenchmarkResult result, Parameters parameters) {
         if (result == null) {
             throw new NullPointerException("Benchmark result must not be null.");
         }
@@ -81,6 +80,8 @@ public final class MimicBenchmarkReport {
         sb.append("\nMIMIC Benchmark Report\n");
         sb.append("=====================\n");
         sb.append("Trials: ").append(trials.size()).append('\n');
+
+        appendParameterTable(sb, parameters);
 
         if (trials.isEmpty()) {
             sb.append("\n(no trials)\n");
@@ -98,6 +99,25 @@ public final class MimicBenchmarkReport {
         }
 
         return sb.toString();
+    }
+
+    /**
+     * Appends a tab-delimited parameter table.
+     *
+     * @param sb the string builder
+     * @param parameters the parameters
+     */
+    private void appendParameterTable(StringBuilder sb, Parameters parameters) {
+        sb.append("SETTINGS\n");
+        sb.append("name\tvalue\n");
+
+        List<String> names = new ArrayList<>(parameters.getParametersNames());
+        Collections.sort(names);
+
+        for (String name : names) {
+            Object value = parameters.get(name);
+            sb.append(name).append('\t').append(value).append('\n');
+        }
     }
 
     /**

@@ -33,7 +33,7 @@ import java.util.Set;
  * <ul>
  *     <li>The graph already contains the latent nodes.</li>
  *     <li>The graph already contains latent -> indicator edges.</li>
- *     <li>The initial pool contains measured non-indicator variables that may be
+ *     <li>The initial pool contains measured non-idicator variables that may be
  *     parents of one or more latents.</li>
  * </ul>
  * </p>

@@ -52,8 +52,8 @@ import java.util.*;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "TM",
-        command = "tm",
+        name = "Trek-M",
+        command = "trek-m",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
@@ -320,7 +320,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
      */
     @Override
     public String getDescription() {
-        return "TM (Trek-MIMIC) using " + this.test.getDescription();
+        return "Trek-M (Trek-MIMIC) using " + this.test.getDescription();
     }
 
     /**
