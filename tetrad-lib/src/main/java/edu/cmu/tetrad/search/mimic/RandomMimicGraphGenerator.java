@@ -169,6 +169,8 @@ public final class RandomMimicGraphGenerator {
                                          List<Node> outputs) {
         buildLatentTree(graph, latents);
         attachInputsSingly(graph, inputs, latents);
+//        double extraInputLatentProb = 0.4;
+//        addExtraInputToLatentEdges(graph, inputs, latents, extraInputLatentProb);
         attachOutputsSingly(graph, latents, outputs);
     }
 
@@ -306,6 +308,38 @@ public final class RandomMimicGraphGenerator {
 
             if (!graph.isParentOf(input, latent)) {
                 graph.addDirectedEdge(input, latent);
+            }
+        }
+    }
+
+    private void addExtraInputToLatentEdges(Graph graph,
+                                            List<Node> inputs,
+                                            List<Node> latents,
+                                            double extraInputLatentProb) {
+        for (Node input : inputs) {
+            if (RandomUtil.getInstance().nextDouble() >= extraInputLatentProb) {
+                continue;
+            }
+
+            List<Node> currentChildren = new ArrayList<>();
+
+            for (Node child : graph.getChildren(input)) {
+                if (child.getNodeType() == NodeType.LATENT) {
+                    currentChildren.add(child);
+                }
+            }
+
+            List<Node> candidates = new ArrayList<>(latents);
+            candidates.removeAll(currentChildren);
+
+            if (candidates.isEmpty()) {
+                continue;
+            }
+
+            Node extraLatent = candidates.get(RandomUtil.getInstance().nextInt(candidates.size()));
+
+            if (!graph.isParentOf(input, extraLatent)) {
+                graph.addDirectedEdge(input, extraLatent);
             }
         }
     }

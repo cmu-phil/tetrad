@@ -16,7 +16,7 @@ public class RunEvaluation {
         parameters.set("mimicInputAttachProb", 0.35);
         parameters.set("mimicOutputAttachProb", 0.35);
 
-        parameters.set("maxLatentSubsetSize", 3);
+        parameters.set("maxLatentSubsetSize", 2);
 
         parameters.set(Params.ALPHA, 0.00001);
         parameters.set(Params.SAMPLE_SIZE, 10000);
