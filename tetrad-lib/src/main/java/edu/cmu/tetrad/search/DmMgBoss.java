@@ -155,10 +155,6 @@ public class DmMgBoss implements IGraphSearch {
         finalRefinement(graph);
         removeDegenerateLatents(graph);
 
-        pruneLatentSubsetEdges(inputClasses, graph);
-//        finalRefinement(graph);
-//        removeDegenerateLatents(graph);
-
         return graph;
     }
 
