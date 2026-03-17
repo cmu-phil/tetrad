@@ -213,16 +213,25 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         return graph;
     }
 
-    private void orientLatentEdgesByCorrelationOfParentsAndChildren(Graph graph, List<Node> variables, SimpleMatrix s, int sampleSize, double alpha) {
-        for (Edge edge : graph.getEdges()) {
+    private void orientLatentEdgesByCorrelationOfParentsAndChildren(Graph graph,
+                                                                    List<Node> variables,
+                                                                    SimpleMatrix s,
+                                                                    int sampleSize,
+                                                                    double alpha) {
+
+        for (Edge edge : new ArrayList<>(graph.getEdges())) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            List<Node> parentsx = graph.getParents(x);
-            List<Node> parentsy = graph.getParents(y);
+            if (x.getNodeType() != NodeType.LATENT || y.getNodeType() != NodeType.LATENT) {
+                continue;
+            }
 
-            List<Node> childrenx = graph.getChildren(x);
-            List<Node> childreny = graph.getChildren(y);
+            List<Node> parentsx = new ArrayList<>(graph.getParents(x));
+            List<Node> parentsy = new ArrayList<>(graph.getParents(y));
+
+            List<Node> childrenx = new ArrayList<>(graph.getChildren(x));
+            List<Node> childreny = new ArrayList<>(graph.getChildren(y));
 
             parentsx.removeIf(n -> n.getNodeType() == NodeType.LATENT);
             parentsy.removeIf(n -> n.getNodeType() == NodeType.LATENT);
@@ -237,16 +246,17 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
                 for (Node childy : childreny) {
                     if (correlated(parentx, childy, variables, s, sampleSize, alpha)) {
                         allUncorrelatedxy = false;
+                        break;
                     }
                     pairTestedxy = true;
                 }
+
+                if (!allUncorrelatedxy) {
+                    break;
+                }
             }
 
-            if (allUncorrelatedxy && pairTestedxy) {
-                graph.removeEdge(edge);
-                graph.addDirectedEdge(y, x);
-                continue;
-            }
+            boolean orientYtoX = allUncorrelatedxy && pairTestedxy;
 
             boolean allUncorrelatedyx = true;
             boolean pairTestedyx = false;
@@ -255,13 +265,29 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
                 for (Node childx : childrenx) {
                     if (correlated(parenty, childx, variables, s, sampleSize, alpha)) {
                         allUncorrelatedyx = false;
+                        break;
                     }
                     pairTestedyx = true;
                 }
+
+                if (!allUncorrelatedyx) {
+                    break;
+                }
             }
 
-            if (allUncorrelatedyx && pairTestedyx) {
-                graph.removeEdge(edge);
+            boolean orientXtoY = allUncorrelatedyx && pairTestedyx;
+
+            if (orientYtoX == orientXtoY) {
+                // Either both directions are supported or neither is supported.
+                // In either case, leave the edge unoriented.
+                continue;
+            }
+
+            graph.removeEdge(edge);
+
+            if (orientYtoX) {
+                graph.addDirectedEdge(y, x);
+            } else {
                 graph.addDirectedEdge(x, y);
             }
         }
