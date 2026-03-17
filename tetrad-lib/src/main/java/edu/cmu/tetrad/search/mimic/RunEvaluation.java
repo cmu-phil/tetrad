@@ -11,8 +11,7 @@ public class RunEvaluation {
         parameters.set("mimicNumInputs", 12);
         parameters.set("mimicNumLatents", 4);
         parameters.set("mimicNumOutputs", 12);
-        parameters.set("mimicSinglyConnected", true);
-
+        parameters.set("mimicSinglyConnected", false);
         parameters.set("mimicLatentEdgeProb", 0.3);
         parameters.set("mimicInputAttachProb", 0.35);
         parameters.set("mimicOutputAttachProb", 0.35);

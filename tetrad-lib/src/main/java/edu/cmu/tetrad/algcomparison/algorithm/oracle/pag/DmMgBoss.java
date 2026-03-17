@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -25,8 +25,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
@@ -35,6 +37,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -45,10 +48,10 @@ import java.util.List;
 
 /**
  * Algorithm-comparison wrapper for the Murray-Watters/Glymour style Detect-Mimic
- * search, DM-MG.
+ * search, DM-MG-BOSS.
  *
  * <p>This wrapper builds the requested independence test from the supplied
- * {@link IndependenceWrapper}, runs {@link DmMg}, and returns the resulting graph.</p>
+ * {@link IndependenceWrapper}, runs DM-MD-BOSS, and returns the resulting graph.</p>
  *
  * <p>The underlying DM-MG search internally performs both a depth-0 PC run and a
  * full-depth PC run as part of the Murray-Watters/Glymour procedure. Accordingly,
@@ -57,13 +60,13 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "DM-MG",
-        command = "dm-mg",
+        name = "DM-MG-BOSS",
+        command = "dm-mg-boss",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class DmMg extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
-        ReturnsBootstrapGraphs, TakesIndependenceWrapper {
+public class DmMgBoss extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+        ReturnsBootstrapGraphs, TakesIndependenceWrapper, TakesScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -74,6 +77,11 @@ public class DmMg extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     private IndependenceWrapper test;
 
     /**
+     * The score to use.
+     */
+    private ScoreWrapper score;
+
+    /**
      * Background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
@@ -81,7 +89,7 @@ public class DmMg extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     /**
      * Constructs the algorithm with a default Fisher Z test.
      */
-    public DmMg() {
+    public DmMgBoss() {
         this(new FisherZ());
     }
 
@@ -90,7 +98,7 @@ public class DmMg extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      *
      * @param test the independence wrapper
      */
-    public DmMg(IndependenceWrapper test) {
+    public DmMgBoss(IndependenceWrapper test) {
         if (test == null) {
             throw new NullPointerException("Independence wrapper must not be null.");
         }
@@ -112,7 +120,9 @@ public class DmMg extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         IndependenceTest test = this.test.getTest(dataModel, parameters);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
 
-        edu.cmu.tetrad.search.DmMg search = new edu.cmu.tetrad.search.DmMg(test);
+        Score score = this.score.getScore(dataModel, parameters);
+
+        edu.cmu.tetrad.search.DmMgBoss search = new edu.cmu.tetrad.search.DmMgBoss(test, score);
 //        search.setKnowledge(this.knowledge);
 
         if (knowledge != null && !knowledge.getTier(0).isEmpty() && !knowledge.getTier(1).isEmpty()) {
@@ -158,7 +168,8 @@ public class DmMg extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      */
     @Override
     public String getDescription() {
-        return "DM-MG using " + this.test.getDescription();
+        return "DM-MG-BOSS using " + this.test.getDescription()
+                + " and " + this.score.getDescription();
     }
 
     /**
@@ -212,5 +223,15 @@ public class DmMg extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
+    }
+
+    @Override
+    public ScoreWrapper getScoreWrapper() {
+        return this.score;
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
     }
 }
