@@ -218,8 +218,9 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
                                                                     SimpleMatrix s,
                                                                     int sampleSize,
                                                                     double alpha) {
+        List<Edge> edges = new ArrayList<>(graph.getEdges());
 
-        for (Edge edge : new ArrayList<>(graph.getEdges())) {
+        for (Edge edge : edges) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -239,56 +240,57 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
             childrenx.removeIf(n -> n.getNodeType() == NodeType.LATENT);
             childreny.removeIf(n -> n.getNodeType() == NodeType.LATENT);
 
-            boolean allUncorrelatedxy = true;
+            boolean allCorrelatedxy = true;
             boolean pairTestedxy = false;
 
             for (Node parentx : parentsx) {
                 for (Node childy : childreny) {
-                    if (correlated(parentx, childy, variables, s, sampleSize, alpha)) {
-                        allUncorrelatedxy = false;
+                    pairTestedxy = true;
+
+                    if (!correlated(parentx, childy, variables, s, sampleSize, alpha)) {
+                        allCorrelatedxy = false;
                         break;
                     }
-                    pairTestedxy = true;
                 }
 
-                if (!allUncorrelatedxy) {
+                if (!allCorrelatedxy) {
                     break;
                 }
             }
 
-            boolean orientYtoX = allUncorrelatedxy && pairTestedxy;
+            boolean orientXtoY = allCorrelatedxy && pairTestedxy;
 
-            boolean allUncorrelatedyx = true;
+            boolean allCorrelatedyx = true;
             boolean pairTestedyx = false;
 
             for (Node parenty : parentsy) {
                 for (Node childx : childrenx) {
-                    if (correlated(parenty, childx, variables, s, sampleSize, alpha)) {
-                        allUncorrelatedyx = false;
+                    pairTestedyx = true;
+
+                    if (!correlated(parenty, childx, variables, s, sampleSize, alpha)) {
+                        allCorrelatedyx = false;
                         break;
                     }
-                    pairTestedyx = true;
                 }
 
-                if (!allUncorrelatedyx) {
+                if (!allCorrelatedyx) {
                     break;
                 }
             }
 
-            boolean orientXtoY = allUncorrelatedyx && pairTestedyx;
+            boolean orientYtoX = allCorrelatedyx && pairTestedyx;
 
-            if (orientYtoX == orientXtoY) {
-                // Either both directions are supported or neither is supported.
-                // In either case, leave the edge unoriented.
+            // If both directions are supported or neither is supported, leave unoriented.
+            if (orientXtoY == orientYtoX) {
                 continue;
             }
 
             graph.removeEdge(edge);
 
-            if (orientYtoX) {
-                graph.addDirectedEdge(y, x);
-            } else {
+            if (orientXtoY) {
                 graph.addDirectedEdge(x, y);
+            } else {
+                graph.addDirectedEdge(y, x);
             }
         }
     }
