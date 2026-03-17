@@ -36,6 +36,7 @@ import edu.cmu.tetrad.search.blocks.BlocksUtil;
 import edu.cmu.tetrad.search.blocks.SingleClusterPolicy;
 import edu.cmu.tetrad.search.test.IndTestBlocksTs;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.*;
 import org.ejml.simple.SimpleMatrix;
 
@@ -208,7 +209,78 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
                 alpha
         );
 
+        orientLatentEdgesByCorrelationOfParentsAndChildren(graph, variables, s, sampleSize, alpha);
         return graph;
+    }
+
+    private void orientLatentEdgesByCorrelationOfParentsAndChildren(Graph graph, List<Node> variables, SimpleMatrix s, int sampleSize, double alpha) {
+        for (Edge edge : graph.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            List<Node> parentsx = graph.getParents(x);
+            List<Node> parentsy = graph.getParents(y);
+
+            List<Node> childrenx = graph.getChildren(x);
+            List<Node> childreny = graph.getChildren(y);
+
+            parentsx.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+            parentsy.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+
+            childrenx.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+            childreny.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+
+            boolean allUncorrelatedxy = true;
+            boolean pairTestedxy = false;
+
+            for (Node parentx : parentsx) {
+                for (Node childy : childreny) {
+                    if (correlated(parentx, childy, variables, s, sampleSize, alpha)) {
+                        allUncorrelatedxy = false;
+                    }
+                    pairTestedxy = true;
+                }
+            }
+
+            if (allUncorrelatedxy && pairTestedxy) {
+                graph.removeEdge(edge);
+                graph.addDirectedEdge(y, x);
+                continue;
+            }
+
+            boolean allUncorrelatedyx = true;
+            boolean pairTestedyx = false;
+
+            for (Node parenty : parentsy) {
+                for (Node childx : childrenx) {
+                    if (correlated(parenty, childx, variables, s, sampleSize, alpha)) {
+                        allUncorrelatedyx = false;
+                    }
+                    pairTestedyx = true;
+                }
+            }
+
+            if (allUncorrelatedyx && pairTestedyx) {
+                graph.removeEdge(edge);
+                graph.addDirectedEdge(x, y);
+            }
+        }
+    }
+
+    private boolean correlated(Node a, Node b, List<Node> variables, SimpleMatrix s, int sampleSize, double alpha) {
+        int i = variables.indexOf(a);
+        int j = variables.indexOf(b);
+
+        double r = s.get(i, j);
+
+        if (Math.abs(r) >= 1.0) {
+            return true;
+        }
+
+        double z = 0.5 * Math.log((1.0 + r) / (1.0 - r)) * Math.sqrt(sampleSize - 3.0);
+        double cutoff = StatUtils.getZForAlpha(alpha);
+
+        return Math.abs(z) > cutoff;
     }
 
     private List<Node> getObservedParentsUnion(Graph graph, Collection<Node> latents) {
