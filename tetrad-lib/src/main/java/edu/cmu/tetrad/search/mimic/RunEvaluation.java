@@ -13,14 +13,14 @@ public class RunEvaluation {
         parameters.set("mimicNumOutputs", 20);
         parameters.set("mimicSinglyConnected", true);
 
-        parameters.set("mimicLatentEdgeProb", 0.25);
+        parameters.set("mimicLatentEdgeProb", 0.4);
         parameters.set("mimicInputAttachProb", 0.35);
         parameters.set("mimicOutputAttachProb", 0.35);
 
-        parameters.set("maxLatentSubsetSize", 3);
+        parameters.set("maxLatentSubsetSize", 6);
 
         parameters.set(Params.ALPHA, 0.01);
-        parameters.set(Params.SAMPLE_SIZE, 5000);
+        parameters.set(Params.SAMPLE_SIZE, 10000);
         parameters.set(Params.COEF_LOW, 0.1);
         parameters.set(Params.COEF_HIGH, 1.2);
         parameters.set(Params.DEPTH, -1);
