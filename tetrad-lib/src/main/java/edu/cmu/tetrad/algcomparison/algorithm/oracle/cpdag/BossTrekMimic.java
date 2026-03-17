@@ -198,23 +198,21 @@ public class BossTrekMimic extends AbstractBootstrapAlgorithm implements Algorit
         int sampleSize = data.getNumRows();
         double alpha = parameters.getDouble(Params.ALPHA);
 
-        Score score = new SemBicScore(new CovarianceMatrix(data));
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
+        score.setPenaltyDiscount(1);
 
         edu.cmu.tetrad.search.BossTrekMimic tm =
                 new edu.cmu.tetrad.search.BossTrekMimic(score);
 
         tm.setMeasurementGraph(graph);
-
-// Required for latent-edge pruning
         tm.setVariables(data.getVariables());
         tm.setMatrix(new edu.cmu.tetrad.data.CorrelationMatrix(data).getMatrix().getSimpleMatrix());
         tm.setSampleSize(data.getNumRows());
-        tm.setAlpha(parameters.getDouble(Params.ALPHA));   // or whatever you're using elsewhere
+        tm.setAlpha(parameters.getDouble(Params.ALPHA));
 
         Graph g2 = tm.search();
+        orientLatentEdgesByCorrelationOfParentsAndChildren(g2, variables, s, sampleSize, alpha);
 
-
-//        orientLatentEdgesByCorrelationOfParentsAndChildren(graph, variables, s, sampleSize, alpha);
         return g2;
     }
 

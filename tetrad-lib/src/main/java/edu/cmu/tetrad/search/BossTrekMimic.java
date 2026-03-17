@@ -172,8 +172,6 @@ public final class BossTrekMimic implements IGraphSearch {
         }
 
         pruneLatentLatentEdgesByConditionedRank(graph);
-//        removeDegenerateLatents(graph);
-
         return graph;
     }
 
