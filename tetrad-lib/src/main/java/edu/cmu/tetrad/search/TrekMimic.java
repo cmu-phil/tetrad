@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Hybrid second version of Trek-MIMIC parent recovery.
+ * Hybrid version of Trek-MIMIC parent recovery.
  *
  * <p>This version deliberately keeps the singleton-parent recovery logic from the
  * original TrekMimic, since that logic appears to work well empirically. It then
@@ -38,7 +38,7 @@ import java.util.Set;
  * </ul>
  * </p>
  */
-public final class TrekMimic2 {
+public final class TrekMimic {
 
     /**
      * Whether to run the higher-rank expansion phase.

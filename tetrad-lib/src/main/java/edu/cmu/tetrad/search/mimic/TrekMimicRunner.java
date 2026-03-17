@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.search.mimic;
 
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.TrekMimic;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.TrekMimic2;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
