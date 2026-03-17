@@ -199,7 +199,7 @@ public class TrekMimic2 extends AbstractBootstrapAlgorithm implements Algorithm,
 
         edu.cmu.tetrad.search.TrekMimic2 t2 = new edu.cmu.tetrad.search.TrekMimic2();
         t2.setDoHigherRankExpansion(true);
-        t2.setMaxLatentSubsetSize(3);
+        t2.setMaxLatentSubsetSize(parameters.getInt("maxLatentSubsetSize"));
 
         t2.recoverMeasuredParentsHybrid(
                 graph,

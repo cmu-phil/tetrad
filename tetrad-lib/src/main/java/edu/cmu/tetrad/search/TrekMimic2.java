@@ -48,7 +48,7 @@ public final class TrekMimic2 {
     /**
      * Maximum latent subset size to consider in higher-rank expansion.
      */
-    private int maxLatentSubsetSize = 3;
+    private int maxLatentSubsetSize = 2;
 
     /**
      * Runs the hybrid parent recovery procedure.
