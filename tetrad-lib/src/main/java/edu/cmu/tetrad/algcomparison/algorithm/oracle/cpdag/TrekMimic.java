@@ -143,7 +143,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
 
         ((BlocksIndTestTs) this.test).setBlockSpec(spec);
 
-        edu.cmu.tetrad.search.Pc.ColliderOrientationStyle colliderOrientationStyle = edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.MAX_P;
+//        edu.cmu.tetrad.search.Pc.ColliderOrientationStyle colliderOrientationStyle = edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.MAX_P;
 
         IndependenceTest test = this.test.getTest(dataModel, parameters);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
@@ -153,8 +153,8 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
-        search.setFasStable(true);
-        search.setColliderOrientationStyle(colliderOrientationStyle);
+        search.setFasStable(false);
+//        search.setColliderOrientationStyle(colliderOrientationStyle);
         search.setVerbose(false);
         Graph graph = search.search();
 
@@ -193,9 +193,6 @@ public class TrekMimic extends AbstractBootstrapAlgorithm implements Algorithm, 
 
         int sampleSize = data.getNumRows();
         double alpha = parameters.getDouble(Params.ALPHA);
-
-        Map<List<Node>, Integer> recoveredPairs =
-                evalutePairRanks(graph, initialPool, allLatents, variables, s, sampleSize, alpha);
 
         edu.cmu.tetrad.search.TrekMimic tm = new edu.cmu.tetrad.search.TrekMimic();
         tm.setDoHigherRankExpansion(true);

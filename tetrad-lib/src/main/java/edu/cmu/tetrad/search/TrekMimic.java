@@ -1,25 +1,11 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Hybrid version of Trek-MIMIC parent recovery.
@@ -53,13 +39,13 @@ public final class TrekMimic {
     /**
      * Runs the hybrid parent recovery procedure.
      *
-     * @param graph the graph containing latent nodes and latent -> indicator edges
+     * @param graph       the graph containing latent nodes and latent -> indicator edges
      * @param initialPool the measured non-indicator pool
-     * @param allLatents the latent nodes
-     * @param variables measured variables in matrix order
-     * @param s covariance or correlation matrix
-     * @param sampleSize sample size
-     * @param alpha rank-test alpha
+     * @param allLatents  the latent nodes
+     * @param variables   measured variables in matrix order
+     * @param s           covariance or correlation matrix
+     * @param sampleSize  sample size
+     * @param alpha       rank-test alpha
      */
     public void recoverMeasuredParentsHybrid(Graph graph,
                                              List<Node> initialPool,
@@ -566,6 +552,9 @@ public final class TrekMimic {
                         children.add(child);
                     }
                 }
+
+                // Remove latents from children lists
+                children.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
                 // Estimate rank of parents above these indicators
                 int rank = estimateRank(

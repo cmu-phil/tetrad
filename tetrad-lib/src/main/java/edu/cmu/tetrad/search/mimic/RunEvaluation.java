@@ -20,7 +20,7 @@ public class RunEvaluation {
         parameters.set("maxLatentSubsetSize", 3);
 
         parameters.set(Params.ALPHA, 0.01);
-        parameters.set(Params.SAMPLE_SIZE, 10000);
+        parameters.set(Params.SAMPLE_SIZE, 5000);
         parameters.set(Params.COEF_LOW, 0.1);
         parameters.set(Params.COEF_HIGH, 1.2);
         parameters.set(Params.DEPTH, -1);
@@ -32,10 +32,8 @@ public class RunEvaluation {
 
         MimicBenchmarkReport report = new MimicBenchmarkReport();
         System.out.println(report.createReport(result, parameters));
-//
+
 //        MimicBenchmarkReportTdf report = new MimicBenchmarkReportTdf();
-//        String text = report.createReport(result, parameters);
-//
-//        System.out.println(text);
+//        System.out.println(report.createReport(result, parameters));
     }
 }
