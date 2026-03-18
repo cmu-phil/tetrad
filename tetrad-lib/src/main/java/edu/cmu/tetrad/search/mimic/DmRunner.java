@@ -21,12 +21,10 @@
 package edu.cmu.tetrad.search.mimic;
 
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -34,18 +32,18 @@ import edu.cmu.tetrad.util.Params;
 import java.util.List;
 
 /**
- * Benchmark runner for the DM-PC algorithm.
+ * Benchmark runner for the DM-MG algorithm.
  *
  * @author josephramsey
  */
-public final class DmBossRobustRunner implements MimicSearchRunner {
+public final class DmRunner implements MimicSearchRunner {
 
     /**
      * {@inheritDoc}
      */
     @Override
     public String getName() {
-        return "DM-BOSS-Robust";
+        return "DM";
     }
 
     /**
@@ -57,8 +55,7 @@ public final class DmBossRobustRunner implements MimicSearchRunner {
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setVerbose(false);
 
-        SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
-        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        knowledge = knowledge.copy();
         knowledge.clear();
 
         for (Node input : inputs) {
@@ -69,7 +66,11 @@ public final class DmBossRobustRunner implements MimicSearchRunner {
             knowledge.addToTier(1, output.getName());
         }
 
-        DmBossRobust search = new DmBossRobust(score, knowledge);
+        Dm search = new Dm(test);
+        search.setKnowledge(knowledge);
+
+//        search.setMeasuredInputs(inputs);
+//        search.setMeasuredOutputs(outputs);
 
         return search.search();
     }

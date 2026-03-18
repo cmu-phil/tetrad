@@ -1,4 +1,4 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -21,15 +21,24 @@
 package edu.cmu.tetrad.search.mimic;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Boss;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.Pc;
-import edu.cmu.tetrad.search.PermutationSearch;
-import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Implements a Murray-Watters/Glymour style Detect-Mimic search ("DM-MG").
@@ -67,60 +76,56 @@ import java.util.*;
  *
  * @author josephramsey
  */
-public class DmMgBoss implements IGraphSearch {
+public class Dm implements IGraphSearch {
 
-    /**
-     * The sore.
-     */
-    private final Score score;
-    /**
-     * Inputs identified or supplied for the current run.
-     */
-    private final List<Node> inputs = new ArrayList<>();
-    /**
-     * Outputs identified or supplied for the current run.
-     */
-    private final List<Node> outputs = new ArrayList<>();
     /**
      * The conditional independence test used throughout the search.
      */
     private IndependenceTest test;
+
     /**
      * Optional background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
+
     /**
      * Optional user-supplied measured inputs.
      * If non-null and nonempty, step 1 is skipped for these variables.
      */
     private List<Node> presetInputs;
+
     /**
      * Optional user-supplied measured outputs.
      * If non-null and nonempty, step 1 is skipped for these variables.
      */
     private List<Node> presetOutputs;
+
+    /**
+     * Inputs identified or supplied for the current run.
+     */
+    private final List<Node> inputs = new ArrayList<>();
+
+    /**
+     * Outputs identified or supplied for the current run.
+     */
+    private final List<Node> outputs = new ArrayList<>();
+
     /**
      * Counter used for latent names.
      */
     private int latentIndex = 1;
 
     /**
-     * Jaccard threshold for considering two outputs to have effectively the same BOSS parent set.
-     */
-    private double bossParentJaccardThreshold = 0.75;
-
-    /**
      * Constructs a new DM-MG search.
      *
      * @param test the independence test to use
      */
-    public DmMgBoss(IndependenceTest test, Score score) {
+    public Dm(IndependenceTest test) {
         if (test == null) {
             throw new NullPointerException("Independence test must not be null.");
         }
 
         this.test = test;
-        this.score = score;
     }
 
     /**
@@ -137,8 +142,7 @@ public class DmMgBoss implements IGraphSearch {
         Graph graph = new EdgeListGraph();
         addMeasuredNodes(graph);
 
-        Graph bossGraph = runBoss();
-        Map<Set<Node>, InputClassInfo> inputClasses = buildInputClassesFromSimilarBossParents(bossGraph);
+        Map<Set<Node>, InputClassInfo> inputClasses = buildInputClasses();
 
         for (InputClassInfo info : inputClasses.values()) {
             graph.addNode(info.latent());
@@ -154,250 +158,13 @@ public class DmMgBoss implements IGraphSearch {
             }
         }
 
-        assignOutputsDirectly(inputClasses, graph);
-        addLatentEdgesByInputClassOverlap(inputClasses, graph);
+        assignOutputsByLeafRemoval(inputClasses, graph);
+        addLatentSubsetEdges(inputClasses, graph);
+        pruneLatentSubsetEdges(inputClasses, graph);
         finalRefinement(graph);
         removeDegenerateLatents(graph);
 
         return graph;
-    }
-
-    /**
-     * Assigns outputs directly to latents using the original output clusters.
-     *
-     * @param inputClasses the latent class information
-     * @param graph the graph to update
-     */
-    private void assignOutputsDirectly(Map<Set<Node>, InputClassInfo> inputClasses, Graph graph) {
-        for (InputClassInfo info : inputClasses.values()) {
-            for (Node output : info.originalOut()) {
-                if (!graph.containsNode(output)) {
-                    graph.addNode(output);
-                }
-
-                if (!graph.isParentOf(info.latent(), output)) {
-                    graph.addDirectedEdge(info.latent(), output);
-                }
-            }
-        }
-    }
-
-    /**
-     * Builds latent classes using a relaxed BOSS clustering rule:
-     * outputs are clustered together when their measured-input parent sets
-     * in the BOSS graph have sufficiently high Jaccard similarity.
-     *
-     * <p>For each measured output Y, let Pa(Y) be the set of measured inputs that are
-     * parents of Y in the BOSS graph. We build an undirected graph on outputs, connecting
-     * Y1 and Y2 whenever Jaccard(Pa(Y1), Pa(Y2)) is at least the configured threshold.
-     * Connected components of that graph define output clusters. The input class for a
-     * cluster is the union of the measured-input parent sets for outputs in that cluster.</p>
-     *
-     * @param bossGraph the BOSS graph on the measured variables
-     * @return a map from input-class sets to their associated latent information
-     */
-    private Map<Set<Node>, InputClassInfo> buildInputClassesFromSimilarBossParents(Graph bossGraph) {
-        Map<Node, Set<Node>> parentSetsByOutput = new LinkedHashMap<>();
-
-        for (Node output : this.outputs) {
-            Set<Node> parentSet = new LinkedHashSet<>();
-
-            for (Node parent : bossGraph.getParents(output)) {
-                if (this.inputs.contains(parent)) {
-                    parentSet.add(parent);
-                }
-            }
-
-            parentSetsByOutput.put(output, parentSet);
-        }
-
-        Graph outputGraph = new EdgeListGraph();
-
-        for (Node output : this.outputs) {
-            outputGraph.addNode(output);
-        }
-
-        for (int i = 0; i < this.outputs.size(); i++) {
-            Node y1 = this.outputs.get(i);
-
-            for (int j = i + 1; j < this.outputs.size(); j++) {
-                Node y2 = this.outputs.get(j);
-
-                Set<Node> p1 = parentSetsByOutput.get(y1);
-                Set<Node> p2 = parentSetsByOutput.get(y2);
-
-                if (p1 == null || p2 == null) {
-                    continue;
-                }
-
-                if (p1.isEmpty() || p2.isEmpty()) {
-                    continue;
-                }
-
-                double jaccard = jaccard(p1, p2);
-
-                if (jaccard >= this.bossParentJaccardThreshold) {
-                    outputGraph.addUndirectedEdge(y1, y2);
-                }
-            }
-        }
-
-        List<Set<Node>> outputClusters = connectedComponents(outputGraph);
-
-        Map<Set<Node>, InputClassInfo> result = new LinkedHashMap<>();
-
-        for (Set<Node> outputCluster : outputClusters) {
-            if (outputCluster.isEmpty()) {
-                continue;
-            }
-
-            Set<Node> inputClass = new LinkedHashSet<>();
-
-            for (Node output : outputCluster) {
-                Set<Node> parents = parentSetsByOutput.get(output);
-
-                if (parents != null) {
-                    inputClass.addAll(parents);
-                }
-            }
-
-            if (inputClass.isEmpty()) {
-                continue;
-            }
-
-            Node latent = createLatentNode();
-
-            InputClassInfo info = new InputClassInfo(
-                    inputClass,
-                    new LinkedHashSet<>(outputCluster),
-                    new LinkedHashSet<>(outputCluster),
-                    latent
-            );
-
-            result.put(inputClass, info);
-        }
-
-        return result;
-    }
-
-    /**
-     * Returns the connected components of the supplied graph.
-     *
-     * @param graph the graph
-     * @return the connected components
-     */
-    private List<Set<Node>> connectedComponents(Graph graph) {
-        List<Set<Node>> components = new ArrayList<>();
-        Set<Node> visited = new LinkedHashSet<>();
-
-        for (Node start : graph.getNodes()) {
-            if (visited.contains(start)) {
-                continue;
-            }
-
-            Set<Node> component = new LinkedHashSet<>();
-            Deque<Node> queue = new ArrayDeque<>();
-            queue.add(start);
-            visited.add(start);
-
-            while (!queue.isEmpty()) {
-                Node current = queue.removeFirst();
-                component.add(current);
-
-                for (Node neighbor : graph.getAdjacentNodes(current)) {
-                    if (!visited.contains(neighbor)) {
-                        visited.add(neighbor);
-                        queue.addLast(neighbor);
-                    }
-                }
-            }
-
-            components.add(component);
-        }
-
-        return components;
-    }
-
-    /**
-     * Returns the Jaccard similarity of two sets.
-     *
-     * @param a the first set
-     * @param b the second set
-     * @return the Jaccard similarity
-     */
-    private double jaccard(Set<Node> a, Set<Node> b) {
-        if (a.isEmpty() && b.isEmpty()) {
-            return 1.0;
-        }
-
-        Set<Node> intersection = new LinkedHashSet<>(a);
-        intersection.retainAll(b);
-
-        Set<Node> union = new LinkedHashSet<>(a);
-        union.addAll(b);
-
-        if (union.isEmpty()) {
-            return 1.0;
-        }
-
-        return (double) intersection.size() / union.size();
-    }
-
-    /**
-     * Builds latent classes using Clark Glymour's suggested BOSS clustering rule:
-     * outputs are clustered together iff they have the same measured-input parents
-     * in the BOSS graph.
-     *
-     * <p>For each measured output Y, let Pa(Y) be the set of measured inputs that are
-     * parents of Y in the BOSS graph. Outputs with identical Pa(Y) sets are grouped
-     * into one cluster. Each such cluster defines one latent. The parent set Pa(Y)
-     * becomes the input class for that latent.</p>
-     *
-     * @param bossGraph the BOSS graph on the measured variables
-     * @return a map from input-class sets to their associated latent information
-     */
-    private Map<Set<Node>, InputClassInfo> buildInputClassesFromBossParents(Graph bossGraph) {
-        Map<Set<Node>, Set<Node>> outputsByParentSet = new LinkedHashMap<>();
-
-        for (Node output : this.outputs) {
-            Set<Node> parentSet = new LinkedHashSet<>();
-
-            for (Node parent : bossGraph.getParents(output)) {
-                if (this.inputs.contains(parent)) {
-                    parentSet.add(parent);
-                }
-            }
-
-            if (parentSet.isEmpty()) {
-                continue;
-            }
-
-            outputsByParentSet.computeIfAbsent(parentSet, k -> new LinkedHashSet<>()).add(output);
-        }
-
-        Map<Set<Node>, InputClassInfo> result = new LinkedHashMap<>();
-
-        for (Map.Entry<Set<Node>, Set<Node>> entry : outputsByParentSet.entrySet()) {
-            Set<Node> inputClass = new LinkedHashSet<>(entry.getKey());
-            Set<Node> outSet = new LinkedHashSet<>(entry.getValue());
-
-            if (inputClass.isEmpty() || outSet.isEmpty()) {
-                continue;
-            }
-
-            Node latent = createLatentNode();
-
-            InputClassInfo info = new InputClassInfo(
-                    inputClass,
-                    outSet,
-                    new LinkedHashSet<>(outSet),
-                    latent
-            );
-
-            result.put(inputClass, info);
-        }
-
-        return result;
     }
 
     /**
@@ -428,15 +195,6 @@ public class DmMgBoss implements IGraphSearch {
         }
 
         this.test = test;
-    }
-
-    /**
-     * Sets the Jaccard threshold for clustering outputs by similar BOSS parent sets.
-     *
-     * @param threshold the threshold
-     */
-    public void setBossParentJaccardThreshold(double threshold) {
-        this.bossParentJaccardThreshold = threshold;
     }
 
     /**
@@ -493,7 +251,7 @@ public class DmMgBoss implements IGraphSearch {
             return;
         }
 
-        Graph pattern = runBoss();
+        Graph pattern = runPc(0);
 
         for (Node node : pattern.getNodes()) {
             int indegree = pattern.getIndegree(node);
@@ -660,46 +418,18 @@ public class DmMgBoss implements IGraphSearch {
      * @param inputClasses the input class information
      * @param graph the graph to update
      */
-    /**
-     * Adds latent-to-latent edges using overlap and inclusion of measured input classes.
-     *
-     * <p>If two latent input classes overlap, the corresponding latents are adjacent.
-     * If one input class is a proper subset of the other, orient from the smaller
-     * class latent to the larger class latent. Otherwise add an undirected edge.</p>
-     *
-     * @param inputClasses the input class information
-     * @param graph the graph to update
-     */
-    private void addLatentEdgesByInputClassOverlap(Map<Set<Node>, InputClassInfo> inputClasses, Graph graph) {
+    private void addLatentSubsetEdges(Map<Set<Node>, InputClassInfo> inputClasses, Graph graph) {
         List<InputClassInfo> infos = new ArrayList<>(inputClasses.values());
 
-        for (int i = 0; i < infos.size(); i++) {
-            InputClassInfo a = infos.get(i);
-
-            for (int j = i + 1; j < infos.size(); j++) {
-                InputClassInfo b = infos.get(j);
-
-                Set<Node> pa = new LinkedHashSet<>(a.inputClass());
-                Set<Node> pb = new LinkedHashSet<>(b.inputClass());
-
-                Set<Node> intersection = new LinkedHashSet<>(pa);
-                intersection.retainAll(pb);
-
-                if (intersection.isEmpty()) {
+        for (InputClassInfo small : infos) {
+            for (InputClassInfo large : infos) {
+                if (small == large) {
                     continue;
                 }
 
-                if (isProperSubset(pa, pb)) {
-                    if (!graph.isAdjacentTo(a.latent(), b.latent())) {
-                        graph.addDirectedEdge(a.latent(), b.latent());
-                    }
-                } else if (isProperSubset(pb, pa)) {
-                    if (!graph.isAdjacentTo(a.latent(), b.latent())) {
-                        graph.addDirectedEdge(b.latent(), a.latent());
-                    }
-                } else {
-                    if (!graph.isAdjacentTo(a.latent(), b.latent())) {
-                        graph.addUndirectedEdge(a.latent(), b.latent());
+                if (isProperSubset(small.originalOut(), large.originalOut())) {
+                    if (!graph.isAdjacentTo(small.latent(), large.latent())) {
+                        graph.addDirectedEdge(small.latent(), large.latent());
                     }
                 }
             }
@@ -995,17 +725,6 @@ public class DmMgBoss implements IGraphSearch {
             pc.setDepth(depth);
             pc.setKnowledge(this.knowledge);
             return pc.search();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("PC search was interrupted.", e);
-        }
-    }
-
-    private Graph runBoss() {
-        try {
-            PermutationSearch boss = new PermutationSearch(new Boss(this.score));
-            boss.setKnowledge(this.knowledge);
-            return boss.search();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("PC search was interrupted.", e);

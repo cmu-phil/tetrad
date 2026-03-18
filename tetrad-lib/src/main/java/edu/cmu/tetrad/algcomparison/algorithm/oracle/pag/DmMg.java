@@ -35,6 +35,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.mimic.Dm;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -112,7 +113,7 @@ public class DmMg extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         IndependenceTest test = this.test.getTest(dataModel, parameters);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
 
-        edu.cmu.tetrad.search.mimic.DmMg search = new edu.cmu.tetrad.search.mimic.DmMg(test);
+        Dm search = new Dm(test);
 //        search.setKnowledge(this.knowledge);
 
         if (knowledge != null && !knowledge.getTier(0).isEmpty() && !knowledge.getTier(1).isEmpty()) {
