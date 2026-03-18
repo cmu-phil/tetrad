@@ -23,11 +23,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
-import edu.cmu.tetrad.util.RankTests;
-import edu.cmu.tetrad.util.SublistGenerator;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.util.*;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
@@ -80,6 +76,19 @@ public class Tsc implements EffectiveSampleSizeSettable {
     private int rMax = 3;
     // require |C| >= (rank + 1 + minRedundancy)
     private int minRedundancy = 1;
+
+    /**
+     * Liberal alpha used during seed finding and cluster growing.
+     * -1.0 means derive adaptively from {@link #alpha} and {@link #nEff}.
+     */
+    private double discoveryAlpha = -1.0;
+
+    /**
+     * Cache for ranks computed at discoveryAlpha. Keyed by the same Key record
+     * as rankCache. Cleared whenever alpha, discoveryAlpha, or nEff changes.
+     */
+    private final Map<Key, Integer> discoveryRankCache = new ConcurrentHashMap<>();
+
 
     /**
      * Constructs an instance of the TscScored class using the provided variables and covariance matrix.
@@ -144,29 +153,47 @@ public class Tsc implements EffectiveSampleSizeSettable {
      * @param rank the target rank to filter clusters
      * @return a set of clusters that match the specified rank, where each cluster is represented as a set of integers
      */
-    public Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
-        log("findClustersAtRankTesting size = " + size + ", rank = " + rank + ", ess = " + nEff);
+    /**
+     * Identifies clusters of variables at a specified rank using the supplied
+     * alpha. The correlation pre-screen rejects k-combinations that contain any
+     * pair with |r| below the significance threshold at a liberal alpha, avoiding
+     * the majority of rank test calls for uncorrelated combinations.
+     *
+     * @param vars a list of integers representing the variables to consider
+     * @param size the size of the clusters to generate
+     * @param rank the target rank to filter clusters
+     * @param a    the alpha level to use for the rank test
+     * @return a set of clusters that match the specified rank
+     */
+    public Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size,
+                                                int rank, double a) {
+        log("findClustersAtRankTesting size = " + size + ", rank = " + rank
+                + ", ess = " + nEff + ", alpha = " + a);
 
         final int n = vars.size();
         final int k = size;
         if (k <= 0 || k > n) return Collections.emptySet();
 
-        // shard by first position for parallelism; avoids nCk overflow
+        // Pre-screen threshold: use a threshold 4x more liberal than the
+        // discovery alpha so only genuinely uncorrelated pairs are rejected.
+        // This preserves all plausible seeds while skipping clearly hopeless ones.
+        final double rThresh =
+                corrSignificanceThreshold(Math.min(a * 4.0, 0.30));
+
         return IntStream.range(0, n - k + 1).parallel().mapToObj(start -> {
             Set<Set<Integer>> out = ConcurrentHashMap.newKeySet();
             int[] comb = new int[k];
-            // initialize comb = [start, start+1, ..., start+k-1]
             for (int i = 0; i < k; i++) comb[i] = start + i;
 
-            // standard lexicographic k-combination advance
             while (true) {
-                // enforce shard: first element fixed to 'start'
                 if (comb[0] != start) break;
 
                 int[] ids = new int[k];
                 for (int i = 0; i < k; i++) ids[i] = vars.get(comb[i]);
 
-                if (lookupRankFast(ids) == rank) {
+                // Cheap O(k^2) pre-screen before the expensive rank test.
+                if (allPairsSignificant(ids, rThresh)
+                        && lookupRankFastAtAlpha(ids, a) == rank) {
                     Set<Integer> cluster = new HashSet<>(k * 2);
                     for (int id : ids) cluster.add(id);
                     out.add(cluster);
@@ -180,6 +207,14 @@ public class Tsc implements EffectiveSampleSizeSettable {
             }
             return out;
         }).flatMap(Set::stream).collect(ConcurrentHashMap::newKeySet, Set::add, Set::addAll);
+    }
+
+    /**
+     * Backward-compatible overload. Delegates to the alpha-parameterised version
+     * using the instance validation alpha.
+     */
+    public Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
+        return findClustersAtRank(vars, size, rank, this.alpha);
     }
 
     // Fast overload: takes primitive IDs and uses canonical Key (Wilks path)
@@ -211,6 +246,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
         List<Integer> remainingVars = new ArrayList<>(allVariables());
         clusterToRank = new HashMap<>();
+        final double da = getDiscoveryAlpha();
 
         for (int rank = 1; rank <= rMax; rank++) {
             int size = rank + 1;
@@ -220,7 +256,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
 
             log("EXAMINING SIZE " + size + " RANK = " + rank + " REMAINING VARS = " + remainingVars.size());
-            Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank);
+            Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank, da);
 
             if (verbose) {
                 TetradLogger.getInstance().log("Base clusters for size " + size + " rank " + rank + ": " + (P.isEmpty() ? "NONE" : toNamesClusters(P, nodes)));
@@ -356,12 +392,12 @@ public class Tsc implements EffectiveSampleSizeSettable {
                     delta.removeAll(C1);
                     if (!Collections.disjoint(delta, usedMinusC1)) continue;
 
-                    int newRank = ranksByTest(C2);
+                    int newRank = ranksByDiscovery(C2);
 
                     // Augmentation targets bifactor: base subsets show rank = r (often 2);
                     // adding exactly one indicator that spans the factors should reduce the
                     // cross-rank to r-1 (often 1). We accept only that exact one-step drop.
-                    int rankC1 = ranksByTest(C1);
+                    int rankC1 = ranksByDiscovery(C1);
                     if (C2.size() == _size + 1
                             && rankC1 == rank
                             && newRank == rank - 1
@@ -454,17 +490,70 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
         // Narrow fallback: rescue isolated rank-1 triples only if the original algorithm found nothing.
         if (clusterToRank.isEmpty()) {
-            Set<Set<Integer>> rescued = rescueIsolatedRank1Triples(allVariables());
-            for (Set<Integer> triple : rescued) {
-                clusterToRank.put(triple, 1);
-                log("Rescuing isolated rank-1 triple " + toNamesCluster(triple) + ".");
-            }
+            rescueAndAddTriples(clusterToRank);
         }
 
         clusterToRank = removeOverlappingClusters(clusterToRank);
 
         log("Final clusters = " + toNamesClusters(clusterToRank.keySet(), nodes));
         return clusterToRank;
+    }
+
+    /**
+     * Rescues isolated rank-1 triples (last-resort fallback when no clusters were found),
+     * applying the same Rule-3 refinement and internal rank-0 check that regular clusters
+     * pass through before adding any survivors to {@code clusterToRank}.
+     *
+     * @param clusterToRank the live cluster map, mutated in place
+     */
+    private void rescueAndAddTriples(Map<Set<Integer>, Integer> clusterToRank) {
+        Set<Set<Integer>> candidates = rescueIsolatedRank1Triples(allVariables());
+
+        for (Set<Integer> triple : candidates) {
+
+            // Register temporarily so removeClustersBecauseOfRank0Internally can
+            // look up the rank if it needs to (and Fix 1 now runs even without it).
+            clusterToRank.put(triple, 1);
+
+            // Rule-3 refinement — same path as regular clusters.
+            Set<Integer> refined = refineClustersByConditionalRanks(triple, 1);
+
+            if (refined.size() < 2) {
+                clusterToRank.remove(triple);
+                log("Rescued triple " + toNamesCluster(triple)
+                        + " eliminated after Rule-3 refinement.");
+                continue;
+            }
+
+            int newRank = ranksByTest(refined);
+            int minSize = newRank + 1 + minRedundancy;
+
+            if (refined.size() < minSize) {
+                clusterToRank.remove(triple);
+                log("Rescued triple " + toNamesCluster(triple) + " → " + toNamesCluster(refined)
+                        + " rejected: |C|=" + refined.size()
+                        + " < r+1+minRedundancy=" + minSize + ".");
+                continue;
+            }
+
+            // Swap refined in if it differs from the original triple.
+            if (!refined.equals(triple)) {
+                clusterToRank.remove(triple);
+                clusterToRank.put(refined, newRank);
+            } else {
+                clusterToRank.put(triple, newRank);
+            }
+
+            // Internal rank-0 check — same as the penultimate-cluster pass.
+            if (removeClustersBecauseOfRank0Internally(S, refined, nEff, alpha)) {
+                clusterToRank.remove(refined);
+                log("Rescued triple " + toNamesCluster(refined)
+                        + " removed: internal rank-0 split detected.");
+            } else {
+                log("Rescued triple " + toNamesCluster(refined)
+                        + " accepted (rank " + newRank + ").");
+            }
+        }
     }
 
     /**
@@ -627,7 +716,8 @@ public class Tsc implements EffectiveSampleSizeSettable {
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
-        rankCache.clear(); // Wilks rank depends on alpha
+        rankCache.clear();
+        discoveryRankCache.clear(); // derived discovery alpha depends on alpha
     }
 
     /**
@@ -637,6 +727,101 @@ public class Tsc implements EffectiveSampleSizeSettable {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    /**
+     * Returns the discovery alpha to use for seed finding and cluster growing.
+     * If set explicitly, returns that value. Otherwise derives an N-adaptive
+     * value: scale = sqrt(10000 / nEff), capped so the result never exceeds 0.20.
+     * At nEff=10000 this returns alpha; at nEff=1000 roughly 3.2x alpha;
+     * at nEff=500 roughly 4.5x alpha.
+     */
+    private double getDiscoveryAlpha() {
+        if (discoveryAlpha > 0.0) {
+            return discoveryAlpha;
+        }
+        double scale = Math.sqrt(10000.0 / Math.max(nEff, 50));
+        return Math.min(0.20, alpha * scale);
+    }
+
+    /**
+     * Sets an explicit discovery alpha, overriding the adaptive default.
+     *
+     * @param discoveryAlpha the discovery alpha; must be in (0, 1)
+     */
+    public void setDiscoveryAlpha(double discoveryAlpha) {
+        if (discoveryAlpha <= 0.0 || discoveryAlpha >= 1.0) {
+            throw new IllegalArgumentException("discoveryAlpha must be in (0, 1).");
+        }
+        this.discoveryAlpha = discoveryAlpha;
+        discoveryRankCache.clear();
+    }
+
+    /**
+     * Computes the rank of a cluster against its complement at an explicit
+     * alpha level, bypassing the instance alpha field.
+     */
+    private int rankWithAlpha(Set<Integer> cluster, double a) {
+        List<Integer> ySet = new ArrayList<>(cluster);
+        List<Integer> xSet = new ArrayList<>(variables);
+        xSet.removeAll(ySet);
+        int[] xIndices = xSet.stream().mapToInt(Integer::intValue).toArray();
+        int[] yIndices = ySet.stream().mapToInt(Integer::intValue).toArray();
+        return estimateWilksRank(S, xIndices, yIndices, nEff, a);
+    }
+
+    /**
+     * Cached rank lookup at discovery alpha. Reuses the main cache when
+     * discovery alpha equals validation alpha (large-N case).
+     */
+    private int ranksByDiscovery(Set<Integer> cluster) {
+        double da = getDiscoveryAlpha();
+        if (da == alpha) {
+            return ranksByTest(cluster);
+        }
+        return discoveryRankCache.computeIfAbsent(
+                new Key(cluster), _k -> rankWithAlpha(cluster, da));
+    }
+
+    /**
+     * Fast rank lookup at an explicit alpha, routing to the appropriate cache.
+     * Used inside the parallel stream in findClustersAtRank.
+     */
+    private int lookupRankFastAtAlpha(int[] ids, double a) {
+        if (a == alpha) {
+            return lookupRankFast(ids);
+        }
+        return discoveryRankCache.computeIfAbsent(new Key(ids), _k -> {
+            Set<Integer> s = new HashSet<>(ids.length * 2);
+            for (int x : ids) s.add(x);
+            return rankWithAlpha(s, a);
+        });
+    }
+
+    /**
+     * Returns the minimum absolute pairwise correlation threshold for a pair
+     * to be considered significantly correlated at significance level {@code a}.
+     * Uses Fisher's z-test. Pairs with |r| below this threshold cannot be
+     * rank-1 seeds and are rejected by the pre-screen without a rank test.
+     */
+    private double corrSignificanceThreshold(double a) {
+        double z = StatUtils.getZForAlpha(a);
+        return Math.tanh(z / Math.sqrt(Math.max(nEff - 3, 1)));
+    }
+
+    /**
+     * Returns true iff every pair within {@code ids} has |r| >= rThresh.
+     * O(k^2) and cheap relative to a rank test.
+     */
+    private boolean allPairsSignificant(int[] ids, double rThresh) {
+        for (int i = 0; i < ids.length; i++) {
+            for (int j = i + 1; j < ids.length; j++) {
+                if (Math.abs(S.get(ids[i], ids[j])) < rThresh) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -711,13 +896,13 @@ public class Tsc implements EffectiveSampleSizeSettable {
         return Cset;
     }
 
-    private boolean removeClustersBecauseOfRank0Internally(SimpleMatrix S, Set<Integer> cluster, int expectedSampleSize, double alpha) {
+    private boolean removeClustersBecauseOfRank0Internally(SimpleMatrix S, Set<Integer> cluster,
+                                                           int expectedSampleSize, double alpha) {
         List<Integer> C = new ArrayList<>(cluster);
-        List<Integer> D = allVariables();
-        D.removeAll(cluster);
 
         SublistGenerator gen0 = new SublistGenerator(C.size(), C.size() - 1);
         int[] choice0;
+
         while ((choice0 = gen0.next()) != null) {
             List<Integer> C1 = new ArrayList<>();
             for (int i : choice0) C1.add(C.get(i));
@@ -730,15 +915,20 @@ public class Tsc implements EffectiveSampleSizeSettable {
             int[] c1Array = C1.stream().mapToInt(Integer::intValue).toArray();
             int[] c2Array = C2.stream().mapToInt(Integer::intValue).toArray();
 
-            int minpq = TMath.min(c1Array.length, c2Array.length);
-            Integer l = clusterToRank.get(cluster);
-            if (l == null) continue;
-            l = TMath.min(minpq, TMath.max(0, l));
-
             int r = RankTests.estimateWilksRank(S, c1Array, c2Array, expectedSampleSize, alpha);
+
             if (r == 0) {
-                log("Deficient! rank(" + toNamesCluster(C1, nodes) + ", " + toNamesCluster(C2, nodes) + ") = "
-                    + r + " < " + l + "; removing " + toNamesCluster(cluster));
+                // l is only used for the log message; a missing entry means the cluster
+                // is being checked before registration (e.g., during augmentation).
+                Integer registeredRank = clusterToRank.get(cluster);
+                int minpq = TMath.min(c1Array.length, c2Array.length);
+                String lStr = (registeredRank != null)
+                        ? String.valueOf(TMath.min(minpq, TMath.max(0, registeredRank)))
+                        : "unregistered";
+
+                log("Deficient! rank(" + toNamesCluster(C1, nodes) + ", "
+                        + toNamesCluster(C2, nodes) + ") = " + r + " < " + lStr
+                        + "; removing " + toNamesCluster(cluster));
                 return true;
             }
         }
@@ -747,12 +937,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
     }
 
     private int ranksByTest(Set<Integer> cluster) {
-        Key k = new Key(cluster);
-        Integer cached = rankCache.get(k);
-        if (cached != null) return cached;
-        int r = rank(cluster);
-        rankCache.put(k, r);
-        return r;
+        return rankCache.computeIfAbsent(new Key(cluster), _k -> rank(cluster));
     }
 
     private int rank(Set<Integer> cluster) {
@@ -794,7 +979,8 @@ public class Tsc implements EffectiveSampleSizeSettable {
      */
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = nEff < 0 ? sampleSize : nEff;
-        rankCache.clear(); // <-- ranks depend on ESS
+        rankCache.clear();
+        discoveryRankCache.clear(); // derived discovery alpha depends on nEff
     }
 
     /**

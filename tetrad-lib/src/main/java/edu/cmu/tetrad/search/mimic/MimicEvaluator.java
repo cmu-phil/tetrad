@@ -24,10 +24,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Evaluates estimated MIMIC-style graphs against a true {@link MimicModel}.
@@ -52,25 +49,26 @@ public final class MimicEvaluator {
      * @return the evaluation summary
      */
     public MimicEvaluation evaluate(MimicModel trueModel, Graph estimatedGraph) {
-        List<LatentSignature> trueLatents = getTrueLatentSignatures(trueModel);
+        List<LatentSignature> trueLatents      = getTrueLatentSignatures(trueModel);
         List<LatentSignature> estimatedLatents = getEstimatedLatentSignatures(estimatedGraph);
 
-        List<Match> matches = greedyMatch(trueLatents, estimatedLatents);
+        // optimalMatch replaces greedyMatch: guaranteed globally maximum similarity.
+        List<Match> matches = optimalMatch(trueLatents, estimatedLatents);
 
         double sumLatent = 0.0;
-        double sumInput = 0.0;
+        double sumInput  = 0.0;
         double sumOutput = 0.0;
 
         for (Match match : matches) {
             sumLatent += match.totalSimilarity;
-            sumInput += match.inputSimilarity;
+            sumInput  += match.inputSimilarity;
             sumOutput += match.outputSimilarity;
         }
 
         int matched = matches.size();
 
         double avgLatent = matched == 0 ? 0.0 : sumLatent / matched;
-        double avgInput = matched == 0 ? 0.0 : sumInput / matched;
+        double avgInput  = matched == 0 ? 0.0 : sumInput  / matched;
         double avgOutput = matched == 0 ? 0.0 : sumOutput / matched;
 
         return new MimicEvaluation(
@@ -144,38 +142,149 @@ public final class MimicEvaluator {
      * @param estimates the estimated latent signatures
      * @return the list of matches
      */
-    private List<Match> greedyMatch(List<LatentSignature> truths, List<LatentSignature> estimates) {
-        List<LatentSignature> remainingTruths = new ArrayList<>(truths);
-        List<LatentSignature> remainingEstimates = new ArrayList<>(estimates);
-        List<Match> matches = new ArrayList<>();
+    /**
+     * Finds the optimal maximum-similarity matching between true and estimated
+     * latent signatures using the Hungarian algorithm. Unlike greedy matching,
+     * this is guaranteed to maximise total similarity across all matched pairs.
+     *
+     * <p>When the counts differ, at most min(nTrue, nEst) pairs are returned.
+     * Unmatched true latents (when nTrue > nEst) simply produce no entry in the
+     * result — they are counted in the latent count error metric elsewhere.</p>
+     *
+     * @param truths    the true latent signatures
+     * @param estimates the estimated latent signatures
+     * @return the optimal list of matches
+     */
+    private List<Match> optimalMatch(List<LatentSignature> truths,
+                                     List<LatentSignature> estimates) {
+        int nTrue = truths.size();
+        int nEst  = estimates.size();
 
-        while (!remainingTruths.isEmpty() && !remainingEstimates.isEmpty()) {
-            Match best = null;
+        if (nTrue == 0 || nEst == 0) {
+            return new ArrayList<>();
+        }
 
-            for (LatentSignature truth : remainingTruths) {
-                for (LatentSignature estimate : remainingEstimates) {
-                    double inputSimilarity = jaccard(truth.inputs, estimate.inputs);
-                    double outputSimilarity = jaccard(truth.outputs, estimate.outputs);
-                    double totalSimilarity = 0.5 * (inputSimilarity + outputSimilarity);
+        int n = Math.max(nTrue, nEst);
 
-                    Match match = new Match(truth, estimate, inputSimilarity, outputSimilarity, totalSimilarity);
+        // Cost matrix for minimisation: cost = 1 - similarity, so minimising cost
+        // maximises similarity. Dummy rows/columns (padding for rectangular case)
+        // use UNMATCHED_COST > 1 so the algorithm always prefers a real pairing
+        // over a dummy one, and only fills dummies when the matrix forces it.
+        double unmatched = 2.0;
+        double[][] cost  = new double[n][n];
 
-                    if (best == null || match.totalSimilarity > best.totalSimilarity) {
-                        best = match;
-                    }
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (i < nTrue && j < nEst) {
+                    double inputSim  = jaccard(truths.get(i).inputs,
+                            estimates.get(j).inputs);
+                    double outputSim = jaccard(truths.get(i).outputs,
+                            estimates.get(j).outputs);
+                    cost[i][j] = 1.0 - 0.5 * (inputSim + outputSim);
+                } else {
+                    cost[i][j] = unmatched;
                 }
             }
+        }
 
-            if (best == null) {
-                break;
+        int[] assignment = hungarianAssign(cost, n);
+
+        List<Match> matches = new ArrayList<>();
+
+        for (int i = 0; i < nTrue; i++) {
+            int j = assignment[i];
+
+            if (j >= nEst) {
+                // This true latent was assigned to a dummy column: unmatched.
+                continue;
             }
 
-            matches.add(best);
-            remainingTruths.remove(best.truth);
-            remainingEstimates.remove(best.estimate);
+            LatentSignature truth    = truths.get(i);
+            LatentSignature estimate = estimates.get(j);
+
+            double inputSim  = jaccard(truth.inputs,  estimate.inputs);
+            double outputSim = jaccard(truth.outputs, estimate.outputs);
+            double totalSim  = 0.5 * (inputSim + outputSim);
+
+            matches.add(new Match(truth, estimate, inputSim, outputSim, totalSim));
         }
 
         return matches;
+    }
+
+    /**
+     * Solves the linear assignment problem for a square cost matrix using the
+     * O(n³) Hungarian algorithm (shortest augmenting path variant).
+     *
+     * @param cost n×n cost matrix; not mutated
+     * @param n    dimension
+     * @return assignment array where {@code result[i] = j} means row i is
+     *         assigned to column j
+     */
+    private static int[] hungarianAssign(double[][] cost, int n) {
+        // All arrays are 1-indexed; index 0 is a sentinel.
+        double[] u    = new double[n + 1]; // row potentials
+        double[] v    = new double[n + 1]; // column potentials
+        int[]    p    = new int[n + 1];    // p[j] = row assigned to column j
+        int[]    way  = new int[n + 1];    // predecessor column in augmenting path
+
+        for (int i = 1; i <= n; i++) {
+            // Insert row i by finding the shortest augmenting path from it.
+            p[0] = i;
+            int     j0      = 0;
+            double[] minDist = new double[n + 1];
+            boolean[] used  = new boolean[n + 1];
+            Arrays.fill(minDist, Double.MAX_VALUE);
+
+            do {
+                used[j0] = true;
+                int    i0    = p[j0];
+                double delta = Double.MAX_VALUE;
+                int    j1    = -1;
+
+                for (int j = 1; j <= n; j++) {
+                    if (!used[j]) {
+                        double reduced = cost[i0 - 1][j - 1] - u[i0] - v[j];
+                        if (reduced < minDist[j]) {
+                            minDist[j] = reduced;
+                            way[j]     = j0;
+                        }
+                        if (minDist[j] < delta) {
+                            delta = minDist[j];
+                            j1    = j;
+                        }
+                    }
+                }
+
+                // Update potentials along the path found so far.
+                for (int j = 0; j <= n; j++) {
+                    if (used[j]) {
+                        u[p[j]] += delta;
+                        v[j]    -= delta;
+                    } else {
+                        minDist[j] -= delta;
+                    }
+                }
+
+                j0 = j1;
+            } while (p[j0] != 0);
+
+            // Augment: flip assignments along the path.
+            do {
+                int j1 = way[j0];
+                p[j0]  = p[j1];
+                j0     = j1;
+            } while (j0 != 0);
+        }
+
+        // Convert from column-indexed p[] to row-indexed result[].
+        int[] result = new int[n];
+        for (int j = 1; j <= n; j++) {
+            if (p[j] != 0) {
+                result[p[j] - 1] = j - 1;
+            }
+        }
+        return result;
     }
 
     /**
@@ -223,13 +332,19 @@ public final class MimicEvaluator {
      * Latent signature for evaluation.
      */
     private static final class LatentSignature {
+        /**
+         * Stored for debugging; not used in matching or scoring. Matching is
+         * performed purely on set similarity so that algorithm-assigned latent
+         * names do not influence evaluation.
+         */
+        @SuppressWarnings("unused")
         private final String name;
         private final Set<String> inputs;
         private final Set<String> outputs;
 
         private LatentSignature(String name, Set<String> inputs, Set<String> outputs) {
-            this.name = name;
-            this.inputs = new LinkedHashSet<>(inputs);
+            this.name    = name;
+            this.inputs  = new LinkedHashSet<>(inputs);
             this.outputs = new LinkedHashSet<>(outputs);
         }
     }

@@ -143,18 +143,29 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
     /**
      * Deterministic alternating split; if rng!=null, shuffle then half/half.
      */
-    private static int[][] splitCols(int[] cols, boolean leftGetsSmaller) {
-        if (cols == null || cols.length == 0) return new int[][]{new int[0], new int[0]};
+    private static int[][] splitCols(int[] cols, boolean leftGetsSmaller, Random rng) {
+        if (cols == null || cols.length == 0) {
+            return new int[][]{new int[0], new int[0]};
+        }
+
         int[] idx = Arrays.copyOf(cols, cols.length);
+
+        // Fisher-Yates with the caller-supplied RNG.
         for (int i = idx.length - 1; i > 0; i--) {
-            int j = RandomUtil.getInstance().nextInt(i + 1);
+            int j = rng.nextInt(i + 1);
             int tmp = idx[i];
             idx[i] = idx[j];
             idx[j] = tmp;
         }
-        int half = idx.length / 2; // smaller half size when odd
-        int[] A = Arrays.copyOfRange(idx, 0, half);
-        int[] B = Arrays.copyOfRange(idx, half, idx.length);
+
+        // leftGetsSmaller = true  → left gets floor(n/2), right gets ceil(n/2)
+        // leftGetsSmaller = false → left gets ceil(n/2),  right gets floor(n/2)
+        int leftSize = leftGetsSmaller
+                ? idx.length / 2
+                : (idx.length + 1) / 2;
+
+        int[] A = Arrays.copyOfRange(idx, 0, leftSize);
+        int[] B = Arrays.copyOfRange(idx, leftSize, idx.length);
         return new int[][]{A, B};
     }
 
@@ -304,46 +315,57 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
 
-        // Build sides L, R using split of each Zi
+        // Read once; never written. Thread-safe.
         long baseSeed = this.splitSeed;
+
         int bestRank = Integer.MAX_VALUE;
         Build bestBuild = null;
 
         for (int trial = 0; trial < TMath.max(1, numTrials); trial++) {
-            if (randomizeSplits) this.splitSeed = baseSeed + trial;
-            Build b = buildSides(x, y, z);
+            long effectiveSeed = randomizeSplits ? baseSeed + trial : baseSeed;
+            Build b = buildSides(x, y, z, effectiveSeed);
             int r = getRank(b.Lcols, b.Rcols);
+
             if (r < bestRank) {
                 bestRank = r;
-                bestBuild = b; // keep the winner
+                bestBuild = b;
             }
+
             if (!randomizeSplits) break;
         }
-        this.splitSeed = baseSeed;
 
-        // use bestBuild for verbose and result context
-        Build b = (bestBuild != null) ? bestBuild : buildSides(x, y, z);
+        // Defensive guard: reachable only if numTrials <= 0.
+        if (bestBuild == null) {
+            bestBuild = buildSides(x, y, z, baseSeed);
+            bestRank = getRank(bestBuild.Lcols, bestBuild.Rcols);
+        }
 
-        // Estimate rank for Î£_{L,R}
-        int estRank = getRankMinOverTrials(b.Lcols, b.Rcols);
+        // bestRank is already the minimum over all trials; no second pass needed.
+        int estRank = bestRank;
 
         int target = 0;
         for (Node _z : z) {
             Integer i = nodeHash.get(_z);
             if (i == null) throw new IllegalArgumentException("Conditioning node not found: " + _z);
             Integer rk = blockSpec.ranks().get(i);
-            if (rk == null) throw new IllegalStateException("Missing rank for block index " + i + " (node=" + _z + ")");
+            if (rk == null) throw new IllegalStateException(
+                    "Missing rank for block index " + i + " (node=" + _z + ")");
             target += rk;
         }
 
         boolean indep = estRank == target;
 
         if (verbose) {
-            List<Node> leftVars = indicesToNodes(b.Lcols, dataVars);
-            List<Node> rightVars = indicesToNodes(b.Rcols, dataVars);
-            TetradLogger.getInstance().log("TS split: left=" + leftVars + " right=" + rightVars);
-            TetradLogger.getInstance().log("TS: " + b.xName + " _||_ " + b.yName + " | " + b.zNames + " " +
-                    "? estRank(min over trials)=" + bestRank + ", target(sum ranks)=" + target + " -> " + (indep ? "INDEP" : "DEP"));
+            List<Node> leftVars  = indicesToNodes(bestBuild.Lcols, dataVars);
+            List<Node> rightVars = indicesToNodes(bestBuild.Rcols, dataVars);
+            TetradLogger.getInstance().log(
+                    "TS split: left=" + leftVars + " right=" + rightVars);
+            TetradLogger.getInstance().log(
+                    "TS: " + bestBuild.xName + " _||_ " + bestBuild.yName
+                            + " | " + bestBuild.zNames
+                            + " ? estRank(min over trials)=" + estRank
+                            + ", target(sum ranks)=" + target
+                            + " -> " + (indep ? "INDEP" : "DEP"));
         }
 
         if (verbose) {
@@ -354,20 +376,8 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), indep, Double.NaN, // p-value intentionally not exposed
-                Double.NaN  // score not used
-        );
-    }
-
-    private int getRankMinOverTrials(int[] L, int[] R) {
-        int best = Integer.MAX_VALUE;
-        for (int t = 0; t < numTrials; t++) {
-            // When randomizing, re-split the Z blocks inside buildSides(); here we only cache by (L,R,alpha,...)
-            int r = getRank(L, R);
-            if (r < best) best = r;
-            if (!randomizeSplits) break; // deterministic: only one pass
-        }
-        return best;
+        return new IndependenceResult(
+                new IndependenceFact(x, y, z), indep, Double.NaN, Double.NaN);
     }
 
     private int getRank(int[] L, int[] R) {
@@ -380,33 +390,36 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
         return rank;
     }
 
-    private Build buildSides(Node x, Node y, Set<Node> z) {
+    private Build buildSides(Node x, Node y, Set<Node> z, long effectiveSeed) {
         Integer xiVar = nodeHash.get(x);
         Integer yiVar = nodeHash.get(y);
         if (xiVar == null || yiVar == null) {
             throw new IllegalArgumentException("Unknown node(s): " + x + ", " + y);
         }
 
-        // sorted Z block indices
         int[] zVars = new int[z.size()];
         int t = 0;
         for (Node zn : z) {
             Integer idx = nodeHash.get(zn);
-            if (idx == null) throw new IllegalArgumentException("Unknown conditioning node: " + zn);
+            if (idx == null)
+                throw new IllegalArgumentException("Unknown conditioning node: " + zn);
             zVars[t++] = idx;
         }
         Arrays.sort(zVars);
 
-        // Start with X on L and Y on R
         IntBuilder Lb = new IntBuilder();
         IntBuilder Rb = new IntBuilder();
         Lb.addAll(allCols[xiVar]);
         Rb.addAll(allCols[yiVar]);
 
-        // Split each Zi into (Ai,Bi) and append
+        // One seeded RNG per call. Each Zi receives successive draws from the same
+        // sequence, so the split is fully determined by effectiveSeed and the sorted
+        // order of zVars. No global or instance state is touched.
+        Random rng = new Random(effectiveSeed);
+
         for (int zv : zVars) {
             int[] Zcols = allCols[zv];
-            int[][] AB = splitCols(Zcols, leftGetsSmallerHalfWhenOdd);
+            int[][] AB = splitCols(Zcols, leftGetsSmallerHalfWhenOdd, rng);
             Lb.addAll(AB[0]);
             Rb.addAll(AB[1]);
         }

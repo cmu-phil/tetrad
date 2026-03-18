@@ -300,10 +300,9 @@ public final class TrekMeasurementModelBuilder {
                                         BlockSpec spec) throws InterruptedException {
         Pc pc = new Pc(indTest);
         pc.setDepth(depth);
-        pc.setVerbose(verbose);
         pc.setKnowledge(knowledge);
         pc.setFasStable(false);
-        pc.setVerbose(false);
+        pc.setVerbose(verbose); // set once; no second override
 
         Graph graph = pc.search();
 
@@ -325,6 +324,12 @@ public final class TrekMeasurementModelBuilder {
             }
         }
 
+        // GraphUtils.replaceNodes matches nodes already in the graph to the
+        // dataset's canonical node objects by name. It does NOT add dataset
+        // variables that are absent from the PC output (e.g., isolated variables
+        // that are neither indicators nor connected to anything). The loop below
+        // is therefore a correctness requirement: downstream stages look up nodes
+        // by name and will silently miss any that were dropped.
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
 
         for (Node node : dataSet.getVariables()) {
@@ -363,15 +368,9 @@ public final class TrekMeasurementModelBuilder {
      * @return true if the node may be treated as a child of a latent
      */
     private boolean mayBeLatentChild(Node node) {
-        if (isKnownInput(node)) {
-            return false;
-        }
-
-        if (isKnownOutput(node)) {
-            return true;
-        }
-
-        return true;
+        // Known inputs are never latent children; everything else
+        // (known outputs and unclassified variables) may be.
+        return !isKnownInput(node);
     }
 
     /**
@@ -442,18 +441,23 @@ public final class TrekMeasurementModelBuilder {
      */
     private List<Node> determineParentPool(List<Node> observedVariables,
                                            Collection<Node> observedChildren) {
-        LinkedHashSet<Node> pool = new LinkedHashSet<>(observedVariables);
-        pool.removeAll(observedChildren);
+        Set<Node> childSet = new LinkedHashSet<>(observedChildren);
+        List<Node> pool = new ArrayList<>();
 
         for (Node node : observedVariables) {
-            if (isKnownInput(node)) {
+            // Known outputs are never parents.
+            if (isKnownOutput(node)) continue;
+
+            // Known inputs are always eligible parents, even when the measurement
+            // model also placed them as latent children — they sit upstream of
+            // the latents by definition.
+            // All other variables are eligible only if they are not latent children.
+            if (isKnownInput(node) || !childSet.contains(node)) {
                 pool.add(node);
             }
         }
 
-        pool.removeIf(this::isKnownOutput);
-
-        return new ArrayList<>(pool);
+        return pool;
     }
 
     /**

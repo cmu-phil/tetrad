@@ -84,7 +84,8 @@ public class RankTests {
      */
     private static final double MIN_EIG = 1e-12;
     // --- Fast Chi-square critical via WilsonâHilferty with cached normal z ---
-    private static final Map<Long, Double> CHI2_CRIT_CACHE = new ConcurrentHashMap<>();
+    private record Chi2Key(int nu, long alphaBits) {}
+    private static final Map<Chi2Key, Double> CHI2_CRIT_CACHE = new ConcurrentHashMap<>();
     /**
      * A small constant value added as a ridge term during regularization to improve numerical stability. This helps
      * prevent issues such as singular matrices or poor conditioning in mathematical computations.
@@ -288,59 +289,6 @@ public class RankTests {
         }
     }
 
-//    public static int estimateWilksRankFast(SimpleMatrix S, int[] xIdx, int[] yIdx, int n, double alpha) {
-//        final int p = xIdx.length, q = yIdx.length;
-//        if (p == 0 || q == 0) return 0;
-//        final int m = TMath.min(p, q);
-//
-//        // submatrices
-//        SimpleMatrix Sxx = submatrix(S, xIdx, xIdx);
-//        SimpleMatrix Syy = submatrix(S, yIdx, yIdx);
-//        SimpleMatrix Sxy = submatrix(S, xIdx, yIdx);
-//        SimpleMatrix Syx = Sxy.transpose();
-//
-//        // tiny ridge for numerical stability
-//        final double eps = 1e-10;
-//        for (int i = 0; i < p; i++) Sxx.set(i, i, Sxx.get(i, i) + eps);
-//        for (int i = 0; i < q; i++) Syy.set(i, i, Syy.get(i, i) + eps);
-//
-//        // inverses
-//        SimpleMatrix SxxInv = Sxx.invert();
-//        SimpleMatrix SyyInv = Syy.invert();
-//
-//        // M should be symmetric PSD up to round-off; enforce symmetry to stabilize eigvals
-//        SimpleMatrix M = SxxInv.mult(Sxy).mult(SyyInv).mult(Syx);
-//        M = M.plus(M.transpose()).scale(0.5);
-//
-//        // eigenvalues ~ rho^2; clamp to [0,1)
-//        double[] evals = eigSymmetricClamped(M);
-//        Arrays.sort(evals);                 // ascending
-//        // take descending into rho2[0..L-1]
-//        int L = TMath.min(evals.length, m);
-//        double[] rho2 = new double[L];
-//        for (int i = 0; i < L; i++) rho2[i] = evals[evals.length - 1 - i];
-//
-//        // Bartlett factor; if invalid, bail out conservatively
-//        double c = (n - 1 - (p + q + 1) / 2.0);
-//        if (c <= 0) return m;
-//
-//        // Find the SMALLEST r with non-rejection; if none, return m (full rank)
-//        for (int r = 0; r < m; r++) {
-//            double sum = 0.0;
-//            for (int i = r; i < L; i++) {
-//                double oneMinus = TMath.max(1e-15, 1.0 - rho2[i]);
-//                sum += TMath.log(oneMinus);
-//            }
-//            double stat = -c * sum;
-//            int nu = (p - r) * (q - r);
-//            if (nu <= 0) return r; // at this point, tail has zero dof â accept
-//
-//            double crit = chi2CriticalWH(nu, alpha);
-//            if (stat <= crit) return r; // first non-rejection
-//        }
-//        return m; // rejected for all r
-//    }
-
     /**
      * Estimates the regularized canonical correlation analysis (rCCA) rank by sequentially testing the rank using
      * Wilks' Lambda statistic.
@@ -358,11 +306,7 @@ public class RankTests {
                                         int n, double alpha) {
         int minpq = TMath.min(xIdxLocal.length, yIdxLocal.length);
 
-        for (int r = 0; r < yIdxLocal.length; r++) {
-            if (r >= minpq) {
-                continue;
-            }
-
+        for (int r = 0; r < minpq; r++) {
             if (rankLeByWilks(Scond, xIdxLocal, yIdxLocal, n, r) > alpha) {
                 return r;
             }
@@ -382,18 +326,17 @@ public class RankTests {
      * @param alpha Significance level for hypothesis testing (e.g., 0.05 for 5%).
      * @return Estimated rank of the matrix, computed based on the Wilks test criteria.
      */
-    public static int estimateWilksRankFast(SimpleMatrix S, int[] xIdx, int[] yIdx, int n, double alpha) {
+    public static int estimateWilksRankFast(SimpleMatrix S, int[] xIdx, int[] yIdx,
+                                            int n, double alpha) {
         final int p = xIdx.length, q = yIdx.length;
         if (p == 0 || q == 0) return 0;
         final int m = TMath.min(p, q);
 
-        // submatrices
         SimpleMatrix Sxx = submatrix(S, xIdx, xIdx);
         SimpleMatrix Syy = submatrix(S, yIdx, yIdx);
         SimpleMatrix Sxy = submatrix(S, xIdx, yIdx);
         SimpleMatrix Syx = Sxy.transpose();
 
-        // tiny ridge for numerical stability
         double eps = 1e-10;
         for (int i = 0; i < p; i++) Sxx.set(i, i, Sxx.get(i, i) + eps);
         for (int i = 0; i < q; i++) Syy.set(i, i, Syy.get(i, i) + eps);
@@ -401,20 +344,14 @@ public class RankTests {
         SimpleMatrix SxxInv = Sxx.invert();
         SimpleMatrix SyyInv = Syy.invert();
 
-        // M has eigenvalues = rho^2 (on the smaller side)
-        // Use the smaller dimension side for eigen-decomp
-        SimpleMatrix M;
-        boolean xSmall = (p <= q);
-        if (xSmall) {
-            M = SxxInv.mult(Sxy).mult(SyyInv).mult(Syx); // p x p
-        } else {
-            M = SyyInv.mult(Syx).mult(SxxInv).mult(Sxy); // q x q
-        }
+        // Use the smaller-dimension side for the eigen-decomposition.
+        SimpleMatrix M = (p <= q)
+                ? SxxInv.mult(Sxy).mult(SyyInv).mult(Syx)   // p x p
+                : SyyInv.mult(Syx).mult(SxxInv).mult(Sxy);  // q x q
 
-        // eigenvalues (non-negative), sort descending, clamp to [0,1)
         double[] evals = eigSymmetricClamped(M);
         Arrays.sort(evals);
-        // reverse to descending
+        // Reverse to descending order.
         for (int i = 0; i < evals.length / 2; i++) {
             double tmp = evals[i];
             evals[i] = evals[evals.length - 1 - i];
@@ -423,49 +360,27 @@ public class RankTests {
         int L = TMath.min(evals.length, m);
         double[] rho2 = Arrays.copyOf(evals, L);
 
-        // For r = 0..m-1, test H0: rank â¤ r using Bartlett ÏÂ² approx
-        // stat_r = - (n - 1 - (p+q+1)/2) * sum_{i=r+1..m} ln(1 - rho_i^2)
-        // Î½_r = (p - r)(q - r)
-        double c = (n - 1 - (p + q + 1) / 2.0);
-        int hat = 0;
+        double c = n - 1.0 - (p + q + 1) / 2.0;
 
-        // Find the SMALLEST r with non-rejection; if none, return m (full rank)
+        // Sample too small to discriminate: conservatively report full rank.
+        if (c <= 0) return m;
+
         for (int r = 0; r < m; r++) {
             double sum = 0.0;
             for (int i = r; i < L; i++) {
-                double oneMinus = TMath.max(1e-15, 1.0 - rho2[i]);
-                sum += TMath.log(oneMinus);
+                sum += TMath.log(TMath.max(1e-15, 1.0 - rho2[i]));
             }
             double stat = -c * sum;
             int nu = (p - r) * (q - r);
-            if (nu <= 0) return r; // at this point, tail has zero dof â accept
 
-            double crit = chi2CriticalWH(nu, alpha);
-            if (stat <= crit) return r; // first non-rejection
+            // Zero degrees of freedom: tail is degenerate, accept this rank.
+            if (nu <= 0) return r;
+
+            if (stat <= chi2CriticalWH(nu, alpha)) return r;
         }
-//        for (int r = 0; r < m; r++) {
-//
-//            double sum = 0.0;
-//            for (int i = r; i < L; i++) {
-//                double oneMinus = TMath.max(1e-15, 1.0 - rho2[i]);
-//                sum += TMath.log(oneMinus);
-//            }
-//            double stat = -c * sum;
-//            int nu = (p - r) * (q - r);
-//            if (nu <= 0) {
-//                hat = TMath.max(hat, r);
-//                continue;
-//            }
-//
-//            double crit = chi2CriticalWH(nu, alpha);
-//            if (stat <= crit) {
-//                hat = TMath.max(hat, r); // fail to reject â rank â¤ r plausible
-//            } else {
-//                // reject H0(rank â¤ r); continue increasing r wonât help acceptance
-//                // (stat decreases with larger r), but we still compute loop to keep it simple
-//            }
-//        }
-        return hat;
+
+        // All hypotheses rank <= r rejected: full rank.
+        return m;
     }
 
     // helpers: symmetric eigvals with clamping
@@ -483,21 +398,17 @@ public class RankTests {
     }
 
     private static double chi2CriticalWH(int nu, double alpha) {
-        // key (nu, alpha*1e9) packed into a long for small cache
-        long key = (((long) nu) << 32) ^ Double.valueOf(alpha).hashCode();
-        Double cv = CHI2_CRIT_CACHE.get(key);
-        if (cv != null) return cv;
-
-        // z_{1-alpha} using a very good rational approximation (AS241 style)
-        double z = invNormal1mAlpha(alpha);
-
-        // WilsonâHilferty: Q_{1-a,Î½} â Î½ * [1 - 2/(9Î½) + z * sqrt(2/(9Î½))]^3
-        double n = nu;
-        double a = 2.0 / (9.0 * n);
-        double q = n * TMath.pow(1.0 - a + z * TMath.sqrt(a), 3.0);
-
-        CHI2_CRIT_CACHE.put(key, q);
-        return q;
+        // Double.doubleToLongBits gives a collision-free 64-bit representation.
+        // computeIfAbsent is safe here since the computation is deterministic;
+        // at worst it runs twice under contention and both results are equal.
+        return CHI2_CRIT_CACHE.computeIfAbsent(
+                new Chi2Key(nu, Double.doubleToLongBits(alpha)),
+                k -> {
+                    double z  = invNormal1mAlpha(alpha);
+                    double dn = nu;
+                    double a  = 2.0 / (9.0 * dn);
+                    return dn * TMath.pow(1.0 - a + z * TMath.sqrt(a), 3.0);
+                });
     }
 
     /**
@@ -724,10 +635,10 @@ public class RankTests {
 
         int[] X = diff(C, Z);
         int[] Y = diff(VminusC, Z);
-        if (X.length == 0 || Y.length == 0) return 0;           // nothing left to test
+
+        if (X.length == 0 || Y.length == 0) return 0;
         if (Z.length == 0) return estimateWilksRank(S, X, Y, n, alpha);
 
-        // Extract blocks
         SimpleMatrix Sxx = block(S, X, X);
         SimpleMatrix Syy = block(S, Y, Y);
         SimpleMatrix Sxy = block(S, X, Y);
@@ -735,28 +646,28 @@ public class RankTests {
         SimpleMatrix Syz = block(S, Y, Z);
         SimpleMatrix Szz = block(S, Z, Z);
 
-        // Invert Szz robustly (use your ridge/floor)
-        SimpleMatrix SzzInv = invPsdWithRidge(Szz, /*ridge*/1e-8);
+        SimpleMatrix SzzInv = invPsdWithRidge(Szz, 1e-8);
 
-        // Schur complements (condition on Z)
+        // Schur complements: partial covariances conditioned on Z.
         SimpleMatrix Sxx_c = Sxx.minus(Sxz.mult(SzzInv).mult(Sxz.transpose()));
         SimpleMatrix Syy_c = Syy.minus(Syz.mult(SzzInv).mult(Syz.transpose()));
         SimpleMatrix Sxy_c = Sxy.minus(Sxz.mult(SzzInv).mult(Syz.transpose()));
 
-        // TODO Try:
+        // Symmetrize and stabilize the conditioned diagonal blocks.
+        // These operations must be applied to the Schur complement results,
+        // not the original blocks — the original blocks are no longer used
+        // after this point.
+        Sxx_c = Sxx_c.plus(Sxx_c.transpose()).divide(2.0);
+        Syy_c = Syy_c.plus(Syy_c.transpose()).divide(2.0);
 
-        // Symmetrize after Schur complement (important)
-        Sxx = Sxx.plus(Sxx.transpose()).divide(2.0);
-        Syy = Syy.plus(Syy.transpose()).divide(2.0);
+        double ridge = 1e-6;
+        for (int i = 0; i < Sxx_c.numRows(); i++) {
+            Sxx_c.set(i, i, Sxx_c.get(i, i) + ridge);
+        }
+        for (int i = 0; i < Syy_c.numRows(); i++) {
+            Syy_c.set(i, i, Syy_c.get(i, i) + ridge);
+        }
 
-        // Add ridge AFTER partialing
-        double ridge = 1e-6; // try 1e-6, then 1e-4
-        for (int i = 0; i < Sxx.numRows(); i++) Sxx.set(i, i, Sxx.get(i,i) + ridge);
-        for (int i = 0; i < Syy.numRows(); i++) Syy.set(i, i, Syy.get(i,i) + ridge);
-
-        // End TODO
-
-        // Reassemble a (|X|+|Y|)Ã(|X|+|Y|) covariance conditioned on Z:
         int p = X.length, q = Y.length;
         SimpleMatrix Scond = new SimpleMatrix(p + q, p + q);
         Scond.insertIntoThis(0, 0, Sxx_c);
@@ -764,7 +675,6 @@ public class RankTests {
         Scond.insertIntoThis(p, 0, Sxy_c.transpose());
         Scond.insertIntoThis(p, p, Syy_c);
 
-        // Now reuse your existing estimator on [X | Y] with Scond
         int[] xLoc = range(0, p);
         int[] yLoc = range(p, p + q);
         return estimateWilksRank(Scond, xLoc, yLoc, n, alpha);
@@ -892,34 +802,8 @@ public class RankTests {
             Sxy = Sxy.minus(Sxz.mult(SzzInv).mult(Syz.transpose()));
         }
 
-        // Whitening and SVD
-//        SimpleMatrix Wxx = invSqrtPSD(Sxx);
-//        SimpleMatrix Wyy = invSqrtPSD(Syy);
-//        SimpleMatrix M = Wxx.mult(Sxy).mult(Wyy);
-//        var svd = M.svd();
-//        int m = TMath.min(M.getNumRows(), M.getNumCols());
-//        double logLambda = 0.0;
-//        for (int i = 0; i < m; i++) {
-//            double rho = TMath.max(0.0, TMath.min(1.0, svd.getSingleValue(i)));
-//            logLambda += TMath.log(TMath.max(1e-16, 1.0 - rho * rho));
-//        }
-//
-//        // Bartlett approx (use your standard scaling)
-//        int p = Sxx.getNumRows(), q = Syy.getNumRows();
-//        double kappa = (n - 1) - 0.5 * (p + q + 1);
-//        if (!Double.isFinite(kappa) || kappa < 1.0) kappa = TMath.max(1.0, n - 1);
-//        double stat = -kappa * logLambda;
-//        int df = p * q;
-//        if (df <= 0) return 1.0;
-//
-//        return 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(stat);
-
         Sxx = Sxx.plus(Sxx.transpose()).divide(2.0);
         Syy = Syy.plus(Syy.transpose()).divide(2.0);
-
-//        double ridge = 1e-4; // try 1e-6, 1e-4
-//        for (int i = 0; i < Sxx.numRows(); i++) Sxx.set(i,i, Sxx.get(i,i) + ridge);
-//        for (int i = 0; i < Syy.numRows(); i++) Syy.set(i,i, Syy.get(i,i) + ridge);
 
         Whitening Wx = invSqrtPSD_rankAware(Sxx, 1e-10);
         Whitening Wy = invSqrtPSD_rankAware(Syy, 1e-10);
@@ -1116,26 +1000,6 @@ public class RankTests {
 
     private static SimpleMatrix symmetrize(SimpleMatrix A) {
         return A.plus(A.transpose()).scale(0.5);
-    }
-
-    /**
-     * Computes the union of the elements from the given array and a single integer value. The union is returned as an
-     * array of unique integers.
-     *
-     * @param A an array of integers whose elements will contribute to the union set
-     * @param b a single integer that will also be included in the union set
-     * @return an array of integers containing the union of the input array and the single integer, with all duplicate
-     * elements removed
-     */
-    public int[] union(int[] A, int b) {
-        Set<Integer> _A = new HashSet<>();
-        Set<Integer> _B = new HashSet<>();
-        for (int j : A) _A.add(j);
-        _B.add(b);
-        Set<Integer> union = new HashSet<>();
-        union.addAll(_A);
-        union.addAll(_B);
-        return union.stream().mapToInt(x -> x).toArray();
     }
 
     /**

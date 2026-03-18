@@ -105,7 +105,7 @@ public final class BossTrekMimic implements IGraphSearch {
      * Minimum proportion of a latent's indicators that must have X as a BOSS parent
      * before X is attached to that latent.
      */
-    private double minIndicatorSupportProportion = 0.6;
+    private double minIndicatorSupportProportion = 0.5;
 
     /**
      * If true, allow one measured input to be attached to multiple latents if it
@@ -206,20 +206,23 @@ public final class BossTrekMimic implements IGraphSearch {
 
         TrekMeasurementModelBuilder.MeasurementBuildResult result = builder.build();
 
-        this.graph = new EdgeListGraph(result.graph());
-        this.variables = new ArrayList<>(result.variables());
-        this.s = result.matrix();
+        this.graph      = new EdgeListGraph(result.graph());
+        this.variables  = new ArrayList<>(result.variables());
+        this.s          = result.matrix();
         this.sampleSize = result.sampleSize();
-        this.alpha = result.alpha();
+        this.alpha      = result.alpha();
+
+        LatentGraphRefinement refinement =
+                new LatentGraphRefinement(variables, s, sampleSize, alpha);
 
         recoverMeasuredParentsByBoss();
 
         if (pruneLatentEdges) {
-            pruneLatentLatentEdgesByConditionedRank();
+            refinement.pruneLatentLatentEdges(graph);
         }
 
         if (orientLatentEdges) {
-            orientLatentEdgesByCorrelationOfParentsAndChildren();
+            refinement.orientLatentEdges(graph);
         }
 
         return graph;
@@ -406,15 +409,15 @@ public final class BossTrekMimic implements IGraphSearch {
     /**
      * Runs the BOSS-based measured-parent recovery stage.
      */
-    private void recoverMeasuredParentsByBoss() {
+    private void recoverMeasuredParentsByBoss() throws InterruptedException {
         if (graph == null) {
             throw new IllegalStateException("Graph has not been initialized.");
         }
 
-        List<Node> latents = getLatents(graph);
-        List<Node> indicators = getIndicators(graph, latents);
+        List<Node> latents      = getLatents(graph);
+        List<Node> indicators   = getIndicators(graph, latents);
         List<Node> measuredNodes = getMeasuredNodes(graph);
-        List<Node> inputPool = new ArrayList<>(measuredNodes);
+        List<Node> inputPool    = new ArrayList<>(measuredNodes);
         inputPool.removeAll(indicators);
 
         Graph bossGraph = runBoss();
@@ -424,7 +427,8 @@ public final class BossTrekMimic implements IGraphSearch {
             Map<Node, Integer> supportCounts = new LinkedHashMap<>();
 
             for (Node latent : latents) {
-                int count = countBossChildrenInIndicatorBlock(input, indicatorsByLatent.get(latent), bossGraph);
+                int count = countBossChildrenInIndicatorBlock(
+                        input, indicatorsByLatent.get(latent), bossGraph);
                 supportCounts.put(latent, count);
             }
 
@@ -436,187 +440,10 @@ public final class BossTrekMimic implements IGraphSearch {
         }
     }
 
-    /**
-     * Removes latent-latent edges that are explained by recovered measured parents.
-     */
-    private void pruneLatentLatentEdgesByConditionedRank() {
-        if (variables == null || s == null) {
-            throw new IllegalStateException("variables and matrix must be supplied for latent-edge pruning.");
-        }
-
-        List<Edge> edges = new ArrayList<>(graph.getEdges());
-
-        for (Edge edge : edges) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            if (x.getNodeType() != NodeType.LATENT || y.getNodeType() != NodeType.LATENT) {
-                continue;
-            }
-
-            List<Node> childrenX = getMeasuredChildren(graph, x);
-            List<Node> childrenY = getMeasuredChildren(graph, y);
-
-            if (childrenX.isEmpty() || childrenY.isEmpty()) {
-                continue;
-            }
-
-            List<Node> cond = new ArrayList<>(getMeasuredParents(graph, x));
-
-            for (Node parent : getMeasuredParents(graph, y)) {
-                if (!cond.contains(parent)) {
-                    cond.add(parent);
-                }
-            }
-
-            if (cond.isEmpty()) {
-                continue;
-            }
-
-            int rank = estimateRankConditioned(childrenX, childrenY, cond);
-
-            if (rank == 0) {
-                graph.removeEdge(edge);
-            }
-        }
-    }
-
-    /**
-     * Orients latent-latent edges using correlations of parents and children.
-     */
-    private void orientLatentEdgesByCorrelationOfParentsAndChildren() {
-        List<Edge> edges = new ArrayList<>(graph.getEdges());
-
-        for (Edge edge : edges) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            if (x.getNodeType() != NodeType.LATENT || y.getNodeType() != NodeType.LATENT) {
-                continue;
-            }
-
-            List<Node> parentsx = new ArrayList<>(graph.getParents(x));
-            List<Node> parentsy = new ArrayList<>(graph.getParents(y));
-
-            List<Node> childrenx = new ArrayList<>(graph.getChildren(x));
-            List<Node> childreny = new ArrayList<>(graph.getChildren(y));
-
-            parentsx.removeIf(n -> n.getNodeType() == NodeType.LATENT);
-            parentsy.removeIf(n -> n.getNodeType() == NodeType.LATENT);
-
-            childrenx.removeIf(n -> n.getNodeType() == NodeType.LATENT);
-            childreny.removeIf(n -> n.getNodeType() == NodeType.LATENT);
-
-            boolean allCorrelatedxy = true;
-            boolean pairTestedxy = false;
-
-            for (Node parentx : parentsx) {
-                for (Node childy : childreny) {
-                    pairTestedxy = true;
-
-                    if (!correlated(parentx, childy)) {
-                        allCorrelatedxy = false;
-                        break;
-                    }
-                }
-
-                if (!allCorrelatedxy) {
-                    break;
-                }
-            }
-
-            boolean orientXtoY = allCorrelatedxy && pairTestedxy;
-
-            boolean allCorrelatedyx = true;
-            boolean pairTestedyx = false;
-
-            for (Node parenty : parentsy) {
-                for (Node childx : childrenx) {
-                    pairTestedyx = true;
-
-                    if (!correlated(parenty, childx)) {
-                        allCorrelatedyx = false;
-                        break;
-                    }
-                }
-
-                if (!allCorrelatedyx) {
-                    break;
-                }
-            }
-
-            boolean orientYtoX = allCorrelatedyx && pairTestedyx;
-
-            if (orientXtoY == orientYtoX) {
-                continue;
-            }
-
-            graph.removeEdge(edge);
-
-            if (orientXtoY) {
-                graph.addDirectedEdge(x, y);
-            } else {
-                graph.addDirectedEdge(y, x);
-            }
-        }
-    }
-
-    private boolean correlated(Node a, Node b) {
-        int i = variables.indexOf(a);
-        int j = variables.indexOf(b);
-
-        double r = s.get(i, j);
-
-        if (Math.abs(r) >= 1.0) {
-            return true;
-        }
-
-        double z = 0.5 * Math.log((1.0 + r) / (1.0 - r)) * Math.sqrt(sampleSize - 3.0);
-        double cutoff = StatUtils.getZForAlpha(alpha);
-
-        return Math.abs(z) > cutoff;
-    }
-
-    private int estimateRankConditioned(List<Node> xSet,
-                                        List<Node> ySet,
-                                        List<Node> cond) {
-        List<Node> x = new ArrayList<>(xSet);
-        List<Node> y = new ArrayList<>(ySet);
-
-        x.removeAll(y);
-
-        if (x.isEmpty() || y.isEmpty()) {
-            return Integer.MAX_VALUE;
-        }
-
-        int[] xIndices = new int[x.size()];
-        int[] yIndices = new int[y.size()];
-        int[] condIndices = new int[cond.size()];
-
-        for (int i = 0; i < x.size(); i++) {
-            xIndices[i] = variables.indexOf(x.get(i));
-        }
-
-        for (int i = 0; i < y.size(); i++) {
-            yIndices[i] = variables.indexOf(y.get(i));
-        }
-
-        for (int i = 0; i < cond.size(); i++) {
-            condIndices[i] = variables.indexOf(cond.get(i));
-        }
-
-        return RankTests.estimateWilksRankConditioned(s, xIndices, yIndices, condIndices, sampleSize, alpha);
-    }
-
-    private Graph runBoss() {
-        try {
-            PermutationSearch boss = new PermutationSearch(new Boss(this.score));
-            boss.setKnowledge(this.knowledge);
-            return boss.search();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("BOSS search was interrupted.", e);
-        }
+    private Graph runBoss() throws InterruptedException {
+        PermutationSearch boss = new PermutationSearch(new Boss(this.score));
+        boss.setKnowledge(this.knowledge);
+        return boss.search();
     }
 
     private List<Node> getLatents(Graph graph) {
@@ -703,16 +530,23 @@ public final class BossTrekMimic implements IGraphSearch {
                                                Map<Node, List<Node>> indicatorsByLatent,
                                                Map<Node, Integer> supportCounts) {
         for (Node latent : latents) {
-            int support = supportCounts.getOrDefault(latent, 0);
+            int support        = supportCounts.getOrDefault(latent, 0);
             int indicatorCount = indicatorsByLatent.get(latent).size();
 
             if (indicatorCount == 0) {
                 continue;
             }
 
-            double proportion = (double) support / indicatorCount;
+            // Require support to satisfy BOTH thresholds simultaneously.
+            // This is equivalent to: support >= max(minIndicatorSupport,
+            // ceil(indicatorCount * minIndicatorSupportProportion)).
+            // For a 2-indicator block with defaults (minSupport=2, proportion=0.5)
+            // this requires support=2, i.e. both indicators, rather than just one.
+            int proportionThreshold =
+                    (int) Math.ceil(indicatorCount * minIndicatorSupportProportion);
+            int required = Math.max(minIndicatorSupport, proportionThreshold);
 
-            if (support >= minIndicatorSupport || proportion >= minIndicatorSupportProportion) {
+            if (support >= required) {
                 if (!graph.isParentOf(input, latent)) {
                     graph.addDirectedEdge(input, latent);
                 }
@@ -724,27 +558,33 @@ public final class BossTrekMimic implements IGraphSearch {
                                          List<Node> latents,
                                          Map<Node, List<Node>> indicatorsByLatent,
                                          Map<Node, Integer> supportCounts) {
-        Node bestLatent = null;
-        double bestScore = Double.NEGATIVE_INFINITY;
+        Node   bestLatent = null;
+        double bestScore  = Double.NEGATIVE_INFINITY;
 
         for (Node latent : latents) {
-            int support = supportCounts.getOrDefault(latent, 0);
+            int support        = supportCounts.getOrDefault(latent, 0);
             int indicatorCount = indicatorsByLatent.get(latent).size();
 
             if (indicatorCount == 0) {
                 continue;
             }
 
-            double proportion = (double) support / indicatorCount;
+            int proportionThreshold =
+                    (int) Math.ceil(indicatorCount * minIndicatorSupportProportion);
+            int required = Math.max(minIndicatorSupport, proportionThreshold);
 
-            if (!(support >= minIndicatorSupport || proportion >= minIndicatorSupportProportion)) {
+            if (support < required) {
                 continue;
             }
 
-            double score = support + proportion;
+            // Score: raw count plus the proportion, so larger blocks with the
+            // same proportion rank above smaller ones. The proportion component
+            // breaks ties when counts are equal across blocks of different sizes.
+            double proportion = (double) support / indicatorCount;
+            double score      = support + proportion;
 
             if (score > bestScore) {
-                bestScore = score;
+                bestScore  = score;
                 bestLatent = latent;
             }
         }
@@ -752,31 +592,5 @@ public final class BossTrekMimic implements IGraphSearch {
         if (bestLatent != null && !graph.isParentOf(input, bestLatent)) {
             graph.addDirectedEdge(input, bestLatent);
         }
-    }
-
-    private static List<Node> getMeasuredChildren(Graph graph, Node latent) {
-        List<Node> children = new ArrayList<>();
-
-        for (Node child : graph.getChildren(latent)) {
-            if (child.getNodeType() != NodeType.LATENT) {
-                children.add(child);
-            }
-        }
-
-        children.sort(Comparator.comparing(Node::getName));
-        return children;
-    }
-
-    private static List<Node> getMeasuredParents(Graph graph, Node node) {
-        List<Node> parents = new ArrayList<>();
-
-        for (Node parent : graph.getParents(node)) {
-            if (parent.getNodeType() != NodeType.LATENT) {
-                parents.add(parent);
-            }
-        }
-
-        parents.sort(Comparator.comparing(Node::getName));
-        return parents;
     }
 }
