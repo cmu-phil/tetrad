@@ -1,14 +1,13 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.independence.BlocksIndTestTs;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.search.blocks.BlocksUtil;
-import edu.cmu.tetrad.search.blocks.SingleClusterPolicy;
-import edu.cmu.tetrad.search.test.IndTestBlocksTs;
-import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RankTests;
+import edu.cmu.tetrad.util.StatUtils;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -41,40 +40,25 @@ import java.util.*;
 public final class TrekMimic {
 
     /**
-     * Trek/block independence wrapper.
-     */
-    private final BlocksIndTestTs test;
-
-    /**
-     * Input data model.
-     */
-    private DataModel dataModel;
-
-    /**
-     * Input data set.
-     */
-    private DataSet dataSet;
-
-    /**
-     * Parameters controlling the search.
-     */
-    private Parameters parameters;
-
-    /**
-     * Optional knowledge.
-     */
-    private Knowledge knowledge = new Knowledge();
-
-    /**
      * Optional known measured inputs by name.
      */
     private final Set<String> inputNames = new LinkedHashSet<>();
-
     /**
      * Optional known measured outputs by name.
      */
     private final Set<String> outputNames = new LinkedHashSet<>();
-
+    /**
+     * Input data set.
+     */
+    private DataSet dataSet;
+    /**
+     * Parameters controlling the search.
+     */
+    private Parameters parameters;
+    /**
+     * Optional knowledge.
+     */
+    private Knowledge knowledge = new Knowledge();
     /**
      * Whether to run the higher-rank expansion phase.
      */
@@ -140,19 +124,44 @@ public final class TrekMimic {
      * Use setters before calling {@link #search()}.
      */
     public TrekMimic() {
-        this.test = new BlocksIndTestTs();
     }
 
     /**
      * Constructs a TrekMimic search with data and parameters.
      *
-     * @param dataSet the data set
+     * @param dataSet    the data set
      * @param parameters the parameters
      */
     public TrekMimic(DataSet dataSet, Parameters parameters) {
         this();
         setDataSet(dataSet);
         setParameters(parameters);
+    }
+
+    private static List<Node> getMeasuredChildren(Graph graph, Node latent) {
+        List<Node> children = new ArrayList<>();
+
+        for (Node child : graph.getChildren(latent)) {
+            if (child.getNodeType() != NodeType.LATENT) {
+                children.add(child);
+            }
+        }
+
+        children.sort(Comparator.comparing(Node::getName));
+        return children;
+    }
+
+    private static List<Node> getMeasuredParents(Graph graph, Node node) {
+        List<Node> parents = new ArrayList<>();
+
+        for (Node parent : graph.getParents(node)) {
+            if (parent.getNodeType() != NodeType.LATENT) {
+                parents.add(parent);
+            }
+        }
+
+        parents.sort(Comparator.comparing(Node::getName));
+        return parents;
     }
 
     /**
@@ -164,25 +173,24 @@ public final class TrekMimic {
     public Graph search() throws InterruptedException {
         validateSearchInputs();
 
-        this.alpha = parameters.getDouble(Params.ALPHA);
-        this.sampleSize = dataSet.getNumRows();
-        this.variables = new ArrayList<>(dataSet.getVariables());
-        this.s = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
+        TrekMeasurementModelBuilder builder =
+                new TrekMeasurementModelBuilder(dataSet, parameters);
 
-        BlockSetup blockSetup = getBlockSetup();
+        builder.setKnowledge(this.knowledge);
+        builder.setInputNames(this.inputNames);
+        builder.setOutputNames(this.outputNames);
+        builder.setDepth(this.depth);
+        builder.setVerbose(this.verbose);
 
-        ((BlocksIndTestTs) this.test).setBlockSpec(blockSetup.spec());
+        TrekMeasurementModelBuilder.MeasurementBuildResult result = builder.build();
 
-        IndependenceTest indTest = this.test.getTest(dataModel, parameters);
-        indTest.setAlpha(alpha);
-        ((IndTestBlocksTs) indTest).setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
-
-        this.graph = getTrekPcGraph(indTest, dataSet.getVariables(), blockSetup.spec());
-
-        this.allLatents = new ArrayList<>(blockSetup.spec().blockVariables());
-
-        List<Node> allChildren = determineObservedChildren(graph, allLatents, dataSet.getVariables());
-        this.initialPool = determineParentPool(dataSet.getVariables(), allChildren);
+        this.graph = result.graph();
+        this.allLatents = new ArrayList<>(result.latents());
+        this.initialPool = new ArrayList<>(result.parentPool());
+        this.variables = new ArrayList<>(result.variables());
+        this.s = result.matrix();
+        this.sampleSize = result.sampleSize();
+        this.alpha = result.alpha();
 
         recoverMeasuredParentsHybrid();
         pruneLatentLatentEdgesByConditionedRank();
@@ -205,7 +213,6 @@ public final class TrekMimic {
         }
 
         this.dataSet = dataSet;
-        this.dataModel = dataSet;
     }
 
     /**
@@ -362,191 +369,6 @@ public final class TrekMimic {
                     "The same variables cannot be declared as both inputs and outputs: " + intersection
             );
         }
-    }
-
-    /**
-     * Returns the block specification and associated setup produced by TSC.
-     *
-     * @return the block setup
-     */
-    private BlockSetup getBlockSetup() {
-        Tsc tsc = new Tsc(dataModel.getVariables(), new CovarianceMatrix(dataSet));
-        tsc.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
-        tsc.setRmax(3);
-        tsc.setMinRedundancy(0);
-        tsc.setAlpha(parameters.getDouble(Params.ALPHA));
-
-        Map<Set<Integer>, Integer> clusters = tsc.findClusters();
-        List<List<Integer>> blocks = new ArrayList<>();
-        List<Integer> ranks = new ArrayList<>();
-
-        for (Set<Integer> block : clusters.keySet()) {
-            List<Integer> blockList = new ArrayList<>(block);
-            Collections.sort(blockList);
-            blocks.add(blockList);
-            ranks.add(clusters.get(block));
-        }
-
-        BlocksUtil.validateBlocks(blocks, dataSet);
-        blocks = BlocksUtil.canonicalizeBlocks(blocks);
-        BlockSpec spec = BlocksUtil.toSpec(blocks, ranks, dataSet);
-        spec = BlocksUtil.applySingleClusterPolicy(
-                spec,
-                SingleClusterPolicy.EXCLUDE,
-                parameters.getDouble(Params.ALPHA)
-        );
-
-        return new BlockSetup(spec);
-    }
-
-    /**
-     * Runs PC with the trek/block test and returns the initial latent-indicator graph.
-     *
-     * @param indTest the independence test
-     * @param measures the measured variables
-     * @param spec the block specification
-     * @return the graph
-     * @throws InterruptedException if interrupted
-     */
-    private Graph getTrekPcGraph(IndependenceTest indTest,
-                                 List<Node> measures,
-                                 BlockSpec spec) throws InterruptedException {
-        Pc search = new Pc(indTest);
-        search.setDepth(depth);
-        search.setVerbose(verbose);
-        search.setKnowledge(knowledge);
-        search.setFasStable(false);
-        search.setVerbose(false);
-
-        Graph graph = search.search();
-
-        for (int i = 0; i < spec.blocks().size(); i++) {
-            Node latent = spec.blockVariables().get(i);
-
-            for (int j : spec.blocks().get(i)) {
-                Node indicator = spec.dataSet().getVariables().get(j);
-
-                if (!mayBeLatentChild(indicator)) {
-                    continue;
-                }
-
-                graph.addNode(indicator);
-
-                if (!graph.isParentOf(latent, indicator)) {
-                    graph.addDirectedEdge(latent, indicator);
-                }
-            }
-        }
-
-        graph = GraphUtils.replaceNodes(graph, measures);
-
-        for (Node node : measures) {
-            if (graph.getNode(node.getName()) == null) {
-                graph.addNode(node);
-            }
-        }
-
-        return graph;
-    }
-
-    /**
-     * Returns true if the given node is known to be an input.
-     *
-     * @param node the node
-     * @return true if known input
-     */
-    private boolean isKnownInput(Node node) {
-        return node != null && inputNames.contains(node.getName());
-    }
-
-    /**
-     * Returns true if the given node is known to be an output.
-     *
-     * @param node the node
-     * @return true if known output
-     */
-    private boolean isKnownOutput(Node node) {
-        return node != null && outputNames.contains(node.getName());
-    }
-
-    /**
-     * Returns true if the given observed node may be treated as a child of a latent.
-     *
-     * @param node the node
-     * @return true if the node may be treated as a child of a latent
-     */
-    private boolean mayBeLatentChild(Node node) {
-        if (isKnownInput(node)) {
-            return false;
-        }
-
-        if (isKnownOutput(node)) {
-            return true;
-        }
-
-        return true;
-    }
-
-    /**
-     * Returns the observed variables to treat as children of the supplied latents,
-     * incorporating any optional input/output role knowledge.
-     *
-     * @param graph the graph
-     * @param latents the latent nodes
-     * @param observedVariables the observed variables
-     * @return the observed child set
-     */
-    private List<Node> determineObservedChildren(Graph graph,
-                                                 Collection<Node> latents,
-                                                 List<Node> observedVariables) {
-        LinkedHashMap<String, Node> byName = new LinkedHashMap<>();
-
-        for (Node node : observedVariables) {
-            byName.put(node.getName(), node);
-        }
-
-        LinkedHashSet<Node> children = new LinkedHashSet<>();
-
-        for (Node child : getObservedChildrenUnion(graph, latents)) {
-            Node resolved = byName.get(child.getName());
-
-            if (resolved != null && !isKnownInput(resolved)) {
-                children.add(resolved);
-            }
-        }
-
-        for (String name : this.outputNames) {
-            Node resolved = byName.get(name);
-
-            if (resolved != null) {
-                children.add(resolved);
-            }
-        }
-
-        return new ArrayList<>(children);
-    }
-
-    /**
-     * Returns the observed variables to treat as the parent pool.
-     *
-     * @param observedVariables the observed variables
-     * @param observedChildren the observed child variables
-     * @return the parent pool
-     */
-    private List<Node> determineParentPool(List<Node> observedVariables,
-                                           Collection<Node> observedChildren) {
-        LinkedHashSet<Node> pool = new LinkedHashSet<>(observedVariables);
-        pool.removeAll(observedChildren);
-
-        for (Node node : observedVariables) {
-            if (isKnownInput(node)) {
-                pool.add(node);
-            }
-        }
-
-        pool.removeIf(this::isKnownOutput);
-
-        return new ArrayList<>(pool);
     }
 
     /**
@@ -844,10 +666,6 @@ public final class TrekMimic {
         }
 
         return new ArrayList<>(parents);
-    }
-
-    private List<Node> getObservedParents(Graph graph, Node latent) {
-        return getObservedParentsUnion(graph, Collections.singletonList(latent));
     }
 
     private List<List<Node>> recoverCliqueRankOneGroups(List<Node> initialPool,
@@ -1241,100 +1059,5 @@ public final class TrekMimic {
         }
 
         return Math.sqrt(sumSquares);
-    }
-
-    private static List<Node> getMeasuredChildren(Graph graph, Node latent) {
-        List<Node> children = new ArrayList<>();
-
-        for (Node child : graph.getChildren(latent)) {
-            if (child.getNodeType() != NodeType.LATENT) {
-                children.add(child);
-            }
-        }
-
-        children.sort(Comparator.comparing(Node::getName));
-        return children;
-    }
-
-    private static List<Node> getMeasuredParents(Graph graph, Node node) {
-        List<Node> parents = new ArrayList<>();
-
-        for (Node parent : graph.getParents(node)) {
-            if (parent.getNodeType() != NodeType.LATENT) {
-                parents.add(parent);
-            }
-        }
-
-        parents.sort(Comparator.comparing(Node::getName));
-        return parents;
-    }
-
-    /**
-     * Setup record for block construction.
-     */
-    private record BlockSetup(BlockSpec spec) {
-    }
-
-    /**
-     * State for higher-rank expansion.
-     */
-    private static final class ExpansionState {
-        private final List<Node> latentSubset;
-        private final List<Node> parentSet;
-        private final int rank;
-
-        private ExpansionState(List<Node> latentSubset, List<Node> parentSet, int rank) {
-            this.latentSubset = new ArrayList<>(latentSubset);
-            this.parentSet = new ArrayList<>(parentSet);
-            this.rank = rank;
-        }
-
-        public List<Node> getLatentSubset() {
-            return new ArrayList<>(this.latentSubset);
-        }
-
-        public List<Node> getParentSet() {
-            return new ArrayList<>(this.parentSet);
-        }
-
-        public int getRank() {
-            return this.rank;
-        }
-    }
-
-    /**
-     * Result of higher-rank parent-set expansion.
-     */
-    private static final class ExpansionResult {
-        private final boolean success;
-        private final List<Node> expandedLatents;
-        private final List<Node> fullParentSet;
-        private final List<Node> newParents;
-
-        private ExpansionResult(boolean success,
-                                List<Node> expandedLatents,
-                                List<Node> fullParentSet,
-                                List<Node> newParents) {
-            this.success = success;
-            this.expandedLatents = new ArrayList<>(expandedLatents);
-            this.fullParentSet = new ArrayList<>(fullParentSet);
-            this.newParents = new ArrayList<>(newParents);
-        }
-
-        public boolean success() {
-            return success;
-        }
-
-        public List<Node> expandedLatents() {
-            return new ArrayList<>(expandedLatents);
-        }
-
-        public List<Node> fullParentSet() {
-            return new ArrayList<>(fullParentSet);
-        }
-
-        public List<Node> newParents() {
-            return new ArrayList<>(newParents);
-        }
     }
 }
