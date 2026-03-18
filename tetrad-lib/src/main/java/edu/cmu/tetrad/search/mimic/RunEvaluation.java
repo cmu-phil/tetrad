@@ -19,6 +19,7 @@ public class RunEvaluation {
         parameters.set("maxLatentSubsetSize", 3);
 
         parameters.set(Params.ALPHA, 0.01);
+//        parameters.set(Params.PENALTY_DISCOUNT, 2.0);
         parameters.set(Params.SAMPLE_SIZE, 5000);
         parameters.set(Params.COEF_LOW, 0.1);
         parameters.set(Params.COEF_HIGH, 1.2);

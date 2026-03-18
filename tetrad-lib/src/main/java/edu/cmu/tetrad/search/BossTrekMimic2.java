@@ -33,34 +33,28 @@ import java.util.*;
 
 /**
  * Uses a fixed latent-indicator measurement model and recovers measured parents
- * of those latents using BOSS parent relations among the indicators.
+ * of those latents using complete BOSS parent bicliques over the indicators.
  *
- * <p>This class runs the full Boss-Trek-MIMIC pipeline from data:
+ * <p>This class runs the full Boss-Trek-MIMIC2 pipeline from data:
  * <ol>
  *     <li>Builds a measurement model using the shared PC/TSC builder.</li>
  *     <li>Keeps that measurement model fixed.</li>
  *     <li>Runs BOSS on the measured variables.</li>
- *     <li>For each measured non-indicator variable X and each latent L, counts how many
- *     indicators of L have X as a BOSS parent.</li>
- *     <li>Adds X -> L when that support is high enough.</li>
+ *     <li>For each latent L, computes the maximum set of measured non-indicator
+ *     variables X such that X is a BOSS parent of every indicator of L.</li>
+ *     <li>Adds X -> L for every such X.</li>
  *     <li>Optionally prunes latent-latent edges explained by the recovered parents.</li>
  *     <li>Optionally orients latent-latent edges using parent/child correlations.</li>
  * </ol>
  * </p>
  *
- * <p>Expected use:
- * <pre>
- * BossTrekMimic tm = new BossTrekMimic(data, parameters, score);
- * tm.setKnowledge(knowledge);
- * tm.setInputNames(inputNames);
- * tm.setOutputNames(outputNames);
- * Graph g = tm.search();
- * </pre>
- * </p>
+ * <p>Equivalently, for each latent L with indicator set I(L), this algorithm recovers
+ * the largest measured parent set P(L) such that P(L) x I(L) is contained in the
+ * directed edge set of the BOSS graph.</p>
  *
  * @author josephramsey
  */
-public final class BossTrekMimic implements IGraphSearch {
+public final class BossTrekMimic2 implements IGraphSearch {
 
     /**
      * Input data set.
@@ -93,20 +87,9 @@ public final class BossTrekMimic implements IGraphSearch {
     private final Set<String> outputNames = new LinkedHashSet<>();
 
     /**
-     * Minimum number of indicators of a latent that must have X as a BOSS parent
-     * before X is attached to that latent.
-     */
-    private int minIndicatorSupport = 2;
-
-    /**
-     * Minimum proportion of a latent's indicators that must have X as a BOSS parent
-     * before X is attached to that latent.
-     */
-    private double minIndicatorSupportProportion = 0.2;
-
-    /**
      * If true, allow one measured input to be attached to multiple latents if it
-     * has enough support for each of them. Otherwise attach it only to the best latent.
+     * belongs to the complete parent biclique for each of them. Otherwise attach it
+     * only to one latent, chosen by the largest indicator block.
      */
     private boolean allowMultipleLatentParents = true;
 
@@ -156,12 +139,12 @@ public final class BossTrekMimic implements IGraphSearch {
     private double alpha = 0.01;
 
     /**
-     * Constructs an uninitialized BossTrekMimic search.
+     * Constructs an uninitialized BossTrekMimic2 search.
      * Use setters before calling {@link #search()}.
      *
      * @param score the score to use for BOSS
      */
-    public BossTrekMimic(Score score) {
+    public BossTrekMimic2(Score score) {
         if (score == null) {
             throw new NullPointerException("Score must not be null.");
         }
@@ -170,20 +153,20 @@ public final class BossTrekMimic implements IGraphSearch {
     }
 
     /**
-     * Constructs a BossTrekMimic search with data, parameters, and score.
+     * Constructs a BossTrekMimic2 search with data, parameters, and score.
      *
      * @param dataSet the data set
      * @param parameters the parameters
      * @param score the score to use for BOSS
      */
-    public BossTrekMimic(DataSet dataSet, Parameters parameters, Score score) {
+    public BossTrekMimic2(DataSet dataSet, Parameters parameters, Score score) {
         this(score);
         setDataSet(dataSet);
         setParameters(parameters);
     }
 
     /**
-     * Runs the full Boss-Trek-MIMIC search.
+     * Runs the full Boss-Trek-MIMIC2 search.
      *
      * @return the resulting graph
      * @throws InterruptedException if interrupted
@@ -209,7 +192,7 @@ public final class BossTrekMimic implements IGraphSearch {
         this.sampleSize = result.sampleSize();
         this.alpha = result.alpha();
 
-        recoverMeasuredParentsByBoss();
+        recoverMeasuredParentsByCompleteBiclique();
 
         if (pruneLatentEdges) {
             pruneLatentLatentEdgesByConditionedRank();
@@ -300,24 +283,6 @@ public final class BossTrekMimic implements IGraphSearch {
     }
 
     /**
-     * Sets the minimum indicator support count.
-     *
-     * @param minIndicatorSupport the minimum support count
-     */
-    public void setMinIndicatorSupport(int minIndicatorSupport) {
-        this.minIndicatorSupport = minIndicatorSupport;
-    }
-
-    /**
-     * Sets the minimum indicator support proportion.
-     *
-     * @param minIndicatorSupportProportion the minimum support proportion
-     */
-    public void setMinIndicatorSupportProportion(double minIndicatorSupportProportion) {
-        this.minIndicatorSupportProportion = minIndicatorSupportProportion;
-    }
-
-    /**
      * Sets whether one measured input may attach to multiple latents.
      *
      * @param allowMultipleLatentParents true if allowed
@@ -401,9 +366,13 @@ public final class BossTrekMimic implements IGraphSearch {
     }
 
     /**
-     * Runs the BOSS-based measured-parent recovery stage.
+     * Runs the BOSS-based measured-parent recovery stage using complete bicliques.
+     *
+     * <p>For each latent L, computes the intersection of the measured-parent sets
+     * of all indicators of L in the BOSS graph. That intersection is the maximum
+     * measured parent set P such that P x I(L) is fully present in the BOSS graph.</p>
      */
-    private void recoverMeasuredParentsByBoss() {
+    private void recoverMeasuredParentsByCompleteBiclique() {
         if (graph == null) {
             throw new IllegalStateException("Graph has not been initialized.");
         }
@@ -411,26 +380,111 @@ public final class BossTrekMimic implements IGraphSearch {
         List<Node> latents = getLatents(graph);
         List<Node> indicators = getIndicators(graph, latents);
         List<Node> measuredNodes = getMeasuredNodes(graph);
-        List<Node> inputPool = new ArrayList<>(measuredNodes);
+
+        LinkedHashSet<Node> inputPool = new LinkedHashSet<>(measuredNodes);
         inputPool.removeAll(indicators);
 
         Graph bossGraph = runBoss();
         Map<Node, List<Node>> indicatorsByLatent = getIndicatorsByLatent(graph, latents);
 
-        for (Node input : inputPool) {
-            Map<Node, Integer> supportCounts = new LinkedHashMap<>();
+        if (allowMultipleLatentParents) {
+            for (Node latent : latents) {
+                Set<Node> commonParents = getCompleteBicliqueParentsForLatent(
+                        latent, indicatorsByLatent.get(latent), inputPool, bossGraph
+                );
+
+                for (Node parent : commonParents) {
+                    if (!graph.isParentOf(parent, latent)) {
+                        graph.addDirectedEdge(parent, latent);
+                    }
+                }
+            }
+        } else {
+            Map<Node, Node> bestLatentForParent = new LinkedHashMap<>();
+            Map<Node, Integer> bestLatentSizeForParent = new LinkedHashMap<>();
 
             for (Node latent : latents) {
-                int count = countBossChildrenInIndicatorBlock(input, indicatorsByLatent.get(latent), bossGraph);
-                supportCounts.put(latent, count);
+                List<Node> latentIndicators = indicatorsByLatent.get(latent);
+                Set<Node> commonParents = getCompleteBicliqueParentsForLatent(
+                        latent, latentIndicators, inputPool, bossGraph
+                );
+
+                int blockSize = latentIndicators.size();
+
+                for (Node parent : commonParents) {
+                    Integer bestSize = bestLatentSizeForParent.get(parent);
+
+                    if (bestSize == null || blockSize > bestSize) {
+                        bestLatentForParent.put(parent, latent);
+                        bestLatentSizeForParent.put(parent, blockSize);
+                    }
+                }
             }
 
-            if (allowMultipleLatentParents) {
-                attachInputToSupportedLatents(input, latents, indicatorsByLatent, supportCounts);
-            } else {
-                attachInputToBestLatent(input, latents, indicatorsByLatent, supportCounts);
+            for (Map.Entry<Node, Node> entry : bestLatentForParent.entrySet()) {
+                Node parent = entry.getKey();
+                Node latent = entry.getValue();
+
+                if (!graph.isParentOf(parent, latent)) {
+                    graph.addDirectedEdge(parent, latent);
+                }
             }
         }
+    }
+
+    /**
+     * Returns the maximum measured parent set whose Cartesian product with the
+     * latent's indicator set is present in the BOSS graph.
+     *
+     * @param latent the latent
+     * @param latentIndicators the indicators of the latent
+     * @param inputPool candidate measured non-indicator variables
+     * @param bossGraph the BOSS graph
+     * @return the maximal complete-biclique parent set
+     */
+    private Set<Node> getCompleteBicliqueParentsForLatent(Node latent,
+                                                          List<Node> latentIndicators,
+                                                          Set<Node> inputPool,
+                                                          Graph bossGraph) {
+        LinkedHashSet<Node> commonParents = new LinkedHashSet<>();
+
+        if (latentIndicators == null || latentIndicators.isEmpty()) {
+            return commonParents;
+        }
+
+        boolean first = true;
+
+        for (Node indicator : latentIndicators) {
+            LinkedHashSet<Node> indicatorParents = new LinkedHashSet<>();
+
+            for (Node parent : bossGraph.getParents(indicator)) {
+                if (parent.getNodeType() == NodeType.LATENT) {
+                    continue;
+                }
+
+                if (!inputPool.contains(parent)) {
+                    continue;
+                }
+
+                indicatorParents.add(parent);
+            }
+
+            if (first) {
+                commonParents.addAll(indicatorParents);
+                first = false;
+            } else {
+                commonParents.retainAll(indicatorParents);
+            }
+
+            if (commonParents.isEmpty()) {
+                break;
+            }
+        }
+
+        commonParents.remove(latent);
+        commonParents.removeAll(latentIndicators);
+
+        return commonParents;
     }
 
     /**
@@ -673,82 +727,6 @@ public final class BossTrekMimic implements IGraphSearch {
         }
 
         return map;
-    }
-
-    /**
-     * Counts how many indicators in the block have the input as a BOSS parent.
-     *
-     * @param input the candidate input
-     * @param indicators the latent's indicators
-     * @param bossGraph the BOSS graph
-     * @return the support count
-     */
-    private int countBossChildrenInIndicatorBlock(Node input, List<Node> indicators, Graph bossGraph) {
-        int count = 0;
-
-        for (Node indicator : indicators) {
-            if (bossGraph.isParentOf(input, indicator)) {
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    private void attachInputToSupportedLatents(Node input,
-                                               List<Node> latents,
-                                               Map<Node, List<Node>> indicatorsByLatent,
-                                               Map<Node, Integer> supportCounts) {
-        for (Node latent : latents) {
-            int support = supportCounts.getOrDefault(latent, 0);
-            int indicatorCount = indicatorsByLatent.get(latent).size();
-
-            if (indicatorCount == 0) {
-                continue;
-            }
-
-            double proportion = (double) support / indicatorCount;
-
-            if (support >= minIndicatorSupport || proportion >= minIndicatorSupportProportion) {
-                if (!graph.isParentOf(input, latent)) {
-                    graph.addDirectedEdge(input, latent);
-                }
-            }
-        }
-    }
-
-    private void attachInputToBestLatent(Node input,
-                                         List<Node> latents,
-                                         Map<Node, List<Node>> indicatorsByLatent,
-                                         Map<Node, Integer> supportCounts) {
-        Node bestLatent = null;
-        double bestScore = Double.NEGATIVE_INFINITY;
-
-        for (Node latent : latents) {
-            int support = supportCounts.getOrDefault(latent, 0);
-            int indicatorCount = indicatorsByLatent.get(latent).size();
-
-            if (indicatorCount == 0) {
-                continue;
-            }
-
-            double proportion = (double) support / indicatorCount;
-
-            if (!(support >= minIndicatorSupport || proportion >= minIndicatorSupportProportion)) {
-                continue;
-            }
-
-            double score = support + proportion;
-
-            if (score > bestScore) {
-                bestScore = score;
-                bestLatent = latent;
-            }
-        }
-
-        if (bestLatent != null && !graph.isParentOf(input, bestLatent)) {
-            graph.addDirectedEdge(input, bestLatent);
-        }
     }
 
     private static List<Node> getMeasuredChildren(Graph graph, Node latent) {

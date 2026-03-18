@@ -67,7 +67,7 @@ public final class TrekMimic {
     /**
      * Maximum latent subset size to consider in higher-rank expansion.
      */
-    private int maxLatentSubsetSize = 2;
+    private int maxLatentSubsetSize = 3;
 
     /**
      * PC depth.

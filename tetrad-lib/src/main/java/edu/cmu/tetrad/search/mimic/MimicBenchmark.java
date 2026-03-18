@@ -75,12 +75,13 @@ public final class MimicBenchmark {
         this.latentLatentEvaluator = new LatentLatentEvaluator();
         this.runners = new ArrayList<>();
 
-        this.runners.add(new DmMergeRunner());
-        this.runners.add(new DmMgRunner());
-        this.runners.add(new DmMgBossRunner());
+//        this.runners.add(new DmMergeRunner());
+//        this.runners.add(new DmMgRunner());
+//        this.runners.add(new DmMgBossRunner());
 //        this.runners.add(new DmBossRobustRunner());
         this.runners.add(new TrekMimicRunner());
         this.runners.add(new BossTrekMimicRunner());
+//        this.runners.add(new BossTrekMimic2Runner());
     }
 
     /**
