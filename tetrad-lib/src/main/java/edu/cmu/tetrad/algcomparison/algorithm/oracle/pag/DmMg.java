@@ -112,7 +112,7 @@ public class DmMg extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         IndependenceTest test = this.test.getTest(dataModel, parameters);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
 
-        edu.cmu.tetrad.search.DmMg search = new edu.cmu.tetrad.search.DmMg(test);
+        edu.cmu.tetrad.search.mimic.DmMg search = new edu.cmu.tetrad.search.mimic.DmMg(test);
 //        search.setKnowledge(this.knowledge);
 
         if (knowledge != null && !knowledge.getTier(0).isEmpty() && !knowledge.getTier(1).isEmpty()) {

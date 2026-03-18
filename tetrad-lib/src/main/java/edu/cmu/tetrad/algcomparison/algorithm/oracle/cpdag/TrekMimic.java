@@ -49,7 +49,7 @@ import java.util.Set;
  * Algorithm-comparison wrapper for the Trek-MIMIC search.
  *
  * <p>This wrapper delegates the actual work to
- * {@link edu.cmu.tetrad.search.TrekMimic}, which now performs the full search
+ * {@link edu.cmu.tetrad.search.mimic.TrekMimic}, which now performs the full search
  * through its {@code search()} method.</p>
  *
  * @author josephramsey
@@ -109,8 +109,8 @@ public class TrekMimic extends AbstractBootstrapAlgorithm
 
         int maxLatentSubsetSize = parameters.getInt("maxLatentSubsetSize", 4);
 
-        edu.cmu.tetrad.search.TrekMimic search =
-                new edu.cmu.tetrad.search.TrekMimic(data, parameters);
+        edu.cmu.tetrad.search.mimic.TrekMimic search =
+                new edu.cmu.tetrad.search.mimic.TrekMimic(data, parameters);
 
         search.setKnowledge(this.knowledge);
         search.setInputNames(this.inputNames);

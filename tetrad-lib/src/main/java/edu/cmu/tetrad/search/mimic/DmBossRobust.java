@@ -1,8 +1,13 @@
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.mimic;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.Boss;
+import edu.cmu.tetrad.search.IGraphSearch;
+import edu.cmu.tetrad.search.PermutationSearch;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.ScoreIndTest;
 
 import java.util.*;
 
@@ -15,12 +20,13 @@ import java.util.*;
  * cluster, prunes weak clusters, merges redundant clusters, and only then builds
  * a latent structure.</p>
  */
-public class DmPcRobust implements IGraphSearch {
+public class DmBossRobust implements IGraphSearch {
 
     private final List<Node> inputs = new ArrayList<>();
     private final List<Node> outputs = new ArrayList<>();
-    private IndependenceTest test;
-    private Knowledge knowledge = new Knowledge();
+    private final IndependenceTest test;
+    private final Score score;
+    private final Knowledge knowledge;
     private int latentIndex = 1;
 
     /**
@@ -48,25 +54,23 @@ public class DmPcRobust implements IGraphSearch {
     /**
      * Constructs the search from an independence test.
      *
-     * @param test the independence test
+     * @param score the score to use
      */
-    public DmPcRobust(IndependenceTest test, Knowledge knowledge) {
-        if (test == null) {
-            throw new NullPointerException("Independence test must not be null.");
+    public DmBossRobust(Score score, Knowledge knowledge) {
+        if (score == null) {
+            throw new NullPointerException("Score must not be null.");
         }
 
-        this.test = test;
-        this.knowledge = knowledge.copy();
+        this.test = new ScoreIndTest(score);
+        this.score = score;
+        this.knowledge = knowledge;
     }
 
     @Override
     public Graph search() {
         resetState();
 
-        Graph depth0Pattern = runPc(0);
-
-        depth0Pattern = GraphUtils.replaceNodes(depth0Pattern, test.getVariables());
-
+        Graph depth0Pattern = runBoss();
         classifyVariables(depth0Pattern);
 
         Map<Node, Set<Node>> outputSignatures = computeOutputSignatures(depth0Pattern);
@@ -110,14 +114,6 @@ public class DmPcRobust implements IGraphSearch {
 //        return graph;
     }
 
-    public void setKnowledge(Knowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException("Knowledge must not be null.");
-        }
-
-        this.knowledge = new Knowledge(knowledge);
-    }
-
     public void setSignatureSimilarityThreshold(double threshold) {
         this.signatureSimilarityThreshold = threshold;
     }
@@ -140,12 +136,11 @@ public class DmPcRobust implements IGraphSearch {
         this.latentIndex = 1;
     }
 
-    private Graph runPc(int depth) {
+    private Graph runBoss() {
         try {
-            Pc pc = new Pc(this.test);
-            pc.setDepth(depth);
-            pc.setKnowledge(this.knowledge);
-            return pc.search();
+            PermutationSearch boss = new PermutationSearch(new Boss(score));
+            boss.setKnowledge(this.knowledge);
+            return boss.search();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("PC search was interrupted.", e);

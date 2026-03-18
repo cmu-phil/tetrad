@@ -18,9 +18,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.mimic;
 
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -28,7 +27,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.IGraphSearch;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 
 import java.util.ArrayList;

@@ -1,7 +1,9 @@
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.mimic;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.IGraphSearch;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 
 import java.util.*;

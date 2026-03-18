@@ -52,7 +52,7 @@ import java.util.Set;
  * Algorithm-comparison wrapper for Boss-Trek-MIMIC.
  *
  * <p>This wrapper delegates the actual work to
- * {@link edu.cmu.tetrad.search.BossTrekMimic}, which performs the full search
+ * {@link edu.cmu.tetrad.search.mimic.BossTrekMimic}, which performs the full search
  * through its constructor-driven {@code search()} method.</p>
  *
  * @author josephramsey
@@ -117,8 +117,8 @@ public class BossTrekMimic extends AbstractBootstrapAlgorithm
         SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
-        edu.cmu.tetrad.search.BossTrekMimic search =
-                new edu.cmu.tetrad.search.BossTrekMimic(data, parameters, score);
+        edu.cmu.tetrad.search.mimic.BossTrekMimic search =
+                new edu.cmu.tetrad.search.mimic.BossTrekMimic(data, parameters, score);
 
         search.setKnowledge(this.knowledge);
         search.setInputNames(this.inputNames);

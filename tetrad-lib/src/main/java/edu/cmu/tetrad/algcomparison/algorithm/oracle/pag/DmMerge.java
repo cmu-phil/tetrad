@@ -112,7 +112,7 @@ public class DmMerge extends AbstractBootstrapAlgorithm implements Algorithm,
 
         IndependenceTest test = this.test.getTest(dataModel, parameters);
 
-        edu.cmu.tetrad.search.DmMerge search = new edu.cmu.tetrad.search.DmMerge(test);
+        edu.cmu.tetrad.search.mimic.DmMerge search = new edu.cmu.tetrad.search.mimic.DmMerge(test);
         search.setKnowledge(knowledge);
 
         return search.search();

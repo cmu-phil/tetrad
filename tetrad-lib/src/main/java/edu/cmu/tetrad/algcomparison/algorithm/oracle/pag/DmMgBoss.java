@@ -122,7 +122,7 @@ public class DmMgBoss extends AbstractBootstrapAlgorithm implements Algorithm, H
 
         Score score = this.score.getScore(dataModel, parameters);
 
-        edu.cmu.tetrad.search.DmMgBoss search = new edu.cmu.tetrad.search.DmMgBoss(test, score);
+        edu.cmu.tetrad.search.mimic.DmMgBoss search = new edu.cmu.tetrad.search.mimic.DmMgBoss(test, score);
 //        search.setKnowledge(this.knowledge);
 
         if (knowledge != null && !knowledge.getTier(0).isEmpty() && !knowledge.getTier(1).isEmpty()) {
