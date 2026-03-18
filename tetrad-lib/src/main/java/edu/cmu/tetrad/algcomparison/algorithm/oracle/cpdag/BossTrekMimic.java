@@ -162,7 +162,7 @@ public class BossTrekMimic extends AbstractBootstrapAlgorithm
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.DEPTH);z
+        parameters.add(Params.DEPTH);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.VERBOSE);
         return parameters;
