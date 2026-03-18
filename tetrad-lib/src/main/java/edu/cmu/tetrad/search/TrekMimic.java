@@ -1,8 +1,14 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.independence.BlocksIndTestTs;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.RankTests;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.search.blocks.BlocksUtil;
+import edu.cmu.tetrad.search.blocks.SingleClusterPolicy;
+import edu.cmu.tetrad.search.test.IndTestBlocksTs;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.util.*;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -10,21 +16,64 @@ import java.util.*;
 /**
  * Hybrid version of Trek-MIMIC parent recovery.
  *
- * <p>This version deliberately keeps the singleton-parent recovery logic from the
- * original TrekMimic, since that logic appears to work well empirically. It then
- * optionally adds a second higher-rank expansion phase for measured groups shared
- * by multiple latents.</p>
- *
- * <p>Expected input state:
- * <ul>
- *     <li>The graph already contains the latent nodes.</li>
- *     <li>The graph already contains latent -> indicator edges.</li>
- *     <li>The initial pool contains measured non-idicator variables that may be
- *     parents of one or more latents.</li>
- * </ul>
+ * <p>This class runs the full Trek-MIMIC pipeline from data:
+ * <ol>
+ *     <li>Runs TSC to obtain clusters and a block specification.</li>
+ *     <li>Runs PC with the trek/block test to obtain a latent-indicator graph.</li>
+ *     <li>Recovers measured parents of the latent variables.</li>
+ *     <li>Prunes latent-latent edges explained by recovered parents.</li>
+ *     <li>Optionally orients latent-latent edges using parent/child correlations.</li>
+ * </ol>
  * </p>
+ *
+ * <p>Expected use:
+ * <pre>
+ * TrekMimic tm = new TrekMimic(data, parameters);
+ * tm.setKnowledge(knowledge);
+ * tm.setInputNames(inputNames);
+ * tm.setOutputNames(outputNames);
+ * Graph g = tm.search();
+ * </pre>
+ * </p>
+ *
+ * @author josephramsey
  */
 public final class TrekMimic {
+
+    /**
+     * Trek/block independence wrapper.
+     */
+    private final BlocksIndTestTs test;
+
+    /**
+     * Input data model.
+     */
+    private DataModel dataModel;
+
+    /**
+     * Input data set.
+     */
+    private DataSet dataSet;
+
+    /**
+     * Parameters controlling the search.
+     */
+    private Parameters parameters;
+
+    /**
+     * Optional knowledge.
+     */
+    private Knowledge knowledge = new Knowledge();
+
+    /**
+     * Optional known measured inputs by name.
+     */
+    private final Set<String> inputNames = new LinkedHashSet<>();
+
+    /**
+     * Optional known measured outputs by name.
+     */
+    private final Set<String> outputNames = new LinkedHashSet<>();
 
     /**
      * Whether to run the higher-rank expansion phase.
@@ -37,38 +86,485 @@ public final class TrekMimic {
     private int maxLatentSubsetSize = 2;
 
     /**
-     * Runs the hybrid parent recovery procedure.
-     *
-     * @param graph       the graph containing latent nodes and latent -> indicator edges
-     * @param initialPool the measured non-indicator pool
-     * @param allLatents  the latent nodes
-     * @param variables   measured variables in matrix order
-     * @param s           covariance or correlation matrix
-     * @param sampleSize  sample size
-     * @param alpha       rank-test alpha
+     * PC depth.
      */
-    public void recoverMeasuredParentsHybrid(Graph graph,
-                                             List<Node> initialPool,
-                                             List<Node> allLatents,
-                                             List<Node> variables,
-                                             SimpleMatrix s,
-                                             int sampleSize,
-                                             double alpha) {
+    private int depth = -1;
+
+    /**
+     * Verbosity flag.
+     */
+    private boolean verbose = false;
+
+    /**
+     * Whether to orient latent-latent edges after pruning.
+     */
+    private boolean orientLatentEdges = true;
+
+    /**
+     * Working graph.
+     */
+    private Graph graph;
+
+    /**
+     * Working measured-parent pool.
+     */
+    private List<Node> initialPool;
+
+    /**
+     * Working latent list.
+     */
+    private List<Node> allLatents;
+
+    /**
+     * Measured variables in matrix order.
+     */
+    private List<Node> variables;
+
+    /**
+     * Correlation matrix in variable order.
+     */
+    private SimpleMatrix s;
+
+    /**
+     * Sample size.
+     */
+    private int sampleSize;
+
+    /**
+     * Alpha level.
+     */
+    private double alpha = 0.01;
+
+    /**
+     * Constructs an uninitialized TrekMimic search.
+     * Use setters before calling {@link #search()}.
+     */
+    public TrekMimic() {
+        this.test = new BlocksIndTestTs();
+    }
+
+    /**
+     * Constructs a TrekMimic search with data and parameters.
+     *
+     * @param dataSet the data set
+     * @param parameters the parameters
+     */
+    public TrekMimic(DataSet dataSet, Parameters parameters) {
+        this();
+        setDataSet(dataSet);
+        setParameters(parameters);
+    }
+
+    /**
+     * Runs the full Trek-MIMIC search.
+     *
+     * @return the resulting graph
+     * @throws InterruptedException if interrupted
+     */
+    public Graph search() throws InterruptedException {
+        validateSearchInputs();
+
+        this.alpha = parameters.getDouble(Params.ALPHA);
+        this.sampleSize = dataSet.getNumRows();
+        this.variables = new ArrayList<>(dataSet.getVariables());
+        this.s = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
+
+        BlockSetup blockSetup = getBlockSetup();
+
+        ((BlocksIndTestTs) this.test).setBlockSpec(blockSetup.spec());
+
+        IndependenceTest indTest = this.test.getTest(dataModel, parameters);
+        indTest.setAlpha(alpha);
+        ((IndTestBlocksTs) indTest).setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+
+        this.graph = getTrekPcGraph(indTest, dataSet.getVariables(), blockSetup.spec());
+
+        this.allLatents = new ArrayList<>(blockSetup.spec().blockVariables());
+
+        List<Node> allChildren = determineObservedChildren(graph, allLatents, dataSet.getVariables());
+        this.initialPool = determineParentPool(dataSet.getVariables(), allChildren);
+
+        recoverMeasuredParentsHybrid();
+        pruneLatentLatentEdgesByConditionedRank();
+
+        if (orientLatentEdges) {
+            orientLatentEdgesByCorrelationOfParentsAndChildren();
+        }
+
+        return graph;
+    }
+
+    /**
+     * Sets the data set.
+     *
+     * @param dataSet the data set
+     */
+    public void setDataSet(DataSet dataSet) {
+        if (dataSet == null) {
+            throw new NullPointerException("Data set must not be null.");
+        }
+
+        this.dataSet = dataSet;
+        this.dataModel = dataSet;
+    }
+
+    /**
+     * Sets the parameters.
+     *
+     * @param parameters the parameters
+     */
+    public void setParameters(Parameters parameters) {
+        if (parameters == null) {
+            throw new NullPointerException("Parameters must not be null.");
+        }
+
+        this.parameters = parameters;
+    }
+
+    /**
+     * Sets the knowledge.
+     *
+     * @param knowledge the knowledge
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        if (knowledge == null) {
+            throw new NullPointerException("Knowledge must not be null.");
+        }
+
+        this.knowledge = new Knowledge(knowledge);
+    }
+
+    /**
+     * Sets known input variable names.
+     *
+     * @param inputNames the input names
+     */
+    public void setInputNames(Collection<String> inputNames) {
+        this.inputNames.clear();
+
+        if (inputNames != null) {
+            for (String name : inputNames) {
+                if (name != null) {
+                    this.inputNames.add(name);
+                }
+            }
+        }
+
+        validateInputOutputKnowledge();
+    }
+
+    /**
+     * Sets known output variable names.
+     *
+     * @param outputNames the output names
+     */
+    public void setOutputNames(Collection<String> outputNames) {
+        this.outputNames.clear();
+
+        if (outputNames != null) {
+            for (String name : outputNames) {
+                if (name != null) {
+                    this.outputNames.add(name);
+                }
+            }
+        }
+
+        validateInputOutputKnowledge();
+    }
+
+    /**
+     * Sets whether to run the higher-rank expansion phase.
+     *
+     * @param doHigherRankExpansion true if so
+     */
+    public void setDoHigherRankExpansion(boolean doHigherRankExpansion) {
+        this.doHigherRankExpansion = doHigherRankExpansion;
+    }
+
+    /**
+     * Sets the maximum latent subset size for higher-rank expansion.
+     *
+     * @param maxLatentSubsetSize the maximum size
+     */
+    public void setMaxLatentSubsetSize(int maxLatentSubsetSize) {
+        this.maxLatentSubsetSize = maxLatentSubsetSize;
+    }
+
+    /**
+     * Sets the PC depth.
+     *
+     * @param depth the depth
+     */
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
+    /**
+     * Sets verbose output.
+     *
+     * @param verbose true if verbose
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * Sets whether to orient latent-latent edges after pruning.
+     *
+     * @param orientLatentEdges true if so
+     */
+    public void setOrientLatentEdges(boolean orientLatentEdges) {
+        this.orientLatentEdges = orientLatentEdges;
+    }
+
+    /**
+     * Returns the current graph after search, if available.
+     *
+     * @return the graph
+     */
+    public Graph getGraph() {
+        return graph;
+    }
+
+    /**
+     * Returns the current latent nodes after search, if available.
+     *
+     * @return the latent nodes
+     */
+    public List<Node> getLatents() {
+        return allLatents == null ? Collections.emptyList() : new ArrayList<>(allLatents);
+    }
+
+    /**
+     * Validates that the required inputs for search have been supplied.
+     */
+    private void validateSearchInputs() {
+        if (dataSet == null) {
+            throw new IllegalStateException("Data set has not been supplied.");
+        }
+
+        if (parameters == null) {
+            throw new IllegalStateException("Parameters have not been supplied.");
+        }
+
+        validateInputOutputKnowledge();
+    }
+
+    /**
+     * Ensures that no observed variable is simultaneously declared as both an input and an output.
+     */
+    private void validateInputOutputKnowledge() {
+        Set<String> intersection = new LinkedHashSet<>(this.inputNames);
+        intersection.retainAll(this.outputNames);
+
+        if (!intersection.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "The same variables cannot be declared as both inputs and outputs: " + intersection
+            );
+        }
+    }
+
+    /**
+     * Returns the block specification and associated setup produced by TSC.
+     *
+     * @return the block setup
+     */
+    private BlockSetup getBlockSetup() {
+        Tsc tsc = new Tsc(dataModel.getVariables(), new CovarianceMatrix(dataSet));
+        tsc.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+        tsc.setRmax(3);
+        tsc.setMinRedundancy(0);
+        tsc.setAlpha(parameters.getDouble(Params.ALPHA));
+
+        Map<Set<Integer>, Integer> clusters = tsc.findClusters();
+        List<List<Integer>> blocks = new ArrayList<>();
+        List<Integer> ranks = new ArrayList<>();
+
+        for (Set<Integer> block : clusters.keySet()) {
+            List<Integer> blockList = new ArrayList<>(block);
+            Collections.sort(blockList);
+            blocks.add(blockList);
+            ranks.add(clusters.get(block));
+        }
+
+        BlocksUtil.validateBlocks(blocks, dataSet);
+        blocks = BlocksUtil.canonicalizeBlocks(blocks);
+        BlockSpec spec = BlocksUtil.toSpec(blocks, ranks, dataSet);
+        spec = BlocksUtil.applySingleClusterPolicy(
+                spec,
+                SingleClusterPolicy.EXCLUDE,
+                parameters.getDouble(Params.ALPHA)
+        );
+
+        return new BlockSetup(spec);
+    }
+
+    /**
+     * Runs PC with the trek/block test and returns the initial latent-indicator graph.
+     *
+     * @param indTest the independence test
+     * @param measures the measured variables
+     * @param spec the block specification
+     * @return the graph
+     * @throws InterruptedException if interrupted
+     */
+    private Graph getTrekPcGraph(IndependenceTest indTest,
+                                 List<Node> measures,
+                                 BlockSpec spec) throws InterruptedException {
+        Pc search = new Pc(indTest);
+        search.setDepth(depth);
+        search.setVerbose(verbose);
+        search.setKnowledge(knowledge);
+        search.setFasStable(false);
+        search.setVerbose(false);
+
+        Graph graph = search.search();
+
+        for (int i = 0; i < spec.blocks().size(); i++) {
+            Node latent = spec.blockVariables().get(i);
+
+            for (int j : spec.blocks().get(i)) {
+                Node indicator = spec.dataSet().getVariables().get(j);
+
+                if (!mayBeLatentChild(indicator)) {
+                    continue;
+                }
+
+                graph.addNode(indicator);
+
+                if (!graph.isParentOf(latent, indicator)) {
+                    graph.addDirectedEdge(latent, indicator);
+                }
+            }
+        }
+
+        graph = GraphUtils.replaceNodes(graph, measures);
+
+        for (Node node : measures) {
+            if (graph.getNode(node.getName()) == null) {
+                graph.addNode(node);
+            }
+        }
+
+        return graph;
+    }
+
+    /**
+     * Returns true if the given node is known to be an input.
+     *
+     * @param node the node
+     * @return true if known input
+     */
+    private boolean isKnownInput(Node node) {
+        return node != null && inputNames.contains(node.getName());
+    }
+
+    /**
+     * Returns true if the given node is known to be an output.
+     *
+     * @param node the node
+     * @return true if known output
+     */
+    private boolean isKnownOutput(Node node) {
+        return node != null && outputNames.contains(node.getName());
+    }
+
+    /**
+     * Returns true if the given observed node may be treated as a child of a latent.
+     *
+     * @param node the node
+     * @return true if the node may be treated as a child of a latent
+     */
+    private boolean mayBeLatentChild(Node node) {
+        if (isKnownInput(node)) {
+            return false;
+        }
+
+        if (isKnownOutput(node)) {
+            return true;
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns the observed variables to treat as children of the supplied latents,
+     * incorporating any optional input/output role knowledge.
+     *
+     * @param graph the graph
+     * @param latents the latent nodes
+     * @param observedVariables the observed variables
+     * @return the observed child set
+     */
+    private List<Node> determineObservedChildren(Graph graph,
+                                                 Collection<Node> latents,
+                                                 List<Node> observedVariables) {
+        LinkedHashMap<String, Node> byName = new LinkedHashMap<>();
+
+        for (Node node : observedVariables) {
+            byName.put(node.getName(), node);
+        }
+
+        LinkedHashSet<Node> children = new LinkedHashSet<>();
+
+        for (Node child : getObservedChildrenUnion(graph, latents)) {
+            Node resolved = byName.get(child.getName());
+
+            if (resolved != null && !isKnownInput(resolved)) {
+                children.add(resolved);
+            }
+        }
+
+        for (String name : this.outputNames) {
+            Node resolved = byName.get(name);
+
+            if (resolved != null) {
+                children.add(resolved);
+            }
+        }
+
+        return new ArrayList<>(children);
+    }
+
+    /**
+     * Returns the observed variables to treat as the parent pool.
+     *
+     * @param observedVariables the observed variables
+     * @param observedChildren the observed child variables
+     * @return the parent pool
+     */
+    private List<Node> determineParentPool(List<Node> observedVariables,
+                                           Collection<Node> observedChildren) {
+        LinkedHashSet<Node> pool = new LinkedHashSet<>(observedVariables);
+        pool.removeAll(observedChildren);
+
+        for (Node node : observedVariables) {
+            if (isKnownInput(node)) {
+                pool.add(node);
+            }
+        }
+
+        pool.removeIf(this::isKnownOutput);
+
+        return new ArrayList<>(pool);
+    }
+
+    /**
+     * Runs the hybrid measured-parent recovery stage using the current fields.
+     */
+    private void recoverMeasuredParentsHybrid() {
         if (graph == null) {
-            throw new NullPointerException("Graph must not be null.");
+            throw new IllegalStateException("Graph has not been initialized.");
         }
 
         if (initialPool == null || allLatents == null || variables == null || s == null) {
-            throw new NullPointerException("Arguments must not be null.");
+            throw new IllegalStateException("Search inputs have not been initialized.");
         }
 
         List<Node> pool = new ArrayList<>(initialPool);
         List<Node> latents = new ArrayList<>(allLatents);
         latents.sort(Comparator.comparing(Node::getName));
 
-        // ============================================================
-        // Phase 1: singleton parent recovery (borrowed from TrekMimic)
-        // ============================================================
         List<Node> allChildren = getObservedChildrenUnion(graph, latents);
 
         List<List<Node>> recoveredGroups =
@@ -88,30 +584,155 @@ public final class TrekMimic {
             }
         }
 
-        // ============================================================
-        // Phase 2: optional higher-rank / shared-parent expansion
-        // ============================================================
         if (doHigherRankExpansion) {
-            expandHigherRankParentSetsV2(
-                    graph,
-                    latents,
-                    pool,
-                    variables,
-                    s,
-                    sampleSize,
-                    alpha
-            );
+            expandHigherRankParentSetsV2(graph, latents, pool);
         }
+    }
+
+    /**
+     * Removes latent-latent edges that are explained by recovered measured parents.
+     */
+    private void pruneLatentLatentEdgesByConditionedRank() {
+        if (variables == null || s == null) {
+            throw new IllegalStateException("variables and matrix must be supplied for latent-edge pruning.");
+        }
+
+        List<Edge> edges = new ArrayList<>(graph.getEdges());
+
+        for (Edge edge : edges) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            if (x.getNodeType() != NodeType.LATENT || y.getNodeType() != NodeType.LATENT) {
+                continue;
+            }
+
+            List<Node> childrenX = getMeasuredChildren(graph, x);
+            List<Node> childrenY = getMeasuredChildren(graph, y);
+
+            if (childrenX.isEmpty() || childrenY.isEmpty()) {
+                continue;
+            }
+
+            List<Node> cond = new ArrayList<>(getMeasuredParents(graph, x));
+
+            for (Node parent : getMeasuredParents(graph, y)) {
+                if (!cond.contains(parent)) {
+                    cond.add(parent);
+                }
+            }
+
+            if (cond.isEmpty()) {
+                continue;
+            }
+
+            int rank = estimateRankConditioned(childrenX, childrenY, cond);
+
+            if (rank == 0) {
+                graph.removeEdge(edge);
+            }
+        }
+    }
+
+    /**
+     * Orients latent-latent edges using correlations of parents and children.
+     */
+    private void orientLatentEdgesByCorrelationOfParentsAndChildren() {
+        List<Edge> edges = new ArrayList<>(graph.getEdges());
+
+        for (Edge edge : edges) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            if (x.getNodeType() != NodeType.LATENT || y.getNodeType() != NodeType.LATENT) {
+                continue;
+            }
+
+            List<Node> parentsx = new ArrayList<>(graph.getParents(x));
+            List<Node> parentsy = new ArrayList<>(graph.getParents(y));
+
+            List<Node> childrenx = new ArrayList<>(graph.getChildren(x));
+            List<Node> childreny = new ArrayList<>(graph.getChildren(y));
+
+            parentsx.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+            parentsy.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+
+            childrenx.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+            childreny.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+
+            boolean allCorrelatedxy = true;
+            boolean pairTestedxy = false;
+
+            for (Node parentx : parentsx) {
+                for (Node childy : childreny) {
+                    pairTestedxy = true;
+
+                    if (!correlated(parentx, childy)) {
+                        allCorrelatedxy = false;
+                        break;
+                    }
+                }
+
+                if (!allCorrelatedxy) {
+                    break;
+                }
+            }
+
+            boolean orientXtoY = allCorrelatedxy && pairTestedxy;
+
+            boolean allCorrelatedyx = true;
+            boolean pairTestedyx = false;
+
+            for (Node parenty : parentsy) {
+                for (Node childx : childrenx) {
+                    pairTestedyx = true;
+
+                    if (!correlated(parenty, childx)) {
+                        allCorrelatedyx = false;
+                        break;
+                    }
+                }
+
+                if (!allCorrelatedyx) {
+                    break;
+                }
+            }
+
+            boolean orientYtoX = allCorrelatedyx && pairTestedyx;
+
+            if (orientXtoY == orientYtoX) {
+                continue;
+            }
+
+            graph.removeEdge(edge);
+
+            if (orientXtoY) {
+                graph.addDirectedEdge(x, y);
+            } else {
+                graph.addDirectedEdge(y, x);
+            }
+        }
+    }
+
+    private boolean correlated(Node a, Node b) {
+        int i = variables.indexOf(a);
+        int j = variables.indexOf(b);
+
+        double r = s.get(i, j);
+
+        if (Math.abs(r) >= 1.0) {
+            return true;
+        }
+
+        double z = 0.5 * Math.log((1.0 + r) / (1.0 - r)) * Math.sqrt(sampleSize - 3.0);
+        double cutoff = StatUtils.getZForAlpha(alpha);
+
+        return Math.abs(z) > cutoff;
     }
 
     private void expandHigherRankParentSetsV2(Graph graph,
                                               List<Node> allLatents,
-                                              List<Node> initialPool,
-                                              List<Node> variables,
-                                              SimpleMatrix s,
-                                              int sampleSize,
-                                              double alpha) {
-
+                                              List<Node> initialPool) {
         LinkedHashSet<Node> unused = new LinkedHashSet<>(initialPool);
         unused.removeAll(getObservedParentsUnion(graph, allLatents));
 
@@ -124,22 +745,18 @@ public final class TrekMimic {
 
         double lambda = 2.0;
 
-        // First try singleton measured candidates.
         for (Node node : new ArrayList<>(unused)) {
             List<Node> group = Collections.singletonList(node);
 
-            List<Node> bestSubset = assignSharedGroupToBestLatentSubset(
-                    group, latentSubsets, graph, variables, s, sampleSize, alpha, lambda
-            );
+            List<Node> bestSubset = assignSharedGroupToBestLatentSubset(group, latentSubsets, lambda);
 
             if (bestSubset != null) {
                 addMeasuredGroupToLatentSubset(graph, group, bestSubset);
-                removeExplainedLatentEdges(graph, bestSubset, group, variables, s, sampleSize, alpha);
+                removeExplainedLatentEdges(graph, bestSubset, group);
                 unused.remove(node);
             }
         }
 
-        // Then try pairs among the remaining unused variables.
         List<Node> remaining = new ArrayList<>(unused);
         ChoiceGenerator gen = new ChoiceGenerator(remaining.size(), 2);
         int[] choice;
@@ -147,20 +764,17 @@ public final class TrekMimic {
         while ((choice = gen.next()) != null) {
             List<Node> pair = GraphUtils.asList(choice, remaining);
 
-            int rankAboveAll = estimateRank(pair, allChildren, variables, s, sampleSize, alpha);
+            int rankAboveAll = estimateRank(pair, allChildren);
 
-            // Mild filter so we do not test hopeless pairs.
             if (rankAboveAll < 1 || rankAboveAll == Integer.MAX_VALUE) {
                 continue;
             }
 
-            List<Node> bestSubset = assignSharedGroupToBestLatentSubset(
-                    pair, latentSubsets, graph, variables, s, sampleSize, alpha, lambda
-            );
+            List<Node> bestSubset = assignSharedGroupToBestLatentSubset(pair, latentSubsets, lambda);
 
             if (bestSubset != null) {
                 addMeasuredGroupToLatentSubset(graph, pair, bestSubset);
-                removeExplainedLatentEdges(graph, bestSubset, pair, variables, s, sampleSize, alpha);
+                removeExplainedLatentEdges(graph, bestSubset, pair);
 
                 unused.removeAll(pair);
                 remaining = new ArrayList<>(unused);
@@ -200,9 +814,6 @@ public final class TrekMimic {
         return subsets;
     }
 
-    /**
-     * Returns all observed children of the supplied latent collection.
-     */
     private List<Node> getObservedChildrenUnion(Graph graph, Collection<Node> latents) {
         LinkedHashSet<Node> children = new LinkedHashSet<>();
 
@@ -217,16 +828,10 @@ public final class TrekMimic {
         return new ArrayList<>(children);
     }
 
-    /**
-     * Returns observed children of a single latent.
-     */
     private List<Node> getObservedChildren(Graph graph, Node latent) {
         return getObservedChildrenUnion(graph, Collections.singletonList(latent));
     }
 
-    /**
-     * Returns all observed parents of the supplied latent collection.
-     */
     private List<Node> getObservedParentsUnion(Graph graph, Collection<Node> latents) {
         LinkedHashSet<Node> parents = new LinkedHashSet<>();
 
@@ -241,18 +846,10 @@ public final class TrekMimic {
         return new ArrayList<>(parents);
     }
 
-    /**
-     * Returns observed parents of a single latent.
-     */
     private List<Node> getObservedParents(Graph graph, Node latent) {
         return getObservedParentsUnion(graph, Collections.singletonList(latent));
     }
 
-    /**
-     * Recovers clique-like measured groups that behave as rank-1 above all observed indicators.
-     *
-     * <p>This is borrowed from the original TrekMimic logic.</p>
-     */
     private List<List<Node>> recoverCliqueRankOneGroups(List<Node> initialPool,
                                                         List<Node> allChildren,
                                                         List<Node> variables,
@@ -268,7 +865,7 @@ public final class TrekMimic {
 
         while ((choice = gen.next()) != null) {
             List<Node> pair = GraphUtils.asList(choice, pool);
-            int rank = estimateRank(pair, allChildren, variables, s, sampleSize, alpha);
+            int rank = estimateRank(pair, allChildren);
 
             if (rank != 1) {
                 continue;
@@ -277,12 +874,10 @@ public final class TrekMimic {
             pairs.add(pair);
         }
 
-        Graph pairGraph = buildRankOnePairGraph(pool, allChildren, variables, s, sampleSize, alpha);
+        Graph pairGraph = buildRankOnePairGraph(pool, allChildren);
 
         for (List<Node> seedPair : pairs) {
-            List<Node> group = growCliqueRankOneSet(
-                    seedPair, pool, pairGraph, allChildren, variables, s, sampleSize, alpha
-            );
+            List<Node> group = growCliqueRankOneSet(seedPair, pool, pairGraph, allChildren);
             groups.add(new HashSet<>(group));
         }
 
@@ -297,15 +892,8 @@ public final class TrekMimic {
         return recovered;
     }
 
-    /**
-     * Builds a graph whose adjacencies indicate pairwise rank-1 behavior above all indicators.
-     */
     private Graph buildRankOnePairGraph(List<Node> pool,
-                                        List<Node> allChildren,
-                                        List<Node> variables,
-                                        SimpleMatrix s,
-                                        int sampleSize,
-                                        double alpha) {
+                                        List<Node> allChildren) {
         Graph pairGraph = new EdgeListGraph(pool);
 
         ChoiceGenerator gen = new ChoiceGenerator(pool.size(), 2);
@@ -314,7 +902,7 @@ public final class TrekMimic {
         while ((choice = gen.next()) != null) {
             List<Node> pair = GraphUtils.asList(choice, pool);
 
-            int rank = estimateRank(pair, allChildren, variables, s, sampleSize, alpha);
+            int rank = estimateRank(pair, allChildren);
 
             if (rank == 1) {
                 pairGraph.addUndirectedEdge(pair.get(0), pair.get(1));
@@ -324,17 +912,10 @@ public final class TrekMimic {
         return pairGraph;
     }
 
-    /**
-     * Grows a seed pair into a larger clique-like rank-1 group above all indicators.
-     */
     private List<Node> growCliqueRankOneSet(List<Node> seedPair,
                                             List<Node> pool,
                                             Graph pairGraph,
-                                            List<Node> allChildren,
-                                            List<Node> variables,
-                                            SimpleMatrix s,
-                                            int sampleSize,
-                                            double alpha) {
+                                            List<Node> allChildren) {
         LinkedHashSet<Node> current = new LinkedHashSet<>(seedPair);
         LinkedHashSet<Node> remaining = new LinkedHashSet<>(pool);
         remaining.removeAll(current);
@@ -364,13 +945,13 @@ public final class TrekMimic {
                 List<Node> proposed = new ArrayList<>(current);
                 proposed.add(candidate);
 
-                int rank = estimateRank(proposed, allChildren, variables, s, sampleSize, alpha);
+                int rank = estimateRank(proposed, allChildren);
 
                 if (rank != 1) {
                     continue;
                 }
 
-                double strength = blockStrength(proposed, allChildren, variables, s);
+                double strength = blockStrength(proposed, allChildren);
 
                 if (strength > bestStrength) {
                     bestStrength = strength;
@@ -388,11 +969,6 @@ public final class TrekMimic {
         return new ArrayList<>(current);
     }
 
-    /**
-     * Assigns each recovered singleton group to the best latent by rank-1 fit and block strength.
-     *
-     * <p>This is also borrowed from the original TrekMimic logic.</p>
-     */
     private Map<Node, List<Node>> assignParentGroupsToLatents(List<List<Node>> recoveredGroups,
                                                               List<Node> allLatentNodes,
                                                               Graph graph,
@@ -409,13 +985,13 @@ public final class TrekMimic {
             for (Node latent : allLatentNodes) {
                 List<Node> childSet = getObservedChildren(graph, latent);
 
-                int rank = estimateRank(group, childSet, variables, s, sampleSize, alpha);
+                int rank = estimateRank(group, childSet);
 
                 if (rank != 1) {
                     continue;
                 }
 
-                double score = blockStrength(group, childSet, variables, s);
+                double score = blockStrength(group, childSet);
 
                 if (score > bestScore) {
                     bestScore = score;
@@ -433,11 +1009,6 @@ public final class TrekMimic {
 
     private List<Node> assignSharedGroupToBestLatentSubset(List<Node> group,
                                                            List<List<Node>> latentSubsets,
-                                                           Graph graph,
-                                                           List<Node> variables,
-                                                           SimpleMatrix s,
-                                                           int sampleSize,
-                                                           double alpha,
                                                            double lambda) {
         List<Node> bestSubset = null;
         double bestScore = Double.NEGATIVE_INFINITY;
@@ -457,14 +1028,7 @@ public final class TrekMimic {
                 }
             }
 
-            int rank = estimateRank(
-                    proposedParents,
-                    getObservedChildrenUnion(graph, latentSubset),
-                    variables,
-                    s,
-                    sampleSize,
-                    alpha
-            );
+            int rank = estimateRank(proposedParents, getObservedChildrenUnion(graph, latentSubset));
 
             if (rank != latentSubset.size()) {
                 continue;
@@ -473,23 +1037,14 @@ public final class TrekMimic {
             int explainedPairs = countExplainedExistingLatentPairs(
                     graph,
                     latentSubset,
-                    proposedParents,
-                    variables,
-                    s,
-                    sampleSize,
-                    alpha
+                    proposedParents
             );
 
             if (explainedPairs == 0) {
                 continue;
             }
 
-            double strength = blockStrength(
-                    proposedParents,
-                    getObservedChildrenUnion(graph, latentSubset),
-                    variables,
-                    s
-            );
+            double strength = blockStrength(proposedParents, getObservedChildrenUnion(graph, latentSubset));
 
             double score = 1000.0 * explainedPairs
                     + 100.0
@@ -509,7 +1064,6 @@ public final class TrekMimic {
             return null;
         }
 
-        // Optional ambiguity check.
         if (secondBestScore > Double.NEGATIVE_INFINITY && bestScore - secondBestScore < 50.0) {
             return null;
         }
@@ -519,12 +1073,7 @@ public final class TrekMimic {
 
     private int countExplainedExistingLatentPairs(Graph graph,
                                                   List<Node> latentSubset,
-                                                  List<Node> proposedParents,
-                                                  List<Node> variables,
-                                                  SimpleMatrix s,
-                                                  int sampleSize,
-                                                  double alpha) {
-
+                                                  List<Node> proposedParents) {
         int explained = 0;
 
         for (int i = 0; i < latentSubset.size(); i++) {
@@ -533,12 +1082,10 @@ public final class TrekMimic {
             for (int j = i + 1; j < latentSubset.size(); j++) {
                 Node lj = latentSubset.get(j);
 
-                // Only consider pairs that currently have a latent-latent edge
                 if (!graph.isAdjacentTo(li, lj)) {
                     continue;
                 }
 
-                // Children of the two latents
                 List<Node> children = new ArrayList<>();
 
                 for (Node child : graph.getChildren(li)) {
@@ -553,20 +1100,10 @@ public final class TrekMimic {
                     }
                 }
 
-                // Remove latents from children lists
                 children.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
-                // Estimate rank of parents above these indicators
-                int rank = estimateRank(
-                        proposedParents,
-                        children,
-                        variables,
-                        s,
-                        sampleSize,
-                        alpha
-                );
+                int rank = estimateRank(proposedParents, children);
 
-                // If parents fully explain the two latent dimensions
                 if (rank == 2) {
                     explained++;
                 }
@@ -576,225 +1113,9 @@ public final class TrekMimic {
         return explained;
     }
 
-    /**
-     * Optional higher-rank expansion stage for shared parent groups.
-     *
-     * <p>This is a compact carry-over of the original TrekMimic higher-rank idea.</p>
-     */
-    private void expandHigherRankParentSets(Graph graph,
-                                            List<Node> allLatentNodes,
-                                            List<Node> initialPool,
-                                            List<Node> variables,
-                                            SimpleMatrix s,
-                                            int sampleSize,
-                                            double alpha,
-                                            int maxLatentSubsetSize) {
-        LinkedHashSet<Node> unused = new LinkedHashSet<>(initialPool);
-        unused.removeAll(getObservedParentsUnion(graph, allLatentNodes));
-
-        List<ExpansionState> currentStates = new ArrayList<>();
-
-        for (Node latent : allLatentNodes) {
-            List<Node> latentSubset = Collections.singletonList(latent);
-            List<Node> parentSet = getObservedParents(graph, latent);
-
-            int rank = estimateRank(
-                    parentSet,
-                    getObservedChildrenUnion(graph, latentSubset),
-                    variables,
-                    s,
-                    sampleSize,
-                    alpha
-            );
-
-            if (rank == 1) {
-                currentStates.add(new ExpansionState(latentSubset, parentSet, rank));
-            }
-        }
-
-        int maxSize = Math.min(maxLatentSubsetSize, allLatentNodes.size());
-
-        for (int targetSize = 2; targetSize <= maxSize; targetSize++) {
-            List<ExpansionState> nextStates = new ArrayList<>();
-
-            for (ExpansionState state : currentStates) {
-                List<Node> currentSubset = state.getLatentSubset();
-                List<Node> currentParents = state.getParentSet();
-
-                for (Node newLatent : allLatentNodes) {
-                    if (currentSubset.contains(newLatent)) {
-                        continue;
-                    }
-
-                    List<Node> expandedSubset = new ArrayList<>(currentSubset);
-                    expandedSubset.add(newLatent);
-                    expandedSubset.sort(Comparator.comparing(Node::getName));
-
-                    int targetRank = expandedSubset.size();
-
-                    LinkedHashSet<Node> baseParents = new LinkedHashSet<>(currentParents);
-                    baseParents.addAll(getObservedParents(graph, newLatent));
-
-                    ExpansionResult result = expandParentSetForLatentExpansion(
-                            graph,
-                            expandedSubset,
-                            new ArrayList<>(baseParents),
-                            targetRank,
-                            unused,
-                            variables,
-                            s,
-                            sampleSize,
-                            alpha
-                    );
-
-                    if (!result.success() || result.newParents().isEmpty()) {
-                        continue;
-                    }
-
-                    for (Node parent : result.newParents()) {
-                        for (Node latent : result.expandedLatents()) {
-                            if (!graph.isParentOf(parent, latent)) {
-                                graph.addDirectedEdge(parent, latent);
-                            }
-                        }
-                    }
-
-                    removeExplainedLatentEdges(
-                            graph,
-                            result.expandedLatents(),
-                            result.newParents(),
-                            variables,
-                            s,
-                            sampleSize,
-                            alpha
-                    );
-
-                    nextStates.add(new ExpansionState(
-                            result.expandedLatents(),
-                            result.fullParentSet(),
-                            targetRank
-                    ));
-                }
-            }
-
-            currentStates = nextStates;
-
-            if (currentStates.isEmpty()) {
-                break;
-            }
-        }
-    }
-
-    /**
-     * Expands a parent set until it realizes the target rank above the supplied latent subset.
-     */
-    private ExpansionResult expandParentSetForLatentExpansion(Graph graph,
-                                                              List<Node> latentSubset,
-                                                              List<Node> baseParents,
-                                                              int targetRank,
-                                                              Set<Node> unused,
-                                                              List<Node> variables,
-                                                              SimpleMatrix s,
-                                                              int sampleSize,
-                                                              double alpha) {
-        List<Node> childSet = getObservedChildrenUnion(graph, latentSubset);
-
-        LinkedHashSet<Node> fullParents = new LinkedHashSet<>(baseParents);
-        List<Node> newParents = new ArrayList<>();
-
-        int currentRank = estimateRank(
-                new ArrayList<>(fullParents),
-                childSet,
-                variables,
-                s,
-                sampleSize,
-                alpha
-        );
-
-        boolean changed = true;
-
-        while (changed && currentRank < targetRank) {
-            changed = false;
-
-            Node bestAdd = null;
-            double bestStrength = Double.NEGATIVE_INFINITY;
-            int bestRank = -1;
-
-            for (Node candidate : unused) {
-                if (fullParents.contains(candidate)) {
-                    continue;
-                }
-
-                List<Node> proposed = new ArrayList<>(fullParents);
-                proposed.add(candidate);
-
-                int proposedRank = estimateRank(
-                        proposed,
-                        childSet,
-                        variables,
-                        s,
-                        sampleSize,
-                        alpha
-                );
-
-                if (proposedRank <= currentRank || proposedRank > targetRank) {
-                    continue;
-                }
-
-                double strength = blockStrength(proposed, childSet, variables, s);
-
-                if (proposedRank > bestRank ||
-                        (proposedRank == bestRank && strength > bestStrength)) {
-                    bestRank = proposedRank;
-                    bestStrength = strength;
-                    bestAdd = candidate;
-                }
-            }
-
-            if (bestAdd != null) {
-                fullParents.add(bestAdd);
-                newParents.add(bestAdd);
-
-                currentRank = estimateRank(
-                        new ArrayList<>(fullParents),
-                        childSet,
-                        variables,
-                        s,
-                        sampleSize,
-                        alpha
-                );
-
-                changed = true;
-            }
-        }
-
-        if (currentRank != targetRank) {
-            return new ExpansionResult(
-                    false,
-                    latentSubset,
-                    new ArrayList<>(baseParents),
-                    Collections.emptyList()
-            );
-        }
-
-        return new ExpansionResult(
-                true,
-                latentSubset,
-                new ArrayList<>(fullParents),
-                new ArrayList<>(newParents)
-        );
-    }
-
-    /**
-     * Removes latent-latent edges explained by new shared parents.
-     */
     private void removeExplainedLatentEdges(Graph graph,
                                             List<Node> latentSubset,
-                                            List<Node> newParents,
-                                            List<Node> variables,
-                                            SimpleMatrix s,
-                                            int sampleSize,
-                                            double alpha) {
+                                            List<Node> newParents) {
         if (newParents.isEmpty()) {
             return;
         }
@@ -823,11 +1144,7 @@ public final class TrekMimic {
             int rank = estimateRankConditioned(
                     getObservedChildren(graph, x),
                     getObservedChildren(graph, y),
-                    newParents,
-                    variables,
-                    s,
-                    sampleSize,
-                    alpha
+                    newParents
             );
 
             if (explained && rank == 0) {
@@ -836,15 +1153,8 @@ public final class TrekMimic {
         }
     }
 
-    /**
-     * Estimates the rank between two measured sets.
-     */
     private int estimateRank(List<Node> xSet,
-                             List<Node> ySet,
-                             List<Node> variables,
-                             SimpleMatrix s,
-                             int sampleSize,
-                             double alpha) {
+                             List<Node> ySet) {
         List<Node> x = new ArrayList<>(xSet);
         List<Node> y = new ArrayList<>(ySet);
 
@@ -868,16 +1178,9 @@ public final class TrekMimic {
         return RankTests.estimateWilksRank(s, xIndices, yIndices, sampleSize, alpha);
     }
 
-    /**
-     * Estimates the rank between two measured sets conditioned on a conditioning set.
-     */
     private int estimateRankConditioned(List<Node> xSet,
                                         List<Node> ySet,
-                                        List<Node> cond,
-                                        List<Node> variables,
-                                        SimpleMatrix s,
-                                        int sampleSize,
-                                        double alpha) {
+                                        List<Node> cond) {
         List<Node> x = new ArrayList<>(xSet);
         List<Node> y = new ArrayList<>(ySet);
 
@@ -906,13 +1209,8 @@ public final class TrekMimic {
         return RankTests.estimateWilksRankConditioned(s, xIndices, yIndices, condIndices, sampleSize, alpha);
     }
 
-    /**
-     * Simple cross-block strength score.
-     */
     private double blockStrength(List<Node> xSet,
-                                 List<Node> ySet,
-                                 List<Node> variables,
-                                 SimpleMatrix s) {
+                                 List<Node> ySet) {
         List<Node> x = new ArrayList<>(xSet);
         List<Node> y = new ArrayList<>(ySet);
 
@@ -945,18 +1243,36 @@ public final class TrekMimic {
         return Math.sqrt(sumSquares);
     }
 
-    /**
-     * Enables or disables the higher-rank expansion phase.
-     */
-    public void setDoHigherRankExpansion(boolean doHigherRankExpansion) {
-        this.doHigherRankExpansion = doHigherRankExpansion;
+    private static List<Node> getMeasuredChildren(Graph graph, Node latent) {
+        List<Node> children = new ArrayList<>();
+
+        for (Node child : graph.getChildren(latent)) {
+            if (child.getNodeType() != NodeType.LATENT) {
+                children.add(child);
+            }
+        }
+
+        children.sort(Comparator.comparing(Node::getName));
+        return children;
+    }
+
+    private static List<Node> getMeasuredParents(Graph graph, Node node) {
+        List<Node> parents = new ArrayList<>();
+
+        for (Node parent : graph.getParents(node)) {
+            if (parent.getNodeType() != NodeType.LATENT) {
+                parents.add(parent);
+            }
+        }
+
+        parents.sort(Comparator.comparing(Node::getName));
+        return parents;
     }
 
     /**
-     * Sets the maximum latent subset size for higher-rank expansion.
+     * Setup record for block construction.
      */
-    public void setMaxLatentSubsetSize(int maxLatentSubsetSize) {
-        this.maxLatentSubsetSize = maxLatentSubsetSize;
+    private record BlockSetup(BlockSpec spec) {
     }
 
     /**
