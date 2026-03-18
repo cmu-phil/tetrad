@@ -10,8 +10,6 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
-import static edu.cmu.tetrad.util.TMath.abs;
-
 /**
  * <b>BlocksBicScoreTrekSoft</b>
  *
@@ -73,21 +71,8 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
 
     private double trekPenaltyMultiplier = 4.0; // default: 1
 
-    private final Map<FamilyKey, Double> scoreCache =
-            new LinkedHashMap<>(2048, 0.75f, true) {
-                @Override
-                protected boolean removeEldestEntry(Map.Entry<FamilyKey, Double> e) {
-                    return size() > SCORE_CACHE_MAX;
-                }
-            };
-
-    private final Map<ParentsKey, int[]> xblockCache =
-            new LinkedHashMap<>(2048, 0.75f, true) {
-                @Override
-                protected boolean removeEldestEntry(Map.Entry<ParentsKey, int[]> e) {
-                    return size() > XBLOCK_CACHE_MAX;
-                }
-            };
+    private final LruMap<FamilyKey, Double> scoreCache  = new LruMap<>(SCORE_CACHE_MAX);
+    private final LruMap<ParentsKey, int[]> xblockCache = new LruMap<>(XBLOCK_CACHE_MAX);
 
     private final BlockSpec blockSpec;
 
@@ -185,52 +170,51 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
     public double localScore(Node y, List<Node> parents) {
         final int yi = idx(y);
 
-        // --- Enforce "rank-0 blocks are isolated" semantics ---
         Integer yRkObj = blockSpec.ranks().get(yi);
         if (yRkObj == null) {
-            throw new IllegalStateException("Missing rank for block index " + yi + " (node=" + y + ")");
+            throw new IllegalStateException(
+                    "Missing rank for block index " + yi + " (node=" + y + ")");
         }
         final int yRank = yRkObj;
+
+        // Rank-0 blocks are structurally isolated: no parents permitted.
         if (yRank == 0) {
-            // Rank-0 blocks: no parents allowed (and they shouldn't help others either; handled below for parents).
-            return (parents == null || parents.isEmpty()) ? 0.0 : Double.NEGATIVE_INFINITY;
+            return (parents == null || parents.isEmpty())
+                    ? 0.0
+                    : Double.NEGATIVE_INFINITY;
         }
 
-        // Null baseline (no parents)
         if (parents == null || parents.isEmpty()) return 0.0;
 
-        // --- Filter out rank-0 parents (they must not create edges) ---
+        // Filter out rank-0 parent blocks.
         int[] parentIdxTmp = new int[parents.size()];
         int mParents = 0;
         for (Node pNode : parents) {
             int pi = idx(pNode);
             Integer prk = blockSpec.ranks().get(pi);
             if (prk == null) {
-                throw new IllegalStateException("Missing rank for block index " + pi + " (parent node=" + pNode + ")");
+                throw new IllegalStateException(
+                        "Missing rank for block index " + pi + " (parent node=" + pNode + ")");
             }
-            if (prk == 0) continue; // ignore rank-0 parent blocks entirely
+            if (prk == 0) continue;
             parentIdxTmp[mParents++] = pi;
         }
 
-        // If all proposed parents were rank-0, treat as empty parent set.
         if (mParents == 0) return 0.0;
 
         int[] parentIdx = Arrays.copyOf(parentIdxTmp, mParents);
         Arrays.sort(parentIdx);
 
-        // Cache key uses filtered parent set (critical!)
         FamilyKey fkey = new FamilyKey(yi, parentIdx, ridge, penaltyDiscount, trekPenaltyMultiplier);
         Double cached = scoreCache.get(fkey);
         if (cached != null) return cached;
 
-        // Y block
         int[] Yblock = blockFor(yi);
         if (Yblock.length == 0) {
             scoreCache.put(fkey, Double.NEGATIVE_INFINITY);
             return Double.NEGATIVE_INFINITY;
         }
 
-        // X block (concat of filtered parents)
         ParentsKey pkey = new ParentsKey(parentIdx);
         int[] Xblock = xblockCache.get(pkey);
         if (Xblock == null) {
@@ -242,7 +226,6 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
             return Double.NEGATIVE_INFINITY;
         }
 
-        // RCCA entry (cached inside RankTests)
         RankTests.RccaEntry ent = RankTests.getRccaEntry(Sphi, Xblock, Yblock, ridge);
         if (ent == null || ent.suffixLogs == null) {
             scoreCache.put(fkey, Double.NEGATIVE_INFINITY);
@@ -251,57 +234,69 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
 
         int p = Xblock.length, q = Yblock.length;
 
-        // Bartlett-style effective n for CCA LLR
         double nAdj = this.nEff - 1.0 - 0.5 * (p + q + 1.0);
         if (nAdj < 1.0) nAdj = 1.0;
 
         double[] suffix = ent.suffixLogs;
         int m = TMath.min(TMath.min(p, q), (int) nAdj - 1);
         m = TMath.min(m, suffix.length - 1);
+
         if (m <= 0) {
-            scoreCache.put(fkey, -1e-12);
-            return -1e-12;
+            // Block sizes relative to sample size make any rank-r model inestimable.
+            // Forbid this configuration rather than returning a value near the
+            // null-model baseline of 0.0.
+            scoreCache.put(fkey, Double.NEGATIVE_INFINITY);
+            return Double.NEGATIVE_INFINITY;
         }
 
-        // Trek-implied rank target r*
+        // Trek-implied rank: sum of parent ranks.
         int rStar = 0;
         for (int pi : parentIdx) {
             Integer rk = blockSpec.ranks().get(pi);
-            if (rk == null) throw new IllegalStateException("Missing rank for block index " + pi);
+            if (rk == null)
+                throw new IllegalStateException("Missing rank for block index " + pi);
             rStar += rk;
         }
-        if (rStar < 0) rStar = 0;
-        rStar = TMath.min(rStar, m);
+        rStar = TMath.min(TMath.max(rStar, 0), m);
+
+        double suffix0 = suffix[0];
+        double logN    = TMath.log(TMath.max(nAdj, 2.0));
+
+        // Standard BIC penalty discount, without any rank-of-target scaling.
+        // The parameter count k(r) = r(p+q-r) already captures dimensional
+        // complexity through q = |Yblock|. Multiplying by yRank^2 would
+        // double-count complexity for higher-rank targets and has no grounding
+        // in either standard BIC or the trek-separation framework.
+        double cEff = penaltyDiscount;
 
         double best = Double.NEGATIVE_INFINITY;
-        double suffix0 = suffix[0];
 
-        double logN = TMath.log(TMath.max(nAdj, 2.0));
-
-        // Sweep r = 1..m
         for (int r = 1; r <= m; r++) {
+            // Improvement in log-likelihood from fitting the top-r canonical structure.
             double sumLogsTopR = suffix0 - suffix[r];
-            double fit = -nAdj * sumLogsTopR;
+            double fit = -nAdj * sumLogsTopR;  // >= 0
 
-            int k = r * (p + q - r);
-
-            double cEff = penaltyDiscount * (yRank * yRank);
-
+            // Standard BIC complexity penalty for a rank-r model.
+            int k   = r * (p + q - r);
             double pen = cEff * k * logN;
 
+            // Soft penalty encouraging the canonical rank to match the
+            // trek-implied rank. Zero when r == rStar; grows quadratically away.
             double trekPen = 0.0;
             if (penaltyDiscount > 0.0) {
                 double d = (double) r - (double) rStar;
                 trekPen = trekPenaltyMultiplier * cEff * logN * d * d;
             }
 
-
             double sc = fit - pen - trekPen;
             if (Double.isNaN(sc) || Double.isInfinite(sc)) continue;
             if (sc > best) best = sc;
         }
 
-        if (best <= 0.0) best = -1e-12;
+        // Return the actual best score — positive means adding these parents
+        // improves BIC over the null; negative means it does not.
+        // Do NOT clamp: callers (localScoreDiff, BOSS) depend on the ordering
+        // of negative scores to discriminate between bad parent sets.
         scoreCache.put(fkey, best);
         return best;
     }
@@ -530,6 +525,40 @@ public class BlocksBicScoreTrekSoft implements Score, BlockScore, EffectiveSampl
         @Override
         public int hashCode() {
             return hash;
+        }
+    }
+
+    /**
+     * Thread-safe access-order LRU cache backed by a {@link LinkedHashMap}.
+     * All public operations are guarded by an intrinsic lock so that concurrent
+     * calls to {@link #localScore} from parallel BOSS threads cannot corrupt the
+     * internal linked list.
+     */
+    private static final class LruMap<K, V> {
+        private final int maxSize;
+        private final LinkedHashMap<K, V> map;
+
+        LruMap(int maxSize) {
+            this.maxSize = Math.max(16, maxSize);
+            // access-order = true so get() promotes entries, enabling LRU eviction
+            this.map = new LinkedHashMap<>(1024, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<K, V> e) {
+                    return size() > LruMap.this.maxSize;
+                }
+            };
+        }
+
+        synchronized V get(K key) {
+            return map.get(key);
+        }
+
+        synchronized void put(K key, V value) {
+            map.put(key, value);
+        }
+
+        synchronized void clear() {
+            map.clear();
         }
     }
 }

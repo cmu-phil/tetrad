@@ -28,8 +28,6 @@ import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.RankTests;
-import edu.cmu.tetrad.util.StatUtils;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -195,8 +193,8 @@ public final class BossTrekMimic implements IGraphSearch {
     public Graph search() throws InterruptedException {
         validateSearchInputs();
 
-        TrekMeasurementModelBuilder builder =
-                new TrekMeasurementModelBuilder(dataSet, parameters);
+        TrekMeasurementModelBuilderPc builder =
+                new TrekMeasurementModelBuilderPc(dataSet, parameters);
 
         builder.setKnowledge(this.knowledge);
         builder.setInputNames(this.inputNames);
@@ -204,7 +202,7 @@ public final class BossTrekMimic implements IGraphSearch {
         builder.setDepth(this.depth);
         builder.setVerbose(this.verbose);
 
-        TrekMeasurementModelBuilder.MeasurementBuildResult result = builder.build();
+        TrekMeasurementModelBuilderPc.MeasurementBuildResult result = builder.build();
 
         this.graph      = new EdgeListGraph(result.graph());
         this.variables  = new ArrayList<>(result.variables());

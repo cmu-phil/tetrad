@@ -148,8 +148,8 @@ public final class TrekMimic {
     public Graph search() throws InterruptedException {
         validateSearchInputs();
 
-        TrekMeasurementModelBuilder builder =
-                new TrekMeasurementModelBuilder(dataSet, parameters);
+        TrekMeasurementModelBuilderPc builder =
+                new TrekMeasurementModelBuilderPc(dataSet, parameters);
 
         builder.setKnowledge(this.knowledge);
         builder.setInputNames(this.inputNames);
@@ -157,7 +157,7 @@ public final class TrekMimic {
         builder.setDepth(this.depth);
         builder.setVerbose(this.verbose);
 
-        TrekMeasurementModelBuilder.MeasurementBuildResult result = builder.build();
+        TrekMeasurementModelBuilderPc.MeasurementBuildResult result = builder.build();
 
         this.graph       = result.graph();
         this.allLatents  = new ArrayList<>(result.latents());

@@ -67,7 +67,7 @@ import java.util.Set;
  *
  * @author josephramsey
  */
-public final class TrekMeasurementModelBuilder {
+public final class TrekMeasurementModelBuilderPc {
 
     /**
      * Data model.
@@ -120,7 +120,7 @@ public final class TrekMeasurementModelBuilder {
      * @param dataSet the data set
      * @param parameters the parameters
      */
-    public TrekMeasurementModelBuilder(DataSet dataSet, Parameters parameters) {
+    public TrekMeasurementModelBuilderPc(DataSet dataSet, Parameters parameters) {
         if (dataSet == null) {
             throw new NullPointerException("Data set must not be null.");
         }
