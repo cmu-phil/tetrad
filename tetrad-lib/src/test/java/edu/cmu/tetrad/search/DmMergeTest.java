@@ -64,7 +64,7 @@ public class DmMergeTest {
         knowledge.addToTier(1, "X3");
         knowledge.setTierForbiddenWithin(1, true);
 
-        DmPcRobust dmPc = new DmPcRobust(fisherZ.getTest(data, parameters));
+        DmPcRobust dmPc = new DmPcRobust(fisherZ.getTest(data, parameters), knowledge);
         dmPc.setKnowledge(knowledge);
         Graph result = dmPc.search();
 
@@ -173,7 +173,7 @@ public class DmMergeTest {
 
         knowledge.setTierForbiddenWithin(1, true);
 
-        DmPcRobust dmPc = new DmPcRobust(fisherZ.getTest(data, parameters));
+        DmPcRobust dmPc = new DmPcRobust(fisherZ.getTest(data, parameters), knowledge);
         dmPc.setKnowledge(knowledge);
 
         Graph result = dmPc.search();
