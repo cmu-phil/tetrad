@@ -115,7 +115,7 @@ public class BossTrekMimic extends AbstractBootstrapAlgorithm
         DataSet data = (DataSet) dataModel;
 
         SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
-        score.setPenaltyDiscount(1.0);
+        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
         edu.cmu.tetrad.search.BossTrekMimic search =
                 new edu.cmu.tetrad.search.BossTrekMimic(data, parameters, score);
@@ -161,7 +161,8 @@ public class BossTrekMimic extends AbstractBootstrapAlgorithm
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
-        parameters.add(Params.DEPTH);
+        parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.DEPTH);z
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.VERBOSE);
         return parameters;
