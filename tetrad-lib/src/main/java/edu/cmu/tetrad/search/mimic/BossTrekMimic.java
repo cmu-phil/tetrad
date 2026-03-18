@@ -105,7 +105,7 @@ public final class BossTrekMimic implements IGraphSearch {
      * Minimum proportion of a latent's indicators that must have X as a BOSS parent
      * before X is attached to that latent.
      */
-    private double minIndicatorSupportProportion = 0.2;
+    private double minIndicatorSupportProportion = 0.6;
 
     /**
      * If true, allow one measured input to be attached to multiple latents if it
