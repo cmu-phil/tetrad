@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
@@ -52,8 +52,8 @@ import java.util.Set;
  * Algorithm-comparison wrapper for Boss-Trek-MIMIC.
  *
  * <p>This wrapper delegates the actual work to
- * {@link edu.cmu.tetrad.search.BossTrekMimic}, which now performs the full
- * search through its {@code search(DataModel, Parameters)} method.</p>
+ * {@link edu.cmu.tetrad.search.BossTrekMimic}, which performs the full search
+ * through its constructor-driven {@code search()} method.</p>
  *
  * @author josephramsey
  */
@@ -101,7 +101,7 @@ public class BossTrekMimic extends AbstractBootstrapAlgorithm
     /**
      * Runs the search.
      *
-     * @param dataModel the data model
+     * @param dataModel  the data model
      * @param parameters the parameters
      * @return the resulting graph
      * @throws InterruptedException if interrupted
@@ -115,19 +115,18 @@ public class BossTrekMimic extends AbstractBootstrapAlgorithm
         DataSet data = (DataSet) dataModel;
 
         SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
-        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        score.setPenaltyDiscount(1.0);
 
         edu.cmu.tetrad.search.BossTrekMimic search =
-                new edu.cmu.tetrad.search.BossTrekMimic(score);
+                new edu.cmu.tetrad.search.BossTrekMimic(data, parameters, score);
 
         search.setKnowledge(this.knowledge);
         search.setInputNames(this.inputNames);
         search.setOutputNames(this.outputNames);
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        search.setAlpha(parameters.getDouble(Params.ALPHA));
 
-        return search.search(dataModel, parameters);
+        return search.search();
     }
 
     /**
@@ -162,7 +161,6 @@ public class BossTrekMimic extends AbstractBootstrapAlgorithm
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
-        parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.DEPTH);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.VERBOSE);

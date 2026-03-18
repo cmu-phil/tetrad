@@ -1,4 +1,4 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,17 +16,15 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.StatUtils;
 import org.ejml.simple.SimpleMatrix;
@@ -37,13 +35,27 @@ import java.util.*;
  * Uses a fixed latent-indicator measurement model and recovers measured parents
  * of those latents using BOSS parent relations among the indicators.
  *
- * <p>The intended use is:
+ * <p>This class runs the full Boss-Trek-MIMIC pipeline from data:
  * <ol>
- *     <li>Obtain a measurement model externally, for example from TSC/PC, and call
- *     {@link #setMeasurementGraph(Graph)} followed by {@link #search()}.</li>
- *     <li>Or call {@link #search(DataModel, Parameters)} to first build the
- *     measurement graph from data using TSC and trek-PC, then recover measured parents.</li>
+ *     <li>Builds a measurement model using the shared PC/TSC builder.</li>
+ *     <li>Keeps that measurement model fixed.</li>
+ *     <li>Runs BOSS on the measured variables.</li>
+ *     <li>For each measured non-indicator variable X and each latent L, counts how many
+ *     indicators of L have X as a BOSS parent.</li>
+ *     <li>Adds X -> L when that support is high enough.</li>
+ *     <li>Optionally prunes latent-latent edges explained by the recovered parents.</li>
+ *     <li>Optionally orients latent-latent edges using parent/child correlations.</li>
  * </ol>
+ * </p>
+ *
+ * <p>Expected use:
+ * <pre>
+ * BossTrekMimic tm = new BossTrekMimic(data, parameters, score);
+ * tm.setKnowledge(knowledge);
+ * tm.setInputNames(inputNames);
+ * tm.setOutputNames(outputNames);
+ * Graph g = tm.search();
+ * </pre>
  * </p>
  *
  * @author josephramsey
@@ -51,76 +63,101 @@ import java.util.*;
 public final class BossTrekMimic implements IGraphSearch {
 
     /**
+     * Input data set.
+     */
+    private DataSet dataSet;
+
+    /**
+     * Parameters controlling the search.
+     */
+    private Parameters parameters;
+
+    /**
      * Score used by BOSS.
      */
     private final Score score;
-    /**
-     * Optional known input variable names.
-     */
-    private final Set<String> inputNames = new LinkedHashSet<>();
-    /**
-     * Optional known output variable names.
-     */
-    private final Set<String> outputNames = new LinkedHashSet<>();
-    /**
-     * Fixed measurement graph containing latent nodes and latent -> indicator edges.
-     */
-    private Graph measurementGraph;
+
     /**
      * Optional background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
+
+    /**
+     * Optional known measured inputs by name.
+     */
+    private final Set<String> inputNames = new LinkedHashSet<>();
+
+    /**
+     * Optional known measured outputs by name.
+     */
+    private final Set<String> outputNames = new LinkedHashSet<>();
+
     /**
      * Minimum number of indicators of a latent that must have X as a BOSS parent
      * before X is attached to that latent.
      */
     private int minIndicatorSupport = 2;
+
     /**
      * Minimum proportion of a latent's indicators that must have X as a BOSS parent
      * before X is attached to that latent.
      */
     private double minIndicatorSupportProportion = 0.5;
+
     /**
      * If true, allow one measured input to be attached to multiple latents if it
      * has enough support for each of them. Otherwise attach it only to the best latent.
      */
     private boolean allowMultipleLatentParents = true;
+
     /**
      * Whether to prune latent-latent edges after parent recovery.
      */
     private boolean pruneLatentEdges = true;
+
     /**
      * Whether to orient latent-latent edges after pruning.
      */
     private boolean orientLatentEdges = true;
+
     /**
-     * Variables in matrix order.
-     */
-    private List<Node> variables;
-    /**
-     * Correlation matrix in variable order.
-     */
-    private SimpleMatrix s;
-    /**
-     * Sample size.
-     */
-    private int sampleSize;
-    /**
-     * Alpha level.
-     */
-    private double alpha = 0.01;
-    /**
-     * PC depth for measurement-graph construction.
+     * PC depth.
      */
     private int depth = -1;
 
     /**
-     * Verbosity flag for measurement-graph construction.
+     * Verbosity flag.
      */
     private boolean verbose = false;
 
     /**
-     * Constructs the search.
+     * Working graph.
+     */
+    private Graph graph;
+
+    /**
+     * Measured variables in matrix order.
+     */
+    private List<Node> variables;
+
+    /**
+     * Correlation matrix in variable order.
+     */
+    private SimpleMatrix s;
+
+    /**
+     * Sample size.
+     */
+    private int sampleSize;
+
+    /**
+     * Alpha level.
+     */
+    private double alpha = 0.01;
+
+    /**
+     * Constructs an uninitialized BossTrekMimic search.
+     * Use setters before calling {@link #search()}.
      *
      * @param score the score to use for BOSS
      */
@@ -133,26 +170,30 @@ public final class BossTrekMimic implements IGraphSearch {
     }
 
     /**
-     * Convenience method: constructs the measurement graph from the data using TSC and trek-PC,
-     * then runs the fixed-measurement BossTrekMimic search.
+     * Constructs a BossTrekMimic search with data, parameters, and score.
      *
-     * @param dataModel  the data model
+     * @param dataSet the data set
      * @param parameters the parameters
+     * @param score the score to use for BOSS
+     */
+    public BossTrekMimic(DataSet dataSet, Parameters parameters, Score score) {
+        this(score);
+        setDataSet(dataSet);
+        setParameters(parameters);
+    }
+
+    /**
+     * Runs the full Boss-Trek-MIMIC search.
+     *
      * @return the resulting graph
      * @throws InterruptedException if interrupted
      */
-    public Graph search(DataModel dataModel, Parameters parameters) throws InterruptedException {
-        if (!(dataModel instanceof DataSet)) {
-            throw new IllegalArgumentException("BossTrekMimic requires a DataSet.");
-        }
-
-        DataSet data = (DataSet) dataModel;
-
-        this.depth = parameters.getInt(Params.DEPTH);
-        this.verbose = parameters.getBoolean(Params.VERBOSE);
+    @Override
+    public Graph search() throws InterruptedException {
+        validateSearchInputs();
 
         TrekMeasurementModelBuilder builder =
-                new TrekMeasurementModelBuilder(data, parameters);
+                new TrekMeasurementModelBuilder(dataSet, parameters);
 
         builder.setKnowledge(this.knowledge);
         builder.setInputNames(this.inputNames);
@@ -162,85 +203,53 @@ public final class BossTrekMimic implements IGraphSearch {
 
         TrekMeasurementModelBuilder.MeasurementBuildResult result = builder.build();
 
-        setMeasurementGraph(result.graph());
-        setVariables(result.variables());
-        setMatrix(result.matrix());
-        setSampleSize(result.sampleSize());
-        setAlpha(result.alpha());
+        this.graph = new EdgeListGraph(result.graph());
+        this.variables = new ArrayList<>(result.variables());
+        this.s = result.matrix();
+        this.sampleSize = result.sampleSize();
+        this.alpha = result.alpha();
 
-        Graph graph = search();
-
-        if (orientLatentEdges) {
-            orientLatentEdgesByCorrelationOfParentsAndChildren(graph);
-        }
-
-        return graph;
-    }
-
-    /**
-     * Runs the fixed-measurement BossTrekMimic search.
-     *
-     * @return the resulting graph
-     */
-    @Override
-    public Graph search() {
-        if (this.measurementGraph == null) {
-            throw new IllegalStateException("A fixed measurement graph must be supplied.");
-        }
-
-        if (this.variables == null || this.s == null) {
-            throw new IllegalStateException("Variables, matrix, and sample size must be supplied.");
-        }
-
-        Graph graph = new EdgeListGraph(this.measurementGraph);
-
-        List<Node> latents = getLatents(graph);
-        List<Node> indicators = getIndicators(graph, latents);
-        List<Node> measuredNodes = getMeasuredNodes(graph);
-        List<Node> inputPool = new ArrayList<>(measuredNodes);
-        inputPool.removeAll(indicators);
-
-        Graph bossGraph = runBoss();
-
-        Map<Node, List<Node>> indicatorsByLatent = getIndicatorsByLatent(graph, latents);
-
-        for (Node input : inputPool) {
-            Map<Node, Integer> supportCounts = new LinkedHashMap<>();
-
-            for (Node latent : latents) {
-                int count = countBossChildrenInIndicatorBlock(input, indicatorsByLatent.get(latent), bossGraph);
-                supportCounts.put(latent, count);
-            }
-
-            if (allowMultipleLatentParents) {
-                attachInputToSupportedLatents(graph, input, latents, indicatorsByLatent, supportCounts);
-            } else {
-                attachInputToBestLatent(graph, input, latents, indicatorsByLatent, supportCounts);
-            }
-        }
+        recoverMeasuredParentsByBoss();
 
         if (pruneLatentEdges) {
-            pruneLatentLatentEdgesByConditionedRank(graph);
+            pruneLatentLatentEdgesByConditionedRank();
+        }
+
+        if (orientLatentEdges) {
+            orientLatentEdgesByCorrelationOfParentsAndChildren();
         }
 
         return graph;
     }
 
     /**
-     * Supplies the fixed measurement graph.
+     * Sets the data set.
      *
-     * @param measurementGraph graph containing latent nodes and latent -> indicator edges
+     * @param dataSet the data set
      */
-    public void setMeasurementGraph(Graph measurementGraph) {
-        if (measurementGraph == null) {
-            throw new NullPointerException("Measurement graph must not be null.");
+    public void setDataSet(DataSet dataSet) {
+        if (dataSet == null) {
+            throw new NullPointerException("Data set must not be null.");
         }
 
-        this.measurementGraph = new EdgeListGraph(measurementGraph);
+        this.dataSet = dataSet;
     }
 
     /**
-     * Sets the knowledge used by BOSS and by trek-PC graph construction.
+     * Sets the parameters.
+     *
+     * @param parameters the parameters
+     */
+    public void setParameters(Parameters parameters) {
+        if (parameters == null) {
+            throw new NullPointerException("Parameters must not be null.");
+        }
+
+        this.parameters = parameters;
+    }
+
+    /**
+     * Sets the knowledge.
      *
      * @param knowledge the knowledge
      */
@@ -250,6 +259,44 @@ public final class BossTrekMimic implements IGraphSearch {
         }
 
         this.knowledge = new Knowledge(knowledge);
+    }
+
+    /**
+     * Sets known input variable names.
+     *
+     * @param inputNames the input names
+     */
+    public void setInputNames(Collection<String> inputNames) {
+        this.inputNames.clear();
+
+        if (inputNames != null) {
+            for (String name : inputNames) {
+                if (name != null) {
+                    this.inputNames.add(name);
+                }
+            }
+        }
+
+        validateInputOutputKnowledge();
+    }
+
+    /**
+     * Sets known output variable names.
+     *
+     * @param outputNames the output names
+     */
+    public void setOutputNames(Collection<String> outputNames) {
+        this.outputNames.clear();
+
+        if (outputNames != null) {
+            for (String name : outputNames) {
+                if (name != null) {
+                    this.outputNames.add(name);
+                }
+            }
+        }
+
+        validateInputOutputKnowledge();
     }
 
     /**
@@ -271,42 +318,6 @@ public final class BossTrekMimic implements IGraphSearch {
     }
 
     /**
-     * Sets the variables in matrix order.
-     *
-     * @param variables the variables
-     */
-    public void setVariables(List<Node> variables) {
-        this.variables = new ArrayList<>(variables);
-    }
-
-    /**
-     * Sets the correlation matrix.
-     *
-     * @param s the matrix
-     */
-    public void setMatrix(SimpleMatrix s) {
-        this.s = s;
-    }
-
-    /**
-     * Sets the sample size.
-     *
-     * @param sampleSize the sample size
-     */
-    public void setSampleSize(int sampleSize) {
-        this.sampleSize = sampleSize;
-    }
-
-    /**
-     * Sets the alpha level.
-     *
-     * @param alpha the alpha
-     */
-    public void setAlpha(double alpha) {
-        this.alpha = alpha;
-    }
-
-    /**
      * Sets whether one measured input may attach to multiple latents.
      *
      * @param allowMultipleLatentParents true if allowed
@@ -325,7 +336,7 @@ public final class BossTrekMimic implements IGraphSearch {
     }
 
     /**
-     * Sets whether to orient latent-latent edges after the main search.
+     * Sets whether to orient latent-latent edges after pruning.
      *
      * @param orientLatentEdges true if so
      */
@@ -334,7 +345,7 @@ public final class BossTrekMimic implements IGraphSearch {
     }
 
     /**
-     * Sets the depth used in trek-PC graph construction.
+     * Sets the PC depth used in measurement-model construction.
      *
      * @param depth the depth
      */
@@ -343,7 +354,7 @@ public final class BossTrekMimic implements IGraphSearch {
     }
 
     /**
-     * Sets verbose output for trek-PC graph construction.
+     * Sets verbose output for measurement-model construction.
      *
      * @param verbose true if verbose
      */
@@ -352,89 +363,31 @@ public final class BossTrekMimic implements IGraphSearch {
     }
 
     /**
-     * Sets known input variables by node collection.
+     * Returns the current graph after search, if available.
      *
-     * @param inputs the inputs
+     * @return the graph
      */
-    public void setInputs(Collection<Node> inputs) {
-        this.inputNames.clear();
+    public Graph getGraph() {
+        return graph;
+    }
 
-        if (inputs != null) {
-            for (Node node : inputs) {
-                if (node != null) {
-                    this.inputNames.add(node.getName());
-                }
-            }
+    /**
+     * Validates that the required inputs for search have been supplied.
+     */
+    private void validateSearchInputs() {
+        if (dataSet == null) {
+            throw new IllegalStateException("Data set has not been supplied.");
+        }
+
+        if (parameters == null) {
+            throw new IllegalStateException("Parameters have not been supplied.");
         }
 
         validateInputOutputKnowledge();
     }
 
     /**
-     * Sets known output variables by node collection.
-     *
-     * @param outputs the outputs
-     */
-    public void setOutputs(Collection<Node> outputs) {
-        this.outputNames.clear();
-
-        if (outputs != null) {
-            for (Node node : outputs) {
-                if (node != null) {
-                    this.outputNames.add(node.getName());
-                }
-            }
-        }
-
-        validateInputOutputKnowledge();
-    }
-
-    /**
-     * Sets known input variable names.
-     *
-     * @param inputNames the input names
-     */
-    public void setInputNames(Collection<String> inputNames) {
-        setInputsByName(inputNames);
-        validateInputOutputKnowledge();
-    }
-
-    /**
-     * Sets known output variable names.
-     *
-     * @param outputNames the output names
-     */
-    public void setOutputNames(Collection<String> outputNames) {
-        setOutputsByName(outputNames);
-        validateInputOutputKnowledge();
-    }
-
-    private void setInputsByName(Collection<String> inputNames) {
-        this.inputNames.clear();
-
-        if (inputNames != null) {
-            for (String name : inputNames) {
-                if (name != null) {
-                    this.inputNames.add(name);
-                }
-            }
-        }
-    }
-
-    private void setOutputsByName(Collection<String> outputNames) {
-        this.outputNames.clear();
-
-        if (outputNames != null) {
-            for (String name : outputNames) {
-                if (name != null) {
-                    this.outputNames.add(name);
-                }
-            }
-        }
-    }
-
-    /**
-     * Ensures that no observed variable is simultaneously declared as both input and output.
+     * Ensures that no observed variable is simultaneously declared as both an input and an output.
      */
     private void validateInputOutputKnowledge() {
         Set<String> intersection = new LinkedHashSet<>(this.inputNames);
@@ -448,33 +401,43 @@ public final class BossTrekMimic implements IGraphSearch {
     }
 
     /**
-     * Returns true if the given node is known to be an input.
-     *
-     * @param node the node
-     * @return true if known input
+     * Runs the BOSS-based measured-parent recovery stage.
      */
-    private boolean isKnownInput(Node node) {
-        return node != null && this.inputNames.contains(node.getName());
+    private void recoverMeasuredParentsByBoss() {
+        if (graph == null) {
+            throw new IllegalStateException("Graph has not been initialized.");
+        }
+
+        List<Node> latents = getLatents(graph);
+        List<Node> indicators = getIndicators(graph, latents);
+        List<Node> measuredNodes = getMeasuredNodes(graph);
+        List<Node> inputPool = new ArrayList<>(measuredNodes);
+        inputPool.removeAll(indicators);
+
+        Graph bossGraph = runBoss();
+        Map<Node, List<Node>> indicatorsByLatent = getIndicatorsByLatent(graph, latents);
+
+        for (Node input : inputPool) {
+            Map<Node, Integer> supportCounts = new LinkedHashMap<>();
+
+            for (Node latent : latents) {
+                int count = countBossChildrenInIndicatorBlock(input, indicatorsByLatent.get(latent), bossGraph);
+                supportCounts.put(latent, count);
+            }
+
+            if (allowMultipleLatentParents) {
+                attachInputToSupportedLatents(input, latents, indicatorsByLatent, supportCounts);
+            } else {
+                attachInputToBestLatent(input, latents, indicatorsByLatent, supportCounts);
+            }
+        }
     }
 
     /**
-     * Returns true if the given node is known to be an output.
-     *
-     * @param node the node
-     * @return true if known output
+     * Removes latent-latent edges that are explained by recovered measured parents.
      */
-    private boolean isKnownOutput(Node node) {
-        return node != null && this.outputNames.contains(node.getName());
-    }
-
-    /**
-     * Removes latent-latent edges that are explained by the measured parents
-     * recovered for the incident latents.
-     *
-     * @param graph the graph to modify
-     */
-    private void pruneLatentLatentEdgesByConditionedRank(Graph graph) {
-        if (this.variables == null || this.s == null) {
+    private void pruneLatentLatentEdgesByConditionedRank() {
+        if (variables == null || s == null) {
             throw new IllegalStateException("variables and matrix must be supplied for latent-edge pruning.");
         }
 
@@ -516,11 +479,9 @@ public final class BossTrekMimic implements IGraphSearch {
     }
 
     /**
-     * Orients latent-latent edges by correlation patterns of measured parents and measured children.
-     *
-     * @param graph the graph
+     * Orients latent-latent edges using correlations of parents and children.
      */
-    private void orientLatentEdgesByCorrelationOfParentsAndChildren(Graph graph) {
+    private void orientLatentEdgesByCorrelationOfParentsAndChildren() {
         List<Edge> edges = new ArrayList<>(graph.getEdges());
 
         for (Edge edge : edges) {
@@ -717,9 +678,9 @@ public final class BossTrekMimic implements IGraphSearch {
     /**
      * Counts how many indicators in the block have the input as a BOSS parent.
      *
-     * @param input      the candidate input
+     * @param input the candidate input
      * @param indicators the latent's indicators
-     * @param bossGraph  the BOSS graph
+     * @param bossGraph the BOSS graph
      * @return the support count
      */
     private int countBossChildrenInIndicatorBlock(Node input, List<Node> indicators, Graph bossGraph) {
@@ -734,8 +695,7 @@ public final class BossTrekMimic implements IGraphSearch {
         return count;
     }
 
-    private void attachInputToSupportedLatents(Graph graph,
-                                               Node input,
+    private void attachInputToSupportedLatents(Node input,
                                                List<Node> latents,
                                                Map<Node, List<Node>> indicatorsByLatent,
                                                Map<Node, Integer> supportCounts) {
@@ -757,8 +717,7 @@ public final class BossTrekMimic implements IGraphSearch {
         }
     }
 
-    private void attachInputToBestLatent(Graph graph,
-                                         Node input,
+    private void attachInputToBestLatent(Node input,
                                          List<Node> latents,
                                          Map<Node, List<Node>> indicatorsByLatent,
                                          Map<Node, Integer> supportCounts) {
@@ -792,38 +751,7 @@ public final class BossTrekMimic implements IGraphSearch {
         }
     }
 
-    private void removeDegenerateLatents(Graph graph) {
-        List<Node> nodes = new ArrayList<>(graph.getNodes());
-
-        for (Node node : nodes) {
-            if (node.getNodeType() != NodeType.LATENT) {
-                continue;
-            }
-
-            boolean hasMeasuredParent = false;
-            boolean hasMeasuredChild = false;
-
-            for (Node parent : graph.getParents(node)) {
-                if (parent.getNodeType() != NodeType.LATENT) {
-                    hasMeasuredParent = true;
-                    break;
-                }
-            }
-
-            for (Node child : graph.getChildren(node)) {
-                if (child.getNodeType() != NodeType.LATENT) {
-                    hasMeasuredChild = true;
-                    break;
-                }
-            }
-
-            if (!hasMeasuredParent || !hasMeasuredChild) {
-                graph.removeNode(node);
-            }
-        }
-    }
-
-    private List<Node> getMeasuredChildren(Graph graph, Node latent) {
+    private static List<Node> getMeasuredChildren(Graph graph, Node latent) {
         List<Node> children = new ArrayList<>();
 
         for (Node child : graph.getChildren(latent)) {
@@ -836,7 +764,7 @@ public final class BossTrekMimic implements IGraphSearch {
         return children;
     }
 
-    private List<Node> getMeasuredParents(Graph graph, Node node) {
+    private static List<Node> getMeasuredParents(Graph graph, Node node) {
         List<Node> parents = new ArrayList<>();
 
         for (Node parent : graph.getParents(node)) {
