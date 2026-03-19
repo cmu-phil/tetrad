@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.model;
 
@@ -75,7 +75,7 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
      */
     public LatentStructureRunner(DataWrapper data, LatentClustersRunner latentClustersRunner,
                                  LatentStructureRunner latentStructureRunner, Parameters parameters)
-    throws ParseException{
+            throws ParseException {
         super(data, parameters);
         this.runner = Objects.requireNonNull(latentClustersRunner, "ClusterRunner required");
         super.blockSpec = latentClustersRunner.getBlockSpec();
@@ -121,7 +121,7 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
      */
     public LatentStructureRunner(DataWrapper data, LatentClustersRunner latentClustersRunner,
                                  LatentStructureRunner latentStructureRunner, KnowledgeBoxModel knowledge,
-                                 Parameters parameters) throws ParseException{
+                                 Parameters parameters) throws ParseException {
         super(data, knowledge, parameters);
         this.runner = Objects.requireNonNull(latentClustersRunner, "ClusterRunner required");
         super.blockSpec = latentClustersRunner.getBlockSpec();

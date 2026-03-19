@@ -16,15 +16,13 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
-import edu.cmu.tetrad.algcomparison.independence.BlocksIndTestTs;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -39,11 +37,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Algorithm-comparison wrapper for the Trek-MIMIC search.
@@ -67,11 +61,6 @@ public class TrekMimic extends AbstractBootstrapAlgorithm
     private static final long serialVersionUID = 23L;
 
     /**
-     * Independence wrapper used for metadata only.
-     */
-    private final IndependenceWrapper test;
-
-    /**
      * Optional observed variables known to be inputs to the latent structure.
      * Stored by name so they remain stable across node replacement.
      */
@@ -91,14 +80,12 @@ public class TrekMimic extends AbstractBootstrapAlgorithm
     /**
      * Constructs the wrapper.
      */
-    public TrekMimic() {
-        this.test = new BlocksIndTestTs();
-    }
+    public TrekMimic() {}
 
     /**
      * Runs the search.
      *
-     * @param dataModel the data model
+     * @param dataModel  the data model
      * @param parameters the parameters
      * @return the resulting graph
      * @throws InterruptedException if interrupted
@@ -138,7 +125,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm
      */
     @Override
     public String getDescription() {
-        return "Trek-MIMIC using " + this.test.getDescription();
+        return "Trek-MIMIC";
     }
 
     /**
@@ -146,7 +133,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm
      */
     @Override
     public DataType getDataType() {
-        return this.test.getDataType();
+        return DataType.Continuous;
     }
 
     /**
@@ -222,6 +209,15 @@ public class TrekMimic extends AbstractBootstrapAlgorithm
     }
 
     /**
+     * Returns the currently specified input variable names.
+     *
+     * @return the input variable names
+     */
+    public List<String> getInputNames() {
+        return new ArrayList<>(this.inputNames);
+    }
+
+    /**
      * Sets the input variable names directly.
      *
      * @param inputNames the input variable names
@@ -241,6 +237,15 @@ public class TrekMimic extends AbstractBootstrapAlgorithm
     }
 
     /**
+     * Returns the currently specified output variable names.
+     *
+     * @return the output variable names
+     */
+    public List<String> getOutputNames() {
+        return new ArrayList<>(this.outputNames);
+    }
+
+    /**
      * Sets the output variable names directly.
      *
      * @param outputNames the output variable names
@@ -257,24 +262,6 @@ public class TrekMimic extends AbstractBootstrapAlgorithm
         }
 
         validateInputOutputKnowledge();
-    }
-
-    /**
-     * Returns the currently specified input variable names.
-     *
-     * @return the input variable names
-     */
-    public List<String> getInputNames() {
-        return new ArrayList<>(this.inputNames);
-    }
-
-    /**
-     * Returns the currently specified output variable names.
-     *
-     * @return the output variable names
-     */
-    public List<String> getOutputNames() {
-        return new ArrayList<>(this.outputNames);
     }
 
     /**

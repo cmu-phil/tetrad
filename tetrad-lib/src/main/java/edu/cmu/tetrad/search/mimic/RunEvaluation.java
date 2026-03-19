@@ -18,6 +18,10 @@ public class RunEvaluation {
 
         parameters.set("maxLatentSubsetSize", 3);
 
+        parameters.set("mimicMinFraction", 0.5);
+        parameters.set("mimicInitialFraction", 0.3);
+        parameters.set("mimicMaxIterations", 10);
+
         parameters.set(Params.ALPHA, 0.01);
         parameters.set(Params.PENALTY_DISCOUNT, 1.0);
         parameters.set(Params.SAMPLE_SIZE, 5000);
