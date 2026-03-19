@@ -32,7 +32,7 @@ import edu.cmu.tetrad.util.Params;
 import java.util.List;
 
 /**
- * Benchmark runner for the DM-MG algorithm.
+ * Benchmark runner for the DM algorithm.
  *
  * @author josephramsey
  */

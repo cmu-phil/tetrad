@@ -35,7 +35,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.mimic.Dm;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -46,24 +45,24 @@ import java.util.List;
 
 /**
  * Algorithm-comparison wrapper for the Murray-Watters/Glymour style Detect-Mimic
- * search, DM-MG.
+ * search, DM.
  *
  * <p>This wrapper builds the requested independence test from the supplied
- * {@link IndependenceWrapper}, runs {@link DmMg}, and returns the resulting graph.</p>
+ * {@link IndependenceWrapper}, runs {@link Dm}, and returns the resulting graph.</p>
  *
- * <p>The underlying DM-MG search internally performs both a depth-0 PC run and a
+ * <p>The underlying DM search internally performs both a depth-0 PC run and a
  * full-depth PC run as part of the Murray-Watters/Glymour procedure. Accordingly,
  * no external PC-depth parameter is exposed here.</p>
  *
  * @author josephramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "DM-MG",
-        command = "dm-mg",
-        algoType = AlgType.forbid_latent_common_causes
-)
-@Bootstrapping
-public class DmMg extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "DM",
+//        command = "dm",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
+//@Bootstrapping
+public class Dm extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
         ReturnsBootstrapGraphs, TakesIndependenceWrapper {
 
     @Serial
@@ -82,7 +81,7 @@ public class DmMg extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     /**
      * Constructs the algorithm with a default Fisher Z test.
      */
-    public DmMg() {
+    public Dm() {
         this(new FisherZ());
     }
 
@@ -91,7 +90,7 @@ public class DmMg extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      *
      * @param test the independence wrapper
      */
-    public DmMg(IndependenceWrapper test) {
+    public Dm(IndependenceWrapper test) {
         if (test == null) {
             throw new NullPointerException("Independence wrapper must not be null.");
         }
@@ -100,7 +99,7 @@ public class DmMg extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * Runs DM-MG on the supplied data model.
+     * Runs DM on the supplied data model.
      *
      * @param dataModel the data model
      * @param parameters the runtime parameters
@@ -113,7 +112,7 @@ public class DmMg extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         IndependenceTest test = this.test.getTest(dataModel, parameters);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
 
-        Dm search = new Dm(test);
+        edu.cmu.tetrad.search.mimic.Dm search = new edu.cmu.tetrad.search.mimic.Dm(test);
 //        search.setKnowledge(this.knowledge);
 
         if (knowledge != null && !knowledge.getTier(0).isEmpty() && !knowledge.getTier(1).isEmpty()) {
@@ -159,7 +158,7 @@ public class DmMg extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      */
     @Override
     public String getDescription() {
-        return "DM-MG using " + this.test.getDescription();
+        return "DM using " + this.test.getDescription();
     }
 
     /**

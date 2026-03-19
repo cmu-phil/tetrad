@@ -29,7 +29,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import java.util.*;
 
 /**
- * Implements a Murray-Watters/Glymour style Detect-Mimic search ("DM-MG").
+ * Implements a Murray-Watters/Glymour style Detect-Mimic search ("DM").
  *
  * <p>This class is intended to follow the "Simple Search" procedure in
  * Murray-Watters and Glymour's paper on discovering hidden intermediate
@@ -109,7 +109,7 @@ public class Dm implements IGraphSearch {
     private double inputClassMergeThreshold = .9;
 
     /**
-     * Constructs a new DM-MG search.
+     * Constructs a new DM search.
      *
      * @param test the independence test to use
      */
@@ -122,7 +122,7 @@ public class Dm implements IGraphSearch {
     }
 
     /**
-     * Runs the DM-MG search and returns the resulting graph.
+     * Runs the DM search and returns the resulting graph.
      *
      * @return the discovered graph
      */
