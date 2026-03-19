@@ -351,9 +351,6 @@ public final class LatentGraphRefinement {
             List<Node> childrenx = measuredOnly(graph.getChildren(x));
             List<Node> childreny = measuredOnly(graph.getChildren(y));
 
-//            boolean orientXtoY = allPairsCorrelated(parentsx, childreny);
-//            boolean orientYtoX = allPairsCorrelated(parentsy, childrenx);
-
             boolean orientXtoY = sufficientPairsCorrelated(
                     parentsx, childreny, orientationProportion);
             boolean orientYtoX = sufficientPairsCorrelated(
