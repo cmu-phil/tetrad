@@ -392,6 +392,8 @@ public final class TrekMimic {
 
         if (doHigherRankExpansion) {
             expandHigherRankParentSetsV2(graph, latents, pool);
+            pruneTransitiveInputEdges(graph, latents);  // remove transitive closure edges
+
         }
     }
 
@@ -751,9 +753,21 @@ public final class TrekMimic {
         // correlations). Direct causation produces substantially stronger
         // correlations than indirect two-hop paths, making this threshold
         // an effective discriminant between direct and transitive shared causes.
-        if (secondBestScore > Double.NEGATIVE_INFINITY
-                && bestScore - secondBestScore < 50.0) {
-            return null;
+//        if (secondBestScore > Double.NEGATIVE_INFINITY
+//                && bestScore - secondBestScore < 50.0) {
+//            return null;
+//        }
+
+        if (secondBestScore > Double.NEGATIVE_INFINITY) {
+            // Scale-free margin: the winning subset must lead by at least 10%
+            // of its own score. This means the same relative advantage is
+            // required whether block strengths are small (weak correlations)
+            // or large (strong correlations), unlike the fixed 50.0 threshold.
+            // Direct causation reliably produces a larger margin than transitive
+            // paths because direct correlations are stronger than multi-hop ones.
+            if (bestScore - secondBestScore < 0.1 * Math.abs(bestScore)) {
+                return null;
+            }
         }
 
         return bestSubset;
@@ -926,5 +940,74 @@ public final class TrekMimic {
         }
 
         return Math.sqrt(sumSquares);
+    }
+
+    /**
+     * Removes spurious transitive input edges added during higher-rank expansion.
+     *
+     * <p>An edge X -> Lk is removed if there exists a latent Lj such that:
+     * <ol>
+     *   <li>X -> Lj is in the graph (X is a direct cause of Lj)</li>
+     *   <li>Lj -> Lk is in the graph (Lj is a cause of Lk)</li>
+     *   <li>X is independent of Lk's indicators given Lj's indicators,
+     *       meaning the X-Lk correlation is fully mediated by Lj</li>
+     * </ol>
+     *
+     * <p>This is called after {@link #expandHigherRankParentSetsV2} to clean up
+     * transitive closure edges that the rank test cannot rule out on its own.
+     *
+     * @param graph   the working graph, mutated in place
+     * @param latents the latent nodes
+     */
+    private void pruneTransitiveInputEdges(Graph graph, List<Node> latents) {
+        Map<Node, List<Node>> indicatorsByLatent = new LinkedHashMap<>();
+        for (Node latent : latents) {
+            indicatorsByLatent.put(latent, getObservedChildren(graph, latent));
+        }
+
+        for (Node latent : latents) {
+            List<Node> measuredParents = new ArrayList<>();
+            for (Node parent : graph.getParents(latent)) {
+                if (parent.getNodeType() != NodeType.LATENT) {
+                    measuredParents.add(parent);
+                }
+            }
+
+            List<Node> lkIndicators = indicatorsByLatent.get(latent);
+            if (lkIndicators == null || lkIndicators.isEmpty()) continue;
+
+            for (Node x : new ArrayList<>(measuredParents)) {
+                // Check if any latent Lj mediates the X -> Lk path.
+                boolean fullyMediated = false;
+
+                for (Node lj : latents) {
+                    if (lj == latent) continue;
+                    if (!graph.isParentOf(x, lj)) continue;
+                    if (!graph.isParentOf(lj, latent) && !graph.isAncestorOf(lj, latent)) continue;
+
+                    List<Node> ljIndicators = indicatorsByLatent.get(lj);
+                    if (ljIndicators == null || ljIndicators.isEmpty()) continue;
+
+                    // X should be independent of Lk's indicators given Lj's
+                    // indicators if and only if Lj fully mediates the X-Lk path.
+                    int condRank = estimateRankConditioned(
+                            Collections.singletonList(x),
+                            lkIndicators,
+                            ljIndicators);
+
+                    if (condRank == 0) {
+                        fullyMediated = true;
+                        break;
+                    }
+                }
+
+                if (fullyMediated) {
+                    Edge edge = graph.getEdge(x, latent);
+                    if (edge != null) {
+                        graph.removeEdge(edge);
+                    }
+                }
+            }
+        }
     }
 }
