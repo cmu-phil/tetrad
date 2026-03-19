@@ -106,7 +106,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm
         search.setMaxLatentSubsetSize(maxLatentSubsetSize);
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        search.setOrientLatentEdges(true);
+        search.setOrientAndPrune(true);
 
         return search.search();
     }

@@ -3,7 +3,7 @@
 // and Richard Scheines.                                                     //
 //                                                                           //
 // This program is free software; see the GNU General Public License v3+.   //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.mimic;
 
@@ -68,6 +68,17 @@ public final class LatentGraphRefinement {
      * Alpha level for correlation and rank tests.
      */
     private final double alpha;
+    /**
+     * Minimum proportion of (parentX, childY) pairs that must be
+     * significantly correlated before orienting X -> Y.
+     * Default 1.0 requires all pairs (original behaviour).
+     * Lower values are more robust at finite N.
+     */
+    private double orientationProportion = 1.0;
+
+    // -------------------------------------------------------------------------
+    // Public operations
+    // -------------------------------------------------------------------------
 
     /**
      * Constructs a {@code LatentGraphRefinement} with the correlation context
@@ -101,10 +112,6 @@ public final class LatentGraphRefinement {
         this.alpha = alpha;
     }
 
-    // -------------------------------------------------------------------------
-    // Public operations
-    // -------------------------------------------------------------------------
-
     /**
      * Returns the measured (non-latent) children of the given node.
      */
@@ -133,6 +140,10 @@ public final class LatentGraphRefinement {
         return parents;
     }
 
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
+
     /**
      * Filters a list of nodes to measured (non-latent) nodes only.
      */
@@ -145,10 +156,6 @@ public final class LatentGraphRefinement {
         }
         return result;
     }
-
-    // -------------------------------------------------------------------------
-    // Private helpers
-    // -------------------------------------------------------------------------
 
     /**
      * Removes latent-latent edges whose cross-block dependence is fully
@@ -387,7 +394,7 @@ public final class LatentGraphRefinement {
                                               double minProportion) {
         if (left.isEmpty() || right.isEmpty()) return false;
 
-        int total     = left.size() * right.size();
+        int total = left.size() * right.size();
         int correlated = 0;
 
         for (Node a : left) {
@@ -398,14 +405,6 @@ public final class LatentGraphRefinement {
 
         return (double) correlated / total >= minProportion;
     }
-
-    /**
-     * Minimum proportion of (parentX, childY) pairs that must be
-     * significantly correlated before orienting X -> Y.
-     * Default 1.0 requires all pairs (original behaviour).
-     * Lower values are more robust at finite N.
-     */
-    private double orientationProportion = 1.0;
 
     public void setOrientationProportion(double proportion) {
         if (proportion <= 0.0 || proportion > 1.0) {
@@ -589,7 +588,7 @@ public final class LatentGraphRefinement {
      */
     private Set<Node> getLatentAncestors(Node latent, Graph graph) {
         Set<Node> ancestors = new LinkedHashSet<>();
-        Queue<Node> queue   = new LinkedList<>();
+        Queue<Node> queue = new LinkedList<>();
 
         // Seed with the latent parents of this node.
         for (Node parent : graph.getParents(latent)) {
@@ -765,5 +764,40 @@ public final class LatentGraphRefinement {
                 }
             }
         }
+    }
+
+    public List<Graph> pruneEdges(Graph graph) {
+        graph = new EdgeListGraph(graph);
+
+//        pruneLatentLatentEdges(graph);
+
+        Graph oriented;
+        Graph pruned;
+
+        orientLatentEdges(graph);
+        oriented = new EdgeListGraph(graph);
+
+        boolean pruneTransitiveInputEdges = true;
+        boolean pruneTransitiveLatentEdges = true;
+        boolean addTransitiveInputEdges = false;
+
+        // Option A: prune to the identifiable subgraph.
+        if (pruneTransitiveInputEdges) {
+            pruneTransitiveInputEdgesByLatentAncestry(graph);
+        }
+
+        if (pruneTransitiveLatentEdges) {
+            pruneTransitiveLatentEdges(graph);
+        }
+
+        // Option B: expand to the full superset.
+        // Mutually exclusive with Option A — only one should be active.
+        if (addTransitiveInputEdges) {
+            addTransitiveInputEdges(graph);
+        }
+
+        pruned = new EdgeListGraph(graph);
+
+        return List.of(oriented, pruned);
     }
 }

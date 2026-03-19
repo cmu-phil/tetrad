@@ -7,6 +7,7 @@ import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RankTests;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -81,7 +82,7 @@ public final class TrekMimic {
     /**
      * Whether to orient latent-latent edges after pruning.
      */
-    private boolean orientLatentEdges = true;
+    private boolean orientAndPrune = true;
 
     /**
      * Working graph.
@@ -173,33 +174,30 @@ public final class TrekMimic {
             this.latentRanks.put(spec.blockVariables().get(i), spec.ranks().get(i));
         }
 
-        LatentGraphRefinement refinement =
-                new LatentGraphRefinement(variables, s, sampleSize, alpha);
-
         recoverMeasuredParentsHybrid();
-        refinement.pruneLatentLatentEdges(graph);
 
-        if (orientLatentEdges) {
-            refinement.orientLatentEdges(graph);
+        LatentGraphRefinement refinement = new LatentGraphRefinement(variables, s, sampleSize, alpha);
 
-            boolean pruneTransitiveInputEdges = true;
-            boolean pruneTransitiveLatentEdges = true;
-            boolean addTransitiveInputEdges = false;
+        // Remove any edges that are removable by conditional rank.
+        refinement.pruneEdges(graph);
 
-            // Option A: prune to the identifiable subgraph.
-            if (pruneTransitiveInputEdges) {
-                refinement.pruneTransitiveInputEdgesByLatentAncestry(graph);
+        // Orient latents and remove latent-transitive inputs.
+        if (orientAndPrune) {
+            List<Graph> graphs = refinement.pruneEdges(graph);
+            Graph oriented = graphs.get(0);
+            Graph pruned = graphs.get(1);
+
+            // The latent-transitive edges are non-identifiable, so we print them.
+            if (verbose) {
+                Set<Edge> set1 = oriented.getEdges();
+                Set<Edge> set2 = pruned.getEdges();
+                Set<Edge> set3 = new HashSet<>(set1);
+                set3.removeAll(set2);
+
+                TetradLogger.getInstance().log("Latent-transitive edges (non-identifiable): " + set3);
             }
 
-            if (pruneTransitiveLatentEdges) {
-                refinement.pruneTransitiveLatentEdges(graph);
-            }
-
-            // Option B: expand to the full superset.
-            // Mutually exclusive with Option A — only one should be active.
-            if (addTransitiveInputEdges) {
-                refinement.addTransitiveInputEdges(graph);
-            }
+            return pruned;
         }
 
         return graph;
@@ -321,10 +319,10 @@ public final class TrekMimic {
     /**
      * Sets whether to orient latent-latent edges after pruning.
      *
-     * @param orientLatentEdges true if so
+     * @param orientAndPrune true if so
      */
-    public void setOrientLatentEdges(boolean orientLatentEdges) {
-        this.orientLatentEdges = orientLatentEdges;
+    public void setOrientAndPrune(boolean orientAndPrune) {
+        this.orientAndPrune = orientAndPrune;
     }
 
     /**
