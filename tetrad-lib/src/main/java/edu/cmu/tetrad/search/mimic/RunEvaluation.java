@@ -16,13 +16,14 @@ public class RunEvaluation {
         parameters.set("mimicInputAttachProb", 0.35);
         parameters.set("mimicOutputAttachProb", 0.35);
 
-        parameters.set("maxLatentSubsetSize", 3);
+        parameters.set("maxLatentSubsetSize", 4);
 
         parameters.set(Params.ALPHA, 0.01);
         parameters.set(Params.PENALTY_DISCOUNT, 1.0);
         parameters.set(Params.SAMPLE_SIZE, 5000);
         parameters.set(Params.COEF_LOW, 0.1);
-        parameters.set(Params.COEF_HIGH, 1.2);
+        parameters.set(Params.COEF_HIGH, 1.0);
+        parameters.set(Params.COEF_SYMMETRIC, false);
         parameters.set(Params.DEPTH, -1);
         parameters.set(Params.EFFECTIVE_SAMPLE_SIZE, -1);
         parameters.set(Params.VERBOSE, false);
