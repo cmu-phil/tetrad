@@ -424,7 +424,6 @@ public final class TrekMimic {
             }
         }
 
-        // Now apply all confident single-node assignments.
         for (Map.Entry<Node, List<Node>> entry : singleNodeAssignments.entrySet()) {
             Node       node       = entry.getKey();
             List<Node> bestSubset = entry.getValue();
@@ -434,8 +433,7 @@ public final class TrekMimic {
             unused.remove(node);
         }
 
-        // --- Pair pass: already reinitialises ChoiceGenerator after each
-        // accepted pair, so order-dependence is handled incrementally.
+        // Pair pass: reinitialise generator after each accepted pair.
         List<Node> remaining = new ArrayList<>(unused);
         ChoiceGenerator gen  = new ChoiceGenerator(remaining.size(), 2);
         int[] choice;
@@ -671,43 +669,69 @@ public final class TrekMimic {
         return assignment;
     }
 
+    /**
+     * Assigns a group of measured inputs to the best qualifying latent subset.
+     *
+     * <p>A subset qualifies when two trek-separation conditions hold:
+     * <ol>
+     *   <li><b>Trek-rank condition.</b> The joint rank of (existing parents of S)
+     *       ∪ group against the indicator union of S equals the expected rank
+     *       (sum of latent ranks in S). This means the group contributes the
+     *       missing channel(s) — it need not span the full space alone.</li>
+     *   <li><b>Explanatory condition.</b> Conditioning on the full proposed
+     *       parent set strictly reduces the cross-indicator rank for at least
+     *       one adjacent latent pair in S, confirming the group explains at
+     *       least one observed LL correlation.</li>
+     * </ol>
+     *
+     * <p>Among qualifying subsets, the one with the highest block strength is
+     * chosen. A second-best subset is only accepted if its strength is within
+     * a relative tolerance of the best — otherwise the assignment is treated
+     * as ambiguous and null is returned.
+     *
+     * @param group         the candidate group of measured inputs
+     * @param latentSubsets the latent subsets to evaluate
+     * @return the best qualifying subset, or null if none or ambiguous
+     */
     private List<Node> assignSharedGroupToBestLatentSubset(List<Node> group,
                                                            List<List<Node>> latentSubsets,
                                                            double lambda) {
-        List<Node> bestSubset       = null;
-        double     bestScore        = Double.NEGATIVE_INFINITY;
-        double     secondBestScore  = Double.NEGATIVE_INFINITY;
+        List<Node> bestSubset      = null;
+        double     bestScore       = Double.NEGATIVE_INFINITY;
+        double     secondBestScore = Double.NEGATIVE_INFINITY;
 
         for (List<Node> latentSubset : latentSubsets) {
             if (latentSubset.size() < 2) continue;
 
+            // Build proposed joint parent set: existing parents + group.
+            // The group need not span the full space alone; it must contribute
+            // the missing channels given what is already attached.
             List<Node> existingParents = getObservedParentsUnion(graph, latentSubset);
             List<Node> proposedParents = new ArrayList<>(existingParents);
             for (Node node : group) {
                 if (!proposedParents.contains(node)) proposedParents.add(node);
             }
 
-            // Expected rank is the sum of per-latent ranks in this subset,
-            // not the subset size (which would assume all latents are rank-1).
+            // Trek-rank condition on the JOINT set (not group alone).
             int expectedRank = 0;
             for (Node latent : latentSubset) {
                 expectedRank += latentRanks.getOrDefault(latent, 1);
             }
 
-            int rank = estimateRank(proposedParents,
-                    getObservedChildrenUnion(graph, latentSubset));
-            if (rank != expectedRank) continue;
+            List<Node> allIndicators = getObservedChildrenUnion(graph, latentSubset);
+            if (estimateRank(proposedParents, allIndicators) != expectedRank) continue;
 
+            // Explanatory condition: the proposed parents must explain at least
+            // one existing LL edge via the conditioned rank.
             int explainedPairs = countExplainedExistingLatentPairs(
                     graph, latentSubset, proposedParents);
             if (explainedPairs == 0) continue;
 
-            double strength = blockStrength(proposedParents,
-                    getObservedChildrenUnion(graph, latentSubset));
-
-            // The constant 100.0 that appeared here was identical for every
-            // candidate and therefore had no effect on ranking or the gap check.
-            double score = 1000.0 * explainedPairs
+            // Score: explained pairs dominate; block strength breaks ties
+            // naturally, favouring direct causation over transitive paths
+            // because direct correlations are stronger than multi-hop ones.
+            double strength = blockStrength(proposedParents, allIndicators);
+            double score    = 1000.0 * explainedPairs
                     + strength
                     - lambda * group.size() * latentSubset.size();
 
@@ -722,7 +746,11 @@ public final class TrekMimic {
 
         if (bestSubset == null) return null;
 
-        // Require a clear margin over the second-best candidate.
+        // Gap threshold: require a clear margin over the second-best candidate.
+        // The 50.0 value is in block-strength units (sqrt of sum of squared
+        // correlations). Direct causation produces substantially stronger
+        // correlations than indirect two-hop paths, making this threshold
+        // an effective discriminant between direct and transitive shared causes.
         if (secondBestScore > Double.NEGATIVE_INFINITY
                 && bestScore - secondBestScore < 50.0) {
             return null;
