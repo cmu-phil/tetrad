@@ -779,7 +779,7 @@ public final class LatentGraphRefinement {
      *         The difference between the two is the set of edges in the
      *         unidentifiable region.
      */
-    public List<Graph> pruneEdges(Graph graph) {
+    public List<Graph> orientAndPrintEdges(Graph graph) {
         graph = new EdgeListGraph(graph);
         orientLatentEdges(graph);
         Graph oriented = new EdgeListGraph(graph);

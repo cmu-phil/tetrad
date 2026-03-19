@@ -179,11 +179,11 @@ public final class TrekMimic {
         LatentGraphRefinement refinement = new LatentGraphRefinement(variables, s, sampleSize, alpha);
 
         // Remove any edges that are removable by conditional rank.
-        refinement.pruneEdges(graph);
+        refinement.orientAndPrintEdges(graph);
 
         // Orient latents and remove latent-transitive inputs.
         if (orientAndPrune) {
-            List<Graph> graphs = refinement.pruneEdges(graph);
+            List<Graph> graphs = refinement.orientAndPrintEdges(graph);
             Graph oriented = graphs.get(0);
             Graph pruned = graphs.get(1);
 
