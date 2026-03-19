@@ -299,7 +299,7 @@ public final class LatentGraphRefinement {
      * between measured parents and measured children.
      *
      * <p>For an undirected edge between latents X and Y:
-     * <ul>
+     * <ul>f
      *   <li>Orient X → Y if every (parentX, childY) pair is significantly
      *       correlated but not every (parentY, childX) pair is.</li>
      *   <li>Orient Y → X in the symmetric case.</li>
@@ -307,14 +307,27 @@ public final class LatentGraphRefinement {
      *       verdict (including when neither latent has measured parents).</li>
      * </ul>
      *
-     * <p>Only undirected edges are examined; directed latent-latent edges
-     * produced by earlier steps are left unchanged.
+     * <p>This overwrites any existing directed edges to avoid confusion (and cycles).
      *
      * @param graph the graph to orient; mutated in place
      */
     public void orientLatentEdges(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("graph must not be null.");
+        }
+
+        // Override existing directed edges to avoid confusion (and cycles).
+        for (Edge edge : new ArrayList<>(graph.getEdges())) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            if (x.getNodeType() != NodeType.LATENT
+                    || y.getNodeType() != NodeType.LATENT) {
+                continue;
+            }
+
+            graph.removeEdge(edge);
+            graph.addUndirectedEdge(x, y);
         }
 
         for (Edge edge : new ArrayList<>(graph.getEdges())) {
@@ -326,18 +339,18 @@ public final class LatentGraphRefinement {
                 continue;
             }
 
-            // Only attempt to orient undirected edges.
-            if (!Edges.isUndirectedEdge(edge)) {
-                continue;
-            }
-
             List<Node> parentsx = measuredOnly(graph.getParents(x));
             List<Node> parentsy = measuredOnly(graph.getParents(y));
             List<Node> childrenx = measuredOnly(graph.getChildren(x));
             List<Node> childreny = measuredOnly(graph.getChildren(y));
 
-            boolean orientXtoY = allPairsCorrelated(parentsx, childreny);
-            boolean orientYtoX = allPairsCorrelated(parentsy, childrenx);
+//            boolean orientXtoY = allPairsCorrelated(parentsx, childreny);
+//            boolean orientYtoX = allPairsCorrelated(parentsy, childrenx);
+
+            boolean orientXtoY = sufficientPairsCorrelated(
+                    parentsx, childreny, orientationProportion);
+            boolean orientYtoX = sufficientPairsCorrelated(
+                    parentsy, childrenx, orientationProportion);
 
             // No asymmetry, or neither side has evidence: leave undirected.
             if (orientXtoY == orientYtoX) {
@@ -352,6 +365,54 @@ public final class LatentGraphRefinement {
                 graph.addDirectedEdge(y, x);
             }
         }
+    }
+
+    /**
+     * Returns true iff at least {@code minProportion} of the cross-pairs
+     * between left and right are significantly correlated.
+     *
+     * <p>Replacing the all-or-nothing check with a proportion threshold
+     * makes orientation more robust at finite N: a single noisy pair no
+     * longer causes abstention when the overwhelming majority of pairs
+     * support a direction.</p>
+     *
+     * @param left           the first list of nodes
+     * @param right          the second list of nodes
+     * @param minProportion  the minimum fraction of pairs that must be
+     *                       correlated; 1.0 recovers the original behaviour
+     * @return true if at least minProportion of cross-pairs are correlated
+     */
+    private boolean sufficientPairsCorrelated(List<Node> left,
+                                              List<Node> right,
+                                              double minProportion) {
+        if (left.isEmpty() || right.isEmpty()) return false;
+
+        int total     = left.size() * right.size();
+        int correlated = 0;
+
+        for (Node a : left) {
+            for (Node b : right) {
+                if (correlated(a, b)) correlated++;
+            }
+        }
+
+        return (double) correlated / total >= minProportion;
+    }
+
+    /**
+     * Minimum proportion of (parentX, childY) pairs that must be
+     * significantly correlated before orienting X -> Y.
+     * Default 1.0 requires all pairs (original behaviour).
+     * Lower values are more robust at finite N.
+     */
+    private double orientationProportion = 1.0;
+
+    public void setOrientationProportion(double proportion) {
+        if (proportion <= 0.0 || proportion > 1.0) {
+            throw new IllegalArgumentException(
+                    "orientationProportion must be in (0, 1].");
+        }
+        this.orientationProportion = proportion;
     }
 
     /**
