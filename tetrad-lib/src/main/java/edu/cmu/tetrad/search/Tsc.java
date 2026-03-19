@@ -145,15 +145,6 @@ public class Tsc implements EffectiveSampleSizeSettable {
     }
 
     /**
-     * Identifies clusters of variables at a specified rank. This method generates all possible clusters based on the
-     * given variable list and size, computes their ranks, and filters those that match the specified target rank.
-     *
-     * @param vars a list of integers representing the variables to consider
-     * @param size the size of the clusters to generate
-     * @param rank the target rank to filter clusters
-     * @return a set of clusters that match the specified rank, where each cluster is represented as a set of integers
-     */
-    /**
      * Identifies clusters of variables at a specified rank using the supplied
      * alpha. The correlation pre-screen rejects k-combinations that contain any
      * pair with |r| below the significance threshold at a liberal alpha, avoiding
