@@ -22,7 +22,7 @@ import edu.cmu.tetrad.search.Tsc;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
 import edu.cmu.tetrad.search.blocks.SingleClusterPolicy;
-import edu.cmu.tetrad.search.score.BlocksBicScoreTrekSoft;
+import edu.cmu.tetrad.search.score.BlocksBicScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import org.ejml.simple.SimpleMatrix;
@@ -43,7 +43,7 @@ import java.util.Set;
  * <ol>
  *     <li>Runs TSC to obtain clusters and ranks.</li>
  *     <li>Builds a {@link BlockSpec} and applies the single-cluster policy.</li>
- *     <li>Constructs a {@link BlocksBicScoreTrekSoft} over the block structure.</li>
+ *     <li>Constructs a {@link BlocksBicScore} over the block structure.</li>
  *     <li>Runs BOSS using that score to obtain the latent-to-latent skeleton.</li>
  *     <li>Adds latent -> indicator edges implied by the block specification.</li>
  *     <li>Computes the latent list, observed child set, and measured parent pool.</li>
@@ -139,7 +139,7 @@ public final class TrekMeasurementModelBuilderBoss {
         validateInputOutputKnowledge();
 
         BlockSpec spec  = buildBlockSpec();
-        BlocksBicScoreTrekSoft score = buildScore(spec);
+        BlocksBicScore score = buildScore(spec);
         Graph graph     = buildMeasurementGraph(score, spec);
 
         List<Node> latents          = new ArrayList<>(spec.blockVariables());
@@ -257,15 +257,15 @@ public final class TrekMeasurementModelBuilderBoss {
     }
 
     /**
-     * Constructs a {@link BlocksBicScoreTrekSoft} from the block specification.
+     * Constructs a {@link BlocksBicScore} from the block specification.
      * The penalty discount and trek penalty multiplier are drawn from parameters
      * when present; otherwise defaults are used.
      *
      * @param spec the block specification
      * @return the configured score
      */
-    private BlocksBicScoreTrekSoft buildScore(BlockSpec spec) {
-        BlocksBicScoreTrekSoft score = new BlocksBicScoreTrekSoft(spec);
+    private BlocksBicScore buildScore(BlockSpec spec) {
+        BlocksBicScore score = new BlocksBicScore(spec);
 
         score.setPenaltyDiscount(
                 parameters.getDouble(Params.PENALTY_DISCOUNT));
@@ -298,7 +298,7 @@ public final class TrekMeasurementModelBuilderBoss {
      * @return the measurement graph
      * @throws InterruptedException if BOSS is interrupted
      */
-    private Graph buildMeasurementGraph(BlocksBicScoreTrekSoft score,
+    private Graph buildMeasurementGraph(BlocksBicScore score,
                                         BlockSpec spec)
             throws InterruptedException {
 
@@ -349,7 +349,7 @@ public final class TrekMeasurementModelBuilderBoss {
      * @return the BOSS output graph
      * @throws InterruptedException if BOSS is interrupted
      */
-    private Graph runBoss(BlocksBicScoreTrekSoft score)
+    private Graph runBoss(BlocksBicScore score)
             throws InterruptedException {
         PermutationSearch boss = new PermutationSearch(new Boss(score));
         boss.setKnowledge(this.knowledge);

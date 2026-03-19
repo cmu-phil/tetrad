@@ -41,11 +41,11 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Blocks-Trek-BIC",
-        command = "blocks-trek-bic-score",
+        name = "Blocks-BIC",
+        command = "blocks-bic-score",
         dataType = DataType.Mixed)
 @Mixed
-public class BlocksTrekBicScore implements BlockScoreWrapper {
+public class BlocksBicScore implements BlockScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -59,7 +59,7 @@ public class BlocksTrekBicScore implements BlockScoreWrapper {
     /**
      * Initializes a new instance of the BasisFunctionBicScore class.
      */
-    public BlocksTrekBicScore() {
+    public BlocksBicScore() {
 
     }
 
@@ -83,7 +83,7 @@ public class BlocksTrekBicScore implements BlockScoreWrapper {
      */
     @Override
     public Score getScore(DataModel model, Parameters parameters) {
-        edu.cmu.tetrad.search.score.BlocksBicScoreTrekSoft score = new edu.cmu.tetrad.search.score.BlocksBicScoreTrekSoft(
+        edu.cmu.tetrad.search.score.BlocksBicScore score = new edu.cmu.tetrad.search.score.BlocksBicScore(
                 blockSpec);
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
@@ -98,7 +98,7 @@ public class BlocksTrekBicScore implements BlockScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "Blocks Trek BIC";
+        return "Blocks BIC";
     }
 
     /**

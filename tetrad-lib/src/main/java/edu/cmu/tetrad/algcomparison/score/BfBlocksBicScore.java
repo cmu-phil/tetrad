@@ -20,13 +20,12 @@
 
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.annotation.General;
-import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.search.score.BlocksBicScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.Parameters;
@@ -109,7 +108,7 @@ public class BfBlocksBicScore implements ScoreWrapper {
 
         this.blockSpec = new BlockSpec(embeddedDataSetFull, blocks, variables);
 
-        edu.cmu.tetrad.search.score.BlocksBicScore score = new edu.cmu.tetrad.search.score.BlocksBicScore(
+        BlocksBicScore score = new BlocksBicScore(
                 this.blockSpec);
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
