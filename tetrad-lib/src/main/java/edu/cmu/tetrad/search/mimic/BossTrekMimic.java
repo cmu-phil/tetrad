@@ -219,8 +219,14 @@ public final class BossTrekMimic implements IGraphSearch {
             refinement.pruneLatentLatentEdges(graph);
         }
 
+//        if (orientLatentEdges) {
+//            refinement.orientLatentEdges(graph);
+//        }
+
         if (orientLatentEdges) {
             refinement.orientLatentEdges(graph);
+            refinement.pruneTransitiveInputEdgesByLatentAncestry(graph);
+            refinement.pruneTransitiveLatentEdges(graph);
         }
 
         return graph;

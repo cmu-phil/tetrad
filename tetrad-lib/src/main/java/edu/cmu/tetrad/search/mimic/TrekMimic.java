@@ -179,8 +179,33 @@ public final class TrekMimic {
         recoverMeasuredParentsHybrid();
         refinement.pruneLatentLatentEdges(graph);
 
+//        if (orientLatentEdges) {
+//            refinement.orientLatentEdges(graph);
+//            refinement.pruneTransitiveInputEdgesByLatentAncestry(graph);
+//            refinement.pruneTransitiveLatentEdges(graph);
+//        }
+
         if (orientLatentEdges) {
             refinement.orientLatentEdges(graph);
+        }
+
+        boolean pruneTransitiveInputEdges = true;
+        boolean pruneTransitiveLatentEdges = true;
+        boolean addTransitiveInputEdges = false;
+
+        // Option A: prune to the identifiable subgraph.
+        if (pruneTransitiveInputEdges) {
+            refinement.pruneTransitiveInputEdgesByLatentAncestry(graph);
+        }
+
+        if (pruneTransitiveLatentEdges) {
+            refinement.pruneTransitiveLatentEdges(graph);
+        }
+
+        // Option B: expand to the full superset.
+        // Mutually exclusive with Option A — only one should be active.
+        if (addTransitiveInputEdges) {
+            refinement.addTransitiveInputEdges(graph);
         }
 
         return graph;
