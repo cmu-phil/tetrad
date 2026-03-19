@@ -383,10 +383,10 @@ public final class LatentGraphRefinement {
      * longer causes abstention when the overwhelming majority of pairs
      * support a direction.</p>
      *
-     * @param left           the first list of nodes
-     * @param right          the second list of nodes
-     * @param minProportion  the minimum fraction of pairs that must be
-     *                       correlated; 1.0 recovers the original behaviour
+     * @param left          the first list of nodes
+     * @param right         the second list of nodes
+     * @param minProportion the minimum fraction of pairs that must be
+     *                      correlated; 1.0 recovers the original behaviour
      * @return true if at least minProportion of cross-pairs are correlated
      */
     private boolean sufficientPairsCorrelated(List<Node> left,
@@ -766,38 +766,29 @@ public final class LatentGraphRefinement {
         }
     }
 
+    /**
+     * Orients and prunes the latent structure of the given graph.
+     *
+     * <p>The conditional rank pruning step is expected to have already
+     * been applied before calling this method. This method performs
+     * orientation of latent edges followed by structural pruning of
+     * transitive input and latent edges.</p>
+     *
+     * <p>The caller's graph is not modified.</p>
+     *
+     * @param graph the graph to process; not modified
+     * @return an unmodifiable list of two graphs: the oriented graph
+     *         (before transitive pruning) and the pruned graph (after).
+     *         The difference between the two is the set of edges in the
+     *         unidentifiable region.
+     */
     public List<Graph> pruneEdges(Graph graph) {
         graph = new EdgeListGraph(graph);
-
-//        pruneLatentLatentEdges(graph);
-
-        Graph oriented;
-        Graph pruned;
-
         orientLatentEdges(graph);
-        oriented = new EdgeListGraph(graph);
-
-        boolean pruneTransitiveInputEdges = true;
-        boolean pruneTransitiveLatentEdges = true;
-        boolean addTransitiveInputEdges = false;
-
-        // Option A: prune to the identifiable subgraph.
-        if (pruneTransitiveInputEdges) {
-            pruneTransitiveInputEdgesByLatentAncestry(graph);
-        }
-
-        if (pruneTransitiveLatentEdges) {
-            pruneTransitiveLatentEdges(graph);
-        }
-
-        // Option B: expand to the full superset.
-        // Mutually exclusive with Option A — only one should be active.
-        if (addTransitiveInputEdges) {
-            addTransitiveInputEdges(graph);
-        }
-
-        pruned = new EdgeListGraph(graph);
-
+        Graph oriented = new EdgeListGraph(graph);
+        pruneTransitiveInputEdgesByLatentAncestry(graph);
+        pruneTransitiveLatentEdges(graph);
+        Graph pruned = new EdgeListGraph(graph);
         return List.of(oriented, pruned);
     }
 }
