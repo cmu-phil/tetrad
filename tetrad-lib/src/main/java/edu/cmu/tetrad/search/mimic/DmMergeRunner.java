@@ -72,6 +72,10 @@ public final class DmMergeRunner implements MimicSearchRunner {
         DmMerge search = new DmMerge(test);
         search.setKnowledge(knowledge);
 
-        return search.search();
+        try {
+            return search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

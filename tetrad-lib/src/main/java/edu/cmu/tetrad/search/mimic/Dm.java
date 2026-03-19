@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,29 +16,17 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.mimic;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implements a Murray-Watters/Glymour style Detect-Mimic search ("DM-MG").
@@ -79,41 +67,46 @@ import java.util.Set;
 public class Dm implements IGraphSearch {
 
     /**
+     * Inputs identified or supplied for the current run.
+     */
+    private final List<Node> inputs = new ArrayList<>();
+    /**
+     * Outputs identified or supplied for the current run.
+     */
+    private final List<Node> outputs = new ArrayList<>();
+    /**
      * The conditional independence test used throughout the search.
      */
     private IndependenceTest test;
-
     /**
      * Optional background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-
     /**
      * Optional user-supplied measured inputs.
      * If non-null and nonempty, step 1 is skipped for these variables.
      */
     private List<Node> presetInputs;
-
     /**
      * Optional user-supplied measured outputs.
      * If non-null and nonempty, step 1 is skipped for these variables.
      */
     private List<Node> presetOutputs;
-
-    /**
-     * Inputs identified or supplied for the current run.
-     */
-    private final List<Node> inputs = new ArrayList<>();
-
-    /**
-     * Outputs identified or supplied for the current run.
-     */
-    private final List<Node> outputs = new ArrayList<>();
-
     /**
      * Counter used for latent names.
      */
     private int latentIndex = 1;
+
+    private int step8MaxDepth = 3;
+
+    /**
+     * Jaccard similarity threshold for merging input classes with similar
+     * OUT-sets. Inputs whose OUT-sets are at least this similar are treated
+     * as belonging to the same latent. Default 0.5 is more liberal than
+     * DmMerge's 0.78 because here we are merging individual inputs rather
+     * than already-merged clusters.
+     */
+    private double inputClassMergeThreshold = .9;
 
     /**
      * Constructs a new DM-MG search.
@@ -134,7 +127,7 @@ public class Dm implements IGraphSearch {
      * @return the discovered graph
      */
     @Override
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         resetState();
 
         identifyInputsAndOutputs();
@@ -197,6 +190,18 @@ public class Dm implements IGraphSearch {
         this.test = test;
     }
 
+    public void setStep8MaxDepth(int depth) {
+        this.step8MaxDepth = depth;
+    }
+
+    public void setInputClassMergeThreshold(double threshold) {
+        if (threshold < 0.0 || threshold > 1.0) {
+            throw new IllegalArgumentException(
+                    "Input class merge threshold must be in [0, 1].");
+        }
+        this.inputClassMergeThreshold = threshold;
+    }
+
     /**
      * Sets optional background knowledge.
      *
@@ -243,7 +248,7 @@ public class Dm implements IGraphSearch {
      * Identifies measured inputs and outputs either from user-supplied lists or by running
      * depth-0 PC and classifying variables by indegree.
      */
-    private void identifyInputsAndOutputs() {
+    private void identifyInputsAndOutputs() throws InterruptedException {
         if (this.presetInputs != null && !this.presetInputs.isEmpty()
                 && this.presetOutputs != null && !this.presetOutputs.isEmpty()) {
             this.inputs.addAll(this.presetInputs);
@@ -289,36 +294,84 @@ public class Dm implements IGraphSearch {
      *
      * @return a map from input-class sets to their class information
      */
-    private Map<Set<Node>, InputClassInfo> buildInputClasses() {
+    private Map<Set<Node>, InputClassInfo> buildInputClasses() throws InterruptedException {
+        // Step 1: exact grouping by identical OUT-sets.
         Map<Set<Node>, Set<Node>> groupedInputs = new LinkedHashMap<>();
 
         for (Node input : this.inputs) {
             Set<Node> outSet = computeOutSet(input);
-            groupedInputs.computeIfAbsent(outSet, k -> new LinkedHashSet<>()).add(input);
+
+            // Inputs with no dependent outputs cannot be assigned to any latent.
+            if (outSet.isEmpty()) continue;
+
+            groupedInputs.computeIfAbsent(outSet, k -> new LinkedHashSet<>())
+                    .add(input);
         }
 
+        // Step 2: fuzzy merge of classes with similar OUT-sets.
+        // Collects (outSet -> inputClass) pairs and merges greedily.
+        List<Set<Node>> outSets = new ArrayList<>(groupedInputs.keySet());
+        List<Set<Node>> inClasses = new ArrayList<>(groupedInputs.values());
+
+        boolean changed;
+        do {
+            changed = false;
+            outer:
+            for (int i = 0; i < outSets.size(); i++) {
+                for (int j = i + 1; j < outSets.size(); j++) {
+                    double sim = jaccard(outSets.get(i), outSets.get(j));
+                    if (sim >= inputClassMergeThreshold) {
+                        // Merge j into i: union inputs, union OUT-sets.
+                        Set<Node> mergedOut = new LinkedHashSet<>(outSets.get(i));
+                        mergedOut.addAll(outSets.get(j));
+                        Set<Node> mergedIn = new LinkedHashSet<>(inClasses.get(i));
+                        mergedIn.addAll(inClasses.get(j));
+
+                        outSets.remove(j);
+                        inClasses.remove(j);
+                        outSets.set(i, mergedOut);
+                        inClasses.set(i, mergedIn);
+
+                        changed = true;
+                        break outer;
+                    }
+                }
+            }
+        } while (changed);
+
+        // Step 3: build InputClassInfo records from merged groups.
         Map<Set<Node>, InputClassInfo> result = new LinkedHashMap<>();
 
-        for (Map.Entry<Set<Node>, Set<Node>> entry : groupedInputs.entrySet()) {
-            Set<Node> outSet = new LinkedHashSet<>(entry.getKey());
-            Set<Node> inputClass = new LinkedHashSet<>(entry.getValue());
+        for (int i = 0; i < outSets.size(); i++) {
+            Set<Node> outSet = outSets.get(i);
+            Set<Node> inputClass = inClasses.get(i);
 
-            if (outSet.isEmpty() || inputClass.isEmpty()) {
-                continue;
-            }
+            if (outSet.isEmpty() || inputClass.isEmpty()) continue;
 
             Node latent = createLatentNode();
-            InputClassInfo info = new InputClassInfo(
+            result.put(inputClass, new InputClassInfo(
                     inputClass,
                     outSet,
                     new LinkedHashSet<>(outSet),
-                    latent
-            );
-
-            result.put(inputClass, info);
+                    latent));
         }
 
         return result;
+    }
+
+    /**
+     * Returns the Jaccard similarity of two node sets.
+     */
+    private double jaccard(Set<Node> a, Set<Node> b) {
+        if (a.isEmpty() && b.isEmpty()) return 1.0;
+
+        Set<Node> intersection = new LinkedHashSet<>(a);
+        intersection.retainAll(b);
+
+        Set<Node> union = new LinkedHashSet<>(a);
+        union.addAll(b);
+
+        return union.isEmpty() ? 1.0 : (double) intersection.size() / union.size();
     }
 
     /**
@@ -327,7 +380,7 @@ public class Dm implements IGraphSearch {
      * @param input the measured input
      * @return the outputs dependent on that input
      */
-    private Set<Node> computeOutSet(Node input) {
+    private Set<Node> computeOutSet(Node input) throws InterruptedException {
         Set<Node> outSet = new LinkedHashSet<>();
 
         for (Node output : this.outputs) {
@@ -343,7 +396,7 @@ public class Dm implements IGraphSearch {
      * Assigns outputs to latents by repeated leaf/minimal-set removal over residual OUT-sets.
      *
      * @param inputClasses the input class information
-     * @param graph the graph to update
+     * @param graph        the graph to update
      */
     private void assignOutputsByLeafRemoval(Map<Set<Node>, InputClassInfo> inputClasses, Graph graph) {
         while (true) {
@@ -416,21 +469,32 @@ public class Dm implements IGraphSearch {
      * Adds latent-to-latent edges according to strict inclusion of original OUT-sets.
      *
      * @param inputClasses the input class information
-     * @param graph the graph to update
+     * @param graph        the graph to update
      */
-    private void addLatentSubsetEdges(Map<Set<Node>, InputClassInfo> inputClasses, Graph graph) {
+    private void addLatentSubsetEdges(Map<Set<Node>, InputClassInfo> inputClasses,
+                                      Graph graph) {
         List<InputClassInfo> infos = new ArrayList<>(inputClasses.values());
 
         for (InputClassInfo small : infos) {
             for (InputClassInfo large : infos) {
-                if (small == large) {
-                    continue;
+                if (small == large) continue;
+                if (!isProperSubset(small.originalOut(), large.originalOut())) continue;
+
+                // Only add the edge if there is no intermediate class C such that
+                // small.originalOut ⊂ C.originalOut ⊂ large.originalOut.
+                // This produces a Hasse diagram rather than a full subset DAG.
+                boolean hasIntermediate = false;
+                for (InputClassInfo mid : infos) {
+                    if (mid == small || mid == large) continue;
+                    if (isProperSubset(small.originalOut(), mid.originalOut())
+                            && isProperSubset(mid.originalOut(), large.originalOut())) {
+                        hasIntermediate = true;
+                        break;
+                    }
                 }
 
-                if (isProperSubset(small.originalOut(), large.originalOut())) {
-                    if (!graph.isAdjacentTo(small.latent(), large.latent())) {
-                        graph.addDirectedEdge(small.latent(), large.latent());
-                    }
+                if (!hasIntermediate && !graph.isAdjacentTo(small.latent(), large.latent())) {
+                    graph.addDirectedEdge(small.latent(), large.latent());
                 }
             }
         }
@@ -440,9 +504,10 @@ public class Dm implements IGraphSearch {
      * Removes latent-to-latent edges when step 8 of the paper finds a separating witness.
      *
      * @param inputClasses the input class information
-     * @param graph the graph to update
+     * @param graph        the graph to update
      */
-    private void pruneLatentSubsetEdges(Map<Set<Node>, InputClassInfo> inputClasses, Graph graph) {
+    private void pruneLatentSubsetEdges(Map<Set<Node>, InputClassInfo> inputClasses, Graph graph)
+            throws InterruptedException {
         List<InputClassInfo> infos = new ArrayList<>(inputClasses.values());
 
         for (InputClassInfo small : infos) {
@@ -476,7 +541,8 @@ public class Dm implements IGraphSearch {
      * @param large the larger OUT-set class Xj
      * @return true if a step-8 witness exists
      */
-    private boolean existsStep8Witness(InputClassInfo small, InputClassInfo large) {
+    private boolean existsStep8Witness(InputClassInfo small, InputClassInfo large)
+            throws InterruptedException {
         Set<Node> largeOnly = new LinkedHashSet<>(large.originalOut());
         largeOnly.removeAll(small.originalOut());
 
@@ -506,13 +572,17 @@ public class Dm implements IGraphSearch {
      * Returns true iff some subset of the supplied conditioning universe renders
      * a and b conditionally independent.
      *
-     * @param a the first node
-     * @param b the second node
+     * @param a        the first node
+     * @param b        the second node
      * @param universe the conditioning universe
      * @return true if some subset separates a and b
      */
-    private boolean existsSeparatingSubset(Node a, Node b, List<Node> universe) {
-        for (int size = 0; size <= universe.size(); size++) {
+    private boolean existsSeparatingSubset(Node a, Node b, List<Node> universe) throws InterruptedException {
+        int maxSize = (step8MaxDepth < 0)
+                ? universe.size()
+                : Math.min(step8MaxDepth, universe.size());
+
+        for (int size = 0; size <= maxSize; size++) {
             if (existsSeparatingSubsetOfSize(a, b, universe, size, 0, new ArrayList<>())) {
                 return true;
             }
@@ -524,19 +594,20 @@ public class Dm implements IGraphSearch {
     /**
      * Recursive helper to search all subsets of a given size.
      *
-     * @param a the first node
-     * @param b the second node
-     * @param universe the conditioning universe
+     * @param a          the first node
+     * @param b          the second node
+     * @param universe   the conditioning universe
      * @param targetSize the target subset size
-     * @param start the current start index
-     * @param current the current subset
+     * @param start      the current start index
+     * @param current    the current subset
      * @return true if a separating subset is found
      */
     private boolean existsSeparatingSubsetOfSize(Node a, Node b,
                                                  List<Node> universe,
                                                  int targetSize,
                                                  int start,
-                                                 List<Node> current) {
+                                                 List<Node> current)
+            throws InterruptedException {
         if (current.size() == targetSize) {
             return isIndependent(a, b, new LinkedHashSet<>(current));
         }
@@ -561,11 +632,17 @@ public class Dm implements IGraphSearch {
      *
      * @param graph the graph to refine
      */
-    private void finalRefinement(Graph graph) {
+    private void finalRefinement(Graph graph) throws InterruptedException {
         Graph fullPattern = runPc(-1);
 
         for (Node output : this.outputs) {
-            if (hasDirectedInputParent(output, fullPattern)) {
+            // In a MIMIC model, outputs connect to inputs through latents, not
+            // directly. The absence of a directed input edge in the full PC graph
+            // is therefore not informative — PC correctly finds no direct edge.
+            // Only strip latent parents from an output that is marginally
+            // independent of every known input, which indicates it genuinely
+            // does not belong to any latent in this model.
+            if (isDependentOnAnyInput(output)) {
                 continue;
             }
 
@@ -575,10 +652,27 @@ public class Dm implements IGraphSearch {
     }
 
     /**
+     * Returns true iff the given output is marginally dependent on at least one
+     * measured input. Used to decide whether the output belongs to the latent
+     * structure.
+     *
+     * @param output the measured output to test
+     * @return true if dependent on any input
+     */
+    private boolean isDependentOnAnyInput(Node output) throws InterruptedException {
+        for (Node input : this.inputs) {
+            if (!isIndependent(input, output, Collections.emptySet())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns true iff the supplied output has a directed parent among the measured inputs
      * in the full PC pattern.
      *
-     * @param output the measured output
+     * @param output  the measured output
      * @param pattern the full PC pattern
      * @return true if some measured input is a directed parent
      */
@@ -596,7 +690,7 @@ public class Dm implements IGraphSearch {
      * Removes latent-to-output edges into the supplied output.
      *
      * @param output the measured output
-     * @param graph the graph to modify
+     * @param graph  the graph to modify
      */
     private void removeLatentParents(Node output, Graph graph) {
         List<Node> parents = new ArrayList<>(graph.getParents(output));
@@ -614,9 +708,9 @@ public class Dm implements IGraphSearch {
      * <p>If the PC pattern orients the edge, that direction is copied. Otherwise an undirected
      * edge is added.</p>
      *
-     * @param output the output node
+     * @param output      the output node
      * @param fullPattern the full PC pattern
-     * @param graph the graph to update
+     * @param graph       the graph to update
      */
     private void addMeasuredOutputAdjacencies(Node output, Graph fullPattern, Graph graph) {
         for (Node neighbor : fullPattern.getAdjacentNodes(output)) {
@@ -644,23 +738,28 @@ public class Dm implements IGraphSearch {
      * @param graph the graph to modify
      */
     private void removeDegenerateLatents(Graph graph) {
-        List<Node> nodes = new ArrayList<>(graph.getNodes());
+        boolean changed;
 
-        for (Node node : nodes) {
-            if (node.getNodeType() != NodeType.LATENT) {
-                continue;
-            }
+        do {
+            changed = false;
+            List<Node> nodes = new ArrayList<>(graph.getNodes());
 
-            if (getMeasuredParents(node, graph).isEmpty() || getMeasuredChildren(node, graph).isEmpty()) {
-                graph.removeNode(node);
+            for (Node node : nodes) {
+                if (node.getNodeType() != NodeType.LATENT) continue;
+
+                if (getMeasuredParents(node, graph).isEmpty()
+                        || getMeasuredChildren(node, graph).isEmpty()) {
+                    graph.removeNode(node);
+                    changed = true;
+                }
             }
-        }
+        } while (changed);
     }
 
     /**
      * Returns the measured parents of a node.
      *
-     * @param node the node
+     * @param node  the node
      * @param graph the graph
      * @return the measured parents
      */
@@ -671,7 +770,7 @@ public class Dm implements IGraphSearch {
     /**
      * Returns the measured children of a node.
      *
-     * @param node the node
+     * @param node  the node
      * @param graph the graph
      * @return the measured children
      */
@@ -700,17 +799,13 @@ public class Dm implements IGraphSearch {
     /**
      * Returns true if a and b are conditionally independent given the supplied set.
      *
-     * @param a the first node
-     * @param b the second node
+     * @param a               the first node
+     * @param b               the second node
      * @param conditioningSet the conditioning set
      * @return true if the test reports independence
      */
-    private boolean isIndependent(Node a, Node b, Set<Node> conditioningSet) {
-        try {
-            return this.test.checkIndependence(a, b, conditioningSet).isIndependent();
-        } catch (Exception e) {
-            throw new RuntimeException("Conditional independence test failed.", e);
-        }
+    private boolean isIndependent(Node a, Node b, Set<Node> conditioningSet) throws InterruptedException {
+        return this.test.checkIndependence(a, b, conditioningSet).isIndependent();
     }
 
     /**
@@ -719,16 +814,11 @@ public class Dm implements IGraphSearch {
      * @param depth the depth, with -1 meaning unrestricted
      * @return the resulting pattern
      */
-    private Graph runPc(int depth) {
-        try {
-            Pc pc = new Pc(this.test);
-            pc.setDepth(depth);
-            pc.setKnowledge(this.knowledge);
-            return pc.search();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("PC search was interrupted.", e);
-        }
+    private Graph runPc(int depth) throws InterruptedException {
+        Pc pc = new Pc(this.test);
+        pc.setDepth(depth);
+        pc.setKnowledge(this.knowledge);
+        return pc.search();
     }
 
     /**

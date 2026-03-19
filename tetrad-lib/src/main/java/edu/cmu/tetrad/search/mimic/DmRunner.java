@@ -72,6 +72,10 @@ public final class DmRunner implements MimicSearchRunner {
 //        search.setMeasuredInputs(inputs);
 //        search.setMeasuredOutputs(outputs);
 
-        return search.search();
+        try {
+            return search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
