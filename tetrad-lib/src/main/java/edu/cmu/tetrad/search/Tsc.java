@@ -39,27 +39,28 @@ import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
  * variables. This class manages significance levels, caching mechanisms, and structures to efficiently handle clusters
  * and their associated ranks.
  *
- * <p><b>Theory (NOLAC) â soundness sketch.</b>
+ * <p><b>Theory (NOLAC) soundness sketch.</b>
  * We assume a linear-Gaussian SEM with a latent DAG and pure measurement (each observed loads on exactly one latent),
  * independent unique errors across distinct clusters, and generic parameters (no exact cancellations). Under the NOLAC
  * (no overlapping clusters) assumption, the indicator sets for distinct latents are disjoint. With a consistent rank
- * test (e.g., Wilks LRT with a diminishing Î±), the following properties hold generically:
+ * test (e.g., Wilks LRT with a diminishing &alpha;), the following properties hold generically:
  *
  * <ul>
  *   <li><b>Seed soundness.</b> If G is a true cluster with latent-boundary dimension r (typically r=1), then every
- *       (r+1)-subset SâG satisfies rank(S, V\S)=r. If S contains any nonmember, generically rank(S, V\S)&gt;r.</li>
+ *       (r+1)-subset S&sube;G satisfies rank(S, V\S)=r. If S contains any nonmember, generically rank(S, V\S)&gt;r.</li>
  *   <li><b>Union/extension correctness.</b> Growing a seed by unions that preserve rank r expands exactly to the
  *       maximal G; adding a nonmember raises the rank and is rejected.</li>
  *   <li><b>Non-overlap.</b> Because each observed belongs to at most one true G, any attempt to reuse a committed
  *       variable either raises the rank earlier or is blocked by bookkeeping; accepted clusters are pairwise disjoint.</li>
- *   <li><b>Conditional-rank refinement (Rule 3).</b> For any ZâC with |Z|â¥r, if rank(C\Z, V\(C) | Z)=0 then Z acts
+ *   <li><b>Conditional-rank refinement (Rule 3).</b> For any Z&sube;C with |Z|&ge;r, if rank(C\Z, V\C | Z)=0 then Z acts
  *       as an observed bottleneck in a pure DAG-without-latents scenario; removing Z collapses spurious clusters.
  *       In a true latent cluster with noisy indicators, conditioning on any small Z cannot annihilate the latent
  *       contribution, so the refinement leaves true clusters intact generically.</li>
  * </ul>
  *
- * <p><b>Practical guidance.</b> Use Î± that decreases slowly with n (e.g., Î±=1/log n) or an information-criterion cutoff
- * to reduce Type-I rank errors with sample size. Ensure {@code expectedSampleSize} reflects the covariance sample size.
+ * <p><b>Practical guidance.</b> Use &alpha; that decreases slowly with n (e.g., &alpha;=1/log n) or an
+ * information-criterion cutoff to reduce Type-I rank errors with sample size. Ensure {@code expectedSampleSize}
+ * reflects the covariance sample size.
  *
  * @author josephramsey
  */
