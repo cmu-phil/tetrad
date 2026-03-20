@@ -269,7 +269,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
                 Set<Integer> cluster = new HashSet<>(seed);
 
-                if (seed.size() >= remainingVars.size() - seed.size()) continue;
+                if (seed.size() > remainingVars.size() - seed.size()) continue;
 
                 int seedRankShown;
                 seedRankShown = ranksByTest(seed);
@@ -376,7 +376,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
                     Set<Integer> C2 = new HashSet<>(C1);
                     C2.addAll(_C);
 
-                    if (C2.size() >= this.variables.size() - C2.size()) continue;
+                    if (C2.size() > this.variables.size() - C2.size()) continue;
 
                     // Ensure the *new* elements being added do not collide with usedMinusC1
                     Set<Integer> delta = new HashSet<>(C2);

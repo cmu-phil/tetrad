@@ -402,6 +402,7 @@ public final class Fcit implements IGraphSearch {
 
         // Initializing the PAG and identifying initial colliders.
         this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias);
+
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
         // In what follows, we look for sepsets to remove edges. After every removal we rebuild the PAG and

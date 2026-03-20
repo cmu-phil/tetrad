@@ -51,12 +51,12 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "DM-Merge",
-//        command = "dm-merge",
-//        algoType = AlgType.search_for_structure_over_latents
-//)
-//@Bootstrapping
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "DM-Merge",
+        command = "dm-merge",
+        algoType = AlgType.search_for_structure_over_latents
+)
+@Bootstrapping
 public class DmMerge extends AbstractBootstrapAlgorithm implements Algorithm,
         TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
