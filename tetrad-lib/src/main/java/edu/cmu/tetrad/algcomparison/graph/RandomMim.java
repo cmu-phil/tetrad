@@ -79,6 +79,7 @@ public class RandomMim implements RandomGraph {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add("mimLatentGroupSpecs");
+        parameters.add("mimicGroupSpecs");
 //        parameters.add("mimNumStructuralNodes");
         parameters.add("mimNumStructuralEdges");
         parameters.add(Params.META_EDGE_CONNECTION_TYPE);

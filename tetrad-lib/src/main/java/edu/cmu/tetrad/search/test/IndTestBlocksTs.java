@@ -355,18 +355,18 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
 
         boolean indep = estRank == target;
 
-        if (verbose) {
-            List<Node> leftVars  = indicesToNodes(bestBuild.Lcols, dataVars);
-            List<Node> rightVars = indicesToNodes(bestBuild.Rcols, dataVars);
-            TetradLogger.getInstance().log(
-                    "TS split: left=" + leftVars + " right=" + rightVars);
-            TetradLogger.getInstance().log(
-                    "TS: " + bestBuild.xName + " _||_ " + bestBuild.yName
-                            + " | " + bestBuild.zNames
-                            + " ? estRank(min over trials)=" + estRank
-                            + ", target(sum ranks)=" + target
-                            + " -> " + (indep ? "INDEP" : "DEP"));
-        }
+//        if (verbose) {
+//            List<Node> leftVars  = indicesToNodes(bestBuild.Lcols, dataVars);
+//            List<Node> rightVars = indicesToNodes(bestBuild.Rcols, dataVars);
+//            TetradLogger.getInstance().log(
+//                    "TS split: left=" + leftVars + " right=" + rightVars);
+//            TetradLogger.getInstance().log(
+//                    "TS: " + bestBuild.xName + " _||_ " + bestBuild.yName
+//                            + " | " + bestBuild.zNames
+//                            + " ? estRank(min over trials)=" + estRank
+//                            + ", target(sum ranks)=" + target
+//                            + " -> " + (indep ? "INDEP" : "DEP"));
+//        }
 
         if (verbose) {
             if (indep) {

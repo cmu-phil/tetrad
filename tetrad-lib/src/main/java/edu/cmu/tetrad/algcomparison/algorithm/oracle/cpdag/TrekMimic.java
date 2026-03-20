@@ -64,13 +64,13 @@ public class TrekMimic extends AbstractBootstrapAlgorithm
      * Optional observed variables known to be inputs to the latent structure.
      * Stored by name so they remain stable across node replacement.
      */
-    private final Set<String> inputNames = new LinkedHashSet<>();
+    private Set<String> inputNames = new LinkedHashSet<>();
 
     /**
      * Optional observed variables known to be outputs from the latent structure.
      * Stored by name so they remain stable across node replacement.
      */
-    private final Set<String> outputNames = new LinkedHashSet<>();
+    private Set<String> outputNames = new LinkedHashSet<>();
 
     /**
      * Background knowledge.
@@ -80,7 +80,8 @@ public class TrekMimic extends AbstractBootstrapAlgorithm
     /**
      * Constructs the wrapper.
      */
-    public TrekMimic() {}
+    public TrekMimic() {
+    }
 
     /**
      * Runs the search.
@@ -98,6 +99,11 @@ public class TrekMimic extends AbstractBootstrapAlgorithm
 
         edu.cmu.tetrad.search.mimic.TrekMimic search =
                 new edu.cmu.tetrad.search.mimic.TrekMimic(data, parameters);
+
+        if (inputNames.isEmpty() && outputNames.isEmpty()) {
+            inputNames = new HashSet<>(knowledge.getTier(0));
+            outputNames = new HashSet<>(knowledge.getTier(1));
+        }
 
         search.setKnowledge(this.knowledge);
         search.setInputNames(this.inputNames);

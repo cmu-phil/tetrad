@@ -184,8 +184,8 @@ public final class TrekMimic {
         // Orient latents and remove latent-transitive inputs.
         if (orientAndPrune) {
             List<Graph> graphs = refinement.orientAndPrintEdges(graph);
-            Graph oriented = graphs.get(0);
-            Graph pruned = graphs.get(1);
+            Graph oriented = removeUnconnectedVariables(graphs.get(0));
+            Graph pruned = removeUnconnectedVariables(graphs.get(1));
 
             // The latent-transitive edges are non-identifiable, so we print them.
             if (verbose) {
@@ -198,6 +198,18 @@ public final class TrekMimic {
             }
 
             return pruned;
+        }
+
+        return removeUnconnectedVariables(graph);
+    }
+
+    private Graph removeUnconnectedVariables(Graph graph) {
+        graph = new EdgeListGraph(graph);
+
+        for (Node node : new ArrayList<>(graph.getNodes())) {
+            if (graph.getAdjacentNodes(node).isEmpty()) {
+                graph.removeNode(node);
+            }
         }
 
         return graph;
