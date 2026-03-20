@@ -244,7 +244,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
             int size = rank + 1;
             if (Thread.currentThread().isInterrupted()) break;
 //            if (size >= remainingVars.size() - size) continue;
-            if (size > remainingVars.size()) continue; // only require non-empty complement
+            if (size >= remainingVars.size()) continue; // only require non-empty complement
 
 
             log("EXAMINING SIZE " + size + " RANK = " + rank + " REMAINING VARS = " + remainingVars.size());
