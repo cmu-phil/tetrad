@@ -305,16 +305,36 @@ public final class LatentGraphRefinement {
      * Orients undirected latent-latent edges using asymmetric correlations
      * between measured parents and measured children.
      *
-     * <p>For an undirected edge between latents X and Y:
-     * <ul>f
-     *   <li>Orient X → Y if every (parentX, childY) pair is significantly
-     *       correlated but not every (parentY, childX) pair is.</li>
+     * <p>For an undirected edge between latents X and Y, let Px and Py be the
+     * measured parents exclusive to X and Y respectively (shared parents are
+     * removed before testing), and let Cx and Cy be the measured children of
+     * X and Y respectively.
+     *
+     * <ul>
+     *   <li>Orient X → Y if at least {@code orientationProportion} of
+     *       (Px, Cy) pairs are significantly correlated but fewer than
+     *       {@code orientationProportion} of (Py, Cx) pairs are.</li>
      *   <li>Orient Y → X in the symmetric case.</li>
-     *   <li>Leave the edge unoriented if both directions give the same
-     *       verdict (including when neither latent has measured parents).</li>
+     *   <li>Leave the edge unoriented if both sides give the same verdict,
+     *       including when neither latent has exclusive measured parents.</li>
      * </ul>
      *
-     * <p>This overwrites any existing directed edges to avoid confusion (and cycles).
+     * <p><b>Correctness argument.</b> Under a linear Gaussian SEM with pure
+     * measurement (each observed loads on exactly one latent):
+     * <ul>
+     *   <li>If X → Y, the path Xi → X → Y → Yj is a directed open path, so
+     *       every exclusive parent Xi of X is correlated with every child Yj
+     *       of Y.</li>
+     *   <li>The reverse path Yj → Y ← X → Xi contains a collider at Y.
+     *       Without conditioning on Y or its descendants, Yj and Xi are
+     *       d-separated and uncorrelated.</li>
+     * </ul>
+     * This asymmetry is provably correct under the model assumptions and is
+     * the same structural logic that makes v-structures identifiable in
+     * standard causal discovery.
+     *
+     * <p>All latent-latent edges are first reset to undirected to ensure a
+     * consistent starting state and avoid introducing cycles.
      *
      * @param graph the graph to orient; mutated in place
      */
@@ -348,6 +368,10 @@ public final class LatentGraphRefinement {
 
             List<Node> parentsx = measuredOnly(graph.getParents(x));
             List<Node> parentsy = measuredOnly(graph.getParents(y));
+
+            parentsx.removeAll(parentsy);
+            parentsy.removeAll(parentsx);
+
             List<Node> childrenx = measuredOnly(graph.getChildren(x));
             List<Node> childreny = measuredOnly(graph.getChildren(y));
 
@@ -872,7 +896,6 @@ public final class LatentGraphRefinement {
         }
 
         orientLatentEdges(graph);
-//        orientLatentEdgesAnyNone(graph);
         Graph oriented = new EdgeListGraph(graph);
         pruneTransitiveInputEdgesByLatentAncestry(graph);
         pruneTransitiveLatentEdges(graph);

@@ -35,6 +35,7 @@ import java.util.List;
  *
  * @author josephramsey
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public final class BossTrekMimicRunner implements MimicSearchRunner {
 
     /**

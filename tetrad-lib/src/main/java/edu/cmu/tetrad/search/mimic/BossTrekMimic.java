@@ -62,6 +62,7 @@ import java.util.*;
  *
  * @author josephramsey
  */
+@Deprecated
 public final class BossTrekMimic implements IGraphSearch {
 
     /**

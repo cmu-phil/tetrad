@@ -76,9 +76,14 @@ public final class MimicBenchmark {
         this.runners = new ArrayList<>();
 
         this.runners.add(new DmMergeRunner());
-        this.runners.add(new DmRunner());
+
+        // I think we can savely take out DM as too conservative.
+//        this.runners.add(new DmRunner());
         this.runners.add(new TrekMimicRunner());
-        this.runners.add(new BossTrekMimicRunner());
+
+        // TrekMimicRunner and BossTrekMimicRunner are now right on top of one another, with TrekMimicRunner
+        // having a slight advantage over BossTrekMimicRunner. So we're taking out BossTrekMimicRunner for now.
+//        this.runners.add(new BossTrekMimicRunner());
     }
 
     /**

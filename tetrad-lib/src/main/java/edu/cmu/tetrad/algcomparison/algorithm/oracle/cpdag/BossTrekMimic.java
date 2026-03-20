@@ -57,12 +57,13 @@ import java.util.Set;
  *
  * @author josephramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "Boss-Trek-MIMIC",
-        command = "boss-trek-mimic",
-        algoType = AlgType.forbid_latent_common_causes
-)
-@Bootstrapping
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "Boss-Trek-MIMIC",
+//        command = "boss-trek-mimic",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
+//@Bootstrapping
+@Deprecated(since = "7.9", forRemoval = false)
 public class BossTrekMimic extends AbstractBootstrapAlgorithm
         implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
 
