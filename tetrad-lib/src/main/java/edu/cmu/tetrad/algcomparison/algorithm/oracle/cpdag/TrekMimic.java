@@ -94,7 +94,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm
     protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         DataSet data = (DataSet) dataModel;
 
-        int maxLatentSubsetSize = parameters.getInt("maxLatentSubsetSize", 4);
+        int maxLatentSubsetSize = 4;//parameters.getInt("maxLatentSubsetSize", 4);
 
         edu.cmu.tetrad.search.mimic.TrekMimic search =
                 new edu.cmu.tetrad.search.mimic.TrekMimic(data, parameters);
@@ -146,7 +146,7 @@ public class TrekMimic extends AbstractBootstrapAlgorithm
         parameters.add(Params.DEPTH);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.VERBOSE);
-        parameters.add("maxLatentSubsetSize");
+//        parameters.add("maxLatentSubsetSize");
         return parameters;
     }
 

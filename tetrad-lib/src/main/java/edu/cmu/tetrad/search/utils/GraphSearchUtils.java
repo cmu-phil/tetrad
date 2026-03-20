@@ -609,6 +609,8 @@ public final class GraphSearchUtils {
             }
         }
 
+        repositionLatents(graph);
+
         LayoutUtil.repositionLatents(graph);
     }
 
@@ -670,6 +672,8 @@ public final class GraphSearchUtils {
             y += ySpace;
 
         }
+
+        repositionLatents(graph);
 
         LayoutUtil.repositionLatents(graph);
     }
@@ -1300,6 +1304,49 @@ public final class GraphSearchUtils {
         public Node getTo() {
             return this.to;
         }
+    }
+
+    /**
+     * Repositions each latent node to the average (x, y) location of its
+     * adjacent measured nodes (parents and children combined). Latents that
+     * have no measured neighbors are left where they are.
+     *
+     * <p>A single pass is sufficient for tree-shaped latent structures; for
+     * graphs where latents are adjacent to other latents, iterating until
+     * convergence gives a better result.
+     *
+     * @param graph the graph whose latent nodes are to be repositioned; mutated in place
+     */
+    public static void repositionLatents(Graph graph) {
+        boolean changed;
+        do {
+            changed = false;
+
+            for (Node node : graph.getNodes()) {
+                if (node.getNodeType() != NodeType.LATENT) continue;
+
+                List<Node> neighbors = graph.getAdjacentNodes(node);
+
+                if (neighbors.isEmpty()) continue;
+
+                double avgX = 0, avgY = 0;
+                for (Node nb : neighbors) {
+                    avgX += nb.getCenterX();
+                    avgY += nb.getCenterY();
+                }
+                avgX /= neighbors.size();
+                avgY /= neighbors.size();
+
+                int newX = (int) Math.round(avgX);
+                int newY = (int) Math.round(avgY);
+
+                if (newX != node.getCenterX() || newY != node.getCenterY()) {
+                    node.setCenterX(newX);
+                    node.setCenterY(newY);
+                    changed = true;
+                }
+            }
+        } while (changed);
     }
 }
 

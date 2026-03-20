@@ -74,7 +74,7 @@ public final class LatentGraphRefinement {
      * Default 1.0 requires all pairs (original behaviour).
      * Lower values are more robust at finite N.
      */
-    private double orientationProportion = 1.0;
+    private double orientationProportion = 0.5;
 
     // -------------------------------------------------------------------------
     // Public operations
@@ -369,6 +369,81 @@ public final class LatentGraphRefinement {
                 graph.addDirectedEdge(y, x);
             }
         }
+    }
+
+    /**
+     * Orients undirected latent-latent edges using asymmetric correlations
+     * between measured parents and measured children.
+     *
+     * <p>For an undirected edge between latents X and Y:
+     * <ul>
+     *   <li>Orient X → Y if any (parentX, childY) pair is significantly
+     *       correlated but no (parentY, childX) pair is.</li>
+     *   <li>Orient Y → X in the symmetric case.</li>
+     *   <li>Leave the edge unoriented if both directions give the same
+     *       verdict (including when neither latent has measured parents).</li>
+     * </ul>
+     *
+     * <p>This overwrites any existing directed edges to avoid confusion (and cycles).
+     *
+     * @param graph the graph to orient; mutated in place
+     */
+    public void orientLatentEdgesAnyNone(Graph graph) {
+        if (graph == null) {
+            throw new NullPointerException("graph must not be null.");
+        }
+
+        for (Edge edge : new ArrayList<>(graph.getEdges())) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            if (x.getNodeType() != NodeType.LATENT
+                    || y.getNodeType() != NodeType.LATENT) {
+                continue;
+            }
+
+            List<Node> parentsx = measuredOnly(graph.getParents(x));
+            List<Node> parentsy = measuredOnly(graph.getParents(y));
+            List<Node> childrenx = measuredOnly(graph.getChildren(x));
+            List<Node> childreny = measuredOnly(graph.getChildren(y));
+
+            boolean anyXtoY = anyPairCorrelated(parentsx, childreny);
+            boolean anyYtoX = anyPairCorrelated(parentsy, childrenx);
+
+            // Orient X → Y only if there is evidence in that direction but none in the other.
+            // No asymmetry, or neither side has evidence: leave undirected.
+            if (anyXtoY == anyYtoX) {
+                continue;
+            }
+
+            graph.removeEdge(edge);
+
+            if (anyXtoY) {
+                graph.addDirectedEdge(x, y);
+            } else {
+                graph.addDirectedEdge(y, x);
+            }
+        }
+    }
+
+    /**
+     * Returns true iff at least one (parent, child) pair is significantly
+     * correlated. Returns false immediately if either list is empty.
+     *
+     * @param parents  the measured parents of one latent
+     * @param children the measured children of the other latent
+     * @return true if any pair is significantly correlated
+     */
+    private boolean anyPairCorrelated(List<Node> parents, List<Node> children) {
+        if (parents.isEmpty() || children.isEmpty()) return false;
+
+        for (Node p : parents) {
+            for (Node c : children) {
+                if (correlated(p, c)) return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -775,17 +850,57 @@ public final class LatentGraphRefinement {
      *
      * @param graph the graph to process; not modified
      * @return an unmodifiable list of two graphs: the oriented graph
-     *         (before transitive pruning) and the pruned graph (after).
-     *         The difference between the two is the set of edges in the
-     *         unidentifiable region.
+     * (before transitive pruning) and the pruned graph (after).
+     * The difference between the two is the set of edges in the
+     * unidentifiable region.
      */
     public List<Graph> orientAndPrintEdges(Graph graph) {
         graph = new EdgeListGraph(graph);
+
+        // Override existing directed edges to avoid confusion (and cycles).
+        for (Edge edge : new ArrayList<>(graph.getEdges())) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            if (x.getNodeType() != NodeType.LATENT
+                    || y.getNodeType() != NodeType.LATENT) {
+                continue;
+            }
+
+            graph.removeEdge(edge);
+            graph.addUndirectedEdge(x, y);
+        }
+
         orientLatentEdges(graph);
+//        orientLatentEdgesAnyNone(graph);
         Graph oriented = new EdgeListGraph(graph);
         pruneTransitiveInputEdgesByLatentAncestry(graph);
         pruneTransitiveLatentEdges(graph);
         Graph pruned = new EdgeListGraph(graph);
         return List.of(oriented, pruned);
+    }
+
+    /**
+     * Returns true iff the parents list is non-empty and at least one parent
+     * has an edge of any type to {@code target} in the graph.
+     *
+     * @param graph   the graph
+     * @param parents the measured parents to check
+     * @param target  the latent node they should all connect to
+     * @return true if any parent has an edge to target
+     */
+    private boolean anyParentHasEdgeTo(Graph graph, List<Node> parents, Node target) {
+        if (parents.isEmpty()) return false;
+        for (Node p : parents) {
+            if (graph.isAdjacentTo(p, target)) {
+                try {
+                    System.out.println("Parent " + p + " has edge to " + target);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                return true;
+            }
+        }
+        return false;
     }
 }
