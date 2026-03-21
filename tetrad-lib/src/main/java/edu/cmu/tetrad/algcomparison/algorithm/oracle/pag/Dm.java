@@ -56,12 +56,12 @@ import java.util.List;
  *
  * @author josephramsey
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "DM",
-//        command = "dm",
-//        algoType = AlgType.forbid_latent_common_causes
-//)
-//@Bootstrapping
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "DM",
+        command = "dm",
+        algoType = AlgType.forbid_latent_common_causes
+)
+@Bootstrapping
 public class Dm extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
         ReturnsBootstrapGraphs, TakesIndependenceWrapper {
 
