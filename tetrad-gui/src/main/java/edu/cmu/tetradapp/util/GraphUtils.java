@@ -35,6 +35,7 @@ import java.awt.event.KeyEvent;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.prefs.Preferences;
 
 /**
  * Created by jdramsey on 12/8/15.
@@ -78,9 +79,9 @@ public class GraphUtils {
         double deltaOut = parameters.getDouble("scaleFreeDeltaOut", 0.2);
         int numFactors = parameters.getInt("randomMimNumFactors", 1);
 
-        String type = parameters.getString("randomGraphType", "Dag");
+        String randomGraphType = Preferences.userNodeForPackage(GraphUtils.class).get("randomGraphType", "Dag");
 
-        return switch (type) {
+        return switch (randomGraphType) {
             case "Dag" -> RandomGraph.randomGraph(
                     newGraphNumMeasuredNodes,
                     newGraphNumLatents,
@@ -111,7 +112,7 @@ public class GraphUtils {
             }
             case "ScaleFree" -> GraphUtils.makeRandomScaleFree(newGraphNumMeasuredNodes,
                     newGraphNumLatents, alpha, beta, deltaIn, deltaOut);
-            default -> throw new IllegalStateException("Unrecognized graph type: " + type);
+            default -> throw new IllegalStateException("Unrecognized graph type: " + randomGraphType);
         };
     }
 

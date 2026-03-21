@@ -898,7 +898,7 @@ public final class LatentGraphRefinement {
         orientLatentEdges(graph);
         Graph oriented = new EdgeListGraph(graph);
         pruneTransitiveInputEdgesByLatentAncestry(graph);
-        pruneTransitiveLatentEdges(graph);
+//        pruneTransitiveLatentEdges(graph);
         Graph pruned = new EdgeListGraph(graph);
         return List.of(oriented, pruned);
     }

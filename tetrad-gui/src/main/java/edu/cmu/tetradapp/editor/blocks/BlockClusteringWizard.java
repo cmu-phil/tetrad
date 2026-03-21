@@ -326,7 +326,7 @@ public class BlockClusteringWizard extends JPanel {
                 }
 
 //                btnSearch.setEnabled(false);
-                status.setText("Searching with " + alg + (testName != null ? (" + " + testName) : "") + " â¦");
+                status.setText("Searching with " + alg + (testName != null ? (" + " + testName) : ""));
 
                 int ess = parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE);
                 ess = ess == -1 ? dataSet.getNumRows() : ess;
