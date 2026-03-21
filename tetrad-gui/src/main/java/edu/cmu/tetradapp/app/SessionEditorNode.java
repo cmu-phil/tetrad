@@ -267,21 +267,10 @@ public final class SessionEditorNode extends DisplayNode {
                     + sessionWrapper.getClass());
         }
 
-//        this.sessionWrapper = (SessionWrapper) sessionWrapper;
-
         SwingUtilities.invokeLater(() -> {
             TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
             launchEditorVisit();
         });
-
-//        class MyWatchedProcess extends WatchedProcess {
-//            public void watch() {
-//                TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
-//                launchEditorVisit();
-//            }
-//        }
-//
-//        new MyWatchedProcess();
     }
 
     private void launchEditorVisit() {
@@ -694,12 +683,6 @@ public final class SessionEditorNode extends DisplayNode {
             Component centeringComp = this;
             String name = JOptionPane.showInputDialog(centeringComp, "New name:");
 
-//            if (!NamingProtocol.isLegalName(name)) {
-//                JOptionPane.showMessageDialog(centeringComp,
-//                        NamingProtocol.getProtocolDescription());
-//                return;
-//            }
-
             SessionNodeWrapper wrapper
                     = (SessionNodeWrapper) getModelNode();
             wrapper.setSessionName(name);
@@ -777,12 +760,6 @@ public final class SessionEditorNode extends DisplayNode {
             public void popupMenuCanceled(PopupMenuEvent e) {}
         });
 
-//        try {
-//            this.popup.add(createModel);
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-
         SessionModel model = getSessionNode().getModel();
         Class<?> modelClass = (model == null)
                 ? determineTheModelClass(getSessionNode())
@@ -830,7 +807,6 @@ public final class SessionEditorNode extends DisplayNode {
 
         this.popup.addSeparator();
 
-//        addEditLoggerSettings(this.popup);
         this.popup.add(propagateDownstream);
 
         return this.popup;
@@ -840,20 +816,6 @@ public final class SessionEditorNode extends DisplayNode {
         SessionNodeModelConfig modelConfig = this.config.getModelConfig(modelClass);
         return modelConfig.getParameterEditorInstance();
     }
-
-//    /**
-//     * Adds the "Edit logger" option if applicable.
-//     */
-//    private void addEditLoggerSettings(JPopupMenu menu) {
-//        SessionNodeWrapper modelNode = (SessionNodeWrapper) getModelNode();
-//        SessionNode sessionNode = modelNode.getSessionNode();
-//        TetradLoggerConfig config = sessionNode.getLoggerConfig();
-//        if (config != null) {
-//            JMenuItem item = new JMenuItem("Edit Logger Settings ...");
-//            item.addActionListener((e) -> showLogConfig(config));
-//            menu.add(item);
-//        }
-//    }
 
     /**
      * Shows a dialog that allows the user to change the settings for the box's model logger.
@@ -923,14 +885,6 @@ public final class SessionEditorNode extends DisplayNode {
 
         // If there isn't any model downstream, no point to showing the next
         // dialog.
-//        for (SessionNode child : getChildren()) {
-//            if (child.getModel() != null) {
-//                continue;
-//            }
-//
-//            return;
-//        }
-
         boolean anyChildHasModel = false;
         for (SessionNode child : getChildren()) {
             if (child.getModel() != null) {
@@ -1128,7 +1082,6 @@ public final class SessionEditorNode extends DisplayNode {
      */
     private void destroyModel() {
         getSessionNode().destroyModel();
-//        getSessionNode().forgetOldModel();
     }
 
     /**
