@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.graph;
 
+import cern.colt.matrix.linalg.Property;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -208,6 +209,108 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     public static EdgeListGraph serializableInstance() {
         return new EdgeListGraph();
+    }
+
+    /**
+     * Creates a deep copy of this graph in which every node is a newly constructed
+     * object with the same name, type, position, and variable type as the original.
+     * Edges are rebuilt using the new node objects. All triple sets and attributes
+     * are copied independently of the original.
+     *
+     * <p>This is distinct from the copy constructor {@link #EdgeListGraph(EdgeListGraph)},
+     * which shares node object references with the source graph. Because node positions
+     * are stored on the node objects themselves, sharing references means that laying
+     * out the copy in one editor will silently reposition nodes in the original graph's
+     * editors. {@code deepCopy()} breaks that link entirely.
+     *
+     * @return a new {@code EdgeListGraph} that shares no mutable node objects with this graph.
+     */
+    public EdgeListGraph deepCopy() {
+
+        // ----- 1) Build old-node -> new-node mapping -----
+        // node.like(name) creates a fresh node of the same concrete type and name.
+        // We then explicitly copy every mutable field that node.like() may not touch.
+        Map<Node, Node> nodeMap = new HashMap<>(this.nodes.size() * 2);
+
+        for (Node original : this.nodes) {
+            Node copy = original.like(original.getName());
+            copy.setNodeType(original.getNodeType());
+            copy.setNodeVariableType(original.getNodeVariableType());
+            copy.setCenter(original.getCenterX(), original.getCenterY());
+            copy.setSelectionBias(original.getSelectionBias());
+
+            // Copy any node-level attributes.
+            for (Map.Entry<String, Object> entry : original.getAllAttributes().entrySet()) {
+                copy.addAttribute(entry.getKey(), entry.getValue());
+            }
+
+            nodeMap.put(original, copy);
+        }
+
+        // ----- 2) Construct the new graph and populate nodes in original order -----
+        EdgeListGraph result = new EdgeListGraph();
+
+        for (Node original : this.nodes) {
+            result.addNode(nodeMap.get(original));
+        }
+
+        // ----- 3) Rebuild edges using the new node objects -----
+        for (Edge edge : this.edgesSet) {
+            Node newNode1 = nodeMap.get(edge.getNode1());
+            Node newNode2 = nodeMap.get(edge.getNode2());
+
+            Edge newEdge = new Edge(newNode1, newNode2,
+                    edge.getEndpoint(edge.getNode1()),
+                    edge.getEndpoint(edge.getNode2()));
+
+            for (Edge.Property p : edge.getProperties()) {
+                newEdge.addProperty(p);
+            }
+
+            result.addEdge(newEdge);
+        }
+
+        // ----- 4) Deep copy triple sets using the new node objects -----
+        for (Triple t : this.underLineTriples) {
+            Node x = nodeMap.get(t.getX());
+            Node y = nodeMap.get(t.getY());
+            Node z = nodeMap.get(t.getZ());
+            if (x != null && y != null && z != null) {
+                result.addUnderlineTriple(x, y, z);
+            }
+        }
+
+        for (Triple t : this.dottedUnderLineTriples) {
+            Node x = nodeMap.get(t.getX());
+            Node y = nodeMap.get(t.getY());
+            Node z = nodeMap.get(t.getZ());
+            if (x != null && y != null && z != null) {
+                result.addDottedUnderlineTriple(x, y, z);
+            }
+        }
+
+        for (Triple t : this.ambiguousTriples) {
+            Node x = nodeMap.get(t.getX());
+            Node y = nodeMap.get(t.getY());
+            Node z = nodeMap.get(t.getZ());
+            if (x != null && y != null && z != null) {
+                result.addAmbiguousTriple(x, y, z);
+            }
+        }
+
+        // ----- 5) Copy graph-level attributes -----
+        result.attributes.putAll(this.attributes);
+
+        // ----- 6) Deep copy ancillary graphs -----
+        // Use the existing EdgeListGraph copy constructor for each ancillary graph,
+        // which is sufficient since ancillary graphs are not themselves displayed
+        // in editors and therefore don't suffer from the shared-node-position problem.
+        for (Map.Entry<String, Graph> entry : this.ancillaryGraphs.entrySet()) {
+            result.ancillaryGraphs.put(entry.getKey(),
+                    new EdgeListGraph(entry.getValue()));
+        }
+
+        return result;
     }
 
     /**
