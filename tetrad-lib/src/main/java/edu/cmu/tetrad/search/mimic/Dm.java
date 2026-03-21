@@ -395,15 +395,27 @@ public class Dm implements IGraphSearch {
      * @param input the measured input
      * @return the outputs dependent on that input
      */
-    private Set<Node> computeOutSet(Node input) throws InterruptedException {
-        Set<Node> outSet = new LinkedHashSet<>();
+//    private Set<Node> computeOutSet(Node input) throws InterruptedException {
+//        Set<Node> outSet = new LinkedHashSet<>();
+//
+//        for (Node output : this.outputs) {
+//            if (!isIndependent(input, output, Collections.emptySet())) {
+//                outSet.add(output);
+//            }
+//        }
+//
+//        return outSet;
+//    }
 
+    private Set<Node> computeOutSet(Node input) throws InterruptedException {
+        Set<Node> otherInputs = new LinkedHashSet<>(this.inputs);
+        otherInputs.remove(input);
+        Set<Node> outSet = new LinkedHashSet<>();
         for (Node output : this.outputs) {
-            if (!isIndependent(input, output, Collections.emptySet())) {
+            if (!isIndependent(input, output, otherInputs)) {
                 outSet.add(output);
             }
         }
-
         return outSet;
     }
 
