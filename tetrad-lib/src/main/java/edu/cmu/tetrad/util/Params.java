@@ -38,6 +38,7 @@ import java.util.Set;
  */
 public final class Params {
 
+
     private Params() {
     }
 
@@ -1448,8 +1449,22 @@ public final class Params {
      * Constant <code>MINIMAX_LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
      */
     public static final String PYTHON_CI_SERVER = "pythonCiServer";
-
-
+    /**
+     * Constant <code>MAX_LATENT_SUBSET_SIZE="maxLatentSubsetSize"</code>
+     */
+    public static final String MAX_LATENT_SUBSET_SIZE = "maxLatentSubsetSize";
+    /**
+     * Constant <code>MAX_LATENT_SUBSET_SIZE="maxLatentSubsetSize"</code>
+     */
+    public static final String DO_HIGHER_RANK_EXPANSION = "doHigherRankExpansion";
+    /**
+     * Constant <code>ORIENT_AND_PRUNE="orientAndPrune"</code>
+     */
+    public static final String ORIENT_AND_PRUNE = "orientAndPrune";
+    /**
+     * Constant <code>MERGE_THRESHOLD="mergeThreshold"</code>
+     */
+    public static final String MERGE_THRESHOLD = "dmMergeThreshold";
 
     /**
      * <p>getAlgorithmParameters.</p>

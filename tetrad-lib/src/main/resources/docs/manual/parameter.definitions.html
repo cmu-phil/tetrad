@@ -6660,6 +6660,110 @@ Source:
         <li>Value Type:
             <span id="pythonExe_value_type">String</span>
         </li>
+
+        === maxLatentSubsetSize ===
+        <h3 class="parameter_description" id="maxLatentSubsetSize">maxLatentSubsetSize</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="maxLatentSubsetSize_short_desc">
+        Max cluster subset size for latent-latent edge removal
+    </span>
+            </li>
+            <li>Long Description:
+                <span id="maxLatentSubsetSize_long_desc">
+        Maximum size of cluster subsets tested when attempting to remove
+        spurious latent-latent edges via conditional rank. In Trek-MIMIC,
+        a latent-latent edge between two clusters is a candidate for removal
+        if some subset of one cluster, of size up to this bound, yields a
+        conditional rank of zero against the other cluster. Larger values
+        allow more thorough pruning at the expense of combinatorial runtime
+        cost; smaller values are faster but may retain spurious edges.
+        A value of 1 restricts testing to individual cluster members only.
+    </span>
+            </li>
+            <li>Default Value: <span id="maxLatentSubsetSize_default_value">3</span></li>
+            <li>Lower Bound: <span id="maxLatentSubsetSize_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="maxLatentSubsetSize_upper_bound">20</span></li>
+            <li>Value Type: <span id="maxLatentSubsetSize_value_type">Integer</span></li>
+        </ul>
+
+        === doHigherRankExpansion ===
+        <h3 class="parameter_description" id="doHigherRankExpansion">doHigherRankExpansion</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="doHigherRankExpansion_short_desc">
+        Allow higher-rank expansion for shared parents
+    </span>
+            </li>
+            <li>Long Description:
+                <span id="doHigherRankExpansion_long_desc">
+        If enabled, Trek-MIMIC will attempt to identify shared measured parents
+        of latents by expanding the search to higher-rank configurations beyond
+        the default rank-1 case. This can recover more complex shared-cause
+        structure but increases runtime and the risk of false positives.
+        Disable for faster, more conservative searches.
+    </span>
+            </li>
+            <li>Default Value: <span id="doHigherRankExpansion_default_value">false</span></li>
+            <li>Lower Bound: <span id="doHigherRankExpansion_lower_bound">false</span></li>
+            <li>Upper Bound: <span id="doHigherRankExpansion_upper_bound">true</span></li>
+            <li>Value Type: <span id="doHigherRankExpansion_value_type">Boolean</span></li>
+        </ul>
+
+        === orientAndPrune ===
+        <h3 class="parameter_description" id="orientAndPrune">orientAndPrune</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="orientAndPrune_short_desc">
+        Orient latent-latent edges and prune transitive inputs
+    </span>
+            </li>
+            <li>Long Description:
+                <span id="orientAndPrune_long_desc">
+        If enabled, Trek-MIMIC will attempt to orient the latent-latent edges
+        in the output graph and prune away transitive measured inputs that are
+        not identifiable given the latent structure. Orienting latent-latent
+        edges recovers causal direction among the latents where possible;
+        pruning transitive inputs removes measured cause nodes whose influence
+        is fully mediated by other latents and therefore cannot be distinguished
+        from direct effects. Disable to retain the unoriented skeleton and all
+        measured inputs as found.
+    </span>
+            </li>
+            <li>Default Value: <span id="orientAndPrune_default_value">true</span></li>
+            <li>Lower Bound: <span id="orientAndPrune_lower_bound">false</span></li>
+            <li>Upper Bound: <span id="orientAndPrune_upper_bound">true</span></li>
+            <li>Value Type: <span id="orientAndPrune_value_type">Boolean</span></li>
+        </ul>
+
+    </ul>
+
+    === dmMergeThreshold ===
+    <h3 class="parameter_description" id="dmMergeThreshold">dmMergeThreshold</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="dmMergeThreshold_short_desc">
+        Jaccard similarity threshold for merging input clusters
+    </span>
+        </li>
+        <li>Long Description:
+            <span id="dmMergeThreshold_long_desc">
+        Minimum Jaccard similarity required between the representative input sets
+        of two clusters for them to be merged into a single latent variable in
+        DM-Merge. The Jaccard similarity is the size of the intersection of the
+        two input sets divided by the size of their union, ranging from 0 (no
+        overlap) to 1 (identical sets). Higher values require greater overlap
+        before merging, producing more latent variables with more distinct input
+        sets. Lower values allow more aggressive merging, producing fewer latents
+        that each capture a broader range of inputs. A value of 1.0 merges only
+        clusters with identical input sets; the default of 0.78 allows moderate
+        tolerance for noisy or partial overlap.
+    </span>
+        </li>
+        <li>Default Value: <span id="dmMergeThreshold_default_value">0.78</span></li>
+        <li>Lower Bound: <span id="dmMergeThreshold_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="dmMergeThreshold_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="dmMergeThreshold_value_type">Double</span></li>
     </ul>
 
     === pythonCiServer ===

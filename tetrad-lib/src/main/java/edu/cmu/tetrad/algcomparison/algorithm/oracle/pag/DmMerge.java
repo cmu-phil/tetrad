@@ -114,6 +114,7 @@ public class DmMerge extends AbstractBootstrapAlgorithm implements Algorithm,
 
         edu.cmu.tetrad.search.mimic.DmMerge search = new edu.cmu.tetrad.search.mimic.DmMerge(test);
         search.setKnowledge(knowledge);
+        search.setMergeThreshold(parameters.getDouble(Params.MERGE_THRESHOLD));
 
         return search.search();
     }
@@ -160,6 +161,7 @@ public class DmMerge extends AbstractBootstrapAlgorithm implements Algorithm,
         List<String> params = new ArrayList<>();
 
         params.add(Params.FDR_Q);
+        params.add(Params.MERGE_THRESHOLD);
         params.add(Params.VERBOSE);
 
         return params;
