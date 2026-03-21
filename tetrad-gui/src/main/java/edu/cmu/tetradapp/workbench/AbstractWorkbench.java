@@ -232,7 +232,12 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         });
         setEnabled(this.enableEditing);
 
-        new PasteLayoutAction(this).actionPerformed(null);
+        LayoutUtil.defaultLayout(graph);
+
+        // This next line is sheer evil. It causes annoying reformats of one view
+        // based other views after an automatic layout has been applied. Evil, evil, evil.
+        // jdramsey 2026-3-21
+//        new PasteLayoutAction(this).actionPerformed(null);
     }
 
     private static Color uiColor(String key, Color fallback) {
