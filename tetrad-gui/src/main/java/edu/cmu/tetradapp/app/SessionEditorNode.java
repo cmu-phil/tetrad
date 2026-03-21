@@ -481,12 +481,6 @@ public final class SessionEditorNode extends DisplayNode {
             String name
                     = JOptionPane.showInputDialog(centeringComp, "New name:");
 
-//            if (!NamingProtocol.isLegalName(name)) {
-//                JOptionPane.showMessageDialog(centeringComp,
-//                        NamingProtocol.getProtocolDescription());
-//                return;
-//            }
-
             SessionNodeWrapper wrapper
                     = (SessionNodeWrapper) getModelNode();
             wrapper.setSessionName(name);
