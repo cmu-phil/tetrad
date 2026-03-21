@@ -48,9 +48,12 @@ public class DmPcRobust implements IGraphSearch {
     private int minClusterSize = 2;
 
     /**
-     * Constructs the search from an independence test.
+     * Constructs a new instance of the DmPcRobust class using the specified independence test and prior knowledge.
      *
-     * @param test the independence test
+     * @param test     the IndependenceTest object to be used for testing statistical independence; must not be null.
+     *                 If null, a NullPointerException will be thrown.
+     * @param knowledge the Knowledge object containing prior constraints and domain-specific knowledge;
+     *                  a deep copy of this object will be stored. Must not be null.
      */
     public DmPcRobust(IndependenceTest test, Knowledge knowledge) {
         if (test == null) {
@@ -112,6 +115,14 @@ public class DmPcRobust implements IGraphSearch {
 //        return graph;
     }
 
+    /**
+     * Sets the knowledge constraints for the algorithm. The provided knowledge
+     * object defines prior knowledge about the structure or properties of the
+     * graph that the algorithm should respect during execution.
+     *
+     * @param knowledge the Knowledge object to be set; must not be null.
+     *                  Passing a null value will throw a NullPointerException.
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException("Knowledge must not be null.");
@@ -120,18 +131,49 @@ public class DmPcRobust implements IGraphSearch {
         this.knowledge = new Knowledge(knowledge);
     }
 
+    /**
+     * Sets the threshold value for signature similarity, which is used to
+     * determine the degree of similarity needed between signatures.
+     *
+     * @param threshold the similarity threshold to be set; should be a double value
+     *                  within the valid range to ensure proper functionality.
+     */
     public void setSignatureSimilarityThreshold(double threshold) {
         this.signatureSimilarityThreshold = threshold;
     }
 
+    /**
+     * Sets the threshold value for parent frequency. The threshold is used to define
+     * the minimum frequency required for considering a parent in the algorithm.
+     *
+     * @param threshold the frequency threshold to be set; must be a non-negative
+     *                  double value to ensure correct behavior.
+     */
     public void setParentFrequencyThreshold(double threshold) {
         this.parentFrequencyThreshold = threshold;
     }
 
+    /**
+     * Sets the threshold value for cluster coherence. This threshold determines
+     * the degree of coherence required for a cluster to be considered valid
+     * during the clustering process.
+     *
+     * @param threshold the coherence threshold to be set; must be a double value
+     *                  within the appropriate range to ensure the algorithm
+     *                  functions correctly.
+     */
     public void setClusterCoherenceThreshold(double threshold) {
         this.clusterCoherenceThreshold = threshold;
     }
 
+    /**
+     * Sets the minimum cluster size to be used during the clustering process.
+     * This value determines the smallest possible size a valid cluster
+     * can have within the algorithm.
+     *
+     * @param minClusterSize the minimum size allowed for a cluster; must be
+     *                       a positive integer to ensure valid behavior.
+     */
     public void setMinClusterSize(int minClusterSize) {
         this.minClusterSize = minClusterSize;
     }

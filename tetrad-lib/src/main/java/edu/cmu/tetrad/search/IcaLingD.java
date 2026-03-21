@@ -214,14 +214,13 @@ public class IcaLingD {
     }
 
     /**
-     * Scale columns by their diagonal (guarding tiny/zero).
+     * Scales a given square matrix such that each row is normalized by its diagonal element.
+     * If a diagonal element is near zero (within a small tolerance), it is replaced by a
+     * predefined constant to avoid division by zero and maintain stability.
      *
-     * @param M the matrix to scale
-     * @return the scaled matrix
-     */
-    /**
-     * Normalize each ROW by its diagonal entry, guarding tiny/zero diagonals.
-     * This matches the LiNGAM / LiNG-D normalization step in the paper.
+     * @param M the square matrix to be scaled
+     * @return a new matrix where each row is scaled by its corresponding diagonal element
+     * @throws IllegalArgumentException if the given matrix is not square
      */
     public static Matrix scale(Matrix M) {
         SimpleMatrix A = M.getSimpleMatrix().copy();
@@ -265,18 +264,13 @@ public class IcaLingD {
     }
 
     /**
-     * Build B̂ from a permutation result; robust to tiny diagonals.
+     * Computes the scaled matrix B̂ from a given permutation matrix pair. The method involves
+     * normalizing the rows of the permuted matrix by their diagonal entries, forming the matrix B̂,
+     * and undoing the row permutation to return the result in the original variable order.
      *
-     * @param pair the permutation matrix pair
-     * @return the scaled B̂ matrix
-     */
-    /**
-     * Build B-hat from a permutation result:
-     * 1) permute W,
-     * 2) transpose into the convention used here,
-     * 3) normalize rows so diag = 1,
-     * 4) form B-hat = I - W-tilde,
-     * 5) undo the row permutation back to original variable order.
+     * @param pair the permutation matrix pair containing the permuted matrix and its row permutation array
+     * @return the scaled matrix B̂ in the original variable order
+     * @throws IllegalArgumentException if the permuted matrix is not square
      */
     public static Matrix getScaledBHat(PermutationMatrixPair pair) {
         Matrix permuted = pair.getPermutedMatrix();

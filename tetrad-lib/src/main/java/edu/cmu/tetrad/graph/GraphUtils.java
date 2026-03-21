@@ -3375,6 +3375,18 @@ public final class GraphUtils {
         g.setEndpoint(y, z, Endpoint.ARROW);
     }
 
+    /**
+     * Identifies all connected components in a given graph.
+     * A connected component is a subset of the graph's nodes such that
+     * each pair of nodes is connected by a path, and which is not connected
+     * to any additional nodes in the graph.
+     *
+     * @param g The graph for which to find connected components. It is assumed
+     *          to be an undirected graph and implemented as a data structure providing
+     *          access to its nodes and the adjacency list for each node.
+     * @return A list of sets, where each set contains the nodes that belong
+     *         to a single connected component of the graph.
+     */
     public static List<Set<Node>> connectedComponents(Graph g) {
         List<Set<Node>> comps = new ArrayList<>();
         Set<Node> visited = new HashSet<>();

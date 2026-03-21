@@ -39,6 +39,12 @@ import java.util.List;
 public final class BossTrekMimicRunner implements MimicSearchRunner {
 
     /**
+     * Constructor for the BossTrekMimicRunner class.
+     * Initializes an instance of the benchmark runner for the BOSS-Trek-MIMIC algorithm.
+     */
+    public BossTrekMimicRunner() {}
+
+    /**
      * {@inheritDoc}
      */
     @Override

@@ -66,6 +66,7 @@ public final class MimicBenchmarkReport {
      * Creates a readable report for the supplied benchmark result.
      *
      * @param result the benchmark result
+     * @param parameters the parameters used for the benchmark
      * @return the report text
      */
     public String createReport(MimicBenchmarkResult result, Parameters parameters) {

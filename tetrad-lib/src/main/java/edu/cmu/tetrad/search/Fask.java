@@ -156,16 +156,17 @@ public final class Fask {
     }
 
     /**
-     * Returns a signed left-right score after first residualizing both variables on
-     * a common covariate set intended to block alternative paths between them.
+     * Computes the left-right difference residualized on covariates for the given nodes in a graph.
+     * This method calculates the residuals for two nodes, standardizes them, and then computes the
+     * left-right difference based on a specified rule index.
      *
-     * <p>The covariate set is obtained using {@link #orientationCovariates(Graph, Node, Node, int)}.
-     * If recursive blocking fails to produce a set, the fallback is
-     * Adj(xi) ∪ Adj(xj) \ {xi, xj}. The selected left-right rule is then applied
-     * to standardized residuals.</p>
-     *
-     * <p>This method is intended especially for cyclic settings, where applying the
-     * left-right rule directly to the raw variables may be distorted by feedback paths.</p>
+     * @param ruleIndex The index representing the rule to apply in calculating the left-right difference.
+     * @param graph The graph structure containing the nodes and their relationships.
+     * @param xi The first node for which the difference is computed.
+     * @param xj The second node for which the difference is computed.
+     * @param nodes The list of all nodes in the graph, used to find the positions of xi and xj in the data.
+     * @param data The 2D dataset where each row corresponds to a node in the nodes list, representing the observed values.
+     * @return The computed left-right difference residualized on covariates for the provided nodes.
      */
     public static double leftRightDiffResidualized(int ruleIndex, Graph graph, Node xi, Node xj, List<Node> nodes,
                                                    double[][] data) {
@@ -184,20 +185,16 @@ public final class Fask {
     }
 
     /**
-     * Returns a covariate set for residualizing xi and xj before applying an
-     * orientation rule.
+     * Identifies a set of covariates (nodes) that help orient causal relationships
+     * between two given nodes xi and xj within a graph. The method relies on path-blocking
+     * algorithms to determine the set of covariates.
      *
-     * <p>Strategy:
-     * <ol>
-     *   <li>Try {@code RecursiveBlocking} to obtain a covariate set that blocks
-     *       alternative paths between xi and xj.</li>
-     *   <li>If that fails ({@code null}), fall back heuristically to
-     *       Adj(xi) ∪ Adj(xj) \ {xi, xj}.</li>
-     *   <li>Optionally, if desired later, this can be extended with filtering.</li>
-     * </ol>
-     *
-     * <p>This method never returns null; it returns an empty set if no covariates
-     * are available.</p>
+     * @param graph the graph in which the nodes and edges are defined
+     * @param xi the first node under consideration
+     * @param xj the second node under consideration
+     * @param maxPathLength the maximum path length to consider while blocking paths
+     * @return a set of nodes that represent the orientation covariates for the given nodes xi and xj.
+     *         If the computation is interrupted, an empty set is returned.
      */
     public static Set<Node> orientationCovariates(Graph graph,
                                                   Node xi,
@@ -233,11 +230,21 @@ public final class Fask {
     }
 
     /**
-     * Returns covariate columns in the format expected by residualize():
-     * covariates[k] is the data column for the k-th covariate node.
+     * Computes the covariates for a pair of nodes in a graph based on a set of
+     * orientation covariates determined up to a given maximum path length.
      *
-     * <p>The input data are assumed to be column-major:
-     * data[nodeIndex][rowIndex].</p>
+     * @param graph The graph containing the nodes and their relationships.
+     * @param xi The first node for which covariates are being computed.
+     * @param xj The second node for which covariates are being computed.
+     * @param nodes A list of all nodes in the graph, used to map nodes to data indices.
+     * @param data A 2D array where each row corresponds to the data values for a node
+     *             in the `nodes` list.
+     * @param maxPathLength The maximum path length for considering orientation covariates
+     *                      in the graph.
+     * @return A 2D array where each row corresponds to the data values of a covariate node
+     *         determined for the given pair of nodes.
+     * @throws IllegalArgumentException If a covariate node is not found in the provided
+     *                                  `nodes` list.
      */
     public static double[][] covariates(Graph graph,
                                         Node xi,
@@ -300,7 +307,10 @@ public final class Fask {
     }
 
     /**
-     * Standardizes the array in place to mean 0 and sample standard deviation 1.
+     * Standardizes the given array of values by converting the elements to have a mean of 0
+     * and a standard deviation of 1. The operation modifies the input array in place.
+     *
+     * @param x the array of double values to be standardized
      */
     public static void standardize(double[] x) {
         int n = x.length;
@@ -326,7 +336,10 @@ public final class Fask {
     }
 
     /**
-     * Standardizes the array in place to mean 0 and sample standard deviation 1.
+     * Adjusts the values in the given array by subtracting the mean of the array from each element,
+     * effectively centering the dataset around zero.
+     *
+     * @param x the array of doubles to be centered; the operation modifies the elements of this array in place
      */
     public static void center(double[] x) {
         int n = x.length;
@@ -341,13 +354,15 @@ public final class Fask {
     }
 
     /**
-     * Returns linear least-squares residuals of x after regressing on the supplied covariates.
+     * Computes the residuals of a dependent variable after removing the effects of specified covariates.
+     * This method performs linear regression to estimate the contribution of the covariates to the
+     * dependent variable and returns the residuals.
      *
-     * <p>The covariates are interpreted column-wise:
-     * covariates[j][i] is the value of the j-th covariate in row i.</p>
-     *
-     * <p>No intercept is added internally, so callers should standardize or center
-     * variables beforehand if that is desired.</p>
+     * @param x The dependent variable array of size n, where n is the number of data points.
+     * @param covariates The 2D array of covariates of size p x n, where p is the number of covariates
+     *        and n is the number of data points. Each row in the array represents a covariate, and
+     *        each column represents a data point.
+     * @return An array of residuals of size n, representing the dependent variable with the effects of the covariates removed.
      */
     public static double[] residualize(double[] x, double[][] covariates) {
 

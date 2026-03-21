@@ -61,6 +61,14 @@ public final class FaskLeftRightHarness {
     private FaskLeftRightHarness() {
     }
 
+    /**
+     * Main method for executing the FASK leftRightDiff harness.
+     * This method runs experiments for different pairwise rules,
+     * applying various configurations of cyclic and standardization parameters.
+     * Results from each configuration are summarized and printed to the console.
+     *
+     * @param args Command-line arguments (not used in this implementation).
+     */
     public static void main(String[] args) {
         System.out.println("FASK leftRightDiff harness");
         System.out.println("Replicates = " + NUM_REPLICATES);

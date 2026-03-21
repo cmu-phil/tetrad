@@ -3,8 +3,32 @@ package edu.cmu.tetrad.search.mimic;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+/**
+ * The RunEvaluation class is responsible for configuring parameters, executing
+ * mimic benchmark trials, and generating a report based on the results. This
+ * entry-point class utilizes the MimicBenchmark framework for evaluating model
+ * performance under specified conditions.
+ */
 public class RunEvaluation {
 
+    /**
+     * Default constructor for the RunEvaluation class.
+     *
+     * This constructor initializes an instance of the RunEvaluation class, which
+     * is responsible for configuring parameters, executing mimic benchmark trials,
+     * and generating reports. The class leverages the MimicBenchmark framework to
+     * evaluate model performance under specified conditions.
+     */
+    public RunEvaluation() {}
+
+    /**
+     * The main method serves as the entry point for the application. It
+     * initializes the benchmark parameters, executes the trials, and generates
+     * a report based on the benchmark results.
+     *
+     * @param args command-line arguments passed to the program. These arguments
+     *             are unused in this implementation.
+     */
     public static void main(String[] args) {
         Parameters parameters = new Parameters();
 

@@ -37,6 +37,11 @@ import java.util.List;
 public final class TrekMimicRunner implements MimicSearchRunner {
 
     /**
+     * Constructor for the Trek-MIMIC runner.
+     */
+    public TrekMimicRunner() {}
+
+    /**
      * {@inheritDoc}
      */
     @Override

@@ -363,6 +363,16 @@ public final class RandomMim {
      * @param childrenPerGroup number of measured children per latent group; must be >= 1
      */
     public record LatentGroupSpec(int countGroups, int rank, int childrenPerGroup) {
+
+        /**
+         * Constructs a specification for a block of groups sharing the same rank and number of children per latent.
+         * Validates that all provided parameters meet the required constraints.
+         *
+         * @param countGroups      the number of groups with this configuration; must be >= 1
+         * @param rank             the number of latent factors per group; must be >= 1
+         * @param childrenPerGroup the number of measured children per latent group; must be >= 1
+         * @throws IllegalArgumentException if any parameter value is less than 1
+         */
         public LatentGroupSpec {
             if (countGroups < 1 || rank < 1 || childrenPerGroup < 1)
                 throw new IllegalArgumentException("All values must be >= 1");

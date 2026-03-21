@@ -34,6 +34,11 @@ import java.util.Set;
 public final class LatentLatentEvaluator {
 
     /**
+     * Constructs a new evaluator.
+     */
+    public LatentLatentEvaluator() {}
+
+    /**
      * Evaluates the estimated graph against the true graph and returns a report object.
      *
      * @param trueGraph the true graph
@@ -559,6 +564,18 @@ public final class LatentLatentEvaluator {
      * @param b second name
      */
     public record LatentPair(String a, String b) implements Comparable<LatentPair> {
+
+        /**
+         * Constructs a LatentPair with two distinct, non-null latent names.
+         * Ensures that the pair is always stored in a consistent order,
+         * with the lexicographically smaller name as the first element.
+         *
+         * @param a the first latent name, must not be null
+         * @param b the second latent name, must not be null and must
+         *          not be equal to the first name
+         * @throws NullPointerException if either latent name is null
+         * @throws IllegalArgumentException if the two latent names are identical
+         */
         public LatentPair {
             if (a == null || b == null) {
                 throw new NullPointerException("Latent names must not be null.");

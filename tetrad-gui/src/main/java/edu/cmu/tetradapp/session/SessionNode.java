@@ -997,7 +997,7 @@ public class SessionNode implements Node {
     /**
      * Returns the constructor arguments that would be used to create a model
      * of the given class, or null if no matching constructor exists. Uses
-     * {@link #listParentModels()} rather than {@link #getParentModels()} so
+     * listParentModels() rather than getParentModels() so
      * that parents with null models are silently skipped rather than causing
      * a NullPointerException.
      *

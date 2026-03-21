@@ -54,6 +54,7 @@ import java.util.Set;
  *
  * <p>This helper performs the common setup steps used by both TrekMimic and
  * BossTrekMimic:
+ * </p>
  * <ol>
  *     <li>Runs TSC to obtain clusters and ranks.</li>
  *     <li>Builds a {@link BlockSpec} and applies the single-cluster policy.</li>
@@ -61,7 +62,6 @@ import java.util.Set;
  *     <li>Adds latent -> indicator edges implied by the block specification.</li>
  *     <li>Computes the latent list, observed child set, and measured parent pool.</li>
  * </ol>
- * </p>
  *
  * <p>The result is returned as a {@link MeasurementBuildResult} record.</p>
  *

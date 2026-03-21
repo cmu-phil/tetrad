@@ -59,6 +59,15 @@ import java.util.List;
 public final class RandomMimicGraphGenerator {
 
     /**
+     * Default constructor for the RandomMimicGraphGenerator class.
+     * Initializes an instance of the generator, which is capable of generating random MIMIC models
+     * through its provided methods.
+     */
+    public RandomMimicGraphGenerator() {
+
+    }
+
+    /**
      * Default latent-edge probability for general mode.
      */
     private static final double DEFAULT_LATENT_EDGE_PROB = 0.25;

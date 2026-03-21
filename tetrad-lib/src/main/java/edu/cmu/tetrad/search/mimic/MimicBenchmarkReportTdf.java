@@ -48,6 +48,12 @@ import java.util.Set;
 public final class MimicBenchmarkReportTdf {
 
     /**
+     * Default constructor for the MimicBenchmarkReportTdf class.
+     * Initializes a new instance of the class with no specific configuration or parameters.
+     */
+    public MimicBenchmarkReportTdf() {}
+
+    /**
      * Formatter for floating-point values.
      */
     private final DecimalFormat nf = new DecimalFormat("0.0000");

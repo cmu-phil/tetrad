@@ -235,7 +235,7 @@ public class Comparison implements TetradSerializable {
      * @param algorithms  - The algorithms to compare.
      * @param statistics  - The statistics to include in the report.
      * @param parameters  - The parameters to use for the algorithms.
-     * @throws ParseException
+     * @throws ParseException - If there is an error parsing the data.
      */
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, Algorithms algorithms,
                                                      Statistics statistics, Parameters parameters)
@@ -255,6 +255,7 @@ public class Comparison implements TetradSerializable {
      * @param parameters     The additional parameters for the algorithms.
      * @throws IllegalArgumentException if any algorithm in the collection is not an instance of ExternalAlgorithm.
      * @throws NullPointerException     if there are no files in the specified data path.
+     * @throws ParseException if any.
      */
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, String outputFileName,
                                                      Algorithms algorithms, Statistics statistics,
@@ -305,6 +306,7 @@ public class Comparison implements TetradSerializable {
      * @param algorithms  The algorithms used in the simulations.
      * @param statistics  The statistics used in the simulations.
      * @param parameters  The parameters used in the simulations.
+     * @throws ParseException if any.
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters)
@@ -322,6 +324,7 @@ public class Comparison implements TetradSerializable {
      * @param algorithms     The algorithms used in the simulations.
      * @param statistics     The statistics used in the simulations.
      * @param parameters     The parameters used in the simulations.
+     * @throws ParseException if any.
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName,
                                        Algorithms algorithms, Statistics statistics, Parameters parameters)
@@ -339,6 +342,7 @@ public class Comparison implements TetradSerializable {
      * @param algorithms     The algorithms to use for comparison.
      * @param statistics     The statistics to calculate for comparison.
      * @param parameters     The parameters for comparison.
+     * @throws ParseException if any.
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, PrintStream localOut,
                                        Algorithms algorithms, Statistics statistics, Parameters parameters)
@@ -357,6 +361,7 @@ public class Comparison implements TetradSerializable {
      * @param algorithms     the algorithms object containing the algorithm data
      * @param statistics     the statistics object containing the statistics data
      * @param parameters     the parameter object containing the parameter data
+     * @throws ParseException if any.
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, PrintStream localOut, PrintStream localOut2,
                                        Algorithms algorithms, Statistics statistics, Parameters parameters)
@@ -2199,7 +2204,7 @@ public class Comparison implements TetradSerializable {
         /**
          * {@inheritDoc}
          *
-         * @throws ParseException
+         * @throws ParseException if any
          */
         @Override
         public void createData(Parameters parameters, boolean newModel) throws ParseException {

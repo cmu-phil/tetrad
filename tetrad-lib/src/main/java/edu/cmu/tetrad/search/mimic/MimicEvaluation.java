@@ -81,26 +81,59 @@ public final class MimicEvaluation {
         this.averageOutputSimilarity = averageOutputSimilarity;
     }
 
+    /**
+     * Retrieves the true latent count value.
+     *
+     * @return the number of true latents
+     */
     public int getTrueLatentCount() {
         return trueLatentCount;
     }
 
+    /**
+     * Retrieves the estimated latent count value.
+     *
+     * @return the number of estimated latents
+     */
     public int getEstimatedLatentCount() {
         return estimatedLatentCount;
     }
 
+    /**
+     * Retrieves the matched latent count value.
+     *
+     * @return the number of matched latent pairs
+     */
     public int getMatchedLatentCount() {
         return matchedLatentCount;
     }
 
+    /**
+     * Retrieves the average latent similarity, representing the average similarity
+     * between matched latent pairs.
+     *
+     * @return the average latent similarity value
+     */
     public double getAverageLatentSimilarity() {
         return averageLatentSimilarity;
     }
 
+    /**
+     * Retrieves the average input similarity, representing the average similarity
+     * between matched inputs.
+     *
+     * @return the average input similarity value
+     */
     public double getAverageInputSimilarity() {
         return averageInputSimilarity;
     }
 
+    /**
+     * Retrieves the average output similarity, representing the average similarity
+     * between matched outputs.
+     *
+     * @return the average output similarity value
+     */
     public double getAverageOutputSimilarity() {
         return averageOutputSimilarity;
     }
@@ -114,6 +147,14 @@ public final class MimicEvaluation {
         return Math.abs(this.trueLatentCount - this.estimatedLatentCount);
     }
 
+    /**
+     * Returns a string representation of the MimicEvaluation object.
+     * The string contains a summary of the object's fields and their values,
+     * including true latent count, estimated latent count, matched latent count,
+     * and the average similarities for latent, input, and output.
+     *
+     * @return a string representation of the MimicEvaluation object
+     */
     @Override
     public String toString() {
         return "MimicEvaluation{" +

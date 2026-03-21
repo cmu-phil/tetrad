@@ -37,7 +37,7 @@ import java.util.*;
  * Uses a fixed latent-indicator measurement model and recovers measured parents
  * of those latents using BOSS parent relations among the indicators.
  *
- * <p>This class runs the full Boss-Trek-MIMIC pipeline from data:
+ * <p>This class runs the full Boss-Trek-MIMIC pipeline from data:</p>
  * <ol>
  *     <li>Builds a measurement model using the shared PC/TSC builder.</li>
  *     <li>Keeps that measurement model fixed.</li>
@@ -48,9 +48,8 @@ import java.util.*;
  *     <li>Optionally prunes latent-latent edges explained by the recovered parents.</li>
  *     <li>Optionally orients latent-latent edges using parent/child correlations.</li>
  * </ol>
- * </p>
  *
- * <p>Expected use:
+ * <p>Expected use:</p>
  * <pre>
  * BossTrekMimic tm = new BossTrekMimic(data, parameters, score);
  * tm.setKnowledge(knowledge);
@@ -58,7 +57,6 @@ import java.util.*;
  * tm.setOutputNames(outputNames);
  * Graph g = tm.search();
  * </pre>
- * </p>
  *
  * @author josephramsey
  */

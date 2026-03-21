@@ -237,6 +237,15 @@ public final class RandomMimic {
      * @param parentsPerGroup  number of measured cause nodes per group; must be >= 1
      */
     public record MimicGroupSpec(int countGroups, int childrenPerGroup, int parentsPerGroup) {
+
+        /**
+         * Constructs a new specification for a block of MIMIC groups.
+         *
+         * @param countGroups      the number of groups with this configuration; must be >= 1
+         * @param childrenPerGroup the number of measured indicator nodes per group; must be >= 1
+         * @param parentsPerGroup  the number of measured cause nodes per group; must be >= 1
+         * @throws IllegalArgumentException if any of the parameters are less than 1
+         */
         public MimicGroupSpec {
             if (countGroups < 1 || childrenPerGroup < 1 || parentsPerGroup < 1)
                 throw new IllegalArgumentException("All values must be >= 1");

@@ -147,6 +147,14 @@ public final class LatentParentRecovery {
         this.pruneInheritedParents = pruneInheritedParents;
     }
 
+    /**
+     * Sets the enter threshold used to determine whether a candidate measured parent
+     * is included in the selection process based on its correlation with the latent residual.
+     * The value should be between 0 and 1, inclusive.
+     *
+     * @param enterThreshold the threshold value to be set; must be in the range [0, 1].
+     * @throws IllegalArgumentException if the provided value is outside the valid range.
+     */
     public void setEnterThreshold(double enterThreshold) {
         if (enterThreshold < 0.0 || enterThreshold > 1.0) {
             throw new IllegalArgumentException("Enter threshold must be between 0 and 1.");

@@ -16,6 +16,7 @@ import java.util.*;
  * Hybrid version of Trek-MIMIC parent recovery.
  *
  * <p>This class runs the full Trek-MIMIC pipeline from data:
+ * </p>
  * <ol>
  *     <li>Runs TSC to obtain clusters and a block specification.</li>
  *     <li>Runs PC with the trek/block test to obtain a latent-indicator graph.</li>
@@ -23,9 +24,9 @@ import java.util.*;
  *     <li>Prunes latent-latent edges explained by recovered parents.</li>
  *     <li>Optionally orients latent-latent edges using parent/child correlations.</li>
  * </ol>
- * </p>
  *
  * <p>Expected use:
+ * </p>
  * <pre>
  * TrekMimic tm = new TrekMimic(data, parameters);
  * tm.setKnowledge(knowledge);
@@ -33,7 +34,6 @@ import java.util.*;
  * tm.setOutputNames(outputNames);
  * Graph g = tm.search();
  * </pre>
- * </p>
  *
  * @author josephramsey
  */
@@ -160,16 +160,16 @@ public final class TrekMimic {
 
         TrekMeasurementModelBuilderPc.MeasurementBuildResult result = builder.build();
 
-        this.graph       = result.graph();
-        this.allLatents  = new ArrayList<>(result.latents());
+        this.graph = result.graph();
+        this.allLatents = new ArrayList<>(result.latents());
         this.initialPool = new ArrayList<>(result.parentPool());
-        this.variables   = new ArrayList<>(result.variables());
-        this.s           = result.matrix();
-        this.sampleSize  = result.sampleSize();
-        this.alpha       = result.alpha();
+        this.variables = new ArrayList<>(result.variables());
+        this.s = result.matrix();
+        this.sampleSize = result.sampleSize();
+        this.alpha = result.alpha();
 
         this.latentRanks = new LinkedHashMap<>();
-        BlockSpec spec   = result.spec();
+        BlockSpec spec = result.spec();
         for (int i = 0; i < spec.blockVariables().size(); i++) {
             this.latentRanks.put(spec.blockVariables().get(i), spec.ranks().get(i));
         }
@@ -447,7 +447,7 @@ public final class TrekMimic {
         // before applying any, so no node has first-mover advantage.
         Map<Node, List<Node>> singleNodeAssignments = new LinkedHashMap<>();
         for (Node node : new ArrayList<>(unused)) {
-            List<Node> group      = Collections.singletonList(node);
+            List<Node> group = Collections.singletonList(node);
             List<Node> bestSubset = assignSharedGroupToBestLatentSubset(
                     group, latentSubsets, lambda);
             if (bestSubset != null) {
@@ -456,9 +456,9 @@ public final class TrekMimic {
         }
 
         for (Map.Entry<Node, List<Node>> entry : singleNodeAssignments.entrySet()) {
-            Node       node       = entry.getKey();
+            Node node = entry.getKey();
             List<Node> bestSubset = entry.getValue();
-            List<Node> group      = Collections.singletonList(node);
+            List<Node> group = Collections.singletonList(node);
             addMeasuredGroupToLatentSubset(graph, group, bestSubset);
             removeExplainedLatentEdges(graph, bestSubset, group);
             unused.remove(node);
@@ -466,7 +466,7 @@ public final class TrekMimic {
 
         // Pair pass: reinitialise generator after each accepted pair.
         List<Node> remaining = new ArrayList<>(unused);
-        ChoiceGenerator gen  = new ChoiceGenerator(remaining.size(), 2);
+        ChoiceGenerator gen = new ChoiceGenerator(remaining.size(), 2);
         int[] choice;
 
         while ((choice = gen.next()) != null) {
@@ -483,7 +483,7 @@ public final class TrekMimic {
                 removeExplainedLatentEdges(graph, bestSubset, pair);
                 pair.forEach(unused::remove);
                 remaining = new ArrayList<>(unused);
-                gen       = new ChoiceGenerator(remaining.size(), 2);
+                gen = new ChoiceGenerator(remaining.size(), 2);
             }
         }
     }
@@ -669,12 +669,12 @@ public final class TrekMimic {
     private Map<Node, List<Node>> assignParentGroupsToLatents(List<List<Node>> recoveredGroups,
                                                               List<Node> allLatentNodes,
                                                               Graph graph) {
-        Map<Node, List<Node>> assignment  = new LinkedHashMap<>();
-        Map<Node, Double>     bestScores  = new LinkedHashMap<>();
+        Map<Node, List<Node>> assignment = new LinkedHashMap<>();
+        Map<Node, Double> bestScores = new LinkedHashMap<>();
 
         for (List<Node> group : recoveredGroups) {
-            Node   bestLatent = null;
-            double bestScore  = Double.NEGATIVE_INFINITY;
+            Node bestLatent = null;
+            double bestScore = Double.NEGATIVE_INFINITY;
 
             for (Node latent : allLatentNodes) {
                 List<Node> childSet = getObservedChildren(graph, latent);
@@ -683,7 +683,7 @@ public final class TrekMimic {
 
                 double score = blockStrength(group, childSet);
                 if (score > bestScore) {
-                    bestScore  = score;
+                    bestScore = score;
                     bestLatent = latent;
                 }
             }
@@ -727,9 +727,9 @@ public final class TrekMimic {
     private List<Node> assignSharedGroupToBestLatentSubset(List<Node> group,
                                                            List<List<Node>> latentSubsets,
                                                            double lambda) {
-        List<Node> bestSubset      = null;
-        double     bestScore       = Double.NEGATIVE_INFINITY;
-        double     secondBestScore = Double.NEGATIVE_INFINITY;
+        List<Node> bestSubset = null;
+        double bestScore = Double.NEGATIVE_INFINITY;
+        double secondBestScore = Double.NEGATIVE_INFINITY;
 
         for (List<Node> latentSubset : latentSubsets) {
             if (latentSubset.size() < 2) continue;
@@ -762,14 +762,14 @@ public final class TrekMimic {
             // naturally, favouring direct causation over transitive paths
             // because direct correlations are stronger than multi-hop ones.
             double strength = blockStrength(proposedParents, allIndicators);
-            double score    = 1000.0 * explainedPairs
+            double score = 1000.0 * explainedPairs
                     + strength
                     - lambda * group.size() * latentSubset.size();
 
             if (score > bestScore) {
                 secondBestScore = bestScore;
-                bestScore       = score;
-                bestSubset      = latentSubset;
+                bestScore = score;
+                bestSubset = latentSubset;
             } else if (score > secondBestScore) {
                 secondBestScore = score;
             }

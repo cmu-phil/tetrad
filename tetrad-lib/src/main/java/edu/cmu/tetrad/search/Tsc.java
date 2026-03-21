@@ -202,8 +202,12 @@ public class Tsc implements EffectiveSampleSizeSettable {
     }
 
     /**
-     * Backward-compatible overload. Delegates to the alpha-parameterised version
-     * using the instance validation alpha.
+     * Calculates clusters of integers based on the given variables, size, and rank.
+     *
+     * @param vars The list of integers representing variables to be clustered.
+     * @param size The desired size of each cluster.
+     * @param rank The specified rank used as a parameter for clustering logic.
+     * @return A set of clusters, where each cluster is represented as a set of integers.
      */
     public Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
         return findClustersAtRank(vars, size, rank, this.alpha);

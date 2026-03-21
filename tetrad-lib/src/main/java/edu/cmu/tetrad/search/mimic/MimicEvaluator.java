@@ -42,6 +42,16 @@ import java.util.*;
 public final class MimicEvaluator {
 
     /**
+     * Constructs a new instance of the MimicEvaluator class.
+     *
+     * This constructor initializes the MimicEvaluator, which is responsible for conducting
+     * evaluations of estimated graphs against true MIMIC models. The class provides various
+     * methods to perform comparisons, calculate similarity metrics, and determine optimal
+     * matching between latent signatures of true and estimated models.
+     */
+    public MimicEvaluator() {}
+
+    /**
      * Evaluates an estimated graph against the true model.
      *
      * @param trueModel the true MIMIC model

@@ -210,6 +210,15 @@ public final class LatentGraphRefinement {
         }
     }
 
+    /**
+     * Removes "latent" edges from the provided graph based on specific conditions.
+     * The method evaluates edges connected to latent nodes and determines whether
+     * they should be removed depending on the relationships among the nodes and
+     * rank conditions.
+     *
+     * @param graph The graph whose latent edges are to be pruned. Must not be null.
+     * @throws InterruptedException If the operation is interrupted during execution.
+     */
     public void pruneInputLatentEdges(Graph graph) throws InterruptedException {
         if (graph == null) {
             throw new NullPointerException("graph must not be null.");
@@ -502,6 +511,14 @@ public final class LatentGraphRefinement {
         return (double) correlated / total >= minProportion;
     }
 
+    /**
+     * Sets the orientation proportion which defines the spatial distribution ratio.
+     * The proportion value must be within the range (0, 1].
+     *
+     * @param proportion the desired orientation proportion, a double value where
+     *                   0.0 &lt; proportion &lt;= 1.0
+     * @throws IllegalArgumentException if the proportion is not within the valid range
+     */
     public void setOrientationProportion(double proportion) {
         if (proportion <= 0.0 || proportion > 1.0) {
             throw new IllegalArgumentException(

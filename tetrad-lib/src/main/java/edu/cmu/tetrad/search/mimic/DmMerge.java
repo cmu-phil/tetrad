@@ -246,6 +246,14 @@ public class DmMerge implements IGraphSearch {
         this.test = test;
     }
 
+    /**
+     * Sets the merge threshold value, which must be within the range [0, 1].
+     * The merge threshold is used to determine the acceptable similarity level
+     * for a merge operation.
+     *
+     * @param threshold the merge threshold value as a double. Must be between 0.0 and 1.0 inclusive.
+     * @throws IllegalArgumentException if the provided threshold is outside the valid range [0, 1].
+     */
     public void setMergeThreshold(double threshold) {
         if (threshold < 0.0 || threshold > 1.0) {
             throw new IllegalArgumentException("Merge threshold must be in [0, 1].");

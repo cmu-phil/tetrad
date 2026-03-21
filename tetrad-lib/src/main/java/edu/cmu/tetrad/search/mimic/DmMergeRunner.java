@@ -39,6 +39,11 @@ import java.util.List;
 public final class DmMergeRunner implements MimicSearchRunner {
 
     /**
+     * Constructor for the DM-Merge algorithm.
+     */
+    public DmMergeRunner() {}
+
+    /**
      * {@inheritDoc}
      */
     @Override

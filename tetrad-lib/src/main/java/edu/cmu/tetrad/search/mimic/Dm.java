@@ -190,10 +190,25 @@ public class Dm implements IGraphSearch {
         this.test = test;
     }
 
+    /**
+     * Sets the maximum depth for step 8 in the process.
+     *
+     * @param depth the maximum depth value to be set for step 8
+     */
     public void setStep8MaxDepth(int depth) {
         this.step8MaxDepth = depth;
     }
 
+    /**
+     * Sets the threshold value for merging input classes. The threshold determines
+     * the sensitivity level at which input classes are considered similar enough
+     * to be merged.
+     *
+     * @param threshold the merge threshold value, must be between 0.0 and 1.0 inclusive.
+     *                  A value closer to 0.0 results in more strict merging criteria,
+     *                  while a value closer to 1.0 allows more lenient merging.
+     * @throws IllegalArgumentException if the threshold is not within the range [0.0, 1.0].
+     */
     public void setInputClassMergeThreshold(double threshold) {
         if (threshold < 0.0 || threshold > 1.0) {
             throw new IllegalArgumentException(

@@ -243,7 +243,9 @@ public class ExpressionLexer {
     }
 
     /**
-     * The car sequenced being lexed.
+     * Returns the {@link CharSequence} associated with this lexer.
+     *
+     * @return the CharSequence being processed.
      */
     public CharSequence getCharSequence() {
         return charSequence;

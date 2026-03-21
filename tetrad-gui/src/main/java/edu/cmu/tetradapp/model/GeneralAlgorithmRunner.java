@@ -283,7 +283,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param runner      a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
      * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
-     * @throws ParseException
+     * @throws ParseException if any
      */
     public GeneralAlgorithmRunner(GraphSource graphSource, GeneralAlgorithmRunner runner, Parameters parameters)
             throws ParseException {
@@ -299,7 +299,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @param graphSource       a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     * @throws ParseException
+     * @throws ParseException if any
      */
     public GeneralAlgorithmRunner(GraphSource graphSource, Parameters parameters,
                                   KnowledgeBoxModel knowledgeBoxModel)
@@ -313,7 +313,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @param model             a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
      * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     * @throws ParseException
+     * @throws ParseException if any
      */
     public GeneralAlgorithmRunner(IndependenceFactsModel model,
                                   Parameters parameters, KnowledgeBoxModel knowledgeBoxModel)
@@ -326,7 +326,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      *
      * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
-     * @throws ParseException
+     * @throws ParseException if any
      */
     public GeneralAlgorithmRunner(GraphSource graphSource, Parameters parameters) throws ParseException {
         this(null, graphSource, parameters, null, null);

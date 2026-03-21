@@ -189,6 +189,19 @@ public class FciOrient {
         return out;
     }
 
+    /**
+     * Finds and returns the set of discriminating paths in the given graph, based on the specified parameters.
+     * A discriminating path is a specific type of path in a causal graph, used in graph-based causal inference to
+     * identify the causal structure that satisfies certain conditions.
+     *
+     * @param graph The graph in which to search for discriminating paths.
+     * @param w The starting node for the path, which must satisfy specific adjacency conditions with the target node y.
+     * @param y The target node for which discriminating paths are being identified.
+     * @param maxLen The maximum allowable length for the paths being considered.
+     * @param checkEcNonadjacency A flag indicating whether strict adjacency conditions between the nodes w and y should be enforced
+     *                            (true for strict adjacency checks, false for relaxed checks).
+     * @return A set of discriminating paths that satisfy the required conditions, or an empty set if no such paths are found.
+     */
     public static Set<DiscriminatingPath> listDiscriminatingPaths(
             Graph graph, Node w, Node y, int maxLen, boolean checkEcNonadjacency) {
 
@@ -1173,7 +1186,7 @@ public class FciOrient {
     /**
      * R10 (Zhang 2008 FCI orientation rule).
      *
-     * Suppose alpha o-> gamma, beta -> gamma <- theta.
+     * Suppose alpha o-&gt; gamma, beta -&gt; gamma &lt;- theta.
      * Let p1 be an uncovered potentially directed path from alpha to beta,
      * and p2 be an uncovered potentially directed path from alpha to theta.
      * Let mu be the vertex adjacent to alpha on p1 (mu could be beta), and

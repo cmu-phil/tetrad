@@ -40,6 +40,7 @@ import java.util.Set;
  * Builds the shared TSC/BOSS-based measurement model used by BossTrekMimic-style searches.
  *
  * <p>This helper performs the common setup steps:
+ * </p>
  * <ol>
  *     <li>Runs TSC to obtain clusters and ranks.</li>
  *     <li>Builds a {@link BlockSpec} and applies the single-cluster policy.</li>
@@ -48,13 +49,12 @@ import java.util.Set;
  *     <li>Adds latent -> indicator edges implied by the block specification.</li>
  *     <li>Computes the latent list, observed child set, and measured parent pool.</li>
  * </ol>
- * </p>
  *
  * <p>The result is returned as a {@link MeasurementBuildResult} record, which is
  * identical in shape to the one produced by {@link TrekMeasurementModelBuilderPc}
  * so that downstream searchers can use either builder interchangeably.</p>
  *
- * <p>Expected use:
+ * <p>Expected use:</p>
  * <pre>
  * TrekMeasurementModelBuilderBoss builder =
  *         new TrekMeasurementModelBuilderBoss(dataSet, parameters);
@@ -64,7 +64,6 @@ import java.util.Set;
  * builder.setVerbose(verbose);
  * TrekMeasurementModelBuilderBoss.MeasurementBuildResult result = builder.build();
  * </pre>
- * </p>
  *
  * @author josephramsey
  */

@@ -140,6 +140,7 @@ public class TimeoutComparison {
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      * @param timeout    a long
      * @param unit       a {@link java.util.concurrent.TimeUnit} object
+     * @throws ParseException if any.
      */
     public void compareFromFiles(String filePath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters, long timeout, TimeUnit unit)

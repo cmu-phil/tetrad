@@ -48,6 +48,8 @@ public interface MimicSearchRunner {
      *
      * @param data the measured data
      * @param knowledge the tier knowledge
+     * @param inputs the inputs
+     * @param outputs the outputs
      * @param parameters the runtime parameters
      * @return the estimated graph
      */

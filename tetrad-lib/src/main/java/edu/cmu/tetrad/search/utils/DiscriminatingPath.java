@@ -13,16 +13,16 @@ import static edu.cmu.tetrad.graph.GraphUtils.distinct;
 
 /**
  * Represents a discriminating path in a graph.
- *
- * The path has the form <X, ..., W, V, Y>, where:
+ * <p>
+ * The path has the form &lt;X, ..., W, V, Y&gt;, where:
  * - V is the discriminated vertex,
  * - V is adjacent to Y on the path,
  * - X is not adjacent to Y (in the strict/original setting),
  * - every vertex between X and V is a collider on the path and a parent of Y.
- *
+ * <p>
  * The colliderPath field stores the subpath from X to V excluding X and V but including W.
  * Its order is from W backward toward X, matching the historical Tetrad convention; thus,
- * if the full path is <X, A, ..., W, V, Y>, colliderPath is [W, ..., A].
+ * if the full path is &lt;X, A, ..., W, V, Y&gt;f, colliderPath is [W, ..., A].
  */
 public class DiscriminatingPath {
     private final Node x;
@@ -42,6 +42,16 @@ public class DiscriminatingPath {
      */
     private final boolean checkXYNonadjacency;
 
+    /**
+     * Constructs a DiscriminatingPath object with the specified parameters.
+     *
+     * @param x                   the starting node in the discriminating path.
+     * @param w                   the node following x in the discriminating path.
+     * @param v                   the middle node that forms a collider in the path.
+     * @param y                   the ending node in the discriminating path.
+     * @param colliderPath        the list of nodes that represents the collider path between nodes.
+     * @param checkEcNonadjacency a flag indicating whether non-adjacency between certain nodes should be checked.
+     */
     public DiscriminatingPath(Node x,
                               Node w,
                               Node v,
@@ -57,7 +67,14 @@ public class DiscriminatingPath {
     }
 
     /**
-     * Checks whether this object really describes a discriminating path in the given graph.
+     * Determines whether a discriminating path exists in the given graph.
+     * <p>
+     * The method evaluates specific conditions such as adjacency, collider properties,
+     * and path structure to verify the existence of the discriminating path that starts
+     * with a sequence of nodes and satisfies the required constraints.
+     *
+     * @param graph the graph in which to verify the existence of the discriminating path.
+     * @return true if the discriminating path exists in the graph; false otherwise.
      */
     public boolean existsIn(Graph graph) {
         // Distinct distinguished vertices.
@@ -135,26 +152,58 @@ public class DiscriminatingPath {
         return true;
     }
 
+    /**
+     * Retrieves the starting node of the discriminating path.
+     *
+     * @return the starting node in the discriminating path.
+     */
     public Node getX() {
         return x;
     }
 
+    /**
+     * Retrieves the node following the starting node in the discriminating path.
+     *
+     * @return the node immediately after the starting node in the discriminating path.
+     */
     public Node getW() {
         return w;
     }
 
+    /**
+     * Retrieves the middle node that forms a collider in the discriminating path.
+     *
+     * @return the middle node in the discriminating path.
+     */
     public Node getV() {
         return v;
     }
 
+    /**
+     * Retrieves the ending node of the discriminating path.
+     *
+     * @return the ending node in the discriminating path.
+     */
     public Node getY() {
         return y;
     }
 
+    /**
+     * Retrieves the list of nodes that represents the collider path in the discriminating path.
+     *
+     * @return a list of nodes constituting the collider path.
+     */
     public List<Node> getColliderPath() {
         return colliderPath;
     }
 
+    /**
+     * Returns a string representation of the DiscriminatingPath object.
+     * The string provides a detailed view of the object's fields including the
+     * starting node, intermediate nodes, ending node, and the collider path.
+     *
+     * @return a string describing the DiscriminatingPath object and its field values.
+     */
     @Override
     public String toString() {
         return "DiscriminatingPath{" +

@@ -120,6 +120,23 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable {
     // Public Methods (IndependenceTest)
     // --------------------------------------------------------------------
 
+    /**
+     * Evaluates the independence between two nodes given a set of conditioning nodes.
+     *
+     * This method tests whether two variables (nodes) are statistically independent,
+     * possibly conditional on a set of other variables. It employs Random Fourier Features
+     * (RFF) or Orthogonal Random Features (ORF) for kernel approximation. The independence
+     * test uses either permutation-based calibration for p-value computation or
+     * analytic approximations such as Gamma, Saddlepoint, or Davies-Imhof methods.
+     *
+     * @param x the first node to be tested; must not be null
+     * @param y the second node to be tested; must not be null
+     * @param z the set of conditioning nodes; can be null or empty if testing marginal independence
+     * @return an {@code IndependenceResult} containing the independence test outcome,
+     *         including the p-value, whether the null hypothesis of independence is rejected,
+     *         and the difference between the p-value and the significance level
+     * @throws InterruptedException if the current thread is interrupted during computation
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z)
             throws InterruptedException {
@@ -222,32 +239,70 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable {
         );
     }
 
+    /**
+     * Retrieves the list of variables (nodes) associated with this instance.
+     *
+     * @return a {@code List} of {@code Node} objects representing the variables
+     */
     @Override
     public List<Node> getVariables() {
         return vars;
     }
 
+    /**
+     * Retrieves the dataset associated with this instance.
+     *
+     * @return the {@code DataSet} object representing the data analyzed by this instance
+     */
     @Override
     public DataSet getData() {
         return data;
     }
 
+    /**
+     * Retrieves the alpha level used for statistical significance testing.
+     * The alpha level represents the threshold below which the null hypothesis
+     * of independence is rejected.
+     *
+     * @return the alpha value as a {@code double}, typically in the range [0.0, 1.0].
+     */
     @Override
     public double getAlpha() {
         return alpha;
     }
 
+    /**
+     * Sets the significance level (alpha) used for statistical testing.
+     * The alpha level determines the threshold below which the null hypothesis
+     * of independence is rejected. This method updates the alpha field and
+     * invalidates any cached features to ensure consistency with the new value.
+     *
+     * @param alpha the statistical significance level to set, represented as a
+     *              double typically in the range [0.0, 1.0]
+     */
     @Override
     public void setAlpha(double alpha) {
         this.alpha = alpha;
         invalidateFeatureCache();
     }
 
+    /**
+     * Checks whether verbose output is enabled for the current instance.
+     * Verbose output typically provides additional diagnostic or detailed information.
+     *
+     * @return {@code true} if verbose output is enabled, {@code false} otherwise.
+     */
     @Override
     public boolean isVerbose() {
         return verbose;
     }
 
+    /**
+     * Configures whether verbose output is enabled for this instance.
+     * Verbose output typically provides additional diagnostic or detailed information.
+     *
+     * @param verbose {@code true} to enable verbose output, {@code false} to disable it
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -257,11 +312,36 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable {
     // Public Methods (RowsSettable)
     // --------------------------------------------------------------------
 
+    /**
+     * Retrieves the list of row indices currently associated with this instance.
+     *
+     * @return a {@code List} of {@code Integer} objects, representing the row indices
+     *         used in computations or analyses for this instance.
+     */
     @Override
     public List<Integer> getRows() {
         return rows;
     }
 
+    /**
+     * Sets the subset of row indices to be used in computations or analyses.
+     * The provided list must contain non-null, non-negative integers, each
+     * referring to a valid row index in the dataset. If the input is null,
+     * the method resets to using all available rows in the dataset.
+     *
+     * This method validates each row in the input list to ensure:
+     * 1. It is not null.
+     * 2. It is non-negative.
+     * 3. It is less than the total number of rows in the dataset.
+     *
+     * Any invalid entries will result in a {@code NullPointerException}
+     * or {@code IllegalArgumentException} with an appropriate error message.
+     *
+     * @param rows a list of integers representing the row indices to set;
+     *             may be null to reset to all rows.
+     * @throws NullPointerException if any row in the list is null.
+     * @throws IllegalArgumentException if any row is negative or out of bounds.
+     */
     @Override
     public void setRows(List<Integer> rows) {
         if (rows == null) {
@@ -293,44 +373,100 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable {
     // Other Public Methods
     // --------------------------------------------------------------------
 
+    /**
+     * Retrieves the previously calculated p-value.
+     *
+     * The p-value is a statistical measure that helps determine the significance of a result.
+     *
+     * @return the last computed p-value as a double
+     */
     public double getPValue() {
         return lastP;
     }
 
+    /**
+     * Sets the value of the lambda parameter and invalidates the feature cache.
+     *
+     * @param lambda the new value for the lambda parameter
+     */
     public void setLambda(double lambda) {
         this.lambda = lambda;
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the approximation object and ensures it is not null.
+     * Invalidates the feature cache after setting the value.
+     *
+     * @param approx the approximation object to set; must not be null
+     */
     public void setApprox(Approx approx) {
         this.approx = Objects.requireNonNull(approx, "approx");
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the number of permutations to be used or processed.
+     *
+     * @param permutations the number of permutations to set; must be a non-negative integer
+     */
     public void setPermutations(int permutations) {
         this.permutations = permutations;
     }
 
+    /**
+     * Sets the number of features along the XY axes. The value is constrained to a
+     * minimum of 1 to ensure valid input.
+     *
+     * @param numFeatXY The number of features along the XY axes. If the provided value
+     *                  is less than 1, it will be automatically set to 1.
+     */
     public void setNumFeatXY(int numFeatXY) {
         this.numFeatXY = TMath.max(1, numFeatXY);
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the value of the numFeatZ property. Ensures the value is at least 1
+     * and updates the internal feature cache to reflect the new value.
+     *
+     * @param numFeatZ the number of features to set; must be a non-negative integer.
+     *                 Values less than 1 will be automatically set to 1.
+     */
     public void setNumFeatZ(int numFeatZ) {
         this.numFeatZ = TMath.max(1, numFeatZ);
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the feature type for the current instance and invalidates the feature cache.
+     *
+     * @param featureType the feature type to be assigned; must not be null
+     */
     public void setFeatureType(FeatureType featureType) {
         this.featureType = Objects.requireNonNull(featureType, "featureType");
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the maximum number of rows for the bandwidth resource.
+     * This value defines the upper limit for rows that can be handled.
+     * Invalidates the feature cache to ensure updated configurations are applied.
+     *
+     * @param bwMaxRows the maximum number of rows to set
+     */
     public void setBwMaxRows(int bwMaxRows) {
         this.bwMaxRows = bwMaxRows;
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the bandwidth multiplier that is used to adjust the bandwidth during calculations.
+     * The value must be greater than 0 and finite.
+     *
+     * @param bandwidthMultiplier the new bandwidth multiplier value
+     * @throws IllegalArgumentException if the provided bandwidthMultiplier is not greater than 0 or is not finite
+     */
     public void setBandwidthMultiplier(double bandwidthMultiplier) {
         if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
             throw new IllegalArgumentException("bandwidthMultiplier must be > 0 and finite");
@@ -339,21 +475,47 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable {
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the number of features along the XY direction, ensuring it is at least 1.
+     * This method will update the internal configuration and invalidate the feature cache
+     * to reflect the change.
+     *
+     * @param d the desired number of features along the XY direction. If the value is
+     *          less than 1, it will default to 1.
+     */
     public void setNumFeaturesXY(int d) {
         this.numFeatXY = TMath.max(1, d);
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the number of features in the Z dimension.
+     * Ensures the value is at least 1 to avoid invalid configurations
+     * and updates any dependent feature caches.
+     *
+     * @param d the desired number of features in the Z dimension
+     */
     public void setNumFeaturesZ(int d) {
         this.numFeatZ = TMath.max(1, d);
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the seed value to be used, updating the internal state and invalidating the feature cache.
+     *
+     * @param seed the seed value used to initialize or modify the current state
+     */
     public void setSeed(long seed) {
         this.seed = seed;
         invalidateFeatureCache();
     }
 
+    /**
+     * Clears the feature cache by removing all stored entries.
+     * This method is typically used to reset or invalidate
+     * cached feature data to ensure it is refreshed or recalculated
+     * when accessed next.
+     */
     public void invalidateFeatureCache() {
         featCache.clear();
     }

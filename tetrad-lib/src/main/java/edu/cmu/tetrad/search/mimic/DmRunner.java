@@ -39,6 +39,14 @@ import java.util.List;
 public final class DmRunner implements MimicSearchRunner {
 
     /**
+     * Constructs a new instance of the DmRunner.
+     *
+     * The DmRunner serves as a benchmark runner for the DM (Dependency-based) algorithm.
+     * It initializes the object without any parameters or specific configurations.
+     */
+    public DmRunner() {}
+
+    /**
      * {@inheritDoc}
      */
     @Override
