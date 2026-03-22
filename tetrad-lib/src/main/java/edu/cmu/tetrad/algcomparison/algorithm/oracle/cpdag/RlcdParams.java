@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.algorithm.other;
+package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.util.Parameters;
 

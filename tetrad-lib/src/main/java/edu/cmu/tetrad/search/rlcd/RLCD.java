@@ -111,7 +111,11 @@ public final class RLCD implements IGraphSearch, Serializable {
      */
     public Graph search(boolean returnStage1Only) {
         // Phase 1: CI skeleton or score-based skeleton (FGES/PC/etc.).
+//        Phase1Result phase1 = Phase1.runPhase1(dataSet, params);
+//
         Phase1Result phase1 = Phase1.runPhase1(dataSet, params);
+        System.out.println("Skeleton edges: " + phase1.getSkeleton().getNumEdges());
+        System.out.println("Partitions: " + phase1.getPartitions().size());
 
         if (returnStage1Only) {
             return phase1.getSkeleton();
