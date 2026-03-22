@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
@@ -16,7 +15,6 @@ public class RankClusterRefiner {
 
     private final double alpha;
     private SimpleMatrix s;
-    private List<Node> variables;
 
     public RankClusterRefiner(double alpha) {
         this.alpha = alpha;
@@ -25,9 +23,8 @@ public class RankClusterRefiner {
     /**
      * Main entry point.
      */
-    public List<List<Integer>> refine(List<List<Integer>> clusters, SimpleMatrix s, List<Node> variables) {
+    public List<List<Integer>> refine(List<List<Integer>> clusters, SimpleMatrix s) {
         this.s = s;
-        this.variables = variables;
 
         List<List<Integer>> refined = new ArrayList<>();
 
