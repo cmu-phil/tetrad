@@ -10,9 +10,9 @@ import java.util.*;
 /**
  * Java port of FindCausalClusters (Algorithm 3), NoCollider (Algorithm 4),
  * and RefineCausalClusters (Algorithm 5) from:
- *
- *   Dong et al., "A Versatile Causal Discovery Framework to Allow
- *   Causally-Related Hidden Variables", ICLR 2024.
+ * <p>
+ * Dong et al., "A Versatile Causal Discovery Framework to Allow
+ * Causally-Related Hidden Variables", ICLR 2024.
  *
  * <h3>Cover representation</h3>
  * A <em>cover</em> is a {@code List<Integer>} of working-node indices, kept in
@@ -25,7 +25,8 @@ import java.util.*;
  */
 final class LatentGroupsSearch {
 
-    private LatentGroupsSearch() {}
+    private LatentGroupsSearch() {
+    }
 
     // -----------------------------------------------------------------------
     // Public entry point
@@ -56,7 +57,7 @@ final class LatentGroupsSearch {
         for (Node nb : neighbourSet) {
             if (!workingNodes.contains(nb)) workingNodes.add(nb);
         }
-        int nObs      = workingNodes.size();
+        int nObs = workingNodes.size();
         int groupSize = group.size();
 
         // Node → DataSet column index (only observed nodes will be found here).
@@ -86,7 +87,7 @@ final class LatentGroupsSearch {
 
         RankTest rankTest = params.getRankTestFactory().create(dataSet);
         double[] alphaByK = params.getAlphaByK();
-        int      maxK     = params.getMaxK();
+        int maxK = params.getMaxK();
 
         // ---- Phase 2: FindCausalClusters (Algorithm 3) ----
         findCausalClusters(S, adj, workingNodes, observedIdx, pureChildrenOf,
@@ -114,6 +115,12 @@ final class LatentGroupsSearch {
             for (int lj = 0; lj < numLatent; lj++)
                 result[liR][groupSize + lj] = adj[liW][nObs + lj];
         }
+
+        System.out.println("runLocalSearch: group=" + group.size()
+                + " neighbours=" + neighbourSet.size()
+                + " workingNodes after=" + workingNodes.size()
+                + " result adj size=" + result.length);
+
         return new LatentGroupsResult(result);
     }
 
@@ -163,12 +170,12 @@ final class LatentGroupsSearch {
         int unfoldLimit = params.isUnfoldCovers() ? Math.min(sSize, 16) : 0;
 
         // Outer loop: enumerate subsets T of S for unfolding (lines 10-11).
-        for (int tMask = (1 << unfoldLimit) - 1; tMask >= 0; tMask--) {
+        for (int tMask = 0; tMask < (1 << unfoldLimit); tMask++) {
             List<List<Integer>> sPrime = unfold(S, tMask, pureChildrenOf, params);
             if (sPrime.isEmpty()) continue;
 
             // Inner loop: t = number of observed singleton covers going into X.
-            for (int t = k; t >= 0; t--) {
+            for (int t = 0; t <= k; t++) {
                 // Positions of observed singleton covers in S'.
                 List<Integer> obsSingletonPos = new ArrayList<>();
                 for (int i = 0; i < sPrime.size(); i++) {
@@ -220,6 +227,16 @@ final class LatentGroupsSearch {
                         boolean rankOk = rankTest.test(lCols, rCols, k, alpha)
                                 && (k == 0 || !rankTest.test(lCols, rCols, k - 1, alpha));
 
+                        // if (lCols.length == 0 || rCols.length == 0) continue;
+                        // if (lCols.length <= k || rCols.length <= k) continue;
+
+                        // ADD THIS:
+                        System.out.println("Testing k=" + k + " t=" + t
+                                + " lCols=" + lCols.length + " rCols=" + rCols.length);
+                        boolean r1 = rankTest.test(lCols, rCols, k, alpha);
+                        boolean r2 = k == 0 || !rankTest.test(lCols, rCols, k - 1, alpha);
+                        System.out.println("  r1=" + r1 + " r2=" + r2);
+
                         if (!rankOk) continue;
 
                         // NoCollider check (Algorithm 4) – line 17.
@@ -265,8 +282,8 @@ final class LatentGroupsSearch {
                 for (int ci : cPrimeIdx) cPrime.add(C.get(ci));
 
                 List<List<Integer>> cPrimeUnionX = union(cPrime, X);
-                int[] lCols   = toCols(cPrimeUnionX, workingNodes, nodeToDataCol, pureChildrenOf);
-                int   effCard = effectiveCardinality(cPrimeUnionX);
+                int[] lCols = toCols(cPrimeUnionX, workingNodes, nodeToDataCol, pureChildrenOf);
+                int effCard = effectiveCardinality(cPrimeUnionX);
 
                 if (lCols.length == 0 || effCard == 0) continue;
 
@@ -453,14 +470,18 @@ final class LatentGroupsSearch {
         }
     }
 
-    /** Effective cardinality: |∪_{C ∈ covers} C|. */
+    /**
+     * Effective cardinality: |∪_{C ∈ covers} C|.
+     */
     private static int effectiveCardinality(List<List<Integer>> covers) {
         Set<Integer> all = new HashSet<>();
         for (List<Integer> cov : covers) all.addAll(cov);
         return all.size();
     }
 
-    /** Union of two cover lists without duplicating identical cover objects. */
+    /**
+     * Union of two cover lists without duplicating identical cover objects.
+     */
     private static List<List<Integer>> union(List<List<Integer>> a, List<List<Integer>> b) {
         List<List<Integer>> result = new ArrayList<>(a);
         for (List<Integer> cov : b) if (!result.contains(cov)) result.add(cov);
@@ -479,17 +500,25 @@ final class LatentGroupsSearch {
     // Helpers – combinatorics
     // -----------------------------------------------------------------------
 
-    /** All r-element subsets of {0, …, n-1}, as int[] arrays of positions. */
+    /**
+     * All r-element subsets of {0, …, n-1}, as int[] arrays of positions.
+     */
     private static List<int[]> subsets(int n, int r) {
         List<int[]> out = new ArrayList<>();
-        if (r == 0) { out.add(new int[0]); return out; }
-        if (r > n)  return out;
+        if (r == 0) {
+            out.add(new int[0]);
+            return out;
+        }
+        if (r > n) return out;
         subsetsRec(n, r, 0, new int[r], 0, out);
         return out;
     }
 
     private static void subsetsRec(int n, int r, int start, int[] buf, int depth, List<int[]> out) {
-        if (depth == r) { out.add(buf.clone()); return; }
+        if (depth == r) {
+            out.add(buf.clone());
+            return;
+        }
         for (int i = start; i <= n - r + depth; i++) {
             buf[depth] = i;
             subsetsRec(n, r, i + 1, buf, depth + 1, out);
@@ -525,7 +554,9 @@ final class LatentGroupsSearch {
     // Helpers – misc
     // -----------------------------------------------------------------------
 
-    /** Look up alpha for rank k, clamping to the last entry if k is out of range. */
+    /**
+     * Look up alpha for rank k, clamping to the last entry if k is out of range.
+     */
     private static double alphaForK(double[] alphaByK, int k) {
         if (alphaByK == null || alphaByK.length == 0) return 0.01;
         int idx = Math.max(0, Math.min(k, alphaByK.length - 1));

@@ -43,6 +43,7 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.io.Serial;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -146,11 +147,11 @@ public class Rlcd extends AbstractBootstrapAlgorithm
         RLCDParams params = new RLCDParams();
 
         // Stage-1 skeleton method.
-        String stage1Str = "FGES";// parameters.getString(Params.STAGE1_METHOD, "FGES");
+        String stage1Str = "ALL";// parameters.getString(Params.STAGE1_METHOD, "FGES");
         try {
             params.setStage1Method(RLCDParams.Stage1Method.valueOf(stage1Str.toUpperCase()));
         } catch (IllegalArgumentException ignored) {
-            params.setStage1Method(RLCDParams.Stage1Method.FGES);
+            params.setStage1Method(RLCDParams.Stage1Method.ALL);
         }
 
         params.setStage1GesSparsity(parameters.getDouble(Params.PENALTY_DISCOUNT, 2.0));
@@ -177,6 +178,8 @@ public class Rlcd extends AbstractBootstrapAlgorithm
             public RankTest create(DataSet ds) {
                 return (pCols, qCols, k, a) -> {
                     int estimatedRank = RankTests.estimateWilksRank(cov, pCols, qCols, k, a);
+                    System.out.println("Estimated rank: " + estimatedRank + " pcols: " + Arrays.toString(pCols)
+                            + " qcols: " + Arrays.toString(qCols) + " k: " + k + " alpha: " + a);
                     return estimatedRank <= k;
                 };
             }

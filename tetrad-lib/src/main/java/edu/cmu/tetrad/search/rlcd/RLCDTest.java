@@ -49,7 +49,8 @@ public class RLCDTest {
     @Test
     public void testPhase1() {
         RLCDParams params = new RLCDParams();
-        params.setStage1Method(RLCDParams.Stage1Method.FGES);
+//        params.setStage1Method(RLCDParams.Stage1Method.FGES)
+        params.setStage1Method(RLCDParams.Stage1Method.ALL);
         params.setStage1GesSparsity(2.0);
         params.setStage1PartitionThreshold(3);
         params.setStages(1);  // until latent phases are ready
@@ -78,7 +79,7 @@ public class RLCDTest {
         Phase1.runPhase1(dataSet, params);// currently same as skeleton
 
         RLCDParams p = new RLCDParams();
-        p.setStage1Method(RLCDParams.Stage1Method.FGES);
+        p.setStage1Method(RLCDParams.Stage1Method.ALL);
         p.setStages(1);  // skeleton only
 
         RLCD _rlcd = new RLCD(dataSet, p);

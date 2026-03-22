@@ -48,7 +48,7 @@ public final class RLCDParams implements Serializable {
      * <p>
      * Possible values are defined in the {@link Stage1Method} enumeration.
      */
-    private Stage1Method stage1Method = Stage1Method.FGES;
+    private Stage1Method stage1Method = Stage1Method.ALL;
     /**
      * Sparsity/penalty parameter for score-based Stage 1 (e.g., FGES/ GES).
      */

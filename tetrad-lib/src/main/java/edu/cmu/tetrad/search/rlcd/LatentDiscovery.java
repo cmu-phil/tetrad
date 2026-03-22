@@ -133,6 +133,8 @@ final class LatentDiscovery {
         int numNewLatent =
                 localAdjOut.length - numGroup;  // same logic as Python
 
+        System.out.println("mergeLocalResult: numNewLatent=" + numNewLatent);
+
         if (numNewLatent <= 0) {
             // Nothing to merge.
             return adj;

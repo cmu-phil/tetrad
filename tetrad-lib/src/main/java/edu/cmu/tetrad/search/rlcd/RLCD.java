@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search.rlcd;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IGraphSearch;
@@ -116,6 +117,10 @@ public final class RLCD implements IGraphSearch, Serializable {
         Phase1Result phase1 = Phase1.runPhase1(dataSet, params);
         System.out.println("Skeleton edges: " + phase1.getSkeleton().getNumEdges());
         System.out.println("Partitions: " + phase1.getPartitions().size());
+
+        for (Edge e : phase1.getSkeleton().getEdges()) {
+            System.out.println(e);
+        }
 
         if (returnStage1Only) {
             return phase1.getSkeleton();
