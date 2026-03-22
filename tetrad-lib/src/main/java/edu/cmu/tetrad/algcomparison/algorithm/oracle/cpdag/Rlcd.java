@@ -147,7 +147,7 @@ public class Rlcd extends AbstractBootstrapAlgorithm
         RLCDParams params = new RLCDParams();
 
         // Stage-1 skeleton method.
-        String stage1Str = "ALL";// parameters.getString(Params.STAGE1_METHOD, "FGES");
+        String stage1Str = "FGES";// parameters.getString(Params.STAGE1_METHOD, "FGES");
         try {
             params.setStage1Method(RLCDParams.Stage1Method.valueOf(stage1Str.toUpperCase()));
         } catch (IllegalArgumentException ignored) {
