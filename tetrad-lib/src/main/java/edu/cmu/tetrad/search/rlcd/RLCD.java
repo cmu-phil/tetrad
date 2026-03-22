@@ -24,7 +24,7 @@ import java.util.List;
  *   <li><b>Phase 3:</b> Refine clusters and orient remaining edges.</li>
  * </ul>
  *
- * <p>Currently, only Phase&nbsp;1 (skeleton construction and partitioning nodes
+ * <p>Currently, only Phase 1 (skeleton construction and partitioning nodes
  * into overlapping clique groups) is fully implemented. Phases&nbsp;2 and&nbsp;3
  * are included as stubs and may be extended to match the Python reference
  * implementation in <code>scm-identify</code>.</p>
