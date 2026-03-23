@@ -890,7 +890,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
     }
 
-    protected void paintComponent(Graphics g) {
+    public void paintComponent(Graphics g) {
         Color background = getWorkbenchBackground();
         g.setColor(background);
         g.fillRect(0, 0, getWidth(), getHeight());
