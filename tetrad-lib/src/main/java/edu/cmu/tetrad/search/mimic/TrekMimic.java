@@ -841,6 +841,45 @@ public final class TrekMimic {
         return bestSubset;
     }
 
+//    private int countExplainedExistingLatentPairs(Graph graph,
+//                                                  List<Node> latentSubset,
+//                                                  List<Node> proposedParents) {
+//        int explained = 0;
+//
+//        for (int i = 0; i < latentSubset.size(); i++) {
+//            Node li = latentSubset.get(i);
+//
+//            for (int j = i + 1; j < latentSubset.size(); j++) {
+//                Node lj = latentSubset.get(j);
+//
+//                if (!graph.isAdjacentTo(li, lj)) continue;
+//
+//                // Collect the combined observed children of li and lj.
+//                List<Node> children = new ArrayList<>();
+//                for (Node child : graph.getChildren(li)) {
+//                    if (!children.contains(child)) children.add(child);
+//                }
+//                for (Node child : graph.getChildren(lj)) {
+//                    if (!children.contains(child)) children.add(child);
+//                }
+//                children.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+//
+//                // The expected rank equals the sum of the two latents' own ranks.
+//                // For two rank-1 latents this is 2 (original behaviour); for a
+//                // rank-2 + rank-1 pair it is 3, etc.
+//                int expectedRank = latentRanks.getOrDefault(li, 1)
+//                        + latentRanks.getOrDefault(lj, 1);
+//
+//                int rank = estimateRank(proposedParents, children);
+//                if (rank == expectedRank) {
+//                    explained++;
+//                }
+//            }
+//        }
+//
+//        return explained;
+//    }
+
     private int countExplainedExistingLatentPairs(Graph graph,
                                                   List<Node> latentSubset,
                                                   List<Node> proposedParents) {
@@ -854,24 +893,22 @@ public final class TrekMimic {
 
                 if (!graph.isAdjacentTo(li, lj)) continue;
 
-                // Collect the combined observed children of li and lj.
-                List<Node> children = new ArrayList<>();
-                for (Node child : graph.getChildren(li)) {
-                    if (!children.contains(child)) children.add(child);
-                }
-                for (Node child : graph.getChildren(lj)) {
-                    if (!children.contains(child)) children.add(child);
-                }
-                children.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+                List<Node> liIndicators = getObservedChildren(graph, li);
+                List<Node> ljIndicators = getObservedChildren(graph, lj);
 
-                // The expected rank equals the sum of the two latents' own ranks.
-                // For two rank-1 latents this is 2 (original behaviour); for a
-                // rank-2 + rank-1 pair it is 3, etc.
-                int expectedRank = latentRanks.getOrDefault(li, 1)
-                        + latentRanks.getOrDefault(lj, 1);
+                if (liIndicators.isEmpty() || ljIndicators.isEmpty()) continue;
 
-                int rank = estimateRank(proposedParents, children);
-                if (rank == expectedRank) {
+                // The actual explanatory check: do the proposed parents screen off
+                // the cross-indicator rank between Li and Lj? This is the same
+                // condition used in removeExplainedLatentEdges — conditioning on
+                // the proposed parents should reduce the cross-indicator rank to 0
+                // if the parents fully explain the Li-Lj correlation.
+                int condRank = estimateRankConditioned(
+                        liIndicators,
+                        ljIndicators,
+                        proposedParents);
+
+                if (condRank == 0) {
                     explained++;
                 }
             }
