@@ -880,10 +880,48 @@ public final class TrekMimic {
 //        return explained;
 //    }
 
+//    private int countExplainedExistingLatentPairs(Graph graph,
+//                                                  List<Node> latentSubset,
+//                                                  List<Node> proposedParents) {
+//        int explained = 0;
+//
+//        for (int i = 0; i < latentSubset.size(); i++) {
+//            Node li = latentSubset.get(i);
+//
+//            for (int j = i + 1; j < latentSubset.size(); j++) {
+//                Node lj = latentSubset.get(j);
+//
+//                if (!graph.isAdjacentTo(li, lj)) continue;
+//
+//                List<Node> liIndicators = getObservedChildren(graph, li);
+//                List<Node> ljIndicators = getObservedChildren(graph, lj);
+//
+//                if (liIndicators.isEmpty() || ljIndicators.isEmpty()) continue;
+//
+//                // The actual explanatory check: do the proposed parents screen off
+//                // the cross-indicator rank between Li and Lj? This is the same
+//                // condition used in removeExplainedLatentEdges — conditioning on
+//                // the proposed parents should reduce the cross-indicator rank to 0
+//                // if the parents fully explain the Li-Lj correlation.
+//                int condRank = estimateRankConditioned(
+//                        liIndicators,
+//                        ljIndicators,
+//                        proposedParents);
+//
+//                if (condRank == 0) {
+//                    explained++;
+//                }
+//            }
+//        }
+//
+//        return explained;
+//    }
+
     private int countExplainedExistingLatentPairs(Graph graph,
                                                   List<Node> latentSubset,
                                                   List<Node> proposedParents) {
         int explained = 0;
+        int adjacent = 0;
 
         for (int i = 0; i < latentSubset.size(); i++) {
             Node li = latentSubset.get(i);
@@ -893,16 +931,13 @@ public final class TrekMimic {
 
                 if (!graph.isAdjacentTo(li, lj)) continue;
 
+                adjacent++;
+
                 List<Node> liIndicators = getObservedChildren(graph, li);
                 List<Node> ljIndicators = getObservedChildren(graph, lj);
 
                 if (liIndicators.isEmpty() || ljIndicators.isEmpty()) continue;
 
-                // The actual explanatory check: do the proposed parents screen off
-                // the cross-indicator rank between Li and Lj? This is the same
-                // condition used in removeExplainedLatentEdges — conditioning on
-                // the proposed parents should reduce the cross-indicator rank to 0
-                // if the parents fully explain the Li-Lj correlation.
                 int condRank = estimateRankConditioned(
                         liIndicators,
                         ljIndicators,
@@ -914,7 +949,11 @@ public final class TrekMimic {
             }
         }
 
-        return explained;
+        // Require ALL adjacent pairs to be explained, not just one.
+        // A true shared parent should screen off every pair it connects,
+        // not just the easiest one. This is the stricter evidence requirement.
+        if (adjacent == 0) return 0;
+        return (explained == adjacent) ? explained : 0;
     }
 
     private void removeExplainedLatentEdges(Graph graph,
