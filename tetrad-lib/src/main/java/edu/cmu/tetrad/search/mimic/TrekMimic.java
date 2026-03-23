@@ -700,6 +700,45 @@ public final class TrekMimic {
         return assignment;
     }
 
+        /*private Map<Node, List<Node>> assignParentGroupsToLatents(List<List<Node>> recoveredGroups,
+                                                                  List<Node> allLatentNodes,
+                                                                  Graph graph) {
+            Map<Node, List<Node>> assignment = new LinkedHashMap<>();
+            Map<Node, Double> bestScores = new LinkedHashMap<>();
+            Set<Node> claimed = new LinkedHashSet<>(); // track assigned nodes
+
+            for (List<Node> group : recoveredGroups) {
+                // Skip groups that contain already-claimed nodes.
+                if (!Collections.disjoint(group, claimed)) continue;
+
+                Node bestLatent = null;
+                double bestScore = Double.NEGATIVE_INFINITY;
+
+                for (Node latent : allLatentNodes) {
+                    List<Node> childSet = getObservedChildren(graph, latent);
+                    int rank = estimateRank(group, childSet);
+                    if (rank != 1) continue;
+
+                    double score = blockStrength(group, childSet);
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestLatent = latent;
+                    }
+                }
+
+                if (bestLatent != null) {
+                    Double existing = bestScores.get(bestLatent);
+                    if (existing == null || bestScore > existing) {
+                        assignment.put(bestLatent, group);
+                        bestScores.put(bestLatent, bestScore);
+                        claimed.addAll(group);
+                    }
+                }
+            }
+
+            return assignment;
+        }*/
+
     /**
      * Assigns a group of measured inputs to the best qualifying latent subset.
      *

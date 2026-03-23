@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.editor.GraphFileMenu;
 import edu.cmu.tetradapp.editor.GraphPropertiesAction;
@@ -32,8 +33,6 @@ import edu.cmu.tetradapp.editor.PathsAction;
 import edu.cmu.tetradapp.editor.UnderliningsAction;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
-import edu.cmu.tetradapp.util.PasteLayoutAction;
-import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -1013,7 +1012,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 //
 //        return rect;
 
-         return super.getVisibleRect();
+        return super.getVisibleRect();
     }
 
     /**
@@ -2183,10 +2182,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     }
 
                     String text = "<html>Graph Edge: " + edge.getNode1().getName()
-                                  + " " + endpoint1 + "-" + endpoint2 + " "
-                                  + edge.getNode2().getName()
-                                  + _properties
-                                  + "<html>";
+                            + " " + endpoint1 + "-" + endpoint2 + " "
+                            + edge.getNode2().getName()
+                            + _properties
+                            + "<html>";
 
                     setEdgeToolTip(edge, text);
                 } else {
@@ -2202,10 +2201,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     }
 
                     StringBuilder text = new StringBuilder("<html>Summary Edge: " + edge.getNode1().getName()
-                                                           + " " + endpoint1 + "-" + endpoint2 + " "
-                                                           + edge.getNode2().getName()
-                                                           + _properties
-                                                           + "<br>");
+                            + " " + endpoint1 + "-" + endpoint2 + " "
+                            + edge.getNode2().getName()
+                            + _properties
+                            + "<br>");
                     String n1 = edge.getNode1().getName();
                     String n2 = edge.getNode2().getName();
                     List<String> nodes = new ArrayList<>();
@@ -2618,7 +2617,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             out.defaultWriteObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
@@ -2637,7 +2636,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             in.defaultReadObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
