@@ -199,10 +199,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Whether to do pag edge specialization markup.
      */
     private boolean pagEdgeSpecializationMarked = false;
-//    /**
-//     * The graph to be used for sampling.
-//     */
-//    private Graph samplingGraph;
     /**
      * The knowledge.
      */
@@ -219,8 +215,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         setGraph(graph);
         addMouseListener(this.mouseHandler);
         addMouseMotionListener(this.mouseMotionHandler);
-        // setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-//        setBackground(new Color(254, 254, 255));
+        super.setBackground(getWorkbenchBackground());
         setBackground(getWorkbenchBackground());
         setOpaque(true);
         setFocusable(true);
@@ -233,11 +228,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         setEnabled(this.enableEditing);
 
         LayoutUtil.defaultLayout(graph);
-
-        // This next line is sheer evil. It causes annoying reformats of one view
-        // based other views after an automatic layout has been applied. Evil, evil, evil.
-        // jdramsey 2026-3-21
-//        new PasteLayoutAction(this).actionPerformed(null);
     }
 
     private static Color uiColor(String key, Color fallback) {
@@ -245,58 +235,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         return c != null ? c : fallback;
     }
 
-//    private static boolean isDarkMode() {
-//        LookAndFeel laf = UIManager.getLookAndFeel();
-//        return laf != null && laf.getName().toLowerCase().contains("dar");
-//    }
-
-//    private static boolean isDarkMode() {
-//        LookAndFeel laf = UIManager.getLookAndFeel();
-//        return laf != null && laf.getName().toLowerCase().contains("dark");
-//    }
-
-    private static boolean isDarkMode() {
-        return com.formdev.flatlaf.FlatLaf.isLafDark();
-    }
-
-    private static Color blend(Color a, Color b, double t) {
-        t = Math.max(0.0, Math.min(1.0, t));
-        int r = (int) Math.round((1.0 - t) * a.getRed() + t * b.getRed());
-        int g = (int) Math.round((1.0 - t) * a.getGreen() + t * b.getGreen());
-        int b2 = (int) Math.round((1.0 - t) * a.getBlue() + t * b.getBlue());
-        return new Color(
-                Math.max(0, Math.min(255, r)),
-                Math.max(0, Math.min(255, g)),
-                Math.max(0, Math.min(255, b2))
-        );
-    }
-
     private static Color getWorkbenchBackground() {
-        Color panel = uiColor("Panel.background", new Color(245, 245, 245));
-
-        if (isDarkMode()) {
-            return panel;
-        }
-
-        // In light mode, give the canvas just a tiny bit of separation from the app background.
-//        return blend(panel, Color.WHITE, 0.18);
-        return Color.WHITE;// blend(panel, Color.WHITE, 0.5);
-    }
-
-//    @Override
-//    public void updateUI() {
-//        super.updateUI();
-//        setBackground(getWorkbenchBackground());
-//        repaint();
-//    }
-
-    @Override
-    public void updateUI() {
-        super.updateUI();
-        Color workbenchBackground = getWorkbenchBackground();
-        setBackground(workbenchBackground);
-        revalidate();
-        repaint();
+        return uiColor("Panel.background", Color.WHITE);
     }
 
     // ============================PUBLIC METHODS==========================//
@@ -386,7 +326,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
         }
 
-//        repaint();
+        revalidate();
+        repaint();
+
         firePropertyChange("BackgroundClicked", null, null);
     }
 
@@ -948,34 +890,12 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
     }
 
-    /**
-     * Paints the component with the specified graphics context.
-     *
-     * @param g the Graphics context in which to paint
-     */
-//    public final void paint(Graphics g) {
-////        g.setColor(getBackground());
-////        g.fillRect(0, 0, getWidth(), getHeight());
-//        super.paint(g);
-//    }
-
-//    @Override
-//    protected void paintComponent(Graphics g) {
-//        g.setColor(getWorkbenchBackground());
-//        g.fillRect(0, 0, getWidth(), getHeight());
-//        super.paintComponent(g);
-//    }
-    @Override
     protected void paintComponent(Graphics g) {
         Color background = getWorkbenchBackground();
         g.setColor(background);
         g.fillRect(0, 0, getWidth(), getHeight());
         super.paintComponent(g);
     }
-//    @Override
-//    protected void paintComponent(Graphics g) {
-//        super.paintComponent(g);
-//    }
 
     /**
      * Scrolls the workbench image so that the given node is in view, then selects that node.
@@ -1005,16 +925,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     public Color getBackground() {
         return super.getBackground();
     }
-
-//    /**
-//     * Sets the background color of this component.
-//     *
-//     * @param color the desired background color
-//     */
-//    public void setBackground(Color color) {
-//        super.setBackground(color);
-////        repaint();
-//    }
 
     /**
      * Layouts the graph nodes using the given layout graph.
@@ -1085,25 +995,25 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * @return a {@link java.awt.Rectangle} object
      */
     public Rectangle getVisibleRect() {
-        List<Node> nodes = this.graph.getNodes();
+//        List<Node> nodes = this.graph.getNodes();
+//
+//        if (nodes.isEmpty()) {
+//            return new Rectangle();
+//        }
+//
+//        DisplayNode displayNode = (DisplayNode) getModelNodesToDisplay().get(nodes.getFirst());
+//        Rectangle rect = displayNode.getBounds();
+//
+//        for (int i = 1; i < nodes.size(); i++) {
+//            displayNode = (DisplayNode) getModelNodesToDisplay().get(nodes.get(i));
+//            rect = rect.union(displayNode.getBounds());
+//        }
+//
+//        rect = rect.union(super.getVisibleRect());
+//
+//        return rect;
 
-        if (nodes.isEmpty()) {
-            return new Rectangle();
-        }
-
-        DisplayNode displayNode = (DisplayNode) getModelNodesToDisplay().get(nodes.getFirst());
-        Rectangle rect = displayNode.getBounds();
-
-        for (int i = 1; i < nodes.size(); i++) {
-            displayNode = (DisplayNode) getModelNodesToDisplay().get(nodes.get(i));
-            rect = rect.union(displayNode.getBounds());
-        }
-
-        rect = rect.union(super.getVisibleRect());
-
-        return rect;
-
-        // return super.getVisibleRect();
+         return super.getVisibleRect();
     }
 
     /**
@@ -1206,21 +1116,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         this.graph = graph;
 
-//        if (isSamplingGraph(graph)) {
-//            Graph samplingGraph = getSamplingGraph();
-//
-//            // replace original sampling graph if it's a different sampling graph
-//            if (!isSameGraph(samplingGraph, graph)) {
-//                samplingGraph = graph;
-//                setSamplingGraph(samplingGraph);
-//            }
-//
-//            this.graph = graph;
-//        } else {
-//            setSamplingGraph(null);
-//            this.graph = graph;
-//        }
-
         if (pagEdgeSpecializationMarked) {
             GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
         }
@@ -1258,21 +1153,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             setMaxY((int) getPreferredSize().getHeight());
         }
 
-//        // Create a graph's legend
-//        if (!graph.getAllAttributes().isEmpty()) {
-//
-//            final int margin = 5;
-//
-//            DisplayLegend legend = new DisplayLegend(graph.getAllAttributes());
-//            legend.setLocation(margin, margin);
-//
-//            // add the display node
-//            add(legend, 0);
-//
-//        }
-
         revalidate();
-//        repaint();
+        repaint();
     }
 
     private void addLast(Graph graph) {
@@ -1487,13 +1369,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         if (getModelEdgesToDisplay().containsKey(modelEdge)) {
             return;
         }
-
-        // This causes problems with the random MIM 2-factor method and is not needed.
-//        if (!getGraph().containsEdge(modelEdge)) {
-//            System.out.println("Attempt to add edge not in model: " + modelEdge);
-//            return;
-////            throw new IllegalArgumentException("Attempt to add edge not in model.");
-//        }
 
         // construct a display edge for the model edge
         Node modelNodeA = modelEdge.getNode1();
@@ -1817,7 +1692,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             setNodeLabel(modelNode, null, 0, 0);
             remove(displayNode);
             getDisplayToModel().remove(displayNode);
-            getModelEdgesToDisplay().remove(modelNode);
+            getModelNodesToDisplay().remove(modelNode);
             displayNode.removePropertyChangeListener(this.propChangeHandler);
             repaint();
 
@@ -2298,7 +2173,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 };
             }
 
-            if (this.graph.containsEdge(edge)) {
+            if (edge != null && this.graph.containsEdge(edge)) {
                 if (edgeProb.isEmpty()) {
                     StringBuilder _properties = new StringBuilder();
                     if (edge.getProperties() != null && !edge.getProperties().isEmpty()) {
@@ -2603,21 +2478,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         revalidate();
         repaint();
     }
-
-//    private void setMouseDragging() {
-//        /**
-//         * TEMPORARY bug fix added 4/15/2005. The bug is that in JDK 1.5.0_02
-//         * (without this bug fix) groups of nodes cannot be selected, because if
-//         * you click and drag, an extra mouseClicked event is fired when you
-//         * release the mouse. This is a known bug, #5039416 in Sun's bug
-//         * database. To get around the problem, we set this flag to true when a
-//         * mouseDragged event is fired and ignore the first click (and reset
-//         * this flag to false) on the first mouseClicked event after any
-//         * mouseDragged event. When this bug is fixed in JDK 1.5, this temporary
-//         * bug fix shold be removed. jdramsey 4/15/2005
-//         */
-//        boolean mouseDragging = true;
-//    }
 
     /**
      * Checks whether adding measured variables is allowed.
@@ -3070,9 +2930,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             if (AbstractWorkbench.this.isEnableEditing()) {
                 this.workbench.handleMouseReleased(e);
             }
-
-            // Copy the laid out graph to the clipboard.
-//            new CopyLayoutAction(getWorkbench()).actionPerformed(null);
         }
 
         @Override
