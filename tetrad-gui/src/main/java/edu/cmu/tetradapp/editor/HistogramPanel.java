@@ -153,6 +153,8 @@ public class HistogramPanel extends JPanel {
     }
 
     private Color getBarColor() {
+        if (true) return getDefaultPlotColor();
+
         return this.barColor != null ? this.barColor : getDefaultBarColor();
     }
 
@@ -361,6 +363,22 @@ public class HistogramPanel extends JPanel {
         } finally {
             g2d.dispose();
         }
+    }
+
+    private static Color getDefaultPlotColor() {
+//        Color c = UIManager.getColor("Component.borderColor");
+//        if (c != null) return c;
+//
+//        Color c = UIManager.getColor("Label.foreground");
+//        if (c != null) return c;
+
+        if (true) {
+            return isDarkMode() ? new Color(180, 190, 205) : Color.RED.darker();
+        }
+
+        return isDarkMode()
+                ? new Color(180, 190, 205)
+                : new Color(26, 113, 169, 255);
     }
 
     private String formatAxis(double v) {

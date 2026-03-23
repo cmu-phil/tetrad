@@ -94,6 +94,8 @@ class ScatterplotPanel extends JPanel {
     }
 
     private static Color getPointColor() {
+        if (true) return getDefaultPlotColor();
+
         Color c = UIManager.getColor("Table.selectionBackground");
         if (c != null) return c.brighter();
 
@@ -108,10 +110,10 @@ class ScatterplotPanel extends JPanel {
     }
 
     private static Color getFitLineColor() {
-        Color c = UIManager.getColor("Label.foreground");
-        if (c != null) return blend(c, getPlotBackground(), 0.25);
+//        Color c = UIManager.getColor("Label.foreground");
+//        if (c != null) return blend(c, getPlotBackground(), 0.25);
 
-        return Color.DARK_GRAY;
+        return isDarkMode() ? Color.YELLOW : Color.BLACK;
     }
 
     private void refreshTheme() {
@@ -252,6 +254,22 @@ class ScatterplotPanel extends JPanel {
         } finally {
             g.dispose();
         }
+    }
+
+    private static Color getDefaultPlotColor() {
+//        Color c = UIManager.getColor("Component.borderColor");
+//        if (c != null) return c;
+//
+//        Color c = UIManager.getColor("Label.foreground");
+//        if (c != null) return c;
+
+        if (true) {
+            return isDarkMode() ? new Color(180, 190, 205) : Color.RED.darker();
+        }
+
+        return isDarkMode()
+                ? new Color(180, 190, 205)
+                : new Color(26, 113, 169, 255);
     }
 
     private static Font uiFont(String key, Font fallback) {
