@@ -149,29 +149,57 @@ public final class TrekMimic {
     public Graph search() throws InterruptedException {
         validateSearchInputs();
 
-        TrekMeasurementModelBuilderPc builder =
-                new TrekMeasurementModelBuilderPc(dataSet, parameters);
+        boolean usePc = false;
 
-        builder.setKnowledge(this.knowledge);
-        builder.setInputNames(this.inputNames);
-        builder.setOutputNames(this.outputNames);
-        builder.setDepth(this.depth);
-        builder.setVerbose(this.verbose);
+        if (usePc) {
+            TrekMeasurementModelBuilderPc builder =
+                    new TrekMeasurementModelBuilderPc(dataSet, parameters);
 
-        TrekMeasurementModelBuilderPc.MeasurementBuildResult result = builder.build();
+            builder.setKnowledge(this.knowledge);
+            builder.setInputNames(this.inputNames);
+            builder.setOutputNames(this.outputNames);
+            builder.setDepth(this.depth);
+            builder.setVerbose(this.verbose);
 
-        this.graph = result.graph();
-        this.allLatents = new ArrayList<>(result.latents());
-        this.initialPool = new ArrayList<>(result.parentPool());
-        this.variables = new ArrayList<>(result.variables());
-        this.s = result.matrix();
-        this.sampleSize = result.sampleSize();
-        this.alpha = result.alpha();
+            TrekMeasurementModelBuilderPc.MeasurementBuildResult result = builder.build();
 
-        this.latentRanks = new LinkedHashMap<>();
-        BlockSpec spec = result.spec();
-        for (int i = 0; i < spec.blockVariables().size(); i++) {
-            this.latentRanks.put(spec.blockVariables().get(i), spec.ranks().get(i));
+            this.graph = result.graph();
+            this.allLatents = new ArrayList<>(result.latents());
+            this.initialPool = new ArrayList<>(result.parentPool());
+            this.variables = new ArrayList<>(result.variables());
+            this.s = result.matrix();
+            this.sampleSize = result.sampleSize();
+            this.alpha = result.alpha();
+
+            this.latentRanks = new LinkedHashMap<>();
+            BlockSpec spec = result.spec();
+            for (int i = 0; i < spec.blockVariables().size(); i++) {
+                this.latentRanks.put(spec.blockVariables().get(i), spec.ranks().get(i));
+            }
+        } else {
+            TrekMeasurementModelBuilderBoss builder =
+                    new TrekMeasurementModelBuilderBoss(dataSet, parameters);
+
+            builder.setKnowledge(this.knowledge);
+            builder.setInputNames(this.inputNames);
+            builder.setOutputNames(this.outputNames);
+            builder.setVerbose(this.verbose);
+
+            TrekMeasurementModelBuilderBoss.MeasurementBuildResult result = builder.build();
+
+            this.graph = result.graph();
+            this.allLatents = new ArrayList<>(result.latents());
+            this.initialPool = new ArrayList<>(result.parentPool());
+            this.variables = new ArrayList<>(result.variables());
+            this.s = result.matrix();
+            this.sampleSize = result.sampleSize();
+            this.alpha = result.alpha();
+
+            this.latentRanks = new LinkedHashMap<>();
+            BlockSpec spec = result.spec();
+            for (int i = 0; i < spec.blockVariables().size(); i++) {
+                this.latentRanks.put(spec.blockVariables().get(i), spec.ranks().get(i));
+            }
         }
 
         recoverMeasuredParentsHybrid();

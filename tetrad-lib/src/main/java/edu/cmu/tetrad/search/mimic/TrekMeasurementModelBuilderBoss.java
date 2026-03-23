@@ -266,8 +266,8 @@ public final class TrekMeasurementModelBuilderBoss {
     private BlocksBicScore buildScore(BlockSpec spec) {
         BlocksBicScore score = new BlocksBicScore(spec);
 
-        score.setPenaltyDiscount(
-                parameters.getDouble(Params.PENALTY_DISCOUNT));
+        score.setPenaltyDiscount(1);
+//                parameters.getDouble(Params.PENALTY_DISCOUNT));
 
         // Trek penalty multiplier: how strongly the score biases the selected
         // canonical rank toward the trek-implied rank. Drawn from parameters
