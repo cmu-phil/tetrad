@@ -34,6 +34,7 @@ import java.util.*;
 public final class TscRunner implements AlgorithmRunner {
 
     private final double alpha;
+    private final int    rMin;
     private final int    rMax;
     private final int    minRedundancy;
 
@@ -47,7 +48,7 @@ public final class TscRunner implements AlgorithmRunner {
      *                      smaller than {@code r + 1 + minRedundancy} are
      *                      rejected.  Default 1.
      */
-    public TscRunner(double alpha, int rMax, int minRedundancy) {
+    public TscRunner(double alpha, int rMin, int rMax, int minRedundancy) {
         if (alpha <= 0 || alpha >= 1)
             throw new IllegalArgumentException("alpha must be in (0, 1).");
         if (rMax < 1)
@@ -55,13 +56,9 @@ public final class TscRunner implements AlgorithmRunner {
         if (minRedundancy < 0)
             throw new IllegalArgumentException("minRedundancy must be >= 0.");
         this.alpha         = alpha;
+        this.rMin          = rMin;
         this.rMax          = rMax;
         this.minRedundancy = minRedundancy;
-    }
-
-    /** Creates a TSC runner with {@code minRedundancy = 1}. */
-    public TscRunner(double alpha, int rMax) {
-        this(alpha, rMax, 1);
     }
 
     @Override
@@ -73,13 +70,20 @@ public final class TscRunner implements AlgorithmRunner {
 
         Tsc tsc = new Tsc(variables, cov);
         tsc.setAlpha(alpha);
+        tsc.setRmin(rMin);
         tsc.setRmax(rMax);
+        tsc.setEffectiveSampleSize(-1);
         tsc.setMinRedundancy(minRedundancy);
+        tsc.setParallel(false);
+//        tsc.setDiscoveryAlpha(.2);
+//        tsc.setAlpha(0.00001);
 
         // findClusters() returns Map<Set<Integer>, Integer>:
         //   key   = set of zero-based indices into the variable list
         //   value = estimated rank of the cluster (not needed here)
         Map<Set<Integer>, Integer> clusterMap = tsc.findClusters();
+
+        System.out.println("TSC found " + clusterMap);
 
         List<Set<Node>> result = new ArrayList<>(clusterMap.size());
         for (Set<Integer> indexSet : clusterMap.keySet()) {

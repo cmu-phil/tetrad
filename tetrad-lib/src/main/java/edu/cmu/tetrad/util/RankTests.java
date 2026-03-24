@@ -506,7 +506,7 @@ public class RankTests {
 
         // Bartlettâs approx: -c * log Î  ~  ÏÂ²_df
         double c = (n - 1) - 0.5 * (p + q + 1);
-        if (c < 1) c = 1; // pragmatic floor; alternatively, treat as inconclusive
+//        if (c < 1) c = 1; // pragmatic floor; alternatively, treat as inconclusive
         double stat = -c * sumLog;
         int df = (p - r) * (q - r);
 
@@ -677,7 +677,7 @@ public class RankTests {
 
         int[] xLoc = range(0, p);
         int[] yLoc = range(p, p + q);
-        return estimateWilksRank(Scond, xLoc, yLoc, n, alpha);
+        return estimateWilksRank(Scond, xLoc, yLoc, n - Z.length, alpha);
     }
 
     /**

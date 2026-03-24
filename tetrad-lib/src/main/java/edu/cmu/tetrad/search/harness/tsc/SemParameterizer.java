@@ -65,10 +65,10 @@ public final class SemParameterizer {
     public static final double DEFAULT_COEF_HIGH = 1.2;
 
     /** Default lower bound for error variances. */
-    public static final double DEFAULT_VAR_LOW   = 0.5;
+    public static final double DEFAULT_VAR_LOW   = 1;
 
     /** Default upper bound for error variances. */
-    public static final double DEFAULT_VAR_HIGH  = 1.5;
+    public static final double DEFAULT_VAR_HIGH  = 3;
 
     // -----------------------------------------------------------------------
     // Instance state (fluent builder)
@@ -145,7 +145,7 @@ public final class SemParameterizer {
         Parameters p = new Parameters();
         p.set(Params.COEF_LOW,          coefLow);
         p.set(Params.COEF_HIGH,         coefHigh);
-        p.set(Params.COEF_SYMMETRIC,    false);  // positive loadings only
+        p.set(Params.COEF_SYMMETRIC,    false);
         p.set(Params.VAR_LOW,           varLow);
         p.set(Params.VAR_HIGH,          varHigh);
         p.set(Params.RANDOMIZE_COLUMNS, true);

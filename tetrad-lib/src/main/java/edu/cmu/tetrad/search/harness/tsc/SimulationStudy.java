@@ -16,6 +16,8 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Top-level harness for the TSC simulation study.
@@ -23,30 +25,22 @@ import java.util.*;
  * <p>Runs two separate sub-studies:
  * <ol>
  *   <li><b>Study 1 — Rank-1 MIM.</b>  Four groups, each with one latent,
- *       cluster sizes drawn uniformly from {2, 3, 4, 5}.
+ *       cluster sizes drawn uniformly from {3, 4, 5, 6}.
  *       Algorithms: TSC, BPC, FOFC.
  *       Sample sizes: 200, 500, 1000, 2000, 5000.</li>
  *   <li><b>Study 2 — Rank-2 MIM.</b>  Four groups, each with two latents
- *       (bifactor), cluster sizes drawn uniformly from {3, 4, 5, 6, 7}.
- *       Algorithms: TSC, FTFC.
+ *       (bifactor), cluster sizes drawn uniformly from {5, 6, 7, 8}.
+ *       Algorithms: TSC (minRedundancy=2), FTFC.
  *       Sample sizes: 500, 1000, 2000, 5000.</li>
  * </ol>
  *
- * <p>Each condition is replicated {@code numReplications} times (default 100).
- * For each replication a fresh MIM graph is generated, independently
- * parameterised from U(0.2, 1.2) coefficients and U(0.5, 1.5) variances,
- * and data are simulated by ancestral sampling.  Precision, recall, and F1
- * are computed via best-Jaccard matching against the true clusters.
- *
- * <p>Results are printed as plain-text tables to standard output and also
- * returned as {@link StudyResult} objects for programmatic access.
- *
- * <h2>Usage</h2>
- * <pre>{@code
- *   SimulationStudy study = new SimulationStudy();
- *   study.setNumReplications(100);
- *   study.runAll();
- * }</pre>
+ * <p>The replication loop is parallelised over replications using a fixed
+ * thread pool of size {@code Runtime.getRuntime().availableProcessors()}.
+ * Each replication runs entirely in its own thread with no shared mutable
+ * state.  Note: {@code RandomUtil.getInstance()} may return a shared
+ * singleton; if its implementation is not thread-safe, draws across
+ * replications will not be independent.  Replace with a thread-local RNG
+ * if strict independence is required.
  *
  * @author josephramsey
  */
@@ -56,12 +50,13 @@ public final class SimulationStudy {
     // Configuration constants
     // -----------------------------------------------------------------------
 
-    private static final int   NUM_GROUPS       = 4;
-    private static final int[] RANK1_SIZES      = {2, 3, 4, 5};
-    private static final int[] RANK2_SIZES      = {3, 4, 5, 6, 7};
-    private static final int[] RANK1_SAMPLE_SIZES = {200, 500, 1000, 2000, 5000};
-    private static final int[] RANK2_SAMPLE_SIZES = {500, 1000, 2000, 5000};
-    private static final double ALPHA            = 0.01;
+    private static final int     NUM_GROUPS          = 4;
+    private static final int[]   RANK1_SIZES         = {3, 4, 5, 6};
+    private static final int[]   RANK2_SIZES         = {5, 6, 7, 8};
+    private static final int[]   RANK1_SAMPLE_SIZES  = {500, 1000, 2000, 5000};
+    private static final int[]   RANK2_SAMPLE_SIZES  = {500, 1000, 2000, 5000, 10000, 20000};
+    private static final double  RANK1_ALPHA         = 0.01;
+    private static final double  RANK2_ALPHA         = 0.01;
 
     // -----------------------------------------------------------------------
     // Mutable settings
@@ -90,7 +85,7 @@ public final class SimulationStudy {
      */
     public List<StudyResult> runAll() {
         List<StudyResult> results = new ArrayList<>();
-        results.add(runStudy1());
+//        results.add(runStudy1());
         results.add(runStudy2());
         return results;
     }
@@ -107,23 +102,17 @@ public final class SimulationStudy {
         System.out.println("STUDY 1 — Rank-1 MIM");
         System.out.println("  Groups: " + NUM_GROUPS
                 + "  Cluster sizes: uniformly from " + Arrays.toString(RANK1_SIZES));
-        System.out.println("  Algorithms: TSC, BPC, FOFC   alpha=" + ALPHA
+        System.out.println("  Algorithms: TSC, BPC, FOFC   alpha=" + RANK1_ALPHA
                 + "  replications=" + numReplications);
         System.out.println("=".repeat(72));
 
         List<AlgorithmRunner> runners = List.of(
-                new TscRunner(ALPHA, 1),
-                new BpcRunner(ALPHA),
-                new FofcRunner(ALPHA)
+                new TscRunner(RANK1_ALPHA, 1,1, 1),
+                new BpcRunner(RANK1_ALPHA),
+                new FofcRunner(RANK1_ALPHA)
         );
 
-        StudyResult result = runStudy(
-                "Rank-1 MIM",
-                RANK1_SAMPLE_SIZES,
-                runners,
-                /* rank */ 1
-        );
-
+        StudyResult result = runStudy("Rank-1 MIM", RANK1_SAMPLE_SIZES, runners, 1);
         printTable(result);
         return result;
     }
@@ -140,28 +129,22 @@ public final class SimulationStudy {
         System.out.println("STUDY 2 — Rank-2 MIM");
         System.out.println("  Groups: " + NUM_GROUPS
                 + "  Cluster sizes: uniformly from " + Arrays.toString(RANK2_SIZES));
-        System.out.println("  Algorithms: TSC, FTFC   alpha=" + ALPHA
+        System.out.println("  Algorithms: TSC (minRedundancy=2), FTFC   alpha=" + RANK2_ALPHA
                 + "  replications=" + numReplications);
         System.out.println("=".repeat(72));
 
         List<AlgorithmRunner> runners = List.of(
-                new TscRunner(ALPHA, 2),
-                new FtfcRunner(ALPHA)
+                new TscRunner(RANK2_ALPHA, 1, 2, 2)
+//                new FtfcRunner(RANK2_ALPHA)
         );
 
-        StudyResult result = runStudy(
-                "Rank-2 MIM",
-                RANK2_SAMPLE_SIZES,
-                runners,
-                /* rank */ 2
-        );
-
+        StudyResult result = runStudy("Rank-2 MIM", RANK2_SAMPLE_SIZES, runners, 2);
         printTable(result);
         return result;
     }
 
     // -----------------------------------------------------------------------
-    // Core replication loop
+    // Core replication loop (parallelised over replications)
     // -----------------------------------------------------------------------
 
     private StudyResult runStudy(
@@ -172,65 +155,61 @@ public final class SimulationStudy {
 
         int numAlgs = runners.size();
         int numN    = sampleSizes.length;
+        int nThreads = Runtime.getRuntime().availableProcessors();
+        ExecutorService pool = Executors.newFixedThreadPool(nThreads);
 
-        // accumulators[algIdx][nIdx] -> running sums of {P, R, F1, emptyCount}
-        double[][] sumP     = new double[numAlgs][numN];
-        double[][] sumR     = new double[numAlgs][numN];
-        double[][] sumF1    = new double[numAlgs][numN];
-        int[][]    empties  = new int[numAlgs][numN];
+        // accumulators[algIdx][nIdx]
+        double[][] sumP    = new double[numAlgs][numN];
+        double[][] sumR    = new double[numAlgs][numN];
+        double[][] sumF1   = new double[numAlgs][numN];
+        int[][]    empties = new int[numAlgs][numN];
 
         for (int nIdx = 0; nIdx < numN; nIdx++) {
-            int n = sampleSizes[nIdx];
+            final int n        = sampleSizes[nIdx];
+            final int nIdxFin  = nIdx;
+            AtomicInteger done = new AtomicInteger(0);
             System.out.printf("  n = %5d  [", n);
+            System.out.flush();
+
+            // Collect one ReplicationResult per replication in parallel
+            List<Future<ReplicationResult>> futures = new ArrayList<>(numReplications);
 
             for (int rep = 0; rep < numReplications; rep++) {
-                // ---- Generate graph ----
-                List<LatentGroupSpec> specs = randomSpecs(rank, NUM_GROUPS);
-                Graph graph = RandomMim.constructRandomMim(
-                        specs,
-                        null,                          // random ~20% meta-edges
-                        0, 0, 0,                       // no impurities
-                        LatentLinkMode.CORRESPONDING
-                );
+                futures.add(pool.submit(() -> runOneReplication(rank, n, runners)));
+            }
 
-                // ---- True clusters ----
-                List<Set<Node>> trueClusters = TrueClusterExtractor.extractClusters(graph);
-
-                // ---- Parameterise and simulate ----
-                DataSet data = SemParameterizer.defaults().parameterizeAndSimulate(graph, n);
-
-                // ---- Run each algorithm ----
-                for (int algIdx = 0; algIdx < numAlgs; algIdx++) {
-                    AlgorithmRunner runner = runners.get(algIdx);
-                    List<Set<Node>> recovered;
-                    try {
-                        recovered = runner.run(data);
-                    } catch (Exception e) {
-                        // Treat any exception as an empty result so one
-                        // bad replication does not abort the whole study.
-                        recovered = Collections.emptyList();
+            // Accumulate results as futures complete
+            for (Future<ReplicationResult> future : futures) {
+                try {
+                    ReplicationResult rr = future.get();
+                    for (int algIdx = 0; algIdx < numAlgs; algIdx++) {
+                        BestJaccardScorer.ClusterScore score = rr.scores()[algIdx];
+                        if (!score.isEmpty()) {
+                            sumP[algIdx][nIdxFin]  += score.precision();
+                            sumR[algIdx][nIdxFin]  += score.recall();
+                            sumF1[algIdx][nIdxFin] += score.f1();
+                        } else {
+                            // recall = 0 for empty; precision not counted
+                            empties[algIdx][nIdxFin]++;
+                        }
                     }
-
-                    BestJaccardScorer.ClusterScore score =
-                            BestJaccardScorer.score(trueClusters, recovered);
-
-                    if (!score.isEmpty()) {
-                        sumP[algIdx][nIdx]  += score.precision();
-                        sumR[algIdx][nIdx]  += score.recall();
-                        sumF1[algIdx][nIdx] += score.f1();
-                    } else {
-                        // Empty result: recall = 0, precision convention = 1,
-                        // but we record as a distinct empty-count rather than
-                        // inflating the precision mean.
-                        sumR[algIdx][nIdx]  += 0.0;
-                        empties[algIdx][nIdx]++;
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (ExecutionException e) {
+                    // A replication threw — treat as all-empty for safety
+                    System.err.println("Replication failed: " + e.getCause().getMessage());
+                    for (int algIdx = 0; algIdx < numAlgs; algIdx++) {
+                        empties[algIdx][nIdxFin]++;
                     }
                 }
 
-                if ((rep + 1) % 10 == 0) System.out.print(".");
+                int d = done.incrementAndGet();
+                if (d % 10 == 0) { System.out.print("."); System.out.flush(); }
             }
             System.out.println("]");
         }
+
+        pool.shutdown();
 
         // ---- Build result ----
         List<ConditionResult> conditions = new ArrayList<>();
@@ -239,11 +218,9 @@ public final class SimulationStudy {
             List<AlgorithmSummary> algSummaries = new ArrayList<>();
             for (int algIdx = 0; algIdx < numAlgs; algIdx++) {
                 int nonEmpty = numReplications - empties[algIdx][nIdx];
-                double meanP  = nonEmpty > 0
-                        ? sumP[algIdx][nIdx] / nonEmpty   : Double.NaN;
-                double meanR  = sumR[algIdx][nIdx] / numReplications;
-                double meanF1 = nonEmpty > 0
-                        ? sumF1[algIdx][nIdx] / nonEmpty  : Double.NaN;
+                double meanP  = nonEmpty > 0 ? sumP[algIdx][nIdx]  / nonEmpty          : Double.NaN;
+                double meanR  =               sumR[algIdx][nIdx]  / numReplications;
+                double meanF1 = nonEmpty > 0 ? sumF1[algIdx][nIdx] / nonEmpty          : Double.NaN;
                 algSummaries.add(new AlgorithmSummary(
                         runners.get(algIdx).label(),
                         meanP, meanR, meanF1,
@@ -255,14 +232,53 @@ public final class SimulationStudy {
     }
 
     // -----------------------------------------------------------------------
+    // Single replication (runs entirely in one thread)
+    // -----------------------------------------------------------------------
+
+    private static ReplicationResult runOneReplication(
+            int rank,
+            int n,
+            List<AlgorithmRunner> runners) {
+
+        // Generate graph
+        List<LatentGroupSpec> specs = randomSpecs(rank, NUM_GROUPS);
+        Graph graph = RandomMim.constructRandomMim(
+                specs,
+                null,                       // random ~20% meta-edges
+                0, 0, 0,                    // no impurities
+                LatentLinkMode.CORRESPONDING
+        );
+
+        // True clusters
+        List<Set<Node>> trueClusters = TrueClusterExtractor.extractClusters(graph);
+
+        // Parameterise and simulate
+        DataSet data = SemParameterizer.defaults().parameterizeAndSimulate(graph, n);
+
+        // Run each algorithm and score
+        BestJaccardScorer.ClusterScore[] scores =
+                new BestJaccardScorer.ClusterScore[runners.size()];
+
+        for (int algIdx = 0; algIdx < runners.size(); algIdx++) {
+            List<Set<Node>> recovered;
+            try {
+                recovered = runners.get(algIdx).run(data);
+
+                System.out.println("recovered: " + recovered);
+
+            } catch (Exception e) {
+                recovered = Collections.emptyList();
+            }
+            scores[algIdx] = BestJaccardScorer.score(trueClusters, recovered);
+        }
+
+        return new ReplicationResult(scores);
+    }
+
+    // -----------------------------------------------------------------------
     // Random spec generation
     // -----------------------------------------------------------------------
 
-    /**
-     * Generates a list of {@link LatentGroupSpec} objects for {@code numGroups}
-     * groups, each with the given {@code rank} and a cluster size drawn uniformly
-     * from the appropriate size array.
-     */
     private static List<LatentGroupSpec> randomSpecs(int rank, int numGroups) {
         int[] sizePool = (rank == 1) ? RANK1_SIZES : RANK2_SIZES;
         List<LatentGroupSpec> specs = new ArrayList<>(numGroups);
@@ -282,15 +298,13 @@ public final class SimulationStudy {
         System.out.println(result.studyName());
         System.out.println();
 
-        // Header
         List<ConditionResult> conditions = result.conditions();
         if (conditions.isEmpty()) return;
         List<AlgorithmSummary> algs = conditions.get(0).algorithmSummaries();
 
-        // Column headers
         StringBuilder header = new StringBuilder(String.format("%-6s", "n"));
         for (AlgorithmSummary a : algs) {
-            header.append(String.format("  %-19s", a.label() + " P / R / F1"));
+            header.append(String.format("  %-23s", a.label() + " P / R / F1"));
         }
         System.out.println(header);
         System.out.println("-".repeat(header.length()));
@@ -298,13 +312,12 @@ public final class SimulationStudy {
         for (ConditionResult cond : conditions) {
             StringBuilder row = new StringBuilder(String.format("%-6d", cond.sampleSize()));
             for (AlgorithmSummary a : cond.algorithmSummaries()) {
-                row.append(String.format("  %5.3f / %5.3f / %5.3f",
+                String cell = String.format("  %5.3f / %5.3f / %5.3f",
                         nanToMinus(a.meanPrecision()),
                         nanToMinus(a.meanRecall()),
-                        nanToMinus(a.meanF1())));
-                if (a.emptyCount() > 0) {
-                    row.append(String.format(" [%d empty]", a.emptyCount()));
-                }
+                        nanToMinus(a.meanF1()));
+                if (a.emptyCount() > 0) cell += String.format(" [%d]", a.emptyCount());
+                row.append(String.format("  %-23s", cell.trim()));
             }
             System.out.println(row);
         }
@@ -316,7 +329,14 @@ public final class SimulationStudy {
     }
 
     // -----------------------------------------------------------------------
-    // Result types
+    // Internal record types
+    // -----------------------------------------------------------------------
+
+    /** Scores for all algorithms on one replication. */
+    private record ReplicationResult(BestJaccardScorer.ClusterScore[] scores) {}
+
+    // -----------------------------------------------------------------------
+    // Public result types
     // -----------------------------------------------------------------------
 
     /**
@@ -325,40 +345,29 @@ public final class SimulationStudy {
      * @param studyName  human-readable name of the study.
      * @param conditions one {@link ConditionResult} per sample-size level.
      */
-    public record StudyResult(
-            String studyName,
-            List<ConditionResult> conditions) {
-    }
+    public record StudyResult(String studyName, List<ConditionResult> conditions) {}
 
     /**
      * Results for one sample-size level within a study.
      *
      * @param sampleSize         the nominal sample size {@code n}.
-     * @param algorithmSummaries one summary per algorithm, in the order they
-     *                           were passed to the study.
+     * @param algorithmSummaries one summary per algorithm.
      */
-    public record ConditionResult(
-            int sampleSize,
-            List<AlgorithmSummary> algorithmSummaries) {
-    }
+    public record ConditionResult(int sampleSize, List<AlgorithmSummary> algorithmSummaries) {}
 
     /**
-     * Mean metrics for one algorithm at one sample-size level, averaged over
-     * all replications.
-     *
-     * <p>Precision and F1 are averaged only over non-empty replications
-     * (replications where the algorithm returned at least one cluster).
+     * Mean metrics for one algorithm at one sample-size level.
+     * Precision and F1 are averaged over non-empty replications only.
      * Recall is averaged over all replications (zero for empty ones).
-     * {@code emptyCount} records how many replications returned nothing,
-     * which is a distinct failure mode worth tracking separately.
+     * {@code emptyCount} is the number of replications where the algorithm
+     * returned no clusters.
      *
-     * @param label         algorithm label, e.g. {@code "TSC"}.
+     * @param label         algorithm label.
      * @param meanPrecision mean best-Jaccard precision (non-empty reps only).
      * @param meanRecall    mean best-Jaccard recall (all reps).
      * @param meanF1        mean F1 (non-empty reps only).
-     * @param emptyCount    number of replications where the algorithm returned
-     *                      no clusters.
-     * @param totalReps     total number of replications for this condition.
+     * @param emptyCount    replications returning no clusters.
+     * @param totalReps     total replications for this condition.
      */
     public record AlgorithmSummary(
             String label,
@@ -366,22 +375,15 @@ public final class SimulationStudy {
             double meanRecall,
             double meanF1,
             int    emptyCount,
-            int    totalReps) {
-    }
+            int    totalReps) {}
 
     // -----------------------------------------------------------------------
-    // Main method for direct execution
+    // Main
     // -----------------------------------------------------------------------
 
     /**
-     * Runs both studies with default settings and prints results to standard
-     * output.  Accepts an optional integer argument for the number of
-     * replications (default 100).
-     *
-     * <pre>{@code
-     *   java edu.cmu.tetrad.search.harness.tsc.SimulationStudy
-     *   java edu.cmu.tetrad.search.harness.tsc.SimulationStudy 20
-     * }</pre>
+     * Runs both studies with default settings.
+     * Optional integer argument sets the number of replications (default 100).
      */
     public static void main(String[] args) {
         SimulationStudy study = new SimulationStudy();

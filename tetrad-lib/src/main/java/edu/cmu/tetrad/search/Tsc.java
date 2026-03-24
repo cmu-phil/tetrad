@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -70,26 +70,25 @@ public class Tsc implements EffectiveSampleSizeSettable {
     private final int sampleSize;
     private final SimpleMatrix S;
     private final Map<Key, Integer> rankCache = new ConcurrentHashMap<>();
-    private int nEff = -1;
-    private double alpha = 0.01;
-    private boolean verbose = false;
-    private Map<Set<Integer>, Integer> clusterToRank;
-    private int rMax = 3;
-    // require |C| >= (rank + 1 + minRedundancy)
-    private int minRedundancy = 1;
-
-    /**
-     * Liberal alpha used during seed finding and cluster growing.
-     * -1.0 means derive adaptively from {@link #alpha} and {@link #nEff}.
-     */
-    private double discoveryAlpha = -1.0;
-
     /**
      * Cache for ranks computed at discoveryAlpha. Keyed by the same Key record
      * as rankCache. Cleared whenever alpha, discoveryAlpha, or nEff changes.
      */
     private final Map<Key, Integer> discoveryRankCache = new ConcurrentHashMap<>();
-
+    private int nEff = -1;
+    private double alpha = 0.01;
+    private boolean verbose = false;
+    private Map<Set<Integer>, Integer> clusterToRank;
+    private int rMin = 1;
+    private int rMax = 3;
+    // require |C| >= (rank + 1 + minRedundancy)
+    private int minRedundancy = 1;
+    /**
+     * Liberal alpha used during seed finding and cluster growing.
+     * -1.0 means derive adaptively from {@link #alpha} and {@link #nEff}.
+     */
+    private double discoveryAlpha = -1.0;
+    private boolean parallel = true;
 
     /**
      * Constructs an instance of the TscScored class using the provided variables and covariance matrix.
@@ -146,33 +145,34 @@ public class Tsc implements EffectiveSampleSizeSettable {
     }
 
     /**
-     * Identifies clusters of variables at a specified rank using the supplied
+     * Identifies clusters of variables at alpha specified rank using the supplied
      * alpha. The correlation pre-screen rejects k-combinations that contain any
-     * pair with |r| below the significance threshold at a liberal alpha, avoiding
+     * pair with |r| below the significance threshold at alpha liberal alpha, avoiding
      * the majority of rank test calls for uncorrelated combinations.
      *
-     * @param vars a list of integers representing the variables to consider
+     * @param vars alpha list of integers representing the variables to consider
      * @param size the size of the clusters to generate
      * @param rank the target rank to filter clusters
-     * @param a    the alpha level to use for the rank test
-     * @return a set of clusters that match the specified rank
+     * @param alpha    the alpha level to use for the rank test
+     * @return alpha set of clusters that match the specified rank
      */
     public Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size,
-                                                int rank, double a) {
+                                                int rank, double alpha) {
         log("findClustersAtRankTesting size = " + size + ", rank = " + rank
-                + ", ess = " + nEff + ", alpha = " + a);
+                + ", ess = " + nEff + ", alpha = " + alpha);
 
         final int n = vars.size();
         final int k = size;
         if (k <= 0 || k > n) return Collections.emptySet();
 
-        // Pre-screen threshold: use a threshold 4x more liberal than the
+        // Pre-screen threshold: use alpha threshold 4x more liberal than the
         // discovery alpha so only genuinely uncorrelated pairs are rejected.
         // This preserves all plausible seeds while skipping clearly hopeless ones.
-        final double rThresh =
-                corrSignificanceThreshold(Math.min(a * 4.0, 0.30));
+        final double rThresh = alpha;
+//                corrSignificanceThreshold(Math.min(alpha * 4.0, 0.30));
 
-        return IntStream.range(0, n - k + 1).parallel().mapToObj(start -> {
+        IntStream stream = IntStream.range(0, n - k + 1);
+        return (parallel ? stream.parallel() : stream).mapToObj(start -> {
             Set<Set<Integer>> out = ConcurrentHashMap.newKeySet();
             int[] comb = new int[k];
             for (int i = 0; i < k; i++) comb[i] = start + i;
@@ -185,7 +185,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
                 // Cheap O(k^2) pre-screen before the expensive rank test.
                 if (allPairsSignificant(ids, rThresh)
-                        && lookupRankFastAtAlpha(ids, a) == rank) {
+                        && lookupRankFastAtAlpha(ids, alpha) == rank) {
                     Set<Integer> cluster = new HashSet<>(k * 2);
                     for (int id : ids) cluster.add(id);
                     out.add(cluster);
@@ -244,7 +244,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
         clusterToRank = new HashMap<>();
         final double da = getDiscoveryAlpha();
 
-        for (int rank = 1; rank <= rMax; rank++) {
+        for (int rank = rMin; rank <= rMax; rank++) {
             int size = rank + 1;
             if (Thread.currentThread().isInterrupted()) break;
 //            if (size >= remainingVars.size() - size) continue;
@@ -274,7 +274,8 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
                 Set<Integer> cluster = new HashSet<>(seed);
 
-                if (seed.size() > remainingVars.size() - seed.size()) continue;
+//                if (seed.size() > remainingVars.size() - seed.size()) continue;
+                if (seed.size() * 2 > this.variables.size()) continue;
 
                 int seedRankShown;
                 seedRankShown = ranksByTest(seed);
@@ -300,7 +301,8 @@ public class Tsc implements EffectiveSampleSizeSettable {
                         log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
 
                         int minSize = rank + 1 + minRedundancy;
-                        if (rankOfUnion == rank && union.size() >= minSize) {
+                        if (rankOfUnion == rank && union.size() >= minSize
+                                && union.size() * 2 <= this.variables.size()) {
 
                             // Accept this union
                             cluster = union;
@@ -315,7 +317,8 @@ public class Tsc implements EffectiveSampleSizeSettable {
                 clusterRank = ranksByTest(cluster);
 
                 int minSize = rank + 1 + minRedundancy;
-                if (clusterRank == rank && cluster.size() >= minSize) {
+                if (clusterRank == rank && cluster.size() >= minSize
+                        && cluster.size() * 2 <= this.variables.size()) {
 
                     // --- Rule 3-lite (observed-mediator guard).
                     // If ∃ z ∈ C such that rank(C\{z}, D | z) = 0, the cross-block dependence collapses when conditioning
@@ -475,13 +478,43 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
         boolean penultimateRemoved = false;
 
-        // Try to split instead of outright reject (Dong-style refinement)
+//        // Try to split instead of outright reject (Dong-style refinement)
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
             if (removeClustersBecauseOfRank0Internally(S, cluster, nEff, alpha)) {
                 clusterToRank.remove(cluster);
                 penultimateRemoved = true;
             }
         }
+
+//        for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
+//            List<Set<Integer>> sets = splitOrKeepCluster(cluster);
+//            clusterToRank.remove(cluster);
+//
+//            for (Set<Integer> sets2 : sets) {
+//                clusterToRank.put(sets2, ranksByTest(sets2));
+//                penultimateRemoved = true;
+//            }
+//        }
+
+        for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
+            List<Set<Integer>> pieces = splitOrKeepCluster(cluster);
+
+            if (pieces.size() == 1 && pieces.get(0).equals(cluster)) {
+                continue; // unchanged — no split, no removal
+            }
+
+            // Something changed: remove the original and add surviving pieces
+            clusterToRank.remove(cluster);
+            penultimateRemoved = true;
+
+            for (Set<Integer> piece : pieces) {
+                int pieceRank = ranksByTest(piece);
+                clusterToRank.put(piece, pieceRank);
+                log("Adding split piece " + toNamesCluster(piece)
+                        + " rank = " + pieceRank);
+            }
+        }
+
         if (!penultimateRemoved) log("No penultimate clusters were removed.");
 
         // Narrow fallback: rescue isolated rank-1 triples only if the original algorithm found nothing.
@@ -879,9 +912,9 @@ public class Tsc implements EffectiveSampleSizeSettable {
                         // offending subset is Z â remove Z from the cluster
                         Z.forEach(Cset::remove);
                         log("Rule 3 fired: removing offending subset Z="
-                            + toNamesCluster(new HashSet<>(Z))
-                            + " from cluster " + toNamesCluster(new HashSet<>(Cnow))
-                            + " (rank(C\\Z, D | Z)=0)");
+                                + toNamesCluster(new HashSet<>(Z))
+                                + " from cluster " + toNamesCluster(new HashSet<>(Cnow))
+                                + " (rank(C\\Z, D | Z)=0)");
                         changed = true;
                         break; // restart passes after modification
                     }
@@ -932,6 +965,78 @@ public class Tsc implements EffectiveSampleSizeSettable {
         return false;
     }
 
+    /**
+     * Checks whether {@code cluster} contains a rank-0 internal split.
+     * If it does, splits on the first such partition found and recursively
+     * applies the same check to each piece, returning all surviving pieces.
+     * If no rank-0 split exists, returns a singleton list containing the
+     * original cluster unchanged.
+     * Pieces that are too small (< r + 1 + minRedundancy) are discarded.
+     *
+     * @return surviving sub-clusters after recursive splitting; empty if all
+     *         pieces are discarded.
+     */
+    private List<Set<Integer>> splitOrKeepCluster(Set<Integer> cluster) {
+        List<Integer> C = new ArrayList<>(cluster);
+
+        SublistGenerator gen0 = new SublistGenerator(C.size(), C.size() - 1);
+        int[] choice0;
+
+        while ((choice0 = gen0.next()) != null) {
+            List<Integer> C1list = new ArrayList<>();
+            for (int i : choice0) C1list.add(C.get(i));
+            if (C1list.isEmpty() || C1list.size() == C.size()) continue;
+
+            List<Integer> C2list = new ArrayList<>(C);
+            C2list.removeAll(C1list);
+            if (C2list.isEmpty()) continue;
+
+            int[] c1Array = C1list.stream().mapToInt(Integer::intValue).toArray();
+            int[] c2Array = C2list.stream().mapToInt(Integer::intValue).toArray();
+
+//            int r = RankTests.estimateWilksRank(S, c1Array, c2Array,
+//                    getEffectiveSampleSize(), alpha);  // see note below
+
+            // Only split if the evidence is very strong — use a fraction of alpha
+            double splitAlpha = alpha / 10.0;
+            int r = RankTests.estimateWilksRank(S, c1Array, c2Array,
+                    getEffectiveSampleSize(), splitAlpha);
+
+            if (r == 0) {
+                Set<Integer> piece1 = new HashSet<>(C1list);
+                Set<Integer> piece2 = new HashSet<>(C2list);
+
+                log("Rank-0 split found in " + toNamesCluster(cluster)
+                        + " -> " + toNamesCluster(piece1)
+                        + " + " + toNamesCluster(piece2)
+                        + "; recursing.");
+
+                List<Set<Integer>> result = new ArrayList<>();
+
+                // Recurse into each piece
+                for (Set<Integer> piece : List.of(piece1, piece2)) {
+                    int pieceRank = ranksByTest(piece);
+                    int minSize = pieceRank + 1 + minRedundancy;
+
+                    if (piece.size() < minSize) {
+                        log("Discarding piece " + toNamesCluster(piece)
+                                + ": size " + piece.size()
+                                + " < minSize " + minSize);
+                        continue;
+                    }
+
+                    // Recursive check on each piece
+                    result.addAll(splitOrKeepCluster(piece));
+                }
+
+                return result;
+            }
+        }
+
+        // No rank-0 split found — return the cluster unchanged
+        return List.of(cluster);
+    }
+
     private int ranksByTest(Set<Integer> cluster) {
         return rankCache.computeIfAbsent(new Key(cluster), _k -> rank(cluster));
     }
@@ -980,12 +1085,21 @@ public class Tsc implements EffectiveSampleSizeSettable {
     }
 
     /**
-     * The algorithm will consider ranks from 0 up to this value, rMax.
+     * The algorithm will consider ranks from rMin up to this value, rMax.
      *
      * @param rMax The maximum rank to consider.
      */
     public void setRmax(int rMax) {
         this.rMax = rMax;
+    }
+
+    /**
+     * The algorithm will consider ranks from this value up to rMax.
+     *
+     * @param rMin the minimum rank value to consisder
+     */
+    public void setRmin(int rMin) {
+        this.rMin = rMin;
     }
 
     /**
@@ -998,6 +1112,10 @@ public class Tsc implements EffectiveSampleSizeSettable {
     public void setMinRedundancy(int minRedundancy) {
         if (minRedundancy < 0) throw new IllegalArgumentException("Min redundancy must be >= 0");
         this.minRedundancy = minRedundancy;
+    }
+
+    public void setParallel(boolean parallel) {
+        this.parallel = parallel;
     }
 
     // ---- Canonical key for caching ranks (immutable, sorted) -------------------
