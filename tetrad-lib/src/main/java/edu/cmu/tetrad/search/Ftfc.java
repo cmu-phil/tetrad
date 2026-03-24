@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.blocks.SingleClusterPolicy;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RankTests;
@@ -70,7 +69,6 @@ public class Ftfc {
     private final int n;
     private final Map<List<Integer>, Boolean> vanishCache = new HashMap<>();
     private final Tsc tsc;
-    private final SingleClusterPolicy policy;
     private final int sampleSize;
     /**
      * Whether verbose output is desired.
@@ -90,14 +88,12 @@ public class Ftfc {
      * Constructs an instance of Ftfc.
      *
      * @param dataSet The dataset containing the variables and data from which the model will be built.
-     * @param alpha The significance level used for statistical testing.
-     * @param ess The equivalent sample size to be set.
-     * @param policy The single cluster policy defining the strategy for cluster formation and analysis.
+     * @param alpha   The significance level used for statistical testing.
+     * @param ess     The equivalent sample size to be set.
      */
-    public Ftfc(DataSet dataSet, double alpha, int ess, SingleClusterPolicy policy) {
+    public Ftfc(DataSet dataSet, double alpha, int ess) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
-        this.policy = policy;
         CorrelationMatrix correlationMatrix = new CorrelationMatrix(dataSet);
         this.S = correlationMatrix.getMatrix().getSimpleMatrix();
         this.n = dataSet.getNumRows();

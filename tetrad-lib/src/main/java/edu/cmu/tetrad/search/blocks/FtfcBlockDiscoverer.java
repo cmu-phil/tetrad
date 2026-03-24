@@ -71,7 +71,7 @@ public class FtfcBlockDiscoverer implements BlockDiscoverer {
      */
     @Override
     public BlockSpec discover() {
-        Ftfc ftfc = new Ftfc(dataSet, alpha, ess, policy);
+        Ftfc ftfc = new Ftfc(dataSet, alpha, ess);
         ftfc.setVerbose(verbose);
 
         Map<List<Integer>, Integer> clusters = ftfc.findClusters();
