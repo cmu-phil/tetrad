@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -79,7 +79,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
     private double alpha = 0.01;
     private boolean verbose = false;
     private Map<Set<Integer>, Integer> clusterToRank;
-    private int rMin = 1;
+    private int rMin = 0;
     private int rMax = 3;
     // require |C| >= (rank + 1 + minRedundancy)
     private int minRedundancy = 1;
@@ -247,9 +247,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
         for (int rank = rMin; rank <= rMax; rank++) {
             int size = rank + 1;
             if (Thread.currentThread().isInterrupted()) break;
-//            if (size >= remainingVars.size() - size) continue;
-            if (size >= remainingVars.size()) continue; // only require non-empty complement
-
+            if (2 * size >= variables.size()) continue;
 
             log("EXAMINING SIZE " + size + " RANK = " + rank + " REMAINING VARS = " + remainingVars.size());
             Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank, da);
@@ -274,7 +272,6 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
                 Set<Integer> cluster = new HashSet<>(seed);
 
-//                if (seed.size() > remainingVars.size() - seed.size()) continue;
                 if (seed.size() * 2 > this.variables.size()) continue;
 
                 int seedRankShown;
@@ -406,7 +403,6 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
                         newClusters.remove(C1);
                         newClusters.add(C2);
-                        //  reducedRank.put(C2, newRank);
 
                         // Update `used`: remove old C1 contribution, then add C2
                         used.removeAll(C1);
@@ -451,7 +447,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
             // produce a refined copy (possibly smaller), do not mutate the key in-place
             Set<Integer> refined = refineClustersByConditionalRanks(cluster, rC);
 
-            if (refined.size() < 2) {
+            if (refined.size() < rC + 1 + minRedundancy) {
                 clusterToRank.remove(cluster);
                 changedAny = true;
                 log("Cluster " + toNamesCluster(cluster) + " eliminated after refinement.");
@@ -478,24 +474,6 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
         boolean penultimateRemoved = false;
 
-//        // Try to split instead of outright reject (Dong-style refinement)
-        for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
-            if (removeClustersBecauseOfRank0Internally(S, cluster, nEff, alpha)) {
-                clusterToRank.remove(cluster);
-                penultimateRemoved = true;
-            }
-        }
-
-//        for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
-//            List<Set<Integer>> sets = splitOrKeepCluster(cluster);
-//            clusterToRank.remove(cluster);
-//
-//            for (Set<Integer> sets2 : sets) {
-//                clusterToRank.put(sets2, ranksByTest(sets2));
-//                penultimateRemoved = true;
-//            }
-//        }
-
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
             List<Set<Integer>> pieces = splitOrKeepCluster(cluster);
 
@@ -515,14 +493,14 @@ public class Tsc implements EffectiveSampleSizeSettable {
             }
         }
 
+//        for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
+//            if (removeClustersBecauseOfRank0Internally(S, cluster, nEff, alpha)) {
+//                clusterToRank.remove(cluster);
+//                penultimateRemoved = true;
+//            }
+//        }
+
         if (!penultimateRemoved) log("No penultimate clusters were removed.");
-
-        // Narrow fallback: rescue isolated rank-1 triples only if the original algorithm found nothing.
-        if (clusterToRank.isEmpty()) {
-            rescueAndAddTriples(clusterToRank);
-        }
-
-        clusterToRank = removeOverlappingClusters(clusterToRank);
 
         log("Final clusters = " + toNamesClusters(clusterToRank.keySet(), nodes));
         return clusterToRank;
@@ -998,9 +976,9 @@ public class Tsc implements EffectiveSampleSizeSettable {
 //                    getEffectiveSampleSize(), alpha);  // see note below
 
             // Only split if the evidence is very strong — use a fraction of alpha
-            double splitAlpha = alpha / 10.0;
+//            double splitAlpha = alpha / 10.0;
             int r = RankTests.estimateWilksRank(S, c1Array, c2Array,
-                    getEffectiveSampleSize(), splitAlpha);
+                    getEffectiveSampleSize(), alpha);
 
             if (r == 0) {
                 Set<Integer> piece1 = new HashSet<>(C1list);

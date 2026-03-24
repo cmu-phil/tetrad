@@ -50,7 +50,7 @@ public final class SimulationStudy {
     // Configuration constants
     // -----------------------------------------------------------------------
 
-    private static final int     NUM_GROUPS          = 4;
+    private static final int     NUM_GROUPS          = 5;
     private static final int[]   RANK1_SIZES         = {3, 4, 5, 6};
     private static final int[]   RANK2_SIZES         = {5, 6, 7, 8};
     private static final int[]   RANK1_SAMPLE_SIZES  = {500, 1000, 2000, 5000};
@@ -107,7 +107,7 @@ public final class SimulationStudy {
         System.out.println("=".repeat(72));
 
         List<AlgorithmRunner> runners = List.of(
-                new TscRunner(RANK1_ALPHA, 1,1, 1),
+                new TscRunner(RANK1_ALPHA, 0,1, 1),
                 new BpcRunner(RANK1_ALPHA),
                 new FofcRunner(RANK1_ALPHA)
         );
@@ -134,7 +134,7 @@ public final class SimulationStudy {
         System.out.println("=".repeat(72));
 
         List<AlgorithmRunner> runners = List.of(
-                new TscRunner(RANK2_ALPHA, 1, 2, 2)
+                new TscRunner(RANK2_ALPHA, 0, 2, 2)
 //                new FtfcRunner(RANK2_ALPHA)
         );
 
