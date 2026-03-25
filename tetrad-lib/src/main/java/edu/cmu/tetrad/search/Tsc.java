@@ -35,34 +35,161 @@ import java.util.stream.IntStream;
 import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
 
 /**
- * The Tsc class provides methods and utilities for statistical computations, clustering, and rank-based analysis of
- * variables. This class manages significance levels, caching mechanisms, and structures to efficiently handle clusters
- * and their associated ranks.
+ * Trek Separation Clusters (TSC): a rank-based algorithm for recovering the
+ * latent-cluster structure of a pure measurement model from an observed
+ * correlation or covariance matrix.
  *
- * <p><b>Theory (NOLAC) soundness sketch.</b>
- * We assume a linear-Gaussian SEM with a latent DAG and pure measurement (each observed loads on exactly one latent),
- * independent unique errors across distinct clusters, and generic parameters (no exact cancellations). Under the NOLAC
- * (no overlapping clusters) assumption, the indicator sets for distinct latents are disjoint. With a consistent rank
- * test (e.g., Wilks LRT with a diminishing &alpha;), the following properties hold generically:
+ * <h2>Theoretical foundation</h2>
  *
+ * <p>TSC exploits the algebraic consequence of trek separation in
+ * linear-Gaussian DAGs (Sullivant, Talaska, and Draisma, 2010).  If a set
+ * of observed variables {@code C} all load on the same latent factor, the
+ * cross-covariance between {@code C} and its complement {@code V \ C} has a
+ * predictable low rank determined by the number of latent variables that
+ * straddle the boundary.  Formally, under the NOLAC (no-overlapping-clusters)
+ * pure measurement assumption with generic parameters,
+ * <pre>
+ *   rank(Σ_{C, V\C}) = r
+ * </pre>
+ * where {@code r} is the latent boundary dimension of the cluster.  For a
+ * single-factor cluster {@code r = 1}; for a bifactor cluster {@code r = 2};
+ * and so on.  This rank criterion is the identifying constraint that TSC tests
+ * at every step of the search.
+ *
+ * <p>The theorem extends to models in which the structural equations
+ * <em>among</em> the latent variables are non-linear or cyclic, provided the
+ * measurement equations (latent to observed) remain linear (Spirtes, 2013).
+ * TSC's correctness guarantees therefore hold for a broader class of causal
+ * models than the strictly linear DAG assumed by Sullivant et al.
+ *
+ * <h2>Algorithm overview</h2>
+ *
+ * <p>TSC searches for ranks from {@code rMin} down to {@code rMax} (inclusive).
+ * Searching higher ranks first prevents spurious low-rank seeds from consuming
+ * variables that belong to higher-rank clusters.  For each target rank {@code r}
+ * the algorithm proceeds in two stages.
+ *
+ * <h3>Discovery stage</h3>
+ * <ol>
+ *   <li><b>Seed enumeration.</b>  All subsets of size {@code r + 1} among the
+ *       remaining variables are tested.  A subset is a valid seed if its
+ *       cross-rank against the full complement equals {@code r}.  A pairwise
+ *       correlation pre-screen (using the discovery alpha {@code αd}) avoids
+ *       the majority of rank-test calls for uncorrelated subsets.</li>
+ *   <li><b>Seed growing.</b>  Each seed is grown by iteratively unioning with
+ *       overlapping seeds that preserve the cross-rank at {@code r}.  If a
+ *       union produces cross-rank 0, it is immediately accepted as a rank-0
+ *       isolated cluster and its variables are committed.</li>
+ *   <li><b>Rule-3 guard.</b>  Before a grown cluster is accepted, a
+ *       singleton conditioning test checks whether any single variable acts
+ *       as an observed mediator/bottleneck.  If conditioning on any
+ *       {@code z ∈ C} collapses the conditional rank to 0, the cluster is
+ *       rejected as a spurious observed-variable artefact.</li>
+ *   <li><b>Bifactor augmentation.</b>  After growing, TSC checks whether
+ *       adding exactly one further variable causes a one-step rank drop
+ *       from {@code r} to {@code r - 1}, the algebraic signature of a
+ *       variable that bridges two latent factors.</li>
+ * </ol>
+ *
+ * <h3>Refinement stage</h3>
+ * <ol>
+ *   <li><b>Rule-3 trimming.</b>  For each accepted cluster, all subsets
+ *       {@code Z ⊆ C} of size exactly {@code r} are tested.  If conditioning
+ *       on {@code Z} collapses the rank of {@code (C \ Z, D | Z)} to 0, the
+ *       variables in {@code Z} are removed from the cluster and the procedure
+ *       restarts.  This iterative trimming is asymptotically safe under NOLAC:
+ *       a true latent cluster cannot be collapsed by conditioning on any
+ *       finite set of its own (noisy) indicators.</li>
+ *   <li><b>Recursive splitting.</b>  Each cluster is checked for internal
+ *       rank-0 splits.  If any partition {@code (C1, C2)} of the cluster has
+ *       {@code rank(Σ_{C1, C2}) = 0}, the cluster is split into {@code C1}
+ *       and {@code C2}, and each piece is recursively checked.  Pieces too
+ *       small to satisfy the minimum redundancy constraint are discarded.
+ *       This step recovers distinct sub-clusters that were incorrectly merged
+ *       during growing.</li>
+ *   <li><b>NOLAC enforcement.</b>  Any remaining overlapping clusters are
+ *       resolved greedily, preferring larger clusters, then lower-rank
+ *       clusters, then lexicographically earlier clusters.</li>
+ * </ol>
+ *
+ * <h2>Soundness sketch (NOLAC)</h2>
+ *
+ * <p>Under the NOLAC pure measurement assumption with generic parameters and
+ * a consistent rank test:
  * <ul>
- *   <li><b>Seed soundness.</b> If G is a true cluster with latent-boundary dimension r (typically r=1), then every
- *       (r+1)-subset S&sube;G satisfies rank(S, V\S)=r. If S contains any nonmember, generically rank(S, V\S)&gt;r.</li>
- *   <li><b>Union/extension correctness.</b> Growing a seed by unions that preserve rank r expands exactly to the
- *       maximal G; adding a nonmember raises the rank and is rejected.</li>
- *   <li><b>Non-overlap.</b> Because each observed belongs to at most one true G, any attempt to reuse a committed
- *       variable either raises the rank earlier or is blocked by bookkeeping; accepted clusters are pairwise disjoint.</li>
- *   <li><b>Conditional-rank refinement (Rule 3).</b> For any Z&sube;C with |Z|&ge;r, if rank(C\Z, V\C | Z)=0 then Z acts
- *       as an observed bottleneck in a pure DAG-without-latents scenario; removing Z collapses spurious clusters.
- *       In a true latent cluster with noisy indicators, conditioning on any small Z cannot annihilate the latent
- *       contribution, so the refinement leaves true clusters intact generically.</li>
+ *   <li><b>Seed soundness.</b>  Every {@code (r+1)}-subset of a true cluster
+ *       {@code G} has cross-rank {@code r}.  Any subset containing a
+ *       non-member generically has cross-rank {@code > r}.</li>
+ *   <li><b>Extension correctness.</b>  Growing a seed by unions that preserve
+ *       cross-rank {@code r} expands exactly to the maximal true cluster
+ *       {@code G}; adding any non-member raises the rank and is rejected.</li>
+ *   <li><b>Rule-3 safety.</b>  Conditioning on any subset {@code Z ⊆ G} of
+ *       size {@code r} cannot annihilate the latent contribution to
+ *       {@code Σ_{G \ Z, D}}, so Rule-3 trimming leaves true clusters intact
+ *       generically.</li>
+ *   <li><b>Split correctness.</b>  A true latent cluster with generic
+ *       parameters has no internal rank-0 partition, so the recursive split
+ *       does not fragment true clusters; only merged artefacts are split.</li>
  * </ul>
  *
- * <p><b>Practical guidance.</b> Use &alpha; that decreases slowly with n (e.g., &alpha;=1/log n) or an
- * information-criterion cutoff to reduce Type-I rank errors with sample size. Ensure {@code expectedSampleSize}
- * reflects the covariance sample size.
+ * <h2>Parameters</h2>
+ * <ul>
+ *   <li>{@code alpha} — validation significance level for all final rank
+ *       tests (default 0.01).</li>
+ *   <li>{@code discoveryAlpha} — significance level for seed enumeration and
+ *       growing; defaults to an {@code n}-adaptive value
+ *       {@code min(0.20, alpha * sqrt(10000 / nEff))} that is more liberal
+ *       at small samples.  Can be overridden via
+ *       {@link #setDiscoveryAlpha(double)}.</li>
+ *   <li>{@code rMin}, {@code rMax} — range of ranks to search
+ *       (defaults 0 and 3 respectively).  Searching from {@code rMax} down
+ *       to {@code rMin} is recommended to avoid spurious low-rank seeds
+ *       consuming variables that belong to higher-rank clusters.</li>
+ *   <li>{@code minRedundancy} ({@code δ}) — clusters of size exactly
+ *       {@code r + 1} cannot be internally cross-checked; requiring size
+ *       at least {@code r + 1 + δ} provides stability.  Default 1 for
+ *       rank-1 problems; 2 recommended for rank-2 problems.</li>
+ *   <li>{@code parallel} — if {@code true}, seed enumeration uses Java
+ *       parallel streams.  Set to {@code false} when the calling harness
+ *       already parallelises over replications, to avoid oversubscription
+ *       of the common ForkJoinPool (default {@code true}).</li>
+ * </ul>
+ *
+ * <h2>Empirical performance</h2>
+ *
+ * <p>In simulation studies under the NOLAC assumption with generic (symmetric)
+ * loadings and four clusters:
+ * <ul>
+ *   <li><b>Rank-1 MIMs</b> (cluster sizes 5--6): TSC reaches F1 ≥ 0.99 by
+ *       {@code n = 5,000} and approaches perfect recovery at larger samples,
+ *       while BPC and FOFC plateau near F1 ≈ 0.77 regardless of sample
+ *       size.</li>
+ *   <li><b>Rank-2 MIMs</b> (cluster sizes 7--8): TSC reaches F1 = 0.966 at
+ *       {@code n = 5,000} and F1 = 0.988 at {@code n = 20,000}.  FTFC, the
+ *       only existing rank-2 alternative, achieves corrected F1 = 0.486 at
+ *       {@code n = 5,000} with 40% empty replications, and F1 = 0.610 at
+ *       {@code n = 20,000} with 21% empty replications.</li>
+ * </ul>
+ *
+ * <h2>References</h2>
+ * <ul>
+ *   <li>Sullivant, S., Talaska, K., and Draisma, J. (2010).
+ *       Trek separation for Gaussian graphical models.
+ *       <i>Annals of Statistics</i>, 38(3):1665--1685.</li>
+ *   <li>Spirtes, P. (2013).
+ *       Calculation of entailed rank constraints in partially non-linear
+ *       and cyclic models.
+ *       <i>Proceedings of UAI 2013</i>, pp. 606--615.</li>
+ *   <li>Silva, R., Scheines, R., Glymour, C., and Spirtes, P. (2006).
+ *       Learning the structure of linear latent variable models.
+ *       <i>JMLR</i>, 7:191--246.</li>
+ *   <li>Kummerfeld, E. and Ramsey, J. (2016).
+ *       Causal clustering for 1-factor measurement models.
+ *       <i>KDD 2016</i>, pp. 1655--1664.</li>
+ * </ul>
  *
  * @author josephramsey
+ * @see RankTests#estimateWilksRank
  */
 public class Tsc implements EffectiveSampleSizeSettable {
     private final List<Node> nodes;
@@ -150,10 +277,10 @@ public class Tsc implements EffectiveSampleSizeSettable {
      * pair with |r| below the significance threshold at alpha liberal alpha, avoiding
      * the majority of rank test calls for uncorrelated combinations.
      *
-     * @param vars alpha list of integers representing the variables to consider
-     * @param size the size of the clusters to generate
-     * @param rank the target rank to filter clusters
-     * @param alpha    the alpha level to use for the rank test
+     * @param vars  alpha list of integers representing the variables to consider
+     * @param size  the size of the clusters to generate
+     * @param rank  the target rank to filter clusters
+     * @param alpha the alpha level to use for the rank test
      * @return alpha set of clusters that match the specified rank
      */
     public Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size,
@@ -298,15 +425,6 @@ public class Tsc implements EffectiveSampleSizeSettable {
                         log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
 
                         int minSize = rank + 1 + minRedundancy;
-//                        if (rankOfUnion == rank && union.size() >= minSize
-//                                && union.size() * 2 <= this.variables.size()) {
-//
-//                            // Accept this union
-//                            cluster = union;
-//                            it.remove();
-//                            extended = true;
-//                            break;
-//                        }
 
                         if (rankOfUnion == rank && union.size() >= minSize
                                 && union.size() * 2 <= this.variables.size()) {
@@ -515,218 +633,10 @@ public class Tsc implements EffectiveSampleSizeSettable {
             }
         }
 
-//        for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
-//            if (removeClustersBecauseOfRank0Internally(S, cluster, nEff, alpha)) {
-//                clusterToRank.remove(cluster);
-//                penultimateRemoved = true;
-//            }
-//        }
-
         if (!penultimateRemoved) log("No penultimate clusters were removed.");
 
         log("Final clusters = " + toNamesClusters(clusterToRank.keySet(), nodes));
         return clusterToRank;
-    }
-
-    /**
-     * Rescues isolated rank-1 triples (last-resort fallback when no clusters were found),
-     * applying the same Rule-3 refinement and internal rank-0 check that regular clusters
-     * pass through before adding any survivors to {@code clusterToRank}.
-     *
-     * @param clusterToRank the live cluster map, mutated in place
-     */
-    private void rescueAndAddTriples(Map<Set<Integer>, Integer> clusterToRank) {
-        Set<Set<Integer>> candidates = rescueIsolatedRank1Triples(allVariables());
-
-        for (Set<Integer> triple : candidates) {
-
-            // Register temporarily so removeClustersBecauseOfRank0Internally can
-            // look up the rank if it needs to (and Fix 1 now runs even without it).
-            clusterToRank.put(triple, 1);
-
-            // Rule-3 refinement — same path as regular clusters.
-            Set<Integer> refined = refineClustersByConditionalRanks(triple, 1);
-
-            if (refined.size() < 2) {
-                clusterToRank.remove(triple);
-                log("Rescued triple " + toNamesCluster(triple)
-                        + " eliminated after Rule-3 refinement.");
-                continue;
-            }
-
-            int newRank = ranksByTest(refined);
-            int minSize = newRank + 1 + minRedundancy;
-
-            if (refined.size() < minSize) {
-                clusterToRank.remove(triple);
-                log("Rescued triple " + toNamesCluster(triple) + " → " + toNamesCluster(refined)
-                        + " rejected: |C|=" + refined.size()
-                        + " < r+1+minRedundancy=" + minSize + ".");
-                continue;
-            }
-
-            // Swap refined in if it differs from the original triple.
-            if (!refined.equals(triple)) {
-                clusterToRank.remove(triple);
-                clusterToRank.put(refined, newRank);
-            } else {
-                clusterToRank.put(triple, newRank);
-            }
-
-            // Internal rank-0 check — same as the penultimate-cluster pass.
-            if (removeClustersBecauseOfRank0Internally(S, refined, nEff, alpha)) {
-                clusterToRank.remove(refined);
-                log("Rescued triple " + toNamesCluster(refined)
-                        + " removed: internal rank-0 split detected.");
-            } else {
-                log("Rescued triple " + toNamesCluster(refined)
-                        + " accepted (rank " + newRank + ").");
-            }
-        }
-    }
-
-    /**
-     * Removes overlapping clusters greedily, keeping the better of any two overlapping clusters.
-     *
-     * <p>The preference rule is:
-     * <ol>
-     *     <li>Prefer larger clusters.</li>
-     *     <li>If sizes tie, prefer lower-rank clusters.</li>
-     *     <li>If still tied, prefer the lexicographically smaller cluster for determinism.</li>
-     * </ol>
-     *
-     * <p>This method is intended as a final cleanup step when the cluster search has produced
-     * many overlapping small clusters, especially overlapping triples. It returns a new map
-     * and does not mutate the input map.</p>
-     *
-     * @param clustersToRank map from cluster to rank
-     * @return a new map with overlaps removed
-     */
-    private Map<Set<Integer>, Integer> removeOverlappingClusters(Map<Set<Integer>, Integer> clustersToRank) {
-        if (clustersToRank == null || clustersToRank.isEmpty()) {
-            return Collections.emptyMap();
-        }
-
-        List<Set<Integer>> ordered = new ArrayList<>(clustersToRank.keySet());
-
-        ordered.sort((a, b) -> {
-            // Larger clusters first.
-            int c = Integer.compare(b.size(), a.size());
-            if (c != 0) return c;
-
-            // Lower rank first.
-            int ra = clustersToRank.getOrDefault(a, Integer.MAX_VALUE);
-            int rb = clustersToRank.getOrDefault(b, Integer.MAX_VALUE);
-            c = Integer.compare(ra, rb);
-            if (c != 0) return c;
-
-            // Deterministic lexical tie-break.
-            return compareClustersLex(a, b);
-        });
-
-        Map<Set<Integer>, Integer> kept = new LinkedHashMap<>();
-        Set<Integer> used = new HashSet<>();
-
-        for (Set<Integer> cluster : ordered) {
-            if (Collections.disjoint(cluster, used)) {
-                Set<Integer> copy = new HashSet<>(cluster);
-                kept.put(copy, clustersToRank.get(cluster));
-                used.addAll(cluster);
-            } else {
-                log("Removing overlapping cluster " + toNamesCluster(cluster)
-                        + " rank = " + clustersToRank.get(cluster));
-            }
-        }
-
-        return kept;
-    }
-
-    /**
-     * Lexicographically compares two clusters after sorting their members increasingly.
-     *
-     * @param a first cluster
-     * @param b second cluster
-     * @return negative, zero, or positive according to lexical order
-     */
-    private int compareClustersLex(Set<Integer> a, Set<Integer> b) {
-        List<Integer> aa = new ArrayList<>(a);
-        List<Integer> bb = new ArrayList<>(b);
-        Collections.sort(aa);
-        Collections.sort(bb);
-
-        int n = Math.min(aa.size(), bb.size());
-        for (int i = 0; i < n; i++) {
-            int c = Integer.compare(aa.get(i), bb.get(i));
-            if (c != 0) return c;
-        }
-
-        return Integer.compare(aa.size(), bb.size());
-    }
-
-    private Set<Set<Integer>> rescueIsolatedRank1Triples(List<Integer> vars) {
-        Set<Set<Integer>> rescued = new HashSet<>();
-
-        if (vars.size() < 3) return rescued;
-
-        SublistGenerator gen = new SublistGenerator(vars.size(), 3);
-        int[] choice;
-
-        while ((choice = gen.next()) != null) {
-            Set<Integer> triple = new HashSet<>();
-            for (int i : choice) {
-                triple.add(vars.get(i));
-            }
-
-            if (!allPairsAreRank1Seeds(triple)) continue;
-            if (!allSingletonSplitsHavePositiveInternalRank(triple)) continue;
-
-            rescued.add(triple);
-        }
-
-        return rescued;
-    }
-
-    private boolean allPairsAreRank1Seeds(Set<Integer> triple) {
-        if (triple == null || triple.size() != 3) return false;
-
-        List<Integer> t = new ArrayList<>(triple);
-
-        for (int i = 0; i < t.size(); i++) {
-            for (int j = i + 1; j < t.size(); j++) {
-                Set<Integer> pair = new HashSet<>();
-                pair.add(t.get(i));
-                pair.add(t.get(j));
-
-                if (ranksByTest(pair) != 1) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    private boolean allSingletonSplitsHavePositiveInternalRank(Set<Integer> cluster) {
-        if (cluster == null || cluster.size() < 3) return false;
-
-        List<Integer> c = new ArrayList<>(cluster);
-
-        for (int v : c) {
-            List<Integer> rest = new ArrayList<>(c);
-            rest.remove((Integer) v);
-
-            if (rest.isEmpty()) return false;
-
-            int[] left = new int[]{v};
-            int[] right = rest.stream().mapToInt(Integer::intValue).toArray();
-
-            int r = RankTests.estimateWilksRank(S, left, right, nEff, alpha);
-            if (r == 0) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private List<Integer> allVariables() {
@@ -825,17 +735,6 @@ public class Tsc implements EffectiveSampleSizeSettable {
             for (int x : ids) s.add(x);
             return rankWithAlpha(s, a);
         });
-    }
-
-    /**
-     * Returns the minimum absolute pairwise correlation threshold for a pair
-     * to be considered significantly correlated at significance level {@code a}.
-     * Uses Fisher's z-test. Pairs with |r| below this threshold cannot be
-     * rank-1 seeds and are rejected by the pre-screen without a rank test.
-     */
-    private double corrSignificanceThreshold(double a) {
-        double z = StatUtils.getZForAlpha(a);
-        return Math.tanh(z / Math.sqrt(Math.max(nEff - 3, 1)));
     }
 
     /**
@@ -974,7 +873,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
      * Pieces that are too small (< r + 1 + minRedundancy) are discarded.
      *
      * @return surviving sub-clusters after recursive splitting; empty if all
-     *         pieces are discarded.
+     * pieces are discarded.
      */
     private List<Set<Integer>> splitOrKeepCluster(Set<Integer> cluster) {
         List<Integer> C = new ArrayList<>(cluster);
@@ -994,11 +893,6 @@ public class Tsc implements EffectiveSampleSizeSettable {
             int[] c1Array = C1list.stream().mapToInt(Integer::intValue).toArray();
             int[] c2Array = C2list.stream().mapToInt(Integer::intValue).toArray();
 
-//            int r = RankTests.estimateWilksRank(S, c1Array, c2Array,
-//                    getEffectiveSampleSize(), alpha);  // see note below
-
-            // Only split if the evidence is very strong — use a fraction of alpha
-//            double splitAlpha = alpha / 10.0;
             int r = RankTests.estimateWilksRank(S, c1Array, c2Array,
                     getEffectiveSampleSize(), alpha);
 
