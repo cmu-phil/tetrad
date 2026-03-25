@@ -24,23 +24,22 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * <p>Runs two separate sub-studies:
  * <ol>
- *   <li><b>Study 1 — Rank-1 MIM.</b>  Four groups, each with one latent,
- *       cluster sizes drawn uniformly from {3, 4, 5, 6}.
- *       Algorithms: TSC, BPC, FOFC.
- *       Sample sizes: 200, 500, 1000, 2000, 5000.</li>
+ *   <li><b>Study 1 — Rank-1 MIM.</b>  Four groups, each with one latent.
+ *       Algorithms: TSC, BPC, FOFC.</li>
  *   <li><b>Study 2 — Rank-2 MIM.</b>  Four groups, each with two latents
- *       (bifactor), cluster sizes drawn uniformly from {5, 6, 7, 8}.
- *       Algorithms: TSC (minRedundancy=2), FTFC.
- *       Sample sizes: 500, 1000, 2000, 5000.</li>
+ *       (bifactor).  Algorithms: TSC, FTFC.</li>
  * </ol>
  *
- * <p>The replication loop is parallelised over replications using a fixed
- * thread pool of size {@code Runtime.getRuntime().availableProcessors()}.
- * Each replication runs entirely in its own thread with no shared mutable
- * state.  Note: {@code RandomUtil.getInstance()} may return a shared
- * singleton; if its implementation is not thread-safe, draws across
- * replications will not be independent.  Replace with a thread-local RNG
- * if strict independence is required.
+ * <h2>F1 computation</h2>
+ * <p>Precision is averaged over non-empty replications only (replications
+ * where the algorithm returned at least one cluster).  Recall is averaged
+ * over <em>all</em> replications, with empty replications contributing
+ * recall = 0.  The reported F1 is computed from these two means:
+ * <pre>
+ *   F1 = 2 * meanPrecision * meanRecall / (meanPrecision + meanRecall)
+ * </pre>
+ * This correctly penalises high empty-count algorithms whose per-replication
+ * precision looks good but whose overall recall is near zero.
  *
  * @author josephramsey
  */
@@ -85,8 +84,8 @@ public final class SimulationStudy {
      */
     public List<StudyResult> runAll() {
         List<StudyResult> results = new ArrayList<>();
-        results.add(runStudy1());
-//        results.add(runStudy2());
+//        results.add(runStudy1());
+        results.add(runStudy2());
         return results;
     }
 
@@ -107,7 +106,7 @@ public final class SimulationStudy {
         System.out.println("=".repeat(72));
 
         List<AlgorithmRunner> runners = List.of(
-                new TscRunner(RANK1_ALPHA, 0,1, 1),
+                new TscRunner(RANK1_ALPHA, 0, 1, 1),
                 new BpcRunner(RANK1_ALPHA),
                 new FofcRunner(RANK1_ALPHA)
         );
@@ -153,53 +152,52 @@ public final class SimulationStudy {
             List<AlgorithmRunner> runners,
             int rank) {
 
-        int numAlgs = runners.size();
-        int numN    = sampleSizes.length;
+        int numAlgs  = runners.size();
+        int numN     = sampleSizes.length;
         int nThreads = Runtime.getRuntime().availableProcessors();
         ExecutorService pool = Executors.newFixedThreadPool(nThreads);
 
-        // accumulators[algIdx][nIdx]
+        // Accumulators: sumP and sumR accumulated per the rules described in
+        // the class Javadoc.  F1 is derived from meanP and meanR at report time.
         double[][] sumP    = new double[numAlgs][numN];
         double[][] sumR    = new double[numAlgs][numN];
-        double[][] sumF1   = new double[numAlgs][numN];
         int[][]    empties = new int[numAlgs][numN];
 
         for (int nIdx = 0; nIdx < numN; nIdx++) {
-            final int n        = sampleSizes[nIdx];
-            final int nIdxFin  = nIdx;
+            final int n       = sampleSizes[nIdx];
+            final int nIdxFin = nIdx;
             AtomicInteger done = new AtomicInteger(0);
             System.out.printf("  n = %5d  [", n);
             System.out.flush();
 
-            // Collect one ReplicationResult per replication in parallel
             List<Future<ReplicationResult>> futures = new ArrayList<>(numReplications);
-
             for (int rep = 0; rep < numReplications; rep++) {
                 futures.add(pool.submit(() -> runOneReplication(rank, n, runners)));
             }
 
-            // Accumulate results as futures complete
             for (Future<ReplicationResult> future : futures) {
                 try {
                     ReplicationResult rr = future.get();
                     for (int algIdx = 0; algIdx < numAlgs; algIdx++) {
                         BestJaccardScorer.ClusterScore score = rr.scores()[algIdx];
+
                         if (!score.isEmpty()) {
-                            sumP[algIdx][nIdxFin]  += score.precision();
-                            sumR[algIdx][nIdxFin]  += score.recall();
-                            sumF1[algIdx][nIdxFin] += score.f1();
+                            // Precision accumulated over non-empty replications only.
+                            sumP[algIdx][nIdxFin] += score.precision();
                         } else {
-                            // recall = 0 for empty; precision not counted
                             empties[algIdx][nIdxFin]++;
                         }
+
+                        // Recall accumulated over ALL replications (zero for empties).
+                        sumR[algIdx][nIdxFin] += score.recall();
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } catch (ExecutionException e) {
-                    // A replication threw — treat as all-empty for safety
                     System.err.println("Replication failed: " + e.getCause().getMessage());
                     for (int algIdx = 0; algIdx < numAlgs; algIdx++) {
                         empties[algIdx][nIdxFin]++;
+                        // recall gets 0 implicitly (sumR not incremented)
                     }
                 }
 
@@ -216,11 +214,28 @@ public final class SimulationStudy {
         for (int nIdx = 0; nIdx < numN; nIdx++) {
             int n = sampleSizes[nIdx];
             List<AlgorithmSummary> algSummaries = new ArrayList<>();
+
             for (int algIdx = 0; algIdx < numAlgs; algIdx++) {
                 int nonEmpty = numReplications - empties[algIdx][nIdx];
-                double meanP  = nonEmpty > 0 ? sumP[algIdx][nIdx]  / nonEmpty          : Double.NaN;
-                double meanR  =               sumR[algIdx][nIdx]  / numReplications;
-                double meanF1 = nonEmpty > 0 ? sumF1[algIdx][nIdx] / nonEmpty          : Double.NaN;
+
+                // meanP: over non-empty replications only.
+                double meanP = nonEmpty > 0
+                        ? sumP[algIdx][nIdx] / nonEmpty
+                        : Double.NaN;
+
+                // meanR: over all replications (empties contribute 0).
+                double meanR = sumR[algIdx][nIdx] / numReplications;
+
+                // F1: derived from meanP and meanR so it correctly reflects
+                // both the quality of found clusters and the empty-run rate.
+                double meanF1;
+                if (Double.isNaN(meanP) || Double.isNaN(meanR)) {
+                    meanF1 = Double.NaN;
+                } else {
+                    double denom = meanP + meanR;
+                    meanF1 = (denom == 0.0) ? 0.0 : 2.0 * meanP * meanR / denom;
+                }
+
                 algSummaries.add(new AlgorithmSummary(
                         runners.get(algIdx).label(),
                         meanP, meanR, meanF1,
@@ -232,7 +247,7 @@ public final class SimulationStudy {
     }
 
     // -----------------------------------------------------------------------
-    // Single replication (runs entirely in one thread)
+    // Single replication
     // -----------------------------------------------------------------------
 
     private static ReplicationResult runOneReplication(
@@ -240,22 +255,17 @@ public final class SimulationStudy {
             int n,
             List<AlgorithmRunner> runners) {
 
-        // Generate graph
         List<LatentGroupSpec> specs = randomSpecs(rank, NUM_GROUPS);
         Graph graph = RandomMim.constructRandomMim(
                 specs,
-                4,                       // random ~20% meta-edges
-                0, 0, 0,                    // no impurities
+                NUM_GROUPS,                         // fixed meta-edge count
+                0, 0, 0,
                 LatentLinkMode.CORRESPONDING
         );
 
-        // True clusters
         List<Set<Node>> trueClusters = TrueClusterExtractor.extractClusters(graph);
-
-        // Parameterise and simulate
         DataSet data = SemParameterizer.defaults().parameterizeAndSimulate(graph, n);
 
-        // Run each algorithm and score
         BestJaccardScorer.ClusterScore[] scores =
                 new BestJaccardScorer.ClusterScore[runners.size()];
 
@@ -263,9 +273,6 @@ public final class SimulationStudy {
             List<Set<Node>> recovered;
             try {
                 recovered = runners.get(algIdx).run(data);
-
-                System.out.println("recovered: " + recovered);
-
             } catch (Exception e) {
                 recovered = Collections.emptyList();
             }
@@ -302,6 +309,7 @@ public final class SimulationStudy {
         if (conditions.isEmpty()) return;
         List<AlgorithmSummary> algs = conditions.get(0).algorithmSummaries();
 
+        // Header
         StringBuilder header = new StringBuilder(String.format("%-6s", "n"));
         for (AlgorithmSummary a : algs) {
             header.append(String.format("  %-23s", a.label() + " P / R / F1"));
@@ -312,12 +320,12 @@ public final class SimulationStudy {
         for (ConditionResult cond : conditions) {
             StringBuilder row = new StringBuilder(String.format("%-6d", cond.sampleSize()));
             for (AlgorithmSummary a : cond.algorithmSummaries()) {
-                String cell = String.format("  %5.3f / %5.3f / %5.3f",
+                String cell = String.format("%5.3f / %5.3f / %5.3f",
                         nanToMinus(a.meanPrecision()),
                         nanToMinus(a.meanRecall()),
                         nanToMinus(a.meanF1()));
                 if (a.emptyCount() > 0) cell += String.format(" [%d]", a.emptyCount());
-                row.append(String.format("  %-23s", cell.trim()));
+                row.append(String.format("  %-23s", cell));
             }
             System.out.println(row);
         }
@@ -357,15 +365,19 @@ public final class SimulationStudy {
 
     /**
      * Mean metrics for one algorithm at one sample-size level.
-     * Precision and F1 are averaged over non-empty replications only.
-     * Recall is averaged over all replications (zero for empty ones).
-     * {@code emptyCount} is the number of replications where the algorithm
-     * returned no clusters.
      *
-     * @param label         algorithm label.
+     * <p><b>Averaging conventions:</b>
+     * <ul>
+     *   <li>{@code meanPrecision} — averaged over non-empty replications only.</li>
+     *   <li>{@code meanRecall} — averaged over all replications (empty = 0).</li>
+     *   <li>{@code meanF1} — derived as {@code 2*P*R/(P+R)} from the two means
+     *       above, so it correctly penalises high empty-count algorithms.</li>
+     * </ul>
+     *
+     * @param label         algorithm label, e.g. {@code "TSC"}.
      * @param meanPrecision mean best-Jaccard precision (non-empty reps only).
      * @param meanRecall    mean best-Jaccard recall (all reps).
-     * @param meanF1        mean F1 (non-empty reps only).
+     * @param meanF1        F1 derived from meanPrecision and meanRecall.
      * @param emptyCount    replications returning no clusters.
      * @param totalReps     total replications for this condition.
      */
