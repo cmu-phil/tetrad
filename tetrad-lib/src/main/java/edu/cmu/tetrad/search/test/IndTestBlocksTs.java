@@ -334,6 +334,13 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
             if (!randomizeSplits) break;
         }
 
+        if (blockSpec.ranks().get(nodeHash.get(x)) == 0 || blockSpec.ranks().get(nodeHash.get(y)) == 0) {
+            boolean indep = true;
+
+            return new IndependenceResult(
+                    new IndependenceFact(x, y, z), indep, Double.NaN, Double.NaN);
+        }
+
         // Defensive guard: reachable only if numTrials <= 0.
         if (bestBuild == null) {
             bestBuild = buildSides(x, y, z, baseSeed);

@@ -635,6 +635,30 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
         if (!penultimateRemoved) log("No penultimate clusters were removed.");
 
+        log("Now we will remove any cluster that is entirely contained within another cluster.");
+
+        Set<Set<Integer>> toRemove = new HashSet<>();
+        List<Set<Integer>> allClusters = new ArrayList<>(clusterToRank.keySet());
+
+        for (int i = 0; i < allClusters.size(); i++) {
+            Set<Integer> clusterA = allClusters.get(i);
+            for (int j = 0; j < allClusters.size(); j++) {
+                if (i == j) continue;
+                Set<Integer> clusterB = allClusters.get(j);
+                if (clusterB.containsAll(clusterA)) {
+                    toRemove.add(clusterA);
+                    log("Removing cluster " + toNamesCluster(clusterA)
+                            + " because it is entirely contained in " + toNamesCluster(clusterB));
+                    break;
+                }
+            }
+        }
+
+        for (Set<Integer> cluster : toRemove) {
+            clusterToRank.remove(cluster);
+        }
+
+
         log("Final clusters = " + toNamesClusters(clusterToRank.keySet(), nodes));
         return clusterToRank;
     }
