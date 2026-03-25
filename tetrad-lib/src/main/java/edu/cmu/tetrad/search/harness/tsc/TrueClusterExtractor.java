@@ -121,6 +121,76 @@ public final class TrueClusterExtractor {
         return Collections.unmodifiableList(result);
     }
 
+    /**
+     * Extracts the primary latent node for each group in the same order as
+     * {@link #extractClusters(Graph)}.
+     *
+     * <p>For rank-1 models there is exactly one latent per group; that latent
+     * is returned.  For rank-r models (r &gt; 1) the group has a base latent
+     * (e.g. {@code L3}) and suffixed latents (e.g. {@code L3A}, {@code L3B}).
+     * This method returns the base latent (the one whose name equals the
+     * group's base name, with no trailing uppercase suffix).
+     *
+     * <p>The returned list is in the same group order as {@link #extractClusters}
+     * so that {@code extractLatentLeaders(graph).get(i)} is the latent whose
+     * indicators constitute {@code extractClusters(graph).get(i)}.
+     *
+     * @param graph a graph produced by {@code RandomMim}; must not be
+     *              {@code null}.
+     * @return an unmodifiable list of one latent node per group, in group-index
+     *         order.  Groups with no measured children are omitted, consistent
+     *         with {@link #extractClusters}.
+     * @throws IllegalArgumentException if {@code graph} is {@code null}.
+     */
+    public static List<Node> extractLatentLeaders(Graph graph) {
+        if (graph == null) throw new IllegalArgumentException("Graph must not be null.");
+
+        // ---- Collect all latent nodes grouped by base name ----
+        // For each group we want the "leader": the latent whose own name equals
+        // the group's base name (no trailing uppercase letters).
+        Map<String, Node>     baseToLeader  = new LinkedHashMap<>();
+        Map<String, Set<Node>> baseToMeasured = new LinkedHashMap<>();
+
+        for (Node node : graph.getNodes()) {
+            if (node.getNodeType() != NodeType.LATENT) continue;
+
+            String base = latentBaseName(node.getName());
+
+            // A latent is the leader of its group if its name equals the base name
+            // (i.e., it has no trailing suffix).
+            if (node.getName().equals(base)) {
+                baseToLeader.put(base, node);
+            }
+
+            // Track whether this group has any measured children.
+            for (Node child : graph.getChildren(node)) {
+                if (child.getNodeType() == NodeType.MEASURED) {
+                    baseToMeasured
+                            .computeIfAbsent(base, k -> new LinkedHashSet<>())
+                            .add(child);
+                }
+            }
+        }
+
+        // ---- Sort by group index and filter to groups with measured children ----
+        List<String> sortedBases = new ArrayList<>(baseToLeader.keySet());
+        sortedBases.sort(Comparator.comparingInt(TrueClusterExtractor::latentGroupIndex)
+                .thenComparing(Comparator.naturalOrder()));
+
+        List<Node> result = new ArrayList<>(sortedBases.size());
+        for (String base : sortedBases) {
+            // Skip groups that have no measured children (consistent with extractClusters).
+            Set<Node> measured = baseToMeasured.get(base);
+            if (measured != null && !measured.isEmpty()) {
+                Node leader = baseToLeader.get(base);
+                if (leader != null) result.add(leader);
+            }
+        }
+
+        return Collections.unmodifiableList(result);
+    }
+
+
     // -----------------------------------------------------------------------
     // Private helpers
     // -----------------------------------------------------------------------
