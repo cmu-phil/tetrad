@@ -12,7 +12,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.search.test.IndTestBlocksTs;
+import edu.cmu.tetrad.search.test.TrekSeparationBlocksIndependence;
 
 import java.util.*;
 
@@ -24,7 +24,7 @@ import java.util.*;
  * cluster partition is supplied directly so that structural-search performance
  * can be evaluated in isolation from cluster-recovery performance.  Each call
  * to {@link #run} builds a {@link BlockSpec} from the supplied clusters, wraps
- * it in an {@link IndTestBlocksTs} instance, and invokes PC to search for the
+ * it in an {@link TrekSeparationBlocksIndependence} instance, and invokes PC to search for the
  * structural graph over the latent factor nodes.
  *
  * <p>Block variables are named after the corresponding true latent group leaders
@@ -39,7 +39,7 @@ import java.util.*;
  * }</pre>
  *
  * @author josephramsey
- * @see IndTestBlocksTs
+ * @see TrekSeparationBlocksIndependence
  * @see edu.cmu.tetrad.search.blocks.BlockSpec
  */
 public final class TsbiRunner {
@@ -138,7 +138,7 @@ public final class TsbiRunner {
         // ---- Instantiate test and run PC ----
         BlockSpec spec = new BlockSpec(data, blocks, blockVars, ranks);
 
-        IndTestBlocksTs test = new IndTestBlocksTs(spec);
+        TrekSeparationBlocksIndependence test = new TrekSeparationBlocksIndependence(spec);
         test.setAlpha(alpha);
         test.setEffectiveSampleSize(effectiveSampleSize);
 

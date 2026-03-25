@@ -13,6 +13,7 @@ import edu.cmu.tetrad.graph.RandomMim.LatentGroupSpec;
 import edu.cmu.tetrad.graph.RandomMim.LatentLinkMode;
 import edu.cmu.tetrad.search.harness.tsc.SemParameterizer;
 import edu.cmu.tetrad.search.harness.tsc.TrueClusterExtractor;
+import edu.cmu.tetrad.search.test.TrekSeparationBlocksIndependence;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -22,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Simulation harness for the TSBI (Trek-Separation Block Independence) test.
  *
  * <p>Evaluates the structural-model recovery of the PC algorithm when its
- * conditional independence oracle is {@link edu.cmu.tetrad.search.test.IndTestBlocksTs}.
+ * conditional independence oracle is {@link TrekSeparationBlocksIndependence}.
  * The true cluster partition is supplied directly to PC+TSBI on each replication,
  * so the results measure structural-search performance in isolation from
  * cluster-recovery performance.

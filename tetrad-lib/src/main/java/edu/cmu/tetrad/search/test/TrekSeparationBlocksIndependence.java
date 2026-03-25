@@ -33,7 +33,7 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Trek-separation block-level CI test (IndTestBlocksTs):
+ * Trek-separation block-level CI test (Trek Separation Blocks Independence, TSBI):
  * <p>
  * Given blocks X, Y, and conditioning blocks Z1..Zk that correspond to latent factors [X], [Y], [Z1]..[Zk], split each
  * Zi into two nearly-equal parts ZiA, ZiB. Form L = X âª Z1A âª ... âª ZkA,   R = Y âª Z1B âª ... âª ZkB and
@@ -48,7 +48,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author josephramsey
  * @see edu.cmu.tetrad.search.test.IndTestTrekSep
  */
-public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSettable, BlockTest {
+public class TrekSeparationBlocksIndependence implements IndependenceTest, EffectiveSampleSizeSettable, BlockTest {
 
     // ---- Cache sizes (tune) ----
     private static final int RANK_CACHE_MAX = 400_000; // (L,R,n,alpha,splitSeed,randomize,numTrials)->rank
@@ -89,7 +89,7 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
      * @throws IllegalArgumentException if blockSpec is null or contains invalid configurations such as duplicate nodes,
      *                                  null variables, or invalid block column references.
      */
-    public IndTestBlocksTs(BlockSpec blockSpec) {
+    public TrekSeparationBlocksIndependence(BlockSpec blockSpec) {
         if (blockSpec == null) throw new IllegalArgumentException("blockspec == null");
         this.blockSpec = blockSpec;
         this.dataVars = blockSpec.dataSet().getVariables();
@@ -362,18 +362,18 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
 
         boolean indep = estRank == target;
 
-//        if (verbose) {
-//            List<Node> leftVars  = indicesToNodes(bestBuild.Lcols, dataVars);
-//            List<Node> rightVars = indicesToNodes(bestBuild.Rcols, dataVars);
-//            TetradLogger.getInstance().log(
-//                    "TS split: left=" + leftVars + " right=" + rightVars);
-//            TetradLogger.getInstance().log(
-//                    "TS: " + bestBuild.xName + " _||_ " + bestBuild.yName
-//                            + " | " + bestBuild.zNames
-//                            + " ? estRank(min over trials)=" + estRank
-//                            + ", target(sum ranks)=" + target
-//                            + " -> " + (indep ? "INDEP" : "DEP"));
-//        }
+        if (verbose) {
+            List<Node> leftVars  = indicesToNodes(bestBuild.Lcols, dataVars);
+            List<Node> rightVars = indicesToNodes(bestBuild.Rcols, dataVars);
+            TetradLogger.getInstance().log(
+                    "TS split: left=" + leftVars + " right=" + rightVars);
+            TetradLogger.getInstance().log(
+                    "TS: " + bestBuild.xName + " _||_ " + bestBuild.yName
+                            + " | " + bestBuild.zNames
+                            + " ? estRank(min over trials)=" + estRank
+                            + ", target(sum ranks)=" + target
+                            + " -> " + (indep ? "INDEP" : "DEP"));
+        }
 
         if (verbose) {
             if (indep) {
