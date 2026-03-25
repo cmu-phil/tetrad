@@ -50,10 +50,10 @@ public final class SimulationStudy {
     // Configuration constants
     // -----------------------------------------------------------------------
 
-    private static final int     NUM_GROUPS          = 5;
-    private static final int[]   RANK1_SIZES         = {3, 4, 5, 6};
-    private static final int[]   RANK2_SIZES         = {5, 6, 7, 8};
-    private static final int[]   RANK1_SAMPLE_SIZES  = {500, 1000, 2000, 5000};
+    private static final int     NUM_GROUPS          = 4;
+    private static final int[]   RANK1_SIZES         = {5, 6};
+    private static final int[]   RANK2_SIZES         = {7, 8};
+    private static final int[]   RANK1_SAMPLE_SIZES  = {500, 1000, 2000, 5000, 10000, 20000};
     private static final int[]   RANK2_SAMPLE_SIZES  = {500, 1000, 2000, 5000, 10000, 20000};
     private static final double  RANK1_ALPHA         = 0.01;
     private static final double  RANK2_ALPHA         = 0.01;
@@ -85,8 +85,8 @@ public final class SimulationStudy {
      */
     public List<StudyResult> runAll() {
         List<StudyResult> results = new ArrayList<>();
-//        results.add(runStudy1());
-        results.add(runStudy2());
+        results.add(runStudy1());
+//        results.add(runStudy2());
         return results;
     }
 
@@ -134,8 +134,8 @@ public final class SimulationStudy {
         System.out.println("=".repeat(72));
 
         List<AlgorithmRunner> runners = List.of(
-                new TscRunner(RANK2_ALPHA, 0, 2, 2)
-//                new FtfcRunner(RANK2_ALPHA)
+                new TscRunner(RANK2_ALPHA, 0, 2, 2),
+                new FtfcRunner(RANK2_ALPHA)
         );
 
         StudyResult result = runStudy("Rank-2 MIM", RANK2_SAMPLE_SIZES, runners, 2);
@@ -244,7 +244,7 @@ public final class SimulationStudy {
         List<LatentGroupSpec> specs = randomSpecs(rank, NUM_GROUPS);
         Graph graph = RandomMim.constructRandomMim(
                 specs,
-                null,                       // random ~20% meta-edges
+                4,                       // random ~20% meta-edges
                 0, 0, 0,                    // no impurities
                 LatentLinkMode.CORRESPONDING
         );

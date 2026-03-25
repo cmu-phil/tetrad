@@ -298,13 +298,35 @@ public class Tsc implements EffectiveSampleSizeSettable {
                         log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
 
                         int minSize = rank + 1 + minRedundancy;
+//                        if (rankOfUnion == rank && union.size() >= minSize
+//                                && union.size() * 2 <= this.variables.size()) {
+//
+//                            // Accept this union
+//                            cluster = union;
+//                            it.remove();
+//                            extended = true;
+//                            break;
+//                        }
+
                         if (rankOfUnion == rank && union.size() >= minSize
                                 && union.size() * 2 <= this.variables.size()) {
-
-                            // Accept this union
+                            // existing: accept union at target rank
                             cluster = union;
                             it.remove();
                             extended = true;
+                            break;
+
+                        } else if (rankOfUnion == 0
+                                && union.size() >= minRedundancy + 1
+                                && union.size() * 2 <= this.variables.size()) {
+                            // new: union is completely isolated from its complement
+                            // record it as a rank-0 cluster and commit its variables
+                            log("Rank-0 isolated cluster found during growing: "
+                                    + toNamesCluster(union));
+                            newClusters.add(union);
+                            used.addAll(union);
+                            it.remove();
+                            // do not set extended = true; stop growing this seed
                             break;
                         }
                     }

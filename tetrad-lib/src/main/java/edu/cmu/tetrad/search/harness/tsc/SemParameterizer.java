@@ -145,7 +145,7 @@ public final class SemParameterizer {
         Parameters p = new Parameters();
         p.set(Params.COEF_LOW,          coefLow);
         p.set(Params.COEF_HIGH,         coefHigh);
-        p.set(Params.COEF_SYMMETRIC,    false);
+        p.set(Params.COEF_SYMMETRIC,    true);
         p.set(Params.VAR_LOW,           varLow);
         p.set(Params.VAR_HIGH,          varHigh);
         p.set(Params.RANDOMIZE_COLUMNS, true);
