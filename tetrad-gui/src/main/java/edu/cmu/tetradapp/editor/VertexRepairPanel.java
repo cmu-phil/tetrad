@@ -236,65 +236,6 @@ public final class VertexRepairPanel extends JPanel {
         return da.compareTo(db);
     }
 
-//    private static double utility(ScoredCandidate s) {
-//        if (s == null) return Double.NEGATIVE_INFINITY;
-//        if (!s.passesGuards()) return Double.NEGATIVE_INFINITY;
-//
-//        final int delta = s.delta();        // negative good
-//        final int edgesAfter = s.edgesAfter();
-//
-//        // Treat missing p-values as NEUTRAL, not catastrophic.
-//        final double mpAfter = s.modelPAfter();
-//        final double npAfter = s.nodePAfter();
-//
-//        final double mpLogOdds = Double.isFinite(mpAfter) ? alphaLogOdds(mpAfter, alpha) : 0.0;
-//        final double npLogOdds = Double.isFinite(npAfter) ? alphaLogOdds(npAfter, alpha) : 0.0;
-//
-//        // Model-P change: if unknown, treat as 0 (neutral), NOT -Infinity.
-//        final double mpBefore = s.modelPBefore();
-//        final double dMp = (Double.isFinite(mpBefore) && Double.isFinite(mpAfter)) ? (mpAfter - mpBefore) : 0.0;
-//
-//        final MoveType mt = moveType(s.edit());
-//
-//        int editSize = 1;
-//        try {
-//            if (s.edit() != null && s.edit().getEdges() != null) {
-//                editSize = TMath.max(1, s.edit().getEdges().size());
-//            }
-//        } catch (Throwable ignored) {
-//            // keep editSize=1
-//        }
-//
-//        // ---- weights ----
-//        final double W_DELTA = 2.0;    // dominates
-//        final double W_DMP = 1.5;    // encourage better Model-P vs baseline
-//        final double W_NODE = 0.35;
-//        final double W_MODEL = 0.35;
-//        final double W_EDGES = 1.0;
-//        final double W_EDIT_SZ = 0.90;
-//
-//        final double BONUS_SIMPLE_REORIENT_IMPROVE = 5.0;
-//        final double PENALTY_COLLIDER_IMPROVE = 1.0;
-//
-//        double bonus = 0.0;
-//        if (Double.isFinite(dMp) && dMp > 0.0) {
-//            if (mt == MoveType.REORIENT_SIMPLE) bonus += BONUS_SIMPLE_REORIENT_IMPROVE;
-//            if (mt == MoveType.COLLIDER_FIX) bonus -= PENALTY_COLLIDER_IMPROVE;
-//        } else if (!Double.isFinite(mpAfter)) {
-//            // If Model-P wasn't computed, gently prefer simple reorients over collider fixes.
-//            if (mt == MoveType.REORIENT_SIMPLE) bonus += 0.25;
-//            if (mt == MoveType.COLLIDER_FIX) bonus -= 0.25;
-//        }
-//
-//        return (-W_DELTA * delta)
-//                + (W_DMP * dMp)
-//                + bonus
-//                + (W_MODEL * mpLogOdds)
-//                + (W_NODE * npLogOdds)
-//                - (W_EDGES * edgesAfter)
-//                - (W_EDIT_SZ * (editSize - 1));
-//    }
-
     private static MoveType moveType(CandidateEdit e) {
         if (e == null) return MoveType.OTHER;
 
@@ -1468,10 +1409,33 @@ public final class VertexRepairPanel extends JPanel {
             vlog("SWEEP %d (start signature=%s)", sweep, sweepStartSig);
 
             // Collect all candidates from all nodes into one global list.
+//            List<ScoredCandidate> allCandidates = new ArrayList<>();
+//            Set<String> seenKeys = new HashSet<>();
+//
+//            gt = (RepairGraphType) graphTypeCombo.getSelectedItem();
+
+// Build baseline cache ONCE for this sweep — shared across all node evaluations.
+// This avoids rebuilding it N times (once per node) when the graph hasn't changed.
+            Graph baseForCache = safeCopy(workingGraph);
+            gt = (RepairGraphType) graphTypeCombo.getSelectedItem();
+
+            if (gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG) {
+                baseForCache = canonicalizeToCpdagOrNull(baseForCache);
+            } else if (gt == RepairGraphType.PAG) {
+                baseForCache = canonicalizeToPagOrNull(baseForCache);
+            }
+
+            GlobalEvalCache sweepBaseCache = (baseForCache != null)
+                    ? buildBaselineCache(baseForCache)
+                    : null;
+
+// Shared candidate graph cache across all nodes in this sweep.
+// Avoids rebuilding e.g. "Add X1---X2" when processing both X1 and X2.
+            Map<String, Graph> sweepCandGraphCache = new HashMap<>();
+
+// Collect all candidates from all nodes into one global list.
             List<ScoredCandidate> allCandidates = new ArrayList<>();
             Set<String> seenKeys = new HashSet<>();
-
-            gt = (RepairGraphType) graphTypeCombo.getSelectedItem();
 
             for (Node v0 : workingGraph.getNodes()) {
                 if (stopRequested()) break;
@@ -1480,14 +1444,14 @@ public final class VertexRepairPanel extends JPanel {
                 Node center = workingGraph.getNode(v0.getName());
                 if (center == null) continue;
 
-                SearchPack pack = computeCandidatesForNode(workingGraph, center, gt);
+                SearchPack pack = computeCandidatesForNode(workingGraph, center, gt,
+                        sweepBaseCache, sweepCandGraphCache);
                 if (pack == null || pack.scored == null || pack.scored.isEmpty()) continue;
 
                 for (ScoredCandidate sc : pack.scored) {
                     if (sc == null || sc.edit() == null) continue;
                     if (sc.edit().isNoOp()) continue;
 
-                    // Deduplicate across nodes by edit key
                     String key = sc.edit().key();
                     if (key == null) continue;
                     if (!seenKeys.add(key)) continue;
@@ -1581,108 +1545,14 @@ public final class VertexRepairPanel extends JPanel {
      * - pass 1: After + Node-P for all
      * - pass 2: Model-P for top-K only (so NaNs behave the same as the UI)
      */
-//    private SearchPack computeCandidatesForNode(Graph g, Node center, RepairGraphType gt) {
-//        if (g == null || center == null) return null;
-//
-//        Graph base = safeCopy(g);
-//
-//        if (stopRequested()) return null;
-//
-//        if (gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG) {
-//            base = canonicalizeToCpdagOrNull(base);
-//            if (base == null) return null;
-//        } else if (gt == RepairGraphType.PAG) {
-//            base = canonicalizeToPagOrNull(base);
-//            if (base == null) return null;
-//        }
-//
-//        if (knowledge != null && knowledge.isViolatedBy(base)) {
-//            return null;
-//        }
-//
-//        List<CandidateEdit> candidates = enumerateCandidates(base, center, gt);
-//        candidates = new ArrayList<>(candidates);
-//        if (candidates.stream().noneMatch(CandidateEdit::isNoOp)) {
-//            candidates.addFirst(CandidateEdit.noOp());
-//        }
-//
-//        GlobalEvalCache baseCache = buildBaselineCache(base);
-//
-//        // Baseline violations only via locality
-//        GraphEval baseEval = evalGraphLocality(baseCache, base, Set.of(), false);
-//        int violationsBaseline = baseEval.violations();
-//
-//        // (Optional) if you ever want violationsBaseline Model-P in SearchPack, compute it like this:
-//        // double baselineModelP = evalGraphOnce(base).modelP();
-//
-//        Map<String, Graph> candGraphByKey = new HashMap<>();
-//        List<ScoredCandidate> scored = new ArrayList<>();
-//
-//        // PASS 1: violationsAfter + nodeP + edges
-//        for (CandidateEdit cand : candidates) {
-//            if (stopRequested()) return null;
-//
-//            Graph finalBase = base;
-//            Graph g2 = candGraphByKey.computeIfAbsent(cand.key(), k -> buildCandidateGraph(finalBase, cand, gt));
-//            if (g2 == null) continue;
-//
-//            if (knowledge != null && knowledge.isViolatedBy(g2)) continue;
-//
-//            boolean useLocality = (gt == RepairGraphType.DAG || gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG);
-//            Set<String> affected = affectedVertices(base, center, g2);
-//
-//            int violationsAfter = useLocality
-//                    ? evalGraphLocality(baseCache, g2, affected, false).violations()
-//                    : evalViolationsOnly(g2);
-//
-//            double nodePAfter = nodePValue(g2, center);
-//            int edgesAfter = g2.getNumEdges();
-//
-//            scored.add(new ScoredCandidate(cand, violationsBaseline, violationsAfter, nodePAfter, Double.NaN, Double.NaN, edgesAfter));
-//        }
-//
-//        if (stopRequested()) return null;
-//
-//        // PASS 2: compute Model-P for top-K only (same as UI behavior)
-//        List<ScoredCandidate> ranked = new ArrayList<>(scored);
-//        ranked.sort(CANONICAL_TABLE_ORDER);
-//
-//        int k = ranked.size();//TMath.min(modelPTopK, ranked.size());
-//        Map<String, Double> modelPByKey = new HashMap<>(k * 2);
-//
-//        for (ScoredCandidate scoredCandidate : ranked) {
-//            if (stopRequested()) return null;
-//
-//            Graph g2 = candGraphByKey.get(scoredCandidate.edit().key());
-//            if (g2 == null) continue;
-//
-//            double mp = evalGraphOnce(g2).modelP();
-//            modelPByKey.put(scoredCandidate.edit().key(), mp);
-//        }
-//
-//        if (!modelPByKey.isEmpty()) {
-//            List<ScoredCandidate> patched = new ArrayList<>(scored.size());
-//            for (ScoredCandidate sc : scored) {
-//                Double mpAfter = modelPByKey.get(sc.edit().key());
-//                patched.add(mpAfter == null ? sc : new ScoredCandidate(
-//                        sc.edit(), sc.violationsBaseline(), sc.violationsAfter(), sc.nodePAfter(), mpBefore, mpAfter, sc.edgesAfter()
-//                ));
-//            }
-//            scored = patched;
-//        }
-//
-//        return new SearchPack(center.getName(), violationsBaseline, scored);
-//    }
     // ---------------------------------------------------------------------
-// Auto-selection helper: compute candidates for a given node center
-// Mirrors UI behavior but ALSO forces Model-P for all reorientation moves.
-// ---------------------------------------------------------------------
+    // Auto-selection helper: compute candidates for a given node center
+    // Mirrors UI behavior and forces Model-P for (top-K rows) ∪ (all simple reorients),
+    // then computes passesGuards consistently with the UI.
     // ---------------------------------------------------------------------
-// Auto-selection helper: compute candidates for a given node center
-// Mirrors UI behavior and forces Model-P for (top-K rows) ∪ (all simple reorients),
-// then computes passesGuards consistently with the UI.
-// ---------------------------------------------------------------------
-    private SearchPack computeCandidatesForNode(Graph g, Node center, RepairGraphType gt) {
+    private SearchPack computeCandidatesForNode(Graph g, Node center, RepairGraphType gt,
+                                                GlobalEvalCache sharedBaseCache,
+                                                Map<String, Graph> sharedCandGraphCache){
         if (g == null || center == null) return null;
 
         Graph base = safeCopy(g);
@@ -1706,7 +1576,7 @@ public final class VertexRepairPanel extends JPanel {
             candidates.addFirst(CandidateEdit.noOp());
         }
 
-        GlobalEvalCache baseCache = buildBaselineCache(base);
+        GlobalEvalCache baseCache = (sharedBaseCache != null) ? sharedBaseCache : buildBaselineCache(base);
 
         // Baseline violations via locality (consistent with your locality merges)
         GraphEval baseEval = evalGraphLocality(baseCache, base, Set.of(), false);
@@ -1715,7 +1585,7 @@ public final class VertexRepairPanel extends JPanel {
         // Baseline Model-P (mpBefore constant within this pack)
         double mpBefore = evalGraphOnce(base).modelP();
 
-        Map<String, Graph> candGraphByKey = new HashMap<>();
+        Map<String, Graph> candGraphByKey = (sharedCandGraphCache != null) ? sharedCandGraphCache : new HashMap<>();
         List<ScoredCandidate> scored = new ArrayList<>();
 
         // PASS 1: violationsAfter + nodeP + edges (Model-P deferred)

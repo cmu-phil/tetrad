@@ -233,14 +233,6 @@ public class VertexRepairSearch implements IGraphSearch {
     private Graph workingGraph;
 
     /**
-     * Minimum number of Markov violations required before Phase 2 (edge
-     * addition/removal) is allowed to run. Setting this to 2 prevents the
-     * repair tool from adding edges to cover a single borderline violation
-     * that is likely sampling noise rather than a genuine structural error.
-     */
-    private int minViolationsForEdgeEdit = 2;
-
-    /**
      * Constructs an instance of VertexRepairSearch, initializing the class with the provided parameters and
      * sets up the necessary components to perform a vertex repair search.
      *
@@ -667,224 +659,81 @@ public class VertexRepairSearch implements IGraphSearch {
         this.workingGraph = GraphUtils.replaceNodes(this.workingGraph, test.getVariables());
 
         int editsApplied = 0;
-
         int sweep = 0;
+
         while (!stopRequested() && editsApplied < maxEdits) {
             sweep++;
             if (sweep > maxSweeps) break;
 
             final String sweepStartSig = graphSignature(workingGraph);
-            int editsThisSweep = 0;
 
-            // Recompute node order each sweep: worst nodeP first.
-            List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
-            Map<String, Double> nodePOrder = new HashMap<>();
-
-            for (Node n : nodes) {
-                if (n == null || n.getName() == null) continue;
-                double p = nodePValue(workingGraph, n);
-                nodePOrder.put(n.getName(), p);
+            // Build baseline cache ONCE for this sweep — shared across all node evaluations.
+            Graph baseForCache = safeCopy(workingGraph);
+            if (gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG) {
+                baseForCache = canonicalizeToCpdagOrNull(baseForCache);
+            } else if (gt == RepairGraphType.PAG) {
+                baseForCache = canonicalizeToPagOrNull(baseForCache);
             }
 
-            nodes.sort((a, b) -> {
-                if (a == null && b == null) return 0;
-                if (a == null) return 1;
-                if (b == null) return -1;
+            GlobalEvalCache sweepBaseCache = (baseForCache != null)
+                    ? buildBaselineCache(baseForCache) : null;
 
-                String an = a.getName();
-                String bn = b.getName();
+            // Shared candidate graph cache across all nodes in this sweep.
+            Map<String, Graph> sweepCandGraphCache = new HashMap<>();
 
-                double pa = (an == null) ? Double.NaN : nodePOrder.getOrDefault(an, Double.NaN);
-                double pb = (bn == null) ? Double.NaN : nodePOrder.getOrDefault(bn, Double.NaN);
+            // Collect all candidates from all nodes into one global list.
+            List<ScoredCandidate> allCandidates = new ArrayList<>();
+            Set<String> seenKeys = new HashSet<>();
 
-                boolean aNaN = Double.isNaN(pa);
-                boolean bNaN = Double.isNaN(pb);
-
-                if (aNaN && bNaN) return NATURAL_NAME_COMPARATOR.compare(an, bn);
-                if (aNaN) return 1;
-                if (bNaN) return -1;
-
-                int c = Double.compare(pa, pb); // ASC (worst first)
-                if (c != 0) return c;
-
-                return NATURAL_NAME_COMPARATOR.compare(an, bn);
-            });
-
-            // Phase 1: orientation-only pass.
-            // Only accept moves that reduce violations without changing edge count.
-            // This ensures we always prefer reorientation over edge addition/removal.
-            int editsPhase1 = doSweepPass(nodes, gt, maxStepsPerNode, maxEdits,
-                    editsApplied, true);
-            editsApplied += editsPhase1;
-            editsThisSweep += editsPhase1;
-
-//            // Phase 2: edge-modification pass.
-//            // Only runs if Phase 1 made no progress.
-//            // Accepts edge additions and removals if they reduce violations.
-//            if (editsPhase1 == 0 && !stopRequested() && editsApplied < maxEdits) {
-//                int editsPhase2 = doSweepPass(nodes, gt, maxStepsPerNode, maxEdits,
-//                        editsApplied, false);
-//                editsApplied += editsPhase2;
-//                editsThisSweep += editsPhase2;
-//            }
-
-            // Phase 2: only run if violations are substantial enough to warrant
-            // structural changes beyond reorientation.
-            if (editsPhase1 == 0 && !stopRequested() && editsApplied < maxEdits) {
-                int currentViolations = countViolations(workingGraph);
-                if (currentViolations >= minViolationsForEdgeEdit) {
-                    int editsPhase2 = doSweepPass(nodes, gt, maxStepsPerNode, maxEdits,
-                            editsApplied, false);
-                    editsApplied += editsPhase2;
-                    editsThisSweep += editsPhase2;
-                }
-            }
-
-            final String sweepEndSig = graphSignature(workingGraph);
-
-            if (editsThisSweep == 0 || sweepEndSig.equals(sweepStartSig)) {
-                break; // fixed point
-            }
-        }
-
-        return workingGraph;
-    }
-
-    /**
-     * Counts the total number of Markov violations in the given graph —
-     * that is, the number of independence facts implied by the graph that
-     * are rejected as dependent by the independence test at the current alpha.
-     *
-     * @param g the graph to evaluate
-     * @return the number of violations
-     */
-    private int countViolations(Graph g) {
-        if (g == null) return 0;
-        GlobalEvalCache cache = buildBaselineCache(g);
-        GraphEval eval = evalGraphLocality(cache, g, null, false);
-        return eval.violations();
-    }
-
-    public void setMinViolationsForEdgeEdit(int minViolationsForEdgeEdit) {
-        if (minViolationsForEdgeEdit < 1)
-            throw new IllegalArgumentException("minViolationsForEdgeEdit must be >= 1");
-        this.minViolationsForEdgeEdit = minViolationsForEdgeEdit;
-    }
-
-    /**
-     * Performs one pass over the given node list, attempting to apply one
-     * beneficial edit per node.
-     *
-     * @param nodes            the nodes to iterate over, in order
-     * @param gt               the repair graph type
-     * @param maxStepsPerNode  maximum inner-loop steps per node
-     * @param maxEdits         global edit budget
-     * @param editsAlreadyDone edits applied so far (for budget checking)
-     * @param orientationOnly  if true, only accept edits that do not change
-     *                         the edge count (pure reorientation moves);
-     *                         if false, accept any progress-making edit
-     * @return the number of edits applied in this pass
-     */
-    private int doSweepPass(List<Node> nodes,
-                            RepairGraphType gt,
-                            int maxStepsPerNode,
-                            int maxEdits,
-                            int editsAlreadyDone,
-                            boolean orientationOnly) {
-
-        int editsThisPass = 0;
-
-        // In orientation-only phase, find the globally best move first.
-        if (orientationOnly) {
-            ScoredCandidate bestCandidate = null;
-            Node bestNode = null;
-            int bestDelta = 0; // only accept delta < 0 in phase 1
-
-            for (Node v0 : nodes) {
-                if (stopRequested() || (editsAlreadyDone + editsThisPass) >= maxEdits) break;
+            for (Node v0 : workingGraph.getNodes()) {
+                if (stopRequested()) break;
                 if (v0 == null || v0.getName() == null) continue;
 
                 Node center = workingGraph.getNode(v0.getName());
                 if (center == null) continue;
 
-                SearchPack pack = computeCandidatesForNode(workingGraph, center, gt);
+                SearchPack pack = computeCandidatesForNode(workingGraph, center, gt,
+                        sweepBaseCache, sweepCandGraphCache);
                 if (pack == null || pack.scored() == null || pack.scored().isEmpty()) continue;
 
-                List<ScoredCandidate> ranked = new ArrayList<>(pack.scored());
-                ranked.sort(CANONICAL_TABLE_ORDER);
-
-                for (ScoredCandidate sc : ranked) {
+                for (ScoredCandidate sc : pack.scored()) {
                     if (sc == null || sc.edit() == null) continue;
-                    if (sc.edit().isNoOp()) break;
-                    if (!sc.passesGuards()) continue;
-                    if (sc.edgesAfter() != workingGraph.getNumEdges()) continue;
+                    if (sc.edit().isNoOp()) continue;
 
-                    // Only accept strict violation reduction in phase 1
-                    if (sc.delta() < bestDelta) {
-                        bestDelta = sc.delta();
-                        bestCandidate = sc;
-                        bestNode = center;
-                    }
-                    break; // best for this node is first ranked valid candidate
+                    String key = sc.edit().key();
+                    if (key == null) continue;
+                    if (!seenKeys.add(key)) continue;
+
+                    allCandidates.add(sc);
                 }
             }
 
-            // Apply the globally best orientation-only violation-reducing move
-            if (bestCandidate != null && bestNode != null) {
-                if (applyCandidateInternal(bestCandidate.edit(), gt)) {
-                    editsThisPass++;
+            if (allCandidates.isEmpty()) break;
+
+            // Sort globally and apply single best passing move.
+            allCandidates.sort(CANONICAL_TABLE_ORDER);
+
+            boolean moved = false;
+            for (ScoredCandidate sc : allCandidates) {
+                if (stopRequested() || editsApplied >= maxEdits) break;
+                if (!sc.passesGuards()) break; // sorted, so all remaining also fail
+
+                if (applyCandidateInternal(sc.edit(), gt)) {
+                    editsApplied++;
+                    moved = true;
+                    vlog("APPLIED move: %s", sc.edit().description());
+                    break;
                 }
             }
 
-            return editsThisPass;
-        }
+            final String sweepEndSig = graphSignature(workingGraph);
 
-        // Phase 2: original node-by-node behavior, edge modifications allowed
-        for (Node v0 : nodes) {
-            if (stopRequested() || (editsAlreadyDone + editsThisPass) >= maxEdits) break;
-            if (v0 == null || v0.getName() == null) continue;
-
-            Node center = workingGraph.getNode(v0.getName());
-            if (center == null) continue;
-
-            Set<String> seenSignatures = new HashSet<>();
-            int nodeSteps = 0;
-
-            while (!stopRequested() && (editsAlreadyDone + editsThisPass) < maxEdits) {
-                nodeSteps++;
-                if (nodeSteps > maxStepsPerNode) break;
-
-                center = workingGraph.getNode(center.getName());
-                if (center == null) break;
-
-                String sig = graphSignature(workingGraph);
-                if (!seenSignatures.add(sig)) break;
-
-                SearchPack pack = computeCandidatesForNode(workingGraph, center, gt);
-                if (pack == null || pack.scored() == null || pack.scored().isEmpty()) break;
-
-                List<ScoredCandidate> ranked = new ArrayList<>(pack.scored());
-                ranked.sort(CANONICAL_TABLE_ORDER);
-
-                boolean moved = false;
-
-                for (ScoredCandidate sc : ranked) {
-                    if (sc == null || sc.edit() == null) continue;
-                    if (sc.edit().isNoOp()) break;
-                    if (!sc.passesGuards()) continue;
-
-                    if (applyCandidateInternal(sc.edit(), gt)) {
-                        editsThisPass++;
-                        moved = true;
-                        break;
-                    }
-                }
-
-                if (!moved) break;
+            if (!moved || sweepEndSig.equals(sweepStartSig)) {
+                break; // fixed point
             }
         }
 
-        return editsThisPass;
+        return workingGraph;
     }
 
     /**
@@ -904,7 +753,9 @@ public class VertexRepairSearch implements IGraphSearch {
      * - pass 1: After + Node-P for all
      * - pass 2: Model-P for top-K only (so NaNs behave the same as the UI)
      */
-    private SearchPack computeCandidatesForNode(Graph g, Node center, RepairGraphType gt) {
+    private SearchPack computeCandidatesForNode(Graph g, Node center, RepairGraphType gt,
+                                                GlobalEvalCache sharedBaseCache,
+                                                Map<String, Graph> sharedCandGraphCache) {
         if (g == null || center == null) return null;
 
         Graph base = safeCopy(g);
@@ -928,16 +779,16 @@ public class VertexRepairSearch implements IGraphSearch {
             candidates.addFirst(VertexRepairSearch.CandidateEdit.noOp());
         }
 
-        GlobalEvalCache baseCache = buildBaselineCache(base);
+        // Use shared cache if provided, otherwise build locally
+        GlobalEvalCache baseCache = (sharedBaseCache != null) ? sharedBaseCache : buildBaselineCache(base);
 
-        // Baseline violations via locality (consistent with your locality merges)
         GraphEval baseEval = evalGraphLocality(baseCache, base, Set.of(), false);
         int baseline = baseEval.violations();
 
-        // Baseline Model-P (mpBefore constant within this pack)
         double mpBefore = evalGraphOnce(base).modelP();
 
-        Map<String, Graph> candGraphByKey = new HashMap<>();
+        // Use shared candidate graph cache if provided
+        Map<String, Graph> candGraphByKey = (sharedCandGraphCache != null) ? sharedCandGraphCache : new HashMap<>();
         List<VertexRepairSearch.ScoredCandidate> scored = new ArrayList<>();
 
         // PASS 1: violationsAfter + nodeP + edges (Model-P deferred)
@@ -960,7 +811,6 @@ public class VertexRepairSearch implements IGraphSearch {
             double nodePAfter = nodePValue(g2, center);
             int edgesAfter = g2.getNumEdges();
 
-            // passesGuards patched later
             scored.add(new VertexRepairSearch.ScoredCandidate(cand, baseline, after, nodePAfter,
                     Double.NaN, Double.NaN, edgesAfter, true));
         }
@@ -974,14 +824,12 @@ public class VertexRepairSearch implements IGraphSearch {
         final int topK = TMath.min(DEFAULT_MODELP_TOP_K, ranked.size());
         final LinkedHashSet<String> keysToEval = new LinkedHashSet<>();
 
-        // 2a) top-K (table-surfaced set)
         for (int i = 0; i < topK; i++) {
             VertexRepairSearch.ScoredCandidate sc = ranked.get(i);
             if (sc == null || sc.edit() == null) continue;
             keysToEval.add(sc.edit().key());
         }
 
-        // 2b) all simple reorientation moves
         for (VertexRepairSearch.ScoredCandidate sc : scored) {
             if (sc == null || sc.edit() == null) continue;
             if (moveType(sc.edit()) == VertexRepairSearch.MoveType.REORIENT_SIMPLE) {
@@ -994,10 +842,8 @@ public class VertexRepairSearch implements IGraphSearch {
         for (String key : keysToEval) {
             if (stopRequested()) return null;
             if (key == null) continue;
-
             Graph g2 = candGraphByKey.get(key);
             if (g2 == null) continue;
-
             double mpAfter = evalGraphOnce(g2).modelP();
             mpAfterByKey.put(key, mpAfter);
         }
@@ -1006,37 +852,23 @@ public class VertexRepairSearch implements IGraphSearch {
             List<VertexRepairSearch.ScoredCandidate> patched = new ArrayList<>(scored.size());
             for (VertexRepairSearch.ScoredCandidate sc : scored) {
                 Double mpAfter = (sc.edit() == null) ? null : mpAfterByKey.get(sc.edit().key());
-
                 patched.add(new VertexRepairSearch.ScoredCandidate(
-                        sc.edit(),
-                        sc.violationsBaseline(),
-                        sc.violationsAfter(),
-                        sc.nodePAfter(),
-                        mpBefore,
+                        sc.edit(), sc.violationsBaseline(), sc.violationsAfter(),
+                        sc.nodePAfter(), mpBefore,
                         (mpAfter == null ? Double.NaN : mpAfter),
-                        sc.edgesAfter(),
-                        true // patched next
-                ));
+                        sc.edgesAfter(), true));
             }
             scored = patched;
         }
 
-        // PASS 3: compute passesGuards consistently with the UI path
         {
             List<VertexRepairSearch.ScoredCandidate> patched2 = new ArrayList<>(scored.size());
             for (VertexRepairSearch.ScoredCandidate sc : scored) {
                 boolean ok = wouldPassGuards(base, sc, gt);
-
                 patched2.add(new VertexRepairSearch.ScoredCandidate(
-                        sc.edit(),
-                        sc.violationsBaseline(),
-                        sc.violationsAfter(),
-                        sc.nodePAfter(),
-                        sc.modelPBefore(),
-                        sc.modelPAfter(),
-                        sc.edgesAfter(),
-                        ok
-                ));
+                        sc.edit(), sc.violationsBaseline(), sc.violationsAfter(),
+                        sc.nodePAfter(), sc.modelPBefore(), sc.modelPAfter(),
+                        sc.edgesAfter(), ok));
             }
             scored = patched2;
         }
