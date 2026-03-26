@@ -25,12 +25,48 @@ import java.util.concurrent.CancellationException;
  * Interactive panel for locally adjusting a causal graph around a selected node {@code x}
  * using feedback from the Vertex Checker.
  *
+ * <h2>Candidate Enumeration</h2>
  * <p>
- * The panel enumerates a conservative set of candidate edge edits involving {@code x}
- * (edge additions, removals, and replacements consistent with the chosen graph type),
- * applies each candidate to a copy of the current graph, and scores the result using
- * Markov-checker diagnostics derived from conditional independence tests.
- * </p>
+ * For the selected node {@code x}, the panel enumerates a conservative set of candidate
+ * single-step edge edits (additions, removals, and replacements) that are consistent with
+ * the chosen graph type (DAG, CPDAG, PDAG, MAG, or PAG). Each candidate is applied to a
+ * copy of the current graph and scored using Markov-checker diagnostics derived from
+ * conditional independence tests. For DAGs and CPDAGs, multi-edge orientation patterns
+ * over the undirected edges incident to {@code x} are also enumerated, subject to a
+ * combinatorial cap.
+ *
+ * <h2>Scoring and Table Order</h2>
+ * <p>
+ * Candidates are ranked by a priority chain: first by whether the edit constitutes genuine
+ * progress (fewer Markov violations, or equal violations with fewer edges, or equal
+ * violations and edges with a higher Model-P score); then within the passing group by
+ * decreasing violation reduction, edge parsimony, local Node-P, and global Model-P. The
+ * top row in the table is therefore the most conservative recommended edit for the current
+ * node. Candidates that do not constitute progress are shown below, ordered by the same
+ * structural criteria, for reference.
+ *
+ * <h2>Model Repair</h2>
+ * <p>
+ * The Repair button performs an automated sweep over all nodes in the graph. For each node
+ * it repeatedly applies the top-ranked move, re-ranking after each application, until the
+ * top move is a no-op or does not constitute progress. The sweep repeats until a full pass
+ * over all nodes produces no further changes. If a cycle is detected for a node — that is,
+ * a move is proposed that has already been attempted for that node in the current visit —
+ * the node is skipped and the user is notified. Because the repair is greedy and local, it
+ * is not guaranteed to find a global optimum; the user is encouraged to inspect the results
+ * and consider whether alternative top moves in the per-node tables might have been more
+ * appropriate.
+ *
+ * <h2>Knowledge Constraints</h2>
+ * <p>
+ * A {@link Knowledge} object may be supplied via {@link #setKnowledge(Knowledge)}. When
+ * present, any candidate edit whose resulting graph violates the knowledge is silently
+ * excluded from the table and will not be applied during repair.
+ *
+ * <h2>Graph Type Legality</h2>
+ * <p>
+ * On construction, the panel checks whether the supplied graph matches any recognized legal
+ * graph type. If it does not, the user is given a warning.
  */
 public final class VertexCheckAdjustmentPanel extends JPanel {
 
@@ -46,14 +82,6 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         if (a == null && b == null) return 0;
         if (a == null) return 1;
         if (b == null) return -1;
-
-//        // 0) Guards first (true before false)
-//        if (a.passesGuards() != b.passesGuards()) {
-//            return a.passesGuards() ? -1 : 1;
-//        }
-//        if (!a.passesGuards()) {
-//            return stableTieBreak(a, b);
-//        }
 
         // 0) Guards first (true before false)
         if (a.passesGuards() != b.passesGuards()) {
@@ -124,8 +152,8 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
 
     private final VertexCheckIndTestModel baseModel;
     // -------------------- move classification --------------------
-// Prefer SIMPLE reorientation (single-edge REP:) over collider moves (multi-edge).
-// We also treat collider moves as their own type so we can *penalize* them.
+    // Prefer SIMPLE reorientation (single-edge REP:) over collider moves (multi-edge).
+    // We also treat collider moves as their own type so we can *penalize* them.
     private final Deque<Graph> history = new ArrayDeque<>();
     // UI
     private final JComboBox<AdjustmentGraphType> graphTypeCombo = new JComboBox<>(AdjustmentGraphType.values());
@@ -195,7 +223,6 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
     }
 
     // Only used for "finiteFirst" on ΔModel-P if you want that behavior.
-// If you don't care, delete this and the finiteFirst(modelDelta...) line.
     private static double modelDeltaValueOrNaN(ScoredCandidate s) {
         if (s == null) return Double.NaN;
         double before = s.modelPBefore();
@@ -530,9 +557,9 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
     }
 
     // Accept if:
-//  (A) violations decrease, OR
-//  (B) violations tie and edges decrease, OR
-//  (C) violations tie and edges tie and Model-P increases by at least MIN_MP_GAIN.
+    //  (A) violations decrease, OR
+    //  (B) violations tie and edges decrease, OR
+    //  (C) violations tie and edges tie and Model-P increases by at least MIN_MP_GAIN.
     private static boolean isProgress(int baselineViol,
                                       int afterViol,
                                       int currentEdges,
@@ -556,8 +583,6 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         return false;
     }
 
-    // NEW helper: used only as a cheap DAG pre-prune.
-    // If this method name doesn't match your Tetrad version, adjust to the right GraphPaths API.
     private static boolean hasDirectedPath(Graph g, Node from, Node to) {
         if (g == null || from == null || to == null) return false;
         try {
@@ -583,7 +608,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
     }
 
     /**
-     * Caller reads this violationsAfter dialog closes.
+     * Caller reads this after the dialog closes.
      */
     public Graph getGraph() {
         return workingGraph;
@@ -794,23 +819,8 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
     }
 
     // ---------------------------------------------------------------------
-    // Knowledge
+    // Search logic (watched, background)
     // ---------------------------------------------------------------------
-
-    /**
-     * One sweep over nodes. For each node, repeatedly:
-     * - compute the candidate table for that node (same 2-pass scoring behavior as UI),
-     * - sort exactly like the JTable,
-     * - take the top row,
-     * - apply it (guarded: progress + do-no-harm),
-     * until the top row is "No change" (or no applicable move), then advance to next node.
-     * <p>
-     * Stops violationsAfter one pass through the nodes (no outer repetition).
-     */
-
-    // ---------------------------------------------------------------------
-// Search logic (watched, background)
-// ---------------------------------------------------------------------
     private void runSearchWatched() {
         AdjustmentGraphType gt = (AdjustmentGraphType) graphTypeCombo.getSelectedItem();
         Graph base = safeCopy(workingGraph);
@@ -884,8 +894,6 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
 
             double nodePAfter = nodePValue(g2, x);
             int edgesAfter = g2.getNumEdges();
-
-//            scored.add(new ScoredCandidate(cand, baseline, after, nodePAfter, Double.NaN, Double.NaN, edgesAfter, true));
 
             scored.add(new ScoredCandidate(cand, baseline, after, nodePAfter,
                     Double.NaN, Double.NaN, edgesAfter, true));
@@ -1728,10 +1736,6 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         }
     }
 
-    // ---------------------------------------------------------------------
-    // Types
-    // ---------------------------------------------------------------------
-
     private double nodePValue(Graph g, Node vertexInOriginalGraph) {
         if (g == null || vertexInOriginalGraph == null) return Double.NaN;
 
@@ -2423,12 +2427,6 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
             return this;
         }
     }
-
-    // ---------------------------------------------------------------------
-    // Canonical table ordering (single source of truth)
-    // Matches applySortAndFilter() intent:
-    //   Model-P DESC (NaN last), Δ ASC, Edges ASC, Node-P DESC (NaN last), stable tiebreak
-    // ---------------------------------------------------------------------
 
     private static final class ButtonEditor extends DefaultCellEditor {
         private final JButton button = new JButton();
