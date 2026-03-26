@@ -23,6 +23,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Simulation harness for studying the effect of Vertex Repair on the output
@@ -55,7 +58,7 @@ public class VertexRepairHarness {
     private static final int AVG_DEGREE = 3;
     private static final int MAX_DEGREE = 6;
     private static final int[] SAMPLE_SIZES = {500, 2000};
-    private static final int NUM_REPS = 10;
+    private static final int NUM_REPS = 100;
     private static final double ALPHA = 0.05;   // for CI tests
     private static final double PENALTY = 2.0;    // BIC penalty discount for FGES/BOSS
 
@@ -85,111 +88,118 @@ public class VertexRepairHarness {
                 + "  Reps=" + NUM_REPS + "  Alpha=" + ALPHA);
         System.out.println();
 
-        try (PrintWriter out = new PrintWriter(new FileWriter(outFile))) {
+        record RunConfig(int n, int rep, String alg) {
+        }
 
-            // Write CSV header
-            out.println(csvHeader());
-
-            int totalRuns = ALGORITHMS.length * SAMPLE_SIZES.length * NUM_REPS;
-            int run = 0;
-
-            for (int n : SAMPLE_SIZES) {
-                for (int rep = 0; rep < NUM_REPS; rep++) {
-
-                    // ----------------------------------------------------------
-                    // 1. Generate true DAG and CPDAG, then sample data
-                    // ----------------------------------------------------------
-                    long seed = rep * 1000L + n;
-                    RandomUtil.getInstance().setSeed(seed);
-
-                    List<Node> vars = new ArrayList<>();
-
-                    for (int i = 0; i < NUM_VARS; i++) {
-                        vars.add(new ContinuousVariable("X" + i));
-                    }
-
-                    Graph trueDag = RandomGraph.randomGraphRandomForwardEdges(
-                            vars, 0,
-                            (int) Math.round(AVG_DEGREE * NUM_VARS / 2.0),
-                            MAX_DEGREE, MAX_DEGREE, MAX_DEGREE, false);
-
-                    Graph trueCpdag = GraphTransforms.dagToCpdag(trueDag);
-
-                    SemPm semPm = new SemPm(trueDag);
-                    SemIm semIm = new SemIm(semPm);
-                    DataSet data = semIm.simulateData(n, false);
-
-                    // ----------------------------------------------------------
-                    // 2. Build independence test and score (reused across algos)
-                    // ----------------------------------------------------------
-                    IndependenceTest fisherZ = new IndTestFisherZ(data, ALPHA);
-                    SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
-                    score.setPenaltyDiscount(PENALTY);
-
-                    // ----------------------------------------------------------
-                    // 3. Run each algorithm, then repair, then record stats
-                    // ----------------------------------------------------------
-                    for (String alg : ALGORITHMS) {
-
-                        run++;
-                        if (run % 50 == 0) {
-                            System.out.printf("  Run %d / %d  (n=%d  rep=%d  alg=%s)%n",
-                                    run, totalRuns, n, rep + 1, alg);
-                        }
-
-                        // --- Run the base algorithm ---
-                        Graph estimated = runAlgorithm(alg, fisherZ, score, data);
-                        if (estimated == null) {
-                            System.err.printf("  WARNING: %s returned null (n=%d rep=%d); skipping.%n",
-                                    alg, n, rep + 1);
-                            continue;
-                        }
-
-                        // Ensure we have a legal CPDAG for comparison
-                        Graph estimatedCpdag = toCpdagSafe(estimated);
-                        if (estimatedCpdag == null) {
-                            System.err.printf("  WARNING: Could not canonicalize %s output (n=%d rep=%d); skipping.%n",
-                                    alg, n, rep + 1);
-                            continue;
-                        }
-
-                        // --- Evaluate before repair ---
-                        Stats before = evaluate(estimatedCpdag, trueCpdag, data, ALPHA);
-
-                        // --- Run Vertex Repair ---
-                        IndependenceTest testForRepair = new CachedIndependenceQueries(new IndTestFisherZ(data, ALPHA));
-                        VertexRepairSearch vrs = new VertexRepairSearch(
-                                testForRepair,
-                                estimatedCpdag,
-                                new Knowledge(),
-                                ConditioningSetType.RECURSIVE_BLOCKING);
-
-                        Graph repaired = vrs.search(
-                                estimatedCpdag,
-                                VertexRepairSearch.RepairGraphType.CPDAG,
-                                MAX_STEPS_PER_NODE,
-                                MAX_SWEEPS,
-                                MAX_EDITS);
-
-                        Graph repairedCpdag = toCpdagSafe(repaired);
-                        if (repairedCpdag == null) {
-                            System.err.printf("  WARNING: Repair produced illegal CPDAG (n=%d rep=%d alg=%s); using pre-repair graph.%n",
-                                    alg, n, rep + 1);
-                            repairedCpdag = estimatedCpdag;
-                        }
-
-                        // --- Evaluate after repair ---
-                        Stats after = evaluate(repairedCpdag, trueCpdag, data, ALPHA);
-
-                        // --- Write row ---
-                        out.println(csvRow(alg, n, rep + 1, seed, before, after));
-                        out.flush();
-                    }
+        List<RunConfig> configs = new ArrayList<>();
+        for (int n : SAMPLE_SIZES) {
+            for (int rep = 0; rep < NUM_REPS; rep++) {
+                for (String alg : ALGORITHMS) {
+                    configs.add(new RunConfig(n, rep, alg));
                 }
             }
         }
 
-        System.out.println("\nDone. Results written to: " + outFile);
+        int totalRuns = configs.size();
+        AtomicInteger runCounter = new AtomicInteger(0);
+        List<String> results = Collections.synchronizedList(new ArrayList<>());
+
+        int parallelism = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
+        System.out.println("Parallelism: " + parallelism + " threads");
+
+        ForkJoinPool pool = new ForkJoinPool(parallelism);
+
+        try {
+            pool.submit(() ->
+                    configs.parallelStream().forEach(cfg -> {
+                        try {
+                            long seed = cfg.rep() * 1000L + cfg.n();
+                            RandomUtil.getInstance().setSeed(seed);
+
+                            List<Node> vars = new ArrayList<>();
+                            for (int i = 0; i < NUM_VARS; i++) {
+                                vars.add(new ContinuousVariable("X" + i));
+                            }
+
+                            Graph trueDag = RandomGraph.randomGraphRandomForwardEdges(
+                                    vars, 0,
+                                    (int) Math.round(AVG_DEGREE * NUM_VARS / 2.0),
+                                    MAX_DEGREE, MAX_DEGREE, MAX_DEGREE, false);
+
+                            Graph trueCpdag = GraphTransforms.dagToCpdag(trueDag);
+
+                            SemPm semPm = new SemPm(trueDag);
+                            SemIm semIm = new SemIm(semPm);
+                            DataSet data = semIm.simulateData(cfg.n(), false);
+
+                            IndependenceTest fisherZ = new IndTestFisherZ(data, ALPHA);
+                            SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
+                            score.setPenaltyDiscount(PENALTY);
+
+                            Graph estimated = runAlgorithm(cfg.alg(), fisherZ, score, data);
+                            if (estimated == null) {
+                                System.err.printf("  WARNING: %s returned null (n=%d rep=%d); skipping.%n",
+                                        cfg.alg(), cfg.n(), cfg.rep() + 1);
+                                return;
+                            }
+
+                            Graph estimatedCpdag = toCpdagSafe(estimated);
+                            if (estimatedCpdag == null) {
+                                System.err.printf("  WARNING: Could not canonicalize %s output (n=%d rep=%d); skipping.%n",
+                                        cfg.alg(), cfg.n(), cfg.rep() + 1);
+                                return;
+                            }
+
+                            Stats before = evaluate(estimatedCpdag, trueCpdag, data, ALPHA);
+
+                            IndependenceTest testForRepair = new CachedIndependenceQueries(
+                                    new IndTestFisherZ(data, ALPHA));
+                            VertexRepairSearch vrs = new VertexRepairSearch(
+                                    testForRepair,
+                                    estimatedCpdag,
+                                    new Knowledge(),
+                                    ConditioningSetType.RECURSIVE_BLOCKING);
+
+                            Graph repaired = vrs.search(
+                                    estimatedCpdag,
+                                    VertexRepairSearch.RepairGraphType.CPDAG,
+                                    MAX_STEPS_PER_NODE,
+                                    MAX_SWEEPS,
+                                    MAX_EDITS);
+
+                            Graph repairedCpdag = toCpdagSafe(repaired);
+                            if (repairedCpdag == null) {
+                                repairedCpdag = estimatedCpdag;
+                            }
+
+                            Stats after = evaluate(repairedCpdag, trueCpdag, data, ALPHA);
+                            results.add(csvRow(cfg.alg(), cfg.n(), cfg.rep() + 1, seed, before, after));
+
+                            int done = runCounter.incrementAndGet();
+                            if (done % 50 == 0) {
+                                System.out.printf("  Completed %d / %d%n", done, totalRuns);
+                            }
+
+                        } catch (Exception e) {
+                            System.err.printf("  ERROR (n=%d rep=%d alg=%s): %s%n",
+                                    cfg.n(), cfg.rep() + 1, cfg.alg(), e.getMessage());
+                        }
+                    })
+            ).get();
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } finally {
+            pool.shutdown();
+        }
+
+        results.sort(Comparator.naturalOrder());
+
+        try (PrintWriter out = new PrintWriter(new FileWriter(outFile))) {
+            out.println(csvHeader());
+            results.forEach(out::println);
+        }
+
+        System.out.println("\nDone. " + results.size() + " rows written to: " + outFile);
     }
 
     // -----------------------------------------------------------------------
