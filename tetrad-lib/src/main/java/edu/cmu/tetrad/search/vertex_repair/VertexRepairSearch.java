@@ -83,6 +83,25 @@ public class VertexRepairSearch implements IGraphSearch {
             return stableTieBreak(a, b);
         }
 
+//        // 0) Guards first (true before false)
+//        if (a.passesGuards() != b.passesGuards()) {
+//            return a.passesGuards() ? -1 : 1;
+//        }
+//        if (!a.passesGuards()) {
+//            // Within the failed-guards group, apply the same structural
+//            // preferences before falling back to stable tie-break.
+//            int c = Integer.compare(a.delta(), b.delta()); // ASC: fewer violations first
+//            if (c != 0) return c;
+//
+//            c = Integer.compare(a.edgesAfter(), b.edgesAfter()); // ASC: fewer edges first
+//            if (c != 0) return c;
+//
+//            c = Integer.compare(editSize(a), editSize(b)); // ASC: smaller edits first
+//            if (c != 0) return c;
+//
+//            return stableTieBreak(a, b);
+//        }
+
         // 1) Δ violations (more negative is better)
         int c = Integer.compare(a.delta(), b.delta()); // ASC
         if (c != 0) return c;

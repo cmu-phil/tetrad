@@ -47,11 +47,30 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         if (a == null) return 1;
         if (b == null) return -1;
 
+//        // 0) Guards first (true before false)
+//        if (a.passesGuards() != b.passesGuards()) {
+//            return a.passesGuards() ? -1 : 1;
+//        }
+//        if (!a.passesGuards()) {
+//            return stableTieBreak(a, b);
+//        }
+
         // 0) Guards first (true before false)
         if (a.passesGuards() != b.passesGuards()) {
             return a.passesGuards() ? -1 : 1;
         }
         if (!a.passesGuards()) {
+            // Within the failed-guards group, apply the same structural
+            // preferences before falling back to stable tie-break.
+            int c = Integer.compare(a.delta(), b.delta()); // ASC: fewer violations first
+            if (c != 0) return c;
+
+            c = Integer.compare(a.edgesAfter(), b.edgesAfter()); // ASC: fewer edges first
+            if (c != 0) return c;
+
+            c = Integer.compare(editSize(a), editSize(b)); // ASC: smaller edits first
+            if (c != 0) return c;
+
             return stableTieBreak(a, b);
         }
 
@@ -114,6 +133,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
     // -------------------- numeric helpers --------------------
     private final JButton backButton = new JButton("Undo");
     private final JButton showGraphButton = new JButton("Graph");
+    private final JButton repairButton = new JButton("Attempt Repair");
     private final JLabel statusLabel = new JLabel(" ");
     private final JTable resultsTable = new JTable();
     private final CandidateTableModel resultsModel = new CandidateTableModel();
@@ -144,12 +164,22 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         this.searchButton.setText("Adjust " + this.x.getName());
 
         // Initialize graph type combo options from graph legality
-        initGraphTypeComboFromGraph(this.workingGraph);
+        boolean graphIsLegal = initGraphTypeComboFromGraph(this.workingGraph);
 
-        buildUI();          // will populate nodeCombo based on workingGraph + x
+        buildUI();
 
         wireActions();
         updateButtons();
+
+        if (!graphIsLegal) {
+            SwingUtilities.invokeLater(() ->
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "The supplied graph does not match any recognized legal graph type\n"
+                                    + "(DAG, CPDAG, PDAG, MAG, or PAG).",
+                            "Unrecognized Graph Type",
+                            JOptionPane.WARNING_MESSAGE));
+        }
 
         // Autopopulate table for the initially selected node
         SwingUtilities.invokeLater(() -> startWatched("Searching", this::runSearchWatched, null));
@@ -601,7 +631,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         topButtons.add(backButton);
         topButtons.add(showGraphButton);
         topButtons.add(searchButton);
-//        topButtons.add(modelBestButton);
+        topButtons.add(repairButton);
 
         JPanel north = new JPanel(new BorderLayout());
         north.add(controls, BorderLayout.CENTER);
@@ -750,12 +780,17 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
                 startWatched("Searching", this::runSearchWatched, null);
             }
         });
+
+        repairButton.addActionListener(e ->
+                startWatched("Repairing", this::runRepairWatched,
+                        () -> startWatched("Searching", this::runSearchWatched, null)));
     }
 
     private void updateButtons() {
         backButton.setEnabled(!history.isEmpty());
         boolean busy = (activeWorker != null);
         searchButton.setEnabled(!busy);
+        repairButton.setEnabled(!busy);
     }
 
     // ---------------------------------------------------------------------
@@ -960,6 +995,177 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
                 ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_TABLE);
             }
         });
+    }
+
+    private Graph prepareBase(AdjustmentGraphType gt) {
+        Graph base = safeCopy(workingGraph);
+
+        if (gt == AdjustmentGraphType.CPDAG) {
+            base = canonicalizeToCpdagOrNull(base);
+        } else if (gt == AdjustmentGraphType.PAG) {
+            base = canonicalizeToPagOrNull(base);
+        }
+
+        return base; // null signals canonicalization failure
+    }
+
+    private List<ScoredCandidate> computeScoredCandidatesForNode(Graph base, Node node,
+                                                                 AdjustmentGraphType gt) {
+        List<CandidateEdit> candidates = new ArrayList<>(enumerateCandidates(base, node, gt));
+        if (candidates.stream().noneMatch(CandidateEdit::isNoOp)) {
+            candidates.addFirst(CandidateEdit.noOp());
+        }
+
+        GlobalEvalCache baseCache = buildBaselineCache(base);
+        int baseline = evalGraphLocality(baseCache, base, Set.of()).violations();
+        double mpBefore = evalGraphOnce(base).modelP();
+
+        Map<String, Graph> candGraphByKey = new HashMap<>();
+        List<ScoredCandidate> scored = new ArrayList<>();
+
+        // Pass 1: violations + Node-P + edges
+        for (CandidateEdit cand : candidates) {
+            if (stopRequested()) return List.of();
+
+            Graph g2 = candGraphByKey.computeIfAbsent(cand.key(),
+                    k -> buildCandidateGraph(base, cand, gt));
+            if (g2 == null) continue;
+            if (knowledge != null && knowledge.isViolatedBy(g2)) continue;
+
+            boolean useLocality = (gt == AdjustmentGraphType.DAG
+                    || gt == AdjustmentGraphType.CPDAG
+                    || gt == AdjustmentGraphType.PDAG);
+
+            Set<String> affected = affectedVertices(base, node, g2);
+            int after = useLocality
+                    ? evalGraphLocality(baseCache, g2, affected).violations()
+                    : evalViolationsOnly(g2);
+
+            scored.add(new ScoredCandidate(cand, baseline, after,
+                    nodePValue(g2, node), Double.NaN, Double.NaN,
+                    g2.getNumEdges(), true));
+        }
+
+        if (stopRequested()) return List.of();
+
+        // Pass 2: Model-P for top-K and all reorient moves
+        List<ScoredCandidate> ranked = new ArrayList<>(scored);
+        ranked.sort(CANONICAL_TABLE_ORDER);
+
+        LinkedHashSet<String> keysToEval = new LinkedHashSet<>();
+        for (int i = 0; i < TMath.min(DEFAULT_MODELP_TOP_K, ranked.size()); i++) {
+            ScoredCandidate sc = ranked.get(i);
+            if (sc != null && sc.edit() != null) keysToEval.add(sc.edit().key());
+        }
+        for (ScoredCandidate sc : scored) {
+            if (sc != null && sc.edit() != null
+                    && moveType(sc.edit()) == MoveType.REORIENT_SIMPLE) {
+                keysToEval.add(sc.edit().key());
+            }
+        }
+
+        Map<String, Double> mpAfterByKey = new HashMap<>();
+        for (String key : keysToEval) {
+            if (stopRequested()) return List.of();
+            Graph g2 = candGraphByKey.get(key);
+            if (g2 != null) mpAfterByKey.put(key, evalGraphOnce(g2).modelP());
+        }
+
+        // Patch Model-P values and guard flags
+        List<ScoredCandidate> result = new ArrayList<>(scored.size());
+        for (ScoredCandidate sc : scored) {
+            Double mpAfter = mpAfterByKey.get(sc.edit().key());
+            ScoredCandidate patched = new ScoredCandidate(
+                    sc.edit(), sc.violationsBaseline(), sc.violationsAfter(),
+                    sc.nodePAfter(), mpBefore,
+                    (mpAfter == null ? Double.NaN : mpAfter),
+                    sc.edgesAfter(), true);
+
+            result.add(new ScoredCandidate(
+                    patched.edit(), patched.violationsBaseline(), patched.violationsAfter(),
+                    patched.nodePAfter(), patched.modelPBefore(), patched.modelPAfter(),
+                    patched.edgesAfter(), wouldPassGuards(base, patched, gt)));
+        }
+
+        result.sort(CANONICAL_TABLE_ORDER);
+        return result;
+    }
+
+    private void runRepairWatched() {
+        AdjustmentGraphType gt = (AdjustmentGraphType) graphTypeCombo.getSelectedItem();
+        boolean anyChangeInSweep;
+        List<String> cycleWarnings = new ArrayList<>();
+
+        do {
+            if (stopRequested()) return;
+            anyChangeInSweep = false;
+
+            List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
+            nodes.sort(Comparator.comparing(Node::getName,
+                    VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR));
+
+            for (Node node : nodes) {
+                if (stopRequested()) return;
+
+                Node current = workingGraph.getNode(node.getName());
+                if (current == null) continue;
+
+                // Track every edit key attempted for this node in this visit.
+                // A repeat means we've entered a cycle — break and move on.
+                Set<String> attemptedKeys = new LinkedHashSet<>();
+
+                while (true) {
+                    if (stopRequested()) return;
+
+                    Graph base = prepareBase(gt);
+                    if (base == null) {
+                        SwingUtilities.invokeLater(() ->
+                                statusLabel.setText("Canonicalization failed during repair."));
+                        return;
+                    }
+
+                    List<ScoredCandidate> candidates =
+                            computeScoredCandidatesForNode(base, current, gt);
+                    if (candidates.isEmpty()) break;
+
+                    ScoredCandidate top = candidates.getFirst();
+                    if (top.edit().isNoOp() || !top.passesGuards()) break;
+
+                    String key = top.edit().key();
+
+                    // Cycle detected: this edit has already been attempted for this node.
+                    if (!attemptedKeys.add(key)) {
+                        cycleWarnings.add(current.getName() + ": \"" + top.edit().description() + "\"");
+                        break;
+                    }
+
+                    Graph before = safeCopy(workingGraph);
+                    applyCandidateInternal(top.edit());
+
+                    if (workingGraph.equals(before)) break;
+
+                    anyChangeInSweep = true;
+
+                    Node refreshed = workingGraph.getNode(current.getName());
+                    if (refreshed == null) break;
+                    current = refreshed;
+                }
+            }
+
+        } while (anyChangeInSweep);
+
+        // Report any cycles to the user on the EDT once repair finishes.
+        if (!cycleWarnings.isEmpty()) {
+            String message = "Repair completed, but cycles were detected and skipped for:\n\n"
+                    + String.join("\n", cycleWarnings)
+                    + "\n\nThese nodes may need manual review.";
+            SwingUtilities.invokeLater(() ->
+                    JOptionPane.showMessageDialog(
+                            VertexCheckAdjustmentPanel.this,
+                            message,
+                            "Cycle Detected During Repair",
+                            JOptionPane.WARNING_MESSAGE));
+        }
     }
 
     private void applyCandidate(CandidateEdit cand) {
@@ -1478,7 +1684,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         }
     }
 
-    private void initGraphTypeComboFromGraph(Graph g) {
+    private boolean initGraphTypeComboFromGraph(Graph g) {
         List<AdjustmentGraphType> plausible = new ArrayList<>();
         for (AdjustmentGraphType gt : AdjustmentGraphType.values()) {
             try {
@@ -1486,16 +1692,20 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
                     plausible.add(gt);
                 }
             } catch (Exception ignored) {
-                // ignore
             }
         }
 
-        if (plausible.isEmpty()) {
+        boolean legal = !plausible.isEmpty();
+
+        if (!legal) {
             plausible = Arrays.asList(AdjustmentGraphType.values());
         }
 
-        graphTypeCombo.setModel(new DefaultComboBoxModel<>(plausible.toArray(new AdjustmentGraphType[0])));
+        graphTypeCombo.setModel(new DefaultComboBoxModel<>(
+                plausible.toArray(new AdjustmentGraphType[0])));
         graphTypeCombo.setSelectedIndex(0);
+
+        return legal;
     }
 
     public void setKnowledge(Knowledge knowledge) {
