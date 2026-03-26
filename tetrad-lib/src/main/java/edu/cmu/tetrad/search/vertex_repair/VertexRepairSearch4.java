@@ -9,10 +9,10 @@ import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
@@ -24,7 +24,7 @@ import java.util.prefs.Preferences;
  * generation of candidate edits for repair, and application of edits to improve the graph's
  * structural and probabilistic properties.
  */
-public class VertexRepairSearch implements IGraphSearch {
+public class VertexRepairSearch4 implements IGraphSearch {
 
     /**
      * A comparator for strings that compares them in "natural name order." This order
@@ -249,8 +249,8 @@ public class VertexRepairSearch implements IGraphSearch {
      * @param knowledge           Domain-specific knowledge about allowable and forbidden edges in the graph.
      * @param conditioningSetType The strategy or type of conditioning set to use during independence testing.
      */
-    public VertexRepairSearch(IndependenceTest test, Graph start, Knowledge knowledge,
-                              ConditioningSetType conditioningSetType) {
+    public VertexRepairSearch4(IndependenceTest test, Graph start, Knowledge knowledge,
+                               ConditioningSetType conditioningSetType) {
         this.test = test;
         this.start = GraphUtils.replaceNodes(start, test.getVariables());
         this.knowledge = knowledge;
@@ -437,10 +437,10 @@ public class VertexRepairSearch implements IGraphSearch {
         return aX == bX && aY == bY;
     }
 
-    private static List<VertexRepairSearch.CandidateEdit> dedupCandidateEdits(List<VertexRepairSearch.CandidateEdit> edits) {
+    private static List<VertexRepairSearch4.CandidateEdit> dedupCandidateEdits(List<VertexRepairSearch4.CandidateEdit> edits) {
         if (edits == null || edits.isEmpty()) return List.of();
-        Map<String, VertexRepairSearch.CandidateEdit> seen = new LinkedHashMap<>();
-        for (VertexRepairSearch.CandidateEdit ce : edits) {
+        Map<String, VertexRepairSearch4.CandidateEdit> seen = new LinkedHashMap<>();
+        for (VertexRepairSearch4.CandidateEdit ce : edits) {
             if (ce == null) continue;
             String key = ce.key();
             if (key == null) key = UUID.randomUUID().toString();
@@ -494,7 +494,7 @@ public class VertexRepairSearch implements IGraphSearch {
         return a1 == reb.getEndpoint(reb.getNode1()) && b1 == reb.getEndpoint(reb.getNode2());
     }
 
-    private static boolean requiresEdgePresenceCheck(VertexRepairSearch.CandidateEdit cand) {
+    private static boolean requiresEdgePresenceCheck(VertexRepairSearch4.CandidateEdit cand) {
         if (cand == null) return false;
         if (cand.isNoOp()) return false;
 
@@ -505,7 +505,7 @@ public class VertexRepairSearch implements IGraphSearch {
         return intended != null && !intended.isEmpty();
     }
 
-    private static boolean allIntendedNewEdgesPresent(Graph g, VertexRepairSearch.CandidateEdit cand) {
+    private static boolean allIntendedNewEdgesPresent(Graph g, VertexRepairSearch4.CandidateEdit cand) {
         if (g == null || cand == null) return false;
         List<Edge> intended = cand.getEdges();
         if (intended == null || intended.isEmpty()) return true; // nothing to verify
@@ -922,10 +922,10 @@ public class VertexRepairSearch implements IGraphSearch {
             return null;
         }
 
-        List<VertexRepairSearch.CandidateEdit> candidates = enumerateCandidates(base, center, gt);
+        List<VertexRepairSearch4.CandidateEdit> candidates = enumerateCandidates(base, center, gt);
         candidates = new ArrayList<>(candidates);
-        if (candidates.stream().noneMatch(VertexRepairSearch.CandidateEdit::isNoOp)) {
-            candidates.addFirst(VertexRepairSearch.CandidateEdit.noOp());
+        if (candidates.stream().noneMatch(VertexRepairSearch4.CandidateEdit::isNoOp)) {
+            candidates.addFirst(VertexRepairSearch4.CandidateEdit.noOp());
         }
 
         GlobalEvalCache baseCache = buildBaselineCache(base);
@@ -938,10 +938,10 @@ public class VertexRepairSearch implements IGraphSearch {
         double mpBefore = evalGraphOnce(base).modelP();
 
         Map<String, Graph> candGraphByKey = new HashMap<>();
-        List<VertexRepairSearch.ScoredCandidate> scored = new ArrayList<>();
+        List<VertexRepairSearch4.ScoredCandidate> scored = new ArrayList<>();
 
         // PASS 1: violationsAfter + nodeP + edges (Model-P deferred)
-        for (VertexRepairSearch.CandidateEdit cand : candidates) {
+        for (VertexRepairSearch4.CandidateEdit cand : candidates) {
             if (stopRequested()) return null;
 
             Graph finalBase = base;
@@ -961,14 +961,14 @@ public class VertexRepairSearch implements IGraphSearch {
             int edgesAfter = g2.getNumEdges();
 
             // passesGuards patched later
-            scored.add(new VertexRepairSearch.ScoredCandidate(cand, baseline, after, nodePAfter,
+            scored.add(new VertexRepairSearch4.ScoredCandidate(cand, baseline, after, nodePAfter,
                     Double.NaN, Double.NaN, edgesAfter, true));
         }
 
         if (stopRequested()) return null;
 
         // PASS 2: compute Model-P for (top-K rows) UNION (all REORIENT_SIMPLE moves)
-        List<VertexRepairSearch.ScoredCandidate> ranked = new ArrayList<>(scored);
+        List<VertexRepairSearch4.ScoredCandidate> ranked = new ArrayList<>(scored);
         ranked.sort(CANONICAL_TABLE_ORDER);
 
         final int topK = TMath.min(DEFAULT_MODELP_TOP_K, ranked.size());
@@ -976,15 +976,15 @@ public class VertexRepairSearch implements IGraphSearch {
 
         // 2a) top-K (table-surfaced set)
         for (int i = 0; i < topK; i++) {
-            VertexRepairSearch.ScoredCandidate sc = ranked.get(i);
+            VertexRepairSearch4.ScoredCandidate sc = ranked.get(i);
             if (sc == null || sc.edit() == null) continue;
             keysToEval.add(sc.edit().key());
         }
 
         // 2b) all simple reorientation moves
-        for (VertexRepairSearch.ScoredCandidate sc : scored) {
+        for (VertexRepairSearch4.ScoredCandidate sc : scored) {
             if (sc == null || sc.edit() == null) continue;
-            if (moveType(sc.edit()) == VertexRepairSearch.MoveType.REORIENT_SIMPLE) {
+            if (moveType(sc.edit()) == VertexRepairSearch4.MoveType.REORIENT_SIMPLE) {
                 keysToEval.add(sc.edit().key());
             }
         }
@@ -1003,11 +1003,11 @@ public class VertexRepairSearch implements IGraphSearch {
         }
 
         {
-            List<VertexRepairSearch.ScoredCandidate> patched = new ArrayList<>(scored.size());
-            for (VertexRepairSearch.ScoredCandidate sc : scored) {
+            List<VertexRepairSearch4.ScoredCandidate> patched = new ArrayList<>(scored.size());
+            for (VertexRepairSearch4.ScoredCandidate sc : scored) {
                 Double mpAfter = (sc.edit() == null) ? null : mpAfterByKey.get(sc.edit().key());
 
-                patched.add(new VertexRepairSearch.ScoredCandidate(
+                patched.add(new VertexRepairSearch4.ScoredCandidate(
                         sc.edit(),
                         sc.violationsBaseline(),
                         sc.violationsAfter(),
@@ -1023,11 +1023,11 @@ public class VertexRepairSearch implements IGraphSearch {
 
         // PASS 3: compute passesGuards consistently with the UI path
         {
-            List<VertexRepairSearch.ScoredCandidate> patched2 = new ArrayList<>(scored.size());
-            for (VertexRepairSearch.ScoredCandidate sc : scored) {
+            List<VertexRepairSearch4.ScoredCandidate> patched2 = new ArrayList<>(scored.size());
+            for (VertexRepairSearch4.ScoredCandidate sc : scored) {
                 boolean ok = wouldPassGuards(base, sc, gt);
 
-                patched2.add(new VertexRepairSearch.ScoredCandidate(
+                patched2.add(new VertexRepairSearch4.ScoredCandidate(
                         sc.edit(),
                         sc.violationsBaseline(),
                         sc.violationsAfter(),
@@ -1044,11 +1044,11 @@ public class VertexRepairSearch implements IGraphSearch {
         return new SearchPack(center.getName(), baseline, scored);
     }
 
-    private List<VertexRepairSearch.CandidateEdit> enumerateCandidates(Graph g, Node x, RepairGraphType gt) {
-        if (g == null || x == null) return List.of(VertexRepairSearch.CandidateEdit.noOp());
+    private List<VertexRepairSearch4.CandidateEdit> enumerateCandidates(Graph g, Node x, RepairGraphType gt) {
+        if (g == null || x == null) return List.of(VertexRepairSearch4.CandidateEdit.noOp());
 
-        List<VertexRepairSearch.CandidateEdit> out = new ArrayList<>();
-        out.add(VertexRepairSearch.CandidateEdit.noOp());
+        List<VertexRepairSearch4.CandidateEdit> out = new ArrayList<>();
+        out.add(VertexRepairSearch4.CandidateEdit.noOp());
 
         // 0) Build the add-edge pool
         Set<Node> pool = new LinkedHashSet<>(g.getNodes());
@@ -1056,7 +1056,7 @@ public class VertexRepairSearch implements IGraphSearch {
 
         // 1) Remove any existing edge incident to x
         for (Edge e : new ArrayList<>(g.getEdges(x))) {
-            out.add(VertexRepairSearch.CandidateEdit.removeEdge(e));
+            out.add(VertexRepairSearch4.CandidateEdit.removeEdge(e));
         }
 
         // 2) Replace existing edge x—y with type-specific variants (single-edge moves)
@@ -1066,7 +1066,7 @@ public class VertexRepairSearch implements IGraphSearch {
 
             for (Edge v : edgeMenuForPair(x, y, gt)) {
                 if (edgeStructurallyEqual(e, v, x, y)) continue;
-                out.add(VertexRepairSearch.CandidateEdit.replaceEdge(e, v));
+                out.add(VertexRepairSearch4.CandidateEdit.replaceEdge(e, v));
             }
         }
 
@@ -1076,7 +1076,7 @@ public class VertexRepairSearch implements IGraphSearch {
             if (g.isAdjacentTo(x, y)) continue;
 
             for (Edge add : addMenuForPair(x, y, gt)) {
-                out.add(VertexRepairSearch.CandidateEdit.addEdge(add));
+                out.add(VertexRepairSearch4.CandidateEdit.addEdge(add));
             }
         }
 
@@ -1094,7 +1094,7 @@ public class VertexRepairSearch implements IGraphSearch {
         return dedupCandidateEdits(out);
     }
 
-    private List<VertexRepairSearch.CandidateEdit> enumerateIncidentOrientationPatternMoves(Graph g, Node x, RepairGraphType gt) {
+    private List<VertexRepairSearch4.CandidateEdit> enumerateIncidentOrientationPatternMoves(Graph g, Node x, RepairGraphType gt) {
         if (g == null || x == null) return List.of();
 
         // Only consider neighbors currently adjacent to x.
@@ -1155,7 +1155,7 @@ public class VertexRepairSearch implements IGraphSearch {
 
         // Enumerate all subsets S of freeEdges to be oriented INTO x (y->x).
         // Others are oriented OUT of x (x->y).
-        List<VertexRepairSearch.CandidateEdit> out = new ArrayList<>();
+        List<VertexRepairSearch4.CandidateEdit> out = new ArrayList<>();
 
         int m = freeEdges.size();
         int total = 1 << m;
@@ -1230,16 +1230,16 @@ public class VertexRepairSearch implements IGraphSearch {
                             " | Pa={" + String.join(",", parents) + "}" +
                             " | Ch={" + String.join(",", children) + "}";
 
-            out.add(VertexRepairSearch.CandidateEdit.replaceEdges(label, olds, news));
+            out.add(VertexRepairSearch4.CandidateEdit.replaceEdges(label, olds, news));
         }
 
         return out;
     }
 
-    private List<VertexRepairSearch.CandidateEdit> enumerateCpdagColliderPairMoves(Graph g, Node x) {
+    private List<VertexRepairSearch4.CandidateEdit> enumerateCpdagColliderPairMoves(Graph g, Node x) {
         if (g == null || x == null) return List.of();
 
-        List<VertexRepairSearch.CandidateEdit> out = new ArrayList<>();
+        List<VertexRepairSearch4.CandidateEdit> out = new ArrayList<>();
 
         List<Node> adj = new ArrayList<>(g.getAdjacentNodes(x));
         // (optional) stable order for repeatability
@@ -1270,7 +1270,7 @@ public class VertexRepairSearch implements IGraphSearch {
                     Edge zToX = new Edge(z, x, Endpoint.TAIL, Endpoint.ARROW);
 
                     String label = "Orient collider " + y.getName() + "->" + x.getName() + "<-" + z.getName();
-                    out.add(VertexRepairSearch.CandidateEdit.replaceEdges(
+                    out.add(VertexRepairSearch4.CandidateEdit.replaceEdges(
                             label,
                             List.of(exy, exz),
                             List.of(yToX, zToX)
@@ -1283,7 +1283,7 @@ public class VertexRepairSearch implements IGraphSearch {
                     Edge xToZ = new Edge(x, z, Endpoint.TAIL, Endpoint.ARROW);
 
                     String label = "Orient away from collider " + y.getName() + "<-" + x.getName() + "->" + z.getName();
-                    out.add(VertexRepairSearch.CandidateEdit.replaceEdges(
+                    out.add(VertexRepairSearch4.CandidateEdit.replaceEdges(
                             label,
                             List.of(exy, exz),
                             List.of(xToY, xToZ)
@@ -1839,7 +1839,7 @@ public class VertexRepairSearch implements IGraphSearch {
     private interface CandidateEdit {
 
         static CandidateEdit noOp() {
-            return new CandidateEdit() {
+            return new VertexRepairSearch4.CandidateEdit() {
                 @Override
                 public String description() {
                     return "No change";
@@ -1869,7 +1869,7 @@ public class VertexRepairSearch implements IGraphSearch {
 
         static CandidateEdit addEdge(Edge edgeToAdd) {
             Objects.requireNonNull(edgeToAdd, "edgeToAdd");
-            return new CandidateEdit() {
+            return new VertexRepairSearch4.CandidateEdit() {
                 @Override
                 public String description() {
                     return "Add edge " + edgeToAdd;
@@ -1921,7 +1921,7 @@ public class VertexRepairSearch implements IGraphSearch {
 
         static CandidateEdit removeEdge(Edge edgeToRemove) {
             Objects.requireNonNull(edgeToRemove, "edgeToRemove");
-            return new CandidateEdit() {
+            return new VertexRepairSearch4.CandidateEdit() {
                 @Override
                 public String description() {
                     return "Remove edge " + edgeToRemove;
@@ -1963,7 +1963,7 @@ public class VertexRepairSearch implements IGraphSearch {
         static CandidateEdit replaceEdge(Edge oldEdge, Edge newEdge) {
             Objects.requireNonNull(oldEdge, "oldEdge");
             Objects.requireNonNull(newEdge, "newEdge");
-            return new CandidateEdit() {
+            return new VertexRepairSearch4.CandidateEdit() {
                 @Override
                 public String description() {
                     return "Replace " + oldEdge + " with " + newEdge;
@@ -2006,7 +2006,7 @@ public class VertexRepairSearch implements IGraphSearch {
             List<Edge> olds = List.copyOf(oldEdges);
             List<Edge> news = List.copyOf(newEdges);
 
-            return new CandidateEdit() {
+            return new VertexRepairSearch4.CandidateEdit() {
                 @Override
                 public String description() {
                     return label;
@@ -2164,9 +2164,9 @@ public class VertexRepairSearch implements IGraphSearch {
         };
 
         //        private List<VertexRepairSearch.ScoredCandidate> rows = List.of();
-        private List<VertexRepairSearch.ScoredCandidate> rows = new ArrayList<>();
+        private List<VertexRepairSearch4.ScoredCandidate> rows = new ArrayList<>();
 
-        void set(List<VertexRepairSearch.ScoredCandidate> rows) {
+        void set(List<VertexRepairSearch4.ScoredCandidate> rows) {
             this.rows = (rows == null) ? new ArrayList<>() : new ArrayList<>(rows);
             sortByCanonicalOrder();
         }
@@ -2193,7 +2193,7 @@ public class VertexRepairSearch implements IGraphSearch {
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            VertexRepairSearch.ScoredCandidate r = rows.get(rowIndex);
+            VertexRepairSearch4.ScoredCandidate r = rows.get(rowIndex);
             double alpha = PREFS.getDouble(PREF_ALPHA, 0.01);
 
             return switch (columnIndex) {
@@ -2246,7 +2246,7 @@ public class VertexRepairSearch implements IGraphSearch {
     /**
      * Lightweight container for per-node auto selection.
      */
-    private record SearchPack(String centerName, int baseline, List<VertexRepairSearch.ScoredCandidate> scored) {
+    private record SearchPack(String centerName, int baseline, List<VertexRepairSearch4.ScoredCandidate> scored) {
 
         private Graph seedDagFromAnyGraph(Graph g) {
             if (g == null) return null;
