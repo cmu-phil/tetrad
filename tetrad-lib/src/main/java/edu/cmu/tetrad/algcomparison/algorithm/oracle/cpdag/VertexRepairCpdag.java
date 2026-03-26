@@ -52,12 +52,12 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
  *
  * This is a thin AlgComparison wrapper around {@link VertexRepairSearch}.
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "Vertex Repair (CPDAG)",
-//        command = "vertex_repair_cpdag",
-//        algoType = AlgType.forbid_latent_common_causes
-//)
-//@Bootstrapping
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "Vertex Repair (CPDAG)",
+        command = "vertex_repair_cpdag",
+        algoType = AlgType.forbid_latent_common_causes
+)
+@Bootstrapping
 public class VertexRepairCpdag extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm,
         TakesGraph

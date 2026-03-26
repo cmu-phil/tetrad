@@ -372,7 +372,9 @@ public class Paths implements TetradSerializable {
             return g.equals(cpdag);
         } catch (Exception e) {
             // There was no valid sink.
-            TetradLogger.getInstance().log(e.getMessage());
+            if (false) {
+                TetradLogger.getInstance().log(e.getMessage());
+            }
             return false;
         }
     }
@@ -403,7 +405,7 @@ public class Paths implements TetradSerializable {
             return cpdag.equals(GraphTransforms.dagToCpdag(g));
         } catch (Exception e) {
             // There was no valid sink.
-            TetradLogger.getInstance().log(e.getMessage());
+//            TetradLogger.getInstance().log(e.getMessage());
             return false;
         }
     }

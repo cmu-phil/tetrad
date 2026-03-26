@@ -102,38 +102,6 @@ public class OrderedLocalMarkovProperty {
      * @param x   the node for which to return implied ordered-local-Markov independencies.
      * @return the set of implied independence facts with sink {@code x}.
      */
-//    public static Set<IndependenceFact> getModelForNode(Graph mag, Node x) {
-//        if (mag == null) throw new NullPointerException("mag");
-//        if (x == null) throw new NullPointerException("x");
-//        if (!mag.getNodes().contains(x)) return Collections.emptySet();
-//
-//        Paths paths = new Paths(mag);
-//        Map<Node, Set<Node>> de = paths.getDescendantsMap();
-//
-//        Set<IndependenceFact> out = new HashSet<>();
-//        EdgeListGraph mag_ = new EdgeListGraph(mag);
-//
-//        List<Node> unprocessed = new ArrayList<>(mag.getNodes());
-//        while (!unprocessed.isEmpty()) {
-//            Node sink = findSinkByChildWalk(mag_, unprocessed.getFirst());
-//
-//            Set<Node> dis = GraphUtils.district(sink, mag_);
-//
-//            if (sink == x) {
-//                processSink(out, de, sink, dis, mag_);
-//                // After x is processed, we can stop: we only want x's implied facts.
-//                return out;
-//            }
-//
-//            // Otherwise eliminate and continue.
-//            mag_.removeNode(sink);
-//            unprocessed.remove(sink);
-//        }
-//
-//        // Should not happen if x was in mag, but keep it safe.
-//        return out;
-//    }
-
     public static Set<IndependenceFact> getModelForNode(Graph mag, Node x) {
         // Compute full OLMP model on this MAG
         Set<IndependenceFact> all = getModel(mag);
@@ -148,9 +116,6 @@ public class OrderedLocalMarkovProperty {
         for (IndependenceFact f : all) {
             if (!f.getX().getName().equals(xName) && !f.getY().getName().equals(xName)) continue;  // name-based match
 
-//            Node X = byName.get(f.getX().getName());
-//            Node Y = byName.get(f.getY().getName());
-
             boolean xIsLeft = f.getX().getName().equals(xName);
 
             Node X = byName.get(f.getX().getName());
@@ -162,10 +127,6 @@ public class OrderedLocalMarkovProperty {
                 Node zz = byName.get(z.getName());
                 if (zz != null) Z.add(zz);
             }
-
-//            if (X != null && Y != null) {
-//                out.add(new IndependenceFact(X, Y, Z));
-//            }
 
             if (X != null && Y != null) {
                 if (xIsLeft) out.add(new IndependenceFact(X, Y, Z));
