@@ -1,7 +1,0 @@
-"algorithm","sampleSize","pct_improved","pct_same","pct_degraded"
-"PC","500",70,10,20
-"PC","2000",70,10,20
-"FGES","500",50,0,50
-"FGES","2000",20,10,70
-"BOSS","500",30,0,70
-"BOSS","2000",30,10,60
