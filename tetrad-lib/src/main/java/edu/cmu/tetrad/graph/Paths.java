@@ -2430,7 +2430,7 @@ public class Paths implements TetradSerializable {
     public boolean existsDirectedCycle() {
         for (Node node : graph.getNodes()) {
             if (existsDirectedPath(node, node)) {
-                TetradLogger.getInstance().log("Cycle found at node " + node.getName() + ".");
+//                TetradLogger.getInstance().log("Cycle found at node " + node.getName() + ".");
                 return true;
             }
         }
