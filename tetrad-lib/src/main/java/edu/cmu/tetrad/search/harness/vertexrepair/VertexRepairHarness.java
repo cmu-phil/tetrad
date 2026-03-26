@@ -55,7 +55,7 @@ public class VertexRepairHarness {
     private static final int AVG_DEGREE = 3;
     private static final int MAX_DEGREE = 6;
     private static final int[] SAMPLE_SIZES = {500, 2000};
-    private static final int NUM_REPS = 100;
+    private static final int NUM_REPS = 10;
     private static final double ALPHA = 0.05;   // for CI tests
     private static final double PENALTY = 2.0;    // BIC penalty discount for FGES/BOSS
 

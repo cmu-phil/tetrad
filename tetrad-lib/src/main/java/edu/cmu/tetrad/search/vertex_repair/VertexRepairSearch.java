@@ -84,12 +84,12 @@ public class VertexRepairSearch implements IGraphSearch {
             return stableTieBreak(a, b);
         }
 
-        // 2) Fewer edges preferred
-        int c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+        // 1) Δ violations (more negative is better)
+        int c = Integer.compare(a.delta(), b.delta()); // ASC
         if (c != 0) return c;
 
-        // 1) Δ violations (more negative is better)
-        c = Integer.compare(a.delta(), b.delta()); // ASC
+        // 2) Fewer edges preferred
+        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
         if (c != 0) return c;
 
         // 3) Smaller edit size preferred (single-edge before multi-edge)
