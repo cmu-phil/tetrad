@@ -570,7 +570,7 @@ public class VertexRepairSearch implements IGraphSearch {
             if (afterEdges < currentEdges) return true;
 
             // NEW: allow pure "quality" improvement when structure doesn't worsen.
-            final double MIN_MP_GAIN = 1e-3; // tune; 0.001 is usually safe
+            final double MIN_MP_GAIN = 0; // Setting this to be the same as in VertexRepairPanel.
             if (afterEdges == currentEdges
                     && Double.isFinite(mpBefore)
                     && Double.isFinite(mpAfter)
