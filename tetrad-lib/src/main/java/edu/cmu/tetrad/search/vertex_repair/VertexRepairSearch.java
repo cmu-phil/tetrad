@@ -9,10 +9,10 @@ import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
@@ -79,16 +79,17 @@ public class VertexRepairSearch implements IGraphSearch {
         if (a.passesGuards() != b.passesGuards()) {
             return a.passesGuards() ? -1 : 1;
         }
+
         if (!a.passesGuards()) {
             return stableTieBreak(a, b);
         }
 
-        // 1) Δ violations (more negative is better)
-        int c = Integer.compare(a.delta(), b.delta()); // ASC
+        // 2) Fewer edges preferred
+        int c = Integer.compare(a.edgesAfter(), b.edgesAfter());
         if (c != 0) return c;
 
-        // 2) Fewer edges preferred
-        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+        // 1) Δ violations (more negative is better)
+        c = Integer.compare(a.delta(), b.delta()); // ASC
         if (c != 0) return c;
 
         // 3) Smaller edit size preferred (single-edge before multi-edge)
@@ -379,7 +380,7 @@ public class VertexRepairSearch implements IGraphSearch {
      * @param f the {@code IndependenceFact} object used to generate the key. It may contain
      *          two variables (X and Y) and a list of conditional variables (Z).
      * @return a string representing the unique key for the given {@code IndependenceFact},
-     *         or a random UUID string if the input is partially or entirely {@code null}.
+     * or a random UUID string if the input is partially or entirely {@code null}.
      */
     private static String factKey(IndependenceFact f) {
         if (f == null || f.getX() == null || f.getY() == null) return UUID.randomUUID().toString();
@@ -570,7 +571,7 @@ public class VertexRepairSearch implements IGraphSearch {
             if (afterEdges < currentEdges) return true;
 
             // NEW: allow pure "quality" improvement when structure doesn't worsen.
-            final double MIN_MP_GAIN = 0; // Setting this to be the same as in VertexRepairPanel.
+            final double MIN_MP_GAIN = 0.001; // Setting this to be the same as in VertexRepairPanel.
             if (afterEdges == currentEdges
                     && Double.isFinite(mpBefore)
                     && Double.isFinite(mpAfter)

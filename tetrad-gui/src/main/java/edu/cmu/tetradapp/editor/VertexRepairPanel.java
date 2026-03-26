@@ -571,7 +571,7 @@ public final class VertexRepairPanel extends JPanel {
             if (afterEdges < currentEdges) return true;
 
             // NEW: allow pure "quality" improvement when structure doesn't worsen.
-            final double MIN_MP_GAIN = 0;// 1e-3; // tune; 0.001 is usually safe
+            final double MIN_MP_GAIN = 0.001;// 1e-3; // tune; 0.001 is usually safe
             if (afterEdges == currentEdges
                     && Double.isFinite(mpBefore)
                     && Double.isFinite(mpAfter)
