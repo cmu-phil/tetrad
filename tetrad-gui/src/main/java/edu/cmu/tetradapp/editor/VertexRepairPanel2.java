@@ -6,10 +6,10 @@ import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -34,7 +34,7 @@ import java.util.prefs.Preferences;
  * Markov-checker diagnostics derived from conditional independence tests.
  * </p>
  */
-public final class VertexRepairPanel extends JPanel {
+public final class VertexRepairPanel2 extends JPanel {
 
     private static final String CARD_TABLE = "table";
     private static final String CARD_NONE = "none";
@@ -135,7 +135,7 @@ public final class VertexRepairPanel extends JPanel {
     private volatile SwingWorker<?, ?> activeWorker;
     private volatile JDialog watchDialog;
 
-    public VertexRepairPanel(VertexCheckEditor editor, Node x) {
+    public VertexRepairPanel2(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
 
         this.baseModel = Objects.requireNonNull(editor.getIndTestModel(), "editor.getIndTestModel()");

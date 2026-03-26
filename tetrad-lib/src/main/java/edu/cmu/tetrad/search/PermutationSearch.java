@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -94,15 +94,28 @@ public class PermutationSearch {
     private long seed = -1;
     private boolean replicatingGraph = false;
 
+    public PermutationSearch(SuborderSearch suborderSearch) {
+        this(suborderSearch, null);
+    }
+
     /**
      * Constructs a new PermutationSearch using the given SuborderSearch.
      *
      * @param suborderSearch The SuborderSearch (see).
+     * @param initialOrder   The initial order of nodes for the search, or null if the data order is to be
+     *                       used.
      * @see SuborderSearch
      */
-    public PermutationSearch(SuborderSearch suborderSearch) {
+    public PermutationSearch(SuborderSearch suborderSearch, List<Node> initialOrder) {
         this.suborderSearch = suborderSearch;
-        this.variables = suborderSearch.getVariables();
+        List<Node> variables = suborderSearch.getVariables();
+
+        if (initialOrder != null && !new HashSet<>(initialOrder).equals(new HashSet<>(variables))) {
+            throw new IllegalArgumentException("Initial order must be a permutation of the variables.");
+        }
+
+        this.variables = initialOrder != null ? initialOrder : variables;
+
         this.order = new ArrayList<>();
         this.gsts = new HashMap<>();
 
@@ -110,7 +123,9 @@ public class PermutationSearch {
         Map<Node, Integer> index = new HashMap<>();
 
         int i = 0;
-        for (Node node : this.variables) {
+        for (Node _node : this.variables) {
+            Node node = score.getVariable(_node.getName());
+
             index.put(node, i++);
             this.gsts.put(node, new GrowShrinkTree(score, index, node));
             this.order.add(node);

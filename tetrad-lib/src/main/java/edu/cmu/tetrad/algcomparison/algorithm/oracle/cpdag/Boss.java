@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
+import edu.cmu.tetrad.algcomparison.independence.TakesGraph;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
@@ -32,6 +33,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -57,7 +59,7 @@ import java.util.List;
 )
 @Bootstrapping
 public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, HasKnowledge,
-        ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm, TakesGraph {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -70,6 +72,11 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
+
+    /**
+     * An initial graph used to find a causal order permutation to seed the search.
+     */
+    private Graph initialGraph = null;
 
     /**
      * Constructs a new BOSS algorithm.
@@ -114,12 +121,18 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
 
         edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(myScore);
 
+        List<Node> initialOder = null;
+
+        if (initialGraph != null) {
+            initialOder = initialGraph.paths().getValidOrder(initialGraph.getNodes(), false);
+        }
+
         boss.setUseBes(parameters.getBoolean(Params.USE_BES));
         boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         boss.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         boss.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        PermutationSearch permutationSearch = new PermutationSearch(boss);
+        PermutationSearch permutationSearch = new PermutationSearch(boss, initialOder);
         permutationSearch.setKnowledge(this.knowledge);
         permutationSearch.setSeed(seed);
         permutationSearch.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
@@ -226,5 +239,9 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         this.knowledge = knowledge;
     }
 
+    @Override
+    public void setGraph(Graph graph) {
+        this.initialGraph = graph;
+    }
 }
 

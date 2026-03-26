@@ -52,7 +52,7 @@
     import java.util.prefs.Preferences;
     import java.util.stream.Collectors;
 
-    import static edu.cmu.tetradapp.editor.VertexRepairPanel.factKey;
+    import static edu.cmu.tetradapp.editor.VertexCheckAdjustmentPanel.factKey;
     import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
 
     /**
@@ -87,7 +87,7 @@
      * </p>
      *
      * <p>
-     * Integrated with this editor is the {@link VertexRepairPanel}, which allows
+     * Integrated with this editor is the {@link VertexCheckAdjustmentPanel}, which allows
      * users to explore local graph modifications when Markov violations are present.
      * Accepted repairs update the underlying graph, trigger recomputation of affected
      * results, and preserve table selections where possible.
@@ -133,7 +133,7 @@
         private final JComboBox<String> conditioningCombo = new JComboBox<>();
         private final JCheckBox verbose = new JCheckBox("Verbose");
         private final JButton showIndepsForRow = new JButton("Independencies");
-        private final JButton repairModelButton = new JButton("Repair Model");
+        private final JButton adjustModelButton = new JButton("Adjust Model");
         // --- Graph UX ---
         private final JButton undoGraphButton = new JButton("Undo");
         private final JButton showGraphButton = new JButton("Graph");
@@ -181,9 +181,9 @@
 
             setTestFromCombo();
 
-            repairModelButton.setEnabled(true);
+            adjustModelButton.setEnabled(true);
 
-            repairModelButton.addActionListener(e -> showRepairModelDialog());
+            adjustModelButton.addActionListener(e -> showRepairModelDialog());
 
             undoGraphButton.addActionListener(e -> undoGraph());
             showGraphButton.addActionListener(e -> showGraphDialog());
@@ -752,7 +752,7 @@
 
             JPanel factsButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
             factsButtons.add(showIndepsForRow);
-            factsButtons.add(repairModelButton);
+            factsButtons.add(adjustModelButton);
             factsButtons.add(undoGraphButton);
             factsButtons.add(showGraphButton);
 
@@ -1224,14 +1224,14 @@
                 enable = rs != null && !rs.isEmpty() && rs.stream().anyMatch(r -> r != null && !r.isIndependent());
             }
 
-            repairModelButton.setEnabled(true);
+            adjustModelButton.setEnabled(true);
         }
 
         private void showRepairModelDialog() {
             Node x = getSelectedVertex();
             if (x == null) return;
 
-            VertexRepairPanel panel = new VertexRepairPanel(this, x);
+            VertexCheckAdjustmentPanel panel = new VertexCheckAdjustmentPanel(this, x);
             panel.setKnowledge(knowledge);
 
             JDialog dialog = new JDialog(
