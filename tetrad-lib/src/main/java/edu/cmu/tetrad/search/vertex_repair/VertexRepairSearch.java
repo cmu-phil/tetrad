@@ -209,6 +209,7 @@ public class VertexRepairSearch implements IGraphSearch {
      * {@code false}, the test will not be applied.
      */
     private final boolean useAndersonDarling = false;
+    private static boolean verbose = false;
 
     /**
      * Stores knowledge constraints used in the search process.
@@ -461,8 +462,10 @@ public class VertexRepairSearch implements IGraphSearch {
         return String.format("%.4g", p);
     }
 
-    private static void vlog(String fmt, Object... args) {
-        TetradLogger.getInstance().log("[VertexAutoRepair] " + String.format(fmt, args));
+     private static void vlog(String fmt, Object... args) {
+        if (verbose) {
+            TetradLogger.getInstance().log("[VertexAutoRepair] " + String.format(fmt, args));
+        }
     }
 
     private static Endpoint endpointAt(Edge e, Node n) {
@@ -651,6 +654,9 @@ public class VertexRepairSearch implements IGraphSearch {
                         int maxSweeps,
                         int maxEdits) {
 
+        // This needs to be kept in sync with the corresponding method in VertexRepairPanel. Sorry.
+        // jdramsey 2026-3-26
+
         if (start == null) return null;
         if (maxStepsPerNode <= 0) throw new IllegalArgumentException("maxStepsPerNode must be > 0");
         if (maxSweeps <= 0) throw new IllegalArgumentException("maxSweeps must be > 0");
@@ -664,12 +670,20 @@ public class VertexRepairSearch implements IGraphSearch {
 
         while (!stopRequested() && editsApplied < maxEdits) {
             sweep++;
-            if (sweep > maxSweeps) break;
+            if (sweep > maxSweeps) {
+                vlog("STOP: hit MAX_SWEEPS=%d", maxSweeps);
+                break;
+            }
 
             final String sweepStartSig = graphSignature(workingGraph);
+            vlog("--------------------------------------------------");
+            vlog("SWEEP %d (start signature=%s)", sweep, sweepStartSig);
 
             // Build baseline cache ONCE for this sweep — shared across all node evaluations.
+            // This avoids rebuilding it N times (once per node) when the graph hasn't changed.
             Graph baseForCache = safeCopy(workingGraph);
+//            gt = (RepairGraphType) graphTypeCombo.getSelectedItem();
+
             if (gt == RepairGraphType.CPDAG || gt == RepairGraphType.PDAG) {
                 baseForCache = canonicalizeToCpdagOrNull(baseForCache);
             } else if (gt == RepairGraphType.PAG) {
@@ -677,9 +691,11 @@ public class VertexRepairSearch implements IGraphSearch {
             }
 
             GlobalEvalCache sweepBaseCache = (baseForCache != null)
-                    ? buildBaselineCache(baseForCache) : null;
+                    ? buildBaselineCache(baseForCache)
+                    : null;
 
             // Shared candidate graph cache across all nodes in this sweep.
+            // Avoids rebuilding e.g. "Add X1---X2" when processing both X1 and X2.
             Map<String, Graph> sweepCandGraphCache = new HashMap<>();
 
             // Collect all candidates from all nodes into one global list.
@@ -695,9 +711,9 @@ public class VertexRepairSearch implements IGraphSearch {
 
                 SearchPack pack = computeCandidatesForNode(workingGraph, center, gt,
                         sweepBaseCache, sweepCandGraphCache);
-                if (pack == null || pack.scored() == null || pack.scored().isEmpty()) continue;
+                if (pack == null || pack.scored == null || pack.scored.isEmpty()) continue;
 
-                for (ScoredCandidate sc : pack.scored()) {
+                for (ScoredCandidate sc : pack.scored) {
                     if (sc == null || sc.edit() == null) continue;
                     if (sc.edit().isNoOp()) continue;
 
@@ -709,28 +725,69 @@ public class VertexRepairSearch implements IGraphSearch {
                 }
             }
 
-            if (allCandidates.isEmpty()) break;
+            if (allCandidates.isEmpty()) {
+                vlog("STOP: no candidates found across all nodes.");
+                break;
+            }
 
-            // Sort globally and apply single best passing move.
+            // Sort the global list by canonical order
             allCandidates.sort(CANONICAL_TABLE_ORDER);
 
+            // Log top candidates for debugging
+            int logLimit = Math.min(5, allCandidates.size());
+            for (int i = 0; i < logLimit; i++) {
+                ScoredCandidate sc = allCandidates.get(i);
+                vlog("Global candidate [%d]: %s | base=%d after=%d delta=%d edges=%d nodeP=%s modelP=%s passes=%b",
+                        i,
+                        sc.edit().description(),
+                        sc.violationsBaseline(),
+                        sc.violationsAfter(),
+                        sc.delta(),
+                        sc.edgesAfter(),
+                        fmtP(sc.nodePAfter()),
+                        fmtP(sc.modelPAfter()),
+                        sc.passesGuards());
+            }
+
+            // Pick the best move that passes guards
             boolean moved = false;
+
             for (ScoredCandidate sc : allCandidates) {
                 if (stopRequested() || editsApplied >= maxEdits) break;
-                if (!sc.passesGuards()) break; // sorted, so all remaining also fail
 
+                // Since list is sorted, once we hit a non-passing candidate
+                // all subsequent ones also fail — stop early.
+                if (!sc.passesGuards()) break;
+
+                vlog("Consider move: %s | base=%d after=%d delta=%d edges=%d nodeP=%s modelP=%s",
+                        sc.edit().description(),
+                        sc.violationsBaseline(),
+                        sc.violationsAfter(),
+                        sc.delta(),
+                        sc.edgesAfter(),
+                        fmtP(sc.nodePAfter()),
+                        fmtP(sc.modelPAfter()));
+
+                // pushHistory=false (auto-repair manages its own undo via
+                // the checkpoint at sweep start), updateStatus=true
                 if (applyCandidateInternal(sc.edit(), gt)) {
                     editsApplied++;
                     moved = true;
+                    TetradLogger.getInstance().log(String.format("APPLIED move: %s", sc.edit().description()));
+//                    vlog("APPLIED move: %s", sc.edit().description());
                     vlog("APPLIED move: %s", sc.edit().description());
                     break;
+                } else {
+                    vlog("Rejected by applyCandidateInternal: %s", sc.edit().description());
                 }
             }
 
             final String sweepEndSig = graphSignature(workingGraph);
+            vlog("SWEEP %d done: applied=%b | end signature=%s", sweep, moved, sweepEndSig);
 
             if (!moved || sweepEndSig.equals(sweepStartSig)) {
-                break; // fixed point
+                vlog("STOP: no changes in sweep %d (fixed point reached).", sweep);
+                break;
             }
         }
 
