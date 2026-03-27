@@ -48,7 +48,7 @@ public interface RawMarginalIndependenceTest {
      * multivariate set of variables.
      * <p>
      * Default implementation: fall back to pairwise tests of (x, y_j) for each column y_j in Y, and combine the
-     * resulting p-values with Fisherâs method. Implementations that support true multivariate tests (e.g. HSIC, KCI
+     * resulting p-values with Fisher's method. Implementations that support true multivariate tests (e.g. HSIC, KCI
      * with vector Y) should override this method.
      *
      * @param x the first variable (scalar), represented as an array of doubles of length n

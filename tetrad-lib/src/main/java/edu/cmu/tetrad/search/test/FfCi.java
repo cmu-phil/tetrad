@@ -20,11 +20,10 @@
 
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataTransforms;
-import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -50,7 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * Conditioning uses ridge residualization in feature space (same pattern as FF-CI).
  */
-public final class FfCi implements IndependenceTest, RowsSettable {
+public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIndependenceTest {
 
     // ---------------- feature representation ----------------
 
@@ -697,6 +696,49 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         }
 
         return new MixedBlock(cont, discFeat);
+    }
+
+    /**
+     * Computes the p-value for the statistical test of independence between two variables.
+     *
+     * @param x the array of values representing the first variable
+     * @param y the array of values representing the second variable
+     * @return the computed p-value indicating the strength of independence between the two variables
+     */
+    @Override
+    public double computePValue(double[] x, double[] y) throws InterruptedException {
+        double[][] combined = new double[x.length][2];
+        for (int i = 0; i < x.length; i++) {
+            combined[i][0] = x[i];
+            combined[i][1] = y[i];
+        }
+        Node _x = new ContinuousVariable("X_computePValue");
+        Node _y = new ContinuousVariable("Y_computePValue");
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(_x);
+        nodes.add(_y);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(combined), nodes);
+
+        edu.cmu.tetrad.search.test.FfCi test = new edu.cmu.tetrad.search.test.FfCi(dataSet, new Parameters());
+//        test.setRidge(this.ridge);
+//        test.setShrinkageMode(this.shrinkageMode);
+//        test.setUsePseudoinverse(this.usePseudoinverse);
+//        test.setPinvTolerance(this.pinvTolerance);
+
+        test.setAlpha(this.alpha);
+//        test.setVerbose(this.verbose);
+        test.setLambda(this.lambda);
+        test.setNumFeaturesXY(this.numFeatXY);
+        test.setNumFeaturesZ(this.numFeatZ);
+        test.setPermutations(this.permutations);
+
+        return test.checkIndependence(_x, _y).getPValue();
+    }
+
+
+    @Override
+    public double computePValue(double[] x, double[][] Y) throws InterruptedException {
+        return RawMarginalIndependenceTest.super.computePValue(x, Y);
     }
 
     private record MixedBlock(double[][] cont, double[][] discFeat) {
