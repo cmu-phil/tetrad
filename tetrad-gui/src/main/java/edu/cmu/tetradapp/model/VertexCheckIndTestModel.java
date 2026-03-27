@@ -26,8 +26,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.MarkovCheck;
-import edu.cmu.tetrad.search.OrderedLocalMarkovProperty;
-import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -43,7 +41,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serial;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Model for a per-vertex ("local") Markov check, a.k.a. "Vertex Checker".

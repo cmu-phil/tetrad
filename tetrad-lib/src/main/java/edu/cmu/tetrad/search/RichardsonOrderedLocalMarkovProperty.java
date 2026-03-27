@@ -44,8 +44,8 @@ import java.util.*;
  * property equals the set satisfying m-separation (the global Markov property), using
  * only the semi-graphoid axioms (C1)–(C4). No composition axiom (C5) is required.
  *
- * <h2>Key difference from {@link OrderedLocalMarkovProperty}</h2>
- * The Andrews sink-elimination procedure ({@link OrderedLocalMarkovProperty}) generates
+ * <h2>Key difference from {@link AndrewsOrderedLocalMarkovProperty}</h2>
+ * The Andrews sink-elimination procedure ({@link AndrewsOrderedLocalMarkovProperty}) generates
  * CI facts only for ancestral sets obtained by removing descendants of district members.
  * This class generates facts for <em>all</em> ancestral subsets of pre(x), including
  * those obtained by removing optional parents of district members. This additional

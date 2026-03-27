@@ -23,13 +23,13 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fci;
-import edu.cmu.tetrad.search.OrderedLocalMarkovProperty;
+import edu.cmu.tetrad.search.AndrewsOrderedLocalMarkovProperty;
 import edu.cmu.tetrad.search.test.IndTestIndependenceFacts;
 import org.junit.Test;
 
 import java.util.Set;
 
-public class TestOrderedLocalMarkovProperty {
+public class TestAndrewsOrderedLocalMarkovProperty {
 
     @Test
     public void test1() {
@@ -37,7 +37,7 @@ public class TestOrderedLocalMarkovProperty {
         Graph pag = GraphTransforms.dagToPag(g, false);
         Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
-        Set<IndependenceFact> im = OrderedLocalMarkovProperty.getModel(mag);
+        Set<IndependenceFact> im = AndrewsOrderedLocalMarkovProperty.getModel(mag);
 
         for (IndependenceFact fact : im) {
             System.out.println(fact);
@@ -58,7 +58,7 @@ public class TestOrderedLocalMarkovProperty {
         mag.addDirectedEdge(mag.getNode("X7"), mag.getNode("X2"));
         mag.addDirectedEdge(mag.getNode("X7"), mag.getNode("X3"));
 
-        Set<IndependenceFact> im = OrderedLocalMarkovProperty.getModel(mag);
+        Set<IndependenceFact> im = AndrewsOrderedLocalMarkovProperty.getModel(mag);
 
         for (IndependenceFact fact : im) {
             System.out.println(fact);
@@ -76,7 +76,7 @@ public class TestOrderedLocalMarkovProperty {
 
         for (Graph mag : mags) {
             System.out.println("\nmag = " + mag);
-            Set<IndependenceFact> im = OrderedLocalMarkovProperty.getModel(mag);
+            Set<IndependenceFact> im = AndrewsOrderedLocalMarkovProperty.getModel(mag);
             System.out.println("semIm = ");
 
             for (IndependenceFact fact : im) {
@@ -99,7 +99,7 @@ public class TestOrderedLocalMarkovProperty {
             for (Graph mag : mags) {
                 System.out.println("\nTrue MAG = " + mag);
 
-                Set<IndependenceFact> im = OrderedLocalMarkovProperty.getModel(mag);
+                Set<IndependenceFact> im = AndrewsOrderedLocalMarkovProperty.getModel(mag);
 
                 IndependenceFacts facts = new IndependenceFacts();
 

@@ -62,7 +62,7 @@ import java.util.*;
  *
  * <h2>Relationship to other procedures</h2>
  * <ul>
- *   <li>{@link OrderedLocalMarkovProperty} (Andrews): sound but not complete.
+ *   <li>{@link AndrewsOrderedLocalMarkovProperty} (Andrews): sound but not complete.
  *   <li>{@link RichardsonOrderedLocalMarkovProperty}: sound and complete, no composition
  *       needed, but potentially exponential in district size.
  *   <li>This class: sound and complete under composition, polynomial cost.

@@ -184,7 +184,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * is categorized or scoped, influencing the analysis process in probabilistic or causal models. It is initialized
      * to `ConditioningSetType.LOCAL_MARKOV`, indicating that the default scope pertains to local Markovity.
      */
-    private ConditioningSetType markovCheckerConditioningSetType = ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG;
+    private ConditioningSetType markovCheckerConditioningSetType = ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY;
     /**
      * Stores the selected independendence test model for the GridSearchEditor. It needs to be stored here in case the
      * user closes the editor and re-opens it.
@@ -463,7 +463,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
      */
     private void syncMarkovCheckerConditioningSetTypeFromParameters() {
         try {
-            String s = parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG.name());
+            String s = parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY.name());
             if (s != null && !s.isBlank()) {
                 this.markovCheckerConditioningSetType = ConditioningSetType.valueOf(s);
                 return;
@@ -1514,7 +1514,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
     public ConditioningSetType getMarkovCheckerConditioningSetType() {
         // Source of truth is parameters, so Grid Search execution and UI cannot diverge.
         try {
-            String s = ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG.name();// parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, null);
+            String s = ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY.name();// parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, null);
             if (s != null && !s.isBlank()) {
                 return ConditioningSetType.valueOf(s);
             }

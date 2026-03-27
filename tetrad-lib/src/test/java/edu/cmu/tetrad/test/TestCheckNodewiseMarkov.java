@@ -34,7 +34,6 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -357,11 +356,11 @@ public class TestCheckNodewiseMarkov {
     /**
      * For LV-light paper's usage under ORDERED_LOCAL_MARKOV_MAG conditioning set type
      *
-     * @see OrderedLocalMarkovProperty
+     * @see AndrewsOrderedLocalMarkovProperty
      * @see ConditioningSetType
      */
     private static void testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(File statsFile, IndependenceTest fisherZTest, DataSet data, Graph trueGraph, Graph estimatedPAG, double threshold, double shuffleThreshold, double lowRecallBound) {
-        MarkovCheck markovCheck = new MarkovCheck(estimatedPAG, fisherZTest, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
+        MarkovCheck markovCheck = new MarkovCheck(estimatedPAG, fisherZTest, ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY);
         markovCheck.generateAllResults();
         double andersonDarlingA2 = markovCheck.getAndersonDarlingA2(true);
         double andersonDarlingP = markovCheck.getAndersonDarlingP(true);

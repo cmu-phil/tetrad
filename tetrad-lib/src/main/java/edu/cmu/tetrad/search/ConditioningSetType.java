@@ -87,9 +87,26 @@ public enum ConditioningSetType {
      * Generates a set of independence facts that implies Global Markov for MAG. Taking a MAG in the given PAG in the
      * calling method.
      *
-     * @see OrderedLocalMarkovProperty
+     * @see AndrewsOrderedLocalMarkovProperty
      */
-    ORDERED_LOCAL_MARKOV_MAG
+    ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY,
+
+    /**
+     * Specifies a conditioning set type that generates a set of independence facts conforming to the
+     * Richardson Ordered Local Markov Property for Markov equivalent models such as MAGs (Maximal Ancestral Graphs).
+     * This method leverages a specific causal ordering in the graph to verify causal and conditional independence
+     * relationships, taking into account the structure of the underlying Markov equivalence class.
+     */
+    RICHARDSON_ORDERED_LOCAL_MARKOV_PROPERTY,
+
+    /**
+     * Represents the assumption or property in probabilistic graphical models that
+     * given any two variables in the model, they are conditionally independent
+     * given a direct connection or edge between them. This property is widely
+     * applicable to pairwise Markov random fields where the edges encode
+     * direct probabilistic relationships between the connected variables.
+     */
+    PAIRWISE_MARKOV_PROPERTY
 
 }
 

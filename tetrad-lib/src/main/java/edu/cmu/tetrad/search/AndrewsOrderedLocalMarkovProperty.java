@@ -33,9 +33,9 @@ import java.util.*;
  * <p>
  * This class is not meant to be instantiated.
  */
-public class OrderedLocalMarkovProperty {
+public class AndrewsOrderedLocalMarkovProperty {
 
-    private OrderedLocalMarkovProperty() {
+    private AndrewsOrderedLocalMarkovProperty() {
     }
 
     /**

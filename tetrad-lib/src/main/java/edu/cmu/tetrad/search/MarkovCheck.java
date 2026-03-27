@@ -28,7 +28,6 @@ import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
-import edu.cmu.tetrad.util.TMath;
 import org.apache.commons.math3.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -270,7 +269,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 return factsForUniformZ(alignedGraph, x, z);
             }
 
-            case ORDERED_LOCAL_MARKOV_MAG: {
+            case ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY: {
                 Graph mag;
 
                 if (alignedGraph.paths().isLegalDag()) {
@@ -301,7 +300,77 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
                 Node _x = mag.getNode(x.getName());
 
-                Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModelForNode(mag, _x);
+                Set<IndependenceFact> raw = AndrewsOrderedLocalMarkovProperty.getModelForNode(mag, _x);
+                return new ArrayList<>(raw);
+            }
+
+            case RICHARDSON_ORDERED_LOCAL_MARKOV_PROPERTY: {
+                Graph mag;
+
+                if (alignedGraph.paths().isLegalDag()) {
+                    mag = GraphTransforms.dagToMag(alignedGraph);
+                } else if (alignedGraph.paths().isLegalCpdag() || alignedGraph.paths().isLegalPdag()) {
+                    Graph dag = GraphTransforms.dagFromCpdag(alignedGraph);
+                    mag = GraphTransforms.dagToMag(dag);
+                } else if (alignedGraph.paths().isLegalMag()) {
+                    mag = alignedGraph;
+                } else if (alignedGraph.paths().isLegalPag()) {
+                    mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+                } else {
+                    boolean hasCircle = false;
+
+                    for (Edge e : alignedGraph.getEdges()) {
+                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
+                            hasCircle = true;
+                            break;
+                        }
+                    }
+
+                    if (hasCircle) {
+                        mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+                    } else {
+                        mag = alignedGraph;
+                    }
+                }
+
+                Node _x = mag.getNode(x.getName());
+
+                Set<IndependenceFact> raw = RichardsonOrderedLocalMarkovProperty.getModelForNode(mag, _x);
+                return new ArrayList<>(raw);
+            }
+
+            case PAIRWISE_MARKOV_PROPERTY: {
+                Graph mag;
+
+                if (alignedGraph.paths().isLegalDag()) {
+                    mag = GraphTransforms.dagToMag(alignedGraph);
+                } else if (alignedGraph.paths().isLegalCpdag() || alignedGraph.paths().isLegalPdag()) {
+                    Graph dag = GraphTransforms.dagFromCpdag(alignedGraph);
+                    mag = GraphTransforms.dagToMag(dag);
+                } else if (alignedGraph.paths().isLegalMag()) {
+                    mag = alignedGraph;
+                } else if (alignedGraph.paths().isLegalPag()) {
+                    mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+                } else {
+                    boolean hasCircle = false;
+
+                    for (Edge e : alignedGraph.getEdges()) {
+                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
+                            hasCircle = true;
+                            break;
+                        }
+                    }
+
+                    if (hasCircle) {
+                        mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+                    } else {
+                        mag = alignedGraph;
+                    }
+                }
+
+                Node _x = mag.getNode(x.getName());
+
+                Set<IndependenceFact> raw = PairwiseMarkovProperty.getModelForNode(mag, _x);
                 return new ArrayList<>(raw);
             }
 
@@ -1239,7 +1308,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     private @Nullable Set<IndependenceFact> getAllIndependenceFacts(List<Node> order) {
         Set<IndependenceFact> allIndependenceFacts = new HashSet<>();
 
-        if (setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG) {
+        if (setType == ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY) {
             Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
 
             if (graph.paths().isLegalDag()) {
@@ -1256,7 +1325,43 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 return null;
             }
 
-            allIndependenceFacts = OrderedLocalMarkovProperty.getModel(mag);
+            allIndependenceFacts = AndrewsOrderedLocalMarkovProperty.getModel(mag);
+        } else if (setType == ConditioningSetType.RICHARDSON_ORDERED_LOCAL_MARKOV_PROPERTY) {
+            Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
+
+            if (graph.paths().isLegalDag()) {
+                mag = graph;
+            } else if (graph.paths().isLegalCpdag()) {
+                mag = GraphTransforms.dagFromCpdag(graph);
+            } else if (graph.paths().isLegalMag()) {
+                mag = graph;
+            } else {
+                mag = GraphTransforms.zhangMagFromPag(graph);
+            }
+
+            if (mag.paths().existsDirectedCycle()) {
+                return null;
+            }
+
+            allIndependenceFacts = RichardsonOrderedLocalMarkovProperty.getModel(mag);
+        } else if (setType == ConditioningSetType.PAIRWISE_MARKOV_PROPERTY) {
+            Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
+
+            if (graph.paths().isLegalDag()) {
+                mag = graph;
+            } else if (graph.paths().isLegalCpdag()) {
+                mag = GraphTransforms.dagFromCpdag(graph);
+            } else if (graph.paths().isLegalMag()) {
+                mag = graph;
+            } else {
+                mag = GraphTransforms.zhangMagFromPag(graph);
+            }
+
+            if (mag.paths().existsDirectedCycle()) {
+                return null;
+            }
+
+            allIndependenceFacts = PairwiseMarkovProperty.getModel(mag);
         } else if (setType == ConditioningSetType.RECURSIVE_BLOCKING) {
             if (graph.paths().existsDirectedCycle()) {
                 return null;

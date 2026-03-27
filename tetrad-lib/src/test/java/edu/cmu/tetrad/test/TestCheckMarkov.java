@@ -170,7 +170,7 @@ public class TestCheckMarkov {
             throw new RuntimeException(e);
         }
 
-        MarkovCheck markovCheck = new MarkovCheck(pag, test, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
+        MarkovCheck markovCheck = new MarkovCheck(pag, test, ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY);
         markovCheck.setFractionResample(1.0);
         markovCheck.generateResults(true, true); // Note the ordered local Markov property only returns indep case.
 
@@ -206,7 +206,7 @@ public class TestCheckMarkov {
                 throw new RuntimeException(e);
             }
 
-            MarkovCheck markovCheck = new MarkovCheck(pag, test, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
+            MarkovCheck markovCheck = new MarkovCheck(pag, test, ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY);
             markovCheck.setFractionResample(1.0);
             markovCheck.generateResults(true, true); // Note the ordered local Markov property only returns indep case.
 
