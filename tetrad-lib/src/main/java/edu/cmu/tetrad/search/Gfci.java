@@ -40,28 +40,29 @@ import java.util.*;
 import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
 
 /**
- * *-FCI implements a template modification of GFCI that starts with a given Markov CPDAG and then fixes that result to
- * be correct for latent variables models. First, colliders from the Markov DAG are copied into the final circle-circle
- * graph, and some independence reasoning is used to remove edges from this and add the remaining colliders into the
- * graph. Then, the FCI final orientation rules are applied.
- * <p>
- * The Markov CPDAG needs to be supplied by classes inheriting from this abstract class using the getMarkovCpdag()
- * methods.
- * <p>
- * The reference for the GFCI algorithm this is being modeled from is here:
+ * Implements the GFCI (Greedy Fast Causal Inference) algorithm as described in:
  * <p>
  * Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal search algorithm for latent variable
  * models. In Conference on probabilistic graphical models (pp. 368-379). PMLR.
  * <p>
- * We modify this by insistent that getMarkovCpdag() is overridden by a method that will return a CPDAG Markov to the
- * data or underlying generative model and removing the possible d-sep step of the original algorithm.
+ * This is a self-contained legacy implementation retained for compatibility and reproducibility with the original
+ * algorithm. For a more modular alternative that participates in the *-FCI framework, see {@link FgesFci}.
+ * <p>
+ * The algorithm proceeds in three phases. First, FGES is run to produce a Markov CPDAG. Second, an extra edge
+ * removal step tests edges in the CPDAG for conditional independence, followed by a possible d-sep removal step
+ * that searches a broader candidate separating set. Third, colliders from the CPDAG are copied into the working
+ * PAG, additional colliders are oriented using the sepsets found during edge removal, and the FCI final orientation
+ * rules are applied.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.
  *
+ * @author Juan Miguel Ogarrio
+ * @author peterspirtes
  * @author josephramsey
  * @author bryanandrews
- * @see #getMarkovCpdag()
+ * @see FgesFci
+ * @see Fges
  * @see Knowledge
  */
 public class Gfci implements IGraphSearch {
@@ -250,33 +251,6 @@ public class Gfci implements IGraphSearch {
         }
     }
 
-//    /**
-//     * Checks if three nodes in a graph form an unshielded triple. An unshielded triple is a configuration where node a
-//     * is adjacent to node b, node b is adjacent to node c, but node a is not adjacent to node c.
-//     *
-//     * @param graph The graph in which the nodes reside.
-//     * @param a     The first node in the triple.
-//     * @param b     The second node in the triple.
-//     * @param c     The third node in the triple.
-//     * @return {@code true} if the nodes form an unshielded triple, {@code false} otherwise.
-//     */
-//    private static boolean unshieldedTriple(Graph graph, Node a, Node b, Node c) {
-//        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
-//    }
-
-//    /**
-//     * Checks if the given nodes are unshielded colliders when considering the given graph.
-//     *
-//     * @param graph the graph to consider
-//     * @param a     the first node
-//     * @param b     the second node
-//     * @param c     the third node
-//     * @return true if the nodes are unshielded colliders, false otherwise
-//     */
-//    private static boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
-//        return a != c && unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
-//    }
-
     /**
      * Generates a list of all possible choices for sublists from the adjacency list with sizes up to the given depth
      * using combinations.
@@ -302,25 +276,6 @@ public class Gfci implements IGraphSearch {
         return choices;
     }
 
-//    /**
-//     * Creates a set of nodes by selecting elements from the adjacency list based on the given indices.
-//     *
-//     * @param choice A list of integers representing the indices of nodes to be included in the combination.
-//     * @param adj    A list of nodes representing the adjacency list from which the nodes are selected.
-//     * @return A set of nodes selected from the adjacency list based on the indices in the choice list.
-//     */
-//    private static Set<Node> combination(List<Integer> choice, List<Node> adj) {
-//
-//        // Create a set of nodes from the subset of adjx represented by choice.
-//        Set<Node> combination = new HashSet<>();
-//
-//        for (int i : choice) {
-//            combination.add(adj.get(i));
-//        }
-//
-//        return combination;
-//    }
-
     /**
      * Runs the graph and returns the search PAG.
      *
@@ -336,32 +291,12 @@ public class Gfci implements IGraphSearch {
         if (startFromCompleteGraph) {
             TetradLogger.getInstance().log("===Starting with complete graph=== ");
             cpdag = new EdgeListGraph(independenceTest.getVariables());
-//            cpdag = GraphUtils.completeGraph(cpdag);
+            cpdag = GraphUtils.completeGraph(cpdag);
         } else {
             cpdag = getMarkovCpdag();
         }
 
-//        Graph cpdag = startFromCompleteGraph
-//                ? GraphUtils.completeGraph(new EdgeListGraph(independenceTest.getVariables()))
-//                : getMarkovCpdag();
-
         Graph pag = GraphFactoryUtil.newGraph(cpdag);
-
-//        Graph pag;
-//        if (replicatingGraph) {
-//            // OPTION A: if you added a (Graph, Policy) ctor
-//             pag = new ReplicatingGraph(cpdag, new LagReplicationPolicy());
-//
-////            // OPTION B: generic, works with (List<Node>, Policy)
-////            pag = new ReplicatingGraph(cpdag.getNodes(), new LagReplicationPolicy());
-////            for (Edge e : cpdag.getEdges()) {
-////                pag.addEdge(e);    // will mirror across lags on insert
-////            }
-//        } else {
-//            pag = new EdgeListGraph(cpdag);
-//        }
-
-//        Graph pag = new EdgeListGraph(cpdag);
 
         Set<Triple> unshieldedColliders = new HashSet<>();
 
@@ -371,7 +306,7 @@ public class Gfci implements IGraphSearch {
             TetradLogger.getInstance().log("Starting *-FCI extra edge removal step.");
         }
 
-        for (Edge edge : pag.getEdges()) {
+        for (Edge edge : new ArrayList<>(pag.getEdges())) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }

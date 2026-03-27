@@ -325,7 +325,7 @@ public abstract class StarFci implements IGraphSearch {
                         unshieldedColliders.add(new Triple(x, y, z));
 
                         if (verbose) {
-                            TetradLogger.getInstance().log("Copied collider " + x + " â " + y + " â " + z + " from CPDAG.");
+                            TetradLogger.getInstance().log("Copied collider " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
                         }
                     }
                 } else if (cpdag.isAdjacentTo(x, z)) {
