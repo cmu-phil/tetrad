@@ -58,12 +58,12 @@ import java.util.List;
  * <p>The independence test’s own hyperparameters (e.g., kernel choices for KCI)
  * are configured separately via the independence-wrapper configuration.</p>
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "GIN",
-        command = "gin",
-        algoType = AlgType.forbid_latent_common_causes
-)
-@Bootstrapping
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "GIN",
+//        command = "gin",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
+//@Bootstrapping
 public class Gin extends AbstractBootstrapAlgorithm
         implements Algorithm, TakesIndependenceWrapper, ReturnsBootstrapGraphs {
 

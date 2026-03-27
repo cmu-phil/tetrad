@@ -123,10 +123,12 @@ public class Gin {
 
         // ---------- Step 1: GIN clustering (paper / GIN.py) ----------
         int clusterSize = 2;
-        List<List<Integer>> clustersList = new ArrayList<>();
+//        List<List<Integer>> clustersList = new ArrayList<>();
+
+        List<ClusterWithRank> clustersList = new ArrayList<>();
 
         while (clusterSize < varSet.size()) {
-            List<List<Integer>> tmpClustersList = new ArrayList<>();
+            List<ClusterWithRank> tmpClustersList = new ArrayList<>();
 
             List<Integer> varList = new ArrayList<>(varSet);
             if (clusterSize <= varList.size()) {
@@ -147,21 +149,30 @@ public class Gin {
                     cluster.forEach(remainVarSet::remove);
 
                     if (!remainVarSet.isEmpty()) {
-                        // e = cal_e_with_gin(data, cov, cluster, remain_var_set)
-                        List<Integer> Z = new ArrayList<>(remainVarSet);
-                        double[] e = calEWithGin(cluster, Z);
+                        List<Integer> remainZ = new ArrayList<>(remainVarSet);
+                        boolean foundLatentSize = false;
 
-                        // pvals = [indep_test(data[:,[z]], e) for z in remain_var_set]
-                        List<Double> pvals = new ArrayList<>();
-                        for (int z : remainVarSet) {
-                            double p = indepPValueEvsSingleZ(e, z);
-                            pvals.add(p);
-                        }
+                        for (int laLen = 1; laLen < clusterSize; laLen++) {
+                            // Check GIN for ALL subsets yTilde of cluster with |yTilde| = laLen + 1
+                            boolean allPass = true;
 
-                        double fisherP = fisherPValue(pvals);
+                            for (List<Integer> yTilde : subsetsOfSize(cluster, laLen + 1)) {
+                                double[] e = calEWithGin(yTilde, remainZ);
+                                List<Double> pvals = new ArrayList<>();
+                                for (int z : remainZ) {
+                                    pvals.add(indepPValueEvsSingleZ(e, z));
+                                }
+                                if (fisherPValue(pvals) < alpha) {
+                                    allPass = false;
+                                    break;
+                                }
+                            }
 
-                        if (fisherP >= alpha) {
-                            tmpClustersList.add(cluster);
+                            if (allPass) {
+                                tmpClustersList.add(new ClusterWithRank(cluster, laLen));
+                                foundLatentSize = true;
+                                break; // use smallest laLen that works
+                            }
                         }
                     }
 
@@ -183,9 +194,25 @@ public class Gin {
             clustersList.addAll(tmpClustersList);
 
             // for a cluster in tmp_clusters_list: var_set -= set(cluster)
-            for (List<Integer> c : tmpClustersList) {
-                c.forEach(varSet::remove);
+            for (ClusterWithRank c : tmpClustersList) {
+                c.vars().forEach(varSet::remove);
             }
+
+            // Post-process: try to split rank-k (k>1) clusters
+            List<ClusterWithRank> refined = new ArrayList<>();
+            for (ClusterWithRank cwr : clustersList) {
+                if (cwr.laLen() == 1) {
+                    refined.add(cwr);
+                } else {
+                    List<Integer> complement = new ArrayList<>(vars.size());
+                    for (int i = 0; i < vars.size(); i++) {
+                        if (!cwr.vars().contains(i)) complement.add(i);
+                    }
+                    refined.addAll(trySplitCluster(cwr, complement));
+                }
+            }
+
+            clustersList = refined;
 
             clusterSize++;
         }
@@ -197,8 +224,8 @@ public class Gin {
 
         // ---------- Step 2: Learn causal order via root-peeling loop ----------
 
-        List<List<Integer>> clustersRemaining = new ArrayList<>(clustersList);
-        List<List<Integer>> causalOrder = new ArrayList<>(); // corresponds to K in the paper
+        List<ClusterWithRank> clustersRemaining = new ArrayList<>(clustersList);
+        List<ClusterWithRank> causalOrder = new ArrayList<>(); // corresponds to K in the paper
 
         boolean updated = true;
         while (updated && !clustersRemaining.isEmpty()) {
@@ -207,26 +234,26 @@ public class Gin {
             // X, Z built from already chosen causalOrder
             List<Integer> X = new ArrayList<>();
             List<Integer> Z = new ArrayList<>();
-            for (List<Integer> clusterK : causalOrder) {
-                Split s = splitCluster(clusterK);
-                X.addAll(s.firstHalf);
-                Z.addAll(s.secondHalf);
+            for (ClusterWithRank clusterK : causalOrder) {
+                Split s = splitCluster(clusterK.vars());
+                X.addAll(s.firstHalf());
+                Z.addAll(s.secondHalf());
             }
 
             // search for a root cluster among the remaining ones
             for (int i = 0; i < clustersRemaining.size(); i++) {
-                List<Integer> clusterI = clustersRemaining.get(i);
-                Split si = splitCluster(clusterI);
-                List<Integer> clusterI1 = si.firstHalf;
-                List<Integer> clusterI2 = si.secondHalf;
+                ClusterWithRank clusterI = clustersRemaining.get(i);
+                Split si = splitCluster(clusterI.vars());
+                List<Integer> clusterI1 = si.firstHalf();
+                List<Integer> clusterI2 = si.secondHalf();
 
                 boolean isRoot = true;
 
                 for (int j = 0; j < clustersRemaining.size(); j++) {
                     if (i == j) continue;
-                    List<Integer> clusterJ = clustersRemaining.get(j);
-                    Split sj = splitCluster(clusterJ);
-                    List<Integer> clusterJ1 = sj.firstHalf;
+                    ClusterWithRank clusterJ = clustersRemaining.get(j);
+                    Split sj = splitCluster(clusterJ.vars());
+                    List<Integer> clusterJ1 = sj.firstHalf();
 
                     // X + cluster_i1 + cluster_j1
                     List<Integer> Xall = new ArrayList<>(X.size() + clusterI1.size() + clusterJ1.size());
@@ -248,7 +275,6 @@ public class Gin {
 
                     double fisherP = fisherPValue(pvals);
                     if (fisherP < alpha) {
-                        // fails root condition
                         isRoot = false;
                         break;
                     }
@@ -278,48 +304,114 @@ public class Gin {
         List<Node> lNodes = new ArrayList<>();
 
         // Ordered latents (causal_order)
-        for (List<Integer> cluster : causalOrder) {
-            Node lNode = new GraphNode("L" + latentId);
-            lNode.setNodeType(NodeType.LATENT);
-            g.addNode(lNode);
+        for (ClusterWithRank cluster : causalOrder) {
+            List<Node> newLNodes = new ArrayList<>();
 
-            for (Node parentLatent : lNodes) {
-                g.addDirectedEdge(parentLatent, lNode);
+            for (int k = 0; k < cluster.laLen(); k++) {
+                Node lNode = new GraphNode("L" + latentId);
+                lNode.setNodeType(NodeType.LATENT);
+                g.addNode(lNode);
+
+                for (Node parentLatent : lNodes) {
+                    g.addDirectedEdge(parentLatent, lNode);
+                }
+                newLNodes.add(lNode);
+                latentId++;
             }
-            lNodes.add(lNode);
 
-            for (int o : cluster) {
-                g.addDirectedEdge(lNode, vars.get(o));
+            lNodes.addAll(newLNodes);
+
+            for (int o : cluster.vars()) {
+                for (Node lNode : newLNodes) {
+                    g.addDirectedEdge(lNode, vars.get(o));
+                }
             }
-
-            latentId++;
         }
 
         // Remaining clusters: undirected latent–latent among themselves,
         // directed from ordered latents into them.
         List<Node> undirectedLNodes = new ArrayList<>();
 
-        for (List<Integer> cluster : clustersRemaining) {
-            Node lNode = new GraphNode("L" + latentId);
-            lNode.setNodeType(NodeType.LATENT);
-            g.addNode(lNode);
+        for (ClusterWithRank cluster : clustersRemaining) {
+            List<Node> newLNodes = new ArrayList<>();
 
-            for (Node parentLatent : lNodes) {
-                g.addDirectedEdge(parentLatent, lNode);
-            }
-            for (Node und : undirectedLNodes) {
-                g.addUndirectedEdge(und, lNode);
-            }
-            undirectedLNodes.add(lNode);
+            for (int k = 0; k < cluster.laLen(); k++) {
+                Node lNode = new GraphNode("L" + latentId);
+                lNode.setNodeType(NodeType.LATENT);
+                g.addNode(lNode);
 
-            for (int o : cluster) {
-                g.addDirectedEdge(lNode, vars.get(o));
+                for (Node parentLatent : lNodes) {
+                    g.addDirectedEdge(parentLatent, lNode);
+                }
+                for (Node und : undirectedLNodes) {
+                    g.addUndirectedEdge(und, lNode);
+                }
+                undirectedLNodes.add(lNode);
+                newLNodes.add(lNode);
+                latentId++;
             }
 
-            latentId++;
+            lNodes.addAll(newLNodes);
+
+            for (int o : cluster.vars()) {
+                for (Node lNode : newLNodes) {
+                    g.addDirectedEdge(lNode, vars.get(o));
+                }
+            }
         }
 
         return g;
+    }
+
+    private List<List<Integer>> subsetsOfSize(List<Integer> list, int size) {
+        List<List<Integer>> result = new ArrayList<>();
+        int n = list.size();
+        int[] idx = new int[size];
+        for (int i = 0; i < size; i++) idx[i] = i;
+
+        while (true) {
+            List<Integer> subset = new ArrayList<>(size);
+            for (int k = 0; k < size; k++) subset.add(list.get(idx[k]));
+            result.add(subset);
+
+            int t = size - 1;
+            while (t >= 0 && idx[t] == t + (n - size)) t--;
+            if (t < 0) break;
+            idx[t]++;
+            for (int i = t + 1; i < size; i++) idx[i] = idx[i - 1] + 1;
+        }
+
+        return result;
+    }
+
+    private List<ClusterWithRank> trySplitCluster(ClusterWithRank cwr, List<Integer> complement) {
+        List<Integer> clusterVars = new ArrayList<>(cwr.vars());
+        java.util.Set<Integer> remaining = new java.util.LinkedHashSet<>(clusterVars);
+        List<ClusterWithRank> subClusters = new ArrayList<>();
+
+        for (int subSize = 2; subSize < clusterVars.size() && !remaining.isEmpty(); subSize++) {
+            for (List<Integer> sub : subsetsOfSize(new ArrayList<>(remaining), subSize)) {
+                for (int laLen = 1; laLen < subSize; laLen++) {
+                    boolean allPass = true;
+                    for (List<Integer> yTilde : subsetsOfSize(sub, laLen + 1)) {
+                        double[] e = calEWithGin(yTilde, complement);
+                        List<Double> pvals = new ArrayList<>();
+                        for (int z : complement) pvals.add(indepPValueEvsSingleZ(e, z));
+                        if (fisherPValue(pvals) < alpha) { allPass = false; break; }
+                    }
+                    if (allPass) {
+                        subClusters.add(new ClusterWithRank(new ArrayList<>(sub), laLen));
+                        sub.forEach(remaining::remove);
+                        break;
+                    }
+                }
+                if (remaining.isEmpty()) break;
+            }
+        }
+
+        // Only accept the split if it accounts for all variables
+        if (remaining.isEmpty() && subClusters.size() > 1) return subClusters;
+        return List.of(cwr);
     }
 
     // --------- GIN projection e = cal_e_with_gin(data, cov, X, Z) ---------
@@ -431,42 +523,43 @@ public class Gin {
      * Merge overlapping clusters: if two clusters share any variable, they are merged into their union. This is a
      * simpler but equivalent version of merge_overlaping_cluster in GIN.py.
      */
-    private List<List<Integer>> mergeOverlappingClusters(List<List<Integer>> clusters) {
+    private List<ClusterWithRank> mergeOverlappingClusters(List<ClusterWithRank> clusters) {
+        // Work with sets for easy overlap detection, track laLen alongside
         List<java.util.Set<Integer>> sets = new ArrayList<>();
-        for (List<Integer> c : clusters) {
-            sets.add(new java.util.LinkedHashSet<>(c));
+        List<Integer> laLens = new ArrayList<>();
+
+        for (ClusterWithRank c : clusters) {
+            sets.add(new java.util.LinkedHashSet<>(c.vars()));
+            laLens.add(c.laLen());
         }
 
         boolean changed;
         do {
             changed = false;
-
             int i = 0;
             while (i < sets.size()) {
                 java.util.Set<Integer> a = sets.get(i);
                 int j = i + 1;
-
                 while (j < sets.size()) {
                     java.util.Set<Integer> b = sets.get(j);
-
                     if (!disjoint(a, b)) {
-                        // Merge b into a and remove b from the list.
+                        // Merge b into a, take max laLen
                         a.addAll(b);
+                        laLens.set(i, Math.max(laLens.get(i), laLens.get(j)));
                         sets.remove(j);
+                        laLens.remove(j);
                         changed = true;
-                        // Do NOT increment j here: the next element has shifted into index j.
                     } else {
                         j++;
                     }
                 }
-
                 i++;
             }
         } while (changed);
 
-        List<List<Integer>> out = new ArrayList<>();
-        for (java.util.Set<Integer> s : sets) {
-            out.add(new ArrayList<>(s));
+        List<ClusterWithRank> out = new ArrayList<>();
+        for (int i = 0; i < sets.size(); i++) {
+            out.add(new ClusterWithRank(new ArrayList<>(sets.get(i)), laLens.get(i)));
         }
         return out;
     }
@@ -490,11 +583,15 @@ public class Gin {
         return out;
     }
 
-    private String clustersAsNames(List<List<Integer>> cl) {
+    private String clustersAsNames(List<ClusterWithRank> cl) {
         return cl.stream()
-                .map(c -> c.stream().map(i -> vars.get(i).getName()).toList().toString())
+                .map(c -> c.vars().stream().map(i -> vars.get(i).getName()).toList().toString()
+                        + "(rank=" + c.laLen() + ")")
                 .collect(Collectors.joining(" | "));
     }
+
+    record ClusterWithRank(List<Integer> vars, int laLen) {}
+
 
     private record Split(List<Integer> firstHalf, List<Integer> secondHalf) {
     }
