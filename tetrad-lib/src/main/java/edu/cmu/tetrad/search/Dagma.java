@@ -124,7 +124,7 @@ public class Dagma {
      */
     public Dagma(DataSet dataset) {
         this.variables = dataset.getVariables();
-        this.cov = dataset.getCorrelationMatrix().getSimpleMatrix();
+        this.cov = dataset.getCovarianceMatrix().getSimpleMatrix();
         this.d = cov.getNumRows();
         this.I = SimpleMatrix.identity(this.d);
 
@@ -349,8 +349,14 @@ public class Dagma {
         SimpleMatrix grad = null;
 
         for (int iter = 1; iter <= innerIter; iter++) {
-            SimpleMatrix M = getMMatrix(W, s).invert();
-            addToEntries(M, 1e-16);
+//            SimpleMatrix M = getMMatrix(W, s).invert();
+//            addToEntries(M, 1e-16);
+
+            SimpleMatrix Mraw = getMMatrix(W, s);
+            for (int i = 0; i < this.d; i++) {
+                Mraw.set(i, i, Mraw.get(i, i) + 1e-16);
+            }
+            SimpleMatrix M = Mraw.invert();
 
             while (notMMatrix(M)) {
                 if ((iter == 1) || (s <= 0.9)) {
@@ -362,8 +368,11 @@ public class Dagma {
                 } else {
                     lrAdam *= 0.5;
                     addToEntries(W, grad, lrAdam);
-                    M = getMMatrix(W, s).invert();
-                    addToEntries(M, 1e-16);
+                    Mraw = getMMatrix(W, s);
+                    for (int i = 0; i < this.d; i++) {
+                        Mraw.set(i, i, Mraw.get(i, i) + 1e-16);
+                    }
+                    M = Mraw.invert();
                 }
             }
 
@@ -432,20 +441,6 @@ public class Dagma {
     }
 
     /**
-     * Adds a constant value to each entry of the provided matrix.
-     *
-     * @param A The matrix to be updated.
-     * @param c The constant value to be added.
-     */
-    private void addToEntries(SimpleMatrix A, double c) {
-        for (int i = 0; i < this.d; i++) {
-            for (int j = 0; j < this.d; j++) {
-                A.set(i, j, A.get(i, j) + c);
-            }
-        }
-    }
-
-    /**
      * Adds each element of matrix B multiplied by constant c to the corresponding element in matrix A.
      *
      * @param A The matrix to be updated.
@@ -477,7 +472,10 @@ public class Dagma {
         DMatrixRMaj L = new DMatrixRMaj(_M.getNumRows(), _M.getNumCols());
         DMatrixRMaj U = new DMatrixRMaj(_M.getNumRows(), _M.getNumCols());
         DMatrixRMaj P = new DMatrixRMaj(_M.getNumRows(), _M.getNumCols());
-        lu.decompose(_M);
+        // KEEP and move the check BEFORE extracting L/U/P:
+        if (!lu.decompose(_M)) {
+            throw new RuntimeException("LU Decomposition failed!");
+        }
         lu.getLower(L);
         lu.getUpper(U);
         lu.getRowPivot(P);

@@ -492,6 +492,11 @@ public class Fges implements IGraphSearch, DagScorer {
     private void fes() {
         int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
 
+        // Clear stale cross-pass cache so the config guard cannot suppress
+        // arrows whose previous queue entry was consumed in an earlier pass.
+        sortedArrows.clear();
+        arrowsMap.clear();
+
         try {
             reevaluateForward(new HashSet<>(variables));
         } catch (InterruptedException e) {
@@ -535,11 +540,33 @@ public class Fges implements IGraphSearch, DagScorer {
 
             insert(x, y, arrow.getHOrT(), arrow.getBump());
 
+//            Set<Node> process = revertToCpdag();
+//
+//            process.add(x);
+//            process.add(y);
+//            process.addAll(getCommonAdjacents(x, y));
+//
+//            try {
+//                reevaluateForward(new HashSet<>(process));
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+
+            // Fges.java — inside fes(), after revertToCpdag() (around line 538)
+
             Set<Node> process = revertToCpdag();
 
             process.add(x);
             process.add(y);
             process.addAll(getCommonAdjacents(x, y));
+
+            // Add non-adjacent forward candidates of every Meek-affected node so that
+            // TNeighbors changes propagated by Meek are captured for Insert scoring.
+            Set<Node> meekExpansion = new HashSet<>();
+            for (Node m : process) {
+                meekExpansion.addAll(getPotentialForwardAdjacents(m));
+            }
+            process.addAll(meekExpansion);
 
             try {
                 reevaluateForward(new HashSet<>(process));

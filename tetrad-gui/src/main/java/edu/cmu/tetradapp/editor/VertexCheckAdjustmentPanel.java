@@ -52,10 +52,10 @@ import java.util.concurrent.CancellationException;
  * top move is a no-op or does not constitute progress. The sweep repeats until a full pass
  * over all nodes produces no further changes. If a cycle is detected for a node — that is,
  * a move is proposed that has already been attempted for that node in the current visit —
- * the node is skipped and the user is notified. Because the repair is greedy and local, it
- * is not guaranteed to find a global optimum; the user is encouraged to inspect the results
- * and consider whether alternative top moves in the per-node tables might have been more
- * appropriate.
+ * the node is skipped and the user is notified. Similarly, if a cycle is detected across
+ * and epoch. Because the repair is greedy and local, it is not guaranteed to find a global
+ * optimum; the user is encouraged to inspect the results and consider whether alternative top
+ * moves in the per-node tables might have been more appropriate.
  *
  * <h2>Knowledge Constraints</h2>
  * <p>
@@ -909,13 +909,25 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         boolean anyChangeInSweep;
         List<String> cycleWarnings = new ArrayList<>();
 
-        // Single undo point for the entire repair
+        // Keys are graph string representations seen at the START of each sweep.
+        // If we ever revisit a state, we are in an inter-sweep cycle.
+        Set<String> seenSweepStates = new LinkedHashSet<>();
+
         history.push(safeCopy(workingGraph));
         suppressHistory = true;
 
         try {
             do {
                 if (stopRequested()) return;
+
+                // --- Inter-sweep cycle guard ---
+                String sweepStartState = workingGraph.toString();
+                if (!seenSweepStates.add(sweepStartState)) {
+                    cycleWarnings.add("Inter-sweep cycle detected: the graph returned " +
+                            "to a previously visited state. Stopping repair.");
+                    break;
+                }
+
                 anyChangeInSweep = false;
 
                 List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
@@ -974,9 +986,9 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         }
 
         if (!cycleWarnings.isEmpty()) {
-            String message = "Repair completed, but cycles were detected and skipped for:\n\n"
+            String message = "Repair completed, but cycles were detected and skipped:\n\n"
                     + String.join("\n", cycleWarnings)
-                    + "\n\nThese nodes may need manual review.";
+                    + "\n\nThese nodes or states may need manual review.";
             SwingUtilities.invokeLater(() ->
                     JOptionPane.showMessageDialog(
                             VertexCheckAdjustmentPanel.this,
