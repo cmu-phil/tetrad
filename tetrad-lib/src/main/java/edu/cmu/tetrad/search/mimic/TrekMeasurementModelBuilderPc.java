@@ -162,8 +162,7 @@ public final class TrekMeasurementModelBuilderPc {
                 graph,
                 latents,
                 observedChildren,
-                parentPool,
-                variables,
+                parentPool,                variables,
                 matrix,
                 sampleSize,
                 alpha

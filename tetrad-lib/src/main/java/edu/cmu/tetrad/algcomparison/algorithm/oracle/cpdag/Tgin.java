@@ -98,24 +98,10 @@ public class Tgin extends AbstractBootstrapAlgorithm
         edu.cmu.tetrad.search.Tgin search =
                 new edu.cmu.tetrad.search.Tgin(data, parameters);
 
-//        if (inputNames.isEmpty() && outputNames.isEmpty()) {
-//            inputNames = new HashSet<>(knowledge.getTier(0));
-//            outputNames = new HashSet<>(knowledge.getTier(1));
-//        }
+        search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-//        search.setKnowledge(this.knowledge);
-//        search.setInputNames(this.inputNames);
-//        search.setOutputNames(this.outputNames);
-//        search.setDoHigherRankExpansion(parameters.getBoolean(Params.DO_HIGHER_RANK_EXPANSION));
-//        search.setMaxLatentSubsetSize(parameters.getInt(Params.MAX_LATENT_SUBSET_SIZE));
-//        search.setOrientAndPrune(parameters.getBoolean(Params.ORIENT_AND_PRUNE));
-//        search.setDepth(parameters.getInt(Params.DEPTH));
-//        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-//        search.setOrientAndPrune(true);
-
-        Graph graph = search.search();
-
-        return graph;
+        return search.search();
     }
 
     /**
@@ -151,11 +137,7 @@ public class Tgin extends AbstractBootstrapAlgorithm
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.DEPTH);
-        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.VERBOSE);
-        parameters.add(Params.MAX_LATENT_SUBSET_SIZE);
-        parameters.add(Params.DO_HIGHER_RANK_EXPANSION);
-        parameters.add(Params.ORIENT_AND_PRUNE);
         return parameters;
     }
 

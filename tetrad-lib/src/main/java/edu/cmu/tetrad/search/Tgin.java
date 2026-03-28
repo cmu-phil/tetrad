@@ -146,7 +146,6 @@ public class Tgin implements IGraphSearch {
     private double alpha = 0.01;
 
     private Map<Node, Integer> latentRanks = new LinkedHashMap<>();
-    private BlockSpec spec;
 
     /**
      * Constructs a TrekMimic search with data and parameters.
@@ -202,7 +201,7 @@ public class Tgin implements IGraphSearch {
             originalToExpanded.put(latent, copies);
         }
 
-// Second pass: latent-latent undirected edges between copies only
+        // Second pass: latent-latent undirected edges between copies only
         for (Edge edge : graph.getEdges()) {
             Node n1 = edge.getNode1();
             Node n2 = edge.getNode2();
@@ -221,7 +220,6 @@ public class Tgin implements IGraphSearch {
         graph = _graph.copy();
         this.allLatents = new ArrayList<>(nodeMap.keySet());
 
-//        // After the builder block (both PC and BOSS branches set the same fields):
         TginOrientationStages stages = new TginOrientationStages(
                 this.graph, this.allLatents, nodeMap,   // nodeMap replaces spec + latentRanks
                 this.dataSet, this.alpha, this.sampleSize);
@@ -264,8 +262,10 @@ public class Tgin implements IGraphSearch {
         this.parameters = parameters;
     }
 
-    private @NotNull void runPcTsc() throws InterruptedException {
+    private void runPcTsc() throws InterruptedException {
         boolean usePc = true;
+
+        BlockSpec spec;
 
         if (usePc) {
             TrekMeasurementModelBuilderPc builder =
@@ -317,6 +317,14 @@ public class Tgin implements IGraphSearch {
                 this.latentRanks.put(spec.blockVariables().get(i), spec.ranks().get(i));
             }
         }
+    }
+
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
 
