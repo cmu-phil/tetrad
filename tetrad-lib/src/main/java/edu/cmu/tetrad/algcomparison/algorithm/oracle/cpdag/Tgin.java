@@ -49,12 +49,12 @@ import java.util.*;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "TRIG",
-        command = "trig",
+        name = "TGIN",
+        command = "tgin",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class Trig extends AbstractBootstrapAlgorithm
+public class Tgin extends AbstractBootstrapAlgorithm
         implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
 
     @Serial
@@ -80,7 +80,7 @@ public class Trig extends AbstractBootstrapAlgorithm
     /**
      * Constructs the wrapper.
      */
-    public Trig() {
+    public Tgin() {
     }
 
     /**
@@ -95,8 +95,8 @@ public class Trig extends AbstractBootstrapAlgorithm
     protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         DataSet data = (DataSet) dataModel;
 
-        edu.cmu.tetrad.search.Trig search =
-                new edu.cmu.tetrad.search.Trig(data, parameters);
+        edu.cmu.tetrad.search.Tgin search =
+                new edu.cmu.tetrad.search.Tgin(data, parameters);
 
 //        if (inputNames.isEmpty() && outputNames.isEmpty()) {
 //            inputNames = new HashSet<>(knowledge.getTier(0));
@@ -132,7 +132,7 @@ public class Trig extends AbstractBootstrapAlgorithm
      */
     @Override
     public String getDescription() {
-        return "TRIG";
+        return "TGIN";
     }
 
     /**

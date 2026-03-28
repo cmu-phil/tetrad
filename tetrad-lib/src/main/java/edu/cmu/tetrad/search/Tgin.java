@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 /**
- * TRIG (Trek Rule Identification with GIN) is a causal discovery algorithm for
+ * TGIN (Trek Rule Generalized Independent Noise) is a causal discovery algorithm for
  * learning the structure of linear latent variable models from observational data.
  *
  * <p>The algorithm proceeds in several stages:
@@ -73,7 +73,7 @@ import java.util.*;
  * @see TrekMeasurementModelBuilderPc
  * @see TrekMeasurementModelBuilderBoss
  */
-public class Trig implements IGraphSearch {
+public class Tgin implements IGraphSearch {
 
     /**
      * Optional known measured inputs by name.
@@ -154,7 +154,7 @@ public class Trig implements IGraphSearch {
      * @param dataSet    the data set
      * @param parameters the parameters
      */
-    public Trig(DataSet dataSet, Parameters parameters) {
+    public Tgin(DataSet dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         this.parameters = parameters;
 
@@ -222,7 +222,7 @@ public class Trig implements IGraphSearch {
         this.allLatents = new ArrayList<>(nodeMap.keySet());
 
 //        // After the builder block (both PC and BOSS branches set the same fields):
-        TrigOrientationStages stages = new TrigOrientationStages(
+        TginOrientationStages stages = new TginOrientationStages(
                 this.graph, this.allLatents, nodeMap,   // nodeMap replaces spec + latentRanks
                 this.dataSet, this.alpha, this.sampleSize);
 
@@ -321,12 +321,12 @@ public class Trig implements IGraphSearch {
 
 
     // ---------------------------------------------------------------
-    // TRIG Stages 4 and 5
+    // GIN Stages 4 and 5
     // Assumes all fields set above are in scope.
     // dataSet is the original DataSet passed to TrekMeasurementModelBuilderPc.
     // ---------------------------------------------------------------
 
-    public static class TrigOrientationStages {
+    public static class TginOrientationStages {
 
         private final Graph graph;
         private final List<Node> allLatents;
@@ -340,7 +340,7 @@ public class Trig implements IGraphSearch {
         private final Map<Node, Integer> rankByOriginal;            // original → rank (# copies)
         private final Map<Node, List<Integer>> originalToIndicatorCols; // original → data col indices
 
-        public TrigOrientationStages(Graph graph, List<Node> allLatents,
+        public TginOrientationStages(Graph graph, List<Node> allLatents,
                                      Map<Node, Node> nodeMap,
                                      DataSet dataSet, double alpha, int sampleSize) {
             this.graph = graph;
