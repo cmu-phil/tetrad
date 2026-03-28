@@ -248,7 +248,7 @@ public final class TrekMeasurementModelBuilderPc {
         Tsc tsc = new Tsc(dataModel.getVariables(), new CovarianceMatrix(dataSet));
         tsc.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         tsc.setRmax(2);
-        tsc.setMinRedundancy(1);
+        tsc.setMinRedundancy(0);
         tsc.setAlpha(parameters.getDouble(Params.ALPHA));
 
         Map<Set<Integer>, Integer> clusters = tsc.findClusters();
