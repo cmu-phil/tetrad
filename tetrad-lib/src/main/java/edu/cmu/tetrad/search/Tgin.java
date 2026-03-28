@@ -380,9 +380,6 @@ public class Tgin implements IGraphSearch {
                     OrientationResult yToX = groupGinTest(origY, origX);
 
                     if (xToY.independent() && !yToX.independent()) {
-                        // Note: groupGinTest(x,y) returning independent confirms y→x, not x→y,
-                        // because leftNullSpace operates on U rather than V from the SVD.
-                        // Reversal is intentional.
                         removeUndirectedEdgesBetweenClusters(origX, origY);
                         expandEdge(origX, origY);
                     } else if (yToX.independent() && !xToY.independent()) {
@@ -575,7 +572,7 @@ public class Tgin implements IGraphSearch {
             System.out.println("lingamOrder: sources.numRows()=" + sources.numRows() + ", sources.numCols()=" + sources.numCols());
 
             boolean[][] adj = new boolean[r][r];
-            RawMarginalIndependenceTest hsic = new edu.cmu.tetrad.search.test.FfCi(dataSet);
+            RawMarginalIndependenceTest hsic = new edu.cmu.tetrad.search.test.FfCiContinuous(dataSet);
 
             for (int i = 0; i < r; i++) {
                 for (int j = i + 1; j < r; j++) {

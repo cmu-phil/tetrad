@@ -22,259 +22,233 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.FfCiContinuous;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * GIN algorithm implementing the procedure described in the GIN papers:
+ * GIN algorithm implementing the procedure described in the GIN papers, rewritten
+ * to use the same left-null-space + pairwise HSIC math as TGIN's Stages 4 and 5.
  *
+ * <p>The three stages are:
  * <ol>
- *   <li>Form latent clusters using the GIN clustering procedure.</li>
- *   <li>Learn a causal order of latent clusters via the root-peeling loop.</li>
- *   <li>Build a latent DAG respecting that order, with tail–tail undirected edges
- *       among the unordered latents (if any).</li>
+ *   <li><b>Clustering.</b> For each candidate cluster C with complement Z, test
+ *       whether the left null space of Cov(C, Z) yields a residual signal that is
+ *       pairwise independent of every column of Z (TGIN Stage 4 math applied to
+ *       cluster discovery). The smallest latent rank for which this holds is
+ *       recorded.</li>
+ *   <li><b>Causal ordering.</b> Root-peeling loop: cluster I is declared a root
+ *       over the remaining clusters if ginIndepTest(colsI, colsJ ∪ orderedCols,
+ *       rankI) returns true for every other remaining cluster J. This is the
+ *       same left-null-space + all-pass HSIC test used in TGIN's Stage 4.</li>
+ *   <li><b>Graph construction.</b> Ordered latents receive directed edges from
+ *       all earlier latents; unordered latents receive undirected edges among
+ *       themselves and directed edges from all ordered latents.</li>
  * </ol>
  *
- * <p>Observed nodes are the {@code DataSet} variables; unclustered variables are left
- * without latent parents (as in the original GIN code).</p>
+ * <p>The core change relative to the original GIN.java is the replacement of
+ * {@code calEWithGin} (last right singular vector of Cov(Z, X) projected onto
+ * X-data, tested via Fisher's combined p-value) with TGIN's approach: compute
+ * the full left null space of Cov(X, Z), project X-data through it, and require
+ * every resulting residual row to be pairwise independent of every Z column via
+ * HSIC. This is strictly more informative when the null space has dimension > 1
+ * (i.e., when the cluster has more indicators than latent dimensions).
+ *
+ * <p>References:
+ * <ul>
+ *   <li>Xie et al. (2020). Generalized independent noise condition for estimating
+ *       latent variable causal graphs. NeurIPS.</li>
+ *   <li>Xie et al. (2024). Generalized independent noise condition for estimating
+ *       causal structure with latent variables. JMLR, 25(191):1–61.</li>
+ * </ul>
  */
 public class Gin {
 
-    // ----------------------------- Params -----------------------------
-    private final double alpha;
-    private final RawMarginalIndependenceTest test;
-    private boolean verbose = false;
-    // ----------------------------- State -----------------------------
-    private DataSet data;
-    private SimpleMatrix cov;                 // covariance of observed
-    private List<Node> vars;                  // observed nodes
+    // ------------------------------------------------------------------ fields
 
-    // ----------------------------- Ctors -----------------------------
+    private final double alpha;
+    private boolean verbose = false;
+
+    // set at search() entry
+    private DataSet data;
+    private List<Node> vars;
 
     /**
-     * Constructs a Gin instance with the specified significance level and independence test.
-     *
-     * @param alpha the significance level to be used for statistical tests, typically in the range [0, 1]
-     * @param test  the raw marginal independence test instance, used to compute p-values for independence testing
-     * @throws NullPointerException if the provided test is null
+     * Shared HSIC test instance, initialised once per search() call.
+     * Using FfCiContinuous directly (same class as TGIN) rather than the
+     * injected RawMarginalIndependenceTest, so that alpha is always set
+     * consistently and the (double[], double[]) pairwise signature is available.
      */
-    public Gin(double alpha, RawMarginalIndependenceTest test) {
+    private FfCiContinuous hsic;
+
+    // ----------------------------------------------------------------- ctors
+
+    /**
+     * Preferred constructor.
+     *
+     * @param alpha significance level for all independence tests
+     */
+    public Gin(double alpha) {
         this.alpha = alpha;
-        this.test = Objects.requireNonNull(test, "test");
     }
 
-    // ----------------------------- Options ---------------------------
+    /**
+     * Backward-compatible constructor; the injected test is ignored in favour
+     * of the internally created FfCiContinuous instance.
+     *
+     * @param alpha       significance level
+     * @param ignoredTest not used; present for API compatibility only
+     */
+    public Gin(double alpha, RawMarginalIndependenceTest ignoredTest) {
+        this.alpha = alpha;
+    }
+
+    // --------------------------------------------------------------- options
 
     /**
-     * Sets the verbose mode for logging or output. When enabled, additional details may be provided for debugging or
-     * informational purposes.
+     * Enables or disables verbose logging via TetradLogger.
      *
-     * @param v true to enable verbose mode, false to disable it
+     * @param v true to enable
      */
     public void setVerbose(boolean v) {
         this.verbose = v;
     }
 
-    // ----------------------------- API -------------------------------
+    // ------------------------------------------------------------------- API
 
     /**
-     * Performs a search operation to generate a causal graph based on the provided dataset.
-     * The specific implementation follows the GIN algorithm as described in the related paper.
+     * Runs the GIN search on the supplied dataset and returns a mixed graph
+     * over the observed variables with latent nodes and measurement edges added.
      *
-     * @param data the dataset used for searching, containing observed variables and their relationships
-     * @return the resulting causal graph constructed from the input dataset
+     * @param data the dataset (raw data required; covariance-only is not sufficient
+     *             because the HSIC test operates on individual observations)
+     * @return the recovered causal graph
      */
     public Graph search(DataSet data) {
-        return searchPaperStyle(data);
+        this.data = data;
+        this.vars = data.getVariables();
+        this.hsic = new FfCiContinuous(data);
+        this.hsic.setAlpha(alpha);
+        return searchPaperStyle();
     }
 
-    /**
-     * GIN algorithm exactly following the paper / causal-learn GIN:
-     *
-     * <ol>
-     *   <li>Form latent clusters using the GIN clustering procedure.</li>
-     *   <li>Learn a causal order of latent clusters via the root-peeling loop.</li>
-     *   <li>Build a latent DAG respecting that order, with tail–tail undirected edges
-     *       among the unordered latents (if any).</li>
-     * </ol>
-     *
-     * <p>Observed nodes are the {@code DataSet} variables; unclustered variables are left
-     * without latent parents (as in the original GIN code).</p>
-     */
-    private Graph searchPaperStyle(DataSet data) {
-        this.data = data;
-        // covariance (not correlation), matching np.cov(data.T) in GIN.py
-        this.cov = new SimpleMatrix(data.getCovarianceMatrix().getSimpleMatrix());
-        this.vars = data.getVariables();
+    // ============================================================
+    // Main algorithm
+    // ============================================================
 
-        final int n = vars.size();
+    private Graph searchPaperStyle() {
+        final int p = vars.size();
 
-        // var_set = set(range(n))
-        java.util.Set<Integer> varSet = new java.util.LinkedHashSet<>();
-        for (int i = 0; i < n; i++) varSet.add(i);
+        Set<Integer> varSet = new LinkedHashSet<>();
+        for (int i = 0; i < p; i++) varSet.add(i);
 
-        // ---------- Step 1: GIN clustering (paper / GIN.py) ----------
+        // ----------------------------------------------------------
+        // Step 1: GIN clustering
+        //
+        // For each candidate cluster of size clusterSize, find the
+        // smallest latent rank laLen for which the GIN independence
+        // condition holds (using TGIN's left-null-space + pairwise
+        // HSIC test).
+        // ----------------------------------------------------------
+
         int clusterSize = 2;
-//        List<List<Integer>> clustersList = new ArrayList<>();
-
         List<ClusterWithRank> clustersList = new ArrayList<>();
 
         while (clusterSize < varSet.size()) {
-            List<ClusterWithRank> tmpClustersList = new ArrayList<>();
-
+            List<ClusterWithRank> tmpClusters = new ArrayList<>();
             List<Integer> varList = new ArrayList<>(varSet);
+
             if (clusterSize <= varList.size()) {
-                // enumerate combinations of 'varList' of size 'clusterSize'
-                int m = varList.size();
-                int[] idx = new int[clusterSize];
-                for (int i = 0; i < clusterSize; i++) idx[i] = i;
+                for (List<Integer> cluster : subsetsOfSize(varList, clusterSize)) {
 
-                while (true) {
-                    // current cluster = varList[idx[0..clusterSize-1]]
-                    List<Integer> cluster = new ArrayList<>(clusterSize);
-                    for (int k = 0; k < clusterSize; k++) {
-                        cluster.add(varList.get(idx[k]));
-                    }
+                    // Complement of this candidate cluster within the remaining var set
+                    List<Integer> remainZ = new ArrayList<>(varSet);
+                    cluster.forEach(remainZ::remove);
+                    if (remainZ.isEmpty()) continue;
 
-                    // remain_var_set = var_set - set(cluster)
-                    java.util.Set<Integer> remainVarSet = new java.util.LinkedHashSet<>(varSet);
-                    cluster.forEach(remainVarSet::remove);
-
-                    if (!remainVarSet.isEmpty()) {
-                        List<Integer> remainZ = new ArrayList<>(remainVarSet);
-                        boolean foundLatentSize = false;
-
-                        for (int laLen = 1; laLen < clusterSize; laLen++) {
-                            // Check GIN for ALL subsets yTilde of cluster with |yTilde| = laLen + 1
-                            boolean allPass = true;
-
-                            for (List<Integer> yTilde : subsetsOfSize(cluster, laLen + 1)) {
-                                double[] e = calEWithGin(yTilde, remainZ);
-                                List<Double> pvals = new ArrayList<>();
-                                for (int z : remainZ) {
-                                    pvals.add(indepPValueEvsSingleZ(e, z));
-                                }
-                                if (fisherPValue(pvals) < alpha) {
-                                    allPass = false;
-                                    break;
-                                }
-                            }
-
-                            if (allPass) {
-                                tmpClustersList.add(new ClusterWithRank(cluster, laLen));
-                                foundLatentSize = true;
-                                break; // use smallest laLen that works
-                            }
+                    // Find the smallest laLen in [1, clusterSize-1] for which the
+                    // GIN condition holds.
+                    for (int laLen = 1; laLen < clusterSize; laLen++) {
+                        if (ginIndepTest(cluster, remainZ, laLen)) {
+                            tmpClusters.add(new ClusterWithRank(new ArrayList<>(cluster), laLen));
+                            break; // use smallest rank that works
                         }
-                    }
-
-                    // next combination
-                    int t = clusterSize - 1;
-                    while (t >= 0 && idx[t] == t + (m - clusterSize)) t--;
-                    if (t < 0) break;
-                    idx[t]++;
-                    for (int i = t + 1; i < clusterSize; i++) {
-                        idx[i] = idx[i - 1] + 1;
                     }
                 }
             }
 
-            // merge_overlaping_cluster(tmp_clusters_list)
-            tmpClustersList = mergeOverlappingClusters(tmpClustersList);
+            // Merge overlapping candidate clusters (union + max rank)
+            tmpClusters = mergeOverlappingClusters(tmpClusters);
 
-            // clusters_list = clusters_list + tmp_clusters_list
-            clustersList.addAll(tmpClustersList);
+            // Remove committed variables from the search pool
+            clustersList.addAll(tmpClusters);
+            for (ClusterWithRank c : tmpClusters) c.vars().forEach(varSet::remove);
 
-            // for a cluster in tmp_clusters_list: var_set -= set(cluster)
-            for (ClusterWithRank c : tmpClustersList) {
-                c.vars().forEach(varSet::remove);
-            }
-
-            // Post-process: try to split rank-k (k>1) clusters
+            // Post-process: try to split any rank-k > 1 clusters into
+            // purer sub-clusters using the same ginIndepTest.
             List<ClusterWithRank> refined = new ArrayList<>();
             for (ClusterWithRank cwr : clustersList) {
                 if (cwr.laLen() == 1) {
                     refined.add(cwr);
                 } else {
-                    List<Integer> complement = new ArrayList<>(vars.size());
-                    for (int i = 0; i < vars.size(); i++) {
+                    List<Integer> complement = new ArrayList<>();
+                    for (int i = 0; i < p; i++) {
                         if (!cwr.vars().contains(i)) complement.add(i);
                     }
                     refined.addAll(trySplitCluster(cwr, complement));
                 }
             }
-
             clustersList = refined;
 
             clusterSize++;
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("[GIN-paper] initial clusters=" + clustersAsNames(clustersList));
-            TetradLogger.getInstance().log("[GIN-paper] unclustered vars=" + varSet);
+            TetradLogger.getInstance().log("[GIN] clusters = " + clustersAsNames(clustersList));
+            TetradLogger.getInstance().log("[GIN] unclustered vars = " + varSet);
         }
 
-        // ---------- Step 2: Learn causal order via root-peeling loop ----------
+        // ----------------------------------------------------------
+        // Step 2: Causal ordering via root-peeling
+        //
+        // Cluster I is a root over the remaining clusters if, for every
+        // other remaining cluster J, ginIndepTest(colsI, colsJ ∪ orderedCols,
+        // rankI) returns true.  This is TGIN's Stage 4 test repurposed for
+        // ordering: the left null space of Cov(I-indicators, J-indicators)
+        // should yield a signal independent of J (and of everything already
+        // ordered), confirming that I is causally prior.
+        // ----------------------------------------------------------
 
         List<ClusterWithRank> clustersRemaining = new ArrayList<>(clustersList);
-        List<ClusterWithRank> causalOrder = new ArrayList<>(); // corresponds to K in the paper
+        List<ClusterWithRank> causalOrder = new ArrayList<>();
 
         boolean updated = true;
         while (updated && !clustersRemaining.isEmpty()) {
             updated = false;
 
-            // X, Z built from already chosen causalOrder
-            List<Integer> X = new ArrayList<>();
-            List<Integer> Z = new ArrayList<>();
-            for (ClusterWithRank clusterK : causalOrder) {
-                Split s = splitCluster(clusterK.vars());
-                X.addAll(s.firstHalf());
-                Z.addAll(s.secondHalf());
-            }
+            // Column indices of all clusters already placed in causal order
+            List<Integer> orderedCols = new ArrayList<>();
+            for (ClusterWithRank oc : causalOrder) orderedCols.addAll(oc.vars());
 
-            // search for a root cluster among the remaining ones
             for (int i = 0; i < clustersRemaining.size(); i++) {
                 ClusterWithRank clusterI = clustersRemaining.get(i);
-                Split si = splitCluster(clusterI.vars());
-                List<Integer> clusterI1 = si.firstHalf();
-                List<Integer> clusterI2 = si.secondHalf();
-
-                boolean isRoot = true;
+                List<Integer> colsI  = clusterI.vars();
+                int            rankI  = clusterI.laLen();
+                boolean        isRoot = true;
 
                 for (int j = 0; j < clustersRemaining.size(); j++) {
                     if (i == j) continue;
-                    ClusterWithRank clusterJ = clustersRemaining.get(j);
-                    Split sj = splitCluster(clusterJ.vars());
-                    List<Integer> clusterJ1 = sj.firstHalf();
 
-                    // X + cluster_i1 + cluster_j1
-                    List<Integer> Xall = new ArrayList<>(X.size() + clusterI1.size() + clusterJ1.size());
-                    Xall.addAll(X);
-                    Xall.addAll(clusterI1);
-                    Xall.addAll(clusterJ1);
+                    // Complement: J's indicators + already-ordered indicators
+                    List<Integer> complementCols = new ArrayList<>(clustersRemaining.get(j).vars());
+                    complementCols.addAll(orderedCols);
 
-                    // Z + cluster_i2
-                    List<Integer> Zall = new ArrayList<>(Z.size() + clusterI2.size());
-                    Zall.addAll(Z);
-                    Zall.addAll(clusterI2);
-
-                    double[] e = calEWithGin(Xall, Zall);
-
-                    List<Double> pvals = new ArrayList<>();
-                    for (int zCol : Zall) {
-                        pvals.add(indepPValueEvsSingleZ(e, zCol));
-                    }
-
-                    double fisherP = fisherPValue(pvals);
-                    if (fisherP < alpha) {
+                    if (!ginIndepTest(colsI, complementCols, rankI)) {
                         isRoot = false;
                         break;
                     }
@@ -284,88 +258,218 @@ public class Gin {
                     causalOrder.add(clusterI);
                     clustersRemaining.remove(i);
                     updated = true;
-                    break;
+                    break; // restart the outer loop with the updated ordered set
                 }
             }
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("[GIN-paper] causal order=" + clustersAsNames(causalOrder));
-            TetradLogger.getInstance().log("[GIN-paper] unordered clusters=" + clustersAsNames(clustersRemaining));
+            TetradLogger.getInstance().log("[GIN] causal order = " + clustersAsNames(causalOrder));
+            TetradLogger.getInstance().log("[GIN] unordered    = " + clustersAsNames(clustersRemaining));
         }
 
-        // ---------- Step 3: Build graph as in GIN.py ----------
+        // ----------------------------------------------------------
+        // Step 3: Build graph (unchanged from original Gin.java)
+        // ----------------------------------------------------------
 
-        Graph g = new EdgeListGraph(this.vars);  // observed nodes already present
-
-        // Unclustered observed variables (still in varSet) are already in 'vars' with no latent parent.
-
+        Graph g = new EdgeListGraph(vars);
         int latentId = 1;
-        List<Node> lNodes = new ArrayList<>();
+        List<Node> lNodes = new ArrayList<>(); // all latent nodes emitted so far
 
-        // Ordered latents (causal_order)
+        // Ordered clusters: directed edges from every earlier latent
         for (ClusterWithRank cluster : causalOrder) {
             List<Node> newLNodes = new ArrayList<>();
 
             for (int k = 0; k < cluster.laLen(); k++) {
-                Node lNode = new GraphNode("L" + latentId);
+                Node lNode = new GraphNode("L" + latentId++);
                 lNode.setNodeType(NodeType.LATENT);
                 g.addNode(lNode);
-
-                for (Node parentLatent : lNodes) {
-                    g.addDirectedEdge(parentLatent, lNode);
-                }
+                for (Node parent : lNodes) g.addDirectedEdge(parent, lNode);
                 newLNodes.add(lNode);
-                latentId++;
             }
 
             lNodes.addAll(newLNodes);
-
-            for (int o : cluster.vars()) {
-                for (Node lNode : newLNodes) {
+            for (int o : cluster.vars())
+                for (Node lNode : newLNodes)
                     g.addDirectedEdge(lNode, vars.get(o));
-                }
-            }
         }
 
-        // Remaining clusters: undirected latent–latent among themselves,
-        // directed from ordered latents into them.
+        // Unordered clusters: undirected among themselves,
+        // directed from every ordered latent into them
         List<Node> undirectedLNodes = new ArrayList<>();
 
         for (ClusterWithRank cluster : clustersRemaining) {
             List<Node> newLNodes = new ArrayList<>();
 
             for (int k = 0; k < cluster.laLen(); k++) {
-                Node lNode = new GraphNode("L" + latentId);
+                Node lNode = new GraphNode("L" + latentId++);
                 lNode.setNodeType(NodeType.LATENT);
                 g.addNode(lNode);
-
-                for (Node parentLatent : lNodes) {
-                    g.addDirectedEdge(parentLatent, lNode);
-                }
-                for (Node und : undirectedLNodes) {
-                    g.addUndirectedEdge(und, lNode);
-                }
+                for (Node parent  : lNodes)          g.addDirectedEdge(parent, lNode);
+                for (Node und     : undirectedLNodes) g.addUndirectedEdge(und, lNode);
                 undirectedLNodes.add(lNode);
                 newLNodes.add(lNode);
-                latentId++;
             }
 
             lNodes.addAll(newLNodes);
-
-            for (int o : cluster.vars()) {
-                for (Node lNode : newLNodes) {
+            for (int o : cluster.vars())
+                for (Node lNode : newLNodes)
                     g.addDirectedEdge(lNode, vars.get(o));
-                }
-            }
         }
 
         return g;
     }
 
+    // ============================================================
+    // Core test — identical math to TGIN's groupGinTest / Stage 4
+    // ============================================================
+
+    /**
+     * GIN independence test using TGIN's left-null-space approach.
+     *
+     * <p>Under the GIN / LiNGLaM assumption, if {@code clusterCols} is a valid
+     * cluster with {@code latentRank} latent sources, the cross-covariance
+     * Σ(cluster, complement) has rank ≤ {@code latentRank}.  The left null space
+     * of that matrix gives a weight matrix Ω such that Ω·X_data is (in population)
+     * independent of Z_data.
+     *
+     * <p>The test returns {@code true} iff every row of the residual matrix
+     * Ω·X_data<sup>T</sup> is pairwise independent of every column of Z_data
+     * under HSIC (all-pass criterion, mirroring TGIN Stage 4).
+     *
+     * @param clusterCols    column indices of the candidate cluster
+     * @param complementCols column indices of the complement (or conditioning) set
+     * @param latentRank     assumed number of latent dimensions in the cluster
+     * @return true if the GIN independence condition holds at level {@code alpha}
+     */
+    private boolean ginIndepTest(List<Integer> clusterCols,
+                                 List<Integer> complementCols,
+                                 int latentRank) {
+        if (clusterCols.isEmpty() || complementCols.isEmpty()) return false;
+
+        Matrix Xdata = submatrixData(clusterCols);    // n × pX
+        Matrix Zdata = submatrixData(complementCols); // n × pZ
+
+        // pX × pZ cross-covariance (identical to TGIN's crossCovariance)
+        Matrix SigmaXZ = crossCovMatrix(Xdata, Zdata);
+
+        // Left null space: (pX − latentRank) × pX
+        Matrix Omega = leftNullSpace(SigmaXZ, latentRank);
+        if (Omega.getNumRows() == 0) return false; // no null space — cannot confirm
+
+        // Residual: (pX − latentRank) × n
+        Matrix residual = Omega.times(Xdata.transpose());
+
+        // All-pass: every residual row must be HSIC-independent of every Z column
+        for (int row = 0; row < residual.getNumRows(); row++) {
+            double[] res = residual.row(row).toArray();
+            for (int col = 0; col < complementCols.size(); col++) {
+                double[] zCol = Zdata.col(col).toArray();
+                try {
+                    if (hsic.computePValue(res, zCol) < alpha) return false;
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    // ============================================================
+    // TGIN math helpers — exact copies of TGIN's private methods
+    // ============================================================
+
+    /**
+     * Returns the left null space of M as a matrix whose rows span ker(M<sup>T</sup>),
+     * assuming M has structural rank {@code rank}.
+     *
+     * <p>Uses a full (not thin) SVD so that the null-space columns of U are
+     * available; columns from index {@code rank} onward of U are the left
+     * null-space basis. Copied verbatim from {@code TginOrientationStages}.
+     *
+     * @param M    the input matrix (r × c)
+     * @param rank assumed rank of M
+     * @return a {@code (r − rank) × r} matrix whose rows are left null vectors,
+     *         or a 0-row matrix if the null space is empty
+     */
+    private Matrix leftNullSpace(Matrix M, int rank) {
+        // false = full SVD; thin SVD truncates the null-space columns we need
+        SimpleSVD<SimpleMatrix> svd = M.getSimpleMatrix().svd(false);
+        SimpleMatrix U = svd.getU(); // r × r
+
+        int numCols = U.getNumCols(); // = r (number of rows of M)
+        int nullDim  = numCols - rank;
+        if (nullDim <= 0) return new Matrix(0, M.getNumRows());
+
+        double[][] result = new double[nullDim][M.getNumRows()];
+        for (int col = 0; col < nullDim; col++)
+            for (int row = 0; row < M.getNumRows(); row++)
+                result[col][row] = U.get(row, rank + col);
+
+        return new Matrix(result);
+    }
+
+    /**
+     * Sample cross-covariance between mean-centred X and mean-centred Y.
+     * Returns an (X.cols × Y.cols) matrix.  Copied verbatim from
+     * {@code TginOrientationStages.crossCovariance}.
+     *
+     * @param X n × pX data matrix
+     * @param Y n × pY data matrix
+     * @return pX × pY cross-covariance matrix, scaled by 1/(n−1)
+     */
+    private Matrix crossCovMatrix(Matrix X, Matrix Y) {
+        int n = X.getNumRows();
+        Matrix Xc = X.copy();
+        Matrix Yc = Y.copy();
+
+        for (int j = 0; j < X.getNumColumns(); j++) {
+            double mean = 0;
+            for (int i = 0; i < n; i++) mean += X.get(i, j);
+            mean /= n;
+            for (int i = 0; i < n; i++) Xc.set(i, j, X.get(i, j) - mean);
+        }
+        for (int j = 0; j < Y.getNumColumns(); j++) {
+            double mean = 0;
+            for (int i = 0; i < n; i++) mean += Y.get(i, j);
+            mean /= n;
+            for (int i = 0; i < n; i++) Yc.set(i, j, Y.get(i, j) - mean);
+        }
+
+        return Xc.transpose().times(Yc).scalarMult(1.0 / (n - 1));
+    }
+
+    /**
+     * Extracts the columns identified by {@code cols} from the dataset as an
+     * n × |cols| {@link Matrix}.  Copied verbatim from
+     * {@code TginOrientationStages.submatrix}.
+     *
+     * @param cols column indices into {@code data}
+     * @return n × |cols| data matrix
+     */
+    private Matrix submatrixData(List<Integer> cols) {
+        int n = data.getNumRows();
+        double[][] result = new double[n][cols.size()];
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < cols.size(); j++)
+                result[i][j] = data.getDouble(i, cols.get(j));
+        return new Matrix(result);
+    }
+
+    // ============================================================
+    // Cluster helpers — unchanged from original Gin.java
+    // (trySplitCluster updated to use ginIndepTest)
+    // ============================================================
+
+    /**
+     * Enumerates all combinations of {@code list} of size {@code size}.
+     */
     private List<List<Integer>> subsetsOfSize(List<Integer> list, int size) {
         List<List<Integer>> result = new ArrayList<>();
         int n = list.size();
+        if (size > n || size <= 0) return result;
+
         int[] idx = new int[size];
         for (int i = 0; i < size; i++) idx[i] = i;
 
@@ -380,170 +484,64 @@ public class Gin {
             idx[t]++;
             for (int i = t + 1; i < size; i++) idx[i] = idx[i - 1] + 1;
         }
-
         return result;
     }
 
-    private List<ClusterWithRank> trySplitCluster(ClusterWithRank cwr, List<Integer> complement) {
-        List<Integer> clusterVars = new ArrayList<>(cwr.vars());
-        java.util.Set<Integer> remaining = new java.util.LinkedHashSet<>(clusterVars);
+    /**
+     * Tries to split a rank-k (k > 1) cluster into purer sub-clusters by
+     * re-running {@link #ginIndepTest} on sub-sets.  Uses the same test as the
+     * clustering stage, now on subsets of the cluster against the complement.
+     *
+     * <p>Returns the list of sub-clusters only if all original variables are
+     * accounted for AND more than one sub-cluster is found; otherwise returns
+     * {@code List.of(cwr)} (no split).
+     */
+    private List<ClusterWithRank> trySplitCluster(ClusterWithRank cwr,
+                                                  List<Integer> complement) {
+        List<Integer>       clusterVars = new ArrayList<>(cwr.vars());
+        Set<Integer>        remaining   = new LinkedHashSet<>(clusterVars);
         List<ClusterWithRank> subClusters = new ArrayList<>();
 
+        outer:
         for (int subSize = 2; subSize < clusterVars.size() && !remaining.isEmpty(); subSize++) {
             for (List<Integer> sub : subsetsOfSize(new ArrayList<>(remaining), subSize)) {
                 for (int laLen = 1; laLen < subSize; laLen++) {
-                    boolean allPass = true;
-                    for (List<Integer> yTilde : subsetsOfSize(sub, laLen + 1)) {
-                        double[] e = calEWithGin(yTilde, complement);
-                        List<Double> pvals = new ArrayList<>();
-                        for (int z : complement) pvals.add(indepPValueEvsSingleZ(e, z));
-                        if (fisherPValue(pvals) < alpha) { allPass = false; break; }
-                    }
-                    if (allPass) {
+                    if (ginIndepTest(sub, complement, laLen)) {
                         subClusters.add(new ClusterWithRank(new ArrayList<>(sub), laLen));
                         sub.forEach(remaining::remove);
-                        break;
+                        break; // next subSize with updated remaining
                     }
                 }
-                if (remaining.isEmpty()) break;
+                if (remaining.isEmpty()) break outer;
             }
         }
 
-        // Only accept the split if it accounts for all variables
         if (remaining.isEmpty() && subClusters.size() > 1) return subClusters;
         return List.of(cwr);
     }
 
-    // --------- GIN projection e = cal_e_with_gin(data, cov, X, Z) ---------
-
     /**
-     * cal_e_with_gin(data, cov, X, Z) from GIN.py:
-     * <pre>
-     *   cov_m = cov[np.ix_(Z, X)]
-     *   _, _, v = np.linalg.svd(cov_m)
-     *   omega = v.T[:, -1]
-     *   return np.dot(data[:, X], omega)
-     * </pre>
-     */
-    private double[] calEWithGin(List<Integer> X, List<Integer> Z) {
-        int nRows = data.getNumRows();
-        if (X.isEmpty() || Z.isEmpty()) {
-            return new double[nRows];
-        }
-
-        // cov_m = cov[np.ix_(Z, X)]
-        SimpleMatrix covM = subCov(cov, Z, X);
-        SimpleSVD<SimpleMatrix> svd = covM.svd();
-        SimpleMatrix V = svd.getV();
-
-        int k = V.getNumCols();
-        if (k == 0) {
-            return new double[nRows];
-        }
-
-        // omega = last column of V
-        SimpleMatrix omegaVec = V.extractVector(false, k - 1); // (len(X) x 1)
-
-        double[] omega = new double[X.size()];
-        for (int i = 0; i < X.size(); i++) {
-            omega[i] = omegaVec.get(i, 0);
-        }
-
-        // e = data[:, X] * omega
-        double[] e = new double[nRows];
-        for (int r = 0; r < nRows; r++) {
-            double sum = 0.0;
-            for (int j = 0; j < X.size(); j++) {
-                int col = X.get(j);
-                sum += data.getDouble(r, col) * omega[j];
-            }
-            e[r] = sum;
-        }
-
-        return e;
-    }
-
-    /**
-     * Independence test p-value for e vs. a single Z column, wrapping the RawMarginalIndependenceTest in the same spirit
-     * as indep_test in GIN.py.
-     */
-    private double indepPValueEvsSingleZ(double[] e, int zCol) {
-        int n = e.length;
-        double[][] Z1 = new double[n][1];
-        for (int i = 0; i < n; i++) {
-            Z1[i][0] = data.getDouble(i, zCol);
-        }
-
-        try {
-            double p = test.computePValue(e, Z1);
-            if (!Double.isFinite(p)) return 1.0;
-            if (p < 0.0) return 0.0;
-            return TMath.min(p, 1.0);
-        } catch (InterruptedException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    /**
-     * Fisher's method for combining p-values, as in fisher_test in GIN.py.
-     */
-    private double fisherPValue(List<Double> pvals) {
-        if (pvals == null || pvals.isEmpty()) {
-            return 1.0;
-        }
-        double stat = 0.0;
-        int k = 0;
-        for (double p : pvals) {
-            double q = p;
-            if (!Double.isFinite(q) || q <= 0.0) q = 1e-5;
-            if (q < 1e-5) q = 1e-5;  // cap small p-values
-            stat += -2.0 * TMath.log(q);
-            k++;
-        }
-        double df = 2.0 * k;
-        ChiSquaredDistribution chi = new ChiSquaredDistribution(df);
-        double cdf = chi.cumulativeProbability(stat);
-        return 1.0 - cdf;
-    }
-
-    // --------- Cluster splitting (array_split(..., 2) for k=2) ---------
-
-    /**
-     * Helper matching array_split(x, 2) in GIN.py: the first half is ceil(len/2), the second is the remainder.
-     */
-    private Split splitCluster(List<Integer> cluster) {
-        int len = cluster.size();
-        int firstLen = (len + 1) / 2; // ceil(len / 2)
-        List<Integer> first = new ArrayList<>(cluster.subList(0, firstLen));
-        List<Integer> second = new ArrayList<>(cluster.subList(firstLen, len));
-        return new Split(first, second);
-    }
-
-    /**
-     * Merge overlapping clusters: if two clusters share any variable, they are merged into their union. This is a
-     * simpler but equivalent version of merge_overlaping_cluster in GIN.py.
+     * Merges overlapping candidate clusters by union, taking the maximum laLen.
+     * Equivalent to {@code merge_overlaping_cluster} in the original GIN.py.
      */
     private List<ClusterWithRank> mergeOverlappingClusters(List<ClusterWithRank> clusters) {
-        // Work with sets for easy overlap detection, track laLen alongside
-        List<java.util.Set<Integer>> sets = new ArrayList<>();
-        List<Integer> laLens = new ArrayList<>();
+        List<Set<Integer>> sets    = new ArrayList<>();
+        List<Integer>      laLens  = new ArrayList<>();
 
         for (ClusterWithRank c : clusters) {
-            sets.add(new java.util.LinkedHashSet<>(c.vars()));
+            sets.add(new LinkedHashSet<>(c.vars()));
             laLens.add(c.laLen());
         }
 
         boolean changed;
         do {
             changed = false;
-            int i = 0;
-            while (i < sets.size()) {
-                java.util.Set<Integer> a = sets.get(i);
+            for (int i = 0; i < sets.size(); i++) {
+                Set<Integer> a = sets.get(i);
                 int j = i + 1;
                 while (j < sets.size()) {
-                    java.util.Set<Integer> b = sets.get(j);
+                    Set<Integer> b = sets.get(j);
                     if (!disjoint(a, b)) {
-                        // Merge b into a, take max laLen
                         a.addAll(b);
                         laLens.set(i, Math.max(laLens.get(i), laLens.get(j)));
                         sets.remove(j);
@@ -553,46 +551,39 @@ public class Gin {
                         j++;
                     }
                 }
-                i++;
             }
         } while (changed);
 
         List<ClusterWithRank> out = new ArrayList<>();
-        for (int i = 0; i < sets.size(); i++) {
+        for (int i = 0; i < sets.size(); i++)
             out.add(new ClusterWithRank(new ArrayList<>(sets.get(i)), laLens.get(i)));
-        }
         return out;
     }
 
-    private boolean disjoint(java.util.Set<Integer> a, java.util.Set<Integer> b) {
-        for (Integer x : a) {
-            if (b.contains(x)) return false;
-        }
+    private boolean disjoint(Set<Integer> a, Set<Integer> b) {
+        for (Integer x : a) if (b.contains(x)) return false;
         return true;
-    }
-
-    // ---------------------- Utilities ---------------------------
-
-    private SimpleMatrix subCov(SimpleMatrix S, List<Integer> rows, List<Integer> cols) {
-        SimpleMatrix out = new SimpleMatrix(rows.size(), cols.size());
-        for (int i = 0; i < rows.size(); i++) {
-            for (int j = 0; j < cols.size(); j++) {
-                out.set(i, j, S.get(rows.get(i), cols.get(j)));
-            }
-        }
-        return out;
     }
 
     private String clustersAsNames(List<ClusterWithRank> cl) {
         return cl.stream()
-                .map(c -> c.vars().stream().map(i -> vars.get(i).getName()).toList().toString()
-                        + "(rank=" + c.laLen() + ")")
+                .map(c -> c.vars().stream()
+                        .map(i -> vars.get(i).getName())
+                        .toList()
+                        .toString() + "(rank=" + c.laLen() + ")")
                 .collect(Collectors.joining(" | "));
     }
 
+    // ============================================================
+    // Records
+    // ============================================================
+
+    /**
+     * A discovered cluster together with its latent rank (number of latent
+     * dimensions needed to explain its cross-covariance with the complement).
+     *
+     * @param vars  column indices of the cluster's indicator variables
+     * @param laLen latent rank (≥ 1)
+     */
     record ClusterWithRank(List<Integer> vars, int laLen) {}
-
-
-    private record Split(List<Integer> firstHalf, List<Integer> secondHalf) {
-    }
 }
