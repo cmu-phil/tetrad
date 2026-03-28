@@ -47,6 +47,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -237,7 +238,12 @@ public class TestFgesFci {
         SemPm pm = new SemPm(g);
         SemIm im = new SemIm(pm);
 
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         data = DataTransforms.restrictToMeasured(data);
 

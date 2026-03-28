@@ -30,6 +30,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -71,7 +72,12 @@ public class TestClusterFinder {
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(5000, false);
+        DataSet dataSet = null;
+        try {
+            dataSet = im.simulateData(5000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println(dataSet.getVariables());
 

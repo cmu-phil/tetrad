@@ -32,6 +32,7 @@ import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -95,14 +96,20 @@ public class TestCausalUnmixer {
 
         // Non-Gaussian errors (e.g., Laplace): SIMULATION_ERROR_TYPE = 3
         Parameters params = new Parameters();
-        params.set(Params.SIMULATION_ERROR_TYPE, 3);
-        params.set(Params.SIMULATION_PARAM1, 1);
+        params.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        params.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemIm imA = new SemIm(new SemPm(gA), params);
         SemIm imB = new SemIm(new SemPm(gB), params);
 
-        DataSet dA = imA.simulateData(n1, false);
-        DataSet dB = imB.simulateData(n2, false);
+        DataSet dA = null;
+        DataSet dB = null;
+        try {
+            dA = imA.simulateData(n1, false);
+            dB = imB.simulateData(n2, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         DataSet concat = DataTransforms.concatenate(dA, dB);
         int[] labels = new int[n1 + n2];
@@ -361,11 +368,15 @@ public class TestCausalUnmixer {
         Graph gBackbone = RandomGraph.randomGraph(vars, 0, 20, 100, 100, 100, false);
 
         Parameters params = new Parameters();
-        params.set(Params.SIMULATION_ERROR_TYPE, 3);
-        params.set(Params.SIMULATION_PARAM1, 1);
+        params.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        params.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemIm imBack = new SemIm(new SemPm(gBackbone), params);
-        DataSet Dreal = imBack.simulateData(n1 + n2, false); // ârealisticâ marginal structure
+        try {
+            DataSet Dreal = imBack.simulateData(n1 + n2, false); // ârealisticâ marginal structure
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         // Two regimes: (A) keep backbone; (B) flip edges & scale some parameters
         Graph gA = gBackbone.copy();
@@ -383,8 +394,14 @@ public class TestCausalUnmixer {
         }
         for (Node v : vars) imB.setErrVar(v, noiseScale * imB.getErrVar(v));
 
-        DataSet dA = imA.simulateData(n1, false);
-        DataSet dB = imB.simulateData(n2, false);
+        DataSet dA = null;
+        DataSet dB = null;
+        try {
+            dA = imA.simulateData(n1, false);
+            dB = imB.simulateData(n2, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         DataSet concat = DataTransforms.concatenate(dA, dB);
 
         // Ground-truth labels before shuffle

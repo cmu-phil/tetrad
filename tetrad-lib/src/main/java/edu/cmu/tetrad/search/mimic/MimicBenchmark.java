@@ -29,6 +29,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -114,7 +115,12 @@ public final class MimicBenchmark {
      */
     public MimicTrialResult runTrial(Parameters parameters) {
         MimicModel trueModel = this.generator.generate(parameters);
-        DataSet measuredData = simulateMeasuredData(trueModel, parameters);
+        DataSet measuredData = null;
+        try {
+            measuredData = simulateMeasuredData(trueModel, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         Knowledge knowledge = trueModel.getTierKnowledge();
 
         Map<String, Graph> estimatedGraphs = new LinkedHashMap<>();
@@ -176,7 +182,7 @@ public final class MimicBenchmark {
      * @param parameters the simulation parameters
      * @return the measured data
      */
-    private DataSet simulateMeasuredData(MimicModel trueModel, Parameters parameters) {
+    private DataSet simulateMeasuredData(MimicModel trueModel, Parameters parameters) throws ParseException {
         Graph graph = trueModel.getGraph();
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm, parameters);

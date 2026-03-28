@@ -33,6 +33,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +59,11 @@ public class TestRegression {
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        this.data = im.simulateDataReducedForm(1000, false);
+        try {
+            this.data = im.simulateDataReducedForm(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

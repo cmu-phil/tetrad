@@ -809,17 +809,21 @@ public final class Params {
      */
     public static final String GRASP_USE_VP_SCORING = "graspUseVpScoring";
     /**
-     * Constant <code>SIMULATION_ERROR_TYPE="simulationErrorType"</code>
+     * Constant <code>GRASP_USE_VP_SCORING="graspUseVpScoring"</code>
      */
-    public static final String SIMULATION_ERROR_TYPE = "simulationErrorType";
-    /**
-     * Constant <code>SIMULATION_PARAM1="simulationParam1"</code>
-     */
-    public static final String SIMULATION_PARAM1 = "simulationParam1";
-    /**
-     * Constant <code>SIMULATION_PARAM2="simulationParam2"</code>
-     */
-    public static final String SIMULATION_PARAM2 = "simulationParam2";
+    public static final String USE_GENERAL_EXOGENOUS_NOISE = "useGeneralExogenousNoise";
+//    /**
+//     * Constant <code>SIMULATION_ERROR_TYPE="simulationErrorType"</code>
+//     */
+//    public static final String SIMULATION_ERROR_TYPE = "simulationErrorType";
+//    /**
+//     * Constant <code>SIMULATION_PARAM1="simulationParam1"</code>
+//     */
+//    public static final String SIMULATION_PARAM1 = "simulationParam1";
+//    /**
+//     * Constant <code>SIMULATION_PARAM2="simulationParam2"</code>
+//     */
+//    public static final String SIMULATION_PARAM2 = "simulationParam2";
     /**
      * Constant <code>SELECTION_MIN_EFFECT="selectionMinEffect"</code>
      */
@@ -1053,6 +1057,10 @@ public final class Params {
      * Constant <code>NOISE_EXPRESSION="noiseExpression"</code>
      */
     public static final String NOISE_EXPRESSION = "noiseExpression";
+    /**
+     * Constant <code>OPTIONAL_NOISE_EXPRESSION="optionalNoiseExpression"</code>
+     */
+    public static final String OPTIONAL_NOISE_EXPRESSION = "optionalNoiseExpression";
     /**
      * Constant <code>INPUT_SCALE="inputScale"</code>
      */

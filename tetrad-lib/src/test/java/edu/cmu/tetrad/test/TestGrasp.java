@@ -1257,7 +1257,12 @@ public final class TestGrasp {
                     100, 100, 100, false);
             SemPm pm = new SemPm(g);
             SemIm im = new SemIm(pm);
-            DataSet d = im.simulateData(1000, false);
+            DataSet d = null;
+            try {
+                d = im.simulateData(1000, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
 
             IndependenceTest test = new IndTestFisherZ(d, 0.00001);
 
@@ -3198,7 +3203,12 @@ public final class TestGrasp {
                         SemPm pm = new SemPm(graph);
                         SemIm im = new SemIm(pm, parameters);
 
-                        DataSet dataSet = im.simulateData(s, false);
+                        DataSet dataSet = null;
+                        try {
+                            dataSet = im.simulateData(s, false);
+                        } catch (ParseException e) {
+                            throw new RuntimeException(e);
+                        }
                         List<Node> V = dataSet.getVariables();
 
                         MsepTest msep = new MsepTest(graph);
@@ -3343,7 +3353,12 @@ public final class TestGrasp {
                     100, 100, false);
             SemPm pm = new SemPm(g);
             SemIm im = new SemIm(pm);
-            DataSet d = im.simulateData(1000, false);
+            DataSet d = null;
+            try {
+                d = im.simulateData(1000, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
 
             IndTestFisherZ test = new IndTestFisherZ(d, 0.001);
             SemBicScore score = new SemBicScore(d, precomputeCovariances);

@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.*;
 import org.ejml.simple.SimpleMatrix;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -153,7 +154,12 @@ public class TestSemIm {
         SemIm semIm = new SemIm(semPm);
 
         DataSet dataSetContColumnContinuous =
-                semIm.simulateData(500, false);
+                null;
+        try {
+            dataSetContColumnContinuous = semIm.simulateData(500, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         ICovarianceMatrix covMatrix =
                 new CovarianceMatrix(dataSetContColumnContinuous);
         SemEstimator estimator2 = new SemEstimator(covMatrix, semPm);
@@ -190,7 +196,12 @@ public class TestSemIm {
         Matrix implCovarC = semIm1.getImplCovar(true);
         implCovarC.toArray();
 
-        DataSet dataSet = semIm1.simulateDataRecursive(1000, false);
+        DataSet dataSet = null;
+        try {
+            dataSet = semIm1.simulateDataRecursive(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         new CovarianceMatrix(dataSet);
     }
 
@@ -228,7 +239,12 @@ public class TestSemIm {
         SemPm semPm = new SemPm(graph);
         SemIm semIm = new SemIm(semPm);
 
-        DataSet dataSet = semIm.simulateData(500, false);
+        DataSet dataSet = null;
+        try {
+            dataSet = semIm.simulateData(500, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
         double[][] a = cov.getMatrix().toArray();
@@ -277,7 +293,12 @@ public class TestSemIm {
         SemIm im = new SemIm(pm);
 
 //        DataSet data = semIm.simulateDataCholesky(1000, true);
-        DataSet data = im.simulateDataReducedForm(1000, true);
+        DataSet data = null;
+        try {
+            data = im.simulateDataReducedForm(1000, true);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 //        DataSet data = semIm.simulateDataRecursive(1000, true);
 
         data.getCovarianceMatrix();
@@ -390,7 +411,12 @@ public class TestSemIm {
         im.setEdgeCoef(x, p, 0.5);
         im.setEdgeCoef(y, x, 0.5);
 
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         SemEstimator est = new SemEstimator(data, pm, new SemOptimizerPowell());
 
@@ -423,7 +449,11 @@ public class TestSemIm {
 
         SemIm modified = TestSemIm.modifySemImStandardizedInterventionOnTargetParents(semIm, x4);
 
-        modified.simulateData(1000, false);
+        try {
+            modified.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 }

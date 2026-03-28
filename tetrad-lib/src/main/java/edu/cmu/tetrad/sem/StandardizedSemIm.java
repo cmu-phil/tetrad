@@ -29,6 +29,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -125,7 +126,7 @@ public class StandardizedSemIm implements Simulator {
      * @param im         The SEM IM that the freeParameters will be initialized from.
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public StandardizedSemIm(SemIm im, Parameters parameters) {
+    public StandardizedSemIm(SemIm im, Parameters parameters) throws ParseException {
         this(im, Initialization.CALCULATE_FROM_SEM, parameters);
     }
 
@@ -136,7 +137,7 @@ public class StandardizedSemIm implements Simulator {
      * @param initialization CALCULATE_FROM_SEM if the initial values will be calculated from the given SEM IM;
      * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public StandardizedSemIm(SemIm im, Initialization initialization, Parameters parameters) {
+    public StandardizedSemIm(SemIm im, Initialization initialization, Parameters parameters) throws ParseException {
         if (im.getSemPm().getGraph().isTimeLagModel()) {
             throw new IllegalArgumentException("Standardized SEM IM with a time lag model with latent variables is not supported.");
         }
@@ -215,7 +216,7 @@ public class StandardizedSemIm implements Simulator {
      *
      * @return a {@link edu.cmu.tetrad.sem.StandardizedSemIm} object
      */
-    public static StandardizedSemIm serializableInstance() {
+    public static StandardizedSemIm serializableInstance() throws ParseException {
         return new StandardizedSemIm(SemIm.serializableInstance(), new Parameters());
     }
 

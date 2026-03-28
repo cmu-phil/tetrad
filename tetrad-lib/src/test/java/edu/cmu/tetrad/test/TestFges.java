@@ -197,7 +197,12 @@ public class TestFges {
 
         SemPm pm = new SemPm(dag);
         SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(numCases, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(numCases, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println("data done");
 
@@ -809,7 +814,12 @@ public class TestFges {
         buildIndexing(nodes);
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(N, false);
+        DataSet dataSet = null;
+        try {
+            dataSet = im.simulateData(N, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         SemBicScore score = new SemBicScore(dataSet, precomputeCovariances);
 
         MsepTest msep = new MsepTest(graph);

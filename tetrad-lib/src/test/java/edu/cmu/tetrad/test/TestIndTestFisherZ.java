@@ -36,6 +36,8 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import org.junit.Test;
 
+import java.text.ParseException;
+
 import static edu.cmu.tetrad.util.TMath.*;
 import static org.junit.Assert.assertEquals;
 
@@ -79,8 +81,14 @@ public class TestIndTestFisherZ {
         im2.setEdgeCoef(x, y, im1.getEdgeCoef(x, y));
         im2.setEdgeCoef(z, y, im1.getEdgeCoef(y, z));
 
-        DataSet data1 = im1.simulateData(500, false);
-        DataSet data2 = im2.simulateData(500, false);
+        DataSet data1 = null;
+        DataSet data2 = null;
+        try {
+            data1 = im1.simulateData(500, false);
+            data2 = im2.simulateData(500, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         IndependenceTest test1 = new IndTestFisherZ(data1, 0.05);
         IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
@@ -144,7 +152,12 @@ public class TestIndTestFisherZ {
             SemIm im = new SemIm(pm, parameters);
 
             final int N = 1000;
-            DataSet data = im.simulateData(N, false);
+            DataSet data = null;
+            try {
+                data = im.simulateData(N, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
             ICovarianceMatrix _cov = new CovarianceMatrix(data);
             Matrix cov = _cov.getMatrix();
 

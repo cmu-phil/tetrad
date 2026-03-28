@@ -40,6 +40,7 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -68,8 +69,8 @@ public class TestIcaLingD {
         parameters.set(Params.AVG_DEGREE, 2);
 
         // Using Exp(1) for the non-Gaussian error for all variables.
-        parameters.set(Params.SIMULATION_ERROR_TYPE, 3);
-        parameters.set(Params.SIMULATION_PARAM1, 1);
+        parameters.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        parameters.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         parameters.set(Params.SEED, seed);
 
@@ -193,15 +194,19 @@ public class TestIcaLingD {
                 100, 100, 100, false);
 
         Parameters parameters = new Parameters();
-
-        parameters.set(Params.SIMULATION_ERROR_TYPE, 3);
-        parameters.set(Params.SIMULATION_PARAM1, 1);
+        parameters.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        parameters.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         // Make a random dataset.
         SemPm pm = new SemPm(g);
         SemIm im = new SemIm(pm, parameters);
 
-        DataSet dataSet = im.simulateData(1000, false);
+        DataSet dataSet = null;
+        try {
+            dataSet = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         // Get the matrix of data out of this, and transpose it, because FastIca is expecting p x N.
         Matrix X = dataSet.getDoubleData().transpose();

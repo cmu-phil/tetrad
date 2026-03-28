@@ -36,6 +36,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -188,7 +189,12 @@ public class SemSimulation implements Simulation {
 //                semIm = new SemIm(pm, parameters);
 //            }
 
-            SemIm.Result result = SemIm.simulatePossibleShrinkage(parameters, graph);
+            SemIm.Result result = null;
+            try {
+                result = SemIm.simulatePossibleShrinkage(parameters, graph);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
 
             DataSet dataSet = result.dataSet();// simulate(semIm, parameters);
 
@@ -304,9 +310,11 @@ public class SemSimulation implements Simulation {
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
         parameters.add(Params.STANDARDIZE);
-        parameters.add(Params.SIMULATION_ERROR_TYPE);
-        parameters.add(Params.SIMULATION_PARAM1);
-        parameters.add(Params.SIMULATION_PARAM2);
+        parameters.add(Params.USE_GENERAL_EXOGENOUS_NOISE);
+        parameters.add(Params.OPTIONAL_NOISE_EXPRESSION);
+//        parameters.add(Params.SIMULATION_ERROR_TYPE);
+//        parameters.add(Params.SIMULATION_PARAM1);
+//        parameters.add(Params.SIMULATION_PARAM2);
         parameters.add(Params.SEED);
 
         return parameters;
@@ -330,7 +338,11 @@ public class SemSimulation implements Simulation {
      * @return a DataSet object representing the simulated data
      */
     private DataSet simulate(SemIm im, Parameters parameters) {
-        return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
+        try {
+            return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

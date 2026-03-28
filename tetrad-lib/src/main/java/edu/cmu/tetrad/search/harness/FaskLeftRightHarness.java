@@ -10,6 +10,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -239,13 +240,17 @@ public final class FaskLeftRightHarness {
     private static DataSet simulateData(Graph graph) {
         Parameters parameters = new Parameters();
 
-        parameters.set(Params.SIMULATION_ERROR_TYPE, 3); // Exp(1)
-        parameters.set(Params.SIMULATION_PARAM1, 1);
+        parameters.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        parameters.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm, parameters);
 
-        return im.simulateData(SAMPLE_SIZE, false);
+        try {
+            return im.simulateData(SAMPLE_SIZE, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static void printSummary(String label, HarnessSummary summary) {

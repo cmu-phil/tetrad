@@ -34,6 +34,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.StatUtils;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,7 +64,12 @@ public final class TestHistogram {
         // Continuous
         SemPm semPm = new SemPm(trueGraph);
         SemIm semIm = new SemIm(semPm);
-        DataSet data = semIm.simulateData(sampleSize, false);
+        DataSet data = null;
+        try {
+            data = semIm.simulateData(sampleSize, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         Histogram histogram = new Histogram(data, "X1", false);
 //        histogram.setTarget("X1");

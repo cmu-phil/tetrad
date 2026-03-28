@@ -38,6 +38,7 @@ import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -641,11 +642,6 @@ public class RoadmapTest {
         Graph gBackbone = RandomGraph.randomGraph(vars, 0, 20, 100, 100, 100, false);
 
         Parameters params = new Parameters();
-        params.set(Params.SIMULATION_ERROR_TYPE, 3);
-        params.set(Params.SIMULATION_PARAM1, 1);
-
-        SemIm imBack = new SemIm(new SemPm(gBackbone), params);
-        DataSet Dreal = imBack.simulateData(n1 + n2, false); // ârealisticâ marginal structure
 
         // Now create two regimes by injecting controlled shifts on top of Drealâs covariance:
         // (A) keep backbone; (B) flip edges & scale some parameters â simulate from shifted SEMs.
@@ -664,8 +660,14 @@ public class RoadmapTest {
         }
         for (Node v : vars) imB.setErrVar(v, noiseScale * imB.getErrVar(v));
 
-        DataSet dA = imA.simulateData(n1, false);
-        DataSet dB = imB.simulateData(n2, false);
+        DataSet dA = null;
+        DataSet dB = null;
+        try {
+            dA = imA.simulateData(n1, false);
+            dB = imB.simulateData(n2, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         DataSet concat = DataTransforms.concatenate(dA, dB);
         int[] lab = new int[n1 + n2];
         Arrays.fill(lab, 0, n1, 0);
@@ -758,8 +760,14 @@ public class RoadmapTest {
             }
             for (Node v : vars) imB.setErrVar(v, noiseScale * imB.getErrVar(v));
 
-            DataSet d1 = imA.simulateData(n1, false);
-            DataSet d2 = imB.simulateData(n2, false);
+            DataSet d1 = null;
+            DataSet d2 = null;
+            try {
+                d1 = imA.simulateData(n1, false);
+                d2 = imB.simulateData(n2, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
             int[] lab = labelVec(n1, n2);
             return new Scenario("ParamsOnly", Kind.PARAMS_ONLY, nf, shuffleWithLabels(DataTransforms.concatenate(d1, d2), lab, seed).data,
                     lab, new Graph[]{g.copy(), g.copy()});
@@ -797,8 +805,14 @@ public class RoadmapTest {
                 }
                 for (Node v : vars) imB.setErrVar(v, paramScaleB * imB.getErrVar(v));
             }
-            DataSet d1 = imA.simulateData(n1, false);
-            DataSet d2 = imB.simulateData(n2, false);
+            DataSet d1 = null;
+            DataSet d2 = null;
+            try {
+                d1 = imA.simulateData(n1, false);
+                d2 = imB.simulateData(n2, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
             int[] lab = labelVec(n1, n2);
             MixOut mix = shuffleWithLabels(DataTransforms.concatenate(d1, d2), lab, seed);
             return new Scenario(name, kind, nf, mix.data, mix.labels, new Graph[]{gA, gB});
@@ -806,10 +820,10 @@ public class RoadmapTest {
 
         private static void setNoise(Parameters par, NoiseFamily nf) {
             if (nf == NoiseFamily.GAUSSIAN) {
-                par.set(Params.SIMULATION_ERROR_TYPE, 0); // Gaussian
+                par.set(Params.USE_GENERAL_EXOGENOUS_NOISE, false); // Gaussian
             } else {
-                par.set(Params.SIMULATION_ERROR_TYPE, 3); // Laplace-like (as used before)
-                par.set(Params.SIMULATION_PARAM1, 1);
+                par.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+                par.set(Params.NOISE_EXPRESSION, "Exp(1)"); // Laplace-like (as used before)
             }
         }
 

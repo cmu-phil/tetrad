@@ -46,6 +46,7 @@ import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.ParseException;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -75,7 +76,12 @@ public class TestCliqueDetection {
         SemPm pm = new SemPm(gTrue);
         SemIm im = new SemIm(pm, params);
 //        edu.cmu.tetrad.util.RandomUtil.getInstance().setSeed(seed);
-        DataSet data = im.simulateData(nRows, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(nRows, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         List<Set<Node>> clusters = extractTrueMimClusters(gTrue, data);
         System.out.println("True clusters (children of each latent): " +

@@ -33,6 +33,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -62,7 +63,11 @@ public class BlocksInvariantTest {
         Graph graph = RandomGraph.randomGraph(20, 3, 20, 100, 100, 100, false);
         SemPm sem = new SemPm(graph);
         SemIm sim = new SemIm(sem);
-        return sim.simulateData(1000, false);
+        try {
+            return sim.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test

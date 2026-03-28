@@ -35,6 +35,7 @@ import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -472,7 +473,12 @@ public class TscHarnessTest {
         SemIm im = new SemIm(pm);
 
         final int nRows = 10000;
-        DataSet data = im.simulateData(nRows, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(nRows, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         SimpleMatrix S = new CorrelationMatrix(data).getMatrix().getSimpleMatrix();
         List<Node> vars = data.getVariables();
         int ess = data.getNumRows();

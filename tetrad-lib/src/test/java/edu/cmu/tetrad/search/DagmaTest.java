@@ -9,6 +9,8 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import org.junit.Test;
 
+import java.text.ParseException;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -31,7 +33,12 @@ public class DagmaTest {
         // Generate data
         SemPm semPm = new SemPm(dag);
         SemIm semIm = new SemIm(semPm);
-        DataSet data = semIm.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = semIm.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         Dagma dagma = new Dagma(data);
         dagma.setLambda1(0.01);

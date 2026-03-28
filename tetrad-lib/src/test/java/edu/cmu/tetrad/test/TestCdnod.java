@@ -30,6 +30,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.Collections;
 
 import static org.junit.Assert.assertNotNull;
@@ -59,7 +60,12 @@ public class TestCdnod {
         // Generate data
         SemPm semPm = new SemPm(dag);
         SemIm semIm = new SemIm(semPm);
-        DataSet data = semIm.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = semIm.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         IndependenceTest test = new IndTestFisherZ(data, 0.05);
 
@@ -90,7 +96,12 @@ public class TestCdnod {
         // Generate data
         SemPm semPm = new SemPm(dag);
         SemIm semIm = new SemIm(semPm);
-        DataSet data = semIm.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = semIm.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         data.getVariable("C").setName("C");
         data.getVariable("X1").setName("X1");
         data.getVariable("X2").setName("X2");

@@ -37,6 +37,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -292,9 +293,10 @@ public class HybridCgSimulation implements Simulation {
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
         parameters.add(Params.STANDARDIZE);
-        parameters.add(Params.SIMULATION_ERROR_TYPE);
-        parameters.add(Params.SIMULATION_PARAM1);
-        parameters.add(Params.SIMULATION_PARAM2);
+        parameters.add(Params.NOISE_EXPRESSION);
+//        parameters.add(Params.SIMULATION_ERROR_TYPE);
+//        parameters.add(Params.SIMULATION_PARAM1);
+//        parameters.add(Params.SIMULATION_PARAM2);
         parameters.add(Params.SEED);
 
         return parameters;
@@ -317,7 +319,7 @@ public class HybridCgSimulation implements Simulation {
      * @param parameters the parameters to use in the simulation
      * @return a DataSet object representing the simulated data
      */
-    private DataSet simulate(SemIm im, Parameters parameters) {
+    private DataSet simulate(SemIm im, Parameters parameters) throws ParseException {
         return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
     }
 }

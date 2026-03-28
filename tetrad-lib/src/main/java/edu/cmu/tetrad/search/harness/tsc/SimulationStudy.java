@@ -15,6 +15,7 @@ import edu.cmu.tetrad.graph.RandomMim.LatentLinkMode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -264,7 +265,12 @@ public final class SimulationStudy {
         );
 
         List<Set<Node>> trueClusters = TrueClusterExtractor.extractClusters(graph);
-        DataSet data = SemParameterizer.defaults().parameterizeAndSimulate(graph, n);
+        DataSet data = null;
+        try {
+            data = SemParameterizer.defaults().parameterizeAndSimulate(graph, n);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         BestJaccardScorer.ClusterScore[] scores =
                 new BestJaccardScorer.ClusterScore[runners.size()];

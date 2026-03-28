@@ -32,6 +32,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,7 +96,12 @@ public class TestCpc {
 
         SemPm semPm = new SemPm(trueGraph);
         SemIm semIm = new SemIm(semPm);
-        DataSet _dataSet = semIm.simulateData(1000, false);
+        DataSet _dataSet = null;
+        try {
+            _dataSet = semIm.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         IndependenceTest test = new IndTestFisherZ(_dataSet, 0.05);
 

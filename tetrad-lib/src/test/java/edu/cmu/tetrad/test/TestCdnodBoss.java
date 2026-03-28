@@ -9,6 +9,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.Collections;
 
 import static org.junit.Assert.assertNotNull;
@@ -36,7 +37,12 @@ public class TestCdnodBoss {
         // Generate data
         SemPm semPm = new SemPm(dag);
         SemIm semIm = new SemIm(semPm);
-        DataSet data = semIm.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = semIm.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         // CdnodBoss expects last column to be C
         double[] cIndex = new double[1000];
@@ -73,7 +79,12 @@ public class TestCdnodBoss {
         // Generate data
         SemPm semPm = new SemPm(dag);
         SemIm semIm = new SemIm(semPm);
-        DataSet data = semIm.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = semIm.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         // Set C as context via Knowledge tier 0
         Knowledge knowledge = new Knowledge();

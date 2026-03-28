@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -85,7 +86,12 @@ public class TestCheckNodewiseMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         // Simulate permuted dataset and save a copy of it.
-        DataSet data = im.simulateData(10000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(10000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         File file = new File(".", "testPermutedData.txt");
         try {
@@ -134,7 +140,12 @@ public class TestCheckNodewiseMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         // Simulate permuted dataset and save a copy of it.
-        DataSet data = im.simulateData(10000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(10000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         File file = new File(".", "testPermutedData.txt");
         try {
@@ -223,7 +234,12 @@ public class TestCheckNodewiseMarkov {
         SemIm im = new SemIm(pm, new Parameters());
         // Simulate permuted dataset and save a copy of it.
         int sampleSize = 10000;
-        DataSet data = im.simulateData(sampleSize, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(sampleSize, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC
         // Save dataset to the simulation  directory
         File datasetFile = new File(simulationDir, "permutedData.txt");
@@ -393,7 +409,12 @@ public class TestCheckNodewiseMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         // Simulate permuted dataset and save a copy of it.
-        DataSet data = im.simulateData(10000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(10000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         File file = new File(".", "testPermutedData.txt");
         try {
@@ -467,7 +488,12 @@ public class TestCheckNodewiseMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         // Simulate permuted dataset and save a copy of it.
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         File file = new File(".", "testPermutedData.txt");
         try {
@@ -510,13 +536,17 @@ public class TestCheckNodewiseMarkov {
         SemPm pm = new SemPm(trueGraph);
 
         Parameters params = new Parameters();
-        // Manually set non-Gaussian
-        params.set(Params.SIMULATION_ERROR_TYPE, 3);
-        params.set(Params.SIMULATION_PARAM1, 1);
+        params.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        params.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
         // Simulate permuted dataset and save a copy of it.
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         File file = new File(".", "testPermutedData.txt");
         try {
@@ -560,13 +590,17 @@ public class TestCheckNodewiseMarkov {
         SemPm pm = new SemPm(trueGraph);
 
         Parameters params = new Parameters();
-        // Manually set non-Gaussian
-        params.set(Params.SIMULATION_ERROR_TYPE, 3);
-        params.set(Params.SIMULATION_PARAM1, 1);
+        params.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        params.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
         // Simulate permuted dataset and save a copy of it.
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         File file = new File(".", "testPermutedData.txt");
         try {
@@ -610,7 +644,12 @@ public class TestCheckNodewiseMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         // Simulate permuted dataset and save a copy of it.
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         File file = new File(".", "testPermutedData.txt");
         try {
@@ -667,7 +706,12 @@ public class TestCheckNodewiseMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         // Simulate permuted dataset and save a copy of it.
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         File file = new File(".", "testPermutedData.txt");
         try {
@@ -720,13 +764,17 @@ public class TestCheckNodewiseMarkov {
 
         SemPm pm = new SemPm(trueGraph);
         Parameters params = new Parameters();
-        // Manually set non-Gaussian
-        params.set(Params.SIMULATION_ERROR_TYPE, 3);
-        params.set(Params.SIMULATION_PARAM1, 1);
+        params.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        params.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
         // Simulate permuted dataset and save a copy of it.
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         File file = new File(".", "testPermutedData.txt");
         try {
@@ -782,13 +830,17 @@ public class TestCheckNodewiseMarkov {
         SemPm pm = new SemPm(trueGraph);
 
         Parameters params = new Parameters();
-        // Manually set non-Gaussian
-        params.set(Params.SIMULATION_ERROR_TYPE, 3);
-        params.set(Params.SIMULATION_PARAM1, 1);
+        params.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        params.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
         // Simulate permuted dataset and save a copy of it.
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         File file = new File(".", "testPermutedData.txt");
         try {
@@ -846,7 +898,12 @@ public class TestCheckNodewiseMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         // Simulate permuted dataset and save a copy of it.
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         File file = new File(".", "testPermutedData.txt");
         try {
@@ -889,13 +946,17 @@ public class TestCheckNodewiseMarkov {
         SemPm pm = new SemPm(trueGraph);
 
         Parameters params = new Parameters();
-        // Manually set non-Gaussian
-        params.set(Params.SIMULATION_ERROR_TYPE, 3);
-        params.set(Params.SIMULATION_PARAM1, 1);
+        params.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        params.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
         // Simulate permuted dataset and save a copy of it.
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         File file = new File(".", "testPermutedData.txt");
         try {
@@ -939,13 +1000,17 @@ public class TestCheckNodewiseMarkov {
         SemPm pm = new SemPm(trueGraph);
 
         Parameters params = new Parameters();
-        // Manually set non-Gaussian
-        params.set(Params.SIMULATION_ERROR_TYPE, 3);
-        params.set(Params.SIMULATION_PARAM1, 1);
+        params.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        params.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
         // Simulate permuted dataset and save a copy of it.
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         File file = new File(".", "testPermutedData.txt");
         try {

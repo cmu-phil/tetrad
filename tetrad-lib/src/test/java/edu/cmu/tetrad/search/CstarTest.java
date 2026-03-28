@@ -13,6 +13,7 @@ import edu.cmu.tetrad.util.Parameters;
 import org.junit.Test;
 
 import java.io.File;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,7 +40,12 @@ public class CstarTest {
         // Generate data
         SemPm semPm = new SemPm(dag);
         SemIm semIm = new SemIm(semPm);
-        DataSet data = semIm.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = semIm.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         Parameters parameters = new Parameters();
         Cstar cstar = new Cstar(new FisherZ(), new SemBicScore(), parameters);

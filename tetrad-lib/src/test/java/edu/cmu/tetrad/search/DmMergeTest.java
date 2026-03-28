@@ -13,6 +13,8 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
+import java.text.ParseException;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -48,8 +50,13 @@ public class DmMergeTest {
         for (Node node : dag.getNodes()) {
             semIm.setErrVar(node, 0.1);
         }
-        DataSet data = semIm.simulateData(1000, false);
-        
+        DataSet data = null;
+        try {
+            data = semIm.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
         // Remove L1 from the dataset to make it truly latent
         data.removeColumn(l1);
 
@@ -147,7 +154,12 @@ public class DmMergeTest {
 
         SemPm semPm = new SemPm(dag);
         SemIm semIm = new SemIm(semPm);
-        DataSet data = semIm.simulateData(5000, false);
+        DataSet data = null;
+        try {
+            data = semIm.simulateData(5000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         FisherZ fisherZ = new FisherZ();
         Parameters parameters = new Parameters();

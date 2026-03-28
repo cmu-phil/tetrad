@@ -35,6 +35,7 @@ import org.junit.Test;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,7 +70,12 @@ public class TestStatUtils {
                 3, 3, 3, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(1000, false);
+        DataSet dataSet = null;
+        try {
+            dataSet = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         double[] x = dataSet.getDoubleData().getColumn(0).toArray();
         double[] y = dataSet.getDoubleData().getColumn(1).toArray();
 

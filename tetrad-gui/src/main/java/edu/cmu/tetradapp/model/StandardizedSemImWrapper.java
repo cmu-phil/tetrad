@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -69,7 +70,11 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
             throw new NullPointerException();
         }
 
-        this.standardizedSemIm = new StandardizedSemIm(semImWrapper.getSemIm(), parameters);
+        try {
+            this.standardizedSemIm = new StandardizedSemIm(semImWrapper.getSemIm(), parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         log(this.standardizedSemIm);
     }
 
@@ -85,7 +90,11 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
         }
 
         SemIm semIm = new SemIm(semPmWrapper.getSemPm());
-        this.standardizedSemIm = new StandardizedSemIm(semIm, parameters);
+        try {
+            this.standardizedSemIm = new StandardizedSemIm(semIm, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         log(this.standardizedSemIm);
     }
 

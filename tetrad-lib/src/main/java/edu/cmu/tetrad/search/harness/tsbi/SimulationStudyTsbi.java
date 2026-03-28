@@ -15,6 +15,7 @@ import edu.cmu.tetrad.search.harness.tsc.SemParameterizer;
 import edu.cmu.tetrad.search.harness.tsc.TrueClusterExtractor;
 import edu.cmu.tetrad.search.test.TrekSeparationBlocksIndependence;
 
+import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -205,7 +206,12 @@ public final class SimulationStudyTsbi {
         List<Node>            trueLeaders  = TrueClusterExtractor.extractLatentLeaders(mim);
 
         // ---- Simulate data ----
-        DataSet data = SemParameterizer.defaults().parameterizeAndSimulate(mim, n);
+        DataSet data = null;
+        try {
+            data = SemParameterizer.defaults().parameterizeAndSimulate(mim, n);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         // ---- True structural graph (latent-to-latent subgraph of MIM) ----
 //        Graph trueStructural = StructuralGraphScorer.extractTrueStructural(mim);

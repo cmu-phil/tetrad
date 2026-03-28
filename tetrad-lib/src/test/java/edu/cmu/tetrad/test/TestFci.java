@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.*;
 
 import static edu.cmu.tetrad.graph.GraphTransforms.dagToPag;
@@ -483,7 +484,12 @@ public class TestFci {
                     10, 10, 10, false, -1);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
-            DataSet data = im.simulateData(1000, false);
+            DataSet data = null;
+            try {
+                data = im.simulateData(1000, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
 
             Graph pag = getPag(data);
 
@@ -945,7 +951,12 @@ public class TestFci {
             Graph graph = RandomGraph.randomGraph(50, 6, 100, 100, 100, 100, false);
             SemPm pm = new SemPm(graph);
             SemIm im = new SemIm(pm);
-            DataSet dataSet = im.simulateData(1000, false);
+            DataSet dataSet = null;
+            try {
+                dataSet = im.simulateData(1000, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
 
             IndependenceTest test = new IndTestFisherZ(dataSet, 0.00001);
             SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));

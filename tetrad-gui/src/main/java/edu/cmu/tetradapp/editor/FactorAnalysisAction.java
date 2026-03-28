@@ -40,6 +40,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -84,7 +85,12 @@ public class FactorAnalysisAction extends AbstractAction {
                 30, 15, 15, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(500, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(500, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         ICovarianceMatrix cov = new CovarianceMatrix(data);
 
         FactorAnalysis factorAnalysis = new FactorAnalysis(cov);

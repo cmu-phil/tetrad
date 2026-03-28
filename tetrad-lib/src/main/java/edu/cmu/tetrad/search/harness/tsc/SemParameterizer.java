@@ -14,6 +14,8 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.text.ParseException;
+
 /**
  * Converts a graph produced by {@link edu.cmu.tetrad.graph.RandomMim} into a
  * parameterised linear Gaussian SEM ({@link SemIm}) and simulates data from it.
@@ -173,7 +175,7 @@ public final class SemParameterizer {
      * @param sampleSize number of rows; must be &ge; 1.
      * @return a {@link DataSet} containing only the measured variables.
      */
-    public DataSet parameterizeAndSimulate(Graph graph, int sampleSize) {
+    public DataSet parameterizeAndSimulate(Graph graph, int sampleSize) throws ParseException {
         return simulate(parameterize(graph), sampleSize);
     }
 
@@ -191,7 +193,7 @@ public final class SemParameterizer {
      * @param sampleSize number of rows; must be &ge; 1.
      * @return a {@link DataSet} with {@code sampleSize} rows.
      */
-    public static DataSet simulate(SemIm im, int sampleSize) {
+    public static DataSet simulate(SemIm im, int sampleSize) throws ParseException {
         if (im == null)     throw new IllegalArgumentException("SemIm must not be null.");
         if (sampleSize < 1) throw new IllegalArgumentException("sampleSize must be >= 1.");
         return im.simulateData(sampleSize, false);

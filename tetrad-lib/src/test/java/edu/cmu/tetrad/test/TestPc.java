@@ -38,6 +38,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -314,7 +315,12 @@ public class TestPc {
                     10, 10, 10, false, -1);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
-            DataSet data = im.simulateData(1000, false);
+            DataSet data = null;
+            try {
+                data = im.simulateData(1000, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
 
             IndTestFisherZ test = new IndTestFisherZ(data, 0.01);
 
@@ -647,7 +653,12 @@ public class TestPc {
                     10, 10, 10, false, -1);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
-            DataSet data = im.simulateData(10000, false);
+            DataSet data = null;
+            try {
+                data = im.simulateData(10000, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
             Graph comparison = GraphTransforms.dagToPag(dag, false);
             IndTestFisherZ test = new IndTestFisherZ(data, 0.1);
 

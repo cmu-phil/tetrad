@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.*;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -174,7 +175,12 @@ public class HsimContinuous {
             conditionUpdate.setEvidence(evidence);
             SemIm updatedIM = conditionUpdate.getUpdatedSemIm();
             //draw values for the node we're resimming
-            DataSet newValues = updatedIM.simulateData(1, false);
+            DataSet newValues = null;
+            try {
+                newValues = updatedIM.simulateData(1, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
             //DataSet newValues = updatedIM.simulateDataRecursive(1,false);
 
             //take these new simnodes values and replace the old values in the data set with them

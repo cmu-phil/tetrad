@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
 
 import java.lang.reflect.Method;
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -59,7 +60,11 @@ public final class CyclicStableUtils {
 
         stabilizeAllSccsFixedRadius(im, g, s, coefLow, coefHigh);
 
-        return new SemIm.CyclicSimResult(im.simulateData(n, false), im);
+        try {
+            return new SemIm.CyclicSimResult(im.simulateData(n, false), im);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

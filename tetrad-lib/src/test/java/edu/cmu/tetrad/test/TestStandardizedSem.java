@@ -36,6 +36,7 @@ import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.TMath;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +65,12 @@ public class TestStandardizedSem {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        DataSet dataSet = im.simulateData(1000, false);
+        DataSet dataSet = null;
+        try {
+            dataSet = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         DataSet dataSetStandardized = DataTransforms.standardizeData(dataSet);
         Matrix _dataSet = dataSet.getDoubleData();
 
@@ -81,7 +87,12 @@ public class TestStandardizedSem {
         imStandardized.getEdgeCoef();
         imStandardized.getErrCovar();
 
-        StandardizedSemIm sem = new StandardizedSemIm(im, new Parameters());
+        StandardizedSemIm sem = null;
+        try {
+            sem = new StandardizedSemIm(im, new Parameters());
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         imStandardized.getEdgeCoef();
         imStandardized.getErrCovar();
@@ -120,7 +131,12 @@ public class TestStandardizedSem {
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        StandardizedSemIm sem = new StandardizedSemIm(im, new Parameters());
+        StandardizedSemIm sem = null;
+        try {
+            sem = new StandardizedSemIm(im, new Parameters());
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         assertTrue(isStandardized(sem));
     }
@@ -147,7 +163,12 @@ public class TestStandardizedSem {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        StandardizedSemIm sem = new StandardizedSemIm(im, new Parameters());
+        StandardizedSemIm sem = null;
+        try {
+            sem = new StandardizedSemIm(im, new Parameters());
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         assertFalse(sem.setEdgeCoefficient(x1, x2, 1.2));
         assertFalse(sem.setEdgeCoefficient(x1, x2, 1.5));
@@ -172,7 +193,12 @@ public class TestStandardizedSem {
                 30, 15, 15, false)));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        StandardizedSemIm sem = new StandardizedSemIm(im, new Parameters());
+        StandardizedSemIm sem = null;
+        try {
+            sem = new StandardizedSemIm(im, new Parameters());
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         for (int i = 0; i < 20; i++) {
             List<Edge> edges = new ArrayList<>(graph.getEdges());
@@ -220,7 +246,12 @@ public class TestStandardizedSem {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        StandardizedSemIm sem = new StandardizedSemIm(im, new Parameters());
+        StandardizedSemIm sem = null;
+        try {
+            sem = new StandardizedSemIm(im, new Parameters());
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         assertTrue(isStandardized(sem));
     }
 
@@ -252,7 +283,12 @@ public class TestStandardizedSem {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        StandardizedSemIm sem = new StandardizedSemIm(im, new Parameters());
+        StandardizedSemIm sem = null;
+        try {
+            sem = new StandardizedSemIm(im, new Parameters());
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         assertTrue(isStandardized(sem));
     }
@@ -287,7 +323,12 @@ public class TestStandardizedSem {
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        StandardizedSemIm sem = new StandardizedSemIm(im, new Parameters());
+        StandardizedSemIm sem = null;
+        try {
+            sem = new StandardizedSemIm(im, new Parameters());
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         graph.setShowErrorTerms(false);
 

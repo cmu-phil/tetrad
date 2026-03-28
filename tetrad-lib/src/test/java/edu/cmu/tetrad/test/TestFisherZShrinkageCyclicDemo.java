@@ -36,6 +36,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.*;
 
 import static edu.cmu.tetrad.util.TMath.abs;
@@ -85,7 +86,12 @@ public class TestFisherZShrinkageCyclicDemo {
         params.set(Params.SAMPLE_SIZE, 1000);
         params.set(Params.SEED, RandomUtil.getInstance().nextLong());
 
-        SemIm.Result result = SemIm.simulatePossibleShrinkage(params, g);
+        SemIm.Result result = null;
+        try {
+            result = SemIm.simulatePossibleShrinkage(params, g);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         // ---- independence test with shrinkage + (optional) pinv ----
         IndTestFisherZ base = new IndTestFisherZ(result.dataSet(), 0.01);

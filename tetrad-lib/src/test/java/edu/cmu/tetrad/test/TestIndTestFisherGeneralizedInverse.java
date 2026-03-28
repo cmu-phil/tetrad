@@ -29,6 +29,8 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
+import java.text.ParseException;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -72,8 +74,14 @@ public class TestIndTestFisherGeneralizedInverse {
         im2.setEdgeCoef(x, y, im1.getEdgeCoef(x, y));
         im2.setEdgeCoef(z, y, im1.getEdgeCoef(y, z));
 
-        DataSet data1 = im1.simulateData(500, false);
-        DataSet data2 = im2.simulateData(500, false);
+        DataSet data1 = null;
+        DataSet data2 = null;
+        try {
+            data1 = im1.simulateData(500, false);
+            data2 = im2.simulateData(500, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         IndTestFisherZ test1 = new IndTestFisherZ(data1, 0.05);
         IndTestFisherZ test2 = new IndTestFisherZ(data2, 0.05);

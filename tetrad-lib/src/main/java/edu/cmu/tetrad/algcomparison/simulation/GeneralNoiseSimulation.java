@@ -297,43 +297,7 @@ public class GeneralNoiseSimulation implements Simulation {
 
         Function<Double, Double> activation = TMath::tanh;
 
-//        Function<Double, Double> activation = x -> signum(x) * TMath.max(.01 * abs(x), tanh(abs(x)));
-
-//        Function<Double, Double> activation = x -> {
-//            double margin = 0.04;
-//            double y = tanh(x);
-//            if (y > 0.0 && y < margin) y += margin;
-//            if (y < 0.0 && y > -margin) y -= margin;
-//            return y;
-//        };
-
-//        Function<Double, Double> activation = x -> {
-//            double margin = 0.01;
-//            double k = 20.0; // steepness
-//            double y = tanh(x);
-//            double v = y + margin * tanh(k * y);
-//            return v;
-//        };
-
-//        Function<Double, Double> activation = x -> {
-//            return tanh(x);
-//        };
-
-//        Function<Double, Double> activation = x -> {
-//            double margin = 0.02;
-//            x = tanh(x);
-//            if (abs(x) < margin) x = 0.0;
-//            return x;
-//        };
-
-//        Function<Double, Double> activation = x -> {
-//            double margin = 0.04;
-//            double k = 30.0;
-//            double y = tanh(x);
-//            return y + margin * (1.0 - exp(-k * y * y)) * tanh(k * y);
-//        };
-
-        Sampler sampler = new ExpressionSampler(parameters.getString("noiseExpression"));
+        Sampler sampler = new ExpressionSampler(parameters.getString(Params.NOISE_EXPRESSION));
 
         edu.cmu.tetrad.sem.GeneralNoiseSimulation generator = new edu.cmu.tetrad.sem.GeneralNoiseSimulation(
                 graph,

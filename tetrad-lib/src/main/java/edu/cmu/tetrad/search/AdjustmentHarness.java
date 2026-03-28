@@ -11,6 +11,7 @@ import edu.cmu.tetrad.util.TMath;
 
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -135,7 +136,12 @@ public class AdjustmentHarness {
         // --- 2) SEM on the true graph + simulate data ---
         SemPm pm = new SemPm(G);
         SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(N, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(N, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         // Optional CSV
         PrintWriter csv = null;
