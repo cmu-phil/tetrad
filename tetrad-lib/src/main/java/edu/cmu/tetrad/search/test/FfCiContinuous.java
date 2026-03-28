@@ -1,9 +1,10 @@
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -25,7 +26,7 @@ import static java.lang.Double.NaN;
  * @author Joseph Ramsey
  * @see FfCi
  */
-public final class FfCiContinuous implements IndependenceTest, RowsSettable {
+public final class FfCiContinuous implements IndependenceTest, RowsSettable, RawMarginalIndependenceTest {
 
     // --------------------------------------------------------------------
     // Fields
@@ -1029,6 +1030,37 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable {
         }
         int mid = firstPos + (t - firstPos) / 2;
         return d2[mid];
+    }
+
+    /**
+     * Computes the p-value for the statistical test of independence between two variables.
+     *
+     * @param x the array of values representing the first variable
+     * @param y the array of values representing the second variable
+     * @return the computed p-value indicating the strength of independence between the two variables
+     */
+    @Override
+    public double computePValue(double[] x, double[] y) throws InterruptedException {
+        double[][] combined = new double[x.length][2];
+        for (int i = 0; i < x.length; i++) {
+            combined[i][0] = x[i];
+            combined[i][1] = y[i];
+        }
+        Node _x = new ContinuousVariable("X_computePValue");
+        Node _y = new ContinuousVariable("Y_computePValue");
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(_x);
+        nodes.add(_y);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(combined), nodes);
+
+        edu.cmu.tetrad.search.test.FfCi test = new edu.cmu.tetrad.search.test.FfCi(dataSet, new Parameters());
+        test.setAlpha(this.alpha);
+        test.setLambda(this.lambda);
+        test.setNumFeaturesXY(this.numFeatXY);
+        test.setNumFeaturesZ(this.numFeatZ);
+        test.setPermutations(this.permutations);
+
+        return test.checkIndependence(_x, _y).getPValue();
     }
 
     // --------------------------------------------------------------------

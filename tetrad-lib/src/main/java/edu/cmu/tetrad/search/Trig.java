@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.mimic.TrekMeasurementModelBuilderBoss;
 import edu.cmu.tetrad.search.mimic.TrekMeasurementModelBuilderPc;
-import edu.cmu.tetrad.search.test.FfCi;
+import edu.cmu.tetrad.search.test.FfCiContinuous;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import org.ejml.simple.SimpleMatrix;
@@ -421,7 +421,7 @@ public class Trig implements IGraphSearch {
 
             // HSIC test: each residual row vs each column of Xdata.
             boolean allIndependent = true;
-            RawMarginalIndependenceTest hsic = new FfCi(dataSet, new Parameters());
+            RawMarginalIndependenceTest hsic = new FfCiContinuous(dataSet);
 
             for (int row = 0; row < residual.getNumRows(); row++) {
                 double[] res = residual.row(row).toArray();

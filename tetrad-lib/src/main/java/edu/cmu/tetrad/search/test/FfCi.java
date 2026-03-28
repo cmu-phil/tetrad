@@ -720,13 +720,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         DataSet dataSet = new BoxDataSet(new DoubleDataBox(combined), nodes);
 
         edu.cmu.tetrad.search.test.FfCi test = new edu.cmu.tetrad.search.test.FfCi(dataSet, new Parameters());
-//        test.setRidge(this.ridge);
-//        test.setShrinkageMode(this.shrinkageMode);
-//        test.setUsePseudoinverse(this.usePseudoinverse);
-//        test.setPinvTolerance(this.pinvTolerance);
-
         test.setAlpha(this.alpha);
-//        test.setVerbose(this.verbose);
         test.setLambda(this.lambda);
         test.setNumFeaturesXY(this.numFeatXY);
         test.setNumFeaturesZ(this.numFeatZ);
