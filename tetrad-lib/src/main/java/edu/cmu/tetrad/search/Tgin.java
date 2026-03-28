@@ -263,7 +263,7 @@ public class Tgin implements IGraphSearch {
     }
 
     private void runPcTsc() throws InterruptedException {
-        boolean usePc = true;
+        boolean usePc = false;
 
         BlockSpec spec;
 
@@ -430,6 +430,7 @@ public class Tgin implements IGraphSearch {
             // HSIC test: each residual row vs each column of Xdata.
             boolean allIndependent = true;
             RawMarginalIndependenceTest hsic = new FfCiContinuous(dataSet);
+            ((FfCiContinuous) hsic).setAlpha(alpha);
 
             for (int row = 0; row < residual.getNumRows(); row++) {
                 double[] res = residual.row(row).toArray();
