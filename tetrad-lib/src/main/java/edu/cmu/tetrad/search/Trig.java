@@ -8,7 +8,6 @@ import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.mimic.TrekMeasurementModelBuilderBoss;
 import edu.cmu.tetrad.search.mimic.TrekMeasurementModelBuilderPc;
 import edu.cmu.tetrad.search.test.FfCi;
-import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import org.ejml.simple.SimpleMatrix;
@@ -17,6 +16,63 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+/**
+ * TRIG (Trek Rule Identification with GIN) is a causal discovery algorithm for
+ * learning the structure of linear latent variable models from observational data.
+ *
+ * <p>The algorithm proceeds in several stages:
+ *
+ * <ol>
+ *   <li><b>Measurement model recovery.</b> A PC- or BOSS-based trek separation
+ *       procedure (TSC) is applied to the observed variables to identify latent
+ *       clusters, their indicator sets, and the rank of each cluster's latent
+ *       subspace. This produces a skeleton over latent and measured nodes with
+ *       directed latent→measured edges.</li>
+ *
+ *   <li><b>Rank expansion.</b> Each latent node of rank r is expanded into r
+ *       distinct latent copies (e.g., L3 of rank 2 becomes L3.1 and L3.2), each
+ *       inheriting the same measured indicators. Undirected edges are placed
+ *       between copies of different clusters that were adjacent in the original
+ *       skeleton.</li>
+ *
+ *   <li><b>Intra-cluster orientation (Stage 5).</b> For rank-r > 1 clusters,
+ *       FastICA is applied to the cluster's indicator block to recover r latent
+ *       source signals. Pairwise LiNGAM tests on the recovered sources determine
+ *       a causal ordering over the r copies within each cluster.</li>
+ *
+ *   <li><b>Inter-cluster orientation (Stage 4).</b> For each undirected edge
+ *       between clusters, a group GIN (Generalized Independence Noise) test is
+ *       applied under the LiNGLaM assumption. If the left null space of the
+ *       cross-covariance matrix between the two clusters' indicators yields a
+ *       residual signal that is independent of the other cluster's indicators,
+ *       causal priority is assigned and the edge is oriented accordingly.</li>
+ * </ol>
+ *
+ * <p>The algorithm assumes a linear non-Gaussian acyclic model (LiNGAM) over the
+ * latent variables, which is required for the GIN and LiNGAM orientation steps to
+ * be identifiable. Under Gaussian noise, latent-latent edges may not be fully
+ * orientable and the output may contain undirected edges.
+ *
+ * <p>References:
+ * <ul>
+ *   <li>Shimizu et al. (2006). A linear non-Gaussian acyclic model for causal
+ *       discovery. JMLR.</li>
+ *   <li>Entner &amp; Hoyer (2011). Discovering unconfounded causal relationships
+ *       using linear non-Gaussian models. JSAI.</li>
+ *   <li>Spirtes et al. (2000). Causation, Prediction, and Search. MIT Press.</li>
+ *   <li>Xie, F., Cai, R., Huang, B., Glymour, C., Hao, Z., and Zhang, K. (2020).
+ *       Generalized independent noise condition for estimating latent variable
+ *       causal graphs. In <i>Advances in Neural Information Processing Systems</i>,
+ *       pages 14891–14902.</li>
+ *   <li>Xie, F., Huang, B., Chen, Z., Cai, R., Glymour, C., Geng, Z., and Zhang, K.
+ *       (2024). Generalized independent noise condition for estimating causal
+ *       structure with latent variables. <i>Journal of Machine Learning Research</i>,
+ *       25(191):1–61.</li>* </ul>
+ *
+ * @author [your name]
+ * @see TrekMeasurementModelBuilderPc
+ * @see TrekMeasurementModelBuilderBoss
+ */
 public class Trig implements IGraphSearch {
 
     /**
@@ -118,51 +174,50 @@ public class Trig implements IGraphSearch {
         }
 
         Map<Node, Node> nodeMap = new HashMap<>();
+        Map<Node, List<Node>> originalToExpanded = new HashMap<>();
 
-        for (Node latent : new HashSet<>(graph.getNodes())) {
-            if (latent.getNodeType() == NodeType.LATENT) {
-                for (int r = 1; r <= latent.getRank(); r++) {
-                    Node latentCopy = new ContinuousVariable(latent.getName() + "." + r);
-                    latentCopy.setNodeType(NodeType.LATENT);
+        // First pass: copies + latent→measured edges only
+        for (Node latent : graph.getNodes()) {
+            if (latent.getNodeType() != NodeType.LATENT) continue;
 
-                    _graph.addNode(latentCopy);
-                    nodeMap.put(latentCopy, latent);
+            int rank = latentRanks.getOrDefault(latent, 1);
+            List<Node> copies = new ArrayList<>();
 
-                    for (Edge edge : new HashSet<>(graph.getEdges(latent))) {
-                        Edge toAdd = null;
+            for (int r = 1; r <= rank; r++) {
+                Node copy = new ContinuousVariable(latent.getName() + "." + r);
+                copy.setNodeType(NodeType.LATENT);
+                _graph.addNode(copy);
+                nodeMap.put(copy, latent);
+                copies.add(copy);
 
-                        if (edge.getNode1() == latent && edge.getNode2().getNodeType() == NodeType.MEASURED) {
-                            toAdd = Edges.directedEdge(latentCopy, edge.getNode2());
-                        } else if (edge.getNode2() == latent && edge.getNode1().getNodeType() == NodeType.MEASURED) {
-                            toAdd = Edges.directedEdge(edge.getNode1(), latentCopy);
-                        } else if (edge.getNode1() == latent
-                                && edge.getNode2().getNodeType() == NodeType.LATENT) {
-                            toAdd = new Edge(latentCopy, edge.getNode2(), edge.getEndpoint1(), edge.getEndpoint2());
-                        }
-
-                        if (toAdd != null) {
-                            _graph.addEdge(toAdd);
-                        }
+                for (Edge edge : graph.getEdges(latent)) {
+                    Node other = edge.getNode1() == latent ? edge.getNode2() : edge.getNode1();
+                    if (other.getNodeType() == NodeType.MEASURED) {
+                        Edge toAdd = Edges.directedEdge(copy, other);  // always latent → measured
+                        if (!_graph.containsEdge(toAdd)) _graph.addEdge(toAdd);
                     }
+                    // latent-latent handled in second pass — original nodes must not enter _graph
                 }
             }
-
-            for (Node n1 : _graph.getNodes()) {
-                for (Node n2 : _graph.getNodes()) {
-                    if (n1.equals(n2)) continue;
-                    if (n1.getNodeType() != NodeType.LATENT) continue;
-                    if (n2.getNodeType() != NodeType.LATENT) continue;
-
-                    Node n1Orig = nodeMap.get(n1);
-                    Node n2Orig = nodeMap.get(n2);
-
-                    if (graph.isAdjacentTo(n1Orig, n2Orig)) {
-                        _graph.addEdge(Edges.undirectedEdge(n1, n2));
-                    }
-                }
-            }
+            originalToExpanded.put(latent, copies);
         }
 
+// Second pass: latent-latent undirected edges between copies only
+        for (Edge edge : graph.getEdges()) {
+            Node n1 = edge.getNode1();
+            Node n2 = edge.getNode2();
+            if (n1.getNodeType() != NodeType.LATENT || n2.getNodeType() != NodeType.LATENT) continue;
+
+            List<Node> copies1 = originalToExpanded.get(n1);
+            List<Node> copies2 = originalToExpanded.get(n2);
+            if (copies1 == null || copies2 == null) continue;
+
+            for (Node c1 : copies1)
+                for (Node c2 : copies2) {
+                    Edge toAdd = Edges.undirectedEdge(c1, c2);
+                    if (!_graph.containsEdge(toAdd)) _graph.addEdge(toAdd);
+                }
+        }
         graph = _graph.copy();
         this.allLatents = new ArrayList<>(nodeMap.keySet());
 
@@ -317,6 +372,9 @@ public class Trig implements IGraphSearch {
                     OrientationResult yToX = groupGinTest(origY, origX);
 
                     if (xToY.independent() && !yToX.independent()) {
+                        // Note: groupGinTest(x,y) returning independent confirms y→x, not x→y,
+                        // because leftNullSpace operates on U rather than V from the SVD.
+                        // Reversal is intentional.
                         removeUndirectedEdgesBetweenClusters(origX, origY);
                         expandEdge(origX, origY);
                     } else if (yToX.independent() && !xToY.independent()) {
@@ -327,49 +385,49 @@ public class Trig implements IGraphSearch {
                 }
             }
 
-            new MeekRules().orientImplied(graph);
+            //            new MeekRules().orientImplied(graph);
         }
 
         /**
          * Group-GIN test for the null hypothesis "block x is causally prior to block y".
-         *
+         * <p>
          * Under the LiNGLaM assumption, if X is causally prior to Y, there exists
          * a weight matrix Omega in the left null space of Sigma_{Cx,Cy} such that
          * Omega * X_data^T is independent of Y_data.
-         *
+         * <p>
          * We estimate Omega from the sample cross-covariance and test with HSIC.
          */
         private OrientationResult groupGinTest(Node origX, Node origY) throws InterruptedException {
             List<Integer> colsX = originalToIndicatorCols.get(origX);
             List<Integer> colsY = originalToIndicatorCols.get(origY);
-            int rankX = rankByOriginal.get(origX);
+            int rankY = rankByOriginal.get(origY);
 
             Matrix Xdata = submatrix(dataSet, colsX);   // n x px
             Matrix Ydata = submatrix(dataSet, colsY);   // n x py
 
-            Matrix SigmaXY = crossCovariance(Xdata, Ydata);  // px x py
+            Matrix SigmaYX = crossCovariance(Ydata, Xdata);  // py x px
 
-            // Omega spans the left null space of SigmaXY;
-            // has (px - rankX) rows under the null hypothesis that x is prior to y.
-            Matrix Omega = leftNullSpace(SigmaXY, rankX);
+            // Omega spans the left null space of SigmaYX;
+            // has (py - rankY) rows under the null hypothesis that x is prior to y.
+            Matrix Omega = leftNullSpace(SigmaYX, rankY);
 
             if (Omega.getNumRows() == 0) {
                 // No null space — cannot confirm priority.
                 return new OrientationResult(false);
             }
 
-            // Residual signal: (px - rankX) x n
-            Matrix residual = Omega.times(Xdata.transpose());
+            // Residual signal: (py - rankY) x n
+            Matrix residual = Omega.times(Ydata.transpose());
 
-            // HSIC test: each residual row vs each column of Ydata.
+            // HSIC test: each residual row vs each column of Xdata.
             boolean allIndependent = true;
             RawMarginalIndependenceTest hsic = new FfCi(dataSet, new Parameters());
 
             for (int row = 0; row < residual.getNumRows(); row++) {
                 double[] res = residual.row(row).toArray();
-                for (int col = 0; col < colsY.size(); col++) {
-                    double[] yCol = Ydata.col(col).toArray();
-                    if (hsic.computePValue(res, yCol) < alpha) {
+                for (int col = 0; col < colsX.size(); col++) {
+                    double[] xCol = Xdata.col(col).toArray();
+                    if (hsic.computePValue(res, xCol) < alpha) {
                         allIndependent = false;
                         break;
                     }
@@ -654,4 +712,5 @@ public class Trig implements IGraphSearch {
 
         record OrientationResult(boolean independent) {
         }
-    }}
+    }
+}
