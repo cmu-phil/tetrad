@@ -241,9 +241,9 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.BayesPmEditor
                 </editor-class>
-                <!--                <params-editor-class>-->
-                <!--                    edu.cmu.tetradapp.editor.BayesPmParamsEditor-->
-                <!--                </params-editor-class>-->
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.BayesPmParamsEditor
+                </params-editor-class>
             </model>
             <model name="SEM Parametric Model" acronym="SEM PM" help="sem_im">
                 <logger>
@@ -1065,39 +1065,39 @@
                 <editor-class>edu.cmu.tetradapp.editor.TextBayesUpdateEditor
                 </editor-class>
             </model>
-<!--            <model name="Approximate Updater" acronym="Aprox Up"-->
-<!--                   help="aproximmate_updater">-->
-<!--                <logger>-->
-<!--                    <event id="info" description="Information" default="on"/>-->
-<!--                    <event id="details" description="Details"/>-->
-<!--                </logger>-->
-<!--                <model-class>edu.cmu.tetradapp.model.ApproximateUpdaterWrapper-->
-<!--                </model-class>-->
-<!--                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor-->
-<!--                </editor-class>-->
-<!--            </model>-->
-<!--            <model name="Row Summing Exact Updater" acronym="Row Sum"-->
-<!--                   help="row_summing_updater">-->
-<!--                <logger>-->
-<!--                    <event id="info" description="Information" default="on"/>-->
-<!--                    <event id="details" description="Details"/>-->
-<!--                </logger>-->
-<!--                <model-class>edu.cmu.tetradapp.model.RowSummingExactWrapper-->
-<!--                </model-class>-->
-<!--                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor-->
-<!--                </editor-class>-->
-<!--            </model>-->
-<!--            <model name="Junction Tree Updater" acronym="Junction Tree"-->
-<!--                   help="junction_tree_updater">-->
-<!--                <logger>-->
-<!--                    <event id="info" description="Information" default="on"/>-->
-<!--                    <event id="details" description="Details"/>-->
-<!--                </logger>-->
-<!--                <model-class>edu.cmu.tetradapp.model.JunctionTreeWrapper-->
-<!--                </model-class>-->
-<!--                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor-->
-<!--                </editor-class>-->
-<!--            </model>-->
+            <!--            <model name="Approximate Updater" acronym="Aprox Up"-->
+            <!--                   help="aproximmate_updater">-->
+            <!--                <logger>-->
+            <!--                    <event id="info" description="Information" default="on"/>-->
+            <!--                    <event id="details" description="Details"/>-->
+            <!--                </logger>-->
+            <!--                <model-class>edu.cmu.tetradapp.model.ApproximateUpdaterWrapper-->
+            <!--                </model-class>-->
+            <!--                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor-->
+            <!--                </editor-class>-->
+            <!--            </model>-->
+            <!--            <model name="Row Summing Exact Updater" acronym="Row Sum"-->
+            <!--                   help="row_summing_updater">-->
+            <!--                <logger>-->
+            <!--                    <event id="info" description="Information" default="on"/>-->
+            <!--                    <event id="details" description="Details"/>-->
+            <!--                </logger>-->
+            <!--                <model-class>edu.cmu.tetradapp.model.RowSummingExactWrapper-->
+            <!--                </model-class>-->
+            <!--                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor-->
+            <!--                </editor-class>-->
+            <!--            </model>-->
+            <!--            <model name="Junction Tree Updater" acronym="Junction Tree"-->
+            <!--                   help="junction_tree_updater">-->
+            <!--                <logger>-->
+            <!--                    <event id="info" description="Information" default="on"/>-->
+            <!--                    <event id="details" description="Details"/>-->
+            <!--                </logger>-->
+            <!--                <model-class>edu.cmu.tetradapp.model.JunctionTreeWrapper-->
+            <!--                </model-class>-->
+            <!--                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor-->
+            <!--                </editor-class>-->
+            <!--            </model>-->
             <model name="SEM Updater" acronym="SEM Up" help="sem_updater">
                 <model-class>edu.cmu.tetradapp.model.SemUpdaterWrapper
                 </model-class>
