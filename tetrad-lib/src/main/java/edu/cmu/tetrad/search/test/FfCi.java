@@ -707,32 +707,28 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
      */
     @Override
     public double computePValue(double[] x, double[] y) throws InterruptedException {
-        double[][] combined = new double[x.length][2];
-        for (int i = 0; i < x.length; i++) {
-            combined[i][0] = x[i];
-            combined[i][1] = y[i];
-        }
-        Node _x = new ContinuousVariable("X_computePValue");
-        Node _y = new ContinuousVariable("Y_computePValue");
-        List<Node> nodes = new ArrayList<>();
-        nodes.add(_x);
-        nodes.add(_y);
-        DataSet dataSet = new BoxDataSet(new DoubleDataBox(combined), nodes);
+        return new FfCiContinuous(data).computePValue(x, y);
 
-        edu.cmu.tetrad.search.test.FfCi test = new edu.cmu.tetrad.search.test.FfCi(dataSet, new Parameters());
-        test.setAlpha(this.alpha);
-        test.setLambda(this.lambda);
-        test.setNumFeaturesXY(this.numFeatXY);
-        test.setNumFeaturesZ(this.numFeatZ);
-        test.setPermutations(this.permutations);
-
-        return test.checkIndependence(_x, _y).getPValue();
-    }
-
-
-    @Override
-    public double computePValue(double[] x, double[][] Y) throws InterruptedException {
-        return RawMarginalIndependenceTest.super.computePValue(x, Y);
+//        double[][] combined = new double[x.length][2];
+//        for (int i = 0; i < x.length; i++) {
+//            combined[i][0] = x[i];
+//            combined[i][1] = y[i];
+//        }
+//        Node _x = new ContinuousVariable("X_computePValue");
+//        Node _y = new ContinuousVariable("Y_computePValue");
+//        List<Node> nodes = new ArrayList<>();
+//        nodes.add(_x);
+//        nodes.add(_y);
+//        DataSet dataSet = new BoxDataSet(new DoubleDataBox(combined), nodes);
+//
+//        edu.cmu.tetrad.search.test.FfCi test = new edu.cmu.tetrad.search.test.FfCi(dataSet, new Parameters());
+//        test.setAlpha(this.alpha);
+//        test.setLambda(this.lambda);
+//        test.setNumFeaturesXY(this.numFeatXY);
+//        test.setNumFeaturesZ(this.numFeatZ);
+//        test.setPermutations(this.permutations);
+//
+//        return test.checkIndependence(_x, _y).getPValue();
     }
 
     private record MixedBlock(double[][] cont, double[][] discFeat) {

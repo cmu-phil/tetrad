@@ -48,8 +48,6 @@ import java.util.List;
  * in {@link edu.cmu.tetrad.search.Gin}. It:</p>
  *
  * <ul>
- *   <li>Obtains a {@link RawMarginalIndependenceTest} from the configured
- *       {@link IndependenceWrapper}.</li>
  *   <li>Constructs a {@link edu.cmu.tetrad.search.Gin} instance with the
  *       user-specified {@code alpha} and {@code verbose} parameters.</li>
  *   <li>Runs the GIN search and returns the resulting latent DAG as a graph.</li>
@@ -114,7 +112,7 @@ public class Gin extends AbstractBootstrapAlgorithm
     @Override
     public String getDescription() {
         return "GIN (Generalized Independent Noise) latent-variable search " +
-               "for continuous LiNGLaM-style data.";
+                "for continuous LiNGLaM-style data.";
     }
 
     @Override
