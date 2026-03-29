@@ -10,9 +10,9 @@ import edu.cmu.tetrad.search.mimic.TrekMeasurementModelBuilderPc;
 import edu.cmu.tetrad.search.test.FfCiContinuous;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -116,24 +116,9 @@ public class Tgin implements IGraphSearch {
     private Graph graph;
 
     /**
-     * Working measured-parent pool.
-     */
-    private List<Node> initialPool;
-
-    /**
      * Working latent list.
      */
     private List<Node> allLatents;
-
-    /**
-     * Measured variables in matrix order.
-     */
-    private List<Node> variables;
-
-    /**
-     * Correlation matrix in variable order.
-     */
-    private SimpleMatrix s;
 
     /**
      * Sample size.
@@ -156,6 +141,9 @@ public class Tgin implements IGraphSearch {
     public Tgin(DataSet dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         this.parameters = parameters;
+        this.depth = parameters.getInt(Params.DEPTH);
+        this.alpha = parameters.getDouble(Params.ALPHA);
+        this.verbose = parameters.getBoolean(Params.VERBOSE);
 
         setDataSet(dataSet);
         setParameters(parameters);
@@ -281,9 +269,6 @@ public class Tgin implements IGraphSearch {
 
             this.graph = result.graph();
             this.allLatents = new ArrayList<>(result.latents());
-            this.initialPool = new ArrayList<>(result.parentPool());
-            this.variables = new ArrayList<>(result.variables());
-            this.s = result.matrix();
             this.sampleSize = result.sampleSize();
             this.alpha = result.alpha();
 
@@ -305,9 +290,6 @@ public class Tgin implements IGraphSearch {
 
             this.graph = result.graph();
             this.allLatents = new ArrayList<>(result.latents());
-            this.initialPool = new ArrayList<>(result.parentPool());
-            this.variables = new ArrayList<>(result.variables());
-            this.s = result.matrix();
             this.sampleSize = result.sampleSize();
             this.alpha = result.alpha();
 
@@ -317,10 +299,6 @@ public class Tgin implements IGraphSearch {
                 this.latentRanks.put(spec.blockVariables().get(i), spec.ranks().get(i));
             }
         }
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
     }
 
     public void setVerbose(boolean verbose) {

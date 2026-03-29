@@ -98,9 +98,6 @@ public class Tgin extends AbstractBootstrapAlgorithm
         edu.cmu.tetrad.search.Tgin search =
                 new edu.cmu.tetrad.search.Tgin(data, parameters);
 
-        search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
         return search.search();
     }
 
@@ -136,6 +133,7 @@ public class Tgin extends AbstractBootstrapAlgorithm
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
+        parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.DEPTH);
         parameters.add(Params.VERBOSE);
         return parameters;

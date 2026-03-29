@@ -82,20 +82,11 @@ public class Gin {
     /**
      * Preferred constructor.
      *
+     * @param data the dataset (raw data required)
      * @param alpha significance level for all independence tests
      */
-    public Gin(double alpha) {
-        this.alpha = alpha;
-    }
-
-    /**
-     * Backward-compatible constructor; the injected test is ignored in favour
-     * of the internally created FfCiContinuous instance.
-     *
-     * @param alpha       significance level
-     * @param ignoredTest not used; present for API compatibility only
-     */
-    public Gin(double alpha, RawMarginalIndependenceTest ignoredTest) {
+    public Gin(DataSet data, double alpha) {
+        this.data = data;
         this.alpha = alpha;
     }
 
@@ -116,11 +107,9 @@ public class Gin {
      * Runs the GIN search on the supplied dataset and returns a mixed graph
      * over the observed variables with latent nodes and measurement edges added.
      *
-     * @param data the dataset (raw data required)
      * @return the recovered causal graph
      */
-    public Graph search(DataSet data) {
-        this.data = data;
+    public Graph search() {
         this.vars = data.getVariables();
         this.hsic = new FfCiContinuous(data);
         this.hsic.setAlpha(alpha);

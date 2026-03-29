@@ -63,16 +63,10 @@ import java.util.List;
 )
 @Bootstrapping
 public class Gin extends AbstractBootstrapAlgorithm
-        implements Algorithm, TakesIndependenceWrapper, ReturnsBootstrapGraphs {
+        implements Algorithm, ReturnsBootstrapGraphs {
 
     @Serial
     private static final long serialVersionUID = 23L;
-
-    /**
-     * Independence-wrapper used to create a {@link RawMarginalIndependenceTest}
-     * for GIN. The wrapper is configured by the algcomparison framework.
-     */
-    private IndependenceWrapper test;
 
     /**
      * Default constructor for the Gin class.
@@ -85,22 +79,15 @@ public class Gin extends AbstractBootstrapAlgorithm
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         DataSet dataSet = (DataSet) dataModel;
-        IndependenceTest itest = this.test.getTest(dataSet, parameters);
-
-        if (!(itest instanceof RawMarginalIndependenceTest rawTest)) {
-            throw new IllegalArgumentException(
-                    "GIN requires an independence test that implements RawMarginalIndependenceTest."
-            );
-        }
 
         edu.cmu.tetrad.search.Gin gin = new edu.cmu.tetrad.search.Gin(
-                parameters.getDouble(Params.ALPHA),
-                rawTest
+                dataSet,
+                parameters.getDouble(Params.ALPHA)
         );
 
         gin.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-        return gin.search(dataSet);
+        return gin.search();
     }
 
     @Override
@@ -126,15 +113,5 @@ public class Gin extends AbstractBootstrapAlgorithm
         params.add(Params.ALPHA);
         params.add(Params.VERBOSE);
         return params;
-    }
-
-    @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
-    }
-
-    @Override
-    public void setIndependenceWrapper(IndependenceWrapper test) {
-        this.test = test;
     }
 }
