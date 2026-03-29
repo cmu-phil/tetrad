@@ -154,6 +154,8 @@ public class TrekMimic extends AbstractBootstrapAlgorithm
         parameters.add(Params.MAX_LATENT_SUBSET_SIZE);
         parameters.add(Params.DO_HIGHER_RANK_EXPANSION);
         parameters.add(Params.ORIENT_AND_PRUNE);
+        parameters.add(Params.TSC_MIN_REDUNDANCY);
+        parameters.add(Params.MAX_RANK);
         return parameters;
     }
 
