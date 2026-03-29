@@ -167,6 +167,102 @@ public class BlocksBicScore implements Score, BlockScore, EffectiveSampleSizeSet
      *         also indicate penalties in some scenarios. Positive or zero scores represent
      *         valid and permissible relationships weighted by their associated scores.
      */
+//    public double localScore(Node y, List<Node> parents) {
+//        final int yi = idx(y);
+//
+//        Integer yRkObj = blockSpec.ranks().get(yi);
+//        if (yRkObj == null)
+//            throw new IllegalStateException("Missing rank for block index " + yi + " (node=" + y + ")");
+//        final int yRank = yRkObj;
+//
+//        if (yRank == 0)
+//            return (parents == null || parents.isEmpty()) ? 0.0 : Double.NEGATIVE_INFINITY;
+//
+//        if (parents == null || parents.isEmpty()) return 0.0;
+//
+//        // Filter rank-0 parent blocks.
+//        int[] parentIdxTmp = new int[parents.size()];
+//        int mParents = 0;
+//        for (Node pNode : parents) {
+//            int pi = idx(pNode);
+//            Integer prk = blockSpec.ranks().get(pi);
+//            if (prk == null)
+//                throw new IllegalStateException("Missing rank for block index " + pi + " (parent=" + pNode + ")");
+//            if (prk == 0) continue;
+//            parentIdxTmp[mParents++] = pi;
+//        }
+//
+//        if (mParents == 0) return 0.0;
+//
+//        int[] parentIdx = Arrays.copyOf(parentIdxTmp, mParents);
+//        Arrays.sort(parentIdx);
+//
+//        FamilyKey fkey = new FamilyKey(yi, parentIdx, ridge, penaltyDiscount);
+//        Double cached = scoreCache.get(fkey);
+//        if (cached != null) return cached;
+//
+//        int[] Yblock = blockFor(yi);
+//        if (Yblock.length == 0) {
+//            scoreCache.put(fkey, Double.NEGATIVE_INFINITY);
+//            return Double.NEGATIVE_INFINITY;
+//        }
+//
+//        ParentsKey pkey = new ParentsKey(parentIdx);
+//        int[] Xblock = xblockCache.get(pkey);
+//        if (Xblock == null) {
+//            Xblock = concatBlocksFromSortedParentIdx(parentIdx);
+//            xblockCache.put(pkey, Xblock);
+//        }
+//        if (Xblock.length == 0) {
+//            scoreCache.put(fkey, Double.NEGATIVE_INFINITY);
+//            return Double.NEGATIVE_INFINITY;
+//        }
+//
+//        // Trek-implied rank: sum of parent ranks.
+//        int rStar = 0;
+//        for (int pi : parentIdx) {
+//            Integer rk = blockSpec.ranks().get(pi);
+//            if (rk == null) throw new IllegalStateException("Missing rank for block index " + pi);
+//            rStar += rk;
+//        }
+//
+//        RankTests.RccaEntry ent = RankTests.getRccaEntry(Sphi, Xblock, Yblock, ridge);
+//        if (ent == null || ent.suffixLogs == null) {
+//            scoreCache.put(fkey, Double.NEGATIVE_INFINITY);
+//            return Double.NEGATIVE_INFINITY;
+//        }
+//
+//        int p = Xblock.length, q = Yblock.length;
+//        double nAdj = this.nEff - 1.0 - 0.5 * (p + q + 1.0);
+//        if (nAdj < 1.0) nAdj = 1.0;
+//
+//        double[] suffix = ent.suffixLogs;
+//        int m = TMath.min(TMath.min(p, q), (int) nAdj - 1);
+//        m = TMath.min(m, suffix.length - 1);
+//
+//        if (m <= 0) {
+//            scoreCache.put(fkey, Double.NEGATIVE_INFINITY);
+//            return Double.NEGATIVE_INFINITY;
+//        }
+//
+//        // Cap rStar to what is estimable. Must be >= 1 since parents exist.
+//        rStar = TMath.min(TMath.max(rStar, 1), m);
+//
+//        double logN = TMath.log(TMath.max(nAdj, 2.0));
+//
+//        // Evaluate Wilks LRT at the trek-implied rank r* only.
+//        // The trek structure fixes the rank — no soft penalty or rank search needed.
+//        // fit(r*) = -nAdj * Σ log(1 - ρᵢ²) for top r* canonical correlations (>= 0).
+//        // BIC penalty: k(r*) = r*(p + q - r*) free parameters.
+//        double fit = -nAdj * (suffix[0] - suffix[rStar]);
+//        double pen = penaltyDiscount * (double) (rStar * (p + q - rStar)) * logN;
+//        double score = fit - pen;
+//
+//        if (Double.isNaN(score)) score = Double.NEGATIVE_INFINITY;
+//        scoreCache.put(fkey, score);
+//        return score;
+//    }
+
     public double localScore(Node y, List<Node> parents) {
         final int yi = idx(y);
 
@@ -180,7 +276,7 @@ public class BlocksBicScore implements Score, BlockScore, EffectiveSampleSizeSet
 
         if (parents == null || parents.isEmpty()) return 0.0;
 
-        // Filter rank-0 parent blocks.
+        // Filter rank-0 parent blocks — now returns -∞ instead of silently skipping.
         int[] parentIdxTmp = new int[parents.size()];
         int mParents = 0;
         for (Node pNode : parents) {
@@ -188,7 +284,7 @@ public class BlocksBicScore implements Score, BlockScore, EffectiveSampleSizeSet
             Integer prk = blockSpec.ranks().get(pi);
             if (prk == null)
                 throw new IllegalStateException("Missing rank for block index " + pi + " (parent=" + pNode + ")");
-            if (prk == 0) continue;
+            if (prk == 0) return Double.NEGATIVE_INFINITY;  // ← rank-0 block must never be a parent
             parentIdxTmp[mParents++] = pi;
         }
 
@@ -250,10 +346,6 @@ public class BlocksBicScore implements Score, BlockScore, EffectiveSampleSizeSet
 
         double logN = TMath.log(TMath.max(nAdj, 2.0));
 
-        // Evaluate Wilks LRT at the trek-implied rank r* only.
-        // The trek structure fixes the rank — no soft penalty or rank search needed.
-        // fit(r*) = -nAdj * Σ log(1 - ρᵢ²) for top r* canonical correlations (>= 0).
-        // BIC penalty: k(r*) = r*(p + q - r*) free parameters.
         double fit = -nAdj * (suffix[0] - suffix[rStar]);
         double pen = penaltyDiscount * (double) (rStar * (p + q - rStar)) * logN;
         double score = fit - pen;
@@ -275,9 +367,19 @@ public class BlocksBicScore implements Score, BlockScore, EffectiveSampleSizeSet
      * @return the difference in local scores between the configuration with
      *         the additional parent node `x` and the original configuration without `x`.
      */
+//    @Override
+//    public double localScoreDiff(int x, int y, int[] z) {
+//        return localScore(variables.get(y), appendNodes(z, x)) - localScore(variables.get(y), z);
+//    }
+
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        return localScore(variables.get(y), appendNodes(z, x)) - localScore(variables.get(y), z);
+        // Block any edge touching a rank-0 block.
+        if (blockSpec.ranks().get(idx(variables.get(x))) == 0) return Double.NEGATIVE_INFINITY;
+        if (blockSpec.ranks().get(idx(variables.get(y))) == 0) return Double.NEGATIVE_INFINITY;
+
+        return localScore(variables.get(y), appendNodes(z, x))
+                - localScore(variables.get(y), z);
     }
 
     private double localScore(Node y, int[] parents) {

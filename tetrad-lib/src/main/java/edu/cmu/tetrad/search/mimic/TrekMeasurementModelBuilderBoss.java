@@ -229,8 +229,8 @@ public final class TrekMeasurementModelBuilderBoss {
                 new CovarianceMatrix(dataSet));
         tsc.setEffectiveSampleSize(
                 parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
-        tsc.setRmax(3);
-        tsc.setMinRedundancy(0);
+        tsc.setRmax(parameters.getInt(Params.MAX_RANK));
+        tsc.setMinRedundancy(parameters.getInt(Params.TSC_MIN_REDUNDANCY));
         tsc.setAlpha(parameters.getDouble(Params.ALPHA));
 
         Map<Set<Integer>, Integer> clusters = tsc.findClusters();
@@ -350,6 +350,7 @@ public final class TrekMeasurementModelBuilderBoss {
      */
     private Graph runBoss(BlocksBicScore score)
             throws InterruptedException {
+        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         PermutationSearch boss = new PermutationSearch(new Boss(score));
         boss.setKnowledge(this.knowledge);
         return boss.search();

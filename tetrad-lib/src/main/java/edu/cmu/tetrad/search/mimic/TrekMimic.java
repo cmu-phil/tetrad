@@ -149,7 +149,7 @@ public final class TrekMimic {
     public Graph search() throws InterruptedException {
         validateSearchInputs();
 
-        boolean usePc = true;
+        boolean usePc = false;
 
         if (usePc) {
             TrekMeasurementModelBuilderPc builder =
