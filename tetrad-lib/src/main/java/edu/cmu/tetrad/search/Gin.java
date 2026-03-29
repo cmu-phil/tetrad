@@ -255,7 +255,7 @@ public class Gin {
                 }
 
                 if (isRoot) {
-                    causalOrder.add(clusterI);
+                    causalOrder.addFirst(clusterI);
                     clustersRemaining.remove(i);
                     updated = true;
                     break; // restart the outer loop with the updated ordered set
