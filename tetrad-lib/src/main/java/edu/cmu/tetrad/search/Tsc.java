@@ -402,7 +402,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
                 if (seed.size() * 2 > this.variables.size()) continue;
 
                 int seedRankShown;
-                seedRankShown = ranksByTest(seed);
+                seedRankShown = rankByTest(seed);
                 log("Picking seed from the list: " + toNamesCluster(seed) + " rank = " + seedRankShown);
 
                 boolean extended;
@@ -421,7 +421,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
                         if (union.size() == cluster.size()) continue;
 
-                        int rankOfUnion = ranksByTest(union);
+                        int rankOfUnion = rankByTest(union);
                         log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
 
                         int minSize = rank + 1 + minRedundancy;
@@ -451,7 +451,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
                 } while (extended);
 
                 int clusterRank;
-                clusterRank = ranksByTest(cluster);
+                clusterRank = rankByTest(cluster);
 
                 int minSize = rank + 1 + minRedundancy;
                 if (clusterRank == rank && cluster.size() >= minSize
@@ -559,7 +559,10 @@ public class Tsc implements EffectiveSampleSizeSettable {
             if (!didAugment) log("No augmentations were needed.");
             log("New clusters after the augmentation step = " + (newClusters.isEmpty() ? "NONE" : toNamesClusters(newClusters, nodes)));
 
-            for (Set<Integer> cluster : new ArrayList<>(newClusters)) clusterToRank.put(cluster, rank);
+//            for (Set<Integer> cluster : new ArrayList<>(newClusters)) clusterToRank.put(cluster, rank);
+//
+            for (Set<Integer> cluster : new ArrayList<>(newClusters))
+                clusterToRank.put(cluster, rankByTest(cluster));
 
             for (Set<Integer> _C : newClusters) used.addAll(_C);
             remainingVars.removeAll(used);
@@ -582,7 +585,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
         boolean changedAny = false;
 
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
-            int rC = ranksByTest(cluster);
+            int rC = rankByTest(cluster);
 
             // produce a refined copy (possibly smaller), do not mutate the key in-place
             Set<Integer> refined = refineClustersByConditionalRanks(cluster, rC);
@@ -594,7 +597,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
                 continue;
             }
 
-            int newRank = ranksByTest(refined);
+            int newRank = rankByTest(refined);
             int minSize2 = newRank + 1 + minRedundancy;
             if (refined.size() < minSize2) {
                 clusterToRank.remove(cluster);
@@ -603,7 +606,8 @@ public class Tsc implements EffectiveSampleSizeSettable {
                         + " rejected: |C| < r+1+minRedundancy (" + refined.size() + " < " + minSize2 + ").");
                 continue;
             }
-            clusterToRank.put(refined, newRank);
+            clusterToRank.remove(cluster);
+            clusterToRank.put(refined, rankByTest(refined));
             changedAny = true;
             log("Refined cluster " + toNamesCluster(cluster) + " → " + toNamesCluster(refined)
                     + " (rank now " + newRank + ").");
@@ -626,7 +630,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
             penultimateRemoved = true;
 
             for (Set<Integer> piece : pieces) {
-                int pieceRank = ranksByTest(piece);
+                int pieceRank = rankByTest(piece);
                 clusterToRank.put(piece, pieceRank);
                 log("Adding split piece " + toNamesCluster(piece)
                         + " rank = " + pieceRank);
@@ -740,7 +744,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
     private int ranksByDiscovery(Set<Integer> cluster) {
         double da = getDiscoveryAlpha();
         if (da == alpha) {
-            return ranksByTest(cluster);
+            return rankByTest(cluster);
         }
         return discoveryRankCache.computeIfAbsent(
                 new Key(cluster), _k -> rankWithAlpha(cluster, da));
@@ -933,7 +937,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
                 // Recurse into each piece
                 for (Set<Integer> piece : List.of(piece1, piece2)) {
-                    int pieceRank = ranksByTest(piece);
+                    int pieceRank = rankByTest(piece);
                     int minSize = pieceRank + 1 + minRedundancy;
 
                     if (piece.size() < minSize) {
@@ -955,7 +959,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
         return List.of(cluster);
     }
 
-    private int ranksByTest(Set<Integer> cluster) {
+    private int rankByTest(Set<Integer> cluster) {
         return rankCache.computeIfAbsent(new Key(cluster), _k -> rank(cluster));
     }
 
