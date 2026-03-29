@@ -135,7 +135,11 @@ public class Tgin extends AbstractBootstrapAlgorithm
         parameters.add(Params.ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.DEPTH);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.MAX_RANK);
+        parameters.add(Params.TSC_MIN_REDUNDANCY);
         parameters.add(Params.VERBOSE);
+
         return parameters;
     }
 

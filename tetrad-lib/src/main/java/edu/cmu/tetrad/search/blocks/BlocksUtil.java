@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
@@ -221,7 +222,8 @@ public final class BlocksUtil {
         if (ranksIn != null && !ranksIn.isEmpty()) {
             for (int i = 0; i < blocks.size(); i++) {
                 Integer r = i < ranksIn.size() ? ranksIn.get(i) : 1;
-                ranksNorm.add((r == null || r < 0) ? 1 : 0);
+//                ranksNorm.add((r == null || r < 0) ? 1 : 0);
+                ranksNorm.add((r == null || r < 0) ? 1 : r);
             }
         } else {
             for (int i = 0; i < blocks.size(); i++) ranksNorm.add(1);
@@ -274,7 +276,9 @@ public final class BlocksUtil {
                 if (unused.isEmpty()) return blockSpec;
 
                 // others = all minus the singletons as we add them (OK to use full others each time)
-                final int[] others = toIndexArray(allMinus(unused, all)); // others = all \ unused
+//                final int[] others = toIndexArray(allMinus(unused, all)); // others = all \ unused
+                final int[] others = toIndexArray(allMinus(all, new ArrayList<>(unused))); // others = all \ unused
+
                 for (int idx : unused) {
                     List<Integer> newBlock = Collections.singletonList(idx);
                     outBlocks.add(newBlock);
@@ -313,7 +317,8 @@ public final class BlocksUtil {
                 outLatents.add(latent);
                 takenNames.add(noiseName);
 
-                int[] others = toIndexArray(allMinus(unused, all));
+//                int[] others = toIndexArray(allMinus(unused, all));
+                final int[] others = toIndexArray(allMinus(all, new ArrayList<>(unused))); // others = all \ unused
                 int rk = estimateRankSafe(S, n, noise, others, alpha);
                 outRanks.add(TMath.max(0, rk));
 
@@ -332,9 +337,11 @@ public final class BlocksUtil {
         int[] blk = toIndexArray(block);
 
         if (others != null && others.length > 0) {
-            return TMath.max(0, edu.cmu.tetrad.util.RankTests.estimateWilksRank(S, blk, others, nRows, alpha));
+            int rank = RankTests.estimateWilksRank(S, blk, others, nRows, alpha);
+            return TMath.max(0, rank);
         } else {
-            return TMath.max(0, edu.cmu.tetrad.util.RankTests.estimateWilksRank(S, blk, new int[0], nRows, alpha));
+            int rank = RankTests.estimateWilksRank(S, blk, new int[0], nRows, alpha);
+            return TMath.max(0, rank);
         }
     }
 
