@@ -8,6 +8,7 @@ import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.mimic.TrekMeasurementModelBuilderBoss;
 import edu.cmu.tetrad.search.mimic.TrekMeasurementModelBuilderPc;
 import edu.cmu.tetrad.search.test.FfCiContinuous;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -87,6 +88,7 @@ public class Tgin implements IGraphSearch {
      * Optional knowledge.
      */
     private final Knowledge knowledge = new Knowledge();
+    private final RawMarginalIndependenceTest hsic;
     /**
      * Input data set.
      */
@@ -144,6 +146,9 @@ public class Tgin implements IGraphSearch {
         this.depth = parameters.getInt(Params.DEPTH);
         this.alpha = parameters.getDouble(Params.ALPHA);
         this.verbose = parameters.getBoolean(Params.VERBOSE);
+
+        hsic = new edu.cmu.tetrad.search.test.FfCiContinuous(dataSet);
+        ((edu.cmu.tetrad.search.test.FfCiContinuous) hsic).setAlpha(alpha);
 
         setDataSet(dataSet);
         setParameters(parameters);
@@ -210,7 +215,7 @@ public class Tgin implements IGraphSearch {
 
         TginOrientationStages stages = new TginOrientationStages(
                 this.graph, this.allLatents, nodeMap,   // nodeMap replaces spec + latentRanks
-                this.dataSet, this.alpha, this.sampleSize);
+                this.dataSet, this.alpha, this.sampleSize, hsic);
 
         System.out.println("=== Expansion check ===");
         for (Map.Entry<Node, Node> e : nodeMap.entrySet()) {
@@ -219,7 +224,11 @@ public class Tgin implements IGraphSearch {
         System.out.println("latentRanks: " + latentRanks);
 
         stages.orientIntraClusterEdges();   // Stage 5 first: resolve intra-cluster order
-        stages.orientInterClusterEdges();   // Stage 4: orient inter-cluster edges using GIN
+
+
+        for (int i = 0; i < 3; i++) {
+            stages.orientInterClusterEdges();   // Stage 4: orient inter-cluster edges using GIN
+        }
 
         return graph;
     }
@@ -251,7 +260,7 @@ public class Tgin implements IGraphSearch {
     }
 
     private void runPcTsc() throws InterruptedException {
-        boolean usePc = false;
+        boolean usePc = true;
 
         BlockSpec spec;
 
@@ -315,29 +324,28 @@ public class Tgin implements IGraphSearch {
     public static class TginOrientationStages {
 
         private final Graph graph;
-        private final List<Node> allLatents;
         private final Map<Node, Node> nodeMap;                      // expanded → original
         private final DataSet dataSet;
         private final double alpha;
-        private final int sampleSize;
 
         // Derived in constructor
         private final Map<Node, List<Node>> originalToExpanded;     // original → expanded copies
         private final Map<Node, Integer> rankByOriginal;            // original → rank (# copies)
         private final Map<Node, List<Integer>> originalToIndicatorCols; // original → data col indices
+        private final RawMarginalIndependenceTest hsic;
 
         public TginOrientationStages(Graph graph, List<Node> allLatents,
                                      Map<Node, Node> nodeMap,
-                                     DataSet dataSet, double alpha, int sampleSize) {
+                                     DataSet dataSet, double alpha, int sampleSize,
+                                     RawMarginalIndependenceTest hsic) {
             this.graph = graph;
-            this.allLatents = allLatents;
             this.nodeMap = nodeMap;
             this.dataSet = dataSet;
             this.alpha = alpha;
-            this.sampleSize = sampleSize;
             this.originalToExpanded = buildOriginalToExpanded();
             this.rankByOriginal = buildRankMap();
             this.originalToIndicatorCols = buildIndicatorMap();
+            this.hsic = hsic;;
         }
 
         // ==============================================================
@@ -368,7 +376,9 @@ public class Tgin implements IGraphSearch {
                 }
             }
 
-            //            new MeekRules().orientImplied(graph);
+            MeekRules meekRules = new MeekRules();
+            meekRules.setRevertToUnshieldedColliders(false);
+            meekRules.orientImplied(graph);
         }
 
         /**
@@ -380,6 +390,48 @@ public class Tgin implements IGraphSearch {
          * <p>
          * We estimate Omega from the sample cross-covariance and test with HSIC.
          */
+//        private OrientationResult groupGinTest(Node origX, Node origY) throws InterruptedException {
+//            List<Integer> colsX = originalToIndicatorCols.get(origX);
+//            List<Integer> colsY = originalToIndicatorCols.get(origY);
+//            int rankY = rankByOriginal.get(origY);
+//
+//            Matrix Xdata = submatrix(dataSet, colsX);   // n x px
+//            Matrix Ydata = submatrix(dataSet, colsY);   // n x py
+//
+//            Matrix SigmaYX = crossCovariance(Ydata, Xdata);  // py x px
+//
+//            // Omega spans the left null space of SigmaYX;
+//            // has (py - rankY) rows under the null hypothesis that x is prior to y.
+//            Matrix Omega = leftNullSpace(SigmaYX, rankY);
+//
+//            if (Omega.getNumRows() == 0) {
+//                // No null space — cannot confirm priority.
+//                return new OrientationResult(false);
+//            }
+//
+//            // Residual signal: (py - rankY) x n
+//            Matrix residual = Omega.times(Ydata.transpose());
+//
+//            // HSIC test: each residual row vs each column of Xdata.
+//            boolean allIndependent = true;
+//            RawMarginalIndependenceTest hsic = new FfCiContinuous(dataSet);
+//            ((FfCiContinuous) hsic).setAlpha(alpha);
+//
+//            for (int row = 0; row < residual.getNumRows(); row++) {
+//                double[] res = residual.row(row).toArray();
+//                for (int col = 0; col < colsX.size(); col++) {
+//                    double[] xCol = Xdata.col(col).toArray();
+//                    if (hsic.computePValue(res, xCol) < alpha) {
+//                        allIndependent = false;
+//                        break;
+//                    }
+//                }
+//                if (!allIndependent) break;
+//            }
+//
+//            return new OrientationResult(allIndependent);
+//        }
+
         private OrientationResult groupGinTest(Node origX, Node origY) throws InterruptedException {
             List<Integer> colsX = originalToIndicatorCols.get(origX);
             List<Integer> colsY = originalToIndicatorCols.get(origY);
@@ -391,7 +443,7 @@ public class Tgin implements IGraphSearch {
             Matrix SigmaYX = crossCovariance(Ydata, Xdata);  // py x px
 
             // Omega spans the left null space of SigmaYX;
-            // has (py - rankY) rows under the null hypothesis that x is prior to y.
+            // has (py - rankY) rows under the null hypothesis that X is prior to Y.
             Matrix Omega = leftNullSpace(SigmaYX, rankY);
 
             if (Omega.getNumRows() == 0) {
@@ -402,24 +454,110 @@ public class Tgin implements IGraphSearch {
             // Residual signal: (py - rankY) x n
             Matrix residual = Omega.times(Ydata.transpose());
 
-            // HSIC test: each residual row vs each column of Xdata.
-            boolean allIndependent = true;
-            RawMarginalIndependenceTest hsic = new FfCiContinuous(dataSet);
-            ((FfCiContinuous) hsic).setAlpha(alpha);
+            // Collect all p-values from pairwise HSIC tests (residual rows vs X columns).
+            // Use Fisher's method to combine them into a single omnibus p-value rather
+            // than the all-pass criterion, which is overly conservative and fragile when
+            // individual tests have low power.
+//            RawMarginalIndependenceTest hsic = new FfCiContinuous(dataSet);
+//            ((FfCiContinuous) hsic).setAlpha(alpha);
+
+            final double EPSILON = 1e-15;  // guard against log(0)
+            double fisherStat = 0.0;
+            int df = 0;
 
             for (int row = 0; row < residual.getNumRows(); row++) {
                 double[] res = residual.row(row).toArray();
                 for (int col = 0; col < colsX.size(); col++) {
                     double[] xCol = Xdata.col(col).toArray();
-                    if (hsic.computePValue(res, xCol) < alpha) {
-                        allIndependent = false;
-                        break;
-                    }
+                    double p = hsic.computePValue(res, xCol);
+                    p = Math.max(p, EPSILON);   // avoid log(0)
+                    fisherStat += -2.0 * Math.log(p);
+                    df += 2;
                 }
-                if (!allIndependent) break;
             }
 
-            return new OrientationResult(allIndependent);
+            // Fisher's combined statistic is chi-squared with 2k degrees of freedom,
+            // where k is the number of p-values combined.
+            // A large statistic means the null (independence) is rejected.
+            // We want independence to hold, so we need a small statistic (large combined p-value).
+            double combinedP = 1.0 - chiSquaredCdf(fisherStat, df);
+
+            return new OrientationResult(combinedP > alpha);
+        }
+
+        /**
+         * Chi-squared CDF via the regularized lower incomplete gamma function,
+         * computed using the Lanczos approximation to the log-gamma function
+         * and a continued-fraction expansion.  Sufficient precision for p-value
+         * combination; no external library required.
+         *
+         * @param x  the chi-squared statistic (non-negative)
+         * @param df degrees of freedom (positive even integer in our usage)
+         * @return P(X <= x) for X ~ chi-squared(df)
+         */
+        private double chiSquaredCdf(double x, int df) {
+            if (x <= 0.0) return 0.0;
+            return regularizedGammaP(df / 2.0, x / 2.0);
+        }
+
+        /**
+         * Regularized lower incomplete gamma function P(a, x),
+         * using a series expansion for x < a+1 and a continued-fraction
+         * expansion otherwise.
+         */
+        private double regularizedGammaP(double a, double x) {
+            if (x < 0.0) return 0.0;
+            if (x == 0.0) return 0.0;
+
+            if (x < a + 1.0) {
+                // Series expansion
+                double ap  = a;
+                double sum = 1.0 / a;
+                double del = sum;
+                for (int i = 0; i < 200; i++) {
+                    ap  += 1.0;
+                    del *= x / ap;
+                    sum += del;
+                    if (Math.abs(del) < Math.abs(sum) * 1e-12) break;
+                }
+                return sum * Math.exp(-x + a * Math.log(x) - logGamma(a));
+            } else {
+                // Continued-fraction expansion (Lentz's method)
+                double fpmin = 1e-300;
+                double b = x + 1.0 - a;
+                double c = 1.0 / fpmin;
+                double d = 1.0 / b;
+                double h = d;
+                for (int i = 1; i <= 200; i++) {
+                    double an = -i * (i - a);
+                    b += 2.0;
+                    d  = an * d + b;
+                    if (Math.abs(d) < fpmin) d = fpmin;
+                    c  = b + an / c;
+                    if (Math.abs(c) < fpmin) c = fpmin;
+                    d  = 1.0 / d;
+                    h *= d * c;
+                    if (Math.abs(d * c - 1.0) < 1e-12) break;
+                }
+                return 1.0 - Math.exp(-x + a * Math.log(x) - logGamma(a)) * h;
+            }
+        }
+
+        /**
+         * Log-gamma function via Lanczos approximation.
+         */
+        private double logGamma(double x) {
+            double[] c = {
+                    76.18009172947146, -86.50532032941677,
+                    24.01409824083091, -1.231739572450155,
+                    0.001208650973866179, -5.395239384953e-6
+            };
+            double y   = x;
+            double tmp = x + 5.5;
+            tmp -= (x + 0.5) * Math.log(tmp);
+            double ser = 1.000000000190015;
+            for (double ci : c) ser += ci / ++y;
+            return -tmp + Math.log(2.5066282746310005 * ser / x);
         }
 
         private boolean hasUndirectedEdgeBetweenClusters(Node origX, Node origY) {
@@ -550,7 +688,7 @@ public class Tgin implements IGraphSearch {
             System.out.println("lingamOrder: sources.numRows()=" + sources.numRows() + ", sources.numCols()=" + sources.numCols());
 
             boolean[][] adj = new boolean[r][r];
-            RawMarginalIndependenceTest hsic = new edu.cmu.tetrad.search.test.FfCiContinuous(dataSet);
+//            RawMarginalIndependenceTest hsic = new edu.cmu.tetrad.search.test.FfCiContinuous(dataSet);
 
             for (int i = 0; i < r; i++) {
                 for (int j = i + 1; j < r; j++) {
