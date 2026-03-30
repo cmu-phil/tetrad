@@ -404,16 +404,16 @@ public final class LatentGraphRefinement {
             parentsx.removeAll(childrenx);
             parentsy.removeAll(childreny);
 
-//            boolean orientXtoY = sufficientPairsCorrelated(
-//                    parentsx, childreny, orientationProportion);
-//            boolean orientYtoX = sufficientPairsCorrelated(
-//                    parentsy, childrenx, orientationProportion);
-
-
-            boolean orientXtoY = sufficientPairsAssociated(
+            boolean orientXtoY = sufficientPairsCorrelated(
                     parentsx, childreny, orientationProportion);
-            boolean orientYtoX = sufficientPairsAssociated(
+            boolean orientYtoX = sufficientPairsCorrelated(
                     parentsy, childrenx, orientationProportion);
+
+
+//            boolean orientXtoY = sufficientPairsAssociated(
+//                    parentsx, childreny, orientationProportion);
+//            boolean orientYtoX = sufficientPairsAssociated(
+//                    parentsy, childrenx, orientationProportion);
 
             // No asymmetry, or neither side has evidence: leave undirected.
             if (orientXtoY == orientYtoX) {

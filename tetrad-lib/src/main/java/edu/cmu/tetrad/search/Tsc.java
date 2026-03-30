@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
 import org.ejml.simple.SimpleMatrix;
@@ -239,6 +240,9 @@ public class Tsc implements EffectiveSampleSizeSettable {
         this.variables = new ArrayList<>(variables.size());
         for (int i = 0; i < variables.size(); i++) this.variables.add(i);
         this.S = new CorrelationMatrix(data).getMatrix().getSimpleMatrix();
+
+        data = DataTransforms.getNonparanormalTransformed(data);
+
         this.sampleSize = data.getNumRows();
         this.dataArray = data.getDoubleData().toArray();
         setEffectiveSampleSize(-1);

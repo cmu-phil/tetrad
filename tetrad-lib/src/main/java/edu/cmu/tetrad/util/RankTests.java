@@ -524,7 +524,7 @@ public class RankTests {
             sumLog += TMath.log(oneMinus);
         }
 
-        // Bartlettâs approx: -c * log Î  ~  ÏÂ²_df
+        // Bartlett's approx: -c * log Î  ~  ÏÂ²_df
         double c = (n - 1) - 0.5 * (p + q + 1);
 //        if (c < 1) c = 1; // pragmatic floor; alternatively, treat as inconclusive
         double stat = -c * sumLog;

@@ -705,8 +705,99 @@ public class DataTransforms {
         return covMatrix;
     }
 
+//    /**
+//     * <p>getNonparanormalTransformed.</p>
+//     *
+//     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+//     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+//     */
+//    public static DataSet getNonparanormalTransformed(DataSet dataSet) {
+//        try {
+//            Matrix data = dataSet.getDoubleData();
+//            Matrix X = data.like();
+//            double n = dataSet.getNumRows();
+////            delta = 1.0 / (4.0 * TMath.pow(n, 0.25) * TMath.sqrt(TMath.PI * TMath.log(n)));
+//
+//            NormalDistribution normalDistribution = new NormalDistribution();
+//
+//            double std = Double.NaN;
+//
+//            for (int j = 0; j < data.getNumColumns(); j++) {
+//                double[] x1Orig = Arrays.copyOf(data.getColumn(j).toArray(), data.getNumRows());
+//                double[] x1 = Arrays.copyOf(data.getColumn(j).toArray(), data.getNumRows());
+//
+//                double a2Orig = new AndersonDarlingTest(x1).getASquaredStar();
+//
+//                if (dataSet.getVariable(j) instanceof DiscreteVariable) {
+//                    X.assignColumn(j, new Vector(x1));
+//                    continue;
+//                }
+//
+//                double std1 = StatUtils.sd(x1);
+//                double mu1 = StatUtils.mean(x1);
+//                double[] xTransformed = DataUtils.ranks(x1);
+//
+//                for (int i = 0; i < xTransformed.length; i++) {
+//                    xTransformed[i] /= n;
+//                    xTransformed[i] = normalDistribution.inverseCumulativeProbability(xTransformed[i]);
+//                }
+//
+//                if (Double.isNaN(std)) {
+//                    std = StatUtils.sd(x1Orig);
+//                }
+//
+//                for (int i = 0; i < xTransformed.length; i++) {
+//                    xTransformed[i] *= std1;
+//                    xTransformed[i] += mu1;
+//                }
+//
+//                double a2Transformed = new AndersonDarlingTest(xTransformed).getASquaredStar();
+//
+//                double min = Double.POSITIVE_INFINITY;
+//                double max = Double.NEGATIVE_INFINITY;
+//
+//                for (double v : xTransformed) {
+//                    if (v > max && !Double.isInfinite(v)) {
+//                        max = v;
+//                    }
+//
+//                    if (v < min && !Double.isInfinite(v)) {
+//                        min = v;
+//                    }
+//                }
+//
+//                for (int i = 0; i < xTransformed.length; i++) {
+//                    if (xTransformed[i] == Double.POSITIVE_INFINITY) {
+//                        xTransformed[i] = max;
+//                    }
+//
+//                    if (xTransformed[i] < Double.NEGATIVE_INFINITY) {
+//                        xTransformed[i] = min;
+//                    }
+//                }
+//
+//                System.out.println(dataSet.getVariable(j) + ": A^2* = " + a2Orig + " transformed A^2* = " + a2Transformed);
+//
+////                if (a2Transformed < a2Orig) {
+//                X.assignColumn(j, new Vector(xTransformed));
+////                } else {
+////                    X.assignColumn(j, new Vector(x1Orig));
+////                }
+//            }
+//
+//            return new BoxDataSet(new VerticalDoubleDataBox(X.transpose().toArray()), dataSet.getVariables());
+//        } catch (OutOfRangeException e) {
+//            e.printStackTrace();
+//            return dataSet;
+//        }
+//    }
+
+
     /**
-     * <p>getNonparanormalTransformed.</p>
+     * Returns a nonparanormal-transformed version of the dataset. Each continuous
+     * column is rank-transformed and mapped through the normal quantile function,
+     * then rescaled to the original column mean and standard deviation. Discrete
+     * columns are left unchanged.
      *
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
@@ -716,80 +807,44 @@ public class DataTransforms {
             Matrix data = dataSet.getDoubleData();
             Matrix X = data.like();
             double n = dataSet.getNumRows();
-//            delta = 1.0 / (4.0 * TMath.pow(n, 0.25) * TMath.sqrt(TMath.PI * TMath.log(n)));
-
-            NormalDistribution normalDistribution = new NormalDistribution();
-
-            double std = Double.NaN;
+            NormalDistribution normal = new NormalDistribution();
 
             for (int j = 0; j < data.getNumColumns(); j++) {
-                double[] x1Orig = Arrays.copyOf(data.getColumn(j).toArray(), data.getNumRows());
-                double[] x1 = Arrays.copyOf(data.getColumn(j).toArray(), data.getNumRows());
+                double[] col = data.getColumn(j).toArray();
 
-                double a2Orig = new AndersonDarlingTest(x1).getASquaredStar();
-
-                if (dataSet.getVariable(j) instanceof DiscreteVariable) {
-                    X.assignColumn(j, new Vector(x1));
+                if (isTreatedAsDiscrete(dataSet, j, col)) {
+                    X.assignColumn(j, new Vector(col));
                     continue;
                 }
 
-                double std1 = StatUtils.sd(x1);
-                double mu1 = StatUtils.mean(x1);
-                double[] xTransformed = DataUtils.ranks(x1);
+                double mu  = StatUtils.mean(col);
+                double std = StatUtils.sd(col);
 
-                for (int i = 0; i < xTransformed.length; i++) {
-                    xTransformed[i] /= n;
-                    xTransformed[i] = normalDistribution.inverseCumulativeProbability(xTransformed[i]);
+                double[] ranks = DataUtils.ranks(col);
+                double[] transformed = new double[ranks.length];
+
+                for (int i = 0; i < ranks.length; i++) {
+                    transformed[i] = normal.inverseCumulativeProbability(ranks[i] / (n + 1));
+                    transformed[i] = transformed[i] * std + mu;
                 }
 
-                if (Double.isNaN(std)) {
-                    std = StatUtils.sd(x1Orig);
-                }
-
-                for (int i = 0; i < xTransformed.length; i++) {
-                    xTransformed[i] *= std1;
-                    xTransformed[i] += mu1;
-                }
-
-                double a2Transformed = new AndersonDarlingTest(xTransformed).getASquaredStar();
-
-                double min = Double.POSITIVE_INFINITY;
-                double max = Double.NEGATIVE_INFINITY;
-
-                for (double v : xTransformed) {
-                    if (v > max && !Double.isInfinite(v)) {
-                        max = v;
-                    }
-
-                    if (v < min && !Double.isInfinite(v)) {
-                        min = v;
-                    }
-                }
-
-                for (int i = 0; i < xTransformed.length; i++) {
-                    if (xTransformed[i] == Double.POSITIVE_INFINITY) {
-                        xTransformed[i] = max;
-                    }
-
-                    if (xTransformed[i] < Double.NEGATIVE_INFINITY) {
-                        xTransformed[i] = min;
-                    }
-                }
-
-                System.out.println(dataSet.getVariable(j) + ": A^2* = " + a2Orig + " transformed A^2* = " + a2Transformed);
-
-//                if (a2Transformed < a2Orig) {
-                X.assignColumn(j, new Vector(xTransformed));
-//                } else {
-//                    X.assignColumn(j, new Vector(x1Orig));
-//                }
+                X.assignColumn(j, new Vector(transformed));
             }
 
-            return new BoxDataSet(new VerticalDoubleDataBox(X.transpose().toArray()), dataSet.getVariables());
+            return new BoxDataSet(
+                    new VerticalDoubleDataBox(X.transpose().toArray()),
+                    dataSet.getVariables());
+
         } catch (OutOfRangeException e) {
             e.printStackTrace();
             return dataSet;
         }
+    }
+
+    private static boolean isTreatedAsDiscrete(DataSet dataSet, int j, double[] col) {
+        if (dataSet.getVariable(j) instanceof DiscreteVariable) return true;
+        long uniqueCount = Arrays.stream(col).distinct().count();
+        return uniqueCount <= TMath.max(10, TMath.sqrt(col.length));
     }
 
     /**
