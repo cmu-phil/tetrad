@@ -1215,86 +1215,86 @@ public class RankTests {
         }
     }
 
-    /**
-     * Conditional permutation-based Wilks test for rank(C_{XY|Z}) &le; r,
-     * valid in the linear non-Gaussian setting.
-     *
-     * <p>Uses the Freedman-Lane residual permutation scheme:
-     * <ol>
-     *   <li>Regress Z out of both X and Y (OLS), obtaining residuals X&#771; and Y&#771;.</li>
-     *   <li>Compute the observed Wilks statistic from X&#771; and Y&#771;.</li>
-     *   <li>For each permutation, shuffle the rows of Y&#771; and recompute the statistic.</li>
-     *   <li>Return the fraction of permutation statistics &ge; the observed statistic.</li>
-     * </ol>
-     *
-     * <p>The residual degrees of freedom are n - rank(Z) - 1, which replaces n - 1
-     * in Bartlett's c-factor. This is used for the observed statistic and all
-     * permutation statistics consistently, so it cancels in the p-value comparison
-     * and only affects the relative weighting of singular values — it is kept for
-     * consistency with the unconditional method.
-     *
-     * @param data  n-by-d raw data matrix (rows = observations).
-     * @param xIdx  column indices for the X block.
-     * @param yIdx  column indices for the Y block.
-     * @param zIdx  column indices for the conditioning set Z.
-     * @param r     rank threshold to test (null hypothesis: rank &le; r).
-     * @param B     number of permutations (e.g. 999 or 1999).
-     * @return      permutation p-value for H0: rank(C_{XY|Z}) &le; r.
-     */
-    public static double rankLeByConditionalPermutation(double[][] data,
-                                                        int[] xIdx, int[] yIdx, int[] zIdx,
-                                                        int r, int B) {
-        final int n = data.length;
-        final int p = xIdx.length, q = yIdx.length;
-        final int minpq = TMath.min(p, q);
-
-        if (r < 0 || r >= minpq) {
-            throw new IllegalArgumentException("r must satisfy 0 <= r < min(p,q).");
-        }
-        if (B < 1) throw new IllegalArgumentException("B must be >= 1.");
-
-        // Extract raw blocks.
-        double[][] X = extractCols(data, xIdx, n, p);
-        double[][] Y = extractCols(data, yIdx, n, q);
-
-        // If Z is empty, fall back to the unconditional permutation test.
-        if (zIdx == null || zIdx.length == 0) {
-            return rankLeByPermutation(data, xIdx, yIdx, r, B);
-        }
-
-        double[][] Z = extractCols(data, zIdx, n, zIdx.length);
-
-        // Effective degrees of freedom: n - rankZ - 1.
-        // We use the column count of Z as a proxy for its rank (Z is assumed
-        // full column rank after any preprocessing). Caller should ensure Z
-        // is not rank-deficient; a ridge is applied inside invSqrtPSD anyway.
-        int dof = n - zIdx.length - 1;
-        if (dof < 1) {
-            throw new IllegalArgumentException(
-                    "Too few observations relative to conditioning set size.");
-        }
-
-        // Residuals: X_res = X - H*X, Y_res = Y - H*Y  where H = Z(Z'Z)^{-1}Z'.
-        // We compute these via QR for numerical stability.
-        double[][] Xres = residualsOLS(Z, X, n, zIdx.length, p);
-        double[][] Yres = residualsOLS(Z, Y, n, zIdx.length, q);
-
-        // Observed statistic on residuals, using dof in place of n-1.
-        double tObs = wilksStatFromData(Xres, Yres, dof, p, q, minpq, r);
-
-        // Permutation loop over residuals.
-        int[] rowPerm = new int[n];
-        for (int i = 0; i < n; i++) rowPerm[i] = i;
-
-        int exceed = 0;
-        for (int b = 0; b < B; b++) {
-            shuffleInPlace(rowPerm);
-            double tPerm = wilksStatPermuted(Xres, Yres, rowPerm, dof, p, q, minpq, r);
-            if (tPerm >= tObs) exceed++;
-        }
-
-        return (exceed + 1.0) / (B + 1.0);
-    }
+//    /**
+//     * Conditional permutation-based Wilks test for rank(C_{XY|Z}) &le; r,
+//     * valid in the linear non-Gaussian setting.
+//     *
+//     * <p>Uses the Freedman-Lane residual permutation scheme:
+//     * <ol>
+//     *   <li>Regress Z out of both X and Y (OLS), obtaining residuals X&#771; and Y&#771;.</li>
+//     *   <li>Compute the observed Wilks statistic from X&#771; and Y&#771;.</li>
+//     *   <li>For each permutation, shuffle the rows of Y&#771; and recompute the statistic.</li>
+//     *   <li>Return the fraction of permutation statistics &ge; the observed statistic.</li>
+//     * </ol>
+//     *
+//     * <p>The residual degrees of freedom are n - rank(Z) - 1, which replaces n - 1
+//     * in Bartlett's c-factor. This is used for the observed statistic and all
+//     * permutation statistics consistently, so it cancels in the p-value comparison
+//     * and only affects the relative weighting of singular values — it is kept for
+//     * consistency with the unconditional method.
+//     *
+//     * @param data  n-by-d raw data matrix (rows = observations).
+//     * @param xIdx  column indices for the X block.
+//     * @param yIdx  column indices for the Y block.
+//     * @param zIdx  column indices for the conditioning set Z.
+//     * @param r     rank threshold to test (null hypothesis: rank &le; r).
+//     * @param B     number of permutations (e.g. 999 or 1999).
+//     * @return      permutation p-value for H0: rank(C_{XY|Z}) &le; r.
+//     */
+//    public static double rankLeByConditionalPermutation(double[][] data,
+//                                                        int[] xIdx, int[] yIdx, int[] zIdx,
+//                                                        int r, int B) {
+//        final int n = data.length;
+//        final int p = xIdx.length, q = yIdx.length;
+//        final int minpq = TMath.min(p, q);
+//
+//        if (r < 0 || r >= minpq) {
+//            throw new IllegalArgumentException("r must satisfy 0 <= r < min(p,q).");
+//        }
+//        if (B < 1) throw new IllegalArgumentException("B must be >= 1.");
+//
+//        // Extract raw blocks.
+//        double[][] X = extractCols(data, xIdx, n, p);
+//        double[][] Y = extractCols(data, yIdx, n, q);
+//
+//        // If Z is empty, fall back to the unconditional permutation test.
+//        if (zIdx == null || zIdx.length == 0) {
+//            return rankLeByPermutation(data, xIdx, yIdx, r, B);
+//        }
+//
+//        double[][] Z = extractCols(data, zIdx, n, zIdx.length);
+//
+//        // Effective degrees of freedom: n - rankZ - 1.
+//        // We use the column count of Z as a proxy for its rank (Z is assumed
+//        // full column rank after any preprocessing). Caller should ensure Z
+//        // is not rank-deficient; a ridge is applied inside invSqrtPSD anyway.
+//        int dof = n - zIdx.length - 1;
+//        if (dof < 1) {
+//            throw new IllegalArgumentException(
+//                    "Too few observations relative to conditioning set size.");
+//        }
+//
+//        // Residuals: X_res = X - H*X, Y_res = Y - H*Y  where H = Z(Z'Z)^{-1}Z'.
+//        // We compute these via QR for numerical stability.
+//        double[][] Xres = residualsOLS(Z, X, n, zIdx.length, p);
+//        double[][] Yres = residualsOLS(Z, Y, n, zIdx.length, q);
+//
+//        // Observed statistic on residuals, using dof in place of n-1.
+//        double tObs = wilksStatFromData(Xres, Yres, dof, p, q, minpq, r);
+//
+//        // Permutation loop over residuals.
+//        int[] rowPerm = new int[n];
+//        for (int i = 0; i < n; i++) rowPerm[i] = i;
+//
+//        int exceed = 0;
+//        for (int b = 0; b < B; b++) {
+//            shuffleInPlace(rowPerm);
+//            double tPerm = wilksStatPermuted(Xres, Yres, rowPerm, dof, p, q, minpq, r);
+//            if (tPerm >= tObs) exceed++;
+//        }
+//
+//        return (exceed + 1.0) / (B + 1.0);
+//    }
 
 //    /**
 //     * Estimates the conditional rank using sequential conditional permutation tests.
@@ -1320,62 +1320,62 @@ public class RankTests {
 //        return minpq;
 //    }
 
-    /**
-     * Computes OLS residuals of regressing each column of Y on Z.
-     *
-     * <p>Solves min ||Y - Z*B||_F via the normal equations (Z'Z + ridge)^{-1} Z'Y,
-     * then returns R = Y - Z * Bhat.  A small ridge is applied for stability,
-     * consistent with the ridge used elsewhere in this class.
-     *
-     * @param Z    n-by-k design matrix (the conditioning variables).
-     * @param Y    n-by-q response matrix.
-     * @param n    number of observations.
-     * @param k    number of conditioning variables (columns of Z).
-     * @param q    number of response variables (columns of Y).
-     * @return     n-by-q residual matrix.
-     */
-    private static double[][] residualsOLS(double[][] Z, double[][] Y,
-                                           int n, int k, int q) {
-        // ZtZ (k x k) and ZtY (k x q).
-        double[][] ZtZ = new double[k][k];
-        double[][] ZtY = new double[k][q];
-
-        for (int i = 0; i < n; i++) {
-            for (int a = 0; a < k; a++) {
-                for (int b = 0; b < k; b++) ZtZ[a][b] += Z[i][a] * Z[i][b];
-                for (int c = 0; c < q; c++) ZtY[a][c] += Z[i][a] * Y[i][c];
-            }
-        }
-
-        // Ridge ZtZ for stability.
-        for (int a = 0; a < k; a++) ZtZ[a][a] += RIDGE;
-
-        // Solve (ZtZ) * Bhat = ZtY via SimpleMatrix inversion.
-        SimpleMatrix mZtZ = new SimpleMatrix(k, k);
-        for (int a = 0; a < k; a++)
-            for (int b = 0; b < k; b++)
-                mZtZ.set(a, b, ZtZ[a][b]);
-
-        SimpleMatrix mZtY = new SimpleMatrix(k, q);
-        for (int a = 0; a < k; a++)
-            for (int c = 0; c < q; c++)
-                mZtY.set(a, c, ZtY[a][c]);
-
-        SimpleMatrix Bhat = mZtZ.invert().mult(mZtY);  // k x q
-
-        // Residuals R = Y - Z * Bhat.
-        double[][] R = new double[n][q];
-        for (int i = 0; i < n; i++) {
-            for (int c = 0; c < q; c++) {
-                double fitted = 0.0;
-                for (int a = 0; a < k; a++) {
-                    fitted += Z[i][a] * Bhat.get(a, c);
-                }
-                R[i][c] = Y[i][c] - fitted;
-            }
-        }
-        return R;
-    }
+//    /**
+//     * Computes OLS residuals of regressing each column of Y on Z.
+//     *
+//     * <p>Solves min ||Y - Z*B||_F via the normal equations (Z'Z + ridge)^{-1} Z'Y,
+//     * then returns R = Y - Z * Bhat.  A small ridge is applied for stability,
+//     * consistent with the ridge used elsewhere in this class.
+//     *
+//     * @param Z    n-by-k design matrix (the conditioning variables).
+//     * @param Y    n-by-q response matrix.
+//     * @param n    number of observations.
+//     * @param k    number of conditioning variables (columns of Z).
+//     * @param q    number of response variables (columns of Y).
+//     * @return     n-by-q residual matrix.
+//     */
+//    private static double[][] residualsOLS(double[][] Z, double[][] Y,
+//                                           int n, int k, int q) {
+//        // ZtZ (k x k) and ZtY (k x q).
+//        double[][] ZtZ = new double[k][k];
+//        double[][] ZtY = new double[k][q];
+//
+//        for (int i = 0; i < n; i++) {
+//            for (int a = 0; a < k; a++) {
+//                for (int b = 0; b < k; b++) ZtZ[a][b] += Z[i][a] * Z[i][b];
+//                for (int c = 0; c < q; c++) ZtY[a][c] += Z[i][a] * Y[i][c];
+//            }
+//        }
+//
+//        // Ridge ZtZ for stability.
+//        for (int a = 0; a < k; a++) ZtZ[a][a] += RIDGE;
+//
+//        // Solve (ZtZ) * Bhat = ZtY via SimpleMatrix inversion.
+//        SimpleMatrix mZtZ = new SimpleMatrix(k, k);
+//        for (int a = 0; a < k; a++)
+//            for (int b = 0; b < k; b++)
+//                mZtZ.set(a, b, ZtZ[a][b]);
+//
+//        SimpleMatrix mZtY = new SimpleMatrix(k, q);
+//        for (int a = 0; a < k; a++)
+//            for (int c = 0; c < q; c++)
+//                mZtY.set(a, c, ZtY[a][c]);
+//
+//        SimpleMatrix Bhat = mZtZ.invert().mult(mZtY);  // k x q
+//
+//        // Residuals R = Y - Z * Bhat.
+//        double[][] R = new double[n][q];
+//        for (int i = 0; i < n; i++) {
+//            for (int c = 0; c < q; c++) {
+//                double fitted = 0.0;
+//                for (int a = 0; a < k; a++) {
+//                    fitted += Z[i][a] * Bhat.get(a, c);
+//                }
+//                R[i][c] = Y[i][c] - fitted;
+//            }
+//        }
+//        return R;
+//    }
 
     // --- Fast Chi-square critical via WilsonâHilferty with cached normal z ---
     private record Chi2Key(int nu, long alphaBits) {
