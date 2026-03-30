@@ -407,48 +407,6 @@ public class Tgin implements IGraphSearch {
          * <p>
          * We estimate Omega from the sample cross-covariance and test with HSIC.
          */
-//        private OrientationResult groupGinTest(Node origX, Node origY) throws InterruptedException {
-//            List<Integer> colsX = originalToIndicatorCols.get(origX);
-//            List<Integer> colsY = originalToIndicatorCols.get(origY);
-//            int rankY = rankByOriginal.get(origY);
-//
-//            Matrix Xdata = submatrix(dataSet, colsX);   // n x px
-//            Matrix Ydata = submatrix(dataSet, colsY);   // n x py
-//
-//            Matrix SigmaYX = crossCovariance(Ydata, Xdata);  // py x px
-//
-//            // Omega spans the left null space of SigmaYX;
-//            // has (py - rankY) rows under the null hypothesis that x is prior to y.
-//            Matrix Omega = leftNullSpace(SigmaYX, rankY);
-//
-//            if (Omega.getNumRows() == 0) {
-//                // No null space — cannot confirm priority.
-//                return new OrientationResult(false);
-//            }
-//
-//            // Residual signal: (py - rankY) x n
-//            Matrix residual = Omega.times(Ydata.transpose());
-//
-//            // HSIC test: each residual row vs each column of Xdata.
-//            boolean allIndependent = true;
-//            RawMarginalIndependenceTest hsic = new FfCiContinuous(dataSet);
-//            ((FfCiContinuous) hsic).setAlpha(alpha);
-//
-//            for (int row = 0; row < residual.getNumRows(); row++) {
-//                double[] res = residual.row(row).toArray();
-//                for (int col = 0; col < colsX.size(); col++) {
-//                    double[] xCol = Xdata.col(col).toArray();
-//                    if (hsic.computePValue(res, xCol) < alpha) {
-//                        allIndependent = false;
-//                        break;
-//                    }
-//                }
-//                if (!allIndependent) break;
-//            }
-//
-//            return new OrientationResult(allIndependent);
-//        }
-
         private OrientationResult groupGinTest(Node origX, Node origY) throws InterruptedException {
             List<Integer> colsX = originalToIndicatorCols.get(origX);
             List<Integer> colsY = originalToIndicatorCols.get(origY);
