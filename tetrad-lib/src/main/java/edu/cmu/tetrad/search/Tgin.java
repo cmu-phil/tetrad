@@ -350,6 +350,7 @@ public class Tgin implements IGraphSearch {
         private final Map<Node, Integer> rankByOriginal;            // original → rank (# copies)
         private final Map<Node, List<Integer>> originalToIndicatorCols; // original → data col indices
         private final RawMarginalIndependenceTest hsic;
+        private boolean rerouteToLatest = false;
 
         public TginOrientationStages(Graph graph, List<Node> allLatents,
                                      Map<Node, Node> nodeMap,
@@ -382,12 +383,42 @@ public class Tgin implements IGraphSearch {
                     OrientationResult xToY = groupGinTest(origX, origY);
                     OrientationResult yToX = groupGinTest(origY, origX);
 
+                    double pxy = xToY.combinedP();
+                    double pyx = yToX.combinedP();
+
+                    // Strong ordinary cases first.
                     if (xToY.independent() && !yToX.independent()) {
                         removeUndirectedEdgesBetweenClusters(origX, origY);
                         expandEdge(origX, origY);
                     } else if (yToX.independent() && !xToY.independent()) {
                         removeUndirectedEdgesBetweenClusters(origY, origX);
                         expandEdge(origY, origX);
+                    }
+
+                    // Tie-breaker when both directions pass:
+                    // orient toward the clearly larger combined p-value.
+                    else if (xToY.independent() && yToX.independent()) {
+                        if (pxy > 3.0 * pyx && pxy > alpha) {
+                            removeUndirectedEdgesBetweenClusters(origX, origY);
+                            expandEdge(origX, origY);
+                        } else if (pyx > 3.0 * pxy && pyx > alpha) {
+                            removeUndirectedEdgesBetweenClusters(origY, origX);
+                            expandEdge(origY, origX);
+                        }
+                    }
+
+                    // Optional weaker tie-breaker when both directions fail:
+                    // if one side is much less bad than the other, allow orientation.
+                    else {
+                        double relaxedAlpha = 0.25 * alpha;
+
+                        if (pxy > 3.0 * pyx && pxy > relaxedAlpha) {
+                            removeUndirectedEdgesBetweenClusters(origX, origY);
+                            expandEdge(origX, origY);
+                        } else if (pyx > 3.0 * pxy && pyx > relaxedAlpha) {
+                            removeUndirectedEdgesBetweenClusters(origY, origX);
+                            expandEdge(origY, origX);
+                        }
                     }
                     // Both or neither: leave undirected for Meek.
                 }
@@ -417,26 +448,15 @@ public class Tgin implements IGraphSearch {
 
             Matrix SigmaYX = crossCovariance(Ydata, Xdata);  // py x px
 
-            // Omega spans the left null space of SigmaYX;
-            // has (py - rankY) rows under the null hypothesis that X is prior to Y.
             Matrix Omega = leftNullSpace(SigmaYX, rankY);
 
             if (Omega.getNumRows() == 0) {
-                // No null space — cannot confirm priority.
-                return new OrientationResult(false);
+                return new OrientationResult(false, 0.0);
             }
 
-            // Residual signal: (py - rankY) x n
             Matrix residual = Omega.times(Ydata.transpose());
 
-            // Collect all p-values from pairwise HSIC tests (residual rows vs X columns).
-            // Use Fisher's method to combine them into a single omnibus p-value rather
-            // than the all-pass criterion, which is overly conservative and fragile when
-            // individual tests have low power.
-//            RawMarginalIndependenceTest hsic = new FfCiContinuous(dataSet);
-//            ((FfCiContinuous) hsic).setAlpha(alpha);
-
-            final double EPSILON = 1e-15;  // guard against log(0)
+            final double EPSILON = 1e-15;
             double fisherStat = 0.0;
             int df = 0;
 
@@ -445,20 +465,54 @@ public class Tgin implements IGraphSearch {
                 for (int col = 0; col < colsX.size(); col++) {
                     double[] xCol = Xdata.col(col).toArray();
                     double p = hsic.computePValue(res, xCol);
-                    p = Math.max(p, EPSILON);   // avoid log(0)
+                    p = Math.max(p, EPSILON);
                     fisherStat += -2.0 * Math.log(p);
                     df += 2;
                 }
             }
 
-            // Fisher's combined statistic is chi-squared with 2k degrees of freedom,
-            // where k is the number of p-values combined.
-            // A large statistic means the null (independence) is rejected.
-            // We want independence to hold, so we need a small statistic (large combined p-value).
             double combinedP = 1.0 - chiSquaredCdf(fisherStat, df);
-
-            return new OrientationResult(combinedP > alpha);
+            return new OrientationResult(combinedP > alpha, combinedP);
         }
+
+//        private OrientationResult groupGinTest(Node origX, Node origY) throws InterruptedException {
+//            List<Integer> colsX = originalToIndicatorCols.get(origX);
+//            List<Integer> colsY = originalToIndicatorCols.get(origY);
+//            int rankX = rankByOriginal.get(origX);
+//
+//            Matrix Xdata = submatrix(dataSet, colsX);   // n x px
+//            Matrix Ydata = submatrix(dataSet, colsY);   // n x py
+//
+//            Matrix SigmaYX = crossCovariance(Ydata, Xdata);  // py x px
+//
+//            // Omega spans the left null space of SigmaYX;
+//            // has (py - rankX) rows under the null hypothesis that X is prior to Y.
+//            Matrix Omega = leftNullSpace(SigmaYX, rankX);
+//
+//            if (Omega.getNumRows() == 0) {
+//                return new OrientationResult(false);
+//            }
+//
+//            Matrix residual = Omega.times(Ydata.transpose());
+//
+//            final double EPSILON = 1e-15;
+//            double fisherStat = 0.0;
+//            int df = 0;
+//
+//            for (int row = 0; row < residual.getNumRows(); row++) {
+//                double[] res = residual.row(row).toArray();
+//                for (int col = 0; col < colsX.size(); col++) {
+//                    double[] xCol = Xdata.col(col).toArray();
+//                    double p = hsic.computePValue(res, xCol);
+//                    p = Math.max(p, EPSILON);
+//                    fisherStat += -2.0 * Math.log(p);
+//                    df += 2;
+//                }
+//            }
+//
+//            double combinedP = 1.0 - chiSquaredCdf(fisherStat, df);
+//            return new OrientationResult(combinedP > alpha);
+//        }
 
         /**
          * Chi-squared CDF via the regularized lower incomplete gamma function,
@@ -614,13 +668,15 @@ public class Tgin implements IGraphSearch {
                 // Any inter-cluster parent that landed on the wrong copy gets
                 // re-routed to the causally latest copy. Original nodes no longer
                 // exist in _graph, so we inspect copies directly.
-                Node latest = copies.get(causalOrder[r - 1]);
-                for (Node copy : copies) {
-                    if (copy == latest) continue;
-                    for (Node parent : new ArrayList<>(graph.getParents(copy))) {
-                        if (!copies.contains(parent)) {    // external (inter-cluster) parent
-                            graph.removeEdge(Edges.directedEdge(parent, copy));
-                            graph.addDirectedEdge(parent, latest);
+                if (rerouteToLatest) {
+                    Node latest = copies.get(causalOrder[r - 1]);
+                    for (Node copy : copies) {
+                        if (copy == latest) continue;
+                        for (Node parent : new ArrayList<>(graph.getParents(copy))) {
+                            if (!copies.contains(parent)) {
+                                graph.removeEdge(Edges.directedEdge(parent, copy));
+                                graph.addDirectedEdge(parent, latest);
+                            }
                         }
                     }
                 }
@@ -654,30 +710,53 @@ public class Tgin implements IGraphSearch {
 //            return new Matrix(result);
 //        }
 
+//        private Matrix leftNullSpace(Matrix M, int nominalRank) {
+//            SimpleSVD<SimpleMatrix> svd = M.getSimpleMatrix().svd(false);
+//
+//            SimpleMatrix U = svd.getU();
+//            SimpleMatrix W = svd.getW();
+//
+//            int diagLen = Math.min(W.getNumRows(), W.getNumCols());
+//            double[] singularValues = new double[diagLen];
+//            for (int i = 0; i < diagLen; i++) {
+//                singularValues[i] = W.get(i, i);
+//            }
+//
+//            double maxSv = 0.0;
+//            for (double s : singularValues) {
+//                if (s > maxSv) maxSv = s;
+//            }
+//
+//            double tol = Math.max(1e-10, maxSv * 1e-8);
+//            int numericalRank = 0;
+//            for (double s : singularValues) {
+//                if (s > tol) numericalRank++;
+//            }
+//
+//            int usedRank = Math.min(nominalRank, numericalRank);
+//
+//            if (U.getNumCols() <= usedRank) {
+//                return new Matrix(0, M.getNumRows());
+//            }
+//
+//            int nullDim = U.getNumCols() - usedRank;
+//
+//            double[][] result = new double[nullDim][M.getNumRows()];
+//            for (int col = 0; col < nullDim; col++) {
+//                for (int row = 0; row < M.getNumRows(); row++) {
+//                    result[col][row] = U.get(row, usedRank + col);
+//                }
+//            }
+//
+//            return new Matrix(result);
+//        }
+
         private Matrix leftNullSpace(Matrix M, int nominalRank) {
             SimpleSVD<SimpleMatrix> svd = M.getSimpleMatrix().svd(false);
 
             SimpleMatrix U = svd.getU();
-            SimpleMatrix W = svd.getW();
 
-            int diagLen = Math.min(W.getNumRows(), W.getNumCols());
-            double[] singularValues = new double[diagLen];
-            for (int i = 0; i < diagLen; i++) {
-                singularValues[i] = W.get(i, i);
-            }
-
-            double maxSv = 0.0;
-            for (double s : singularValues) {
-                if (s > maxSv) maxSv = s;
-            }
-
-            double tol = Math.max(1e-10, maxSv * 1e-8);
-            int numericalRank = 0;
-            for (double s : singularValues) {
-                if (s > tol) numericalRank++;
-            }
-
-            int usedRank = Math.min(nominalRank, numericalRank);
+            int usedRank = nominalRank;
 
             if (U.getNumCols() <= usedRank) {
                 return new Matrix(0, M.getNumRows());
@@ -848,7 +927,7 @@ public class Tgin implements IGraphSearch {
             return map;
         }
 
-        record OrientationResult(boolean independent) {
+        record OrientationResult(boolean independent, double combinedP) {
         }
     }
 }
