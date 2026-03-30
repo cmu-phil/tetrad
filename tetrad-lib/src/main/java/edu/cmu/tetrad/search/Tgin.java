@@ -398,10 +398,10 @@ public class Tgin implements IGraphSearch {
                     // Tie-breaker when both directions pass:
                     // orient toward the clearly larger combined p-value.
                     else if (xToY.independent() && yToX.independent()) {
-                        if (pxy > 3.0 * pyx && pxy > alpha) {
+                        if (pxy > 2.0 * pyx && pxy > alpha) {
                             removeUndirectedEdgesBetweenClusters(origX, origY);
                             expandEdge(origX, origY);
-                        } else if (pyx > 3.0 * pxy && pyx > alpha) {
+                        } else if (pyx > 2.0 * pxy && pyx > alpha) {
                             removeUndirectedEdgesBetweenClusters(origY, origX);
                             expandEdge(origY, origX);
                         }
@@ -412,10 +412,10 @@ public class Tgin implements IGraphSearch {
                     else {
                         double relaxedAlpha = 0.25 * alpha;
 
-                        if (pxy > 3.0 * pyx && pxy > relaxedAlpha) {
+                        if (pxy > 2.0 * pyx && pxy > relaxedAlpha) {
                             removeUndirectedEdgesBetweenClusters(origX, origY);
                             expandEdge(origX, origY);
-                        } else if (pyx > 3.0 * pxy && pyx > relaxedAlpha) {
+                        } else if (pyx > 2.0 * pxy && pyx > relaxedAlpha) {
                             removeUndirectedEdgesBetweenClusters(origY, origX);
                             expandEdge(origY, origX);
                         }
