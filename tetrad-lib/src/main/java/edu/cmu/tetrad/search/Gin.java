@@ -213,7 +213,7 @@ public class Gin {
                 }
 
                 if (isRoot) {
-                    causalOrder.addFirst(clusterI);
+                    causalOrder.add(clusterI);
                     clustersRemaining.remove(i);
                     updated = true;
                     break;
