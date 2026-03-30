@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search.mimic;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
@@ -253,7 +254,8 @@ public final class TrekMimic {
             throw new NullPointerException("Data set must not be null.");
         }
 
-        this.dataSet = dataSet;
+//        this.dataSet = dataSet;
+        this.dataSet = DataTransforms.getNonparanormalTransformed(dataSet);
     }
 
     /**

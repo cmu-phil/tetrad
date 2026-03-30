@@ -241,8 +241,6 @@ public class Tsc implements EffectiveSampleSizeSettable {
         for (int i = 0; i < variables.size(); i++) this.variables.add(i);
         this.S = new CorrelationMatrix(data).getMatrix().getSimpleMatrix();
 
-        data = DataTransforms.getNonparanormalTransformed(data);
-
         this.sampleSize = data.getNumRows();
         this.dataArray = data.getDoubleData().toArray();
         setEffectiveSampleSize(-1);

@@ -120,7 +120,7 @@ public final class TrekMeasurementModelBuilderPc {
             throw new NullPointerException("Parameters must not be null.");
         }
 
-        this.dataSet = DataTransforms.getNonparanormalTransformed(dataSet);
+        this.dataSet = dataSet;
         this.parameters = parameters;
         this.test = new BlocksIndTestTs();
     }
