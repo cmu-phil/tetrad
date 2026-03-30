@@ -383,8 +383,8 @@ public class Tgin implements IGraphSearch {
                     OrientationResult xToY = groupGinTest(origX, origY);
                     OrientationResult yToX = groupGinTest(origY, origX);
 
-                    double pxy = xToY.combinedP();
-                    double pyx = yToX.combinedP();
+//                    double pxy = xToY.combinedP();
+//                    double pyx = yToX.combinedP();
 
                     // Strong ordinary cases first.
                     if (xToY.independent() && !yToX.independent()) {
@@ -395,31 +395,31 @@ public class Tgin implements IGraphSearch {
                         expandEdge(origY, origX);
                     }
 
-                    // Tie-breaker when both directions pass:
-                    // orient toward the clearly larger combined p-value.
-                    else if (xToY.independent() && yToX.independent()) {
-                        if (pxy > 2.0 * pyx && pxy > alpha) {
-                            removeUndirectedEdgesBetweenClusters(origX, origY);
-                            expandEdge(origX, origY);
-                        } else if (pyx > 2.0 * pxy && pyx > alpha) {
-                            removeUndirectedEdgesBetweenClusters(origY, origX);
-                            expandEdge(origY, origX);
-                        }
-                    }
+//                    // Tie-breaker when both directions pass:
+//                    // orient toward the clearly larger combined p-value.
+//                    else if (xToY.independent() && yToX.independent()) {
+//                        if (pxy > 3.0 * pyx && pxy > alpha) {
+//                            removeUndirectedEdgesBetweenClusters(origX, origY);
+//                            expandEdge(origX, origY);
+//                        } else if (pyx > 3.0 * pxy && pyx > alpha) {
+//                            removeUndirectedEdgesBetweenClusters(origY, origX);
+//                            expandEdge(origY, origX);
+//                        }
+//                    }
 
-                    // Optional weaker tie-breaker when both directions fail:
-                    // if one side is much less bad than the other, allow orientation.
-                    else {
-                        double relaxedAlpha = 0.25 * alpha;
-
-                        if (pxy > 2.0 * pyx && pxy > relaxedAlpha) {
-                            removeUndirectedEdgesBetweenClusters(origX, origY);
-                            expandEdge(origX, origY);
-                        } else if (pyx > 2.0 * pxy && pyx > relaxedAlpha) {
-                            removeUndirectedEdgesBetweenClusters(origY, origX);
-                            expandEdge(origY, origX);
-                        }
-                    }
+//                    // Optional weaker tie-breaker when both directions fail:
+//                    // if one side is much less bad than the other, allow orientation.
+//                    else {
+//                        double relaxedAlpha = /*0.25 **/     alpha;
+//
+//                        if (pxy > 3.0 * pyx && pxy > relaxedAlpha) {
+//                            removeUndirectedEdgesBetweenClusters(origX, origY);
+//                            expandEdge(origX, origY);
+//                        } else if (pyx > 3.0 * pxy && pyx > relaxedAlpha) {
+//                            removeUndirectedEdgesBetweenClusters(origY, origX);
+//                            expandEdge(origY, origX);
+//                        }
+//                    }
                     // Both or neither: leave undirected for Meek.
                 }
             }

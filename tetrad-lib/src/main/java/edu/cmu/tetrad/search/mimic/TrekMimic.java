@@ -204,7 +204,7 @@ public final class TrekMimic {
 
         recoverMeasuredParentsHybrid();
 
-        LatentGraphRefinement refinement = new LatentGraphRefinement(variables, s, sampleSize, alpha);
+        LatentGraphRefinement refinement = new LatentGraphRefinement(variables, s, dataSet, sampleSize, alpha);
 
         // Remove any edges that are removable by conditional rank.
         refinement.orientAndPrintEdges(graph);

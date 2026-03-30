@@ -7,8 +7,11 @@
 
 package edu.cmu.tetrad.search.mimic;
 
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.search.RecursiveBlocking;
+import edu.cmu.tetrad.search.test.FfCiContinuous;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.StatUtils;
@@ -68,6 +71,7 @@ public final class LatentGraphRefinement {
      * Alpha level for correlation and rank tests.
      */
     private final double alpha;
+    private final DataSet dataSet;
     /**
      * Minimum proportion of (parentX, childY) pairs that must be
      * significantly correlated before orienting X -> Y.
@@ -90,7 +94,7 @@ public final class LatentGraphRefinement {
      * @param alpha      significance level; must be in (0, 1)
      */
     public LatentGraphRefinement(List<Node> variables,
-                                 SimpleMatrix s,
+                                 SimpleMatrix s, DataSet dataSet,
                                  int sampleSize,
                                  double alpha) {
         if (variables == null) {
@@ -108,6 +112,7 @@ public final class LatentGraphRefinement {
 
         this.variables = new ArrayList<>(variables);
         this.s = s;
+        this.dataSet = dataSet;
         this.sampleSize = sampleSize;
         this.alpha = alpha;
     }
@@ -378,15 +383,36 @@ public final class LatentGraphRefinement {
             List<Node> parentsx = measuredOnly(graph.getParents(x));
             List<Node> parentsy = measuredOnly(graph.getParents(y));
 
-            parentsx.removeAll(parentsy);
-            parentsy.removeAll(parentsx);
+            // The parents might be wrong, and children should not correlate in any case.
+//            List<Node> parentsx = measuredOnly(graph.getAdjacentNodes(x));
+//            List<Node> parentsy = measuredOnly(graph.getAdjacentNodes(y));
 
+//            parentsx.addAll(measuredOnly(graph.getChildren(x)));
+//            parentsy.addAll(measuredOnly(graph.getChildren(y)));
+
+
+            // here we need children.
             List<Node> childrenx = measuredOnly(graph.getChildren(x));
             List<Node> childreny = measuredOnly(graph.getChildren(y));
 
-            boolean orientXtoY = sufficientPairsCorrelated(
+            parentsx.removeAll(parentsy);
+            parentsy.removeAll(parentsx);
+            childrenx.removeAll(childreny);
+            childreny.removeAll(childrenx);
+            parentsx.addAll(childrenx);
+            parentsy.addAll(childreny);
+            parentsx.removeAll(childrenx);
+            parentsy.removeAll(childreny);
+
+//            boolean orientXtoY = sufficientPairsCorrelated(
+//                    parentsx, childreny, orientationProportion);
+//            boolean orientYtoX = sufficientPairsCorrelated(
+//                    parentsy, childrenx, orientationProportion);
+
+
+            boolean orientXtoY = sufficientPairsAssociated(
                     parentsx, childreny, orientationProportion);
-            boolean orientYtoX = sufficientPairsCorrelated(
+            boolean orientYtoX = sufficientPairsAssociated(
                     parentsy, childrenx, orientationProportion);
 
             // No asymmetry, or neither side has evidence: leave undirected.
@@ -510,6 +536,38 @@ public final class LatentGraphRefinement {
 
         return (double) correlated / total >= minProportion;
     }
+
+    private boolean sufficientPairsAssociated(List<Node> left,
+                                              List<Node> right,
+                                              double minProportion) {
+        if (left.isEmpty() || right.isEmpty()) return false;
+
+        int total = left.size() * right.size();
+        int associated = 0;
+
+        double[][] array = dataSet.getDoubleData().transpose().toArray();
+        List<Node> nodes = dataSet.getVariables();
+        RawMarginalIndependenceTest hsic = new FfCiContinuous(dataSet);
+
+        for (Node a : left) {
+            for (Node b : right) {
+                double[] aData = array[nodes.indexOf(a)];
+                double[] bData = array[nodes.indexOf(b)];
+
+                try {
+                    if (hsic.computePValue(aData, bData) < alpha) {
+                        associated++;
+                    };
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        return (double) associated / total >= minProportion;
+    }
+
+
 
     /**
      * Sets the orientation proportion which defines the spatial distribution ratio.
