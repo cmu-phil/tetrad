@@ -226,11 +226,28 @@ public class Tgin implements IGraphSearch {
         stages.orientIntraClusterEdges();   // Stage 5 first: resolve intra-cluster order
 
 
-        for (int i = 0; i < 3; i++) {
-            stages.orientInterClusterEdges();   // Stage 4: orient inter-cluster edges using GIN
+//        for (int i = 0; i < 3; i++) {
+//            stages.orientInterClusterEdges();   // Stage 4: orient inter-cluster edges using GIN
+//        }
+
+        int maxIter = 10;
+        for (int i = 0; i < maxIter; i++) {
+            int edgesBefore = countDirectedLatentEdges();
+            stages.orientInterClusterEdges();
+            int edgesAfter = countDirectedLatentEdges();
+            if (edgesAfter == edgesBefore) break;
         }
 
         return graph;
+    }
+
+    private int countDirectedLatentEdges() {
+        int count = 0;
+        for (Edge e : graph.getEdges())
+            if (e.isDirected()
+                    && e.getNode1().getNodeType() == NodeType.LATENT
+                    && e.getNode2().getNodeType() == NodeType.LATENT) count++;
+        return count;
     }
 
     /**
@@ -660,22 +677,63 @@ public class Tgin implements IGraphSearch {
          * Returns the left null space of M as a matrix whose rows are orthogonal
          * to the column space of M, assuming M has rank r. Uses thin SVD.
          */
-        private Matrix leftNullSpace(Matrix M, int rank) {
-            // false = full SVD; thin SVD truncates the null-space columns we need
-            SimpleSVD<SimpleMatrix> svd = M.getSimpleMatrix().svd(false);
-            SimpleMatrix U = svd.getU();
+//        private Matrix leftNullSpace(Matrix M, int rank) {
+//            // false = full SVD; thin SVD truncates the null-space columns we need
+//            SimpleSVD<SimpleMatrix> svd = M.getSimpleMatrix().svd(false);
+//            SimpleMatrix U = svd.getU();
+//
+//            // U is now px x px; its columns from index `rank` onward span the left null space.
+//            int numCols = U.getNumCols();   // was: svd.getSingularValues().length — wrong for non-square M
+//            int nullDim = numCols - rank;
+//            if (nullDim <= 0) return new Matrix(0, M.getNumRows());
+//
+//            double[][] result = new double[nullDim][M.getNumRows()];
+//            for (int col = 0; col < nullDim; col++) {
+//                for (int row = 0; row < M.getNumRows(); row++) {
+//                    result[col][row] = U.get(row, rank + col);
+//                }
+//            }
+//            return new Matrix(result);
+//        }
 
-            // U is now px x px; its columns from index `rank` onward span the left null space.
-            int numCols = U.getNumCols();   // was: svd.getSingularValues().length — wrong for non-square M
-            int nullDim = numCols - rank;
-            if (nullDim <= 0) return new Matrix(0, M.getNumRows());
+        private Matrix leftNullSpace(Matrix M, int nominalRank) {
+            SimpleSVD<SimpleMatrix> svd = M.getSimpleMatrix().svd(false);
+
+            SimpleMatrix U = svd.getU();
+            SimpleMatrix W = svd.getW();
+
+            int diagLen = Math.min(W.getNumRows(), W.getNumCols());
+            double[] singularValues = new double[diagLen];
+            for (int i = 0; i < diagLen; i++) {
+                singularValues[i] = W.get(i, i);
+            }
+
+            double maxSv = 0.0;
+            for (double s : singularValues) {
+                if (s > maxSv) maxSv = s;
+            }
+
+            double tol = Math.max(1e-10, maxSv * 1e-8);
+            int numericalRank = 0;
+            for (double s : singularValues) {
+                if (s > tol) numericalRank++;
+            }
+
+            int usedRank = Math.min(nominalRank, numericalRank);
+
+            if (U.getNumCols() <= usedRank) {
+                return new Matrix(0, M.getNumRows());
+            }
+
+            int nullDim = U.getNumCols() - usedRank;
 
             double[][] result = new double[nullDim][M.getNumRows()];
             for (int col = 0; col < nullDim; col++) {
                 for (int row = 0; row < M.getNumRows(); row++) {
-                    result[col][row] = U.get(row, rank + col);
+                    result[col][row] = U.get(row, usedRank + col);
                 }
             }
+
             return new Matrix(result);
         }
 
