@@ -21,11 +21,7 @@
 package edu.cmu.tetrad.search.mimic;
 
 import edu.cmu.tetrad.algcomparison.independence.BlocksIndTestTs;
-import edu.cmu.tetrad.data.CorrelationMatrix;
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -68,11 +64,6 @@ import java.util.Set;
  * @author josephramsey
  */
 public final class TrekMeasurementModelBuilderPc {
-
-    /**
-     * Data model.
-     */
-    private final DataModel dataModel;
 
     /**
      * Data set.
@@ -129,8 +120,7 @@ public final class TrekMeasurementModelBuilderPc {
             throw new NullPointerException("Parameters must not be null.");
         }
 
-        this.dataModel = dataSet;
-        this.dataSet = dataSet;
+        this.dataSet = DataTransforms.getNonparanormalTransformed(dataSet);
         this.parameters = parameters;
         this.test = new BlocksIndTestTs();
     }
@@ -246,7 +236,7 @@ public final class TrekMeasurementModelBuilderPc {
     private BlockSpec buildBlockSpec() {
 //        Tsc tsc = new Tsc(dataModel.getVariables(),
 //                new CovarianceMatrix(dataSet));
-        Tsc tsc = new Tsc(dataModel.getVariables(), dataSet);
+        Tsc tsc = new Tsc(dataSet.getVariables(), dataSet);
 
         tsc.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         tsc.setRmin(1); // TODO - should this be configurable?
@@ -285,8 +275,7 @@ public final class TrekMeasurementModelBuilderPc {
      */
     private IndependenceTest buildBlocksTest(BlockSpec spec) {
         this.test.setBlockSpec(spec);
-
-        IndependenceTest indTest = this.test.getTest(dataModel, parameters);
+        IndependenceTest indTest = this.test.getTest(dataSet, parameters);
         indTest.setAlpha(parameters.getDouble(Params.ALPHA));
         return indTest;
     }

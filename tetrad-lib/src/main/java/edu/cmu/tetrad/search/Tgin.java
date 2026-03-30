@@ -7,7 +7,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.mimic.TrekMeasurementModelBuilderBoss;
 import edu.cmu.tetrad.search.mimic.TrekMeasurementModelBuilderPc;
-import edu.cmu.tetrad.search.test.FfCiContinuous;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
@@ -363,7 +362,8 @@ public class Tgin implements IGraphSearch {
             this.originalToExpanded = buildOriginalToExpanded();
             this.rankByOriginal = buildRankMap();
             this.originalToIndicatorCols = buildIndicatorMap();
-            this.hsic = hsic;;
+            this.hsic = hsic;
+            ;
         }
 
         // ==============================================================
@@ -475,45 +475,6 @@ public class Tgin implements IGraphSearch {
             return new OrientationResult(combinedP > alpha, combinedP);
         }
 
-//        private OrientationResult groupGinTest(Node origX, Node origY) throws InterruptedException {
-//            List<Integer> colsX = originalToIndicatorCols.get(origX);
-//            List<Integer> colsY = originalToIndicatorCols.get(origY);
-//            int rankX = rankByOriginal.get(origX);
-//
-//            Matrix Xdata = submatrix(dataSet, colsX);   // n x px
-//            Matrix Ydata = submatrix(dataSet, colsY);   // n x py
-//
-//            Matrix SigmaYX = crossCovariance(Ydata, Xdata);  // py x px
-//
-//            // Omega spans the left null space of SigmaYX;
-//            // has (py - rankX) rows under the null hypothesis that X is prior to Y.
-//            Matrix Omega = leftNullSpace(SigmaYX, rankX);
-//
-//            if (Omega.getNumRows() == 0) {
-//                return new OrientationResult(false);
-//            }
-//
-//            Matrix residual = Omega.times(Ydata.transpose());
-//
-//            final double EPSILON = 1e-15;
-//            double fisherStat = 0.0;
-//            int df = 0;
-//
-//            for (int row = 0; row < residual.getNumRows(); row++) {
-//                double[] res = residual.row(row).toArray();
-//                for (int col = 0; col < colsX.size(); col++) {
-//                    double[] xCol = Xdata.col(col).toArray();
-//                    double p = hsic.computePValue(res, xCol);
-//                    p = Math.max(p, EPSILON);
-//                    fisherStat += -2.0 * Math.log(p);
-//                    df += 2;
-//                }
-//            }
-//
-//            double combinedP = 1.0 - chiSquaredCdf(fisherStat, df);
-//            return new OrientationResult(combinedP > alpha);
-//        }
-
         /**
          * Chi-squared CDF via the regularized lower incomplete gamma function,
          * computed using the Lanczos approximation to the log-gamma function
@@ -540,11 +501,11 @@ public class Tgin implements IGraphSearch {
 
             if (x < a + 1.0) {
                 // Series expansion
-                double ap  = a;
+                double ap = a;
                 double sum = 1.0 / a;
                 double del = sum;
                 for (int i = 0; i < 200; i++) {
-                    ap  += 1.0;
+                    ap += 1.0;
                     del *= x / ap;
                     sum += del;
                     if (Math.abs(del) < Math.abs(sum) * 1e-12) break;
@@ -560,11 +521,11 @@ public class Tgin implements IGraphSearch {
                 for (int i = 1; i <= 200; i++) {
                     double an = -i * (i - a);
                     b += 2.0;
-                    d  = an * d + b;
+                    d = an * d + b;
                     if (Math.abs(d) < fpmin) d = fpmin;
-                    c  = b + an / c;
+                    c = b + an / c;
                     if (Math.abs(c) < fpmin) c = fpmin;
-                    d  = 1.0 / d;
+                    d = 1.0 / d;
                     h *= d * c;
                     if (Math.abs(d * c - 1.0) < 1e-12) break;
                 }
@@ -581,7 +542,7 @@ public class Tgin implements IGraphSearch {
                     24.01409824083091, -1.231739572450155,
                     0.001208650973866179, -5.395239384953e-6
             };
-            double y   = x;
+            double y = x;
             double tmp = x + 5.5;
             tmp -= (x + 0.5) * Math.log(tmp);
             double ser = 1.000000000190015;
@@ -691,66 +652,6 @@ public class Tgin implements IGraphSearch {
          * Returns the left null space of M as a matrix whose rows are orthogonal
          * to the column space of M, assuming M has rank r. Uses thin SVD.
          */
-//        private Matrix leftNullSpace(Matrix M, int rank) {
-//            // false = full SVD; thin SVD truncates the null-space columns we need
-//            SimpleSVD<SimpleMatrix> svd = M.getSimpleMatrix().svd(false);
-//            SimpleMatrix U = svd.getU();
-//
-//            // U is now px x px; its columns from index `rank` onward span the left null space.
-//            int numCols = U.getNumCols();   // was: svd.getSingularValues().length — wrong for non-square M
-//            int nullDim = numCols - rank;
-//            if (nullDim <= 0) return new Matrix(0, M.getNumRows());
-//
-//            double[][] result = new double[nullDim][M.getNumRows()];
-//            for (int col = 0; col < nullDim; col++) {
-//                for (int row = 0; row < M.getNumRows(); row++) {
-//                    result[col][row] = U.get(row, rank + col);
-//                }
-//            }
-//            return new Matrix(result);
-//        }
-
-//        private Matrix leftNullSpace(Matrix M, int nominalRank) {
-//            SimpleSVD<SimpleMatrix> svd = M.getSimpleMatrix().svd(false);
-//
-//            SimpleMatrix U = svd.getU();
-//            SimpleMatrix W = svd.getW();
-//
-//            int diagLen = Math.min(W.getNumRows(), W.getNumCols());
-//            double[] singularValues = new double[diagLen];
-//            for (int i = 0; i < diagLen; i++) {
-//                singularValues[i] = W.get(i, i);
-//            }
-//
-//            double maxSv = 0.0;
-//            for (double s : singularValues) {
-//                if (s > maxSv) maxSv = s;
-//            }
-//
-//            double tol = Math.max(1e-10, maxSv * 1e-8);
-//            int numericalRank = 0;
-//            for (double s : singularValues) {
-//                if (s > tol) numericalRank++;
-//            }
-//
-//            int usedRank = Math.min(nominalRank, numericalRank);
-//
-//            if (U.getNumCols() <= usedRank) {
-//                return new Matrix(0, M.getNumRows());
-//            }
-//
-//            int nullDim = U.getNumCols() - usedRank;
-//
-//            double[][] result = new double[nullDim][M.getNumRows()];
-//            for (int col = 0; col < nullDim; col++) {
-//                for (int row = 0; row < M.getNumRows(); row++) {
-//                    result[col][row] = U.get(row, usedRank + col);
-//                }
-//            }
-//
-//            return new Matrix(result);
-//        }
-
         private Matrix leftNullSpace(Matrix M, int nominalRank) {
             SimpleSVD<SimpleMatrix> svd = M.getSimpleMatrix().svd(false);
 
@@ -783,7 +684,6 @@ public class Tgin implements IGraphSearch {
             System.out.println("lingamOrder: sources.numRows()=" + sources.numRows() + ", sources.numCols()=" + sources.numCols());
 
             boolean[][] adj = new boolean[r][r];
-//            RawMarginalIndependenceTest hsic = new edu.cmu.tetrad.search.test.FfCiContinuous(dataSet);
 
             for (int i = 0; i < r; i++) {
                 for (int j = i + 1; j < r; j++) {

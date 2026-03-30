@@ -215,11 +215,11 @@ public final class BossTrekMimic implements IGraphSearch {
         LatentGraphRefinement refinement = new LatentGraphRefinement(variables, s, dataSet, sampleSize, alpha);
 
         // Remove any edges that are removable by conditional rank.
-        refinement.orientAndPrintEdges(graph);
+        refinement.orientAndPruneEdges(graph);
 
         // Orient latents and remove latent-transitive inputs.
         if (orientAndPrune) {
-            List<Graph> graphs = refinement.orientAndPrintEdges(graph);
+            List<Graph> graphs = refinement.orientAndPruneEdges(graph);
             Graph oriented = graphs.get(0);
             Graph pruned = graphs.get(1);
 

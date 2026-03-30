@@ -383,37 +383,20 @@ public final class LatentGraphRefinement {
             List<Node> parentsx = measuredOnly(graph.getParents(x));
             List<Node> parentsy = measuredOnly(graph.getParents(y));
 
-            // The parents might be wrong, and children should not correlate in any case.
-//            List<Node> parentsx = measuredOnly(graph.getAdjacentNodes(x));
-//            List<Node> parentsy = measuredOnly(graph.getAdjacentNodes(y));
+            if (parentsx.isEmpty() || parentsy.isEmpty()) {
+                continue;
+            }
 
-//            parentsx.addAll(measuredOnly(graph.getChildren(x)));
-//            parentsy.addAll(measuredOnly(graph.getChildren(y)));
-
-
-            // here we need children.
             List<Node> childrenx = measuredOnly(graph.getChildren(x));
             List<Node> childreny = measuredOnly(graph.getChildren(y));
 
             parentsx.removeAll(parentsy);
             parentsy.removeAll(parentsx);
-            childrenx.removeAll(childreny);
-            childreny.removeAll(childrenx);
-            parentsx.addAll(childrenx);
-            parentsy.addAll(childreny);
-            parentsx.removeAll(childrenx);
-            parentsy.removeAll(childreny);
 
             boolean orientXtoY = sufficientPairsCorrelated(
                     parentsx, childreny, orientationProportion);
             boolean orientYtoX = sufficientPairsCorrelated(
                     parentsy, childrenx, orientationProportion);
-
-
-//            boolean orientXtoY = sufficientPairsAssociated(
-//                    parentsx, childreny, orientationProportion);
-//            boolean orientYtoX = sufficientPairsAssociated(
-//                    parentsy, childrenx, orientationProportion);
 
             // No asymmetry, or neither side has evidence: leave undirected.
             if (orientXtoY == orientYtoX) {
@@ -953,7 +936,7 @@ public final class LatentGraphRefinement {
      * The difference between the two is the set of edges in the
      * unidentifiable region.
      */
-    public List<Graph> orientAndPrintEdges(Graph graph) {
+    public List<Graph> orientAndPruneEdges(Graph graph) {
         graph = new EdgeListGraph(graph);
 
         // Override existing directed edges to avoid confusion (and cycles).

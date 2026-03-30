@@ -7,11 +7,7 @@
 
 package edu.cmu.tetrad.search.mimic;
 
-import edu.cmu.tetrad.data.CorrelationMatrix;
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -70,11 +66,6 @@ import java.util.Set;
 public final class TrekMeasurementModelBuilderBoss {
 
     /**
-     * Data model (used by TSC for variable list and covariance).
-     */
-    private final DataModel dataModel;
-
-    /**
      * Data set.
      */
     private final DataSet dataSet;
@@ -118,8 +109,7 @@ public final class TrekMeasurementModelBuilderBoss {
             throw new NullPointerException("Parameters must not be null.");
         }
 
-        this.dataModel = dataSet;
-        this.dataSet = dataSet;
+        this.dataSet = DataTransforms.getNonparanormalTransformed(dataSet);
         this.parameters = parameters;
     }
 
@@ -227,7 +217,7 @@ public final class TrekMeasurementModelBuilderBoss {
     private BlockSpec buildBlockSpec() {
 //        Tsc tsc = new Tsc(dataModel.getVariables(),
 //                new CovarianceMatrix(dataSet));
-        Tsc tsc = new Tsc(dataModel.getVariables(), dataSet);
+        Tsc tsc = new Tsc(dataSet.getVariables(), dataSet);
 
         tsc.setEffectiveSampleSize(
                 parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
