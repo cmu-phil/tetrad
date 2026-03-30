@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.util;
 
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
@@ -83,15 +82,12 @@ public class RankTests {
      * threshold, which could lead to numerical instability or inaccuracies.
      */
     private static final double MIN_EIG = 1e-12;
-    // --- Fast Chi-square critical via WilsonâHilferty with cached normal z ---
-    private record Chi2Key(int nu, long alphaBits) {}
     private static final Map<Chi2Key, Double> CHI2_CRIT_CACHE = new ConcurrentHashMap<>();
     /**
      * A small constant value added as a ridge term during regularization to improve numerical stability. This helps
      * prevent issues such as singular matrices or poor conditioning in mathematical computations.
      */
     public static double RIDGE = 1e-6;
-
     /**
      * The RankTests class provides utility methods for ranking-related evaluations. This class is not meant to be
      * instantiated.
@@ -316,6 +312,30 @@ public class RankTests {
     }
 
     /**
+     * Estimates rank using the permutation Wilks test, suitable for linear
+     * non-Gaussian data.  Sequentially tests rank &le; 0, 1, 2, ... and
+     * returns the first r whose permutation p-value exceeds {@code alpha}.
+     *
+     * @param data  n-by-d raw data matrix.
+     * @param xIdx  column indices for the X block.
+     * @param yIdx  column indices for the Y block.
+     * @param alpha significance level (e.g. 0.05).
+     * @param B     number of permutations per test (e.g. 999).
+     * @return      estimated rank.
+     */
+    public static int estimatePermutationRank(double[][] data,
+                                              int[] xIdx, int[] yIdx,
+                                              double alpha, int B) {
+        int minpq = TMath.min(xIdx.length, yIdx.length);
+        for (int r = 0; r < minpq; r++) {
+            if (rankLeByPermutation(data, xIdx, yIdx, r, B) > alpha) {
+                return r;
+            }
+        }
+        return minpq;
+    }
+
+    /**
      * Estimates the rank of a matrix using the Wilks test and a Bartlett ÏÂ² approximation. This method employs an
      * optimization for fast computation.
      *
@@ -404,9 +424,9 @@ public class RankTests {
         return CHI2_CRIT_CACHE.computeIfAbsent(
                 new Chi2Key(nu, Double.doubleToLongBits(alpha)),
                 k -> {
-                    double z  = invNormal1mAlpha(alpha);
+                    double z = invNormal1mAlpha(alpha);
                     double dn = nu;
-                    double a  = 2.0 / (9.0 * dn);
+                    double a = 2.0 / (9.0 * dn);
                     return dn * TMath.pow(1.0 - a + z * TMath.sqrt(a), 3.0);
                 });
     }
@@ -555,17 +575,6 @@ public class RankTests {
         }
         // V * D^{-1/2} * V^T
         return V.mult(DinvSqrt).mult(V.transpose());
-    }
-
-    /**
-     * Rank-aware PSD inverse square root.
-     * Returns W = D^{-1/2} U^T where U contains kept eigenvectors (columns),
-     * so W has shape (r x n). Also returns r.
-     */
-    private static final class Whitening {
-        final SimpleMatrix W;  // r x n
-        final int rank;
-        Whitening(SimpleMatrix W, int rank) { this.W = W; this.rank = rank; }
     }
 
     private static Whitening invSqrtPSD_rankAware(SimpleMatrix A, double relTol) {
@@ -868,8 +877,6 @@ public class RankTests {
         return entry;
     }
 
-    // ==== Add this to RankTests ====
-
     /**
      * RCCA entry for (C, D) after partialing out Z: S_|Z = S - S_{.,Z} * inv(S_{Z,Z} + ridge*I) * S_{Z,.} Then run RCCA
      * on (C, D) blocks of S_|Z with the same ridge regularization on R_cc and R_dd that getRccaEntry(...) uses.
@@ -980,13 +987,13 @@ public class RankTests {
         return new RccaEntry(svals, suffixLogs);
     }
 
-    /* --------------------- small local helpers (keep private) --------------------- */
-
     private static int[] all(int n) {
         int[] a = new int[n];
         for (int i = 0; i < n; i++) a[i] = i;
         return a;
     }
+
+    // ==== Add this to RankTests ====
 
     private static SimpleMatrix submatrix(SimpleMatrix S, int[] rows, int[] cols) {
         SimpleMatrix out = new SimpleMatrix(rows.length, cols.length);
@@ -998,8 +1005,395 @@ public class RankTests {
         return out;
     }
 
+    /* --------------------- small local helpers (keep private) --------------------- */
+
     private static SimpleMatrix symmetrize(SimpleMatrix A) {
         return A.plus(A.transpose()).scale(0.5);
+    }
+
+    /**
+     * Permutation-based test for rank &le; r in the linear non-Gaussian setting.
+     *
+     * <p>The standard Wilks test uses a chi-square approximation that requires
+     * Gaussianity of the data.  When the data are linear but non-Gaussian (e.g.
+     * heavy-tailed, skewed, or copula-structured), the Bartlett chi-square null
+     * can be badly mis-calibrated.  This method avoids that assumption entirely
+     * by estimating the null distribution empirically:
+     *
+     * <ol>
+     *   <li>Compute the observed Wilks statistic {@code T_obs = -c * sum log(1 - rho_i^2)}
+     *       for the singular values beyond index r.</li>
+     *   <li>For each of {@code B} permutations, shuffle the <em>rows</em> of the
+     *       Y-block of the data matrix independently and uniformly at random.
+     *       This breaks all X-Y dependence while preserving the marginal
+     *       distributions of X and Y (and hence within-block dependence), which
+     *       is exactly the null hypothesis rank(C_{XY}) &le; r.</li>
+     *   <li>Recompute the Wilks statistic on the permuted covariance and collect
+     *       the null distribution.</li>
+     *   <li>Return the fraction of permutation statistics &ge; {@code T_obs}
+     *       (the one-sided p-value).</li>
+     * </ol>
+     *
+     * <p>The input is the raw data matrix (rows = observations, columns = all
+     * variables), together with the x- and y-column index arrays.  The method
+     * internally computes the sample covariance so it can re-compute it cheaply
+     * on each permutation.
+     *
+     * @param data   n-by-d data matrix (rows = observations).
+     * @param xIdx   column indices for the X block.
+     * @param yIdx   column indices for the Y block.
+     * @param r      rank threshold to test (null hypothesis: rank &le; r).
+     * @param B      number of permutations (e.g. 999 or 1999).
+     * @return       permutation p-value for H0: rank(C_XY) &le; r.
+     */
+    public static double rankLeByPermutation(double[][] data,
+                                             int[] xIdx, int[] yIdx,
+                                             int r, int B) {
+        final int n = data.length;
+        final int p = xIdx.length, q = yIdx.length;
+        final int minpq = TMath.min(p, q);
+
+        if (r < 0 || r >= minpq) {
+            throw new IllegalArgumentException("r must satisfy 0 <= r < min(p,q).");
+        }
+        if (B < 1) throw new IllegalArgumentException("B must be >= 1.");
+
+        // Extract X and Y sub-matrices (n x p and n x q).
+        double[][] X = extractCols(data, xIdx, n, p);
+        double[][] Y = extractCols(data, yIdx, n, q);
+
+        // Observed statistic.
+        double tObs = wilksStatFromData(X, Y, n, p, q, minpq, r);
+
+        // Permutation loop: shuffle rows of Y, re-compute statistic.
+        int[] rowPerm = new int[n];
+        for (int i = 0; i < n; i++) rowPerm[i] = i;
+
+        int exceed = 0;
+        for (int b = 0; b < B; b++) {
+            shuffleInPlace(rowPerm);
+            double tPerm = wilksStatPermuted(X, Y, rowPerm, n, p, q, minpq, r);
+            if (tPerm >= tObs) exceed++;
+        }
+
+        // +1/+1 continuity correction (Phipson & Smyth, 2010).
+        return (exceed + 1.0) / (B + 1.0);
+    }
+
+    /**
+     * Computes the Wilks test statistic for rank-leq-r from raw X and Y blocks.
+     */
+    private static double wilksStatFromData(double[][] X, double[][] Y,
+                                            int n, int p, int q, int minpq, int r) {
+        SimpleMatrix Sxx = sampleCov(X, X, n, p, p);
+        SimpleMatrix Syy = sampleCov(Y, Y, n, q, q);
+        SimpleMatrix Sxy = sampleCov(X, Y, n, p, q);
+        return wilksStatFromBlocks(Sxx, Syy, Sxy, n, p, q, minpq, r);
+    }
+
+    /**
+     * Computes the Wilks statistic after permuting the rows of Y via {@code perm}.
+     * Avoids materializing the permuted matrix by passing {@code perm} directly
+     * into the covariance accumulation.d
+     */
+    private static double wilksStatPermuted(double[][] X, double[][] Y,
+                                            int[] perm,
+                                            int n, int p, int q, int minpq, int r) {
+        // Sxx is the same as in the observed case but it's cheap to recompute.
+        SimpleMatrix Sxx = sampleCov(X, X, n, p, p);
+        SimpleMatrix Syy = sampleCovPermuted(Y, Y, perm, n, q, q);
+        SimpleMatrix Sxy = sampleCovPermuted(X, Y, perm, n, p, q);
+        return wilksStatFromBlocks(Sxx, Syy, Sxy, n, p, q, minpq, r);
+    }
+
+    /**
+     * Core statistic: -c * sum_{i=r}^{minpq-1} log(1 - rho_i^2).
+     * Mirrors the logic in {@link #rankLeByWilks} exactly.
+     */
+    private static double wilksStatFromBlocks(SimpleMatrix Sxx, SimpleMatrix Syy,
+                                              SimpleMatrix Sxy,
+                                              int n, int p, int q, int minpq, int r) {
+        SimpleMatrix Wxx = invSqrtPSD(Sxx);
+        SimpleMatrix Wyy = invSqrtPSD(Syy);
+        SimpleSVD<SimpleMatrix> svd = Wxx.mult(Sxy).mult(Wyy).svd();
+
+        double sumLog = 0.0;
+        for (int i = r; i < minpq; i++) {
+            double rho = TMath.max(0.0, TMath.min(1.0, svd.getSingleValue(i)));
+            sumLog += TMath.log(TMath.max(1e-16, 1.0 - rho * rho));
+        }
+
+        double c = (n - 1) - 0.5 * (p + q + 1);
+        if (c <= 0) c = 1.0; // guard against tiny samples
+        return -c * sumLog;
+    }
+
+    /**
+     * Column-wise extraction from a row-major double[][] matrix.
+     */
+    private static double[][] extractCols(double[][] data, int[] cols, int n, int k) {
+        double[][] out = new double[n][k];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < k; j++) {
+                out[i][j] = data[i][cols[j]];
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Sample covariance (unbiased, denom n-1) between column blocks A and B.
+     * Both use natural row ordering.
+     */
+    private static SimpleMatrix sampleCov(double[][] A, double[][] B,
+                                          int n, int rDim, int cDim) {
+        // means
+        double[] meanA = new double[rDim], meanB = new double[cDim];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < rDim; j++) meanA[j] += A[i][j];
+            for (int j = 0; j < cDim; j++) meanB[j] += B[i][j];
+        }
+        for (int j = 0; j < rDim; j++) meanA[j] /= n;
+        for (int j = 0; j < cDim; j++) meanB[j] /= n;
+
+        SimpleMatrix S = new SimpleMatrix(rDim, cDim);
+        for (int i = 0; i < n; i++) {
+            for (int r = 0; r < rDim; r++) {
+                double da = A[i][r] - meanA[r];
+                for (int c = 0; c < cDim; c++) {
+                    S.set(r, c, S.get(r, c) + da * (B[i][c] - meanB[c]));
+                }
+            }
+        }
+        S = S.divide(n - 1.0);
+        return S;
+    }
+
+    /**
+     * Same as {@link #sampleCov} but the rows of {@code B} are accessed via
+     * the permutation index array, effectively computing Cov(A, B[perm, :]).
+     * {@code A} rows are in natural order; only {@code B} rows are permuted.
+     */
+    private static SimpleMatrix sampleCovPermuted(double[][] A, double[][] B,
+                                                  int[] perm,
+                                                  int n, int rDim, int cDim) {
+        double[] meanA = new double[rDim], meanB = new double[cDim];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < rDim; j++) meanA[j] += A[i][j];
+            for (int j = 0; j < cDim; j++) meanB[j] += B[perm[i]][j];
+        }
+        for (int j = 0; j < rDim; j++) meanA[j] /= n;
+        for (int j = 0; j < cDim; j++) meanB[j] /= n;
+
+        SimpleMatrix S = new SimpleMatrix(rDim, cDim);
+        for (int i = 0; i < n; i++) {
+            for (int r = 0; r < rDim; r++) {
+                double da = A[i][r] - meanA[r];
+                for (int c = 0; c < cDim; c++) {
+                    S.set(r, c, S.get(r, c) + da * (B[perm[i]][c] - meanB[c]));
+                }
+            }
+        }
+        S = S.divide(n - 1.0);
+        return S;
+    }
+
+    // -------------------------------------------------------------------------
+    // Private helpers for the permutation test.
+    // These follow the same covariance-then-SVD logic as rankLeByWilks.
+    // -------------------------------------------------------------------------
+
+    /**
+     * Fisher-Yates shuffle of an index array in-place.
+     */
+    private static void shuffleInPlace(int[] a) {
+        for (int i = a.length - 1; i > 0; i--) {
+            int j = RandomUtil.getInstance().nextInt(i + 1);
+            int tmp = a[i];
+            a[i] = a[j];
+            a[j] = tmp;
+        }
+    }
+
+    /**
+     * Conditional permutation-based Wilks test for rank(C_{XY|Z}) &le; r,
+     * valid in the linear non-Gaussian setting.
+     *
+     * <p>Uses the Freedman-Lane residual permutation scheme:
+     * <ol>
+     *   <li>Regress Z out of both X and Y (OLS), obtaining residuals X&#771; and Y&#771;.</li>
+     *   <li>Compute the observed Wilks statistic from X&#771; and Y&#771;.</li>
+     *   <li>For each permutation, shuffle the rows of Y&#771; and recompute the statistic.</li>
+     *   <li>Return the fraction of permutation statistics &ge; the observed statistic.</li>
+     * </ol>
+     *
+     * <p>The residual degrees of freedom are n - rank(Z) - 1, which replaces n - 1
+     * in Bartlett's c-factor. This is used for the observed statistic and all
+     * permutation statistics consistently, so it cancels in the p-value comparison
+     * and only affects the relative weighting of singular values — it is kept for
+     * consistency with the unconditional method.
+     *
+     * @param data  n-by-d raw data matrix (rows = observations).
+     * @param xIdx  column indices for the X block.
+     * @param yIdx  column indices for the Y block.
+     * @param zIdx  column indices for the conditioning set Z.
+     * @param r     rank threshold to test (null hypothesis: rank &le; r).
+     * @param B     number of permutations (e.g. 999 or 1999).
+     * @return      permutation p-value for H0: rank(C_{XY|Z}) &le; r.
+     */
+    public static double rankLeByConditionalPermutation(double[][] data,
+                                                        int[] xIdx, int[] yIdx, int[] zIdx,
+                                                        int r, int B) {
+        final int n = data.length;
+        final int p = xIdx.length, q = yIdx.length;
+        final int minpq = TMath.min(p, q);
+
+        if (r < 0 || r >= minpq) {
+            throw new IllegalArgumentException("r must satisfy 0 <= r < min(p,q).");
+        }
+        if (B < 1) throw new IllegalArgumentException("B must be >= 1.");
+
+        // Extract raw blocks.
+        double[][] X = extractCols(data, xIdx, n, p);
+        double[][] Y = extractCols(data, yIdx, n, q);
+
+        // If Z is empty, fall back to the unconditional permutation test.
+        if (zIdx == null || zIdx.length == 0) {
+            return rankLeByPermutation(data, xIdx, yIdx, r, B);
+        }
+
+        double[][] Z = extractCols(data, zIdx, n, zIdx.length);
+
+        // Effective degrees of freedom: n - rankZ - 1.
+        // We use the column count of Z as a proxy for its rank (Z is assumed
+        // full column rank after any preprocessing). Caller should ensure Z
+        // is not rank-deficient; a ridge is applied inside invSqrtPSD anyway.
+        int dof = n - zIdx.length - 1;
+        if (dof < 1) {
+            throw new IllegalArgumentException(
+                    "Too few observations relative to conditioning set size.");
+        }
+
+        // Residuals: X_res = X - H*X, Y_res = Y - H*Y  where H = Z(Z'Z)^{-1}Z'.
+        // We compute these via QR for numerical stability.
+        double[][] Xres = residualsOLS(Z, X, n, zIdx.length, p);
+        double[][] Yres = residualsOLS(Z, Y, n, zIdx.length, q);
+
+        // Observed statistic on residuals, using dof in place of n-1.
+        double tObs = wilksStatFromData(Xres, Yres, dof, p, q, minpq, r);
+
+        // Permutation loop over residuals.
+        int[] rowPerm = new int[n];
+        for (int i = 0; i < n; i++) rowPerm[i] = i;
+
+        int exceed = 0;
+        for (int b = 0; b < B; b++) {
+            shuffleInPlace(rowPerm);
+            double tPerm = wilksStatPermuted(Xres, Yres, rowPerm, dof, p, q, minpq, r);
+            if (tPerm >= tObs) exceed++;
+        }
+
+        return (exceed + 1.0) / (B + 1.0);
+    }
+
+//    /**
+//     * Estimates the conditional rank using sequential conditional permutation tests.
+//     * Mirrors {@link #estimatePermutationRank} but conditions on Z.
+//     *
+//     * @param data  n-by-d raw data matrix.
+//     * @param xIdx  column indices for the X block.
+//     * @param yIdx  column indices for the Y block.
+//     * @param zIdx  column indices for the conditioning set.
+//     * @param alpha significance level.
+//     * @param B     number of permutations per test.
+//     * @return      estimated conditional rank.
+//     */
+//    public static int estimateConditionalPermutationRank(double[][] data,
+//                                                         int[] xIdx, int[] yIdx, int[] zIdx,
+//                                                         double alpha, int B) {
+//        int minpq = TMath.min(xIdx.length, yIdx.length);
+//        for (int r = 0; r < minpq; r++) {
+//            if (rankLeByConditionalPermutation(data, xIdx, yIdx, zIdx, r, B) > alpha) {
+//                return r;
+//            }
+//        }
+//        return minpq;
+//    }
+
+    /**
+     * Computes OLS residuals of regressing each column of Y on Z.
+     *
+     * <p>Solves min ||Y - Z*B||_F via the normal equations (Z'Z + ridge)^{-1} Z'Y,
+     * then returns R = Y - Z * Bhat.  A small ridge is applied for stability,
+     * consistent with the ridge used elsewhere in this class.
+     *
+     * @param Z    n-by-k design matrix (the conditioning variables).
+     * @param Y    n-by-q response matrix.
+     * @param n    number of observations.
+     * @param k    number of conditioning variables (columns of Z).
+     * @param q    number of response variables (columns of Y).
+     * @return     n-by-q residual matrix.
+     */
+    private static double[][] residualsOLS(double[][] Z, double[][] Y,
+                                           int n, int k, int q) {
+        // ZtZ (k x k) and ZtY (k x q).
+        double[][] ZtZ = new double[k][k];
+        double[][] ZtY = new double[k][q];
+
+        for (int i = 0; i < n; i++) {
+            for (int a = 0; a < k; a++) {
+                for (int b = 0; b < k; b++) ZtZ[a][b] += Z[i][a] * Z[i][b];
+                for (int c = 0; c < q; c++) ZtY[a][c] += Z[i][a] * Y[i][c];
+            }
+        }
+
+        // Ridge ZtZ for stability.
+        for (int a = 0; a < k; a++) ZtZ[a][a] += RIDGE;
+
+        // Solve (ZtZ) * Bhat = ZtY via SimpleMatrix inversion.
+        SimpleMatrix mZtZ = new SimpleMatrix(k, k);
+        for (int a = 0; a < k; a++)
+            for (int b = 0; b < k; b++)
+                mZtZ.set(a, b, ZtZ[a][b]);
+
+        SimpleMatrix mZtY = new SimpleMatrix(k, q);
+        for (int a = 0; a < k; a++)
+            for (int c = 0; c < q; c++)
+                mZtY.set(a, c, ZtY[a][c]);
+
+        SimpleMatrix Bhat = mZtZ.invert().mult(mZtY);  // k x q
+
+        // Residuals R = Y - Z * Bhat.
+        double[][] R = new double[n][q];
+        for (int i = 0; i < n; i++) {
+            for (int c = 0; c < q; c++) {
+                double fitted = 0.0;
+                for (int a = 0; a < k; a++) {
+                    fitted += Z[i][a] * Bhat.get(a, c);
+                }
+                R[i][c] = Y[i][c] - fitted;
+            }
+        }
+        return R;
+    }
+
+    // --- Fast Chi-square critical via WilsonâHilferty with cached normal z ---
+    private record Chi2Key(int nu, long alphaBits) {
+    }
+
+    /**
+     * Rank-aware PSD inverse square root.
+     * Returns W = D^{-1/2} U^T where U contains kept eigenvectors (columns),
+     * so W has shape (r x n). Also returns r.
+     */
+    private static final class Whitening {
+        final SimpleMatrix W;  // r x n
+        final int rank;
+
+        Whitening(SimpleMatrix W, int rank) {
+            this.W = W;
+            this.rank = rank;
+        }
     }
 
     /**
@@ -1066,6 +1460,10 @@ public class RankTests {
             return h;
         }
     }
+
+// -------------------------------------------------------------------------
+// OLS residual projection.
+// -------------------------------------------------------------------------
 
     /**
      * Represents an entry in the RCCA (Regularized Canonical Correlation Analysis) data structure. The entry contains

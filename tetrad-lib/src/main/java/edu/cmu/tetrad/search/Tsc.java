@@ -22,6 +22,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
 import org.ejml.simple.SimpleMatrix;
@@ -216,6 +217,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
      */
     private double discoveryAlpha = -1.0;
     private boolean parallel = true;
+    private double[][] dataArray;
 
     /**
      * Constructs an instance of the TscScored class using the provided variables and covariance matrix.
@@ -229,6 +231,16 @@ public class Tsc implements EffectiveSampleSizeSettable {
         for (int i = 0; i < variables.size(); i++) this.variables.add(i);
         this.S = new CorrelationMatrix(cov).getMatrix().getSimpleMatrix();
         this.sampleSize = cov.getSampleSize();
+        setEffectiveSampleSize(-1);
+    }
+
+    public Tsc(List<Node> variables, DataSet data) {
+        this.nodes = new ArrayList<>(variables);
+        this.variables = new ArrayList<>(variables.size());
+        for (int i = 0; i < variables.size(); i++) this.variables.add(i);
+        this.S = new CorrelationMatrix(data).getMatrix().getSimpleMatrix();
+        this.sampleSize = data.getNumRows();
+        this.dataArray = data.getDoubleData().toArray();
         setEffectiveSampleSize(-1);
     }
 
@@ -834,17 +846,17 @@ public class Tsc implements EffectiveSampleSizeSettable {
                     int[] dArray = Dnow.stream().mapToInt(Integer::intValue).toArray();
                     int[] zArray = Z.stream().mapToInt(Integer::intValue).toArray();
 
-                    int rZ = RankTests.estimateWilksRankConditioned(S, _cArray, dArray, zArray, nEff, alpha);
-                    if (rZ == 0) {
-                        // offending subset is Z â remove Z from the cluster
-                        Z.forEach(Cset::remove);
-                        log("Rule 3 fired: removing offending subset Z="
-                                + toNamesCluster(new HashSet<>(Z))
-                                + " from cluster " + toNamesCluster(new HashSet<>(Cnow))
-                                + " (rank(C\\Z, D | Z)=0)");
-                        changed = true;
-                        break; // restart passes after modification
-                    }
+//                    int rZ = RankTests.estimateWilksRankConditioned(S, _cArray, dArray, zArray, nEff, alpha);
+//                    if (rZ == 0) {
+//                        // offending subset is Z â remove Z from the cluster
+//                        Z.forEach(Cset::remove);
+//                        log("Rule 3 fired: removing offending subset Z="
+//                                + toNamesCluster(new HashSet<>(Z))
+//                                + " from cluster " + toNamesCluster(new HashSet<>(Cnow))
+//                                + " (rank(C\\Z, D | Z)=0)");
+//                        changed = true;
+//                        break; // restart passes after modification
+//                    }
                 }
             }
         } while (changed && Cset.size() >= 2);
@@ -871,7 +883,10 @@ public class Tsc implements EffectiveSampleSizeSettable {
             int[] c1Array = C1.stream().mapToInt(Integer::intValue).toArray();
             int[] c2Array = C2.stream().mapToInt(Integer::intValue).toArray();
 
-            int r = RankTests.estimateWilksRank(S, c1Array, c2Array, expectedSampleSize, alpha);
+            int numPermutations = 1000;
+
+//            int r = RankTests.estimateWilksRank(S, c1Array, c2Array, expectedSampleSize, alpha);
+            int r = RankTests.estimatePermutationRank(dataArray, c1Array, c2Array, alpha, numPermutations);
 
             if (r == 0) {
                 // l is only used for the log message; a missing entry means the cluster

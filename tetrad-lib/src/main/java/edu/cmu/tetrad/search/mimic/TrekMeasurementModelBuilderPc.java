@@ -244,7 +244,10 @@ public final class TrekMeasurementModelBuilderPc {
      * @return the block specification
      */
     private BlockSpec buildBlockSpec() {
-        Tsc tsc = new Tsc(dataModel.getVariables(), new CovarianceMatrix(dataSet));
+//        Tsc tsc = new Tsc(dataModel.getVariables(),
+//                new CovarianceMatrix(dataSet));
+        Tsc tsc = new Tsc(dataModel.getVariables(), dataSet);
+
         tsc.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         tsc.setRmin(1); // TODO - should this be configurable?
         tsc.setRmax(parameters.getInt(Params.MAX_RANK));
