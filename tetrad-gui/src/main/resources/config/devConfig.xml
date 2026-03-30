@@ -192,7 +192,7 @@
                 </editor-class>
             </model>
             <model name="Generate Complete Graph" acronym="Generate complete graph"
-                   help="graph" category="Graph Manipulations">
+                   help="graph" category="Graph Manipula    tions">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="graph" description="Graph" default="on"/>
