@@ -126,7 +126,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
      */
     public GraphWorkbench(Graph graph) {
         super(graph);
-//        setRightClickPopupAllowed(true);
+        setRightClickPopupAllowed(true);
 //        setBackground(getWorkbenchBackground());
 //        setOpaque(true);
     }
