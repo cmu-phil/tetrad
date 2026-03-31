@@ -1925,10 +1925,6 @@ public final class SemIm implements Im, ISemIm {
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) throws ParseException {
-//        int errorType = this.params.getInt(Params.SIMULATION_ERROR_TYPE);
-//        double errorParam1 = params.getDouble(Params.SIMULATION_PARAM1);
-//        double errorParam2 = params.getDouble(Params.SIMULATION_PARAM2);
-
         int numVars = getVariableNodes().size();
         Sampler sampler = new ExpressionSampler(this.params.getString(Params.OPTIONAL_NOISE_EXPRESSION));
 
@@ -1945,7 +1941,6 @@ public final class SemIm implements Im, ISemIm {
 
         // Prepare correlated error generator when Gaussian
         Matrix L = null;
-//        boolean useCorrelatedGaussian = (errorType == 1); // Normal
         if (!params.getBoolean(Params.USE_GENERAL_EXOGENOUS_NOISE)) {
             try {
                 L = MatrixUtils.cholesky(errCovar()); // lower-tri; throws if not PD
