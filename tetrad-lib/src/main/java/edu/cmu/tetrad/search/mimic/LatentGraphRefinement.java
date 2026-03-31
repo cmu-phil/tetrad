@@ -413,6 +413,82 @@ public final class LatentGraphRefinement {
         }
     }
 
+
+    public void orientLatentEdgesUsingRanks(Graph graph) {
+        if (graph == null) {
+            throw new NullPointerException("graph must not be null.");
+        }
+        
+        // Override existing directed edges to avoid confusion (and cycles).
+        for (Edge edge : new ArrayList<>(graph.getEdges())) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            if (x.getNodeType() != NodeType.LATENT
+                    || y.getNodeType() != NodeType.LATENT) {
+                continue;
+            }
+
+            graph.removeEdge(edge);
+            graph.addUndirectedEdge(x, y);
+        }
+
+        for (Edge edge : new ArrayList<>(graph.getEdges())) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            if (x.getNodeType() != NodeType.LATENT
+                    || y.getNodeType() != NodeType.LATENT) {
+                continue;
+            }
+
+            List<Node> parentsx = measuredOnly(graph.getParents(x));
+            List<Node> parentsy = measuredOnly(graph.getParents(y));
+
+            if (parentsx.isEmpty() || parentsy.isEmpty()) {
+                continue;
+            }
+
+            List<Node> childrenx = measuredOnly(graph.getChildren(x));
+            List<Node> childreny = measuredOnly(graph.getChildren(y));
+
+            parentsx.removeAll(parentsy);
+            parentsy.removeAll(parentsx);
+
+            int[] parentsxIndices = indicesToArray(parentsx);
+            int[] parentsyIndices = indicesToArray(parentsy);
+            int[] childrenxIndices = indicesToArray(childrenx);
+            int[] childrenyIndices = indicesToArray(childreny);
+
+            int rankXtoY = Integer.MAX_VALUE;
+            int rankYtoX = Integer.MAX_VALUE;
+
+            if (parentsxIndices.length > 0 && childrenyIndices.length > 0) {
+                rankXtoY = RankTests.estimateWilksRank(s, parentsxIndices, childrenyIndices, sampleSize, alpha);
+            }
+
+            if (parentsyIndices.length > 0 && childrenxIndices.length > 0) {
+                rankYtoX = RankTests.estimateWilksRank(s, parentsyIndices, childrenxIndices, sampleSize, alpha);
+            }
+
+            boolean orientXtoY = (rankXtoY > 0 && rankYtoX == 0);
+            boolean orientYtoX = (rankYtoX > 0 && rankXtoY == 0);
+
+            // No asymmetry, or neither side has evidence: leave undirected.
+            if (orientXtoY == orientYtoX) {
+                continue;
+            }
+
+            graph.removeEdge(edge);
+
+            if (orientXtoY) {
+                graph.addDirectedEdge(x, y);
+            } else {
+                graph.addDirectedEdge(y, x);
+            }
+        }
+    }
+
     /**
      * Orients undirected latent-latent edges using asymmetric correlations
      * between measured parents and measured children.
@@ -953,7 +1029,7 @@ public final class LatentGraphRefinement {
             graph.addUndirectedEdge(x, y);
         }
 
-        orientLatentEdges(graph);
+        orientLatentEdgesUsingRanks(graph);
         Graph oriented = new EdgeListGraph(graph);
         pruneTransitiveInputEdgesByLatentAncestry(graph);
 //        pruneTransitiveLatentEdges(graph);
