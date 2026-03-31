@@ -27,7 +27,7 @@ import java.util.*;
  *       procedure (TSC) is applied to the observed variables to identify latent
  *       clusters, their indicator sets, and the rank of each cluster's latent
  *       subspace. This produces a skeleton over latent and measured nodes with
- *       directed latent→measured edges.</li>
+ *       directed latent-to-measured edges.</li>
  *
  *   <li><b>Rank expansion.</b> Each latent node of rank r is expanded into r
  *       distinct latent copies (e.g., L3 of rank 2 becomes L3.1 and L3.2), each
@@ -35,17 +35,19 @@ import java.util.*;
  *       between copies of different clusters that were adjacent in the original
  *       skeleton.</li>
  *
- *   <li><b>Intra-cluster orientation (Stage 5).</b> For rank-r > 1 clusters,
+ *   <li><b>Intra-cluster orientation (Stage 5).</b> For rank-r &gt; 1 clusters,
  *       FastICA is applied to the cluster's indicator block to recover r latent
  *       source signals. Pairwise LiNGAM tests on the recovered sources determine
  *       a causal ordering over the r copies within each cluster.</li>
  *
- *   <li><b>Inter-cluster orientation (Stage 4).</b> For each undirected edge
- *       between clusters, a group GIN (Generalized Independence Noise) test is
- *       applied under the LiNGLaM assumption. If the left null space of the
- *       cross-covariance matrix between the two clusters' indicators yields a
- *       residual signal that is independent of the other cluster's indicators,
- *       causal priority is assigned and the edge is oriented accordingly.</li>
+ *   <li><b>Inter-cluster orientation (Stage 4).</b> For each connected component
+ *       of clusters linked by undirected edges (an "impure cluster"), the
+ *       LaHiCaSl Algorithm 6 procedure is applied: iteratively find the local
+ *       root latent using the Proposition 7 GIN test (which splits each cluster's
+ *       indicators and conditions on already-identified confounders), orient all
+ *       edges away from it, add it to the confounder set LC, and repeat until
+ *       the component is fully ordered. Redundant edges are then pruned using
+ *       the Proposition 8 rank test.</li>
  * </ol>
  *
  * <p>The algorithm assumes a linear non-Gaussian acyclic model (LiNGAM) over the
@@ -62,79 +64,66 @@ import java.util.*;
  *   <li>Spirtes et al. (2000). Causation, Prediction, and Search. MIT Press.</li>
  *   <li>Xie, F., Cai, R., Huang, B., Glymour, C., Hao, Z., and Zhang, K. (2020).
  *       Generalized independent noise condition for estimating latent variable
- *       causal graphs. In <i>Advances in Neural Information Processing Systems</i>,
- *       pages 14891–14902.</li>
+ *       causal graphs. NeurIPS.</li>
  *   <li>Xie, F., Huang, B., Chen, Z., Cai, R., Glymour, C., Geng, Z., and Zhang, K.
  *       (2024). Generalized independent noise condition for estimating causal
- *       structure with latent variables. <i>Journal of Machine Learning Research</i>,
- *       25(191):1–61.</li>* </ul>
+ *       structure with latent variables. JMLR 25(191):1-61.</li>
+ * </ul>
  *
- * @author [your name]
  * @see TrekMeasurementModelBuilderPc
  * @see TrekMeasurementModelBuilderBoss
  */
 public class Tgin implements IGraphSearch {
 
-    /**
-     * Optional known measured inputs by name.
-     */
+    // -----------------------------------------------------------------------
+    // Fields
+    // -----------------------------------------------------------------------
+
+    /** Optional known measured inputs by name. */
     private final Set<String> inputNames = new LinkedHashSet<>();
-    /**
-     * Optional known measured outputs by name.
-     */
+
+    /** Optional known measured outputs by name. */
     private final Set<String> outputNames = new LinkedHashSet<>();
-    /**
-     * Optional knowledge.
-     */
+
+    /** Optional background knowledge. */
     private final Knowledge knowledge = new Knowledge();
+
+    /** HSIC-based marginal independence test. */
     private final RawMarginalIndependenceTest hsic;
-    /**
-     * Input data set.
-     */
+
+    /** Input data set. */
     private DataSet dataSet;
-    /**
-     * Parameters controlling the search.
-     */
+
+    /** Parameters controlling the search. */
     private Parameters parameters;
-    /**
-     * PC depth.
-     */
+
+    /** PC search depth (-1 = unlimited). */
     private int depth = -1;
 
-    /**
-     * Verbosity flag.
-     */
+    /** Verbosity flag. */
     private boolean verbose = false;
 
-    /**
-     * Whether to orient latent-latent edges after pruning.
-     */
-    private boolean orientAndPrune = true;
-
-    /**
-     * Working graph.
-     */
+    /** Working graph (modified in place during search). */
     private Graph graph;
 
-    /**
-     * Working latent list.
-     */
+    /** All expanded latent copies in the working graph. */
     private List<Node> allLatents;
 
-    /**
-     * Sample size.
-     */
+    /** Sample size (set from TSC result). */
     private int sampleSize;
 
-    /**
-     * Alpha level.
-     */
+    /** Significance level. */
     private double alpha = 0.01;
 
+    /** Rank of each original latent node from TSC. */
     private Map<Node, Integer> latentRanks = new LinkedHashMap<>();
 
+    // -----------------------------------------------------------------------
+    // Constructor
+    // -----------------------------------------------------------------------
+
     /**
-     * Constructs a TrekMimic search with data and parameters.
+     * Constructs a TGIN search with data and parameters.
      *
      * @param dataSet    the data set
      * @param parameters the parameters
@@ -153,9 +142,107 @@ public class Tgin implements IGraphSearch {
         setParameters(parameters);
     }
 
+    // -----------------------------------------------------------------------
+    // IGraphSearch
+    // -----------------------------------------------------------------------
+
+    @Override
     public Graph search() throws InterruptedException {
         runPcTsc();
 
+        expandGraph();
+
+        // --- DEBUG: print pre-expansion children ---
+        for (Node node : graph.getNodes()) {
+            if (node.getNodeType() == NodeType.LATENT) {
+                System.out.println("Pre-expansion: " + node.getName()
+                        + " children=" + graph.getChildren(node));
+            }
+        }
+        // --- END DEBUG ---
+
+        // Build expanded graph: one copy per rank unit for each latent,
+        // plus latent->measured edges and undirected latent-latent edges.
+        Graph _graph = new EdgeListGraph();
+
+        for (Node node : graph.getNodes()) {
+            if (node.getNodeType() == NodeType.MEASURED) {
+                _graph.addNode(node);
+            }
+        }
+
+        Map<Node, Node> nodeMap = new HashMap<>();               // copy -> original
+        Map<Node, List<Node>> originalToExpanded = new HashMap<>();
+
+        // First pass: copies + latent->measured edges only.
+        for (Node latent : graph.getNodes()) {
+            if (latent.getNodeType() != NodeType.LATENT) continue;
+
+            int rank = latentRanks.getOrDefault(latent, 1);
+            List<Node> copies = new ArrayList<>();
+
+            for (int r = 1; r <= rank; r++) {
+                Node copy = new ContinuousVariable(latent.getName() + "." + r);
+                copy.setNodeType(NodeType.LATENT);
+                _graph.addNode(copy);
+                nodeMap.put(copy, latent);
+                copies.add(copy);
+
+                for (Edge edge : graph.getEdges(latent)) {
+                    Node other = edge.getNode1() == latent ? edge.getNode2() : edge.getNode1();
+                    if (other.getNodeType() == NodeType.MEASURED) {
+                        Edge toAdd = Edges.directedEdge(copy, other);
+                        if (!_graph.containsEdge(toAdd)) _graph.addEdge(toAdd);
+                    }
+                }
+            }
+            originalToExpanded.put(latent, copies);
+        }
+
+        // Second pass: undirected latent-latent edges between all copy pairs.
+        for (Edge edge : graph.getEdges()) {
+            Node n1 = edge.getNode1();
+            Node n2 = edge.getNode2();
+            if (n1.getNodeType() != NodeType.LATENT || n2.getNodeType() != NodeType.LATENT) continue;
+
+            List<Node> copies1 = originalToExpanded.get(n1);
+            List<Node> copies2 = originalToExpanded.get(n2);
+            if (copies1 == null || copies2 == null) continue;
+
+            for (Node c1 : copies1)
+                for (Node c2 : copies2) {
+                    Edge toAdd = Edges.undirectedEdge(c1, c2);
+                    if (!_graph.containsEdge(toAdd)) _graph.addEdge(toAdd);
+                }
+        }
+
+        graph = _graph.copy();
+        this.allLatents = new ArrayList<>(nodeMap.keySet());
+
+        if (verbose) {
+            System.out.println("=== Expansion check ===");
+            for (Map.Entry<Node, Node> e : nodeMap.entrySet())
+                System.out.println("  copy=" + e.getKey().getName()
+                        + " -> original=" + e.getValue().getName());
+            System.out.println("latentRanks: " + latentRanks);
+        }
+
+        TginOrientationStages stages = new TginOrientationStages(
+                graph, allLatents, nodeMap, dataSet, alpha, sampleSize, hsic);
+
+        // Stage 5: intra-cluster ordering for rank > 1 clusters.
+        stages.orientIntraClusterEdges();
+
+        // Stage 4: inter-cluster orientation via Algorithm 6 (LaHiCaSl Phase II).
+        List<List<Node>> impureClusters = stages.findImpureClusters();
+        for (List<Node> cluster : impureClusters) {
+            stages.orientImpureCluster(cluster);
+        }
+
+        return graph;
+    }
+
+    private void expandGraph() {
         Graph _graph = new EdgeListGraph();
 
         for (Node node : graph.getNodes()) {
@@ -210,80 +297,37 @@ public class Tgin implements IGraphSearch {
                 }
         }
         graph = _graph.copy();
-        this.allLatents = new ArrayList<>(nodeMap.keySet());
-
-        TginOrientationStages stages = new TginOrientationStages(
-                this.graph, this.allLatents, nodeMap,   // nodeMap replaces spec + latentRanks
-                this.dataSet, this.alpha, this.sampleSize, hsic);
-
-        System.out.println("=== Expansion check ===");
-        for (Map.Entry<Node, Node> e : nodeMap.entrySet()) {
-            System.out.println("  copy=" + e.getKey().getName() + " -> original=" + e.getValue().getName());
-        }
-        System.out.println("latentRanks: " + latentRanks);
-
-        stages.orientIntraClusterEdges();   // Stage 5 first: resolve intra-cluster order
-
-
-//        for (int i = 0; i < 3; i++) {
-//            stages.orientInterClusterEdges();   // Stage 4: orient inter-cluster edges using GIN
-//        }
-
-        int maxIter = 10;
-        for (int i = 0; i < maxIter; i++) {
-            int edgesBefore = countDirectedLatentEdges();
-            stages.orientInterClusterEdges();
-            int edgesAfter = countDirectedLatentEdges();
-            if (edgesAfter == edgesBefore) break;
-        }
-
-        return graph;
     }
 
-    private int countDirectedLatentEdges() {
-        int count = 0;
-        for (Edge e : graph.getEdges())
-            if (e.isDirected()
-                    && e.getNode1().getNodeType() == NodeType.LATENT
-                    && e.getNode2().getNodeType() == NodeType.LATENT) count++;
-        return count;
-    }
+    // -----------------------------------------------------------------------
+    // Setters
+    // -----------------------------------------------------------------------
 
-    /**
-     * Sets the data set.
-     *
-     * @param dataSet the data set
-     */
     public void setDataSet(DataSet dataSet) {
-        if (dataSet == null) {
-            throw new NullPointerException("Data set must not be null.");
-        }
-
+        if (dataSet == null) throw new NullPointerException("Data set must not be null.");
         this.dataSet = dataSet;
     }
 
-    /**
-     * Sets the parameters.
-     *
-     * @param parameters the parameters
-     */
     public void setParameters(Parameters parameters) {
-        if (parameters == null) {
-            throw new NullPointerException("Parameters must not be null.");
-        }
-
+        if (parameters == null) throw new NullPointerException("Parameters must not be null.");
         this.parameters = parameters;
     }
 
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    // -----------------------------------------------------------------------
+    // TSC measurement model recovery
+    // -----------------------------------------------------------------------
+
     private void runPcTsc() throws InterruptedException {
         boolean usePc = true;
-
         BlockSpec spec;
 
         if (usePc) {
             TrekMeasurementModelBuilderPc builder =
                     new TrekMeasurementModelBuilderPc(dataSet, parameters);
-
             builder.setKnowledge(this.knowledge);
             builder.setInputNames(this.inputNames);
             builder.setOutputNames(this.outputNames);
@@ -291,65 +335,48 @@ public class Tgin implements IGraphSearch {
             builder.setVerbose(this.verbose);
 
             TrekMeasurementModelBuilderPc.MeasurementBuildResult result = builder.build();
-
             this.graph = result.graph();
             this.allLatents = new ArrayList<>(result.latents());
             this.sampleSize = result.sampleSize();
             this.alpha = result.alpha();
-
-            this.latentRanks = new LinkedHashMap<>();
             spec = result.spec();
-            for (int i = 0; i < spec.blockVariables().size(); i++) {
-                this.latentRanks.put(spec.blockVariables().get(i), spec.ranks().get(i));
-            }
         } else {
             TrekMeasurementModelBuilderBoss builder =
                     new TrekMeasurementModelBuilderBoss(dataSet, parameters);
-
             builder.setKnowledge(this.knowledge);
             builder.setInputNames(this.inputNames);
             builder.setOutputNames(this.outputNames);
             builder.setVerbose(this.verbose);
 
             TrekMeasurementModelBuilderBoss.MeasurementBuildResult result = builder.build();
-
             this.graph = result.graph();
             this.allLatents = new ArrayList<>(result.latents());
             this.sampleSize = result.sampleSize();
             this.alpha = result.alpha();
-
-            this.latentRanks = new LinkedHashMap<>();
             spec = result.spec();
-            for (int i = 0; i < spec.blockVariables().size(); i++) {
-                this.latentRanks.put(spec.blockVariables().get(i), spec.ranks().get(i));
-            }
+        }
+
+        this.latentRanks = new LinkedHashMap<>();
+        for (int i = 0; i < spec.blockVariables().size(); i++) {
+            this.latentRanks.put(spec.blockVariables().get(i), spec.ranks().get(i));
         }
     }
 
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-
-    // ---------------------------------------------------------------
-    // GIN Stages 4 and 5
-    // Assumes all fields set above are in scope.
-    // dataSet is the original DataSet passed to TrekMeasurementModelBuilderPc.
-    // ---------------------------------------------------------------
+    // -----------------------------------------------------------------------
+    // Orientation stages (static inner class)
+    // -----------------------------------------------------------------------
 
     public static class TginOrientationStages {
 
+        // All fields needed by both Stage 4 and Stage 5.
         private final Graph graph;
-        private final Map<Node, Node> nodeMap;                      // expanded → original
+        private final Map<Node, Node> nodeMap;                       // expanded copy -> original
         private final DataSet dataSet;
         private final double alpha;
-
-        // Derived in constructor
-        private final Map<Node, List<Node>> originalToExpanded;     // original → expanded copies
-        private final Map<Node, Integer> rankByOriginal;            // original → rank (# copies)
-        private final Map<Node, List<Integer>> originalToIndicatorCols; // original → data col indices
+        private final Map<Node, List<Node>> originalToExpanded;      // original -> copies
+        private final Map<Node, Integer> rankByOriginal;             // original -> # copies
+        private final Map<Node, List<Integer>> originalToIndicatorCols; // original -> data col indices
         private final RawMarginalIndependenceTest hsic;
-        private boolean rerouteToLatest = false;
 
         public TginOrientationStages(Graph graph, List<Node> allLatents,
                                      Map<Node, Node> nodeMap,
@@ -359,236 +386,15 @@ public class Tgin implements IGraphSearch {
             this.nodeMap = nodeMap;
             this.dataSet = dataSet;
             this.alpha = alpha;
+            this.hsic = hsic;
             this.originalToExpanded = buildOriginalToExpanded();
             this.rankByOriginal = buildRankMap();
             this.originalToIndicatorCols = buildIndicatorMap();
-            this.hsic = hsic;
-            ;
         }
 
-        // ==============================================================
-        // Stage 4: inter-cluster GIN orientation
-        // ==============================================================
-
-        public void orientInterClusterEdges() throws InterruptedException {
-            List<Node> originals = new ArrayList<>(originalToExpanded.keySet());
-
-            for (int i = 0; i < originals.size(); i++) {
-                for (int j = i + 1; j < originals.size(); j++) {
-                    Node origX = originals.get(i);
-                    Node origY = originals.get(j);
-
-                    if (!hasUndirectedEdgeBetweenClusters(origX, origY)) continue;
-
-                    OrientationResult xToY = groupGinTest(origX, origY);
-                    OrientationResult yToX = groupGinTest(origY, origX);
-
-                    double pxy = xToY.combinedP();
-                    double pyx = yToX.combinedP();
-
-                    System.out.println("origX=" + origX.getName() + " origY=" + origY.getName() + " pxy=" + pxy + " pyx=" + pyx);
-
-                    // Strong ordinary cases first.
-//                    if (xToY.independent() && !yToX.independent()) {
-//                        removeUndirectedEdgesBetweenClusters(origX, origY);
-//                        expandEdge(origX, origY);
-//                    } else if (yToX.independent() && !xToY.independent()) {
-//                        removeUndirectedEdgesBetweenClusters(origY, origX);
-//                        expandEdge(origY, origX);
-//                    }
-
-                    if (xToY.independent() && !yToX.independent()) {
-                        removeUndirectedEdgesBetweenClusters(origX, origY);
-                        expandEdge(origY, origX);  // swapped: Y → X
-                    } else if (yToX.independent() && !xToY.independent()) {
-                        removeUndirectedEdgesBetweenClusters(origY, origX);
-                        expandEdge(origX, origY);  // swapped: X → Y
-                    }
-
-//                    // Tie-breaker when both directions pass:
-//                    // orient toward the clearly larger combined p-value.
-//                    else if (xToY.independent() && yToX.independent()) {
-//                        if (pxy > 3.0 * pyx && pxy > alpha) {
-//                            removeUndirectedEdgesBetweenClusters(origX, origY);
-//                            expandEdge(origX, origY);
-//                        } else if (pyx > 3.0 * pxy && pyx > alpha) {
-//                            removeUndirectedEdgesBetweenClusters(origY, origX);
-//                            expandEdge(origY, origX);
-//                        }
-//                    }
-
-//                    // Optional weaker tie-breaker when both directions fail:
-//                    // if one side is much less bad than the other, allow orientation.
-//                    else {
-//                        double relaxedAlpha = /*0.25 **/     alpha;
-//
-//                        if (pxy > 3.0 * pyx && pxy > relaxedAlpha) {
-//                            removeUndirectedEdgesBetweenClusters(origX, origY);
-//                            expandEdge(origX, origY);
-//                        } else if (pyx > 3.0 * pxy && pyx > relaxedAlpha) {
-//                            removeUndirectedEdgesBetweenClusters(origY, origX);
-//                            expandEdge(origY, origX);
-//                        }
-//                    }
-                    // Both or neither: leave undirected for Meek.
-                }
-            }
-
-            MeekRules meekRules = new MeekRules();
-            meekRules.setRevertToUnshieldedColliders(false);
-            meekRules.orientImplied(graph);
-        }
-
-        /**
-         * Group-GIN test for the null hypothesis "block x is causally prior to block y".
-         * <p>
-         * Under the LiNGLaM assumption, if X is causally prior to Y, there exists
-         * a weight matrix Omega in the left null space of Sigma_{Cx,Cy} such that
-         * Omega * X_data^T is independent of Y_data.
-         * <p>
-         * We estimate Omega from the sample cross-covariance and test with HSIC.
-         */
-        private OrientationResult groupGinTest(Node origX, Node origY) throws InterruptedException {
-            List<Integer> colsX = originalToIndicatorCols.get(origX);
-            List<Integer> colsY = originalToIndicatorCols.get(origY);
-            int rankY = rankByOriginal.get(origY);
-
-            Matrix Xdata = submatrix(dataSet, colsX);   // n x px
-            Matrix Ydata = submatrix(dataSet, colsY);   // n x py
-
-            Matrix SigmaYX = crossCovariance(Ydata, Xdata);  // py x px
-
-            Matrix Omega = leftNullSpace(SigmaYX, rankY);
-
-            if (Omega.getNumRows() == 0) {
-                return new OrientationResult(false, 0.0);
-            }
-
-            Matrix residual = Omega.times(Ydata.transpose());
-
-            final double EPSILON = 1e-15;
-            double fisherStat = 0.0;
-            int df = 0;
-
-            for (int row = 0; row < residual.getNumRows(); row++) {
-                double[] res = residual.row(row).toArray();
-                for (int col = 0; col < colsX.size(); col++) {
-                    double[] xCol = Xdata.col(col).toArray();
-                    double p = hsic.computePValue(res, xCol);
-                    p = Math.max(p, EPSILON);
-                    fisherStat += -2.0 * Math.log(p);
-                    df += 2;
-                }
-            }
-
-            double combinedP = 1.0 - chiSquaredCdf(fisherStat, df);
-            return new OrientationResult(combinedP > alpha, combinedP);
-        }
-
-        /**
-         * Chi-squared CDF via the regularized lower incomplete gamma function,
-         * computed using the Lanczos approximation to the log-gamma function
-         * and a continued-fraction expansion.  Sufficient precision for p-value
-         * combination; no external library required.
-         *
-         * @param x  the chi-squared statistic (non-negative)
-         * @param df degrees of freedom (positive even integer in our usage)
-         * @return P(X <= x) for X ~ chi-squared(df)
-         */
-        private double chiSquaredCdf(double x, int df) {
-            if (x <= 0.0) return 0.0;
-            return regularizedGammaP(df / 2.0, x / 2.0);
-        }
-
-        /**
-         * Regularized lower incomplete gamma function P(a, x),
-         * using a series expansion for x < a+1 and a continued-fraction
-         * expansion otherwise.
-         */
-        private double regularizedGammaP(double a, double x) {
-            if (x < 0.0) return 0.0;
-            if (x == 0.0) return 0.0;
-
-            if (x < a + 1.0) {
-                // Series expansion
-                double ap = a;
-                double sum = 1.0 / a;
-                double del = sum;
-                for (int i = 0; i < 200; i++) {
-                    ap += 1.0;
-                    del *= x / ap;
-                    sum += del;
-                    if (Math.abs(del) < Math.abs(sum) * 1e-12) break;
-                }
-                return sum * Math.exp(-x + a * Math.log(x) - logGamma(a));
-            } else {
-                // Continued-fraction expansion (Lentz's method)
-                double fpmin = 1e-300;
-                double b = x + 1.0 - a;
-                double c = 1.0 / fpmin;
-                double d = 1.0 / b;
-                double h = d;
-                for (int i = 1; i <= 200; i++) {
-                    double an = -i * (i - a);
-                    b += 2.0;
-                    d = an * d + b;
-                    if (Math.abs(d) < fpmin) d = fpmin;
-                    c = b + an / c;
-                    if (Math.abs(c) < fpmin) c = fpmin;
-                    d = 1.0 / d;
-                    h *= d * c;
-                    if (Math.abs(d * c - 1.0) < 1e-12) break;
-                }
-                return 1.0 - Math.exp(-x + a * Math.log(x) - logGamma(a)) * h;
-            }
-        }
-
-        /**
-         * Log-gamma function via Lanczos approximation.
-         */
-        private double logGamma(double x) {
-            double[] c = {
-                    76.18009172947146, -86.50532032941677,
-                    24.01409824083091, -1.231739572450155,
-                    0.001208650973866179, -5.395239384953e-6
-            };
-            double y = x;
-            double tmp = x + 5.5;
-            tmp -= (x + 0.5) * Math.log(tmp);
-            double ser = 1.000000000190015;
-            for (double ci : c) ser += ci / ++y;
-            return -tmp + Math.log(2.5066282746310005 * ser / x);
-        }
-
-        private boolean hasUndirectedEdgeBetweenClusters(Node origX, Node origY) {
-            for (Node lx : originalToExpanded.get(origX))
-                for (Node ly : originalToExpanded.get(origY))
-                    if (graph.containsEdge(Edges.undirectedEdge(lx, ly))) return true;
-            return false;
-        }
-
-        private void removeUndirectedEdgesBetweenClusters(Node origX, Node origY) {
-            for (Node lx : originalToExpanded.get(origX))
-                for (Node ly : originalToExpanded.get(origY)) {
-                    Edge e = Edges.undirectedEdge(lx, ly);
-                    if (graph.containsEdge(e)) graph.removeEdge(e);
-                }
-        }
-
-        /**
-         * Add directed edges from each expanded copy in origX's cluster
-         * to each expanded copy in origY's cluster.
-         */
-        private void expandEdge(Node origX, Node origY) {
-            for (Node lx : originalToExpanded.get(origX))
-                for (Node ly : originalToExpanded.get(origY))
-                    if (!graph.containsEdge(Edges.directedEdge(lx, ly)))
-                        graph.addDirectedEdge(lx, ly);
-        }
-
-        // ==============================================================
+        // ==================================================================
         // Stage 5: intra-cluster ordering for rank-r > 1 clusters
-        // ==============================================================
+        // ==================================================================
 
         public void orientIntraClusterEdges() throws InterruptedException {
             for (Map.Entry<Node, List<Node>> entry : originalToExpanded.entrySet()) {
@@ -601,134 +407,503 @@ public class Tgin implements IGraphSearch {
 
                 List<Integer> cols = originalToIndicatorCols.get(original);
 
-                // --- 5a: ICA demixing ---
+                // 5a: ICA demixing.
+                // FastICA expects variables x samples (p x n).
                 SimpleMatrix Xblock = submatrix(dataSet, cols).getSimpleMatrix();  // n x |Cj|
-
-                // FastICA expects variables x samples (p x n), not samples x variables.
-                SimpleMatrix XblockT = Xblock.transpose();                         // |Cj| x n
+                SimpleMatrix XblockT = Xblock.transpose();                          // |Cj| x n
 
                 FastIca fastica = new FastIca(new Matrix(XblockT.toArray2()), r);
                 fastica.setAlgorithmType(FastIca.DEFLATION);
-                fastica.setMaxIterations(5000);       // prevent infinite loop
-                fastica.setTolerance(1e-6);          // explicit convergence threshold
+                fastica.setMaxIterations(5000);
+                fastica.setTolerance(1e-6);
 
                 FastIca.IcaResult icaResult = fastica.findComponents();
-                SimpleMatrix sources = icaResult.S().transpose().getSimpleMatrix();
 
-                // --- 5b: Pairwise LiNGAM on sources to find causal order ---
+                // S is r x n; transpose to n x r for lingamOrder.
+                SimpleMatrix sources = icaResult.S().transpose().getSimpleMatrix(); // n x r
+
+                // 5b: Pairwise LiNGAM on ICA sources to get causal order.
                 int[] causalOrder = lingamOrder(sources, r);
-                // causalOrder[0] is causally earliest, causalOrder[r-1] is latest.
 
-                // --- 5c: Assign causal order to latent copies and orient edges ---
+                // 5c: Orient edges between copies according to causal order.
                 for (int pos = 0; pos < r - 1; pos++) {
                     Node earlier = copies.get(causalOrder[pos]);
                     Node later = copies.get(causalOrder[pos + 1]);
-                    if (graph.containsEdge(Edges.undirectedEdge(earlier, later)))
-                        graph.removeEdge(Edges.undirectedEdge(earlier, later));
+                    Edge ue = Edges.undirectedEdge(earlier, later);
+                    if (graph.containsEdge(ue)) graph.removeEdge(ue);
                     graph.addDirectedEdge(earlier, later);
                 }
+            }
+        }
 
-                // --- 5d: Consistency check with Stage 4 ---
-                // Any inter-cluster parent that landed on the wrong copy gets
-                // re-routed to the causally latest copy. Original nodes no longer
-                // exist in _graph, so we inspect copies directly.
-                if (rerouteToLatest) {
-                    Node latest = copies.get(causalOrder[r - 1]);
-                    for (Node copy : copies) {
-                        if (copy == latest) continue;
-                        for (Node parent : new ArrayList<>(graph.getParents(copy))) {
-                            if (!copies.contains(parent)) {
-                                graph.removeEdge(Edges.directedEdge(parent, copy));
-                                graph.addDirectedEdge(parent, latest);
-                            }
+        // ==================================================================
+        // Stage 4: inter-cluster orientation via LaHiCaSl Algorithm 6
+        // ==================================================================
+
+        /**
+         * Groups original latents into connected components joined by undirected
+         * edges. Each component with more than one member is an impure cluster
+         * that needs Algorithm 6 orientation.
+         */
+        public List<List<Node>> findImpureClusters() {
+            List<Node> originals = new ArrayList<>(originalToExpanded.keySet());
+
+            // Union-Find over originals.
+            Map<Node, Node> parent = new LinkedHashMap<>();
+            for (Node n : originals) parent.put(n, n);
+
+            for (int i = 0; i < originals.size(); i++) {
+                for (int j = i + 1; j < originals.size(); j++) {
+                    Node a = originals.get(i);
+                    Node b = originals.get(j);
+                    if (hasUndirectedEdgeBetweenClusters(a, b)) {
+                        Node rootA = find(parent, a);
+                        Node rootB = find(parent, b);
+                        if (rootA != rootB) parent.put(rootA, rootB);
+                    }
+                }
+            }
+
+            // Group by root.
+            Map<Node, List<Node>> components = new LinkedHashMap<>();
+            for (Node n : originals) {
+                Node root = find(parent, n);
+                components.computeIfAbsent(root, k -> new ArrayList<>()).add(n);
+            }
+
+            // Return only multi-member components.
+            List<List<Node>> result = new ArrayList<>();
+            for (List<Node> component : components.values()) {
+                if (component.size() > 1) result.add(component);
+            }
+            return result;
+        }
+
+        /**
+         * Orients all latent-latent edges within one impure cluster using the
+         * LaHiCaSl Algorithm 6 procedure (Xie et al. 2024, Section 4.3.3).
+         *
+         * <p>Iteratively peels the local root latent from the cluster using the
+         * Proposition 7 GIN test, orienting edges away from it, until a total
+         * causal order is established. Then prunes redundant edges via
+         * Proposition 8.
+         */
+        public void orientImpureCluster(List<Node> impureCluster) throws InterruptedException {
+            System.out.println("=== orientImpureCluster: originalToIndicatorCols = " + originalToIndicatorCols);
+            System.out.println("=== orientImpureCluster: nodeMap = " + nodeMap);
+            System.out.println("=== orientImpureCluster: originalToExpanded = " + originalToExpanded);
+
+            List<Node> remaining = new ArrayList<>(impureCluster);
+
+            // LC: latents external to the cluster that are known parents of
+            // cluster members (identified from already-directed edges in the graph).
+            List<Node> LC = new ArrayList<>();
+            for (Node n : impureCluster) {
+                for (Node expandedCopy : originalToExpanded.get(n)) {
+                    for (Node parentCopy : graph.getParents(expandedCopy)) {
+                        Node origParent = nodeMap.get(parentCopy);
+                        if (origParent != null
+                                && !impureCluster.contains(origParent)
+                                && !LC.contains(origParent)) {
+                            LC.add(origParent);
                         }
+                    }
+                }
+            }
+
+            System.out.println("=== orientImpureCluster: " + clusterNames(impureCluster)
+                    + "  LC=" + clusterNames(LC) + " ===");
+
+            // Peel local roots one at a time.
+            while (remaining.size() > 1) {
+                Node root = findLocalRoot(remaining, LC);
+
+                if (root == null) {
+                    System.out.println("WARNING: no local root found in "
+                            + clusterNames(remaining) + " with LC=" + clusterNames(LC)
+                            + ". Leaving remaining edges undirected.");
+                    break;
+                }
+
+                System.out.println("  Local root: " + root.getName()
+                        + "  remaining=" + clusterNames(remaining));
+
+                // Orient root -> all others still in remaining.
+                for (Node other : remaining) {
+                    if (other == root) continue;
+                    removeUndirectedEdgesBetweenClusters(root, other);
+                    expandEdge(root, other);
+                }
+
+                remaining.remove(root);
+                LC.add(root);
+            }
+
+            // Proposition 8: prune redundant directed edges.
+            pruneRedundantEdges(impureCluster);
+
+            MeekRules meekRules = new MeekRules();
+            meekRules.setRevertToUnshieldedColliders(false);
+            meekRules.orientImplied(graph);
+        }
+
+        /**
+         * Finds the local root of {@code remaining} by testing Proposition 7
+         * for each candidate. Returns the first candidate for which the GIN
+         * condition holds (i.e. it is causally prior to all others given LC).
+         */
+        private Node findLocalRoot(List<Node> remaining, List<Node> LC)
+                throws InterruptedException {
+            for (Node candidate : remaining) {
+                List<Node> others = new ArrayList<>(remaining);
+                others.remove(candidate);
+                if (proposition7Test(candidate, others, LC)) {
+                    return candidate;
+                }
+            }
+            return null;
+        }
+
+//        private Node findLocalRoot(List<Node> remaining, List<Node> LC)
+//                throws InterruptedException {
+//
+//            // Standard Proposition 7 test.
+//            for (Node candidate : remaining) {
+//                List<Node> others = new ArrayList<>(remaining);
+//                others.remove(candidate);
+//                if (proposition7Test(candidate, others, LC)) {
+//                    return candidate;
+//                }
+//            }
+//
+//            // Fallback for the case where two latents remain and one is a rank-2
+//            // copy whose twin is already in LC — condition on LC is effectively
+//            // empty due to shared indicators. Try a direct pairwise test ignoring LC.
+//            if (remaining.size() == 2) {
+//                Node a = remaining.get(0);
+//                Node b = remaining.get(1);
+//                System.out.println("  Fallback pairwise test (ignoring LC): "
+//                        + a.getName() + " vs " + b.getName());
+//
+//                boolean aToB = proposition7Test(a, List.of(b), List.of());
+//                boolean bToA = proposition7Test(b, List.of(a), List.of());
+//
+//                if (aToB && !bToA) return a;
+//                if (bToA && !aToB) return b;
+//
+//                // If both or neither pass, try with just the non-twin members of LC.
+//                // Find LC members that are NOT copies of the same original as either remaining node.
+//                List<Node> reducedLC = new ArrayList<>();
+//                for (Node lc : LC) {
+//                    List<Integer> lcCols = originalToIndicatorCols.get(lc);
+//                    List<Integer> aCols = originalToIndicatorCols.get(a);
+//                    List<Integer> bCols = originalToIndicatorCols.get(b);
+//                    // Include in reducedLC only if it doesn't share all indicators with a or b.
+//                    if (!lcCols.equals(aCols) && !lcCols.equals(bCols)) {
+//                        reducedLC.add(lc);
+//                    }
+//                }
+//
+//                if (!reducedLC.isEmpty()) {
+//                    System.out.println("  Fallback with reducedLC=" + clusterNames(reducedLC));
+//                    aToB = proposition7Test(a, List.of(b), reducedLC);
+//                    bToA = proposition7Test(b, List.of(a), reducedLC);
+//                    if (aToB && !bToA) return a;
+//                    if (bToA && !aToB) return b;
+//                }
+//
+//                System.out.println("  Fallback exhausted — cannot orient "
+//                        + a.getName() + " vs " + b.getName());
+//            }
+//
+//            return null;
+//        }
+
+        /**
+         * Proposition 7 GIN test (Xie et al. 2024).
+         *
+         * <p>Tests whether {@code origP} is causally prior to all latents in
+         * {@code others} given confounders {@code LC}.
+         *
+         * <p>Constructs:
+         * <ul>
+         *   <li>P1 = first |Lp| indicator columns of origP</li>
+         *   <li>P2 = remaining indicator columns of origP</li>
+         *   <li>Q1 = one indicator column per latent in others</li>
+         *   <li>T1, T2 = split indicator columns for each confounder in LC</li>
+         * </ul>
+         * Then tests GIN on Z={P2,T2}, Y={P1,Q1,T1}.
+         */
+//        private boolean proposition7Test(Node origP, List<Node> others, List<Node> LC)
+//                throws InterruptedException {
+//
+//            List<Integer> pCols = originalToIndicatorCols.get(origP);
+//            if (pCols == null || pCols.isEmpty()) return false;
+//
+//            int pRank = rankByOriginal.get(origP);
+//            List<Integer> P1 = new ArrayList<>(pCols.subList(0, Math.min(pRank, pCols.size())));
+//            List<Integer> P2 = new ArrayList<>(pCols.subList(P1.size(), pCols.size()));
+//
+//            // Q1: one indicator per remaining latent.
+//            List<Integer> Q1 = new ArrayList<>();
+//            for (Node q : others) {
+//                List<Integer> qCols = originalToIndicatorCols.get(q);
+//                if (qCols != null && !qCols.isEmpty()) Q1.add(qCols.get(0));
+//            }
+//
+//            // T1, T2: split each confounder's indicators in half.
+//            List<Integer> T1 = new ArrayList<>();
+//            List<Integer> T2 = new ArrayList<>();
+//            for (Node lt : LC) {
+//                List<Integer> tCols = originalToIndicatorCols.get(lt);
+//                if (tCols == null || tCols.isEmpty()) continue;
+//                int half = tCols.size() / 2;
+//                T1.addAll(tCols.subList(0, half));
+//                T2.addAll(tCols.subList(half, tCols.size()));
+//            }
+//
+//            // Z = {P2, T2},  Y = {P1, Q1, T1}
+//            List<Integer> zCols = new ArrayList<>();
+//            zCols.addAll(P2);
+//            zCols.addAll(T2);
+//
+//            List<Integer> yCols = new ArrayList<>();
+//            yCols.addAll(P1);
+//            yCols.addAll(Q1);
+//            yCols.addAll(T1);
+//
+//            System.out.printf("  P7 test: candidate=%s others=%s LC=%s%n",
+//                    origP.getName(), clusterNames(others), clusterNames(LC));
+//            System.out.println("    P1=" + P1 + " P2=" + P2 + " Q1=" + Q1
+//                    + " T1=" + T1 + " T2=" + T2);
+//            System.out.println("    zCols=" + zCols + " yCols=" + yCols);
+//
+//            if (zCols.isEmpty() || yCols.isEmpty()) {
+//                System.out.println("  proposition7Test: empty Z or Y for "
+//                        + origP.getName() + " — skipping.");
+//                return false;
+//            }
+//
+//            boolean result = ginConditionHolds(zCols, yCols);
+//            System.out.printf("  P7 test: candidate=%s  GIN=%b  |Z|=%d |Y|=%d%n",
+//                    origP.getName(), result, zCols.size(), yCols.size());
+//            return result;
+//        }
+
+        private boolean proposition7Test(Node origP, List<Node> others, List<Node> LC)
+                throws InterruptedException {
+
+            List<Integer> pCols = originalToIndicatorCols.get(origP);
+            if (pCols == null || pCols.isEmpty()) return false;
+
+            int pRank = rankByOriginal.get(origP);
+            List<Integer> P1 = new ArrayList<>(pCols.subList(0, Math.min(pRank, pCols.size())));
+            List<Integer> P2 = new ArrayList<>(pCols.subList(P1.size(), pCols.size()));
+
+            // Q1: one indicator per other latent, deduplicating within Q1 only
+            // (allowed to overlap with P1/P2 since different latent nodes may
+            // legitimately share indicators when they are copies of the same cluster).
+            Set<Integer> usedInQ = new LinkedHashSet<>();
+            List<Integer> Q1 = new ArrayList<>();
+            for (Node q : others) {
+                List<Integer> qCols = originalToIndicatorCols.get(q);
+                if (qCols == null) continue;
+                for (Integer col : qCols) {
+                    if (!usedInQ.contains(col)) {
+                        Q1.add(col);
+                        usedInQ.add(col);
+                        break;
+                    }
+                }
+            }
+
+            // T1, T2: split each confounder's fresh indicators in half,
+            // deduplicating across all already-used columns including P1, P2, Q1.
+            Set<Integer> usedInT = new LinkedHashSet<>();
+            usedInT.addAll(P1);
+            usedInT.addAll(P2);
+            usedInT.addAll(Q1);
+            List<Integer> T1 = new ArrayList<>();
+            List<Integer> T2 = new ArrayList<>();
+            for (Node lt : LC) {
+                List<Integer> tCols = originalToIndicatorCols.get(lt);
+                if (tCols == null || tCols.isEmpty()) continue;
+                List<Integer> freshT = new ArrayList<>();
+                for (Integer col : tCols) {
+                    if (!usedInT.contains(col)) {
+                        freshT.add(col);
+                        usedInT.add(col);
+                    }
+                }
+                int half = freshT.size() / 2;
+                T1.addAll(freshT.subList(0, half));
+                T2.addAll(freshT.subList(half, freshT.size()));
+            }
+
+            List<Integer> zCols = new ArrayList<>();
+            zCols.addAll(P2);
+            zCols.addAll(T2);
+
+            List<Integer> yCols = new ArrayList<>();
+            yCols.addAll(P1);
+            yCols.addAll(Q1);
+            yCols.addAll(T1);
+
+            if (zCols.isEmpty() || yCols.isEmpty()) {
+                System.out.println("  proposition7Test: empty Z or Y for "
+                        + origP.getName() + " — skipping.");
+                return false;
+            }
+
+            boolean result = ginConditionHolds(zCols, yCols);
+            System.out.printf("  P7 test: candidate=%s  GIN=%b  |Z|=%d |Y|=%d%n",
+                    origP.getName(), result, zCols.size(), yCols.size());
+            return result;
+        }
+
+        /**
+         * Proposition 8 edge pruning (Xie et al. 2024).
+         *
+         * <p>For each ordered pair (Lp, Lq) in the cluster with a directed edge
+         * Lp->Lq, checks whether that edge is made redundant by intermediate
+         * latents LS lying on all paths from Lp to Lq. Removes the edge if the
+         * rank of the combined covariance block is at most |LC_external union LS|.
+         */
+        private void pruneRedundantEdges(List<Node> cluster) {
+            for (int i = 0; i < cluster.size(); i++) {
+                for (int j = 0; j < cluster.size(); j++) {
+                    if (i == j) continue;
+                    Node origP = cluster.get(i);
+                    Node origQ = cluster.get(j);
+                    if (!hasDirectedEdgeBetweenClusters(origP, origQ)) continue;
+
+                    List<Node> LS = intermediateLatents(origP, origQ, cluster);
+                    if (LS.isEmpty()) continue;
+
+                    // Collect external confounders (common parents outside cluster).
+                    List<Node> LC = externalParents(cluster);
+
+                    if (proposition8RankTest(origP, origQ, LS, LC)) {
+                        removeDirectedEdgesBetweenClusters(origP, origQ);
+                        System.out.println("  Proposition 8 removed edge: "
+                                + origP.getName() + " -> " + origQ.getName());
                     }
                 }
             }
         }
 
-        // ==============================================================
-        // Helpers
-        // ==============================================================
+        /**
+         * Tests the Proposition 8 rank condition.
+         *
+         * <p>Constructs the combined column set {P1, Q1, T1, T2, S} and checks
+         * whether the estimated rank of its covariance is at most |LC| + |LS|.
+         */
+        private boolean proposition8RankTest(Node origP, Node origQ,
+                                             List<Node> LS, List<Node> LC) {
+            List<Integer> P1 = firstN(originalToIndicatorCols.get(origP),
+                    rankByOriginal.get(origP));
+            List<Integer> Q1 = firstN(originalToIndicatorCols.get(origQ),
+                    rankByOriginal.get(origQ));
+
+            List<Integer> T1 = new ArrayList<>();
+            List<Integer> T2 = new ArrayList<>();
+            for (Node lt : LC) {
+                List<Integer> tCols = originalToIndicatorCols.get(lt);
+                if (tCols == null || tCols.isEmpty()) continue;
+                int half = tCols.size() / 2;
+                T1.addAll(tCols.subList(0, half));
+                T2.addAll(tCols.subList(half, tCols.size()));
+            }
+
+            List<Integer> S = new ArrayList<>();
+            for (Node ls : LS) {
+                List<Integer> sCols = originalToIndicatorCols.get(ls);
+                if (sCols != null && !sCols.isEmpty()) S.add(sCols.get(0));
+            }
+
+            List<Integer> allCols = new ArrayList<>();
+            allCols.addAll(P1);
+            allCols.addAll(Q1);
+            allCols.addAll(T1);
+            allCols.addAll(T2);
+            allCols.addAll(S);
+
+            if (allCols.isEmpty()) return false;
+
+            Matrix sub = submatrix(dataSet, allCols);
+            Matrix cov = crossCovariance(sub, sub);
+
+            int estimatedRank = estimateRank(cov.getSimpleMatrix(), allCols.size());
+            int targetRank = LC.size() + LS.size();
+            return estimatedRank <= targetRank;
+        }
+
+        // ==================================================================
+        // Core GIN test (shared by Stage 4)
+        // ==================================================================
 
         /**
-         * Returns the left null space of M as a matrix whose rows are orthogonal
-         * to the column space of M, assuming M has rank r. Uses thin SVD.
+         * Tests whether the GIN condition holds for the ordered pair (Z, Y),
+         * where Z and Y are specified by column index lists into dataSet.
+         *
+         * <p>Computes the left null space of Sigma_{Y,Z}, forms the residual
+         * Omega * Y, and tests pairwise independence of each residual row
+         * against each column of Z using HSIC. Combines p-values via Fisher's
+         * method.
          */
-//        private Matrix leftNullSpace(Matrix M, int nominalRank) {
-//            SimpleSVD<SimpleMatrix> svd = M.getSimpleMatrix().svd(false);
-//
-//            SimpleMatrix U = svd.getU();
-//
-//            int usedRank = nominalRank;
-//
-//            if (U.getNumCols() <= usedRank) {
-//                return new Matrix(0, M.getNumRows());
-//            }
-//
-//            int nullDim = U.getNumCols() - usedRank;
-//
-//            double[][] result = new double[nullDim][M.getNumRows()];
-//            for (int col = 0; col < nullDim; col++) {
-//                for (int row = 0; row < M.getNumRows(); row++) {
-//                    result[col][row] = U.get(row, usedRank + col);
-//                }
-//            }
-//
-//            return new Matrix(result);
-//        }
+        private boolean ginConditionHolds(List<Integer> zCols, List<Integer> yCols)
+                throws InterruptedException {
 
-        private Matrix leftNullSpace(Matrix M, int nominalRank) {
-            SimpleSVD<SimpleMatrix> svd = M.getSimpleMatrix().svd(false);
-            SimpleMatrix U = svd.getU();
-            SimpleMatrix W = svd.getW();
+            Matrix Ydata = submatrix(dataSet, yCols);   // n x |Y|
+            Matrix Zdata = submatrix(dataSet, zCols);   // n x |Z|
 
-            // Estimate rank from singular values rather than trusting nominalRank.
-            int m = Math.min(W.numRows(), W.numCols());
-            double maxSV = 0.0;
-            for (int i = 0; i < m; i++) maxSV = Math.max(maxSV, W.get(i, i));
-            double threshold = maxSV * Math.max(M.getNumRows(), M.getNumColumns()) * 1e-8;
+            // Sigma_{Y,Z}: |Y| x |Z|
+            Matrix SigmaYZ = crossCovariance(Ydata, Zdata);
+            Matrix Omega = leftNullSpace(SigmaYZ);      // nullDim x |Y|
 
-            int estimatedRank = 0;
-            for (int i = 0; i < m; i++) {
-                if (W.get(i, i) > threshold) estimatedRank++;
-            }
+            if (Omega.getNumRows() == 0) return false;
 
-            if (U.getNumCols() <= estimatedRank) {
-                return new Matrix(0, M.getNumRows());
-            }
+            // residual = Omega * Y^T,  shape: nullDim x n
+            Matrix residual = Omega.times(Ydata.transpose());
 
-            int nullDim = U.getNumCols() - estimatedRank;
-            double[][] result = new double[nullDim][M.getNumRows()];
-            for (int col = 0; col < nullDim; col++) {
-                for (int row = 0; row < M.getNumRows(); row++) {
-                    result[col][row] = U.get(row, estimatedRank + col);
+            final double EPSILON = 1e-15;
+            double fisherStat = 0.0;
+            int df = 0;
+
+            for (int row = 0; row < residual.getNumRows(); row++) {
+                double[] res = residual.row(row).toArray();
+                for (int col = 0; col < zCols.size(); col++) {
+                    double[] zCol = Zdata.col(col).toArray();
+                    double p = hsic.computePValue(res, zCol);
+                    p = Math.max(p, EPSILON);
+                    fisherStat += -2.0 * Math.log(p);
+                    df += 2;
                 }
             }
 
-            return new Matrix(result);
+            double combinedP = 1.0 - chiSquaredCdf(fisherStat, df);
+            return combinedP > alpha;
         }
 
+        // ==================================================================
+        // Stage 5 helpers: ICA-based intra-cluster ordering
+        // ==================================================================
+
         /**
-         * Recover a total causal order over r ICA sources via pairwise LiNGAM.
-         * For each pair (i, j), regress i on j and vice versa, test residual
+         * Recovers a causal order over r ICA sources via pairwise LiNGAM.
+         * For each pair (i,j): regress i on j and vice versa, test residual
          * independence with HSIC. Build a DAG; topological sort gives the order.
          */
         private int[] lingamOrder(SimpleMatrix sources, int r) throws InterruptedException {
-            System.out.println("lingamOrder: sources.numRows()=" + sources.numRows() + ", sources.numCols()=" + sources.numCols());
-
             boolean[][] adj = new boolean[r][r];
 
             for (int i = 0; i < r; i++) {
                 for (int j = i + 1; j < r; j++) {
                     double[] si = new double[sources.getNumRows()];
-                    for (int row = 0; row < sources.getNumRows(); row++) {
-                        si[row] = sources.get(row, i);
-                    }
-
                     double[] sj = new double[sources.getNumRows()];
                     for (int row = 0; row < sources.getNumRows(); row++) {
-                        sj[row] = sources.get(row, j);   // fixed: was writing into si
+                        si[row] = sources.get(row, i);
+                        sj[row] = sources.get(row, j);
                     }
 
                     double[] res_j_on_i = residualOLS(sj, si);
@@ -739,19 +914,18 @@ public class Tgin implements IGraphSearch {
                     double pji = hsic.computePValue(res_i_on_j, sj);
                     boolean jToI = pji > alpha;
 
-                    System.out.printf("i=%d, j=%d, pij=%.4f, pji=%.4f\n", i, j, pij, pji);
+                    System.out.printf("  LiNGAM i=%d j=%d pij=%.4f pji=%.4f%n",
+                            i, j, pij, pji);
 
-                    if (iToJ && !jToI) adj[i][j] = true;   // i --> j
-                    if (jToI && !iToJ) adj[j][i] = true;   // j --> i
+                    if (iToJ && !jToI) adj[i][j] = true;
+                    if (jToI && !iToJ) adj[j][i] = true;
                 }
             }
 
             return topologicalSort(adj, r);
         }
 
-        /**
-         * OLS residual of y regressed on x (both length-n arrays).
-         */
+        /** OLS residual of y regressed on x. */
         private double[] residualOLS(double[] y, double[] x) {
             int n = y.length;
             double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
@@ -763,70 +937,15 @@ public class Tgin implements IGraphSearch {
             }
             double meanX = sumX / n;
             double meanY = sumY / n;
-            double beta = (sumXY - n * meanX * meanY) / (sumX2 - n * meanX * meanX);
+            double denom = sumX2 - n * meanX * meanX;
+            double beta = (denom == 0.0) ? 0.0 : (sumXY - n * meanX * meanY) / denom;
             double intercept = meanY - beta * meanX;
             double[] residuals = new double[n];
-            for (int i = 0; i < n; i++) {
-                residuals[i] = y[i] - (intercept + beta * x[i]);
-            }
+            for (int i = 0; i < n; i++) residuals[i] = y[i] - (intercept + beta * x[i]);
             return residuals;
         }
 
-        private Matrix submatrix(DataSet ds, List<Integer> cols) {
-            int n = ds.getNumRows();
-            int p = cols.size();
-            double[][] result = new double[n][p];
-            for (int i = 0; i < n; i++)
-                for (int j = 0; j < p; j++)
-                    result[i][j] = ds.getDouble(i, cols.get(j));
-            return new Matrix(result);
-        }
-
-        private Matrix crossCovariance(Matrix X, Matrix Y) {
-            int n = X.getNumRows();
-            Matrix Xc = X.copy();
-            Matrix Yc = Y.copy();
-
-            for (int j = 0; j < X.getNumColumns(); j++) {
-                double mean = 0;
-                for (int i = 0; i < n; i++) mean += X.get(i, j);
-                mean /= n;
-                for (int i = 0; i < n; i++) Xc.set(i, j, X.get(i, j) - mean);
-            }
-
-            for (int j = 0; j < Y.getNumColumns(); j++) {
-                double mean = 0;
-                for (int i = 0; i < n; i++) mean += Y.get(i, j);
-                mean /= n;
-                for (int i = 0; i < n; i++) Yc.set(i, j, Y.get(i, j) - mean);
-            }
-
-            return Xc.transpose().times(Yc).scalarMult(1.0 / (n - 1));
-        }
-
-//        private int[] topologicalSort(boolean[][] adj, int r) {
-//            int[] inDegree = new int[r];
-//            for (int i = 0; i < r; i++)
-//                for (int j = 0; j < r; j++)
-//                    if (adj[i][j]) inDegree[j]++;
-//
-//            Queue<Integer> queue = new LinkedList<>();
-//            for (int i = 0; i < r; i++)
-//                if (inDegree[i] == 0) queue.offer(i);
-//
-//            int[] result = new int[r];
-//            int index = 0;
-//            while (!queue.isEmpty()) {
-//                int node = queue.poll();
-//                result[index++] = node;
-//                for (int j = 0; j < r; j++) {
-//                    if (adj[node][j] && --inDegree[j] == 0)
-//                        queue.offer(j);
-//                }
-//            }
-//            return result;
-//        }
-
+        /** Topological sort of the pairwise LiNGAM adjacency matrix. */
         private int[] topologicalSort(boolean[][] adj, int r) {
             int[] inDegree = new int[r];
             for (int i = 0; i < r; i++)
@@ -842,23 +961,263 @@ public class Tgin implements IGraphSearch {
             while (!queue.isEmpty()) {
                 int node = queue.poll();
                 result[index++] = node;
-                for (int j = 0; j < r; j++) {
-                    if (adj[node][j] && --inDegree[j] == 0)
-                        queue.offer(j);
-                }
+                for (int j = 0; j < r; j++)
+                    if (adj[node][j] && --inDegree[j] == 0) queue.offer(j);
             }
 
             if (index < r) {
-                // Cycle detected in pairwise LiNGAM adjacency — HSIC decisions were
-                // contradictory. Fall back to identity order and log a warning.
-                System.out.println("WARNING: topologicalSort detected a cycle in " +
-                        "pairwise LiNGAM adj matrix (only " + index + " of " + r +
-                        " nodes placed). Falling back to identity order.");
+                System.out.println("WARNING: topologicalSort cycle detected ("
+                        + index + " of " + r + " placed). Falling back to identity order.");
                 for (int k = 0; k < r; k++) result[k] = k;
             }
-
             return result;
         }
+
+        // ==================================================================
+        // Linear algebra helpers
+        // ==================================================================
+
+        /**
+         * Returns the left null space of M as a matrix whose rows span the
+         * orthogonal complement of M's row space. Rank is estimated from
+         * singular values using a relative threshold.
+         */
+        private Matrix leftNullSpace(Matrix M) {
+            SimpleSVD<SimpleMatrix> svd = M.getSimpleMatrix().svd(false);
+            SimpleMatrix U = svd.getU();
+            SimpleMatrix W = svd.getW();
+
+            int m = Math.min(W.numRows(), W.numCols());
+            double maxSV = 0.0;
+            for (int i = 0; i < m; i++) maxSV = Math.max(maxSV, W.get(i, i));
+            double threshold = maxSV * Math.max(M.getNumRows(), M.getNumColumns()) * 1e-8;
+
+            int estimatedRank = 0;
+            for (int i = 0; i < m; i++)
+                if (W.get(i, i) > threshold) estimatedRank++;
+
+            if (U.getNumCols() <= estimatedRank)
+                return new Matrix(0, M.getNumRows());
+
+            int nullDim = U.getNumCols() - estimatedRank;
+            double[][] result = new double[nullDim][M.getNumRows()];
+            for (int col = 0; col < nullDim; col++)
+                for (int row = 0; row < M.getNumRows(); row++)
+                    result[col][row] = U.get(row, estimatedRank + col);
+
+            return new Matrix(result);
+        }
+
+        /** Estimates the numerical rank of a square matrix from its SVD. */
+        private int estimateRank(SimpleMatrix M, int dim) {
+            SimpleSVD<SimpleMatrix> svd = M.svd(false);
+            int m = Math.min(svd.getW().numRows(), svd.getW().numCols());
+            double maxSV = 0.0;
+            for (int i = 0; i < m; i++) maxSV = Math.max(maxSV, svd.getW().get(i, i));
+            double threshold = maxSV * dim * 1e-8;
+            int rank = 0;
+            for (int i = 0; i < m; i++)
+                if (svd.getW().get(i, i) > threshold) rank++;
+            return rank;
+        }
+
+        private Matrix submatrix(DataSet ds, List<Integer> cols) {
+            int n = ds.getNumRows();
+            int p = cols.size();
+            double[][] result = new double[n][p];
+            for (int i = 0; i < n; i++)
+                for (int j = 0; j < p; j++)
+                    result[i][j] = ds.getDouble(i, cols.get(j));
+            return new Matrix(result);
+        }
+
+        /**
+         * Sample cross-covariance of X and Y (both n x p matrices).
+         * Returns X^T * Y / (n-1), shape p_x x p_y.
+         */
+        private Matrix crossCovariance(Matrix X, Matrix Y) {
+            int n = X.getNumRows();
+            Matrix Xc = X.copy();
+            Matrix Yc = Y.copy();
+
+            for (int j = 0; j < X.getNumColumns(); j++) {
+                double mean = 0;
+                for (int i = 0; i < n; i++) mean += X.get(i, j);
+                mean /= n;
+                for (int i = 0; i < n; i++) Xc.set(i, j, X.get(i, j) - mean);
+            }
+            for (int j = 0; j < Y.getNumColumns(); j++) {
+                double mean = 0;
+                for (int i = 0; i < n; i++) mean += Y.get(i, j);
+                mean /= n;
+                for (int i = 0; i < n; i++) Yc.set(i, j, Y.get(i, j) - mean);
+            }
+
+            return Xc.transpose().times(Yc).scalarMult(1.0 / (n - 1));
+        }
+
+        // ==================================================================
+        // Statistical helpers
+        // ==================================================================
+
+        private double chiSquaredCdf(double x, int df) {
+            if (x <= 0.0) return 0.0;
+            return regularizedGammaP(df / 2.0, x / 2.0);
+        }
+
+        private double regularizedGammaP(double a, double x) {
+            if (x <= 0.0) return 0.0;
+            if (x < a + 1.0) {
+                double ap = a, sum = 1.0 / a, del = sum;
+                for (int i = 0; i < 200; i++) {
+                    ap += 1.0;
+                    del *= x / ap;
+                    sum += del;
+                    if (Math.abs(del) < Math.abs(sum) * 1e-12) break;
+                }
+                return sum * Math.exp(-x + a * Math.log(x) - logGamma(a));
+            } else {
+                double fpmin = 1e-300, b = x + 1.0 - a, c = 1.0 / fpmin,
+                        d = 1.0 / b, h = d;
+                for (int i = 1; i <= 200; i++) {
+                    double an = -i * (i - a);
+                    b += 2.0;
+                    d = an * d + b;
+                    if (Math.abs(d) < fpmin) d = fpmin;
+                    c = b + an / c;
+                    if (Math.abs(c) < fpmin) c = fpmin;
+                    d = 1.0 / d;
+                    h *= d * c;
+                    if (Math.abs(d * c - 1.0) < 1e-12) break;
+                }
+                return 1.0 - Math.exp(-x + a * Math.log(x) - logGamma(a)) * h;
+            }
+        }
+
+        private double logGamma(double x) {
+            double[] c = {76.18009172947146, -86.50532032941677, 24.01409824083091,
+                    -1.231739572450155, 0.001208650973866179, -5.395239384953e-6};
+            double y = x, tmp = x + 5.5;
+            tmp -= (x + 0.5) * Math.log(tmp);
+            double ser = 1.000000000190015;
+            for (double ci : c) ser += ci / ++y;
+            return -tmp + Math.log(2.5066282746310005 * ser / x);
+        }
+
+        // ==================================================================
+        // Graph query / mutation helpers
+        // ==================================================================
+
+        private boolean hasUndirectedEdgeBetweenClusters(Node origX, Node origY) {
+            for (Node lx : originalToExpanded.get(origX))
+                for (Node ly : originalToExpanded.get(origY))
+                    if (graph.containsEdge(Edges.undirectedEdge(lx, ly))) return true;
+            return false;
+        }
+
+        private boolean hasDirectedEdgeBetweenClusters(Node origX, Node origY) {
+            for (Node lx : originalToExpanded.get(origX))
+                for (Node ly : originalToExpanded.get(origY))
+                    if (graph.containsEdge(Edges.directedEdge(lx, ly))) return true;
+            return false;
+        }
+
+        private void removeUndirectedEdgesBetweenClusters(Node origX, Node origY) {
+            for (Node lx : originalToExpanded.get(origX))
+                for (Node ly : originalToExpanded.get(origY)) {
+                    Edge e = Edges.undirectedEdge(lx, ly);
+                    if (graph.containsEdge(e)) graph.removeEdge(e);
+                }
+        }
+
+        private void removeDirectedEdgesBetweenClusters(Node origX, Node origY) {
+            for (Node lx : originalToExpanded.get(origX))
+                for (Node ly : originalToExpanded.get(origY)) {
+                    Edge e = Edges.directedEdge(lx, ly);
+                    if (graph.containsEdge(e)) graph.removeEdge(e);
+                }
+        }
+
+        /** Adds directed edges from every copy of origX to every copy of origY. */
+        private void expandEdge(Node origX, Node origY) {
+            for (Node lx : originalToExpanded.get(origX))
+                for (Node ly : originalToExpanded.get(origY))
+                    if (!graph.containsEdge(Edges.directedEdge(lx, ly)))
+                        graph.addDirectedEdge(lx, ly);
+        }
+
+        /**
+         * Returns latents in {@code cluster} that lie strictly between origP
+         * and origQ in the current directed graph (descendants of origP that
+         * are also ancestors of origQ within the cluster).
+         */
+        private List<Node> intermediateLatents(Node origP, Node origQ,
+                                               List<Node> cluster) {
+            List<Node> result = new ArrayList<>();
+            for (Node n : cluster) {
+                if (n == origP || n == origQ) continue;
+                if (hasDirectedEdgeBetweenClusters(origP, n)
+                        && hasDirectedEdgeBetweenClusters(n, origQ))
+                    result.add(n);
+            }
+            return result;
+        }
+
+        /**
+         * Returns original latents outside {@code cluster} that are parents
+         * of any expanded copy of any cluster member.
+         */
+        private List<Node> externalParents(List<Node> cluster) {
+            List<Node> LC = new ArrayList<>();
+            for (Node n : cluster) {
+                for (Node copy : originalToExpanded.get(n)) {
+                    for (Node parentCopy : graph.getParents(copy)) {
+                        Node origParent = nodeMap.get(parentCopy);
+                        if (origParent != null
+                                && !cluster.contains(origParent)
+                                && !LC.contains(origParent)) {
+                            LC.add(origParent);
+                        }
+                    }
+                }
+            }
+            return LC;
+        }
+
+        // ==================================================================
+        // Union-Find helpers (for findImpureClusters)
+        // ==================================================================
+
+        private Node find(Map<Node, Node> parent, Node n) {
+            while (parent.get(n) != n) {
+                parent.put(n, parent.get(parent.get(n)));  // path compression
+                n = parent.get(n);
+            }
+            return n;
+        }
+
+        // ==================================================================
+        // Miscellaneous helpers
+        // ==================================================================
+
+        /** Returns the first n elements of cols (or all if cols.size() < n). */
+        private List<Integer> firstN(List<Integer> cols, int n) {
+            if (cols == null) return new ArrayList<>();
+            return new ArrayList<>(cols.subList(0, Math.min(n, cols.size())));
+        }
+
+        private String clusterNames(List<Node> nodes) {
+            StringBuilder sb = new StringBuilder("[");
+            for (int i = 0; i < nodes.size(); i++) {
+                if (i > 0) sb.append(", ");
+                sb.append(nodes.get(i).getName());
+            }
+            return sb.append("]").toString();
+        }
+
+        // ==================================================================
+        // Map builders (called once in constructor)
+        // ==================================================================
 
         private Map<Node, List<Node>> buildOriginalToExpanded() {
             Map<Node, List<Node>> map = new LinkedHashMap<>();
@@ -881,7 +1240,7 @@ public class Tgin implements IGraphSearch {
                 List<Node> copies = e.getValue();
                 if (copies.isEmpty()) continue;
 
-                // All copies share the same measured children; use the first.
+                // All copies share the same measured children; use the first copy.
                 List<Integer> colIndices = new ArrayList<>();
                 for (Node child : graph.getChildren(copies.get(0))) {
                     if (child.getNodeType() == NodeType.MEASURED) {
@@ -893,6 +1252,10 @@ public class Tgin implements IGraphSearch {
             }
             return map;
         }
+
+        // ==================================================================
+        // Result record (unused externally but kept for symmetry)
+        // ==================================================================
 
         record OrientationResult(boolean independent, double combinedP) {
         }
