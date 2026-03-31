@@ -79,43 +79,69 @@ public class Tgin implements IGraphSearch {
     // Fields
     // -----------------------------------------------------------------------
 
-    /** Optional known measured inputs by name. */
+    /**
+     * Optional known measured inputs by name.
+     */
     private final Set<String> inputNames = new LinkedHashSet<>();
 
-    /** Optional known measured outputs by name. */
+    /**
+     * Optional known measured outputs by name.
+     */
     private final Set<String> outputNames = new LinkedHashSet<>();
 
-    /** Optional background knowledge. */
+    /**
+     * Optional background knowledge.
+     */
     private final Knowledge knowledge = new Knowledge();
 
-    /** HSIC-based marginal independence test. */
+    /**
+     * HSIC-based marginal independence test.
+     */
     private final RawMarginalIndependenceTest hsic;
 
-    /** Input data set. */
+    /**
+     * Input data set.
+     */
     private DataSet dataSet;
 
-    /** Parameters controlling the search. */
+    /**
+     * Parameters controlling the search.
+     */
     private Parameters parameters;
 
-    /** PC search depth (-1 = unlimited). */
+    /**
+     * PC search depth (-1 = unlimited).
+     */
     private int depth = -1;
 
-    /** Verbosity flag. */
+    /**
+     * Verbosity flag.
+     */
     private boolean verbose = false;
 
-    /** Working graph (modified in place during search). */
+    /**
+     * Working graph (modified in place during search).
+     */
     private Graph graph;
 
-    /** All expanded latent copies in the working graph. */
+    /**
+     * All expanded latent copies in the working graph.
+     */
     private List<Node> allLatents;
 
-    /** Sample size (set from TSC result). */
+    /**
+     * Sample size (set from TSC result).
+     */
     private int sampleSize;
 
-    /** Significance level. */
+    /**
+     * Significance level.
+     */
     private double alpha = 0.01;
 
-    /** Rank of each original latent node from TSC. */
+    /**
+     * Rank of each original latent node from TSC.
+     */
     private Map<Node, Integer> latentRanks = new LinkedHashMap<>();
 
     // -----------------------------------------------------------------------
@@ -396,12 +422,25 @@ public class Tgin implements IGraphSearch {
         // Stage 5: intra-cluster ordering for rank-r > 1 clusters
         // ==================================================================
 
+//        public void orientIntraClusterEdges() throws InterruptedException {
+//            for (Map.Entry<Node, List<Node>> entry : originalToExpanded.entrySet()) {
+//                Node original = entry.getKey();
+//                List<Node> copies = entry.getValue();
+//                int r = rankByOriginal.get(original);
+
+        //
+//                if (r <= 1) continue;
         public void orientIntraClusterEdges() throws InterruptedException {
             for (Map.Entry<Node, List<Node>> entry : originalToExpanded.entrySet()) {
                 Node original = entry.getKey();
                 List<Node> copies = entry.getValue();
                 int r = rankByOriginal.get(original);
+
+                System.out.println("=== orientIntraClusterEdges: " + original.getName()
+                        + "  rank=" + r + "  copies=" + copies);
+
                 if (r <= 1) continue;
+                // ... rest of method
 
                 System.out.println("=== Intra-cluster ordering for " + original.getName() + " ===");
 
@@ -528,11 +567,63 @@ public class Tgin implements IGraphSearch {
                 System.out.println("  Local root: " + root.getName()
                         + "  remaining=" + clusterNames(remaining));
 
-                // Orient root -> all others still in remaining.
+                // Step 1: Orient root against any LC members with leftover undirected edges.
+                for (Node lcMember : LC) {
+                    if (hasUndirectedEdgeBetweenClusters(root, lcMember)) {
+                        System.out.println("  Deferred LC edge: " + root.getName()
+                                + " --> " + lcMember.getName());
+                        removeUndirectedEdgesBetweenClusters(root, lcMember);
+                        expandEdge(root, lcMember);
+                    }
+                }
+
+                // Step 2: Orient root -> non-twin remaining members.
                 for (Node other : remaining) {
                     if (other == root) continue;
+//                    List<Integer> otherCols = originalToIndicatorCols.get(other);
+//                    List<Integer> rootCols = originalToIndicatorCols.get(root);
+                    boolean isTwin = false;
+
+                    if (areTwins(other, root)) isTwin = true;
+
+                    if (!isTwin) {
+                        for (Node unprocessed : remaining) {
+                            if (unprocessed == other || unprocessed == root) continue;
+                            if (areTwins(unprocessed, other)) {  // other's twin, not root's twin
+                                isTwin = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!isTwin) {
+                        for (Node lcMember : LC) {
+//                            List<Integer> lcCols = originalToIndicatorCols.get(lcMember);
+//                            if (lcCols != null && lcCols.equals(otherCols)) {
+                            if (areTwins(lcMember, other)) {
+                                isTwin = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (isTwin) continue;
+
+                    System.out.println("  expandEdge: " + root.getName() + " --> " + other.getName());
                     removeUndirectedEdgesBetweenClusters(root, other);
                     expandEdge(root, other);
+                }
+
+                // Step 3: Orient intra-cluster twin edge.
+                for (Node other : remaining) {
+                    if (other == root) continue;
+                    if (areTwins(other, root)) {
+//                    if (originalToIndicatorCols.get(other).equals(originalToIndicatorCols.get(root))) {
+                        System.out.println("  Orienting intra-cluster twin edge: "
+                                + root.getName() + " --> " + other.getName());
+                        removeUndirectedEdgesBetweenClusters(root, other);
+                        expandEdge(root, other);
+                    }
                 }
 
                 remaining.remove(root);
@@ -547,13 +638,18 @@ public class Tgin implements IGraphSearch {
             meekRules.orientImplied(graph);
         }
 
-        /**
-         * Finds the local root of {@code remaining} by testing Proposition 7
-         * for each candidate. Returns the first candidate for which the GIN
-         * condition holds (i.e. it is causally prior to all others given LC).
-         */
+        private boolean areTwins(Node a, Node b) {
+            List<Integer> aCols = originalToIndicatorCols.get(a);
+            List<Integer> bCols = originalToIndicatorCols.get(b);
+            if (aCols == null || bCols == null) return false;
+            if (aCols.size() != bCols.size()) return false;
+            return new HashSet<>(aCols).equals(new HashSet<>(bCols));
+        }
+
         private Node findLocalRoot(List<Node> remaining, List<Node> LC)
                 throws InterruptedException {
+
+            // Standard Proposition 7 test.
             for (Node candidate : remaining) {
                 List<Node> others = new ArrayList<>(remaining);
                 others.remove(candidate);
@@ -561,63 +657,57 @@ public class Tgin implements IGraphSearch {
                     return candidate;
                 }
             }
+
+            if (remaining.size() == 2) {
+                Node a = remaining.get(0);
+                Node b = remaining.get(1);
+
+                // Twin inheritance: check BEFORE fallback pairwise tests.
+                for (Node lc : LC) {
+                    if (areTwins(lc, a)) {
+                        System.out.println("  Twin inheritance (early): " + a.getName()
+                                + " inherits root status from LC member " + lc.getName());
+                        return a;
+                    }
+                    if (areTwins(lc, b)) {
+                        System.out.println("  Twin inheritance (early): " + b.getName()
+                                + " inherits root status from LC member " + lc.getName());
+                        return b;
+                    }
+                }
+
+                // Fallback pairwise test ignoring LC.
+                System.out.println("  Fallback pairwise test (ignoring LC): "
+                        + a.getName() + " vs " + b.getName());
+
+                boolean aToB = proposition7Test(a, List.of(b), List.of());
+                boolean bToA = proposition7Test(b, List.of(a), List.of());
+
+                if (aToB && !bToA) return a;
+                if (bToA && !aToB) return b;
+
+                // Fallback with reducedLC: exclude LC members that are twins of a or b.
+                List<Node> reducedLC = new ArrayList<>();
+                for (Node lc : LC) {
+                    if (!areTwins(lc, a) && !areTwins(lc, b)) {
+                        reducedLC.add(lc);
+                    }
+                }
+
+                if (!reducedLC.isEmpty()) {
+                    System.out.println("  Fallback with reducedLC=" + clusterNames(reducedLC));
+                    aToB = proposition7Test(a, List.of(b), reducedLC);
+                    bToA = proposition7Test(b, List.of(a), reducedLC);
+                    if (aToB && !bToA) return a;
+                    if (bToA && !aToB) return b;
+                }
+
+                System.out.println("  Fallback exhausted — cannot orient "
+                        + a.getName() + " vs " + b.getName());
+            }
+
             return null;
         }
-
-//        private Node findLocalRoot(List<Node> remaining, List<Node> LC)
-//                throws InterruptedException {
-//
-//            // Standard Proposition 7 test.
-//            for (Node candidate : remaining) {
-//                List<Node> others = new ArrayList<>(remaining);
-//                others.remove(candidate);
-//                if (proposition7Test(candidate, others, LC)) {
-//                    return candidate;
-//                }
-//            }
-//
-//            // Fallback for the case where two latents remain and one is a rank-2
-//            // copy whose twin is already in LC — condition on LC is effectively
-//            // empty due to shared indicators. Try a direct pairwise test ignoring LC.
-//            if (remaining.size() == 2) {
-//                Node a = remaining.get(0);
-//                Node b = remaining.get(1);
-//                System.out.println("  Fallback pairwise test (ignoring LC): "
-//                        + a.getName() + " vs " + b.getName());
-//
-//                boolean aToB = proposition7Test(a, List.of(b), List.of());
-//                boolean bToA = proposition7Test(b, List.of(a), List.of());
-//
-//                if (aToB && !bToA) return a;
-//                if (bToA && !aToB) return b;
-//
-//                // If both or neither pass, try with just the non-twin members of LC.
-//                // Find LC members that are NOT copies of the same original as either remaining node.
-//                List<Node> reducedLC = new ArrayList<>();
-//                for (Node lc : LC) {
-//                    List<Integer> lcCols = originalToIndicatorCols.get(lc);
-//                    List<Integer> aCols = originalToIndicatorCols.get(a);
-//                    List<Integer> bCols = originalToIndicatorCols.get(b);
-//                    // Include in reducedLC only if it doesn't share all indicators with a or b.
-//                    if (!lcCols.equals(aCols) && !lcCols.equals(bCols)) {
-//                        reducedLC.add(lc);
-//                    }
-//                }
-//
-//                if (!reducedLC.isEmpty()) {
-//                    System.out.println("  Fallback with reducedLC=" + clusterNames(reducedLC));
-//                    aToB = proposition7Test(a, List.of(b), reducedLC);
-//                    bToA = proposition7Test(b, List.of(a), reducedLC);
-//                    if (aToB && !bToA) return a;
-//                    if (bToA && !aToB) return b;
-//                }
-//
-//                System.out.println("  Fallback exhausted — cannot orient "
-//                        + a.getName() + " vs " + b.getName());
-//            }
-//
-//            return null;
-//        }
 
         /**
          * Proposition 7 GIN test (Xie et al. 2024).
@@ -689,7 +779,6 @@ public class Tgin implements IGraphSearch {
 //                    origP.getName(), result, zCols.size(), yCols.size());
 //            return result;
 //        }
-
         private boolean proposition7Test(Node origP, List<Node> others, List<Node> LC)
                 throws InterruptedException {
 
@@ -698,7 +787,9 @@ public class Tgin implements IGraphSearch {
 
             int pRank = rankByOriginal.get(origP);
             List<Integer> P1 = new ArrayList<>(pCols.subList(0, Math.min(pRank, pCols.size())));
-            List<Integer> P2 = new ArrayList<>(pCols.subList(P1.size(), pCols.size()));
+            // P2 should also be exactly pRank columns, not all remaining.
+            List<Integer> P2 = new ArrayList<>(pCols.subList(P1.size(),
+                    Math.min(P1.size() + pRank, pCols.size())));
 
             // Q1: one indicator per other latent, deduplicating within Q1 only
             // (allowed to overlap with P1/P2 since different latent nodes may
@@ -925,7 +1016,9 @@ public class Tgin implements IGraphSearch {
             return topologicalSort(adj, r);
         }
 
-        /** OLS residual of y regressed on x. */
+        /**
+         * OLS residual of y regressed on x.
+         */
         private double[] residualOLS(double[] y, double[] x) {
             int n = y.length;
             double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
@@ -945,7 +1038,9 @@ public class Tgin implements IGraphSearch {
             return residuals;
         }
 
-        /** Topological sort of the pairwise LiNGAM adjacency matrix. */
+        /**
+         * Topological sort of the pairwise LiNGAM adjacency matrix.
+         */
         private int[] topologicalSort(boolean[][] adj, int r) {
             int[] inDegree = new int[r];
             for (int i = 0; i < r; i++)
@@ -1008,7 +1103,9 @@ public class Tgin implements IGraphSearch {
             return new Matrix(result);
         }
 
-        /** Estimates the numerical rank of a square matrix from its SVD. */
+        /**
+         * Estimates the numerical rank of a square matrix from its SVD.
+         */
         private int estimateRank(SimpleMatrix M, int dim) {
             SimpleSVD<SimpleMatrix> svd = M.svd(false);
             int m = Math.min(svd.getW().numRows(), svd.getW().numCols());
@@ -1138,7 +1235,9 @@ public class Tgin implements IGraphSearch {
                 }
         }
 
-        /** Adds directed edges from every copy of origX to every copy of origY. */
+        /**
+         * Adds directed edges from every copy of origX to every copy of origY.
+         */
         private void expandEdge(Node origX, Node origY) {
             for (Node lx : originalToExpanded.get(origX))
                 for (Node ly : originalToExpanded.get(origY))
@@ -1200,7 +1299,9 @@ public class Tgin implements IGraphSearch {
         // Miscellaneous helpers
         // ==================================================================
 
-        /** Returns the first n elements of cols (or all if cols.size() < n). */
+        /**
+         * Returns the first n elements of cols (or all if cols.size() < n).
+         */
         private List<Integer> firstN(List<Integer> cols, int n) {
             if (cols == null) return new ArrayList<>();
             return new ArrayList<>(cols.subList(0, Math.min(n, cols.size())));
