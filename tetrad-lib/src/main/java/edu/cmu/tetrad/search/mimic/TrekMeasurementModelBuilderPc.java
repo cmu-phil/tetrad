@@ -30,7 +30,7 @@ import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.Tsc;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
-import edu.cmu.tetrad.search.blocks.SingleClusterPolicy;
+import edu.cmu.tetrad.search.blocks.SingletonClusterPolicy;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -259,7 +259,7 @@ public final class TrekMeasurementModelBuilderPc {
 
         return BlocksUtil.applySingleClusterPolicy(
                 spec,
-                SingleClusterPolicy.EXCLUDE,
+                SingletonClusterPolicy.EXCLUDE,
                 parameters.getDouble(Params.ALPHA)
         );
     }

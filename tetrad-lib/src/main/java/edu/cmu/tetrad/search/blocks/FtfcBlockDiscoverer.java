@@ -40,7 +40,7 @@ public class FtfcBlockDiscoverer implements BlockDiscoverer {
     private final DataSet dataSet;
     private final double alpha;
     private final int ess;
-    private final SingleClusterPolicy policy;
+    private final SingletonClusterPolicy policy;
     private final boolean verbose;
 
     /**
@@ -55,7 +55,7 @@ public class FtfcBlockDiscoverer implements BlockDiscoverer {
      * @param verbose whether to enable verbose output during the block discovery process.
      */
     public FtfcBlockDiscoverer(DataSet dataSet, double alpha, int ess,
-                               SingleClusterPolicy policy, boolean verbose) {
+                               SingletonClusterPolicy policy, boolean verbose) {
         this.dataSet = dataSet;
         this.alpha = alpha;
         this.ess = ess;

@@ -208,7 +208,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
     private double alpha = 0.01;
     private boolean verbose = false;
     private Map<Set<Integer>, Integer> clusterToRank;
-    private int rMin = 0;
+    private int rMin = 1;
     private int rMax = 3;
     // require |C| >= (rank + 1 + minRedundancy)
     private int minRedundancy = 1;
@@ -887,8 +887,8 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
             int numPermutations = 1000;
 
-//            int r = RankTests.estimateWilksRank(S, c1Array, c2Array, expectedSampleSize, alpha);
-            int r = RankTests.estimatePermutationRank(dataArray, c1Array, c2Array, alpha, numPermutations);
+            int r = RankTests.estimateWilksRank(S, c1Array, c2Array, expectedSampleSize, alpha);
+//            int r = RankTests.estimatePermutationRank(dataArray, c1Array, c2Array, alpha, numPermutations);
 
             if (r == 0) {
                 // l is only used for the log message; a missing entry means the cluster

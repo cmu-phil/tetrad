@@ -32,7 +32,7 @@ import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.blocks.BlockDiscoverers;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.search.blocks.SingleClusterPolicy;
+import edu.cmu.tetrad.search.blocks.SingletonClusterPolicy;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -396,7 +396,7 @@ public class TestCliqueDetection {
             {
                 learners.put("TSC", () -> {
                     BlockSpec spec = BlockDiscoverers.tsc(
-                            md.data(), 0.05, -1, 1e-8, 2, SingleClusterPolicy.EXCLUDE, 0, false
+                            md.data(), 0.05, -1, 1e-8, 2, SingletonClusterPolicy.EXCLUDE, 0, false
                     ).discover();
 
                     List<Set<Node>> cliquesRaw = new ArrayList<>();

@@ -597,20 +597,13 @@ public class Tgin implements IGraphSearch {
                 // FastICA expects variables x samples (p x n), not samples x variables.
                 SimpleMatrix XblockT = Xblock.transpose();                         // |Cj| x n
 
-                System.out.println("Xblock.numRows()=" + Xblock.numRows() + ", Xblock.numCols()=" + Xblock.numCols());
-
                 FastIca fastica = new FastIca(new Matrix(XblockT.toArray2()), r);
                 fastica.setAlgorithmType(FastIca.DEFLATION);
-                fastica.setMaxIterations(500);       // prevent infinite loop
+                fastica.setMaxIterations(5000);       // prevent infinite loop
                 fastica.setTolerance(1e-6);          // explicit convergence threshold
 
                 FastIca.IcaResult icaResult = fastica.findComponents();
-
-                System.out.println("FastICA done.");
-
-                // W is r x p (unmixing), sources = (W * X^T)^T = X * W^T, giving n x r
-                SimpleMatrix W = icaResult.W().getSimpleMatrix();                  // r x |Cj|
-                SimpleMatrix sources = Xblock.mult(W.transpose());                 // n x r
+                SimpleMatrix sources = icaResult.S().transpose().getSimpleMatrix();
 
                 // --- 5b: Pairwise LiNGAM on sources to find causal order ---
                 int[] causalOrder = lingamOrder(sources, r);
@@ -770,6 +763,29 @@ public class Tgin implements IGraphSearch {
             return Xc.transpose().times(Yc).scalarMult(1.0 / (n - 1));
         }
 
+//        private int[] topologicalSort(boolean[][] adj, int r) {
+//            int[] inDegree = new int[r];
+//            for (int i = 0; i < r; i++)
+//                for (int j = 0; j < r; j++)
+//                    if (adj[i][j]) inDegree[j]++;
+//
+//            Queue<Integer> queue = new LinkedList<>();
+//            for (int i = 0; i < r; i++)
+//                if (inDegree[i] == 0) queue.offer(i);
+//
+//            int[] result = new int[r];
+//            int index = 0;
+//            while (!queue.isEmpty()) {
+//                int node = queue.poll();
+//                result[index++] = node;
+//                for (int j = 0; j < r; j++) {
+//                    if (adj[node][j] && --inDegree[j] == 0)
+//                        queue.offer(j);
+//                }
+//            }
+//            return result;
+//        }
+
         private int[] topologicalSort(boolean[][] adj, int r) {
             int[] inDegree = new int[r];
             for (int i = 0; i < r; i++)
@@ -790,6 +806,16 @@ public class Tgin implements IGraphSearch {
                         queue.offer(j);
                 }
             }
+
+            if (index < r) {
+                // Cycle detected in pairwise LiNGAM adjacency — HSIC decisions were
+                // contradictory. Fall back to identity order and log a warning.
+                System.out.println("WARNING: topologicalSort detected a cycle in " +
+                        "pairwise LiNGAM adj matrix (only " + index + " of " + r +
+                        " nodes placed). Falling back to identity order.");
+                for (int k = 0; k < r; k++) result[k] = k;
+            }
+
             return result;
         }
 

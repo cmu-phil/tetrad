@@ -40,7 +40,7 @@ public class FofcBlockDiscoverer implements BlockDiscoverer {
     private final DataSet dataSet;
     private final double alpha;
     private final int ess;
-    private final SingleClusterPolicy policy;
+    private final SingletonClusterPolicy policy;
     private final boolean verbose;
 
     /**
@@ -55,7 +55,7 @@ public class FofcBlockDiscoverer implements BlockDiscoverer {
      * @param verbose A boolean flag indicating whether verbose mode should be enabled (true) or disabled (false).
      */
     public FofcBlockDiscoverer(DataSet dataSet, double alpha, int ess,
-                               SingleClusterPolicy policy, boolean verbose) {
+                               SingletonClusterPolicy policy, boolean verbose) {
         this.dataSet = dataSet;
         this.alpha = alpha;
         this.ess = ess;

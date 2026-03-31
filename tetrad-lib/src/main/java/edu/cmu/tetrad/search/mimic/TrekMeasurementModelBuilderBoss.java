@@ -17,7 +17,7 @@ import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.Tsc;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
-import edu.cmu.tetrad.search.blocks.SingleClusterPolicy;
+import edu.cmu.tetrad.search.blocks.SingletonClusterPolicy;
 import edu.cmu.tetrad.search.score.BlocksBicScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -243,7 +243,7 @@ public final class TrekMeasurementModelBuilderBoss {
 
         return BlocksUtil.applySingleClusterPolicy(
                 spec,
-                SingleClusterPolicy.EXCLUDE,
+                SingletonClusterPolicy.EXCLUDE,
                 parameters.getDouble(Params.ALPHA));
     }
 

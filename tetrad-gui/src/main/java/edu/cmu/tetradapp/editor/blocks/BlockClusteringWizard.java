@@ -367,7 +367,7 @@ public class BlockClusteringWizard extends JPanel {
         setParamList();
 
         int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
-        SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
+        SingletonClusterPolicy policy = SingletonClusterPolicy.values()[_singletonPolicy - 1];
 
         return switch (alg) {
             case "TSC" -> {
