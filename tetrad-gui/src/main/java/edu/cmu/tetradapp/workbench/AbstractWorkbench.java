@@ -214,9 +214,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         setGraph(graph);
         addMouseListener(this.mouseHandler);
         addMouseMotionListener(this.mouseMotionHandler);
-        super.setBackground(getWorkbenchBackground());
-        setBackground(getWorkbenchBackground());
-        setOpaque(true);
+//        super.setBackground(getWorkbenchBackground());
+//        setBackground(getWorkbenchBackground());
+        setOpaque(false);
         setFocusable(true);
 
         addMouseListener(new MouseAdapter() {
@@ -890,9 +890,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     public void paintComponent(Graphics g) {
-        Color background = getWorkbenchBackground();
-        g.setColor(background);
-        g.fillRect(0, 0, getWidth(), getHeight());
+//        Color background = getWorkbenchBackground();
+//        g.setColor(background);
+//        g.fillRect(0, 0, getWidth(), getHeight());
         super.paintComponent(g);
     }
 
