@@ -1238,9 +1238,9 @@ public class ExpressionManager {
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    double e1 = getExpressions().getFirst().evaluate(context);
-                    double e2 = getExpressions().get(1).evaluate(context);
-                    return new LaplaceDistribution(randomGenerator, e1, e2).sample();
+                    double mu = getExpressions().getFirst().evaluate(context);
+                    double beta = getExpressions().get(1).evaluate(context);
+                    return new LaplaceDistribution(randomGenerator, mu, beta).sample();
                 }
 
                 public RealDistribution getRealDistribution(Context context) {

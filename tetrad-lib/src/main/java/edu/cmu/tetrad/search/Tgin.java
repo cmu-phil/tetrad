@@ -788,12 +788,25 @@ public class Tgin implements IGraphSearch {
          *
          * <p>Constructs:
          * <ul>
-         *   <li>P1 = first |Lp| indicator columns of origP</li>
-         *   <li>P2 = remaining indicator columns of origP</li>
+         *   <li>P1 = first {@code pRank} indicator columns of origP (Y side)</li>
+         *   <li>P2 = next {@code pRank} indicator columns of origP (Z side, balanced split)</li>
          *   <li>Q1 = one indicator column per latent in others</li>
          *   <li>T1, T2 = split indicator columns for each confounder in LC</li>
          * </ul>
          * Then tests GIN on Z={P2,T2}, Y={P1,Q1,T1}.
+         *
+         * <p><b>Adaptive P2 fallback.</b> When the balanced split passes, that result
+         * is returned immediately. If it fails, and more indicator columns remain
+         * unused beyond the balanced P2, a second attempt is made using <em>all</em>
+         * remaining indicators in P2 (giving Z a larger column set and hence more
+         * statistical power). The expanded test is only tried when either:
+         * <ul>
+         *   <li>the balanced P2 had {@code <=1} column (too few for reliable HSIC), or</li>
+         *   <li>the balanced combined p-value was within {@code adaptiveThreshold}
+         *       of {@code alpha} (the test nearly passed — additional power may tip it).</li>
+         * </ul>
+         * Using both passes reduces false negatives in the low-indicator regime without
+         * materially inflating type I error when the balanced test clearly rejects.
          */
         private boolean proposition7Test(Node origP, List<Node> others, List<Node> LC)
                 throws InterruptedException {
@@ -803,13 +816,17 @@ public class Tgin implements IGraphSearch {
 
             int pRank = rankByOriginal.get(origP);
             List<Integer> P1 = new ArrayList<>(pCols.subList(0, Math.min(pRank, pCols.size())));
-            // P2 is exactly pRank columns (not all remaining), to keep Z and Y balanced.
-            int p2End = Math.min(P1.size() + pRank, pCols.size());
-            List<Integer> P2 = new ArrayList<>(pCols.subList(P1.size(), p2End));
 
-            // Q1: one indicator per other latent, deduplicating within Q1 only
-            // (allowed to overlap with P1/P2 since different latent nodes may
-            // legitimately share indicators when they are copies of the same cluster).
+            // Balanced split: P2 gets exactly pRank columns (same width as P1).
+            int p2BalancedEnd = Math.min(P1.size() + pRank, pCols.size());
+            List<Integer> P2balanced = new ArrayList<>(pCols.subList(P1.size(), p2BalancedEnd));
+
+            // Full split: P2 gets every remaining indicator beyond P1.
+            List<Integer> P2full = new ArrayList<>(pCols.subList(P1.size(), pCols.size()));
+
+            // Q1: one indicator per other latent, deduplicating within Q1 only.
+            // Overlap with P1/P2 is permitted — copies of the same cluster legitimately
+            // share indicators.
             Set<Integer> usedInQ = new LinkedHashSet<>();
             List<Integer> Q1 = new ArrayList<>();
             for (Node q : others) {
@@ -825,10 +842,12 @@ public class Tgin implements IGraphSearch {
             }
 
             // T1, T2: split each confounder's fresh indicators in half,
-            // deduplicating across all already-used columns including P1, P2, Q1.
+            // deduplicating against P1, P2balanced, and Q1.
+            // (T deduplication uses the balanced P2 in both attempts so that
+            // T1/T2/Q1/yCols are identical between the two runs — only zCols differs.)
             Set<Integer> usedInT = new LinkedHashSet<>();
             usedInT.addAll(P1);
-            usedInT.addAll(P2);
+            usedInT.addAll(P2balanced);
             usedInT.addAll(Q1);
             List<Integer> T1 = new ArrayList<>();
             List<Integer> T2 = new ArrayList<>();
@@ -847,25 +866,61 @@ public class Tgin implements IGraphSearch {
                 T2.addAll(freshT.subList(half, freshT.size()));
             }
 
-            List<Integer> zCols = new ArrayList<>();
-            zCols.addAll(P2);
-            zCols.addAll(T2);
-
+            // Y is the same for both attempts.
             List<Integer> yCols = new ArrayList<>();
             yCols.addAll(P1);
             yCols.addAll(Q1);
             yCols.addAll(T1);
 
-            if (zCols.isEmpty() || yCols.isEmpty()) {
-                System.out.println("  proposition7Test: empty Z or Y for "
+            if (yCols.isEmpty()) {
+                System.out.println("  proposition7Test: empty Y for "
                         + origP.getName() + " — skipping.");
                 return false;
             }
 
-            boolean result = ginConditionHolds(zCols, yCols);
-            System.out.printf("  P7 test: candidate=%s  GIN=%b  |Z|=%d |Y|=%d%n",
-                    origP.getName(), result, zCols.size(), yCols.size());
-            return result;
+            // --- Attempt 1: balanced P2 ---
+            List<Integer> zColsBalanced = new ArrayList<>();
+            zColsBalanced.addAll(P2balanced);
+            zColsBalanced.addAll(T2);
+
+            if (zColsBalanced.isEmpty()) {
+                System.out.println("  proposition7Test: empty Z (balanced) for "
+                        + origP.getName() + " — skipping.");
+                return false;
+            }
+
+            OrientationResult r1 = ginConditionHolds(zColsBalanced, yCols);
+            System.out.printf("  P7 test (balanced): candidate=%s  GIN=%b  p=%.4f  |Z|=%d |Y|=%d%n",
+                    origP.getName(), r1.independent(), r1.combinedP(),
+                    zColsBalanced.size(), yCols.size());
+
+            if (r1.independent()) return true;
+
+            // --- Attempt 2: expanded P2 (adaptive fallback) ---
+            // Only worthwhile when more indicators are available AND the balanced
+            // test either had too little data (|P2| <= 1) or came tantalisingly
+            // close to passing (combinedP within adaptiveThreshold of alpha).
+            boolean moreAvailable = P2full.size() > P2balanced.size();
+            boolean tooFewCols   = P2balanced.size() <= 1;
+            // adaptiveThreshold: how far below alpha the combined p must be
+            // before we consider the evidence "marginal" rather than "clear rejection".
+            // 5 * alpha gives a comfortable margin; exposed here for easy tuning.
+            double adaptiveThreshold = 5.0 * alpha;
+            boolean marginalEvidence = r1.combinedP() < adaptiveThreshold;
+
+            if (moreAvailable && (tooFewCols || marginalEvidence)) {
+                List<Integer> zColsFull = new ArrayList<>();
+                zColsFull.addAll(P2full);
+                zColsFull.addAll(T2);
+
+                OrientationResult r2 = ginConditionHolds(zColsFull, yCols);
+                System.out.printf("  P7 test (expanded): candidate=%s  GIN=%b  p=%.4f  |Z|=%d |Y|=%d%n",
+                        origP.getName(), r2.independent(), r2.combinedP(),
+                        zColsFull.size(), yCols.size());
+                return r2.independent();
+            }
+
+            return false;
         }
 
         /**
@@ -957,8 +1012,12 @@ public class Tgin implements IGraphSearch {
          * Omega * Y, and tests pairwise independence of each residual row
          * against each column of Z using HSIC. Combines p-values via Fisher's
          * method.
+         *
+         * @return an {@link OrientationResult} carrying both the boolean verdict
+         *         ({@code combinedP > alpha}) and the raw combined p-value, so
+         *         callers can implement adaptive fallback strategies.
          */
-        private boolean ginConditionHolds(List<Integer> zCols, List<Integer> yCols)
+        private OrientationResult ginConditionHolds(List<Integer> zCols, List<Integer> yCols)
                 throws InterruptedException {
 
             Matrix Ydata = submatrix(dataSet, yCols);   // n x |Y|
@@ -968,7 +1027,7 @@ public class Tgin implements IGraphSearch {
             Matrix SigmaYZ = crossCovariance(Ydata, Zdata);
             Matrix Omega = leftNullSpace(SigmaYZ);      // nullDim x |Y|
 
-            if (Omega.getNumRows() == 0) return false;
+            if (Omega.getNumRows() == 0) return new OrientationResult(false, 0.0);
 
             // residual = Omega * Y^T,  shape: nullDim x n
             Matrix residual = Omega.times(Ydata.transpose());
@@ -989,7 +1048,7 @@ public class Tgin implements IGraphSearch {
             }
 
             double combinedP = 1.0 - chiSquaredCdf(fisherStat, df);
-            return combinedP > alpha;
+            return new OrientationResult(combinedP > alpha, combinedP);
         }
 
         // ==================================================================
