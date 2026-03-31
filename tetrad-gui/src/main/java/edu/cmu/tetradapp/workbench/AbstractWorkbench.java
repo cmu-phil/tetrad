@@ -234,9 +234,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         return c != null ? c : fallback;
     }
 
-    private static Color getWorkbenchBackground() {
-        return uiColor("Panel.background", Color.WHITE);
-    }
+//    private static Color getWorkbenchBackground() {
+//        return uiColor("Panel.background", Color.WHITE);
+//    }
 
     // ============================PUBLIC METHODS==========================//
 

@@ -86,9 +86,9 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
         return c != null ? c : fallback;
     }
 
-    private static Color getWorkbenchBackground() {
-        return uiColor("Panel.background", Color.WHITE);
-    }
+//    private static Color getWorkbenchBackground() {
+//        return uiColor("Panel.background", Color.WHITE);
+//    }
 
     private static Color getEdgeColor() {
         Color c = javax.swing.UIManager.getColor("Component.borderColor");
@@ -126,15 +126,15 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
      */
     public GraphWorkbench(Graph graph) {
         super(graph);
-        setRightClickPopupAllowed(true);
-        setBackground(getWorkbenchBackground());
-        setOpaque(true);
+//        setRightClickPopupAllowed(true);
+//        setBackground(getWorkbenchBackground());
+//        setOpaque(true);
     }
 
     @Override
     public void updateUI() {
         super.updateUI();
-        setBackground(getWorkbenchBackground());
+//        setBackground(getWorkbenchBackground());
         repaint();
     }
 
