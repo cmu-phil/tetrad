@@ -206,7 +206,6 @@ public final class BossTrekMimic implements IGraphSearch {
 
         this.graph      = new EdgeListGraph(result.graph());
         this.variables  = new ArrayList<>(result.variables());
-        this.s          = result.matrix();
         this.sampleSize = result.sampleSize();
         this.alpha      = result.alpha();
 

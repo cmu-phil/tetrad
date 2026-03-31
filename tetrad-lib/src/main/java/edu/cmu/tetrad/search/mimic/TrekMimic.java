@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search.mimic;
 
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
@@ -168,7 +169,6 @@ public final class TrekMimic {
             this.allLatents = new ArrayList<>(result.latents());
             this.initialPool = new ArrayList<>(result.parentPool());
             this.variables = new ArrayList<>(result.variables());
-            this.s = result.matrix();
             this.sampleSize = result.sampleSize();
             this.alpha = result.alpha();
 
@@ -192,7 +192,6 @@ public final class TrekMimic {
             this.allLatents = new ArrayList<>(result.latents());
             this.initialPool = new ArrayList<>(result.parentPool());
             this.variables = new ArrayList<>(result.variables());
-            this.s = result.matrix();
             this.sampleSize = result.sampleSize();
             this.alpha = result.alpha();
 
@@ -256,6 +255,7 @@ public final class TrekMimic {
 
 //        this.dataSet = dataSet;
         this.dataSet = DataTransforms.getNonparanormalTransformed(dataSet);
+        this.s = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
     }
 
     /**

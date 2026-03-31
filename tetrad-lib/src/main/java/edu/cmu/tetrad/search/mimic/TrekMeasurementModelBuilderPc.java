@@ -34,7 +34,6 @@ import edu.cmu.tetrad.search.blocks.SingleClusterPolicy;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -143,7 +142,6 @@ public final class TrekMeasurementModelBuilderPc {
         List<Node> parentPool = determineParentPool(dataSet.getVariables(), observedChildren);
 
         List<Node> variables = new ArrayList<>(dataSet.getVariables());
-        SimpleMatrix matrix = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
         int sampleSize = dataSet.getNumRows();
         double alpha = parameters.getDouble(Params.ALPHA);
 
@@ -153,7 +151,6 @@ public final class TrekMeasurementModelBuilderPc {
                 latents,
                 observedChildren,
                 parentPool,                variables,
-                matrix,
                 sampleSize,
                 alpha
         );
@@ -469,15 +466,14 @@ public final class TrekMeasurementModelBuilderPc {
     /**
      * Result of building the shared measurement model.
      *
-     * @param spec the block specification
-     * @param graph the measurement graph
-     * @param latents the latent variables
+     * @param spec             the block specification
+     * @param graph            the measurement graph
+     * @param latents          the latent variables
      * @param observedChildren the observed child variables
-     * @param parentPool the measured parent pool
-     * @param variables the measured variables in matrix order
-     * @param matrix the correlation matrix
-     * @param sampleSize the sample size
-     * @param alpha the alpha level
+     * @param parentPool       the measured parent pool
+     * @param variables        the measured variables in matrix order
+     * @param sampleSize       the sample size
+     * @param alpha            the alpha level
      */
     public record MeasurementBuildResult(
             BlockSpec spec,
@@ -486,7 +482,6 @@ public final class TrekMeasurementModelBuilderPc {
             List<Node> observedChildren,
             List<Node> parentPool,
             List<Node> variables,
-            SimpleMatrix matrix,
             int sampleSize,
             double alpha
     ) {
