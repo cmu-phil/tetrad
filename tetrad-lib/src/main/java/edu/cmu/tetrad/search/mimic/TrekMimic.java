@@ -253,8 +253,7 @@ public final class TrekMimic {
             throw new NullPointerException("Data set must not be null.");
         }
 
-//        this.dataSet = dataSet;
-        this.dataSet = DataTransforms.getNonparanormalTransformed(dataSet);
+        this.dataSet = dataSet;
         this.s = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
     }
 
