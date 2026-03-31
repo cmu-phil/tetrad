@@ -553,8 +553,35 @@ public class Tgin implements IGraphSearch {
             System.out.println("=== orientImpureCluster: " + clusterNames(impureCluster)
                     + "  LC=" + clusterNames(LC) + " ===");
 
-            // Peel local roots one at a time.
+// Peel local roots one at a time.
             while (remaining.size() > 1) {
+
+                // Check if all remaining nodes are mutual twins.
+                // If so, use ICA+LiNGAM to order them directly.
+                Set<Integer> firstCols = new HashSet<>(
+                        originalToIndicatorCols.get(remaining.get(0)));
+                boolean allTwins = remaining.stream().allMatch(n ->
+                        new HashSet<>(originalToIndicatorCols.get(n)).equals(firstCols));
+
+                if (allTwins) {
+                    System.out.println("  All remaining are twins — using ICA ordering: "
+                            + clusterNames(remaining));
+                    orientTwinsByICA(remaining);
+
+                    // Fire deferred LC edges for each twin.
+                    for (Node twin : remaining) {
+                        for (Node lcMember : LC) {
+                            if (hasUndirectedEdgeBetweenClusters(twin, lcMember)) {
+                                System.out.println("  Deferred LC edge (post-ICA): "
+                                        + twin.getName() + " --> " + lcMember.getName());
+                                removeUndirectedEdgesBetweenClusters(twin, lcMember);
+                                expandEdge(twin, lcMember);
+                            }
+                        }
+                    }
+                    break;
+                }
+
                 Node root = findLocalRoot(remaining, LC);
 
                 if (root == null) {
@@ -580,8 +607,6 @@ public class Tgin implements IGraphSearch {
                 // Step 2: Orient root -> non-twin remaining members.
                 for (Node other : remaining) {
                     if (other == root) continue;
-//                    List<Integer> otherCols = originalToIndicatorCols.get(other);
-//                    List<Integer> rootCols = originalToIndicatorCols.get(root);
                     boolean isTwin = false;
 
                     if (areTwins(other, root)) isTwin = true;
@@ -589,7 +614,7 @@ public class Tgin implements IGraphSearch {
                     if (!isTwin) {
                         for (Node unprocessed : remaining) {
                             if (unprocessed == other || unprocessed == root) continue;
-                            if (areTwins(unprocessed, other)) {  // other's twin, not root's twin
+                            if (areTwins(unprocessed, other)) {
                                 isTwin = true;
                                 break;
                             }
@@ -598,8 +623,6 @@ public class Tgin implements IGraphSearch {
 
                     if (!isTwin) {
                         for (Node lcMember : LC) {
-//                            List<Integer> lcCols = originalToIndicatorCols.get(lcMember);
-//                            if (lcCols != null && lcCols.equals(otherCols)) {
                             if (areTwins(lcMember, other)) {
                                 isTwin = true;
                                 break;
@@ -618,7 +641,6 @@ public class Tgin implements IGraphSearch {
                 for (Node other : remaining) {
                     if (other == root) continue;
                     if (areTwins(other, root)) {
-//                    if (originalToIndicatorCols.get(other).equals(originalToIndicatorCols.get(root))) {
                         System.out.println("  Orienting intra-cluster twin edge: "
                                 + root.getName() + " --> " + other.getName());
                         removeUndirectedEdgesBetweenClusters(root, other);
@@ -636,6 +658,55 @@ public class Tgin implements IGraphSearch {
             MeekRules meekRules = new MeekRules();
             meekRules.setRevertToUnshieldedColliders(false);
             meekRules.orientImplied(graph);
+        }
+
+        private void orientTwinsByICA(List<Node> twins) throws InterruptedException {
+            if (twins.size() <= 1) return;
+
+            // All twins share the same indicator columns — use the first one.
+            List<Integer> cols = originalToIndicatorCols.get(twins.get(0));
+            if (cols == null || cols.isEmpty()) {
+                System.out.println("  orientTwinsByICA: no indicator cols for "
+                        + twins.get(0).getName() + " — skipping.");
+                return;
+            }
+
+            int r = twins.size();
+            System.out.println("  orientTwinsByICA: r=" + r + " cols=" + cols);
+
+            // FastICA expects variables x samples (p x n).
+            SimpleMatrix Xblock = submatrix(dataSet, cols).getSimpleMatrix();  // n x |cols|
+            SimpleMatrix XblockT = Xblock.transpose();                          // |cols| x n
+
+            FastIca fastica = new FastIca(new Matrix(XblockT.toArray2()), r);
+            fastica.setAlgorithmType(FastIca.DEFLATION);
+            fastica.setMaxIterations(5000);
+            fastica.setTolerance(1e-6);
+
+            FastIca.IcaResult icaResult = fastica.findComponents();
+
+            // S is r x n; transpose to n x r.
+            SimpleMatrix sources = icaResult.S().transpose().getSimpleMatrix(); // n x r
+
+            // Pairwise LiNGAM on sources to get causal order.
+            int[] causalOrder = lingamOrder(sources, r);
+
+            // Orient edges between twin copies according to causal order.
+            for (int pos = 0; pos < r - 1; pos++) {
+                Node earlier = twins.get(causalOrder[pos]);
+                Node later = twins.get(causalOrder[pos + 1]);
+
+                removeUndirectedEdgesBetweenClusters(earlier, later);
+                expandEdge(earlier, later);
+
+                System.out.println("  orientTwinsByICA: " + earlier.getName()
+                        + " --> " + later.getName());
+            }
+
+            // Also orient deferred LC edges for all twins now that order is known.
+            // The causally earliest twin should point away from LC members,
+            // but since all twins share the same LC relationship, orient all of them.
+            // (Deferred LC edges are handled by the main loop's step 1 — nothing extra needed here.)
         }
 
         private boolean areTwins(Node a, Node b) {
@@ -724,61 +795,6 @@ public class Tgin implements IGraphSearch {
          * </ul>
          * Then tests GIN on Z={P2,T2}, Y={P1,Q1,T1}.
          */
-//        private boolean proposition7Test(Node origP, List<Node> others, List<Node> LC)
-//                throws InterruptedException {
-//
-//            List<Integer> pCols = originalToIndicatorCols.get(origP);
-//            if (pCols == null || pCols.isEmpty()) return false;
-//
-//            int pRank = rankByOriginal.get(origP);
-//            List<Integer> P1 = new ArrayList<>(pCols.subList(0, Math.min(pRank, pCols.size())));
-//            List<Integer> P2 = new ArrayList<>(pCols.subList(P1.size(), pCols.size()));
-//
-//            // Q1: one indicator per remaining latent.
-//            List<Integer> Q1 = new ArrayList<>();
-//            for (Node q : others) {
-//                List<Integer> qCols = originalToIndicatorCols.get(q);
-//                if (qCols != null && !qCols.isEmpty()) Q1.add(qCols.get(0));
-//            }
-//
-//            // T1, T2: split each confounder's indicators in half.
-//            List<Integer> T1 = new ArrayList<>();
-//            List<Integer> T2 = new ArrayList<>();
-//            for (Node lt : LC) {
-//                List<Integer> tCols = originalToIndicatorCols.get(lt);
-//                if (tCols == null || tCols.isEmpty()) continue;
-//                int half = tCols.size() / 2;
-//                T1.addAll(tCols.subList(0, half));
-//                T2.addAll(tCols.subList(half, tCols.size()));
-//            }
-//
-//            // Z = {P2, T2},  Y = {P1, Q1, T1}
-//            List<Integer> zCols = new ArrayList<>();
-//            zCols.addAll(P2);
-//            zCols.addAll(T2);
-//
-//            List<Integer> yCols = new ArrayList<>();
-//            yCols.addAll(P1);
-//            yCols.addAll(Q1);
-//            yCols.addAll(T1);
-//
-//            System.out.printf("  P7 test: candidate=%s others=%s LC=%s%n",
-//                    origP.getName(), clusterNames(others), clusterNames(LC));
-//            System.out.println("    P1=" + P1 + " P2=" + P2 + " Q1=" + Q1
-//                    + " T1=" + T1 + " T2=" + T2);
-//            System.out.println("    zCols=" + zCols + " yCols=" + yCols);
-//
-//            if (zCols.isEmpty() || yCols.isEmpty()) {
-//                System.out.println("  proposition7Test: empty Z or Y for "
-//                        + origP.getName() + " — skipping.");
-//                return false;
-//            }
-//
-//            boolean result = ginConditionHolds(zCols, yCols);
-//            System.out.printf("  P7 test: candidate=%s  GIN=%b  |Z|=%d |Y|=%d%n",
-//                    origP.getName(), result, zCols.size(), yCols.size());
-//            return result;
-//        }
         private boolean proposition7Test(Node origP, List<Node> others, List<Node> LC)
                 throws InterruptedException {
 
@@ -787,9 +803,9 @@ public class Tgin implements IGraphSearch {
 
             int pRank = rankByOriginal.get(origP);
             List<Integer> P1 = new ArrayList<>(pCols.subList(0, Math.min(pRank, pCols.size())));
-            // P2 should also be exactly pRank columns, not all remaining.
-            List<Integer> P2 = new ArrayList<>(pCols.subList(P1.size(),
-                    Math.min(P1.size() + pRank, pCols.size())));
+            // P2 is exactly pRank columns (not all remaining), to keep Z and Y balanced.
+            int p2End = Math.min(P1.size() + pRank, pCols.size());
+            List<Integer> P2 = new ArrayList<>(pCols.subList(P1.size(), p2End));
 
             // Q1: one indicator per other latent, deduplicating within Q1 only
             // (allowed to overlap with P1/P2 since different latent nodes may
