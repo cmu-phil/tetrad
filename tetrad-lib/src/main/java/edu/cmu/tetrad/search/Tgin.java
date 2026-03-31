@@ -72,7 +72,9 @@ import java.util.*;
  *
  * @see TrekMeasurementModelBuilderPc
  * @see TrekMeasurementModelBuilderBoss
+ *
  */
+@Deprecated
 public class Tgin implements IGraphSearch {
 
     // -----------------------------------------------------------------------

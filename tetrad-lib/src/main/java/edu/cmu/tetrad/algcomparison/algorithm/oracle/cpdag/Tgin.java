@@ -24,8 +24,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -48,12 +46,13 @@ import java.util.*;
  *
  * @author josephramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "TGIN",
-        command = "tgin",
-        algoType = AlgType.forbid_latent_common_causes
-)
-@Bootstrapping
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "TGIN",
+//        command = "tgin",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
+//@Bootstrapping
+@Deprecated
 public class Tgin extends AbstractBootstrapAlgorithm
         implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
 

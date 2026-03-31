@@ -66,12 +66,13 @@ import java.util.Map;
  *       parameter; it is passed to the script for forward compatibility.</li>
  * </ul>
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "CL-GIN",
-        command = "cl-gin",
-        algoType = AlgType.search_for_structure_over_latents
-)
-@Bootstrapping
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "CL-GIN",
+//        command = "cl-gin",
+//        algoType = AlgType.search_for_structure_over_latents
+//)
+//@Bootstrapping
+@Deprecated
 public class PythonGin implements Algorithm {
 
     @Serial
