@@ -383,16 +383,26 @@ public class Tgin implements IGraphSearch {
                     OrientationResult xToY = groupGinTest(origX, origY);
                     OrientationResult yToX = groupGinTest(origY, origX);
 
-//                    double pxy = xToY.combinedP();
-//                    double pyx = yToX.combinedP();
+                    double pxy = xToY.combinedP();
+                    double pyx = yToX.combinedP();
+
+                    System.out.println("origX=" + origX.getName() + " origY=" + origY.getName() + " pxy=" + pxy + " pyx=" + pyx);
 
                     // Strong ordinary cases first.
+//                    if (xToY.independent() && !yToX.independent()) {
+//                        removeUndirectedEdgesBetweenClusters(origX, origY);
+//                        expandEdge(origX, origY);
+//                    } else if (yToX.independent() && !xToY.independent()) {
+//                        removeUndirectedEdgesBetweenClusters(origY, origX);
+//                        expandEdge(origY, origX);
+//                    }
+
                     if (xToY.independent() && !yToX.independent()) {
                         removeUndirectedEdgesBetweenClusters(origX, origY);
-                        expandEdge(origX, origY);
+                        expandEdge(origY, origX);  // swapped: Y → X
                     } else if (yToX.independent() && !xToY.independent()) {
                         removeUndirectedEdgesBetweenClusters(origY, origX);
-                        expandEdge(origY, origX);
+                        expandEdge(origX, origY);  // swapped: X → Y
                     }
 
 //                    // Tie-breaker when both directions pass:
@@ -645,23 +655,54 @@ public class Tgin implements IGraphSearch {
          * Returns the left null space of M as a matrix whose rows are orthogonal
          * to the column space of M, assuming M has rank r. Uses thin SVD.
          */
+//        private Matrix leftNullSpace(Matrix M, int nominalRank) {
+//            SimpleSVD<SimpleMatrix> svd = M.getSimpleMatrix().svd(false);
+//
+//            SimpleMatrix U = svd.getU();
+//
+//            int usedRank = nominalRank;
+//
+//            if (U.getNumCols() <= usedRank) {
+//                return new Matrix(0, M.getNumRows());
+//            }
+//
+//            int nullDim = U.getNumCols() - usedRank;
+//
+//            double[][] result = new double[nullDim][M.getNumRows()];
+//            for (int col = 0; col < nullDim; col++) {
+//                for (int row = 0; row < M.getNumRows(); row++) {
+//                    result[col][row] = U.get(row, usedRank + col);
+//                }
+//            }
+//
+//            return new Matrix(result);
+//        }
+
         private Matrix leftNullSpace(Matrix M, int nominalRank) {
             SimpleSVD<SimpleMatrix> svd = M.getSimpleMatrix().svd(false);
-
             SimpleMatrix U = svd.getU();
+            SimpleMatrix W = svd.getW();
 
-            int usedRank = nominalRank;
+            // Estimate rank from singular values rather than trusting nominalRank.
+            int m = Math.min(W.numRows(), W.numCols());
+            double maxSV = 0.0;
+            for (int i = 0; i < m; i++) maxSV = Math.max(maxSV, W.get(i, i));
+            double threshold = maxSV * Math.max(M.getNumRows(), M.getNumColumns()) * 1e-8;
 
-            if (U.getNumCols() <= usedRank) {
+            int estimatedRank = 0;
+            for (int i = 0; i < m; i++) {
+                if (W.get(i, i) > threshold) estimatedRank++;
+            }
+
+            if (U.getNumCols() <= estimatedRank) {
                 return new Matrix(0, M.getNumRows());
             }
 
-            int nullDim = U.getNumCols() - usedRank;
-
+            int nullDim = U.getNumCols() - estimatedRank;
             double[][] result = new double[nullDim][M.getNumRows()];
             for (int col = 0; col < nullDim; col++) {
                 for (int row = 0; row < M.getNumRows(); row++) {
-                    result[col][row] = U.get(row, usedRank + col);
+                    result[col][row] = U.get(row, estimatedRank + col);
                 }
             }
 
