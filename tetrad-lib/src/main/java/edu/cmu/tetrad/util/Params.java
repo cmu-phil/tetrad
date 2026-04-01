@@ -809,9 +809,9 @@ public final class Params {
      */
     public static final String GRASP_USE_VP_SCORING = "graspUseVpScoring";
     /**
-     * Constant <code>GRASP_USE_VP_SCORING="graspUseVpScoring"</code>
+     * Constant <code>CUSTOM_NOISE_OPTION="customNoiseOption"</code>
      */
-    public static final String USE_GENERAL_EXOGENOUS_NOISE = "useGeneralExogenousNoise";
+    public static final String CUSTOM_NOISE_OPTION = "customNoiseOption";
 //    /**
 //     * Constant <code>SIMULATION_ERROR_TYPE="simulationErrorType"</code>
 //     */
@@ -1060,7 +1060,7 @@ public final class Params {
     /**
      * Constant <code>OPTIONAL_NOISE_EXPRESSION="optionalNoiseExpression"</code>
      */
-    public static final String OPTIONAL_NOISE_EXPRESSION = "optionalNoiseExpression";
+    public static final String CUSTOM_NOISE_EXPRESSION = "customNoiseExpression";
     /**
      * Constant <code>INPUT_SCALE="inputScale"</code>
      */

@@ -1738,9 +1738,7 @@ public final class SemIm implements Im, ISemIm {
      */
     private DataSet simulateDataRecursive(int sampleSize, DataSet initialValues,
                                           boolean latentDataSaved) throws ParseException {
-        Sampler sampler = new ExpressionSampler(this.params.getString(Params.OPTIONAL_NOISE_EXPRESSION));
-
-        boolean useGeneralExogenousNoise = this.params.getBoolean(Params.USE_GENERAL_EXOGENOUS_NOISE);
+        Sampler sampler = new ExpressionSampler(this.params.getString(Params.CUSTOM_NOISE_EXPRESSION));
 
         List<Node> variables = new LinkedList<>();
         List<Node> variableNodes = getVariableNodes();
@@ -1791,11 +1789,13 @@ public final class SemIm implements Im, ISemIm {
             double[] exoData = new double[cholesky.getNumRows()];
 
             for (int i = 0; i < exoData.length; i++) {
-                if (useGeneralExogenousNoise) {
-                    exoData[i] = sampler.sample();
-                } else {
+                if (this.params.getInt(Params.CUSTOM_NOISE_OPTION) == 1) {
                     exoData[i] = getNextNormal(0,
                             sqrt(this.errCovar.get(i, i)));
+                } else if (this.params.getInt(Params.CUSTOM_NOISE_OPTION) == 2) {
+                    exoData[i] = sampler.sample();
+                } else {
+                    throw new IllegalArgumentException("Invalid value for useGeneralExogenousNoise: " + this.params.getInt(Params.CUSTOM_NOISE_OPTION));
                 }
             }
 
@@ -1926,7 +1926,7 @@ public final class SemIm implements Im, ISemIm {
      */
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) throws ParseException {
         int numVars = getVariableNodes().size();
-        Sampler sampler = new ExpressionSampler(this.params.getString(Params.OPTIONAL_NOISE_EXPRESSION));
+        Sampler sampler = new ExpressionSampler(this.params.getString(Params.CUSTOM_NOISE_EXPRESSION));
 
         // Compute A = I - Báµ and (optionally) its inverse
         Matrix B = edgeCoef().transpose();
@@ -1941,7 +1941,7 @@ public final class SemIm implements Im, ISemIm {
 
         // Prepare correlated error generator when Gaussian
         Matrix L = null;
-        if (!params.getBoolean(Params.USE_GENERAL_EXOGENOUS_NOISE)) {
+        if (params.getInt(Params.CUSTOM_NOISE_OPTION) == 1) {
             try {
                 L = MatrixUtils.cholesky(errCovar()); // lower-tri; throws if not PD
             } catch (Exception ex) {
@@ -1955,7 +1955,7 @@ public final class SemIm implements Im, ISemIm {
         for (int row = 0; row < sampleSize; row++) {
             Vector e = new Vector(numVars);
 
-            if (!params.getBoolean(Params.USE_GENERAL_EXOGENOUS_NOISE)) {
+            if (params.getInt(Params.CUSTOM_NOISE_OPTION) == 1) {
                 // e = L z, z ~ N(0, I)
                 double[] z = new double[numVars];
                 for (int i = 0; i < numVars; i++) z[i] = RandomUtil.getInstance().nextGaussian(0, 1.0);

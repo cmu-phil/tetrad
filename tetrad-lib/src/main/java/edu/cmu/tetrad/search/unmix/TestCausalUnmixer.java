@@ -96,7 +96,7 @@ public class TestCausalUnmixer {
 
         // Non-Gaussian errors (e.g., Laplace): SIMULATION_ERROR_TYPE = 3
         Parameters params = new Parameters();
-        params.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        params.set(Params.CUSTOM_NOISE_OPTION, 2);
         params.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemIm imA = new SemIm(new SemPm(gA), params);
@@ -368,7 +368,7 @@ public class TestCausalUnmixer {
         Graph gBackbone = RandomGraph.randomGraph(vars, 0, 20, 100, 100, 100, false);
 
         Parameters params = new Parameters();
-        params.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        params.set(Params.CUSTOM_NOISE_OPTION, 2);
         params.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemIm imBack = new SemIm(new SemPm(gBackbone), params);

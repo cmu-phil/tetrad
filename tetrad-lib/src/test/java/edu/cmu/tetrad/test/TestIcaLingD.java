@@ -69,7 +69,7 @@ public class TestIcaLingD {
         parameters.set(Params.AVG_DEGREE, 2);
 
         // Using Exp(1) for the non-Gaussian error for all variables.
-        parameters.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        parameters.set(Params.CUSTOM_NOISE_OPTION, 2);
         parameters.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         parameters.set(Params.SEED, seed);
@@ -194,7 +194,7 @@ public class TestIcaLingD {
                 100, 100, 100, false);
 
         Parameters parameters = new Parameters();
-        parameters.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        parameters.set(Params.CUSTOM_NOISE_OPTION, 2);
         parameters.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         // Make a random dataset.

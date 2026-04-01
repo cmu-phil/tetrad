@@ -187,8 +187,8 @@ public class StandardizedSemSimulation implements Simulation {
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
-        parameters.add(Params.USE_GENERAL_EXOGENOUS_NOISE);
-        parameters.add(Params.OPTIONAL_NOISE_EXPRESSION);
+        parameters.add(Params.CUSTOM_NOISE_OPTION);
+        parameters.add(Params.CUSTOM_NOISE_EXPRESSION);
         parameters.add(Params.SEED);
         return parameters;
     }

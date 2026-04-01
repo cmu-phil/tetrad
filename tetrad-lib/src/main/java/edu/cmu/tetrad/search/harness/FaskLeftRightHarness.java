@@ -240,7 +240,7 @@ public final class FaskLeftRightHarness {
     private static DataSet simulateData(Graph graph) {
         Parameters parameters = new Parameters();
 
-        parameters.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        parameters.set(Params.CUSTOM_NOISE_OPTION, 2);
         parameters.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemPm pm = new SemPm(graph);

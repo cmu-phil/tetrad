@@ -536,7 +536,7 @@ public class TestCheckNodewiseMarkov {
         SemPm pm = new SemPm(trueGraph);
 
         Parameters params = new Parameters();
-        params.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        params.set(Params.CUSTOM_NOISE_OPTION, 2);
         params.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
@@ -590,7 +590,7 @@ public class TestCheckNodewiseMarkov {
         SemPm pm = new SemPm(trueGraph);
 
         Parameters params = new Parameters();
-        params.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        params.set(Params.CUSTOM_NOISE_OPTION, 2);
         params.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
@@ -764,7 +764,7 @@ public class TestCheckNodewiseMarkov {
 
         SemPm pm = new SemPm(trueGraph);
         Parameters params = new Parameters();
-        params.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        params.set(Params.CUSTOM_NOISE_OPTION, 2);
         params.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
@@ -830,7 +830,7 @@ public class TestCheckNodewiseMarkov {
         SemPm pm = new SemPm(trueGraph);
 
         Parameters params = new Parameters();
-        params.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        params.set(Params.CUSTOM_NOISE_OPTION, 2);
         params.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
@@ -946,7 +946,7 @@ public class TestCheckNodewiseMarkov {
         SemPm pm = new SemPm(trueGraph);
 
         Parameters params = new Parameters();
-        params.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        params.set(Params.CUSTOM_NOISE_OPTION, 2);
         params.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
@@ -1000,7 +1000,7 @@ public class TestCheckNodewiseMarkov {
         SemPm pm = new SemPm(trueGraph);
 
         Parameters params = new Parameters();
-        params.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+        params.set(Params.CUSTOM_NOISE_OPTION, 2);
         params.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);

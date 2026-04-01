@@ -2122,40 +2122,38 @@ Source:
         <li>Value Type: <span id="noiseExpression_value_type">String</span></li>
     </ul>
 
-    === optionalNoiseExpression ===
-    <h3 class="parameter_description" id="optionalNoiseExpression">optionalNoiseExpression</h3>
+    === customNoiseExpression ===
+    <h3 class="parameter_description" id="customNoiseExpression">customNoiseExpression</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="optionalNoiseExpression_short_desc">
-            Optional expression specifying how noise values are generated.
+        <li>Short Description: <span id="customNoiseExpression_short_desc">
+            Exogenous Noises: Custom exogenous noise distribution expression
         </span></li>
 
-        <li>Long Description: <span id="optionalNoiseExpression_long_desc">
-            If an exogenous noise distribution is selected (see associated Yes/No
-            parameters), it will be used. Otherwise, linear Gaussian parameters
-            will be honored.
+        <li>Long Description: <span id="customNoiseExpression_long_desc">
+             Custom exogenous noise distribution expression
         </span></li>
 
-        <li>Default Value: <span id="optionalNoiseExpression_default_value">N(0,1)</span></li>
-        <li>Lower Bound: <span id="optionalNoiseExpression_lower_bound"></span></li>
-        <li>Upper Bound: <span id="optionalNoiseExpression_upper_bound"></span></li>
-        <li>Value Type: <span id="optionalNoiseExpression_value_type">String</span></li>
+        <li>Default Value: <span id="customNoiseExpression_default_value">N(0,1)</span></li>
+        <li>Lower Bound: <span id="customNoiseExpression_lower_bound"></span></li>
+        <li>Upper Bound: <span id="customNoiseExpression_upper_bound"></span></li>
+        <li>Value Type: <span id="customNoiseExpression_value_type">String</span></li>
     </ul>
 
-    === useGeneralExogenousNoise ===
-    <h3 class="parameter_description" id="useGeneralExogenousNoise">useGeneralExogenousNoise</h3>
+    === customNoiseOption ===
+    <h3 class="parameter_description" id="customNoiseOption">customNoiseOption</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="useGeneralExogenousNoise_short_desc">
-            Use the specified exogenous noise distribution, if true.
+        <li>Short Description: <span id="customNoiseOption_short_desc">
+            Exogenous Noises: 1 = Use standard Linear Gaussian noises, 2 = Use custom noise distribution
         </span></li>
 
-        <li>Long Description: <span id="useGeneralExogenousNoise_long_desc">
-            If true, the specified exogenous noise distribution will be used.
+        <li>Long Description: <span id="customNoiseOption_long_desc">
+            If true, the specified custom exogenous noise distribution will be used.
         </span></li>
 
-        <li>Default Value: <span id="useGeneralExogenousNoise_default_value">false</span></li>
-        <li>Lower Bound: <span id="useGeneralExogenousNoise_lower_bound"></span></li>
-        <li>Upper Bound: <span id="useGeneralExogenousNoise_upper_bound"></span></li>
-        <li>Value Type: <span id="useGeneralExogenousNoise_value_type">Boolean</span></li>
+        <li>Default Value: <span id="customNoiseOption_default_value">1</span></li>
+        <li>Lower Bound: <span id="customNoiseOption_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="customNoiseOption_upper_bound">2</span></li>
+        <li>Value Type: <span id="customNoiseOption_value_type">Integer</span></li>
     </ul>
 
     === hiddenDimensions ===

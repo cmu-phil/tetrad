@@ -820,9 +820,9 @@ public class RoadmapTest {
 
         private static void setNoise(Parameters par, NoiseFamily nf) {
             if (nf == NoiseFamily.GAUSSIAN) {
-                par.set(Params.USE_GENERAL_EXOGENOUS_NOISE, false); // Gaussian
+                par.set(Params.CUSTOM_NOISE_OPTION, 1); // Gaussian
             } else {
-                par.set(Params.USE_GENERAL_EXOGENOUS_NOISE, true);
+                par.set(Params.CUSTOM_NOISE_OPTION, 2);
                 par.set(Params.NOISE_EXPRESSION, "Exp(1)"); // Laplace-like (as used before)
             }
         }
