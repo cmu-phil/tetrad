@@ -459,8 +459,6 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 
     /**
      * Queries the user whether they would like to save their sessions.
-     *
-     * @return true if the transaction was ended successfully, false if not (that is, canceled).
      */
     public void closeAllSessions() {
         while (existsSession()) {
