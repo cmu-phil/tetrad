@@ -280,7 +280,6 @@ public class RecursiveBlocking {
 
             // Case 1: if b is latent or already in Z, we cannot (or need not) condition on it.
 
-            // TODO try taking out z.contains(b)...
             if (b.getNodeType() == NodeType.LATENT) {// || z.contains(b)) {
                 List<Node> passNodes = getReachableNodes(graph, a, b, z, descendantsMap);
                 passNodes.removeAll(notFollowed);
