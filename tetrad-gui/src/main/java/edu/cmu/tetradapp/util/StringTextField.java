@@ -73,26 +73,49 @@ public final class StringTextField extends JTextField {
             }
         });
 
-        addFocusListener(new FocusAdapter() {
+//        addFocusListener(new FocusAdapter() {
+//
+//            /**
+//             * Nothing need be done when focus is gained, but this method is
+//             * required by the FocusListener interface.
+//             */
+//            public void focusGained(FocusEvent e) {
+//                if (isEditable()) {
+//                    selectAll();
+//                }
+//            }
+//
+//            /**
+//             * If focus is lost, attempt to store the text value being
+//             * displayed as String; if this cannot be done, restore the previous
+//             * value.
+//             *
+//             * @param e the event.
+//             */
+//            public void focusLost(FocusEvent e) {
+//
+//                // Dehighlight text.
+//                setCaretPosition(0);
+//                moveCaretPosition(0);
+//
+//                setValue(getText());
+//            }
+//        })
+//        ;
 
-            /**
-             * Nothing need be done when focus is gained, but this method is
-             * required by the FocusListener interface.
-             */
+        addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
                 if (isEditable()) {
                     selectAll();
                 }
             }
 
-            /**
-             * If focus is lost, attempt to store the text value being
-             * displayed as String; if this cannot be done, restore the previous
-             * value.
-             *
-             * @param e the event.
-             */
             public void focusLost(FocusEvent e) {
+                // Ignore temporary focus loss (e.g. window deactivation, popups).
+                // Only commit the value on a permanent focus transfer.
+                if (e.isTemporary()) {
+                    return;
+                }
 
                 // Dehighlight text.
                 setCaretPosition(0);
