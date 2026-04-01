@@ -89,13 +89,12 @@ public class EditorUtils {
             return new File(directory, prefix + "." + suffix);
         }
 
-        List<String> files = Arrays.asList(Objects.requireNonNull(directory.list()));
         String name;
         int i = 0;
 
         do {
             name = prefix + (++i) + "." + suffix;
-        } while (files.contains(name));
+        } while (new File(directory, name).exists());
 
         return new File(directory, name);
     }

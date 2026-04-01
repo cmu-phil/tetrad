@@ -86,13 +86,12 @@ public final class SaveSessionAsAction extends AbstractAction {
 
         // Get the next available filename before presenting the save dialog,
         // so the user is never defaulted into overwriting an existing session.
-        File defaultFile = nextAvailableFile(
-                new File(sessionSaveLocation, sessionEditor.getName() + ".tet"));
+        String defaultName = "untitled";
 
         File file = EditorUtils.getSaveFileWithPath(
-                defaultFile.getName().replace(".tet", ""), "tet",
-                JOptionUtils.centeringComp(), true, "Save Session As...",
-                defaultFile.getParent());
+                defaultName, "tet",
+                JOptionUtils.centeringComp(), false, "Save Session As...",
+                sessionSaveLocation);
 
         if (file == null) {
             saved = false;
