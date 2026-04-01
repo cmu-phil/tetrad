@@ -33,7 +33,10 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serial;
@@ -236,6 +239,7 @@ public final class Tetrad implements PropertyChangeListener {
             @Override
             public void windowClosing(WindowEvent e) {
                 exitApplication();
+                getFrame().dispose();
             }
         });
 
@@ -262,7 +266,7 @@ public final class Tetrad implements PropertyChangeListener {
 
             try {
                 desktop.setQuitHandler((e2, response) -> {
-                    getDesktop().closeAllSessions();
+                    exitApplication();
                     response.performQuit();
                 });
             } catch (Exception e) {
@@ -273,12 +277,7 @@ public final class Tetrad implements PropertyChangeListener {
 
     // Exits the application gracefully.
     private void exitApplication() {
-        boolean succeeded = getDesktop().closeAllSessions();
-
-        if (!succeeded) {
-            return;
-        }
-
+        getDesktop().closeAllSessions();
         getFrame().setVisible(false);
         getFrame().dispose();
         TetradLogger.getInstance().removeNextOutputStream();

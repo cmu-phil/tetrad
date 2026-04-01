@@ -120,7 +120,7 @@ public interface DesktopControllable {
      *
      * @return a boolean
      */
-    boolean closeAllSessions();
+    void closeAllSessions();
 }
 
 

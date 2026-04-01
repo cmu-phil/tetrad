@@ -452,7 +452,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
      *
      * @return true if the transaction was ended successfully, false if not (that is, canceled).
      */
-    public boolean closeAllSessions() {
+    public void closeAllSessions() {
         while (existsSession()) {
             SessionEditor sessionEditor = getFrontmostSessionEditor();
             assert sessionEditor != null;
@@ -461,8 +461,6 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
                     ActionEvent.ACTION_PERFORMED, "Save as"));
             closeFrontmostSession();
         }
-
-        return true;
     }
 
     /**

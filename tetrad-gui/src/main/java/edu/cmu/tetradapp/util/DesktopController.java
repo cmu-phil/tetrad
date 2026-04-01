@@ -154,8 +154,8 @@ public class DesktopController implements DesktopControllable {
      *
      * @return a boolean
      */
-    public boolean closeAllSessions() {
-        return DesktopController.getInstance().closeAllSessions();
+    public void closeAllSessions() {
+        DesktopController.getInstance().closeAllSessions();
     }
 }
 
