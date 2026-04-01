@@ -288,14 +288,14 @@ public class TestSepsetMethods {
     }
 
     // This doesn't work if we return z in instead possibly null from the recursive method.
-//    @Test
+    @Test
     public void test4() {
         System.out.println("Checking to make sure blockPathsRecursively works for dsep(x, y | mb(x)) for a PAG for y not in mb(x).");
 
         Graph dag = RandomGraph.randomDag(20, 10, 40, 100,
                 100, 100, false);
 
-        Graph pag = new MagToPag(dag).convert(true, false);
+        Graph pag = new MagToPag(GraphTransforms.dagToMag(dag)).convert(true, false);
 
         for (Node x : pag.getNodes()) {
             for (Node y : pag.getNodes()) {
