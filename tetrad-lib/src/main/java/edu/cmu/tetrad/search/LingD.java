@@ -41,10 +41,9 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static edu.cmu.tetrad.util.TMath.abs;
-import static edu.cmu.tetrad.util.TMath.sqrt;
 
 /**
- * ICA-LiNG-D (Lacerda, Spirtes, Ramsey, Hoyer, 2012).
+ * LiNG-D (Lacerda, Spirtes, Ramsey, Hoyer, 2012).
  * <p>
  * Stability hardening: - Uses fixed FastICA (sym. update derivative, whitening ridge, orthonormal wInit). - Robust
  * diagonal scaling with epsilon guard. - Prefer Hungarian "best-diagonal" permutation; then enumerate NRooks
@@ -57,9 +56,9 @@ import static edu.cmu.tetrad.util.TMath.sqrt;
  * @author patrickhoyer
  * @author josephramsey
  * @version $Id: $Id
- * @see IcaLingam
+ * @see Lingam
  */
-public class IcaLingD {
+public class LingD {
 
     /**
      * Small guard used when scaling by diagonal.
@@ -85,7 +84,7 @@ public class IcaLingD {
      * Analysis (ICA) and Linear Non-Gaussian Acyclic Model (LiNGAM) for directional inference and graph estimation
      * tasks.
      */
-    public IcaLingD() {
+    public LingD() {
     }
 
     // ----------------------------------------------------------------------
@@ -381,7 +380,7 @@ public class IcaLingD {
      * @return the list of scaled B̂ matrices
      */
     public List<Matrix> fit(DataSet D) {
-        Matrix W = IcaLingD.estimateW(D, 10000, 1e-6, 1.1, true);
+        Matrix W = LingD.estimateW(D, 10000, 1e-6, 1.1, true);
         return getScaledBHats(W);
     }
 

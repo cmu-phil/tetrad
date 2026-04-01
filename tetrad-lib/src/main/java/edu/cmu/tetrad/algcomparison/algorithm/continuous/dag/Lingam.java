@@ -31,7 +31,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.IcaLingD;
+import edu.cmu.tetrad.search.LingD;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
@@ -44,18 +44,18 @@ import java.util.List;
 
 /**
  * IcaLingam class implements the Algorithm and ReturnsBootstrapGraphs interface. It provides the implementation of the
- * ICA-LiNGAM algorithm for causal discovery.
+ * LiNGAM algorithm for causal discovery.
  *
- * @see edu.cmu.tetrad.search.IcaLingam
+ * @see edu.cmu.tetrad.search.Lingam
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "ICA-LiNGAM",
-        command = "ica-lingam",
+        name = "LiNGAM",
+        command = "lingam",
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class IcaLingam extends AbstractBootstrapAlgorithm implements Algorithm, ReturnsBootstrapGraphs {
+public class Lingam extends AbstractBootstrapAlgorithm implements Algorithm, ReturnsBootstrapGraphs {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -76,7 +76,7 @@ public class IcaLingam extends AbstractBootstrapAlgorithm implements Algorithm, 
     /**
      * Constructs a new instance of the IcaLingam algorithm.
      */
-    public IcaLingam() {
+    public Lingam() {
 
     }
 
@@ -94,12 +94,12 @@ public class IcaLingam extends AbstractBootstrapAlgorithm implements Algorithm, 
         double alpha = parameters.getDouble(Params.FAST_ICA_A);
         double tol = parameters.getDouble(Params.FAST_ICA_TOLERANCE);
 
-        Matrix W = IcaLingD.estimateW(data, maxIter, tol, alpha, parameters.getBoolean(Params.VERBOSE));
-        edu.cmu.tetrad.search.IcaLingam icaLingam = new edu.cmu.tetrad.search.IcaLingam();
-        icaLingam.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        icaLingam.setBThreshold(parameters.getDouble(Params.THRESHOLD_B));
-        bHat = icaLingam.getAcyclicTrimmedBHat(W);
-        Graph graph = IcaLingD.makeGraph(bHat, data.getVariables());
+        Matrix W = LingD.estimateW(data, maxIter, tol, alpha, parameters.getBoolean(Params.VERBOSE));
+        edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
+        lingam.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        lingam.setBThreshold(parameters.getDouble(Params.THRESHOLD_B));
+        bHat = lingam.getAcyclicTrimmedBHat(W);
+        Graph graph = LingD.makeGraph(bHat, data.getVariables());
 
         if (parameters.getBoolean(Params.VERBOSE)) {
             TetradLogger.getInstance().log("BHat = " + bHat);
@@ -122,12 +122,12 @@ public class IcaLingam extends AbstractBootstrapAlgorithm implements Algorithm, 
     }
 
     /**
-     * Returns the description of the ICA-LiNGAM algorithm.
+     * Returns the description of the LiNGAM algorithm.
      *
-     * @return The description of the ICA-LiNGAM algorithm.
+     * @return The description of the LiNGAM algorithm.
      */
     public String getDescription() {
-        return "ICA-LiNGAM (ICA Linear Non-Gaussian Acyclic Model";
+        return "LiNGAM (Linear Non-Gaussian Acyclic Model";
     }
 
     /**

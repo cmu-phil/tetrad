@@ -23,7 +23,7 @@ package edu.cmu.tetrad.study.examples.conditions;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.FaskOrig;
-import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.IcaLingam;
+import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fas;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.R3;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.Rskew;
@@ -77,7 +77,7 @@ public class LingamStudy {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new IcaLingam());
+        algorithms.add(new Lingam());
         algorithms.add(new R3(new Fas(new FisherZ())));
         algorithms.add(new Rskew(new Fas(new FisherZ())));
         algorithms.add(new FaskOrig(new FisherZ(), new SemBicScore()));

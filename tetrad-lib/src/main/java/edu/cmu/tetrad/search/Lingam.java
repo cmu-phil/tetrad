@@ -35,13 +35,13 @@ import java.util.*;
 import static edu.cmu.tetrad.util.TMath.abs;
 
 /**
- * ICA-LiNGAM (Shimizu et al., 2006), with small numerical hardening to match the stabilized ICA-LiNG-D pipeline.
+ * LiNGAM (Shimizu et al., 2006), with small numerical hardening to match the stabilized LiNG-D pipeline.
  * <p>
  * Changes vs. the earlier version: - Optionally threshold W before Hungarian assignment (reduces spurious diagonals). -
  * After forming B̂ via IcaLingD.getScaledBHat (guarded diag), hard-threshold B̂ using bThreshold prior to acyclicity
  * trimming. - Always return a (possibly empty) trimmed matrix (never null).
  */
-public class IcaLingam {
+public class Lingam {
 
     /**
      * Dummy graph and helpers for cycle detection during trimming.
@@ -66,15 +66,15 @@ public class IcaLingam {
     private boolean verbose = false;
 
     /**
-     * Constructor for the IcaLingam class. Initializes an instance of the ICA-LiNGAM algorithm for causal discovery.
+     * Constructor for the IcaLingam class. Initializes an instance of the LiNGAM algorithm for causal discovery.
      * This class provides methods to estimate causal structures from observational data, ensuring acyclic causal graphs
      * and performing weight matrix estimation and processing.
      */
-    public IcaLingam() {
+    public Lingam() {
     }
 
     /**
-     * Fits a dataset to estimate a weight matrix using the ICA-LiNGAM algorithm. The method utilizes stabilized FastICA
+     * Fits a dataset to estimate a weight matrix using the LiNGAM algorithm. The method utilizes stabilized FastICA
      * for the estimation process and further processes the weights to ensure they conform to an acyclic structure.
      *
      * @param D the dataset, represented as a DataSet object, which includes the observed data necessary for estimating
@@ -83,7 +83,7 @@ public class IcaLingam {
      */
     public Matrix fit(DataSet D) {
         // Slightly more conservative defaults play nicely with stabilized FastICA.
-        Matrix W = IcaLingD.estimateW(D, 5000, 1e-6, 1.2, true);
+        Matrix W = LingD.estimateW(D, 5000, 1e-6, 1.2, true);
         return getAcyclicTrimmedBHat(W);
     }
 
@@ -110,8 +110,8 @@ public class IcaLingam {
         }
 
         // (2) Best diagonal via Hungarian, then robust scaling to produce B̂
-        PermutationMatrixPair bestPair = IcaLingD.maximizeDiagonal(W);
-        Matrix scaledBHat = IcaLingD.getScaledBHat(bestPair);
+        PermutationMatrixPair bestPair = LingD.maximizeDiagonal(W);
+        Matrix scaledBHat = LingD.getScaledBHat(bestPair);
 
         // (3) Hard-threshold B̂ BEFORE trimming
         double bt = TMath.max(0.0, this.bThreshold);
@@ -165,7 +165,7 @@ public class IcaLingam {
             // Check acyclicity
             if (!existsDirectedCycle()) {
                 if (verbose) {
-                    TetradLogger.getInstance().log("ICA-LiNGAM: effective trim threshold = " + r.coef);
+                    TetradLogger.getInstance().log("LiNGAM: effective trim threshold = " + r.coef);
                 }
                 return scaledBHat;
             }
@@ -173,7 +173,7 @@ public class IcaLingam {
 
         // If we get here, all edges were removed; return empty DAG (still valid & acyclic).
         if (verbose) {
-            TetradLogger.getInstance().log("ICA-LiNGAM: all edges removed to achieve acyclicity.");
+            TetradLogger.getInstance().log("LiNGAM: all edges removed to achieve acyclicity.");
         }
         return scaledBHat;
     }
@@ -190,7 +190,7 @@ public class IcaLingam {
             dummyVars.add(new GraphNode("" + i));
         }
         dummyCyclicNodes = new HashSet<>(dummyVars);
-        dummyGraph = IcaLingD.makeGraph(scaledBHat, dummyVars);
+        dummyGraph = LingD.makeGraph(scaledBHat, dummyVars);
         return !dummyGraph.paths().existsDirectedCycle();
     }
 

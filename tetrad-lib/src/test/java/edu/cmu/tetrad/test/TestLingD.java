@@ -29,8 +29,8 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.FastIca;
-import edu.cmu.tetrad.search.IcaLingD;
-import edu.cmu.tetrad.search.IcaLingam;
+import edu.cmu.tetrad.search.LingD;
+import edu.cmu.tetrad.search.Lingam;
 import edu.cmu.tetrad.search.utils.NRooks;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -50,7 +50,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author josephramsey
  */
-public class TestIcaLingD {
+public class TestLingD {
 
     @Test
     public void test1() {
@@ -84,12 +84,12 @@ public class TestIcaLingD {
 
         System.out.println("B threshold = " + bThreshold);
 
-        IcaLingam icaLingam = new IcaLingam();
-        icaLingam.setVerbose(true);
-        icaLingam.setBThreshold(bThreshold);
-        Matrix lingamBhat = icaLingam.fit(dataSet);
+        Lingam lingam = new Lingam();
+        lingam.setVerbose(true);
+        lingam.setBThreshold(bThreshold);
+        Matrix lingamBhat = lingam.fit(dataSet);
 
-        Graph lingamGraph = IcaLingD.makeGraph(lingamBhat, dataSet.getVariables());
+        Graph lingamGraph = LingD.makeGraph(lingamBhat, dataSet.getVariables());
         System.out.println("Lingam graph = " + lingamGraph);
         lingamGraph = GraphUtils.replaceNodes(lingamGraph, trueGraph.getNodes());
 
@@ -116,9 +116,9 @@ public class TestIcaLingD {
         // associated column-permuted W thresholded W matrices. For the constrained N rooks problem, we
         // are allowed to place a "rook" at any position in the thresholded W matrix that is not zero.
         System.out.println("LiNG-D");
-        IcaLingD icaLingD = new IcaLingD();
-        icaLingD.setBThreshold(bThreshold);
-        List<Matrix> bHats = icaLingD.fit(dataSet);
+        LingD lingD = new LingD();
+        lingD.setBThreshold(bThreshold);
+        List<Matrix> bHats = lingD.fit(dataSet);
 
         if (bHats.isEmpty()) {
             throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");
@@ -130,10 +130,10 @@ public class TestIcaLingD {
         for (Matrix bHat : bHats) {
             System.out.println("BHat = " + bHat);
 
-            Graph lingGraph = IcaLingD.makeGraph(bHat, dataSet.getVariables());
+            Graph lingGraph = LingD.makeGraph(bHat, dataSet.getVariables());
             System.out.println("\nGraph = " + lingGraph);
 
-            boolean stable = IcaLingD.isStable(bHat);
+            boolean stable = LingD.isStable(bHat);
             System.out.println(stable ? "Is Stable" : "Not stable");
 
             if (stable) existsStable = true;

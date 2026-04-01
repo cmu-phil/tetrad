@@ -20,8 +20,8 @@
 
 package edu.cmu.tetrad.search.utils;
 
-import edu.cmu.tetrad.search.IcaLingD;
-import edu.cmu.tetrad.search.IcaLingam;
+import edu.cmu.tetrad.search.LingD;
+import edu.cmu.tetrad.search.Lingam;
 import edu.cmu.tetrad.util.Matrix;
 
 import java.util.Arrays;
@@ -32,8 +32,8 @@ import java.util.Arrays;
  *
  * @author josephramsey
  * @version $Id: $Id
- * @see IcaLingam
- * @see IcaLingD
+ * @see Lingam
+ * @see LingD
  */
 public class PermutationMatrixPair {
     private final int[] rowPerm;
