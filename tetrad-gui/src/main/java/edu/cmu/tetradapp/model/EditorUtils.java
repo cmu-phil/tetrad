@@ -127,6 +127,7 @@ public class EditorUtils {
     public static File getSaveFileWithPath(String prefix, String suffix,
                                            Component parent, boolean overwrite, String dialogName, String saveLocation) {
         JFileChooser chooser = EditorUtils.createJFileChooser(dialogName, saveLocation);
+        renameButton(chooser, "Cancel", "Don't Save");
 
         String fileSaveLocation;
         if (saveLocation == null) {
@@ -183,6 +184,20 @@ public class EditorUtils {
         }
 
         return outfile;
+    }
+
+    private static void renameButton(Container container, String originalText, String newText) {
+        for (Component c : container.getComponents()) {
+            if (c instanceof JButton button) {
+                String text = button.getText();
+                if (text != null && text.equals(originalText)) {
+                    button.setText(newText);
+                    return;
+                }
+            } else if (c instanceof Container child) {
+                renameButton(child, originalText, newText);
+            }
+        }
     }
 
     /**
