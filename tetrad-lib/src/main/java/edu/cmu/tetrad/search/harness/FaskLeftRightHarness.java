@@ -241,7 +241,7 @@ public final class FaskLeftRightHarness {
         Parameters parameters = new Parameters();
 
         parameters.set(Params.CUSTOM_NOISE_OPTION, 2);
-        parameters.set(Params.NOISE_EXPRESSION, "Exp(1)");
+        parameters.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)");
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm, parameters);

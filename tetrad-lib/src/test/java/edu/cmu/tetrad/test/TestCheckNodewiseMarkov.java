@@ -537,7 +537,7 @@ public class TestCheckNodewiseMarkov {
 
         Parameters params = new Parameters();
         params.set(Params.CUSTOM_NOISE_OPTION, 2);
-        params.set(Params.NOISE_EXPRESSION, "Exp(1)");
+        params.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
         // Simulate permuted dataset and save a copy of it.
@@ -591,7 +591,7 @@ public class TestCheckNodewiseMarkov {
 
         Parameters params = new Parameters();
         params.set(Params.CUSTOM_NOISE_OPTION, 2);
-        params.set(Params.NOISE_EXPRESSION, "Exp(1)");
+        params.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
         // Simulate permuted dataset and save a copy of it.
@@ -765,7 +765,7 @@ public class TestCheckNodewiseMarkov {
         SemPm pm = new SemPm(trueGraph);
         Parameters params = new Parameters();
         params.set(Params.CUSTOM_NOISE_OPTION, 2);
-        params.set(Params.NOISE_EXPRESSION, "Exp(1)");
+        params.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
         // Simulate permuted dataset and save a copy of it.
@@ -831,7 +831,7 @@ public class TestCheckNodewiseMarkov {
 
         Parameters params = new Parameters();
         params.set(Params.CUSTOM_NOISE_OPTION, 2);
-        params.set(Params.NOISE_EXPRESSION, "Exp(1)");
+        params.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
         // Simulate permuted dataset and save a copy of it.
@@ -947,7 +947,7 @@ public class TestCheckNodewiseMarkov {
 
         Parameters params = new Parameters();
         params.set(Params.CUSTOM_NOISE_OPTION, 2);
-        params.set(Params.NOISE_EXPRESSION, "Exp(1)");
+        params.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
         // Simulate permuted dataset and save a copy of it.
@@ -1001,7 +1001,7 @@ public class TestCheckNodewiseMarkov {
 
         Parameters params = new Parameters();
         params.set(Params.CUSTOM_NOISE_OPTION, 2);
-        params.set(Params.NOISE_EXPRESSION, "Exp(1)");
+        params.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
         // Simulate permuted dataset and save a copy of it.

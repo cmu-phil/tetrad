@@ -310,8 +310,6 @@ public class SemSimulation implements Simulation {
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
         parameters.add(Params.STANDARDIZE);
-        parameters.add(Params.CUSTOM_NOISE_OPTION);
-        parameters.add(Params.CUSTOM_NOISE_EXPRESSION);
         parameters.add(Params.SEED);
 
         return parameters;

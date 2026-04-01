@@ -405,6 +405,8 @@ public final class SemIm implements Im, ISemIm {
         parameters.add(Params.VAR_HIGH);
         parameters.add(Params.COEF_SYMMETRIC);
         parameters.add(Params.COV_SYMMETRIC);
+        parameters.add(Params.CUSTOM_NOISE_OPTION);
+        parameters.add(Params.CUSTOM_NOISE_EXPRESSION);
 
         parameters.add(Params.CYCLIC_COEF_LOW);
         parameters.add(Params.CYCLIC_COEF_HIGH);
@@ -1790,8 +1792,7 @@ public final class SemIm implements Im, ISemIm {
 
             for (int i = 0; i < exoData.length; i++) {
                 if (this.params.getInt(Params.CUSTOM_NOISE_OPTION) == 1) {
-                    exoData[i] = getNextNormal(0,
-                            sqrt(this.errCovar.get(i, i)));
+                    exoData[i] = getNextNormal(0, sqrt(this.errCovar.get(i, i)));
                 } else if (this.params.getInt(Params.CUSTOM_NOISE_OPTION) == 2) {
                     exoData[i] = sampler.sample();
                 } else {
@@ -1965,12 +1966,14 @@ public final class SemIm implements Im, ISemIm {
                     for (int j = 0; j <= i; j++) s += L.get(i, j) * z[j];
                     e.set(i, s);
                 }
-            } else {
+            } else if (params.getInt(Params.CUSTOM_NOISE_OPTION) == 2) {
                 // Non-Gaussian path: preserve original per-coordinate draws (independent).
                 // Note: off-diagonal errCovar entries are ignored for non-Gaussian error types.
                 for (int i = 0; i < numVars; i++) {
                     e.set(i, sampler.sample());
                 }
+            } else {
+                throw new IllegalArgumentException("Invalid noise expression option: " + params.getInt(Params.CUSTOM_NOISE_EXPRESSION));
             }
 
             // x = A^{-1} e

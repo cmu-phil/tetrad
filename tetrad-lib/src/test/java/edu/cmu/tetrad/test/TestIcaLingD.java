@@ -70,7 +70,7 @@ public class TestIcaLingD {
 
         // Using Exp(1) for the non-Gaussian error for all variables.
         parameters.set(Params.CUSTOM_NOISE_OPTION, 2);
-        parameters.set(Params.NOISE_EXPRESSION, "Exp(1)");
+        parameters.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)");
 
         parameters.set(Params.SEED, seed);
 
@@ -80,20 +80,9 @@ public class TestIcaLingD {
         Graph trueGraph = sim.getTrueGraph(0);
         System.out.println("True graph = " + trueGraph);
 
-        // We then apply LiNGAM with a W threshold of .3. We should get a mostly correct DAG
-        // back. The "W threshold" is a threshold for the B Hat matrix below which values are
-        // sent to zero in absolute value, so that only coefficients whose absolute values
-        // exceed the W threshold are reported as edges in the model. Self-loops are not reported
-        // in the printed graphs but are assumed to exist for purposes of this algorithm. The
-        // B Hat matrices are scaled so that self-loops always have strength 1.
-        System.out.println("LiNGAM");
+        double bThreshold = 0.2;
 
-        // We send any small value in W to 0 that has absolute value below a given threshold.
-        // We do no further pruning on the B matrix. (The algorithm spec wants us to do both,
-        // but pruning the W matrix seems to be giving better bHats, and besides in LiNG-D
-        // the W matrix is pruned. Could switch though.)
-        double bThreshold = 0.25;
-        System.out.println("W threshold = " + bThreshold);
+        System.out.println("B threshold = " + bThreshold);
 
         IcaLingam icaLingam = new IcaLingam();
         icaLingam.setVerbose(true);
@@ -195,7 +184,7 @@ public class TestIcaLingD {
 
         Parameters parameters = new Parameters();
         parameters.set(Params.CUSTOM_NOISE_OPTION, 2);
-        parameters.set(Params.NOISE_EXPRESSION, "Exp(1)");
+        parameters.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)");
 
         // Make a random dataset.
         SemPm pm = new SemPm(g);

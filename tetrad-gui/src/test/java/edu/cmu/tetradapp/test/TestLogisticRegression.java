@@ -33,6 +33,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,7 +62,12 @@ public class TestLogisticRegression {
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet data = im.simulateDataRecursive(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateDataRecursive(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         Node x1 = data.getVariable("X1");
         Node x2 = data.getVariable("X2");

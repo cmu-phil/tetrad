@@ -273,7 +273,15 @@ public class IcaLingD {
      * @throws IllegalArgumentException if the permuted matrix is not square
      */
     public static Matrix getScaledBHat(PermutationMatrixPair pair) {
+//        Matrix permuted = pair.getPermutedMatrix();
+
+        if (pair.getRowPerm() == null && pair.getColPerm() != null) {
+            // Defensive: should not happen after pairsNRook fix, but guard anyway.
+            throw new IllegalArgumentException(
+                    "getScaledBHat requires a rowPerm-based pair; got a colPerm-only pair.");
+        }
         Matrix permuted = pair.getPermutedMatrix();
+
         SimpleMatrix wTilde = permuted.transpose().getSimpleMatrix().copy();
 
         int p = wTilde.numRows();
@@ -322,6 +330,20 @@ public class IcaLingD {
         return new PermutationMatrixPair(W, perm, null);
     }
 
+//    @NotNull
+//    private static List<PermutationMatrixPair> pairsNRook(Matrix W) {
+//        boolean[][] allowable = new boolean[W.getNumRows()][W.getNumColumns()];
+//        for (int i = 0; i < W.getNumRows(); i++) {
+//            for (int j = 0; j < W.getNumColumns(); j++) {
+//                allowable[i][j] = abs(W.get(i, j)) > 0;
+//            }
+//        }
+//        List<PermutationMatrixPair> pairs = new ArrayList<>();
+//        List<int[]> colPerms = NRooks.nRooks(allowable);
+//        for (int[] colPerm : colPerms) pairs.add(new PermutationMatrixPair(W, null, colPerm));
+//        return pairs;
+//    }
+
     @NotNull
     private static List<PermutationMatrixPair> pairsNRook(Matrix W) {
         boolean[][] allowable = new boolean[W.getNumRows()][W.getNumColumns()];
@@ -332,7 +354,13 @@ public class IcaLingD {
         }
         List<PermutationMatrixPair> pairs = new ArrayList<>();
         List<int[]> colPerms = NRooks.nRooks(allowable);
-        for (int[] colPerm : colPerms) pairs.add(new PermutationMatrixPair(W, null, colPerm));
+        for (int[] colPerm : colPerms) {
+            // colPerm[i] = j means row i of W goes to diagonal position j,
+            // which is equivalent to a row permutation: row colPerm[i] moves to row i.
+            // Convert to rowPerm so getScaledBHat's undo step fires correctly.
+            int[] rowPerm = inversePermutation(colPerm);
+            pairs.add(new PermutationMatrixPair(W, rowPerm, null));
+        }
         return pairs;
     }
 

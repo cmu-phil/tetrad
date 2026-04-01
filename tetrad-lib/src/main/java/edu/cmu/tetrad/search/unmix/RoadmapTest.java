@@ -823,7 +823,7 @@ public class RoadmapTest {
                 par.set(Params.CUSTOM_NOISE_OPTION, 1); // Gaussian
             } else {
                 par.set(Params.CUSTOM_NOISE_OPTION, 2);
-                par.set(Params.NOISE_EXPRESSION, "Exp(1)"); // Laplace-like (as used before)
+                par.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)"); // Laplace-like (as used before)
             }
         }
 
