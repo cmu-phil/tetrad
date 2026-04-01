@@ -271,8 +271,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
                     SwingUtilities.invokeLater(() -> {
                         graphWrapper.setGraph(targetGraph);
-                        // Also need to update the UI
-//                    updateBootstrapTable(targetGraph);
                     });
                 }
             } else if ("modelChanged".equals(propertyName)) {
@@ -286,65 +284,56 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         // Add the model selection to top if multiple models
         modelSelection(graphWrapper);
 
-        // topBox Left side toolbar
+        // Left side toolbar
         GraphToolbar graphToolbar = new GraphToolbar(getWorkbench());
-        graphToolbar.setMaximumSize(new Dimension(140, 450));
+        graphToolbar.setMaximumSize(new Dimension(140, Integer.MAX_VALUE));
+        graphToolbar.setAlignmentY(Component.TOP_ALIGNMENT);
 
-        // topBox right side graph editor
-        this.graphEditorScroll.setPreferredSize(new Dimension(500, 500));
+        // Right side scroll pane — no fixed preferred size, let it fill
+        this.graphEditorScroll.setMinimumSize(new Dimension(200, 200));
+        this.graphEditorScroll.setAlignmentY(Component.TOP_ALIGNMENT);
         this.graphEditorScroll.setViewportView(this.workbench);
 
-        // topBox contains the topGraphBox and the instructionBox underneath
-        Box topBox = Box.createVerticalBox();
-        topBox.setPreferredSize(new Dimension(450, 400));
-
-        // topGraphBox contains the vertical graph toolbar and graph editor
+        // topGraphBox: toolbar on left, scroll pane fills the rest
         Box topGraphBox = Box.createHorizontalBox();
         topGraphBox.add(graphToolbar);
         topGraphBox.add(this.graphEditorScroll);
 
-        // Instruction with info button
+        // Instruction label underneath the graph
         Box instructionBox = Box.createHorizontalBox();
-        instructionBox.setMaximumSize(new Dimension(450, 40));
-
+        instructionBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         JLabel label = new JLabel("Double click variable/node rectangle to change name.");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
-
         instructionBox.add(label);
 
-        // Add to topBox
+        // topBox: graph on top, instruction label on bottom — no fixed preferred size
+        Box topBox = Box.createVerticalBox();
         topBox.add(topGraphBox);
         topBox.add(instructionBox);
 
+        // Edge type table
         this.edgeTypeTable.setPreferredSize(new Dimension(500, 150));
 
-//        //Use JSplitPane to allow resize the bottom box - Zhou
-//        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new PaddingPanel(topBox), new PaddingPanel(edgeTypeTable));
-//        splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 150));
-
-
-        // Switching to tabbed pane because of resizing problems with the split pane... jdramsey 2021.08.25
+        // Tabbed pane
         JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.RIGHT);
         tabbedPane.addTab("Graph", new PaddingPanel(topBox));
 
         Box edgeTableBox = Box.createVerticalBox();
         edgeTableBox.add(this.edgeTypeTable);
         edgeTableBox.add(new JLabel("Rows can be copy/pasted into Excel or text file"));
-
         tabbedPane.addTab("Edges", edgeTableBox);
 
         JTextArea ta = new JTextArea(String.valueOf(graph));
         ta.setEditable(false);
         ta.setCaretPosition(0);
         JScrollPane textScroll = new JScrollPane(ta);
-
         tabbedPane.addTab("Text", textScroll);
 
         updateBootstrapTable(graph);
         this.edgeTypeTable.update(graph);
 
         tabbedPane.addChangeListener(e -> {
-            if (tabbedPane.getSelectedIndex() == 1) { // "Edges" tab
+            if (tabbedPane.getSelectedIndex() == 1) {
                 updateBootstrapTable(workbench.getGraph());
                 this.edgeTypeTable.update(workbench.getGraph());
             }
@@ -354,9 +343,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         add(menuBar, BorderLayout.NORTH);
         add(tabbedPane, BorderLayout.CENTER);
 
-        // Performs relayout.
-        // It means invalid content is asked for all the sizes and
-        // all the subcomponents' sizes are set to proper values by LayoutManager.
         validate();
     }
 
