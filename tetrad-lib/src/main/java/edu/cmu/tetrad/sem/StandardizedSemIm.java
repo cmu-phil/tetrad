@@ -125,6 +125,7 @@ public class StandardizedSemIm implements Simulator {
      *
      * @param im         The SEM IM that the freeParameters will be initialized from.
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @throws ParseException
      */
     public StandardizedSemIm(SemIm im, Parameters parameters) throws ParseException {
         this(im, Initialization.CALCULATE_FROM_SEM, parameters);
@@ -136,6 +137,7 @@ public class StandardizedSemIm implements Simulator {
      * @param im             Stop asking me for these things! The given SEM IM!!!
      * @param initialization CALCULATE_FROM_SEM if the initial values will be calculated from the given SEM IM;
      * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
+     * @throws ParseException
      */
     public StandardizedSemIm(SemIm im, Initialization initialization, Parameters parameters) throws ParseException {
         if (im.getSemPm().getGraph().isTimeLagModel()) {
@@ -215,6 +217,7 @@ public class StandardizedSemIm implements Simulator {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return a {@link edu.cmu.tetrad.sem.StandardizedSemIm} object
+     * @throws ParseException if any
      */
     public static StandardizedSemIm serializableInstance() throws ParseException {
         return new StandardizedSemIm(SemIm.serializableInstance(), new Parameters());

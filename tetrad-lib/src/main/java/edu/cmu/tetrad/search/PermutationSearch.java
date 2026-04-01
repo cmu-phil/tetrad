@@ -94,6 +94,12 @@ public class PermutationSearch {
     private long seed = -1;
     private boolean replicatingGraph = false;
 
+    /**
+     * Constructs a new PermutationSearch instance using the specified SuborderSearch.
+     *
+     * @param suborderSearch The SuborderSearch instance used to perform suborder searches
+     *                       as part of the permutation search process.
+     */
     public PermutationSearch(SuborderSearch suborderSearch) {
         this(suborderSearch, null);
     }

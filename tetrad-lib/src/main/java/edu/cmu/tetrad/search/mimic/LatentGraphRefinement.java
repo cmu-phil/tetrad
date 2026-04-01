@@ -90,6 +90,7 @@ public final class LatentGraphRefinement {
      *
      * @param variables  measured variables in matrix order; must not be null
      * @param s          correlation matrix over those variables; must not be null
+     * @param dataSet    data set used for correlation and rank tests; must not be null
      * @param sampleSize sample size; must be positive
      * @param alpha      significance level; must be in (0, 1)
      */
@@ -413,7 +414,16 @@ public final class LatentGraphRefinement {
         }
     }
 
-
+    /**
+     * Orients latent edges in the given graph using statistical rank-based tests.
+     * First, any existing directed edges between latent nodes are removed to avoid
+     * confusion or the introduction of cycles. Each pair of latent nodes connected
+     * by an undirected edge is then tested for directional orientation based on the
+     * rank test performed between their measured parents and children.
+     *
+     * @param graph The graph whose latent edges are to be oriented. Must not be null.
+     *              Throws {@link NullPointerException} if the graph is null.
+     */
     public void orientLatentEdgesUsingRanks(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("graph must not be null.");

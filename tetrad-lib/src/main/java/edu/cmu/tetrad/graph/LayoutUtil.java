@@ -58,8 +58,19 @@ public class LayoutUtil {
      * tie into Swing, a logger, or simply do nothing (headless use).
      */
     public interface LayoutProgressListener {
+        /**
+         * Reports the progress of a layout operation.
+         *
+         * @param percent the completion percentage of the layout process, ranging from 0 to 100
+         * @param message a descriptive message providing additional information about the current state of progress
+         */
         void onProgress(int percent, String message);
 
+        /**
+         * Determines if the layout operation has been canceled.
+         *
+         * @return {@code true} if the layout operation has been canceled, {@code false} otherwise.
+         */
         boolean isCanceled();
     }
 
@@ -67,6 +78,14 @@ public class LayoutUtil {
      * No-op listener for headless / non-GUI use.
      */
     public static class NoOpProgressListener implements LayoutProgressListener {
+
+        /**
+         * A no-operation implementation of the LayoutProgressListener interface.
+         * This listener performs no actions and is intended for use in non-interactive
+         * or headless environments where progress updates are unnecessary.
+         */
+        public NoOpProgressListener() {}
+
         @Override
         public void onProgress(int percent, String message) {
             // do nothing
@@ -84,6 +103,21 @@ public class LayoutUtil {
     public static class SwingProgressListener implements LayoutProgressListener {
         private final ProgressMonitor monitor;
 
+        /**
+         * Constructs a SwingProgressListener instance. This listener acts as a Swing adapter
+         * that wraps a {@link ProgressMonitor}, providing a visual progress indication for
+         * tasks that report progress.
+         *
+         * The constructed {@link ProgressMonitor} is initialized with the following settings:
+         * - No parent component (null).
+         * - Title message: "Energy settling...".
+         * - Initial note: "Energy = ?".
+         * - Minimum progress value: 0.
+         * - Maximum progress value: 100.
+         * - Time to decide to pop up: 10 milliseconds.
+         * - Time to pop up: 0 milliseconds.
+         * - Initial progress: 0%.
+         */
         public SwingProgressListener() {
             this.monitor = new ProgressMonitor(null, "Energy settling...",
                     "Energy = ?", 0, 100);

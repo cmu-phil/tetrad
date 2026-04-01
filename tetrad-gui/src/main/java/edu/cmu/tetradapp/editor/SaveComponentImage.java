@@ -38,9 +38,6 @@ import java.io.IOException;
  */
 public class SaveComponentImage extends AbstractAction {
 
-    /**
-     * The component whose image is to be saved.
-     */
     private final JComponent comp;
 
     /**
@@ -73,14 +70,25 @@ public class SaveComponentImage extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         File file = EditorUtils.getSaveFile("image", "png", getComp(), false, this.actionName);
 
-        // Create the image.
+        int scale = 2;
         Dimension size = getComp().getSize();
-        BufferedImage image = new BufferedImage(size.width, size.height,
-                BufferedImage.TYPE_INT_ARGB_PRE);
-        Graphics graphics = image.getGraphics();
-        getComp().paint(graphics);
 
-        // Write the image to file.
+        BufferedImage image = new BufferedImage(
+                size.width * scale,
+                size.height * scale,
+                BufferedImage.TYPE_INT_ARGB_PRE);
+
+        Graphics2D g2 = image.createGraphics();
+
+        // Rendering hints for quality upscaling.
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+
+        g2.scale(scale, scale);
+        getComp().paint(g2);
+        g2.dispose();
+
         try {
             ImageIO.write(image, "png", file);
         } catch (IOException e1) {
@@ -88,16 +96,10 @@ public class SaveComponentImage extends AbstractAction {
         }
     }
 
-    private Component getComp() {
-        return this.comp;
+    /**
+     * The component whose image is to be saved.
+     */
+    public JComponent getComp() {
+        return comp;
     }
-
 }
-
-
-
-
-
-
-
-

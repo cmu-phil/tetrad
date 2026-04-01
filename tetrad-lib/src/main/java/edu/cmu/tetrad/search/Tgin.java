@@ -72,7 +72,6 @@ import java.util.*;
  *
  * @see TrekMeasurementModelBuilderPc
  * @see TrekMeasurementModelBuilderBoss
- *
  */
 @Deprecated
 public class Tgin implements IGraphSearch {
@@ -331,16 +330,38 @@ public class Tgin implements IGraphSearch {
     // Setters
     // -----------------------------------------------------------------------
 
+    /**
+     * Sets the data set to be used for the analysis. The data set is a central component
+     * in the structure learning process and must not be null.
+     *
+     * @param dataSet the data set to be used; must not be null
+     * @throws NullPointerException if the provided data set is null
+     */
     public void setDataSet(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("Data set must not be null.");
         this.dataSet = dataSet;
     }
 
+    /**
+     * Sets the parameters to be used for the analysis. The parameters are essential
+     * for configuring the structure learning process.
+     *
+     * @param parameters the parameters to be used; must not be null
+     * @throws NullPointerException if the provided parameters are null
+     */
     public void setParameters(Parameters parameters) {
         if (parameters == null) throw new NullPointerException("Parameters must not be null.");
         this.parameters = parameters;
     }
 
+    /**
+     * Configures the verbosity of the process. When set to true, additional
+     * information is displayed during execution, primarily useful for debugging
+     * or detailed monitoring of the process.
+     *
+     * @param verbose a boolean value where true enables verbose output and
+     *                false disables it
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
@@ -394,6 +415,9 @@ public class Tgin implements IGraphSearch {
     // Orientation stages (static inner class)
     // -----------------------------------------------------------------------
 
+    /**
+     * Helper class for the orientation stages.
+     */
     public static class TginOrientationStages {
 
         // All fields needed by both Stage 4 and Stage 5.
@@ -406,6 +430,17 @@ public class Tgin implements IGraphSearch {
         private final Map<Node, List<Integer>> originalToIndicatorCols; // original -> data col indices
         private final RawMarginalIndependenceTest hsic;
 
+        /**
+         * Constructs a new instance of TginOrientationStages.
+         *
+         * @param graph The causal graph used for orientation stages.
+         * @param allLatents The list of all latent variables in the model.
+         * @param nodeMap A mapping of nodes from their original representation to their evaluated counterparts.
+         * @param dataSet The dataset used for statistical analyses and testing.
+         * @param alpha The significance level used for independence tests and orientation decisions.
+         * @param sampleSize The number of samples in the dataset.
+         * @param hsic The raw marginal independence test instance used for evaluating statistical independence.
+         */
         public TginOrientationStages(Graph graph, List<Node> allLatents,
                                      Map<Node, Node> nodeMap,
                                      DataSet dataSet, double alpha, int sampleSize,
@@ -432,6 +467,25 @@ public class Tgin implements IGraphSearch {
 
         //
 //                if (r <= 1) continue;
+
+        /**
+         * Adjusts the orientation of intra-cluster edges within a graph based on a causal ordering
+         * derived from independent component analysis (ICA) and pairwise LiNGAM.
+         * <p>
+         * This method processes a set of nodes grouped into clusters (original and their expanded
+         * copies) and modifies the edges between them to reflect a specific causal hierarchy.
+         * The steps include:
+         * <ol>
+         * <li>Using ICA to perform demixing on the data associated with the node cluster.</li>
+         * <li>Applying LiNGAM on the demixed sources to determine a causal order among the copies.</li>
+         * <li>Reorienting undirected edges into directed edges based on the causal order.</li>
+         * </ol>
+         * <p>
+         * This procedure works on the assumption that the rank of the original node is greater
+         * than 1, indicating the presence of sufficient structure for causal analysis.
+         *
+         * @throws InterruptedException if the ICA algorithm is interrupted during execution.
+         */
         public void orientIntraClusterEdges() throws InterruptedException {
             for (Map.Entry<Node, List<Node>> entry : originalToExpanded.entrySet()) {
                 Node original = entry.getKey();
@@ -485,6 +539,7 @@ public class Tgin implements IGraphSearch {
          * Groups original latents into connected components joined by undirected
          * edges. Each component with more than one member is an impure cluster
          * that needs Algorithm 6 orientation.
+         * @return a list of lists of original latents that are members of an impure cluster.
          */
         public List<List<Node>> findImpureClusters() {
             List<Node> originals = new ArrayList<>(originalToExpanded.keySet());
@@ -528,6 +583,8 @@ public class Tgin implements IGraphSearch {
          * Proposition 7 GIN test, orienting edges away from it, until a total
          * causal order is established. Then prunes redundant edges via
          * Proposition 8.
+         * @param impureCluster the list of original latents that are members of an impure cluster.
+         * @throws InterruptedException if the thread is interrupted while waiting for the GIN test.
          */
         public void orientImpureCluster(List<Node> impureCluster) throws InterruptedException {
             System.out.println("=== orientImpureCluster: originalToIndicatorCols = " + originalToIndicatorCols);

@@ -56,6 +56,13 @@ import java.text.ParseException;
  */
 public final class SemParameterizer {
 
+    /**
+     * Private constructor for the {@code SemParameterizer} class.
+     * This constructor is intentionally private to ensure that instances
+     * of the class can only be created through factory methods.
+     */
+    private SemParameterizer() {}
+
     // -----------------------------------------------------------------------
     // Defaults matching the simulation study design
     // -----------------------------------------------------------------------
@@ -174,6 +181,7 @@ public final class SemParameterizer {
      * @param graph      a graph produced by {@code RandomMim}; must not be {@code null}.
      * @param sampleSize number of rows; must be &ge; 1.
      * @return a {@link DataSet} containing only the measured variables.
+     * @throws ParseException if the data set cannot be parsed.
      */
     public DataSet parameterizeAndSimulate(Graph graph, int sampleSize) throws ParseException {
         return simulate(parameterize(graph), sampleSize);
@@ -192,6 +200,7 @@ public final class SemParameterizer {
      * @param im         a parameterised SEM; must not be {@code null}.
      * @param sampleSize number of rows; must be &ge; 1.
      * @return a {@link DataSet} with {@code sampleSize} rows.
+     * @throws ParseException if the data set cannot be parsed.
      */
     public static DataSet simulate(SemIm im, int sampleSize) throws ParseException {
         if (im == null)     throw new IllegalArgumentException("SemIm must not be null.");

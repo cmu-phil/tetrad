@@ -1,9 +1,9 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
 // and Richard Scheines.                                                     //
 //                                                                           //
 // This program is free software; see LICENSE for details.                   //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.harness.tsc;
 
@@ -79,7 +79,7 @@ public final class BestJaccardScorer {
             Collection<? extends Set<T>> recovered) {
 
         if (trueClusters == null) throw new IllegalArgumentException("trueClusters must not be null.");
-        if (recovered    == null) throw new IllegalArgumentException("recovered must not be null.");
+        if (recovered == null) throw new IllegalArgumentException("recovered must not be null.");
 
         int k = trueClusters.size();
         int m = recovered.size();
@@ -98,7 +98,7 @@ public final class BestJaccardScorer {
         @SuppressWarnings("unchecked")
         Set<T>[] trueArr = trueClusters.toArray(new Set[0]);
         @SuppressWarnings("unchecked")
-        Set<T>[] recArr  = recovered.toArray(new Set[0]);
+        Set<T>[] recArr = recovered.toArray(new Set[0]);
 
         // ---- Recall: for each true cluster find its best recovered match ----
         double recallSum = 0.0;
@@ -132,6 +132,7 @@ public final class BestJaccardScorer {
      *
      * @param a first set; must not be {@code null}.
      * @param b second set; must not be {@code null}.
+     * @param <T> element type (typically {@link edu.cmu.tetrad.graph.Node})
      * @return {@code |a ∩ b| / |a ∪ b|}, or {@code 0.0} if both sets are empty.
      */
     public static <T> double jaccard(Set<T> a, Set<T> b) {
@@ -141,7 +142,7 @@ public final class BestJaccardScorer {
         int intersection = 0;
         // Iterate over the smaller set for efficiency
         Set<T> smaller = (a.size() <= b.size()) ? a : b;
-        Set<T> larger  = (a.size() <= b.size()) ? b : a;
+        Set<T> larger = (a.size() <= b.size()) ? b : a;
         for (T element : smaller) {
             if (larger.contains(element)) intersection++;
         }
@@ -167,13 +168,14 @@ public final class BestJaccardScorer {
     public record ClusterScore(
             double precision,
             double recall,
-            int    trueCount,
-            int    recoveredCount) {
+            int trueCount,
+            int recoveredCount) {
 
         /**
          * Returns {@code true} if the algorithm returned no clusters at all.
          * This is a distinct failure mode from returning wrong clusters and
          * should be tracked separately in simulation summaries.
+         * @return {@code true} if the algorithm returned no clusters at all.
          */
         public boolean isEmpty() {
             return recoveredCount == 0;
@@ -182,6 +184,7 @@ public final class BestJaccardScorer {
         /**
          * Returns the F1 score (harmonic mean of precision and recall), or
          * {@code NaN} if either component is {@code NaN} or both are zero.
+         * @return the F1 score, or {@code NaN} if either component is {@code NaN} or both are zero.
          */
         public double f1() {
             if (Double.isNaN(precision) || Double.isNaN(recall)) return Double.NaN;

@@ -46,6 +46,22 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public final class SimulationStudy {
 
+    /**
+     * Constructs a new instance of the {@code SimulationStudy} class.
+     * This class is designed to perform statistical simulations involving
+     * multiple groups and conditions, evaluating rank-1 and rank-2 measurement
+     * models (MIM). It provides methods to configure replication settings
+     * and run simulations for each study or both studies collectively.
+     *
+     * By default, the number of replications for each condition is set to 100.
+     * Users can modify this using the {@link #setNumReplications(int)} method.
+     * The simulation includes rank-specific configurations for sample sizes,
+     * significance levels, and analysis procedures.
+     */
+    public SimulationStudy() {
+
+    }
+
     // -----------------------------------------------------------------------
     // Configuration constants
     // -----------------------------------------------------------------------
@@ -96,6 +112,7 @@ public final class SimulationStudy {
 
     /**
      * Runs Study 1 (rank-1 MIM) and returns its results.
+     * @return the results of Study 1.
      */
     public StudyResult runStudy1() {
         System.out.println("=".repeat(72));
@@ -123,6 +140,7 @@ public final class SimulationStudy {
 
     /**
      * Runs Study 2 (rank-2 MIM) and returns its results.
+     * @return the results of Study 2.
      */
     public StudyResult runStudy2() {
         System.out.println("=".repeat(72));
@@ -402,6 +420,7 @@ public final class SimulationStudy {
     /**
      * Runs both studies with default settings.
      * Optional integer argument sets the number of replications (default 100).
+     * @param args ignored.
      */
     public static void main(String[] args) {
         SimulationStudy study = new SimulationStudy();

@@ -117,8 +117,6 @@ public interface DesktopControllable {
 
     /**
      * <p>closeAllSessions.</p>
-     *
-     * @return a boolean
      */
     void closeAllSessions();
 }

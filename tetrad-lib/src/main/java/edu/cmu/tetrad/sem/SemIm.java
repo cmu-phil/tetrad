@@ -548,6 +548,7 @@ public final class SemIm implements Im, ISemIm {
      * @param g The graph on which the shrinkage simulation is performed.
      * @return A Result object containing the shrinkage mode, simulated dataset, sample size,
      *         and the SEM (Structural Equation Model) instance representing the data-generating process.
+     * @throws ParseException If there is an issue parsing the input parameters.
      */
     public static @NotNull Result simulatePossibleShrinkage(Parameters params, Graph g) throws ParseException {
         // Shrinkage: 1=None, 2=Ridge, 3=LedoitâWolf
@@ -1725,6 +1726,7 @@ public final class SemIm implements Im, ISemIm {
      * @param sampleSize      a int
      * @param latentDataSaved a boolean
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @throws java.text.ParseException if any.
      */
     public DataSet simulateDataRecursive(int sampleSize,
                                          boolean latentDataSaved) throws ParseException {
@@ -1924,6 +1926,7 @@ public final class SemIm implements Im, ISemIm {
      * @param sampleSize      a int
      * @param latentDataSaved a boolean
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @throws java.text.ParseException if any.
      */
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) throws ParseException {
         int numVars = getVariableNodes().size();

@@ -42,6 +42,7 @@ public final class TscRunner implements AlgorithmRunner {
      * Creates a TSC runner with the given settings.
      *
      * @param alpha         significance level for rank tests (e.g. 0.01).
+     * @param rMin          minimum rank to search for (e.g. 1 for rank-1 study)
      * @param rMax          maximum rank to search for (e.g. 1 for rank-1
      *                      study, 2 for rank-2 study).
      * @param minRedundancy minimum redundancy ({@code delta}); clusters

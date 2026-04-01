@@ -235,6 +235,14 @@ public class Tsc implements EffectiveSampleSizeSettable {
         setEffectiveSampleSize(-1);
     }
 
+    /**
+     * Constructs an instance of the Tsc class by initializing variables, correlation matrix,
+     * sample size, and data array from the provided nodes and dataset.
+     *
+     * @param variables a list of Node objects representing the variables of interest.
+     * @param data a DataSet object containing the data used to compute the correlation matrix
+     *             and initialize the data array.
+     */
     public Tsc(List<Node> variables, DataSet data) {
         this.nodes = new ArrayList<>(variables);
         this.variables = new ArrayList<>(variables.size());
@@ -1053,6 +1061,12 @@ public class Tsc implements EffectiveSampleSizeSettable {
         this.minRedundancy = minRedundancy;
     }
 
+    /**
+     * Sets the parallel processing mode.
+     *
+     * @param parallel a boolean value indicating whether to enable (true)
+     *                 or disable (false) parallel processing.
+     */
     public void setParallel(boolean parallel) {
         this.parallel = parallel;
     }

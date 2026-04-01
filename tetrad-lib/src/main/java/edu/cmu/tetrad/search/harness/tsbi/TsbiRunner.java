@@ -82,7 +82,7 @@ public final class TsbiRunner {
      * @return the structural graph over block-variable nodes as returned by PC;
      *         may contain both directed and undirected edges (a CPDAG).
      * @throws IllegalArgumentException if arguments are null or sizes do not match.
-     * @throws InterruptedException
+     * @throws InterruptedException if any
      */
     public Graph run(DataSet data,
                      List<Set<Node>> trueClusters,

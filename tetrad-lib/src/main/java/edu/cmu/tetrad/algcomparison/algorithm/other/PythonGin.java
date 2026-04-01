@@ -50,14 +50,14 @@ import java.util.Map;
  * Zhang, K. (2020). Generalized independent noise condition for estimating
  * latent variable causal graphs. NeurIPS 33, 14891–14902.
  *
- * <h3>Required {@link Parameters}</h3>
+ * Required {@link Parameters}
  * <ul>
  *   <li>{@code Params.PYTHON_EXE} — path to the Python executable
  *       (e.g., {@code /usr/bin/python3}).  Defaults to the venv path in
  *       {@code DEFAULT_PYTHON_EXE} if not set.</li>
  * </ul>
  *
- * <h3>Optional {@link Parameters}</h3>
+ * Optional {@link Parameters}
  * <ul>
  *   <li>{@value #GIN_INDEP_TEST} — independence test used internally by GIN:
  *       {@code "kci"} (default) or {@code "hsic"}</li>
@@ -74,6 +74,18 @@ import java.util.Map;
 //@Bootstrapping
 @Deprecated
 public class PythonGin implements Algorithm {
+
+    /**
+     * Default constructor for the PythonGin class.
+     *
+     * This constructor initializes a new instance of the PythonGin algorithm.
+     * It provides access to methods for executing the GIN causal discovery
+     * process using a Python-based implementation and facilitates
+     * interactions between Java and Python scripts.
+     */
+    public PythonGin() {
+
+    }
 
     @Serial
     private static final long serialVersionUID = 1L;
