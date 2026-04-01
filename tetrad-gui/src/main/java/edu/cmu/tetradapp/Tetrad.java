@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,13 +16,12 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp;
 
-import com.formdev.flatlaf.*;
-import com.formdev.flatlaf.themes.FlatMacDarkLaf;
-import com.formdev.flatlaf.themes.FlatMacLightLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
@@ -34,10 +33,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serial;
@@ -220,13 +216,11 @@ public final class Tetrad implements PropertyChangeListener {
         // Fixing a bug caused by switch to Oracle Java (at least for Mac), although I must say the following
         // code is what should have worked to begin with. Bug was that sessions would appear only in the lower
         // left-hand corner of the screen.
-//        frame.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
         frame.setPreferredSize(frame.getPreferredSize());
         frame.setLocation(frame.getLocation());
 
         getFrame().setContentPane(getDesktop());
         getFrame().pack();
-//        getFrame().setLocationRelativeTo(null);
 
         // This doesn't let the user resize the main window.
         Image image = ImageUtils.getImage(this, "tyler16.png");
@@ -268,14 +262,8 @@ public final class Tetrad implements PropertyChangeListener {
 
             try {
                 desktop.setQuitHandler((e2, response) -> {
-                    int result = JOptionPane.showConfirmDialog(null,
-                            "Are you sure you want to quit? Any unsaved work will be lost.",
-                            "Confirm Quit", JOptionPane.YES_NO_OPTION);
-                    if (result == JOptionPane.YES_OPTION) {
-                        response.performQuit();
-                    } else {
-                        response.cancelQuit();
-                    }
+                    getDesktop().closeAllSessions();
+                    response.performQuit();
                 });
             } catch (Exception e) {
                 TetradLogger.getInstance().log("Could not set quit handler on this platform..");

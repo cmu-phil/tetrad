@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -25,7 +25,6 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
-import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -99,34 +98,26 @@ public final class SaveSessionAction extends AbstractAction {
             }
         }
 
-        class MyWatchedProceess extends WatchedProcess {
-
-            @Override
-            public void watch() {
-                try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(outputFile))) {
-                    sessionWrapper.setNewSession(false);
-                    objOut.writeObject(metadata);
-                    objOut.writeObject(sessionWrapper);
-                } catch (NotSerializableException exception) {
-                    exception.printStackTrace(System.err);
-                    JOptionPane.showMessageDialog(
-                            JOptionUtils.centeringComp(),
-                            "An error occurred while attempting to save the session. The session could not be saved.");
-                } catch (IOException exception) {
-                    exception.printStackTrace(System.err);
-                    JOptionPane.showMessageDialog(
-                            JOptionUtils.centeringComp(),
-                            String.format(
-                                    "An error occurred while attempting to save the session as %s.",
-                                    outputFile.toAbsolutePath()));
-                }
-
-                sessionWrapper.setSessionChanged(false);
-                DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
-            }
+        try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(outputFile))) {
+            sessionWrapper.setNewSession(false);
+            objOut.writeObject(metadata);
+            objOut.writeObject(sessionWrapper);
+        } catch (NotSerializableException exception) {
+            exception.printStackTrace(System.err);
+            JOptionPane.showMessageDialog(
+                    JOptionUtils.centeringComp(),
+                    "An error occurred while attempting to save the session. The session could not be saved.");
+        } catch (IOException exception) {
+            exception.printStackTrace(System.err);
+            JOptionPane.showMessageDialog(
+                    JOptionUtils.centeringComp(),
+                    String.format(
+                            "An error occurred while attempting to save the session as %s.",
+                            outputFile.toAbsolutePath()));
         }
 
-        new MyWatchedProceess();
+        sessionWrapper.setSessionChanged(false);
+        DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
     }
 
     /**

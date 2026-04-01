@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -26,7 +26,6 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
-import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -58,85 +57,6 @@ public final class SaveSessionAsAction extends AbstractAction {
      */
     public SaveSessionAsAction() {
         super("Save Session As...");
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Performs the action of saving a session to a file.
-     */
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        // Get the frontmost SessionWrapper.
-        SessionEditorIndirectRef sessionEditorRef
-                = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench workbench = sessionEditor.getSessionWorkbench();
-        SessionWrapper sessionWrapper = workbench.getSessionWrapper();
-        TetradMetadata metadata = new TetradMetadata();
-
-        // Select the file to save this to.
-//        String sessionSaveLocation
-//                = Preferences.userRoot().get("sessionSaveLocation", "");
-//        File file = EditorUtils.getSaveFileWithPath(sessionEditor.getName(), "tet",
-//                JOptionUtils.centeringComp(), true, "Save Session As...", sessionSaveLocation);
-
-        String sessionSaveLocation =
-                Preferences.userRoot().get("sessionSaveLocation", "");
-
-        // Get the next available filename before presenting the save dialog,
-        // so the user is never defaulted into overwriting an existing session.
-        String defaultName = "untitled";
-
-        File file = EditorUtils.getSaveFileWithPath(
-                defaultName, "tet",
-                JOptionUtils.centeringComp(), false, "Save Session As...",
-                sessionSaveLocation);
-
-        if (file == null) {
-            saved = false;
-            return;
-        }
-
-        if ((DesktopController.getInstance().existsSessionByName(
-                file.getName())
-             && !(sessionWrapper.getName().equals(file.getName())))) {
-            saved = false;
-            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                    "Another session by that name is currently open. Please "
-                    + "\nclose that session first.");
-            return;
-        }
-
-        sessionWrapper.setName(file.getName());
-        sessionEditor.setName(file.getName());
-
-        class MyWatchedProcess extends WatchedProcess {
-
-            @Override
-            public void watch() {
-                try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
-                    saved = false;
-                    objOut.writeObject(metadata);
-                    objOut.writeObject(sessionWrapper);
-
-                    sessionWrapper.setSessionChanged(false);
-                    sessionWrapper.setNewSession(false);
-                    saved = true;
-                } catch (IOException exception) {
-                    exception.printStackTrace(System.err);
-
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            "An error occurred while attempting to save the session.");
-                    saved = false;
-                }
-
-                DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
-                sessionEditor.firePropertyChange("name", null, file.getName());
-            }
-        }
-
-        new MyWatchedProcess();
     }
 
     /**
@@ -181,6 +101,71 @@ public final class SaveSessionAsAction extends AbstractAction {
             }
             index++;
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Performs the action of saving a session to a file.
+     */
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // Get the frontmost SessionWrapper.
+        SessionEditorIndirectRef sessionEditorRef
+                = DesktopController.getInstance().getFrontmostSessionEditor();
+        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        SessionEditorWorkbench workbench = sessionEditor.getSessionWorkbench();
+        SessionWrapper sessionWrapper = workbench.getSessionWrapper();
+        TetradMetadata metadata = new TetradMetadata();
+
+        String sessionSaveLocation =
+                Preferences.userRoot().get("sessionSaveLocation", "");
+
+        // Get the next available filename before presenting the save dialog,
+        // so the user is never defaulted into overwriting an existing session.
+        String defaultName = "untitled";
+
+        File file = EditorUtils.getSaveFileWithPath(
+                defaultName, "tet",
+                JOptionUtils.centeringComp(), false, "Save Session As...",
+                sessionSaveLocation);
+
+        if (file == null) {
+            saved = false;
+            return;
+        }
+
+        if ((DesktopController.getInstance().existsSessionByName(
+                file.getName())
+                && !(sessionWrapper.getName().equals(file.getName())))) {
+            saved = false;
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Another session by that name is currently open. Please "
+                            + "\nclose that session first.");
+            return;
+        }
+
+        sessionWrapper.setName(file.getName());
+        sessionEditor.setName(file.getName());
+
+        try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
+            saved = false;
+            objOut.writeObject(metadata);
+            objOut.writeObject(sessionWrapper);
+
+            sessionWrapper.setSessionChanged(false);
+            sessionWrapper.setNewSession(false);
+            saved = true;
+        } catch (IOException exception) {
+            exception.printStackTrace(System.err);
+
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "An error occurred while attempting to save the session.");
+            saved = false;
+        }
+
+        DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
+        sessionEditor.firePropertyChange("name", null, file.getName());
     }
 }
 
