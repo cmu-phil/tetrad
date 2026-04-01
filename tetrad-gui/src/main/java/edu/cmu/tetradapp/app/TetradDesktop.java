@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.app;
 
@@ -300,12 +300,22 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 
         if (frames.length > 0) {
             Map<SessionEditor, JInternalFrame> framesMap = this.framesMap;
-            framesMap.keySet().removeIf(sessionEditor -> sessionEditor.getName().equals(name));
+
+            for (JInternalFrame frame : frames) {
+                SessionEditor sessionEditor = (SessionEditor) frame.getContentPane().getComponents()[0];
+
+                if (sessionEditor.getName().equals(name)) {
+                    frame.dispose();
+                    framesMap.remove(sessionEditor);
+                    break;
+                }
+            }
+//            framesMap.keySet().removeIf(sessionEditor -> sessionEditor.getName().equals(name));
         }
     }
 
     /**
-     * <p>closeEmptySessions.</p>
+     * <p>  closeEmptySessions.</p>
      */
     public void closeEmptySessions() {
         JInternalFrame[] frames = this.desktopPane.getAllFramesInLayer(0);
@@ -457,8 +467,11 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             SessionEditor sessionEditor = getFrontmostSessionEditor();
             assert sessionEditor != null;
 
-            new SaveSessionAsAction().actionPerformed(new ActionEvent(sessionEditor,
-                    ActionEvent.ACTION_PERFORMED, "Save as"));
+            if (sessionEditor.getSessionWorkbench().getSessionWrapper().isSessionChanged()) {
+                new SaveSessionAsAction().actionPerformed(new ActionEvent(sessionEditor,
+                        ActionEvent.ACTION_PERFORMED, "Save as"));
+            }
+
             closeFrontmostSession();
         }
     }

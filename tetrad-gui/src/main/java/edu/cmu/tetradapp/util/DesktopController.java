@@ -107,7 +107,7 @@ public class DesktopController implements DesktopControllable {
      * <p>closeEmptySessions.</p>
      */
     public void closeEmptySessions() {
-        DesktopController.getInstance().closeAllSessions();
+        getInstance().closeEmptySessions();
     }
 
     /**
