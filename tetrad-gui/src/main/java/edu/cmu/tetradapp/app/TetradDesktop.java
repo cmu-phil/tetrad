@@ -40,6 +40,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.Serial;
 import java.util.*;
 import java.util.List;
@@ -617,6 +618,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             i++;
 
             String name = base + i + suffix;
+
+            if (new File(name).exists())
+                continue;
 
             for (SessionEditor _o : this.framesMap.keySet()) {
                 if (_o != null) {
