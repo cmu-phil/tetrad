@@ -57,7 +57,8 @@ import java.util.List;
  * @author Zhou Yuan 8/22/2018
  * @version $Id: $Id
  */
-public final class GraphEditor extends JPanel implements GraphEditable, LayoutEditable, IndTestProducer {
+public final class GraphEditor extends JPanel implements GraphEditable, LayoutEditable, IndTestProducer,
+    DoNotScroll {
 
     @Serial
     private static final long serialVersionUID = 5123725895449927539L;
