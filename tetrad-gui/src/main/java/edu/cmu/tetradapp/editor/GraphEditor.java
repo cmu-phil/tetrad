@@ -257,6 +257,95 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     }
 
     //===========================PRIVATE METHODS========================//
+//    private void initUI(GraphWrapper graphWrapper) {
+//        Graph graph = graphWrapper.getGraph();
+//
+//        this.workbench = new GraphWorkbench(graph);
+//        this.workbench.setEnableEditing(this.enableEditing);
+//
+//        this.workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
+//            String propertyName = evt.getPropertyName();
+//            if (GraphEditor.EVENTS.contains(propertyName)) {
+//                if (getWorkbench() != null) {
+//                    Graph targetGraph = getWorkbench().getGraph();
+//
+//                    SwingUtilities.invokeLater(() -> {
+//                        graphWrapper.setGraph(targetGraph);
+//                    });
+//                }
+//            } else if ("modelChanged".equals(propertyName)) {
+//                firePropertyChange("modelChanged", null, null);
+//            }
+//        });
+//
+//        // Graph menu at the very top of the window
+//        JMenuBar menuBar = createGraphMenuBar();
+//
+//        // Add the model selection to top if multiple models
+//        modelSelection(graphWrapper);
+//
+//        // Left side toolbar
+//        GraphToolbar graphToolbar = new GraphToolbar(getWorkbench());
+//        graphToolbar.setMaximumSize(new Dimension(140, Integer.MAX_VALUE));
+//        graphToolbar.setAlignmentY(Component.TOP_ALIGNMENT);
+//
+//        // Right side scroll pane — no fixed preferred size, let it fill
+//        this.graphEditorScroll.setMinimumSize(new Dimension(200, 200));
+//        this.graphEditorScroll.setAlignmentY(Component.TOP_ALIGNMENT);
+//        this.graphEditorScroll.setViewportView(this.workbench);
+//
+//        // topGraphBox: toolbar on left, scroll pane fills the rest
+//        Box topGraphBox = Box.createHorizontalBox();
+//        topGraphBox.add(graphToolbar);
+//        topGraphBox.add(this.graphEditorScroll);
+//
+//        // Instruction label underneath the graph
+//        Box instructionBox = Box.createHorizontalBox();
+//        instructionBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+//        JLabel label = new JLabel("Double click variable/node rectangle to change name.");
+//        label.setFont(new Font("SansSerif", Font.PLAIN, 12));
+//        instructionBox.add(label);
+//
+//        // topBox: graph on top, instruction label on bottom — no fixed preferred size
+//        Box topBox = Box.createVerticalBox();
+//        topBox.add(topGraphBox);
+//        topBox.add(instructionBox);
+//
+//        // Edge type table
+//        this.edgeTypeTable.setPreferredSize(new Dimension(500, 150));
+//
+//        // Tabbed pane
+//        JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.RIGHT);
+//        tabbedPane.addTab("Graph", new PaddingPanel(topBox));
+//
+//        Box edgeTableBox = Box.createVerticalBox();
+//        edgeTableBox.add(this.edgeTypeTable);
+//        edgeTableBox.add(new JLabel("Rows can be copy/pasted into Excel or text file"));
+//        tabbedPane.addTab("Edges", edgeTableBox);
+//
+//        JTextArea ta = new JTextArea(String.valueOf(graph));
+//        ta.setEditable(false);
+//        ta.setCaretPosition(0);
+//        JScrollPane textScroll = new JScrollPane(ta);
+//        tabbedPane.addTab("Text", textScroll);
+//
+//        updateBootstrapTable(graph);
+//        this.edgeTypeTable.update(graph);
+//
+//        tabbedPane.addChangeListener(e -> {
+//            if (tabbedPane.getSelectedIndex() == 1) {
+//                updateBootstrapTable(workbench.getGraph());
+//                this.edgeTypeTable.update(workbench.getGraph());
+//            }
+//        });
+//
+//        // Add to parent container
+//        add(menuBar, BorderLayout.NORTH);
+//        add(tabbedPane, BorderLayout.CENTER);
+//
+//        validate();
+//    }
+
     private void initUI(GraphWrapper graphWrapper) {
         Graph graph = graphWrapper.getGraph();
 
