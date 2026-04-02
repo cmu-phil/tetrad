@@ -90,6 +90,7 @@ public class DiscretizationWrapper extends DataWrapper {
                 throw new IllegalArgumentException("Only tabular data sets can be converted to time lagged form.");
             }
 
+            @SuppressWarnings("unchecked")
             Map<Node, DiscretizationSpec> discretizationSpecs = (Map<Node, DiscretizationSpec>) params.get("discretizationSpecs", new HashMap<Node, DiscretizationSpec>());
             Discretizer discretizer = new Discretizer(originalData, discretizationSpecs);
             discretizer.setVariablesCopied(Preferences.userRoot().getBoolean("copyUnselectedColumns", true));
