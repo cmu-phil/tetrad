@@ -1,4 +1,4 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.model.datamanip;
 
@@ -53,7 +53,7 @@ public class DiscretizationWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
-     * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
+     * Constructs the <code>DiscretizationWrapper</code> by discretizing the selected
      * <code>DataModel</code>.
      *
      * @param data   a {@link edu.cmu.tetradapp.model.DataWrapper} object
@@ -88,6 +88,23 @@ public class DiscretizationWrapper extends DataWrapper {
             }
         }
 
+        // Build a name-keyed lookup from the specs so that node object identity
+        // does not matter. The simulator may reorder or recreate columns, so the
+        // Node references in the specs map may not match the Node references in
+        // datasets other than the one that was selected when the editor ran.
+        @SuppressWarnings("unchecked")
+        Map<Node, DiscretizationSpec> discretizationSpecs = (Map<Node, DiscretizationSpec>)
+                params.get("discretizationSpecs", new HashMap<Node, DiscretizationSpec>());
+
+        if (discretizationSpecs.isEmpty()) {
+            throw new IllegalArgumentException("No discretization specifications have been provided.");
+        }
+
+        Map<String, DiscretizationSpec> specsByName = new HashMap<>();
+        for (Map.Entry<Node, DiscretizationSpec> entry : discretizationSpecs.entrySet()) {
+            specsByName.put(entry.getKey().getName(), entry.getValue());
+        }
+
         DataModelList dataSets = data.getDataModelList();
         DataModelList discretizedDataSets = new DataModelList();
 
@@ -96,13 +113,22 @@ public class DiscretizationWrapper extends DataWrapper {
                 throw new IllegalArgumentException("Only tabular data sets can be discretized.");
             }
 
-            @SuppressWarnings("unchecked") Map<Node, DiscretizationSpec> discretizationSpecs = (Map<Node, DiscretizationSpec>) params.get("discretizationSpecs", new HashMap<Node, DiscretizationSpec>());
-
-            if (discretizationSpecs.isEmpty()) {
-                throw new IllegalArgumentException("No discretization specifications have been provided.");
+            // Build a per-dataset specs map keyed by the actual Node objects in
+            // this dataset, matched by name to the editor-produced specs.
+            Map<Node, DiscretizationSpec> datasetSpecs = new HashMap<>();
+            for (Node node : originalData.getVariables()) {
+                DiscretizationSpec spec = specsByName.get(node.getName());
+                if (spec != null) {
+                    datasetSpecs.put(node, spec);
+                }
             }
 
-            Discretizer discretizer = new Discretizer(originalData, discretizationSpecs);
+            if (datasetSpecs.isEmpty()) {
+                throw new IllegalArgumentException("No discretization specifications matched any "
+                        + "variables in one of the datasets. Check that variable names are consistent.");
+            }
+
+            Discretizer discretizer = new Discretizer(originalData, datasetSpecs);
             discretizer.setVariablesCopied(Preferences.userRoot().getBoolean("copyUnselectedColumns", true));
 
             discretizedDataSets.add(discretizer.discretize());
@@ -131,9 +157,7 @@ public class DiscretizationWrapper extends DataWrapper {
         setSourceGraph(data.getSourceGraph());
 
         LogDataUtils.logDataModelList("Discretization of data in the parent node.", getDataModelList());
-
     }
-
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -181,7 +205,3 @@ public class DiscretizationWrapper extends DataWrapper {
         }
     }
 }
-
-
-
-

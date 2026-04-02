@@ -132,6 +132,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             throw new NullPointerException("Graph must not be null.");
         }
 
+//        graph = GraphUtils.replaceNodes(graph, this.nodes);
+
         transferNodesAndEdges(graph);
 
         // Keep attributes from the original graph
@@ -716,6 +718,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         if (graph == null) {
             throw new NullPointerException("No graph was provided.");
         }
+
+        graph = GraphUtils.replaceNodes(graph, this.nodes);
 
         for (Node node : graph.getNodes()) {
             if (!addNode(node)) {
