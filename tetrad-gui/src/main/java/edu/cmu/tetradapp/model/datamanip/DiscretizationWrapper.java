@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.model.datamanip;
 
@@ -38,10 +38,15 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 
 /**
- * Created by IntelliJ IDEA.
- *
- * @author Tyler
- * @version $Id: $Id
+ * The <code>DiscretizationWrapper</code> class provides functionality for discretizing a
+ * <code>DataModel</code> within a <code>DataWrapper</code> object. This class serves as a
+ * specialized wrapper that processes tabular datasets by converting continuous variables to
+ * discrete variables based on a specified set of discretization specifications.
+ * Discretization is performed to transform data into a format suitable for some algorithms
+ * that require discrete inputs.
+ * <p>
+ * This class extends {@link DataWrapper} and ensures compatibility between the parent
+ * and child node data models for seamless re-discretization.
  */
 public class DiscretizationWrapper extends DataWrapper {
     @Serial
@@ -63,7 +68,8 @@ public class DiscretizationWrapper extends DataWrapper {
         }
 
         if (!getDataModelList().isEmpty() && data.getDataModelList().size() != getDataModelList().size()) {
-            throw new IllegalArgumentException("The number of data models in the parent node must match the number of data models in the child node.");
+            throw new IllegalArgumentException("The number of data models in the parent node must match " +
+                    "the number of data models in the child node.");
         }
 
         if (!getDataModelList().isEmpty()) {
@@ -74,8 +80,8 @@ public class DiscretizationWrapper extends DataWrapper {
                 for (int j = 0; j < variables1.size(); j++) {
                     if (variables1.get(j) instanceof DiscreteVariable) {
                         if (!variables1.get(j).getName().equals(variables2.get(j).getName())) {
-                            throw new IllegalArgumentException("Discrete variables in the parent node " +
-                                    "must have the same categories to re-discretize automatically.");
+                            throw new IllegalArgumentException("Discrete variables in the parent node "
+                                    + "must have the same categories to re-discretize automatically.");
                         }
                     }
                 }
@@ -90,8 +96,7 @@ public class DiscretizationWrapper extends DataWrapper {
                 throw new IllegalArgumentException("Only tabular data sets can be converted to time lagged form.");
             }
 
-            @SuppressWarnings("unchecked")
-            Map<Node, DiscretizationSpec> discretizationSpecs = (Map<Node, DiscretizationSpec>) params.get("discretizationSpecs", new HashMap<Node, DiscretizationSpec>());
+            @SuppressWarnings("unchecked") Map<Node, DiscretizationSpec> discretizationSpecs = (Map<Node, DiscretizationSpec>) params.get("discretizationSpecs", new HashMap<Node, DiscretizationSpec>());
             Discretizer discretizer = new Discretizer(originalData, discretizationSpecs);
             discretizer.setVariablesCopied(Preferences.userRoot().getBoolean("copyUnselectedColumns", true));
 
@@ -129,7 +134,7 @@ public class DiscretizationWrapper extends DataWrapper {
             out.defaultWriteObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
@@ -148,7 +153,7 @@ public class DiscretizationWrapper extends DataWrapper {
             in.defaultReadObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
