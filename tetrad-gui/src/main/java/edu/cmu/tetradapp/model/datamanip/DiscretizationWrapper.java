@@ -93,16 +93,39 @@ public class DiscretizationWrapper extends DataWrapper {
 
         for (DataModel dataModel : dataSets) {
             if (!(dataModel instanceof DataSet originalData)) {
-                throw new IllegalArgumentException("Only tabular data sets can be converted to time lagged form.");
+                throw new IllegalArgumentException("Only tabular data sets can be discretized.");
             }
 
             @SuppressWarnings("unchecked") Map<Node, DiscretizationSpec> discretizationSpecs = (Map<Node, DiscretizationSpec>) params.get("discretizationSpecs", new HashMap<Node, DiscretizationSpec>());
+
+            if (discretizationSpecs.isEmpty()) {
+                throw new IllegalArgumentException("No discretization specifications have been provided.");
+            }
+
             Discretizer discretizer = new Discretizer(originalData, discretizationSpecs);
             discretizer.setVariablesCopied(Preferences.userRoot().getBoolean("copyUnselectedColumns", true));
 
             discretizedDataSets.add(discretizer.discretize());
         }
 
+        boolean anyDiscretized = false;
+
+        if (!discretizedDataSets.isEmpty()) {
+            for (DataModel discretizedDataSet : discretizedDataSets) {
+                List<Node> variables = discretizedDataSet.getVariables();
+
+                for (Node variable : variables) {
+                    if (variable instanceof DiscreteVariable) {
+                        anyDiscretized = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!anyDiscretized) {
+            throw new IllegalArgumentException("No discretization has been done.");
+        }
 
         setDataModel(discretizedDataSets);
         setSourceGraph(data.getSourceGraph());
