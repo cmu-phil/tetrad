@@ -374,12 +374,12 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         int numModels = graphWrapper.getNumModels();
 
         if (numModels > 1) {
-            List<Integer> models = new ArrayList<>();
+            Integer[] models = new Integer[numModels];
             for (int i = 0; i < numModels; i++) {
-                models.add(i + 1);
+                models[i] = i + 1;
             }
 
-            JComboBox<Integer> comboBox = new JComboBox(models.toArray());
+            JComboBox<Integer> comboBox = new JComboBox<>(models);
 
             // Remember the selected model on reopen
             comboBox.setSelectedIndex(graphWrapper.getModelIndex());
