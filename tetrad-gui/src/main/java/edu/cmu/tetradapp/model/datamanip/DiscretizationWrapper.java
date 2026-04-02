@@ -157,8 +157,6 @@ public class DiscretizationWrapper extends DataWrapper {
             throw e;
         }
     }
-
-
 }
 
 
