@@ -431,6 +431,10 @@ public final class LatentGraphRefinement {
         
         // Override existing directed edges to avoid confusion (and cycles).
         for (Edge edge : new ArrayList<>(graph.getEdges())) {
+            if (edge.isDirected()) {
+                continue;
+            }
+
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -1025,19 +1029,19 @@ public final class LatentGraphRefinement {
     public List<Graph> orientAndPruneEdges(Graph graph) {
         graph = new EdgeListGraph(graph);
 
-        // Override existing directed edges to avoid confusion (and cycles).
-        for (Edge edge : new ArrayList<>(graph.getEdges())) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            if (x.getNodeType() != NodeType.LATENT
-                    || y.getNodeType() != NodeType.LATENT) {
-                continue;
-            }
-
-            graph.removeEdge(edge);
-            graph.addUndirectedEdge(x, y);
-        }
+//        // Override existing directed edges to avoid confusion (and cycles).
+//        for (Edge edge : new ArrayList<>(graph.getEdges())) {
+//            Node x = edge.getNode1();
+//            Node y = edge.getNode2();
+//
+//            if (x.getNodeType() != NodeType.LATENT
+//                    || y.getNodeType() != NodeType.LATENT) {
+//                continue;
+//            }
+//
+//            graph.removeEdge(edge);
+//            graph.addUndirectedEdge(x, y);
+//        }
 
         orientLatentEdgesUsingRanks(graph);
         Graph oriented = new EdgeListGraph(graph);
