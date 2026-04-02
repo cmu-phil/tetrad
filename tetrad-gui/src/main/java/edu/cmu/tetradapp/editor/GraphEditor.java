@@ -119,6 +119,9 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         this.edgeTypeTable = new EdgeTypeTable();
 
         initUI(graphWrapper);
+
+        setPreferredSize(new Dimension(827, 620));
+
     }
 
     //===========================PUBLIC METHODS======================//
