@@ -79,10 +79,6 @@ public class DiscretizationWrapper extends DataWrapper {
                         }
                     }
                 }
-
-//                if (!variables1.equals(variables2)) {
-//                    throw new IllegalArgumentException("All data models must have the same variables to re-discretize automatically.");
-//                }
             }
         }
 
