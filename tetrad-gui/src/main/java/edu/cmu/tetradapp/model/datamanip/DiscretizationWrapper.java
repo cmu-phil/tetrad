@@ -33,6 +33,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
@@ -59,6 +60,30 @@ public class DiscretizationWrapper extends DataWrapper {
         }
         if (params == null) {
             throw new NullPointerException("The given parameters must not be null");
+        }
+
+        if (!getDataModelList().isEmpty() && data.getDataModelList().size() != getDataModelList().size()) {
+            throw new IllegalArgumentException("The number of data models in the parent node must match the number of data models in the child node.");
+        }
+
+        if (!getDataModelList().isEmpty()) {
+            for (int i = 0; i < data.getDataModelList().size(); i++) {
+                List<Node> variables1 = getDataModelList().get(i).getVariables();
+                List<Node> variables2 = data.getDataModelList().get(i).getVariables();
+
+                for (int j = 0; j < variables1.size(); j++) {
+                    if (variables1.get(j) instanceof DiscreteVariable) {
+                        if (!variables1.get(j).getName().equals(variables2.get(j).getName())) {
+                            throw new IllegalArgumentException("Discrete variables in the parent node " +
+                                    "must have the same categories to re-discretize automatically.");
+                        }
+                    }
+                }
+
+//                if (!variables1.equals(variables2)) {
+//                    throw new IllegalArgumentException("All data models must have the same variables to re-discretize automatically.");
+//                }
+            }
         }
 
         DataModelList dataSets = data.getDataModelList();
