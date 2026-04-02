@@ -107,6 +107,7 @@ final class TetradMenuBar extends JMenuBar {
         JMenuItem loadSession = new JMenuItem(new LoadSessionAction());
         JMenuItem closeSession = new JMenuItem(new CloseSessionAction());
         JMenuItem saveSession = new JMenuItem(new SaveSessionAction());
+        JMenuItem saveSessionAs = new JMenuItem(new SaveSessionAsAction());
 
         fileMenu.add(newSession);
         fileMenu.add(loadSession);
@@ -114,9 +115,9 @@ final class TetradMenuBar extends JMenuBar {
 
         fileMenu.addSeparator();
         fileMenu.add(saveSession);
-        fileMenu.add(new SaveSessionAsAction());
+        fileMenu.add(saveSession);
         fileMenu.addSeparator();
-        fileMenu.add(new SessionVersionAction());
+        fileMenu.add(saveSessionAs);
         fileMenu.addSeparator();
 //      fileMenu.add(new SaveScreenshot(desktop, true, "Save Screenshot..."));
 
@@ -171,13 +172,14 @@ final class TetradMenuBar extends JMenuBar {
         fileMenu.add(exit);
         exit.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK));
-
         newSession.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK));
         loadSession.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
         saveSession.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
+        saveSessionAs.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
         closeSession.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.CTRL_DOWN_MASK));
 
