@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.app;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.Tetrad;
 import edu.cmu.tetradapp.ThemeUtils;
+import edu.cmu.tetradapp.editor.SaveScreenshot;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
@@ -119,7 +120,7 @@ final class TetradMenuBar extends JMenuBar {
         fileMenu.addSeparator();
         fileMenu.add(saveSessionAs);
         fileMenu.addSeparator();
-//      fileMenu.add(new SaveScreenshot(desktop, true, "Save Screenshot..."));
+      fileMenu.add(new SaveScreenshot(desktop, true, "Save Screenshot..."));
 
         JMenuItem menuItem = new JMenuItem("Save Session Workspace Image...");
         menuItem.addActionListener(e -> {

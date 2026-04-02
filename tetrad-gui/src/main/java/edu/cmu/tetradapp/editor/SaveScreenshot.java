@@ -35,7 +35,7 @@ import java.io.IOException;
  *
  * @author josephramsey
  */
-class SaveScreenshot extends AbstractAction {
+public class SaveScreenshot extends AbstractAction {
 
     /**
      * The component whose image is to be saved.
@@ -72,16 +72,27 @@ class SaveScreenshot extends AbstractAction {
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {
-        File file = EditorUtils.getSaveFile("image", "png", getComp(), false, "Save");
+        File file = EditorUtils.getSaveFile("image", "png", getComp(), false, "Save Screenshot");
 
-        // Create the image.
+        int scale = 2;
         Dimension size = getComp().getSize();
-        BufferedImage image = new BufferedImage(size.width, size.height,
-                BufferedImage.TYPE_INT_ARGB);
-        Graphics graphics = image.getGraphics();
-        getComp().paint(graphics);
 
-        // Write the image to file.
+        BufferedImage image = new BufferedImage(
+                size.width * scale,
+                size.height * scale,
+                BufferedImage.TYPE_INT_ARGB_PRE);
+
+        Graphics2D g2 = image.createGraphics();
+
+        // Rendering hints for quality upscaling.
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+
+        g2.scale(scale, scale);
+        getComp().paint(g2);
+        g2.dispose();
+
         try {
             ImageIO.write(image, "png", file);
         } catch (IOException e1) {
