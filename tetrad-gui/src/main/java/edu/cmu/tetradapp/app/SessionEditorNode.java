@@ -392,7 +392,7 @@ public final class SessionEditorNode extends DisplayNode {
         sessionEditorNode.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentMoved(ComponentEvent e) {
-                sessionEditorNode.getSimulationStudy().getSession().setSessionChanged(true);
+                sessionEditorNode.getSimulationStudy().getSession().setSessionUnsaved(true);
             }
         });
 
