@@ -114,6 +114,7 @@ public class ExpressionManager {
         descriptors.add(new AtanExpressionDescriptor());
 
         descriptors.add(new LogisticExpressionDescriptor());
+        descriptors.add(new ExpExpressionDescriptor());
         descriptors.add(new NaturalLogExpressionDescriptor());
         descriptors.add(new Log10ExpressionDescriptor());
         descriptors.add(new RoundExpressionDescriptor());
@@ -756,6 +757,33 @@ public class ExpressionManager {
                 public double evaluate(Context context) {
                     double t = getExpressions().getFirst().evaluate(context);
                     return 1.0 / (1.0 + TMath.exp(-t));
+                }
+            };
+        }
+    }
+
+    private static class ExpExpressionDescriptor extends AbstractExpressionDescriptor {
+        @Serial
+        private static final long serialVersionUID = 23L;
+
+
+        public ExpExpressionDescriptor() {
+            super("exp", "exp", Position.PREFIX, false);
+        }
+
+
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
+            if (expressions.length != 1) {
+                throw new ExpressionInitializationException("exp function must have one and only one" +
+                        " argument.");
+            }
+            return new AbstractExpression("exp", Position.PREFIX, expressions) {
+                @Serial
+                private static final long serialVersionUID = 23L;
+
+                public double evaluate(Context context) {
+                    double t = getExpressions().getFirst().evaluate(context);
+                    return TMath.exp(t);
                 }
             };
         }

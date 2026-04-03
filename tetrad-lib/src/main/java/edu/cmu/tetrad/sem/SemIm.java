@@ -2726,6 +2726,43 @@ public final class SemIm implements Im, ISemIm {
         return numRandomCalls;
     }
 
+//    /**
+//     * Calculates the total effect between two nodes.
+//     *
+//     * @param x the source node
+//     * @param y the target node
+//     * @return the total effect from node x to node y
+//     */
+//    public synchronized double getTotalEffect(Node x, Node y) {
+//        List<Node> parents = getSemPm().getGraph().getParents(x);
+//
+//        Map<Parameter, Double> paramValues = new HashMap<>();
+//
+//        for (Node parent : parents) {
+//            Parameter param = this.semPm.getCoefficientParameter(parent, x);
+//            paramValues.put(param, getParamValue(param));
+//            setParamValue(param, 0);
+//        }
+//
+//        Matrix impl = getImplCovar(!paramValues.isEmpty());
+//
+//        int i = variableNodes.indexOf(x);
+//        int j = variableNodes.indexOf(y);
+//
+//        double totalEffect = impl.get(i, j);
+//        totalEffect /= impl.get(i, i);
+//
+//        if (!paramValues.isEmpty()) {
+//            for (Parameter param : paramValues.keySet()) {
+//                setParamValue(param, paramValues.get(param));
+//            }
+//
+//            getImplCovar(true);
+//        }
+//
+//        return totalEffect;
+//    }
+
     /**
      * Calculates the total effect between two nodes.
      *
@@ -2734,33 +2771,48 @@ public final class SemIm implements Im, ISemIm {
      * @return the total effect from node x to node y
      */
     public synchronized double getTotalEffect(Node x, Node y) {
-        List<Node> parents = getSemPm().getGraph().getParents(x);
+        // Get the SEM graph with error terms hidden to avoid including error nodes as parents.
+        SemGraph graph = getSemPm().getGraph();
+        graph.setShowErrorTerms(false);
+        List<Node> parents = graph.getParents(x);
 
         Map<Parameter, Double> paramValues = new HashMap<>();
 
+        // Zero out all coefficient parameters for edges into X.
         for (Node parent : parents) {
+            if (parent.getNodeType() == NodeType.ERROR) continue;
             Parameter param = this.semPm.getCoefficientParameter(parent, x);
+            if (param == null) continue;
             paramValues.put(param, getParamValue(param));
             setParamValue(param, 0);
         }
 
-        Matrix impl = getImplCovar(!paramValues.isEmpty());
+        try {
+            // Recompute implied covariance under the interventional distribution do(X).
+            Matrix impl = getImplCovar(true);
 
-        int i = variableNodes.indexOf(x);
-        int j = variableNodes.indexOf(y);
+            int i = variableNodes.indexOf(x);
+            int j = variableNodes.indexOf(y);
 
-        double totalEffect = impl.get(i, j);
-        totalEffect /= impl.get(i, i);
+            if (i == -1) throw new IllegalArgumentException("Node x not found in variable nodes: " + x);
+            if (j == -1) throw new IllegalArgumentException("Node y not found in variable nodes: " + y);
 
-        if (!paramValues.isEmpty()) {
-            for (Parameter param : paramValues.keySet()) {
-                setParamValue(param, paramValues.get(param));
+            double varX = impl.get(i, i);
+            if (varX == 0) return 0.0;
+
+            // Total effect = Cov_do(X)(X, Y) / Var_do(X)
+            return impl.get(i, j) / varX;
+
+        } finally {
+            // Always restore original parameter values, even if an exception occurred.
+            if (!paramValues.isEmpty()) {
+                for (Map.Entry<Parameter, Double> entry : paramValues.entrySet()) {
+                    setParamValue(entry.getKey(), entry.getValue());
+                }
+                // Force recomputation to restore the implied covariance cache.
+                getImplCovar(true);
             }
-
-            getImplCovar(true);
         }
-
-        return totalEffect;
     }
 
     /**

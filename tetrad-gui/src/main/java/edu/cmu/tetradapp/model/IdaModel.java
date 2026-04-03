@@ -121,7 +121,7 @@ public class IdaModel implements SessionModel {
             }
         }
 
-        if (!(graphSource.getGraph().paths().isLegalPdag() || containsCircle)) {// graphSource.getGraph().paths().isLegalPag())) {
+        if (!(graphSource.getGraph().paths().isLegalCpdag() || containsCircle)) {// graphSource.getGraph().paths().isLegalPag())) {
             throw new IllegalArgumentException("Expecting an PDAG or PAG. (Could be a CPDAG or a DAG or a PAG.)");
         }
 
