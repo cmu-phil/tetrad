@@ -134,7 +134,10 @@ public class SemGraphWrapper implements GraphSource,
     public SemGraphWrapper(Parameters params) {
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             SemGraph semGraph = new SemGraph();
-            semGraph.setShowErrorTerms(false);
+
+            // This MUST be set to true for the sem graph to initialize correctly. Otherise
+            // the error nodes will not be initialized correctly. jdramsey 2026-4-2
+            semGraph.setShowErrorTerms(true);
             setSemGraph(semGraph);
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
 //            RandomUtil.getInstance().setSeed(new Date().getTime());

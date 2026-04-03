@@ -503,7 +503,10 @@ public final class SemGraphEditor extends JPanel
                 menuItem.setText("Hide Error Terms");
                 getSemGraph().setShowErrorTerms(true);
             }
+
+            getWorkbench().setGraph(getSemGraph());
         });
+
 
         graph.add(errorTerms);
         graph.addSeparator();
