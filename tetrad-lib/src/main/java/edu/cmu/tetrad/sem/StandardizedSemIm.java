@@ -406,7 +406,6 @@ public class StandardizedSemIm implements Simulator {
                     this.semGraph.getExogenous(edge.getNode2()));
         }
 
-
         if (!(this.edgeParameters.containsKey(edge))) {
             throw new IllegalArgumentException("Not an edge in this model: " + edge);
         }
@@ -420,6 +419,11 @@ public class StandardizedSemIm implements Simulator {
         }
 
         double value = initial;
+
+        // Null out caches so paramInBounds gets fresh calculations
+        this.edgeCoef = null;
+        this.errorCovar = null;
+        this.errorVariances = null;
 
         // look upward for a point that fails.
         double high = value + 1;
@@ -491,6 +495,12 @@ public class StandardizedSemIm implements Simulator {
         } else if (Edges.isBidirectedEdge(edge)) {
             this.edgeParameters.put(edge, initial);
         }
+
+        // Restore original value and caches
+        this.edgeParameters.put(edge, initial);
+        this.edgeCoef = null;
+        this.errorCovar = null;
+        this.errorVariances = null;
 
         return new ParameterRange(edge, value, rangeLow, rangeHigh);
     }
@@ -861,7 +871,7 @@ public class StandardizedSemIm implements Simulator {
         double otherVariance = 0;
 
         for (Node parent : parents) {
-            if (parent == error) continue;
+            if (parent.equals(error)) continue;  // <-- was ==
             double coef = getEdgeCoef(parent, child);
             otherVariance += coef * coef;
         }
@@ -906,7 +916,14 @@ public class StandardizedSemIm implements Simulator {
                         if (Edges.isBidirectedEdge(edge)) {
                             factor = this.edgeParameters.get(edge);
                         } else if (!this.edgeParameters.containsKey(edge)) {
-                            factor = 1;
+                            // This edge is in the graph but not a model parameter (e.g. error->child
+                            // edge, which has implicit coefficient 1)
+                            if (edge.getNode1().getNodeType() == NodeType.ERROR
+                                    || edge.getNode2().getNodeType() == NodeType.ERROR) {
+                                factor = 1;  // correct: error terms always have coef 1
+                            } else {
+                                throw new IllegalStateException("Non-error edge missing from edgeParameters: " + edge);
+                            }
                         } else if (this.semGraph.isParentOf(_node1, _node2)) {
                             factor = getEdgeCoef(_node1, _node2);
                         } else {
