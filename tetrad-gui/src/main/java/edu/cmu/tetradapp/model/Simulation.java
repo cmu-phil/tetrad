@@ -133,7 +133,6 @@ public class Simulation extends DataWrapper implements
             }
         }
 
-        // Resimulation whenever graph source changed and "Execute" button is clicked.
         createSimulation();
     }
 
