@@ -1131,7 +1131,7 @@ public final class SemIm implements Im, ISemIm {
     public double getParamValue(Node nodeA, Node nodeB) {
         Parameter parameter = null;
 
-        if (nodeA == nodeB) {
+        if (nodeA.equals(nodeB)) {
             parameter = getSemPm().getVarianceParameter(nodeA);
         }
 
@@ -1506,10 +1506,16 @@ public final class SemIm implements Im, ISemIm {
     }
 
     private SemIm independenceModel() {
-        Graph nullModel = new SemGraph(getSemPm().getGraph());
-        nullModel.removeEdges(nullModel.getEdges());
-        SemPm nullPm = new SemPm(nullModel);
-        CovarianceMatrix sampleCovar = new CovarianceMatrix(getMeasuredNodes(), getSampleCovar(), getSampleSize());
+        // Build the null model from a fresh EdgeListGraph to avoid SemGraph
+        // error-term inconsistencies when edges are removed post-construction.
+        SemGraph original = getSemPm().getGraph();
+        Graph nullGraph = new EdgeListGraph(original.getNodes());
+        SemGraph nullSemGraph = new SemGraph(nullGraph);
+        nullSemGraph.setShowErrorTerms(true);
+
+        SemPm nullPm = new SemPm(nullSemGraph);
+        CovarianceMatrix sampleCovar = new CovarianceMatrix(
+                getMeasuredNodes(), getSampleCovar(), getSampleSize());
 
         return new SemEstimator(sampleCovar, nullPm).estimate();
     }
@@ -1742,6 +1748,26 @@ public final class SemIm implements Im, ISemIm {
      */
     private DataSet simulateDataRecursive(int sampleSize, DataSet initialValues,
                                           boolean latentDataSaved) throws ParseException {
+
+        // Warn if non-Gaussian noise is requested but model has correlated errors,
+        // since off-diagonal errCovar entries are silently ignored in that path.
+        if (params.getInt(Params.CUSTOM_NOISE_OPTION) == 2) {
+            Matrix ec = errCovar();
+            boolean hasOffDiagCovar = false;
+            for (int i = 0; i < ec.getNumRows() && !hasOffDiagCovar; i++) {
+                for (int j = 0; j < ec.getNumColumns() && !hasOffDiagCovar; j++) {
+                    if (i != j && Math.abs(ec.get(i, j)) > 1e-10) {
+                        hasOffDiagCovar = true;
+                    }
+                }
+            }
+            if (hasOffDiagCovar) {
+                TetradLogger.getInstance().log("WARNING: simulateDataRecursive with non-Gaussian " +
+                        "noise ignores off-diagonal error covariances. Errors will be simulated " +
+                        "as independent despite correlated error terms in the model.");
+            }
+        }
+
         Sampler sampler = new ExpressionSampler(this.params.getString(Params.CUSTOM_NOISE_EXPRESSION));
 
         List<Node> variables = new LinkedList<>();
@@ -2326,6 +2352,10 @@ public final class SemIm implements Im, ISemIm {
                     try {
                         Parameter _parameter = oldSemIm.getSemPm().getParameter(_nodeA, _nodeB);
                         Parameter parameter = getSemPm().getParameter(nodeA, nodeB);
+
+                        if (parameter == null || _parameter == null) {
+                            continue;
+                        }
 
                         if (parameter.getType() != _parameter.getType()) {
                             continue;

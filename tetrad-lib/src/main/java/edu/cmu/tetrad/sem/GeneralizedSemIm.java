@@ -430,7 +430,7 @@ public class GeneralizedSemIm implements Im, Simulator {
             throw new IllegalArgumentException("No value recorded for '" + term + "'");
         };
 
-        List<Node> variableNodes = this.pm.getVariableNodes();
+        List<Node> variableNodes = this.pm.getGraph().getNodes();
         Map<Node, Integer> indices = new HashMap<>();
         for (int i = 0; i < variableNodes.size(); i++) indices.put(variableNodes.get(i), i);
         double[][] all = new double[variableNodes.size()][sampleSize];
