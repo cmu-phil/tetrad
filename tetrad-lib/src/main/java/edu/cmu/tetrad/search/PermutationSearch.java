@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphFactoryUtil;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
@@ -115,6 +116,7 @@ public class PermutationSearch {
     public PermutationSearch(SuborderSearch suborderSearch, List<Node> initialOrder) {
         this.suborderSearch = suborderSearch;
         List<Node> variables = suborderSearch.getVariables();
+
 
         if (initialOrder != null && !new HashSet<>(initialOrder).equals(new HashSet<>(variables))) {
             throw new IllegalArgumentException("Initial order must be a permutation of the variables.");
@@ -211,7 +213,9 @@ public class PermutationSearch {
         }
 
         if (cpDag) {
+//            return GraphTransforms.dagToCpdag(graph);
             MeekRules rules = new MeekRules();
+            rules.setRevertToUnshieldedColliders(true);
             if (knowledge != null) rules.setKnowledge(knowledge);
             rules.setVerbose(false);
             rules.orientImplied(graph); // setEndpoint/edge ops mirror automatically if replicating

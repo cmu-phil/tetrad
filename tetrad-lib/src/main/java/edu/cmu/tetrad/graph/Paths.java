@@ -161,10 +161,6 @@ public class Paths implements TetradSerializable {
 
         Graph _graph = new EdgeListGraph(this.graph);
 
-        if (!new HashSet<>(_initialOrder).equals(new HashSet<>(_graph.getNodes())))
-            throw new IllegalArgumentException("The initial order nodes must be the same as the graph nodes.");
-
-
         if (forward) Collections.reverse(_initialOrder);
         List<Node> newOrder = new ArrayList<>();
 

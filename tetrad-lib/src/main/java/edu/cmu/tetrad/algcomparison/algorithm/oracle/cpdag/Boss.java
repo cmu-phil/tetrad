@@ -33,6 +33,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.Score;
@@ -124,6 +125,7 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         List<Node> initialOder = null;
 
         if (initialGraph != null) {
+            initialGraph = GraphUtils.replaceNodes(initialGraph, dataModel.getVariables());
             initialOder = initialGraph.paths().getValidOrder(initialGraph.getNodes(), false);
         }
 
