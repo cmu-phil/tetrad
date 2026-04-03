@@ -299,9 +299,9 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.BayesImEditor
                 </editor-class>
-                <params-editor-class>
-                    edu.cmu.tetradapp.editor.BayesImParamsEditor
-                </params-editor-class>
+<!--                <params-editor-class>-->
+<!--                    edu.cmu.tetradapp.editor.BayesImParamsEditor-->
+<!--                </params-editor-class>-->
             </model>
             <model name="Dirichlet Bayes Instantiated Model"
                    acronym="Dir Bayes IM" help="dirichlet_bayes_im">
