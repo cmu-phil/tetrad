@@ -322,12 +322,6 @@ public class Simulation extends DataWrapper implements
      * @param parameters  the parameters for the simulation
      */
     public Simulation(DataWrapper dataWrapper, Parameters parameters) {
-//        if (this.simulation == null) {
-//            this.simulation = new LinearFisherModel(new RandomForward(), dataWrapper.getDataModelList());
-//            this.parameters = parameters;
-//            this.fixedGraph = false;
-//            this.fixedSimulation = false;
-
         inputGraph = new RandomForward().createGraph(parameters);
         inputData = (DataSet) dataWrapper.getDataModelList().getFirst();
 
@@ -339,18 +333,10 @@ public class Simulation extends DataWrapper implements
         this.parameters = parameters;
         this.fixedGraph = true;
         this.fixedSimulation = false;
-//        }
     }
 
     public Simulation(DataWrapper dataWrapper, GraphWrapper graph, Parameters parameters)
             throws ParseException {
-//        if (this.simulation == null) {
-//            this.simulation = new LinearFisherModel(new RandomForward(), dataWrapper.getDataModelList());
-//            this.parameters = parameters;
-//            this.fixedGraph = false;
-//            this.fixedSimulation = false;
-//        }
-
         inputGraph = graph.getGraph();
         inputData = (DataSet) dataWrapper.getDataModelList().getFirst();
 
