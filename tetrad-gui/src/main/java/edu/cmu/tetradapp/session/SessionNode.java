@@ -24,6 +24,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetradapp.model.Simulation;
 
 import javax.swing.*;
 import java.beans.PropertyChangeListener;
@@ -1628,6 +1629,34 @@ public class SessionNode implements Node {
         if (!(SessionModel.class.isAssignableFrom(modelClass))) {
             throw new ClassCastException(
                     "Model class must implement SessionModel: " + modelClass);
+        }
+
+        // If the model class is a Simulation and there is exactly one parent
+        // that is not itself a Simulation, use that parent's parameters instead
+        // of this node's parameters.
+        if (Simulation.class.isAssignableFrom(modelClass)) {
+            Parameters parentParams = null;
+            int nonSimulationParentCount = 0;
+
+            for (SessionNode parent : this.parents) {
+                Object parentModel = parent.getModel();
+                if (parentModel != null && !(parentModel instanceof Simulation)) {
+                    nonSimulationParentCount++;
+                    // Get the parameters the parent is actually using for its current model.
+                    if (parent.getLastModelClass() != null) {
+                        Parameters p = parent.getParam(parent.getLastModelClass());
+                        if (p != null) {
+                            parentParams = p;
+                        }
+                    }
+                }
+            }
+
+            if (nonSimulationParentCount == 1 && parentParams != null) {
+                // Replace any existing Parameters in models with the parent's parameters.
+                models.removeIf(o -> o instanceof Parameters);
+                models.add(parentParams);
+            }
         }
 
         // Try to find a constructor of the model class that exactly

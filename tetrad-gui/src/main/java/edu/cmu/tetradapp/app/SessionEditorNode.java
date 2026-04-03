@@ -1086,6 +1086,49 @@ public final class SessionEditorNode extends DisplayNode {
      * @param parentModels an array of {@link java.lang.Object} objects
      * @return a boolean
      */
+//    public boolean editParameters(Class<?> modelClass, Parameters params,
+//                                  Object[] parentModels) {
+//        if (parentModels == null) {
+//            throw new NullPointerException("Parent models array is null.");
+//        }
+//
+//        if (params == null) {
+//            throw new NullPointerException("Parameters cannot be null.");
+//        }
+//
+//        ParameterEditor paramEditor = getParameterEditor(modelClass);
+//
+//        if (paramEditor == null) {
+//            // if no editor, then consider the params "edited".
+//            return true;
+//        } else {
+//            paramEditor.setParams(params);
+//            paramEditor.setParentModels(parentModels);
+//        }
+//        // If a finalizing editor and a dialog then let it handle things on itself onw.
+//        if (paramEditor instanceof FinalizingParameterEditor e && paramEditor instanceof JDialog) {
+//            e.setup();
+//            return e.finalizeEdit();
+//        }
+//        // wrap editor and deal with response.
+//        paramEditor.setup();
+//        JComponent editor = (JComponent) paramEditor;
+//        SessionNodeWrapper nodeWrapper = (SessionNodeWrapper) getModelNode();
+//        String buttonType = nodeWrapper.getButtonType();
+//        editor.setName(buttonType + " Parameter Editor");
+//        Component centeringComp = this;
+//
+//        int ret = JOptionPane.showOptionDialog(centeringComp, editor,
+//                editor.getName(), JOptionPane.OK_CANCEL_OPTION,
+//                JOptionPane.PLAIN_MESSAGE, null,
+//                null, null);
+//
+//        // if finalizing editor, then deal with specially.
+//        return ret == JOptionPane.OK_OPTION && (!(paramEditor instanceof FinalizingParameterEditor)
+//                                                || ((FinalizingParameterEditor) paramEditor).finalizeEdit());
+//
+//    }
+
     public boolean editParameters(Class<?> modelClass, Parameters params,
                                   Object[] parentModels) {
         if (parentModels == null) {
@@ -1099,18 +1142,17 @@ public final class SessionEditorNode extends DisplayNode {
         ParameterEditor paramEditor = getParameterEditor(modelClass);
 
         if (paramEditor == null) {
-            // if no editor, then consider the params "edited".
             return true;
         } else {
             paramEditor.setParams(params);
             paramEditor.setParentModels(parentModels);
         }
-        // If a finalizing editor and a dialog then let it handle things on itself onw.
+
         if (paramEditor instanceof FinalizingParameterEditor e && paramEditor instanceof JDialog) {
             e.setup();
             return e.finalizeEdit();
         }
-        // wrap editor and deal with response.
+
         paramEditor.setup();
         JComponent editor = (JComponent) paramEditor;
         SessionNodeWrapper nodeWrapper = (SessionNodeWrapper) getModelNode();
@@ -1123,10 +1165,8 @@ public final class SessionEditorNode extends DisplayNode {
                 JOptionPane.PLAIN_MESSAGE, null,
                 null, null);
 
-        // if finalizing editor, then deal with specially.
         return ret == JOptionPane.OK_OPTION && (!(paramEditor instanceof FinalizingParameterEditor)
-                                                || ((FinalizingParameterEditor) paramEditor).finalizeEdit());
-
+                || ((FinalizingParameterEditor) paramEditor).finalizeEdit());
     }
 
     /**
