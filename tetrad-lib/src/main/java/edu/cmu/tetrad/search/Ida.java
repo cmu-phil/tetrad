@@ -213,7 +213,9 @@ public class Ida {
     }
 
     private boolean isLegalParentSet(List<Node> parents, List<Node> siblingsChoice) {
-        // Your consistency checks: avoid illegal parent-sets.
+        // Per Lemma 3.1 (Maathuis et al. 2009): G^{S->i} is locally valid iff
+        // no two chosen siblings are adjacent (which would create a new v-structure
+        // with Xi as collider). No condition on parent-sibling adjacency is required.
         if (siblingsChoice.size() > 1) {
             ChoiceGenerator gen2 = new ChoiceGenerator(siblingsChoice.size(), 2);
             int[] choice2;
@@ -224,19 +226,12 @@ public class Ida {
             }
         }
 
-        if (!siblingsChoice.isEmpty()) {
-            for (Node p : parents) {
-                for (Node s : siblingsChoice) {
-                    if (this.cpdag.isAdjacentTo(p, s)) return false;
-                }
-            }
-        }
         return true;
     }
 
     private double getRegularIdaBeta(Node x, Node y, List<Node> parents, List<Node> siblingsChoice) {
-        // === Original (parent-based) IDA ===
-        Set<Node> _regressors = new HashSet<>();
+        // Use LinkedHashSet to preserve insertion order so x remains first.
+        Set<Node> _regressors = new LinkedHashSet<>();
         _regressors.add(x);
         _regressors.addAll(parents);
         _regressors.addAll(siblingsChoice);
@@ -355,7 +350,9 @@ public class Ida {
         for (Node x : this.possibleCauses) {
             if (!(this.cpdag.containsNode(x) && this.cpdag.containsNode(y))) continue;
             LinkedList<Double> effects = getTotalEffects(x, y);
-            minEffects.put(x, effects.getFirst());
+            if (!effects.isEmpty()) {
+                minEffects.put(x, effects.getFirst());
+            }
         }
 
         return minEffects;
@@ -373,28 +370,57 @@ public class Ida {
      * @throws RuntimeException If a singularity is encountered during the regression process.
      */
     private double getBeta(List<Node> regressors, Node parent, Node child) {
-        if (!regressors.contains(parent))
+        if (!regressors.contains(parent)) {
             throw new IllegalArgumentException("The regressors must contain the parent node.");
+        }
 
         try {
-            int xIndex = regressors.indexOf(parent);
-            int yIndex = this.nodeIndices.get(child.getName());
-            int[] xIndices = new int[regressors.size()];
-            for (int i = 0; i < regressors.size(); i++) xIndices[i] = this.nodeIndices.get(regressors.get(i).getName());
+            // Build indices from covariance matrix variable ordering, not graph node ordering.
+            List<Node> covVars = this.allCovariances.getVariables();
+            Map<String, Integer> covIndices = new HashMap<>();
+            for (int i = 0; i < covVars.size(); i++) {
+                covIndices.put(covVars.get(i).getName(), i);
+            }
 
+            // Position of parent in regressors list -- indexes into bStar.
+            int parentIndexInRegressors = regressors.indexOf(parent);
+
+            // Index of child in the covariance matrix.
+            Integer yIndex = covIndices.get(child.getName());
+            if (yIndex == null) {
+                throw new IllegalArgumentException("Child node not found in covariance matrix: "
+                        + child.getName());
+            }
+
+            // Indices of regressors in the covariance matrix.
+            int[] xIndices = new int[regressors.size()];
+            for (int i = 0; i < regressors.size(); i++) {
+                Integer idx = covIndices.get(regressors.get(i).getName());
+                if (idx == null) {
+                    throw new IllegalArgumentException("Regressor not found in covariance matrix: "
+                            + regressors.get(i).getName());
+                }
+                xIndices[i] = idx;
+            }
+
+            // bStar = Σ_XX^{-1} Σ_XY (Maathuis et al. 2009, eq. 4)
             Matrix rX = this.allCovariances.getSelection(xIndices, xIndices);
             Matrix rY = this.allCovariances.getSelection(xIndices, new int[]{yIndex});
-            Matrix bStar = null;
 
+            Matrix bStar;
             try {
                 bStar = rX.inverse().times(rY);
             } catch (SingularMatrixException e) {
-                TetradLogger.getInstance().log("Singularity encountered when regressing " + LogUtilsSearch.getScoreFact(child, regressors));
+                TetradLogger.getInstance().log("Singularity encountered when regressing "
+                        + LogUtilsSearch.getScoreFact(child, regressors));
+                return 0.0;
             }
 
-            return bStar != null ? bStar.get(xIndex, 0) : 0.0;
+            return bStar.get(parentIndexInRegressors, 0);
+
         } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singularity encountered when regressing " + LogUtilsSearch.getScoreFact(child, regressors));
+            throw new RuntimeException("Singularity encountered when regressing "
+                    + LogUtilsSearch.getScoreFact(child, regressors));
         }
     }
 

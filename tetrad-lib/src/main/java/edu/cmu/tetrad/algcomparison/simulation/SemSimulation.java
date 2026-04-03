@@ -150,7 +150,9 @@ public class SemSimulation implements Simulation {
             dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
         }
 
-        dataSet = DataTransforms.restrictToMeasured(dataSet);
+        if (!parameters.getBoolean(Params.SAVE_LATENT_VARS)) {
+            dataSet = DataTransforms.restrictToMeasured(dataSet);
+        }
 
         return dataSet;
     }
@@ -211,7 +213,7 @@ public class SemSimulation implements Simulation {
 
             this.graphs.add(graph);
             this.ims.add(im);
-            this.dataSets.add(DataTransforms.restrictToMeasured(dataSet));
+            this.dataSets.add(dataSet);
         }
     }
 
@@ -298,7 +300,7 @@ public class SemSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-        if (this.im == null) {
+        if (this.im != null) {
             parameters.addAll(SemIm.getParameterNames());
         }
 
@@ -325,19 +327,19 @@ public class SemSimulation implements Simulation {
         return getClass();
     }
 
-    /**
-     * Simulates a data set based on the given SemIm and Parameters.
-     *
-     * @param im         the SemIm object used for simulation
-     * @param parameters the parameters to use in the simulation
-     * @return a DataSet object representing the simulated data
-     */
-    private DataSet simulate(SemIm im, Parameters parameters) {
-        try {
-            return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    /**
+//     * Simulates a data set based on the given SemIm and Parameters.
+//     *
+//     * @param im         the SemIm object used for simulation
+//     * @param parameters the parameters to use in the simulation
+//     * @return a DataSet object representing the simulated data
+//     */
+//    private DataSet simulate(SemIm im, Parameters parameters) {
+//        try {
+//            return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
+//        } catch (ParseException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 }
 
