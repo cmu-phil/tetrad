@@ -125,7 +125,7 @@ public class StandardizedSemIm implements Simulator {
      *
      * @param im         The SEM IM that the freeParameters will be initialized from.
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
-     * @throws ParseException
+     * @throws ParseException if any.
      */
     public StandardizedSemIm(SemIm im, Parameters parameters) throws ParseException {
         this(im, Initialization.CALCULATE_FROM_SEM, parameters);
@@ -137,7 +137,7 @@ public class StandardizedSemIm implements Simulator {
      * @param im             Stop asking me for these things! The given SEM IM!!!
      * @param initialization CALCULATE_FROM_SEM if the initial values will be calculated from the given SEM IM;
      * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
-     * @throws ParseException
+     * @throws ParseException if any.
      */
     public StandardizedSemIm(SemIm im, Initialization initialization, Parameters parameters) throws ParseException {
         if (im.getSemPm().getGraph().isTimeLagModel()) {

@@ -60,6 +60,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public final class SimulationStudyTsbi {
 
+    /**
+     * Constructs a new instance of the SimulationStudyTsbi class.
+     * This class is designed for conducting simulation studies,
+     * allowing users to manage study settings such as the number
+     * of replications and to produce summarized results for different
+     * simulation conditions.
+     */
+    public SimulationStudyTsbi() {}
+
     // -----------------------------------------------------------------------
     // Study configuration
     // -----------------------------------------------------------------------
