@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -129,14 +129,11 @@ public final class Dag implements Graph {
     }
 
     /**
-     * Adds a bidirectional edge between two nodes.
-     *
-     * @param node1 the first node to connect (a {@link Node} object)
-     * @param node2 the second node to connect (a {@link Node} object)
-     * @return true if the bidirectional edge was successfully added, false otherwise
+     * Bidirected edges are not allowed in DAGs.
+     * @throws UnsupportedOperationException always, since bidirected edges are disallowed in DAGs
      */
     public boolean addBidirectedEdge(Node node1, Node node2) {
-        return this.graph.addBidirectedEdge(node1, node2);
+        throw new UnsupportedOperationException("Disallowed for a DAG.");
     }
 
     /**
@@ -962,20 +959,20 @@ public final class Dag implements Graph {
     public void removeTriplesNotInGraph() {
         for (Triple triple : new HashSet<>(this.ambiguousTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY())
-                || !containsNode(triple.getZ())) {
+                    || !containsNode(triple.getZ())) {
                 this.ambiguousTriples.remove(triple);
                 continue;
             }
 
             if (!isAdjacentTo(triple.getX(), triple.getY())
-                || !isAdjacentTo(triple.getY(), triple.getZ())) {
+                    || !isAdjacentTo(triple.getY(), triple.getZ())) {
                 this.ambiguousTriples.remove(triple);
             }
         }
 
         for (Triple triple : new HashSet<>(this.underLineTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY())
-                || !containsNode(triple.getZ())) {
+                    || !containsNode(triple.getZ())) {
                 this.underLineTriples.remove(triple);
                 continue;
             }

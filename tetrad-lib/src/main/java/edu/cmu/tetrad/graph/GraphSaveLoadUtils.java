@@ -85,10 +85,9 @@ public class GraphSaveLoadUtils {
         try {
             Reader in1 = new FileReader(file);
             return readerToGraphTxt(in1);
-
         } catch (Exception e) {
             e.printStackTrace();
-            throw new IllegalStateException();
+            throw new RuntimeException(e);
         }
     }
 

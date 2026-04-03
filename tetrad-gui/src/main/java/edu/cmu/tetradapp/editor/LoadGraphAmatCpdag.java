@@ -88,7 +88,14 @@ class LoadGraphAmatCpdag extends AbstractAction {
 
         Preferences.userRoot().put("fileSaveLocation", file.getParent());
 
-        Graph graph = GraphSaveLoadUtils.loadGraphAmatCpdag(file);
+        Graph graph = null;
+        try {
+            graph = GraphSaveLoadUtils.loadGraphAmatCpdag(file);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog((Component) this.graphEditable,
+                    "Error loading graph: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         LayoutUtil.defaultLayout(graph);
         this.graphEditable.setGraph(graph);
     }

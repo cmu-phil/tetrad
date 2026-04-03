@@ -89,7 +89,14 @@ public class LoadGraphJson extends AbstractAction {
 
         Preferences.userRoot().put("fileSaveLocation", file.getParent());
 
-        Graph graph = GraphSaveLoadUtils.loadGraphJson(file);
+        Graph graph = null;
+        try {
+            graph = GraphSaveLoadUtils.loadGraphJson(file);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog((Component) this.graphEditable,
+                    "Error loading graph: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         // The saved node positions should be used instead of just arranging the
         // nodes in a circle.

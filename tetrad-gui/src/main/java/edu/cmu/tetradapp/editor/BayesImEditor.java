@@ -133,7 +133,7 @@ public class BayesImEditor extends JPanel {
         load.add(new LoadBayesImXmlAction(this.wrapper, this));
         load.add(new LoadBayesImBifAction(this.wrapper, this));
         load.add(new LoadBayesImXsdlXmlAction(this.wrapper, this));
-        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
+//        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
         setLayout(new BorderLayout());
         panel.add(menuBar, BorderLayout.NORTH);

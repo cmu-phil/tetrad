@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -120,7 +120,7 @@ final class TetradMenuBar extends JMenuBar {
         fileMenu.addSeparator();
         fileMenu.add(saveSessionAs);
         fileMenu.addSeparator();
-      fileMenu.add(new SaveScreenshot(desktop, true, "Save Screenshot..."));
+//      fileMenu.add(new SaveScreenshot(desktop, true, "Save Screenshot..."));
 
         JMenuItem menuItem = new JMenuItem("Save Session Workspace Image...");
         menuItem.addActionListener(e -> {
@@ -256,13 +256,13 @@ final class TetradMenuBar extends JMenuBar {
 
             // Create a clickable link
             JLabel label = new JLabel("<html>" +
-                                      "<p>Please submit any issues you may have,</p>" +
-                                      "<p>whether bug reports, general encouragement,</p>" +
-                                      "<p>or feature requests, to our issues list. We'd</p>" +
-                                      "<p>love to hear from you as we continue to</p>" +
-                                      "<p>improve the Tetrad tools!</p>" +
-                                      "<p><center><a href=\"" + url + "\">" + url + "</a></center>" +
-                                      "</html>");
+                    "<p>Please submit any issues you may have,</p>" +
+                    "<p>whether bug reports, general encouragement,</p>" +
+                    "<p>or feature requests, to our issues list. We'd</p>" +
+                    "<p>love to hear from you as we continue to</p>" +
+                    "<p>improve the Tetrad tools!</p>" +
+                    "<p><center><a href=\"" + url + "\">" + url + "</a></center>" +
+                    "</html>");
             label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             label.setFont(label.getFont().deriveFont(Font.PLAIN, 14));
             label.addMouseListener(new MouseAdapter() {

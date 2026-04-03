@@ -513,16 +513,20 @@ public final class DagEditor extends JPanel
 
 //                    RandomUtil.getInstance().setSeed(new Date().getTime());
                     Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), DagEditor.this.parameters);
+//
+//                    boolean addCycles = DagEditor.this.parameters.getBoolean("randomAddCycles", false);
+//
+//                    if (addCycles) {
+//                        int newGraphNumMeasuredNodes = DagEditor.this.parameters.getInt("newGraphNumMeasuredNodes", 10);
+//                        int newGraphNumEdges = DagEditor.this.parameters.getInt("newGraphNumEdges", 10);
+//                        graph1 = RandomGraph.randomCyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
+//                    }
 
-                    boolean addCycles = DagEditor.this.parameters.getBoolean("randomAddCycles", false);
-
-                    if (addCycles) {
-                        int newGraphNumMeasuredNodes = DagEditor.this.parameters.getInt("newGraphNumMeasuredNodes", 10);
-                        int newGraphNumEdges = DagEditor.this.parameters.getInt("newGraphNumEdges", 10);
-                        graph1 = RandomGraph.randomCyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
+                    try {
+                        getWorkbench().setGraph(new Dag(graph1));
+                    } catch (IllegalArgumentException ex) {
+                        throw new RuntimeException("Not a DAG:");
                     }
-
-                    getWorkbench().setGraph(graph1);
                 }
             });
         });
