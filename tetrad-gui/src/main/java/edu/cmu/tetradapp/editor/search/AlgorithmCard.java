@@ -236,7 +236,7 @@ public class AlgorithmCard extends JPanel {
         initComponents();
         initListeners();
 
-        resetAllSettings();
+//        resetAllSettings();
 
         this.algorithmList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
@@ -244,14 +244,14 @@ public class AlgorithmCard extends JPanel {
     private void initComponents() {
         initDescriptionTextAreas();
 
-        JButton resetSettingsBtn = new JButton("Reset All Settings");
-        resetSettingsBtn.addActionListener(e -> {
-            resetAllSettings();
-        });
+//        JButton resetSettingsBtn = new JButton("Reset All Settings");
+//        resetSettingsBtn.addActionListener(e -> {
+//            resetAllSettings();
+//        });
 
         JPanel westMainSouthPanel = new JPanel(new BorderLayout(0, 10));
         westMainSouthPanel.add(new TestAndScorePanel(), BorderLayout.CENTER);
-        westMainSouthPanel.add(resetSettingsBtn, BorderLayout.SOUTH);
+//        westMainSouthPanel.add(resetSettingsBtn, BorderLayout.SOUTH);
 
         JPanel westMainWestPanel = new JPanel(new BorderLayout(0, 10));
         westMainWestPanel.add(new AlgorithmFilterPanel(), BorderLayout.CENTER);
@@ -1056,13 +1056,13 @@ public class AlgorithmCard extends JPanel {
         refreshScoreList();
     }
 
-    private void resetAllSettings() {
-        this.defaultIndTestModels.clear();
-        this.defaultScoreModels.clear();
-
-        Map<String, Object> remembered = this.algorithmRunner.getUserAlgoSelections();
-        restoreUserAlgoSelections(remembered);
-    }
+//    private void resetAllSettings() {
+//        this.defaultIndTestModels.clear();
+//        this.defaultScoreModels.clear();
+//
+//        Map<String, Object> remembered = this.algorithmRunner.getUserAlgoSelections();
+//        restoreUserAlgoSelections(remembered);
+//    }
 
     private void setAlgorithmDescription() {
         AlgorithmModel model = this.algorithmList.getSelectedValue();
