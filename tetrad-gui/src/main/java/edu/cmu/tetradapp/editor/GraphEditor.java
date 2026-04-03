@@ -275,10 +275,9 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                     Graph targetGraph = getWorkbench().getGraph();
 
                     SwingUtilities.invokeLater(() -> {
-                        graphWrapper.setGraph(targetGraph);
+                        graphWrapper.setGraph(new EdgeListGraph(targetGraph));
+                        firePropertyChange("modelChanged", null, null);
                     });
-
-                    firePropertyChange("modelChanged", null, null);
                 }
             } else if ("modelChanged".equals(propertyName)) {
                 firePropertyChange("modelChanged", null, null);

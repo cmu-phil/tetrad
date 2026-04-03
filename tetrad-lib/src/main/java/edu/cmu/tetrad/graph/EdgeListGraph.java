@@ -154,6 +154,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
                 ancillaryGraphs.put(name, ((EdgeListGraph) graph).ancillaryGraphs.get(name));
             }
         }
+
+        namesHash.clear();
+
+        for (Node node : this.nodes) {
+            this.namesHash.put(node.getName(), node);
+        }
     }
 
     /**
@@ -1414,12 +1420,24 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         node.setName(newName);
         this.namesHash.put(newName, node);
 
-        // Rebuild edgeLists to fix keys invalidated by the name change
+        // Rebuild all hash-based structures that use Node (or objects
+        // containing Node) as keys, since the node's hash may have changed.
         Map<Node, Set<Edge>> newEdgeLists = new HashMap<>();
         for (Map.Entry<Node, Set<Edge>> entry : this.edgeLists.entrySet()) {
             newEdgeLists.put(entry.getKey(), entry.getValue());
         }
         this.edgeLists = newEdgeLists;
+
+        Set<Edge> edgesCopy = new HashSet<>(this.edgesSet);
+        this.edgesSet.clear();
+        this.edgesSet.addAll(edgesCopy);
+
+        this.underLineTriples = new HashSet<>(this.underLineTriples);
+        this.dottedUnderLineTriples = new HashSet<>(this.dottedUnderLineTriples);
+        this.ambiguousTriples = new HashSet<>(this.ambiguousTriples);
+
+        this.ancestorCache.clear();
+        this.potentiallyDirectedPathCache.clear();
 
         getPcs().firePropertyChange("nodeRenamed", name, newName);
     }
