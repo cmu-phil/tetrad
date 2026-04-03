@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphFactoryUtil;
-import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
@@ -96,33 +95,17 @@ public class PermutationSearch {
     private boolean replicatingGraph = false;
 
     /**
-     * Constructs a new PermutationSearch instance using the specified SuborderSearch.
-     *
-     * @param suborderSearch The SuborderSearch instance used to perform suborder searches
-     *                       as part of the permutation search process.
-     */
-    public PermutationSearch(SuborderSearch suborderSearch) {
-        this(suborderSearch, null);
-    }
-
-    /**
      * Constructs a new PermutationSearch using the given SuborderSearch.
      *
      * @param suborderSearch The SuborderSearch (see).
-     * @param initialOrder   The initial order of nodes for the search, or null if the data order is to be
-     *                       used.
      * @see SuborderSearch
      */
-    public PermutationSearch(SuborderSearch suborderSearch, List<Node> initialOrder) {
+    public PermutationSearch(SuborderSearch suborderSearch) {
         this.suborderSearch = suborderSearch;
         List<Node> variables = suborderSearch.getVariables();
 
 
-        if (initialOrder != null && !new HashSet<>(initialOrder).equals(new HashSet<>(variables))) {
-            throw new IllegalArgumentException("Initial order must be a permutation of the variables.");
-        }
-
-        this.variables = initialOrder != null ? initialOrder : variables;
+        this.variables = variables;
 
         this.order = new ArrayList<>();
         this.gsts = new HashMap<>();

@@ -1422,7 +1422,6 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.edgeLists = newEdgeLists;
 
         getPcs().firePropertyChange("nodeRenamed", name, newName);
-        getPcs().firePropertyChange("modelChanged", node, node);
     }
 
     /**

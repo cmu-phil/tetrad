@@ -33,8 +33,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -122,19 +120,12 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
 
         edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(myScore);
 
-        List<Node> initialOder = null;
-
-        if (initialGraph != null) {
-            initialGraph = GraphUtils.replaceNodes(initialGraph, dataModel.getVariables());
-            initialOder = initialGraph.paths().getValidOrder(initialGraph.getNodes(), false);
-        }
-
         boss.setUseBes(parameters.getBoolean(Params.USE_BES));
         boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         boss.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         boss.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        PermutationSearch permutationSearch = new PermutationSearch(boss, initialOder);
+        PermutationSearch permutationSearch = new PermutationSearch(boss);
         permutationSearch.setKnowledge(this.knowledge);
         permutationSearch.setSeed(seed);
         permutationSearch.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));

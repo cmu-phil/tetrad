@@ -236,7 +236,7 @@ public class AlgorithmCard extends JPanel {
         initComponents();
         initListeners();
 
-//        resetAllSettings();
+        resetAllSettings();
 
         this.algorithmList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
@@ -1056,13 +1056,13 @@ public class AlgorithmCard extends JPanel {
         refreshScoreList();
     }
 
-//    private void resetAllSettings() {
-//        this.defaultIndTestModels.clear();
-//        this.defaultScoreModels.clear();
-//
-//        Map<String, Object> remembered = this.algorithmRunner.getUserAlgoSelections();
-//        restoreUserAlgoSelections(remembered);
-//    }
+    private void resetAllSettings() {
+        this.defaultIndTestModels.clear();
+        this.defaultScoreModels.clear();
+
+        Map<String, Object> remembered = this.algorithmRunner.getUserAlgoSelections();
+        restoreUserAlgoSelections(remembered);
+    }
 
     private void setAlgorithmDescription() {
         AlgorithmModel model = this.algorithmList.getSelectedValue();
