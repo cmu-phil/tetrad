@@ -24,6 +24,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.Simulation;
 
 import javax.swing.*;

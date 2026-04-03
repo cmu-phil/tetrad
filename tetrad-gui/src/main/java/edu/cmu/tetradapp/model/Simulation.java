@@ -29,6 +29,7 @@ import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -109,29 +110,31 @@ public class Simulation extends DataWrapper implements
      * @param parameters  the parameters to be used in the simulation
      */
     public Simulation(GraphSource graphSource, Parameters parameters) throws ParseException {
-        if (graphSource instanceof Simulation _simulation) {
-            this.simulation = _simulation.simulation;
-            this.parameters = new Parameters(_simulation.parameters);
-            this.name = _simulation.name + ".copy";
-            this.fixedGraph = _simulation.fixedGraph;
-            this.fixedSimulation = _simulation.fixedSimulation;
-            createSimulation(); // The suggestion is that you shouldn't simulate before the user clicks 'simulate'
-        } else {
-            this.fixedGraph = true;
-            this.parameters = parameters;
-            this.fixedSimulation = false;
-            setSourceGraph(graphSource.getGraph());
+        this.fixedGraph = true;
 
-            if (parameters.getParametersNames().contains("simulationsDropdownPreference")) {
-                String simulationType = String.valueOf(parameters.getValues("simulationsDropdownPreference")[0]);
-                this.simulation = SimulationUtils.create(simulationType, new SingleGraph(graphSource.getGraph()));
+        this.parameters = parameters;
+        this.fixedSimulation = false;
+        setSourceGraph(graphSource.getGraph());
 
-                // Resimulation whenever graph source changed and "Execute" button is clicked.
-                createSimulation();
-            } else {
-                this.simulation = new BayesNetSimulation(new SingleGraph(graphSource.getGraph()));
+        String simulationType = String.valueOf(parameters.getValues("simulationsDropdownPreference")[0]);
+
+        try {
+            this.simulation = SimulationUtils.create(simulationType, new SingleGraph(graphSource.getGraph()));
+        } catch (Exception e) {
+            this.simulation = SimulationUtils.create(SimulationTypes.STRUCTURAL_EQUATION_MODEL, new SingleGraph(graphSource.getGraph()));
+        }
+
+        this.simulation.createData(parameters, true);
+        List<String> parameters1 = this.simulation.getParameters();
+
+        for (String key : parameters1) {
+            if (this.parameters.get(key) == null) {
+                this.parameters.set(key, ParamDescriptions.getInstance().get(key).getDefaultValue());
             }
         }
+
+        // Resimulation whenever graph source changed and "Execute" button is clicked.
+        createSimulation();
     }
 
     /**
