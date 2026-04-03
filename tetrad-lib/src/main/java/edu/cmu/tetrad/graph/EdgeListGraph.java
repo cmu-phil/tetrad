@@ -1413,6 +1413,16 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.namesHash.remove(name);
         node.setName(newName);
         this.namesHash.put(newName, node);
+
+        // Rebuild edgeLists to fix keys invalidated by the name change
+        Map<Node, Set<Edge>> newEdgeLists = new HashMap<>();
+        for (Map.Entry<Node, Set<Edge>> entry : this.edgeLists.entrySet()) {
+            newEdgeLists.put(entry.getKey(), entry.getValue());
+        }
+        this.edgeLists = newEdgeLists;
+
+        getPcs().firePropertyChange("nodeRenamed", name, newName);
+        getPcs().firePropertyChange("modelChanged", node, node);
     }
 
     /**

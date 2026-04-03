@@ -67,7 +67,8 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             "graph",
             "edgeAdded",
             "edgeRemoved",
-            "nodeRemoved"
+            "nodeRemoved",
+            "nodeRenamed"
     ));
 
     /**
