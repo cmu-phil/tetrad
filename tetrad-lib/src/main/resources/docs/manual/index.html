@@ -3351,6 +3351,221 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     </div>
 
+    <h3>The Resricted BOSS Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="r-boss">
+        <p>Implements a restricted version of the BOSS (Best Order Score Search) algorithm that focuses search on a set
+            of target variables and their immediate causes.
+            The algorithm proceeds in two stages. In the first stage, BOSS is run on the full dataset with the target
+            variables placed in a later tier than all other variables, with edges forbidden within the first tier. This
+            uses the Grow-Shrink Tree (GST) structure from the resulting search to identify the "first layer" of each
+            target — that is, the variables that are direct or proximal causes of the targets.
+            In the second stage, the data is restricted to just the target variables and their first-layer variables,
+            and BOSS is run again on this reduced dataset, once more with the target variables in a later tier. The
+            resulting graph is then trimmed according to the specified trimming style to yield the final output.
+            This two-stage approach is more computationally efficient than running BOSS on the full variable set when
+            only the relationships among a small set of target variables and their causes are of interest.</p>
+
+    </div>
+
+    <h3>The Resricted PCMCI Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="pcmci">
+        <p>PCMCI (Runge et al.) — minimal, time-series implementation with lagged edges only (τ≥1).
+            Pipeline:
+            Build lagged variables up to maxLag.
+            Parent pre-selection per node V: PC1-like elimination using only the strict past of V.
+            MCI step: keep Xt-τ → Yt iff X ¬⊥ Y | Pa(Y)\{X} ∪ Pa(X).
+            Add directed edges Xt-τ → Yt; optionally collapse to base-time nodes.
+            Notes:
+            IndependenceTest is user-supplied (e.g., FisherZ, etc.).
+            Knowledge constraints are enforced for allowed/forbidden arcs (including tiering).
+            This version orients only τ>0 (no instantaneous τ=0); add later for PCMCI+.</p>
+
+    </div>
+
+    <h3>The Trek-MIMIC Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="trek-mimic">
+        <p>Implements the Trek-MIMIC algorithm for recovering latent structure from measured data, including both the
+            latent-latent skeleton and the measured parents (inputs) of each latent variable.
+            The algorithm proceeds in five stages:
+            Measurement model construction. TSC (Trek Separation Clustering) is run to identify clusters of measured
+            indicators and assign each cluster to a latent variable, yielding a block specification with per-latent
+            ranks. PC with a trek/block independence test is then run to produce an initial latent-indicator graph.
+            Measured parent recovery. Rank-one clique groups are identified among a pool of candidate measured
+            variables. Each group is assigned to the latent it best explains (by block strength), and directed edges
+            from those measured parents into the latent are added to the graph.
+            Higher-rank expansion (optional). Candidate measured variables not yet assigned as parents are tested
+            individually and in pairs against subsets of latents. A candidate is added as a shared parent of a latent
+            subset when it satisfies a trek-rank condition (contributing missing channels to the joint parent set) and
+            an explanatory condition (its presence reduces the cross-indicator rank for at least one adjacent latent
+            pair). Transitive input edges introduced during this phase are subsequently pruned.
+            Latent-latent edge pruning. Edges between latents that are explained by recovered measured parents — as
+            evidenced by conditional rank dropping to zero — are removed.
+            Orientation and final pruning (optional). Remaining latent-latent edges are oriented using parent/child
+            correlations, and any latent-transitive edges that become non-identifiable are removed, leaving the final
+            graph.</p>
+
+    </div>
+
+    <h3>The RFCI-BSC Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="rfci-bsc">
+        <p>Implements the RFCI-BSC (Really Fast Causal Inference with Bayesian Scoring of Constraints) algorithm for
+            learning PAGs (Partial Ancestral Graphs) from discrete data with probabilistic uncertainty quantification.
+            The algorithm proceeds in four stages:
+            Randomized PAG search. RFCI is run multiple times using a probabilistic independence test (BSC test) to
+            generate a collection of candidate PAGs. Independence facts whose probabilities of independence fall within
+            a specified uncertainty band [lowerBound, upperBound] are retained as "uncertain constraints" for downstream
+            scoring.
+            Bootstrap constraint data construction. Bootstrap samples of the original data are drawn and a probabilistic
+            independence test is applied to each sample, recording the independence/dependence outcome for each
+            uncertain constraint. This yields an empirical dataset whose rows are bootstrap samples and whose columns
+            are uncertain independence facts.
+            Constraint structure learning. FGES with a BDeu score is run on the bootstrap constraint dataset to learn a
+            Bayesian network over the uncertain constraints, and its parameters are estimated via Dirichlet estimation.
+            This learned model captures the dependency structure among the uncertain constraints.
+            PAG scoring. Each candidate PAG is scored under two methods:
+            BSC-I (independent scoring): each constraint fact is scored independently using its marginal probability of
+            independence.
+            BSC-D (dependent scoring): constraint facts are scored using the learned Bayesian network over constraints,
+            accounting for dependencies among facts.
+            The highest-scoring PAG under each method is returned as graphRBI and graphRBD respectively. Normalized
+            BSC-I and BSC-D scores are attached as attributes on both output graphs. The method selected for the primary
+            return value is controlled by the outputRBD flag.
+            Edge type probabilities across the sampled PAGs are computed and attached to the edges of the returned
+            graph, providing bootstrap uncertainty estimates for each edge.</p>
+
+    </div>
+
+    <h3>The CD-NOD Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="cdnod">
+        <p>Implements the CD-NOD (Causal Discovery from Non-stationary/heterogeneous Data) algorithm, which learns a
+            causal graph from data in the presence of context variables that index changing causal mechanisms across
+            data segments or environments.
+            Context variables are identified as all Tier-0 variables in the supplied Knowledge object. Any variable in
+            Tier-0 that is also present in the dataset is treated as a context variable and is forced to be a cause of
+            every adjacent non-context variable. This matches the CD-NOD-PAG semantics, where changing mechanisms are
+            indicated by directed edges from context nodes.
+            The algorithm proceeds in four stages:
+            Skeleton search. FAS (Fast Adjacency Search) is run using the supplied independence test to find the
+            undirected skeleton of the causal graph and the corresponding sepsets.
+            Context forcing. For each context variable C and each adjacent non-context variable X, the undirected edge C
+            --- X is replaced by the directed edge C → X, subject to any background knowledge constraints.
+            Collider orientation. Unshielded triples are oriented as colliders or non-colliders using one of three
+            strategies, selectable via Cdnod.ColliderOrientationStyle:
+            SEPSETS: orients x → z ← y if z is not in the sepset of x and y (standard PC rule).
+            CONSERVATIVE: orients a collider only if every sepset excludes z and no sepset includes z (Conservative PC
+            rule).
+            MAX_P: selects the sepset with the highest p-value and uses it to decide orientation, with an optional
+            tie-guard margin.
+            Context variables are excluded from conditioning sets during this step by default, consistent with
+            CD-NOD-PAG behavior.
+            Meek closure. Meek's orientation rules are applied to propagate implied orientations and complete the
+            partially directed graph.</p>
+
+    </div>
+
+    <h3>The CD-NOD-BOSS Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="cd-nod-boss">
+        <p>Implements a variant of the CD-NOD (Causal Discovery from Non-stationary/ heterogeneous Data) algorithm that
+            uses BOSS (Best Order Score Search) for skeleton construction rather than FAS, combining score-based
+            skeleton search with constraint-based collider orientation.
+            Context variables are identified as all Tier-0 variables in the supplied Knowledge object. Any variable in
+            Tier-0 that is also present in the dataset is treated as a context variable and is forced to be a cause of
+            every adjacent non-context variable, reflecting the assumption that changing causal mechanisms are indexed
+            by those context variables.
+            The algorithm proceeds in four stages:
+            BOSS skeleton search. BOSS is run using a SEM BIC score on the augmented dataset (X ∪ contexts), with
+            knowledge extended to forbid all edges into context variables. The resulting CPDAG provides the initial
+            skeleton and a set of sepsets, which are cached and supplemented by a recursive blocking heuristic and
+            conditional independence fallback during collider orientation.
+            Context forcing. For each context variable C and each adjacent non-context variable X, the undirected edge C
+            --- X is replaced by the directed edge C → X, subject to any background knowledge constraints.
+            Collider orientation. Unshielded triples are oriented as colliders or non-colliders using one of three
+            strategies, selectable via CdnodBoss.ColliderOrientationStyle:
+            SEPSETS: orients x → z ← y if z is not in the sepset of x and y (standard PC rule).
+            CONSERVATIVE: orients a collider only if every sepset excludes z and no sepset includes z (Conservative PC
+            rule).
+            MAX_P: selects the sepset with the highest p-value and uses it to decide orientation, with an optional
+            tie-guard margin.
+            Meek closure. Meek's orientation rules are applied to propagate implied orientations and complete the
+            partially directed graph.</p>
+
+    </div>
+
+    <h3>The CAM Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="cam">
+        <p>Implements the CAM (Causal Additive Model) algorithm for causal discovery from continuous observational data
+            under the assumption that each variable is a nonlinear additive function of its parents plus independent
+            noise.
+            The algorithm proceeds in three stages:
+            Prior Neighborhood Selection (PNS). For each target variable y, all other variables are ranked by their
+            univariate additive BIC score (the score of y regressed on each x individually), and the top-k candidates
+            are retained as the set of plausible parents for y. This reduces the search space from O(p²) to O(p·k)
+            before the more expensive order search begins.
+            Incremental edge order search. A causal ordering over all variables is found greedily using the IncEdge
+            method: variables are appended one at a time to the order, each time choosing the variable whose local score
+            (given its already-placed PNS predecessors) is minimized. The search is restarted from multiple random
+            initial permutations and the best-scoring order is kept.
+            DAG construction and pruning. Given the best order, a DAG is constructed by running forward selection and
+            backward pruning for each variable restricted to its PNS predecessors. Forward selection greedily adds
+            parents that improve the local score; backward pruning then removes any parent whose removal further
+            improves the score.
+            Local scores are computed by an AdditiveLocalScorer, which defaults to CamAdditivePsplineBic (penalized
+            spline BIC) if none is supplied. A custom scorer can be injected via setScorer. Scores are cached internally
+            in an LRU cache to avoid redundant computation.</p>
+
+    </div>
+
+    <h3>The CPW Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="cpw">
+        <p>Implements the CPW (Causal Pairwise) algorithm for causal discovery from continuous, causally sufficient
+            observational data. CPW combines FCI with a pairwise left-right orientation rule to resolve edge directions
+            that FCI leaves ambiguous, under the assumption of no latent common causes and no selection bias.
+            The algorithm proceeds iteratively until the PAG stabilizes:
+            Pairwise forbidden knowledge construction. For every pair of variables (X, Y), a pairwise left-right
+            statistic is computed on standardized data. If the statistic favors X → Y, the reverse edge Y → X is added
+            to a forbidden knowledge object. This internal knowledge is passed to FCI to bias skeleton orientation
+            without hard-constraining the independence tests.
+            FCI search. FCI is run with the pairwise forbidden knowledge, producing a PAG. The collider orientation
+            strategy (SEPSETS, CONSERVATIVE, or MAX_P) and other FCI parameters are configurable. Optionally an FDR
+            correction loop is applied to the independence tests.
+            Pairwise edge orientation. Edges left ambiguous by FCI are further oriented using the pairwise left-right
+            rule on standardized data, subject to the following case analysis:
+            Tail–tail (—): oriented fully as X → Y or Y → X per the pairwise statistic.
+            Tail–circle (—o) or circle–tail (o—): the circle end is resolved to a tail or arrow if the pairwise
+            statistic provides clear evidence.
+            Circle–circle (o–o): one circle end is converted to an arrow in the preferred direction.
+            Circle–arrow (o→) or arrow–circle (←o): under causal sufficiency, the circle is resolved to a tail.
+            Bidirected (↔) edges are never altered, and existing tails and arrows are never flipped.
+            The pairwise left-right rule is selected via the PAIRWISE_RULE parameter (1=FASK1, 2=FASK2, 3=RSKEW, 4=SKEW,
+            5=TANH; default 2). Time-lagged data is supported via the TIME_LAG parameter, which prepends lag columns
+            before search.</p>
+
+    </div>
+
     <h3>The SvarFCI Algorithm</h3>
 
     <h4>Description</h4>
@@ -3926,6 +4141,54 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </p>
 
     </div>
+
+    <h3>Factor Analysis</h3>
+
+    <h4>Description</h4>
+
+    <div id="factor-anal">
+
+        <p>Implements the classical Factor Analysis algorithm. Some references include: Horst, P. (1965). Factor
+            analysis of data matrices. Holt, Rinehart and Winston. This work has good specifications and explanations of
+            factor analysis algorithm and methods of communality estimation.
+        </p>
+        <p>
+            Rummel, R. J. (1988). Applied factor analysis. Northwestern University Press. This book is a good companion
+            to the book listed above. While it doesn't specify any actual algorithm, it has a great introduction to the
+            subject that gives the reader a good appreciation of the philosophy and the mathematics behind factor
+            analysis.
+        </p>
+
+    </div>
+
+    <h3>IOD</h3>
+
+    <h4>Description</h4>
+
+    <div id="iod">
+
+        <p>Runs FCI on multiple datasets using the IOD pooled dataset independence test. The reference is here:
+            Tillman, R., & Spirtes, P. (2011, June). Learning equivalence classes of acyclic models with latent and
+            selection variables from multiple datasets with overlapping variables. In Proceedings of the Fourteenth
+            International Conference on Artificial Intelligence and Statistics (pp. 3-15). JMLR Workshop and Conference
+            Proceedings.
+        </p>
+
+    </div>
+
+    <h3>LV-Heuristic</h3>
+
+    <h4>Description</h4>
+
+    <div id="lv-heuristic">
+
+        <p>LV-Heuristic is a class that implements the IGraphSearch interface. The LV-Heuristic algorithm finds the BOSS
+            DAG for the dataset and then simply reports the PAG (Partially Ancestral Graph) structure of the BOSS DAG,
+            without doing any further latent variable reasoning.
+        </p>
+
+    </div>
+
 
     <h3>The FTFC Algorithm</h3>
 

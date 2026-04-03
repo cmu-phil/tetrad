@@ -13,12 +13,50 @@ import edu.cmu.tetrad.util.TMath;
 import java.util.*;
 
 /**
- * The Cam class implements the Causal Additive Model (CAM), designed for causal discovery from observational data. This
- * class includes support for preprocessing potential parent nodes using a Prior Neighborhood Search (PNS), searching
- * for variable ordering using incremental edge methods, and refining causal relationships through pruning strategies.
- * <p>
- * It is initialized with a dataset and allows for additional configuration such as injection of a custom local scorer,
- * adjustment of search parameters, and control over numerical stability options.
+ * Implements the CAM (Causal Additive Model) algorithm for causal discovery
+ * from continuous observational data under the assumption that each variable
+ * is a nonlinear additive function of its parents plus independent noise.
+ *
+ * <p>The algorithm proceeds in three stages:
+ * <ol>
+ *   <li><b>Prior Neighborhood Selection (PNS).</b> For each target variable y,
+ *       all other variables are ranked by their univariate additive BIC score
+ *       (the score of y regressed on each x individually), and the top-k
+ *       candidates are retained as the set of plausible parents for y. This
+ *       reduces the search space from O(p²) to O(p·k) before the more
+ *       expensive order search begins.</li>
+ *   <li><b>Incremental edge order search.</b> A causal ordering over all
+ *       variables is found greedily using the IncEdge method: variables are
+ *       appended one at a time to the order, each time choosing the variable
+ *       whose local score (given its already-placed PNS predecessors) is
+ *       minimized. The search is restarted from multiple random initial
+ *       permutations and the best-scoring order is kept.</li>
+ *   <li><b>DAG construction and pruning.</b> Given the best order, a DAG is
+ *       constructed by running forward selection and backward pruning for each
+ *       variable restricted to its PNS predecessors. Forward selection greedily
+ *       adds parents that improve the local score; backward pruning then removes
+ *       any parent whose removal further improves the score.</li>
+ * </ol>
+ *
+ * <p>Local scores are computed by an {@link AdditiveLocalScorer}, which defaults
+ * to {@link CamAdditivePsplineBic} (penalized spline BIC) if none is supplied.
+ * A custom scorer can be injected via {@link #setScorer}. Scores are cached
+ * internally in an LRU cache to avoid redundant computation.
+ *
+ * <p>Expected use:
+ * <pre>
+ *   Cam cam = new Cam(dataSet)
+ *       .setPenaltyDiscount(1.0)
+ *       .setMaxForwardParents(20)
+ *       .setPnsTopK(10)
+ *       .setRestarts(10)
+ *       .setVerbose(true);
+ *
+ *   Graph dag = cam.search();
+ * </pre>
+ *
+ * @see AdditiveLocalScorer
+ * @see CamAdditivePsplineBic
  */
 public class Cam {
 

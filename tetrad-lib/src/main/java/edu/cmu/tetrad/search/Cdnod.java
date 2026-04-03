@@ -16,17 +16,65 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * The {@code Cdnod} class implements the causal discovery algorithm for detecting changing dependencies with respect to
- * context variables (Tier-0 in {@link Knowledge}).
+ * Implements the CD-NOD (Causal Discovery from Non-stationary/heterogeneous Data)
+ * algorithm, which learns a causal graph from data in the presence of context
+ * variables that index changing causal mechanisms across data segments or
+ * environments.
  *
- * <p><b>Important behavioral change:</b> This implementation no longer requires a single context variable to be the last
- * column. Instead, <b>ALL Tier-0 variables</b> in the supplied {@link Knowledge} are treated as context variables
- * (consistent with CD-NOD-PAG).</p>
+ * <p>Context variables are identified as all Tier-0 variables in the supplied
+ * {@link Knowledge} object. Any variable in Tier-0 that is also present in the
+ * dataset is treated as a context variable and is forced to be a cause of every
+ * adjacent non-context variable. This matches the CD-NOD-PAG semantics, where
+ * changing mechanisms are indicated by directed edges from context nodes.
  *
- * <p>Optionally, contexts can be excluded from conditioning sets (enabled by default) to match the PAG runner behavior
- * ({@code withExcludeContextsFromS(true)} in {@code CdnodPag}).</p>
- */
-public final class Cdnod implements IGraphSearch {
+ * <p>The algorithm proceeds in four stages:
+ * <ol>
+ *   <li><b>Skeleton search.</b> FAS (Fast Adjacency Search) is run using the
+ *       supplied independence test to find the undirected skeleton of the
+ *       causal graph and the corresponding sepsets.</li>
+ *   <li><b>Context forcing.</b> For each context variable C and each adjacent
+ *       non-context variable X, the undirected edge C --- X is replaced by the
+ *       directed edge C → X, subject to any background knowledge constraints.</li>
+ *   <li><b>Collider orientation.</b> Unshielded triples are oriented as colliders
+ *       or non-colliders using one of three strategies, selectable via
+ *       {@link ColliderOrientationStyle}:
+ *       <ul>
+ *         <li><b>SEPSETS</b>: orients x → z ← y if z is not in the sepset of
+ *             x and y (standard PC rule).</li>
+ *         <li><b>CONSERVATIVE</b>: orients a collider only if every sepset
+ *             excludes z and no sepset includes z (Conservative PC rule).</li>
+ *         <li><b>MAX_P</b>: selects the sepset with the highest p-value and
+ *             uses it to decide orientation, with an optional tie-guard margin.</li>
+ *       </ul>
+ *       Context variables are excluded from conditioning sets during this step
+ *       by default, consistent with CD-NOD-PAG behavior.</li>
+ *   <li><b>Meek closure.</b> Meek's orientation rules are applied to propagate
+ *       implied orientations and complete the partially directed graph.</li>
+ * </ol>
+ *
+ * <p>Instances are constructed via the nested {@link Builder}:
+ * <pre>
+ *   Cdnod cdnod = new Cdnod.Builder()
+ *       .test(independenceTest)
+ *       .data(dataSet)
+ *       .knowledge(knowledge)        // Tier-0 variables treated as contexts
+ *       .colliderStyle(ColliderOrientationStyle.CONSERVATIVE)
+ *       .alpha(0.05)
+ *       .depth(3)
+ *       .verbose(true)
+ *       .build();
+ *
+ *   Graph result = cdnod.search();
+ * </pre>
+ *
+ * <p>For backwards compatibility, a change-index column can be appended to the
+ * dataset via {@link Builder#dataAndIndex}, though contexts are now determined
+ * from Knowledge tier 0 rather than column position.
+ *
+ * @see Fas
+ * @see MeekRules
+ * @see Knowledge
+ */public final class Cdnod implements IGraphSearch {
 
     private final boolean stable;
     private final ColliderOrientationStyle colliderStyle;

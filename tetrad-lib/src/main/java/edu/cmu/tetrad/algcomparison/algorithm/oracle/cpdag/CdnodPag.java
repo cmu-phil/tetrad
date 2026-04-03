@@ -35,16 +35,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-/**
- * CD-NOD wrapper for algcomparison.
- */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "CD-NOD-PAG",
-        command = "cdnodpag",
-        algoType = AlgType.forbid_latent_common_causes
-)
-@Bootstrapping
-@Experimental
+///**
+// * CD-NOD wrapper for algcomparison.
+// */
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "CD-NOD-PAG",
+//        command = "cdnodpag",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
+//@Bootstrapping
+//@Experimental
 public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
         TakesIndependenceWrapper, TakesScoreWrapper,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {

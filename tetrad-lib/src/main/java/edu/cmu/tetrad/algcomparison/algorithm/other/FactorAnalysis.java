@@ -47,7 +47,8 @@ import java.util.Vector;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "Factor Analysis",
         command = "factor-anal",
-        algoType = AlgType.search_for_structure_over_latents
+        algoType = AlgType.search_for_structure_over_latents,
+        dataType = DataType.Continuous
 )
 @Bootstrapping
 public class FactorAnalysis extends AbstractBootstrapAlgorithm implements Algorithm {

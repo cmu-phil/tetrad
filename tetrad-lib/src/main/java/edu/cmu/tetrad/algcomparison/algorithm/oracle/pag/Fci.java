@@ -53,7 +53,8 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FCI",
         command = "fci",
-        algoType = AlgType.allow_latent_common_causes
+        algoType = AlgType.allow_latent_common_causes,
+        dataType = DataType.All
 )
 @Bootstrapping
 public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper,

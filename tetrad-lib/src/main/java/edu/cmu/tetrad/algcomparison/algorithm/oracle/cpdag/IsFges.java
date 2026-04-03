@@ -35,9 +35,9 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.is.IsBDeuScore2;
 import edu.cmu.tetrad.search.is.IsScore;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -49,9 +49,9 @@ import java.util.List;
  * IS-FGES (Instance-Specific FGES) wrapper for the algcomparison interface. Uses a discrete instance-specific score
  * (ISBDeuScore) with test=row 0 of train (for now), plus a population BDeu score for the base FGES machinery.
  */
-@edu.cmu.tetrad.annotation.Algorithm(name = "IS-FGES", command = "is-fges", algoType = AlgType.forbid_latent_common_causes)
-@Bootstrapping
-@Experimental
+//@edu.cmu.tetrad.annotation.Algorithm(name = "IS-FGES", command = "is-fges", algoType = AlgType.forbid_latent_common_causes)
+//@Bootstrapping
+//@Experimental
 public class IsFges extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs,
         TakesCovarianceMatrix {
 
@@ -107,7 +107,7 @@ public class IsFges extends AbstractBootstrapAlgorithm implements Algorithm, Has
                     // Same sets?
                     if (!(new java.util.HashSet<>(tLabels).equals(new java.util.HashSet<>(iLabels)))) {
                         throw new IllegalArgumentException("Discrete categories differ for '" + tv.getName()
-                                                           + "'. Train=" + tLabels + ", Test=" + iLabels);
+                                + "'. Train=" + tLabels + ", Test=" + iLabels);
                     }
                     // Build remap: instanceIndex -> trainIndex
                     int K = iLabels.size();
@@ -121,7 +121,7 @@ public class IsFges extends AbstractBootstrapAlgorithm implements Algorithm, Has
                         if (v == -99) continue; // preserve your missing sentinel
                         if (v < 0 || v >= K) {
                             throw new IllegalArgumentException("Out-of-range category at row " + r + ", var "
-                                                               + tv.getName());
+                                    + tv.getName());
                         }
                         projected.setInt(r, j, remap[v]);
                     }

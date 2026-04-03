@@ -45,7 +45,24 @@ import java.io.Serial;
 import java.util.*;
 
 /**
- * Restricted BOSS.
+ * Implements a restricted version of the BOSS (Best Order Score Search) algorithm
+ * that focuses search on a set of target variables and their immediate causes.
+ *
+ * <p>The algorithm proceeds in two stages. In the first stage, BOSS is run on the
+ * full dataset with the target variables placed in a later tier than all other
+ * variables, with edges forbidden within the first tier. This uses the Grow-Shrink
+ * Tree (GST) structure from the resulting search to identify the "first layer" of
+ * each target — that is, the variables that are direct or proximal causes of the
+ * targets.
+ *
+ * <p>In the second stage, the data is restricted to just the target variables and
+ * their first-layer variables, and BOSS is run again on this reduced dataset, once
+ * more with the target variables in a later tier. The resulting graph is then
+ * trimmed according to the specified trimming style to yield the final output.
+ *
+ * <p>This two-stage approach is more computationally efficient than running BOSS on
+ * the full variable set when only the relationships among a small set of target
+ * variables and their causes are of interest.
  *
  * @author bryanandrews
  * @author josephramsey

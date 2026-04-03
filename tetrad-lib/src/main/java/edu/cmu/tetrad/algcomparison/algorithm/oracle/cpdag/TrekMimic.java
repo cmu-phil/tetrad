@@ -51,7 +51,8 @@ import java.util.*;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "Trek-MIMIC",
         command = "trek-mimic",
-        algoType = AlgType.forbid_latent_common_causes
+        algoType = AlgType.forbid_latent_common_causes,
+        dataType = DataType.Continuous
 )
 @Bootstrapping
 public class TrekMimic extends AbstractBootstrapAlgorithm

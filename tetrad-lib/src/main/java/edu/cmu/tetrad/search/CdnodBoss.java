@@ -18,25 +18,67 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * The {@code Cdnod} class implements the causal discovery algorithm for detecting changing dependencies with respect to
- * a change index variable in a dataset.
+ * Implements a variant of the CD-NOD (Causal Discovery from Non-stationary/
+ * heterogeneous Data) algorithm that uses BOSS (Best Order Score Search) for
+ * skeleton construction rather than FAS, combining score-based skeleton search
+ * with constraint-based collider orientation.
  *
- * <p>The algorithm is capable of orienting edges in a graph based on statistical
- * tests, knowledge constraints, and user-defined parameters. It also supports conservative decision-making and
- * constraints on collider orientations.</p>
+ * <p>Context variables are identified as all Tier-0 variables in the supplied
+ * {@link Knowledge} object. Any variable in Tier-0 that is also present in the
+ * dataset is treated as a context variable and is forced to be a cause of every
+ * adjacent non-context variable, reflecting the assumption that changing causal
+ * mechanisms are indexed by those context variables.
  *
- * <p>This class extends the functionality of {@code IGraphSearch} and provides methods
- * for configuring the statistical independence test, working dataset, maximum conditioning depth, and timeout
- * settings.</p>
- * <p>
- * Key Features:
- * <ul>
- *   <li>Searches for a graph representing causal structure based on a change index variable.</li>
- *   <li>Provides support for collider orientation with both conservative logic and
- *       maximum p-margin decisions.</li>
- *   <li>Enables customization of constraints using a {@code Knowledge} object.</li>
- *   <li>Supports timeout settings to limit the duration of computations.</li>
- * </ul>
+ * <p>The algorithm proceeds in four stages:
+ * <ol>
+ *   <li><b>BOSS skeleton search.</b> BOSS is run using a SEM BIC score on the
+ *       augmented dataset (X ∪ contexts), with knowledge extended to forbid all
+ *       edges into context variables. The resulting CPDAG provides the initial
+ *       skeleton and a set of sepsets, which are cached and supplemented by a
+ *       recursive blocking heuristic and conditional independence fallback during
+ *       collider orientation.</li>
+ *   <li><b>Context forcing.</b> For each context variable C and each adjacent
+ *       non-context variable X, the undirected edge C --- X is replaced by the
+ *       directed edge C → X, subject to any background knowledge constraints.</li>
+ *   <li><b>Collider orientation.</b> Unshielded triples are oriented as colliders
+ *       or non-colliders using one of three strategies, selectable via
+ *       {@link ColliderOrientationStyle}:
+ *       <ul>
+ *         <li><b>SEPSETS</b>: orients x → z ← y if z is not in the sepset of
+ *             x and y (standard PC rule).</li>
+ *         <li><b>CONSERVATIVE</b>: orients a collider only if every sepset
+ *             excludes z and no sepset includes z (Conservative PC rule).</li>
+ *         <li><b>MAX_P</b>: selects the sepset with the highest p-value and
+ *             uses it to decide orientation, with an optional tie-guard margin.</li>
+ *       </ul></li>
+ *   <li><b>Meek closure.</b> Meek's orientation rules are applied to propagate
+ *       implied orientations and complete the partially directed graph.</li>
+ * </ol>
+ *
+ * <p>Instances are constructed via the nested {@link Builder}:
+ * <pre>
+ *   CdnodBoss cdnod = new CdnodBoss.Builder()
+ *       .test(independenceTest)
+ *       .data(dataSet)               // dataset already containing context column(s)
+ *       .knowledge(knowledge)        // Tier-0 variables treated as contexts
+ *       .colliderStyle(ColliderOrientationStyle.MAX_P)
+ *       .alpha(0.05)
+ *       .depth(3)
+ *       .verbose(true)
+ *       .build();
+ *
+ *   Graph result = cdnod.search();
+ * </pre>
+ *
+ * <p>For backwards compatibility, a continuous change-index column can be appended
+ * to the dataset via {@link Builder#dataAndIndex} rather than being supplied
+ * pre-merged. Context variables are determined from Knowledge tier 0 regardless
+ * of column position.
+ *
+ * @see Boss
+ * @see PermutationSearch
+ * @see MeekRules
+ * @see Knowledge
  */
 public final class CdnodBoss implements IGraphSearch {
 

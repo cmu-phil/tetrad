@@ -34,7 +34,8 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "CAM",
         command = "cam",
-        algoType = AlgType.forbid_latent_common_causes
+        algoType = AlgType.forbid_latent_common_causes,
+        dataType = DataType.Continuous
 )
 @Bootstrapping
 @Experimental

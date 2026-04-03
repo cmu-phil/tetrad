@@ -44,29 +44,60 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * CPW: Run FCI for causally sufficient data with internally constructed PW-forbidden knowledge,
- * then orient edge using a pairwise left-right rule on standardized data in cases that are safe under
- * no-selection-bias cyclic causally sufficient semantics:
+ * Implements the CPW (Causal Pairwise) algorithm for causal discovery from
+ * continuous, causally sufficient observational data. CPW combines FCI with
+ * a pairwise left-right orientation rule to resolve edge directions that FCI
+ * leaves ambiguous, under the assumption of no latent common causes and no
+ * selection bias.
  *
+ * <p>The algorithm proceeds iteratively until the PAG stabilizes:
  * <ol>
- *   <li>Tail–tail (—) edges
- *     <ul><li>Orient per pairwise rule.</li></ul>
- *   </li>
- *   <li>Tail–circle (—o) edges
- *     <ul><li>If pairwise prefers x→y, set x→y (symmetrically, if prefers y→x, set y→x).</li></ul>
- *   </li>
- *   <li>Circle–circle (o–o) edges
- *     <ul><li>If pairwise prefers x→y, set x o→y (symmetrically for y→x).</li></ul>
- *   </li>
+ *   <li><b>Pairwise forbidden knowledge construction.</b> For every pair of
+ *       variables (X, Y), a pairwise left-right statistic is computed on
+ *       standardized data. If the statistic favors X → Y, the reverse edge
+ *       Y → X is added to a forbidden knowledge object. This internal
+ *       knowledge is passed to FCI to bias skeleton orientation without
+ *       hard-constraining the independence tests.</li>
+ *   <li><b>FCI search.</b> FCI is run with the pairwise forbidden knowledge,
+ *       producing a PAG. The collider orientation strategy (SEPSETS,
+ *       CONSERVATIVE, or MAX_P) and other FCI parameters are configurable.
+ *       Optionally an FDR correction loop is applied to the independence
+ *       tests.</li>
+ *   <li><b>Pairwise edge orientation.</b> Edges left ambiguous by FCI are
+ *       further oriented using the pairwise left-right rule on standardized
+ *       data, subject to the following case analysis:
+ *       <ul>
+ *         <li><b>Tail–tail (—):</b> oriented fully as X → Y or Y → X per
+ *             the pairwise statistic.</li>
+ *         <li><b>Tail–circle (—o) or circle–tail (o—):</b> the circle end
+ *             is resolved to a tail or arrow if the pairwise statistic
+ *             provides clear evidence.</li>
+ *         <li><b>Circle–circle (o–o):</b> one circle end is converted to an
+ *             arrow in the preferred direction.</li>
+ *         <li><b>Circle–arrow (o→) or arrow–circle (←o):</b> under causal
+ *             sufficiency, the circle is resolved to a tail.</li>
+ *       </ul>
+ *       Bidirected (↔) edges are never altered, and existing tails and
+ *       arrows are never flipped.</li>
  * </ol>
  *
- * <p>We never alter &lt;-&gt; (two heads), never flip existing tails/heads,
- * and never touch o→ or ←o edges.</p>
+ * <p>The pairwise left-right rule is selected via the {@code PAIRWISE_RULE}
+ * parameter (1=FASK1, 2=FASK2, 3=RSKEW, 4=SKEW, 5=TANH; default 2).
+ * Time-lagged data is supported via the {@code TIME_LAG} parameter, which
+ * prepends lag columns before search.
  *
- * <p><b>Parameter:</b> PAIRWISE_RULE ∈ {1..5}, default 3 (RSKEW).
- * 1=FASK1, 2=FASK2, 3=RSKEW, 4=SKEW, 5=TANH.</p>
+ * <p>This algorithm is marked {@link Experimental} and is intended for
+ * linear, non-Gaussian, causally sufficient data.
+ *
+ * @see edu.cmu.tetrad.search.Fci
+ * @see edu.cmu.tetrad.search.Fask
  */
-@edu.cmu.tetrad.annotation.Algorithm(name = "CPW", command = "cpw", algoType = AlgType.forbid_latent_common_causes)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "CPW",
+        command = "cpw",
+        algoType = AlgType.forbid_latent_common_causes,
+        dataType = DataType.Continuous
+)
 @Bootstrapping
 @Experimental
 public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {

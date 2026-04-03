@@ -53,13 +53,13 @@ import java.util.List;
  * IS-GFCI (Instance-Specific GFCI) wrapper for the algcomparison interface. Uses a discrete instance-specific score
  * (ISBDeuScore), a score for FGES, plus a population BDeu score for the base FGES machinery.
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "IS-GFCI",
-        command = "is-gfci",
-        algoType = AlgType.forbid_latent_common_causes
-)
-@Bootstrapping
-@Experimental
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "IS-GFCI",
+//        command = "is-gfci",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
+//@Bootstrapping
+//@Experimental
 public class IsGfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 

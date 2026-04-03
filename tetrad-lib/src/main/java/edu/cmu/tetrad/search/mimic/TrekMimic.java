@@ -15,26 +15,44 @@ import org.ejml.simple.SimpleMatrix;
 import java.util.*;
 
 /**
- * Hybrid version of Trek-MIMIC parent recovery.
+ * Implements the Trek-MIMIC algorithm for recovering latent structure from
+ * measured data, including both the latent-latent skeleton and the measured
+ * parents (inputs) of each latent variable.
  *
- * <p>This class runs the full Trek-MIMIC pipeline from data:
- * </p>
+ * <p>The algorithm proceeds in five stages:
  * <ol>
- *     <li>Runs TSC to obtain clusters and a block specification.</li>
- *     <li>Runs PC with the trek/block test to obtain a latent-indicator graph.</li>
- *     <li>Recovers measured parents of the latent variables.</li>
- *     <li>Prunes latent-latent edges explained by recovered parents.</li>
- *     <li>Optionally orients latent-latent edges using parent/child correlations.</li>
+ *   <li><b>Measurement model construction.</b> TSC (Trek Separation Clustering)
+ *       is run to identify clusters of measured indicators and assign each cluster
+ *       to a latent variable, yielding a block specification with per-latent
+ *       ranks. PC with a trek/block independence test is then run to produce an
+ *       initial latent-indicator graph.</li>
+ *   <li><b>Measured parent recovery.</b> Rank-one clique groups are identified
+ *       among a pool of candidate measured variables. Each group is assigned to
+ *       the latent it best explains (by block strength), and directed edges from
+ *       those measured parents into the latent are added to the graph.</li>
+ *   <li><b>Higher-rank expansion (optional).</b> Candidate measured variables
+ *       not yet assigned as parents are tested individually and in pairs against
+ *       subsets of latents. A candidate is added as a shared parent of a latent
+ *       subset when it satisfies a trek-rank condition (contributing missing
+ *       channels to the joint parent set) and an explanatory condition (its
+ *       presence reduces the cross-indicator rank for at least one adjacent
+ *       latent pair). Transitive input edges introduced during this phase are
+ *       subsequently pruned.</li>
+ *   <li><b>Latent-latent edge pruning.</b> Edges between latents that are
+ *       explained by recovered measured parents — as evidenced by conditional
+ *       rank dropping to zero — are removed.</li>
+ *   <li><b>Orientation and final pruning (optional).</b> Remaining latent-latent
+ *       edges are oriented using parent/child correlations, and any latent-transitive
+ *       edges that become non-identifiable are removed, leaving the final graph.</li>
  * </ol>
  *
  * <p>Expected use:
- * </p>
  * <pre>
- * TrekMimic tm = new TrekMimic(data, parameters);
- * tm.setKnowledge(knowledge);
- * tm.setInputNames(inputNames);
- * tm.setOutputNames(outputNames);
- * Graph g = tm.search();
+ *   TrekMimic tm = new TrekMimic(data, parameters);
+ *   tm.setKnowledge(knowledge);       // optional background knowledge
+ *   tm.setInputNames(inputNames);     // optional known measured inputs
+ *   tm.setOutputNames(outputNames);   // optional known measured outputs
+ *   Graph g = tm.search();
  * </pre>
  *
  * @author josephramsey
