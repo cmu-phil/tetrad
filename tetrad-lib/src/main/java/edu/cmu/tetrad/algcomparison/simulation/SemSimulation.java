@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.SemGraph;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -192,11 +193,30 @@ public class SemSimulation implements Simulation {
 //            }
 
             SemIm.Result result = null;
-            try {
-                result = SemIm.simulatePossibleShrinkage(parameters, graph);
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
+
+            if (this.im != null) {
+                // simulate directly from the stored IM
+                DataSet dataSet = null;
+                try {
+                    dataSet = this.im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+                result = new SemIm.Result(IndTestFisherZ.ShrinkageMode.NONE, dataSet, dataSet.getNumRows(), this.im);
+            } else {
+                try {
+                    result = SemIm.simulatePossibleShrinkage(parameters, graph);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
             }
+
+//            SemIm.Result result = null;
+//            try {
+//                result = SemIm.simulatePossibleShrinkage(parameters, graph);
+//            } catch (ParseException e) {
+//                throw new RuntimeException(e);
+//            }
 
             DataSet dataSet = result.dataSet();// simulate(semIm, parameters);
 
@@ -300,7 +320,9 @@ public class SemSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-        parameters.addAll(SemIm.getParameterNames());
+        if (this.im == null) {
+            parameters.addAll(SemIm.getParameterNames());
+        }
 
         parameters.add(Params.MEASUREMENT_VARIANCE);
         parameters.add(Params.NUM_RUNS);
