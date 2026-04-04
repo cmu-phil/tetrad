@@ -486,6 +486,11 @@ public class EdgeTypeTable extends JPanel {
             if (getModel().getColumnCount() > 2) {
                 sorter.setComparator(1, NaturalSort.naturalComparator()); // Node 1
                 sorter.setComparator(3, NaturalSort.naturalComparator()); // Node 2
+                sorter.setSortKeys(List.of(
+                        new RowSorter.SortKey(1, SortOrder.ASCENDING), // Node 1
+                        new RowSorter.SortKey(3, SortOrder.ASCENDING)  // Node 2
+                ));
+                sorter.sort();
                 setRowSorter(sorter);
             }
         }

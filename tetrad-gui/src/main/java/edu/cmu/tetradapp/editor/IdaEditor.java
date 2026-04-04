@@ -157,10 +157,8 @@ public class IdaEditor extends JPanel {
         table.setFillsViewportHeight(true);
 
         this.sorter = new TableRowSorter<>(tableModel);
-        sorter.setComparator(1, Comparator.<String, NaturalSort.NaturalKey>comparing(
-                        s -> NaturalSort.NaturalKey.from(s.split(" ~~> ")[0]))
-                .thenComparing(
-                        s -> NaturalSort.NaturalKey.from(s.split(" ~~> ")[1])));
+        sorter.setComparator(1, Comparator.comparing(NaturalSort.NaturalKey::from));  // From col
+        sorter.setComparator(2, Comparator.comparing(NaturalSort.NaturalKey::from));  // To col
         table.setRowSorter(sorter);
 
         // When the user sorts, recompute the summary statistics using only visible rows.
@@ -274,11 +272,9 @@ public class IdaEditor extends JPanel {
                 tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
                 table.setModel(tableModel);
 
-                sorter = new TableRowSorter<>(tableModel);
-                sorter.setComparator(1, Comparator.<String, NaturalSort.NaturalKey>comparing(
-                                s -> NaturalSort.NaturalKey.from(s.split(" ~~> ")[0]))
-                        .thenComparing(
-                                s -> NaturalSort.NaturalKey.from(s.split(" ~~> ")[1])));
+                this.sorter = new TableRowSorter<>(tableModel);
+                sorter.setComparator(1, Comparator.comparing(NaturalSort.NaturalKey::from));  // From col
+                sorter.setComparator(2, Comparator.comparing(NaturalSort.NaturalKey::from));  // To col
                 table.setRowSorter(sorter);
 
                 sorter.addRowSorterListener(e2 -> {
@@ -506,10 +502,9 @@ public class IdaEditor extends JPanel {
 
                     // Replace sorter (and its listeners) to match the new model.
                     sorter = new TableRowSorter<>(tableModel);
-                    sorter.setComparator(1, Comparator.<String, NaturalSort.NaturalKey>comparing(
-                                    s -> NaturalSort.NaturalKey.from(s.split(" ~~> ")[0]))
-                            .thenComparing(
-                                    s -> NaturalSort.NaturalKey.from(s.split(" ~~> ")[1])));
+                    sorter.setComparator(1, Comparator.comparing(NaturalSort.NaturalKey::from));
+                    sorter.setComparator(2, Comparator.comparing(NaturalSort.NaturalKey::from));
+
                     sorter.addRowSorterListener(e -> {
                         if (e.getType() == RowSorterEvent.Type.SORTED) {
                             updateStatsForVisibleRows();
@@ -666,8 +661,7 @@ class IdaTableModel extends AbstractTableModel {
      * where if the true total effect falls between the minimum and maximum total effect zero is reported. If the true
      * model is not given, the last two columns are not included.
      */
-    private final String[] columnNames = {"#", "Pair", "Min TE", "Max TE", "IDA Min Effect", "True TE", "Sq Dist"};
-
+    private final String[] columnNames = {"#", "From", "To", "Min TE", "Max TE", "IDA Min Effect", "True TE", "Sq Dist"};
     /**
      * The data for the table.
      */
@@ -682,27 +676,24 @@ class IdaTableModel extends AbstractTableModel {
      */
     IdaTableModel(List<OrderedPair<Node>> pairs, IdaCheck estModel, SemIm trueSemIm) {
         boolean hasTrue = trueSemIm != null;
-        data = new Object[pairs.size()][hasTrue ? 7 : 5];
+        data = new Object[pairs.size()][hasTrue ? 8 : 6];
 
         for (int i = 0; i < pairs.size(); i++) {
             OrderedPair<Node> pair = pairs.get(i);
-            String edge = pair.getFirst().getName() + " ~~> " + pair.getSecond().getName();
             double minTotalEffect = estModel.getMinTotalEffect(pair.getFirst(), pair.getSecond());
             double maxTotalEffect = estModel.getMaxTotalEffect(pair.getFirst(), pair.getSecond());
             double minAbsTotalEffect = estModel.getIdaMinEffect(pair.getFirst(), pair.getSecond());
 
-            data[i][0] = i + 1;   // 1-based index
-            data[i][1] = edge;
-            data[i][2] = minTotalEffect;
-            data[i][3] = maxTotalEffect;
-            data[i][4] = minAbsTotalEffect;
+            data[i][0] = i + 1;
+            data[i][1] = pair.getFirst().getName();   // From
+            data[i][2] = pair.getSecond().getName();  // To
+            data[i][3] = minTotalEffect;
+            data[i][4] = maxTotalEffect;
+            data[i][5] = minAbsTotalEffect;
 
             if (hasTrue) {
-                double trueTotalEffect = estModel.getTrueTotalEffect(pair);
-                double squaredDistance = estModel.getSquaredDistance(pair);
-
-                data[i][5] = trueTotalEffect;
-                data[i][6] = squaredDistance;
+                data[i][6] = estModel.getTrueTotalEffect(pair);
+                data[i][7] = estModel.getSquaredDistance(pair);
             }
         }
     }
@@ -714,7 +705,7 @@ class IdaTableModel extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return data.length == 0 ? 4 : data[0].length;
+        return data.length == 0 ? 5 : data[0].length;
     }
 
     @Override
@@ -725,7 +716,8 @@ class IdaTableModel extends AbstractTableModel {
     @Override
     public Class<?> getColumnClass(int col) {
         if (col == 0) return Integer.class;  // index
-        if (col == 1) return String.class;   // pair label
+        if (col == 1) return String.class;   // From
+        if (col == 2) return String.class;   // To
         return Double.class;
     }
 

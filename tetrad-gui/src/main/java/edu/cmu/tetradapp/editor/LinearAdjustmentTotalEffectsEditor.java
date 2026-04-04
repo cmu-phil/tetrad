@@ -318,7 +318,7 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
         if (selected.length > 1) {
             JOptionPane.showMessageDialog(this,
                     "Multiple rows are selected. Please select exactly one row\n" +
-                    "to view its regression result.",
+                            "to view its regression result.",
                     "Multiple selections",
                     JOptionPane.INFORMATION_MESSAGE);
             return;
@@ -331,7 +331,7 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
         if (row.discreteRegression) {
             JOptionPane.showMessageDialog(this,
                     "No regression is available for this row because discrete variables are involved\n" +
-                    "and \"Do Discrete Regressions\" is unchecked.",
+                            "and \"Do Discrete Regressions\" is unchecked.",
                     "Discrete variables",
                     JOptionPane.INFORMATION_MESSAGE);
             return;
@@ -413,6 +413,7 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
                 }
             }
         }
+
         return nodes;
     }
 
@@ -535,10 +536,18 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
             String name = cm.getColumn(i).getHeaderValue().toString();
 
             if (name.equals("Total effect")
-                || name.equals("True Total Effect")) {
+                    || name.equals("True Total Effect")) {
                 cm.getColumn(i).setCellRenderer(effectRenderer);
             }
         }
+    }
+
+    private void installSorter() {
+        TableRowSorter<ResultTableModel> sorter = new TableRowSorter<>(this.tableModel);
+        sorter.setComparator(1, NaturalSort.naturalComparator()); // X
+        sorter.setComparator(2, NaturalSort.naturalComparator()); // Y
+        sorter.sort();
+        this.resultTable.setRowSorter(sorter);
     }
 
     private static final class ResultTableModel extends AbstractTableModel {
@@ -548,7 +557,7 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
         private static final String COL_Y = "Y";
         private static final String COL_Z = "Adjustment set Z";
         private static final String COL_TE = "Total effect";
-//        private static final String COL_ABS_TE = "Abs total effect";
+        //        private static final String COL_ABS_TE = "Abs total effect";
         private static final String COL_TRUE_TE = "True Total Effect";
 //        private static final String COL_ABS_TRUE_TE = "Abs True Total Effect";
 
@@ -560,7 +569,7 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
 
         private boolean showTrueColumns() {
             return model.getEffectMode() == LinearAdjustmentTotalEffectsModel.EffectMode.PAIRWISE
-                   && model.isTrueSemImAvailable();
+                    && model.isTrueSemImAvailable();
         }
 
 //        private String[] columns() {
@@ -577,9 +586,9 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
 
         private String[] columns() {
             if (showTrueColumns()) {
-                return new String[] { COL_NUM, COL_X, COL_Y, COL_Z, COL_TE, COL_TRUE_TE };
+                return new String[]{COL_NUM, COL_X, COL_Y, COL_Z, COL_TE, COL_TRUE_TE};
             } else {
-                return new String[] { COL_NUM, COL_X, COL_Y, COL_Z, COL_TE };
+                return new String[]{COL_NUM, COL_X, COL_Y, COL_Z, COL_TE};
             }
         }
 
@@ -718,12 +727,5 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return false;
         }
-    }
-
-    private void installSorter() {
-        TableRowSorter<ResultTableModel> sorter = new TableRowSorter<>(this.tableModel);
-        sorter.setComparator(1, NaturalSort.naturalComparator()); // X
-        sorter.setComparator(2, NaturalSort.naturalComparator()); // Y
-        this.resultTable.setRowSorter(sorter);
     }
 }

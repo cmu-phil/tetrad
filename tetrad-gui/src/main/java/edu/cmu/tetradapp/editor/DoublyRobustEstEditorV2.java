@@ -25,18 +25,18 @@ import java.util.regex.Pattern;
 
 /**
  * v2: Editor panel for "Mixed DR Adjustment Effect".
- *
+ * <p>
  * Mirrors the interface style of LinearAdjustmentTotalEffectsEditor:
- *  - PAIRWISE vs JOINT
- *  - wildcard/list parsing for X and Y
- *  - "Compute adjustment sets and effects"
- *  - simple table rows
- *  - "View Details..." dialog (copy/paste friendly) for a selected row
- *
+ * - PAIRWISE vs JOINT
+ * - wildcard/list parsing for X and Y
+ * - "Compute adjustment sets and effects"
+ * - simple table rows
+ * - "View Details..." dialog (copy/paste friendly) for a selected row
+ * <p>
  * v2.1:
- *  - adds "Binarize..." button for derived binary treatments (stored in model)
- *  - table includes a "Note" column and is safe for rows where x/y are null
- *  - "View details..." enabled only for OK rows
+ * - adds "Binarize..." button for derived binary treatments (stored in model)
+ * - table includes a "Note" column and is safe for rows where x/y are null
+ * - "View details..." enabled only for OK rows
  */
 public final class DoublyRobustEstEditorV2 extends JPanel {
 
@@ -100,13 +100,15 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
         outcomesField.setText(model.getOutcomesText());
 
         treatmentsField.addFocusListener(new FocusAdapter() {
-            @Override public void focusLost(FocusEvent e) {
+            @Override
+            public void focusLost(FocusEvent e) {
                 model.setTreatmentsText(treatmentsField.getText());
             }
         });
 
         outcomesField.addFocusListener(new FocusAdapter() {
-            @Override public void focusLost(FocusEvent e) {
+            @Override
+            public void focusLost(FocusEvent e) {
                 model.setOutcomesText(outcomesField.getText());
             }
         });
@@ -120,6 +122,71 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
     // ------------------------
     // UI
     // ------------------------
+
+    private static List<String> tokenizeCsvWhitespace(String s) {
+        ArrayList<String> out = new ArrayList<>();
+        StringBuilder cur = new StringBuilder();
+
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == ',' || Character.isWhitespace(c)) {
+                if (cur.length() > 0) {
+                    out.add(cur.toString());
+                    cur.setLength(0);
+                }
+            } else {
+                cur.append(c);
+            }
+        }
+
+        if (cur.length() > 0) out.add(cur.toString());
+        return out;
+    }
+
+    // ------------------------
+    // Listeners
+    // ------------------------
+
+    private static String wildcardToRegex(String pattern) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("^");
+        for (int i = 0; i < pattern.length(); i++) {
+            char c = pattern.charAt(i);
+            switch (c) {
+                case '*':
+                    sb.append(".*");
+                    break;
+                case '?':
+                    sb.append(".");
+                    break;
+                case '\\':
+                    sb.append("\\\\");
+                    break;
+                case '.':
+                case '[':
+                case ']':
+                case '{':
+                case '}':
+                case '(':
+                case ')':
+                case '+':
+                case '-':
+                case '^':
+                case '$':
+                case '|':
+                    sb.append("\\").append(c);
+                    break;
+                default:
+                    sb.append(c);
+            }
+        }
+        sb.append("$");
+        return sb.toString();
+    }
+
+    private static String safe(String s) {
+        return (s == null) ? "" : s;
+    }
 
     private void initUI() {
         setLayout(new BorderLayout(5, 5));
@@ -178,10 +245,6 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
         binarizeButton.addActionListener(e -> onBinarize());
     }
 
-    // ------------------------
-    // Listeners
-    // ------------------------
-
     private void initListeners() {
         runButton.addActionListener(this::onRun);
         paramsButton.addActionListener(this::onEditParams);
@@ -233,6 +296,9 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
         }
     }
 
+    // ------------------------
+    // Details dialog
+    // ------------------------
 
     private void onEditParams(ActionEvent e) {
         JTextField maxNumField = new JTextField(String.valueOf(model.getMaxNumSets()));
@@ -296,6 +362,10 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
         }
     }
 
+    // ------------------------
+    // Model sync
+    // ------------------------
+
     private void onViewDetails(ActionEvent e) {
         int viewIndex = resultTable.getSelectedRow();
         if (viewIndex < 0) {
@@ -351,10 +421,6 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
         }
     }
 
-    // ------------------------
-    // Details dialog
-    // ------------------------
-
     private void showDetailsDialog(ResultRowV2 row) {
         var d = row.details;
 
@@ -407,10 +473,6 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
-
-    // ------------------------
-    // Model sync
-    // ------------------------
 
     private void updateModelFromUI() {
         Set<Node> X = parseNodeList(treatmentsField.getText().trim(), true);
@@ -486,25 +548,9 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
         return nodes;
     }
 
-    private static List<String> tokenizeCsvWhitespace(String s) {
-        ArrayList<String> out = new ArrayList<>();
-        StringBuilder cur = new StringBuilder();
-
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (c == ',' || Character.isWhitespace(c)) {
-                if (cur.length() > 0) {
-                    out.add(cur.toString());
-                    cur.setLength(0);
-                }
-            } else {
-                cur.append(c);
-            }
-        }
-
-        if (cur.length() > 0) out.add(cur.toString());
-        return out;
-    }
+    // ------------------------
+    // Wildcard
+    // ------------------------
 
     private void installRenderers() {
         var cm = resultTable.getColumnModel();
@@ -515,6 +561,10 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
             }
         }
     }
+
+    // ------------------------
+    // Table model
+    // ------------------------
 
     private void updateViewDetailsEnabled() {
         int viewRow = resultTable.getSelectedRow();
@@ -536,51 +586,24 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
     }
 
     // ------------------------
-    // Wildcard
+    // Helpers
     // ------------------------
 
-    private static String wildcardToRegex(String pattern) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("^");
-        for (int i = 0; i < pattern.length(); i++) {
-            char c = pattern.charAt(i);
-            switch (c) {
-                case '*': sb.append(".*"); break;
-                case '?': sb.append("."); break;
-                case '\\': sb.append("\\\\"); break;
-                case '.':
-                case '[':
-                case ']':
-                case '{':
-                case '}':
-                case '(':
-                case ')':
-                case '+':
-                case '-':
-                case '^':
-                case '$':
-                case '|':
-                    sb.append("\\").append(c);
-                    break;
-                default:
-                    sb.append(c);
-            }
-        }
-        sb.append("$");
-        return sb.toString();
+    private void installSorter() {
+        TableRowSorter<DoublyRobustEstEditorV2.DoublyRobustEstResultTableModelV2> sorter = new TableRowSorter<>(this.tableModel);
+        sorter.setComparator(1, NaturalSort.naturalComparator()); // X
+        sorter.setComparator(2, NaturalSort.naturalComparator()); // Y
+        sorter.sort();
+        this.resultTable.setRowSorter(sorter);
     }
-
-    // ------------------------
-    // Table model
-    // ------------------------
 
     private static final class DoublyRobustEstResultTableModelV2 extends AbstractTableModel {
 
-        private static final String COL_NUM  = "#";
-        private static final String COL_X    = "X";
-        private static final String COL_Y    = "Y";
-        private static final String COL_Z    = "Adjustment set Z";
-        private static final String COL_ATE  = "ATE_DR";
+        private static final String COL_NUM = "#";
+        private static final String COL_X = "X";
+        private static final String COL_Y = "Y";
+        private static final String COL_Z = "Adjustment set Z";
+        private static final String COL_ATE = "ATE_DR";
         private static final String COL_NOTE = "Note";
 
         private final DoublyRobustEstModelV2 model;
@@ -590,7 +613,7 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
         }
 
         private String[] columns() {
-            return new String[] { COL_NUM, COL_X, COL_Y, COL_Z, COL_ATE, COL_NOTE };
+            return new String[]{COL_NUM, COL_X, COL_Y, COL_Z, COL_ATE, COL_NOTE};
         }
 
         @Override
@@ -625,9 +648,9 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
             String col = columns()[columnIndex];
 
             if (COL_NUM.equals(col)) return rowIndex + 1;
-            if (COL_X.equals(col))   return safe(r.formatX());
-            if (COL_Y.equals(col))   return safe(r.formatY());
-            if (COL_Z.equals(col))   return safe(r.formatZ());
+            if (COL_X.equals(col)) return safe(r.formatX());
+            if (COL_Y.equals(col)) return safe(r.formatY());
+            if (COL_Z.equals(col)) return safe(r.formatZ());
 
             if (COL_ATE.equals(col)) {
                 return (r.status == ResultRowV2.Status.OK) ? r.ateDr : Double.NaN;
@@ -650,20 +673,5 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return false;
         }
-    }
-
-    // ------------------------
-    // Helpers
-    // ------------------------
-
-    private static String safe(String s) {
-        return (s == null) ? "" : s;
-    }
-
-    private void installSorter() {
-        TableRowSorter<DoublyRobustEstEditorV2.DoublyRobustEstResultTableModelV2> sorter = new TableRowSorter<>(this.tableModel);
-        sorter.setComparator(1, NaturalSort.naturalComparator()); // X
-        sorter.setComparator(2, NaturalSort.naturalComparator()); // Y
-        this.resultTable.setRowSorter(sorter);
     }
 }
