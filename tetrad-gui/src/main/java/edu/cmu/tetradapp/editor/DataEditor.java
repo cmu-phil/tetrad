@@ -811,12 +811,20 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             DataDisplay dataDisplay = new DataDisplay(((DataSet) model).copy());
             dataDisplay.addPropertyChangeListener(this);
 
-            // Sync copied DataSet back to the wrapper whenever any cell changes.
             JTable table = dataDisplay.getDataDisplayJTable();
             if (table != null) {
                 table.getModel().addTableModelListener(e -> {
                     syncDisplayedModelsToWrapper();
                     firePropertyChange("modelChanged", null, null);
+                });
+
+                // Also sync when column selection changes, since that updates
+                // DataSet.selection but does not fire a tableChanged event.
+                table.getColumnModel().getSelectionModel().addListSelectionListener(e -> {
+                    if (!e.getValueIsAdjusting()) {
+                        syncDisplayedModelsToWrapper();
+                        firePropertyChange("modelChanged", null, null);
+                    }
                 });
             }
 
@@ -877,6 +885,10 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
     private void syncDisplayedModelsToWrapper() {
         DataModelList dataModelList = dataWrapper.getDataModelList();
+
+        // Remember which tab is currently selected by index.
+        int selectedIndex = tabbedPane.getSelectedIndex();
+
         dataModelList.clear();
 
         for (int i = 0; i < getNumJTables(); i++) {
@@ -886,6 +898,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             }
             // CovMatrix and TimeSeries are not copied in dataDisplay(), so they
             // are already the upstream object — no sync needed for them.
+        }
+
+        // Restore the selected model in the wrapper to match the selected tab.
+        if (selectedIndex >= 0 && selectedIndex < dataModelList.size()) {
+            dataModelList.setSelectedModel(dataModelList.get(selectedIndex));
         }
 
         dataWrapper.setDataModelList(dataModelList);
