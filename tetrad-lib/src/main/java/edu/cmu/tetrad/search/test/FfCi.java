@@ -32,19 +32,71 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * FF-CI-Mixed: Feature-Function CI test for mixed continuous/discrete data.
+ * A kernel-based conditional independence (CI) test for datasets containing any mix of
+ * continuous and discrete variables, implementing the Feature-Function CI (FF-CI) framework.
  *
- * Guarantee:
- *   If the dataset contains NO discrete variables, this class delegates all
- *   CI queries to IndTestFfCi, and (when configured through the same setters)
- *   behaves identically to FF-CI on continuous data.
+ * <h2>Overview</h2>
+ * FF-CI tests whether two variables X and Y are conditionally independent given a set Z,
+ * using a nonparametric kernel approach. Variables are mapped into a finite-dimensional
+ * feature space, cross-covariances are computed there, and a quadratic-form statistic is
+ * evaluated against its null distribution to produce a p-value.
  *
- * Mixed handling:
- *   - Continuous vars: Random Fourier Features (RFF) or Orthogonal Random Features (ORF)
- *   - Discrete vars: categorical features (one-hot if catRho==0; otherwise exact PSD feature map
- *     for kernel with diag=1, offdiag=catRho)
+ * <h2>Continuous-only datasets</h2>
+ * If the dataset contains <em>no</em> discrete variables, all CI queries are delegated
+ * transparently to {@link FfCiContinuous}, and this class behaves identically to that
+ * implementation given the same hyperparameter settings.
  *
- * Conditioning uses ridge residualization in feature space (same pattern as FF-CI).
+ * <h2>Mixed datasets</h2>
+ * When discrete variables are present, each variable type is featurized separately:
+ * <ul>
+ *   <li><b>Continuous variables</b> — mapped via Random Fourier Features (RFF) or
+ *       Orthogonal Random Features (ORF), approximating a Gaussian kernel. The kernel
+ *       bandwidth is estimated from the data using the median pairwise distance heuristic.</li>
+ *   <li><b>Discrete variables</b> — mapped via a categorical feature map. When
+ *       {@code catRho == 0} (the default), this reduces to standard one-hot encoding.
+ *       When {@code catRho > 0}, a PSD feature map is used corresponding to the kernel
+ *       with diagonal entries 1 and off-diagonal entries {@code catRho}, constructed via
+ *       Cholesky factorization.</li>
+ * </ul>
+ * The continuous and discrete feature blocks are horizontally stacked to form a joint
+ * feature representation for each variable (or block of variables).
+ *
+ * <h2>Conditional testing</h2>
+ * Conditioning on Z is handled by ridge residualization in feature space: the feature
+ * matrices for X and Y are each regressed on the feature matrix for Z using a ridge
+ * penalty ({@code lambda}), and the residuals are used to compute the test statistic.
+ * This mirrors the approach used in {@link FfCiContinuous}.
+ *
+ * <h2>Test statistic and p-value</h2>
+ * The test statistic is {@code n * ||Cov(fX, fY)||_F^2}, where {@code fX} and {@code fY}
+ * are the (possibly residualized) feature matrices. Its null distribution is approximated
+ * as a weighted sum of chi-squared(1) variables, with weights given by the positive
+ * eigenvalues of the sample Khatri-Rao covariance matrix. The p-value can be obtained
+ * via one of four methods selectable through {@link #setApproximation}:
+ * <ul>
+ *   <li>{@code GAMMA} — Satterthwaite/moment-matching gamma approximation (default)</li>
+ *   <li>{@code SADDLEPOINT} — Lugannani-Rice saddlepoint approximation</li>
+ *   <li>{@code DAVIES_IMHOF} — Davies/Imhof numerical integration</li>
+ *   <li>{@code PERMUTATION} — permutation test (exact but slow)</li>
+ * </ul>
+ *
+ * <h2>Caching</h2>
+ * Feature matrices and kernel bandwidths are cached by a key that encodes the variable
+ * names, active row set, hyperparameters, and a {@code dataVersion} counter. Call
+ * {@link #bumpDataVersion()} after any in-place modification of the dataset (e.g.,
+ * resimulation) to invalidate stale cached values.
+ *
+ * <h2>Key references</h2>
+ * <ul>
+ *   <li>Zhang et al. (2012). "Kernel-based conditional independence test and application
+ *       in causal discovery." UAI.</li>
+ *   <li>Rahimi &amp; Recht (2007). "Random features for large-scale kernel machines." NeurIPS.</li>
+ *   <li>Yu et al. (2016). "Orthogonal random features." NeurIPS.</li>
+ * </ul>
+ *
+ * @see FfCiContinuous
+ * @see IndependenceTest
+ * @see RawMarginalIndependenceTest
  */
 public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIndependenceTest {
 
