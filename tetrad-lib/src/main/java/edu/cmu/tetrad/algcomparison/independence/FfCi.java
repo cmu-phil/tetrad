@@ -28,9 +28,9 @@ import java.util.List;
  */
 @TestOfIndependence(
         name = "FFCI (Fourier Features Conditional Independence)",
-        command = "ffci",
+        command = "ffci-test",
         dataType = DataType.Mixed
-)
+)   
 @General
 @Mixed
 public class FfCi implements IndependenceWrapper {

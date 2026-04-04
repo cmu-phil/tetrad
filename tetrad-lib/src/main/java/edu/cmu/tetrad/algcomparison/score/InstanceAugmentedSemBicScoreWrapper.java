@@ -16,11 +16,11 @@ import java.util.List;
  * algorithm wrapper), - takes the instance row from Params.INSTANCE_ROW, - aligns columns by training variable names, -
  * uses alpha from Params.IS_ALPHA (default 1.0).
  */
-@edu.cmu.tetrad.annotation.Score(
-        name = "Instance-specific Augmented Sem BIC Score",
-        command = "is-sem-bic-score",
-        dataType = {DataType.Continuous, DataType.Covariance}
-)
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "Instance-specific Augmented Sem BIC Score",
+//        command = "is-sem-bic-score",
+//        dataType = {DataType.Continuous, DataType.Covariance}
+//)
 public final class InstanceAugmentedSemBicScoreWrapper implements ScoreWrapper, AcceptsKnowledge {
 
     /**
