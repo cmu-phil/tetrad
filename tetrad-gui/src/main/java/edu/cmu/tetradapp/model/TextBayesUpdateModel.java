@@ -3,6 +3,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.Evidence;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.editor.BayesUpdaterEditor;
 import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.Serial;
@@ -46,6 +47,11 @@ public final class TextBayesUpdateModel implements SessionModel, Serializable {
 
     public TextBayesUpdateModel(BayesImWrapper bayesIm, Parameters params) {
         this.bayesIm = Objects.requireNonNull(bayesIm, "bayesIm").getBayesIm();
+        this.params = Objects.requireNonNull(params, "params");
+    }
+
+    public TextBayesUpdateModel(BayesEstimatorWrapper bayesEst, Parameters params) {
+        this.bayesIm = Objects.requireNonNull(bayesEst, "bayesIm").getEstimatedBayesIm();
         this.params = Objects.requireNonNull(params, "params");
     }
 
