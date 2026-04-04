@@ -192,7 +192,7 @@ public final class IndTestCramerT implements IndependenceTest {
         }
 
         List<Node> z = new ArrayList<>();
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         // Precondition: this.variables, this.corrMatrix properly set up.
         //

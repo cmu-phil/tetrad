@@ -28,12 +28,9 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.PartialCorrelation;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
-import edu.cmu.tetrad.util.TMath;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -222,7 +219,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
 
     private double partialCorrelation(Node x, Node y, Set<Node> _z) throws SingularMatrixException {
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         return this.recursivePartialCorrelation.corr(x, y, z);
 
@@ -298,7 +295,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     public boolean determines(Set<Node> _z, Node x) throws UnsupportedOperationException {
         int[] parents = new int[_z.size()];
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         for (int j = 0; j < parents.length; j++) {
             parents[j] = this.covMatrix.getVariables().indexOf(z.get(j));

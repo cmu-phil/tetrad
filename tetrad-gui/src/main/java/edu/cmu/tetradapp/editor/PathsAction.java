@@ -24,6 +24,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.OSet;
 import edu.cmu.tetrad.search.RecursiveAdjustment;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
@@ -2012,7 +2013,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         List<Node> nodes = new ArrayList<>(_nodes);
 
-        Collections.sort(nodes);
+        nodes.sort(NaturalSort.naturalComparator());
 
         StringBuilder buf = new StringBuilder();
 

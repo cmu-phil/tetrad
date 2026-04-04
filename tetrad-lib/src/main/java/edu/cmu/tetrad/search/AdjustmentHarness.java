@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
 
@@ -251,7 +252,7 @@ public class AdjustmentHarness {
         if (Z.isEmpty()) return "{}";
         List<String> names = new ArrayList<>();
         for (Node n : Z) names.add(n.getName());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());
         return "{" + String.join(",", names) + "}";
     }
 

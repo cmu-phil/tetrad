@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlockSpecTextCodec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
@@ -231,7 +232,7 @@ public final class BlockSpecEditorPanel extends JPanel {
         sb.append("%\n% Available variables:\n% ");
         int col = 2; // "% " already on the line
         List<Node> variables = dataSet.getVariables();
-        Collections.sort(variables);
+        variables.sort(NaturalSort.naturalComparator());
 
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
             Node v = variables.get(i);
@@ -560,7 +561,7 @@ public final class BlockSpecEditorPanel extends JPanel {
             }
             LinkedHashSet<String> uniq = new LinkedHashSet<>(names);
             List<String> sorted = new ArrayList<>(uniq);
-            Collections.sort(sorted);
+            sorted.sort(NaturalSort.naturalComparator());
             return lhs + ": " + String.join(", ", sorted);
         };
 
@@ -636,89 +637,6 @@ public final class BlockSpecEditorPanel extends JPanel {
         String newText = String.join("\n", rewritten);
         setText(newText, false);
     }
-
-//    private void canonicalizePreservingComments() {
-//        Element root = textPane.getDocument().getDefaultRootElement();
-//        int lineCount = root.getElementCount();
-//        List<String> lines = new ArrayList<>(lineCount);
-//        try {
-//            for (int i = 0; i < lineCount; i++) {
-//                Element el = root.getElement(i);
-//                String line = textPane.getDocument().getText(el.getStartOffset(),
-//                        el.getEndOffset() - el.getStartOffset());
-//                // strip trailing newline the Document may include
-//                if (line.endsWith("\n")) line = line.substring(0, line.length() - 1);
-//                lines.add(line);
-//            }
-//        } catch (BadLocationException e) {
-//            Toolkit.getDefaultToolkit().beep();
-//            return;
-//        }
-//
-//        List<String> rewritten = new ArrayList<>(lines.size());
-//        Map<Integer, String> idxToName = new HashMap<>();
-//        for (int i = 0; i < dataSet.getNumColumns(); i++) {
-//            idxToName.put(i, dataSet.getVariable(i).getName());
-//        }
-//        Map<String, Integer> nameToIdx = idxToName.entrySet().stream()
-//                .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
-//
-//        for (String raw : lines) {
-//            String s = raw.stripTrailing();
-//            if (s.isBlank() || s.stripLeading().startsWith("%")) {
-//                rewritten.add(raw); // keep comments/blanks exactly
-//                continue;
-//            }
-//            int colon = s.indexOf(':');
-//            if (colon < 0) {
-//                // singleton line (token) â leave as-is
-//                rewritten.add(raw);
-//                continue;
-//            }
-//            String lhs = s.substring(0, colon).trim();
-//            String rhs = s.substring(colon + 1);
-//
-//            // Parse RHS tokens to names
-//            List<String> tokens = new ArrayList<>();
-//            Matcher mt = TOKEN.matcher(rhs);
-//            while (mt.find()) {
-//                String q = mt.group(1);
-//                String idx = mt.group(2);
-//                String bare = mt.group(3);
-//                if (q != null) tokens.add(q);
-//                else if (idx != null) tokens.add("#" + idx);
-//                else if (bare != null) tokens.add(bare);
-//            }
-//
-//            // Map tokens to variable names (drop unknowns; we donât alter them here)
-//            List<String> names = new ArrayList<>();
-//            for (String tok : tokens) {
-//                if (tok.startsWith("#")) {
-//                    try {
-//                        int k = Integer.parseInt(tok.substring(1));
-//                        String nm = idxToName.get(k);
-//                        if (nm != null) names.add(nm);
-//                    } catch (NumberFormatException ignored) {
-//                    }
-//                } else if (nameToIdx.containsKey(tok)) {
-//                    names.add(tok);
-//                }
-//            }
-//
-//            // Sort & dedup names
-//            LinkedHashSet<String> uniq = new LinkedHashSet<>(names); // preserve first occurrence
-//            List<String> sorted = new ArrayList<>(uniq);
-//            Collections.sort(sorted);
-//
-//            String joined = String.join(", ", sorted);
-//            String newLine = lhs + ": " + joined;
-//            // Preserve original trailing whitespace difference if desired; simple replace here:
-//            rewritten.add(newLine);
-//        }
-//
-//        String newText = String.join("\n", rewritten);
-//        setText(newText, false); // donât replace originalText; keep undo stack cleared
-//    }
 
     private void showCompletion() {
         completionModel.clear();

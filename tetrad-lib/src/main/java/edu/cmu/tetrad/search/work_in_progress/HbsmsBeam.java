@@ -30,6 +30,7 @@ import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.sem.*;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 
@@ -402,7 +403,7 @@ public final class HbsmsBeam implements Hbsms {
 
         // Add moves:
         List<Node> nodes = graph.getNodes();
-        Collections.sort(nodes);
+        nodes.sort(NaturalSort.naturalComparator());
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = 0; j < nodes.size(); j++) {

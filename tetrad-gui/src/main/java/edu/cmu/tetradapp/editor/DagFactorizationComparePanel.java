@@ -6,6 +6,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.Histogram;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetradapp.model.DagFactorizationCompare;
 import edu.cmu.tetrad.util.TMath;
 
@@ -270,7 +271,7 @@ public final class DagFactorizationComparePanel extends JPanel {
             }
 
             // stable sort consistent with your PlotMatrix (Collections.sort(nodes))
-            Collections.sort(out);
+            out.sort(NaturalSort.naturalComparator());
 
             this.vars = out;
             this.varsArray = out.toArray(new Node[0]);

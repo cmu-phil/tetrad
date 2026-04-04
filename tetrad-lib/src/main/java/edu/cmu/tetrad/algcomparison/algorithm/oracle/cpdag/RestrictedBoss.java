@@ -38,6 +38,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -172,7 +173,7 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm
         }
 
         List<Node> restrictedList = new ArrayList<>(restrictedSet);
-        Collections.sort(restrictedList);
+        restrictedList.sort(NaturalSort.naturalComparator());
 
         DataSet restrictedData = dataSet.subsetColumns(restrictedList);
 

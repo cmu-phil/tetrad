@@ -136,7 +136,7 @@ public class TrekSeparationBlocksIndependence implements IndependenceTest, Effec
         if (z == null || z.isEmpty()) return "{}";
         List<String> names = new ArrayList<>(z.size());
         for (Node n : z) names.add(n.getName());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());;
         return "{" + String.join(",", names) + "}";
     }
 

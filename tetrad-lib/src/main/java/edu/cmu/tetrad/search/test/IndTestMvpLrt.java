@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.MvpLikelihood;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.HashedMap;
@@ -117,7 +118,7 @@ public class IndTestMvpLrt implements IndependenceTest {
         }
 
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         int _x = this.nodesHash.get(x);
         int _y = this.nodesHash.get(y);

@@ -20,11 +20,7 @@
 
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.PointXy;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.util.*;
 
 import javax.swing.*;
 import java.text.NumberFormat;
@@ -247,7 +243,7 @@ public class LayoutUtil {
         int radius = centerx - CIRCLE_MARGIN;
 
         List<Node> nodes = graph.getNodes();
-        Collections.sort(nodes);
+        nodes.sort(NaturalSort.naturalComparator());
 
         double rad = 2.0 * Math.PI / nodes.size();
         double phi = 1.5 * Math.PI; // start from 12 o'clock
@@ -273,7 +269,7 @@ public class LayoutUtil {
     public static void squareLayout(Graph graph) {
         List<Node> nodes = new ArrayList<>(graph.getNodes());
 
-        Collections.sort(nodes);
+        nodes.sort(NaturalSort.naturalComparator());
 
         int bufferx = 70;
         int buffery = 50;
@@ -1127,7 +1123,7 @@ public class LayoutUtil {
             });
 
             for (List<Node> component1 : components) {
-                Collections.sort(component1);
+                components.sort(NaturalSort.naturalComparator());
                 layoutComponent(component1);
             }
         }

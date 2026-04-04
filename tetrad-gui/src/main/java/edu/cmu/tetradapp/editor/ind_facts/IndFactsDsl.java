@@ -1,5 +1,6 @@
 package edu.cmu.tetradapp.editor.ind_facts;
 
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
@@ -238,7 +239,7 @@ public final class IndFactsDsl {
         Set<String> seen = new HashSet<>();
 
         List<String> vars = new ArrayList<>(allVars);
-        Collections.sort(vars);
+        vars.sort(NaturalSort.naturalComparator());
 
         for (Template t : templates) {
             int expanded = 0, kept = 0, skippedInvalid = 0;
@@ -453,7 +454,7 @@ public final class IndFactsDsl {
         if (k < 0) return List.of();
         List<String> items = new ArrayList<>(pool);
         // deterministic ordering
-        Collections.sort(items);
+        items.sort(NaturalSort.naturalComparator());
         List<List<String>> out = new ArrayList<>();
         choose(items, 0, k, new ArrayList<>(k), out);
         return out;
@@ -483,7 +484,7 @@ public final class IndFactsDsl {
         String a = x, b = y;
         if (a.compareTo(b) > 0) { String tmp = a; a = b; b = tmp; }
         List<String> zz = new ArrayList<>(z);
-        Collections.sort(zz);
+        zz.sort(NaturalSort.naturalComparator());;
         if (zz.isEmpty()) return a + " _||_ " + b;
         return a + " _||_ " + b + " | " + String.join(", ", zz);
     }

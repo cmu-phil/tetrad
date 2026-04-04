@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
 
@@ -124,7 +125,7 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         Node[] nodes = new Node[z.size()];
         for (int i = 0; i < z.size(); i++) nodes[i] = z.get(i);

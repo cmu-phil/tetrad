@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.CharArrayWriter;
@@ -410,7 +411,7 @@ public final class Knowledge implements TetradSerializable {
 
         try {
             List<String> list = new ArrayList<>(tierSpecs.get(tier));
-            Collections.sort(list);
+            list.sort(NaturalSort.naturalComparator());
             return list;
         } catch (Exception e) {
             throw new RuntimeException("Expecting tiered knowledge", e);

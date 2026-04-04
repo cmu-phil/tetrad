@@ -690,7 +690,7 @@ public class GridSearchEditor extends JPanel {
     @NotNull
     private static String getParameterText(Set<String> paramNamesSet, Parameters parameters) {
         List<String> paramNames = new ArrayList<>(paramNamesSet);
-        Collections.sort(paramNames);
+        paramNames.sort(NaturalSort.naturalComparator());
 
         StringBuilder paramText = new StringBuilder();
 

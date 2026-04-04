@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.LegendreBicScore;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import edu.cmu.tetrad.util.TMath;
@@ -91,7 +92,7 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) throws InterruptedException {
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         IndependenceFact fact = new IndependenceFact(x, y, _z);
 

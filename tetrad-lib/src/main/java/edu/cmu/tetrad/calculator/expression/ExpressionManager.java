@@ -174,7 +174,6 @@ public class ExpressionManager {
         descriptors.add(new ClipExpressionDescriptor());
         descriptors.add(new BoundExpressionDescriptor());
 
-//        Collections.sort(descriptor, new Comp());
         return descriptors;
     }
 

@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import edu.cmu.tetrad.util.TMath;
@@ -233,7 +234,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
                              Map<Integer, List<Integer>> embedding, boolean doOneEquationOnly,
                              double lambda, SimpleMatrix covarianceMatrix, int sampleSize) {
         List<Node> zList = new ArrayList<>(z);
-        Collections.sort(zList);
+        zList.sort(NaturalSort.naturalComparator());
 
         int _x = nodeHash.get(x);
         int _y = nodeHash.get(y);

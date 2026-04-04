@@ -33,6 +33,7 @@ import edu.cmu.tetrad.search.PcMb;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.MbUtils;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -209,7 +210,7 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
         mbPlusTarget.add(this.target);
 
         ArrayList<Node> vars = new ArrayList<>(mbPlusTarget);
-        Collections.sort(vars);
+        vars.sort(NaturalSort.naturalComparator());;
         DataSet subset = this.train.subsetColumns(vars);
 
         System.out.println("subset vars = " + subset.getVariables());

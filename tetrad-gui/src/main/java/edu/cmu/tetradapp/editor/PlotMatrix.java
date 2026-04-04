@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.Histogram;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.NaturalSort;
 
 import javax.swing.*;
 import java.awt.*;
@@ -106,7 +107,7 @@ public class PlotMatrix extends JPanel {
         setLayout(new BorderLayout());
 
         List<Node> nodes = dataSet.getVariables();
-        Collections.sort(nodes);
+        nodes.sort(NaturalSort.naturalComparator());
 
         Node[] _vars = new Node[nodes.size()];
         for (int i = 0; i < nodes.size(); i++) _vars[i] = nodes.get(i);

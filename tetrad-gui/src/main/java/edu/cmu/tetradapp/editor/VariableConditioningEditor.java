@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
@@ -75,7 +76,7 @@ public class VariableConditioningEditor extends JPanel {
         this.setLayout(new BorderLayout());
 
         List<Node> variables = dataset.getVariables();
-        Collections.sort(variables);
+        variables.sort(NaturalSort.naturalComparator());
 
         if (!_conditioningPanelMap.isEmpty()) {
             this.conditioningPanelMap.putAll(_conditioningPanelMap);
@@ -196,7 +197,7 @@ public class VariableConditioningEditor extends JPanel {
         }
 
         List<Node> variables = dataSet.getVariables();
-        Collections.sort(variables);
+        variables.sort(NaturalSort.naturalComparator());
 
         for (Node node : variables) {
             ConditioningPanel panel = conditioningPanelMap.get(node);

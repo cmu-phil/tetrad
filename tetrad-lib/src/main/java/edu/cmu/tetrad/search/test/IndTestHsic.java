@@ -30,11 +30,7 @@ import edu.cmu.tetrad.search.utils.Kernel;
 import edu.cmu.tetrad.search.utils.KernelGaussian;
 import edu.cmu.tetrad.search.utils.KernelUtils;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.util.*;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -171,7 +167,7 @@ public final class IndTestHsic implements IndependenceTest {
         }
 
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         int m = sampleSize();
 

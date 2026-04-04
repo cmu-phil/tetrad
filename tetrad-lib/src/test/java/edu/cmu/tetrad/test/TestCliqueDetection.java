@@ -38,11 +38,7 @@ import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.RankTests;
-import edu.cmu.tetrad.util.TextTable;
-import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.util.*;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
@@ -674,7 +670,7 @@ public class TestCliqueDetection {
 
             List<String> keys = new ArrayList<>(raw.keySet());
             keys.retainAll(r1.keySet());
-            Collections.sort(keys);
+            keys.sort(NaturalSort.naturalComparator());
 
             final int rows = keys.size() + 1;
             final int cols = 7;

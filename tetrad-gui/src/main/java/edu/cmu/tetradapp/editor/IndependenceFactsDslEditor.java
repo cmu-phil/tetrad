@@ -1523,7 +1523,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
             String a = xName.compareTo(yName) <= 0 ? xName : yName;
             String b = xName.compareTo(yName) <= 0 ? yName : xName;
             List<String> z = new ArrayList<>(zNames);
-            Collections.sort(z);
+            z.sort(NaturalSort.naturalComparator());
             return a + "||" + b + "||" + String.join(",", z);
         }
     }

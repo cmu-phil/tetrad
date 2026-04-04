@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.OrderedPair;
 import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.search.IdaCheck;
 import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.IdaModel;
 import edu.cmu.tetradapp.util.WatchedProcess;
@@ -39,10 +40,8 @@ import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -158,6 +157,10 @@ public class IdaEditor extends JPanel {
         table.setFillsViewportHeight(true);
 
         this.sorter = new TableRowSorter<>(tableModel);
+        sorter.setComparator(1, Comparator.<String, NaturalSort.NaturalKey>comparing(
+                        s -> NaturalSort.NaturalKey.from(s.split(" ~~> ")[0]))
+                .thenComparing(
+                        s -> NaturalSort.NaturalKey.from(s.split(" ~~> ")[1])));
         table.setRowSorter(sorter);
 
         // When the user sorts, recompute the summary statistics using only visible rows.
@@ -272,6 +275,10 @@ public class IdaEditor extends JPanel {
                 table.setModel(tableModel);
 
                 sorter = new TableRowSorter<>(tableModel);
+                sorter.setComparator(1, Comparator.<String, NaturalSort.NaturalKey>comparing(
+                                s -> NaturalSort.NaturalKey.from(s.split(" ~~> ")[0]))
+                        .thenComparing(
+                                s -> NaturalSort.NaturalKey.from(s.split(" ~~> ")[1])));
                 table.setRowSorter(sorter);
 
                 sorter.addRowSorterListener(e2 -> {
@@ -499,8 +506,10 @@ public class IdaEditor extends JPanel {
 
                     // Replace sorter (and its listeners) to match the new model.
                     sorter = new TableRowSorter<>(tableModel);
-                    table.setRowSorter(sorter);
-
+                    sorter.setComparator(1, Comparator.<String, NaturalSort.NaturalKey>comparing(
+                                    s -> NaturalSort.NaturalKey.from(s.split(" ~~> ")[0]))
+                            .thenComparing(
+                                    s -> NaturalSort.NaturalKey.from(s.split(" ~~> ")[1])));
                     sorter.addRowSorterListener(e -> {
                         if (e.getType() == RowSorterEvent.Type.SORTED) {
                             updateStatsForVisibleRows();

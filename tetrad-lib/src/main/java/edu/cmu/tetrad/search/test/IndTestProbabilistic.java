@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
@@ -183,7 +184,7 @@ public class IndTestProbabilistic implements IndependenceTest {
         }
 
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         Node[] nodes = new Node[z.size()];
         for (int i = 0; i < z.size(); i++) nodes[i] = z.get(i);

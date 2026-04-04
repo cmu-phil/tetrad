@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.ResolveSepsets;
+import edu.cmu.tetrad.util.NaturalSort;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -105,7 +106,7 @@ public class IndTestIod implements IndependenceTest {
             }
         }
 
-        Collections.sort(nodeList);
+        nodeList.sort(NaturalSort.naturalComparator());
         this.nodeList = nodeList;
     }
 

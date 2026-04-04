@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -78,7 +79,7 @@ public class UnderliningsAction extends AbstractAction implements ClipboardOwner
         textArea.append("Underlinings:");
         boolean allEmpty = true;
         List<Node> nodes = workbench.getGraph().getNodes();
-        Collections.sort(nodes);
+        nodes.sort(NaturalSort.naturalComparator());
 
         for (Node node : nodes) {
             List<String> types = this.workbench.getTriplesClassificationTypes();

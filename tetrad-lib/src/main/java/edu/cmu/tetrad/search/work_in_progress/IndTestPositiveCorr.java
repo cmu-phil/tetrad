@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
@@ -134,7 +135,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         double[] y = this.data[this.dataSet.getColumnIndex(y0)];
 
         List<Node> z0 = new ArrayList<>(_z0);
-        Collections.sort(z0);
+        z0.sort(NaturalSort.naturalComparator());
 
         double[][] _Z = new double[z0.size()][];
 

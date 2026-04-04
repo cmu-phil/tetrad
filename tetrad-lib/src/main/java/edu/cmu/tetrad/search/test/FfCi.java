@@ -24,10 +24,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.util.*;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
@@ -1262,7 +1259,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
 
         ArrayList<String> zNames = new ArrayList<>();
         for (Node z : fact.getZ()) zNames.add(z.getName());
-        Collections.sort(zNames);
+        zNames.sort(NaturalSort.naturalComparator());
         for (String s : zNames) h = 1099511628211L * (h ^ s.hashCode());
 
         return h;

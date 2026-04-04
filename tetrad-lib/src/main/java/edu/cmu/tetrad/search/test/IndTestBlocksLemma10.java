@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
@@ -128,7 +129,7 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest, Effect
         if (z == null || z.isEmpty()) return "{}";
         List<String> names = new ArrayList<>(z.size());
         for (Node n : z) names.add(n.getName());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());;
         return "{" + String.join(",", names) + "}";
     }
 

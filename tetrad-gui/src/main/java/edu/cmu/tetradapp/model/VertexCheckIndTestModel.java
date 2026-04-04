@@ -56,10 +56,6 @@ import java.util.*;
 public class VertexCheckIndTestModel implements SessionModel, GraphSource, KnowledgeBoxInput {
 
     public static final String PROP_GRAPH = "graph";
-    public static final Comparator<String> NATURAL_NAME_COMPARATOR =
-            Comparator.comparing(
-                    NaturalKey::from
-            );
     @Serial
     private static final long serialVersionUID = 1L;
     private final DataModel dataModel;
@@ -441,7 +437,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         }
 
         List<String> _vertexNames = new ArrayList<>(vertexNames);
-        _vertexNames.sort(NATURAL_NAME_COMPARATOR);
+        _vertexNames.sort(NaturalSort.NATURAL_NAME_COMPARATOR);
         return _vertexNames;
     }
 
@@ -598,42 +594,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     public boolean getUseAndersonDarling() {
         return useAndersonDarling;
-    }
-
-    private static final class NaturalKey implements Comparable<NaturalKey> {
-        final String prefix;
-        final Integer suffix;   // null if no numeric suffix
-
-        private NaturalKey(String prefix, Integer suffix) {
-            this.prefix = prefix;
-            this.suffix = suffix;
-        }
-
-        static NaturalKey from(String s) {
-            int i = s.length();
-            while (i > 0 && Character.isDigit(s.charAt(i - 1))) {
-                i--;
-            }
-
-            String prefix = s.substring(0, i);
-            Integer suffix = (i < s.length())
-                    ? Integer.parseInt(s.substring(i))
-                    : null;
-
-            return new NaturalKey(prefix, suffix);
-        }
-
-        @Override
-        public int compareTo(NaturalKey o) {
-            int c = this.prefix.compareTo(o.prefix);
-            if (c != 0) return c;
-
-            if (this.suffix == null && o.suffix == null) return 0;
-            if (this.suffix == null) return -1;  // "X" before "X1"
-            if (o.suffix == null) return 1;
-
-            return Integer.compare(this.suffix, o.suffix);
-        }
     }
 
     private record ConditioningSetSizeRange(int min, int max) {

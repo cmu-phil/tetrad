@@ -6,6 +6,7 @@ import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -346,7 +347,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
             if (n != null && n.getName() != null) z.add(n.getName());
         }
 
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());
 
         return a + "|" + b + "|" + String.join(",", z);
     }
@@ -498,7 +499,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         // 1) Nodes in a stable order (natural sort)
         List<Node> nodes = new ArrayList<>(g.getNodes());
         nodes.sort(Comparator.comparing(Node::getName,
-                Comparator.nullsLast(VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR)));
+                Comparator.nullsLast(NaturalSort.NATURAL_NAME_COMPARATOR)));
 
         if (nodes.isEmpty()) return null;
 
@@ -748,7 +749,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
 
         if (workingGraph != null) {
             List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
-            nodes.sort(Comparator.comparing(Node::getName, VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR));
+            nodes.sort(Comparator.comparing(Node::getName, NaturalSort.NATURAL_NAME_COMPARATOR));
             for (Node n : nodes) m.addElement(n);
         }
 
@@ -932,7 +933,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
 
                 List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
                 nodes.sort(Comparator.comparing(Node::getName,
-                        VertexCheckIndTestModel.NATURAL_NAME_COMPARATOR));
+                        NaturalSort.NATURAL_NAME_COMPARATOR));
 
                 for (Node node : nodes) {
                     if (stopRequested()) return;
@@ -1382,8 +1383,8 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
             if (earlyReject) continue;
             if (news.isEmpty()) continue;
 
-            Collections.sort(parents);
-            Collections.sort(children);
+            parents.sort(NaturalSort.naturalComparator());
+            children.sort(NaturalSort.naturalComparator());
 
             // Label is important: your moveType(...) will treat this as a REORIENT_SIMPLE (contains "orient").
             String label =
@@ -1774,7 +1775,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         Map<String, Double> globalPByKey = false ? new HashMap<>() : null;
 
         List<String> names = new ArrayList<>(contrib.keySet());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());
 
         for (String name : names) {
             VertexContribution vc = contrib.get(name);
@@ -2163,7 +2164,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
                     List<String> parts = new ArrayList<>();
                     for (Edge oe : olds) parts.add("O:" + stableEdgeKey(oe));
                     for (Edge ne : news) parts.add("N:" + stableEdgeKey(ne));
-                    Collections.sort(parts);
+                    parts.sort(NaturalSort.naturalComparator());
                     return "MULTI:" + label + ":" + String.join("|", parts);
                 }
 

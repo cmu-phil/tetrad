@@ -1774,7 +1774,7 @@ public class Paths implements TetradSerializable {
 
         List<Node> _msep = new ArrayList<>(msep);
 
-        Collections.sort(_msep);
+        _msep.sort(NaturalSort.naturalComparator());
         Collections.reverse(_msep);
 
         return _msep;

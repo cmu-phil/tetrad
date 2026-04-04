@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 
@@ -554,7 +555,7 @@ public class Pc implements IGraphSearch {
 
     private static String stringifySet(Set<Node> S) {
         List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());
         return "{" + String.join(",", names) + "}";
     }
 
@@ -820,7 +821,7 @@ public class Pc implements IGraphSearch {
 
     private String setKey(Set<Node> S) {
         List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());;
         return String.join("\u0001", names);
     }
 

@@ -22,6 +22,7 @@ package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.NaturalSort;
 
 import java.util.*;
 
@@ -149,7 +150,7 @@ public class CachingIndependenceTest implements IndependenceTest {
             // canonicalize: sorted conditioning set
             this.z = new ArrayList<>();
             for (Node n : condSet) this.z.add(n.getName());
-            Collections.sort(this.z);
+            this.z.sort(NaturalSort.naturalComparator());
         }
 
         @Override

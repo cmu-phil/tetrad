@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.ConditionalGaussianLikelihood;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.special.Gamma;
@@ -131,7 +132,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
         this.likelihood.setMinSampleSizePerCell(this.minSampleSizePerCell);
 
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         List<Node> allVars = new ArrayList<>(z.size() + 2);
         allVars.addAll(z);

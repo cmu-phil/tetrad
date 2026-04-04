@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 
@@ -199,7 +200,7 @@ public final class IndependenceFact implements TetradSerializable, Comparable<In
         if (!_z.isEmpty()) {
             List<String> zNames = new ArrayList<>(_z.size());
             for (Node n : _z) zNames.add(n.getName());
-            Collections.sort(zNames);
+            zNames.sort(NaturalSort.naturalComparator());
             for (String s : zNames) {
                 h = 31 * h + s.hashCode();
             }
@@ -232,11 +233,11 @@ public final class IndependenceFact implements TetradSerializable, Comparable<In
         if (!this._z.isEmpty()) {
             List<String> z1 = new ArrayList<>(this._z.size());
             for (Node n : this._z) z1.add(n.getName());
-            Collections.sort(z1);
+            z1.sort(NaturalSort.naturalComparator());
 
             List<String> z2 = new ArrayList<>(other._z.size());
             for (Node n : other._z) z2.add(n.getName());
-            Collections.sort(z2);
+            z2.sort(NaturalSort.naturalComparator());
 
             for (int i = 0; i < z1.size(); i++) {
                 c = z1.get(i).compareTo(z2.get(i));
@@ -260,7 +261,7 @@ public final class IndependenceFact implements TetradSerializable, Comparable<In
             builder.append(" | ");
 
             List<Node> z = new ArrayList<>(this._z);
-            Collections.sort(z);
+            z.sort(NaturalSort.naturalComparator());
 
             for (int i = 0; i < z.size(); i++) {
                 builder.append(z.get(i));

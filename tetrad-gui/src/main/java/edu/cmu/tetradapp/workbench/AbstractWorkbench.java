@@ -23,10 +23,7 @@ package edu.cmu.tetradapp.workbench;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TMath;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.GraphFileMenu;
 import edu.cmu.tetradapp.editor.GraphPropertiesAction;
 import edu.cmu.tetradapp.editor.PathsAction;
@@ -36,6 +33,7 @@ import edu.cmu.tetradapp.util.LayoutEditable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.Point;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -2210,7 +2208,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     List<String> nodes = new ArrayList<>();
                     nodes.add(n1);
                     nodes.add(n2);
-                    Collections.sort(nodes);
+                    nodes.sort(NaturalSort.naturalComparator());
                     for (EdgeTypeProbability edgeTypeProb : edgeProb) {
                         String type = switch (edgeTypeProb.getEdgeType()) {
                             case nil -> "no edge";

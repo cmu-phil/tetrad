@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.search.mimic;
 
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.text.DecimalFormat;
@@ -113,7 +114,7 @@ public final class MimicBenchmarkReport {
         sb.append("name\tvalue\n");
 
         List<String> names = new ArrayList<>(parameters.getParametersNames());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());;
 
         for (String name : names) {
             Object value = parameters.get(name);

@@ -27,10 +27,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.ProbUtils;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.*;
@@ -138,7 +135,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
 
         try {
             List<Node> z = new ArrayList<>();
-            Collections.sort(z);
+            z.sort(NaturalSort.naturalComparator());;
 
             int[] all = new int[z.size() + 2];
             all[0] = this.nodesMap.get(x);

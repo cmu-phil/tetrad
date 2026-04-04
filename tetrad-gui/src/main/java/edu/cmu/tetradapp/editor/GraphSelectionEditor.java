@@ -21,6 +21,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
@@ -1205,7 +1206,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
              * Sorts the elements in the list.
              */
             public void sort() {
-                Collections.sort(this.delegate);
+                this.delegate.sort(NaturalSort.naturalComparator());
                 this.fireContentsChanged(this, 0, this.delegate.size());
             }
         }

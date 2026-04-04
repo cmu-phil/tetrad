@@ -25,11 +25,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
-import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -225,7 +222,7 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         List<Node> zList = new ArrayList<>(z);
-        Collections.sort(zList);
+        zList.sort(NaturalSort.naturalComparator());
 
         List<Integer> rows = this.rows == null ? allRows : this.rows;
 

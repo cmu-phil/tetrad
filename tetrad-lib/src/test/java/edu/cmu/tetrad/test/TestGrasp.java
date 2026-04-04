@@ -3049,7 +3049,7 @@ public final class TestGrasp {
             OrderedMap<String, Set<String>> labels = new ListOrderedMap<>();
 
             List<Node> variables = facts.facts.getVariables();
-            Collections.sort(variables);
+            variables.sort(NaturalSort.naturalComparator());
 
             PermutationGenerator gen = new PermutationGenerator(variables.size());
             int[] perm;
@@ -3124,7 +3124,7 @@ public final class TestGrasp {
             OrderedMap<String, Set<String>> labels = new ListOrderedMap<>();
 
             List<Node> variables = facts.facts.getVariables();
-            Collections.sort(variables);
+            variables.sort(NaturalSort.naturalComparator());
 
             PermutationGenerator gen = new PermutationGenerator(variables.size());
             int[] perm;

@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.AdditiveLocalScorer;
 import edu.cmu.tetrad.search.score.CamAdditivePsplineBic;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
@@ -364,7 +365,7 @@ public class Cam {
             // canonicalize parent names to avoid cache misses due to order
             List<String> names = new ArrayList<>(parents.size());
             for (Node p : parents) names.add(p.getName());
-            Collections.sort(names);
+            names.sort(NaturalSort.naturalComparator());
             StringBuilder sb = new StringBuilder(64).append(y.getName()).append('|');
             for (String name : names) sb.append(name).append(',');
             key = sb.toString();

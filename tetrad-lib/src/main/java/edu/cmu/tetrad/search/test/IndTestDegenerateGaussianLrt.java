@@ -27,11 +27,8 @@ import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
-import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.text.DecimalFormat;
@@ -121,7 +118,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
 
     private double getPValue(Node x, Node y, Set<Node> z) {
         List<Node> zList = new ArrayList<>(z);
-        Collections.sort(zList);
+        zList.sort(NaturalSort.naturalComparator());
 
         Integer _xObj = this.nodeHash.get(x);
         Integer _yObj = this.nodeHash.get(y);

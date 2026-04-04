@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import edu.cmu.tetrad.util.TMath;
@@ -159,7 +160,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      */
     public double isIndependent(Node x, Node y, Set<Node> _z) {
         var z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         var allNodes = new ArrayList<>(z);
         allNodes.add(x);
