@@ -14,17 +14,85 @@ import org.ejml.interfaces.linsol.LinearSolverDense;
 import java.util.*;
 
 /**
- * The HeavyTailSemBicScore class implements a scoring mechanism for assessing structural equation models (SEMs) with
- * heavy-tailed data. It extends functionalities from the Score class and the EffectiveSampleSizeSettable interface,
- * adding capabilities for local scoring, kurtosis adjustments, centering options, and noise modeling.
- * <p>
- * The scoring methodology incorporates adjustments for heavy-tailed distributions using metrics like kurtosis and ridge
- * regularization. It supports efficient calculation of scores through caching and includes options for penalizing model
- * complexity.
- * <p>
- * This is not a score-equivalent score, meaning that DAGs in the same Markov equivalence class may receive different
- * scores. As a result, it is more suited to a DAG-based search strategy like BOSS and less suited to, say, FGES, which
- * relies on score-equivalence.
+ * A BIC-style local score for structural equation models (SEMs) that replaces the
+ * standard Gaussian log-likelihood with a heavier-tailed or more robust noise model,
+ * making it better suited to data with outliers or non-Gaussian residuals.
+ *
+ * <h2>Local score formula</h2>
+ * For a target variable Y with parent set Pa(Y), the local score is:
+ * <pre>
+ *   score(Y, Pa(Y)) = 2 · ll(e) + bonus(e) − penalty_discount · df · log(n)
+ * </pre>
+ * where:
+ * <ul>
+ *   <li>{@code e} are the OLS residuals from regressing Y on Pa(Y) (with optional
+ *       ridge regularization and optional centering/standardization).</li>
+ *   <li>{@code ll(e)} is the log-likelihood of the residuals under the chosen
+ *       {@link NoiseModel}.</li>
+ *   <li>{@code bonus(e)} is an optional non-Gaussian reward (see below).</li>
+ *   <li>{@code df} is the number of free parameters: one per parent plus one noise
+ *       scale parameter (and one intercept if centering is disabled).</li>
+ *   <li>{@code n} is the effective sample size.</li>
+ * </ul>
+ *
+ * <h2>Noise models</h2>
+ * The residual log-likelihood is computed under one of four models, selectable via
+ * {@link #setNoiseModel}:
+ * <ul>
+ *   <li><b>GAUSSIAN</b> — standard Gaussian MLE; equivalent to ordinary SEM-BIC when
+ *       no bonus is applied.</li>
+ *   <li><b>LAPLACE</b> — double-exponential distribution; robust to outliers, promotes
+ *       sparse residuals. The scale parameter is estimated as the mean absolute
+ *       residual.</li>
+ *   <li><b>STUDENT_T</b> (default) — Student-t with fixed degrees of freedom
+ *       {@code ν} (default 4). Provides heavy tails while remaining unimodal. The
+ *       scale parameter is estimated from the mean squared residual. Requires
+ *       {@code ν > 2}.</li>
+ *   <li><b>LOG_COSH</b> — log-cosh loss, a smooth approximation to the Laplace
+ *       log-likelihood that is differentiable everywhere.</li>
+ * </ul>
+ *
+ * <h2>Non-Gaussian bonus</h2>
+ * An optional additive reward can be enabled via {@link #setNonGaussianBonus}:
+ * <ul>
+ *   <li><b>NONE</b> (default) — no bonus.</li>
+ *   <li><b>KURTOSIS</b> — adds {@code kurtosisGamma · n · g2²} to the score, where
+ *       {@code g2} is the excess kurtosis of the residuals, optionally capped at
+ *       {@code ±kurtosisCap}. This rewards parent sets whose residuals are more
+ *       non-Gaussian (larger |g2|), which can help identify the correct causal
+ *       direction in non-Gaussian additive noise models.</li>
+ * </ul>
+ *
+ * <h2>Regression details</h2>
+ * The regression of Y on Pa(Y) is solved via:
+ * <pre>
+ *   (XᵀX + ridge · I) β = Xᵀy
+ * </pre>
+ * using an EJML symmetric positive-definite solver. If the solver fails (ill-conditioned
+ * XᵀX), the ridge is increased automatically in up to six doubling steps before the
+ * score is reported as {@code NaN}. When {@code centerData=true} (default), Y and all
+ * parent columns are z-scored before regression and no intercept is included. When
+ * {@code centerData=false} and {@code includeInterceptWhenNotCentered=true}, an
+ * intercept column is added to the design matrix.
+ *
+ * <h2>Missing data</h2>
+ * When the dataset contains missing values, each local score computation uses only
+ * the rows that are complete for the target and all its parents jointly (listwise
+ * deletion). Scores are not computed when fewer than 10 complete rows are available.
+ *
+ * <h2>Score equivalence</h2>
+ * This is <em>not</em> a score-equivalent score: DAGs in the same Markov equivalence
+ * class may receive different scores, because the log-likelihood of the residuals
+ * depends on the direction of the regression. This makes the score well suited to
+ * DAG-based searches such as BOSS, but unsuitable for algorithms that rely on
+ * score equivalence such as FGES.
+ *
+ * <h2>Caching</h2>
+ * Local scores are cached by a hash of the target index and sorted parent indices.
+ * The cache is cleared whenever any hyperparameter that affects the score is changed.
+ *
+ * @see Score
+ * @see EffectiveSampleSizeSettable
  */
 public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSettable {
 

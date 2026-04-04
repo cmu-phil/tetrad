@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * <p><b>FFML-Mixed: Feature-Function Marginal Likelihood score for mixed (continuous + discrete) parents</b></p>
+ * <p><b>FFML: Feature-Function Marginal Likelihood score for mixed (continuous + discrete) parents</b></p>
  *
  * <p>
  * This class extends the continuous FFML (random-feature Gaussian-process marginal likelihood)

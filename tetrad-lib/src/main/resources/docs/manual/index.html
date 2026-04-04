@@ -5375,6 +5375,165 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     </p>
     </div>
 
+    <h3>FFML Score</h3>
+
+    <div id="ffml-score"><p>
+        FFML: Feature-Function Marginal Likelihood score for mixed (continuous + discrete) parents
+        This class extends the continuous FFML (random-feature Gaussian-process marginal likelihood) score to parent
+        sets containing both continuous and discrete variables. The goal is to retain nonlinear flexibility for
+        continuous parents while treating discrete parents via an appropriate categorical kernel, rather than embedding
+        integer-coded levels into a smooth Euclidean geometry.
+        Product-kernel model
+        For parent vector Z = (Z_c, Z_d) with continuous part Z_c and discrete part Z_d, we use a product kernel:
+        k((z_c, z_d), (z'_c, z'_d)) = k_cont(z_c, z'_c) * k_cat(z_d, z'_d)
+
+        k_cont is an RBF kernel over continuous parents, approximated using Random Fourier Features (RFF) or Orthogonal
+        Random Features (ORF), as in the continuous FFML score.
+        k_cat is a positive semidefinite categorical kernel returning 1 for a level match and ρ for a mismatch (0 ≤ ρ <
+        1). When ρ=0, this corresponds to independent function draws per joint discrete level; larger ρ induces partial
+        pooling across levels.
+        Feature representation:
+        The product kernel is implemented via an explicit finite feature map. Discrete parents are mapped to a
+        categorical feature block (indexed by joint discrete levels), and continuous parents are mapped via Fourier
+        features. The mixed feature map is the Kronecker product:
+        φ_mix(z_c, z_d) = φ_cat(z_d) ⊗ φ_cont(z_c)
+
+        This guarantees that inner products in feature space correspond to the product kernel above. For a discrete
+        parent with L levels, the feature dimension is multiplied by L; with multiple discrete parents, the feature
+        space corresponds to their joint level combinations.
+        Scoring objective:
+        The local score for Y | Pa(Y) is the log marginal likelihood of a Bayesian linear model in the random-feature
+        space. This is equivalent to a low-rank Gaussian-process marginal likelihood under the chosen kernel
+        approximation. Computation uses the standard Woodbury reduction to an m×m system (where m is the mixed feature
+        dimension), avoiding formation of an n×n kernel matrix.
+        Bandwidths and preprocessing:
+        Continuous parent columns are globally z-scored.
+        The RBF bandwidth for k_cont is selected using a median pairwise (squared) distance heuristic on continuous
+        parents only (typically via subsampling).
+        If no continuous parents are present, the model reduces to a purely categorical-kernel marginal likelihood.
+        Random-feature generation is deterministic per (target, parent set), enabling stable caching and
+        reproducibility.
+        Practical notes:
+        Intended for mixed data with genuinely categorical (unordered) discrete parents.
+        Feature dimension grows with joint discrete cardinality; runtime scales accordingly.
+        The parameter ρ controls similarity across categorical levels.
+    </p>
+    </div>
+
+    <h3>Heavy-Tail SEM BIC Score</h3>
+
+    <div id="ht-sem-bic-score"><p>
+        A BIC-style local score for structural equation models (SEMs) that replaces the standard Gaussian log-likelihood
+        with a heavier-tailed or more robust noise model, making it better suited to data with outliers or non-Gaussian
+        residuals.
+        Local score formula:
+        For a target variable Y with parent set Pa(Y), the local score is:
+        score(Y, Pa(Y)) = 2 · ll(e) + bonus(e) − penalty_discount · df · log(n)
+
+        where:
+        e are the OLS residuals from regressing Y on Pa(Y) (with optional ridge regularization and optional
+        centering/standardization).
+        ll(e) is the log-likelihood of the residuals under the chosen HeavyTailSemBicScore.NoiseModel.
+        bonus(e) is an optional non-Gaussian reward (see below).
+        df is the number of free parameters: one per parent plus one noise scale parameter (and one intercept if
+        centering is disabled).
+        n is the effective sample size.
+        Noise models:
+        The residual log-likelihood is computed under one of four models, selectable via setNoiseModel:
+        GAUSSIAN — standard Gaussian MLE; equivalent to ordinary SEM-BIC when no bonus is applied.
+        LAPLACE — double-exponential distribution; robust to outliers, promotes sparse residuals. The scale parameter is
+        estimated as the mean absolute residual.
+        STUDENT_T (default) — Student-t with fixed degrees of freedom ν (default 4). Provides heavy tails while
+        remaining unimodal. The scale parameter is estimated from the mean squared residual. Requires ν > 2.
+        LOG_COSH — log-cosh loss, a smooth approximation to the Laplace log-likelihood that is differentiable
+        everywhere.
+        Non-Gaussian bonus:
+        An optional additive reward can be enabled via setNonGaussianBonus:
+        NONE (default) — no bonus.
+        KURTOSIS — adds kurtosisGamma · n · g2² to the score, where g2 is the excess kurtosis of the residuals,
+        optionally capped at ±kurtosisCap. This rewards parent sets whose residuals are more non-Gaussian (larger |g2|),
+        which can help identify the correct causal direction in non-Gaussian additive noise models.
+        Regression details:
+        The regression of Y on Pa(Y) is solved via:
+        (XᵀX + ridge · I) β = Xᵀy
+
+        using an EJML symmetric positive-definite solver. If the solver fails (ill-conditioned XᵀX), the ridge is
+        increased automatically in up to six doubling steps before the score is reported as NaN. When centerData=true
+        (default), Y and all parent columns are z-scored before regression and no intercept is included. When
+        centerData=false and includeInterceptWhenNotCentered=true, an intercept column is added to the design matrix.
+        Missing data
+        When the dataset contains missing values, each local score computation uses only the rows that are complete for
+        the target and all its parents jointly (listwise deletion). Scores are not computed when fewer than 10 complete
+        rows are available.
+        Score equivalence:
+        This is not a score-equivalent score: DAGs in the same Markov equivalence class may receive different scores,
+        because the log-likelihood of the residuals depends on the direction of the regression. This makes the score
+        well suited to DAG-based searches such as BOSS, but unsuitable for algorithms that rely on score equivalence
+        such as FGES.
+        Caching:
+        Local scores are cached by a hash of the target index and sorted parent indices. The cache is cleared whenever
+        any hyperparameter that affects the score is changed.
+    </p>
+    </div>
+
+    <h3>Legendre BIC Score</h3>
+
+    <div id="legendre-bic-score"><p>
+        Legendre BIC score
+        Local BIC-style score for structure learning with mixed continuous and discrete variables. Continuous children
+        are modeled using a Student-t location model of the form Y = f(Pa) + ε, fit via IRLS with ridge regularization.
+        Discrete children are modeled using multinomial logistic regression (softmax) with ridge regularization, also
+        fit via IRLS.
+        Continuous parents enter through additive Legendre basis expansions. For each continuous parent X (globally
+        z-scored), values are mapped to [-1,1] and polynomial terms P1(x)..Pt(x) are included, where t = legendreDegree.
+        (The intercept is handled separately.) Discrete parents enter via baseline-dropped one-hot blocks.
+        This yields a nonlinear additive location-model representation in which the conditional mean lies in the span of
+        the chosen Legendre basis.
+        Missing data: Rows with missing values in {Y} ∪ Pa(Y) are excluded locally (testwise deletion).
+        Score:
+        score(Y | Pa(Y)) = logLik_hat − 0.5 · penaltyDiscount · edf · log(n)
+
+        where logLik_hat is the maximized penalized log-likelihood, n is the effective local sample size, and edf is the
+        ridge-based effective degrees of freedom.
+        Implementation notes:
+        No hard NaN cutoff at small n; if n is very small, a stable intercept-only fallback is used.
+        Mapping to [-1,1] defaults to quantile-based bounds (e.g., 1%..99%) for robustness rather than raw global
+        extrema.
+        Cholesky failures during IRLS are handled via adaptive jitter.
+        Cache keys include all tuning parameters to ensure correctness under configuration changes.
+    </p>
+    </div>
+
+    <h3>TRFF BIC Score</h3>
+
+    <div id="trff-bic-score"><p>
+        TRFF BIC score (mixed)
+        Local Bayesian Information Criterion (BIC)–style score for structure learning with mixed continuous and discrete
+        variables. The score combines nonlinear mean modeling via Random Fourier Features (RFF) with Student-t
+        likelihoods for robustness to heavy-tailed residuals, while remaining computationally stable and fully local.
+        Local conditional models. For each candidate parent set Pa(Y), the conditional distribution of Y is modeled as:
+        Continuous child Y: Student-t location model of the form Y = f(Pa) + ε. Continuous parents enter through RFF;
+        discrete parents enter via one-hot encoding. Parameters are estimated by iteratively reweighted ridge regression
+        (IRLS), yielding robustness to heavy-tailed residuals.
+        Discrete child Y: Multinomial logistic (softmax) regression with ridge regularization. Continuous parents are
+        represented via RFF; discrete parents via one-hot encoding. Fitting is performed using IRLS.
+        Score definition. The local score takes a generalized BIC form
+        score(Y | Pa(Y)) = logLik_hat − 0.5 · edf · log(n),
+
+        where logLik_hat is the maximized penalized log-likelihood, n is the effective sample size for the local family,
+        and edf is the ridge-based effective degrees of freedom.
+        For multinomial logistic models, the effective degrees of freedom are approximated by summing the ridge edf
+        contributions of the K − 1 one-vs-reference logistic blocks using the final IRLS weights.
+        Student-t robustness. The Student-t likelihood induces residual-dependent reweighting that downweights extreme
+        observations, reducing sensitivity to outliers relative to Gaussian BIC variants while preserving a
+        location-model structure.
+        Missing data handling. Rows with missing values in the local family {Y} ∪ Pa(Y) are excluded on a per-score
+        basis (testwise deletion).
+        Intended use. Intended for robust causal structure learning in mixed-type data when nonlinear mean effects are
+        expected and residual distributions may be heavy-tailed.
+    </p>
+    </div>
+
     <!-- ─────────────  NEW SCORES  ───────────── -->
     <h3 id="score-cca-bic">CCA Scores (Wishart, Bollen–Ting)</h3>
     <p>

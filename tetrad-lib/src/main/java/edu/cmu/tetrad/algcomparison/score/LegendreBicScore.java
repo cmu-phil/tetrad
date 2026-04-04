@@ -34,7 +34,7 @@ import java.util.List;
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "Legendre BIC Score",
-        command = "legendre-score",
+        command = "legendre-bic-score",
         dataType = {DataType.Mixed}
 )
 @General

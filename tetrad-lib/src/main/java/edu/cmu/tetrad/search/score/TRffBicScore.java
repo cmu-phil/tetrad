@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static edu.cmu.tetrad.util.TMath.*;
 
 /**
- * <p><b>T-RFF BIC score (mixed)</b></p>
+ * <p><b>TRFF BIC score (mixed)</b></p>
  *
  * <p>
  * Local Bayesian Information Criterion (BIC)–style score for structure learning with
