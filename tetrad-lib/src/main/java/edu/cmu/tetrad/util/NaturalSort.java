@@ -2,7 +2,20 @@ package edu.cmu.tetrad.util;
 
 import java.util.Comparator;
 
+/**
+ * Provides functionality for natural sorting of strings and objects.
+ * Natural order refers to sorting where numeric components in strings
+ * are considered, for example, sorting "X1", "X2", and "X10" in that order
+ * rather than lexicographically as "X1", "X10", "X2".
+ */
 public class NaturalSort {
+
+    /**
+     * Private constructor to prevent instantiation of the NaturalSort class.
+     * This class is intended to be used as a utility class containing static methods
+     * and constants for natural sorting.
+     */
+    private NaturalSort() {}
 
     /**
      * A comparator that sorts strings in natural order (e.g. "X1", "X2", "X10"
@@ -22,6 +35,13 @@ public class NaturalSort {
         return Comparator.comparing(t -> NaturalKey.from(t.toString()));
     }
 
+    /**
+     * Represents a natural key, which consists of a string prefix and an optional numeric suffix.
+     * This class facilitates natural ordering of strings, combining lexicographical sorting
+     * of the prefix with numerical comparison of the suffix when present.
+     *
+     * Instances of this class are immutable.
+     */
     public static final class NaturalKey implements Comparable<NaturalKey> {
         final String prefix;
         final Integer suffix;   // null if no numeric suffix
@@ -31,6 +51,16 @@ public class NaturalSort {
             this.suffix = suffix;
         }
 
+        /**
+         * Creates a {@code NaturalKey} from the given string. The input string is divided into a
+         * prefix consisting of non-numeric characters and an optional numeric suffix.
+         * If the string ends with numeric characters, they are extracted as the suffix;
+         * otherwise, the suffix is {@code null}.
+         *
+         * @param s the input string to be parsed into a {@code NaturalKey}
+         * @return a {@code NaturalKey} constructed from the given string's prefix and suffix
+         * @throws NumberFormatException if the numeric suffix cannot be parsed as an {@code Integer}
+         */
         public static NaturalKey from(String s) {
             int i = s.length();
             while (i > 0 && Character.isDigit(s.charAt(i - 1))) {
