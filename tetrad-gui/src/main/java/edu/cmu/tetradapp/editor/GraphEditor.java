@@ -87,6 +87,13 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     private final EdgeTypeTable edgeTypeTable;
 
     /**
+     * A private JTextArea used for text-based input or output within the GraphEditor component.
+     * This field provides a space for displaying or editing textual content
+     * related to the graph editing functionalities of the GraphEditor class.
+     */
+    private JTextArea ta;
+
+    /**
      * The workbench for the graph.
      */
     private GraphWorkbench workbench;
@@ -187,6 +194,14 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     @Override
     public GraphWorkbench getWorkbench() {
         return this.workbench;
+    }
+
+    private EdgeTypeTable getEdgeTypeTable() {
+        return this.edgeTypeTable;
+    }
+
+    private JTextArea getTa() {
+        return this.ta;
     }
 
     /**
@@ -329,7 +344,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         edgeTableBox.add(new JLabel("Rows can be copy/pasted into Excel or text file"));
         tabbedPane.addTab("Edges", edgeTableBox);
 
-        JTextArea ta = new JTextArea(String.valueOf(graph));
+        ta = new JTextArea(String.valueOf(graph));
         ta.setEditable(false);
         ta.setCaretPosition(0);
         JScrollPane textScroll = new JScrollPane(ta);
@@ -342,6 +357,10 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             if (tabbedPane.getSelectedIndex() == 1) {
                 updateBootstrapTable(workbench.getGraph());
                 this.edgeTypeTable.update(workbench.getGraph());
+            }
+
+            if (tabbedPane.getSelectedIndex() == 2) {
+                ta.setText(String.valueOf(workbench.getGraph()));
             }
         });
 
@@ -359,6 +378,8 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         this.workbench.setGraph(graph);// = new GraphWorkbench(graph);
         this.workbench.setEnableEditing(this.enableEditing);
         this.graphEditorScroll.setViewportView(this.workbench);
+        this.edgeTypeTable.update(graph);
+        this.ta.setText(String.valueOf(graph));
 
         validate();
     }
@@ -545,6 +566,8 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                     }
 
                     getWorkbench().setGraph(graph1);
+                    getEdgeTypeTable().update(graph1);
+                    getTa().setText(String.valueOf(graph1));
                 }
             });
         });

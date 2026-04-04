@@ -3,6 +3,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.LinearAdjustmentTotalEffectsModel;
 import edu.cmu.tetradapp.model.LinearAdjustmentTotalEffectsModel.ResultRow;
@@ -10,6 +11,7 @@ import edu.cmu.tetradapp.model.LinearAdjustmentTotalEffectsModel.ResultRow;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
@@ -105,11 +107,11 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
         this.tableModel = new ResultTableModel(model);
         this.resultTable = new JTable(tableModel);
         this.resultTable.setTransferHandler(new DefaultTableTransferHandler(0));
+        installSorter();
 
         installEffectRenderers();
 
         this.resultTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        this.resultTable.setAutoCreateRowSorter(true); // enable column-header sorting
 
         this.treatmentsField.setText(model.getTreatmentsText());
         this.outcomesField.setText(model.getOutcomesText());
@@ -238,8 +240,9 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
             updateModelFromUI();
             model.recompute();
 
-            tableModel.fireTableStructureChanged();  // <-- important
-            installEffectRenderers();                // <-- reapply renderers
+            tableModel.fireTableStructureChanged();
+            installSorter();         // <-- reinstall after structure change
+            installEffectRenderers();
         } catch (IllegalArgumentException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this,
@@ -715,5 +718,12 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return false;
         }
+    }
+
+    private void installSorter() {
+        TableRowSorter<ResultTableModel> sorter = new TableRowSorter<>(this.tableModel);
+        sorter.setComparator(1, NaturalSort.naturalComparator()); // X
+        sorter.setComparator(2, NaturalSort.naturalComparator()); // Y
+        this.resultTable.setRowSorter(sorter);
     }
 }

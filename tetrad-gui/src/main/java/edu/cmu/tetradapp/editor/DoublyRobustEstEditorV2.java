@@ -3,6 +3,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.DoublyRobustEstModelV2;
 import edu.cmu.tetradapp.model.DoublyRobustEstModelV2.ResultRowV2;
@@ -12,6 +13,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -90,7 +92,9 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
         this.resultTable.setFillsViewportHeight(true);
         this.resultTable.setTransferHandler(new DefaultTableTransferHandler(0));
         this.resultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        this.resultTable.setAutoCreateRowSorter(true);
+//        this.resultTable.setAutoCreateRowSorter(true);
+
+        installSorter();
 
         treatmentsField.setText(model.getTreatmentsText());
         outcomesField.setText(model.getOutcomesText());
@@ -203,6 +207,7 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
 
             installRenderers();
             updateViewDetailsEnabled();
+            installSorter();
             tableModel.fireTableDataChanged();
         } catch (IllegalArgumentException ex) {
             ex.printStackTrace();
@@ -337,11 +342,12 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
                 updateViewDetailsEnabled();
             });
             tableModel.fireTableStructureChanged();
+            installSorter();          // <-- add this
             installRenderers();
             updateViewDetailsEnabled();
         } catch (Exception ex) {
-            // v2: don't block binarize if recompute fails (e.g., missing Y selection yet)
             tableModel.fireTableStructureChanged();
+            installSorter();          // <-- add this
         }
     }
 
@@ -652,5 +658,12 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
 
     private static String safe(String s) {
         return (s == null) ? "" : s;
+    }
+
+    private void installSorter() {
+        TableRowSorter<DoublyRobustEstEditorV2.DoublyRobustEstResultTableModelV2> sorter = new TableRowSorter<>(this.tableModel);
+        sorter.setComparator(1, NaturalSort.naturalComparator()); // X
+        sorter.setComparator(2, NaturalSort.naturalComparator()); // Y
+        this.resultTable.setRowSorter(sorter);
     }
 }
