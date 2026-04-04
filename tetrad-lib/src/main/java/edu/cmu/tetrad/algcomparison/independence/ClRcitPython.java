@@ -19,15 +19,52 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The ClRcitPython class is a wrapper implementation of the {@code IndependenceWrapper}
- * interface, providing functionality for testing conditional independence using
- * Python-based methods. It integrates with a Python server script to perform
- * statistical computations specifically designed for continuous data sets.
+ * An {@link IndependenceWrapper} that runs the Randomized Conditional Independence Test
+ * (RCIT) implemented in the Python <em>causal-learn</em> library, bridging it into
+ * Tetrad's {@link IndependenceTest} framework.
  *
- * The implementation supports configurable parameters, such as the path to the Python
- * executable, the Python server script location, and statistical settings including
- * the alpha significance level. It also offers a mechanism to use a bundled Python
- * server script if no custom script is provided.
+ * <h2>How it works</h2>
+ * Each call to {@link #getTest} launches (or connects to) a persistent Python process
+ * running a bundled server script ({@code python/rcit_server.py}). CI queries from Java
+ * are forwarded to that process via {@link ProcessPythonCiService}, and results are
+ * returned as standard {@link IndependenceTest} responses through
+ * {@link PythonRcitIndependenceTest}.
+ *
+ * <h2>Python environment</h2>
+ * A Python interpreter that has {@code causal-learn} and its dependencies installed must
+ * be available on the host machine. The path to that interpreter is supplied via the
+ * {@link Params#PYTHON_EXE} parameter. There is no default that is likely to be valid on
+ * any machine other than the developer's, so this parameter should always be set
+ * explicitly before use.
+ *
+ * <h2>Server script resolution</h2>
+ * The Python server script is resolved in the following order:
+ * <ol>
+ *   <li>If {@link Params#PYTHON_CI_SERVER} is set to a non-empty path (and not the
+ *       sentinel value {@code "Use bundled script"}), that path is used directly.</li>
+ *   <li>Otherwise, the bundled resource {@code python/rcit_server.py} is extracted to
+ *       the user's local cache directory (via {@link PythonResource#extractToUserCache})
+ *       and that extracted copy is used.</li>
+ * </ol>
+ *
+ * <h2>Parameters</h2>
+ * <ul>
+ *   <li>{@link Params#PYTHON_EXE} — path to the Python executable (required).</li>
+ *   <li>{@link Params#PYTHON_CI_SERVER} — path to the RCIT server script, or
+ *       {@code "Use bundled script"} to use the packaged default.</li>
+ *   <li>{@link Params#ALPHA} — significance level for the independence test
+ *       (default: {@code 0.01}).</li>
+ *   <li>{@link Params#VERBOSE} — if {@code true}, the test logs additional
+ *       detail during execution (default: {@code false}).</li>
+ * </ul>
+ *
+ * <h2>Data</h2>
+ * Only continuous {@link DataSet} inputs are supported. Passing any other
+ * {@link DataModel} type will throw an {@link IllegalArgumentException}.
+ *
+ * @see PythonRcitIndependenceTest
+ * @see ProcessPythonCiService
+ * @see PythonResource
  */
 @TestOfIndependence(
         name = "RCIT, Causal Learn (Python)",

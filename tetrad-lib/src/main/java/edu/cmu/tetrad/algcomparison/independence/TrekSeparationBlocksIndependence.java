@@ -27,7 +27,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.search.test.TrekSeparationBlocksIndependence;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -44,12 +43,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "Rank Independence Test TS",
-        command = "rank-test-ts",
+        name = "TSBI",
+        command = "tsbi",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
 @LinearGaussian
-public class RankIndependenceTestTs implements IndependenceWrapper {
+public class TrekSeparationBlocksIndependence implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -57,7 +56,7 @@ public class RankIndependenceTestTs implements IndependenceWrapper {
     /**
      * Constructs a new instance of the algorithm.
      */
-    public RankIndependenceTestTs() {
+    public TrekSeparationBlocksIndependence() {
     }
 
     /**
@@ -80,7 +79,7 @@ public class RankIndependenceTestTs implements IndependenceWrapper {
         }
 
         // If youâre using the Wilks-rank test:
-        TrekSeparationBlocksIndependence ind = new TrekSeparationBlocksIndependence(new BlockSpec((DataSet) dataModel, blocks, blockVars));
+        edu.cmu.tetrad.search.test.TrekSeparationBlocksIndependence ind = new edu.cmu.tetrad.search.test.TrekSeparationBlocksIndependence(new BlockSpec((DataSet) dataModel, blocks, blockVars));
         ind.setAlpha(parameters.getDouble(Params.ALPHA));
         ind.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
 

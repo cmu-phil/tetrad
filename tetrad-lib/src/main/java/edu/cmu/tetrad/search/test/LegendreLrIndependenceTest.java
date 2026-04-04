@@ -14,17 +14,57 @@ import java.util.*;
 import static java.lang.Float.NaN;
 
 /**
- * Likelihood-ratio CI test based on MinimaxLegendreScore local fits.
- * <p>
- * Tests X ⟂ Y | Z by comparing:
- * reduced: Y ~ Z
- * full:    Y ~ Z ∪ {X}
- * <p>
- * Statistic: D = 2 (ll_full - ll_red)
- * df approx: Δdf = edf_full - edf_red
- * p = 1 - CDF_ChiSq( D ; Δdf )
- * <p>
- * V1: forces nesting by disabling interactions during the test (recommended).
+ * A likelihood-ratio conditional independence (CI) test built on top of
+ * {@link LegendreBicScore} local polynomial fits.
+ *
+ * <h2>Hypotheses</h2>
+ * Tests X ⊥ Y | Z by fitting two nested regression models for Y:
+ * <ul>
+ *   <li><b>Reduced model:</b> Y ~ Z</li>
+ *   <li><b>Full model:</b> Y ~ Z ∪ {X}</li>
+ * </ul>
+ * If X carries no additional information about Y beyond what Z already explains,
+ * the two models should fit equally well.
+ *
+ * <h2>Test statistic</h2>
+ * The likelihood-ratio statistic is:
+ * <pre>
+ *   D = 2 * (ll_full − ll_reduced)
+ * </pre>
+ * where {@code ll} denotes the log-likelihood of each local Legendre fit.
+ * Under the null hypothesis of independence, {@code D} is approximately
+ * chi-squared with degrees of freedom:
+ * <pre>
+ *   Δdf = edf_full − edf_reduced
+ * </pre>
+ * where {@code edf} is the effective degrees of freedom reported by each fit.
+ * The p-value is {@code 1 − CDF_χ²(D ; Δdf)}.
+ *
+ * <h2>Nesting guarantee</h2>
+ * For the chi-squared approximation to be valid, the reduced model must be
+ * nested within the full model — i.e., the reduced model must be a special
+ * case of the full model. Interaction terms in {@link LegendreBicScore} can
+ * break this nesting. When {@code disableInteractionsForTest} is {@code true}
+ * (the default, and recommended setting), interactions are temporarily disabled
+ * in the score object for the duration of each CI query and restored afterward,
+ * ensuring valid nesting.
+ *
+ * <h2>Row alignment</h2>
+ * Both the reduced and full fits are evaluated on the same set of rows —
+ * those with valid (non-missing) values across Y, Z, and X jointly. This is
+ * critical for a fair likelihood-ratio comparison under missing data.
+ *
+ * <h2>Degenerate cases</h2>
+ * The test returns a non-independent result with {@code NaN} p-value when:
+ * <ul>
+ *   <li>X or any node in Z is not found in the variable list.</li>
+ *   <li>Either fit produces a non-finite log-likelihood or effective df.</li>
+ *   <li>The effective df difference {@code Δdf} is less than {@code 1e-8}.</li>
+ *   <li>Fewer than 10 valid rows are available for the joint fit.</li>
+ * </ul>
+ *
+ * @see LegendreBicScore
+ * @see IndependenceTest
  */
 public final class LegendreLrIndependenceTest implements IndependenceTest {
 

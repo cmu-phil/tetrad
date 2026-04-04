@@ -19,16 +19,52 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The ClKciPython class is an implementation of the IndependenceWrapper interface that
- * utilizes the Kernel-based Independence Criterion with Causal Learning (KCI-CL)
- * test in a Python environment. This implementation integrates a Python server
- * script to perform independence testing on continuous data. The class supports
- * configuration of parameters, such as the Python executable path, server script path,
- * significance level (alpha), and verbosity.
+ * An {@link IndependenceWrapper} that runs the Kernel-based Conditional Independence (KCI)
+ * test implemented in the Python <em>causal-learn</em> library, bridging it into Tetrad's
+ * {@link IndependenceTest} framework.
  *
- * The main purpose of this class is to facilitate the execution of independence
- * tests using Python-based statistical tools, while managing execution and resource
- * configuration seamlessly within a Java environment.
+ * <h2>How it works</h2>
+ * Each call to {@link #getTest} launches (or connects to) a persistent Python process
+ * running a bundled server script ({@code python/kci_server.py}). CI queries from Java
+ * are forwarded to that process via {@link ProcessPythonCiService}, and results are
+ * returned as standard {@link IndependenceTest} responses through
+ * {@link PythonKciIndependenceTest}.
+ *
+ * <h2>Python environment</h2>
+ * A Python interpreter that has {@code causal-learn} and its dependencies installed must
+ * be available on the host machine. The path to that interpreter is supplied via the
+ * {@link Params#PYTHON_EXE} parameter. There is no default that is likely to be valid on
+ * any machine other than the developer's, so this parameter should always be set
+ * explicitly before use.
+ *
+ * <h2>Server script resolution</h2>
+ * The Python server script is resolved in the following order:
+ * <ol>
+ *   <li>If {@link Params#PYTHON_CI_SERVER} is set to a non-empty path (and not the
+ *       sentinel value {@code "Use bundled script"}), that path is used directly.</li>
+ *   <li>Otherwise, the bundled resource {@code python/kci_server.py} is extracted to
+ *       the user's local cache directory (via {@link PythonResource#extractToUserCache})
+ *       and that extracted copy is used.</li>
+ * </ol>
+ *
+ * <h2>Parameters</h2>
+ * <ul>
+ *   <li>{@link Params#PYTHON_EXE} — path to the Python executable (required).</li>
+ *   <li>{@link Params#PYTHON_CI_SERVER} — path to the KCI server script, or
+ *       {@code "Use bundled script"} to use the packaged default.</li>
+ *   <li>{@link Params#ALPHA} — significance level for the independence test
+ *       (default: {@code 0.01}).</li>
+ *   <li>{@link Params#VERBOSE} — if {@code true}, the test logs additional
+ *       detail during execution (default: {@code false}).</li>
+ * </ul>
+ *
+ * <h2>Data</h2>
+ * Only continuous {@link DataSet} inputs are supported. Passing any other
+ * {@link DataModel} type will throw an {@link IllegalArgumentException}.
+ *
+ * @see PythonKciIndependenceTest
+ * @see ProcessPythonCiService
+ * @see PythonResource
  */
 @TestOfIndependence(
         name = "KCI, Causal Learn (Python)",

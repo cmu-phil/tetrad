@@ -33,20 +33,72 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Trek-separation block-level CI test (Trek Separation Blocks Independence, TSBI):
- * <p>
- * Given blocks X, Y, and conditioning blocks Z1..Zk that correspond to latent factors [X], [Y], [Z1]..[Zk], split each
- * Zi into two nearly-equal parts ZiA, ZiB. Form L = X âª Z1A âª ... âª ZkA,   R = Y âª Z1B âª ... âª ZkB and
- * estimate rank(Î£_{L,R}). Under linear measurement models with n conditioning latents, independence suggests
- * rank(Î£_{L,R}) â¤ 2k.
- * <p>
- * Drop-in replacement matching the public surface of IndTestBlocksLemma10 (no p-values exposed).
- * <p>
- * This class is an elaboration of the IndTestTrekSep class of Adam Brodie and Peter Spirtes.
+ * A block-level conditional independence test based on trek separation, operating under
+ * linear latent factor measurement models. This class implements the Trek Separation
+ * Blocks Independence (TSBI) test, elaborating on the {@link IndTestTrekSep} class of
+ * Adam Brodie and Peter Spirtes.
  *
- * @author Adam Brodie
- * @author josephramsey
- * @see edu.cmu.tetrad.search.test.IndTestTrekSep
+ * <h2>Setting</h2>
+ * Variables are organized into <em>blocks</em>, where each block corresponds to a set
+ * of observed indicator variables that measure a common latent factor. The independence
+ * test operates at the block level: X, Y, and the conditioning set Z = {Z1, ..., Zk}
+ * are each a block (latent factor), and the test assesses whether the latent factor
+ * behind X is independent of the latent factor behind Y given the latent factors behind
+ * Z1, ..., Zk.
+ *
+ * <h2>Test logic</h2>
+ * The test is based on the rank of the cross-covariance matrix between two constructed
+ * variable sets L and R:
+ * <ol>
+ *   <li>Each conditioning block Zi is split into two nearly equal halves ZiA and ZiB.</li>
+ *   <li>The left side is formed as L = cols(X) ∪ cols(Z1A) ∪ ... ∪ cols(ZkA).</li>
+ *   <li>The right side is formed as R = cols(Y) ∪ cols(Z1B) ∪ ... ∪ cols(ZkB).</li>
+ *   <li>The rank of the cross-covariance submatrix Σ_{L,R} is estimated via
+ *       {@link RankTests#estimateWilksRank}.</li>
+ * </ol>
+ * Under a linear measurement model with k conditioning latent factors, trek separation
+ * implies that X ⊥ Y | Z1,...,Zk if and only if:
+ * <pre>
+ *   rank(Σ_{L,R}) = sum of ranks(Zi)
+ * </pre>
+ * where the rank of each Zi block is specified externally via {@link BlockSpec#ranks()}.
+ * The test declares independence when the estimated rank equals this target sum.
+ *
+ * <h2>Splitting strategy</h2>
+ * Each conditioning block Zi is split either deterministically or randomly:
+ * <ul>
+ *   <li>When {@code randomizeSplits=false}, the same fixed split (determined by
+ *       {@code splitSeed}) is used for every query.</li>
+ *   <li>When {@code randomizeSplits=true} (default), each trial uses a different
+ *       seed derived from {@code splitSeed + trialIndex}, allowing the minimum rank
+ *       over multiple trials to be taken. This reduces sensitivity to unlucky splits
+ *       for odd-sized blocks.</li>
+ * </ul>
+ * When a block has an odd number of indicators, the {@code leftGetsSmallerHalfWhenOdd}
+ * flag controls whether the left or right side receives the extra column.
+ *
+ * <h2>Multiple trials</h2>
+ * When {@code numTrials > 1} and {@code randomizeSplits=true}, the test runs the full
+ * rank estimation procedure {@code numTrials} times with different random splits and
+ * takes the minimum estimated rank. This provides a more conservative (less likely to
+ * falsely declare dependence) result when block sizes are small.
+ *
+ * <h2>Caching</h2>
+ * Rank estimates are cached in a thread-safe LRU cache keyed by the left and right
+ * column sets together with all hyperparameters that affect the rank estimate (sample
+ * size, alpha, seed, randomize flag, and number of trials). The cache holds up to
+ * {@value #RANK_CACHE_MAX} entries.
+ *
+ * <h2>P-values</h2>
+ * This test does not produce p-values. All {@link IndependenceResult} objects returned
+ * carry {@code NaN} for both the p-value and the alpha-minus-p fields. The independence
+ * decision is made purely by comparing the estimated rank to the target rank.
+ *
+ * @see IndTestTrekSep
+ * @see BlockSpec
+ * @see RankTests
+ * @see IndependenceTest
+ * @see BlockTest
  */
 public class TrekSeparationBlocksIndependence implements IndependenceTest, EffectiveSampleSizeSettable, BlockTest {
 

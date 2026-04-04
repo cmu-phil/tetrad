@@ -4717,7 +4717,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h3>Fisher Z Test</h3>
 
-    <div id="fisher-z-test"><p> Fisher Z judges independence if the
+    <div id="fisher-z-test"><p> rcit-cl-test judges independence if the
         conditional correlation is cannot statistically be distinguished from
         zero. Primarily for the linear, Gaussian case. </p></div>
 
@@ -5030,6 +5030,201 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         Zhang et al. (2012). "Kernel-based conditional independence test and application in causal discovery." UAI.
         Rahimi & Recht (2007). "Random features for large-scale kernel machines." NeurIPS.
         Yu et al. (2016). "Orthogonal random features." NeurIPS. </p></div>
+
+    <h3>GCM Test</h3>
+
+    <div id="gcm-test"><p> Generalized Covariance Measure (GCM) conditional independence test.
+        Tests conditional independence of X and Y given Z by measuring residual dependence after regressing out the
+        effect of Z from each variable. The test follows the generalized covariance framework of Shah and Peters and is
+        suitable for nonlinear regression models when good predictors of conditional means are available.
+        Test construction. To test X ⟂⟂ Y | Z:
+        Fit regression models x̂(Z) ≈ E[X | Z] and ŷ(Z) ≈ E[Y | Z].
+        Compute residuals rX = X − x̂(Z) and rY = Y − ŷ(Z).
+        Form the elementwise product u = rX · rY.
+        Compute the test statistic
+        T = sqrt(n) · mean(u) / sd(u),
+
+        which is asymptotically standard normal under the null hypothesis, given mild regularity conditions.
+        Interpretation. Under X ⟂⟂ Y | Z, the residuals rX and rY are uncorrelated, so E[rX · rY] = 0. Systematic
+        deviation from zero indicates conditional dependence.
+        Regression models. The power and validity of the test depend critically on the quality of the regressors used to
+        approximate E[X | Z] and E[Y | Z]. In this implementation, regression options include linear and nonlinear
+        models (e.g., ridge regression with random Fourier features).
+        Practical considerations.
+        The test is only as reliable as the underlying regression fits.
+        Performance in causal search depends strongly on caching: residuals should be cached by (target, conditioning
+        set Z, rows) to avoid repeated regression during search.
+        The test is fast and scalable when regressions are reused, making it suitable for constraint-based structure
+        learning.
+        Intended use. GCM is well-suited for conditional independence testing in nonlinear settings when approximate
+        conditional mean models are available, and serves as a computationally efficient alternative to fully
+        nonparametric kernel-based tests. </p></div>
+
+    <h3>KCI-CL Test</h3>
+
+    <div id="kci-cl-test"><p> An IndependenceWrapper that runs the Kernel-based Conditional Independence (KCI) test
+        implemented in the Python causal-learn library, bridging it into Tetrad's IndependenceTest framework.
+        How it works
+        Each call to getTest launches (or connects to) a persistent Python process running a bundled server script
+        (python/kci_server.py). CI queries from Java are forwarded to that process via ProcessPythonCiService, and
+        results are returned as standard IndependenceTest responses through PythonKciIndependenceTest.
+        Python environment
+        A Python interpreter that has causal-learn and its dependencies installed must be available on the host machine.
+        The path to that interpreter is supplied via the Params.PYTHON_EXE parameter. There is no default that is likely
+        to be valid on any machine other than the developer's, so this parameter should always be set explicitly before
+        use.
+        Server script resolution
+        The Python server script is resolved in the following order:
+        If Params.PYTHON_CI_SERVER is set to a non-empty path (and not the sentinel value "Use bundled script"), that
+        path is used directly.
+        Otherwise, the bundled resource python/kci_server.py is extracted to the user's local cache directory (via
+        PythonResource.extractToUserCache) and that extracted copy is used. </p></div>
+
+    <h3>Legendre LR Test</h3>
+
+    <div id="legendre-lr-test"><p> A likelihood-ratio conditional independence (CI) test built on top of
+        LegendreBicScore local polynomial fits.
+        Hypotheses:
+        Tests X ⊥ Y | Z by fitting two nested regression models for Y:
+        Reduced model: Y ~ Z
+        Full model: Y ~ Z ∪ {X}
+        If X carries no additional information about Y beyond what Z already explains, the two models should fit equally
+        well.
+        Test statistic:
+        The likelihood-ratio statistic is:
+        D = 2 * (ll_full − ll_reduced)
+
+        where ll denotes the log-likelihood of each local Legendre fit. Under the null hypothesis of independence, D is
+        approximately chi-squared with degrees of freedom:
+        Δdf = edf_full − edf_reduced
+
+        where edf is the effective degrees of freedom reported by each fit. The p-value is 1 − CDF_χ²(D ; Δdf).
+        Nesting guarantee:
+        For the chi-squared approximation to be valid, the reduced model must be nested within the full model — i.e.,
+        the reduced model must be a special case of the full model. Interaction terms in LegendreBicScore can break this
+        nesting. When disableInteractionsForTest is true (the default, and recommended setting), interactions are
+        temporarily disabled in the score object for the duration of each CI query and restored afterward, ensuring
+        valid nesting.
+        Row alignment:
+        Both the reduced and full fits are evaluated on the same set of rows — those with valid (non-missing) values
+        across Y, Z, and X jointly. This is critical for a fair likelihood-ratio comparison under missing data.
+        Degenerate cases:
+        The test returns a non-independent result with NaN p-value when:
+        X or any node in Z is not found in the variable list.
+        Either fit produces a non-finite log-likelihood or effective df.
+        The effective df difference Δdf is less than 1e-8.
+        Fewer than 10 valid rows are available for the joint fit. </p></div>
+
+    <h3>RCIT Test</h3>
+
+    <div id="rcit-test"><p> A Java implementation of the RCIT (Randomized Conditional Independence Test) and its variant
+        RCoT (Randomized Conditional correlation Test), following the architecture of FfCiContinuous but with the
+        feature-block construction described in:
+        Strobl, Zhang, and Visweswaran (2019). "Approximate kernel-based conditional independence tests for fast
+        non-parametric causal discovery." Journal of Causal Inference 7(1).
+        Hypotheses:
+        Tests X ⊥ Y | Z nonparametrically by mapping variables into finite-dimensional feature spaces and measuring
+        cross-covariance between the feature representations of X and Y after regressing out the influence of Z.
+        Feature construction:
+        All variables are assumed to be continuous. Each variable or block of variables is mapped to a feature matrix
+        using either:
+        RFF (Random Fourier Features) — i.i.d. Gaussian frequency vectors, approximating an RBF kernel via sqrt(2/m)
+        cos(Wx + b).
+        ORF (Orthogonal Random Features) — block-orthogonalized frequency vectors with chi-distributed norms, typically
+        giving a better kernel approximation for the same feature budget.
+        The RBF bandwidth is estimated from the data using the median pairwise squared distance heuristic, optionally
+        scaled by bandwidthMultiplier.
+        RCIT vs. RCoT:
+        The two modes differ only in how the Y feature block is constructed when Z is non-empty:
+        RCIT (doRcit=true, default) — the Y feature block is built from the joint variable set [Y, Z], using numFeatYAug
+        features. This augmentation allows the test to be more sensitive to conditional dependence mediated through Z.
+        RCoT (doRcit=false) — the Y feature block is built from Y alone, using numFeatXY features. This is the simpler
+        variant and matches unconditional RIT when Z is empty.
+        Test statistic:
+        Given feature matrices FX, FY, and FZ:
+        Residualize: RX = FX − FZ (FZ'FZ + λI)⁻¹ FZ'FX, and similarly RY.
+        Center residual columns.
+        Compute: stat = n · ‖cov(RX, RY)‖²_F
+        Under the null, this statistic follows an asymptotic weighted sum of chi-squared(1) variables, with weights
+        given by the eigenvalues of the Khatri-Rao residual covariance matrix.
+        P-value approximation
+        Four methods are available via Rcit.Approx:
+        GAMMA (default) — Satterthwaite gamma approximation via moment matching. Moments are computed without forming
+        the full Khatri-Rao matrix, using the identity tr(Cov) = ‖Z‖²_F/(n−1) and tr(Cov²) = ‖ZZᵀ‖²_F/(n−1)², making
+        this substantially faster than eigendecomposition-based methods.
+        SADDLEPOINT — Lugannani-Rice saddlepoint approximation (requires eigendecomposition of the Khatri-Rao
+        covariance).
+        DAVIES_IMHOF — Davies/Imhof numerical integration (requires eigendecomposition).
+        PERMUTATION — permutation test over row shuffles of RY; exact but slow. The number of permutations is controlled
+        by setPermutations.
+        Caching:
+        Feature matrices are cached by a key that encodes the variable names, active row set, feature count, feature
+        type, bandwidth settings, seed, and RCIT/RCoT mode. The cache is invalidated whenever any hyperparameter that
+        affects feature construction is changed, or when the active row set is updated via setRows. </p></div>
+
+    <h3>RCIT-CL Test</h3>
+
+    <div id="rcit-cl-test"><p> An IndependenceWrapper that runs the Randomized Conditional Independence Test (RCIT)
+        implemented in the Python causal-learn library, bridging it into Tetrad's IndependenceTest framework.
+        How it works
+        Each call to getTest launches (or connects to) a persistent Python process running a bundled server script
+        (python/rcit_server.py). CI queries from Java are forwarded to that process via ProcessPythonCiService, and
+        results are returned as standard IndependenceTest responses through PythonRcitIndependenceTest.
+        Python environment
+        A Python interpreter that has causal-learn and its dependencies installed must be available on the host machine.
+        The path to that interpreter is supplied via the Params.PYTHON_EXE parameter. There is no default that is likely
+        to be valid on any machine other than the developer's, so this parameter should always be set explicitly before
+        use.
+        Server script resolution
+        The Python server script is resolved in the following order:
+        If Params.PYTHON_CI_SERVER is set to a non-empty path (and not the sentinel value "Use bundled script"), that
+        path is used directly.
+        Otherwise, the bundled resource python/rcit_server.py is extracted to the user's local cache directory (via
+        PythonResource.extractToUserCache) and that extracted copy is used. </p></div>
+
+    <h3>TSBI</h3>
+
+    <div id="tsbi"><p> A block-level conditional independence test based on trek separation, operating under linear
+        latent factor measurement models. This class implements the Trek Separation Blocks Independence (TSBI) test,
+        elaborating on the IndTestTrekSep class of Adam Brodie and Peter Spirtes.
+        Setting
+        Variables are organized into blocks, where each block corresponds to a set of observed indicator variables that
+        measure a common latent factor. The independence test operates at the block level: X, Y, and the conditioning
+        set Z = {Z1, ..., Zk} are each a block (latent factor), and the test assesses whether the latent factor behind X
+        is independent of the latent factor behind Y given the latent factors behind Z1, ..., Zk.
+        Test logic
+        The test is based on the rank of the cross-covariance matrix between two constructed variable sets L and R:
+        Each conditioning block Zi is split into two nearly equal halves ZiA and ZiB.
+        The left side is formed as L = cols(X) ∪ cols(Z1A) ∪ ... ∪ cols(ZkA).
+        The right side is formed as R = cols(Y) ∪ cols(Z1B) ∪ ... ∪ cols(ZkB).
+        The rank of the cross-covariance submatrix Σ_{L,R} is estimated via RankTests.estimateWilksRank.
+        Under a linear measurement model with k conditioning latent factors, trek separation implies that X ⊥ Y |
+        Z1,...,Zk if and only if:
+        rank(Σ_{L,R}) = sum of ranks(Zi)
+
+        where the rank of each Zi block is specified externally via BlockSpec.ranks(). The test declares independence
+        when the estimated rank equals this target sum.
+        Splitting strategy:
+        Each conditioning block Zi is split either deterministically or randomly:
+        When randomizeSplits=false, the same fixed split (determined by splitSeed) is used for every query.
+        When randomizeSplits=true (default), each trial uses a different seed derived from splitSeed + trialIndex,
+        allowing the minimum rank over multiple trials to be taken. This reduces sensitivity to unlucky splits for
+        odd-sized blocks.
+        When a block has an odd number of indicators, the leftGetsSmallerHalfWhenOdd flag controls whether the left or
+        right side receives the extra column.
+        Multiple trials:
+        When numTrials > 1 and randomizeSplits=true, the test runs the full rank estimation procedure numTrials times
+        with different random splits and takes the minimum estimated rank. This provides a more conservative (less
+        likely to falsely declare dependence) result when block sizes are small.
+        Caching:
+        Rank estimates are cached in a thread-safe LRU cache keyed by the left and right column sets together with all
+        hyperparameters that affect the rank estimate (sample size, alpha, seed, randomize flag, and number of trials).
+        The cache holds up to 400000 entries.
+        P-values:
+        This test does not produce p-values. All IndependenceResult objects returned carry NaN for both the p-value and
+        the alpha-minus-p fields. The independence decision is made purely by comparing the estimated rank to the target
+        rank. </p></div>
+
 
     <h2>Scoring Functions</h2>
 

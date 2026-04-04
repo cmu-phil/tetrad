@@ -17,21 +17,98 @@ import java.util.*;
 import static java.lang.Double.NaN;
 
 /**
- * RCIT / RCoT (Strobl, Zhang, Visweswaran 2019) implemented in the same
- * “meta-architecture” as {@link FfCiContinuous}, but with RCIT-style feature blocks.
+ * A Java implementation of the RCIT (Randomized Conditional Independence Test) and its
+ * variant RCoT (Randomized Conditional correlation Test), following the architecture of
+ * {@link FfCiContinuous} but with the feature-block construction described in:
  *
- * <p>Core statistic (feature space):
- * <pre>
- *   FX = phi(X),  FY = psi(Y)  (or psi([Y,Z]) if doRcit &amp;&amp; Z nonempty),  FZ = eta(Z)
- *   RX = FX - Proj_Z(FX)   (ridge)
- *   RY = FY - Proj_Z(FY)   (ridge)
- *   stat = n * || cov(RX, RY) ||_F^2
- * </pre>
+ * <blockquote>
+ * Strobl, Zhang, and Visweswaran (2019). "Approximate kernel-based conditional
+ * independence tests for fast non-parametric causal discovery."
+ * <em>Journal of Causal Inference</em> 7(1).
+ * </blockquote>
  *
- * <p>Null approximations are delegated to {@code QuadraticFormPValues}.
+ * <h2>Hypotheses</h2>
+ * Tests X ⊥ Y | Z nonparametrically by mapping variables into finite-dimensional
+ * feature spaces and measuring cross-covariance between the feature representations
+ * of X and Y after regressing out the influence of Z.
  *
- * <p>Design goal: keep everything as close to {@link FfCiContinuous} as sensible,
- * changing only what’s needed for RCIT/RCoT behavior (notably the optional Y-augmentation).
+ * <h2>Feature construction</h2>
+ * All variables are assumed to be continuous. Each variable or block of variables
+ * is mapped to a feature matrix using either:
+ * <ul>
+ *   <li><b>RFF</b> (Random Fourier Features) — i.i.d. Gaussian frequency vectors,
+ *       approximating an RBF kernel via {@code sqrt(2/m) cos(Wx + b)}.</li>
+ *   <li><b>ORF</b> (Orthogonal Random Features) — block-orthogonalized frequency
+ *       vectors with chi-distributed norms, typically giving a better kernel
+ *       approximation for the same feature budget.</li>
+ * </ul>
+ * The RBF bandwidth is estimated from the data using the median pairwise squared
+ * distance heuristic, optionally scaled by {@code bandwidthMultiplier}.
+ *
+ * <h2>RCIT vs. RCoT</h2>
+ * The two modes differ only in how the Y feature block is constructed when Z is
+ * non-empty:
+ * <ul>
+ *   <li><b>RCIT</b> ({@code doRcit=true}, default) — the Y feature block is built
+ *       from the joint variable set [Y, Z], using {@code numFeatYAug} features.
+ *       This augmentation allows the test to be more sensitive to conditional
+ *       dependence mediated through Z.</li>
+ *   <li><b>RCoT</b> ({@code doRcit=false}) — the Y feature block is built from Y
+ *       alone, using {@code numFeatXY} features. This is the simpler variant and
+ *       matches unconditional RIT when Z is empty.</li>
+ * </ul>
+ *
+ * <h2>Test statistic</h2>
+ * Given feature matrices FX, FY, and FZ:
+ * <ol>
+ *   <li>Residualize: RX = FX − FZ (FZ'FZ + λI)⁻¹ FZ'FX, and similarly RY.</li>
+ *   <li>Center residual columns.</li>
+ *   <li>Compute: stat = n · ‖cov(RX, RY)‖²_F</li>
+ * </ol>
+ * Under the null, this statistic follows an asymptotic weighted sum of chi-squared(1)
+ * variables, with weights given by the eigenvalues of the Khatri-Rao residual
+ * covariance matrix.
+ *
+ * <h2>P-value approximation</h2>
+ * Four methods are available via {@link Approx}:
+ * <ul>
+ *   <li><b>GAMMA</b> (default) — Satterthwaite gamma approximation via moment
+ *       matching. Moments are computed without forming the full Khatri-Rao matrix,
+ *       using the identity tr(Cov) = ‖Z‖²_F/(n−1) and
+ *       tr(Cov²) = ‖ZZᵀ‖²_F/(n−1)², making this substantially faster than
+ *       eigendecomposition-based methods.</li>
+ *   <li><b>SADDLEPOINT</b> — Lugannani-Rice saddlepoint approximation (requires
+ *       eigendecomposition of the Khatri-Rao covariance).</li>
+ *   <li><b>DAVIES_IMHOF</b> — Davies/Imhof numerical integration (requires
+ *       eigendecomposition).</li>
+ *   <li><b>PERMUTATION</b> — permutation test over row shuffles of RY; exact
+ *       but slow. The number of permutations is controlled by
+ *       {@link #setPermutations}.</li>
+ * </ul>
+ *
+ * <h2>Caching</h2>
+ * Feature matrices are cached by a key that encodes the variable names, active row
+ * set, feature count, feature type, bandwidth settings, seed, and RCIT/RCoT mode.
+ * The cache is invalidated whenever any hyperparameter that affects feature
+ * construction is changed, or when the active row set is updated via
+ * {@link #setRows}.
+ *
+ * <h2>Key hyperparameters</h2>
+ * <ul>
+ *   <li>{@code numFeatXY} — feature dimension for X (and Y in RCoT mode); default 10.</li>
+ *   <li>{@code numFeatZ} — feature dimension for Z; default 100.</li>
+ *   <li>{@code numFeatYAug} — feature dimension for the augmented [Y,Z] block in
+ *       RCIT mode; default 50.</li>
+ *   <li>{@code lambda} — ridge penalty in the residualization step; default 0.001.</li>
+ *   <li>{@code bandwidthMultiplier} — scales the median-distance bandwidth
+ *       estimate; default 1.0.</li>
+ *   <li>{@code bwMaxRows} — maximum rows used in the bandwidth estimation
+ *       subsample; default 500.</li>
+ * </ul>
+ *
+ * @see FfCiContinuous
+ * @see IndependenceTest
+ * @see RowsSettable
  */
 public final class Rcit implements IndependenceTest, RowsSettable {
 
