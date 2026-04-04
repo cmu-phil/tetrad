@@ -543,6 +543,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             TabularDataJTable table = (TabularDataJTable) getSelectedJTable();
             assert table != null;
             table.clearSelected();
+            syncDisplayedModelsToWrapper();
+            firePropertyChange("modelChanged", null, null);
         });
 
         ActionListener deleteSelectedRowsOrColumnsActionListener = e -> {
@@ -559,6 +561,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                 covTable.deleteSelected();
             }
 
+            syncDisplayedModelsToWrapper();
+            firePropertyChange("modelChanged", null, null);
         };
 
         deleteSelectedRowsOrColumns.addActionListener(deleteSelectedRowsOrColumnsActionListener);
@@ -592,6 +596,9 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
                 }
             }
+
+            syncDisplayedModelsToWrapper();
+            firePropertyChange("modelChanged", null, null);
         };
 
         ActionListener selectNamedColumnsActionListener = e -> {
@@ -624,6 +631,9 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                     model.fireTableDataChanged();
                 }
             }
+
+            syncDisplayedModelsToWrapper();
+            firePropertyChange("modelChanged", null, null);
         };
 
         deleteNamedColumns.addActionListener(removeNamedColumnsActionListener);
@@ -686,6 +696,9 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                     model.fireTableDataChanged();
                 }
             }
+
+            syncDisplayedModelsToWrapper();
+            firePropertyChange("modelChanged", null, null);
         });
 
         JCheckBoxMenuItem categoryNames
@@ -795,8 +808,18 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      */
     private JComponent dataDisplay(Object model) {
         if (model instanceof DataSet) {
-            DataDisplay dataDisplay = new DataDisplay((DataSet) model);
+            DataDisplay dataDisplay = new DataDisplay(((DataSet) model).copy());
             dataDisplay.addPropertyChangeListener(this);
+
+            // Sync copied DataSet back to the wrapper whenever any cell changes.
+            JTable table = dataDisplay.getDataDisplayJTable();
+            if (table != null) {
+                table.getModel().addTableModelListener(e -> {
+                    syncDisplayedModelsToWrapper();
+                    firePropertyChange("modelChanged", null, null);
+                });
+            }
+
             return dataDisplay;
         } else if (model instanceof ICovarianceMatrix) {
             CovMatrixDisplay covMatrixDisplay = new CovMatrixDisplay((ICovarianceMatrix) model);
@@ -850,6 +873,22 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                 Math.max(800, d.width),
                 Math.max(600, d.height)
         ));
+    }
+
+    private void syncDisplayedModelsToWrapper() {
+        DataModelList dataModelList = dataWrapper.getDataModelList();
+        dataModelList.clear();
+
+        for (int i = 0; i < getNumJTables(); i++) {
+            JTable jTable = getJTableAt(i);
+            if (jTable instanceof TabularDataJTable tableTabular) {
+                dataModelList.add(tableTabular.getDataSet());
+            }
+            // CovMatrix and TimeSeries are not copied in dataDisplay(), so they
+            // are already the upstream object — no sync needed for them.
+        }
+
+        dataWrapper.setDataModelList(dataModelList);
     }
 }
 
