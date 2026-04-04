@@ -29,7 +29,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 /**
  * Splits continuous data sets by collinear columns.
@@ -102,7 +102,7 @@ public class CovMatrixDifferenceWrapper extends DataWrapper {
         }
 
         for (int i = 0; i < corr3.getNumRows(); i++) {
-            corr3.set(i, i, FastMath.abs(corr3.get(i, i)));
+            corr3.set(i, i, TMath.abs(corr3.get(i, i)));
         }
 
         return corr3;

@@ -38,7 +38,7 @@ import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 
 import java.util.*;
 
-import static org.apache.commons.math3.util.FastMath.log;
+import static edu.cmu.tetrad.util.TMath.log;
 
 /**
  * Estimates a Generalized SEM I'M given a Generalized SEM PM and a data set.
@@ -127,7 +127,7 @@ public class GeneralizedSemEstimator {
         int[] indices = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {
-            indices[i] = data.getColumn(data.getVariable(tierOrdering.get(i).getName()));
+            indices[i] = data.getColumnIndex(data.getVariable(tierOrdering.get(i).getName()));
         }
 
         for (int i = 0; i < data.getNumRows(); i++) {
@@ -234,7 +234,7 @@ public class GeneralizedSemEstimator {
 
         {
 //            0.01, 0.000001
-            //2.0D * FastMath.ulp(1.0D), 1e-8
+            //2.0D * TMath.ulp(1.0D), 1e-8
             MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
             pair = search.optimize(
                     new InitialGuess(values),

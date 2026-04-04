@@ -1,27 +1,8 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-//                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
-// and Richard Scheines.                                                     //
-//                                                                           //
-// This program is free software: you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation, either version 3 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.NaturalSort;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import javax.swing.table.*;
@@ -63,38 +44,24 @@ public class EdgeTypeTable extends JPanel {
             "Node 2",
             "Ensemble",
             "Edge",
-            "No edge",  // 6
-            "--> dd pl",   // 7
-            "<-- dd pl",   // 8
-            "---",         // 9
-            "--> pd nl", // -G> pd nl 10  nl pd
-            "<-- pd nl", // <G- pd nl 11
-            "--> dd nl", // =G> dd nl 12  nl dd
-            "<-- dd nl", // <G= dd nl 13
+            "No edge",
+            "--> dd pl",
+            "<-- dd pl",
+            "---",
+            "--> pd nl",
+            "<-- pd nl",
+            "--> dd nl",
+            "<-- dd nl",
             "o->",
             "<-o",
             "o-o",
             "<->"
     };
 
-    /**
-     * The title of the table.
-     */
     private final JLabel title = new JLabel();
-
-    /**
-     * The table.
-     */
-    private final JTable table = new EdgeInfoTable(new DefaultTableModel());
-
-    /**
-     * The graph.
-     */
+    private final EdgeInfoTable table = new EdgeInfoTable(new DefaultTableModel());
     private Graph graph;
 
-    /**
-     * <p>Constructor for EdgeTypeTable.</p>
-     */
     public EdgeTypeTable() {
         initComponents();
     }
@@ -106,13 +73,71 @@ public class EdgeTypeTable extends JPanel {
         setLayout(new BorderLayout(0, 10));
         add(this.title, BorderLayout.NORTH);
         add(new JScrollPane(this.table), BorderLayout.CENTER);
+
+        refreshTheme();
     }
 
-    /**
-     * <p>update.</p>
-     *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     */
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        refreshTheme();
+    }
+
+    private static Color uiColor(String key, Color fallback) {
+        Color c = UIManager.getColor(key);
+        return c != null ? c : fallback;
+    }
+
+    private static Font uiFont(String key, Font fallback) {
+        Font f = UIManager.getFont(key);
+        return f != null ? f : fallback;
+    }
+
+    private static boolean isDarkMode() {
+        return com.formdev.flatlaf.FlatLaf.isLafDark();
+    }
+
+    private static Color blend(Color a, Color b, double t) {
+        t = Math.max(0.0, Math.min(1.0, t));
+        int r = (int) Math.round((1.0 - t) * a.getRed() + t * b.getRed());
+        int g = (int) Math.round((1.0 - t) * a.getGreen() + t * b.getGreen());
+        int b2 = (int) Math.round((1.0 - t) * a.getBlue() + t * b.getBlue());
+        return new Color(
+                Math.max(0, Math.min(255, r)),
+                Math.max(0, Math.min(255, g)),
+                Math.max(0, Math.min(255, b2))
+        );
+    }
+
+    private void refreshTheme() {
+        setBackground(uiColor("Panel.background", getBackground()));
+        setForeground(uiColor("Label.foreground", getForeground()));
+
+        if (title != null) {
+            title.setForeground(uiColor("Label.foreground", Color.BLACK));
+            title.setFont(uiFont("Label.font", title.getFont()));
+        }
+
+        if (table != null) {
+            table.setBackground(uiColor("Table.background", Color.WHITE));
+            table.setForeground(uiColor("Table.foreground", Color.BLACK));
+            table.setSelectionBackground(uiColor("Table.selectionBackground", table.getSelectionBackground()));
+            table.setSelectionForeground(uiColor("Table.selectionForeground", table.getSelectionForeground()));
+            table.setGridColor(uiColor("Table.gridColor", table.getGridColor()));
+            table.setFont(uiFont("Table.font", table.getFont()));
+            table.setShowGrid(true);
+
+            JTableHeader header = table.getTableHeader();
+            if (header != null) {
+                header.setBackground(uiColor("TableHeader.background", header.getBackground()));
+                header.setForeground(uiColor("TableHeader.foreground", header.getForeground()));
+                header.setFont(uiFont("TableHeader.font", header.getFont()));
+            }
+        }
+
+        repaint();
+    }
+
     public void update(Graph graph) {
         List<Edge> edges = graph.getEdges().stream()
                 .filter(edge -> !edge.isNull())
@@ -128,26 +153,10 @@ public class EdgeTypeTable extends JPanel {
             this.table.setTransferHandler(new DefaultTableTransferHandler(1));
             tableModel.setColumnIdentifiers(EdgeTypeTable.EDGES_AND_EDGE_TYPES);
 
-//            JTableHeader header = this.table.getTableHeader();
-//            Font boldFont = new Font(header.getFont().getFontName(), Font.BOLD, 18);
-//            TableCellRenderer headerRenderer = header.getDefaultRenderer();
-//            header.setDefaultRenderer((tbl, value, isSelected, hasFocus, row, column) -> {
-//                Component comp = headerRenderer.getTableCellRendererComponent(tbl, value, isSelected, hasFocus, row, column);
-//                if (column >= 10 && column <= 13) {
-//                    comp.setForeground(Color.BLUE);
-//                }
-//                if (column >= 12 && column <= 13) {
-//                    comp.setFont(boldFont);
-//                }
-//
-//                return comp;
-//            });
-
             edges.forEach(edge -> {
                 String[] rowData = new String[EdgeTypeTable.EDGES_AND_EDGE_TYPES.length];
                 addEdgeData(edge, rowData);
                 addEdgeProbabilityData(edge, rowData);
-
                 tableModel.addRow(rowData);
             });
         } else {
@@ -156,19 +165,17 @@ public class EdgeTypeTable extends JPanel {
 
             this.title.setText("Edges");
             this.table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-
             tableModel.setColumnIdentifiers(edgeHeaders);
 
             edges.forEach(edge -> {
                 String[] rowData = new String[edgeHeaders.length];
                 addEdgeData(edge, rowData, addProperty);
-
                 tableModel.addRow(rowData);
             });
         }
 
         tableModel.fireTableDataChanged();
-
+        this.table.installSorter();
         this.graph = graph;
     }
 
@@ -187,15 +194,9 @@ public class EdgeTypeTable extends JPanel {
                             pd = false;
                             dd = false;
                             for (Edge.Property p : edgeTypeProb.getProperties()) {
-                                if (p == Edge.Property.dd) {
-                                    dd = true;
-                                }
-                                if (p == Edge.Property.nl) {
-                                    nl = true;
-                                }
-                                if (p == Edge.Property.pd) {
-                                    pd = true;
-                                }
+                                if (p == Edge.Property.dd) dd = true;
+                                if (p == Edge.Property.nl) nl = true;
+                                if (p == Edge.Property.pd) pd = true;
                             }
                             if (nl && dd) {
                                 rowData[12] = probValue;
@@ -210,15 +211,9 @@ public class EdgeTypeTable extends JPanel {
                             pd = false;
                             dd = false;
                             for (Edge.Property p : edgeTypeProb.getProperties()) {
-                                if (p == Edge.Property.dd) {
-                                    dd = true;
-                                }
-                                if (p == Edge.Property.nl) {
-                                    nl = true;
-                                }
-                                if (p == Edge.Property.pd) {
-                                    pd = true;
-                                }
+                                if (p == Edge.Property.dd) dd = true;
+                                if (p == Edge.Property.nl) nl = true;
+                                if (p == Edge.Property.pd) pd = true;
                             }
                             if (nl && dd) {
                                 rowData[13] = probValue;
@@ -262,7 +257,6 @@ public class EdgeTypeTable extends JPanel {
         Endpoint endpoint1 = edge.getEndpoint1();
         Endpoint endpoint2 = edge.getEndpoint2();
 
-        // These should not be flipped.
         String endpoint1Str = switch (endpoint1) {
             case TAIL -> "-";
             case ARROW -> "<";
@@ -287,7 +281,7 @@ public class EdgeTypeTable extends JPanel {
                 rowData[4] = "";
             } else {
                 rowData[4] = edgeProperties.stream()
-                        .map(e -> e.toString())
+                        .map(Object::toString)
                         .collect(Collectors.joining(", "));
             }
         }
@@ -300,7 +294,6 @@ public class EdgeTypeTable extends JPanel {
         Endpoint endpoint1 = edge.getEndpoint1();
         Endpoint endpoint2 = edge.getEndpoint2();
 
-        // These should not be flipped.
         String endpoint1Str = "";
         if (endpoint1 == Endpoint.TAIL) {
             endpoint1Str = "-";
@@ -330,7 +323,6 @@ public class EdgeTypeTable extends JPanel {
         for (Edge edge : graph.getEdges()) {
             return !edge.getEdgeTypeProbabilities().isEmpty();
         }
-
         return false;
     }
 
@@ -340,15 +332,9 @@ public class EdgeTypeTable extends JPanel {
                 return true;
             }
         }
-
         return false;
     }
 
-    /**
-     * <p>Getter for the field <code>graph</code>.</p>
-     *
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
-     */
     public Graph getGraph() {
         return graph;
     }
@@ -358,14 +344,37 @@ public class EdgeTypeTable extends JPanel {
         @Serial
         private static final long serialVersionUID = 4603884548966502824L;
 
-        private final Color STRIPE = new Color(0.929f, 0.953f, 0.996f);
-        private final Color NON_STRIPE = Color.WHITE;
-
-        public StripedRowTableCellRenderer() {
-            initComponents();
+        private static Color uiColor(String key, Color fallback) {
+            Color c = UIManager.getColor(key);
+            return c != null ? c : fallback;
         }
 
-        private void initComponents() {
+        private static boolean isDarkMode() {
+            return com.formdev.flatlaf.FlatLaf.isLafDark();
+        }
+
+        private static Color blend(Color a, Color b, double t) {
+            t = Math.max(0.0, Math.min(1.0, t));
+            int r = (int) Math.round((1.0 - t) * a.getRed() + t * b.getRed());
+            int g = (int) Math.round((1.0 - t) * a.getGreen() + t * b.getGreen());
+            int b2 = (int) Math.round((1.0 - t) * a.getBlue() + t * b.getBlue());
+            return new Color(
+                    Math.max(0, Math.min(255, r)),
+                    Math.max(0, Math.min(255, g)),
+                    Math.max(0, Math.min(255, b2))
+            );
+        }
+
+        private static Color getNonStripe() {
+            return uiColor("Table.background", isDarkMode() ? new Color(43, 45, 48) : Color.WHITE);
+        }
+
+        private static Color getStripe() {
+            Color base = getNonStripe();
+            return isDarkMode() ? blend(base, Color.WHITE, 0.04) : blend(base, new Color(220, 235, 255), 0.55);
+        }
+
+        public StripedRowTableCellRenderer() {
             setOpaque(true);
         }
 
@@ -373,19 +382,27 @@ public class EdgeTypeTable extends JPanel {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            if (!isSelected) {
-                label.setBackground((row % 2 == 0) ? this.NON_STRIPE : this.STRIPE);
+            if (isSelected) {
+                label.setBackground(table.getSelectionBackground());
+                label.setForeground(table.getSelectionForeground());
+            } else {
+                label.setBackground((row % 2 == 0) ? getNonStripe() : getStripe());
+                label.setForeground(table.getForeground());
             }
 
             if (column == 0) {
-                setText(Integer.toString(row + 1));
+                label.setText(Integer.toString(row + 1));
                 label.setHorizontalAlignment(SwingConstants.CENTER);
-                label.setFont(new Font("SansSerif", Font.BOLD, 12));
+
+                Font base = table.getFont();
+                label.setFont(base.deriveFont(Font.BOLD));
+            } else {
+                label.setHorizontalAlignment(SwingConstants.LEADING);
+                label.setFont(table.getFont());
             }
 
             return label;
         }
-
     }
 
     static class EdgeInfoTable extends JTable {
@@ -403,30 +420,79 @@ public class EdgeTypeTable extends JPanel {
             setDefaultRenderer(Object.class, new StripedRowTableCellRenderer());
             setOpaque(true);
 
-            setRowSorter(new TableRowSorter<TableModel>(getModel()) {
-                @Override
-                public boolean isSortable(int column) {
-                    return !(column == 0);
-                }
-            });
+            setBackground(UIManager.getColor("Table.background"));
+            setForeground(UIManager.getColor("Table.foreground"));
+            setSelectionBackground(UIManager.getColor("Table.selectionBackground"));
+            setSelectionForeground(UIManager.getColor("Table.selectionForeground"));
+            setGridColor(UIManager.getColor("Table.gridColor"));
+            installSorter();
+        }
+
+        @Override
+        public void updateUI() {
+            super.updateUI();
+            if (getModel() != null) {
+                setDefaultRenderer(Object.class, new StripedRowTableCellRenderer());
+            }
+
+            Color bg = UIManager.getColor("Table.background");
+            Color fg = UIManager.getColor("Table.foreground");
+            Color sbg = UIManager.getColor("Table.selectionBackground");
+            Color sfg = UIManager.getColor("Table.selectionForeground");
+            Color grid = UIManager.getColor("Table.gridColor");
+
+            if (bg != null) setBackground(bg);
+            if (fg != null) setForeground(fg);
+            if (sbg != null) setSelectionBackground(sbg);
+            if (sfg != null) setSelectionForeground(sfg);
+            if (grid != null) setGridColor(grid);
+
+            Font tf = UIManager.getFont("Table.font");
+            if (tf != null) setFont(tf);
+
+            JTableHeader header = getTableHeader();
+            if (header != null) {
+                Color hbg = UIManager.getColor("TableHeader.background");
+                Color hfg = UIManager.getColor("TableHeader.foreground");
+                Font hf = UIManager.getFont("TableHeader.font");
+                if (hbg != null) header.setBackground(hbg);
+                if (hfg != null) header.setForeground(hfg);
+                if (hf != null) header.setFont(hf);
+            }
         }
 
         @Override
         public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
-            // adjust each column width automatically to fit the content
             Component component = super.prepareRenderer(renderer, row, column);
             int rendererWidth = component.getPreferredSize().width;
             TableColumn tableColumn = getColumnModel().getColumn(column);
-            tableColumn.setPreferredWidth(FastMath.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
-
+            tableColumn.setPreferredWidth(TMath.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
             return component;
         }
 
+        @Override
         public void setValueAt(Object value, int row, int col) {
             // No op. Don't allow values in the table to be changed.
         }
 
+        public void installSorter() {
+            TableRowSorter<TableModel> sorter = new TableRowSorter<>(getModel()) {
+                @Override
+                public boolean isSortable(int column) {
+                    return column != 0;
+                }
+            };
+
+            if (getModel().getColumnCount() > 2) {
+                sorter.setComparator(1, NaturalSort.naturalComparator()); // Node 1
+                sorter.setComparator(3, NaturalSort.naturalComparator()); // Node 2
+                sorter.setSortKeys(List.of(
+                        new RowSorter.SortKey(1, SortOrder.ASCENDING), // Node 1
+                        new RowSorter.SortKey(3, SortOrder.ASCENDING)  // Node 2
+                ));
+                sorter.sort();
+                setRowSorter(sorter);
+            }
+        }
     }
-
 }
-

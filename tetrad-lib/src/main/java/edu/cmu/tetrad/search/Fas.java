@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -199,7 +199,7 @@ public class Fas implements IFas {
                 Node y = nodes.get(j);
 
                 if (knowledge.isForbidden(x.getName(), y.getName()) &&
-                    knowledge.isForbidden(y.getName(), x.getName())) {
+                        knowledge.isForbidden(y.getName(), x.getName())) {
                     modify.removeEdge(x, y);
 
                     if (verbose) {
@@ -250,7 +250,7 @@ public class Fas implements IFas {
 
         if (!nodes.equals(_nodes)) {
             throw new IllegalArgumentException(String.format("The nodes of the proposed new test are not equal list-wise\n" +
-                                                             "to the nodes of the existing test."));
+                    "to the nodes of the existing test."));
         }
 
         this.test = test;
@@ -279,6 +279,9 @@ public class Fas implements IFas {
             ConcurrentLinkedQueue<EdgeRemoval> removals = new ConcurrentLinkedQueue<>();
             List<Node> nodes = checkAdj.getNodes();
 
+            // I think the parallel is fine here because I'm not doing random resampling. Keep in mind this was
+            // an issue for FFCI. jdramsey 2026-2-16
+//            nodes.forEach(x -> {
             nodes.parallelStream().forEach(x -> {
                 for (Node y : checkAdj.getAdjacentNodes(x)) {
                     // Process each unordered pair once (canonical order x<y).

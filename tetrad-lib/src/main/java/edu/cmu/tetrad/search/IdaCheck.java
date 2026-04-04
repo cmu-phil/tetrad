@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.OrderedPair;
 import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -80,7 +81,7 @@ public class IdaCheck {
     /**
      * The instance of IDA used in this class to calculate node effects and distances.
      */
-    private final PdagPagIda ida;
+    private final Ida ida;
 
     /**
      * The true SEM IM, if given.
@@ -102,6 +103,8 @@ public class IdaCheck {
      * copy" behavior without repeatedly copying.
      */
     private Graph cachedGraphCopy;
+
+    private Ida.IDA_TYPE currentIdaType = Ida.IDA_TYPE.OPTIMAL;
 
     /**
      * Constructs a new IDA check for the given PDAG and data set.
@@ -133,7 +136,7 @@ public class IdaCheck {
         this.nodes = dataSet.getVariables();
         this.totalEffects = new HashMap<>();
         this.absTotalEffects = new HashMap<>();
-        this.ida = new PdagPagIda(dataSet, graph, List.of());
+        this.ida = new Ida(dataSet, graph, List.of());
         this.pairs = calcOrderedPairs();
 
         this.trueSemIm = trueSemIm;
@@ -149,6 +152,8 @@ public class IdaCheck {
                 nodeMap.put(node, _node);
             }
         }
+
+        this.ida.setIdaType(currentIdaType);
 
         // NOTE: Do NOT compute IDA results here. The UI may open this object even when it needs an empty table.
         // Results are computed either by calling recompute() or lazily when getters are called.
@@ -185,6 +190,27 @@ public class IdaCheck {
             if (!this.totalEffects.containsKey(pair)) {
                 ensurePairComputed(pair);
             }
+        }
+    }
+
+    /**
+     * Sets the IDA (Intervention Distribution Approximation) type for the current instance.
+     * This method updates the current IDA type and recalculates the results for
+     * total effects and absolute total effects as needed.
+     *
+     * @param idaType the IDA type to be set. Must not be null. Valid values are defined in {@code Ida.IDA_TYPE}.
+     * @throws NullPointerException if {@code idaType} is null.
+     */
+    public void setIdaType(Ida.IDA_TYPE idaType) {
+        if (idaType == null) {
+            throw new NullPointerException("IDA type must not be null.");
+        }
+
+        if (this.currentIdaType != idaType) {
+            this.currentIdaType = idaType;
+            this.ida.setIdaType(idaType);
+            this.totalEffects.clear();
+            this.absTotalEffects.clear();
         }
     }
 
@@ -284,7 +310,7 @@ public class IdaCheck {
         double ret = Double.NaN;
 
         for (double te : total) {
-            if (Math.abs(Math.abs(te) - targetAbs) < 1e-12) {
+            if (TMath.abs(TMath.abs(te) - targetAbs) < 1e-12) {
                 ret = te;
                 break;
             }
@@ -297,6 +323,8 @@ public class IdaCheck {
      * Calculates the squared distance of the true total effect to the [min, max] IDA effect range of the given (x, y)
      * node pair, for x predicting y. If the true effect falls within [min, max], the method returns 0. Otherwise, the
      * squared distance to the nearest endpoint of the [min, max] range is returned.
+     * <p>
+     * If no IDA effects are available for this pair, returns {@link Double#NaN}.
      *
      * @param pair the pair of nodes.
      * @return the squared distance between the two nodes.
@@ -354,7 +382,7 @@ public class IdaCheck {
 
     /**
      * Returns the squared difference between the minimum total effect and the true total effect for the given pair of
-     * nodes.
+     * nodes. If no IDA effects are available for this pair, returns {@link Double#NaN}.
      *
      * @param pair the pair of nodes.
      * @return the squared difference between the minimum total effect and the true total effect.
@@ -362,21 +390,15 @@ public class IdaCheck {
     public double getSquaredMinTrueDistance(OrderedPair<Node> pair) {
         if (this.trueSemIm == null) return Double.NaN;
 
-        Node x = pair.getFirst();
-        Node y = pair.getSecond();
-
-        // We intentionally call ida directly here (as in your version),
-        // but we still keep the cached maps in sync via ensurePairComputed.
         ensurePairComputed(pair);
 
         List<Double> totalEffects = this.totalEffects.get(pair);
-        double trueTotalEffect = getTrueTotalEffect(pair);
-
-        double min = Double.MAX_VALUE;
-
-        if (totalEffects.isEmpty()) {
-            return trueTotalEffect;
+        if (totalEffects == null || totalEffects.isEmpty()) {
+            return Double.NaN;
         }
+
+        double trueTotalEffect = getTrueTotalEffect(pair);
+        double min = Double.MAX_VALUE;
 
         for (double totalEffect : totalEffects) {
             double diff = totalEffect - trueTotalEffect;
@@ -425,7 +447,7 @@ public class IdaCheck {
 
     /**
      * Returns the squared difference between the maximum total effect and the true total effect for the given pair of
-     * nodes.
+     * nodes. If no IDA effects are available for this pair, returns {@link Double#NaN}.
      *
      * @param pair the pair of nodes.
      * @return the squared difference between the maximum total effect and the true total effect.
@@ -433,19 +455,15 @@ public class IdaCheck {
     public double getSquaredMaxTrueDist(OrderedPair<Node> pair) {
         if (this.trueSemIm == null) return Double.NaN;
 
-        Node x = pair.getFirst();
-        Node y = pair.getSecond();
-
         ensurePairComputed(pair);
 
         List<Double> totalEffects = this.totalEffects.get(pair);
-        double trueTotalEffect = getTrueTotalEffect(pair);
-
-        double max = 0;
-
-        if (totalEffects.isEmpty()) {
-            return trueTotalEffect;
+        if (totalEffects == null || totalEffects.isEmpty()) {
+            return Double.NaN;
         }
+
+        double trueTotalEffect = getTrueTotalEffect(pair);
+        double max = -1.0;
 
         for (double totalEffect : totalEffects) {
             double diff = totalEffect - trueTotalEffect;
@@ -521,6 +539,8 @@ public class IdaCheck {
      */
     public void recompute(List<OrderedPair<Node>> currentPairs) {
         for (OrderedPair<Node> pair : currentPairs) {
+            this.totalEffects.remove(pair);
+            this.absTotalEffects.remove(pair);
             ensurePairComputed(pair);
         }
     }

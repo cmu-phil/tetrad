@@ -34,12 +34,12 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * This class represents a Simulation using Structural Equation Modeling (SEM).
@@ -134,7 +134,7 @@ public class HybridCgSimulation implements Simulation {
             for (int k = 0; k < dataSet.getNumRows(); k++) {
                 for (int j = 0; j < dataSet.getNumColumns(); j++) {
                     double d = dataSet.getDouble(k, j);
-                    double norm = RandomUtil.getInstance().nextGaussian(0, FastMath.sqrt(variance));
+                    double norm = RandomUtil.getInstance().nextGaussian(0, TMath.sqrt(variance));
                     dataSet.setDouble(k, j, d + norm);
                 }
             }
@@ -181,7 +181,7 @@ public class HybridCgSimulation implements Simulation {
             HybridCgModel.HybridCgIm im = this.im;
 
 
-            HybridCgModel.HybridCgIm.Sample sample = im.sample(parameters.getInt(Params.SAMPLE_SIZE), new Random());
+            HybridCgModel.HybridCgIm.Sample sample = im.sample(parameters.getInt(Params.SAMPLE_SIZE));
 
             List<Node> nodes = HybridCgVars.materializeDataVariables(im.getPm());
 
@@ -293,9 +293,10 @@ public class HybridCgSimulation implements Simulation {
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
         parameters.add(Params.STANDARDIZE);
-        parameters.add(Params.SIMULATION_ERROR_TYPE);
-        parameters.add(Params.SIMULATION_PARAM1);
-        parameters.add(Params.SIMULATION_PARAM2);
+        parameters.add(Params.NOISE_EXPRESSION);
+//        parameters.add(Params.SIMULATION_ERROR_TYPE);
+//        parameters.add(Params.SIMULATION_PARAM1);
+//        parameters.add(Params.SIMULATION_PARAM2);
         parameters.add(Params.SEED);
 
         return parameters;
@@ -318,7 +319,7 @@ public class HybridCgSimulation implements Simulation {
      * @param parameters the parameters to use in the simulation
      * @return a DataSet object representing the simulated data
      */
-    private DataSet simulate(SemIm im, Parameters parameters) {
+    private DataSet simulate(SemIm im, Parameters parameters) throws ParseException {
         return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
     }
 }

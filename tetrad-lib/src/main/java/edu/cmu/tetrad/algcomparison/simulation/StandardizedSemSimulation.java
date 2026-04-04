@@ -36,6 +36,7 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -110,7 +111,7 @@ public class StandardizedSemSimulation implements Simulation {
      * {@inheritDoc}
      */
     @Override
-    public void createData(Parameters parameters, boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) throws ParseException {
         if (parameters.getLong(Params.SEED) != -1L) {
             RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
         }
@@ -186,6 +187,8 @@ public class StandardizedSemSimulation implements Simulation {
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
+        parameters.add(Params.CUSTOM_NOISE_OPTION);
+        parameters.add(Params.CUSTOM_NOISE_EXPRESSION);
         parameters.add(Params.SEED);
         return parameters;
     }
@@ -216,7 +219,7 @@ public class StandardizedSemSimulation implements Simulation {
         return DataType.Continuous;
     }
 
-    private DataSet simulate(Graph graph, Parameters parameters) {
+    private DataSet simulate(Graph graph, Parameters parameters) throws ParseException {
         if (this.standardizedIm == null) {
             SemPm pm = this.pm;
 

@@ -24,6 +24,7 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -137,12 +138,12 @@ final class EMBayesEstimatorEditorWizard extends JPanel {
             int max = this.varNamesComboBox.getItemCount();
 
             ++current;
-
-            if (current == max) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "There are no more variables.");
-            }
+//
+//            if (current == max) {
+//                JOptionPane.showMessageDialog(
+//                        this,
+//                        "There are no more variables.");
+//            }
 
             int set = (current < max) ? current : 0;
 
@@ -164,12 +165,12 @@ final class EMBayesEstimatorEditorWizard extends JPanel {
 
     private JComboBox<Node> createVarNamesComboBox(BayesPm bayesPm) {
         JComboBox<Node> varNameComboBox = new JComboBox<>();
-        varNameComboBox.setBackground(Color.white);
+//        varNameComboBox.setBackground(Color.white);
 
         Graph graph = bayesPm.getDag();
 
         List<Node> nodes = new ArrayList<>(graph.getNodes());
-        Collections.sort(nodes);
+        nodes.sort(NaturalSort.naturalComparator());
         nodes.forEach(varNameComboBox::addItem);
 
         if (varNameComboBox.getItemCount() > 0) {

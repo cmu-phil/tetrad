@@ -88,7 +88,7 @@ public class DgBicTest implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "DG BIC Test";
+        return "DG-BIC-Test";
     }
 
     /**

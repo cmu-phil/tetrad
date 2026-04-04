@@ -23,10 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.ProbUtils;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.model.EditorUtils;
 import edu.cmu.tetradapp.model.SemEstimatorWrapper;
 import edu.cmu.tetradapp.model.SemImWrapper;
@@ -39,7 +36,6 @@ import edu.cmu.tetradapp.workbench.LayoutMenu;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Serializer;
-import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -48,6 +44,7 @@ import javax.swing.event.AncestorListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -558,16 +555,16 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     double d1 = implCovar[i][j];
                     double d2 = implCovar[i][i];
                     double d3 = implCovar[j][j];
-                    double d4 = d1 / FastMath.pow(d2 * d3, 0.5);
+                    double d4 = d1 / TMath.pow(d2 * d3, 0.5);
 
                     if (d4 <= 1.0 || Double.isNaN(d4)) {
                         corr[i][j] = d4;
                     } else {
                         throw new IllegalArgumentException(
                                 "Off-diagonal element at (" + i + ", " + j
-                                + ") cannot be converted to correlation: "
-                                + d1 + " <= FastMath.pow(" + d2 + " * " + d3
-                                + ", 0.5)");
+                                        + ") cannot be converted to correlation: "
+                                        + d1 + " <= TMath.pow(" + d2 + " * " + d3
+                                        + ", 0.5)");
                     }
                 }
             }
@@ -663,30 +660,30 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 append("\nRMSEA = " + this.nf.format(semIm().getRmsea()));
 
             } else {
-                int numToFix = (int) FastMath.abs(modelDof);
+                int numToFix = (int) TMath.abs(modelDof);
                 append("\n\nA SEM with negative degrees of freedom is underidentified, "
-                       + "\nand other model statistics are meaningless.  Please increase "
-                       + "\nthe degrees of freedom to 0 or above by fixing at least "
-                       + numToFix + " parameter" + (numToFix == 1 ? "." : "s."));
+                        + "\nand other model statistics are meaningless.  Please increase "
+                        + "\nthe degrees of freedom to 0 or above by fixing at least "
+                        + numToFix + " parameter" + (numToFix == 1 ? "." : "s."));
             }
 
             append("\n\nThe above chi square test assumes that the maximum "
-                   + "likelihood function over the measured variables has been "
-                   + "minimized. Under that assumption, the null hypothesis for "
-                   + "the test is that the population covariance matrix over all "
-                   + "of the measured variables is equal to the estimated covariance "
-                   + "matrix over all of the measured variables written as a function "
-                   + "of the free model parameters--that is, the unfixed parameters "
-                   + "for each directed edge (the linear coefficient for that edge), "
-                   + "each exogenous variable (the variance for the error term for "
-                   + "that variable), and each bidirected edge (the covariance for "
-                   + "the exogenous variables it connects).  The model is explained "
-                   + "in Bollen, Structural Equations with Latent Variable, 110. "
-                   + "Degrees of freedom are calculated as m (m + 1) / 2 - d, where d "
-                   + "is the number of linear coefficients, variance terms, and error "
-                   + "covariance terms that are not fixed in the model. For latent models, "
-                   + "the degrees of freedom are termed 'estimated' since extra contraints "
-                   + "(e.g. pentad constraints) are not taken into account.");
+                    + "likelihood function over the measured variables has been "
+                    + "minimized. Under that assumption, the null hypothesis for "
+                    + "the test is that the population covariance matrix over all "
+                    + "of the measured variables is equal to the estimated covariance "
+                    + "matrix over all of the measured variables written as a function "
+                    + "of the free model parameters--that is, the unfixed parameters "
+                    + "for each directed edge (the linear coefficient for that edge), "
+                    + "each exogenous variable (the variance for the error term for "
+                    + "that variable), and each bidirected edge (the covariance for "
+                    + "the exogenous variables it connects).  The model is explained "
+                    + "in Bollen, Structural Equations with Latent Variable, 110. "
+                    + "Degrees of freedom are calculated as m (m + 1) / 2 - d, where d "
+                    + "is the number of linear coefficients, variance terms, and error "
+                    + "covariance terms that are not fixed in the model. For latent models, "
+                    + "the degrees of freedom are termed 'estimated' since extra contraints "
+                    + "(e.g. pentad constraints) are not taken into account.");
 
         }
 
@@ -1280,14 +1277,14 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             double d = semIm().getParamValue(parameter);
 
             if (this.editor.isEditCovariancesAsCorrelations()
-                && parameter.getType() == ParamType.COVAR) {
+                    && parameter.getType() == ParamType.COVAR) {
                 Node nodeA = parameter.getNodeA();
                 Node nodeB = parameter.getNodeB();
 
                 double varA = semIm().getParamValue(nodeA, nodeA);
                 double varB = semIm().getParamValue(nodeB, nodeB);
 
-                d /= FastMath.sqrt(varA * varB);
+                d /= TMath.sqrt(varA * varB);
             }
 
             DoubleTextField field = new DoubleTextField(d, 10, NumberFormatUtil.getInstance().getNumberFormat());
@@ -1347,7 +1344,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
             Parameter parameter = getNodeParameter(node);
             if (this.editor.isEditCovariancesAsCorrelations()
-                && parameter.getType() == ParamType.VAR) {
+                    && parameter.getType() == ParamType.VAR) {
                 return;
             }
 
@@ -1360,7 +1357,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     d = semIm().getMean(node);
                 }
             } else {
-                d = FastMath.sqrt(semIm().getParamValue(parameter));
+                d = TMath.sqrt(semIm().getParamValue(parameter));
             }
 
             DoubleTextField field = new DoubleTextField(d, 10, NumberFormatUtil.getInstance().getNumberFormat());
@@ -1506,14 +1503,14 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 }
 
                 if (this.editor.isEditCovariancesAsCorrelations()
-                    && parameter.getType() == ParamType.COVAR) {
+                        && parameter.getType() == ParamType.COVAR) {
                     Node nodeA = edge.getNode1();
                     Node nodeB = edge.getNode2();
 
                     double varA = semIm().getVariance(nodeA, implCovar);
                     double varB = semIm().getVariance(nodeB, implCovar);
 
-                    val /= FastMath.sqrt(varA * varB);
+                    val /= TMath.sqrt(varA * varB);
                 }
 
                 JLabel label = new JLabel();
@@ -1536,7 +1533,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 label.addMouseListener(new EdgeMouseListener(edge, this));
                 if (!Double.isNaN(standardError) && semIm().isEstimated()) {
                     label.setToolTipText("SE=" + asString(standardError) + ", T="
-                                         + asString(tValue) + ", P=" + asString(pValue));
+                            + asString(tValue) + ", P=" + asString(pValue));
                 }
 
                 workbench().setEdgeLabel(edge, label);
@@ -1584,7 +1581,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                         = semIm().getPValue(parameter, this.maxFreeParamsForStatistics);
 
                 tooltip = "SE=" + asString(standardError) + ", T="
-                          + asString(tValue) + ", P=" + asString(pValue);
+                        + asString(tValue) + ", P=" + asString(pValue);
             }
 
             if (!Double.isNaN(meanOrIntercept)) {
@@ -1593,18 +1590,18 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
                 if (this.editor.isEditIntercepts()) {
                     tooltip = "<html>" + "B0_" + node.getName() + " = "
-                              + asString(meanOrIntercept) + "</html>";
+                            + asString(meanOrIntercept) + "</html>";
                 } else {
                     tooltip = "<html>" + "Mean(" + node.getName() + ") = "
-                              + asString(meanOrIntercept) + "</html>";
+                            + asString(meanOrIntercept) + "</html>";
                 }
             } else if (!this.editor.isEditCovariancesAsCorrelations()
-                       && !Double.isNaN(stdDev)) {
+                    && !Double.isNaN(stdDev)) {
                 label.setForeground(Color.BLUE);
                 label.setText(asString(stdDev));
 
                 tooltip = "<html>" + node.getName() + " ~ N(0," + asString(stdDev)
-                          + ")" + "<br><br>" + tooltip + "</html>";
+                        + ")" + "<br><br>" + tooltip + "</html>";
 
             } else if (this.editor.isEditCovariancesAsCorrelations()) {
                 label.setForeground(Color.GRAY);
@@ -1661,7 +1658,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 double d = Double.parseDouble(text);
 
                 if (this.editor.isEditCovariancesAsCorrelations()
-                    && parameter.getType() == ParamType.COVAR) {
+                        && parameter.getType() == ParamType.COVAR) {
                     Node nodeA = edge.getNode1();
                     Node nodeB = edge.getNode2();
 
@@ -1670,12 +1667,12 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     double varA = semIm().getVariance(nodeA, implCovar);
                     double varB = semIm().getVariance(nodeB, implCovar);
 
-                    d *= FastMath.sqrt(varA * varB);
+                    d *= TMath.sqrt(varA * varB);
 
                     semIm().setParamValue(parameter, d);
                     this.firePropertyChange("modelChanged", null, null);
                 } else if (!this.editor.isEditCovariancesAsCorrelations()
-                           && parameter.getType() == ParamType.COVAR) {
+                        && parameter.getType() == ParamType.COVAR) {
                     semIm().setParamValue(parameter, d);
                     this.firePropertyChange("modelChanged", null, null);
                 } else if (parameter.getType() == ParamType.COEF) {
@@ -1883,6 +1880,16 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             };
             this.tableModel = new ParamTableModel(wrapper, editor, maxFreeParamsForStatistics);
             table.setModel(getTableModel());
+
+            TableRowSorter<ParamTableModel> sorter = new TableRowSorter<>(this.tableModel);
+            sorter.setComparator(0, NaturalSort.naturalComparator()); // From
+            sorter.setComparator(1, NaturalSort.naturalComparator()); // To
+            sorter.setSortKeys(List.of(
+                    new RowSorter.SortKey(0, SortOrder.ASCENDING),
+                    new RowSorter.SortKey(1, SortOrder.ASCENDING)
+            ));
+            sorter.sort();
+            table.setRowSorter(sorter);
             this.tableModel.addTableModelListener((e) -> this.firePropertyChange("modelChanged", null, null));
 
             add(new JScrollPane(table), BorderLayout.CENTER);
@@ -2012,11 +2019,11 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 int df = n - 1;
                 double mean = semIm().getMean(node);
                 double stdDev = semIm().getMeanStdDev(node);
-                double stdErr = stdDev / FastMath.sqrt(n);
-//            double tValue = mean * FastMath.sqrt(n - 1) / stdDev;
+                double stdErr = stdDev / TMath.sqrt(n);
+//            double tValue = mean * TMath.sqrt(n - 1) / stdDev;
 
                 double tValue = mean / stdErr;
-                double p = 2.0 * (1.0 - ProbUtils.tCdf(FastMath.abs(tValue), df));
+                double p = 2.0 * (1.0 - ProbUtils.tCdf(TMath.abs(tValue), df));
 
                 switch (column) {
                     case 0:
@@ -2061,11 +2068,11 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     double varA = semIm().getParamValue(nodeA, nodeA);
                     double varB = semIm().getParamValue(nodeB, nodeB);
 
-                    paramValue *= FastMath.sqrt(varA * varB);
+                    paramValue *= TMath.sqrt(varA * varB);
                 }
             } else {
                 if (parameter.getType() == ParamType.VAR) {
-                    paramValue = FastMath.sqrt(paramValue);
+                    paramValue = TMath.sqrt(paramValue);
                 }
             }
 

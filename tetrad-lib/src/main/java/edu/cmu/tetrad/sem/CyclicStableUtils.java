@@ -24,8 +24,10 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TMath;
 
 import java.lang.reflect.Method;
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -46,26 +48,23 @@ public final class CyclicStableUtils {
      * @param s the fixed spectral radius for each SCC
      * @param coefLow the lower bound for coefficient values
      * @param coefHigh the upper bound for coefficient values
-     * @param seed the random seed for reproducibility, or -1 for random seed
      * @param params the parameters for the SEM model
      * @return the simulated data and SEM model
      */
     public static SemIm.CyclicSimResult simulateStableFixedRadius(
             Graph g, int n, double s, double coefLow, double coefHigh,
-            long seed, Parameters params) {
-
-        if (seed != -1) {
-            RandomUtil.getInstance().setSeed(seed);
-        } else {
-            RandomUtil.getInstance().setSeed(RandomUtil.getInstance().nextLong());
-        }
+            Parameters params) {
 
         SemPm pm = new SemPm(g);
         SemIm im = new SemIm(pm, params);
 
         stabilizeAllSccsFixedRadius(im, g, s, coefLow, coefHigh);
 
-        return new SemIm.CyclicSimResult(im.simulateData(n, false), im);
+        try {
+            return new SemIm.CyclicSimResult(im.simulateData(n, false), im);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -84,8 +83,8 @@ public final class CyclicStableUtils {
             Graph g, int n, double maxProd, double coefLow, double coefHigh,
             long seed, Parameters params) {
 
-        double targetRadius = Math.sqrt(maxProd); // exact for 2-node cycles; safe upper bound otherwise
-        return simulateStableFixedRadius(g, n, targetRadius, coefLow, coefHigh, seed, params);
+        double targetRadius = TMath.sqrt(maxProd); // exact for 2-node cycles; safe upper bound otherwise
+        return simulateStableFixedRadius(g, n, targetRadius, coefLow, coefHigh, params);
     }
 
     // Scale-only: do not redraw; just rescale SCCs to target radius
@@ -212,7 +211,7 @@ public final class CyclicStableUtils {
                 if (i == j) continue;
                 Node from = scc.get(j);
                 if (g.getDirectedEdge(from, to) != null) {
-                    A[i][j] = Math.abs(getEdgeCoef(im, from, to));
+                    A[i][j] = TMath.abs(getEdgeCoef(im, from, to));
                 }
             }
         }
@@ -236,7 +235,7 @@ public final class CyclicStableUtils {
 
             // Rayleigh quotient in 1-norm for nonnegative A: lambda â ||A v||_1 / ||v||_1 = sum(w)
             lambda = norm;
-            if (Math.abs(lambda - prev) < 1e-9 * Math.max(1.0, lambda)) break;
+            if (TMath.abs(lambda - prev) < 1e-9 * TMath.max(1.0, lambda)) break;
             prev = lambda;
         }
         return lambda;
@@ -340,6 +339,6 @@ public final class CyclicStableUtils {
 
         Parameters p = new Parameters();
         long seed = 42L;
-        return simulateStableFixedRadius(g, 10000, 0.6, 0.2, 1.0, seed, p);
+        return simulateStableFixedRadius(g, 10000, 0.6, 0.2, 1.0, p);
     }
 }

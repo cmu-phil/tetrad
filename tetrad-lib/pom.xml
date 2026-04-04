@@ -19,8 +19,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <source>21</source>
-                    <target>21</target>
+                    <release>21</release>
+<!--                    <source>21</source>-->
+<!--                    <target>21</target>-->
                 </configuration>
             </plugin>
             <plugin>
@@ -84,6 +85,11 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
             <version>1.14.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-rng-simple</artifactId>
+            <version>1.6</version>
         </dependency>
         <dependency>
             <groupId>colt</groupId>
@@ -198,6 +204,11 @@
 <!--            <version>5.10.2</version>-->
 <!--            <scope>test</scope>-->
 <!--        </dependency>-->
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>3.4</version>
+        </dependency>
     </dependencies>
 
     <properties>

@@ -79,7 +79,7 @@ public class CciTest implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "CCI Test";
+        return "CCI";
     }
 
     /**

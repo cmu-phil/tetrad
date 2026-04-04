@@ -179,8 +179,8 @@ class GeneralizedSemPmGraphicalEditor extends JPanel {
             workbench().setNodeLabel(node, null, 0, 0);
         } else {
             JLabel label = new JLabel();
-            label.setForeground(Color.BLACK);
-            label.setBackground(Color.WHITE);
+//            label.setForeground(Color.BLACK);
+//            label.setBackground(Color.WHITE);
 //            label.setFont(SMALL_FONT);
             label.setText(expressionString);
             label.addMouseListener(new NodeMouseListener(node, this));

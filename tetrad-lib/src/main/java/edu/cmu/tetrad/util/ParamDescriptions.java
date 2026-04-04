@@ -96,7 +96,12 @@ public final class ParamDescriptions {
                     this.paramsWithUnsupportedValueType.add(paramName);
                 } else {
                     String shortDescription = Objects.requireNonNull(doc.getElementById(paramName + "_short_desc")).text().trim();
-                    String longDescription = Objects.requireNonNull(doc.getElementById(paramName + "_long_desc")).text().trim();
+                    String longDescription = null;
+                    try {
+                        longDescription = Objects.requireNonNull(doc.getElementById(paramName + "_long_desc")).text().trim();
+                    } catch (Exception e) {
+                        throw new RuntimeException("Missing long description: " + paramName, e);
+                    }
                     String defaultValue = Objects.requireNonNull(doc.getElementById(paramName + "_default_value")).text().trim();
                     String lowerBound = Objects.requireNonNull(doc.getElementById(paramName + "_lower_bound")).text().trim();
                     String upperBound = Objects.requireNonNull(doc.getElementById(paramName + "_upper_bound")).text().trim();

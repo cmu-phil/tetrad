@@ -229,38 +229,29 @@ public class MeekRules {
     }
 
     /**
-     * If a-->b-->c, a--c, then a-->c.
+     * Meek's rule R2: if a-->b-->c and a--c, then a-->c.
      */
     private boolean meekR2(Node a, Node c, Graph graph, Set<Node> visited) {
-        List<Node> adjacentNodes = graph.getAdjacentNodes(c);
-        adjacentNodes.remove(a);
-
         Set<Node> common = getCommonAdjacents(a, c, graph);
         boolean oriented = false;
 
         for (Node b : common) {
-            if (graph.paths().isDirected(a, b) && graph.paths().isDirected(b, c)) {
-                if (r2Helper(a, b, c, graph, visited)) {
+            if (graph.isParentOf(a, b) && graph.isParentOf(b, c)) {
+                if (direct(a, c, graph, visited)) {
+                    log(LogUtilsSearch.edgeOrientedMsg("Meek R2 triangle (" + a + "-->" + b + "-->" + c + ", " + a + "--" + c + ")", graph.getEdge(a, c)));
                     oriented = true;
                 }
             }
 
-            if (graph.paths().isDirected(c, b) && graph.paths().isDirected(b, a)) {
-                if (r2Helper(c, b, a, graph, visited)) {
+            if (graph.isParentOf(c, b) && graph.isParentOf(b, a)) {
+                if (direct(c, a, graph, visited)) {
+                    log(LogUtilsSearch.edgeOrientedMsg("Meek R2 triangle (" + c + "-->" + b + "-->" + a + ", " + c + "--" + a + ")", graph.getEdge(c, a)));
                     oriented = true;
                 }
             }
         }
 
         return oriented;
-    }
-
-    private boolean r2Helper(Node a, Node b, Node c, Graph graph, Set<Node> visited) {
-        if (direct(a, c, graph, visited)) {
-            log(LogUtilsSearch.edgeOrientedMsg("Meek R2 triangle (" + a + "-->" + b + "-->" + c + ", " + a + "--" + c + ")", graph.getEdge(a, c)));
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -292,13 +283,10 @@ public class MeekRules {
     }
 
     private boolean r3Helper(Node a, Node d, Node b, Node c, Graph graph, Set<Node> visited) {
-        boolean b4 = graph.paths().isUndirected(d, a);
-        boolean b5 = graph.paths().isUndirected(d, b);
-        boolean b6 = graph.paths().isUndirected(d, c);
-        boolean b7 = graph.paths().isDirected(b, a);
-        boolean b8 = graph.paths().isDirected(c, a);
-
-        if (b4 && b5 && b6 && b7 && b8) {
+        if (graph.isParentOf(b, a) && graph.isParentOf(c, a)
+            && Edges.isUndirectedEdge(graph.getEdge(d, a))
+            && Edges.isUndirectedEdge(graph.getEdge(d, b))
+            && Edges.isUndirectedEdge(graph.getEdge(d, c))) {
             if (direct(d, a, graph, visited)) {
                 log(LogUtilsSearch.edgeOrientedMsg("Meek R3 " + d + "--" + a + ", " + b + ", " + c, graph.getEdge(d, a)));
                 return true;

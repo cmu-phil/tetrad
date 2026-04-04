@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,10 +20,9 @@
 
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
-
-import java.util.Random;
 
 /**
  * This class generates and evaluates a random piecewise cubic spline function. It uses a set of breakpoints and random
@@ -52,12 +51,10 @@ public class RandomPiecewiseSpline {
         this.xPoints = new double[numPoints];
         this.yPoints = new double[numPoints];
 
-        Random random = new Random();
-
         // Step 1: Generate random breakpoints and corresponding values
         for (int i = 0; i < numPoints; i++) {
             xPoints[i] = xMin + i * (xMax - xMin) / (numPoints - 1); // Evenly spaced x-points
-            yPoints[i] = yMin + (yMax - yMin) * random.nextDouble(); // Random y-values in the range [yMin, yMax]
+            yPoints[i] = yMin + (yMax - yMin) * RandomUtil.getInstance().nextDouble(); // Random y-values in the range [yMin, yMax]
         }
 
         // Step 2: Create the cubic spline interpolator

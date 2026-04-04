@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,15 +20,12 @@
 
 package edu.cmu.tetradapp.editor;
 
-import javax.help.CSH;
-import javax.help.HelpBroker;
-import javax.help.HelpSet;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.net.URL;
 
 /**
@@ -49,24 +46,55 @@ public class PagEdgeTypeInstructions extends AbstractAction implements Clipboard
      *
      * @param e the event that triggered the action.
      */
+    @Override
     public void actionPerformed(ActionEvent e) {
-        // Initialize helpSet
-        final String helpHS = "/docs/javahelp/TetradHelp.hs";
+        final String helpPage = "/docs/javahelp/manual/graph_edge_types.html";
 
         try {
-            URL url = this.getClass().getResource(helpHS);
-            HelpSet helpSet = new HelpSet(null, url);
-            helpSet.setHomeID("graph_edge_types");
-            HelpBroker broker = helpSet.createHelpBroker();
-            broker.setCurrentView("Index");
-            ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-            listener.actionPerformed(e);
-        } catch (Exception ee) {
-            System.out.println("HelpSet " + ee.getMessage());
-            System.out.println("HelpSet " + helpHS + " not found");
-            throw new IllegalArgumentException();
-        }
+            URL url = getClass().getResource(helpPage);
+            if (url == null) {
+                throw new IllegalArgumentException("Help page not found: " + helpPage);
+            }
 
+            JEditorPane editorPane = new JEditorPane();
+            editorPane.setEditable(false);
+            editorPane.setContentType("text/html");
+            editorPane.setPage(url);
+            editorPane.setCaretPosition(0);
+
+            JScrollPane scrollPane = new JScrollPane(editorPane);
+            scrollPane.setPreferredSize(new Dimension(900, 650));
+
+            Object source = e.getSource();
+            java.awt.Component sourceComponent =
+                    (source instanceof java.awt.Component) ? (java.awt.Component) source : null;
+            java.awt.Window owner =
+                    sourceComponent != null ? SwingUtilities.getWindowAncestor(sourceComponent) : null;
+
+            JDialog dialog = new JDialog(owner, "PAG Edge Types", Dialog.ModalityType.APPLICATION_MODAL);
+            dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            dialog.getContentPane().setLayout(new BorderLayout());
+            dialog.getContentPane().add(scrollPane, BorderLayout.CENTER);
+
+            JButton closeButton = new JButton("Close");
+            closeButton.addActionListener(ev -> dialog.dispose());
+
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            buttonPanel.add(closeButton);
+            dialog.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+
+            dialog.pack();
+            dialog.setLocationRelativeTo(owner);
+            dialog.setVisible(true);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Could not load help page:\n" + ex.getMessage(),
+                    "Help Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
     }
 
     /**

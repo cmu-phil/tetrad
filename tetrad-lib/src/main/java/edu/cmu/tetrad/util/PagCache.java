@@ -103,7 +103,7 @@ public final class PagCache {
         long h = 0xcbf29ce484222325L; // FNV-1a
         List<String> names = new ArrayList<>();
         for (Node n : g.getNodes()) names.add(n.getName());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());;
         for (String s : names) h = fnv1a(h, s);
 
         List<String> es = new ArrayList<>();

@@ -2,7 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Experimental;
@@ -18,6 +18,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Experimental
-public class Pcmci implements Algorithm, TakesIndependenceWrapper, HasKnowledge {
+public class Pcmci implements Algorithm, TakesIndependenceWrapper, AcceptsKnowledge {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -94,7 +95,7 @@ public class Pcmci implements Algorithm, TakesIndependenceWrapper, HasKnowledge 
             throw new IllegalArgumentException("PCMCI requires a DataSet.");
         }
 
-        final int maxLag = Math.max(1, parameters.getInt(Params.TIME_LAG, 1));
+        final int maxLag = TMath.max(1, parameters.getInt(Params.TIME_LAG, 1));
         final int maxCondSize = parameters.getInt(Params.DEPTH, 3);
         final double alpha = parameters.getDouble(Params.ALPHA, 0.05);
         final boolean verbose = parameters.getBoolean(Params.VERBOSE, false);

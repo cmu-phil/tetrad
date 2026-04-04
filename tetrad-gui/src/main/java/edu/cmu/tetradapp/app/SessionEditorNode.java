@@ -38,6 +38,8 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.Point;
 import java.awt.event.ComponentAdapter;
@@ -258,21 +260,17 @@ public final class SessionEditorNode extends DisplayNode {
      */
     @Override
     public void doDoubleClickAction(Graph sessionWrapper) {
-        this.sessionWrapper = (SessionWrapper) sessionWrapper;
+        if (sessionWrapper instanceof SessionWrapper sw) {
+            this.sessionWrapper = sw;
+        } else if (sessionWrapper != null) {
+            throw new IllegalArgumentException("Expected SessionWrapper, got: "
+                    + sessionWrapper.getClass());
+        }
 
         SwingUtilities.invokeLater(() -> {
             TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
             launchEditorVisit();
         });
-
-//        class MyWatchedProcess extends WatchedProcess {
-//            public void watch() {
-//                TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
-//                launchEditorVisit();
-//            }
-//        }
-//
-//        new MyWatchedProcess();
     }
 
     private void launchEditorVisit() {
@@ -319,7 +317,7 @@ public final class SessionEditorNode extends DisplayNode {
                     SessionEditorNode.this.spawnedEditor = null;
 
                     EditorWindow window = (EditorWindow) e.getSource();
-                    if (window.isCanceled()) {
+                    if (window.isCanceled() && cloned) {
                         sessionNode.restoreOriginalModel();
                     }
 
@@ -394,7 +392,7 @@ public final class SessionEditorNode extends DisplayNode {
         sessionEditorNode.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentMoved(ComponentEvent e) {
-                sessionEditorNode.getSimulationStudy().getSession().setSessionChanged(true);
+                sessionEditorNode.getSimulationStudy().getSession().setSessionUnsaved(true);
             }
         });
 
@@ -483,12 +481,6 @@ public final class SessionEditorNode extends DisplayNode {
             String name
                     = JOptionPane.showInputDialog(centeringComp, "New name:");
 
-            if (!NamingProtocol.isLegalName(name)) {
-                JOptionPane.showMessageDialog(centeringComp,
-                        NamingProtocol.getProtocolDescription());
-                return;
-            }
-
             SessionNodeWrapper wrapper
                     = (SessionNodeWrapper) getModelNode();
             wrapper.setSessionName(name);
@@ -555,14 +547,14 @@ public final class SessionEditorNode extends DisplayNode {
      * Creates the popup for the node.
      */
     private JPopupMenu getPopup() {
-        if (this.popup != null && this.popup.isShowing()) {
+        if (this.popup != null) {
             return this.popup;
         }
 
         this.popup = new JPopupMenu();
 
-        JMenuItem createModel = new JMenuItem("Create Model");
-        createModel.setToolTipText("<html>Creates a new model for this node"
+        JMenuItem createModel = new JMenuItem("Create Contents");
+        createModel.setToolTipText("<html>Creates new contents for this node"
                                    + "<br>of the type selected.</html>");
 
         createModel.addActionListener((e) -> {
@@ -582,8 +574,8 @@ public final class SessionEditorNode extends DisplayNode {
             }
         });
 
-        JMenuItem editModel = new JMenuItem("Edit Model");
-        editModel.setToolTipText("<html>Edits the model in this node.</html>");
+        JMenuItem editModel = new JMenuItem("Edit Contents");
+        editModel.setToolTipText("<html>Edits the contents of this node.</html>");
 
         editModel.addActionListener((e) -> {
             try {
@@ -602,8 +594,8 @@ public final class SessionEditorNode extends DisplayNode {
             }
         });
 
-        JMenuItem destroyModel = new JMenuItem("Destroy Model");
-        destroyModel.setToolTipText("<html>Destroys the model for this node, "
+        JMenuItem destroyModel = new JMenuItem("Destroy Contents");
+        destroyModel.setToolTipText("<html>Destroys the contents of this node, "
                                     + "<br>if it has one, destroying any "
                                     + "<br>downstream models as well.</html>");
 
@@ -685,12 +677,6 @@ public final class SessionEditorNode extends DisplayNode {
             Component centeringComp = this;
             String name = JOptionPane.showInputDialog(centeringComp, "New name:");
 
-            if (!NamingProtocol.isLegalName(name)) {
-                JOptionPane.showMessageDialog(centeringComp,
-                        NamingProtocol.getProtocolDescription());
-                return;
-            }
-
             SessionNodeWrapper wrapper
                     = (SessionNodeWrapper) getModelNode();
             wrapper.setSessionName(name);
@@ -723,7 +709,50 @@ public final class SessionEditorNode extends DisplayNode {
             firePropertyChange("deleteNode", null, null);
         });
 
-        this.popup.add(createModel);
+        // Build the parameter editor item once, disabled by default.
+        JMenuItem editParamsItem = new JMenuItem("Edit Parameters...");
+        editParamsItem.setEnabled(false);
+        editParamsItem.addActionListener((e) -> {
+            SessionModel model = getSessionNode().getModel();
+            Class<?> mc = (model == null)
+                    ? determineTheModelClass(getSessionNode())
+                    : model.getClass();
+            Parameters param = getSessionNode().getParam(mc);
+            Object[] arguments = getSessionNode().getModelConstructorArguments(mc);
+            if (param != null) {
+                try {
+                    editParameters(mc, param, arguments);
+                    int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                            "Should I overwrite the contents of this box and delete the contents\n"
+                                    + "of all boxes downstream?",
+                            "Double check...", JOptionPane.YES_NO_OPTION);
+                    if (ret == JOptionPane.YES_OPTION) {
+                        getSessionNode().destroyModel();
+                        getSessionNode().createModel(mc, true);
+                    }
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
+        this.popup.add(editParamsItem);
+
+        // Enable/disable the parameter editor item dynamically when the
+        // popup is about to show, reflecting the current model state.
+        this.popup.addPopupMenuListener(new PopupMenuListener() {
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                SessionModel model = getSessionNode().getModel();
+                Class<?> mc = (model == null)
+                        ? determineTheModelClass(getSessionNode())
+                        : model.getClass();
+                editParamsItem.setEnabled(
+                        mc != null
+                                && getSessionNode().existsParameterizedConstructor(mc)
+                                && getParameterEditor(mc) != null);
+            }
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+            public void popupMenuCanceled(PopupMenuEvent e) {}
+        });
 
         SessionModel model = getSessionNode().getModel();
         Class<?> modelClass = (model == null)
@@ -772,7 +801,6 @@ public final class SessionEditorNode extends DisplayNode {
 
         this.popup.addSeparator();
 
-        addEditLoggerSettings(this.popup);
         this.popup.add(propagateDownstream);
 
         return this.popup;
@@ -781,20 +809,6 @@ public final class SessionEditorNode extends DisplayNode {
     private ParameterEditor getParameterEditor(Class<?> modelClass) {
         SessionNodeModelConfig modelConfig = this.config.getModelConfig(modelClass);
         return modelConfig.getParameterEditorInstance();
-    }
-
-    /**
-     * Adds the "Edit logger" option if applicable.
-     */
-    private void addEditLoggerSettings(JPopupMenu menu) {
-        SessionNodeWrapper modelNode = (SessionNodeWrapper) getModelNode();
-        SessionNode sessionNode = modelNode.getSessionNode();
-        TetradLoggerConfig config = sessionNode.getLoggerConfig();
-        if (config != null) {
-            JMenuItem item = new JMenuItem("Edit Logger Settings ...");
-            item.addActionListener((e) -> showLogConfig(config));
-            menu.add(item);
-        }
     }
 
     /**
@@ -865,13 +879,14 @@ public final class SessionEditorNode extends DisplayNode {
 
         // If there isn't any model downstream, no point to showing the next
         // dialog.
+        boolean anyChildHasModel = false;
         for (SessionNode child : getChildren()) {
             if (child.getModel() != null) {
-                continue;
+                anyChildHasModel = true;
+                break;
             }
-
-            return;
         }
+        if (!anyChildHasModel) return;
 
         Object[] options = {"Execute", "Break Edges"};
         Component centeringComp = this;
@@ -1061,7 +1076,6 @@ public final class SessionEditorNode extends DisplayNode {
      */
     private void destroyModel() {
         getSessionNode().destroyModel();
-        getSessionNode().forgetOldModel();
     }
 
     /**
@@ -1072,6 +1086,49 @@ public final class SessionEditorNode extends DisplayNode {
      * @param parentModels an array of {@link java.lang.Object} objects
      * @return a boolean
      */
+//    public boolean editParameters(Class<?> modelClass, Parameters params,
+//                                  Object[] parentModels) {
+//        if (parentModels == null) {
+//            throw new NullPointerException("Parent models array is null.");
+//        }
+//
+//        if (params == null) {
+//            throw new NullPointerException("Parameters cannot be null.");
+//        }
+//
+//        ParameterEditor paramEditor = getParameterEditor(modelClass);
+//
+//        if (paramEditor == null) {
+//            // if no editor, then consider the params "edited".
+//            return true;
+//        } else {
+//            paramEditor.setParams(params);
+//            paramEditor.setParentModels(parentModels);
+//        }
+//        // If a finalizing editor and a dialog then let it handle things on itself onw.
+//        if (paramEditor instanceof FinalizingParameterEditor e && paramEditor instanceof JDialog) {
+//            e.setup();
+//            return e.finalizeEdit();
+//        }
+//        // wrap editor and deal with response.
+//        paramEditor.setup();
+//        JComponent editor = (JComponent) paramEditor;
+//        SessionNodeWrapper nodeWrapper = (SessionNodeWrapper) getModelNode();
+//        String buttonType = nodeWrapper.getButtonType();
+//        editor.setName(buttonType + " Parameter Editor");
+//        Component centeringComp = this;
+//
+//        int ret = JOptionPane.showOptionDialog(centeringComp, editor,
+//                editor.getName(), JOptionPane.OK_CANCEL_OPTION,
+//                JOptionPane.PLAIN_MESSAGE, null,
+//                null, null);
+//
+//        // if finalizing editor, then deal with specially.
+//        return ret == JOptionPane.OK_OPTION && (!(paramEditor instanceof FinalizingParameterEditor)
+//                                                || ((FinalizingParameterEditor) paramEditor).finalizeEdit());
+//
+//    }
+
     public boolean editParameters(Class<?> modelClass, Parameters params,
                                   Object[] parentModels) {
         if (parentModels == null) {
@@ -1085,18 +1142,17 @@ public final class SessionEditorNode extends DisplayNode {
         ParameterEditor paramEditor = getParameterEditor(modelClass);
 
         if (paramEditor == null) {
-            // if no editor, then consider the params "edited".
             return true;
         } else {
             paramEditor.setParams(params);
             paramEditor.setParentModels(parentModels);
         }
-        // If a finalizing editor and a dialog then let it handle things on itself onw.
+
         if (paramEditor instanceof FinalizingParameterEditor e && paramEditor instanceof JDialog) {
             e.setup();
             return e.finalizeEdit();
         }
-        // wrap editor and deal with response.
+
         paramEditor.setup();
         JComponent editor = (JComponent) paramEditor;
         SessionNodeWrapper nodeWrapper = (SessionNodeWrapper) getModelNode();
@@ -1109,10 +1165,8 @@ public final class SessionEditorNode extends DisplayNode {
                 JOptionPane.PLAIN_MESSAGE, null,
                 null, null);
 
-        // if finalizing editor, then deal with specially.
         return ret == JOptionPane.OK_OPTION && (!(paramEditor instanceof FinalizingParameterEditor)
-                                                || ((FinalizingParameterEditor) paramEditor).finalizeEdit());
-
+                || ((FinalizingParameterEditor) paramEditor).finalizeEdit());
     }
 
     /**

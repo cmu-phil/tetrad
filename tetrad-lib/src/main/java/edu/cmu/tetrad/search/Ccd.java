@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.utils.SepsetsMaxP;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -249,16 +250,23 @@ public final class Ccd implements IGraphSearch {
                     boolean ok1 = addDirectedIfAllowed(psi, a, b);
                     boolean ok2 = addDirectedIfAllowed(psi, c, b);
 
+                    // If an arrowhead was forbidden, we must still record the collider semantic
+                    // for subsequent steps that check for colliders. We use ambiguous triples
+                    // to store this semantic since CCD doesn't have a dedicated collider set
+                    // and psi.isDefCollider will fail if the arrowhead is missing.
+                    if (!ok1 || !ok2) {
+                        psi.addAmbiguousTriple(a, b, c);
+                    }
+
                     if (verbose) {
                         if (ok1 && ok2)
                             TetradLogger.getInstance().log("StepB: collider " + a + "->" + b + "<-" + c + " ; S(a,c)=" + S);
                         else if (ok1 ^ ok2)
                             TetradLogger.getInstance().log("StepB: half-collider (knowledge veto) at " + b + " from " +
-                                                           (ok1 ? a : c) + " ; S(a,c)=" + S);
+                                    (ok1 ? a : c) + " ; S(a,c)=" + S);
                         else
                             TetradLogger.getInstance().log("StepB: collider semantic recorded but both incoming arrows vetoed by knowledge at " + b);
                     }
-                    // Even if both arrows vetoed, the collider semantic is effectively known to Steps D–F via CCD logic.
                 }
             }
         }
@@ -301,7 +309,7 @@ public final class Ccd implements IGraphSearch {
 
                     // Orientable? require o? at y-x side
                     if (!(psi.getEndpoint(y, x) == Endpoint.CIRCLE &&
-                          (psi.getEndpoint(x, y) == Endpoint.CIRCLE || psi.getEndpoint(x, y) == Endpoint.TAIL))) {
+                            (psi.getEndpoint(x, y) == Endpoint.CIRCLE || psi.getEndpoint(x, y) == Endpoint.TAIL))) {
                         continue;
                     }
 
@@ -355,7 +363,7 @@ public final class Ccd implements IGraphSearch {
             Node a = _adj.get(0);
             Node c = _adj.get(1);
 
-            if (!psi.isDefCollider(a, b, c)) continue;
+            if (!psi.isDefCollider(a, b, c) && !psi.isAmbiguousTriple(a, b, c)) continue;
 
             Set<Node> S = sepsets.getSepset(a, c, -1, null);
             if (S == null) continue;
@@ -365,7 +373,7 @@ public final class Ccd implements IGraphSearch {
             TT.remove(b);
             TT.remove(c);
 
-            int kMax = (depth < 0) ? -1 : Math.min(depth, TT.size());
+            int kMax = (depth < 0) ? -1 : TMath.min(depth, TT.size());
             SublistGenerator gen2 = new SublistGenerator(TT.size(), kMax);
             int[] choice2;
 
@@ -486,13 +494,13 @@ public final class Ccd implements IGraphSearch {
     }
 
     /**
-     * Local expansion around x: adj(x) plus z where x-y-z is a definite collider.
+     * Local expansion around x: adj(x) plus z where x-y-z is a definite collider (or recorded collider semantic).
      */
     private List<Node> local(Graph psi, Node x) {
         Set<Node> nodes = new HashSet<>(psi.getAdjacentNodes(x));
         for (Node y : new HashSet<>(nodes)) {
             for (Node z : psi.getAdjacentNodes(y)) {
-                if (psi.isDefCollider(x, y, z) && z != x) {
+                if ((psi.isDefCollider(x, y, z) || psi.isAmbiguousTriple(x, y, z)) && z != x) {
                     nodes.add(z);
                 }
             }
@@ -534,24 +542,76 @@ public final class Ccd implements IGraphSearch {
     /**
      * DFS-style push-away with backtracking safety and knowledge veto.
      */
+//    private boolean orientAwayFromArrowVisit(Node a, Node b, Node c, Graph graph) {
+//        Edge bc = graph.getEdge(b, c);
+//        if (bc == null || !Edges.isNondirectedEdge(bc)) return false;
+//        if (!graph.isUnderlineTriple(a, b, c)) return false;
+//        if (bc.pointsTowards(b)) return false;
+//
+////        // Try b -> c (vetoable)
+////        if (!addDirectedIfAllowed(graph, b, c)) return false;
+////
+////        for (Node d : new ArrayList<>(graph.getAdjacentNodes(c))) {
+////            if (d == b) continue;
+////            Edge cur = graph.getEdge(b, c);
+////            if (cur == null) return true; // edge removed elsewhere
+////            if (!orientAwayFromArrowVisit(b, c, d, graph)) {
+////                graph.removeEdge(b, c);
+////                graph.addEdge(cur);
+////            }
+////        }
+////        return true;
+//
+//        Edge originalEdge = graph.getEdge(b, c);          // snapshot before orientation
+//        if (!addDirectedIfAllowed(graph, b, c)) return false;
+//
+//        for (Node d : new ArrayList<>(graph.getAdjacentNodes(c))) {
+//            if (d == b) continue;                          // fix #1 applied here too
+//            if (graph.getEdge(b, c) == null) return true;
+//            if (!orientAwayFromArrowVisit(b, c, d, graph)) {
+//                graph.removeEdge(b, c);
+//                graph.addEdge(originalEdge);               // restores pre-orientation state
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
+
+    // Without rollback.
     private boolean orientAwayFromArrowVisit(Node a, Node b, Node c, Graph graph) {
         Edge bc = graph.getEdge(b, c);
         if (bc == null || !Edges.isNondirectedEdge(bc)) return false;
         if (!graph.isUnderlineTriple(a, b, c)) return false;
         if (bc.pointsTowards(b)) return false;
 
-        // Try b -> c (vetoable)
         if (!addDirectedIfAllowed(graph, b, c)) return false;
 
         for (Node d : new ArrayList<>(graph.getAdjacentNodes(c))) {
-            if (d == b) return true;
-            Edge cur = graph.getEdge(b, c);
-            if (cur == null) return true; // edge removed elsewhere
-            if (!orientAwayFromArrowVisit(b, c, d, graph)) {
-                graph.removeEdge(b, c);
-                graph.addEdge(cur);
-            }
+            if (d == b) continue;
+            orientAwayFromArrowVisit(b, c, d, graph);
         }
         return true;
     }
+
+//    // With rollback.
+//    private boolean orientAwayFromArrowVisit(Node a, Node b, Node c, Graph graph) {
+//        Edge bc = graph.getEdge(b, c);
+//        if (bc == null || !Edges.isNondirectedEdge(bc)) return false;
+//        if (!graph.isUnderlineTriple(a, b, c)) return false;
+//        if (bc.pointsTowards(b)) return false;
+//
+//        Edge originalEdge = bc;  // snapshot before orientation
+//        if (!addDirectedIfAllowed(graph, b, c)) return false;
+//
+//        for (Node d : new ArrayList<>(graph.getAdjacentNodes(c))) {
+//            if (d == b) continue;
+//            if (graph.getEdge(b, c) == null) return true;
+//            if (!orientAwayFromArrowVisit(b, c, d, graph)) {
+//                graph.removeEdge(b, c);
+//                graph.addEdge(originalEdge);
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 }

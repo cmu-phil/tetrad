@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -34,8 +34,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
+import java.util.prefs.Preferences;
 
 /**
  * Created by jdramsey on 12/8/15.
@@ -65,22 +65,23 @@ public class GraphUtils {
         int randomGraphMaxDegree = parameters.getInt("randomGraphMaxDegree", 6);
         boolean graphChooseFixed = parameters.getBoolean("graphChooseFixed", false);
         int numStructuralNodes = parameters.getInt("mimNumStructuralNodes", 3);
-        int numStructuralEdges = parameters.getInt("mimNumStructuralEdges", 3);
-        int metaEdgeConnectionType = parameters.getInt(Params.META_EDGE_CONNECTION_TYPE);
+        int numSharedParents = parameters.getInt("mimicNumSharedParents", 0);
+         int metaEdgeConnectionType = parameters.getInt(Params.META_EDGE_CONNECTION_TYPE);
         int measurementModelDegree = parameters.getInt("mimNumChildrenPerLatents", 3);
         String latentGroupSpecs = parameters.getString("mimLatentGroupSpecs");
         int numLatentMeasuredImpureParents = parameters.getInt("mimLatentMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureParents = parameters.getInt("mimMeasuredMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureAssociations = parameters.getInt("mimMeasuredMeasuredImpureAssociations", 0);
+        int numStructuralEdges = parameters.getInt("mimicNumStructuralEdges", 5);
         double alpha = parameters.getDouble("scaleFreeAlpha", 0.2);
         double beta = parameters.getDouble("scaleFreeBeta", 0.6);
         double deltaIn = parameters.getDouble("scaleFreeDeltaIn", 0.2);
         double deltaOut = parameters.getDouble("scaleFreeDeltaOut", 0.2);
         int numFactors = parameters.getInt("randomMimNumFactors", 1);
 
-        String type = parameters.getString("randomGraphType", "Dag");
+        String randomGraphType = Preferences.userNodeForPackage(GraphUtils.class).get("randomGraphType", "Dag");
 
-        return switch (type) {
+        return switch (randomGraphType) {
             case "Dag" -> RandomGraph.randomGraph(
                     newGraphNumMeasuredNodes,
                     newGraphNumLatents,
@@ -96,12 +97,22 @@ public class GraphUtils {
                         numLatentMeasuredImpureParents,
                         numMeasuredMeasuredImpureParents,
                         numMeasuredMeasuredImpureAssociations,
-                        RandomMim.LatentLinkMode.values()[metaEdgeConnectionType - 1],
-                        new Random());
+                        RandomMim.LatentLinkMode.values()[metaEdgeConnectionType - 1]);
+            }
+            case "Mimic" -> {
+                List<RandomMimic.MimicGroupSpec> specs = RandomMimic.parseMimicGroupSpecs(
+                        parameters.getString("mimicGroupSpecs"));
+                yield RandomMimic.constructRandomMimic(
+                        specs,
+                        numStructuralEdges,
+                        numSharedParents,
+                        numLatentMeasuredImpureParents,
+                        numMeasuredMeasuredImpureParents,
+                        numMeasuredMeasuredImpureAssociations);
             }
             case "ScaleFree" -> GraphUtils.makeRandomScaleFree(newGraphNumMeasuredNodes,
                     newGraphNumLatents, alpha, beta, deltaIn, deltaOut);
-            default -> throw new IllegalStateException("Unrecognized graph type: " + type);
+            default -> throw new IllegalStateException("Unrecognized graph type: " + randomGraphType);
         };
     }
 

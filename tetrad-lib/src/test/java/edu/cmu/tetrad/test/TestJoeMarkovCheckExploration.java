@@ -38,9 +38,11 @@ import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.UniformityTest;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.*;
 
 public class TestJoeMarkovCheckExploration {
@@ -101,11 +103,16 @@ public class TestJoeMarkovCheckExploration {
         SemPm pm = new SemPm(trueGraph);
 
         SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(1000, false);
+        DataSet dataSet = null;
+        try {
+            dataSet = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
 //        for (double penalty = 0.01; penalty <= .2; penalty += 0.1) {
         for (double penalty = 0.5; penalty <= 10; penalty += 0.1) {
-            penalty = Math.round(penalty * 10) / 10.0;
+            penalty = TMath.round(penalty * 10) / 10.0;
             SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
             score.setPenaltyDiscount(penalty);
 

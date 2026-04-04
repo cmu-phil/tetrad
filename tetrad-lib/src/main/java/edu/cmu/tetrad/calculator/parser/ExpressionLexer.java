@@ -242,7 +242,14 @@ public class ExpressionLexer {
         return found;
     }
 
-
+    /**
+     * Returns the {@link CharSequence} associated with this lexer.
+     *
+     * @return the CharSequence being processed.
+     */
+    public CharSequence getCharSequence() {
+        return charSequence;
+    }
 }
 
 

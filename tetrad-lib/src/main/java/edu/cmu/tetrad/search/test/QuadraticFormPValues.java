@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search.test;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.Arrays;
 
@@ -52,10 +53,10 @@ public final class QuadraticFormPValues {
         double var = 2.0 * s2;
         if (var <= 0) return 1.0;
 
-        double sigma = Math.sqrt(var);
+        double sigma = TMath.sqrt(var);
         double t = (stat - mu) / sigma;
 
-        double gamma1 = (8.0 * s3) / Math.pow(var, 1.5);
+        double gamma1 = (8.0 * s3) / TMath.pow(var, 1.5);
         double gamma2 = (48.0 * s4) / (var * var);
 
         double z = t + (gamma1 / 6.0) * (t * t - 1.0);
@@ -119,12 +120,12 @@ public final class QuadraticFormPValues {
         // We'll handle the "near-mean" region with a safe normal approximation.
         final double mean = sum(eig);
         final double var = 2.0 * sumSquares(eig);
-        final double sd = Math.sqrt(Math.max(0.0, var));
+        final double sd = TMath.sqrt(TMath.max(0.0, var));
         if (!(sd > 0)) return 1.0;
 
         // relative tolerance region near mean
-        final double near = 1e-8 * Math.max(1.0, Math.abs(mean));
-        if (Math.abs(stat - mean) <= near) {
+        final double near = 1e-8 * TMath.max(1.0, TMath.abs(mean));
+        if (TMath.abs(stat - mean) <= near) {
             double z = (stat - mean) / sd;
             return clamp01(1.0 - STD_NORMAL.cumulativeProbability(z));
         }
@@ -191,8 +192,8 @@ public final class QuadraticFormPValues {
             return gammaSatterthwaiteP(stat, eig);
         }
 
-        double w = Math.copySign(Math.sqrt(w2), tStar);
-        double u = tStar * Math.sqrt(K2t);
+        double w = TMath.copySign(TMath.sqrt(w2), tStar);
+        double u = tStar * TMath.sqrt(K2t);
 
         // LR tail approximation:
         // p ≈ 1 - Φ(w) + φ(w) * (1/w - 1/u)
@@ -201,7 +202,7 @@ public final class QuadraticFormPValues {
         double phi_w = STD_NORMAL.density(w);
 
         double corr;
-        if (Math.abs(w) < 1e-10 || Math.abs(u) < 1e-14) {
+        if (TMath.abs(w) < 1e-10 || TMath.abs(u) < 1e-14) {
             // Fallback to normal approximation at saddlepoint
             // (or gamma) if extremely close to problematic region.
             double z = (stat - mean) / sd;
@@ -271,7 +272,7 @@ public final class QuadraticFormPValues {
         // Map t in [0,∞) to theta in [0, π/2):
         //   t = tan(theta), dt = sec^2(theta) dtheta
         // integral = ∫_0^{π/2} g(tanθ) sec^2θ dθ
-        final double upper = Math.PI / 2.0 - 1e-9; // avoid tan blow-up at endpoint
+        final double upper = TMath.PI / 2.0 - 1e-9; // avoid tan blow-up at endpoint
 
         // We’ll count evaluations to cap work.
         final EvalCounter counter = new EvalCounter(maxEvals);
@@ -282,7 +283,7 @@ public final class QuadraticFormPValues {
         double integral = adaptiveSimpsonTheta(f, 0.0, upper, epsAbs, maxRec);
 
         // If we hit eval limit, we still return best effort (clamped).
-        double cdf = 0.5 - integral / Math.PI;
+        double cdf = 0.5 - integral / TMath.PI;
         cdf = clamp01(cdf);
         return clamp01(1.0 - cdf);
     }
@@ -292,7 +293,7 @@ public final class QuadraticFormPValues {
     private static final class EvalCounter {
         final int max;
         int used = 0;
-        EvalCounter(int max) { this.max = Math.max(1, max); }
+        EvalCounter(int max) { this.max = TMath.max(1, max); }
         void bump() {
             used++;
             if (used > max) throw new TooManyEvals();
@@ -321,8 +322,8 @@ public final class QuadraticFormPValues {
             counter.bump();
 
             // t = tan(theta)
-            double cos = Math.cos(theta);
-            double sin = Math.sin(theta);
+            double cos = TMath.cos(theta);
+            double sin = TMath.sin(theta);
             if (cos == 0.0) return 0.0;
 
             double t = sin / cos;
@@ -340,14 +341,14 @@ public final class QuadraticFormPValues {
             for (double l : lam) {
                 // mag = sqrt(1 + (2 t l)^2)
                 double a = 2.0 * t * l;
-                double mag = Math.sqrt(1.0 + a * a);
-                logMag += -0.5 * Math.log(mag);
-                phase += 0.5 * Math.atan(a);
+                double mag = TMath.sqrt(1.0 + a * a);
+                logMag += -0.5 * TMath.log(mag);
+                phase += 0.5 * TMath.atan(a);
             }
 
-            double prodMag = Math.exp(logMag);
+            double prodMag = TMath.exp(logMag);
             double arg = phase - t * x;
-            double g = prodMag * Math.sin(arg) / t;
+            double g = prodMag * TMath.sin(arg) / t;
 
             return g * sec2;
         }
@@ -384,7 +385,7 @@ public final class QuadraticFormPValues {
         double Sright = simpson(m, b, fm, frm, fb);
 
         double err = (Sleft + Sright - S) / 15.0;
-        if (rec <= 0 || Math.abs(err) <= eps) {
+        if (rec <= 0 || TMath.abs(err) <= eps) {
             return Sleft + Sright + err;
         }
 
@@ -533,9 +534,9 @@ public final class QuadraticFormPValues {
 
     /**
      * Stable-ish log for positive x without pulling in extra deps.
-     * (You can replace with FastMath.log if you prefer.)
+     * (You can replace with TMath.log if you prefer.)
      */
     private static double log(double x) {
-        return Math.log(x);
+        return TMath.log(x);
     }
 }

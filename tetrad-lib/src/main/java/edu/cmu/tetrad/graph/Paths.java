@@ -22,7 +22,6 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.RecursiveAdjustment;
-import edu.cmu.tetrad.search.RecursiveAdjustmentMultiple;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -119,12 +118,12 @@ public class Paths implements TetradSerializable {
     /**
      * Returns the parents of the node at index p, calculated using Pearl's method.
      *
-     * @param pi                 The list of nodes.
-     * @param p                  The index.
-     * @param g                  The graph.
-     * @param verbose            Whether to print verbose output.
+     * @param pi                   The list of nodes.
+     * @param p                    The index.
+     * @param g                    The graph.
+     * @param verbose              Whether to print verbose output.
      * @param excludeSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X-&gt;L&lt;-Y.
+     *                             treated as X-&gt;L&lt;-Y.
      * @return The parents, as a Pair object (parents + score).
      */
     public static Set<Node> getParents(List<Node> pi, int p, Graph g, boolean verbose, boolean excludeSelectionBias) {
@@ -159,6 +158,7 @@ public class Paths implements TetradSerializable {
      */
     public List<Node> getValidOrder(List<Node> initialOrder, boolean forward) {
         List<Node> _initialOrder = new ArrayList<>(initialOrder);
+
         Graph _graph = new EdgeListGraph(this.graph);
 
         if (forward) Collections.reverse(_initialOrder);
@@ -307,24 +307,24 @@ public class Paths implements TetradSerializable {
 
         // jdramsey 2024-2-17
         //
-        // This is this idea I had for checking whether a graph is a CPDAG. What do you think?
+        // This is the idea I had for checking whether a graph is a CPDAG. What do you think?
         //
         // I'm using Bryan's method, validOrder, which repeatedly looks for a valid sink in the graph (no children,
         // neighbors forming a clique) and removes it, then reports the removed nodes in reverse order.
         //
-        // Bryan gave this example: G = âX1-->X2,X2---X3,X3<--X4â. validOrder gets Ï = [X1, X2, X4, X3]. (This is
-        // a malformed âvalid order,â but itâs what the algorithm says.) This makes sense because according to
+        // Bryan gave this example: G = {X1-->X2, X2---X3, X3<--X4}. validOrder gets π = [X1, X2, X4, X3]. (This is
+        // a malformed "valid order," but it's what the algorithm says.) This makes sense because according to
         // the valid order method, X3 is a valid sink (only X2 is a neighbor, so the neighbors form a clique),
-        // and the rest follows. So now youâre in a situation where youâre using d-separation on G, but itâs not
+        // and the rest follows. So now you're in a situation where you're using d-separation on G, but it's not
         // even a CPDAG. This is interesting to think about, just as an exercise in using the d-separation algorithm
         // on a malformed graph. What happens is you end up with an extra adjacency in the induced DAG because
         // there is no collider on the path X2--X3<-X4, and you only get to condition on the prefix of X2, which
-        // is {X1} by the RU method, so there is no way to remove the adjacency X2--X4. So, G canât be a CPDAG.
+        // is {X1} by the RU method, so there is no way to remove the adjacency X2--X4. So, G can't be a CPDAG.
         // But we need a test of CPDAG that can handle graphs like G; I had to think about it.
         //
-        // So let validOrder be this method. Let DAG(Ï, dsep) be the Raskutti-Uhler method of forming a DAG given
-        // permutation Ï and a d-separation relation dsep, taking G as the âtrue graphâ (possibly malformed) yielding
-        // a (possibly malformed) oracle of d-separation facts. Let CPDAG(Gâ) for DAG Gâ be the MEC graph for Gâ.
+        // So let validOrder be this method. Let DAG(π, dsep) be the Raskutti-Uhler method of forming a DAG given
+        // permutation π and a d-separation relation dsep, taking G as the "true graph" (possibly malformed) yielding
+        // a (possibly malformed) oracle of d-separation facts. Let CPDAG(G') for DAG G' be the MEC graph for G'.
         //
         // I propose that if the validOrder method throws an exception because it can't find a valid sink, then G is
         // not a CPDAG, since all CPDAGs have valid sinks, and any CPDAG with valid sinks removed in series also has
@@ -338,20 +338,20 @@ public class Paths implements TetradSerializable {
         // Proof. We know the contrapositive. That is, we know that if G is a CPDAG, a valid order exists, so
         // validOrder in that case will not throw an exception.
         //
-        // Theorem 2: For permutation Ï, DAG(Ï, dsep) always returns a DAG in cases where a valid order for G exists,
+        // Theorem 2: For permutation π, DAG(π, dsep) always returns a DAG in cases where a valid order for G exists,
         // no matter the d-separation relation dsep (even based on possibly malformed information).
         //
-        // Proof. DAG(Ï, dsep) always choos  es parents for a variable x from prefix(x, Ï), so the method will always
+        // Proof. DAG(π, dsep) always chooses parents for a variable x from prefix(x, π), so the method will always
         // return a DAG.
         //
-        // Theorem 3: When validOrder(G) returns an order Ï, G is a CPDAG if and only if G = CPDAG(DAG(Ï, dsep(G))),
+        // Theorem 3: When validOrder(G) returns an order π, G is a CPDAG if and only if G = CPDAG(DAG(π, dsep(G))),
         // where dsep(G) is the usual d-separation algorithm applied to (possibly malformed) G.
         //
-        // Proof. Let Ï = validOrder(G). Note that if G is, in fact, a CPDAG, it follows from the construction of the
-        // validOrder method and the Raskutti-Uhler method for building DAGs that G = CPDAG(DAG(Ï, dsep(G))). So,
-        // let G not be a CPDAG and assume G = CPDAG(DAG(Ï, dsep(G))). But then G is, in fact, a CPDAG by construction
-        // since DAG(Ï, dsep(G)) is a DAG (Theorem 2), which is a contradiction. It follows that
-        // G != CPDAG(DAG(Ï, dsepG))), which proves the theorem.
+        // Proof. Let π = validOrder(G). Note that if G is, in fact, a CPDAG, it follows from the construction of the
+        // validOrder method and the Raskutti-Uhler method for building DAGs that G = CPDAG(DAG(π, dsep(G))). So,
+        // let G not be a CPDAG and assume G = CPDAG(DAG(π, dsep(G))). But then G is, in fact, a CPDAG by construction
+        // since DAG(π, dsep(G)) is a DAG (Theorem 2), which is a contradiction. It follows that
+        // G != CPDAG(DAG(π, dsep(G))), which proves the theorem.
         //
         // In any case, I can't get this method to fail, and it's easy to implement, given the other stuff we already
         // have implemented in Tetrad.
@@ -372,7 +372,9 @@ public class Paths implements TetradSerializable {
             return g.equals(cpdag);
         } catch (Exception e) {
             // There was no valid sink.
-            TetradLogger.getInstance().log(e.getMessage());
+            if (false) {
+                TetradLogger.getInstance().log(e.getMessage());
+            }
             return false;
         }
     }
@@ -403,7 +405,7 @@ public class Paths implements TetradSerializable {
             return cpdag.equals(GraphTransforms.dagToCpdag(g));
         } catch (Exception e) {
             // There was no valid sink.
-            TetradLogger.getInstance().log(e.getMessage());
+//            TetradLogger.getInstance().log(e.getMessage());
             return false;
         }
     }
@@ -731,12 +733,12 @@ public class Paths implements TetradSerializable {
      * Finds all paths between two nodes within a given maximum length, considering optional condition set and selection
      * bias.
      *
-     * @param node1              the starting node
-     * @param node2              the target node
-     * @param maxLength          the maximum length of each path
-     * @param conditionSet       a set of nodes that need to be included in the path (optional)
+     * @param node1                the starting node
+     * @param node2                the target node
+     * @param maxLength            the maximum length of each path
+     * @param conditionSet         a set of nodes that need to be included in the path (optional)
      * @param excludeSelectionBias if true, undirected edges are interpreted as selection bias; otherwise, as directed
-     *                           edges in one direction or the other.
+     *                             edges in one direction or the other.
      * @return a set of paths between node1 and node2 that satisfy the conditions
      */
     public Set<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet, boolean excludeSelectionBias) {
@@ -748,12 +750,12 @@ public class Paths implements TetradSerializable {
     /**
      * Finds all paths between two nodes satisfying certain conditions.
      *
-     * @param node1              the starting node
-     * @param node2              the ending node
-     * @param minLength          the minimum length of paths to consider
-     * @param maxLength          the maximum length of paths to consider
-     * @param conditionSet       a set of nodes that must be present in the paths
-     * @param ancestors          a map representing the ancestry relationships of nodes
+     * @param node1                the starting node
+     * @param node2                the ending node
+     * @param minLength            the minimum length of paths to consider
+     * @param maxLength            the maximum length of paths to consider
+     * @param conditionSet         a set of nodes that must be present in the paths
+     * @param ancestors            a map representing the ancestry relationships of nodes
      * @param excludeSelectionBias true if selection bias is allowed, false otherwise
      * @return a set of lists representing all paths between node1 and node2
      */
@@ -766,9 +768,9 @@ public class Paths implements TetradSerializable {
     /**
      * Generates all paths out of a given node within a specified maximum length and conditional set.
      *
-     * @param node1              The starting node.
-     * @param maxLength          The maximum length of each path.
-     * @param conditionSet       The set of nodes that must be present in each path.
+     * @param node1                The starting node.
+     * @param maxLength            The maximum length of each path.
+     * @param conditionSet         The set of nodes that must be present in each path.
      * @param excludeSelectionBias Determines whether to allow selection bias when choosing the next node to visit.
      * @return A set containing all generated paths as lists of nodes.
      */
@@ -1772,7 +1774,7 @@ public class Paths implements TetradSerializable {
 
         List<Node> _msep = new ArrayList<>(msep);
 
-        Collections.sort(_msep);
+        _msep.sort(NaturalSort.naturalComparator());
         Collections.reverse(_msep);
 
         return _msep;
@@ -1919,11 +1921,11 @@ public class Paths implements TetradSerializable {
     /**
      * Finds a sepset for x and y, if there is one; otherwise, returns null.
      *
-     * @param x                  The first node.
-     * @param y                  The second node.
+     * @param x                    The first node.
+     * @param y                    The second node.
      * @param excludeSelectionBias Whether to allow selection bias.
-     * @param test               The independence test to use.
-     * @param depth              The maximum depth to search for a sepset.
+     * @param test                 The independence test to use.
+     * @param depth                The maximum depth to search for a sepset.
      * @return A sepset for x and y, if there is one; otherwise, null.
      */
     public Set<Node> getSepset(Node x, Node y, boolean excludeSelectionBias, IndependenceTest test, int depth) {
@@ -1970,11 +1972,11 @@ public class Paths implements TetradSerializable {
     /**
      * Determmines whether x and y are d-connected given z.
      *
-     * @param x                  a {@link Node} object
-     * @param y                  a {@link Node} object
-     * @param z                  a {@link Set} object
+     * @param x                    a {@link Node} object
+     * @param y                    a {@link Node} object
+     * @param z                    a {@link Set} object
      * @param excludeSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X-&gt;L&lt;-Y.
+     *                             treated as X-&gt;L&lt;-Y.
      * @return true if x and y are d-connected given z; false otherwise.
      */
     public boolean isMConnectedTo(Node x, Node y, Set<Node> z, boolean excludeSelectionBias) {
@@ -2168,10 +2170,10 @@ public class Paths implements TetradSerializable {
     /**
      * Checks if the given path is an m-connecting path and doens't contain duplicate nodes.
      *
-     * @param path               The path to check.
-     * @param conditioningSet    The set of nodes to check reachability against.
+     * @param path                 The path to check.
+     * @param conditioningSet      The set of nodes to check reachability against.
      * @param excludeSelectionBias Determines if selection bias is allowed in the m-connection procedure.
-     * @param ancestors          The ancestors of each node in the graph.
+     * @param ancestors            The ancestors of each node in the graph.
      * @return {@code true} if the given path is an m-connecting path, {@code false} otherwise.
      */
     public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, Map<Node, Set<Node>> ancestors, boolean excludeSelectionBias) {
@@ -2397,7 +2399,7 @@ public class Paths implements TetradSerializable {
     {
         /* (i) Interior-vertex parent-of-B condition */
         if (prev != null && !cur.equals(targetA)          // interior only
-            && !graph.isParentOf(cur, B)) {
+                && !graph.isParentOf(cur, B)) {
             return false;                                 // violates clause
         }
 
@@ -2428,7 +2430,7 @@ public class Paths implements TetradSerializable {
     public boolean existsDirectedCycle() {
         for (Node node : graph.getNodes()) {
             if (existsDirectedPath(node, node)) {
-                TetradLogger.getInstance().log("Cycle found at node " + node.getName() + ".");
+//                TetradLogger.getInstance().log("Cycle found at node " + node.getName() + ".");
                 return true;
             }
         }
@@ -2674,12 +2676,12 @@ public class Paths implements TetradSerializable {
     /**
      * Checks if two nodes are M-separated.
      *
-     * @param node1              The first node.
-     * @param node2              The second node.
-     * @param z                  The set of nodes to be excluded from the path.
-     * @param ancestors          A map containing the ancestors of each node.
+     * @param node1                The first node.
+     * @param node2                The second node.
+     * @param z                    The set of nodes to be excluded from the path.
+     * @param ancestors            A map containing the ancestors of each node.
      * @param excludeSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X-&gt;L&lt;-Y.
+     *                             treated as X-&gt;L&lt;-Y.
      * @return {@code true} if the two nodes are M-separated, {@code false} otherwise.
      */
     public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean excludeSelectionBias) {

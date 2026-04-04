@@ -79,58 +79,26 @@ public class CptMapCounts implements CptMap {
     }
 
     /**
-     * Constructs a new CptMap based on counts from a given dataset.
-     *
-     * @param data the DataSet object representing the probability matrix
-     * @throws IllegalArgumentException if the data set is null or not discrete
-     */
-    public CptMapCounts(DataSet data) {
-        if (data == null) {
-            throw new IllegalArgumentException("Probability matrix must have at least one row and one column.");
-        }
-
-        if (!data.isDiscrete()) {
-            throw new IllegalArgumentException("Data set must be discrete.");
-
-        }
-
-        numRows = data.getNumRows();
-        numColumns = data.getNumColumns();
-
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numColumns; j++) {
-                int key = i * numColumns + j;
-
-                if (data.getInt(i, j) == -1) {
-                    continue;
-                }
-
-                if (data.getInt(i, j) == 0) {
-                    continue;
-                }
-
-                if (!cellCounts.containsKey(key)) {
-                    cellCounts.put(key, 1);
-                } else {
-                    cellCounts.put(key, cellCounts.get(key) + 1);
-                }
-
-                if (!rowCounts.containsKey(i)) {
-                    rowCounts.put(i, 1);
-                } else {
-                    rowCounts.put(i, rowCounts.get(i) + 1);
-                }
-            }
-        }
-    }
-
-    /**
      * Returns the probability of the node taking on the value specified by the given row and column.
      *
      * @param row    the row of the node
      * @param column the column of the node
      * @return the probability of the node taking on the value specified by the given row and column
      */
+//    @Override
+//    public double get(int row, int column) {
+//        if (row < 0 || row >= numRows || column < 0 || column >= numColumns) {
+//            throw new IllegalArgumentException("Row and column must be within bounds.");
+//        }
+//
+//        int key = row * numColumns + column;
+//        double rowCount = rowCounts.getOrDefault(row, 0);
+//        double cellCount = cellCounts.getOrDefault(key, 0);
+//        rowCount += priorCount * numColumns;
+//        cellCount += priorCount;
+//        return cellCount / rowCount;
+//    }
+
     @Override
     public double get(int row, int column) {
         if (row < 0 || row >= numRows || column < 0 || column >= numColumns) {
@@ -138,11 +106,20 @@ public class CptMapCounts implements CptMap {
         }
 
         int key = row * numColumns + column;
-        double rowCount = rowCounts.getOrDefault(row, 0);
-        double cellCount = cellCounts.getOrDefault(key, 0);
-        rowCount += priorCount * numColumns;
-        cellCount += priorCount;
-        return cellCount / rowCount;
+
+        double rc = rowCounts.getOrDefault(row, 0);
+        double cc = cellCounts.getOrDefault(key, 0);
+
+        // Add priors
+        rc += priorCount * numColumns;
+        cc += priorCount;
+
+        // If we have no mass in the row at all, return uniform (avoids NaN/Inf)
+        if (rc <= 0.0) {
+            return 1.0 / numColumns;
+        }
+
+        return cc / rc;
     }
 
     /**
@@ -208,7 +185,13 @@ public class CptMapCounts implements CptMap {
      *
      * @param priorCount the value to set as the prior count.
      */
+//    public void setPriorCount(double priorCount) {
+//        this.priorCount = priorCount;
+//    }
     public void setPriorCount(double priorCount) {
+        if (priorCount < 0.0 || Double.isNaN(priorCount) || Double.isInfinite(priorCount)) {
+            throw new IllegalArgumentException("priorCount must be a finite nonnegative number.");
+        }
         this.priorCount = priorCount;
     }
 }

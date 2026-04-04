@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.editor;
 
@@ -41,8 +41,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.RowSorterEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -59,7 +57,6 @@ import java.util.*;
 import java.util.List;
 import java.util.function.Function;
 import java.util.prefs.Preferences;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
@@ -233,7 +230,9 @@ public class MarkovCheckEditor extends JPanel {
 
         setPreferredSize(new Dimension(1100, 600));
 
-        conditioningSetTypeJComboBox.addItem("Ordered Local Markov MAG");
+        conditioningSetTypeJComboBox.addItem("Andrews Ordered Local Markov Property");
+        conditioningSetTypeJComboBox.addItem("Richardson Ordered Local Markov Property");
+        conditioningSetTypeJComboBox.addItem("Pairwise Markov Property");
         conditioningSetTypeJComboBox.addItem("Parents(X)");
         conditioningSetTypeJComboBox.addItem("Parents(X) and Neighbors(X)");
         conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
@@ -259,11 +258,27 @@ public class MarkovCheckEditor extends JPanel {
                     }
 
                     break;
-                case "Ordered Local Markov MAG":
-                    model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
+                case "Andrews Ordered Local Markov Property":
+                    model.getMarkovCheck().setSetType(ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY);
 
                     if (model.getMarkovCheck() != null) {
-                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Ordered Local Markov MAG");
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Ordered Local Markov Property");
+                    }
+
+                    break;
+                case "Richardson Ordered Local Markov Property":
+                    model.getMarkovCheck().setSetType(ConditioningSetType.RICHARDSON_ORDERED_LOCAL_MARKOV_PROPERTY);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Andrews Ordered Local Markov Property");
+                    }
+
+                    break;
+                case "Pairwise Local Markov MAG":
+                    model.getMarkovCheck().setSetType(ConditioningSetType.PAIRWISE_MARKOV_PROPERTY);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Andrews Ordered Local Markov Property");
                     }
 
                     break;
@@ -335,7 +350,7 @@ public class MarkovCheckEditor extends JPanel {
 
         setTest();
 
-        conditioningSetTypeJComboBox.setSelectedItem(Preferences.userRoot().get("markovCheckerConditioningSetType", "Ordered Local Markov MAG"));
+        conditioningSetTypeJComboBox.setSelectedItem(Preferences.userRoot().get("markovCheckerConditioningSetType", "Ordered Local Markov Property"));
 
         Graph _graph = model.getGraph();
         Graph graph = GraphUtils.replaceNodes(_graph, model.getMarkovCheck().getVariables(model.getGraph().getNodes(), model.getMarkovCheck().getIndependenceNodes(), model.getMarkovCheck().getConditioningNodes()));

@@ -24,7 +24,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.Parameters;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 
@@ -93,7 +93,7 @@ public class StructuralHammingDistance implements Statistic {
      */
     @Override
     public double getNormValue(double value) {
-        return 1.0 - FastMath.tanh(0.001 * value);
+        return 1.0 - TMath.tanh(0.001 * value);
     }
 }
 

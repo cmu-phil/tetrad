@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -110,7 +111,7 @@ public class ScoreIndTest implements IndependenceTest {
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
         List<Node> z1 = new ArrayList<>(z);
-        Collections.sort(z1);
+        z1.sort(NaturalSort.naturalComparator());
 
         double v = this.score.localScoreDiff(this.variables.indexOf(x), this.variables.indexOf(y),
                 varIndices(z1));

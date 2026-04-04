@@ -32,6 +32,7 @@ import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.lang3.tuple.Pair;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
@@ -1789,8 +1790,8 @@ public final class GraphUtils {
         String type = params.getString("graphComparisonType");
 
         switch (type) {
-            case "DAG" -> {
-                params.set("graphComparisonType", "DAG");
+            case "Truth" -> {
+                params.set("graphComparisonType", "Truth");
                 return new EdgeListGraph(graph);
             }
             case "CPDAG" -> {
@@ -1802,7 +1803,7 @@ public final class GraphUtils {
                 return GraphTransforms.dagToPag(graph, params.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
             }
             case null, default -> {
-                params.set("graphComparisonType", "DAG");
+                params.set("graphComparisonType", "Truth");
                 return new EdgeListGraph(graph);
             }
         }
@@ -3374,6 +3375,47 @@ public final class GraphUtils {
         g.setEndpoint(y, z, Endpoint.ARROW);
     }
 
+    /**
+     * Identifies all connected components in a given graph.
+     * A connected component is a subset of the graph's nodes such that
+     * each pair of nodes is connected by a path, and which is not connected
+     * to any additional nodes in the graph.
+     *
+     * @param g The graph for which to find connected components. It is assumed
+     *          to be an undirected graph and implemented as a data structure providing
+     *          access to its nodes and the adjacency list for each node.
+     * @return A list of sets, where each set contains the nodes that belong
+     *         to a single connected component of the graph.
+     */
+    public static List<Set<Node>> connectedComponents(Graph g) {
+        List<Set<Node>> comps = new ArrayList<>();
+        Set<Node> visited = new HashSet<>();
+
+        for (Node start : g.getNodes()) {
+            if (visited.contains(start)) continue;
+
+            Set<Node> comp = new LinkedHashSet<>();
+            Deque<Node> queue = new ArrayDeque<>();
+            queue.add(start);
+            visited.add(start);
+
+            while (!queue.isEmpty()) {
+                Node v = queue.remove();
+                comp.add(v);
+
+                for (Node w : g.getAdjacentNodes(v)) {
+                    if (!visited.contains(w)) {
+                        visited.add(w);
+                        queue.add(w);
+                    }
+                }
+            }
+
+            comps.add(comp);
+        }
+
+        return comps;
+    }
 
     /**
      * Compute strongly connected components (SCCs) of a directed graph. Uses Tarjan's algorithm. Each SCC is returned
@@ -3417,9 +3459,9 @@ public final class GraphUtils {
         for (Node w : g.getChildren(v)) {  // outgoing edges only
             if (!index.containsKey(w)) {
                 strongConnect(w, g, index, lowlink, stack, onStack, counter, sccs);
-                lowlink.put(v, Math.min(lowlink.get(v), lowlink.get(w)));
+                lowlink.put(v, TMath.min(lowlink.get(v), lowlink.get(w)));
             } else if (onStack.contains(w)) {
-                lowlink.put(v, Math.min(lowlink.get(v), index.get(w)));
+                lowlink.put(v, TMath.min(lowlink.get(v), index.get(w)));
             }
         }
 

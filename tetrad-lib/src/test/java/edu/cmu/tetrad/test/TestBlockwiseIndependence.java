@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.test.*;
+import edu.cmu.tetrad.util.TMath;
 import org.junit.Test;
 
 import java.util.*;
@@ -279,13 +280,13 @@ public class TestBlockwiseIndependence {
             case EXPONENTIAL: {
                 // Exponential(rate=1), mean=1; center to mean 0
                 double u = r.nextDouble();
-                double x = -Math.log(1.0 - u); // Exp(1)
+                double x = -TMath.log(1.0 - u); // Exp(1)
                 return x - 1.0;
             }
             case GUMBEL: {
                 // Gumbel(location 0, scale 1): inverse CDF: -ln(-ln(U)); mean = gamma
                 double u = r.nextDouble();
-                double g = -Math.log(-Math.log(u));
+                double g = -TMath.log(-TMath.log(u));
                 return g - EULER_GAMMA; // center to mean 0
             }
             case UNIFORM:

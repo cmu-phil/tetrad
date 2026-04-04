@@ -23,7 +23,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
@@ -54,7 +54,7 @@ import java.util.List;
 //        algoType = AlgType.forbid_latent_common_causes
 //)
 @Bootstrapping
-public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependenceWrapper {
+public class FaskConcatenated implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesIndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -121,14 +121,6 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
      */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
-        // Not used.
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setIndTestWrapper(IndependenceWrapper test) {
         // Not used.
     }
 

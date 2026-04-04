@@ -33,21 +33,27 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
 /**
- * Created by IntelliJ IDEA.
- *
- * @author Tyler
- * @version $Id: $Id
+ * The <code>DiscretizationWrapper</code> class provides functionality for discretizing a
+ * <code>DataModel</code> within a <code>DataWrapper</code> object. This class serves as a
+ * specialized wrapper that processes tabular datasets by converting continuous variables to
+ * discrete variables based on a specified set of discretization specifications.
+ * Discretization is performed to transform data into a format suitable for some algorithms
+ * that require discrete inputs.
+ * <p>
+ * This class extends {@link DataWrapper} and ensures compatibility between the parent
+ * and child node data models for seamless re-discretization.
  */
 public class DiscretizationWrapper extends DataWrapper {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
+     * Constructs the <code>DiscretizationWrapper</code> by discretizing the selected
      * <code>DataModel</code>.
      *
      * @param data   a {@link edu.cmu.tetradapp.model.DataWrapper} object
@@ -61,29 +67,97 @@ public class DiscretizationWrapper extends DataWrapper {
             throw new NullPointerException("The given parameters must not be null");
         }
 
+        if (!getDataModelList().isEmpty() && data.getDataModelList().size() != getDataModelList().size()) {
+            throw new IllegalArgumentException("The number of data models in the parent node must match " +
+                    "the number of data models in the child node.");
+        }
+
+        if (!getDataModelList().isEmpty()) {
+            for (int i = 0; i < data.getDataModelList().size(); i++) {
+                List<Node> variables1 = getDataModelList().get(i).getVariables();
+                List<Node> variables2 = data.getDataModelList().get(i).getVariables();
+
+                for (int j = 0; j < variables1.size(); j++) {
+                    if (variables1.get(j) instanceof DiscreteVariable) {
+                        if (!variables1.get(j).getName().equals(variables2.get(j).getName())) {
+                            throw new IllegalArgumentException("Discrete variables in the parent node "
+                                    + "must have the same categories to re-discretize automatically.");
+                        }
+                    }
+                }
+            }
+        }
+
+        // Build a name-keyed lookup from the specs so that node object identity
+        // does not matter. The simulator may reorder or recreate columns, so the
+        // Node references in the specs map may not match the Node references in
+        // datasets other than the one that was selected when the editor ran.
+        @SuppressWarnings("unchecked")
+        Map<Node, DiscretizationSpec> discretizationSpecs = (Map<Node, DiscretizationSpec>)
+                params.get("discretizationSpecs", new HashMap<Node, DiscretizationSpec>());
+
+        if (discretizationSpecs.isEmpty()) {
+            throw new IllegalArgumentException("No discretization specifications have been provided.");
+        }
+
+        Map<String, DiscretizationSpec> specsByName = new HashMap<>();
+        for (Map.Entry<Node, DiscretizationSpec> entry : discretizationSpecs.entrySet()) {
+            specsByName.put(entry.getKey().getName(), entry.getValue());
+        }
+
         DataModelList dataSets = data.getDataModelList();
         DataModelList discretizedDataSets = new DataModelList();
 
         for (DataModel dataModel : dataSets) {
             if (!(dataModel instanceof DataSet originalData)) {
-                throw new IllegalArgumentException("Only tabular data sets can be converted to time lagged form.");
+                throw new IllegalArgumentException("Only tabular data sets can be discretized.");
             }
 
-            Map<Node, DiscretizationSpec> discretizationSpecs = (Map<Node, DiscretizationSpec>) params.get("discretizationSpecs", new HashMap<Node, DiscretizationSpec>());
-            Discretizer discretizer = new Discretizer(originalData, discretizationSpecs);
+            // Build a per-dataset specs map keyed by the actual Node objects in
+            // this dataset, matched by name to the editor-produced specs.
+            Map<Node, DiscretizationSpec> datasetSpecs = new HashMap<>();
+            for (Node node : originalData.getVariables()) {
+                DiscretizationSpec spec = specsByName.get(node.getName());
+                if (spec != null) {
+                    datasetSpecs.put(node, spec);
+                }
+            }
+
+            if (datasetSpecs.isEmpty()) {
+                throw new IllegalArgumentException("No discretization specifications matched any "
+                        + "variables in one of the datasets. Check that variable names are consistent.");
+            }
+
+            Discretizer discretizer = new Discretizer(originalData, datasetSpecs);
             discretizer.setVariablesCopied(Preferences.userRoot().getBoolean("copyUnselectedColumns", true));
 
             discretizedDataSets.add(discretizer.discretize());
         }
 
+        boolean anyDiscretized = false;
+
+        if (!discretizedDataSets.isEmpty()) {
+            for (DataModel discretizedDataSet : discretizedDataSets) {
+                List<Node> variables = discretizedDataSet.getVariables();
+
+                for (Node variable : variables) {
+                    if (variable instanceof DiscreteVariable) {
+                        anyDiscretized = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!anyDiscretized) {
+            throw new IllegalArgumentException("No discretization has been done.");
+        }
 
         setDataModel(discretizedDataSets);
         setSourceGraph(data.getSourceGraph());
 
         LogDataUtils.logDataModelList("Discretization of data in the parent node.", getDataModelList());
-
     }
-
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -107,7 +181,7 @@ public class DiscretizationWrapper extends DataWrapper {
             out.defaultWriteObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
@@ -126,14 +200,8 @@ public class DiscretizationWrapper extends DataWrapper {
             in.defaultReadObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
-
-
 }
-
-
-
-

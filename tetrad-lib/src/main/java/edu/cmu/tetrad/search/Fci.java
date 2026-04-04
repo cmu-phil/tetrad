@@ -28,9 +28,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.SepsetMap;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.MillisecondTimes;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 
 import java.util.*;
 
@@ -48,7 +46,6 @@ public final class Fci implements IGraphSearch {
     // Existing fields (unchanged)
     // -------------------------
     private final List<Node> variables = new ArrayList<>();
-    private final TetradLogger logger = TetradLogger.getInstance();
     private IndependenceTest test;
     private SepsetMap sepsets;
     private Knowledge knowledge = new Knowledge();
@@ -158,7 +155,7 @@ public final class Fci implements IGraphSearch {
      *               default to 0.0.
      */
     public void setMaxPMargin(double margin) {
-        this.maxPMargin = Math.max(0.0, margin);
+        this.maxPMargin = TMath.max(0.0, margin);
     }
 
     /**
@@ -593,8 +590,8 @@ public final class Fci implements IGraphSearch {
 
         double bestExcl = Double.NEGATIVE_INFINITY, bestIncl = Double.NEGATIVE_INFINITY;
         for (SepCandidate c : indep) {
-            if (c.S.contains(t.z)) bestIncl = Math.max(bestIncl, c.p);
-            else bestExcl = Math.max(bestExcl, c.p);
+            if (c.S.contains(t.z)) bestIncl = TMath.max(bestIncl, c.p);
+            else bestExcl = TMath.max(bestExcl, c.p);
         }
         boolean hasExcl = bestExcl > Double.NEGATIVE_INFINITY;
         boolean hasIncl = bestIncl > Double.NEGATIVE_INFINITY;
@@ -609,7 +606,7 @@ public final class Fci implements IGraphSearch {
                 return new MaxPDecision(t, ColliderOutcome.DEPENDENT, bestIncl, bestS);
             }
             if (logMaxPTies && ties.size() > 1) debugPrintMaxPTies(t, bestP, ties);
-            return new MaxPDecision(t, ColliderOutcome.AMBIGUOUS, Math.max(bestExcl, bestIncl), ties.isEmpty() ? Collections.emptySet() : ties.get(0).S);
+            return new MaxPDecision(t, ColliderOutcome.AMBIGUOUS, TMath.max(bestExcl, bestIncl), ties.isEmpty() ? Collections.emptySet() : ties.get(0).S);
         } else if (hasExcl) {
             Set<Node> bestS = firstTieMatchingContainsZ(ties, t.z, false);
             return new MaxPDecision(t, ColliderOutcome.INDEPENDENT, bestExcl, bestS);
@@ -646,9 +643,9 @@ public final class Fci implements IGraphSearch {
         adjy.sort(Comparator.comparing(Node::getName));
 
         final int depthCap = (depth < 0) ? Integer.MAX_VALUE : depth;
-        int maxAdj = Math.max(adjx.size(), adjy.size());
+        int maxAdj = TMath.max(adjx.size(), adjy.size());
 
-        for (int d = 0; d <= Math.min(depthCap, maxAdj); d++) {
+        for (int d = 0; d <= TMath.min(depthCap, maxAdj); d++) {
             for (List adj : new List[]{adjx, adjy}) {
                 if (d > adj.size()) continue;
                 ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
@@ -686,13 +683,13 @@ public final class Fci implements IGraphSearch {
 
     private String setKey(Set<Node> S) {
         List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());
         return String.join("\u0001", names);
     }
 
     private String stringifySet(Set<Node> S) {
         List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());
         return "{" + String.join(",", names) + "}";
     }
 

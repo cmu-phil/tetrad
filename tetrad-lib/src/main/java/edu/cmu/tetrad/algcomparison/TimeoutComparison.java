@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.algcomparison;
 
@@ -35,7 +35,7 @@ import edu.cmu.tetrad.algcomparison.statistic.ElapsedCpuTime;
 import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
@@ -43,16 +43,12 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
-import org.apache.commons.math3.util.FastMath;
 import org.reflections.Reflections;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.nio.file.Files;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
+import java.text.*;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -144,9 +140,11 @@ public class TimeoutComparison {
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      * @param timeout    a long
      * @param unit       a {@link java.util.concurrent.TimeUnit} object
+     * @throws ParseException if any.
      */
     public void compareFromFiles(String filePath, Algorithms algorithms,
-                                 Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
+                                 Statistics statistics, Parameters parameters, long timeout, TimeUnit unit)
+            throws ParseException {
         compareFromFiles(filePath, filePath, algorithms, statistics, parameters, timeout, unit);
     }
 
@@ -160,9 +158,11 @@ public class TimeoutComparison {
      * @param parameters  The list of parameters and their values.
      * @param timeout     a long
      * @param unit        a {@link java.util.concurrent.TimeUnit} object
+     * @throws ParseException if any.
      */
     public void compareFromFiles(String dataPath, String resultsPath, Algorithms algorithms,
-                                 Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
+                                 Statistics statistics, Parameters parameters, long timeout, TimeUnit unit)
+            throws ParseException {
         for (Algorithm algorithm : algorithms.getAlgorithms()) {
             if (algorithm instanceof ExternalAlgorithm) {
                 throw new IllegalArgumentException("Not expecting any implementations of ExternalAlgorithm here.");
@@ -211,9 +211,12 @@ public class TimeoutComparison {
      * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      * @param timeout     a long
      * @param unit        a {@link java.util.concurrent.TimeUnit} object
+     * @throws ParseException if any.
      */
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, Algorithms algorithms,
-                                                     Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
+                                                     Statistics statistics, Parameters parameters, long timeout,
+                                                     TimeUnit unit)
+            throws ParseException {
         generateReportFromExternalAlgorithms(dataPath, resultsPath, "Comparison.txt", algorithms,
                 statistics, parameters, timeout, unit);
     }
@@ -229,9 +232,13 @@ public class TimeoutComparison {
      * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
      * @param timeout        a long
      * @param unit           a {@link java.util.concurrent.TimeUnit} object
+     * @throws ParseException if any.
      */
-    public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, String outputFileName, Algorithms algorithms,
-                                                     Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
+    public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, String outputFileName,
+                                                     Algorithms algorithms,
+                                                     Statistics statistics, Parameters parameters, long timeout,
+                                                     TimeUnit unit)
+            throws ParseException {
 
         this.saveGraphs = false;
         this.dataPath = dataPath;
@@ -283,9 +290,11 @@ public class TimeoutComparison {
      * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      * @param timeout     a long
      * @param unit        a {@link java.util.concurrent.TimeUnit} object
+     * @throws ParseException if any.
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, Algorithms algorithms,
-                                       Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
+                                       Statistics statistics, Parameters parameters, long timeout, TimeUnit unit)
+            throws ParseException {
         compareFromSimulations(resultsPath, simulations, "Comparison.txt", algorithms, statistics, parameters, timeout, unit);
     }
 
@@ -300,9 +309,11 @@ public class TimeoutComparison {
      * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
      * @param timeout        a long
      * @param unit           a {@link java.util.concurrent.TimeUnit} object
+     * @throws ParseException if any.
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, Algorithms algorithms,
-                                       Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
+                                       Statistics statistics, Parameters parameters, long timeout, TimeUnit unit)
+            throws ParseException {
         this.resultsPath = resultsPath;
 
         // Create output file.
@@ -385,7 +396,7 @@ public class TimeoutComparison {
                 DataType simDataType = simulationWrapper.getDataType();
                 if (!(algDataType == DataType.Mixed || (algDataType == simDataType))) {
                     System.out.println("Type mismatch: " + algorithmWrapper.getDescription()
-                                       + " / " + simulationWrapper.getDescription());
+                            + " / " + simulationWrapper.getDescription());
                 }
 
                 if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
@@ -542,8 +553,10 @@ public class TimeoutComparison {
      * @param dataPath   The path to the directory where the simulationWrapper data should be saved.
      * @param simulation The simulate used to generate the graphs and data.
      * @param parameters The parameters to be used in the simulationWrapper.
+     * @throws ParseException if any.
      */
-    public void saveToFiles(String dataPath, Simulation simulation, Parameters parameters) {
+    public void saveToFiles(String dataPath, Simulation simulation, Parameters parameters)
+            throws ParseException {
         List<SimulationWrapper> simulationWrappers = getSimulationWrappers(simulation, parameters);
 
         File dir0 = new File(dataPath);
@@ -659,7 +672,7 @@ public class TimeoutComparison {
 
                 for (Constructor constructor : constructors) {
                     if (constructor.getParameterTypes().length == 1
-                        && constructor.getParameterTypes()[0] == IndependenceWrapper.class) {
+                            && constructor.getParameterTypes()[0] == IndependenceWrapper.class) {
                         Algorithm algorithm = (Algorithm) constructor.newInstance(
                                 FisherZ.class.newInstance());
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
@@ -686,7 +699,7 @@ public class TimeoutComparison {
 
                 for (Constructor constructor : constructors) {
                     if (constructor.getParameterTypes().length == 1
-                        && constructor.getParameterTypes()[0] == ScoreWrapper.class) {
+                            && constructor.getParameterTypes()[0] == ScoreWrapper.class) {
                         Algorithm algorithm = (Algorithm) constructor.newInstance(
                                 BdeuScore.class.getDeclaredConstructor().newInstance());
                         out.println(clazz.getSimpleName() + ": " + algorithm.getDescription());
@@ -1159,7 +1172,7 @@ public class TimeoutComparison {
         Graph trueGraph = simulationWrapper.getTrueGraph(run.getRunIndex());
 
         System.out.println((run.getAlgSimIndex() + 1) + ". " + algorithmWrapper.getDescription()
-                           + " simulationWrapper: " + simulationWrapper.getDescription());
+                + " simulationWrapper: " + simulationWrapper.getDescription());
 
         long start = MillisecondTimes.timeMillis();
         Graph out;
@@ -1168,8 +1181,8 @@ public class TimeoutComparison {
             Algorithm algorithm = algorithmWrapper.getAlgorithm();
             Simulation simulation = simulationWrapper.getSimulation();
 
-            if (algorithm instanceof HasKnowledge && simulation instanceof HasKnowledge) {
-                ((HasKnowledge) algorithm).setKnowledge(((HasKnowledge) simulation).getKnowledge());
+            if (algorithm instanceof AcceptsKnowledge && simulation instanceof AcceptsKnowledge) {
+                ((AcceptsKnowledge) algorithm).setKnowledge(((AcceptsKnowledge) simulation).getKnowledge());
             }
 
             if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
@@ -1190,7 +1203,7 @@ public class TimeoutComparison {
                 int randomSelectionSize = algorithmWrapper.getAlgorithmSpecificParameters().getInt(
                         "randomSelectionSize");
                 for (int i = 0; i <
-                                FastMath.min(numDataModels, randomSelectionSize); i++) {
+                        TMath.min(numDataModels, randomSelectionSize); i++) {
                     dataModels.add(simulationWrapper.getSimulation().getDataModel(indices.get(i)));
                 }
 
@@ -1452,7 +1465,7 @@ public class TimeoutComparison {
 
             int rows = algorithmSimulationWrappers.size() + 1;
             int cols = (1) + (1) + numStats
-                       + (isShowUtilities() ? 1 : 0);
+                    + (isShowUtilities() ? 1 : 0);
 
             TextTable table = new TextTable(rows, cols);
             table.setDelimiter(isTabDelimitedTables() ? TextTable.Delimiter.TAB : TextTable.Delimiter.JUSTIFIED);
@@ -1525,7 +1538,7 @@ public class TimeoutComparison {
                         table.setToken(t + 1, initialColumn + statIndex, "*");
                     } else {
                         table.setToken(t + 1, initialColumn + statIndex,
-                                FastMath.abs(stat) < FastMath.pow(10, -smallNf.getMaximumFractionDigits()) && stat != 0 ? smallNf.format(stat) : nf.format(stat));
+                                TMath.abs(stat) < TMath.pow(10, -smallNf.getMaximumFractionDigits()) && stat != 0 ? smallNf.format(stat) : nf.format(stat));
                     }
                 }
 
@@ -1612,7 +1625,7 @@ public class TimeoutComparison {
                 Node node2 = DataModel.getVariable(edge.getNode2().getName());
 
                 if (node1 instanceof DiscreteVariable
-                    && node2 instanceof DiscreteVariable) {
+                        && node2 instanceof DiscreteVariable) {
                     newGraph.addEdge(edge);
                 }
             }
@@ -1626,7 +1639,7 @@ public class TimeoutComparison {
                 Node node2 = DataModel.getVariable(edge.getNode2().getName());
 
                 if (node1 instanceof ContinuousVariable
-                    && node2 instanceof ContinuousVariable) {
+                        && node2 instanceof ContinuousVariable) {
                     newGraph.addEdge(edge);
                 }
             }
@@ -1640,12 +1653,12 @@ public class TimeoutComparison {
                 Node node2 = DataModel.getVariable(edge.getNode2().getName());
 
                 if (node1 instanceof DiscreteVariable
-                    && node2 instanceof ContinuousVariable) {
+                        && node2 instanceof ContinuousVariable) {
                     newGraph.addEdge(edge);
                 }
 
                 if (node1 instanceof ContinuousVariable
-                    && node2 instanceof DiscreteVariable) {
+                        && node2 instanceof DiscreteVariable) {
                     newGraph.addEdge(edge);
                 }
             }
@@ -1856,8 +1869,16 @@ public class TimeoutComparison {
             this.parameters = new Parameters(parameters);
         }
 
+        /**
+         * Creates data for the simulation and initializes associated graphs and data models.
+         * This method interacts with the simulation to generate data models and true graphs based on provided parameters.
+         *
+         * @param parameters the parameters used to configure the simulation and generate the data.
+         * @param newModel   a boolean flag indicating whether a new model should be created.
+         * @throws ParseException if an error occurs during parsing of the parameters.
+         */
         @Override
-        public void createData(Parameters parameters, boolean newModel) {
+        public void createData(Parameters parameters, boolean newModel) throws ParseException {
             this.simulation.createData(parameters, false);
             this.graphs = new ArrayList<>();
             this.dataModels = new ArrayList<>();

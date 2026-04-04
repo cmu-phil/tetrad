@@ -75,7 +75,7 @@ class DescriptiveStatsAction extends AbstractAction {
         Box panel = createDescriptiveStatsDialog();
 
         EditorWindow window = new EditorWindow(panel,
-                "Descriptive Statistics", "Close", false, (JComponent) this.dataEditor);
+                "Descriptive Statistics", null, false, (JComponent) this.dataEditor);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 

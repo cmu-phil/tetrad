@@ -27,7 +27,7 @@ import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.log;
+import static edu.cmu.tetrad.util.TMath.log;
 
 /**
  * Calculates chi-square or g-square for a conditional cross-tabulation table for independence question 0 _||_ 1 | 2, 3,

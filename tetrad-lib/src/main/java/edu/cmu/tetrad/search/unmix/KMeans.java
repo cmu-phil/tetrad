@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,10 +20,11 @@
 
 package edu.cmu.tetrad.search.unmix;
 
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.Arrays;
-import java.util.Random;
 
 /**
  * Implements the K-Means clustering algorithm using the k-means++ initialization method and iterative refinement. The
@@ -32,7 +33,7 @@ import java.util.Random;
  */
 public final class KMeans {
 
-    private  KMeans() {
+    private KMeans() {
 
     }
 
@@ -44,21 +45,19 @@ public final class KMeans {
      * @param K       The number of clusters to create. If K is greater than the number of data points, it will be
      *                adjusted to the number of data points. K must be a positive integer.
      * @param maxIter The maximum number of iterations the algorithm will run. Must be a positive integer.
-     * @param seed    The seed for the random number generator used to initialize the cluster centroids.
      * @return An instance of the {@code Result} class containing the cluster assignments (labels) for each data point
      * and the coordinates of the centroids of the clusters.
      */
-    public static Result cluster(double[][] X, int K, int maxIter, long seed) {
+    public static Result cluster(double[][] X, int K, int maxIter) {
         int n = X.length, d = (n == 0 ? 0 : X[0].length);
-        if (n == 0 || K <= 0) return new Result(new int[0], new double[Math.max(K, 0)][d]);
+        if (n == 0 || K <= 0) return new Result(new int[0], new double[TMath.max(K, 0)][d]);
         if (K > n) K = n;
 
-        Random rnd = new Random(seed);
         double[][] C = new double[K][d];
 
         // --- k-means++ init ---
         int[] chosen = new int[K];
-        chosen[0] = rnd.nextInt(n);
+        chosen[0] = RandomUtil.getInstance().nextInt(n);
         C[0] = X[chosen[0]].clone();
         double[] dist2 = new double[n];
         Arrays.fill(dist2, Double.POSITIVE_INFINITY);
@@ -74,9 +73,9 @@ public final class KMeans {
             int pick;
             if (sum == 0.0 || Double.isNaN(sum) || Double.isInfinite(sum)) {
                 // All points are identical (or degenerate distances); pick uniformly
-                pick = rnd.nextInt(n);
+                pick = RandomUtil.getInstance().nextInt(n);
             } else {
-                double r = rnd.nextDouble() * sum;
+                double r = RandomUtil.getInstance().nextDouble() * sum;
                 double acc = 0.0;
                 pick = n - 1;
                 for (int i = 0; i < n - 1; i++) {
@@ -140,21 +139,17 @@ public final class KMeans {
      * @param K        The number of clusters to create. If K is greater than the number of data points, it
      *                 will be adjusted to the number of data points. K must be a positive integer.
      * @param maxIter  The maximum number of iterations the algorithm will run. Must be a positive integer.
-     * @param seed     The seed for the random number generator used to initialize the cluster centroids for
-     *                 each restart.
      * @param restarts The number of times to restart the clustering process with different initial centroids.
      *                 If set to a value less than or equal to 0, the clustering algorithm will run only once.
      * @return An instance of the {@code Result} class containing the cluster assignments (labels) for each
      *         data point and the coordinates of the centroids of the clusters from the best run (based on
      *         the lowest within-cluster SSE).
      */
-    public static Result clusterWithRestarts(double[][] X, int K, int maxIter, long seed, int restarts) {
+    public static Result clusterWithRestarts(double[][] X, int K, int maxIter, int restarts) {
         Result best = null;
         double bestSse = Double.POSITIVE_INFINITY;
-        Random seeder = new Random(seed);
-        for (int r = 0; r < Math.max(1, restarts); r++) {
-            long s = seeder.nextLong();
-            Result res = cluster(X, K, maxIter, s);
+        for (int r = 0; r < TMath.max(1, restarts); r++) {
+            Result res = cluster(X, K, maxIter);
             double sse = withinSSE(X, res.labels, res.centroids);
             if (sse < bestSse) {
                 bestSse = sse;

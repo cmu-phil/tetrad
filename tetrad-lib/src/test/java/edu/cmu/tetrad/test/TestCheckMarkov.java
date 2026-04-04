@@ -38,6 +38,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -59,7 +60,12 @@ public class TestCheckMarkov {
 
         SemPm pm = new SemPm(dag);
         SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(500, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(500, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         Kci test = new Kci(data);
         test.setAlpha(alpha);
@@ -123,7 +129,12 @@ public class TestCheckMarkov {
                 100, false);
         SemPm pm = new SemPm(dag);
         SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(500, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(500, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         SemBicScore score = new SemBicScore(data, true);
 
@@ -153,7 +164,12 @@ public class TestCheckMarkov {
                 100, false);
         SemPm pm = new SemPm(dag);
         SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(10000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(10000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(data), 0.01);
         SemBicScore score = new SemBicScore(data, 1, true);
@@ -170,7 +186,7 @@ public class TestCheckMarkov {
             throw new RuntimeException(e);
         }
 
-        MarkovCheck markovCheck = new MarkovCheck(pag, test, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
+        MarkovCheck markovCheck = new MarkovCheck(pag, test, ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY);
         markovCheck.setFractionResample(1.0);
         markovCheck.generateResults(true, true); // Note the ordered local Markov property only returns indep case.
 
@@ -189,7 +205,12 @@ public class TestCheckMarkov {
                     100, false);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
-            DataSet data = im.simulateData(10000, false);
+            DataSet data = null;
+            try {
+                data = im.simulateData(10000, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
 
             IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(data), 0.01);
             SemBicScore score = new SemBicScore(data, 1, true);
@@ -206,7 +227,7 @@ public class TestCheckMarkov {
                 throw new RuntimeException(e);
             }
 
-            MarkovCheck markovCheck = new MarkovCheck(pag, test, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
+            MarkovCheck markovCheck = new MarkovCheck(pag, test, ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY);
             markovCheck.setFractionResample(1.0);
             markovCheck.generateResults(true, true); // Note the ordered local Markov property only returns indep case.
 
@@ -225,7 +246,12 @@ public class TestCheckMarkov {
         SemPm pm = new SemPm(trueGraph);
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
-        DataSet data = im.simulateData(10000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(10000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = null;
@@ -289,7 +315,12 @@ public class TestCheckMarkov {
         SemPm pm = new SemPm(trueGraph);
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = null;
@@ -322,12 +353,16 @@ public class TestCheckMarkov {
         SemPm pm = new SemPm(trueGraph);
 
         Parameters params = new Parameters();
-        // Manually set non-Gaussian
-        params.set(Params.SIMULATION_ERROR_TYPE, 3);
-        params.set(Params.SIMULATION_PARAM1, 1);
+        params.set(Params.CUSTOM_NOISE_OPTION, 2);
+        params.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = null;
@@ -361,12 +396,16 @@ public class TestCheckMarkov {
         SemPm pm = new SemPm(trueGraph);
 
         Parameters params = new Parameters();
-        // Manually set non-Gaussian
-        params.set(Params.SIMULATION_ERROR_TYPE, 3);
-        params.set(Params.SIMULATION_PARAM1, 1);
+        params.set(Params.CUSTOM_NOISE_OPTION, 2);
+        params.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = null;
@@ -399,7 +438,12 @@ public class TestCheckMarkov {
         SemPm pm = new SemPm(trueGraph);
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = null;
@@ -445,7 +489,12 @@ public class TestCheckMarkov {
         SemPm pm = new SemPm(trueGraph);
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = null;
@@ -488,12 +537,16 @@ public class TestCheckMarkov {
 
         SemPm pm = new SemPm(trueGraph);
         Parameters params = new Parameters();
-        // Manually set non-Gaussian
-        params.set(Params.SIMULATION_ERROR_TYPE, 3);
-        params.set(Params.SIMULATION_PARAM1, 1);
+        params.set(Params.CUSTOM_NOISE_OPTION, 2);
+        params.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = null;
@@ -539,12 +592,16 @@ public class TestCheckMarkov {
         SemPm pm = new SemPm(trueGraph);
 
         Parameters params = new Parameters();
-        // Manually set non-Gaussian
-        params.set(Params.SIMULATION_ERROR_TYPE, 3);
-        params.set(Params.SIMULATION_PARAM1, 1);
+        params.set(Params.CUSTOM_NOISE_OPTION, 2);
+        params.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = null;
@@ -591,7 +648,12 @@ public class TestCheckMarkov {
         SemPm pm = new SemPm(trueGraph);
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = null;
@@ -624,12 +686,16 @@ public class TestCheckMarkov {
         SemPm pm = new SemPm(trueGraph);
 
         Parameters params = new Parameters();
-        // Manually set non-Gaussian
-        params.set(Params.SIMULATION_ERROR_TYPE, 3);
-        params.set(Params.SIMULATION_PARAM1, 1);
+        params.set(Params.CUSTOM_NOISE_OPTION, 2);
+        params.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = null;
@@ -663,12 +729,16 @@ public class TestCheckMarkov {
         SemPm pm = new SemPm(trueGraph);
 
         Parameters params = new Parameters();
-        // Manually set non-Gaussian
-        params.set(Params.SIMULATION_ERROR_TYPE, 3);
-        params.set(Params.SIMULATION_PARAM1, 1);
+        params.set(Params.CUSTOM_NOISE_OPTION, 2);
+        params.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)");
 
         SemIm im = new SemIm(pm, params);
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         edu.cmu.tetrad.search.score.SemBicScore score = new SemBicScore(data, true);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = null;

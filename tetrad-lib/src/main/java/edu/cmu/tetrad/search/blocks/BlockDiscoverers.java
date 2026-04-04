@@ -46,7 +46,7 @@ public final class BlockDiscoverers {
      * @param verbose a flag indicating whether verbose output is enabled for debugging or detailed logs
      * @return a {@code BpcBlockDiscoverer} instance configured with the specified parameters
      */
-    public static BlockDiscoverer bpc(DataSet data, double alpha, int ess, SingleClusterPolicy policy, boolean verbose) {
+    public static BlockDiscoverer bpc(DataSet data, double alpha, int ess, SingletonClusterPolicy policy, boolean verbose) {
         return new BpcBlockDiscoverer(data, alpha, ess, policy, verbose);
     }
 
@@ -65,7 +65,7 @@ public final class BlockDiscoverers {
      * @param verbose a flag indicating whether verbose output is enabled for debugging or detailed logs
      * @return a {@code FofcBlockDiscoverer} instance configured with the specified parameters
      */
-    public static BlockDiscoverer fofc(DataSet data, double alpha, int ess, SingleClusterPolicy policy, boolean verbose) {
+    public static BlockDiscoverer fofc(DataSet data, double alpha, int ess, SingletonClusterPolicy policy, boolean verbose) {
         return new FofcBlockDiscoverer(data, alpha, ess, policy, verbose);
     }
 
@@ -81,7 +81,7 @@ public final class BlockDiscoverers {
      * @param verbose a flag indicating whether verbose output is enabled for debugging or detailed logs
      * @return a {@code FtfcBlockDiscoverer} instance configured with the specified parameters
      */
-    public static BlockDiscoverer ftfc(DataSet data, double alpha, int ess, SingleClusterPolicy policy, boolean verbose) {
+    public static BlockDiscoverer ftfc(DataSet data, double alpha, int ess, SingletonClusterPolicy policy, boolean verbose) {
         return new FtfcBlockDiscoverer(data, alpha, ess, policy, verbose);
     }
 
@@ -98,7 +98,7 @@ public final class BlockDiscoverers {
      * @param verbose a flag indicating whether verbose output is enabled for debugging or detailed logs
      * @return a {@code GffcBlockDiscoverer} instance configured with the specified parameters
      */
-    public static BlockDiscoverer gffc(DataSet data, double alpha, int ess, int rMax, SingleClusterPolicy policy, boolean verbose) {
+    public static BlockDiscoverer gffc(DataSet data, double alpha, int ess, int rMax, SingletonClusterPolicy policy, boolean verbose) {
         return new GffcBlockDiscoverer(data, alpha, ess, rMax, policy, verbose);
     }
 
@@ -121,7 +121,7 @@ public final class BlockDiscoverers {
      * @param verbose       a flag indicating whether verbose output is enabled for debugging or detailed logs
      * @return a {@code TscTestBlockDiscoverer} instance configured with the specified parameters
      */
-    public static BlockDiscoverer tsc(DataSet data, double alpha, int ess, double ridge, int rMax, SingleClusterPolicy policy, int minRedundancy, boolean verbose) {
+    public static BlockDiscoverer tsc(DataSet data, double alpha, int ess, double ridge, int rMax, SingletonClusterPolicy policy, int minRedundancy, boolean verbose) {
         return new TscTestBlockDiscoverer(data, alpha, ess, ridge, rMax, policy, minRedundancy, verbose);
     }
 }

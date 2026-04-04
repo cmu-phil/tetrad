@@ -40,6 +40,7 @@ import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.*;
 import edu.cmu.tetradapp.util.*;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -689,7 +690,7 @@ public class GridSearchEditor extends JPanel {
     @NotNull
     private static String getParameterText(Set<String> paramNamesSet, Parameters parameters) {
         List<String> paramNames = new ArrayList<>(paramNamesSet);
-        Collections.sort(paramNames);
+        paramNames.sort(NaturalSort.naturalComparator());
 
         StringBuilder paramText = new StringBuilder();
 
@@ -1090,7 +1091,7 @@ public class GridSearchEditor extends JPanel {
             case 0 -> BayesNetSimulation.class;
             case 1 -> SemSimulation.class;
             case 2 -> LinearFisherModel.class;
-            case 3 -> GeneralizedAdditiveModelSimulator.class;
+            case 3 -> GeneralAdditiveModel.class;
             case 4 -> GeneralNoiseSimulation.class;
             case 5 -> AdditiveNoiseSimulation.class;
             case 6 -> PostnonlinearSem.class;
@@ -3481,7 +3482,7 @@ public class GridSearchEditor extends JPanel {
             int modelRow = table.convertRowIndexToModel(row);
             if (tableModel.moveUp(modelRow)) {
                 tableModel.fireTableDataChanged();
-                int newRow = Math.max(0, row - 1);
+                int newRow = TMath.max(0, row - 1);
                 table.getSelectionModel().setSelectionInterval(newRow, newRow);
             } else {
                 Toolkit.getDefaultToolkit().beep();
@@ -3497,7 +3498,7 @@ public class GridSearchEditor extends JPanel {
             int modelRow = table.convertRowIndexToModel(row);
             if (tableModel.moveDown(modelRow)) {
                 tableModel.fireTableDataChanged();
-                int newRow = Math.min(table.getRowCount() - 1, row + 1);
+                int newRow = TMath.min(table.getRowCount() - 1, row + 1);
                 table.getSelectionModel().setSelectionInterval(newRow, newRow);
             } else {
                 Toolkit.getDefaultToolkit().beep();
@@ -3599,7 +3600,7 @@ public class GridSearchEditor extends JPanel {
             int modelRow = table.convertRowIndexToModel(row);
             if (tableModel.moveUp(modelRow)) {
                 tableModel.fireTableDataChanged();
-                int newRow = Math.max(0, row - 1);
+                int newRow = TMath.max(0, row - 1);
                 table.getSelectionModel().setSelectionInterval(newRow, newRow);
             } else Toolkit.getDefaultToolkit().beep();
         });
@@ -3613,7 +3614,7 @@ public class GridSearchEditor extends JPanel {
             int modelRow = table.convertRowIndexToModel(row);
             if (tableModel.moveDown(modelRow)) {
                 tableModel.fireTableDataChanged();
-                int newRow = Math.min(table.getRowCount() - 1, row + 1);
+                int newRow = TMath.min(table.getRowCount() - 1, row + 1);
                 table.getSelectionModel().setSelectionInterval(newRow, newRow);
             } else Toolkit.getDefaultToolkit().beep();
         });

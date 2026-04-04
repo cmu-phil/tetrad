@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,7 +20,8 @@
 
 package edu.cmu.tetrad.search.utils;
 
-import java.util.Random;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TMath;
 
 /**
  * A class that represents a Random Radial Basis Function (RBF) system. This implementation generates RBFs using
@@ -42,10 +43,9 @@ public class RandomRBF {
         this.amplitudes = new double[numCenters];
         this.sigma = sigma;
 
-        Random random = new Random();
         for (int i = 0; i < numCenters; i++) {
-            centers[i] = -2 + 4 * random.nextDouble(); // Random values in range [-2, 2]
-            amplitudes[i] = -2 + 4 * random.nextDouble(); // Random amplitudes in range [-2, 2]
+            centers[i] = -2 + 4 * RandomUtil.getInstance().nextDouble(); // Random values in range [-2, 2]
+            amplitudes[i] = -2 + 4 * RandomUtil.getInstance().nextDouble(); // Random amplitudes in range [-2, 2]
         }
     }
 
@@ -84,8 +84,8 @@ public class RandomRBF {
     public double compute(double x) {
         double result = 0.0;
         for (int i = 0; i < centers.length; i++) {
-            double distanceSquared = Math.pow(x - centers[i], 2);
-            result += amplitudes[i] * Math.exp(-distanceSquared / (2 * Math.pow(sigma, 2)));
+            double distanceSquared = TMath.pow(x - centers[i], 2);
+            result += amplitudes[i] * TMath.exp(-distanceSquared / (2 * TMath.pow(sigma, 2)));
         }
         return result;
     }

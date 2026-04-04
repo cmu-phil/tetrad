@@ -31,7 +31,7 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -168,15 +168,15 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         if (r > 1.) r = 1.;
         if (r < -1.) r = -1.;
 
-        double fisherZ = FastMath.sqrt(sampleSize - z.size() - 3.0) *
-                         0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
+        double fisherZ = TMath.sqrt(sampleSize - z.size() - 3.0) *
+                         0.5 * (TMath.log(1.0 + r) - TMath.log(1.0 - r));
 
         if (Double.isNaN(fisherZ)) {
             return new IndependenceResult(new IndependenceFact(x, y, _z),
                     true, Double.NaN, Double.NaN);
         }
 
-        double pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(fisherZ)));
+        double pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, TMath.abs(fisherZ)));
 
         if (Double.isNaN(pValue)) {
             throw new RuntimeException("Undefined p-value encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));

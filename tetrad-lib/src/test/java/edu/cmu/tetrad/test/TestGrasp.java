@@ -68,6 +68,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.*;
 
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
@@ -339,7 +340,11 @@ public final class TestGrasp {
 
         Comparison comparison = new Comparison();
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
-        comparison.compareFromSimulations("grasp_boss_timing", simulations, algorithms, statistics, params);
+        try {
+            comparison.compareFromSimulations("grasp_boss_timing", simulations, algorithms, statistics, params);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //    @Test
@@ -486,9 +491,13 @@ public final class TestGrasp {
 //        comparison.saveToFiles("/Users/josephramsey/Downloads/grasp/vary_sample_size",
 //                simulation, params);
 
-        comparison.compareFromFiles(dataPath,
-                resultsPath,
-                algorithms, statistics, params);
+        try {
+            comparison.compareFromFiles(dataPath,
+                    resultsPath,
+                    algorithms, statistics, params);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //    @Test
@@ -573,9 +582,13 @@ public final class TestGrasp {
         comparison.setSaveData(false);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
-        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/varying_final2/testPaperSimulations_"
-                                          + type, simulations,
-                algorithms, statistics, params);
+        try {
+            comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/varying_final2/testPaperSimulations_"
+                                              + type, simulations,
+                    algorithms, statistics, params);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void newAlgsHeadToHead() {
@@ -723,9 +736,13 @@ public final class TestGrasp {
 //        comparison.saveToFiles("/Users/josephramsey/Downloads/grasp/vary_sample_size",
 //                simulation, params);
 
-        comparison.compareFromFiles(dataPath,
-                resultsPath,
-                algorithms, statistics, params);
+        try {
+            comparison.compareFromFiles(dataPath,
+                    resultsPath,
+                    algorithms, statistics, params);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //    @Test
@@ -785,8 +802,12 @@ public final class TestGrasp {
         Comparison comparison = new Comparison();
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
-        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testGraspForClark",
-                simulations, algorithms, statistics, params);
+        try {
+            comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testGraspForClark",
+                    simulations, algorithms, statistics, params);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //    @Test
@@ -848,8 +869,12 @@ public final class TestGrasp {
         Comparison comparison = new Comparison();
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
-        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testGrasp1",
-                simulations, algorithms, statistics, params);
+        try {
+            comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testGrasp1",
+                    simulations, algorithms, statistics, params);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //    @Test
@@ -894,8 +919,12 @@ public final class TestGrasp {
         Comparison comparison = new Comparison();
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
-        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testComparePearlGrowShrink",
-                simulations, algorithms, statistics, params);
+        try {
+            comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testComparePearlGrowShrink",
+                    simulations, algorithms, statistics, params);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //    @Test
@@ -944,8 +973,12 @@ public final class TestGrasp {
         Comparison comparison = new Comparison();
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
-        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testCompareGrasp1Grasp2",
-                simulations, algorithms, statistics, params);
+        try {
+            comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testCompareGrasp1Grasp2",
+                    simulations, algorithms, statistics, params);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -1012,8 +1045,12 @@ public final class TestGrasp {
         comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
         comparison.setSaveData(false);
 
-        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testGrasp2",
-                simulations, algorithms, statistics, params);
+        try {
+            comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testGrasp2",
+                    simulations, algorithms, statistics, params);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //    @Test
@@ -1074,8 +1111,12 @@ public final class TestGrasp {
         comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
         comparison.setSaveData(false);
 
-        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testLuFigure3",
-                simulations, algorithms, statistics, params);
+        try {
+            comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testLuFigure3",
+                    simulations, algorithms, statistics, params);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //    @Test
@@ -1133,8 +1174,12 @@ public final class TestGrasp {
         comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
         comparison.setSaveData(false);
 
-        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/Lu.figure.6", simulations,
-                algorithms, statistics, params);
+        try {
+            comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/Lu.figure.6", simulations,
+                    algorithms, statistics, params);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //    @Test
@@ -1193,9 +1238,13 @@ public final class TestGrasp {
         Comparison comparison = new Comparison();
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
-        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testPaperSimulations_"
-                                          + numMeasures + "_" + avgDegree, simulations,
-                algorithms, statistics, params);
+        try {
+            comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testPaperSimulations_"
+                                              + numMeasures + "_" + avgDegree, simulations,
+                    algorithms, statistics, params);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //    @Test
@@ -1208,7 +1257,12 @@ public final class TestGrasp {
                     100, 100, 100, false);
             SemPm pm = new SemPm(g);
             SemIm im = new SemIm(pm);
-            DataSet d = im.simulateData(1000, false);
+            DataSet d = null;
+            try {
+                d = im.simulateData(1000, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
 
             IndependenceTest test = new IndTestFisherZ(d, 0.00001);
 
@@ -1828,7 +1882,11 @@ public final class TestGrasp {
         Comparison comparison = new Comparison();
         comparison.setSaveGraphs(true);
 
-        comparison.saveToFiles("/Users/josephramsey/Downloads/grasp/simulation", simulation, params);
+        try {
+            comparison.saveToFiles("/Users/josephramsey/Downloads/grasp/simulation", simulation, params);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private GraphoidAxioms getGraphoidAxioms(String line, List<Node> nodes) throws IOException {
@@ -2027,8 +2085,12 @@ public final class TestGrasp {
         Comparison comparison = new Comparison();
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
-        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/clark", simulations,
-                algorithms, statistics, params);
+        try {
+            comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/clark", simulations,
+                    algorithms, statistics, params);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public List<Node> getPrefix(List<Node> order, int i) {
@@ -2078,8 +2140,12 @@ public final class TestGrasp {
         comparison.setTabDelimitedTables(false);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
-        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/manyvarsmanyavgdegrees",
-                simulations, algorithms, statistics, params);
+        try {
+            comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/manyvarsmanyavgdegrees",
+                    simulations, algorithms, statistics, params);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private boolean isCpdagForDag(Graph cpdag, Graph dag) {
@@ -2573,9 +2639,13 @@ public final class TestGrasp {
         Comparison comparison = new Comparison();
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
-        comparison.compareFromSimulations(
-                "/Users/josephramsey/Downloads/grasp/testFciAlgs", simulations,
-                _algorithms, statistics, params);
+        try {
+            comparison.compareFromSimulations(
+                    "/Users/josephramsey/Downloads/grasp/testFciAlgs", simulations,
+                    _algorithms, statistics, params);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
@@ -2856,9 +2926,13 @@ public final class TestGrasp {
             Comparison comparison = new Comparison();
             comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
-            comparison.compareFromSimulations(
-                    "/Users/josephramsey/Downloads/grasp/scores", simulations,
-                    algorithms, statistics, params);
+            try {
+                comparison.compareFromSimulations(
+                        "/Users/josephramsey/Downloads/grasp/scores", simulations,
+                        algorithms, statistics, params);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -2916,9 +2990,13 @@ public final class TestGrasp {
             Comparison comparison = new Comparison();
             comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
-            comparison.compareFromSimulations(
-                    "/Users/josephramsey/Downloads/grasp/zsb_varyrisk", simulations,
-                    algorithms, statistics, params);
+            try {
+                comparison.compareFromSimulations(
+                        "/Users/josephramsey/Downloads/grasp/zsb_varyrisk", simulations,
+                        algorithms, statistics, params);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
         }
 
     }
@@ -2971,7 +3049,7 @@ public final class TestGrasp {
             OrderedMap<String, Set<String>> labels = new ListOrderedMap<>();
 
             List<Node> variables = facts.facts.getVariables();
-            Collections.sort(variables);
+            variables.sort(NaturalSort.naturalComparator());
 
             PermutationGenerator gen = new PermutationGenerator(variables.size());
             int[] perm;
@@ -3046,7 +3124,7 @@ public final class TestGrasp {
             OrderedMap<String, Set<String>> labels = new ListOrderedMap<>();
 
             List<Node> variables = facts.facts.getVariables();
-            Collections.sort(variables);
+            variables.sort(NaturalSort.naturalComparator());
 
             PermutationGenerator gen = new PermutationGenerator(variables.size());
             int[] perm;
@@ -3125,7 +3203,12 @@ public final class TestGrasp {
                         SemPm pm = new SemPm(graph);
                         SemIm im = new SemIm(pm, parameters);
 
-                        DataSet dataSet = im.simulateData(s, false);
+                        DataSet dataSet = null;
+                        try {
+                            dataSet = im.simulateData(s, false);
+                        } catch (ParseException e) {
+                            throw new RuntimeException(e);
+                        }
                         List<Node> V = dataSet.getVariables();
 
                         MsepTest msep = new MsepTest(graph);
@@ -3270,7 +3353,12 @@ public final class TestGrasp {
                     100, 100, false);
             SemPm pm = new SemPm(g);
             SemIm im = new SemIm(pm);
-            DataSet d = im.simulateData(1000, false);
+            DataSet d = null;
+            try {
+                d = im.simulateData(1000, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
 
             IndTestFisherZ test = new IndTestFisherZ(d, 0.001);
             SemBicScore score = new SemBicScore(d, precomputeCovariances);

@@ -23,7 +23,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
@@ -60,7 +60,7 @@ import java.util.List;
 )
 // Bootstrapping makes no sense here, since the algorithm pools the data from various sources, which may be federated
 // in principle, so we've removed the bootstrapping annotation from it and deleted the bootstrapping code.
-public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependenceWrapper {
+public class FciIod implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesIndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -126,6 +126,10 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
         search.setDoPossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setStable(parameters.getBoolean(Params.STABLE_FAS));
+        int anInt = parameters.getInt(Params.COLLIDER_ORIENTATION_STYLE) - 1;
+        search.setR0ColliderRule(edu.cmu.tetrad.search.Fci.ColliderRule.values()[anInt]);
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
+        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         return search.search();
     }
@@ -136,14 +140,6 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         // Not used.
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setIndTestWrapper(IndependenceWrapper test) {
-        this.test = test;
     }
 
     /**
@@ -186,10 +182,13 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
         List<String> parameters = new LinkedList<>(test.getParameters());
         parameters.add(Params.DEPTH);
         parameters.add(Params.STABLE_FAS);
+        parameters.add(Params.COLLIDER_ORIENTATION_STYLE);
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.DO_POSSIBLE_DSEP);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.TIME_LAG);
+        parameters.add(Params.EXCLUDE_SELECTION_BIAS);
+        parameters.add(Params.GUARANTEE_PAG);
         parameters.add(Params.VERBOSE);
 
         return parameters;

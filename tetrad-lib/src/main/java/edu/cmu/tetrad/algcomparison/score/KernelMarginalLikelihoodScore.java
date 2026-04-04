@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.FfMl;
+import edu.cmu.tetrad.search.score.FfMlContinuous;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -35,19 +35,19 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Wrapper for Kernel Marginal Likelihood Score.
- *
- * @author josephramsey
- * @version $Id: $Id
- */
-@edu.cmu.tetrad.annotation.Score(
-        name = "KML Score",
-        command = "kml-score",
-        dataType = {DataType.Continuous}
-)
-@General
-@Experimental
+///**
+// * Wrapper for Kernel Marginal Likelihood Score.
+// *
+// * @author josephramsey
+// * @version $Id: $Id
+// */
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "KML Score",
+//        command = "kml-score",
+//        dataType = {DataType.Continuous}
+//)
+//@General
+//@Experimental
 public class KernelMarginalLikelihoodScore implements ScoreWrapper {
 
     @Serial
@@ -82,11 +82,11 @@ public class KernelMarginalLikelihoodScore implements ScoreWrapper {
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         score.setLambda(parameters.getDouble(Params.KML_LAMBDA));
         score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
-        score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
+        score.setBwMaxRows(parameters.getInt(Params.BW_MAX_ROWS));
         score.setJitter(parameters.getDouble(Params.KML_JITTER));
 
-        FfMl.FeatureType[] values
-                = FfMl.FeatureType.values();
+        FfMlContinuous.FeatureType[] values
+                = FfMlContinuous.FeatureType.values();
 
 
         return score;
@@ -123,7 +123,7 @@ public class KernelMarginalLikelihoodScore implements ScoreWrapper {
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.KML_LAMBDA);
         parameters.add(Params.KML_BANDWIDTH_MULTIPLIER);
-        parameters.add(Params.KML_BW_MAX_ROWS);
+        parameters.add(Params.BW_MAX_ROWS);
         parameters.add(Params.KML_JITTER);
 
         return parameters;

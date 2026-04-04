@@ -38,6 +38,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -314,7 +315,12 @@ public class TestPc {
                     10, 10, 10, false, -1);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
-            DataSet data = im.simulateData(1000, false);
+            DataSet data = null;
+            try {
+                data = im.simulateData(1000, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
 
             IndTestFisherZ test = new IndTestFisherZ(data, 0.01);
 
@@ -341,9 +347,6 @@ public class TestPc {
                     break;
                 case 5:
                     search = new Rfci(test);
-                    break;
-                case 6:
-                    search = new Cfci(test);
                     break;
                 default:
                     throw new IllegalStateException();
@@ -568,7 +571,7 @@ public class TestPc {
 
         RandomUtil.getInstance().setSeed(12345);
 
-        String[] algorithms = {"PC", "CPC", "FGES", "FCI", "FGES-FCI", "RFCI", "CFCI", "Regression"};
+        String[] algorithms = {"PC", "CPC", "FGES", "FCI", "FGES-FCI", "RFCI", "Regression"};
         String[] statLabels = {"AP", "AR"};
 
         final int numMeasures = 10;
@@ -650,7 +653,12 @@ public class TestPc {
                     10, 10, 10, false, -1);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
-            DataSet data = im.simulateData(10000, false);
+            DataSet data = null;
+            try {
+                data = im.simulateData(10000, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
             Graph comparison = GraphTransforms.dagToPag(dag, false);
             IndTestFisherZ test = new IndTestFisherZ(data, 0.1);
 
@@ -721,14 +729,6 @@ public class TestPc {
                     }
                     break;
                 case 6:
-                    search = new Cfci(test);
-                    try {
-                        out = search.search();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    break;
-                case 7:
                     out = getRegressionGraph(data, target);
                     break;
                 default:

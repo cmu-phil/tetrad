@@ -41,6 +41,8 @@ import java.util.stream.Collectors;
  * CPDAG. Then it uses scoring steps to infer some unshielded colliders in the graph, then finishes with a testing step
  * to remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is applied to the
  * graph.
+ * <p>
+ * This is "strategy 0" of FCIT, which uses a recursive edge removal strategy.
  *
  * @author josephramsey
  */
@@ -61,7 +63,6 @@ public final class Fcit0 implements IGraphSearch {
      * sets - specifically to check conditional independencies between pairs of variables given a separating set.
      */
     private final SepsetMap sepsets = new SepsetMap();
-    private final List<Node> selection;
     /**
      * The background knowledge.
      */
@@ -162,9 +163,6 @@ public final class Fcit0 implements IGraphSearch {
 
         this.test = test;
         this.score = score;
-
-        this.selection = this.test.getVariables().stream()
-                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
         test.setVerbose(superVerbose);
 
@@ -434,11 +432,10 @@ public final class Fcit0 implements IGraphSearch {
         // optionally check to see if the Zhang MAG in the PAG is a legal MAG, and if not, reset the PAG
         // and any changed sepsets) to the previous state. Repeat until no more edges are removed.
         Set<IndependenceCheck> checks = new HashSet<>();
-        int round = 0;
 
-        do {
-//            System.out.println("Round: " + (++round));
-        } while (removeEdgesRecursivelyBryan(checks, excludeSelectionBias));
+        while (removeEdgesRecursivelyBryan(checks, excludeSelectionBias)) {
+            // Edge removed; continue searching for more.
+        }
 
         if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -447,18 +444,22 @@ public final class Fcit0 implements IGraphSearch {
         long stop2 = System.currentTimeMillis();
 
         if (verbose) {
-            System.out.println();
+            TetradLogger.getInstance().log("Doing final FCI orientation.");
         }
+
+        fciOrient.orient(this.pag, this.initialColliders, excludeSelectionBias);
 
         // Revert nodes made latent to latent.
         for (Node node : latents) {
             node.setNodeType(NodeType.LATENT);
         }
 
-        TetradLogger.getInstance().log("FCIT0 finished.");
-        TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
-        TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
-        TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
+        if (verbose) {
+            TetradLogger.getInstance().log("FCIT0 finished.");
+            TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
+            TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
+            TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
+        }
 
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
@@ -584,7 +585,6 @@ public final class Fcit0 implements IGraphSearch {
     }
 
     private IndependenceCheck findIndependenceCheckRecursive(Edge edge, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) throws InterruptedException {
-        if (verbose) System.out.print(".");
 
         final Node x = edge.getNode1();
         final Node y = edge.getNode2();
@@ -677,7 +677,7 @@ public final class Fcit0 implements IGraphSearch {
         sepsets.set(x, y, b);
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, excludeSelectionBias, superVerbose);
 
-        if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
+        if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>())) {
             if (verbose) {
                 TetradLogger.getInstance().log("Tried removing " + _edge + " conditioning on " + b + ", but it didn't lead to a PAG");
             }

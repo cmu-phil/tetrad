@@ -29,6 +29,8 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.text.ParseException;
+
 /**
  * My script.
  *
@@ -128,7 +130,11 @@ public class TestSimulatedFmri2 {
 
         final String directory = "comparison_testing_nonconcat";
 
-        comparison.compareFromSimulations(directory, simulations, algorithms, statistics, parameters);
+        try {
+            comparison.compareFromSimulations(directory, simulations, algorithms, statistics, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.factory.LinearSolverFactory_DDRM;
@@ -13,17 +14,85 @@ import org.ejml.interfaces.linsol.LinearSolverDense;
 import java.util.*;
 
 /**
- * The HeavyTailSemBicScore class implements a scoring mechanism for assessing structural equation models (SEMs) with
- * heavy-tailed data. It extends functionalities from the Score class and the EffectiveSampleSizeSettable interface,
- * adding capabilities for local scoring, kurtosis adjustments, centering options, and noise modeling.
- * <p>
- * The scoring methodology incorporates adjustments for heavy-tailed distributions using metrics like kurtosis and ridge
- * regularization. It supports efficient calculation of scores through caching and includes options for penalizing model
- * complexity.
- * <p>
- * This is not a score-equivalent score, meaning that DAGs in the same Markov equivalence class may receive different
- * scores. As a result, it is more suited to a DAG-based search strategy like BOSS and less suited to, say, FGES, which
- * relies on score-equivalence.
+ * A BIC-style local score for structural equation models (SEMs) that replaces the
+ * standard Gaussian log-likelihood with a heavier-tailed or more robust noise model,
+ * making it better suited to data with outliers or non-Gaussian residuals.
+ *
+ * <h2>Local score formula</h2>
+ * For a target variable Y with parent set Pa(Y), the local score is:
+ * <pre>
+ *   score(Y, Pa(Y)) = 2 · ll(e) + bonus(e) − penalty_discount · df · log(n)
+ * </pre>
+ * where:
+ * <ul>
+ *   <li>{@code e} are the OLS residuals from regressing Y on Pa(Y) (with optional
+ *       ridge regularization and optional centering/standardization).</li>
+ *   <li>{@code ll(e)} is the log-likelihood of the residuals under the chosen
+ *       {@link NoiseModel}.</li>
+ *   <li>{@code bonus(e)} is an optional non-Gaussian reward (see below).</li>
+ *   <li>{@code df} is the number of free parameters: one per parent plus one noise
+ *       scale parameter (and one intercept if centering is disabled).</li>
+ *   <li>{@code n} is the effective sample size.</li>
+ * </ul>
+ *
+ * <h2>Noise models</h2>
+ * The residual log-likelihood is computed under one of four models, selectable via
+ * {@link #setNoiseModel}:
+ * <ul>
+ *   <li><b>GAUSSIAN</b> — standard Gaussian MLE; equivalent to ordinary SEM-BIC when
+ *       no bonus is applied.</li>
+ *   <li><b>LAPLACE</b> — double-exponential distribution; robust to outliers, promotes
+ *       sparse residuals. The scale parameter is estimated as the mean absolute
+ *       residual.</li>
+ *   <li><b>STUDENT_T</b> (default) — Student-t with fixed degrees of freedom
+ *       {@code ν} (default 4). Provides heavy tails while remaining unimodal. The
+ *       scale parameter is estimated from the mean squared residual. Requires
+ *       {@code ν > 2}.</li>
+ *   <li><b>LOG_COSH</b> — log-cosh loss, a smooth approximation to the Laplace
+ *       log-likelihood that is differentiable everywhere.</li>
+ * </ul>
+ *
+ * <h2>Non-Gaussian bonus</h2>
+ * An optional additive reward can be enabled via {@link #setNonGaussianBonus}:
+ * <ul>
+ *   <li><b>NONE</b> (default) — no bonus.</li>
+ *   <li><b>KURTOSIS</b> — adds {@code kurtosisGamma · n · g2²} to the score, where
+ *       {@code g2} is the excess kurtosis of the residuals, optionally capped at
+ *       {@code ±kurtosisCap}. This rewards parent sets whose residuals are more
+ *       non-Gaussian (larger |g2|), which can help identify the correct causal
+ *       direction in non-Gaussian additive noise models.</li>
+ * </ul>
+ *
+ * <h2>Regression details</h2>
+ * The regression of Y on Pa(Y) is solved via:
+ * <pre>
+ *   (XᵀX + ridge · I) β = Xᵀy
+ * </pre>
+ * using an EJML symmetric positive-definite solver. If the solver fails (ill-conditioned
+ * XᵀX), the ridge is increased automatically in up to six doubling steps before the
+ * score is reported as {@code NaN}. When {@code centerData=true} (default), Y and all
+ * parent columns are z-scored before regression and no intercept is included. When
+ * {@code centerData=false} and {@code includeInterceptWhenNotCentered=true}, an
+ * intercept column is added to the design matrix.
+ *
+ * <h2>Missing data</h2>
+ * When the dataset contains missing values, each local score computation uses only
+ * the rows that are complete for the target and all its parents jointly (listwise
+ * deletion). Scores are not computed when fewer than 10 complete rows are available.
+ *
+ * <h2>Score equivalence</h2>
+ * This is <em>not</em> a score-equivalent score: DAGs in the same Markov equivalence
+ * class may receive different scores, because the log-likelihood of the residuals
+ * depends on the direction of the regression. This makes the score well suited to
+ * DAG-based searches such as BOSS, but unsuitable for algorithms that rely on
+ * score equivalence such as FGES.
+ *
+ * <h2>Caching</h2>
+ * Local scores are cached by a hash of the target index and sorted parent indices.
+ * The cache is cleared whenever any hyperparameter that affects the score is changed.
+ *
+ * @see Score
+ * @see EffectiveSampleSizeSettable
  */
 public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSettable {
 
@@ -158,7 +227,7 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
         }
         double mean = sum / n;
         double var = (sumsq - n * mean * mean) / (n - 1);
-        double sd = (var > 0) ? Math.sqrt(var) : 1.0;
+        double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
         for (int i = 0; i < n; i++) x[i] = (x[i] - mean) / sd;
     }
 
@@ -177,13 +246,13 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
             }
             double mean = sum / n;
             double var = (sumsq - n * mean * mean) / (n - 1);
-            double sd = (var > 0) ? Math.sqrt(var) : 1.0;
+            double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
             for (int i = 0; i < n; i++) X[i][j] = (X[i][j] - mean) / sd;
         }
     }
 
     private static void addDiagonalInPlace(DMatrixRMaj M, double v) {
-        int n = Math.min(M.numRows, M.numCols);
+        int n = TMath.min(M.numRows, M.numCols);
         for (int i = 0; i < n; i++) M.add(i, i, v);
     }
 
@@ -201,8 +270,8 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
 
     private static double logCosh(double x) {
         // stable: log(cosh(x)) = |x| + log(1 + exp(-2|x|)) - log 2
-        double ax = Math.abs(x);
-        return ax + Math.log1p(Math.exp(-2.0 * ax)) - Math.log(2.0);
+        double ax = TMath.abs(x);
+        return ax + TMath.log1p(TMath.exp(-2.0 * ax)) - TMath.log(2.0);
     }
 
     private static int[] concat(int i, int[] parents) {
@@ -276,7 +345,7 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
             // df: just noise scale (and maybe intercept, but if p=0 and centerData==false, intercept is the location;
             // we’re not estimating a separate location here. Keep it simple: count 1 scale parameter.)
             double df = noiseDf();
-            double score = 2.0 * ll - penaltyDiscount * df * Math.log(n);
+            double score = 2.0 * ll - penaltyDiscount * df * TMath.log(n);
             localScoreCache.put(key, score);
             return score;
         }
@@ -320,7 +389,7 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
         LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.symmPosDef(m);
         if (!solver.setA(XtX)) {
             // fall back: try a bit more ridge
-            double extra = Math.max(1e-10, ridge);
+            double extra = TMath.max(1e-10, ridge);
             boolean ok = false;
             for (int k = 0; k < 6; k++) {
                 DMatrixRMaj A = XtX.copy();
@@ -362,7 +431,7 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
 // df for BIC penalty (see section 3 below for improved df by model)
         double df = m + noiseDf();
 
-        double score = 2.0 * ll + bonus - penaltyDiscount * df * Math.log(n);
+        double score = 2.0 * ll + bonus - penaltyDiscount * df * TMath.log(n);
 
         localScoreCache.put(key, score);
         return score;
@@ -398,7 +467,7 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
      */
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(Math.log(Math.max(3, nEff)));
+        return (int) TMath.ceil(TMath.log(TMath.max(3, nEff)));
     }
 
     /**
@@ -723,13 +792,13 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
             case LAPLACE -> {
                 // Laplace(0, b): loglik = -n log(2b) - (1/b) sum |e|
                 double sumAbs = 0.0;
-                for (double v : e) sumAbs += Math.abs(v);
+                for (double v : e) sumAbs += TMath.abs(v);
 
                 double b = sumAbs / n;
                 if (!(b > 0) || !Double.isFinite(b)) b = minScale;
                 if (b < minScale) b = minScale;
 
-                return -n * Math.log(2.0 * b) - (sumAbs / b);
+                return -n * TMath.log(2.0 * b) - (sumAbs / b);
             }
 
             case STUDENT_T -> {
@@ -743,18 +812,18 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
                 if (!(sigma2 > 0) || !Double.isFinite(sigma2)) sigma2 = minScale * minScale;
                 if (sigma2 < minScale * minScale) sigma2 = minScale * minScale;
 
-                double sigma = Math.sqrt(sigma2);
+                double sigma = TMath.sqrt(sigma2);
 
                 double c =
                         org.apache.commons.math3.special.Gamma.logGamma((nu + 1.0) / 2.0)
                         - org.apache.commons.math3.special.Gamma.logGamma(nu / 2.0)
-                        - 0.5 * Math.log(nu * Math.PI)
-                        - Math.log(sigma);
+                        - 0.5 * TMath.log(nu * TMath.PI)
+                        - TMath.log(sigma);
 
                 double ll = 0.0;
                 for (double v : e) {
                     double z = (v * v) / (nu * sigma2);
-                    ll += c - 0.5 * (nu + 1.0) * Math.log1p(z);
+                    ll += c - 0.5 * (nu + 1.0) * TMath.log1p(z);
                 }
                 return ll;
             }
@@ -769,7 +838,7 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
                 if (!(sigma2 > 0) || !Double.isFinite(sigma2)) sigma2 = minScale * minScale;
                 if (sigma2 < minScale * minScale) sigma2 = minScale * minScale;
 
-                return -0.5 * n * (Math.log(2.0 * Math.PI) + 1.0 + Math.log(sigma2));
+                return -0.5 * n * (TMath.log(2.0 * TMath.PI) + 1.0 + TMath.log(sigma2));
             }
 
             case LOG_COSH -> {
@@ -819,14 +888,14 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
 
         // pick a scale s (roughly comparable to sigma): use mean absolute deviation
         double sumAbs = 0.0;
-        for (double v : e) sumAbs += Math.abs(v);
+        for (double v : e) sumAbs += TMath.abs(v);
         double s = sumAbs / n;
         if (!(s > 0) || !Double.isFinite(s)) s = minScale;
         if (s < minScale) s = minScale;
 
         // loglik up to an additive constant:
         // ll = - n*log(s) - sum log cosh(e/s)  (+ constant not depending on parents)
-        double ll = -n * Math.log(s);
+        double ll = -n * TMath.log(s);
         double invS = 1.0 / s;
         for (double v : e) ll -= logCosh(v * invS);
 

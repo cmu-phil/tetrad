@@ -159,14 +159,6 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
     }
 
     /**
-     * <p>Constructor for TimeLagGraphWrapper.</p>
-     */
-    public TimeLagGraphWrapper() {
-        this.graph = new TimeLagGraph();
-        log();
-    }
-
-    /**
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return a {@link edu.cmu.tetradapp.model.TimeLagGraphWrapper} object

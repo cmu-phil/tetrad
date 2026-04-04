@@ -2101,6 +2101,60 @@ Source:
         <li>Value Type: <span id="hiddenDimension_value_type">Integer</span></li>
     </ul>
 
+    === noiseExpression ===
+    <h3 class="parameter_description" id="noiseExpression">noiseExpression</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="noiseExpression_short_desc">
+            Expression specifying how noise values are generated
+        </span></li>
+
+        <li>Long Description: <span id="noiseExpression_long_desc">
+            An expression in the Tetrad expression language specifying how noise values
+            should be sampled for the error term in the model. The expression is evaluated
+            independently for each sample to produce a noise value. The expression may use
+            any supported random generators and arithmetic operations defined in the
+            expression language.
+        </span></li>
+
+        <li>Default Value: <span id="noiseExpression_default_value">N(0,1)</span></li>
+        <li>Lower Bound: <span id="noiseExpression_lower_bound"></span></li>
+        <li>Upper Bound: <span id="noiseExpression_upper_bound"></span></li>
+        <li>Value Type: <span id="noiseExpression_value_type">String</span></li>
+    </ul>
+
+    === customNoiseExpression ===
+    <h3 class="parameter_description" id="customNoiseExpression">customNoiseExpression</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="customNoiseExpression_short_desc">
+            Exogenous Noises: Custom exogenous noise distribution expression
+        </span></li>
+
+        <li>Long Description: <span id="customNoiseExpression_long_desc">
+             Custom exogenous noise distribution expression
+        </span></li>
+
+        <li>Default Value: <span id="customNoiseExpression_default_value">N(0,1)</span></li>
+        <li>Lower Bound: <span id="customNoiseExpression_lower_bound"></span></li>
+        <li>Upper Bound: <span id="customNoiseExpression_upper_bound"></span></li>
+        <li>Value Type: <span id="customNoiseExpression_value_type">String</span></li>
+    </ul>
+
+    === customNoiseOption ===
+    <h3 class="parameter_description" id="customNoiseOption">customNoiseOption</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="customNoiseOption_short_desc">
+            Exogenous Noises: 1 = Use standard Linear Gaussian noises, 2 = Use custom noise distribution
+        </span></li>
+
+        <li>Long Description: <span id="customNoiseOption_long_desc">
+            If true, the specified custom exogenous noise distribution will be used.
+        </span></li>
+
+        <li>Default Value: <span id="customNoiseOption_default_value">1</span></li>
+        <li>Lower Bound: <span id="customNoiseOption_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="customNoiseOption_upper_bound">2</span></li>
+        <li>Value Type: <span id="customNoiseOption_value_type">Integer</span></li>
+    </ul>
 
     === hiddenDimensions ===
     <h3 class="parameter_description" id="hiddenDimensions">hiddenDimensions</h3>
@@ -2112,7 +2166,7 @@ Source:
                 For perceptrons, the number of nodes in hidden layers (comma separated)
         </span></li>
         <li>Default
-            Value: <span id="hiddenDimensions_default_value">100,100,100,100</span></li>
+            Value: <span id="hiddenDimensions_default_value">200,200,200,200,200,200</span></li>
         <li>Lower Bound: <span id="hiddenDimensions_lower_bound"></span></li>
         <li>Upper
             Bound: <span id="hiddenDimensions_upper_bound"></span></li>
@@ -2249,7 +2303,7 @@ Source:
                 For a shallow multilayer perception (MLP), the input scale (affects bumpiness)
             </span></li>
         <li>Long Description: <span id="inputScale_long_desc">
-                For a shallow multilayer perception (MLP), the input scale (affects bumpiness)
+                Input scale for the network--inputs into each node are scaled by this
         </span></li>
         <li>Default
             Value: <span id="inputScale_default_value">5.0</span></li>
@@ -2556,19 +2610,19 @@ Source:
         <li>Value Type: <span id="kmlBandwidthMultiplier_value_type">Double</span></li>
     </ul>
 
-    === kmlBwMaxRows ===
-    <h3 class="parameter_description" id="kmlBwMaxRows">kmlBwMaxRows</h3>
+    === bwMaxRows ===
+    <h3 class="parameter_description" id="bwMaxRows">bwMaxRows</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="kmlBwMaxRows_short_desc">
+        <li>Short Description: <span id="bwMaxRows_short_desc">
                     Max rows used to estimate median bandwidth (subsample for speed).
                     </span></li>
-        <li>Long Description: <span id="kmlBwMaxRows_long_desc">
+        <li>Long Description: <span id="bwMaxRows_long_desc">
                     Max rows used to estimate median bandwidth (subsample for speed).
         </span></li>
-        <li>Default Value: <span id="kmlBwMaxRows_default_value">100</span></li>
-        <li>Lower Bound: <span id="kmlBwMaxRows_lower_bound">1</span></li>
-        <li>Upper Bound: <span id="kmlBwMaxRows_upper_bound">2000000</span></li>
-        <li>Value Type: <span id="kmlBwMaxRows_value_type">Integer</span></li>
+        <li>Default Value: <span id="bwMaxRows_default_value">100</span></li>
+        <li>Lower Bound: <span id="bwMaxRows_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="bwMaxRows_upper_bound">2000000</span></li>
+        <li>Value Type: <span id="bwMaxRows_value_type">Integer</span></li>
     </ul>
 
     === kmlNumFeatures ===
@@ -2580,7 +2634,7 @@ Source:
         <li>Long Description: <span id="kmlNumFeatures_long_desc">
                     The number of random features used for kernel approximations
         </span></li>
-        <li>Default Value: <span id="kmlNumFeatures_default_value">100</span></li>
+        <li>Default Value: <span id="kmlNumFeatures_default_value">200</span></li>
         <li>Lower Bound: <span id="kmlNumFeatures_lower_bound">1</span></li>
         <li>Upper Bound: <span id="kmlNumFeatures_upper_bound">2147483647</span></li>
         <li>Value Type: <span id="kmlNumFeatures_value_type">Integer</span></li>
@@ -2590,30 +2644,30 @@ Source:
     <h3 class="parameter_description" id="kmlFeatureType">kmlFeatureType</h3>
     <ul class="parameter_description_list">
         <li>Short Description: <span id="kmlFeatureType_short_desc">
-                    Type type of random features: 1 = RFF or 2 = ORF
+                    Type of features: 1 = Random FFs, 2 = Orthogonal Random FFs
                     </span></li>
         <li>Long Description: <span id="kmlFeatureType_long_desc">
-                    Type type of random features: 1 = RFF or 2 = ORF
+                    Type type of random features: 1 = Random FFs or 2 = Orthogonal Random FFs
         </span></li>
-        <li>Default Value: <span id="kmlFeatureType_default_value">1</span></li>
+        <li>Default Value: <span id="kmlFeatureType_default_value">2</span></li>
         <li>Lower Bound: <span id="kmlFeatureType_lower_bound">1</span></li>
         <li>Upper Bound: <span id="kmlFeatureType_upper_bound">2</span></li>
         <li>Value Type: <span id="kmlFeatureType_value_type">Integer</span></li>
     </ul>
 
-    === kmlCatRho ===
-    <h3 class="parameter_description" id="kmlCatRho">kmlCatRho</h3>
+    === catRho ===
+    <h3 class="parameter_description" id="catRho">catRho</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="kmlCatRho_short_desc">
+        <li>Short Description: <span id="catRho_short_desc">
                     Categorical kernel similarity (rho, range 0-1)
                     </span></li>
-        <li>Long Description: <span id="kmlCatRho_long_desc">
+        <li>Long Description: <span id="catRho_long_desc">
                     0 = categories fully distinct; values closer to 1 make categories more similar
         </span></li>
-        <li>Default Value: <span id="kmlCatRho_default_value">0.5</span></li>
-        <li>Lower Bound: <span id="kmlCatRho_lower_bound">0</span></li>
-        <li>Upper Bound: <span id="kmlCatRho_upper_bound">1</span></li>
-        <li>Value Type: <span id="kmlCatRho_value_type">Double</span></li>
+        <li>Default Value: <span id="catRho_default_value">0.5</span></li>
+        <li>Lower Bound: <span id="catRho_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="catRho_upper_bound">1</span></li>
+        <li>Value Type: <span id="catRho_value_type">Double</span></li>
     </ul>
 
     === lambda1 ===
@@ -3089,6 +3143,19 @@ Source:
         <li>Lower Bound: <span id="mimLatentGroupSpecs_lower_bound"></span></li>
         <li>Upper Bound: <span id="mimLatentGroupSpecs_upper_bound"></span></li>
         <li>Value Type: <span id="mimLatentGroupSpecs_value_type">String</span></li>
+    </ul>
+
+    === mimicGroupSpecs ===
+    <h3 class="parameter_description" id="mimicGroupSpecs">mimicGroupSpecs</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="mimicGroupSpecs_short_desc">
+                MIMIC: List of count:children:parents, comma separated; e.g. 5:6:3,2:8:3:</span></li>
+        <li>Long Description: <span id="mimicGroupSpecs_long_desc">
+                List of count:children:parents, comma separated; e.g. 5:6:3,2:8:3</span></li>
+        <li>Default Value: <span id="mimicGroupSpecs_default_value">5:6:3</span></li>
+        <li>Lower Bound: <span id="mimicGroupSpecs_lower_bound"></span></li>
+        <li>Upper Bound: <span id="mimicGroupSpecs_upper_bound"></span></li>
+        <li>Value Type: <span id="mimicGroupSpecs_value_type">String</span></li>
     </ul>
 
 
@@ -3877,18 +3944,61 @@ Source:
     === penaltyDiscount ===
     <h3 class="parameter_description" id="penaltyDiscount">penaltyDiscount</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="penaltyDiscount_short_desc">Penalty discount (min =
-        0.0)</span></li>
-        <li>Long Description: <span id="penaltyDiscount_long_desc"> The parameter c added to a modified
-        BIC score of the form 2L – c k ln N, where L is the likelihood, k the
-        number of degrees of freedom, and N the sample size. Higher c yield
-        sparser graphs. </span></li>
-        <li>Default Value: <span id="penaltyDiscount_default_value">2.0</span></li>
+        <li>Short Description:
+            <span id="penaltyDiscount_short_desc">
+        Penalty discount (default = 2.0; min = 0.0)
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="penaltyDiscount_long_desc">
+        The parameter c in a modified BIC-style score of the form
+        2L – c k ln N, where L is the log-likelihood, k is the effective
+        number of degrees of freedom, and N is the sample size.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="penaltyDiscount_default_value">2.0</span>
+        </li>
         <li>Lower Bound:
-            <span id="penaltyDiscount_lower_bound">0.0</span></li>
-        <li>Upper
-            Bound: <span id="penaltyDiscount_upper_bound">1.7976931348623157E308</span></li>
-        <li>Value Type: <span id="penaltyDiscount_value_type">Double</span></li>
+            <span id="penaltyDiscount_lower_bound">0.0</span>
+        </li>
+        <li>Upper Bound:
+            <span id="penaltyDiscount_upper_bound">1.7976931348623157E308</span>
+        </li>
+        <li>Value Type:
+            <span id="penaltyDiscount_value_type">Double</span>
+        </li>
+    </ul>
+
+    === penaltyDiscountDefault1 ===
+    <h3 class="parameter_description" id="penaltyDiscountDefault1">penaltyDiscountDefault1</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="penaltyDiscountDefault1_short_desc">
+        Penalty discount (min = 0.0, default = 1.0)
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="penaltyDiscountDefault1_long_desc">
+        The parameter c added to a modified BIC score of the form
+        2L – c k ln N, where L is the likelihood, k the number of
+        degrees of freedom, and N the sample size. Higher c yields
+        sparser graphs. A value of 1.0 corresponds to the classical
+        BIC penalty scaling.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="penaltyDiscountDefault1_default_value">1.0</span>
+        </li>
+        <li>Lower Bound:
+            <span id="penaltyDiscountDefault1_lower_bound">0.0</span>
+        </li>
+        <li>Upper Bound:
+            <span id="penaltyDiscountDefault1_upper_bound">1.7976931348623157E308</span>
+        </li>
+        <li>Value Type:
+            <span id="penaltyDiscountDefault1_value_type">Double</span>
+        </li>
     </ul>
 
 
@@ -4191,8 +4301,8 @@ Source:
                     2 = Saddlepoint / Lugannani–Rice Approximation
                     3 = Davies / Imhof (Exact) Inversion Methods
                     4 = Permutation test</span></li>
-        <li>Default Value: <span id="rcit.approx_default_value">3</span></li>
-        <li>Lower Bound: <span id="rcit.approx_lower_bound">3</span></li>
+        <li>Default Value: <span id="rcit.approx_default_value">1</span></li>
+        <li>Lower Bound: <span id="rcit.approx_lower_bound">1</span></li>
         <li>Upper Bound: <span id="rcit.approx_upper_bound">4</span></li>
         <li>Value Type: <span id="rcit.approx_value_type">Integer</span></li>
     </ul>
@@ -4479,9 +4589,8 @@ Source:
         <li>Long
             Description: <span id="sampleStyle_long_desc">
             Sample style: 1 = Subsample 2 = Bootstrap
-        /span></li>
-        <li>Default
-            Value: <span id="sampleStyle_default_value">1</span></li>
+        </span>
+        <li>Default Value: <span id="sampleStyle_default_value">1</span></li>
         <li>Lower
             Bound: <span id="sampleStyle_lower_bound">1</span></li>
         <li>Upper
@@ -5109,7 +5218,7 @@ Source:
                     is thresholded by setting small entries less than this threshold
                     to zero.</span>
         </li>
-        <li>Default Value: <span id="thresholdBHat_default_value">0.1</span></li>
+        <li>Default Value: <span id="thresholdBHat_default_value">0.2</span></li>
         <li>Lower Bound:
             <span id="thresholdBHat_lower_bound">0.0</span></li>
         <li>Upper
@@ -5459,17 +5568,16 @@ Source:
     <h3 class="parameter_description" id="tscSingletonPolicy">tscSingletonPolicy</h3>
     <ul class="parameter_description_list">
         <li>Short Description: <span id="tscSingletonPolicy_short_desc">
-                    Singletons: 1 = Exclude 2 = Include 3 = Collect as Noise
+                    Singletons: 1 = Exclude 2 = Include
         </span></li>
         <li>Long Description: <span id="tscSingletonPolicy_long_desc">
-                    Singletons: 1 = Exclude 2 = Include 3 = Collect as Noise
+                    Singletons: 1 = Exclude 2 = Include
         </span></li>
         <li>Default Value: <span id="tscSingletonPolicy_default_value">1</span></li>
         <li>Lower Bound: <span id="tscSingletonPolicy_lower_bound">1</span></li>
         <li>Upper
             Bound:
-            <span4 id="tscSingletonPolicy_upper_bound">3
-            </span4>
+            <span id="tscSingletonPolicy_upper_bound">2</span>
         </li>
         <li>Value
             Type: <span id="tscSingletonPolicy_value_type">Integer</span></li>
@@ -5791,3 +5899,930 @@ Source:
     </ul>
 
 
+    === binsPerContXY ===
+    <h3 class="parameter_description" id="binsPerContXY">binsPerContXY</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="binsPerContXY_short_desc">Bins per continuous X/Y variable</span>
+        </li>
+        <li>Long Description:
+            <span id="binsPerContXY_long_desc">
+            Number of quantile bins used to discretize continuous X and Y variables
+            within each conditioning stratum. Larger values increase sensitivity to
+            nonlinear dependence but require more data per stratum.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="binsPerContXY_default_value">4</span>
+        </li>
+        <li>Lower Bound:
+            <span id="binsPerContXY_lower_bound">2</span>
+        </li>
+        <li>Upper Bound:
+            <span id="binsPerContXY_upper_bound">20</span>
+        </li>
+        <li>Value Type:
+            <span id="binsPerContXY_value_type">Integer</span>
+        </li>
+    </ul>
+
+    === binsPerContZ ===
+    <h3 class="parameter_description" id="binsPerContZ">binsPerContZ</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="binsPerContZ_short_desc">Bins per continuous Z variable</span>
+        </li>
+        <li>Long Description:
+            <span id="binsPerContZ_long_desc">
+            Number of quantile bins used to discretize continuous conditioning (Z)
+            variables when forming strata. Increasing this value yields finer
+            conditioning but increases the number of strata and data requirements.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="binsPerContZ_default_value">4</span>
+        </li>
+        <li>Lower Bound:
+            <span id="binsPerContZ_lower_bound">2</span>
+        </li>
+        <li>Upper Bound:
+            <span id="binsPerContZ_upper_bound">10</span>
+        </li>
+        <li>Value Type:
+            <span id="binsPerContZ_value_type">Integer</span>
+        </li>
+    </ul>
+
+    === maxCellsPerStratum ===
+    <h3 class="parameter_description" id="maxCellsPerStratum">maxCellsPerStratum</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="maxCellsPerStratum_short_desc">Maximum contingency cells per stratum</span>
+        </li>
+        <li>Long Description:
+            <span id="maxCellsPerStratum_long_desc">
+            Upper bound on the number of cells allowed in a contingency table
+            for a single stratum. Strata producing larger tables are skipped
+            to avoid sparse or unstable likelihood-ratio statistics.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="maxCellsPerStratum_default_value">100</span>
+        </li>
+        <li>Lower Bound:
+            <span id="maxCellsPerStratum_lower_bound">4</span>
+        </li>
+        <li>Upper Bound:
+            <span id="maxCellsPerStratum_upper_bound">1000</span>
+        </li>
+        <li>Value Type:
+            <span id="maxCellsPerStratum_value_type">Integer</span>
+        </li>
+    </ul>
+
+
+    === maxObservedLevelsPerVar ===
+    <h3 class="parameter_description" id="maxObservedLevelsPerVar">maxObservedLevelsPerVar</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="maxObservedLevelsPerVar_short_desc">Maximum observed levels per variable</span>
+        </li>
+        <li>Long Description:
+            <span id="maxObservedLevelsPerVar_long_desc">
+            Maximum number of distinct observed levels retained for a discrete
+            variable within a stratum. Variables with more levels are compressed
+            to the most frequent levels to control table size.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="maxObservedLevelsPerVar_default_value">10</span>
+        </li>
+        <li>Lower Bound:
+            <span id="maxObservedLevelsPerVar_lower_bound">2</span>
+        </li>
+        <li>Upper Bound:
+            <span id="maxObservedLevelsPerVar_upper_bound">1000</span>
+        </li>
+        <li>Value Type:
+            <span id="maxObservedLevelsPerVar_value_type">Integer</span>
+        </li>
+    </ul>
+
+
+    === minStratumSize ===
+    <h3 class="parameter_description" id="minStratumSize">minStratumSize</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minStratumSize_short_desc">Minimum stratum size</span>
+        </li>
+        <li>Long Description:
+            <span id="minStratumSize_long_desc">
+            Minimum number of samples required for a conditioning stratum to be
+            included in the test. Smaller strata are discarded to ensure stable
+            estimation of contingency-table statistics.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minStratumSize_default_value">6</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minStratumSize_lower_bound">1</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minStratumSize_upper_bound">1000</span>
+        </li>
+        <li>Value Type:
+            <span id="minStratumSize_value_type">Integer</span>
+        </li>
+    </ul>
+
+
+    === useMaxAcrossStrata ===
+    <h3 class="parameter_description" id="useMaxAcrossStrata">useMaxAcrossStrata</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="useMaxAcrossStrata_short_desc">Use maximum across strata</span>
+        </li>
+        <li>Long Description:
+            <span id="useMaxAcrossStrata_long_desc">
+            If enabled, the overall test statistic is computed as the maximum
+            dependence statistic across all strata (minimax aggregation).
+            If disabled, statistics are aggregated more conservatively
+            across strata.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="useMaxAcrossStrata_default_value">true</span>
+        </li>
+        <li>Lower Bound:
+            <span id="useMaxAcrossStrata_lower_bound"></span>
+        </li>
+        <li>Upper Bound:
+            <span id="useMaxAcrossStrata_upper_bound"></span>
+        </li>
+        <li>Value Type:
+            <span id="useMaxAcrossStrata_value_type">Boolean</span>
+        </li>
+    </ul>
+
+
+    === minimaxPermutations ===
+    <h3 class="parameter_description" id="minimaxPermutations">minimaxPermutations</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minimaxPermutations_short_desc">
+            Number of permutations
+        </span>
+        </li>
+        f
+        <li>Long Description:
+            <span id="minimaxPermutations_long_desc">
+            Specifies the number of random permutations used to approximate
+            the null distribution in the Minimax permutation procedure.
+            This parameter applies both to the Minimax conditional independence
+            test and to Minimax-based scores.
+            <br><br>
+            Larger values yield more stable and accurate p-value or score
+            estimates, especially for small significance levels, at the cost
+            of increased computation time. Smaller values improve speed but
+            may introduce Monte Carlo variability.
+            <br><br>
+            Internally, a small minimum number of permutations may be enforced
+            to ensure numerical stability of the resulting p-values.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minimaxPermutations_default_value">500</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minimaxPermutations_lower_bound">1</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minimaxPermutations_upper_bound">100000</span>
+        </li>
+        <li>Value Type:
+            <span id="minimaxPermutations_value_type">Integer</span>
+        </li>
+    </ul>
+
+
+    === minimaxMaxNu ===
+    <h3 class="parameter_description" id="minimaxMaxNu">minimaxMaxNu</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="minimaxMaxNu_short_desc">Maximum Student-t degrees of freedom (nu)</span></li>
+        <li>Long Description: <span id="minimaxMaxNu_long_desc">
+        Upper bound on the Student-t degrees of freedom parameter used by the Minimax-t model for continuous children.
+        Smaller nu yields heavier tails (more robust to outliers); larger nu approaches a Gaussian.
+        This parameter caps nu to prevent the fit from drifting to effectively Gaussian behavior.
+    </span></li>
+        <li>Default Value: <span id="minimaxMaxNu_default_value">30</span></li>
+        <li>Lower Bound: <span id="minimaxMaxNu_lower_bound">2</span></li>
+        <li>Upper Bound: <span id="minimaxMaxNu_upper_bound">1000</span></li>
+        <li>Value Type: <span id="minimaxMaxNu_value_type">Double</span></li>
+    </ul>
+
+    === trffNu ===
+    <h3 class="parameter_description" id="trffNu">trffNu</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="trffNu_short_desc">
+            Student-t degrees of freedom (nu)
+        </span>
+        </li>
+
+        <li>Long Description:
+            <span id="trffNu_long_desc">
+        The Student-t degrees of freedom parameter used by the TRFF model
+        for continuous children.
+
+        Smaller nu yields heavier tails and greater robustness to outliers.
+        Larger nu reduces tail heaviness and approaches a Gaussian model.
+        In practice, values above roughly 50–100 behave nearly Gaussian.
+        </span>
+        </li>
+
+        <li>Default Value: <span id="trffNu_default_value">5</span></li>
+        <li>Lower Bound: <span id="trffNu_lower_bound">2</span></li>
+        <li>Upper Bound: <span id="trffNu_upper_bound">1000</span></li>
+        <li>Value Type: <span id="trffNu_value_type">Double</span></li>
+    </ul>
+
+
+    === minimaxScale ===
+    <h3 class="parameter_description" id="minimaxScale">minimaxScale</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="minimaxScale_short_desc">Scale for Fourier features (FF)</span></li>
+        <li>Long Description: <span id="minimaxScale_long_desc">
+        Sets the scale used for constructing Fourier Features (FF) for continuous parents in the Minimax score.
+        Larger values produce smoother features (longer length-scale); smaller values allow more rapid variation.
+        This controls the effective complexity of the nonlinear parent representation.
+    </span></li>
+        <li>Default Value: <span id="minimaxScale_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="minimaxScale_lower_bound">1e-6</span></li>
+        <li>Upper Bound: <span id="minimaxScale_upper_bound">1.0e6</span></li>
+        <li>Value Type: <span id="minimaxScale_value_type">Double</span></li>
+    </ul>
+
+
+    === minimaxRidge ===
+    <h3 class="parameter_description" id="minimaxRidge">minimaxRidge</h3>minimaxRidge
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="minimaxRidge_short_desc">Ridge penalty (L2) for Minimax regression/IRLS</span>
+        </li>
+        <li>Long Description: <span id="minimaxRidge_long_desc">
+        Ridge (L2) regularization strength used when fitting Minimax local conditional models.
+        Larger values shrink coefficients more aggressively (more conservative, more stable, smaller edf);
+        smaller values fit more closely to the data but may overfit and be numerically less stable.
+    </span></li>
+        <li>Default Value: <span id="minimaxRidge_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="minimaxRidge_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="minimaxRidge_upper_bound">1.0e12</span></li>
+        <li>Value Type: <span id="minimaxRidge_value_type">Double</span></li>
+    </ul>
+
+    === trffRidge ===
+    <h3 class="parameter_description" id="trffRidge">trffRidge</h3>trffRidge
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="trffRidge_short_desc">
+            Ridge (L2) regularization strength for T-RFF local models
+        </span>
+        </li>
+
+        <li>Long Description:
+            <span id="trffRidge_long_desc">
+        Ridge (L2) regularization parameter used when fitting local conditional models
+        in the T-RFF BIC score.
+        </span>
+        </li>
+
+        <li>Default Value: <span id="trffRidge_default_value">1e-3</span></li>
+        <li>Lower Bound: <span id="trffRidge_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="trffRidge_upper_bound">1.0e12</span></li>
+        <li>Value Type: <span id="trffRidge_value_type">Double</span></li>
+    </ul>
+
+    === ffmlRidge ===
+    <h3 class="parameter_description" id="ffmlRidge">ffmlRidge</h3>ffmlRidge
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="ffmlRidge_short_desc">
+            Ridge / noise-variance (σ²) term for FFML Gaussian-process marginal likelihood
+        </span>
+        </li>
+
+        <li>Long Description:
+            <span id="ffmlRidge_long_desc">
+            Positive ridge (jitter) term added to the GP covariance when computing the FFML
+            (Feature-Function Marginal Likelihood) score. In the FFML implementation this
+            parameter is used as the observation noise variance σ² in the marginal likelihood
+            (i.e., K + σ²I in the n×n path, and G + σ²I in the feature-space path). Larger values
+            enforce smoother, more heavily regularized fits; smaller values allow tighter fits but
+            can be less numerically stable.
+        </span>
+        </li>
+
+        <li>Default Value: <span id="ffmlRidge_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="ffmlRidge_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="ffmlRidge_upper_bound">1.0e12</span></li>
+        <li>Value Type: <span id="ffmlRidge_value_type">Double</span></li>
+    </ul>
+
+
+    === minimaxFfFeatures ===
+    <h3 class="parameter_description" id="minimaxFfFeatures">minimaxFfFeatures</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="minimaxFfFeatures_short_desc">Number of Fourier features (FF)</span>
+        </li>
+        <li>Long Description: <span id="minimaxFfFeatures_long_desc">
+        Number of Fourier features used to represent nonlinear effects of continuous parents in the Minimax score.
+        Larger values increase flexibility and runtime/memory cost; smaller values are faster but less expressive.
+    </span></li>
+        <li>Default Value: <span id="minimaxFfFeatures_default_value">100</span></li>
+        <li>Lower Bound: <span id="minimaxFfFeatures_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="minimaxFfFeatures_upper_bound">1000000</span></li>
+        <li>Value Type: <span id="minimaxFfFeatures_value_type">Integer</span></li>
+    </ul>
+
+    === trffFfFeatures ===
+    <h3 class="parameter_description" id="trffFfFeatures">trffFfFeatures</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="trffFfFeatures_short_desc">Number of Fourier features (FF)</span>
+        </li>
+        <li>Long Description: <span id="trffFfFeatures_long_desc">
+        Number of Fourier features used to represent nonlinear effects of continuous parents in the Minimax score.
+        Larger values increase flexibility and runtime/memory cost; smaller values are faster but less expressive.
+    </span></li>
+        <li>Default Value: <span id="trffFfFeatures_default_value">100</span></li>
+        <li>Lower Bound: <span id="trffFfFeatures_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="trffFfFeatures_upper_bound">1000000</span></li>
+        <li>Value Type: <span id="trffFfFeatures_value_type">Integer</span></li>
+    </ul>
+
+    === numFfFeatures ===
+    <h3 class="parameter_description" id="numFfFeatures">numFfFeatures</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="numFfFeatures_short_desc">
+            Number of Fourier features used for nonlinear continuous effects
+        </span>
+        </li>
+
+        <li>Long Description:
+            <span id="numFfFeatures_long_desc">
+            Number of random Fourier (or orthogonal random) features used to approximate
+            the continuous kernel in feature-function (FF)–based scores.
+            Increasing this value improves the accuracy of the kernel approximation and
+            allows more flexible nonlinear modeling of continuous parents, but increases
+            runtime and memory usage. Smaller values are faster but provide a coarser
+            approximation of nonlinear effects.
+        </span>
+        </li>
+
+        <li>Default Value: <span id="numFfFeatures_default_value">100</span></li>
+        <li>Lower Bound: <span id="numFfFeatures_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="numFfFeatures_upper_bound">1000000</span></li>
+        <li>Value Type: <span id="numFfFeatures_value_type">Integer</span></li>
+    </ul>
+
+    === ffmlFfFeatures ===
+    <h3 class="parameter_description" id="ffmlFfFeatures">ffmlFfFeatures</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="ffmlFfFeatures_short_desc">
+            Number of Fourier features used for nonlinear continuous effects
+        </span>
+        </li>
+
+        <li>Long Description:
+            <span id="ffmlFfFeatures_long_desc">
+            Number of random Fourier (or orthogonal random) features used to approximate
+            the continuous kernel in FFML score.
+            Increasing this value improves the accuracy of the kernel approximation and
+            allows more flexible nonlinear modeling of continuous parents, but increases
+            runtime and memory usage. Smaller values are faster but provide a coarser
+            approximation of nonlinear effects.
+        </span>
+        </li>
+
+        <li>Default Value: <span id="ffmlFfFeatures_default_value">50</span></li>
+        <li>Lower Bound: <span id="ffmlFfFeatures_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="ffmlFfFeatures_upper_bound">1000000</span></li>
+        <li>Value Type: <span id="ffmlFfFeatures_value_type">Integer</span></li>
+    </ul>
+
+    === minimaxFfSigma ===
+    <h3 class="parameter_description" id="minimaxFfSigma">minimaxFfSigma</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="minimaxFfSigma_short_desc">
+        FF length scale (σ) — larger = smoother; smaller = more flexible.
+        </span></li>
+        <li>Long Description: <span id="minimaxFfSigma_long_desc">
+        Bandwidth parameter (sigma) for the random Fourier feature construction used on continuous parents.
+        Smaller sigma yields higher-frequency features (more local variation); larger sigma yields smoother features.
+        This interacts with data scaling, so it is typically tuned relative to standardized inputs.
+    </span></li>
+        <li>Default Value: <span id="minimaxFfSigma_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="minimaxFfSigma_lower_bound">1e-6</span></li>
+        <li>Upper Bound: <span id="minimaxFfSigma_upper_bound">1.0e6</span></li>
+        <li>Value Type: <span id="minimaxFfSigma_value_type">Double</span></li>
+    </ul>
+
+
+    === minimaxIrlsIters ===
+    <h3 class="parameter_description" id="minimaxIrlsIters">minimaxIrlsIters</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="minimaxIrlsIters_short_desc">Maximum IRLS iterations</span></li>
+        <li>Long Description: <span id="minimaxIrlsIters_long_desc">
+        Maximum number of IRLS (iteratively reweighted least squares) iterations used to fit Minimax local models.
+        Increasing this may improve convergence for difficult problems but increases runtime.
+    </span></li>
+        <li>Default Value: <span id="minimaxIrlsIters_default_value">50</span></li>
+        <li>Lower Bound: <span id="minimaxIrlsIters_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="minimaxIrlsIters_upper_bound">10000</span></li>
+        <li>Value Type: <span id="minimaxIrlsIters_value_type">Integer</span></li>
+    </ul>
+
+
+    === gcmRegressorType ===
+    <h3 class="parameter_description" id="gcmRegressorType">gcmRegressorType</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="gcmRegressorType_short_desc">1 = Linear Ridge, 2 = RFF Ridge</span>
+        </li>
+        <li>Long Description:
+            <span id="gcmRegressorType_long_desc">
+            Selects the regression model used by the GCM conditional independence test.
+            The regressor type determines how the conditional mean of each variable
+            is modeled given the conditioning set, ranging from linear to nonlinear
+            (RFF-based) regressors.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="gcmRegressorType_default_value">2</span>
+        </li>
+        <li>Lower Bound:
+            <span id="gcmRegressorType_lower_bound">1</span>
+        </li>
+        <li>Upper Bound:
+            <span id="gcmRegressorType_upper_bound">2</span>
+        </li>
+        <li>Value Type:
+            <span id="gcmRegressorType_value_type">Integer</span>
+        </li>
+    </ul>
+
+
+    === gcmRidge ===
+    <h3 class="parameter_description" id="gcmRidge">gcmRidge</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="gcmRidge_short_desc">Ridge regularization strength</span>
+        </li>
+        <li>Long Description:
+            <span id="gcmRidge_long_desc">
+            Ridge (L2) regularization strength used when fitting regression
+            models within the GCM test. Larger values increase shrinkage
+            and numerical stability; smaller values allow more flexible fits.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="gcmRidge_default_value">1.0</span>
+        </li>
+        <li>Lower Bound:
+            <span id="gcmRidge_lower_bound">0.0</span>
+        </li>
+        <li>Upper Bound:
+            <span id="gcmRidge_upper_bound">1.0e12</span>
+        </li>
+        <li>Value Type:
+            <span id="gcmRidge_value_type">Double</span>
+        </li>
+    </ul>
+
+
+    === gcmRffFeatures ===
+    <h3 class="parameter_description" id="gcmRffFeatures">gcmRffFeatures</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="gcmRffFeatures_short_desc">Number of random Fourier features</span>
+        </li>
+        <li>Long Description:
+            <span id="gcmRffFeatures_long_desc">
+            Number of random Fourier features (RFF) used to represent nonlinear
+            relationships in the GCM regression models.
+            Larger values increase expressiveness and runtime cost.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="gcmRffFeatures_default_value">200</span>
+        </li>
+        <li>Lower Bound:
+            <span id="gcmRffFeatures_lower_bound">0</span>
+        </li>
+        <li>Upper Bound:
+            <span id="gcmRffFeatures_upper_bound">1000000</span>
+        </li>
+        <li>Value Type:
+            <span id="gcmRffFeatures_value_type">Integer</span>
+        </li>
+    </ul>
+
+
+    === gcmRffSigma ===
+    <h3 class="parameter_description" id="gcmRffSigma">gcmRffSigma</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="gcmRffSigma_short_desc">RFF kernel bandwidth (sigma)</span>
+        </li>
+        <li>Long Description:
+            <span id="gcmRffSigma_long_desc">
+            Bandwidth parameter (sigma) for the random Fourier feature
+            construction used in the GCM test.
+            Smaller values produce higher-frequency features; larger values
+            produce smoother features.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="gcmRffSigma_default_value">1.0</span>
+        </li>
+        <li>Lower Bound:
+            <span id="gcmRffSigma_lower_bound">1e-6</span>
+        </li>
+        <li>Upper Bound:
+            <span id="gcmRffSigma_upper_bound">1.0e6</span>
+        </li>
+        <li>Value Type:
+            <span id="gcmRffSigma_value_type">Double</span>
+        </li>
+    </ul>
+
+    === minimaxLegendreDegree ===
+    <h3 class="parameter_description" id="minimaxLegendreDegree">minimaxLegendreDegree</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minimaxLegendreDegree_short_desc">
+            Legendre truncation degree (t)
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="minimaxLegendreDegree_long_desc">
+        Number of Legendre polynomial basis functions used per continuous parent
+        in the Legendre score.
+        For each continuous parent X, the model includes P₁(x), …, P_t(x),
+        where x is the globally z-scored variable mapped to [-1,1].
+        Larger values increase nonlinear flexibility but also increase model
+        complexity and effective degrees of freedom.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minimaxLegendreDegree_default_value">8</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minimaxLegendreDegree_lower_bound">1</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minimaxLegendreDegree_upper_bound">50</span>
+        </li>
+        <li>Value Type:
+            <span id="minimaxLegendreDegree_value_type">Integer</span>
+        </li>
+    </ul>
+
+    === minimaxLegendreClip ===
+    <h3 class="parameter_description" id="minimaxLegendreClip">minimaxLegendreClip</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minimaxLegendreClip_short_desc">
+            Z-score clipping for Legendre mapping
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="minimaxLegendreClip_long_desc">
+        Continuous variables are globally z-scored and mapped to [-1,1] via
+        x = clamp(z / clip).
+        This parameter controls the clipping threshold.
+        Smaller values cause stronger saturation at ±1; larger values
+        preserve more linear behavior.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minimaxLegendreClip_default_value">3.0</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minimaxLegendreClip_lower_bound">1e-3</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minimaxLegendreClip_upper_bound">1.0e6</span>
+        </li>
+        <li>Value Type:
+            <span id="minimaxLegendreClip_value_type">Double</span>
+        </li>
+    </ul>
+
+    === minimaxLegendreRidge ===
+    <h3 class="parameter_description" id="minimaxLegendreRidge">minimaxLegendreRidge</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minimaxLegendreRidge_short_desc">
+            Ridge regularization strength
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="minimaxLegendreRidge_long_desc">
+        ℓ₂ (ridge) regularization applied to all non-intercept coefficients
+        in both the Student-t regression and multinomial logistic models.
+        Larger values shrink coefficients more strongly and reduce effective
+        degrees of freedom.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minimaxLegendreRidge_default_value">1e-3</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minimaxLegendreRidge_lower_bound">1e-12</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minimaxLegendreRidge_upper_bound">1.0e6</span>
+        </li>
+        <li>Value Type:
+            <span id="minimaxLegendreRidge_value_type">Double</span>
+        </li>
+    </ul>
+
+    === minimaxLegendreNu ===
+    <h3 class="parameter_description" id="minimaxLegendreNu">minimaxLegendreNu</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minimaxLegendreNu_short_desc">
+            Student-t degrees of freedom (ν)
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="minimaxLegendreNu_long_desc">
+        Degrees of freedom parameter ν for the Student-t likelihood used
+        for continuous children.
+        Smaller values produce heavier tails (more robustness to outliers).
+        As ν → ∞, the model approaches Gaussian regression.
+        Must be greater than 2.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minimaxLegendreNu_default_value">5.0</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minimaxLegendreNu_lower_bound">2.01</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minimaxLegendreNu_upper_bound">1.0e6</span>
+        </li>
+        <li>Value Type:
+            <span id="minimaxLegendreNu_value_type">Double</span>
+        </li>
+    </ul>
+
+    === minimaxLegendreInitScale ===
+    <h3 class="parameter_description" id="minimaxLegendreInitScale">minimaxLegendreInitScale</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minimaxLegendreInitScale_short_desc">
+            Initial scale for Student-t IRLS
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="minimaxLegendreInitScale_long_desc">
+        Initial scale parameter used in the iterative reweighted least
+        squares (IRLS) procedure for Student-t regression.
+        The scale is subsequently profiled during fitting.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minimaxLegendreInitScale_default_value">1.0</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minimaxLegendreInitScale_lower_bound">1e-6</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minimaxLegendreInitScale_upper_bound">1.0e6</span>
+        </li>
+        <li>Value Type:
+            <span id="minimaxLegendreInitScale_value_type">Double</span>
+        </li>
+    </ul>
+
+    === minimaxLegendreIrlsIters ===
+    <h3 class="parameter_description" id="minimaxLegendreIrlsIters">minimaxLegendreIrlsIters</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minimaxLegendreIrlsIters_short_desc">
+            IRLS iterations
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="minimaxLegendreIrlsIters_long_desc">
+        Maximum number of IRLS iterations used for fitting both
+        Student-t and multinomial logistic models.
+        Larger values may improve convergence but increase runtime.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minimaxLegendreIrlsIters_default_value">8</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minimaxLegendreIrlsIters_lower_bound">1</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minimaxLegendreIrlsIters_upper_bound">200</span>
+        </li>
+        <li>Value Type:
+            <span id="minimaxLegendreIrlsIters_value_type">Integer</span>
+        </li>
+    </ul>
+
+    === minimaxLegendreIrlsTol ===
+    <h3 class="parameter_description" id="minimaxLegendreIrlsTol">minimaxLegendreIrlsTol</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="minimaxLegendreIrlsTol_short_desc">
+            IRLS convergence tolerance
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="minimaxLegendreIrlsTol_long_desc">
+        Convergence tolerance for the IRLS procedure.
+        Iterations stop when successive objective values change by less than
+        this relative threshold.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="minimaxLegendreIrlsTol_default_value">1e-6</span>
+        </li>
+        <li>Lower Bound:
+            <span id="minimaxLegendreIrlsTol_lower_bound">0.0</span>
+        </li>
+        <li>Upper Bound:
+            <span id="minimaxLegendreIrlsTol_upper_bound">1.0</span>
+        </li>
+        <li>Value Type:
+            <span id="minimaxLegendreIrlsTol_value_type">Double</span>
+        </li>
+    </ul>
+
+    === pythonExe ===
+    <h3 class="parameter_description" id="pythonExe">pythonExe</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="pythonExe_short_desc">Path to Python executable for Python-based CI tests</span>
+        </li>
+        <li>Long Description:
+            <span id="pythonExe_long_desc">
+      Absolute path to the Python interpreter used to run the external CI server process.
+      This should typically point to the Python executable inside a dedicated virtual environment
+      that has the required packages installed (e.g., causal-learn and its dependencies).
+      </span>
+        </li>
+        <li>Default Value:
+            <span id="pythonExe_default_value">/Users/josephramsey/venvs/kci/bin/python</span>
+        </li>
+        <li>Lower Bound:
+            <span id="pythonExe_lower_bound">N/A</span>
+        </li>
+        <li>Upper Bound:
+            <span id="pythonExe_upper_bound">N/A</span>
+        </li>
+        <li>Value Type:
+            <span id="pythonExe_value_type">String</span>
+        </li>
+
+        === maxLatentSubsetSize ===
+        <h3 class="parameter_description" id="maxLatentSubsetSize">maxLatentSubsetSize</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="maxLatentSubsetSize_short_desc">
+        Max cluster subset size for latent-latent edge removal
+    </span>
+            </li>
+            <li>Long Description:
+                <span id="maxLatentSubsetSize_long_desc">
+        Maximum size of cluster subsets tested when attempting to remove
+        spurious latent-latent edges via conditional rank. In Trek-MIMIC,
+        a latent-latent edge between two clusters is a candidate for removal
+        if some subset of one cluster, of size up to this bound, yields a
+        conditional rank of zero against the other cluster. Larger values
+        allow more thorough pruning at the expense of combinatorial runtime
+        cost; smaller values are faster but may retain spurious edges.
+        A value of 1 restricts testing to individual cluster members only.
+    </span>
+            </li>
+            <li>Default Value: <span id="maxLatentSubsetSize_default_value">3</span></li>
+            <li>Lower Bound: <span id="maxLatentSubsetSize_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="maxLatentSubsetSize_upper_bound">20</span></li>
+            <li>Value Type: <span id="maxLatentSubsetSize_value_type">Integer</span></li>
+        </ul>
+
+        === doHigherRankExpansion ===
+        <h3 class="parameter_description" id="doHigherRankExpansion">doHigherRankExpansion</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="doHigherRankExpansion_short_desc">
+        Allow higher-rank expansion for shared parents
+    </span>
+            </li>
+            <li>Long Description:
+                <span id="doHigherRankExpansion_long_desc">
+        If enabled, Trek-MIMIC will attempt to identify shared measured parents
+        of latents by expanding the search to higher-rank configurations beyond
+        the default rank-1 case. This can recover more complex shared-cause
+        structure but increases runtime and the risk of false positives.
+        Disable for faster, more conservative searches.
+    </span>
+            </li>
+            <li>Default Value: <span id="doHigherRankExpansion_default_value">true</span></li>
+            <li>Lower Bound: <span id="doHigherRankExpansion_lower_bound">false</span></li>
+            <li>Upper Bound: <span id="doHigherRankExpansion_upper_bound">true</span></li>
+            <li>Value Type: <span id="doHigherRankExpansion_value_type">Boolean</span></li>
+        </ul>
+
+        === orientAndPrune ===
+        <h3 class="parameter_description" id="orientAndPrune">orientAndPrune</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="orientAndPrune_short_desc">
+        Orient latent-latent edges and prune transitive inputs
+    </span>
+            </li>
+            <li>Long Description:
+                <span id="orientAndPrune_long_desc">
+        If enabled, Trek-MIMIC will attempt to orient the latent-latent edges
+        in the output graph and prune away transitive measured inputs that are
+        not identifiable given the latent structure. Orienting latent-latent
+        edges recovers causal direction among the latents where possible;
+        pruning transitive inputs removes measured cause nodes whose influence
+        is fully mediated by other latents and therefore cannot be distinguished
+        from direct effects. Disable to retain the unoriented skeleton and all
+        measured inputs as found.
+    </span>
+            </li>
+            <li>Default Value: <span id="orientAndPrune_default_value">true</span></li>
+            <li>Lower Bound: <span id="orientAndPrune_lower_bound">false</span></li>
+            <li>Upper Bound: <span id="orientAndPrune_upper_bound">true</span></li>
+            <li>Value Type: <span id="orientAndPrune_value_type">Boolean</span></li>
+        </ul>
+
+    </ul>
+
+    === dmMergeThreshold ===
+    <h3 class="parameter_description" id="dmMergeThreshold">dmMergeThreshold</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="dmMergeThreshold_short_desc">
+        Jaccard similarity threshold for merging input clusters
+    </span>
+        </li>
+        <li>Long Description:
+            <span id="dmMergeThreshold_long_desc">
+        Minimum Jaccard similarity required between the representative input sets
+        of two clusters for them to be merged into a single latent variable in
+        DM-Merge. The Jaccard similarity is the size of the intersection of the
+        two input sets divided by the size of their union, ranging from 0 (no
+        overlap) to 1 (identical sets). Higher values require greater overlap
+        before merging, producing more latent variables with more distinct input
+        sets. Lower values allow more aggressive merging, producing fewer latents
+        that each capture a broader range of inputs. A value of 1.0 merges only
+        clusters with identical input sets; the default of 0.78 allows moderate
+        tolerance for noisy or partial overlap.
+    </span>
+        </li>
+        <li>Default Value: <span id="dmMergeThreshold_default_value">0.78</span></li>
+        <li>Lower Bound: <span id="dmMergeThreshold_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="dmMergeThreshold_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="dmMergeThreshold_value_type">Double</span></li>
+    </ul>
+
+    === pythonCiServer ===
+    <h3 class="parameter_description" id="pythonCiServer">pythonCiServer</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="pythonCiServer_short_desc">Path to Python CI server script</span>
+        </li>
+        <li>Long Description:
+            <span id="pythonCiServer_long_desc">
+      Absolute path to the Python CI server script (e.g., kci_server.py) used for Python-based CI tests.
+      If left blank, Tetrad will use the bundled server script shipped inside the Tetrad JAR
+      and extract it to a local cache directory at runtime.
+      </span>
+        </li>
+        <li>Default Value:
+            <span id="pythonCiServer_default_value">Use bundled script</span>
+        </li>
+        <li>Lower Bound:
+            <span id="pythonCiServer_lower_bound">N/A</span>
+        </li>
+        <li>Upper Bound:
+            <span id="pythonCiServer_upper_bound">N/A</span>
+        </li>
+        <li>Value Type:
+            <span id="pythonCiServer_value_type">String</span>
+        </li>
+    </ul>
+</div>

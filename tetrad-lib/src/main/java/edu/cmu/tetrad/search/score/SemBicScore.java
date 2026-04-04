@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -39,8 +39,8 @@ import java.util.stream.IntStream;
 
 import static edu.cmu.tetrad.util.MatrixUtils.convertCovToCorr;
 import static java.lang.Double.NaN;
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.log;
+import static edu.cmu.tetrad.util.TMath.abs;
+import static edu.cmu.tetrad.util.TMath.log;
 
 /**
  * Implements the linear, Gaussian BIC score, with a 'penalty discount' multiplier on the BIC penalty. The formula used
@@ -608,7 +608,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            System.out.println("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
+            TetradLogger.getInstance().log("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
             return Double.NaN;
         }
 
@@ -649,7 +649,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            System.out.println("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
+            TetradLogger.getInstance().log("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
             return new LikelihoodResult(Double.NaN, -1, penaltyDiscount, nEff);
         }
 
@@ -674,7 +674,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            System.out.println("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
+            TetradLogger.getInstance().log("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
             return Double.NaN;
         }
 
@@ -708,7 +708,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
      */
     public double getLikelihood(int i, int[] parents) throws SingularMatrixException {
         double sigmaSquared = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets, lambda);
-        return -0.5 * this.nEff * (Math.log(2 * Math.PI * sigmaSquared) + 1);
+        return -0.5 * this.nEff * (TMath.log(2 * TMath.PI * sigmaSquared) + 1);
 //        return -(double) (this.nEff / 2.0) * log(sigmaSquared);
     }
 
@@ -840,7 +840,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
      */
     @Override
     public int getMaxDegree() {
-        return (int) FastMath.ceil(log(this.nEff));
+        return (int) TMath.ceil(log(this.nEff));
     }
 
     /**

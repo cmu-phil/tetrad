@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.knowledge_editor;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeGroup;
+import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
 import edu.cmu.tetradapp.workbench.LayoutUtils;
 
 import javax.swing.*;
@@ -33,11 +34,12 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
+import java.io.Serial;
 import java.util.*;
 import java.util.List;
 
 /**
- * Edits fobiddings or requirings of groups of node to other groups of nodes.
+ * Edits forbidding or requiring of groups of nodes to other groups of nodes.
  *
  * @author Tyler Gibson
  */
@@ -66,14 +68,126 @@ class OtherGroupsEditor extends JPanel {
         if (vars == null) {
             throw new NullPointerException("The given list of variables must not be null");
         }
+
         this.knowledge = knowledge;
         this.variables = new ArrayList<>(vars);
 
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(new EmptyBorder(5, 5, 5, 5));
+        setOpaque(true);
+        setBackground(getPanelBackground());
 
-        this.add(buildComponent());
-        //   this.add(Box.createVerticalGlue());
+        rebuild();
+    }
+
+    private static Color uiColor(String key, Color fallback) {
+        Color c = UIManager.getColor(key);
+        return c != null ? c : fallback;
+    }
+
+    private static boolean isDarkMode() {
+        return com.formdev.flatlaf.FlatLaf.isLafDark();
+    }
+
+    private static Color blend(Color a, Color b, double t) {
+        t = Math.max(0.0, Math.min(1.0, t));
+        int r = (int) Math.round((1.0 - t) * a.getRed() + t * b.getRed());
+        int g = (int) Math.round((1.0 - t) * a.getGreen() + t * b.getGreen());
+        int b2 = (int) Math.round((1.0 - t) * a.getBlue() + t * b.getBlue());
+        return new Color(
+                Math.max(0, Math.min(255, r)),
+                Math.max(0, Math.min(255, g)),
+                Math.max(0, Math.min(255, b2))
+        );
+    }
+
+    private static Color darken(Color c, double amount) {
+        return blend(c, Color.BLACK, amount);
+    }
+
+    private static Color brighten(Color c, double amount) {
+        return blend(c, Color.WHITE, amount);
+    }
+
+    private static Color getPanelBackground() {
+        return uiColor("Panel.background", isDarkMode() ? new Color(43, 43, 43) : Color.WHITE);
+    }
+
+    private static Color getSubpanelBackground() {
+        Color panel = getPanelBackground();
+        return isDarkMode() ? brighten(panel, 0.03) : panel;
+    }
+
+    private static Color getPrimaryTextColor() {
+        return uiColor("Label.foreground", isDarkMode() ? new Color(230, 230, 230) : Color.BLACK);
+    }
+
+    private static Color getBorderColor() {
+        Color c = uiColor("Component.borderColor", null);
+        if (c != null) return c;
+
+        c = uiColor("Separator.foreground", null);
+        if (c != null) return c;
+
+        Color fg = getPrimaryTextColor();
+        return isDarkMode() ? blend(fg, Color.GRAY, 0.35) : darken(fg, 0.15);
+    }
+
+    private static Color getVariableFillColor() {
+        if (isDarkMode()) {
+            Color panel = uiColor("Panel.background", new Color(60, 63, 65));
+            Color button = uiColor("Button.background", panel);
+            return brighten(blend(panel, button, 0.5), 0.08);
+        }
+
+        Color base = uiColor("Button.background", new Color(230, 240, 240));
+        return blend(base, new Color(153, 204, 204), 0.60);
+    }
+
+//    private static Color getSelectedVariableFillColor() {
+//        Color sel = uiColor("Table.selectionBackground", null);
+//        if (sel != null) return sel;
+//
+//        return isDarkMode() ? new Color(90, 130, 180) : new Color(255, 204, 102);
+//    }
+
+    private static Color getSelectedVariableFillColor() {
+        if (isDarkMode()) {
+            Color sel = UIManager.getColor("Table.selectionBackground");
+            if (sel != null) return sel;
+            return new Color(90, 130, 180);
+        }
+
+        return DisplayNodeUtils.getNodeSelectedFillColor();
+    }
+
+    private static void themePanel(JComponent c) {
+        c.setOpaque(true);
+        c.setBackground(getPanelBackground());
+        c.setForeground(getPrimaryTextColor());
+    }
+
+    private static void themeSubpanel(JComponent c) {
+        c.setOpaque(true);
+        c.setBackground(getSubpanelBackground());
+        c.setForeground(getPrimaryTextColor());
+    }
+
+    private static void themeScrollPane(JScrollPane pane) {
+        pane.setOpaque(true);
+        pane.setBackground(getPanelBackground());
+        pane.getViewport().setOpaque(true);
+        pane.getViewport().setBackground(getPanelBackground());
+        pane.setBorder(new LineBorder(getBorderColor()));
+    }
+
+    private static void themeLabel(JLabel label) {
+        label.setForeground(getPrimaryTextColor());
+        label.setOpaque(false);
+    }
+
+    private static void themeButton(AbstractButton button) {
+        button.setForeground(getPrimaryTextColor());
     }
 
     /**
@@ -108,17 +222,21 @@ class OtherGroupsEditor extends JPanel {
     }
 
     //===================== Private Methods ============================//
+
     private Box buildComponent() {
         Box vBox = Box.createVerticalBox();
+        themePanel(vBox);
 
         VariableDragList varList = new VariableDragList(this.variables);
         varList.setBorder(null);
 
         JScrollPane pane = new JScrollPane(varList);
         pane.setPreferredSize(new Dimension(500, 50));
+        themeScrollPane(pane);
         vBox.add(pane);
 
         JButton addForbidden = new JButton("Add New Forbidden Group");
+        themeButton(addForbidden);
         addForbidden.addActionListener(e -> {
             KnowledgeGroup targetKnowledgeGroup = new KnowledgeGroup(KnowledgeGroup.FORBIDDEN);
             OtherGroupsEditor.this.knowledge.addKnowledgeGroup(targetKnowledgeGroup);
@@ -126,6 +244,7 @@ class OtherGroupsEditor extends JPanel {
         });
 
         JButton addRequired = new JButton("Add New Required Group");
+        themeButton(addRequired);
         addRequired.addActionListener(e -> {
             KnowledgeGroup targetKnowledgeGroup = new KnowledgeGroup(KnowledgeGroup.REQUIRED);
             OtherGroupsEditor.this.knowledge.addKnowledgeGroup(targetKnowledgeGroup);
@@ -133,6 +252,7 @@ class OtherGroupsEditor extends JPanel {
         });
 
         Box buttons = Box.createHorizontalBox();
+        buttons.setOpaque(false);
         buttons.add(addForbidden);
         buttons.add(Box.createHorizontalStrut(5));
         buttons.add(addRequired);
@@ -143,16 +263,24 @@ class OtherGroupsEditor extends JPanel {
         vBox.add(Box.createVerticalStrut(5));
 
         Box groupBoxes = Box.createVerticalBox();
+        themePanel(groupBoxes);
+
         List<KnowledgeGroup> groups = this.knowledge.getKnowledgeGroups();
         for (int i = 0; i < groups.size(); i++) {
             groupBoxes.add(buildGroupBox(i, groups.get(i)));
         }
         groupBoxes.add(Box.createVerticalGlue());
+
         JScrollPane pane2 = new JScrollPane(groupBoxes);
         pane2.setPreferredSize(new Dimension(500, 400));
+        themeScrollPane(pane2);
 
         vBox.add(pane2);
-        vBox.add(LayoutUtils.leftAlignJLabel(new JLabel("Use shift key to select multiple items.")));
+
+        JLabel help = new JLabel("Use shift key to select multiple items.");
+        themeLabel(help);
+        vBox.add(LayoutUtils.leftAlignJLabel(help));
+
         return vBox;
     }
 
@@ -163,26 +291,27 @@ class OtherGroupsEditor extends JPanel {
      */
     private Box buildGroupBox(int index, KnowledgeGroup group) {
         Box vBox = Box.createVerticalBox();
-        vBox.setBorder(new EmptyBorder(10, 10, 10, 10));
+        themeSubpanel(vBox);
+        vBox.setBorder(new CompoundBorder(
+                new LineBorder(getBorderColor()),
+                new EmptyBorder(10, 10, 10, 10)
+        ));
 
         Box labelBox = Box.createHorizontalBox();
+        labelBox.setOpaque(false);
 
         String title;
 
-        // Only add this forbidden checkbox for required group - Zhou
         JButton forbiddenButton = new JButton("Generate forbidden group");
+        themeButton(forbiddenButton);
         forbiddenButton.setFont(forbiddenButton.getFont().deriveFont(11f));
         forbiddenButton.setMargin(new Insets(3, 4, 3, 4));
 
-        // Enable/disable the button
         Set<String> fromGroup = group.getFromVariables();
         Set<String> toGroup = group.getToVariables();
 
-        // Don't allow to create forbidden group from this required group if
-        // no variables in the from or to boxes - Zhou
         forbiddenButton.setEnabled(!fromGroup.isEmpty() && !toGroup.isEmpty());
 
-        // Add skinny hand
         forbiddenButton.addActionListener((e) -> {
             Set<String> toForbiddenGroup = new HashSet<>();
 
@@ -192,10 +321,10 @@ class OtherGroupsEditor extends JPanel {
                 }
             });
 
-            KnowledgeGroup targetKnowledgeGroup = new KnowledgeGroup(KnowledgeGroup.FORBIDDEN, fromGroup, toForbiddenGroup);
+            KnowledgeGroup targetKnowledgeGroup =
+                    new KnowledgeGroup(KnowledgeGroup.FORBIDDEN, fromGroup, toForbiddenGroup);
 
             this.knowledge.addKnowledgeGroup(targetKnowledgeGroup);
-
             rebuild();
         });
 
@@ -206,17 +335,18 @@ class OtherGroupsEditor extends JPanel {
         }
 
         JButton remove = new JButton("Remove");
+        themeButton(remove);
         remove.setFont(remove.getFont().deriveFont(11f));
         remove.setMargin(new Insets(3, 4, 3, 4));
         remove.addActionListener(e -> {
             OtherGroupsEditor.this.knowledge.removeKnowledgeGroup(index);
-
             rebuild();
         });
 
-        labelBox.add(new JLabel(title));
+        JLabel titleLabel = new JLabel(title);
+        themeLabel(titleLabel);
+        labelBox.add(titleLabel);
 
-        // Only add this forbidden button for required group - Zhou
         if (group.getType() == KnowledgeGroup.REQUIRED) {
             labelBox.add(Box.createHorizontalGlue());
             labelBox.add(forbiddenButton);
@@ -229,13 +359,18 @@ class OtherGroupsEditor extends JPanel {
         vBox.add(Box.createVerticalStrut(2));
 
         Box box = Box.createHorizontalBox();
+        box.setOpaque(false);
+
         GroupVariableDragList fromList = new GroupVariableDragList(index, true);
         GroupVariableDragList toList = new GroupVariableDragList(index, false);
 
         JScrollPane pane1 = new JScrollPane(fromList);
         pane1.setPreferredSize(new Dimension(180, 50));
+        themeScrollPane(pane1);
+
         JScrollPane pane2 = new JScrollPane(toList);
         pane2.setPreferredSize(new Dimension(180, 50));
+        themeScrollPane(pane2);
 
         box.add(pane1);
         box.add(new Arrow());
@@ -249,10 +384,19 @@ class OtherGroupsEditor extends JPanel {
      * Rebuilds the components
      */
     private void rebuild() {
-        this.removeAll();
-        this.add(buildComponent());
+        removeAll();
+        themePanel(this);
+        add(buildComponent());
         revalidate();
         repaint();
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        if (this.variables != null) {
+            rebuild();
+        }
     }
 
     //========================== Inner classes =====================================//
@@ -262,22 +406,28 @@ class OtherGroupsEditor extends JPanel {
      */
     private static class Arrow extends JPanel {
 
-        private final Color color;
-
         public Arrow() {
-            Color b = Color.BLACK;
-            this.color = new Color(b.getRed(), b.getGreen(), b.getBlue(), 150);
-            this.setMinimumSize(new Dimension(22, 22));
+            setMinimumSize(new Dimension(22, 22));
+            setPreferredSize(new Dimension(22, 22));
+            setOpaque(false);
         }
 
+        private Color getArrowColor() {
+            Color fg = getPrimaryTextColor();
+            return new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 150);
+        }
+
+        @Override
         public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
             Dimension size = getSize();
-            // if too small, just don't draw
             if (size.width < 21 || size.height < 21) {
                 return;
             }
+
             int mid = size.height / 2;
-            g.setColor(this.color);
+            g.setColor(getArrowColor());
             int end = size.width - 15;
             g.fillRect(5, mid, end - 5, 2);
             g.fillPolygon(new int[]{end, end + 10, end}, new int[]{mid + 10, mid, mid - 10}, 3);
@@ -289,27 +439,29 @@ class OtherGroupsEditor extends JPanel {
      */
     private static class VariableRenderer extends DefaultListCellRenderer {
 
-        private final Color fillColor = new Color(153, 204, 204);
-        private final Color selectedFillColor = new Color(255, 204, 102);
-
         public VariableRenderer() {
-            this.setOpaque(true);
+            setOpaque(true);
             setHorizontalAlignment(SwingConstants.CENTER);
-            setBorder(new CompoundBorder(
-                    new MatteBorder(2, 2, 2, 2, Color.WHITE),
-                    new LineBorder(Color.BLACK)));
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index,
                                                       boolean isSelected, boolean cellHasFocus) {
 
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
             setText(" " + value + " ");
+            setBorder(new CompoundBorder(
+                    new MatteBorder(2, 2, 2, 2, getPanelBackground()),
+                    new LineBorder(getBorderColor())
+            ));
+
             if (isSelected) {
-                setForeground(Color.BLACK);
-                setBackground(this.selectedFillColor);
+                setForeground(getPrimaryTextColor());
+                setBackground(getSelectedVariableFillColor());
             } else {
-                setForeground(Color.BLACK);
-                setBackground(this.fillColor);
+                setForeground(getPrimaryTextColor());
+                setBackground(getVariableFillColor());
             }
 
             return this;
@@ -324,13 +476,15 @@ class OtherGroupsEditor extends JPanel {
         public VariableDragList(List<String> items) {
             setLayoutOrientation(JList.HORIZONTAL_WRAP);
             setVisibleRowCount(0);
-            this.setCellRenderer(new VariableRenderer());
+            setCellRenderer(new VariableRenderer());
+            setOpaque(true);
+            setBackground(getPanelBackground());
+            setForeground(getPrimaryTextColor());
 
             new DropTarget(this, DnDConstants.ACTION_MOVE, this, true);
 
             DragSource dragSource = DragSource.getDefaultDragSource();
-            dragSource.createDefaultDragGestureRecognizer(this,
-                    DnDConstants.ACTION_MOVE, this);
+            dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_MOVE, this);
 
             setModel(new DefaultListModel());
             for (Object item : items) {
@@ -348,8 +502,7 @@ class OtherGroupsEditor extends JPanel {
                 getToolkit().beep();
             } else {
                 ListTransferable transferable = new ListTransferable(list);
-                dragGestureEvent.startDrag(DragSource.DefaultMoveDrop,
-                        transferable);
+                dragGestureEvent.startDrag(DragSource.DefaultMoveDrop, transferable);
             }
         }
 
@@ -358,21 +511,16 @@ class OtherGroupsEditor extends JPanel {
         }
 
         public void dragEnter(DropTargetDragEvent dtde) {
-
         }
 
         public void dragOver(DropTargetDragEvent dtde) {
-
         }
 
         public void dropActionChanged(DropTargetDragEvent dtde) {
-
         }
 
         public void dragExit(DropTargetEvent dte) {
-
         }
-
     }
 
     private class GroupVariableDragList extends JList implements DropTargetListener, DragSourceListener, DragGestureListener {
@@ -390,15 +538,18 @@ class OtherGroupsEditor extends JPanel {
         public GroupVariableDragList(int index, boolean from) {
             this.index = index;
             this.from = from;
+
             setLayoutOrientation(JList.HORIZONTAL_WRAP);
             setVisibleRowCount(0);
-            this.setCellRenderer(new VariableRenderer());
+            setCellRenderer(new VariableRenderer());
+            setOpaque(true);
+            setBackground(getPanelBackground());
+            setForeground(getPrimaryTextColor());
 
             new DropTarget(this, DnDConstants.ACTION_MOVE, this, true);
 
             DragSource dragSource = DragSource.getDefaultDragSource();
-            dragSource.createDefaultDragGestureRecognizer(this,
-                    DnDConstants.ACTION_MOVE, this);
+            dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_MOVE, this);
 
             setModel(new DefaultListModel());
             KnowledgeGroup group = OtherGroupsEditor.this.knowledge.getKnowledgeGroups().get(index);
@@ -414,13 +565,14 @@ class OtherGroupsEditor extends JPanel {
                 DataFlavor flavor = tr.getTransferDataFlavors()[0];
                 DefaultListModel model = (DefaultListModel) getModel();
                 boolean added = false;
+
                 for (Object var : (List) tr.getTransferData(flavor)) {
                     if (!OtherGroupsEditor.modelContains(var, model) && !opposingContains((String) var)) {
                         model.addElement(var);
                         added = true;
                     }
                 }
-                // nothing was added so drop is incomplete.
+
                 if (!added) {
                     dtde.getDropTargetContext().dropComplete(false);
                     return;
@@ -429,19 +581,19 @@ class OtherGroupsEditor extends JPanel {
                 OtherGroupsEditor.sort(model);
                 KnowledgeGroup group = OtherGroupsEditor.this.knowledge.getKnowledgeGroups().get(this.index);
                 KnowledgeGroup g;
+
                 if (this.from) {
                     g = new KnowledgeGroup(group.getType(), OtherGroupsEditor.getElementsInModel(model), group.getToVariables());
                 } else {
                     g = new KnowledgeGroup(group.getType(), group.getFromVariables(), OtherGroupsEditor.getElementsInModel(model));
                 }
+
                 try {
                     OtherGroupsEditor.this.knowledge.setKnowledgeGroup(this.index, g);
                     dtde.getDropTargetContext().dropComplete(true);
-
-                    rebuild(); // Zhou added this to reflect the update
+                    rebuild();
                 } catch (IllegalArgumentException ex) {
                     JOptionPane.showMessageDialog(OtherGroupsEditor.this, ex.getMessage());
-                    // rebuild so the old values are resorted.
                     rebuild();
                     dtde.getDropTargetContext().dropComplete(false);
                 }
@@ -457,23 +609,25 @@ class OtherGroupsEditor extends JPanel {
                 try {
                     List list = (List) t.getTransferData(ListTransferable.DATA_FLAVOR);
                     DefaultListModel model = (DefaultListModel) getModel();
+
                     for (Object o : list) {
                         model.removeElement(o);
                     }
+
                     KnowledgeGroup group = OtherGroupsEditor.this.knowledge.getKnowledgeGroups().get(this.index);
                     KnowledgeGroup g;
+
                     if (this.from) {
                         g = new KnowledgeGroup(group.getType(), OtherGroupsEditor.getElementsInModel(model), group.getToVariables());
                     } else {
                         g = new KnowledgeGroup(group.getType(), group.getFromVariables(), OtherGroupsEditor.getElementsInModel(model));
                     }
+
                     try {
                         OtherGroupsEditor.this.knowledge.setKnowledgeGroup(this.index, g);
-
-                        rebuild(); // Zhou added this to reflect the update
+                        rebuild();
                     } catch (IllegalArgumentException ex) {
                         JOptionPane.showMessageDialog(OtherGroupsEditor.this, ex.getMessage());
-                        // rebuild so the old values are resorted.
                         rebuild();
                     }
                 } catch (Exception ex) {
@@ -492,8 +646,7 @@ class OtherGroupsEditor extends JPanel {
                 getToolkit().beep();
             } else {
                 ListTransferable transferable = new ListTransferable(list);
-                dge.startDrag(DragSource.DefaultMoveDrop,
-                        transferable, this);
+                dge.startDrag(DragSource.DefaultMoveDrop, transferable, this);
             }
         }
 
@@ -503,40 +656,28 @@ class OtherGroupsEditor extends JPanel {
             return opposite.contains(o);
         }
 
-        // ===================== Not implemented ====================//
         public void dragEnter(DropTargetDragEvent dtde) {
-
         }
 
         public void dragOver(DropTargetDragEvent dtde) {
-
         }
 
         public void dropActionChanged(DropTargetDragEvent dtde) {
-
         }
 
         public void dragExit(DropTargetEvent dte) {
-
         }
 
         public void dragEnter(DragSourceDragEvent dsde) {
-
         }
 
         public void dragOver(DragSourceDragEvent dsde) {
-
         }
 
         public void dropActionChanged(DragSourceDragEvent dsde) {
-
         }
 
         public void dragExit(DragSourceEvent dse) {
-
         }
-
     }
-
 }
-

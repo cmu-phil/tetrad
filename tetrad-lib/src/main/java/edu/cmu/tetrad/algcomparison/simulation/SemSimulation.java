@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -28,14 +28,16 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.SemGraph;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -134,7 +136,7 @@ public class SemSimulation implements Simulation {
             for (int k = 0; k < dataSet.getNumRows(); k++) {
                 for (int j = 0; j < dataSet.getNumColumns(); j++) {
                     double d = dataSet.getDouble(k, j);
-                    double norm = RandomUtil.getInstance().nextGaussian(0, FastMath.sqrt(variance));
+                    double norm = RandomUtil.getInstance().nextGaussian(0, TMath.sqrt(variance));
                     dataSet.setDouble(k, j, d + norm);
                 }
             }
@@ -149,7 +151,9 @@ public class SemSimulation implements Simulation {
             dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
         }
 
-        dataSet = DataTransforms.restrictToMeasured(dataSet);
+        if (!parameters.getBoolean(Params.SAVE_LATENT_VARS)) {
+            dataSet = DataTransforms.restrictToMeasured(dataSet);
+        }
 
         return dataSet;
     }
@@ -188,7 +192,31 @@ public class SemSimulation implements Simulation {
 //                semIm = new SemIm(pm, parameters);
 //            }
 
-            SemIm.Result result = SemIm.simulatePossibleShrinkage(parameters, graph);
+            SemIm.Result result = null;
+
+            if (this.im != null) {
+                // simulate directly from the stored IM
+                DataSet dataSet = null;
+                try {
+                    dataSet = this.im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+                result = new SemIm.Result(IndTestFisherZ.ShrinkageMode.NONE, dataSet, dataSet.getNumRows(), this.im);
+            } else {
+                try {
+                    result = SemIm.simulatePossibleShrinkage(parameters, graph);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+//            SemIm.Result result = null;
+//            try {
+//                result = SemIm.simulatePossibleShrinkage(parameters, graph);
+//            } catch (ParseException e) {
+//                throw new RuntimeException(e);
+//            }
 
             DataSet dataSet = result.dataSet();// simulate(semIm, parameters);
 
@@ -205,7 +233,7 @@ public class SemSimulation implements Simulation {
 
             this.graphs.add(graph);
             this.ims.add(im);
-            this.dataSets.add(DataTransforms.restrictToMeasured(dataSet));
+            this.dataSets.add(dataSet);
         }
     }
 
@@ -304,9 +332,6 @@ public class SemSimulation implements Simulation {
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
         parameters.add(Params.STANDARDIZE);
-        parameters.add(Params.SIMULATION_ERROR_TYPE);
-        parameters.add(Params.SIMULATION_PARAM1);
-        parameters.add(Params.SIMULATION_PARAM2);
         parameters.add(Params.SEED);
 
         return parameters;
@@ -322,15 +347,19 @@ public class SemSimulation implements Simulation {
         return getClass();
     }
 
-    /**
-     * Simulates a data set based on the given SemIm and Parameters.
-     *
-     * @param im         the SemIm object used for simulation
-     * @param parameters the parameters to use in the simulation
-     * @return a DataSet object representing the simulated data
-     */
-    private DataSet simulate(SemIm im, Parameters parameters) {
-        return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
-    }
+//    /**
+//     * Simulates a data set based on the given SemIm and Parameters.
+//     *
+//     * @param im         the SemIm object used for simulation
+//     * @param parameters the parameters to use in the simulation
+//     * @return a DataSet object representing the simulated data
+//     */
+//    private DataSet simulate(SemIm im, Parameters parameters) {
+//        try {
+//            return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
+//        } catch (ParseException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 }
 

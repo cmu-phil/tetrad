@@ -64,17 +64,17 @@ public class Rcit implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.test.IndTestRcit test = new edu.cmu.tetrad.search.test.IndTestRcit((DataSet) dataSet);
+        edu.cmu.tetrad.search.test.Rcit test = new edu.cmu.tetrad.search.test.Rcit((DataSet) dataSet);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
 //        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
         test.setLambda(parameters.getDouble(Params.RCIT_LAMBDA));
         test.setNumFeaturesXY(parameters.getInt(Params.RCIT_NUM_FEATURES_XY));
         test.setNumFeaturesZ(parameters.getInt(Params.RCIT_NUM_FEATURES_Z));
         test.setPermutations(parameters.getInt(Params.RCIT_PERMUTATIONS));
-        test.setCenterFeatures(parameters.getBoolean(Params.RCIT_CENTER_FEATURES));
+//        test.setCenterFeatures(parameters.getBoolean(Params.RCIT_CENTER_FEATURES));
         test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
-        edu.cmu.tetrad.search.test.IndTestRcit.Approx[] approxes
-                = edu.cmu.tetrad.search.test.IndTestRcit.Approx.values();
+        edu.cmu.tetrad.search.test.Rcit.Approx[] approxes
+                = edu.cmu.tetrad.search.test.Rcit.Approx.values();
         test.setApproximation(approxes[parameters.getInt(Params.RCIT_APPROX) - 1]);
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
         return test;
@@ -115,7 +115,7 @@ public class Rcit implements IndependenceWrapper {
         params.add(Params.RCIT_LAMBDA);
         params.add(Params.RCIT_MODE);
         params.add(Params.RCIT_APPROX);
-        params.add(Params.RCIT_CENTER_FEATURES);
+//        params.add(Params.RCIT_CENTER_FEATURES);
         params.add(Params.RCIT_NUM_FEATURES_XY);
         params.add(Params.RCIT_NUM_FEATURES_Z);
         return params;

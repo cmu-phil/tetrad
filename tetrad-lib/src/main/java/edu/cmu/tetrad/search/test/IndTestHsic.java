@@ -30,11 +30,7 @@ import edu.cmu.tetrad.search.utils.Kernel;
 import edu.cmu.tetrad.search.utils.KernelGaussian;
 import edu.cmu.tetrad.search.utils.KernelUtils;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.*;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -171,7 +167,7 @@ public final class IndTestHsic implements IndependenceTest {
         }
 
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         int m = sampleSize();
 
@@ -229,14 +225,14 @@ public final class IndTestHsic implements IndependenceTest {
         // shuffle data for approximate the null distribution
         double[] nullapprox = new double[this.perms];
         int[] zind = null;
-        int ycol = this.dataSet.getColumn(y);
+        int ycol = this.dataSet.getColumnIndex(y);
         List<List<Integer>> clusterAssign = null;
         if (!z.isEmpty()) {
             // get clusters for z
             KMeans kmeans = KMeans.randomClusters((m / 3));
             zind = new int[z.size()];
             for (int j = 0; j < z.size(); j++) {
-                zind[j] = this.dataSet.getColumn(z.get(j));
+                zind[j] = this.dataSet.getColumnIndex(z.get(j));
             }
             kmeans.cluster(this.dataSet.subsetColumns(z).getDoubleData());
             clusterAssign = kmeans.getClusters();
@@ -357,7 +353,7 @@ public final class IndTestHsic implements IndependenceTest {
         for (int i = 0; i < m; i++) {
             empHSIC += Kyx.get(i, i);
         }
-        empHSIC /= FastMath.pow(m - 1, 2);
+        empHSIC /= TMath.pow(m - 1, 2);
         return empHSIC;
     }
 
@@ -385,7 +381,7 @@ public final class IndTestHsic implements IndependenceTest {
         for (int i = 0; i < m; i++) {
             empHSIC += matrixProductEntry(B, Gcxt, i, i);
         }
-        empHSIC /= FastMath.pow(m - 1, 2);
+        empHSIC /= TMath.pow(m - 1, 2);
         return empHSIC;
     }
 
@@ -422,12 +418,12 @@ public final class IndTestHsic implements IndependenceTest {
             empHSIC += (-2 * Kyzzregzx.get(i, i));
             empHSIC += Kyzzregzxzzregz.get(i, i);
         }
-        empHSIC /= FastMath.pow(m - 1, 2);
+        empHSIC /= TMath.pow(m - 1, 2);
         double Bz = 0.0;
         for (int i = 0; i < (m - 1); i++) {
             for (int j = (i + 1); j < m; j++) {
-                Bz += FastMath.pow(Kz.get(i, j), 2);
-                Bz += FastMath.pow(Kz.get(j, i), 2);
+                Bz += TMath.pow(Kz.get(i, j), 2);
+                Bz += TMath.pow(Kz.get(j, i), 2);
             }
         }
         Bz = (m * (m - 1)) / Bz;
@@ -512,8 +508,8 @@ public final class IndTestHsic implements IndependenceTest {
         double betaz = 0.0;
         for (int i = 0; i < (m - 1); i++) {
             for (int j = (i + 1); j < m; j++) {
-                betaz += FastMath.pow(matrixProductEntry(Gcz, Gczt, i, j), 2);
-                betaz += FastMath.pow(matrixProductEntry(Gcz, Gczt, j, i), 2);
+                betaz += TMath.pow(matrixProductEntry(Gcz, Gczt, i, j), 2);
+                betaz += TMath.pow(matrixProductEntry(Gcz, Gczt, j, i), 2);
             }
         }
 

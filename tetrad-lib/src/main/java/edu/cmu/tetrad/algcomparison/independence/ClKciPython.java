@@ -1,23 +1,3 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-//                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
-// and Richard Scheines.                                                     //
-//                                                                           //
-// This program is free software: you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation, either version 3 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.annotation.General;
@@ -30,13 +10,61 @@ import edu.cmu.tetrad.search.test.ProcessPythonCiService;
 import edu.cmu.tetrad.search.test.PythonKciIndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.PythonResource;
 
+import java.io.File;
 import java.io.Serial;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for KCI test implemented via Python (causal-learn).
+ * An {@link IndependenceWrapper} that runs the Kernel-based Conditional Independence (KCI)
+ * test implemented in the Python <em>causal-learn</em> library, bridging it into Tetrad's
+ * {@link IndependenceTest} framework.
+ *
+ * <h2>How it works</h2>
+ * Each call to {@link #getTest} launches (or connects to) a persistent Python process
+ * running a bundled server script ({@code python/kci_server.py}). CI queries from Java
+ * are forwarded to that process via {@link ProcessPythonCiService}, and results are
+ * returned as standard {@link IndependenceTest} responses through
+ * {@link PythonKciIndependenceTest}.
+ *
+ * <h2>Python environment</h2>
+ * A Python interpreter that has {@code causal-learn} and its dependencies installed must
+ * be available on the host machine. The path to that interpreter is supplied via the
+ * {@link Params#PYTHON_EXE} parameter. There is no default that is likely to be valid on
+ * any machine other than the developer's, so this parameter should always be set
+ * explicitly before use.
+ *
+ * <h2>Server script resolution</h2>
+ * The Python server script is resolved in the following order:
+ * <ol>
+ *   <li>If {@link Params#PYTHON_CI_SERVER} is set to a non-empty path (and not the
+ *       sentinel value {@code "Use bundled script"}), that path is used directly.</li>
+ *   <li>Otherwise, the bundled resource {@code python/kci_server.py} is extracted to
+ *       the user's local cache directory (via {@link PythonResource#extractToUserCache})
+ *       and that extracted copy is used.</li>
+ * </ol>
+ *
+ * <h2>Parameters</h2>
+ * <ul>
+ *   <li>{@link Params#PYTHON_EXE} — path to the Python executable (required).</li>
+ *   <li>{@link Params#PYTHON_CI_SERVER} — path to the KCI server script, or
+ *       {@code "Use bundled script"} to use the packaged default.</li>
+ *   <li>{@link Params#ALPHA} — significance level for the independence test
+ *       (default: {@code 0.01}).</li>
+ *   <li>{@link Params#VERBOSE} — if {@code true}, the test logs additional
+ *       detail during execution (default: {@code false}).</li>
+ * </ul>
+ *
+ * <h2>Data</h2>
+ * Only continuous {@link DataSet} inputs are supported. Passing any other
+ * {@link DataModel} type will throw an {@link IllegalArgumentException}.
+ *
+ * @see PythonKciIndependenceTest
+ * @see ProcessPythonCiService
+ * @see PythonResource
  */
 @TestOfIndependence(
         name = "KCI, Causal Learn (Python)",
@@ -49,31 +77,39 @@ public class ClKciPython implements IndependenceWrapper {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    // These defaults match what you were using; users can override via parameters.
+    private static final String DEFAULT_PYTHON_EXE =
+            "/Users/josephramsey/venvs/kci/bin/python";
+
+    // If pythonCiServer is not set, we use the bundled resource "python/kci_server.py".
+    private static final String BUNDLED_RESOURCE = "python/kci_server.py";
+    private static final String BUNDLED_CACHE_NAME = "kci_server.py";
+    private static final String USE_BUNDLED = "Use bundled script";
+
     /**
      * Default constructor for the ClKciPython class.
-     *
-     * This constructor initializes an instance of the ClKciPython class, which serves
-     * as a wrapper for the Kernel-based Conditional Independence (KCI) test implemented
-     * using causal-learn in Python. This test is specifically designed to work with
-     * continuous data.
+     * This constructor initializes an instance of the ClKciPython class.
      */
     public ClKciPython() {
     }
 
     /**
-     * Creates and returns an independence test based on the Kernel-based Conditional Independence
-     * (KCI) test implemented in Python using the causal-learn library.
+     * Creates and returns an IndependenceTest instance using the provided DataModel and Parameters.
+     * The method ensures that the appropriate Python executable and server script are properly configured,
+     * resolving paths as necessary. A ProcessPythonCiService instance is initialized, and its output is
+     * used to create a PythonKciIndependenceTest with configurable settings such as alpha and verbosity.
      *
-     * @param dataModel    The data model to be used with the independence test. Must be an
-     *                     instance of {@code DataSet} containing continuous data.
-     * @param parameters   The parameters to configure the independence test, such as the
-     *                     significance level (alpha). Can be {@code null}.
-     * @return             An instance of {@code IndependenceTest} setup for the KCI method.
-     * @throws IllegalArgumentException If the provided {@code dataModel} is not an instance of
-     *                                  {@code DataSet}.
+     * @param dataModel The data model to be analyzed. Must be an instance of DataSet (continuous).
+     * @param parameters Configuration parameters for the test, including paths for the Python executable
+     *                   and server script, as well as settings like alpha and verbosity.
+     * @return An IndependenceTest instance configured using the provided dataModel and parameters.
+     * @throws IllegalArgumentException If the dataModel is not an instance of DataSet, the Python executable
+     *                                  path is invalid or missing, or the server script path is invalid.
+     * @throws RuntimeException If there is an error extracting the bundled Python server script.
      */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
+
         if (!(dataModel instanceof DataSet dataSet)) {
             throw new IllegalArgumentException(
                     "ClKciPython requires a DataSet (continuous). Got: " +
@@ -81,32 +117,90 @@ public class ClKciPython implements IndependenceWrapper {
             );
         }
 
-        String pythonExe = "/Users/josephramsey/venvs/kci/bin/python";  // or absolute path if needed
-        String serverScriptPath = "/Users/josephramsey/IdeaProjects/py-tetrad/pytetrad/tools/kci_server.py";
+        dataSet = dataSet.copy();
 
-        // Service that launches / talks to the Python-side CI server.
-        ProcessPythonCiService service = new ProcessPythonCiService(
-                pythonExe, serverScriptPath
+        // -----------------------------
+        // 1. Resolve python executable
+        // -----------------------------
+        String pythonExe = (parameters == null)
+                ? DEFAULT_PYTHON_EXE
+                : parameters.getString(Params.PYTHON_EXE, DEFAULT_PYTHON_EXE);
 
-        );
+        if (pythonExe == null || pythonExe.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "pythonExe is not configured. Please specify the path to the Python executable."
+            );
+        }
 
-        PythonKciIndependenceTest test = new PythonKciIndependenceTest(dataSet, service);
+        pythonExe = pythonExe.trim();
+        File pyFile = new File(pythonExe);
+        if (!pyFile.exists()) {
+            throw new IllegalArgumentException("pythonExe does not exist: " + pythonExe);
+        }
 
-        // Respect the standard alpha parameter if present.
-        // (PythonKciIndependenceTest implements setAlpha/getAlpha.)
+        // -----------------------------
+        // 2. Resolve server script path
+        // -----------------------------
+        String serverScriptPath = null;
+
+        if (parameters != null) {
+            String raw = parameters.getString(Params.PYTHON_CI_SERVER, "");
+            if (raw != null) {
+                raw = raw.trim();
+                if (!raw.isEmpty() && !USE_BUNDLED.equals(raw)) {
+                    serverScriptPath = raw;
+                }
+            }
+        }
+
+        // If null → use bundled script
+        if (serverScriptPath == null) {
+            try {
+                Path extracted = PythonResource.extractToUserCache(
+                        BUNDLED_RESOURCE,
+                        BUNDLED_CACHE_NAME
+                );
+                serverScriptPath = extracted.toAbsolutePath().toString();
+            } catch (Exception e) {
+                throw new RuntimeException(
+                        "Failed to extract bundled KCI server script from resource: "
+                                + BUNDLED_RESOURCE,
+                        e
+                );
+            }
+        }
+
+        File scriptFile = new File(serverScriptPath);
+        if (!scriptFile.exists()) {
+            throw new IllegalArgumentException(
+                    "pythonCiServer does not exist: " + serverScriptPath
+            );
+        }
+
+        // -----------------------------
+        // 3. Create service + test
+        // -----------------------------
+        ProcessPythonCiService service =
+                new ProcessPythonCiService(pythonExe, serverScriptPath);
+
+        PythonKciIndependenceTest test =
+                new PythonKciIndependenceTest(dataSet, service);
+
         if (parameters != null) {
             double alpha = parameters.getDouble(Params.ALPHA, 0.01);
             test.setAlpha(alpha);
+
+            boolean verbose = parameters.getBoolean(Params.VERBOSE, false);
+            test.setVerbose(verbose);
         }
 
         return test;
     }
 
     /**
-     * Provides a textual description of the KCI-CL (Kernel-based Conditional Independence
-     * with Causal-Learn in Python) method.
+     * Provides a description of the test being implemented by the ClKciPython class.
      *
-     * @return A string representation of the method description, specifically "KCI-CL (Python)".
+     * @return A string representing the description of the test, specifically "KCI-CL (Python)".
      */
     @Override
     public String getDescription() {
@@ -114,9 +208,11 @@ public class ClKciPython implements IndependenceWrapper {
     }
 
     /**
-     * Returns the type of data handled by this method, which is continuous.
+     * Returns the data type associated with this implementation. The data type
+     * indicates the type of data that the method operates on or supports.
      *
-     * @return The data type, represented as {@code DataType.Continuous}.
+     * @return The data type of this implementation. In this case, the data type
+     *         is {@code DataType.Continuous}.
      */
     @Override
     public DataType getDataType() {
@@ -124,17 +220,20 @@ public class ClKciPython implements IndependenceWrapper {
     }
 
     /**
-     * Retrieves the list of parameters used by the KCI-CL (Kernel-based Conditional Independence
-     * with Causal-Learn in Python) method.
+     * Retrieves the list of parameters required for the configuration of the ClKciPython test.
+     * These parameters may include settings such as the alpha level, Python executable,
+     * Python CI server path, and verbosity.
      *
-     * @return A list of parameter names required by this method, specifically including
-     *         the alpha parameter for configuring the significance level.
+     * @return A list of strings representing the names of parameters necessary
+     *         for configuring the test implemented by the ClKciPython class.
      */
     @Override
     public List<String> getParameters() {
-        // Use the standard alpha parameter, so algcomparison UI + scripts can set it.
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
+        params.add(Params.PYTHON_EXE);
+        params.add(Params.PYTHON_CI_SERVER);
+        params.add(Params.VERBOSE);
         return params;
     }
 }

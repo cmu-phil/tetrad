@@ -25,6 +25,8 @@ import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.text.ParseException;
+
 /**
  * An example script to simulate data and run a comparison analysis on it.
  *
@@ -68,7 +70,11 @@ public class TestGenerateMixedData {
 
         comparison.setTabDelimitedTables(true);
 
-        comparison.saveToFiles("mixed.lee.hastie.avg.degree.4", simulation, parameters);
+        try {
+            comparison.saveToFiles("mixed.lee.hastie.avg.degree.4", simulation, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

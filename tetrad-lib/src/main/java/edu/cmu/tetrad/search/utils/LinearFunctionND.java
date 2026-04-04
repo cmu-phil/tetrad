@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,7 +20,7 @@
 
 package edu.cmu.tetrad.search.utils;
 
-import java.util.Random;
+import edu.cmu.tetrad.util.RandomUtil;
 
 /**
  * Represents a linear function in an n-dimensional space (R^n -> R). The function is defined as f(x) = c1*x1 + c2*x2 +
@@ -38,28 +38,19 @@ public class LinearFunctionND {
      * @param coefLow       Lower bound for the coefficients.
      * @param coefHigh      Upper bound for the coefficients.
      * @param coefSymmetric If true, coefficients may randomly switch sign.
-     * @param seed          Random seed for reproducibility.
      */
-    public LinearFunctionND(int inputDim, double coefLow, double coefHigh, boolean coefSymmetric, long seed) {
+    public LinearFunctionND(int inputDim, double coefLow, double coefHigh, boolean coefSymmetric) {
         if (coefLow > coefHigh) {
             throw new IllegalArgumentException("coefLow must be less than or equal to coefHigh.");
         }
 
-        Random random;
-
-        if (seed == -1) {
-            random = new Random();
-        } else {
-            random = new Random(seed);
-        }
-
         this.coefficients = new double[inputDim];
-        this.intercept = coefLow + (coefHigh - coefLow) * random.nextDouble(); // Random intercept
+        this.intercept = coefLow + (coefHigh - coefLow) * RandomUtil.getInstance().nextDouble(); // Random intercept
 
         // Initialize coefficients randomly
         for (int i = 0; i < inputDim; i++) {
-            double coef = coefLow + (coefHigh - coefLow) * random.nextDouble(); // Random coefficient
-            if (coefSymmetric && random.nextBoolean()) {
+            double coef = coefLow + (coefHigh - coefLow) * RandomUtil.getInstance().nextDouble(); // Random coefficient
+            if (coefSymmetric && RandomUtil.getInstance().nextBoolean()) {
                 coef *= -1; // Randomly switch sign
             }
             this.coefficients[i] = coef;
@@ -78,8 +69,7 @@ public class LinearFunctionND {
                 3, // Input dimension
                 -2.0, // CoefLow
                 2.0, // CoefHigh
-                true, // CoefSymmetric
-                42 // Random seed
+                true // CoefSymmetric
         );
 
         // Print coefficients and intercept

@@ -21,11 +21,9 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -47,10 +45,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Wraps the IMaGES algorithm for continuous variables.
+ * Wraps the IMaGES algorithm for continuous variables. This version uses the BOSS algorithm in place of FGES.
  * <p>
  * Requires that the parameter 'randomSelectionSize' be set to indicate how many datasets should be taken at a time
- * (randomly). This cannot given multiple values.
+ * (randomly). This cannot be given multiple values.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -62,7 +60,7 @@ import java.util.List;
         dataType = DataType.All
 )
 @Bootstrapping
-public class Images implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWrapper {
+public class Images implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -78,7 +76,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWr
     private ScoreWrapper score = new SemBicScore();
 
     /**
-     * <p>Constructor for Images.</p>
+     * <p>Constructor for ImagesBoss.</p>
      *
      * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
      */
@@ -93,17 +91,10 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWr
     }
 
     /**
-     * Searches for a graph using the given data sets and parameters.
-     *
-     * @param dataSets   The data sets to search on.
-     * @param parameters The parameters for the search.
-     * @return The resulting graph.
-     * @throws IllegalArgumentException If the meta option is unrecognized.
+     * {@inheritDoc}
      */
     @Override
-    public Graph search(List<DataModel> dataSets, Parameters parameters) throws InterruptedException {
-        int meta = parameters.getInt(Params.IMAGES_META_ALG);
-
+    public Graph search(List<DataModel> dataSets, Parameters parameters) {
         List<DataModel> _dataSets = new ArrayList<>();
 
         if (parameters.getInt(Params.TIME_LAG) > 0) {
@@ -127,37 +118,26 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWr
 
         ImagesScore score = new ImagesScore(scores);
 
-        if (meta == 1) {
-            edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
-            search.setKnowledge(this.knowledge);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        PermutationSearch search = new PermutationSearch(new Boss(score));
+        search.setSeed(parameters.getLong(Params.SEED));
+        search.setKnowledge(this.knowledge);
+        try {
             return search.search();
-        } else if (meta == 2) {
-            PermutationSearch search = new PermutationSearch(new Boss(score));
-            search.setKnowledge(this.knowledge);
-            return search.search();
-        } else {
-            throw new IllegalArgumentException("Unrecognized meta option: " + meta);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
     /**
-     * Searches for a graph using the given data set and parameters.
-     *
-     * @param dataSet    The data set to run the search on.
-     * @param parameters The parameters of the search.
-     * @return The resulting graph.
+     * {@inheritDoc}
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) throws InterruptedException {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         return search(Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet)), parameters);
     }
 
     /**
-     * Returns a comparison graph based on the true directed graph, if there is one.
-     *
-     * @param graph The true directed graph, if there is one.
-     * @return The comparison graph.
+     * {@inheritDoc}
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -165,9 +145,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWr
     }
 
     /**
-     * Returns the description of this method.
-     *
-     * @return the description of this method.
+     * {@inheritDoc}
      */
     @Override
     public String getDescription() {
@@ -175,9 +153,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWr
     }
 
     /**
-     * Returns the type of the data set.
-     *
-     * @return the type of the data set
+     * {@inheritDoc}
      */
     @Override
     public DataType getDataType() {
@@ -185,29 +161,24 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWr
     }
 
     /**
-     * Retrieves the list of parameters required for the algorithm.
-     *
-     * @return The list of parameters required for the algorithm.
+     * {@inheritDoc}
      */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new LinkedList<>();
         parameters.addAll(new SemBicScore().getParameters());
 
-        parameters.addAll((new Fges()).getParameters());
+        parameters.addAll((new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Boss()).getParameters());
         parameters.add(Params.RANDOM_SELECTION_SIZE);
         parameters.add(Params.TIME_LAG);
-        parameters.add(Params.IMAGES_META_ALG);
-
+        parameters.add(Params.SEED);
         parameters.add(Params.VERBOSE);
 
         return parameters;
     }
 
     /**
-     * Retrieves the knowledge of the current instance.
-     *
-     * @return The knowledge of the current instance.
+     * {@inheritDoc}
      */
     @Override
     public Knowledge getKnowledge() {
@@ -215,9 +186,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWr
     }
 
     /**
-     * Sets the knowledge object for this instance.
-     *
-     * @param knowledge The knowledge object to be set. Cannot be null.
+     * {@inheritDoc}
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -225,9 +194,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWr
     }
 
     /**
-     * Retrieves the score wrapper object.
-     *
-     * @return The score wrapper object.
+     * {@inheritDoc}
      */
     @Override
     public ScoreWrapper getScoreWrapper() {
@@ -235,23 +202,11 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWr
     }
 
     /**
-     * Sets the score wrapper for the algorithm.
-     *
-     * @param score The score wrapper to be set.
+     * {@inheritDoc}
      */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
-    }
-
-    /**
-     * Sets the IndependenceWrapper for this algorithm.
-     *
-     * @param test The IndependenceWrapper object to be set. Cannot be null.
-     */
-    @Override
-    public void setIndTestWrapper(IndependenceWrapper test) {
-        // Not used.
     }
 }
 

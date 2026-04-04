@@ -11,31 +11,75 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TMath;
 
 import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * The {@code Cdnod} class implements the causal discovery algorithm for detecting changing dependencies with respect to
- * a change index variable in a dataset.
+ * Implements a variant of the CD-NOD (Causal Discovery from Non-stationary/
+ * heterogeneous Data) algorithm that uses BOSS (Best Order Score Search) for
+ * skeleton construction rather than FAS, combining score-based skeleton search
+ * with constraint-based collider orientation.
  *
- * <p>The algorithm is capable of orienting edges in a graph based on statistical
- * tests, knowledge constraints, and user-defined parameters. It also supports conservative decision-making and
- * constraints on collider orientations.</p>
+ * <p>Context variables are identified as all Tier-0 variables in the supplied
+ * {@link Knowledge} object. Any variable in Tier-0 that is also present in the
+ * dataset is treated as a context variable and is forced to be a cause of every
+ * adjacent non-context variable, reflecting the assumption that changing causal
+ * mechanisms are indexed by those context variables.
  *
- * <p>This class extends the functionality of {@code IGraphSearch} and provides methods
- * for configuring the statistical independence test, working dataset, maximum conditioning depth, and timeout
- * settings.</p>
- * <p>
- * Key Features:
- * <ul>
- *   <li>Searches for a graph representing causal structure based on a change index variable.</li>
- *   <li>Provides support for collider orientation with both conservative logic and
- *       maximum p-margin decisions.</li>
- *   <li>Enables customization of constraints using a {@code Knowledge} object.</li>
- *   <li>Supports timeout settings to limit the duration of computations.</li>
- * </ul>
+ * <p>The algorithm proceeds in four stages:
+ * <ol>
+ *   <li><b>BOSS skeleton search.</b> BOSS is run using a SEM BIC score on the
+ *       augmented dataset (X ∪ contexts), with knowledge extended to forbid all
+ *       edges into context variables. The resulting CPDAG provides the initial
+ *       skeleton and a set of sepsets, which are cached and supplemented by a
+ *       recursive blocking heuristic and conditional independence fallback during
+ *       collider orientation.</li>
+ *   <li><b>Context forcing.</b> For each context variable C and each adjacent
+ *       non-context variable X, the undirected edge C --- X is replaced by the
+ *       directed edge C → X, subject to any background knowledge constraints.</li>
+ *   <li><b>Collider orientation.</b> Unshielded triples are oriented as colliders
+ *       or non-colliders using one of three strategies, selectable via
+ *       {@link ColliderOrientationStyle}:
+ *       <ul>
+ *         <li><b>SEPSETS</b>: orients x → z ← y if z is not in the sepset of
+ *             x and y (standard PC rule).</li>
+ *         <li><b>CONSERVATIVE</b>: orients a collider only if every sepset
+ *             excludes z and no sepset includes z (Conservative PC rule).</li>
+ *         <li><b>MAX_P</b>: selects the sepset with the highest p-value and
+ *             uses it to decide orientation, with an optional tie-guard margin.</li>
+ *       </ul></li>
+ *   <li><b>Meek closure.</b> Meek's orientation rules are applied to propagate
+ *       implied orientations and complete the partially directed graph.</li>
+ * </ol>
+ *
+ * <p>Instances are constructed via the nested {@link Builder}:
+ * <pre>
+ *   CdnodBoss cdnod = new CdnodBoss.Builder()
+ *       .test(independenceTest)
+ *       .data(dataSet)               // dataset already containing context column(s)
+ *       .knowledge(knowledge)        // Tier-0 variables treated as contexts
+ *       .colliderStyle(ColliderOrientationStyle.MAX_P)
+ *       .alpha(0.05)
+ *       .depth(3)
+ *       .verbose(true)
+ *       .build();
+ *
+ *   Graph result = cdnod.search();
+ * </pre>
+ *
+ * <p>For backwards compatibility, a continuous change-index column can be appended
+ * to the dataset via {@link Builder#dataAndIndex} rather than being supplied
+ * pre-merged. Context variables are determined from Knowledge tier 0 regardless
+ * of column position.
+ *
+ * @see Boss
+ * @see PermutationSearch
+ * @see MeekRules
+ * @see Knowledge
  */
 public final class CdnodBoss implements IGraphSearch {
 
@@ -55,6 +99,8 @@ public final class CdnodBoss implements IGraphSearch {
     private final SepsetMap sepsets = new SepsetMap();
     private final Set<Long> noSep = new HashSet<>();
     private Map<Node,Integer> id;
+
+    private Set<Node> contextNodes = Collections.emptySet();
 
     private CdnodBoss(IndependenceTest test,
                       DataSet dataWithC,
@@ -77,6 +123,7 @@ public final class CdnodBoss implements IGraphSearch {
     }
 
     private Set<Node> getOrComputeSepset(Graph g, Node x, Node y) throws InterruptedException {
+        if (id == null) indexNodes(g);
         long key = pairKey(x,y);
 
         Set<Node> S = sepsets.get(x, y);
@@ -107,7 +154,7 @@ public final class CdnodBoss implements IGraphSearch {
 
     private long pairKey(Node a, Node b){
         int ia = id.get(a), ib = id.get(b);
-        int lo = Math.min(ia, ib), hi = Math.max(ia, ib);
+        int lo = TMath.min(ia, ib), hi = TMath.max(ia, ib);
         return (((long) lo) << 32) | (hi & 0xffffffffL);
     }
     private void indexNodes(Graph g){
@@ -136,9 +183,10 @@ public final class CdnodBoss implements IGraphSearch {
         return new BoxDataSet(box, vars);
     }
 
-    private static void ensureLastIsChangeIndex(DataSet data) {
-        if (data.getNumColumns() < 2) {
-            throw new IllegalArgumentException("Expect at least one X column plus C as last column.");
+    private static void ensureVariablesMatch(IndependenceTest test, DataSet data) {
+        List<Node> testVars = test.getVariables();
+        if (!testVars.equals(data.getVariables())) {
+            throw new IllegalStateException("Cdnod: IndependenceTest variables must match data variables (same order).");
         }
     }
 
@@ -147,15 +195,10 @@ public final class CdnodBoss implements IGraphSearch {
     @Override
     public Graph search() throws InterruptedException {
         if (dataWithC == null) {
-            throw new IllegalStateException("Cdnod: dataWithC is null. Provide a DataSet whose last column is C, " +
-                                            "or use the Builder.dataAndIndex(...) to append C before search().");
+            throw new IllegalStateException("Cdnod: data is null. Provide a DataSet via Builder.data(...), " +
+                                            "or use Builder.dataAndIndex(...) to append a column before search().");
         }
-        ensureLastIsChangeIndex(dataWithC);
-        // Optional: ensure test variables match dataset variables
-        List<Node> testVars = test.getVariables();
-        if (!testVars.equals(dataWithC.getVariables())) {
-            throw new IllegalStateException("Cdnod: IndependenceTest variables must match dataWithC variables (same order).");
-        }
+        ensureVariablesMatch(test, dataWithC);
         return run(dataWithC);
     }
 
@@ -215,23 +258,38 @@ public final class CdnodBoss implements IGraphSearch {
 
     // =============== Core ===============
 
-    private Graph run(DataSet dataAug) throws InterruptedException {
+    private Graph run(DataSet dataAll) throws InterruptedException {
         this.startTimeMs = System.currentTimeMillis();
+
+        // Resolve contexts from Knowledge tier 0 (CD-NOD semantics).
+        this.contextNodes = resolveContextNodesTier0(dataAll);
 
         // 1) Skeleton (BOSS instead of FAS)
         if (verbose) TetradLogger.getInstance().log("CD-NOD(BOSS): BOSS backbone...");
-        Graph g = runBossSkeleton(dataAug);
+        Graph g = runBossSkeleton(dataAll);
 
-        // 2) Force C -> X where adjacent (respect knowledge/tiers)
-        Node C = dataAug.getVariable(dataAug.getNumColumns() - 1);
-        if (verbose) TetradLogger.getInstance().log("CD-NOD: Forcing " + C.getName() + " -> X");
-        for (Node nbr : new ArrayList<>(g.getAdjacentNodes(C))) {
-            String from = C.getName(), to = nbr.getName();
-            if (knowledgeForbids(from, to) || knowledgeRequires(to, from)) {
-                continue; // skip if forbidden or opposite required
+        // If no contexts were provided, we skip context forcing.
+        if (contextNodes.isEmpty()) {
+            if (verbose) {
+                TetradLogger.getInstance().log("CD-NOD: No Tier-0 contexts in Knowledge; skipping context forcing.");
             }
-            g.removeEdges(C, nbr);
-            g.addDirectedEdge(C, nbr);
+        } else {
+            // 2) Force Context -> X where adjacent (respect knowledge/tiers)
+            if (verbose) {
+                List<String> cn = contextNodes.stream().map(Node::getName).sorted().toList();
+                TetradLogger.getInstance().log("CD-NOD: Forcing Context -> X for contexts=" + cn);
+            }
+            for (Node c : contextNodes) {
+                for (Node nbr : new ArrayList<>(g.getAdjacentNodes(c))) {
+                    if (contextNodes.contains(nbr)) continue; // do not force among contexts
+                    String from = c.getName(), to = nbr.getName();
+                    if (knowledgeForbids(from, to) || knowledgeRequires(to, from)) {
+                        continue; // skip if forbidden or opposite required
+                    }
+                    g.removeEdges(c, nbr);
+                    g.addDirectedEdge(c, nbr);
+                }
+            }
         }
 
         // 3) UC orientation per style
@@ -245,6 +303,23 @@ public final class CdnodBoss implements IGraphSearch {
         meek.orientImplied(g);
 
         return g;
+    }
+
+    /**
+     * Context semantics: all Tier-0 variables in {@link Knowledge} are treated as contexts.
+     * Any Tier-0 names not present in the DataSet are silently ignored (matches the PAG runner style).
+     */
+    private Set<Node> resolveContextNodesTier0(DataSet dataAll) {
+        if (knowledge == null || knowledge.getTier(0).isEmpty()) return Collections.emptySet();
+        Set<Node> out = new LinkedHashSet<>();
+        List<String> tier0 = knowledge.getTier(0);
+        for (String name : tier0) {
+            Node v = dataAll.getVariable(name);
+            if (v != null) {
+                out.add(v);
+            }
+        }
+        return out;
     }
 
     // ------------- collider orientation (SEPSETS / CONSERVATIVE / MAX_P) --------------
@@ -345,12 +420,14 @@ public final class CdnodBoss implements IGraphSearch {
         boolean hasExcl = bestExcl > Double.NEGATIVE_INFINITY;
 
         if (hasIncl && hasExcl) {
-            if (bestExcl >= bestIncl + maxPMargin)
+            if (bestExcl >= bestIncl + maxPMargin) {
                 return new MaxPDecision(ColliderOutcome.INDEPENDENT, bestExcl, bestS_excl);
-            if (bestIncl >= bestExcl + maxPMargin)
+            } else if (bestIncl >= bestExcl + maxPMargin) {
                 return new MaxPDecision(ColliderOutcome.DEPENDENT, bestIncl, bestS_incl);
-            return new MaxPDecision(ColliderOutcome.AMBIGUOUS, Math.max(bestIncl, bestExcl),
-                    (bestIncl >= bestExcl ? bestS_incl : bestS_excl));
+            } else {
+                return new MaxPDecision(ColliderOutcome.AMBIGUOUS, TMath.max(bestIncl, bestExcl),
+                        (bestIncl >= bestExcl ? bestS_incl : bestS_excl));
+            }
         } else if (hasExcl) {
             return new MaxPDecision(ColliderOutcome.INDEPENDENT, bestExcl, bestS_excl);
         } else if (hasIncl) {
@@ -371,12 +448,15 @@ public final class CdnodBoss implements IGraphSearch {
         adjx.sort(Comparator.comparing(Node::getName));
         adjy.sort(Comparator.comparing(Node::getName));
 
-        int maxAdj = Math.max(adjx.size(), adjy.size());
-        int cap = (depth < 0 ? maxAdj : Math.min(depth, maxAdj));
+        int maxAdj = TMath.max(adjx.size(), adjy.size());
+        int cap = (depth < 0 ? maxAdj : TMath.min(depth, maxAdj));
 
         for (int d = 0; d <= cap; d++) {
-            for (List<Node> adj : new List[]{adjx, adjy}) {
-                if (d > adj.size()) continue;
+            List<List<Node>> both = new ArrayList<>();
+            if (d <= adjx.size()) both.add(adjx);
+            if (d <= adjy.size()) both.add(adjy);
+
+            for (List<Node> adj : both) {
                 ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
                 int[] choice;
                 while ((choice = gen.next()) != null) {
@@ -395,33 +475,24 @@ public final class CdnodBoss implements IGraphSearch {
 
     // ------------- utils -------------
 
-    // --- BOSS backbone (DAG/CPDAG over X ∪ {C}) -------------------------------
+    // --- BOSS backbone (DAG/CPDAG over X ∪ Contexts) -------------------------------
     private Graph runBossSkeleton(DataSet dataAug) {
-        // 0) Identify C and prepare knowledge
-        Node C = dataAug.getVariable(dataAug.getNumColumns() - 1);
+        // 0) Prepare knowledge
         Knowledge K = new Knowledge(this.knowledge); // copy
 
-        // Forbid all edges into C, and optionally forbid X->C.
-        for (Node v : dataAug.getVariables()) {
-            if (v == C) continue;
-            // forbid v -> C
-            try { K.setForbidden(v.getName(), C.getName()); } catch (Throwable ignored) {}
-            // (Recommended for CD-NOD) also forbid C <- v, i.e., forbid parents of C
-            // already done above; this comment notes the CD-NOD assumption.
-            // also forbid C -> C via tiers/explicit forbid if API allows (harmless)
-            try { K.setForbidden(C.getName(), C.getName()); } catch (Throwable ignored) {}
+        // Forbid all edges into contexts.
+        for (Node context : contextNodes) {
+            for (Node v : dataAug.getVariables()) {
+                if (v == context) continue;
+                // forbid v -> context
+                K.setForbidden(v.getName(), context.getName());
+            }
+            // forbid context -> context
+            K.setForbidden(context.getName(), context.getName());
         }
 
         // 1) Run BOSS with this knowledge.
-        // NOTE: adapt class/ctor names to your project (Boss, BossScore, etc.)
-        // Typical shape in Tetrad:
-        //   Score score = new BossScore(dataAug); // BF-BIC, etc.
-        //   Boss search = new Boss(score);
-        //   search.setKnowledge(K);
-        //   search.setVerbose(verbose);
-        //   Graph g = search.search();
-        // If you have a CPDAG/DAG toggle, either is fine for downstream Meek.
-        Score score = new SemBicScore(new CovarianceMatrix(dataAug));         // <-- adjust to your actual score class
+        Score score = new SemBicScore(new CovarianceMatrix(dataAug));
         Boss boss = new Boss(score);
         PermutationSearch search = new PermutationSearch(boss);
         search.setKnowledge(K);
@@ -449,50 +520,24 @@ public final class CdnodBoss implements IGraphSearch {
 
     private boolean knowledgeForbids(String from, String to) {
         if (knowledge == null || knowledge.isEmpty()) return false;
-        try {
-            if (knowledge.isForbidden(from, to)) return true;
-        } catch (Throwable ignored) {
-        }
-        // If tiers are defined and tier(from) > tier(to), treat as forbidden
-        try {
-            Method mNum = Knowledge.class.getMethod("getNumTiers");
-            int T = (Integer) mNum.invoke(knowledge);
-            if (T > 0) {
-                Method mTier = Knowledge.class.getMethod("getTier", String.class);
-                int tf = (Integer) mTier.invoke(knowledge, from);
-                int tt = (Integer) mTier.invoke(knowledge, to);
-                if (tf >= 0 && tt >= 0 && tf > tt) return true;
-            }
-        } catch (Throwable ignored) {
-        }
-        // If Knowledge exposes isForbiddenByTiers(String,String)
-        try {
-            Method m = Knowledge.class.getMethod("isForbiddenByTiers", String.class, String.class);
-            Object v = m.invoke(knowledge, from, to);
-            if (v instanceof Boolean && (Boolean) v) return true;
-        } catch (Throwable ignored) {
-        }
-        return false;
+        if (knowledge.isForbidden(from, to)) return true;
+        return knowledge.isForbiddenByTiers(from, to);
     }
 
     private boolean knowledgeRequires(String from, String to) {
         if (knowledge == null || knowledge.isEmpty()) return false;
-        try {
-            return knowledge.isRequired(from, to);
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return knowledge.isRequired(from, to);
     }
 
     private String labelSet(Set<Node> S) {
         List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());
         return "{" + String.join(",", names) + "}";
     }
 
     private String setKey(Set<Node> S) {
         List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());
         return String.join("\u0001", names);
     }
 
@@ -688,7 +733,7 @@ public final class CdnodBoss implements IGraphSearch {
          * @return The current {@code Builder} instance for method chaining.
          */
         public Builder maxPMargin(double m) {
-            this.maxPMargin = Math.max(0.0, m);
+            this.maxPMargin = TMath.max(0.0, m);
             return this;
         }
 
@@ -702,6 +747,18 @@ public final class CdnodBoss implements IGraphSearch {
         public Builder depth(int d) {
             this.depth = d;
             return this;
+        }
+
+        /**
+         * Backwards-compatible helper: append a single continuous change-index column as the last column.
+         *
+         * @param dataX  the original dataset to which the change-index column will be appended
+         * @param cIndex the array of continuous change-index values to be added
+         * @param cName  the name of the new change-index column
+         * @return a new dataset with the change-index column appended
+         */
+        public static DataSet appendChangeIndexAsLastColumn(DataSet dataX, double[] cIndex, String cName) {
+            return CdnodBoss.appendChangeIndexAsLastColumn(dataX, cIndex, cName);
         }
 
         /**

@@ -34,7 +34,7 @@ import edu.cmu.tetrad.util.Parameters;
  * @author josephramsey
  */
 public class SpecialExampleSimulationClark {
-    public static void main(String... args) {
+    public static void main(String... args) throws java.text.ParseException {
         Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 20);

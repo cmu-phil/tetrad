@@ -24,6 +24,8 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.util.RankTests;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -205,12 +207,12 @@ public final class BlocksUtil {
      * the blocks, ranks, and variables in the BlockSpec and returns a new BlockSpec object.
      *
      * @param blockSpec the BlockSpec object containing the current block configuration, ranks, and dataset
-     * @param policy    the SingleClusterPolicy to apply, which determines how unused columns or variables are handled
+     * @param policy    the SingletonClusterPolicy to apply, which determines how unused columns or variables are handled
      *                  (e.g., INCLUDE, EXCLUDE, NOISE_VAR)
      * @param alpha     a double value representing a parameter used in the computation of ranks
      * @return a new BlockSpec object that reflects the changes made according to the specified policy
      */
-    public static BlockSpec applySingleClusterPolicy(BlockSpec blockSpec, SingleClusterPolicy policy, double alpha) {
+    public static BlockSpec applySingleClusterPolicy(BlockSpec blockSpec, SingletonClusterPolicy policy, double alpha) {
         final DataSet dataSet = blockSpec.dataSet();
         final List<List<Integer>> blocks = blockSpec.blocks();
 
@@ -219,11 +221,11 @@ public final class BlocksUtil {
         final List<Integer> ranksNorm = new ArrayList<>(blocks.size());
         if (ranksIn != null && !ranksIn.isEmpty()) {
             for (int i = 0; i < blocks.size(); i++) {
-                Integer r = i < ranksIn.size() ? ranksIn.get(i) : 1;
-                ranksNorm.add((r == null || r < 0) ? 1 : 0);
+                int r = i < ranksIn.size() ? ranksIn.get(i) : 0;
+                ranksNorm.add(Math.max(r, 0));
             }
         } else {
-            for (int i = 0; i < blocks.size(); i++) ranksNorm.add(1);
+            for (int i = 0; i < blocks.size(); i++) ranksNorm.add(0);
         }
 
         // --- start output with current blocks/latents/ranks ---
@@ -270,53 +272,31 @@ public final class BlocksUtil {
 
         switch (policy) {
             case INCLUDE -> {
-                if (unused.isEmpty()) return blockSpec;
+                List<Integer> reestimatedRanks = new ArrayList<>(outRanks);
 
-                // others = all minus the singletons as we add them (OK to use full others each time)
-                final int[] others = toIndexArray(allMinus(unused, all)); // others = all \ unused
                 for (int idx : unused) {
-                    List<Integer> newBlock = Collections.singletonList(idx);
-                    outBlocks.add(newBlock);
-
-                    // latent name "S_<Var>" but ensure uniqueness vs existing
-//                    String base = "S_" + sanitize(dataSet.getVariable(idx).getName());
-//                    String name = ensureUnique(base, takenNames, observedNames);
-
-//                    Node latent = new edu.cmu.tetrad.data.ContinuousVariable(name);
-//                    latent.setNodeType(edu.cmu.tetrad.graph.NodeType.LATENT);
-                    Node variable = dataSet.getVariable(idx);
-                    outLatents.add(variable);
-                    takenNames.add(variable.getName());
-
-                    int rk = estimateRankSafe(S, n, newBlock, others, alpha);
-                    outRanks.add(Math.max(0, rk));
+                    outBlocks.add(Collections.singletonList(idx));
+                    outLatents.add(dataSet.getVariable(idx));
+                    reestimatedRanks.add(0);  // singleton: no shared latent, rank must be 0
                 }
 
-                return new BlockSpec(dataSet, outBlocks, outLatents, outRanks);
+                return new BlockSpec(dataSet, outBlocks, outLatents, reestimatedRanks);
             }
 
             case EXCLUDE -> {
-                return blockSpec;
-            }
+                List<List<Integer>> filteredBlocks = new ArrayList<>();
+                List<Node> filteredLatents = new ArrayList<>();
+                List<Integer> filteredRanks = new ArrayList<>();
 
-            case NOISE_VAR -> {
-                if (unused.isEmpty()) return blockSpec;
+                for (int i = 0; i < outBlocks.size(); i++) {
+                    if (outBlocks.get(i).size() > 1) {
+                        filteredBlocks.add(outBlocks.get(i));
+                        filteredLatents.add(outLatents.get(i));
+                        filteredRanks.add(outRanks.get(i));  // preserve TSC rank
+                    }
+                }
 
-                List<Integer> noise = new ArrayList<>(unused);
-                outBlocks.add(noise);
-
-                // name "Noise" but unique
-                String noiseName = ensureUnique("Noise", takenNames, observedNames);
-                Node latent = new edu.cmu.tetrad.data.ContinuousVariable(noiseName);
-                latent.setNodeType(edu.cmu.tetrad.graph.NodeType.LATENT);
-                outLatents.add(latent);
-                takenNames.add(noiseName);
-
-                int[] others = toIndexArray(allMinus(unused, all));
-                int rk = estimateRankSafe(S, n, noise, others, alpha);
-                outRanks.add(Math.max(0, rk));
-
-                return new BlockSpec(dataSet, outBlocks, outLatents, outRanks);
+                return new BlockSpec(dataSet, filteredBlocks, filteredLatents, filteredRanks);
             }
 
             default -> throw new IllegalArgumentException("Unknown policy: " + policy);
@@ -331,9 +311,11 @@ public final class BlocksUtil {
         int[] blk = toIndexArray(block);
 
         if (others != null && others.length > 0) {
-            return Math.max(0, edu.cmu.tetrad.util.RankTests.estimateWilksRank(S, blk, others, nRows, alpha));
+            int rank = RankTests.estimateWilksRank(S, blk, others, nRows, alpha);
+            return TMath.max(0, rank);
         } else {
-            return Math.max(0, edu.cmu.tetrad.util.RankTests.estimateWilksRank(S, blk, new int[0], nRows, alpha));
+            int rank = RankTests.estimateWilksRank(S, blk, new int[0], nRows, alpha);
+            return TMath.max(0, rank);
         }
     }
 

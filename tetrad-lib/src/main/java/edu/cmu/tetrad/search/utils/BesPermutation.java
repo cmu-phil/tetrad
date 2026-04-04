@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.RecursiveTask;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
-import static org.apache.commons.math3.util.FastMath.min;
+import static edu.cmu.tetrad.util.TMath.min;
 
 
 /**
@@ -178,7 +178,7 @@ public class BesPermutation {
 
         int numEdges = graph.getNumEdges();
         if (numEdges % 1000 == 0 && numEdges > 0) {
-            System.out.println("Num edges (backwards) = " + numEdges);
+            TetradLogger.getInstance().log("Num edges (backwards) = " + numEdges);
         }
 
         if (verbose) {

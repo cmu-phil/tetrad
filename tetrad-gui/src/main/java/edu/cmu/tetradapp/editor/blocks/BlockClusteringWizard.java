@@ -26,9 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.*;
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.simulation.ParameterTab;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.ParameterComponents;
@@ -212,15 +210,14 @@ public class BlockClusteringWizard extends JPanel {
         // Allocate data box
         VerticalDoubleDataBox box = new VerticalDoubleDataBox(n, p);
 
-        Random rnd = new Random(42);
-        double sdLatent = Math.sqrt(latentVar);
-        double sdNoiseIndicator = Math.sqrt(1.0 - loading * loading); // ensure Var(X) â 1
+        double sdLatent = TMath.sqrt(latentVar);
+        double sdNoiseIndicator = TMath.sqrt(1.0 - loading * loading); // ensure Var(X) â 1
 
         for (int t = 0; t < n; t++) {
             // Latent disturbances (std normal scaled)
-            double e1 = sdLatent * rnd.nextGaussian();
-            double e2 = sdLatent * rnd.nextGaussian();
-            double e3 = sdLatent * rnd.nextGaussian();
+            double e1 = sdLatent * RandomUtil.getInstance().nextGaussian();
+            double e2 = sdLatent * RandomUtil.getInstance().nextGaussian();
+            double e3 = sdLatent * RandomUtil.getInstance().nextGaussian();
 
             // Latents (structural)
             double L1 = e1;
@@ -230,15 +227,15 @@ public class BlockClusteringWizard extends JPanel {
             // Indicators: m each
             int col = 0;
             for (int j = 0; j < m; j++, col++) {
-                double x = loading * L1 + sdNoiseIndicator * rnd.nextGaussian();
+                double x = loading * L1 + sdNoiseIndicator * RandomUtil.getInstance().nextGaussian();
                 box.set(t, col, x);
             }
             for (int j = 0; j < m; j++, col++) {
-                double x = loading * L2 + sdNoiseIndicator * rnd.nextGaussian();
+                double x = loading * L2 + sdNoiseIndicator * RandomUtil.getInstance().nextGaussian();
                 box.set(t, col, x);
             }
             for (int j = 0; j < m; j++, col++) {
-                double x = loading * L3 + sdNoiseIndicator * rnd.nextGaussian();
+                double x = loading * L3 + sdNoiseIndicator * RandomUtil.getInstance().nextGaussian();
                 box.set(t, col, x);
             }
         }
@@ -329,7 +326,7 @@ public class BlockClusteringWizard extends JPanel {
                 }
 
 //                btnSearch.setEnabled(false);
-                status.setText("Searching with " + alg + (testName != null ? (" + " + testName) : "") + " â¦");
+                status.setText("Searching with " + alg + (testName != null ? (" + " + testName) : ""));
 
                 int ess = parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE);
                 ess = ess == -1 ? dataSet.getNumRows() : ess;
@@ -370,7 +367,7 @@ public class BlockClusteringWizard extends JPanel {
         setParamList();
 
         int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
-        SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
+        SingletonClusterPolicy policy = SingletonClusterPolicy.values()[_singletonPolicy - 1];
 
         return switch (alg) {
             case "TSC" -> {

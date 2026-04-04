@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
 
@@ -127,12 +128,12 @@ public class MimbuildPca {
         for (int j = 0; j < p; j++) {
             double mean = 0, m2 = 0;
             for (int i = 0; i < n; i++) mean += X.get(i, j);
-            mean /= Math.max(1, n);
+            mean /= TMath.max(1, n);
             for (int i = 0; i < n; i++) {
                 double d = X.get(i, j) - mean;
                 m2 += d * d;
             }
-            double sd = Math.sqrt(m2 / Math.max(1, n - 1));
+            double sd = TMath.sqrt(m2 / TMath.max(1, n - 1));
             if (!Double.isFinite(sd) || sd == 0.0) sd = 1.0;
             for (int i = 0; i < n; i++) {
                 X.set(i, j, (X.get(i, j) - mean) / sd);
@@ -186,12 +187,12 @@ public class MimbuildPca {
             // Rescale to unit variance
             double mean = 0, m2 = 0;
             for (int r = 0; r < n; r++) mean += pc1.get(r);
-            mean /= Math.max(1, n);
+            mean /= TMath.max(1, n);
             for (int r = 0; r < n; r++) {
                 double d = pc1.get(r) - mean;
                 m2 += d * d;
             }
-            double sd = Math.sqrt(m2 / Math.max(1, n - 1));
+            double sd = TMath.sqrt(m2 / TMath.max(1, n - 1));
             if (!Double.isFinite(sd) || sd == 0.0) sd = 1.0;
 
             for (int r = 0; r < n; r++) {
@@ -201,12 +202,12 @@ public class MimbuildPca {
 
         // Covariance over latents with (n-1) divisor + tiny ridge
         SimpleMatrix L = new SimpleMatrix(latentData);          // n x B
-        int dof = Math.max(1, n - 1);
-        SimpleMatrix latentCov = L.transpose().mult(L).divide(Math.max(1, n - 1));
+        int dof = TMath.max(1, n - 1);
+        SimpleMatrix latentCov = L.transpose().mult(L).divide(TMath.max(1, n - 1));
 
         double diagMean = 0.0;
         for (int k = 0; k < B; k++) diagMean += latentCov.get(k, k);
-        double eps = 1e-8 * (diagMean / Math.max(1, B));
+        double eps = 1e-8 * (diagMean / TMath.max(1, B));
         if (!Double.isFinite(eps) || eps <= 0) eps = 1e-8;
 
         for (int k = 0; k < B; k++) {

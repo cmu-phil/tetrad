@@ -62,9 +62,9 @@ public final class CloseSessionAction extends AbstractAction {
 
             // check to make sure user wants to evaporate this window...
             String msg =
-                    "Do you want to save the changes you made to " + name + "?";
+                    "Do you want to save your changes?";
             int response = JOptionPane.showConfirmDialog(
-                    JOptionUtils.centeringComp(), msg, "Fair Warning",
+                    JOptionUtils.centeringComp(), msg, "Save and Close",
                     JOptionPane.YES_NO_CANCEL_OPTION);
 
             if (response == JOptionPane.YES_OPTION) {

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -102,7 +102,11 @@ public class PermutationSearch {
      */
     public PermutationSearch(SuborderSearch suborderSearch) {
         this.suborderSearch = suborderSearch;
-        this.variables = suborderSearch.getVariables();
+        List<Node> variables = suborderSearch.getVariables();
+
+
+        this.variables = variables;
+
         this.order = new ArrayList<>();
         this.gsts = new HashMap<>();
 
@@ -110,7 +114,9 @@ public class PermutationSearch {
         Map<Node, Integer> index = new HashMap<>();
 
         int i = 0;
-        for (Node node : this.variables) {
+        for (Node _node : this.variables) {
+            Node node = score.getVariable(_node.getName());
+
             index.put(node, i++);
             this.gsts.put(node, new GrowShrinkTree(score, index, node));
             this.order.add(node);
@@ -190,7 +196,9 @@ public class PermutationSearch {
         }
 
         if (cpDag) {
+//            return GraphTransforms.dagToCpdag(graph);
             MeekRules rules = new MeekRules();
+            rules.setRevertToUnshieldedColliders(true);
             if (knowledge != null) rules.setKnowledge(knowledge);
             rules.setVerbose(false);
             rules.orientImplied(graph); // setEndpoint/edge ops mirror automatically if replicating

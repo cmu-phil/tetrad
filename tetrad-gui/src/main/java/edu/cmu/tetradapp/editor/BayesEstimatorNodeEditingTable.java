@@ -25,7 +25,7 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -396,7 +396,7 @@ class BayesEstimatorNodeEditingTable extends JTable {
             col = getNumParents();
         }
 
-        this.focusCol = FastMath.max(col, getNumParents());
+        this.focusCol = TMath.max(col, getNumParents());
 
         if (this.focusCol >= getNumParents() &&
             this.focusCol < getColumnCount()) {

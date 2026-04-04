@@ -87,7 +87,7 @@ public final class ExploreAutisticsNeurotypicals {
                     }
                 }
 
-                dataSet.setDouble(row, dataSet.getColumn(group), _group);
+                dataSet.setDouble(row, dataSet.getColumnIndex(group), _group);
             }
         }
 
@@ -118,7 +118,7 @@ public final class ExploreAutisticsNeurotypicals {
             if ("Group".equals(node.getName())) {
                 continue;
             }
-            int col = dataSet.getColumn(node);
+            int col = dataSet.getColumnIndex(node);
             int count = 0;
 
             for (int i = 0; i < total; i++) {

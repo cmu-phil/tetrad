@@ -210,15 +210,6 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
     /**
      * <p>Constructor for DagWrapper.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper} object
-     */
-    public DagWrapper(CptInvariantUpdaterWrapper wrapper) {
-        this(new Dag(wrapper.getBayesUpdater().getManipulatedGraph()));
-    }
-
-    /**
-     * <p>Constructor for DagWrapper.</p>
-     *
      * @param wrapper a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
      */
     public DagWrapper(SemPmWrapper wrapper) {

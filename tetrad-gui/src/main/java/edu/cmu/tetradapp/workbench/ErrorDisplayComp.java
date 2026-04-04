@@ -1,23 +1,3 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-//                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
-// and Richard Scheines.                                                     //
-//                                                                           //
-// This program is free software: you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation, either version 3 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.workbench;
 
 import javax.swing.*;
@@ -25,13 +5,12 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
 /**
- * The display component for error nodes, which is a transparent ellipse.
+ * The display component for error nodes, which is a transparent label-like component.
  *
  * @author Joseph Ramsmey
  * @version $Id: $Id
  */
-public class ErrorDisplayComp extends JComponent
-        implements DisplayComp {
+public class ErrorDisplayComp extends JComponent implements DisplayComp {
 
     /**
      * True iff this display node is selected.
@@ -39,27 +18,68 @@ public class ErrorDisplayComp extends JComponent
     private boolean selected;
 
     /**
-     * <p>Constructor for ErrorDisplayComp.</p>
+     * Constructor.
      *
-     * @param name a {@link java.lang.String} object
+     * @param name the node name
      */
     public ErrorDisplayComp(String name) {
-        setBackground(DisplayNodeUtils.getNodeFillColor());
-        setFont(DisplayNodeUtils.getFont());
+        setOpaque(false);
+        refreshTheme();
         setName(name);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void setName(String name) {
-        super.setName(name);
-        setSize(getPreferredSize());
+    private static Color uiColor(String key, Color fallback) {
+        Color c = UIManager.getColor(key);
+        return c != null ? c : fallback;
+    }
+
+    private static Font uiFont(String key, Font fallback) {
+        Font f = UIManager.getFont(key);
+        return f != null ? f : fallback;
+    }
+
+    private static Color getTextColor() {
+        return uiColor("Label.foreground", DisplayNodeUtils.getNodeTextColor());
+    }
+
+    private static Color getSelectedTextColor() {
+        Color c = UIManager.getColor("Table.selectionForeground");
+        if (c != null) return c;
+
+        c = UIManager.getColor("Component.focusColor");
+        if (c != null) return c;
+
+        return getTextColor();
+    }
+
+    private void refreshTheme() {
+        setFont(uiFont("Label.font", DisplayNodeUtils.getFont()));
+        setForeground(isSelected() ? getSelectedTextColor() : getTextColor());
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        refreshTheme();
+        revalidate();
+        repaint();
     }
 
     /**
      * {@inheritDoc}
      */
+    @Override
+    public void setName(String name) {
+        super.setName(name);
+        setSize(getPreferredSize());
+        revalidate();
+        repaint();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean contains(int x, int y) {
         return getShape().contains(x, y);
     }
@@ -68,43 +88,62 @@ public class ErrorDisplayComp extends JComponent
      * @return the shape of the component.
      */
     private Shape getShape() {
-        return new Rectangle2D.Double(0, 0, getPreferredSize().width - 1,
-                getPreferredSize().height - 1);
+        Dimension d = getPreferredSize();
+        return new Rectangle2D.Double(0, 0, d.width - 1, d.height - 1);
     }
 
     /**
      * {@inheritDoc}
-     * <p>
      * Paints the component.
      */
-    public void paint(Graphics g) {
-        FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
-        Dimension size = getPreferredSize();
-        int stringWidth = fm.stringWidth(getName());
-        int stringX = (size.width - stringWidth) / 2;
-        int stringY = fm.getAscent() + (size.height - fm.getHeight()) / 2;
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
 
-        g.setColor(DisplayNodeUtils.getNodeTextColor());
-        g.drawString(getName(), stringX, stringY);
+        refreshTheme();
+
+        Graphics2D g2 = (Graphics2D) g.create();
+        try {
+            Font font = getFont();
+            FontMetrics fm = g2.getFontMetrics(font);
+            Dimension size = getPreferredSize();
+
+            String name = getName();
+            if (name == null) name = "";
+
+            int stringWidth = fm.stringWidth(name);
+            int stringX = (size.width - stringWidth) / 2;
+            int stringY = fm.getAscent() + (size.height - fm.getHeight()) / 2;
+
+            g2.setFont(font);
+            g2.setColor(getForeground());
+            g2.drawString(name, stringX, stringY);
+        } finally {
+            g2.dispose();
+        }
     }
 
     /**
      * Calculates the size of the component based on its name.
      *
-     * @return a {@link java.awt.Dimension} object
+     * @return preferred size
      */
+    @Override
     public Dimension getPreferredSize() {
-        FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
-        int width = fm.stringWidth(getName()) + fm.getMaxAdvance();
+        Font font = getFont() != null ? getFont() : DisplayNodeUtils.getFont();
+        FontMetrics fm = getFontMetrics(font);
+
+        String name = getName();
+        if (name == null) name = "";
+
+        int width = fm.stringWidth(name) + fm.getMaxAdvance();
         int height = 2 * DisplayNodeUtils.getPixelGap() + fm.getAscent();
 
         return new Dimension(width, height);
     }
 
     /**
-     * <p>isSelected.</p>
-     *
-     * @return a boolean
+     * @return true iff selected
      */
     public boolean isSelected() {
         return this.selected;
@@ -113,11 +152,10 @@ public class ErrorDisplayComp extends JComponent
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setSelected(boolean selected) {
         this.selected = selected;
+        refreshTheme();
+        repaint();
     }
 }
-
-
-
-

@@ -20,10 +20,11 @@
 
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.General;
+import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
@@ -35,18 +36,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for FF Marginal Likelihood Score.
+ * Wrapper for FF-ML MIxed Marginal Likelihood Score.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "FF-ML Score",
-        command = "ff-ml-score",
-        dataType = {DataType.Continuous}
+        name = "FFML Score",
+        command = "ffml-score",
+        dataType = {DataType.Mixed}
 )
 @General
-@Experimental
+@Mixed
+//@Experimental
 public class FfMl implements ScoreWrapper {
 
     @Serial
@@ -55,7 +57,7 @@ public class FfMl implements ScoreWrapper {
     /**
      * The data set.
      */
-    private DataModel dataSet;
+    private transient DataModel dataSet;
 
     /**
      * Constructs a new instance of the SemBicScore.
@@ -68,25 +70,20 @@ public class FfMl implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        this.dataSet = dataSet;
-
         edu.cmu.tetrad.search.score.FfMl score;
 
         if (dataSet instanceof DataSet) {
+            this.dataSet = DataTransforms.standardizeData((DataSet) dataSet);
             score = new edu.cmu.tetrad.search.score.FfMl((DataSet) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
 
-        score.setLambda(parameters.getDouble(Params.KML_LAMBDA));
-        score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
-        score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
+        score.setLambda(parameters.getDouble(Params.FFML_RIDGE));
+        score.setBwMaxRows(parameters.getInt(Params.BW_MAX_ROWS));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
-
-        score.setNumFeatures(parameters.getInt(Params.KML_NUM_FEATURES));
-        edu.cmu.tetrad.search.score.FfMl.FeatureType[] values
-                = edu.cmu.tetrad.search.score.FfMl.FeatureType.values();
-        score.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
+        score.setNumFeatures(parameters.getInt(Params.FFML_FF_FEATURES));
+        score.setCatRho(parameters.getDouble(Params.CAT_RHO));
 
         return score;
     }
@@ -98,7 +95,7 @@ public class FfMl implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "FF-ML Score";
+        return "FFML Score";
     }
 
     /**
@@ -108,7 +105,7 @@ public class FfMl implements ScoreWrapper {
      */
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return DataType.Mixed;
     }
 
     /**
@@ -119,11 +116,10 @@ public class FfMl implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.KML_LAMBDA);
-        parameters.add(Params.KML_BANDWIDTH_MULTIPLIER);
-        parameters.add(Params.KML_BW_MAX_ROWS);
-        parameters.add(Params.KML_NUM_FEATURES);
-        parameters.add(Params.KML_FEATURE_TYPE);
+        parameters.add(Params.FFML_RIDGE);
+        parameters.add(Params.BW_MAX_ROWS);
+        parameters.add(Params.FFML_FF_FEATURES);
+        parameters.add(Params.CAT_RHO);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
@@ -137,6 +133,22 @@ public class FfMl implements ScoreWrapper {
     @Override
     public Node getVariable(String name) {
         return this.dataSet.getVariable(name);
+    }
+
+    /**
+     * Deserializes the object from the given {@link java.io.ObjectInputStream}.
+     * Resets the transient {@code dataSet} field to {@code null} to ensure that
+     * it is properly reinitialized after deserialization.
+     *
+     * @param in the {@link java.io.ObjectInputStream} from which the object is read
+     * @throws java.io.IOException if an I/O error occurs while reading the stream
+     * @throws ClassNotFoundException if the class of a serialized object cannot be found
+     */
+    @Serial
+    private void readObject(java.io.ObjectInputStream in)
+            throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        this.dataSet = null;             // <-- force rebind after load
     }
 
 }

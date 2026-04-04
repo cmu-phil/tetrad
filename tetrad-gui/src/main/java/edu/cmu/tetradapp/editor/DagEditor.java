@@ -309,36 +309,7 @@ public final class DagEditor extends JPanel
         JLabel label = new JLabel("Double click variable/node rectangle to change name.");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
-//        // Info button added by Zhou to show edge types
-//        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-//        infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
-//
-//        // Clock info button to show edge types instructions - Zhou
-//        infoBtn.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                // Initialize helpSet
-//                final String helpHS = "/docs/javahelp/TetradHelp.hs";
-//
-//                try {
-//                    URL url = this.getClass().getResource(helpHS);
-//                    HelpSet helpSet = new HelpSet(null, url);
-//
-//                    helpSet.setHomeID("graph_edge_types");
-//                    HelpBroker broker = helpSet.createHelpBroker();
-//                    ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-//                    listener.actionPerformed(e);
-//                } catch (Exception ee) {
-//                    System.out.println("HelpSet " + ee.getMessage());
-//                    System.out.println("HelpSet " + helpHS + " not found");
-//                    throw new IllegalArgumentException();
-//                }
-//            }
-//        });
-//
         instructionBox.add(label);
-//        instructionBox.add(Box.createHorizontalStrut(2));
-//        instructionBox.add(infoBtn);
 
         // Add to topBox
         topBox.add(topGraphBox);
@@ -542,16 +513,20 @@ public final class DagEditor extends JPanel
 
 //                    RandomUtil.getInstance().setSeed(new Date().getTime());
                     Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), DagEditor.this.parameters);
+//
+//                    boolean addCycles = DagEditor.this.parameters.getBoolean("randomAddCycles", false);
+//
+//                    if (addCycles) {
+//                        int newGraphNumMeasuredNodes = DagEditor.this.parameters.getInt("newGraphNumMeasuredNodes", 10);
+//                        int newGraphNumEdges = DagEditor.this.parameters.getInt("newGraphNumEdges", 10);
+//                        graph1 = RandomGraph.randomCyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
+//                    }
 
-                    boolean addCycles = DagEditor.this.parameters.getBoolean("randomAddCycles", false);
-
-                    if (addCycles) {
-                        int newGraphNumMeasuredNodes = DagEditor.this.parameters.getInt("newGraphNumMeasuredNodes", 10);
-                        int newGraphNumEdges = DagEditor.this.parameters.getInt("newGraphNumEdges", 10);
-                        graph1 = RandomGraph.randomCyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
+                    try {
+                        getWorkbench().setGraph(new Dag(graph1));
+                    } catch (IllegalArgumentException ex) {
+                        throw new RuntimeException("Not a DAG:");
                     }
-
-                    getWorkbench().setGraph(graph1);
                 }
             });
         });

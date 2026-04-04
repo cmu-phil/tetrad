@@ -53,10 +53,9 @@ public class TestHybridCgModel {
      * Generates a random HybridCgIm model.
      *
      * @param pm the HybridCgPm
-     * @param rng the random number generator
      * @return the generated HybridCgIm model
      */
-    public static HybridCgModel.HybridCgIm randomIm(HybridCgModel.HybridCgPm pm, Random rng) {
+    public static HybridCgModel.HybridCgIm randomIm(HybridCgModel.HybridCgPm pm) {
         HybridCgModel.HybridCgIm im = new HybridCgModel.HybridCgIm(pm);
         int n = pm.getNodes().length;
 
@@ -69,7 +68,7 @@ public class TestHybridCgModel {
                     double[] probs = new double[K];
                     double sum = 0.0;
                     for (int k = 0; k < K; k++) {
-                        probs[k] = rng.nextDouble();
+                        probs[k] = RandomUtil.getInstance().nextDouble();
                         sum += probs[k];
                     }
                     for (int k = 0; k < K; k++) {
@@ -79,11 +78,11 @@ public class TestHybridCgModel {
             } else {
                 int m = pm.getContinuousParents(y).length;
                 for (int r = 0; r < rows; r++) {
-                    im.setMean(y, r, rng.nextGaussian());         // random mean offset
+                    im.setMean(y, r, RandomUtil.getInstance().nextGaussian());         // random mean offset
                     for (int j = 0; j < m; j++) {
                         im.setCoefficient(y, r, j, RandomUtil.getInstance().nextUniform(-1, 1)); // random slope
                     }
-                    im.setVariance(y, r, 1.0 + rng.nextDouble());      // variance > 0
+                    im.setVariance(y, r, 1.0 + RandomUtil.getInstance().nextDouble());      // variance > 0
                 }
             }
         }
@@ -141,9 +140,9 @@ public class TestHybridCgModel {
         }
 
         // ----- Simulate from a random IM (deterministic seeds)
-        HybridCgModel.HybridCgIm im = randomIm(pm, new Random(12345));
+        HybridCgModel.HybridCgIm im = randomIm(pm);
         int n = 5000;
-        HybridCgModel.HybridCgIm.Sample draw = im.sample(n, new Random(42));
+        HybridCgModel.HybridCgIm.Sample draw = im.sample(n);
 
         // Convert to a Tetrad DataSet
         DataSet simulated = im.toDataSet(draw);

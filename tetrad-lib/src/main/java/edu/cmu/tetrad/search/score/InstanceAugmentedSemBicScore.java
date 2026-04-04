@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.linear.*;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.Arrays;
 import java.util.List;
@@ -327,12 +328,12 @@ public final class InstanceAugmentedSemBicScore implements InstanceSpecificScore
         }
 
         double diff = xCentered[i] - mu;
-        return -0.5 * (Math.log(2.0 * Math.PI * s2) + (diff * diff) / s2);
+        return -0.5 * (TMath.log(2.0 * TMath.PI * s2) + (diff * diff) / s2);
     }
 
     private double clampVar(double s2) {
         if (Double.isNaN(s2) || s2 <= 0.0) return varFloor;
-        return Math.max(s2, varFloor);
+        return TMath.max(s2, varFloor);
     }
 
     /* ------------------------ Accessors ------------------------ */

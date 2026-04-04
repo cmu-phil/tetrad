@@ -32,7 +32,7 @@ import edu.cmu.tetradapp.util.SortingComboBox;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -658,7 +658,7 @@ final class UpdaterEditingTableObs extends JTable {
             col = getNumParents();
         }
 
-        this.focusCol = FastMath.max(col, getNumParents());
+        this.focusCol = TMath.max(col, getNumParents());
 
         if (this.focusCol >= getNumParents() &&
             this.focusCol < getColumnCount()) {

@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.SublistGenerator;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -225,15 +226,15 @@ public class CpdagParentDistancesFromTrue {
             return 0.0; // No distance if true strength is within the coefficient range
         } else if (trueStrength <= min) {
             if (distanceType == DistanceType.SQUARED) {
-                return Math.pow(trueStrength - min, 2); // Squared distance from the minimum coefficient
+                return TMath.pow(trueStrength - min, 2); // Squared distance from the minimum coefficient
             } else {
-                return Math.abs(trueStrength - min); // Distance from the minimum coefficient
+                return TMath.abs(trueStrength - min); // Distance from the minimum coefficient
             }
         } else {
             if (distanceType == DistanceType.SQUARED) {
-                return Math.pow(trueStrength - max, 2); // Squared distance from the maximum coefficient
+                return TMath.pow(trueStrength - max, 2); // Squared distance from the maximum coefficient
             } else {
-                return Math.abs(trueStrength - max); // Distance from the maximum coefficient
+                return TMath.abs(trueStrength - max); // Distance from the maximum coefficient
             }
         }
     }

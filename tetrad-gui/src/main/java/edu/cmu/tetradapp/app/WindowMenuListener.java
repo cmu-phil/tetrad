@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.app;
 
+import edu.cmu.tetrad.util.NaturalSort;
+
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
@@ -111,7 +113,7 @@ final class WindowMenuListener implements MenuListener, ActionListener {
             titlesToFrames.put(title, layer0Frame);
         }
 
-        Collections.sort(titles);
+        titles.sort(NaturalSort.naturalComparator());
 
         for (String title1 : titles) {
             JMenuItem item = new JMenuItem(title1);

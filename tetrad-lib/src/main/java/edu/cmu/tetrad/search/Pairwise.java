@@ -29,15 +29,15 @@ import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
 import static edu.cmu.tetrad.util.MatrixUtils.transpose;
 import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Double.isNaN;
-import static org.apache.commons.math3.util.FastMath.*;
-import static org.apache.commons.math3.util.FastMath.pow;
+import static edu.cmu.tetrad.util.TMath.*;
+import static edu.cmu.tetrad.util.TMath.pow;
 
 /**
  * Implements a number of methods which take a fixed graph as input and use linear, non-Gaussian methods to orient the
@@ -221,7 +221,6 @@ public class Pairwise {
             FastIca fastIca = new FastIca(this.dataSets.getFirst().getDoubleData(),
                     this.dataSets.getFirst().getNumColumns());
             FastIca.IcaResult result = fastIca.findComponents();
-            System.out.println(result.W());
             return new EdgeListGraph();
         }
 
@@ -1152,7 +1151,7 @@ public class Pairwise {
      * @return The result of applying the function g(x) to the input value.
      */
     private double g(double x) {
-        return log(cosh(FastMath.max(x, 0)));
+        return log(cosh(TMath.max(x, 0)));
     }
 
     /**
@@ -1193,8 +1192,6 @@ public class Pairwise {
             }
         }
 
-        System.out.println(_graph);
-
         return _graph;
     }
 
@@ -1216,8 +1213,8 @@ public class Pairwise {
 
         for (int i = 0; i < d1b.length; i++) {
             double y1 = (d1in[i] - grotMIN) / (grotMAX - grotMIN);
-            double y2 = FastMath.min(y1, 1.0);
-            double y3 = FastMath.max(y2, 0.0);
+            double y2 = TMath.min(y1, 1.0);
+            double y3 = TMath.max(y2, 0.0);
             d1b[i] = y3;
         }
 
@@ -1235,8 +1232,8 @@ public class Pairwise {
 
         for (int i = 0; i < d2b.length; i++) {
             double y1 = (d2in[i] - grotMIN) / (grotMAX - grotMIN);
-            double y2 = FastMath.min(y1, 1.0);
-            double y3 = FastMath.max(y2, 0.0);
+            double y2 = TMath.min(y1, 1.0);
+            double y3 = TMath.max(y2, 0.0);
             d2b[i] = y3;
         }
 
@@ -1314,8 +1311,8 @@ public class Pairwise {
      * @return A List of double arrays containing the extracted x and y data.
      */
     private List<double[]> extractData(DataSet data, Node _x, Node _y) {
-        int xIndex = data.getColumn(_x);
-        int yIndex = data.getColumn(_y);
+        int xIndex = data.getColumnIndex(_x);
+        int yIndex = data.getColumnIndex(_y);
 
         double[][] _data = data.getDoubleData().transpose().toArray();
 
@@ -1369,8 +1366,8 @@ public class Pairwise {
      * @return A list containing the X-values and Y-values as double arrays.
      */
     private List<double[]> prepareData(DataSet concatData, Node _x, Node _y) {
-        int xIndex = concatData.getColumn(_x);
-        int yIndex = concatData.getColumn(_y);
+        int xIndex = concatData.getColumnIndex(_x);
+        int yIndex = concatData.getColumnIndex(_y);
 
         double[] xData = concatData.getDoubleData().getColumn(xIndex).toArray();
         double[] yData = concatData.getDoubleData().getColumn(yIndex).toArray();
@@ -1830,7 +1827,7 @@ public class Pairwise {
 
             DataSet dataSet = this.dataSets.get(m);
 
-            int targetCol = dataSet.getColumn(target);
+            int targetCol = dataSet.getColumnIndex(target);
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
                 if (isNaN(dataSet.getDouble(i, targetCol))) {
@@ -1843,7 +1840,7 @@ public class Pairwise {
                     break;
                 }
 
-                int regressorCol = dataSet.getColumn(regressor);
+                int regressorCol = dataSet.getColumnIndex(regressor);
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     if (isNaN(dataSet.getDouble(i, regressorCol))) {
@@ -1933,7 +1930,7 @@ public class Pairwise {
 
             DataSet dataSet = this.dataSets.get(m);
 
-            int targetCol = dataSet.getColumn(target);
+            int targetCol = dataSet.getColumnIndex(target);
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
                 if (isNaN(dataSet.getDouble(i, targetCol))) {
@@ -1946,7 +1943,7 @@ public class Pairwise {
                     break;
                 }
 
-                int regressorCol = dataSet.getColumn(regressor);
+                int regressorCol = dataSet.getColumnIndex(regressor);
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     if (isNaN(dataSet.getDouble(i, regressorCol))) {
@@ -2042,8 +2039,8 @@ public class Pairwise {
         if (this._data == null) {
             this._data = DataTransforms.centerData(this.matrices.get(0));
         }
-        int xIndex = this.dataSets.getFirst().getColumn(this.dataSets.getFirst().getVariable(x.getName()));
-        int yIndex = this.dataSets.getFirst().getColumn(this.dataSets.getFirst().getVariable(y.getName()));
+        int xIndex = this.dataSets.getFirst().getColumnIndex(this.dataSets.getFirst().getVariable(x.getName()));
+        int yIndex = this.dataSets.getFirst().getColumnIndex(this.dataSets.getFirst().getVariable(y.getName()));
         double[] xCol = this._data.getColumn(xIndex).toArray();
         double[] yCol = this._data.getColumn(yIndex).toArray();
         int N = xCol.length;
@@ -2075,8 +2072,7 @@ public class Pairwise {
         double abs2 = abs(sdY - sdYX);
 
         if (abs(abs1 - abs2) < this.epsilon) {
-            System.out.println("Orienting by non-Gaussianity " + abs(abs1 - abs2) + " epsilon = " + this.epsilon);
-            System.out.println(x + "===" + y);
+            TetradLogger.getInstance().log("Orienting by non-Gaussianity " + abs(abs1 - abs2) + " epsilon = " + this.epsilon);
             double v = resolveOneEdgeMaxR3b(xCol, yCol);
 
             if (v < 0) {
@@ -2090,8 +2086,7 @@ public class Pairwise {
             return;
         }
 
-        System.out.println("Orienting by variances " + abs(abs1 - abs2));
-        System.out.println(x + "===" + y);
+        TetradLogger.getInstance().log("Orienting by variances " + abs(abs1 - abs2));
 
         if (sdXY + ngY < sdYX + ngX) {
             graph.addDirectedEdge(x, y);
@@ -2154,7 +2149,7 @@ public class Pairwise {
         for (var j = 0; j < N; j++) x[j] = abs(x[j] - central);
         var mad = median(x);
         var sigmaRobust = 1.4826 * mad;
-        return 1.06 * sigmaRobust * FastMath.pow(N, -0.20);
+        return 1.06 * sigmaRobust * TMath.pow(N, -0.20);
     }
 
     /**

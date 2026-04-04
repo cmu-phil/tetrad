@@ -24,8 +24,10 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.GammaDistribution;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.factory.LinearSolverFactory_DDRM;
@@ -69,10 +71,6 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
      * framework.
      */
     private final List<Node> variables;
-    /**
-     * RNG for permutations; can be null (seeded later).
-     */
-    public Random rng = new Random(0);
     /**
      * Specifies the degree of the polynomial in the polynomial kernel function.
      * <p>
@@ -184,7 +182,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
      *                list, and other attributes.
      */
     public Kci(DataSet dataSet) {
-        this.dataSet = dataSet;
+        this.dataSet = DataTransforms.standardizeData(dataSet);
 
         this.varToRow = new HashMap<>();
         this.rows = new ArrayList<>();
@@ -279,12 +277,12 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         return sb.toString();
     }
 
-    private static int[] uniformSample(int n, int m, Random rng) {
+    private static int[] uniformSample(int n, int m) {
         int[] idx = new int[n];
         for (int i = 0; i < n; i++) idx[i] = i;
         // Partial FisherâYates
         for (int i = 0; i < m; i++) {
-            int j = i + rng.nextInt(n - i);
+            int j = i + RandomUtil.getInstance().nextInt(n - i);
             int t = idx[i];
             idx[i] = idx[j];
             idx[j] = t;
@@ -304,7 +302,6 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
 
         // --- 1) Estimate null mean and variance via a small number of permutations
         final int Bmom = 500;               // 128â512 is a good range
-        final Random rng = new Random(7);   // fixed seed for stability in tests
 
         double mean = 0.0, m2 = 0.0;
         int[] idx = new int[N];
@@ -313,7 +310,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         for (int b = 0; b < Bmom; b++) {
             // FisherâYates shuffle of idx
             for (int i = N - 1; i > 0; i--) {
-                int j = rng.nextInt(i + 1);
+                int j = RandomUtil.getInstance().nextInt(i + 1);
                 int t = idx[i];
                 idx[i] = idx[j];
                 idx[j] = t;
@@ -358,9 +355,8 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
      * Permutation p-value for conditional KCI. Permute Y (equivalently, conjugate RY by P) and recompute S_perm = (1/n)
      * tr(RX * P RY Páµ).
      */
-    private static double permutationPValueConditional(SimpleMatrix RX, SimpleMatrix RY, double stat, int N, int numPermutations, Random rng) {
+    private static double permutationPValueConditional(SimpleMatrix RX, SimpleMatrix RY, double stat, int N, int numPermutations) {
         if (N <= 1 || numPermutations <= 0) return 1.0;
-        if (rng == null) rng = new Random(0);
 
         final double[] rx = RX.getDDRM().data;
         final double[] ry = RY.getDDRM().data;
@@ -373,7 +369,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         for (int b = 0; b < numPermutations; b++) {
             // Shuffle idx
             for (int i = N - 1; i > 0; i--) {
-                int j = rng.nextInt(i + 1);
+                int j = RandomUtil.getInstance().nextInt(i + 1);
                 int t = idx[i];
                 idx[i] = idx[j];
                 idx[j] = t;
@@ -414,7 +410,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
 
     private static double trace(SimpleMatrix M) {
         DMatrixRMaj A = M.getDDRM();
-        int n = Math.min(A.getNumRows(), A.getNumCols());
+        int n = TMath.min(A.getNumRows(), A.getNumCols());
         double t = 0.0;
         for (int i = 0; i < n; i++) t += A.get(i, i);
         return t;
@@ -636,7 +632,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
             p = pValueGammaConditional(RX, RY, stat, n);
         } else {
             p = permutationPValueConditional(
-                    RX, RY, stat, n, getNumPermutations(), rng);
+                    RX, RY, stat, n, getNumPermutations());
         }
 
         if (verbose) {
@@ -654,9 +650,9 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         // mean diagonal is a decent scale proxy for PSD-ish kernels
         DMatrixRMaj A = KZraw.getDDRM();
         double diagMean = 0.0;
-        int m = Math.min(A.getNumRows(), A.getNumCols());
+        int m = TMath.min(A.getNumRows(), A.getNumCols());
         for (int i = 0; i < m; i++) diagMean += A.get(i, i);
-        diagMean /= Math.max(m, 1);
+        diagMean /= TMath.max(m, 1);
 
         double scale = diagMean;  // already "per-sample"
         if (!Double.isFinite(scale) || scale <= 1e-12) scale = 1.0;
@@ -757,13 +753,13 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         double[] diag = new double[n];
         for (int i = 0; i < n; i++) diag[i] = G.get(i, i);
 
-        double inv2s2 = 1.0 / Math.max(2.0 * sigma * sigma, 1e-24);
+        double inv2s2 = 1.0 / TMath.max(2.0 * sigma * sigma, 1e-24);
         int p = 0;
         for (int i = 0; i < n; i++) {
             double di = diag[i];
             for (int j = 0; j < n; j++, p++) {
                 double v = di + diag[j] - 2.0 * G.get(i, j);
-                kd[p] = Math.exp(-v * inv2s2);
+                kd[p] = TMath.exp(-v * inv2s2);
             }
         }
         return SimpleMatrix.wrap(K);
@@ -826,7 +822,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
 //        // Edge case: no variables â constant kernel (coef0^degree) * 1
 //        if (d == 0) {
 //            DMatrixRMaj K = new DMatrixRMaj(n, n);
-//            Arrays.fill(K.data, Math.pow(coef0, degree));
+//            Arrays.fill(K.data, TMath.pow(coef0, degree));
 //            return SimpleMatrix.wrap(K);
 //        }
 //
@@ -860,7 +856,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
 //            }
 //        } else {
 //            for (int i = 0; i < kd.length; i++) {
-//                kd[i] = Math.pow(a * gd[i] + b, degree);
+//                kd[i] = TMath.pow(a * gd[i] + b, degree);
 //            }
 //        }
 //        return SimpleMatrix.wrap(K);
@@ -871,7 +867,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
 
         if (d == 0) {
             DMatrixRMaj K = new DMatrixRMaj(n, n);
-            Arrays.fill(K.data, Math.pow(coef0, degree));
+            Arrays.fill(K.data, TMath.pow(coef0, degree));
             return SimpleMatrix.wrap(K);
         }
 
@@ -896,7 +892,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
                 kd[i] = v * v;
             }
         } else {
-            for (int i = 0; i < kd.length; i++) kd[i] = Math.pow(a * gd[i] + b, degree);
+            for (int i = 0; i < kd.length; i++) kd[i] = TMath.pow(a * gd[i] + b, degree);
         }
         return SimpleMatrix.wrap(K);
     }
@@ -917,8 +913,8 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         // ✅ bandwidth should be computed in the same feature space you kernelize
         DMatrixRMaj X = buildX(varRows, true, null);
 
-        int m = Math.min(n, 256);
-        int[] idx = uniformSample(n, m, rng);
+        int m = TMath.min(n, 256);
+        int[] idx = uniformSample(n, m);
 
         List<Double> dists = new ArrayList<>(m * (m - 1) / 2);
         for (int a = 0; a < m; a++) {
@@ -937,7 +933,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
 
         Collections.sort(dists);
         double med2 = dists.get(dists.size() / 2);
-        double sigma = Math.sqrt(med2 / 2.0);
+        double sigma = TMath.sqrt(med2 / 2.0);
         if (!(sigma > 0.0) || !Double.isFinite(sigma)) sigma = 1.0;
 
         sigma *= getScalingFactor();
@@ -985,7 +981,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
 
         // Clamp for numeric robustness
         if (!Double.isFinite(p)) return 1.0;
-        return Math.max(0.0, Math.min(p, 1.0));
+        return TMath.max(0.0, TMath.min(p, 1.0));
 
 //        throw new UnsupportedOperationException(
 //                "Use checkIndependence(Node,Node,Set) with the dataset; array version is unsupported for block tests.");
@@ -1020,7 +1016,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
             }
             double mean = sum / n;
             double var = (sumsq - n * mean * mean) / (n - 1);
-            double sd = (var > 0.0) ? Math.sqrt(var) : 1.0;
+            double sd = (var > 0.0) ? TMath.sqrt(var) : 1.0;
             if (!Double.isFinite(sd) || sd <= 0.0) sd = 1.0;
 
             for (int r = 0; r < n; r++) {
@@ -1037,8 +1033,8 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         double g = getPolyGamma();
         if (!Double.isFinite(g) || g <= 0.0) g = 1.0;
         // Heuristic: treat "1.0" as "unset default".
-        if (Math.abs(g - 1.0) < 1e-12) {
-            return 1.0 / Math.max(d, 1);
+        if (TMath.abs(g - 1.0) < 1e-12) {
+            return 1.0 / TMath.max(d, 1);
         }
         return g;
     }
@@ -1087,7 +1083,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
 
             double mean = sum / count;
             double var = (sumsq - count * mean * mean) / (count - 1); // ddof=1
-            double sd = (var > 0.0) ? Math.sqrt(var) : 1.0;
+            double sd = (var > 0.0) ? TMath.sqrt(var) : 1.0;
             if (!Double.isFinite(sd) || sd <= 0.0) sd = 1.0;
 
             for (int r = 0; r < n; r++) {
@@ -1123,8 +1119,8 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
                 final int d = cols.size();
                 DMatrixRMaj X = buildX(cols, true, scales);
 
-                int m = Math.min(n, 256);
-                int[] idx = uniformSample(n, m, rng);
+                int m = TMath.min(n, 256);
+                int[] idx = uniformSample(n, m);
                 List<Double> dists = new ArrayList<>(m * (m - 1) / 2);
                 for (int a = 0; a < m; a++) {
                     int ii = idx[a];
@@ -1142,7 +1138,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
                 if (!dists.isEmpty()) {
                     Collections.sort(dists);
                     double med2 = dists.get(dists.size() / 2);
-                    sigma = Math.sqrt(med2 / 2.0);
+                    sigma = TMath.sqrt(med2 / 2.0);
                     if (!(sigma > 0.0) || !Double.isFinite(sigma)) sigma = 1.0;
                 }
                 sigma *= getScalingFactor();
@@ -1156,13 +1152,13 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
                 double[] diag = new double[n];
                 for (int i = 0; i < n; i++) diag[i] = G.get(i, i);
 
-                double inv2s2 = 1.0 / Math.max(2.0 * sigma * sigma, 1e-24);
+                double inv2s2 = 1.0 / TMath.max(2.0 * sigma * sigma, 1e-24);
                 int p = 0;
                 for (int i = 0; i < n; i++) {
                     double di = diag[i];
                     for (int j = 0; j < n; j++, p++) {
                         double v = di + diag[j] - 2.0 * G.get(i, j);
-                        kd[p] = Math.exp(-v * inv2s2);
+                        kd[p] = TMath.exp(-v * inv2s2);
                     }
                 }
                 return SimpleMatrix.wrap(K);

@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.util.*;
@@ -170,7 +171,7 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
     @Override
     public void setRows(List<Integer> rows) {
         if (test instanceof RowsSettable rs) rs.setRows(rows);
-        else throw new UnsupportedOperationException("Wrapped test does not support setRows()");
+//        else throw new UnsupportedOperationException("Wrapped test does not support setRows()");
     }
 
     /**
@@ -392,8 +393,7 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
         double p = eval.pValue();
         double alpha = test.getAlpha();
 
-        // Decision must be computed now, from the current alpha.
-        boolean independent = !Double.isNaN(p) && p > alpha;
+        boolean independent = eval.independent();
 
         double score = Double.isNaN(p) ? -alpha : (alpha - p);
         return new IndependenceResult(fact, independent, p, score);
@@ -543,8 +543,8 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
         Integer iy = idOfName(f.getY());
         if (ix == null || iy == null) return null;
 
-        int a = Math.min(ix, iy);
-        int b = Math.max(ix, iy);
+        int a = TMath.min(ix, iy);
+        int b = TMath.max(ix, iy);
 
         Set<Node> zset = f.getZ();
         if (zset == null || zset.isEmpty()) {

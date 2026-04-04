@@ -34,6 +34,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -278,7 +279,12 @@ public class TestRicf {
                 30, 15, 15, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         CovarianceMatrix cov = new CovarianceMatrix(data);
 
         Ricf.RicfResult result = new Ricf().ricf(new SemGraph(graph), cov, 0.001);
@@ -325,7 +331,12 @@ public class TestRicf {
         SemPm pm = new SemPm(g1);
         SemIm im = new SemIm(pm);
 
-        DataSet dataset = im.simulateData(1000, false);
+        DataSet dataset = null;
+        try {
+            dataset = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         ICovarianceMatrix cov = new CovarianceMatrix(dataset);
 

@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -521,7 +522,7 @@ public final class Rfci implements IGraphSearch {
         boolean independent;
 
         List<Node> sepSet = new ArrayList<>(_sepSet);
-        Collections.sort(sepSet);
+        sepSet.sort(NaturalSort.naturalComparator());
 
         try {
             independent = this.test.checkIndependence(x, y, empty).isIndependent();

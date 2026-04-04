@@ -22,7 +22,7 @@ package edu.cmu.tetrad.simulation;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,8 +76,8 @@ public class Gdistance {
         //calculate distance between two nodes based on their locations
         //simple starter is simply the taxicab distance:
         //calc differences in X, Y, and Z axis, then sum them together.
-        int column1 = locationMap.getColumn(node1);
-        int column2 = locationMap.getColumn(node2);
+        int column1 = locationMap.getColumnIndex(node1);
+        int column2 = locationMap.getColumnIndex(node2);
 
         //System.out.println(column1);
 
@@ -90,10 +90,10 @@ public class Gdistance {
         double value23 = locationMap.getDouble(2, column2);
 
         //taxicab distance
-        //double taxicab = FastMath.abs(value11 - value21) + FastMath.abs(value12 - value22) + FastMath.abs(value13 - value23);
+        //double taxicab = TMath.abs(value11 - value21) + TMath.abs(value12 - value22) + TMath.abs(value13 - value23);
         //euclidian distance instead of taxicab
 
-        return FastMath.sqrt((value11 - value21) * x * (value11 - value21) * x + (value12 - value22) * y *
+        return TMath.sqrt((value11 - value21) * x * (value11 - value21) * x + (value12 - value22) * y *
                                                                                  (value12 - value22) * y + (value13 - value23) * z * (value13 - value23) * z);
     }
 
@@ -131,7 +131,7 @@ public class Gdistance {
             double dist21 = Gdistance.nodesDistance(node12, node21, locationMap, xD, yD, zD);
 
             //then return the minimum of the two ways of pairing nodes from each edge
-            return FastMath.min(dist11 + dist22, dist12 + dist21);
+            return TMath.min(dist11 + dist22, dist12 + dist21);
         }
 
     }
@@ -177,7 +177,7 @@ public class Gdistance {
 
         List<Edge> taskEdges = new ArrayList<>();
         //can change the times 3.0 part if it seems better to do so
-        int taskSize = (int) FastMath.ceil(graph1.getNumEdges() / (5.0 * this.cores));
+        int taskSize = (int) TMath.ceil(graph1.getNumEdges() / (5.0 * this.cores));
         System.out.println(" edges1: " + graph1.getNumEdges() + " taskSize: " + taskSize);
 
         for (Edge edge1 : graph1.getEdges()) {

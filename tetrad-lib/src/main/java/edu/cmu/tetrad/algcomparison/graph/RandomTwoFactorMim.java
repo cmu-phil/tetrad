@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -27,7 +27,6 @@ import edu.cmu.tetrad.util.Parameters;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Creates a random graph by adding forward edges.
@@ -63,8 +62,7 @@ public class RandomTwoFactorMim implements RandomGraph {
                 numLatentMeasuredImpureParents,
                 numMeasuredMeasuredImpureParents,
                 numMeasuredMeasuredImpureAssociations,
-                RandomMim.LatentLinkMode.CARTESIAN_PRODUCT,
-                new Random());
+                RandomMim.LatentLinkMode.CARTESIAN_PRODUCT);
     }
 
     /**

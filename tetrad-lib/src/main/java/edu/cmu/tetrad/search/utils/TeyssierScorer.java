@@ -25,12 +25,13 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
-import static org.apache.commons.math3.util.FastMath.floor;
+import static edu.cmu.tetrad.util.TMath.floor;
 
 
 /**
@@ -208,8 +209,8 @@ public class TeyssierScorer {
         int minj = Integer.MAX_VALUE;
         for (Node node : j) {
             jIndices.add(index(node));
-            maxj = Math.max(maxj, index(node));
-            minj = Math.min(minj, index(node));
+            maxj = TMath.max(maxj, index(node));
+            minj = TMath.min(minj, index(node));
         }
 
         int kIndex = index(k);

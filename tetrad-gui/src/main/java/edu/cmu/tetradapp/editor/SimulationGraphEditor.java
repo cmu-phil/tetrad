@@ -23,6 +23,8 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.GraphWrapper;
+import edu.cmu.tetradapp.ui.PaddingPanel;
+import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,7 +45,7 @@ public final class SimulationGraphEditor extends JPanel {
     /**
      * The data wrapper being displayed.
      */
-    private final List<Graph> graphs;
+    private List<Graph> graphs;
 
     /**
      * A tabbed pane containing displays for all data models and displaying 'dataModel' currently.
@@ -90,18 +92,20 @@ public final class SimulationGraphEditor extends JPanel {
             // Do nothing.
         } else if (graphs.size() > 1) {
             for (int i = 0; i < graphs.size(); i++) {
-                this.tabbedPane.addTab(SimulationGraphEditor.tabName(i + 1), new JScrollPane(graphDisplay(graphs.get(i))));
+                this.tabbedPane.addTab(SimulationGraphEditor.tabName(i + 1), graphDisplay(graphs.get(i)));
             }
 
             add(this.tabbedPane, BorderLayout.CENTER);
         } else {
-            this.tabbedPane.addTab(SimulationGraphEditor.tabName(1), new JScrollPane(graphDisplay(graphs.get(0))));
+            this.tabbedPane.addTab(SimulationGraphEditor.tabName(1), graphDisplay(graphs.get(0)));
             add(this.tabbedPane, BorderLayout.CENTER);
 
         }
 
         this.tabbedPane.validate();
         this.tabbedPane.repaint();
+
+        this.graphs = graphs;
     }
 
     /**
@@ -166,11 +170,27 @@ public final class SimulationGraphEditor extends JPanel {
         GraphEditor graphEditor = new GraphEditor(new GraphWrapper(graph));
         graphEditor.setEnableEditing(false);
 
-        return graphEditor.getWorkbench();
+        GraphWorkbench workbench = graphEditor.getWorkbench();
+
+        JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.RIGHT);
+        tabbedPane.addTab("Graph", new JScrollPane(workbench));
+
+        JTextArea ta = new JTextArea(String.valueOf(graph));
+        ta.setEditable(false);
+        ta.setCaretPosition(0);
+        JScrollPane textScroll = new JScrollPane(ta);
+
+        tabbedPane.addTab("Text", textScroll);
+
+        return new PaddingPanel(tabbedPane);
     }
 
     private JTabbedPane tabbedPane() {
         return this.tabbedPane;
+    }
+
+    public Graph getSelectedGraph(){
+        return this.graphs.get(tabbedPane().getSelectedIndex());
     }
 }
 

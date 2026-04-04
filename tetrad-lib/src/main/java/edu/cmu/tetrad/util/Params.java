@@ -38,6 +38,10 @@ import java.util.Set;
  */
 public final class Params {
 
+
+    private Params() {
+    }
+
     /**
      * Constant <code>ADD_ORIGINAL_DATASET="addOriginalDataset"</code>
      */
@@ -507,6 +511,10 @@ public final class Params {
      */
     public static final String PENALTY_DISCOUNT = "penaltyDiscount";
     /**
+     * Constant <code>PENALTY_DISCOUNT="penaltyDiscount"</code>
+     */
+    public static final String PENALTY_DISCOUNT_DEFAULT_1 = "penaltyDiscountDefault1";
+    /**
      * Constant <code>PENALTY_DISCOUNT_ZS="penaltyDiscountZs"</code>
      */
     public static final String PENALTY_DISCOUNT_ZS = "penaltyDiscountZs";
@@ -801,17 +809,21 @@ public final class Params {
      */
     public static final String GRASP_USE_VP_SCORING = "graspUseVpScoring";
     /**
-     * Constant <code>SIMULATION_ERROR_TYPE="simulationErrorType"</code>
+     * Constant <code>CUSTOM_NOISE_OPTION="customNoiseOption"</code>
      */
-    public static final String SIMULATION_ERROR_TYPE = "simulationErrorType";
-    /**
-     * Constant <code>SIMULATION_PARAM1="simulationParam1"</code>
-     */
-    public static final String SIMULATION_PARAM1 = "simulationParam1";
-    /**
-     * Constant <code>SIMULATION_PARAM2="simulationParam2"</code>
-     */
-    public static final String SIMULATION_PARAM2 = "simulationParam2";
+    public static final String CUSTOM_NOISE_OPTION = "customNoiseOption";
+//    /**
+//     * Constant <code>SIMULATION_ERROR_TYPE="simulationErrorType"</code>
+//     */
+//    public static final String SIMULATION_ERROR_TYPE = "simulationErrorType";
+//    /**
+//     * Constant <code>SIMULATION_PARAM1="simulationParam1"</code>
+//     */
+//    public static final String SIMULATION_PARAM1 = "simulationParam1";
+//    /**
+//     * Constant <code>SIMULATION_PARAM2="simulationParam2"</code>
+//     */
+//    public static final String SIMULATION_PARAM2 = "simulationParam2";
     /**
      * Constant <code>SELECTION_MIN_EFFECT="selectionMinEffect"</code>
      */
@@ -1042,6 +1054,14 @@ public final class Params {
      */
     public static final String HIDDEN_DIMENSIONS = "hiddenDimensions";
     /**
+     * Constant <code>NOISE_EXPRESSION="noiseExpression"</code>
+     */
+    public static final String NOISE_EXPRESSION = "noiseExpression";
+    /**
+     * Constant <code>OPTIONAL_NOISE_EXPRESSION="optionalNoiseExpression"</code>
+     */
+    public static final String CUSTOM_NOISE_EXPRESSION = "customNoiseExpression";
+    /**
      * Constant <code>INPUT_SCALE="inputScale"</code>
      */
     public static final String INPUT_SCALE = "inputScale";
@@ -1080,7 +1100,7 @@ public final class Params {
     /**
      * Constant <code>KML_BW_MAX_ROWS="kmlBwMaxRows"</code>
      */
-    public static final String KML_BW_MAX_ROWS = "kmlBwMaxRows";
+    public static final String BW_MAX_ROWS = "bwMaxRows";
     /**
      * Constant <code>KML_NUM_FEATURES="kmlNumFeatures"</code>
      */
@@ -1092,7 +1112,7 @@ public final class Params {
     /**
      * Constant <code>KML_CAT_RHO="kmlCatRho"</code>
      */
-    public static final String KML_CAT_RHO = "kmlCatRho";
+    public static final String CAT_RHO = "catRho";
     /**
      * Constant <code>CLUSTER_SIZES="clusterSizes"</code>
      */
@@ -1206,10 +1226,131 @@ public final class Params {
      * Constant <code>EXCLUDE_SELECTION_BIAS="excludeSelectionBias"</code>
      */
     public static final String EXCLUDE_SELECTION_BIAS = "excludeSelectionBias";
+    /**
+     * Constant <code>BINS_PER_CONT_XY="binsPerContXY"</code>
+     */
+    public static final String BINS_PER_CONT_XY = "binsPerContXY";
+    /**
+     * Constant <code>BINS_PER_CONT_Z="binsPerContZ"</code>
+     */
+    public static final String BINS_PER_CONT_Z = "binsPerContZ";
+    /**
+     * Constant <code>MAX_CELLS_PER_STRATUM="maxCellsPerStratum"</code>
+     */
+    public static final String MAX_CELLS_PER_STRATUM = "maxCellsPerStratum";
+    /**
+     * Constant <code>MAX_OBSERVED_LEVELS_PER_VAR="maxObservedLevelsPerVar"</code>
+     */
+    public static final String MAX_OBSERVED_LEVELS_PER_VAR = "maxObservedLevelsPerVar";
+    /**
+     * Constant <code>MIN_STRATUM_SIZE="minStratumSize"</code>
+     */
+    public static final String MIN_STRATUM_SIZE = "minStratumSize";
+    /**
+     * Constant <code>USE_MAX_ACROSS_STRATA="useMaxAcrossStrata"</code>
+     */
+    public static final String USE_MAX_ACROSS_STRATA = "useMaxAcrossStrata";
+    /**
+     * Constant <code>MINIMAX_PERMUTATIONS="miniMaxPermutations"</code>
+     */
+    public static final String MINIMAX_PERMUTATIONS = "minimaxPermutations";
+    /**
+     * Constant <code>MINIMAX_NU="minimaxMaxNu"</code>
+     */
+    public static final String MINIMAX_NU = "minimaxMaxNu";
+    /**
+     * Constant <code>MINIMAX_NU="trfffNu"</code>
+     */
+    public static final String TRFF_NU = "trffNu";
+    /**
+     * Constant <code>MINIMAX_SCALE="minimaxScale"</code>
+     */
+    public static final String MINIMAX_SCALE = "minimaxScale";
+    /**
+     * Constant <code>MINIMAX_RIDGE="minimaxRidge"</code>
+     */
+    public static final String MINIMAX_RIDGE = "minimaxRidge";
+    /**
+     * Constant <code>TRFF_RIDGE="trffRidge"</code>
+     */
+    public static final String TRFF_RIDGE = "trffRidge";
+    /**
+     * Constant <code>TRFF_RIDGE="trffRidge"</code>
+     */
+    public static final String FFML_RIDGE = "ffmlRidge";
+    /**
+     * Constant <code>MINIMAX_RFF_FEATURES="minimaxRffFeatures"</code>
+     */
+    public static final String MINIMAX_FF_FEATURES = "minimaxFfFeatures";
+    /**
+     * Constant <code>MINIMAX_RFF_FEATURES="minimaxRffFeatures"</code>
+     */
+    public static final String TRFF_FF_FEATURES = "trffFfFeatures";
+    /**
+     * Constant <code>NUM_FF_FEATURES="numFfFeatures"</code>
+     */
+    public static final String NUM_FF_FEATURES = "numFfFeatures";
+    /**
+     * Constant <code>FFML_FF_FEATURES="ffmlFfFeatures"</code>
+     */
+    public static final String FFML_FF_FEATURES = "ffmlFfFeatures";    /**
+     * Constant <code>MINIMAX_RFF_SIGMA="minimaxRffSigma"</code>
+     */
+    public static final String MINIMAX_FF_SIGMA = "minimaxFfSigma";
+    /**
+     * Constant <code>MINIMAX_IRLS_ITERS="minimaxIrlsIters"</code>
+     */
+    public static final String MINIMAX_IRLS_ITERS = "minimaxIrlsIters";
+    /**
+     * Constant <code>MINIMAX_MAX_ITERATIONS="minimaxMaxIterations"</code>
+     */
+    public static final String GCM_REGRESSOR_TYPE = "gcmRegressorType";
+    /**
+     * Constant <code>MINIMAX_MAX_ITERATIONS="minimaxMaxIterations"</code>
+     */
+    public static final String GCM_RIDGE = "gcmRidge";
+    /**
+     * Constant <code>MINIMAX_MAX_ITERATIONS="minimaxMaxIterations"</code>
+     */
+    public static final String GCM_RFF_FEATURES = "gcmRffFeatures";
+    /**
+     * Constant <code>MINIMAX_MAX_ITERATIONS="minimaxMaxIterations"</code>
+     */
+    public static final String GCM_RFF_SIGMA = "gcmRffSigma";
+    /**
+     * Constant <code>LEGENDRE_DEGREE="minimaxLegendreDegree"</code> Degree of the Legendre polynomial used in
+     * the MLegendre BIC scoring methodology.
+     */
+    public static final String LEGENDRE_DEGREE = "minimaxLegendreDegree";
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_CLIP="minimaxLegendreClip"</code> Clip value for the Legendre BIC scoring
+     * methodology.
+     */
+    public static final String LEGENDRE_CLIP = "minimaxLegendreClip";
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_RIDGE="minimaxLegendreRidge"</code> Ridge parameter for the Minimax Legendre
+     * scoring methodology.
+     */
+    public static final String LEGENDRE_RIDGE = "minimaxLegendreRidge";
+    /**
+     * Constant <code>LEGENDRE_RFF_FEATURES="minimaxLegendreRffFeatures"</code> Number
+     */
+    public static final String LEGENDRE_NU = "minimaxLegendreNu";
+    /**
+     * Constant <code>LEGENDRE_RFF_SIGMA="minimaxLegendreRffSigma"</code>
+     */
+    public static final String LEGENDRE_IRLS_ITERS = "minimaxLegendreIrlsIters";
+    /**
+     * Constant <code>LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
+     */
+    public static final String LEGENDRE_IRLS_TOL = "minimaxLegendreIrlsTol";
+    /**
+     * Constant <code>LEGENDRE_INIT_SCALE="minimaxLegendreMaxIterations"</code>
+     */
+    public static final String LEGENDRE_INIT_SCALE = "minimaxLegendreInitScale";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
-
             Params.ADD_ORIGINAL_DATASET, Params.ALPHA, Params.APPLY_R1, Params.AVG_DEGREE, Params.BASIS_TYPE,
             Params.CCI_SCORE_ALPHA, Params.CG_EXACT, Params.COEF_HIGH, Params.COEF_LOW, Params.COEF_SYMMETRIC,
             Params.COLLIDER_DISCOVERY_RULE, Params.COMPLETE_RULE_SET_USED, Params.CONCURRENT_FAS,
@@ -1271,41 +1412,34 @@ public final class Params {
      * Constant <code>CELL_COUNT_TYPE="cellCountType"</code>
      */
     public static String CELL_TABLE_TYPE = "cellTableType";
-
     /**
      * Constant <code>RCIT_MODE="rcit.rcitMode"</code> Whether to use RCIT (true) or RCoT (false).
      */
     public static String RCIT_MODE = "rcit.rcitMode";
-
     /**
      * Constant <code>RCIT_NUM_FEATURES_Z="rcit.numFeaturesZ"</code> Number of random Fourier features for the
      * conditioning set Z (num_f).
      */
     public static String RCIT_NUM_FEATURES_Z = "rcit.numFeaturesZ";
-
     /**
      * Constant <code>RCIT_NUM_FEATURES_XY="rcit.numFeaturesXY"</code> Number of random Fourier features for the test
      * variables X and Y (num_f2).
      */
     public static String RCIT_NUM_FEATURES_XY = "rcit.numFeaturesXY";
-
     /**
      * Constant <code>RCIT_LAMBDA="rcit.lambda"</code> Ridge regularization parameter (λ) used during residualization.
      */
     public static String RCIT_LAMBDA = "rcit.lambda";
-
     /**
      * Constant <code>RCIT_APPROX="rcit.approx"</code> Approximation method for the null distribution: one of {"lpd4",
      * "hbe", "gamma", "chi2", "perm"}.
      */
     public static String RCIT_APPROX = "rcit.approx";
-
     /**
      * Constant <code>RCIT_PERMUTATIONS="rcit.permutations"</code> Number of permutations used when RCIT_APPROX is
      * "perm".
      */
     public static String RCIT_PERMUTATIONS = "rcit.permutations";
-
     /**
      * Constant <code>RCIT_CENTER_FEATURES="rcit.centerFeatures"</code> Whether to center feature matrices before
      * regression and HSIC.
@@ -1315,9 +1449,30 @@ public final class Params {
      * Constant <code>REPEATING_GRAPH="repeatingGraph"</code> Whether to use a repeating graph for time lag search.
      */
     public static String TIME_LAG_REPLICATING_GRAPH = "timeLagReplicatingGraph";
-
-    private Params() {
-    }
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
+     */
+    public static String PYTHON_EXE = "pythonExe";
+    /**
+     * Constant <code>MINIMAX_LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
+     */
+    public static final String PYTHON_CI_SERVER = "pythonCiServer";
+    /**
+     * Constant <code>MAX_LATENT_SUBSET_SIZE="maxLatentSubsetSize"</code>
+     */
+    public static final String MAX_LATENT_SUBSET_SIZE = "maxLatentSubsetSize";
+    /**
+     * Constant <code>MAX_LATENT_SUBSET_SIZE="maxLatentSubsetSize"</code>
+     */
+    public static final String DO_HIGHER_RANK_EXPANSION = "doHigherRankExpansion";
+    /**
+     * Constant <code>ORIENT_AND_PRUNE="orientAndPrune"</code>
+     */
+    public static final String ORIENT_AND_PRUNE = "orientAndPrune";
+    /**
+     * Constant <code>MERGE_THRESHOLD="mergeThreshold"</code>
+     */
+    public static final String MERGE_THRESHOLD = "dmMergeThreshold";
 
     /**
      * <p>getAlgorithmParameters.</p>

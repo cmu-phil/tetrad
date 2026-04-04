@@ -27,9 +27,7 @@ import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
-import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.ejml.simple.SimpleMatrix;
 
@@ -120,7 +118,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
 
     private double getPValue(Node x, Node y, Set<Node> z) {
         List<Node> zList = new ArrayList<>(z);
-        Collections.sort(zList);
+        zList.sort(NaturalSort.naturalComparator());
 
         Integer _xObj = this.nodeHash.get(x);
         Integer _yObj = this.nodeHash.get(y);
@@ -169,11 +167,11 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
 
         // Variance estimates
         double eps = 1e-10;
-        double sigma0_sq = Math.max(eps, computeResidualVariance(xIndices, zIndices));
-        double sigma1_sq = Math.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices)));
+        double sigma0_sq = TMath.max(eps, computeResidualVariance(xIndices, zIndices));
+        double sigma1_sq = TMath.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices)));
 
         // LR statistic
-        double LR_stat = nEff * Math.log(sigma0_sq / sigma1_sq);
+        double LR_stat = nEff * TMath.log(sigma0_sq / sigma1_sq);
 
         int df = yIndices.length;
         if (df == 0) {

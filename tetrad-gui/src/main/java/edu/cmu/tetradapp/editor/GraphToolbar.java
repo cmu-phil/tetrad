@@ -111,6 +111,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         }
 
         this.workbench = workbench;
+
         this.group = new ButtonGroup();
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -126,28 +127,6 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         this.addUndirectedEdge = new JToggleButton();
         this.addPartiallyOrientedEdge = new JToggleButton();
         this.addBidirectedEdge = new JToggleButton();
-
-        // Apparently it's not acting like this anymore, and recently the
-        // focus listeners have caused some weird behavior, so commenting
-        // them out. jdramsey 2014.02.28
-//        // Adding this listener fixes a previous bug where if you
-//        // select a button and then move the mouse away from the
-//        // button without releasing the mouse it would deselect. J
-//        // Ramsey 11/02/01
-//        FocusListener focusListener = new FocusAdapter() {
-//            public void focusGained(FocusEvent e) {
-//                JToggleButton component = (JToggleButton) e.getComponent();
-//                component.doClick();
-//            }
-//        };
-
-//        move.addFocusListener(focusListener);
-//        addObserved.addFocusListener(focusListener);
-//        addLatent.addFocusListener(focusListener);
-//        addNondirectedEdge.addFocusListener(focusListener);
-//        addDirectedEdge.addFocusListener(focusListener);
-//        addPartiallyOrientedEdge.addFocusListener(focusListener);
-//        addBidirectedEdge.addFocusListener(focusListener);
 
         // add listeners
         this.move.addActionListener(e -> {
@@ -213,6 +192,22 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
 
         this.move.setSelected(true);
 
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        // Reload icons when the L&F changes
+        if (this.move != null) {
+            this.move.setIcon(new ImageIcon(ImageUtils.getImage(this, "move3.gif")));
+            this.addObserved.setIcon(new ImageIcon(ImageUtils.getImage(this, "variable3.gif")));
+            this.addLatent.setIcon(new ImageIcon(ImageUtils.getImage(this, "latent3.gif")));
+            this.addDirectedEdge.setIcon(new ImageIcon(ImageUtils.getImage(this, "directed3.gif")));
+            this.addNondirectedEdge.setIcon(new ImageIcon(ImageUtils.getImage(this, "nondirected3.gif")));
+            this.addUndirectedEdge.setIcon(new ImageIcon(ImageUtils.getImage(this, "undirected3.gif")));
+            this.addPartiallyOrientedEdge.setIcon(new ImageIcon(ImageUtils.getImage(this, "partiallyoriented3.gif")));
+            this.addBidirectedEdge.setIcon(new ImageIcon(ImageUtils.getImage(this, "bidirected3.gif")));
+        }
     }
 
     /**

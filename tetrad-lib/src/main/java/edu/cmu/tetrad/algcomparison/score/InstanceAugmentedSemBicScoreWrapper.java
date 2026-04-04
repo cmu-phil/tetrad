@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.InstanceAugmentedSemBicScore;
@@ -16,12 +16,12 @@ import java.util.List;
  * algorithm wrapper), - takes the instance row from Params.INSTANCE_ROW, - aligns columns by training variable names, -
  * uses alpha from Params.IS_ALPHA (default 1.0).
  */
-@edu.cmu.tetrad.annotation.Score(
-        name = "Instance-specific Augmented Sem BIC Score",
-        command = "is-sem-bic-score",
-        dataType = {DataType.Continuous, DataType.Covariance}
-)
-public final class InstanceAugmentedSemBicScoreWrapper implements ScoreWrapper, HasKnowledge {
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "Instance-specific Augmented Sem BIC Score",
+//        command = "is-sem-bic-score",
+//        dataType = {DataType.Continuous, DataType.Covariance}
+//)
+public final class InstanceAugmentedSemBicScoreWrapper implements ScoreWrapper, AcceptsKnowledge {
 
     /**
      * Constructs a new instance of the `InstanceAugmentedSemBicScoreWrapper` class.
@@ -77,7 +77,7 @@ public final class InstanceAugmentedSemBicScoreWrapper implements ScoreWrapper, 
         double[] x = new double[vars.size()];
         for (int j = 0; j < vars.size(); j++) {
             Node v = vars.get(j);
-            int col = testing.getColumn(testing.getVariable(v.getName()));
+            int col = testing.getColumnIndex(testing.getVariable(v.getName()));
             x[j] = testing.getDouble(row, col);
         }
 

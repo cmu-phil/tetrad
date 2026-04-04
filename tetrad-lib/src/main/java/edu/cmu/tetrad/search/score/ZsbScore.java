@@ -29,12 +29,13 @@ import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Implements an unpublished score based on a risk bound due to Zhang and Shen. It adapts Theorem 1 in the following
@@ -214,7 +215,7 @@ public class ZsbScore implements Score, EffectiveSampleSizeSettable {
                 if (i == j) continue;
                 double r = correlations.getValue(i, j);
                 if (abs(r) > correlationThreshold) {
-                    System.out.println("Absolute correlation too high: " + r);
+                    TetradLogger.getInstance().log("Absolute correlation too high: " + r);
                     exists = true;
                 }
             }

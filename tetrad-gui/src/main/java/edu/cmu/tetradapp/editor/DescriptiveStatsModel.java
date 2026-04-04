@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.StatUtils;
 
@@ -54,7 +55,7 @@ class DescriptiveStatsModel extends AbstractTableModel {
     public DescriptiveStatsModel(DataSet dataSet) {
         this.dataSet = dataSet;
         this.vars = new ArrayList<>(dataSet.getVariables());
-        Collections.sort(vars);
+        vars.sort(NaturalSort.naturalComparator());
         this.stats = new ArrayList<>();
 
         for (Node n : vars) {
@@ -73,7 +74,7 @@ class DescriptiveStatsModel extends AbstractTableModel {
         List<String> names = new ArrayList<>();
         List<Object> stats = new ArrayList<>();
 
-        int col = dataSet.getColumn(variable);
+        int col = dataSet.getColumnIndex(variable);
 
         // Extract the data.
         double[] data = new double[dataSet.getNumRows()];

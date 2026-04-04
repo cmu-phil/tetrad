@@ -1,5 +1,7 @@
 package edu.cmu.tetrad.search.cdnod_pag;
 
+import edu.cmu.tetrad.util.TMath;
+
 import java.util.*;
 
 /**
@@ -26,7 +28,7 @@ final class SmallSubsetIter<T> implements Iterable<Set<T>> {
      */
     SmallSubsetIter(Collection<T> items, int maxSize) {
         this.items = new ArrayList<>(items);
-        this.maxSize = Math.max(0, maxSize);
+        this.maxSize = TMath.max(0, maxSize);
     }
 
     /**

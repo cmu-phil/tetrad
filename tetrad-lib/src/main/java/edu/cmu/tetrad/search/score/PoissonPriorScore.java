@@ -25,12 +25,13 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.special.Gamma;
 
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Implements Poisson prior score, a novel (unpubished) score that replaces the penalty term in BIC by the log of the
@@ -176,7 +177,7 @@ public class PoissonPriorScore implements Score, EffectiveSampleSizeSettable {
                 if (i == j) continue;
                 double r = correlations.getValue(i, j);
                 if (abs(r) > correlationThreshold) {
-                    System.out.println("Absolute correlation too high: " + r);
+                    TetradLogger.getInstance().log("Absolute correlation too high: " + r);
                     exists = true;
                 }
             }

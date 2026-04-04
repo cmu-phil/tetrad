@@ -31,7 +31,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.linear.SingularMatrixException;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Set;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Implements the FASK (Fast Adjacency Skewness) algorithm, which makes decisions for adjacency and orientation using a
@@ -361,7 +361,7 @@ public final class FaskOrig implements IGraphSearch {
      * @return The result of the calculation.
      */
     public static double g(double x) {
-        return log(cosh(FastMath.max(x, 0)));
+        return log(cosh(TMath.max(x, 0)));
     }
 
     /**
@@ -456,7 +456,7 @@ public final class FaskOrig implements IGraphSearch {
         double[][] lrs = getLrScores(); // Sets D.
 
         for (int i = 0; i < variables.size(); i++) {
-            System.out.println("Skewness of " + variables.get(i) + " = " + skewness(this.D[i]));
+            TetradLogger.getInstance().log("Skewness of " + variables.get(i) + " = " + skewness(this.D[i]));
         }
 
         TetradLogger.getInstance().log("FASK v. 2.0");
@@ -845,7 +845,7 @@ public final class FaskOrig implements IGraphSearch {
         double[] lr = new double[x.length];
 
         for (int i = 0; i < x.length; i++) {
-            lr[i] = x[i] * FastMath.tanh(y[i]) - FastMath.tanh(x[i]) * y[i];
+            lr[i] = x[i] * TMath.tanh(y[i]) - TMath.tanh(x[i]) * y[i];
         }
 
         return correlation(x, y) * mean(lr);
@@ -896,7 +896,7 @@ public final class FaskOrig implements IGraphSearch {
         adj.remove(X);
         adj.remove(Y);
 
-        SublistGenerator gen = new SublistGenerator(adj.size(), FastMath.min(this.depth, adj.size()));
+        SublistGenerator gen = new SublistGenerator(adj.size(), TMath.min(this.depth, adj.size()));
         int[] choice;
 
         while ((choice = gen.next()) != null) {
@@ -905,7 +905,7 @@ public final class FaskOrig implements IGraphSearch {
 
             for (int f = 0; f < _adj.size(); f++) {
                 Node _z = _adj.get(f);
-                int column = this.dataSet.getColumn(_z);
+                int column = this.dataSet.getColumnIndex(_z);
                 _Z[f] = D[column];
             }
 

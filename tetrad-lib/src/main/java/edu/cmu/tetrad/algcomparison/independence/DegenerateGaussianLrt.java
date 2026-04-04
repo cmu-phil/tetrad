@@ -74,7 +74,7 @@ public class DegenerateGaussianLrt implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Degenerate Gaussian Likelihood Ratio Test";
+        return "DG-LRT";
     }
 
     /**

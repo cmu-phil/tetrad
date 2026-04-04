@@ -5,7 +5,9 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.RealDistribution;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 
@@ -30,34 +32,31 @@ public class AdditiveNoiseSimulation {
 
     private final Graph graph;
     private final int numSamples;
-    private final RealDistribution noiseDistribution;
+    private final Sampler sampler;
     private final int[] hiddenDimensions;
     private final double inputScale;
     private final Function<Double, Double> activationFunction;
     private final boolean useFastTanh;
-
-    // Keep simple per-node seeding (still random overall)
-    private final Random seeder = new Random();
 
     /**
      * Constructs a new AdditiveNoiseSimulation instance with the specified parameters.
      *
      * @param graph              The causal graph representing the structural relationships.
      * @param numSamples         The number of data samples to generate.
-     * @param noiseDistribution  The distribution for additive noise.
+     * @param sampler            The sampler for additive noise.
      * @param hiddenDimensions   The dimensions of hidden layers in the MLP.
      * @param inputScale         The scaling factor for input data.
      * @param activationFunction The activation function for the MLP.
      */
     public AdditiveNoiseSimulation(Graph graph,
                                    int numSamples,
-                                   RealDistribution noiseDistribution,
+                                   Sampler sampler,
                                    int[] hiddenDimensions,
                                    double inputScale,
                                    Function<Double, Double> activationFunction) {
-        if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycles.");
+        if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycle; need a causal order to simulate.");
         if (numSamples < 1) throw new IllegalArgumentException("numSamples must be positive.");
-        Objects.requireNonNull(noiseDistribution, "noiseDistribution");
+        Objects.requireNonNull(sampler, "sampler");
         Objects.requireNonNull(hiddenDimensions, "hiddenDimensions");
         Objects.requireNonNull(activationFunction, "activationFunction");
 
@@ -65,7 +64,7 @@ public class AdditiveNoiseSimulation {
 
         this.graph = graph;
         this.numSamples = numSamples;
-        this.noiseDistribution = noiseDistribution;
+        this.sampler = sampler;
         this.hiddenDimensions = hiddenDimensions.clone();
         this.inputScale = inputScale;
         this.activationFunction = activationFunction;
@@ -85,8 +84,8 @@ public class AdditiveNoiseSimulation {
         if (q >= 1.0) return tmp[n - 1];
 
         double pos = q * (n - 1);
-        int lo = (int) Math.floor(pos);
-        int hi = (int) Math.ceil(pos);
+        int lo = (int) TMath.floor(pos);
+        int hi = (int) TMath.ceil(pos);
         if (hi == lo) return tmp[lo];
         double w = pos - lo;
         return tmp[lo] * (1.0 - w) + tmp[hi] * w;
@@ -105,7 +104,7 @@ public class AdditiveNoiseSimulation {
                                                boolean fastTanh) {
         final int n = A.getNumElements();
         if (fastTanh) {
-            for (int i = 0; i < n; i++) A.data[i] = Math.tanh(A.data[i]);
+            for (int i = 0; i < n; i++) A.data[i] = TMath.tanh(A.data[i]);
         } else {
             for (int i = 0; i < n; i++) A.data[i] = f.apply(A.data[i]);
         }
@@ -118,12 +117,47 @@ public class AdditiveNoiseSimulation {
         for (double x : xs) {
             double fx = f.apply(x);
             if (!Double.isFinite(fx)) return false;
-            if (Math.abs(fx) > 1.000001) return false;
+            if (TMath.abs(fx) > 1.000001) return false;
         }
         // oddness check at 0.5 and 1.0
         double a = f.apply(0.5), b = f.apply(-0.5);
         double c = f.apply(1.0), d = f.apply(-1.0);
-        return Math.abs(a + b) < 1e-6 && Math.abs(c + d) < 1e-6;
+        return TMath.abs(a + b) < 1e-6 && TMath.abs(c + d) < 1e-6;
+    }
+
+    /**
+     * Z-score each column of A in place: mean 0, sd 1.
+     * Columns with ~0 variance are left unchanged.
+     */
+    private static void zScoreColumnsInPlace(DMatrixRMaj A) {
+        final int N = A.numRows;
+        final int D = A.numCols;
+
+        for (int j = 0; j < D; j++) {
+            // column j is at offsets j, j+D, j+2D, ...
+            double mean = 0.0;
+            int k = j;
+            for (int i = 0; i < N; i++, k += D) {
+                mean += A.data[k];
+            }
+            mean /= N;
+
+            double var = 0.0;
+            k = j;
+            for (int i = 0; i < N; i++, k += D) {
+                double d = A.data[k] - mean;
+                var += d * d;
+            }
+            var /= N;
+
+            if (var < 1e-12) continue; // avoid division by ~0
+
+            double invSd = 1.0 / TMath.sqrt(var);
+            k = j;
+            for (int i = 0; i < N; i++, k += D) {
+                A.data[k] = (A.data[k] - mean) * invSd;
+            }
+        }
     }
 
     /**
@@ -167,8 +201,12 @@ public class AdditiveNoiseSimulation {
             final int Din = pj.length;          // <-- PARENTS ONLY (additive noise comes AFTER)
             final boolean isRoot = (Din == 0);
 
-            // Draw noise once for this node (independent across i)
-            for (int i = 0; i < N; i++) noise[i] = noiseDistribution.sample();
+            double noiseScale = 0.5 * inputScale;
+
+            for (int i = 0; i < N; i++) {
+                double v = sampler.sample();
+                noise[i] = noiseScale * v;
+            }
 
             if (isRoot) {
                 // Root: X_j = N_j
@@ -183,16 +221,10 @@ public class AdditiveNoiseSimulation {
                     for (int i = 0; i < N; i++, k += Din) A.data[k] = raw[i][col];
                 }
 
-                // copy parents into A (existing code)
-
-                // NEW: stabilize parent scale
-                zScoreColumnsInPlace(A);
+                applyActivationInPlace(A, activationFunction, useFastTanh);
 
                 // Random MLP for this node
-                RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale, seeder);
-
-//                // Random MLP for this node: f_j(Pa)
-//                RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale, seeder);
+                RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale);
 
                 // signal = f_j(Pa)
                 Y = mlp.forward(A, Z, Y, activationFunction, useFastTanh);
@@ -211,7 +243,7 @@ public class AdditiveNoiseSimulation {
         final DMatrixRMaj[] W;   // layer weights: (out x in)
         final double[][] b;      // biases per layer
 
-        RandomMLP(int Din, int[] hidden, int Dout, double inputScale, Random r) {
+        RandomMLP(int Din, int[] hidden, int Dout, double inputScale) {
             this.Din = Din;
             this.Dout = Dout;
             this.H = hidden == null ? new int[0] : hidden.clone();
@@ -223,28 +255,22 @@ public class AdditiveNoiseSimulation {
             for (int l = 0; l < H.length; l++) {
                 W[l] = new DMatrixRMaj(H[l], prev);
                 b[l] = new double[H[l]];
-//                heInit(W[l], r, inputScale);
-                heInit(W[l], r, inputScale, true);  // tanh-friendly
+                heInit(W[l], inputScale, true);  // tanh-friendly
                 prev = H[l];
             }
             W[L - 1] = new DMatrixRMaj(Dout, prev);
             b[L - 1] = new double[Dout];
 //            heInit(W[L - 1], r, inputScale * 0.5);
-            heInit(W[L - 1], r, inputScale * 0.5, true);
+            heInit(W[L - 1],inputScale * 0.5, true);
 
         }
 
-//        private static void heInit(DMatrixRMaj W, Random r, double scale) {
-//            double s = scale * Math.sqrt(2.0 / Math.max(1, W.numCols));
-//            for (int i = 0, n = W.getNumElements(); i < n; i++) W.data[i] = r.nextGaussian() * s;
-//        }
-
-        private static void heInit(DMatrixRMaj W, Random r, double scale, boolean tanhLike) {
+        private static void heInit(DMatrixRMaj W, double scale, boolean tanhLike) {
             // tanh prefers sqrt(1 / fan_in), ReLU prefers sqrt(2 / fan_in)
             double base = tanhLike ? 1.0 : 2.0;
-            double s = scale * Math.sqrt(base / Math.max(1, W.numCols));
+            double s = scale * TMath.sqrt(base / TMath.max(1, W.numCols));
             for (int i = 0, n = W.getNumElements(); i < n; i++) {
-                W.data[i] = r.nextGaussian() * s;
+                W.data[i] = RandomUtil.getInstance().nextGaussian() * s;
             }
         }
 
@@ -283,41 +309,6 @@ public class AdditiveNoiseSimulation {
             CommonOps_DDRM.multTransB(cur, W[W.length - 1], out);
             addBiasRowsInPlace(out, b[b.length - 1]);
             return out;
-        }
-    }
-
-    /**
-     * Z-score each column of A in place: mean 0, sd 1.
-     * Columns with ~0 variance are left unchanged.
-     */
-    private static void zScoreColumnsInPlace(DMatrixRMaj A) {
-        final int N = A.numRows;
-        final int D = A.numCols;
-
-        for (int j = 0; j < D; j++) {
-            // column j is at offsets j, j+D, j+2D, ...
-            double mean = 0.0;
-            int k = j;
-            for (int i = 0; i < N; i++, k += D) {
-                mean += A.data[k];
-            }
-            mean /= N;
-
-            double var = 0.0;
-            k = j;
-            for (int i = 0; i < N; i++, k += D) {
-                double d = A.data[k] - mean;
-                var += d * d;
-            }
-            var /= N;
-
-            if (var < 1e-12) continue; // avoid division by ~0
-
-            double invSd = 1.0 / Math.sqrt(var);
-            k = j;
-            for (int i = 0; i < N; i++, k += D) {
-                A.data[k] = (A.data[k] - mean) * invSd;
-            }
         }
     }
 }

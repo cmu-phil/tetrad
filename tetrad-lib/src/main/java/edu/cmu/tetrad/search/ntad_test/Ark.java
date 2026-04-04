@@ -24,6 +24,7 @@ import edu.cmu.tetrad.util.MathUtils;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
 
@@ -126,7 +127,7 @@ public class Ark extends NtadTest {
 
         SimpleMatrix D = new SimpleMatrix(2 * z, 2 * z);
         for (int i = 0; i < 2 * z; i++) {
-            D.set(i, i, Math.sqrt(R.get(i, i)));
+            D.set(i, i, TMath.sqrt(R.get(i, i)));
         }
 
         SimpleMatrix Di = D.invert();
@@ -139,11 +140,11 @@ public class Ark extends NtadTest {
 
         SimpleMatrix subR = StatUtils.extractSubMatrix(R, idx, idx).invert();
 
-        double p_corr = -subR.get(0, 1) / Math.sqrt(subR.get(0, 0) * subR.get(1, 1));
-        double z_score = MathUtils.arctanh(p_corr) * Math.sqrt(n - idx.length - 1);
+        double p_corr = -subR.get(0, 1) / TMath.sqrt(subR.get(0, 0) * subR.get(1, 1));
+        double z_score = MathUtils.arctanh(p_corr) * TMath.sqrt(n - idx.length - 1);
 
         NormalDistribution normalDist = new NormalDistribution();
-        return 2 * normalDist.cumulativeProbability(-Math.abs(z_score));
+        return 2 * normalDist.cumulativeProbability(-TMath.abs(z_score));
     }
 
     /**
@@ -204,7 +205,7 @@ public class Ark extends NtadTest {
             if (pValue == 0) {
                 sum = Double.NEGATIVE_INFINITY;
             } else {
-                sum += Math.log(pValue);
+                sum += TMath.log(pValue);
             }
 
             count++;

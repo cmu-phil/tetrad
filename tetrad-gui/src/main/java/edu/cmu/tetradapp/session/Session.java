@@ -83,7 +83,7 @@ public final class Session implements TetradSerializable {
     /**
      * Notes when the model has changed. Should be false at time of deserialization.
      */
-    private transient boolean sessionChanged = true;
+    private transient boolean sessionUnsaved = true;
 
     /**
      * True iff the session is new. Should be false at time of deserialization.
@@ -339,21 +339,21 @@ public final class Session implements TetradSerializable {
     }
 
     /**
-     * <p>isSessionChanged.</p>
+     * <p>isSessionUnsaved.</p>
      *
      * @return a boolean
      */
-    public boolean isSessionChanged() {
-        return this.sessionChanged;
+    public boolean isSessionUnsaved() {
+        return this.sessionUnsaved;
     }
 
     /**
      * <p>Setter for the field <code>sessionChanged</code>.</p>
      *
-     * @param sessionChanged a boolean
+     * @param sessionUnsaved a boolean
      */
-    public void setSessionChanged(boolean sessionChanged) {
-        this.sessionChanged = sessionChanged;
+    public void setSessionUnsaved(boolean sessionUnsaved) {
+        this.sessionUnsaved = sessionUnsaved;
     }
 
     /**
@@ -401,7 +401,7 @@ public final class Session implements TetradSerializable {
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-        this.sessionChanged = false;
+        this.sessionUnsaved = false;
         this.newSession = false;
     }
 
@@ -415,7 +415,7 @@ public final class Session implements TetradSerializable {
          */
         public void nodeAdded(SessionEvent event) {
             getSessionSupport().fireSessionEvent(event);
-            setSessionChanged(true);
+            setSessionUnsaved(true);
         }
 
         /**
@@ -423,7 +423,7 @@ public final class Session implements TetradSerializable {
          */
         public void nodeRemoved(SessionEvent event) {
             getSessionSupport().fireSessionEvent(event);
-            setSessionChanged(true);
+            setSessionUnsaved(true);
         }
 
         /**
@@ -431,7 +431,7 @@ public final class Session implements TetradSerializable {
          */
         public void parentAdded(SessionEvent event) {
             getSessionSupport().fireSessionEvent(event);
-            setSessionChanged(true);
+            setSessionUnsaved(true);
         }
 
         /**
@@ -439,7 +439,7 @@ public final class Session implements TetradSerializable {
          */
         public void parentRemoved(SessionEvent event) {
             getSessionSupport().fireSessionEvent(event);
-            setSessionChanged(true);
+            setSessionUnsaved(true);
         }
 
         /**
@@ -447,7 +447,7 @@ public final class Session implements TetradSerializable {
          */
         public void modelCreated(SessionEvent event) {
             getSessionSupport().fireSessionEvent(event);
-            setSessionChanged(true);
+            setSessionUnsaved(true);
         }
 
         /**
@@ -455,7 +455,7 @@ public final class Session implements TetradSerializable {
          */
         public void modelDestroyed(SessionEvent event) {
             getSessionSupport().fireSessionEvent(event);
-            setSessionChanged(true);
+            setSessionUnsaved(true);
         }
 
         /**

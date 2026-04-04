@@ -153,7 +153,7 @@ public class TestCcdSimpleCycleSanity {
 
             // Stable cyclic simulation (fixed spectral radius per SCC)
             SemIm.CyclicSimResult sim = CyclicStableUtils.simulateStableFixedRadius(
-                    g, N, RADIUS, CYC_LOW, CYC_HIGH, seed, pars);
+                    g, N, RADIUS, CYC_LOW, CYC_HIGH, pars);
 
             DataSet ds = sim.dataSet();
 

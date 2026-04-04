@@ -23,18 +23,20 @@ package edu.cmu.tetrad.study.examples.conditions;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.FaskOrig;
-import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.IcaLingam;
+import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fas;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.R3;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.Rskew;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+
+import java.text.ParseException;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -75,7 +77,7 @@ public class LingamStudy {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new IcaLingam());
+        algorithms.add(new Lingam());
         algorithms.add(new R3(new Fas(new FisherZ())));
         algorithms.add(new Rskew(new Fas(new FisherZ())));
         algorithms.add(new FaskOrig(new FisherZ(), new SemBicScore()));
@@ -86,10 +88,13 @@ public class LingamStudy {
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         Simulations simulations = new Simulations();
-        simulations.add(new LinearFisherModel(new RandomForward()));
+        simulations.add(new SemSimulation(new RandomForward()));
 
-        comparison.compareFromSimulations("lingam", simulations, algorithms, statistics, LingamStudy.getParameters());
-
+        try {
+            comparison.compareFromSimulations("lingam", simulations, algorithms, statistics, LingamStudy.getParameters());
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static Parameters getParameters() {

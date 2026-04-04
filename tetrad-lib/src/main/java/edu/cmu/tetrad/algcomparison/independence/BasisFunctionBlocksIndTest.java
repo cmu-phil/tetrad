@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
@@ -34,19 +35,20 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Wrapper for BF-Blocks-Test.
- *
- * @author josephramsey
- * @author bryanandrews
- * @version $Id: $Id
- */
-@TestOfIndependence(
-        name = "BF-Blocks-Test",
-        command = "bf-blocks-test",
-        dataType = DataType.Mixed
-)
-@Mixed
+///**
+// * Wrapper for BF-Blocks-Test.
+// *
+// * @author josephramsey
+// * @author bryanandrews
+// * @version $Id: $Id
+// */
+//@TestOfIndependence(
+//        name = "BF-Blocks-Test",
+//        command = "bf-blocks-test",
+//        dataType = DataType.Mixed
+//)
+//@Mixed
+//@General
 public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
 
     @Serial
@@ -75,7 +77,7 @@ public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "BF Blocks Test";
+        return "BF-Blocks";
     }
 
     /**

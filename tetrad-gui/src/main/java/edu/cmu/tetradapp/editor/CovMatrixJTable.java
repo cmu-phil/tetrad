@@ -75,6 +75,12 @@ public class CovMatrixJTable extends JTable implements DataModelContainer,
         setDefaultRenderer(Number.class, new NumberCellRenderer());
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
+        setBackground(uiColor("Table.background", Color.WHITE));
+        setForeground(uiColor("Table.foreground", Color.BLACK));
+        setSelectionBackground(uiColor("Table.selectionBackground", new Color(204, 204, 255)));
+        setSelectionForeground(uiColor("Table.selectionForeground", Color.BLACK));
+        setGridColor(uiColor("Table.gridColor", new Color(220, 220, 220)));
+
         this.covCellEditor = new CovCellEditor();
         this.covCellRenderer = new CovCellRenderer(covMatrix);
 
@@ -139,6 +145,11 @@ public class CovMatrixJTable extends JTable implements DataModelContainer,
                 updateSelection();
             }
         });
+    }
+
+    private static Color uiColor(String key, Color fallback) {
+        Color c = UIManager.getColor(key);
+        return c != null ? c : fallback;
     }
 
     private void updateSelection() {
@@ -279,15 +290,26 @@ public class CovMatrixJTable extends JTable implements DataModelContainer,
         firePropertyChange("modelChanged", null, null);
         model.fireTableDataChanged();
     }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+
+        if (covCellRenderer != null) {
+            repaint();
+        }
+
+        setBackground(uiColor("Table.background", Color.WHITE));
+        setForeground(uiColor("Table.foreground", Color.BLACK));
+        setSelectionBackground(uiColor("Table.selectionBackground", new Color(204, 204, 255)));
+        setSelectionForeground(uiColor("Table.selectionForeground", Color.BLACK));
+        setGridColor(uiColor("Table.gridColor", new Color(220, 220, 220)));
+    }
 }
 
-/**
- * A table model for the covariance matrix.
- */
 class CovCellRenderer extends DefaultTableCellRenderer {
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private final ICovarianceMatrix covMatrix;
-    private final Color selectedColor = new Color(204, 204, 255);
     private boolean positiveDefinite = true;
 
     public CovCellRenderer(ICovarianceMatrix covMatrix) {
@@ -296,8 +318,68 @@ class CovCellRenderer extends DefaultTableCellRenderer {
         }
 
         this.covMatrix = covMatrix;
+        setOpaque(true);
     }
 
+    private static Color uiColor(String key, Color fallback) {
+        Color c = UIManager.getColor(key);
+        return c != null ? c : fallback;
+    }
+
+    private static Color blend(Color a, Color b, double t) {
+        t = Math.max(0.0, Math.min(1.0, t));
+        int r = (int) Math.round((1.0 - t) * a.getRed() + t * b.getRed());
+        int g = (int) Math.round((1.0 - t) * a.getGreen() + t * b.getGreen());
+        int bb = (int) Math.round((1.0 - t) * a.getBlue() + t * b.getBlue());
+        return new Color(r, g, bb);
+    }
+
+    private static Color getBaseBackground() {
+        return uiColor("Table.background", Color.WHITE);
+    }
+
+    private static Color getBaseForeground() {
+        return uiColor("Table.foreground", Color.BLACK);
+    }
+
+    private static Color getSelectionBackground() {
+        Color c = UIManager.getColor("Table.selectionBackground");
+        if (c != null) return c;
+
+        return new Color(204, 204, 255);
+    }
+
+    private static Color getSelectionForeground() {
+        return uiColor("Table.selectionForeground", getBaseForeground());
+    }
+
+    private static Color getProblemForeground() {
+        Color c = UIManager.getColor("Component.error.focusedBorderColor");
+        if (c != null) return c;
+
+        c = UIManager.getColor("Actions.Red");
+        if (c != null) return c;
+
+        return Color.RED;
+    }
+
+    private static Color getFocusBorderColor() {
+        Color c = UIManager.getColor("Component.focusColor");
+        if (c != null) return c;
+
+        c = UIManager.getColor("Table.selectionBackground");
+        if (c != null) return c;
+
+        return Color.BLACK;
+    }
+
+    private static Color getSelectedCellBackground() {
+        Color base = getBaseBackground();
+        Color sel = getSelectionBackground();
+        return blend(base, sel, 0.35);
+    }
+
+    @Override
     public void setValue(Object value) {
         if (value instanceof String) {
             setText((String) value);
@@ -311,20 +393,19 @@ class CovCellRenderer extends DefaultTableCellRenderer {
         }
     }
 
-    public Component getTableCellRendererComponent(JTable table, Object value,
-                                                   boolean isSelected, boolean hasFocus, int row, int col) {
+    @Override
+    public Component getTableCellRendererComponent(
+            JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 
-        // Have to set the alignment here, since this is the only place the col
-        // index of the component is available...
-        Component c = super.getTableCellRendererComponent(table, value,
-                isSelected, hasFocus, row, col);
+        Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
         DefaultTableCellRenderer renderer = (DefaultTableCellRenderer) c;
 
-        renderer.setBackground(Color.WHITE);
-        renderer.setForeground(Color.BLACK);
+        renderer.setBackground(getBaseBackground());
+        renderer.setForeground(getBaseForeground());
+        renderer.setBorder(noFocusBorder);
 
         if (!isPositiveDefinite() && row >= 4 && col >= 1) {
-            renderer.setForeground(Color.RED);
+            renderer.setForeground(getProblemForeground());
         }
 
         if (value instanceof Number) {
@@ -339,38 +420,36 @@ class CovCellRenderer extends DefaultTableCellRenderer {
         int numVars = variables.size();
 
         if (colVar >= 0 && colVar < numVars && rowVar >= 0 &&
-            rowVar < numVars && rowVar >= colVar) {
-            boolean rowSelected =
-                    this.covMatrix.isSelected((Node) variables.get(rowVar));
-            boolean colSelected =
-                    this.covMatrix.isSelected((Node) variables.get(colVar));
+                rowVar < numVars && rowVar >= colVar) {
+            boolean rowSelected = this.covMatrix.isSelected((Node) variables.get(rowVar));
+            boolean colSelected = this.covMatrix.isSelected((Node) variables.get(colVar));
 
             if (rowSelected && colSelected) {
-                renderer.setBackground(this.selectedColor);
+                renderer.setBackground(getSelectedCellBackground());
+                renderer.setForeground(getSelectionForeground());
             }
         }
 
         if (colVar == -1 && rowVar >= 0 && rowVar < numVars) {
-            boolean rowSelected =
-                    this.covMatrix.isSelected((Node) variables.get(rowVar));
+            boolean rowSelected = this.covMatrix.isSelected((Node) variables.get(rowVar));
 
             if (rowSelected) {
-                renderer.setBackground(this.selectedColor);
+                renderer.setBackground(getSelectedCellBackground());
+                renderer.setForeground(getSelectionForeground());
             }
         }
 
         if (rowVar == -1 && colVar >= 0 && colVar < numVars) {
-            boolean colSelected =
-                    this.covMatrix.isSelected((Node) variables.get(colVar));
+            boolean colSelected = this.covMatrix.isSelected((Node) variables.get(colVar));
 
             if (colSelected) {
-                renderer.setBackground(this.selectedColor);
+                renderer.setBackground(getSelectedCellBackground());
+                renderer.setForeground(getSelectionForeground());
             }
         }
 
         if (hasFocus) {
-            renderer.setBackground(Color.WHITE);
-            renderer.setBorder(new LineBorder(Color.BLACK));
+            renderer.setBorder(new LineBorder(getFocusBorderColor()));
         }
 
         return renderer;
@@ -387,7 +466,6 @@ class CovCellRenderer extends DefaultTableCellRenderer {
     public ICovarianceMatrix getCovMatrix() {
         return this.covMatrix;
     }
-
 }
 
 /**
@@ -397,17 +475,15 @@ class CovCellEditor extends DefaultCellEditor {
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private final JTextField textField;
 
-    /**
-     * Constructs a new number cell editor.
-     */
     public CovCellEditor() {
         super(new JTextField());
 
         this.textField = (JTextField) this.editorComponent;
         this.textField.setHorizontalAlignment(SwingConstants.LEFT);
-        this.textField.setBorder(new LineBorder(Color.black));
+        refreshTheme(false);
 
         this.delegate = new EditorDelegate() {
+            @Override
             public void setValue(Object value) {
                 if (value == null) {
                     CovCellEditor.this.textField.setText("");
@@ -428,12 +504,7 @@ class CovCellEditor extends DefaultCellEditor {
                 CovCellEditor.this.textField.selectAll();
             }
 
-            /**
-             * Overrides delegate; gets the text value from the cell to send
-             * back to the model.
-             *
-             * @return this text value.
-             */
+            @Override
             public Object getCellEditorValue() {
                 return CovCellEditor.this.textField.getText();
             }
@@ -442,17 +513,55 @@ class CovCellEditor extends DefaultCellEditor {
         this.textField.addActionListener(this.delegate);
     }
 
-    /**
-     * Sets the text of the editor to red if red is true, black otherwise.
-     *
-     * @param red if true, the text is set to red; otherwise, it is set to black.
-     */
-    public void setRed(boolean red) {
+    private static Color uiColor(String key, Color fallback) {
+        Color c = UIManager.getColor(key);
+        return c != null ? c : fallback;
+    }
+
+    private static Color getEditorBackground() {
+        return uiColor("TextField.background", Color.WHITE);
+    }
+
+    private static Color getEditorForeground() {
+        return uiColor("TextField.foreground", Color.BLACK);
+    }
+
+    private static Color getProblemForeground() {
+        Color c = UIManager.getColor("Component.error.focusedBorderColor");
+        if (c != null) return c;
+
+        c = UIManager.getColor("Actions.Red");
+        if (c != null) return c;
+
+        return Color.RED;
+    }
+
+    private static Color getBorderColor(boolean red) {
         if (red) {
-            this.textField.setForeground(Color.RED);
-        } else {
-            this.textField.setForeground(Color.BLACK);
+            return getProblemForeground();
         }
+
+        Color c = UIManager.getColor("Component.borderColor");
+        if (c != null) return c;
+
+        c = UIManager.getColor("TextField.borderColor");
+        if (c != null) return c;
+
+        c = UIManager.getColor("Component.focusColor");
+        if (c != null) return c;
+
+        return Color.BLACK;
+    }
+
+    private void refreshTheme(boolean red) {
+        this.textField.setBackground(getEditorBackground());
+        this.textField.setForeground(red ? getProblemForeground() : getEditorForeground());
+        this.textField.setCaretColor(this.textField.getForeground());
+        this.textField.setBorder(new LineBorder(getBorderColor(red)));
+    }
+
+    public void setRed(boolean red) {
+        refreshTheme(red);
     }
 }
 

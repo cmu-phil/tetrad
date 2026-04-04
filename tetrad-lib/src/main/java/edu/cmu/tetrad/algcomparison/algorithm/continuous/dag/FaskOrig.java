@@ -24,7 +24,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
@@ -58,7 +58,7 @@ import static edu.cmu.tetrad.util.Params.*;
 //)
 //@Experimental
 @Deprecated
-public class FaskOrig extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesScoreWrapper, TakesIndependenceWrapper, TakesExternalGraph {
+public class FaskOrig extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge, TakesScoreWrapper, TakesIndependenceWrapper, TakesExternalGraph {
     @Serial
     private static final long serialVersionUID = 23L;
 

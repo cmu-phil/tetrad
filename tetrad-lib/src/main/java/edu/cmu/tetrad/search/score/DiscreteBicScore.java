@@ -23,14 +23,14 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.log;
+import static edu.cmu.tetrad.util.TMath.abs;
+import static edu.cmu.tetrad.util.TMath.log;
 
 /**
  * Calculates the discrete BIC score. The likelihood for this score is calculated as SUM(ln(P(X | Z) P(Z))) across all
@@ -140,7 +140,6 @@ public class DiscreteBicScore implements DiscreteScore {
             }
         }
 
-        System.out.println("DiscreteBicScore: attestedCategories = " + attestedCategories);
     }
 
     private static int getRowIndex(int[] dim, int[] values) {
@@ -231,7 +230,7 @@ public class DiscreteBicScore implements DiscreteScore {
                 int cellCount = n_jk[rowIndex][childValue];
                 if (cellCount == 0) continue;
 
-                lik += cellCount * FastMath.log(cellCount / (double) rowCount);
+                lik += cellCount * TMath.log(cellCount / (double) rowCount);
             }
         }
 
@@ -246,7 +245,7 @@ public class DiscreteBicScore implements DiscreteScore {
 //        int params = attestedRows * (c - 1);
         int params = r * (c - 1);
 
-        double score = 2 * lik - this.penaltyDiscount * params * FastMath.log(sampleSize) + 2 * getPriorForStructure(parents.length);
+        double score = 2 * lik - this.penaltyDiscount * params * TMath.log(sampleSize) + 2 * getPriorForStructure(parents.length);
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {
             return Double.NaN;

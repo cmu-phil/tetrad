@@ -32,20 +32,17 @@ import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.blocks.BlockDiscoverers;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.search.blocks.SingleClusterPolicy;
+import edu.cmu.tetrad.search.blocks.SingletonClusterPolicy;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.RankTests;
-import edu.cmu.tetrad.util.TextTable;
+import edu.cmu.tetrad.util.*;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -63,8 +60,7 @@ public class TestCliqueDetection {
                 List.of(spec1),
                 5, 0,
                 0, 0,
-                RandomMim.LatentLinkMode.CARTESIAN_PRODUCT,
-                rng
+                RandomMim.LatentLinkMode.CARTESIAN_PRODUCT
         );
 
         Parameters params = new Parameters();
@@ -76,7 +72,12 @@ public class TestCliqueDetection {
         SemPm pm = new SemPm(gTrue);
         SemIm im = new SemIm(pm, params);
 //        edu.cmu.tetrad.util.RandomUtil.getInstance().setSeed(seed);
-        DataSet data = im.simulateData(nRows, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(nRows, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         List<Set<Node>> clusters = extractTrueMimClusters(gTrue, data);
         System.out.println("True clusters (children of each latent): " +
@@ -223,8 +224,8 @@ public class TestCliqueDetection {
         }
 
         // --- Macro aggregates with zeros for misses/unmatched ---
-        int Kt = Math.max(1, T.size()); // avoid /0 when no truths (shouldn't happen)
-        int Kr = Math.max(1, R.size()); // avoid /0 when no predictions
+        int Kt = TMath.max(1, T.size()); // avoid /0 when no truths (shouldn't happen)
+        int Kr = TMath.max(1, R.size()); // avoid /0 when no predictions
 
         double nodeRec = sumRec_T / Kt;          // unmatched truths contribute 0
         double nodePrec = sumPrec_R / Kr;        // unmatched predictions contribute 0
@@ -309,7 +310,7 @@ public class TestCliqueDetection {
     private static String trunc(String s, int max) {
         if (s == null) return "";
         if (s.length() <= max) return s;
-        return s.substring(0, Math.max(0, max - 1)) + "…";
+        return s.substring(0, TMath.max(0, max - 1)) + "…";
     }
 
     private static String fmtMSD(double mean, double sd, int wMean, int wSd) {
@@ -391,7 +392,7 @@ public class TestCliqueDetection {
             {
                 learners.put("TSC", () -> {
                     BlockSpec spec = BlockDiscoverers.tsc(
-                            md.data(), 0.05, -1, 1e-8, 2, SingleClusterPolicy.EXCLUDE, 0, false
+                            md.data(), 0.05, -1, 1e-8, 2, SingletonClusterPolicy.EXCLUDE, 0, false
                     ).discover();
 
                     List<Set<Node>> cliquesRaw = new ArrayList<>();
@@ -459,7 +460,7 @@ public class TestCliqueDetection {
                 for (Set<Node> clique : cliquesRaw) {
                     List<Integer> indices = new ArrayList<>();
                     for (Node node : clique) {
-                        indices.add(md.data().getColumn(node));
+                        indices.add(md.data().getColumnIndex(node));
                     }
 
                     List<Integer> remaining = new ArrayList<>(all);
@@ -570,11 +571,11 @@ public class TestCliqueDetection {
             if (n <= 1) return 0.0;
             double m = mean();
             double v = (sum2 / n) - m * m;
-            return Math.max(0.0, v);
+            return TMath.max(0.0, v);
         }
 
         double sd() {
-            return Math.sqrt(var());
+            return TMath.sqrt(var());
         }
     }
 
@@ -669,7 +670,7 @@ public class TestCliqueDetection {
 
             List<String> keys = new ArrayList<>(raw.keySet());
             keys.retainAll(r1.keySet());
-            Collections.sort(keys);
+            keys.sort(NaturalSort.naturalComparator());
 
             final int rows = keys.size() + 1;
             final int cols = 7;
@@ -692,9 +693,9 @@ public class TestCliqueDetection {
                 double dNodeP_m = b.nodeP.mean() - a.nodeP.mean();
                 double dNodeR_m = b.nodeR.mean() - a.nodeR.mean();
 
-                double dSumJ_sd = Math.sqrt(b.sumJ.var() + a.sumJ.var());
-                double dNodeP_sd = Math.sqrt(b.nodeP.var() + a.nodeP.var());
-                double dNodeR_sd = Math.sqrt(b.nodeR.var() + a.nodeR.var());
+                double dSumJ_sd = TMath.sqrt(b.sumJ.var() + a.sumJ.var());
+                double dNodeP_sd = TMath.sqrt(b.nodeP.var() + a.nodeP.var());
+                double dNodeR_sd = TMath.sqrt(b.nodeR.var() + a.nodeR.var());
 
                 tt.setToken(i + 1, 0, Integer.toString(i + 1));
                 tt.setToken(i + 1, 1, trunc(k, 40));

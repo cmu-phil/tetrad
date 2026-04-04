@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.RecursiveTask;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
-import static org.apache.commons.math3.util.FastMath.min;
+import static edu.cmu.tetrad.util.TMath.min;
 
 
 /**
@@ -148,6 +148,17 @@ public class Bes {
                 continue;
             }
 
+//            if (!validDelete(x, y, arrow.getHOrT(), arrow.getNaYX(), graph)) {
+//                continue;
+//            }
+//
+//            Set<Node> complement = new HashSet<>(arrow.getNaYX());
+//            complement.removeAll(arrow.getHOrT());
+//
+//            double _bump = deleteEval(x, y, complement, arrow.parents, hashIndices);
+
+            // Bes.java — inside the while loop in bes() (around line 155)
+
             if (!validDelete(x, y, arrow.getHOrT(), arrow.getNaYX(), graph)) {
                 continue;
             }
@@ -156,6 +167,12 @@ public class Bes {
             complement.removeAll(arrow.getHOrT());
 
             double _bump = deleteEval(x, y, complement, arrow.parents, hashIndices);
+
+            if (_bump <= 0) {   // add this guard
+                continue;
+            }
+
+            delete(x, y, arrow.getHOrT(), _bump, arrow.getNaYX(), graph);
 
             delete(x, y, arrow.getHOrT(), _bump, arrow.getNaYX(), graph);
 
@@ -193,7 +210,7 @@ public class Bes {
 
         int numEdges = graph.getNumEdges();
         if (numEdges % 1000 == 0 && numEdges > 0) {
-            System.out.println("Num edges (backwards) = " + numEdges);
+            TetradLogger.getInstance().log("Num edges (backwards) = " + numEdges);
         }
 
         if (verbose) {
@@ -263,10 +280,20 @@ public class Bes {
         return -scoreGraphChange(x, y, set, hashIndices);
     }
 
+//    private Set<Node> revertToCPDAG(Graph graph) {
+//        MeekRules rules = new MeekRules();
+//        rules.setKnowledge(getKnowledge());
+//        rules.setMeekPreventCycles(false);
+//        rules.setVerbose(verbose);
+//        return rules.orientImplied(graph);
+//    }
+
+    // Bes.java — revertToCPDAG (around line 266)
+
     private Set<Node> revertToCPDAG(Graph graph) {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
-        rules.setMeekPreventCycles(false);
+        rules.setMeekPreventCycles(true);   // was false — must match Fges.revertToCpdag()
         rules.setVerbose(verbose);
         return rules.orientImplied(graph);
     }
@@ -400,9 +427,26 @@ public class Bes {
             }
         }
 
+//        for (Node r : toProcess) {
+//            List<Node> adjacentNodes = new ArrayList<>(toProcess);
+//            BackwardTask task = new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
+//                    adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward);
+//
+//            try {
+//                task.invoke();
+//            } catch (Exception e) {
+//                Thread.currentThread().interrupt();
+//                throw e;
+//            }
+//        }
+
         for (Node r : toProcess) {
-            List<Node> adjacentNodes = new ArrayList<>(toProcess);
-            BackwardTask task = new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
+            // Use the node's actual graph neighbours, not the toProcess set.
+            // Edges between an affected node and an unaffected neighbour must
+            // be reconsidered when their NaYX may have changed via Meek.
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(r));
+            BackwardTask task = new BackwardTask(r, adjacentNodes,
+                    getChunkSize(adjacentNodes.size()), 0,
                     adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward);
 
             try {

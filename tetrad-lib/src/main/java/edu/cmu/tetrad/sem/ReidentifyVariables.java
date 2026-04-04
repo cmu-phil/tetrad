@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.NodeType;
 
 import java.util.*;
 
-import static org.apache.commons.math3.util.FastMath.abs;
+import static edu.cmu.tetrad.util.TMath.abs;
 
 /**
  * Utility for reidentifying variables for multiple indicator structure searches.

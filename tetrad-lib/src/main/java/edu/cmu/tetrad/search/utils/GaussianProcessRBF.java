@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,7 +20,8 @@
 
 package edu.cmu.tetrad.search.utils;
 
-import java.util.Random;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TMath;
 
 /**
  * GaussianProcessRBF simulates a Gaussian Process (GP) with a Radial Basis Function (RBF) kernel. It provides
@@ -31,7 +32,6 @@ public class GaussianProcessRBF {
     private final double[] xValues;        // Input points
     private final double[][] covarianceMatrix; // Covariance matrix
     private final double[] functionValues;     // Simulated function values
-    private final Random random;               // Random number generator
 
     private final double lengthScale;  // Length scale parameter for the RBF kernel
     private final double amplitude;    // Amplitude parameter for the RBF kernel
@@ -50,7 +50,6 @@ public class GaussianProcessRBF {
         this.lengthScale = lengthScale;
         this.amplitude = amplitude;
         this.noiseStd = noiseStd;
-        this.random = new Random();
 
         // Compute the covariance matrix
         this.covarianceMatrix = computeCovarianceMatrix(xValues);
@@ -100,14 +99,14 @@ public class GaussianProcessRBF {
 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                double sqDist = Math.pow(xValues[i] - xValues[j], 2);
-                matrix[i][j] = amplitude * Math.exp(-sqDist / (2 * Math.pow(lengthScale, 2)));
+                double sqDist = TMath.pow(xValues[i] - xValues[j], 2);
+                matrix[i][j] = amplitude * TMath.exp(-sqDist / (2 * TMath.pow(lengthScale, 2)));
             }
         }
 
         // Add noise to the diagonal for numerical stability
         for (int i = 0; i < n; i++) {
-            matrix[i][i] += Math.pow(noiseStd, 2);
+            matrix[i][i] += TMath.pow(noiseStd, 2);
         }
 
         return matrix;
@@ -124,7 +123,7 @@ public class GaussianProcessRBF {
         // Generate random Gaussian noise
         double[] noise = new double[n];
         for (int i = 0; i < n; i++) {
-            noise[i] = random.nextGaussian();
+            noise[i] = RandomUtil.getInstance().nextGaussian();
         }
 
         // Simulate function values by applying the covariance matrix
@@ -148,8 +147,8 @@ public class GaussianProcessRBF {
         double result = 0.0;
 
         for (int i = 0; i < xValues.length; i++) {
-            double sqDist = Math.pow(x - xValues[i], 2);
-            double kernelValue = amplitude * Math.exp(-sqDist / (2 * Math.pow(lengthScale, 2)));
+            double sqDist = TMath.pow(x - xValues[i], 2);
+            double kernelValue = amplitude * TMath.exp(-sqDist / (2 * TMath.pow(lengthScale, 2)));
             result += kernelValue * functionValues[i];
         }
 

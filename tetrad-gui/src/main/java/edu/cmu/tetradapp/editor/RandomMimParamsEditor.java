@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -146,7 +147,7 @@ class RandomMimParamsEditor extends JPanel {
         Box root = Box.createVerticalBox();
         root.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
 
-        root.add(row("List of count:children:(rank), comma separated; e.g. 5:6(1),2:8(2):", latentGroupSpecs));
+        root.add(row("List of count:children:(rank), comma separated; e.g. 5:6(1),2:8(2)", latentGroupSpecs));
         root.add(Box.createVerticalStrut(10));
         root.add(row("Number of structural edges:", numStructuralEdges));
 
@@ -165,7 +166,7 @@ class RandomMimParamsEditor extends JPanel {
                 stored = parameters.getInt(Params.META_EDGE_CONNECTION_TYPE);
             } catch (Exception ignore) {
             }
-            final int initialIndex = Math.max(0, Math.min(META_EDGE_CONNECTION_CHOICES.length - 1, stored - 1));
+            final int initialIndex = TMath.max(0, TMath.min(META_EDGE_CONNECTION_CHOICES.length - 1, stored - 1));
 
             final JLabel label = new JLabel("Latent connection pattern");
             final JComboBox<String> combo = new JComboBox<>(META_EDGE_CONNECTION_CHOICES);

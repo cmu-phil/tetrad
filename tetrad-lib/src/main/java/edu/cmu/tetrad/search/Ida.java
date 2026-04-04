@@ -34,11 +34,12 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.min;
+import static edu.cmu.tetrad.util.TMath.abs;
+import static edu.cmu.tetrad.util.TMath.min;
 
 /**
  * Implements the IDA algorithm. The reference is here:
@@ -185,123 +186,20 @@ public class Ida {
 
         LinkedList<Double> totalEffects = new LinkedList<>();
 
-        CHOICE:
         while ((choice = gen.next()) != null) {
             try {
                 List<Node> siblingsChoice = GraphUtils.asList(choice, siblings);
 
-                // Your consistency checks: avoid illegal parent-sets.
-                if (siblingsChoice.size() > 1) {
-                    ChoiceGenerator gen2 = new ChoiceGenerator(siblingsChoice.size(), 2);
-                    int[] choice2;
-
-                    while ((choice2 = gen2.next()) != null) {
-                        List<Node> adj = GraphUtils.asList(choice2, siblingsChoice);
-                        if (this.cpdag.isAdjacentTo(adj.get(0), adj.get(1))) continue CHOICE;
-                    }
-                }
-
-                if (!siblingsChoice.isEmpty()) {
-                    for (Node p : parents) {
-                        for (Node s : siblingsChoice) {
-                            if (this.cpdag.isAdjacentTo(p, s)) continue CHOICE;
-                        }
-                    }
+                if (!isLegalParentSet(parents, siblingsChoice)) {
+                    continue;
                 }
 
                 double beta;
 
                 if (idaType == IDA_TYPE.REGULAR) {
-                    // === Original (parent-based) IDA ===
-                    Set<Node> _regressors = new HashSet<>();
-                    _regressors.add(x);
-                    _regressors.addAll(parents);
-                    _regressors.addAll(siblingsChoice);
-                    List<Node> regressors = new ArrayList<>(_regressors);
-
-                    System.out.println(x + " to " + y + " regressors (REGULAR IDA): " + regressors);
-
-                    if (regressors.contains(y)) {
-                        beta = 0.0;
-                    } else {
-                        beta = getBeta(regressors, x, y);
-                    }
+                    beta = getRegularIdaBeta(x, y, parents, siblingsChoice);
                 } else {
-                    // === Optimal IDA (Witte et al. 2020) ===
-
-                    // 1) Build a local orientation of the graph around X
-                    Graph gPrime = new EdgeListGraph(this.cpdag);
-
-                    for (Node s : siblings) {
-                        if (!gPrime.isAdjacentTo(x, s)) continue;
-                        // Remove the undirected edge X - s
-                        gPrime.removeEdge(x, s);
-
-                        if (siblingsChoice.contains(s)) {
-                            // Treat s as a parent: s -> X
-                            gPrime.addDirectedEdge(s, x);
-                        } else {
-                            // Treat s as a child: X -> s
-                            gPrime.addDirectedEdge(x, s);
-                        }
-                    }
-
-                    // 2) Apply Meek rules to propagate orientations
-                    MeekRules rules = new MeekRules();
-                    rules.setRevertToUnshieldedColliders(false);
-                    rules.orientImplied(gPrime);
-
-                    // 3) Compute the O-set for (X, Y) in gPrime
-                    Set<Node> oSet;
-
-                    try {
-                        if (dag) {
-                            oSet = OSet.oSetDag(gPrime, x, y);
-                        } else {
-                            oSet = OSet.oSetCpdag(gPrime, x, y, maxLengthAdjustment);
-                        }
-                    } catch (Exception e) {
-                        // If O-set computation fails, treat this orientation as yielding no effect
-                        System.out.println("O-set computation failed for " + x + " ~~> " + y + ": " + e);
-                        beta = 0.0;
-                        totalEffects.add(beta);
-                        continue;
-                    }
-
-                    // If the O-set is null, this DAG is not O-set-eligible for (x,y), which must mean this
-                    // is not a legal CPDAG. That is, we took a CPDAG, oriented the undirected edges about
-                    // X, and applied the Meek rules, so all possibly oriented edges from X to Y are out of
-                    // X, which means the O-Set is defined. Then it's just a matter of whether there are any
-                    // such paths at all; if not, the total effect is zero for this orientation.
-                    if (oSet == null) {
-                        if (!gPrime.paths().isGraphAmenable(x, y, "PDAG", -1, Set.of())) {
-                            throw new IllegalArgumentException("PDAG is weirdly not amenable for " + x + " ~~> " + y
-                                + "; that must not have been a legal CPDAG.");
-                        } else {
-
-                            // In this case it's amenable, but there are no amenable paths from X to Y, so the
-                            // total effect is zero.
-                            beta = 0.0;
-                            totalEffects.add(beta);
-                            continue;
-                        }
-                    }
-
-                    // O-set is defined, even if empty; estimate effect by regressing on X ∪ oSet
-                    Set<Node> regressorsSet = new LinkedHashSet<>();
-                    regressorsSet.add(x);
-                    regressorsSet.addAll(oSet);
-
-                    // Super-paranoid safety check: make sure Y is not in the regressor set
-                    regressorsSet.remove(y);
-
-                    List<Node> regressors = new ArrayList<>(regressorsSet);
-
-                    System.out.println(x + " to " + y + " regressors (OPTIMAL IDA): " + regressors
-                                       + "   O-set=" + oSet);
-
-                    beta = getBeta(regressors, x, y);
-//                    }
+                    beta = getOptimalIdaBeta(x, y, siblings, siblingsChoice);
                 }
 
                 totalEffects.add(beta);
@@ -312,6 +210,113 @@ public class Ida {
 
         Collections.sort(totalEffects);
         return totalEffects;
+    }
+
+    private boolean isLegalParentSet(List<Node> parents, List<Node> siblingsChoice) {
+        // Per Lemma 3.1 (Maathuis et al. 2009): G^{S->i} is locally valid iff
+        // no two chosen siblings are adjacent (which would create a new v-structure
+        // with Xi as collider). No condition on parent-sibling adjacency is required.
+        if (siblingsChoice.size() > 1) {
+            ChoiceGenerator gen2 = new ChoiceGenerator(siblingsChoice.size(), 2);
+            int[] choice2;
+
+            while ((choice2 = gen2.next()) != null) {
+                List<Node> adj = GraphUtils.asList(choice2, siblingsChoice);
+                if (this.cpdag.isAdjacentTo(adj.get(0), adj.get(1))) return false;
+            }
+        }
+
+        return true;
+    }
+
+    private double getRegularIdaBeta(Node x, Node y, List<Node> parents, List<Node> siblingsChoice) {
+        // Use LinkedHashSet to preserve insertion order so x remains first.
+        Set<Node> _regressors = new LinkedHashSet<>();
+        _regressors.add(x);
+        _regressors.addAll(parents);
+        _regressors.addAll(siblingsChoice);
+        List<Node> regressors = new ArrayList<>(_regressors);
+
+        TetradLogger.getInstance().log(x + " to " + y + " regressors (REGULAR IDA): " + regressors);
+
+        if (regressors.contains(y)) {
+            return 0.0;
+        } else {
+            return getBeta(regressors, x, y);
+        }
+    }
+
+    private double getOptimalIdaBeta(Node x, Node y, List<Node> siblings, List<Node> siblingsChoice) {
+        // === Optimal IDA (Witte et al. 2020) ===
+
+        // 1) Build a local orientation of the graph around X
+        Graph gPrime = new EdgeListGraph(this.cpdag);
+
+        for (Node s : siblings) {
+            if (!gPrime.isAdjacentTo(x, s)) continue;
+            // Remove the undirected edge X - s
+            gPrime.removeEdge(x, s);
+
+            if (siblingsChoice.contains(s)) {
+                // Treat s as a parent: s -> X
+                gPrime.addDirectedEdge(s, x);
+            } else {
+                // Treat s as a child: X -> s
+                gPrime.addDirectedEdge(x, s);
+            }
+        }
+
+        // 2) Apply Meek rules to propagate orientations
+        MeekRules rules = new MeekRules();
+        rules.setRevertToUnshieldedColliders(false);
+        rules.orientImplied(gPrime);
+
+        // 3) Compute the O-set for (X, Y) in gPrime
+        Set<Node> oSet;
+
+        try {
+            if (dag) {
+                oSet = OSet.oSetDag(gPrime, x, y);
+            } else {
+                oSet = OSet.oSetCpdag(gPrime, x, y, maxLengthAdjustment);
+            }
+        } catch (Exception e) {
+            // If O-set computation fails, treat this orientation as yielding no effect
+            TetradLogger.getInstance().log("O-set computation failed for " + x + " ~~> " + y + ": " + e);
+            return 0.0;
+        }
+
+        // If the O-set is null, this DAG is not O-set-eligible for (x,y), which must mean this
+        // is not a legal CPDAG. That is, we took a CPDAG, oriented the undirected edges about
+        // X, and applied the Meek rules, so all possibly oriented edges from X to Y are out of
+        // X, which means the O-Set is defined. Then it's just a matter of whether there are any
+        // such paths at all; if not, the total effect is zero for this orientation.
+        if (oSet == null) {
+            if (!gPrime.paths().isGraphAmenable(x, y, "PDAG", -1, Set.of())) {
+                throw new IllegalArgumentException("PDAG is weirdly not amenable for " + x + " ~~> " + y
+                        + "; that must not have been a legal CPDAG.");
+            } else {
+
+                // In this case it's amenable, but there are no amenable paths from X to Y, so the
+                // total effect is zero.
+                return 0.0;
+            }
+        }
+
+        // O-set is defined, even if empty; estimate effect by regressing on X ∪ oSet
+        Set<Node> regressorsSet = new LinkedHashSet<>();
+        regressorsSet.add(x);
+        regressorsSet.addAll(oSet);
+
+        // Super-paranoid safety check: make sure Y is not in the regressor set
+        regressorsSet.remove(y);
+
+        List<Node> regressors = new ArrayList<>(regressorsSet);
+
+        TetradLogger.getInstance().log(x + " to " + y + " regressors (OPTIMAL IDA): " + regressors
+                + "   O-set=" + oSet);
+
+        return getBeta(regressors, x, y);
     }
 
     /**
@@ -326,7 +331,7 @@ public class Ida {
         LinkedList<Double> totalEffects = getTotalEffects(x, y);
         LinkedList<Double> absTotalEffects = new LinkedList<>();
         for (double d : totalEffects) {
-            absTotalEffects.add(Math.abs(d));
+            absTotalEffects.add(TMath.abs(d));
         }
 
         Collections.sort(absTotalEffects);
@@ -345,7 +350,9 @@ public class Ida {
         for (Node x : this.possibleCauses) {
             if (!(this.cpdag.containsNode(x) && this.cpdag.containsNode(y))) continue;
             LinkedList<Double> effects = getTotalEffects(x, y);
-            minEffects.put(x, effects.getFirst());
+            if (!effects.isEmpty()) {
+                minEffects.put(x, effects.getFirst());
+            }
         }
 
         return minEffects;
@@ -363,28 +370,57 @@ public class Ida {
      * @throws RuntimeException If a singularity is encountered during the regression process.
      */
     private double getBeta(List<Node> regressors, Node parent, Node child) {
-        if (!regressors.contains(parent))
+        if (!regressors.contains(parent)) {
             throw new IllegalArgumentException("The regressors must contain the parent node.");
+        }
 
         try {
-            int xIndex = regressors.indexOf(parent);
-            int yIndex = this.nodeIndices.get(child.getName());
-            int[] xIndices = new int[regressors.size()];
-            for (int i = 0; i < regressors.size(); i++) xIndices[i] = this.nodeIndices.get(regressors.get(i).getName());
+            // Build indices from covariance matrix variable ordering, not graph node ordering.
+            List<Node> covVars = this.allCovariances.getVariables();
+            Map<String, Integer> covIndices = new HashMap<>();
+            for (int i = 0; i < covVars.size(); i++) {
+                covIndices.put(covVars.get(i).getName(), i);
+            }
 
+            // Position of parent in regressors list -- indexes into bStar.
+            int parentIndexInRegressors = regressors.indexOf(parent);
+
+            // Index of child in the covariance matrix.
+            Integer yIndex = covIndices.get(child.getName());
+            if (yIndex == null) {
+                throw new IllegalArgumentException("Child node not found in covariance matrix: "
+                        + child.getName());
+            }
+
+            // Indices of regressors in the covariance matrix.
+            int[] xIndices = new int[regressors.size()];
+            for (int i = 0; i < regressors.size(); i++) {
+                Integer idx = covIndices.get(regressors.get(i).getName());
+                if (idx == null) {
+                    throw new IllegalArgumentException("Regressor not found in covariance matrix: "
+                            + regressors.get(i).getName());
+                }
+                xIndices[i] = idx;
+            }
+
+            // bStar = Σ_XX^{-1} Σ_XY (Maathuis et al. 2009, eq. 4)
             Matrix rX = this.allCovariances.getSelection(xIndices, xIndices);
             Matrix rY = this.allCovariances.getSelection(xIndices, new int[]{yIndex});
-            Matrix bStar = null;
 
+            Matrix bStar;
             try {
                 bStar = rX.inverse().times(rY);
             } catch (SingularMatrixException e) {
-                System.out.println("Singularity encountered when regressing " + LogUtilsSearch.getScoreFact(child, regressors));
+                TetradLogger.getInstance().log("Singularity encountered when regressing "
+                        + LogUtilsSearch.getScoreFact(child, regressors));
+                return 0.0;
             }
 
-            return bStar != null ? bStar.get(xIndex, 0) : 0.0;
+            return bStar.get(parentIndexInRegressors, 0);
+
         } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singularity encountered when regressing " + LogUtilsSearch.getScoreFact(child, regressors));
+            throw new RuntimeException("Singularity encountered when regressing "
+                    + LogUtilsSearch.getScoreFact(child, regressors));
         }
     }
 

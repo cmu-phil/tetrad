@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
 
@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.commons.math3.util.FastMath.log;
+import static edu.cmu.tetrad.util.TMath.log;
 
 /**
  * Calculates the basis function BIC score for a given dataset. This is a generalization of the Degenerate Gaussian
@@ -230,7 +230,7 @@ public class BasisFunctionBicScoreFullSample implements Score {
      */
     @Override
     public int getMaxDegree() {
-        return (int) FastMath.ceil(log(getSampleSize()));
+        return (int) TMath.ceil(log(getSampleSize()));
     }
 
     /**
@@ -273,12 +273,12 @@ public class BasisFunctionBicScoreFullSample implements Score {
             double sigma_sq = computeVariance(residuals) + 1e-10;
 
             // Compute log-likelihood
-            double logLikelihood = -0.5 * N * (Math.log(2 * Math.PI * sigma_sq) + 1);
+            double logLikelihood = -0.5 * N * (TMath.log(2 * TMath.PI * sigma_sq) + 1);
             totalLikelihood += logLikelihood;
             totalDof += Z.getNumCols() + 1;
         }
 
-        return 2 * totalLikelihood - penaltyDiscount * totalDof * Math.log(N);
+        return 2 * totalLikelihood - penaltyDiscount * totalDof * TMath.log(N);
     }
 
     /**

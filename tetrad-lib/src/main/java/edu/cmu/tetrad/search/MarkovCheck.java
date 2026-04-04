@@ -28,7 +28,6 @@ import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
-import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -100,7 +99,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * True if the checks should be parallelized. (Not always a good idea.)
      */
-    private boolean parallelized = true;
+    private boolean parallelized = false;
     /**
      * The fraction of dependent judgments for the independent case.
      */
@@ -202,7 +201,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         this.graph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
         this.isPdag = graph.paths().isLegalPdag();
 
-        this.independenceTest = new CachedIndependenceQueries(independenceTest);
+        this.independenceTest = independenceTest;// new CachedIndependenceQueries(independenceTest);
 
         this.setType = setType;
         this.independenceNodes = new ArrayList<>(independenceTest.getVariables());
@@ -212,18 +211,239 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * Computes all implied independence facts for the given graph based on the specified conditioning set type.
      *
-     * @param g the graph for which implied independence facts will be computed
+     * @param g       the graph for which implied independence facts will be computed
      * @param setType the type of conditioning set to be used for inferring independence facts
      * @return a list of all implied independence facts derived from the graph
      */
     public static List<IndependenceFact> computeAllImpliedFacts(Graph g, ConditioningSetType setType) {
-       Set<IndependenceFact> allImpliedFacts = new HashSet<>();
+        Set<IndependenceFact> allImpliedFacts = new HashSet<>();
 
-       for (Node x : g.getNodes()) {
-           allImpliedFacts.addAll(computeImpliedFactsForVertex (g, x, setType));
-       }
+        for (Node x : g.getNodes()) {
+            allImpliedFacts.addAll(computeImpliedFactsForVertex(g, x, setType));
+        }
 
-       return new ArrayList<>(allImpliedFacts);
+        return new ArrayList<>(allImpliedFacts);
+    }
+
+    /**
+     * Computes the implied independence facts for a given vertex within the specified graph
+     * based on the provided conditioning set type.
+     *
+     * @param alignedGraph        The graph within which the independence facts are computed.
+     *                            Must be a valid representation of a causal graph or related structure.
+     * @param x                   The vertex (node) for which independence facts are to be computed.
+     * @param conditioningSetType The type of conditioning set to be used when computing the
+     *                            facts, which determines the strategy and context (e.g., Local Markov,
+     *                            Parents and Neighbors, Markov Blanket, etc.).
+     * @return A list of {@code IndependenceFact} objects representing the computed
+     * independence facts for the given vertex and configuration. Each fact contains
+     * information about the independence relationships implied by the specified conditioning.
+     * @throws IllegalArgumentException If the provided {@code conditioningSetType} is not supported.
+     * @throws RuntimeException         If a computation is interrupted during recursive blocking.
+     */
+    public static List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x, ConditioningSetType conditioningSetType) {
+        switch (conditioningSetType) {
+
+            // ---------------- uniform-Z families ----------------
+
+            case LOCAL_MARKOV: {
+                Set<Node> z = new HashSet<>();
+                for (Node w : alignedGraph.getAdjacentNodes(x)) {
+                    if (alignedGraph.isParentOf(w, x)) z.add(w);
+                }
+                return factsForUniformZ(alignedGraph, x, z);
+            }
+
+            case PARENTS_AND_NEIGHBORS: {
+                Set<Node> z = new HashSet<>();
+                for (Node w : alignedGraph.getAdjacentNodes(x)) {
+                    Edge e = alignedGraph.getEdge(w, x);
+                    if (e != null && Edges.isUndirectedEdge(e)) z.add(w);
+                    if (alignedGraph.isParentOf(w, x)) z.add(w);
+                }
+                return factsForUniformZ(alignedGraph, x, z);
+            }
+
+            case MARKOV_BLANKET: {
+                Set<Node> z = GraphUtils.markovBlanket(x, alignedGraph);
+                return factsForUniformZ(alignedGraph, x, z);
+            }
+
+            case ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY: {
+                Graph mag;
+
+                if (alignedGraph.paths().isLegalDag()) {
+                    mag = GraphTransforms.dagToMag(alignedGraph);
+                } else if (alignedGraph.paths().isLegalCpdag() || alignedGraph.paths().isLegalPdag()) {
+                    Graph dag = GraphTransforms.dagFromCpdag(alignedGraph);
+                    mag = GraphTransforms.dagToMag(dag);
+                } else if (alignedGraph.paths().isLegalMag()) {
+                    mag = alignedGraph;
+                } else if (alignedGraph.paths().isLegalPag()) {
+                    mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+                } else {
+                    boolean hasCircle = false;
+
+                    for (Edge e : alignedGraph.getEdges()) {
+                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
+                            hasCircle = true;
+                            break;
+                        }
+                    }
+
+                    if (hasCircle) {
+                        mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+                    } else {
+                        mag = alignedGraph;
+                    }
+                }
+
+                Node _x = mag.getNode(x.getName());
+
+                Set<IndependenceFact> raw = AndrewsOrderedLocalMarkovProperty.getModelForNode(mag, _x);
+                return new ArrayList<>(raw);
+            }
+
+            case RICHARDSON_ORDERED_LOCAL_MARKOV_PROPERTY: {
+                Graph mag;
+
+                if (alignedGraph.paths().isLegalDag()) {
+                    mag = GraphTransforms.dagToMag(alignedGraph);
+                } else if (alignedGraph.paths().isLegalCpdag() || alignedGraph.paths().isLegalPdag()) {
+                    Graph dag = GraphTransforms.dagFromCpdag(alignedGraph);
+                    mag = GraphTransforms.dagToMag(dag);
+                } else if (alignedGraph.paths().isLegalMag()) {
+                    mag = alignedGraph;
+                } else if (alignedGraph.paths().isLegalPag()) {
+                    mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+                } else {
+                    boolean hasCircle = false;
+
+                    for (Edge e : alignedGraph.getEdges()) {
+                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
+                            hasCircle = true;
+                            break;
+                        }
+                    }
+
+                    if (hasCircle) {
+                        mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+                    } else {
+                        mag = alignedGraph;
+                    }
+                }
+
+                Node _x = mag.getNode(x.getName());
+
+                Set<IndependenceFact> raw = RichardsonOrderedLocalMarkovProperty.getModelForNode(mag, _x);
+                return new ArrayList<>(raw);
+            }
+
+            case PAIRWISE_MARKOV_PROPERTY: {
+                Graph mag;
+
+                if (alignedGraph.paths().isLegalDag()) {
+                    mag = GraphTransforms.dagToMag(alignedGraph);
+                } else if (alignedGraph.paths().isLegalCpdag() || alignedGraph.paths().isLegalPdag()) {
+                    Graph dag = GraphTransforms.dagFromCpdag(alignedGraph);
+                    mag = GraphTransforms.dagToMag(dag);
+                } else if (alignedGraph.paths().isLegalMag()) {
+                    mag = alignedGraph;
+                } else if (alignedGraph.paths().isLegalPag()) {
+                    mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+                } else {
+                    boolean hasCircle = false;
+
+                    for (Edge e : alignedGraph.getEdges()) {
+                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
+                            hasCircle = true;
+                            break;
+                        }
+                    }
+
+                    if (hasCircle) {
+                        mag = GraphTransforms.zhangMagFromPag(alignedGraph);
+                    } else {
+                        mag = alignedGraph;
+                    }
+                }
+
+                Node _x = mag.getNode(x.getName());
+
+                Set<IndependenceFact> raw = PairwiseMarkovProperty.getModelForNode(mag, _x);
+                return new ArrayList<>(raw);
+            }
+
+            case RECURSIVE_BLOCKING: {
+                Set<IndependenceFact> facts = new HashSet<>();
+                for (Node w : alignedGraph.getNodes()) {
+                    if (x == w) continue;
+                    if (alignedGraph.isAdjacentTo(w, x)) continue;
+
+                    try {
+                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(alignedGraph, x, w, Set.of(), Set.of(), -1);
+
+                        if (blocking != null) {
+                            if (alignedGraph.paths().isMSeparatedFrom(x, w, blocking, false)) {
+                                facts.add(new IndependenceFact(x, w, blocking));
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                return new ArrayList<>(facts);
+            }
+
+            case RECURSIVE_ADJUSTMENT: {
+                Set<IndependenceFact> facts = new HashSet<>();
+                for (Node w : alignedGraph.getNodes()) {
+                    if (x == w) continue;
+                    if (alignedGraph.isAdjacentTo(w, x)) continue;
+
+                    RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(alignedGraph)
+                            .setUseHenckelPruning(false).setRaMode(RecursiveAdjustment.RaMode.O_COMPATIBLE);
+                    List<Set<Node>> adjustment = recursiveAdjustment.adjustmentSetsRB(x, w, "CPDAG", 1,
+                            100, 2, 100, false, Set.of(), Set.of());
+
+                    if (!adjustment.isEmpty()) {
+                        Set<Node> first = adjustment.getFirst();
+
+                        if (alignedGraph.paths().isMSeparatedFrom(x, w, first, false)) {
+                            facts.add(new IndependenceFact(x, w, first));
+                        }
+                    }
+                }
+                return new ArrayList<>(facts);
+            }
+
+            default:
+                throw new IllegalArgumentException(
+                        "Unsupported conditioning set type for VertexCheck: " + conditioningSetType
+                );
+        }
+    }
+
+    /**
+     * Generates a list of independence facts for a given node with respect to a given graph and a conditioning set.
+     * The method identifies all nodes in the graph that are neither the target node, part of the conditioning set,
+     * nor directly adjacent to the target node, and creates independence facts for these nodes.
+     *
+     * @param g The graph in which the nodes and edges are defined.
+     * @param x The target node for which independence facts are being generated.
+     * @param z The conditioning set of nodes that should be excluded from the independence facts.
+     * @return A list of independence facts specifying which nodes are conditionally independent
+     * of the target node given the conditioning set.
+     */
+    public static List<IndependenceFact> factsForUniformZ(Graph g, Node x, Set<Node> z) {
+        List<IndependenceFact> out = new ArrayList<>();
+        for (Node y : g.getNodes()) {
+            if (y.equals(x)) continue;
+            if (z.contains(y)) continue;
+            if (g.isAdjacentTo(x, y)) continue;   // <-- NEW LINE
+            out.add(new IndependenceFact(x, y, z));
+        }
+        return out;
     }
 
     /**
@@ -334,7 +554,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public List<List<Double>> getLocalPValues(IndependenceTest independenceTest, List<IndependenceFact> facts, Double shuffleThreshold) {
         // Shuffle to generate more data from the same graph.
-        int shuffleTimes = (int) Math.ceil(1 / shuffleThreshold);
+        int shuffleTimes = (int) TMath.ceil(1 / shuffleThreshold);
         // pVals is a list of lists of the p values for each shuffled results.
         List<List<Double>> pVals_list = new ArrayList<>();
         for (int i = 0; i < shuffleTimes; i++) {
@@ -456,7 +676,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         NumberFormat nf = new DecimalFormat("0.00");
         // Classify nodes into accepts and rejects base on ADTest result, and  update confusion stats lists accordingly.
         for (Node x : allNodes) {
-            System.out.println("Target Node: " + x);
+            TetradLogger.getInstance().log("Target Node: " + x);
             List<IndependenceFact> localIndependenceFacts = checkIndependenceForTargetNode(x);
             List<Double> ap_ar_ahp_ahr = getPrecisionAndRecallOnMarkovBlanketGraphPlotData(x, estimatedCpdag, trueGraph);
             Double ap = ap_ar_ahp_ahr.getFirst();
@@ -506,7 +726,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     }
                 }
             }
-            System.out.println("-----------------------------");
         }
         accepts_rejects_lowRecalls.add(accepts);
         accepts_rejects_lowRecalls.add(rejects);
@@ -578,7 +797,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     default:
                         break;
                 }
-                System.out.println("Successfully written to " + entry.getKey());
+                TetradLogger.getInstance().log("Successfully written to " + entry.getKey());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -628,7 +847,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         NumberFormat nf = new DecimalFormat("0.00");
         // Classify nodes into accepts and rejects base on ADTest result, and  update confusion stats lists accordingly.
         for (Node x : allNodes) {
-            System.out.println("Target Node: " + x);
+            TetradLogger.getInstance().log("Target Node: " + x);
             List<IndependenceFact> localIndependenceFacts = checkIndependenceForTargetNode(x);
             List<Double> lgp_lgr = getPrecisionAndRecallOnMarkovBlanketGraphPlotData2(x, estimatedCpdag, trueGraph);
             Double lgp = lgp_lgr.getFirst();
@@ -642,7 +861,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 List<Double> flatList = shuffledlocalPValues.stream()
                         .flatMap(List::stream)
                         .collect(Collectors.toList());
-                System.out.println("# p values feed into ADTest: " + flatList.size());
+                TetradLogger.getInstance().log("# p values feed into ADTest: " + flatList.size());
                 Double ADTestPValue = checkAgainstAndersonDarlingTest(flatList);
                 if (ADTestPValue <= threshold) {
                     rejects.add(x);
@@ -662,7 +881,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     }
                 }
             }
-            System.out.println("-----------------------------");
+            TetradLogger.getInstance().log("-----------------------------");
         }
         accepts_rejects_lowRecall.add(accepts);
         accepts_rejects_lowRecall.add(rejects);
@@ -704,7 +923,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     default:
                         break;
                 }
-                System.out.println("Successfully written to " + entry.getKey());
+                TetradLogger.getInstance().log("Successfully written to " + entry.getKey());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -734,7 +953,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         double cr = new CircleRecall().getValue(lookupGraph, estimatedGraph, null, new Parameters());
 
         NumberFormat nf = new DecimalFormat("0.00");
-        System.out.println("Whole graph statistics: " + " \n" +
+        TetradLogger.getInstance().log("Whole graph statistics: " + " \n" +
                 " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
                 " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr) + " \n" +
                 " TailPrecision = " + nf.format(tp) + " TailRecall = " + nf.format(tr) + " \n" +
@@ -829,6 +1048,17 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
     }
 
+//    /**
+//     *
+//     * Calculates the precision and recall on the general definition of local sub graph of a target node, plot data.
+//     * @param x
+//     * @param estimatedGraph
+//     * @param trueGraph
+//     * @param conditioningSetType
+//     * @param subgraphFeature features of a subgraph, can be either parents, adjacencies, or MB.
+//     * @return
+//     */
+
     /**
      * Calculates the precision and recall on the Markov Blanket graph for a given node. Prints the statistics to the
      * console.
@@ -841,9 +1071,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
         Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
-        System.out.println("xMBLookupGraph:" + xMBLookupGraph);
+        TetradLogger.getInstance().log("xMBLookupGraph:" + xMBLookupGraph);
         Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
-        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
+        TetradLogger.getInstance().log("xMBEstimatedGraph:" + xMBEstimatedGraph);
 
         // TODO VBC: validate
         double ap = new AdjacencyPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
@@ -852,7 +1082,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         double ahr = new ArrowheadRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
 
         NumberFormat nf = new DecimalFormat("0.00");
-        System.out.println("Node " + x + "'s statistics: " + " \n" +
+        TetradLogger.getInstance().log("Node " + x + "'s statistics: " + " \n" +
                 " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
                 " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr));
     }
@@ -870,9 +1100,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
         Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
-        System.out.println("xMBLookupGraph:" + xMBLookupGraph);
+        TetradLogger.getInstance().log("xMBLookupGraph:" + xMBLookupGraph);
         Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
-        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
+        TetradLogger.getInstance().log("xMBEstimatedGraph:" + xMBEstimatedGraph);
 
         double ap = new AdjacencyPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
         double ar = new AdjacencyRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
@@ -880,17 +1110,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         double ahr = new ArrowheadRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
         return Arrays.asList(ap, ar, ahp, ahr);
     }
-
-//    /**
-//     *
-//     * Calculates the precision and recall on the general definition of local sub graph of a target node, plot data.
-//     * @param x
-//     * @param estimatedGraph
-//     * @param trueGraph
-//     * @param conditioningSetType
-//     * @param subgraphFeature features of a subgraph, can be either parents, adjacencies, or MB.
-//     * @return
-//     */
 
     /**
      * Computes the precision and recall values for a specified subgraph structure between an estimated graph and a true
@@ -915,19 +1134,19 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         // A more general definition of what "local subgraph" means
         if (subgraphFeature.equals("MB")) { // TODO VBC: create a enum for subgraph features
             xConditioningSetTypeLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
-            System.out.println("xMBLookupGraph:" + xConditioningSetTypeLookupGraph);
+            TetradLogger.getInstance().log("xMBLookupGraph:" + xConditioningSetTypeLookupGraph);
             xConditioningSetTypeEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
-            System.out.println("xMBEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
+            TetradLogger.getInstance().log("xMBEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
         } else if (subgraphFeature.equals("parents")) {
             xConditioningSetTypeLookupGraph = GraphUtils.getParentsSubgraphWithTargetNode(lookupGraph, x);
-            System.out.println("xParentsLookupGraph:" + xConditioningSetTypeLookupGraph);
+            TetradLogger.getInstance().log("xParentsLookupGraph:" + xConditioningSetTypeLookupGraph);
             xConditioningSetTypeEstimatedGraph = GraphUtils.getParentsSubgraphWithTargetNode(estimatedGraph, x);
-            System.out.println("xParentsEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
+            TetradLogger.getInstance().log("xParentsEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
         } else if (subgraphFeature.equals("adjacency")) {
             xConditioningSetTypeLookupGraph = GraphUtils.getAdjacencySubgraphWithTargetNode(lookupGraph, x);
-            System.out.println("xParentsLookupGraph:" + xConditioningSetTypeLookupGraph);
+            TetradLogger.getInstance().log("xParentsLookupGraph:" + xConditioningSetTypeLookupGraph);
             xConditioningSetTypeEstimatedGraph = GraphUtils.getAdjacencySubgraphWithTargetNode(estimatedGraph, x);
-            System.out.println("xParentsEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
+            TetradLogger.getInstance().log("xParentsEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
 
         } else {
             throw new IllegalArgumentException("Unsupported subgraph feature: " + subgraphFeature);
@@ -951,15 +1170,15 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
         Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
-        System.out.println("xMBLookupGraph:" + xMBLookupGraph);
+        TetradLogger.getInstance().log("xMBLookupGraph:" + xMBLookupGraph);
         Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
-        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
+        TetradLogger.getInstance().log("xMBEstimatedGraph:" + xMBEstimatedGraph);
 
         double lgp = new LocalGraphPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
         double lgr = new LocalGraphRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
 
         NumberFormat nf = new DecimalFormat("0.00");
-        System.out.println("Node " + x + "'s statistics: " + " \n" +
+        TetradLogger.getInstance().log("Node " + x + "'s statistics: " + " \n" +
                 " LocalGraphPrecision = " + nf.format(lgp) + " LocalGraphRecall = " + nf.format(lgr) + " \n");
     }
 
@@ -975,9 +1194,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
         Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
-        System.out.println("xMBLookupGraph:" + xMBLookupGraph);
+        TetradLogger.getInstance().log("xMBLookupGraph:" + xMBLookupGraph);
         Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
-        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
+        TetradLogger.getInstance().log("xMBEstimatedGraph:" + xMBEstimatedGraph);
 
         double lgp = new LocalGraphPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
         double lgr = new LocalGraphRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
@@ -1089,7 +1308,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     private @Nullable Set<IndependenceFact> getAllIndependenceFacts(List<Node> order) {
         Set<IndependenceFact> allIndependenceFacts = new HashSet<>();
 
-        if (setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG) {
+        if (setType == ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY) {
             Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
 
             if (graph.paths().isLegalDag()) {
@@ -1106,7 +1325,43 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 return null;
             }
 
-            allIndependenceFacts = OrderedLocalMarkovProperty.getModel(mag);
+            allIndependenceFacts = AndrewsOrderedLocalMarkovProperty.getModel(mag);
+        } else if (setType == ConditioningSetType.RICHARDSON_ORDERED_LOCAL_MARKOV_PROPERTY) {
+            Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
+
+            if (graph.paths().isLegalDag()) {
+                mag = graph;
+            } else if (graph.paths().isLegalCpdag()) {
+                mag = GraphTransforms.dagFromCpdag(graph);
+            } else if (graph.paths().isLegalMag()) {
+                mag = graph;
+            } else {
+                mag = GraphTransforms.zhangMagFromPag(graph);
+            }
+
+            if (mag.paths().existsDirectedCycle()) {
+                return null;
+            }
+
+            allIndependenceFacts = RichardsonOrderedLocalMarkovProperty.getModel(mag);
+        } else if (setType == ConditioningSetType.PAIRWISE_MARKOV_PROPERTY) {
+            Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
+
+            if (graph.paths().isLegalDag()) {
+                mag = graph;
+            } else if (graph.paths().isLegalCpdag()) {
+                mag = GraphTransforms.dagFromCpdag(graph);
+            } else if (graph.paths().isLegalMag()) {
+                mag = graph;
+            } else {
+                mag = GraphTransforms.zhangMagFromPag(graph);
+            }
+
+            if (mag.paths().existsDirectedCycle()) {
+                return null;
+            }
+
+            allIndependenceFacts = PairwiseMarkovProperty.getModel(mag);
         } else if (setType == ConditioningSetType.RECURSIVE_BLOCKING) {
             if (graph.paths().existsDirectedCycle()) {
                 return null;
@@ -1116,7 +1371,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             for (Node x : graph.getNodes()) {
                 for (Node w : graph.getNodes()) {
                     if (x == w) continue;
-                    if (graph.isAdjacentTo(w, x)) continue;
+//                    if (graph.isAdjacentTo(w, x)) continue;
 
                     try {
                         Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, x, w, Set.of(), Set.of(), -1);
@@ -1129,6 +1384,25 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     }
 
                     allIndependenceFacts = facts;
+                }
+            }
+        } else if (setType == ConditioningSetType.RECURSIVE_ADJUSTMENT) {
+            if (graph.paths().existsDirectedCycle()) {
+                return null;
+            }
+
+            for (Node x : graph.getNodes()) {
+                for (Node w : graph.getNodes()) {
+                    if (x == w) continue;
+//                    if (graph.isAdjacentTo(w, x)) continue;
+
+                    RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph)
+                            .setUseHenckelPruning(false).setRaMode(RecursiveAdjustment.RaMode.O_COMPATIBLE);
+                    List<Set<Node>> adjustment = recursiveAdjustment.adjustmentSetsRB(x, w, "CPDAG", 1,
+                            4, 2, -1, true, Set.of(), Set.of());
+
+
+                    allIndependenceFacts.add(new IndependenceFact(x, w, adjustment.getFirst()));
                 }
             }
         } else {
@@ -1213,133 +1487,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
         return allIndependenceFacts;
     }
-
-    /**
-     * Computes the implied independence facts for a given vertex within the specified graph
-     * based on the provided conditioning set type.
-     *
-     * @param alignedGraph The graph within which the independence facts are computed.
-     *                     Must be a valid representation of a causal graph or related structure.
-     * @param x            The vertex (node) for which independence facts are to be computed.
-     * @param conditioningSetType The type of conditioning set to be used when computing the
-     *                            facts, which determines the strategy and context (e.g., Local Markov,
-     *                            Parents and Neighbors, Markov Blanket, etc.).
-     * @return A list of {@code IndependenceFact} objects representing the computed
-     *         independence facts for the given vertex and configuration. Each fact contains
-     *         information about the independence relationships implied by the specified conditioning.
-     * @throws IllegalArgumentException If the provided {@code conditioningSetType} is not supported.
-     * @throws RuntimeException If a computation is interrupted during recursive blocking.
-     */
-    public static List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x, ConditioningSetType conditioningSetType) {
-        switch (conditioningSetType) {
-
-            // ---------------- uniform-Z families ----------------
-
-            case LOCAL_MARKOV: {
-                Set<Node> z = new HashSet<>();
-                for (Node w : alignedGraph.getAdjacentNodes(x)) {
-                    if (alignedGraph.isParentOf(w, x)) z.add(w);
-                }
-                return factsForUniformZ(alignedGraph, x, z);
-            }
-
-            case PARENTS_AND_NEIGHBORS: {
-                Set<Node> z = new HashSet<>();
-                for (Node w : alignedGraph.getAdjacentNodes(x)) {
-                    Edge e = alignedGraph.getEdge(w, x);
-                    if (e != null && Edges.isUndirectedEdge(e)) z.add(w);
-                    if (alignedGraph.isParentOf(w, x)) z.add(w);
-                }
-                return factsForUniformZ(alignedGraph, x, z);
-            }
-
-            case MARKOV_BLANKET: {
-                Set<Node> z = GraphUtils.markovBlanket(x, alignedGraph);
-                return factsForUniformZ(alignedGraph, x, z);
-            }
-
-            case ORDERED_LOCAL_MARKOV_MAG: {
-                Graph mag;
-
-                if (alignedGraph.paths().isLegalDag()) {
-                    mag = GraphTransforms.dagToMag(alignedGraph);
-                } else if (alignedGraph.paths().isLegalCpdag() || alignedGraph.paths().isLegalPdag()) {
-                    Graph dag = GraphTransforms.dagFromCpdag(alignedGraph);
-                    mag = GraphTransforms.dagToMag(dag);
-                } else if (alignedGraph.paths().isLegalMag()) {
-                    mag = alignedGraph;
-                } else if (alignedGraph.paths().isLegalPag()) {
-                    mag = GraphTransforms.zhangMagFromPag(alignedGraph);
-                } else {
-                    boolean hasCircle = false;
-
-                    for (Edge e : alignedGraph.getEdges()) {
-                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
-                            hasCircle = true;
-                            break;
-                        }
-                    }
-
-                    if (hasCircle) {
-                        mag = GraphTransforms.zhangMagFromPag(alignedGraph);
-                    } else {
-                        mag = alignedGraph;
-                    }
-                }
-
-                Node _x = mag.getNode(x.getName());
-
-                Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModelForNode(mag, _x);
-                return new ArrayList<>(raw);
-            }
-
-            case RECURSIVE_BLOCKING:
-                Set<IndependenceFact> facts = new HashSet<>();
-                for (Node w : alignedGraph.getNodes()) {
-                    if (x == w) continue;
-                    if (alignedGraph.isAdjacentTo(w, x)) continue;
-
-                    try {
-                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(alignedGraph, x, w, Set.of(), Set.of(), -1);
-
-                        if (blocking != null) {
-                            facts.add(new IndependenceFact(x, w, blocking));
-                        }
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                return new ArrayList<>(facts);
-
-            default:
-                throw new IllegalArgumentException(
-                        "Unsupported conditioning set type for VertexCheck: " + conditioningSetType
-                );
-        }
-    }
-
-    /**
-     * Generates a list of independence facts for a given node with respect to a given graph and a conditioning set.
-     * The method identifies all nodes in the graph that are neither the target node, part of the conditioning set,
-     * nor directly adjacent to the target node, and creates independence facts for these nodes.
-     *
-     * @param g The graph in which the nodes and edges are defined.
-     * @param x The target node for which independence facts are being generated.
-     * @param z The conditioning set of nodes that should be excluded from the independence facts.
-     * @return A list of independence facts specifying which nodes are conditionally independent
-     *         of the target node given the conditioning set.
-     */
-    public static List<IndependenceFact> factsForUniformZ(Graph g, Node x, Set<Node> z) {
-        List<IndependenceFact> out = new ArrayList<>();
-        for (Node y : g.getNodes()) {
-            if (y.equals(x)) continue;
-            if (z.contains(y)) continue;
-            if (g.isAdjacentTo(x, y)) continue;   // <-- NEW LINE
-            out.add(new IndependenceFact(x, y, z));
-        }
-        return out;
-    }
-
 
 
 //    private @NotNull Set<Node> removeExtraneousVariables(Set<Node> z, Node x, Node y, boolean isPdag) {
@@ -1946,7 +2093,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         }
 
         double effectiveSampleSize = (sum * sum) / sumSquared;
-        return (int) FastMath.round(effectiveSampleSize);
+        return (int) TMath.round(effectiveSampleSize);
     }
 
     /**
@@ -2005,7 +2152,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     private List<Integer> getSubsampleRows(double v) {
         int sampleSize = independenceTest.getSampleSize();
-        int subsampleSize = (int) FastMath.floor(sampleSize * v);
+        int subsampleSize = (int) TMath.floor(sampleSize * v);
         List<Integer> rows = new ArrayList<>(sampleSize);
         for (int i = 0; i < sampleSize; i++) {
             rows.add(i);
@@ -2027,7 +2174,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
     private List<Integer> getBootstrapRows(double v) {
         int sampleSize = independenceTest.getSampleSize();
-        int subsampleSize = (int) FastMath.floor(sampleSize * v);
+        int subsampleSize = (int) TMath.floor(sampleSize * v);
 
         // Draw a sample of size subsampleSize with replacement from the set of all rows.
         List<Integer> rows = new ArrayList<>(sampleSize);
@@ -2074,7 +2221,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
         double leftTail = bd.cumulativeProbability(k);
         double rightTail = 1.0 - bd.cumulativeProbability(k - 1);
-        double pValue = Math.min(1.0, 2.0 * Math.min(leftTail, rightTail));
+        double pValue = TMath.min(1.0, 2.0 * TMath.min(leftTail, rightTail));
 
         return pValue;
     }
@@ -2183,7 +2330,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         double sum = 0.0;
 
         for (double pValue : pValues) {
-            sum += Math.log(pValue);
+            sum += TMath.log(pValue);
         }
 
         double c = -2.0 * sum;

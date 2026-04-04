@@ -116,7 +116,7 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
 
         this.workbench.addPropertyChangeListener(evt -> {
             if (BayesUpdaterEditor.this.mode == BayesUpdaterEditor.MULTI_VALUE
-                && "selectedNodes".equals(evt.getPropertyName())) {
+                    && "selectedNodes".equals(evt.getPropertyName())) {
                 setMode(BayesUpdaterEditor.MULTI_VALUE);
             }
         });
@@ -128,15 +128,6 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
      * @param wrapper a {@link edu.cmu.tetradapp.model.RowSummingExactWrapper} object
      */
     public BayesUpdaterEditor(RowSummingExactWrapper wrapper) {
-        this((UpdaterWrapper) wrapper);
-    }
-
-    /**
-     * Constructs a new instantiated model editor from a Bayes IM wrapper.
-     *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper} object
-     */
-    public BayesUpdaterEditor(CptInvariantUpdaterWrapper wrapper) {
         this((UpdaterWrapper) wrapper);
     }
 

@@ -22,7 +22,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -45,7 +46,7 @@ import java.util.List;
  * @author danielmalinsky
  * @version $Id: $Id
  */
-public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
+public class TimeSeriesSemSimulation implements Simulation, AcceptsKnowledge {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -151,7 +152,12 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             int sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
             boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
-            DataSet dataSet = im.simulateData(sampleSize, saveLatentVars);
+            DataSet dataSet = null;
+            try {
+                dataSet = im.simulateData(sampleSize, saveLatentVars);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
 
             // This causes issues downstream when further time lag datasets are created, making for some weird
             // variable names.

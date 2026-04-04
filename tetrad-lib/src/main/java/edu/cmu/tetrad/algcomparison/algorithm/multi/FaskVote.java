@@ -22,10 +22,8 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Fask;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -58,7 +56,7 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWrapper, TakesIndependenceWrapper {
+public class FaskVote implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -74,20 +72,6 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesScore
     private ScoreWrapper score;
 
     /**
-     * The independence test to use.
-     */
-    private IndependenceWrapper test;
-
-    /**
-     * <p>Constructor for FaskVote.</p>
-     *
-     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
-     */
-    public FaskVote(ScoreWrapper score) {
-        this.score = score;
-    }
-
-    /**
      * <p>Constructor for FaskVote.</p>
      */
     public FaskVote() {
@@ -97,11 +81,9 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesScore
     /**
      * <p>Constructor for FaskVote.</p>
      *
-     * @param test  a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
      * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
      */
-    public FaskVote(IndependenceWrapper test, ScoreWrapper score) {
-        this.test = test;
+    public FaskVote(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -121,7 +103,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesScore
             _dataSets.add((DataSet) d);
         }
 
-        edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets, this.score, this.test);
+        edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets, this.score);
 
         search.setKnowledge(this.knowledge);
         return search.search(parameters);
@@ -190,14 +172,6 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesScore
      * {@inheritDoc}
      */
     @Override
-    public void setIndTestWrapper(IndependenceWrapper test) {
-        this.test = test;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
@@ -208,22 +182,6 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, TakesScore
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
-        this.test = independenceWrapper;
     }
 }
 

@@ -27,13 +27,17 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.ExpressionSampler;
+import edu.cmu.tetrad.sem.Sampler;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.BetaDistribution;
-import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.distribution.NormalDistribution;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -91,7 +95,7 @@ public class AdditiveNoiseSimulation implements Simulation {
             for (int k = 0; k < dataSet.getNumRows(); k++) {
                 for (int j = 0; j < dataSet.getNumColumns(); j++) {
                     double d = dataSet.getDouble(k, j);
-                    double norm = RandomUtil.getInstance().nextGaussian(0, FastMath.sqrt(variance));
+                    double norm = RandomUtil.getInstance().nextGaussian(0, TMath.sqrt(variance));
                     dataSet.setDouble(k, j, d + norm);
                 }
             }
@@ -226,10 +230,7 @@ public class AdditiveNoiseSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-//        parameters.add(Params.AM_RESCALE_MIN);
-//        parameters.add(Params.AM_RESCALE_MAX);
-        parameters.add(Params.AM_BETA_ALPHA);
-        parameters.add(Params.AM_BETA_BETA);
+        parameters.add(Params.NOISE_EXPRESSION);
         parameters.add(Params.HIDDEN_DIMENSIONS);
         parameters.add(Params.INPUT_SCALE);
         parameters.add(Params.NUM_RUNS);
@@ -289,15 +290,19 @@ public class AdditiveNoiseSimulation implements Simulation {
             hiddenDimensions[i] = Integer.parseInt(hiddenDimensionsSplit[i].trim());
         }
 
-        Function<Double, Double> activation = Math::tanh;// x -> Math.max(0.1 * x, x);
+        Function<Double, Double> activation = Math::tanh;// x -> TMath.max(0.1 * x, x);
 
-        edu.cmu.tetrad.sem.AdditiveNoiseSimulation generator = new edu.cmu.tetrad.sem.AdditiveNoiseSimulation(
-                graph, parameters.getInt(Params.SAMPLE_SIZE),
-                new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
-//                parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
-                hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
+        try {
+            Sampler sampler = new ExpressionSampler(parameters.getString("noiseExpression"));
 
-        return generator.generateData();
+            edu.cmu.tetrad.sem.AdditiveNoiseSimulation generator = new edu.cmu.tetrad.sem.AdditiveNoiseSimulation(
+                    graph, parameters.getInt(Params.SAMPLE_SIZE), sampler,
+                    hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
+
+            return generator.generateData();
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

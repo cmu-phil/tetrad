@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -26,7 +26,6 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
-import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -61,6 +60,50 @@ public final class SaveSessionAsAction extends AbstractAction {
     }
 
     /**
+     * Given a desired file path, returns the first unused filename in the sequence.
+     * For example, if "untitled1.tet" exists, tries "untitled2.tet", "untitled3.tet", etc.
+     * If the given file does not exist, it is returned as-is.
+     *
+     * @param file the initially desired file
+     * @return the first file in the sequence that does not yet exist on disk
+     */
+    public static File nextAvailableFile(File file) {
+        if (!file.exists()) {
+            return file;
+        }
+
+        String name = file.getName();
+        String parent = file.getParent();
+        String ext = "";
+        String base = name;
+
+        int dotIndex = name.lastIndexOf('.');
+        if (dotIndex >= 0) {
+            ext = name.substring(dotIndex);       // e.g. ".tet"
+            base = name.substring(0, dotIndex);   // e.g. "untitled1"
+        }
+
+        // Strip any trailing digits from base to get the stem, e.g. "untitled"
+        String stem = base.replaceAll("\\d+$", "");
+
+        // Find the starting index -- if base had digits, start after the highest used
+        int index = 1;
+        String digitsStr = base.substring(stem.length());
+        if (!digitsStr.isEmpty()) {
+            index = Integer.parseInt(digitsStr) + 1;
+        }
+
+        // Walk forward until we find an unused filename
+        while (true) {
+            File candidate = new File(parent, stem + index + ext);
+            if (!candidate.exists()) {
+                return candidate;
+            }
+            index++;
+        }
+    }
+
+    /**
      * {@inheritDoc}
      * <p>
      * Performs the action of saving a session to a file.
@@ -75,11 +118,17 @@ public final class SaveSessionAsAction extends AbstractAction {
         SessionWrapper sessionWrapper = workbench.getSessionWrapper();
         TetradMetadata metadata = new TetradMetadata();
 
-        // Select the file to save this to.
-        String sessionSaveLocation
-                = Preferences.userRoot().get("sessionSaveLocation", "");
-        File file = EditorUtils.getSaveFileWithPath(sessionEditor.getName(), "tet",
-                JOptionUtils.centeringComp(), true, "Save Session As...", sessionSaveLocation);
+        String sessionSaveLocation =
+                Preferences.userRoot().get("sessionSaveLocation", "");
+
+        // Get the next available filename before presenting the save dialog,
+        // so the user is never defaulted into overwriting an existing session.
+        String defaultName = "untitled";
+
+        File file = EditorUtils.getSaveFileWithPath(
+                defaultName, "tet",
+                JOptionUtils.centeringComp(), false, "Save Session As...",
+                sessionSaveLocation);
 
         if (file == null) {
             saved = false;
@@ -88,43 +137,35 @@ public final class SaveSessionAsAction extends AbstractAction {
 
         if ((DesktopController.getInstance().existsSessionByName(
                 file.getName())
-             && !(sessionWrapper.getName().equals(file.getName())))) {
+                && !(sessionWrapper.getName().equals(file.getName())))) {
             saved = false;
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Another session by that name is currently open. Please "
-                    + "\nclose that session first.");
+                            + "\nclose that session first.");
             return;
         }
 
         sessionWrapper.setName(file.getName());
         sessionEditor.setName(file.getName());
 
-        class MyWatchedProcess extends WatchedProcess {
+        try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
+            saved = false;
+            objOut.writeObject(metadata);
+            objOut.writeObject(sessionWrapper);
 
-            @Override
-            public void watch() {
-                try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
-                    saved = false;
-                    objOut.writeObject(metadata);
-                    objOut.writeObject(sessionWrapper);
+            sessionWrapper.setSessionChanged(false);
+            sessionWrapper.setNewSession(false);
+            saved = true;
+        } catch (IOException exception) {
+            exception.printStackTrace(System.err);
 
-                    sessionWrapper.setSessionChanged(false);
-                    sessionWrapper.setNewSession(false);
-                    saved = true;
-                } catch (IOException exception) {
-                    exception.printStackTrace(System.err);
-
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            "An error occurred while attempting to save the session.");
-                    saved = false;
-                }
-
-                DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
-                sessionEditor.firePropertyChange("name", null, file.getName());
-            }
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "An error occurred while attempting to save the session.");
+            saved = false;
         }
 
-        new MyWatchedProcess();
+        DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
+        sessionEditor.firePropertyChange("name", null, file.getName());
     }
 }
 

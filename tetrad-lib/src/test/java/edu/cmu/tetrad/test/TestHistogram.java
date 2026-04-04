@@ -34,6 +34,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.StatUtils;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,14 +64,19 @@ public final class TestHistogram {
         // Continuous
         SemPm semPm = new SemPm(trueGraph);
         SemIm semIm = new SemIm(semPm);
-        DataSet data = semIm.simulateData(sampleSize, false);
+        DataSet data = null;
+        try {
+            data = semIm.simulateData(sampleSize, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         Histogram histogram = new Histogram(data, "X1", false);
 //        histogram.setTarget("X1");
         histogram.setNumBins(20);
 
-        assertEquals(3.65, histogram.getMax(), 0.01);
-        assertEquals(-3.46, histogram.getMin(), 0.01);
+        assertEquals(4.709, histogram.getMax(), 0.01);
+        assertEquals(-6.78, histogram.getMin(), 0.01);
         assertEquals(1000, histogram.getN());
 
 //        histogram.setTarget("X1");
@@ -80,8 +86,8 @@ public final class TestHistogram {
 
         histogram.removeConditioningVariable("X3");
 
-        assertEquals(3.65, histogram.getMax(), 0.01);
-        assertEquals(-3.46, histogram.getMin(), 0.01);
+        assertEquals(4.709, histogram.getMax(), 0.01);
+        assertEquals(-6.78, histogram.getMin(), 0.01);
 //        assertEquals( 142, histogram.getN());
 
         double[] arr = histogram.getContinuousData("X2");

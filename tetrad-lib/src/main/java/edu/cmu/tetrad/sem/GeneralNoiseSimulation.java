@@ -5,89 +5,177 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import org.apache.commons.math3.distribution.RealDistribution;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 
 import java.util.*;
 import java.util.function.Function;
 
+import static edu.cmu.tetrad.util.TMath.abs;
+
 /**
- * Represents a Causal Perceptron Network designed to generate synthetic data by traversing
- * an acyclic graph while applying random multi-layer perceptron (MLP) computations to represent
- * node relationships. This class provides functionality to create a dataset that respects the
- * causal structure defined by the graph, optionally applying noise, rescaling, and activation
- * functions to the generated data.
+ * General-noise simulator: X_j = f_j(Pa(X_j), e_j)
  * <p>
- * Each node of the graph can be represented as being driven by other parent nodes,
- * constructed through a random MLP. The MLP structure, activation function, and other
- * parameters can be customized in the constructor.
+ * Noise enters as an extra input column, allowing nonlinear interaction between parents and noise.
+ * This variant enforces "nature-like" positive noise clipped to a tanh-friendly interval [0, 2].
  */
 public class GeneralNoiseSimulation {
-
     private final Graph graph;
     private final int numSamples;
-    private final RealDistribution noiseDistribution;
+    private final Sampler sampler;
     private final int[] hiddenDimensions;
     private final double inputScale;
     private final Function<Double, Double> activationFunction;
     private final boolean useFastTanh;
-
-    // Keep simple per-node seeding (still random overall)
-    private final Random seeder = new Random();
+    private final boolean reportSaturation;
+    private final double saturationAbsActivationThreshold;
 
     /**
-     * Creates a AdditiveNoiseSimulation for generating data with a causal structure based on the provided graph.
+     * Constructs a GeneralNoiseSimulation instance based on the provided parameters.
      *
-     * @param graph The acyclic graph representing the causal structure of the network.
-     * @param numSamples The number of samples to generate by the network. Must be greater than 0.
-     * @param noiseDistribution The probability distribution used to sample noise for the network.
-     * @param hiddenDimensions An array representing the number of hidden neurons per layer. All entries must be at least 1.
-     * @param inputScale A scaling factor applied to the inputs of the network.
-     * @param activationFunction A function applied as the activation function for the perceptron network.
-     *                           Must be provided and not null.
-     * @throws IllegalArgumentException If the graph is not acyclic, numSamples is less than 1, rescaleMin is greater
-     *                                  than rescaleMax, or if any hidden dimensions are less than 1.
-     * @throws NullPointerException If noiseDistribution, hiddenDimensions, or activationFunction are null.
+     * @param graph The graph structure representing the network or model to be simulated.
+     * @param numSamples The number of data samples to generate during the simulation.
+     * @param sampler The sampler instance used to generate noise or random data.
+     * @param hiddenDimensions An array defining the number of hidden units in each layer of the network.
+     * @param inputScale A scaling factor applied to the input data.
+     * @param activationFunction The activation function applied to the network's nodes.
      */
     public GeneralNoiseSimulation(Graph graph,
                                   int numSamples,
-                                  RealDistribution noiseDistribution,
+                                  Sampler sampler,
                                   int[] hiddenDimensions,
                                   double inputScale,
                                   Function<Double, Double> activationFunction) {
-        if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycles.");
+        this(graph, numSamples, sampler, hiddenDimensions, inputScale, activationFunction,
+                false, 0.95);
+    }
+
+    /**
+     * Constructs a GeneralNoiseSimulation instance based on the provided parameters.
+     *
+     * @param graph The graph structure representing the network or model to be simulated.
+     *              The graph must be acyclic; otherwise, an exception will be thrown.
+     * @param numSamples The number of data samples to generate during the simulation.
+     *                   Must be a positive integer.
+     * @param sampler The sampler instance used to generate noise or random data.
+     *                Cannot be null.
+     * @param hiddenDimensions An array defining the number of hidden units in each layer of the network.
+     *                         Each value must be a positive integer. Cannot be null.
+     * @param inputScale A scaling factor applied to the input data.
+     * @param activationFunction The activation function applied to the network's nodes.
+     *                           Typically used to introduce non-linearity. Cannot be null.
+     * @param reportSaturation A boolean flag indicating whether to report saturation statistics
+     *                         during the simulation.
+     * @param saturationAbsActivationThreshold The absolute activation threshold used to determine
+     *                                         activation saturation. Only applicable if
+     *                                         {@code reportSaturation} is set to {@code true}.
+     *                                         Must be a non-negative value.
+     * @throws IllegalArgumentException If the graph contains cycles, if {@code numSamples} is less than 1,
+     *                                  if any element in {@code hiddenDimensions} is less than 1, or if
+     *                                  {@code saturationAbsActivationThreshold} is negative.
+     * @throws NullPointerException If {@code sampler}, {@code hiddenDimensions}, or {@code activationFunction} is null.
+     */
+    public GeneralNoiseSimulation(Graph graph,
+                                  int numSamples,
+                                  Sampler sampler,
+                                  int[] hiddenDimensions,
+                                  double inputScale,
+                                  Function<Double, Double> activationFunction,
+                                  boolean reportSaturation,
+                                  double saturationAbsActivationThreshold) {
+        if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycles; need a causal order to simulate.");
         if (numSamples < 1) throw new IllegalArgumentException("numSamples must be positive.");
-//        if (rescaleMin > rescaleMax) throw new IllegalArgumentException("rescaleMin > rescaleMax");
-        Objects.requireNonNull(noiseDistribution, "noiseDistribution");
+        Objects.requireNonNull(sampler, "sampler");
         Objects.requireNonNull(hiddenDimensions, "hiddenDimensions");
         Objects.requireNonNull(activationFunction, "activationFunction");
-
         for (int h : hiddenDimensions) if (h < 1) throw new IllegalArgumentException("Hidden dims must be >= 1");
 
         this.graph = graph;
         this.numSamples = numSamples;
-        this.noiseDistribution = noiseDistribution;
+        this.sampler = sampler;
         this.hiddenDimensions = hiddenDimensions.clone();
         this.inputScale = inputScale;
         this.activationFunction = activationFunction;
+        this.reportSaturation = reportSaturation;
+        this.saturationAbsActivationThreshold = saturationAbsActivationThreshold;
 
-        // IMPORTANT: give the method reference a target type to make == legal
-        @SuppressWarnings("unchecked")
-        Function<Double, Double> tanhRef = (Function<Double, Double>) (Double x) -> Math.tanh(x);
-        this.useFastTanh = activationFunction == tanhRef;
+        this.useFastTanh = isTanhLike(activationFunction);
     }
 
     /**
-     * Generates a dataset based on the causal structure defined by the network's graph.
-     * This method uses a causal graph to determine the order of nodes, processes the
-     * parent's data, adds noise, and forwards it through a randomly initialized multilayer
-     * perceptron (MLP) with the specified parameters. The data is optionally rescaled
-     * between specified minimum and maximum values, and the resulting data is returned
-     * as part of a structured dataset.
+     * Fills the provided noise array with sampled values using the specified sampler.
      *
-     * @return A dataset containing generated data with causal relationships derived from
-     *         the network's graph structure and the associated processing logic.
+     * @param noise The array to be populated with sampled values.
+     * @param N The number of samples to generate and store in the noise array.
+     * @param sampler The sampling strategy used to generate the noise values.
+     */
+    private static void drawNoise(double[] noise, int N, Sampler sampler) {
+        for (int i = 0; i < N; i++) {
+            noise[i] = sampler.sample();
+        }
+    }
+
+    private static boolean isTanhLike(Function<Double, Double> f) {
+        // Very low-cost signature test.
+        double a = f.apply(1.0);
+        double b = f.apply(-0.7);
+        return abs(a - TMath.tanh(1.0)) < 1e-12
+                && abs(b - TMath.tanh(-0.7)) < 1e-12;
+    }
+
+    private static void addBiasRowsInPlace(DMatrixRMaj A, double[] b) {
+        final int n = A.numRows, m = A.numCols;
+        int k = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++, k++) {
+                A.data[k] += b[j];
+            }
+        }
+    }
+
+    // ------------------ Tiny EJML MLP ------------------
+
+    private static void applyActivationInPlace(DMatrixRMaj A,
+                                               Function<Double, Double> f,
+                                               boolean fastTanh) {
+        final int n = A.getNumElements();
+        if (fastTanh) {
+            for (int i = 0; i < n; i++) A.data[i] = TMath.tanh(A.data[i]);
+        } else {
+            for (int i = 0; i < n; i++) A.data[i] = f.apply(A.data[i]);
+        }
+    }
+
+    private static void printSaturationStats(String nodeName,
+                                             int layerIndex,
+                                             DMatrixRMaj activations,
+                                             double absThreshold) {
+        int total = activations.getNumElements();
+        int sat = 0;
+
+        for (int i = 0; i < total; i++) {
+            if (TMath.abs(activations.data[i]) >= absThreshold) sat++;
+        }
+
+        double pct = 100.0 * sat / TMath.max(1, total);
+
+        System.out.printf(
+                Locale.US,
+                "GeneralNoiseSimulation saturation: node=%s layer=%d threshold=|a|>=%.3f saturated=%d/%d (%.2f%%)%n",
+                nodeName, layerIndex, absThreshold, sat, total, pct
+        );
+    }
+
+    /**
+     * Generates a dataset based on the current graph structure, incorporating
+     * random noise and a multi-layer perceptron (MLP) for each node in the graph.
+     * The method uses topological sorting to determine the order of computation,
+     * propagates values through the graph, and applies noise to ensure variability.
+     *
+     * @return A DataSet containing the computed values for all nodes in the graph
+     *         and their corresponding topological order.
      */
     public DataSet generateData() {
         final List<Node> topo = graph.paths().getValidOrder(graph.getNodes(), true);
@@ -111,7 +199,8 @@ public class GeneralNoiseSimulation {
 
         // Reusable EJML matrices
         DMatrixRMaj A = new DMatrixRMaj(N, 1);  // input to MLP (will reshape)
-        DMatrixRMaj Z = new DMatrixRMaj(N, 1);  // hidden scratch
+        DMatrixRMaj S1 = new DMatrixRMaj(N, 1); // scratch buffer 1
+        DMatrixRMaj S2 = new DMatrixRMaj(N, 1); // scratch buffer 2
         DMatrixRMaj Y = new DMatrixRMaj(N, 1);  // output (N x 1)
 
         final double[] noise = new double[N];
@@ -127,23 +216,26 @@ public class GeneralNoiseSimulation {
                 int k = c;
                 for (int i = 0; i < N; i++, k += Din) A.data[k] = raw[i][col];
             }
-            // draw noise once and place as last column
-            for (int i = 0; i < N; i++) noise[i] = noiseDistribution.sample();
+
+            // draw noise once (positive + clipped) and place as last column
+            drawNoise(noise, N, sampler);
+
             int k = pj.length;
             for (int i = 0; i < N; i++, k += Din) A.data[k] = noise[i];
 
             // Random MLP for this node, supports H=[] (no hidden) too
-            RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale, seeder);
+            RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale);
 
             // Forward pass: Y = mlp(A)
-            Y = mlp.forward(A, Z, Y, activationFunction, useFastTanh);
+//            Y = mlp.forward(A, S1, S2, Y, activationFunction, useFastTanh);
 
-//            // write column + rescale
-            double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
-            for (int i = 0; i < N; i++) {
-                double v = Y.data[i]; raw[i][j] = v;
-                if (v < min) min = v; if (v > max) max = v;
-            }
+            Y = mlp.forward(
+                    A, S1, S2, Y,
+                    activationFunction, useFastTanh,
+                    reportSaturation,
+                    saturationAbsActivationThreshold,
+                    topo.get(j).getName()
+            );
 
             // write column
             for (int i = 0; i < N; i++) raw[i][j] = Y.data[i];
@@ -152,35 +244,15 @@ public class GeneralNoiseSimulation {
         return new BoxDataSet(new DoubleDataBox(raw), new ArrayList<>(topo));
     }
 
-    // Computes an approximate quantile of raw[0..N-1][col].
-    // Uses a copy + sort; O(N log N) per node, which is usually fine for simulation.
-    private static double quantileOfColumn(double[][] raw, int col, double q) {
-        int n = raw.length;
-        double[] tmp = new double[n];
-        for (int i = 0; i < n; i++) tmp[i] = raw[i][col];
-        Arrays.sort(tmp);
-
-        if (q <= 0) return tmp[0];
-        if (q >= 1) return tmp[n - 1];
-
-        double pos = q * (n - 1);
-        int lo = (int) Math.floor(pos);
-        int hi = (int) Math.ceil(pos);
-        if (hi == lo) return tmp[lo];
-        double w = pos - lo;
-        return tmp[lo] * (1.0 - w) + tmp[hi] * w;
-    }
-
-    // ------------------ Tiny EJML MLP ------------------
-
     private static final class RandomMLP {
         final int Din, Dout;
         final int[] H;
         final DMatrixRMaj[] W;   // layer weights: (out x in)
         final double[][] b;      // biases per layer
 
-        RandomMLP(int Din, int[] hidden, int Dout, double inputScale, Random r) {
-            this.Din = Din; this.Dout = Dout;
+        RandomMLP(int Din, int[] hidden, int Dout, double inputScale) {
+            this.Din = Din;
+            this.Dout = Dout;
             this.H = hidden == null ? new int[0] : hidden.clone();
             int L = H.length + 1;
             this.W = new DMatrixRMaj[L];
@@ -190,71 +262,74 @@ public class GeneralNoiseSimulation {
             for (int l = 0; l < H.length; l++) {
                 W[l] = new DMatrixRMaj(H[l], prev);
                 b[l] = new double[H[l]];
-                heInit(W[l], r, inputScale);
+                xavierInit(W[l], inputScale);
+                // biases default to 0; you can randomize later if you want
                 prev = H[l];
             }
             W[L - 1] = new DMatrixRMaj(Dout, prev);
             b[L - 1] = new double[Dout];
-            heInit(W[L - 1], r, inputScale * 0.5);
+            xavierInit(W[L - 1], inputScale * 0.5);
         }
 
-        /** Y = forward(X). Uses multTransB so we never materialize W^T. */
-        /** Y = forward(X). Uses two scratch buffers so output != input for EJML. */
+        private static void heInit(DMatrixRMaj W,  double scale) {
+            double s = scale * TMath.sqrt(2.0 / TMath.max(1, W.numCols));
+            for (int i = 0, n = W.getNumElements(); i < n; i++) {
+                W.data[i] = RandomUtil.getInstance().nextGaussian() * s;
+            }
+        }
+
+        private static void xavierInit(DMatrixRMaj W, double scale) {
+            int fanIn = TMath.max(1, W.numCols);
+            int fanOut = TMath.max(1, W.numRows);
+
+            double std = scale * TMath.sqrt(2.0 / (fanIn + fanOut));
+
+            for (int i = 0, n = W.getNumElements(); i < n; i++) {
+                W.data[i] = RandomUtil.getInstance().nextGaussian() * std;
+            }
+        }
+
+        /**
+         * Forward pass using two scratch buffers so EJML never sees aliasing.
+         */
         DMatrixRMaj forward(DMatrixRMaj X,
                             DMatrixRMaj scratch1,
+                            DMatrixRMaj scratch2,
                             DMatrixRMaj out,
                             Function<Double, Double> act,
-                            boolean fastTanh) {
+                            boolean fastTanh,
+                            boolean reportSaturation,
+                            double saturationAbsActivationThreshold,
+                            String nodeName) {
 
-            // Two ping-pong buffers for hidden activations
             DMatrixRMaj cur = X;
             DMatrixRMaj bufA = scratch1;
-            DMatrixRMaj bufB = new DMatrixRMaj(1, 1); // will be reshaped
+            DMatrixRMaj bufB = scratch2;
 
             // Hidden layers
             for (int l = 0; l < H.length; l++) {
                 int h = H[l];
 
-                // choose destination buffer so it's not the same instance as 'cur'
                 DMatrixRMaj dest = (cur == bufA) ? bufB : bufA;
                 dest.reshape(X.numRows, h, false);
 
-                // dest = cur * W[l]^T
                 CommonOps_DDRM.multTransB(cur, W[l], dest);
                 addBiasRowsInPlace(dest, b[l]);
                 applyActivationInPlace(dest, act, fastTanh);
 
-                // advance
+                if (reportSaturation) {
+                    printSaturationStats(nodeName, l + 1, dest, saturationAbsActivationThreshold);
+                }
+
                 cur = dest;
             }
 
-            // Output layer: write into 'out' (guaranteed != cur)
+            // Output layer into 'out' (must not alias cur)
             out.reshape(X.numRows, Dout, false);
+            if (out == cur) throw new IllegalArgumentException("Output aliases current buffer.");
             CommonOps_DDRM.multTransB(cur, W[W.length - 1], out);
             addBiasRowsInPlace(out, b[b.length - 1]);
             return out;
-        }
-
-        private static void heInit(DMatrixRMaj W, Random r, double scale) {
-            double s = scale * Math.sqrt(2.0 / Math.max(1, W.numCols));
-            for (int i = 0, n = W.getNumElements(); i < n; i++) W.data[i] = r.nextGaussian() * s;
-        }
-    }
-
-    private static void addBiasRowsInPlace(DMatrixRMaj A, double[] b) {
-        final int n = A.numRows, m = A.numCols;
-        int k = 0;
-        for (int i = 0; i < n; i++) for (int j = 0; j < m; j++, k++) A.data[k] += b[j];
-    }
-
-    private static void applyActivationInPlace(DMatrixRMaj A,
-                                               Function<Double, Double> f,
-                                               boolean fastTanh) {
-        final int n = A.getNumElements();
-        if (fastTanh) {
-            for (int i = 0; i < n; i++) A.data[i] = Math.tanh(A.data[i]);
-        } else {
-            for (int i = 0; i < n; i++) A.data[i] = f.apply(A.data[i]);
         }
     }
 }

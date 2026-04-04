@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
@@ -36,20 +37,21 @@ import java.util.List;
 
 // Using the Blocks BIC score version instead.
 
-/**
- * Wrapper for BF-LRT.
- *
- * @author josephramsey
- * @author bryanandrews
- * @version $Id: $Id
- */
+///**
+// * Wrapper for BF-LRT.
+// *
+// * @author josephramsey
+// * @author bryanandrews
+// * @version $Id: $Id
+// */
 //@TestOfIndependence(
 //        name = "BF-LRT (Basis Function Likelihood Ratio Test)",
 //        command = "bf-lr-test",
 //        dataType = DataType.Mixed
 //)
-@Mixed
-@Deprecated(since = "7.9", forRemoval = false)
+//@Mixed
+//@General
+//@Deprecated(since = "7.9", forRemoval = false)
 public class BasisFunctionLrt implements IndependenceWrapper {
 
     @Serial
@@ -78,7 +80,7 @@ public class BasisFunctionLrt implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Basis Function Likelihood Ratio Test";
+        return "BF-LRT";
     }
 
     /**

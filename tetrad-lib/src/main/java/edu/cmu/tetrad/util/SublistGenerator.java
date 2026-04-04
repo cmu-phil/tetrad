@@ -22,8 +22,8 @@ package edu.cmu.tetrad.util;
 
 import org.apache.commons.math3.special.Gamma;
 
-import static org.apache.commons.math3.util.FastMath.exp;
-import static org.apache.commons.math3.util.FastMath.round;
+import static edu.cmu.tetrad.util.TMath.exp;
+import static edu.cmu.tetrad.util.TMath.round;
 
 /**
  * Generates (nonrecursively) all of the sublists of size b from a list of size a, where a, b are nonnegative integers

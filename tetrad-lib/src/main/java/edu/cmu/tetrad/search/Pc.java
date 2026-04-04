@@ -27,7 +27,9 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -124,7 +126,7 @@ public class Pc implements IGraphSearch {
      * <p>
      * This variable is initialized to {@code ColliderOrientationStyle.SEPSETS} by default.
      */
-    private ColliderOrientationStyle colldierOrientationStyle = ColliderOrientationStyle.SEPSETS;
+    private ColliderOrientationStyle colliderOrientationStyle = ColliderOrientationStyle.SEPSETS;
     /**
      * Determines whether bidirected edges are allowed in the graph. By default, bidirected edges are disallowed, which
      * means the algorithm will not consider such edges during its operations.
@@ -318,7 +320,7 @@ public class Pc implements IGraphSearch {
      * @param rule the {@link ColliderOrientationStyle} that specifies the method used for collider orientation
      */
     public void setColliderOrientationStyle(ColliderOrientationStyle rule) {
-        this.colldierOrientationStyle = rule;
+        this.colliderOrientationStyle = rule;
     }
 
     /**
@@ -553,7 +555,7 @@ public class Pc implements IGraphSearch {
 
     private static String stringifySet(Set<Node> S) {
         List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());
         return "{" + String.join(",", names) + "}";
     }
 
@@ -564,7 +566,7 @@ public class Pc implements IGraphSearch {
     private void orientUnshieldedTriples(Graph g, SepsetMap fasSepsets) throws InterruptedException {
         List<Triple> triples = collectUnshieldedTriples(g);
 
-        if (colldierOrientationStyle == ColliderOrientationStyle.MAX_P && maxPGlobalOrder) {
+        if (colliderOrientationStyle == ColliderOrientationStyle.MAX_P && maxPGlobalOrder) {
             orientMaxPGlobal(g, triples);
             return;
         }
@@ -577,7 +579,7 @@ public class Pc implements IGraphSearch {
             // Already collider? skip
             if (g.isParentOf(t.x, t.z) && g.isParentOf(t.y, t.z)) continue;
 
-            ColliderOutcome outcome = switch (colldierOrientationStyle) {
+            ColliderOutcome outcome = switch (colliderOrientationStyle) {
                 case SEPSETS -> {
                     Set<Node> s = fasSepsets.get(t.x, t.y);
                     if (s == null) yield ColliderOutcome.NO_SEPSET;
@@ -742,8 +744,8 @@ public class Pc implements IGraphSearch {
 
         double bestExcl = Double.NEGATIVE_INFINITY, bestIncl = Double.NEGATIVE_INFINITY;
         for (SepCandidate c : indep) {
-            if (c.S.contains(t.z)) bestIncl = Math.max(bestIncl, c.p);
-            else bestExcl = Math.max(bestExcl, c.p);
+            if (c.S.contains(t.z)) bestIncl = TMath.max(bestIncl, c.p);
+            else bestExcl = TMath.max(bestExcl, c.p);
         }
         boolean hasExcl = bestExcl > Double.NEGATIVE_INFINITY;
         boolean hasIncl = bestIncl > Double.NEGATIVE_INFINITY;
@@ -761,7 +763,7 @@ public class Pc implements IGraphSearch {
                 logStream.println("[MAX-P ambiguous] pair=(" + x.getName() + "," + y.getName() + "), z=" + t.z.getName()
                         + " bestExcl=" + bestExcl + " bestIncl=" + bestIncl + " margin=" + maxPMargin);
             }
-            return new MaxPDecision(t, ColliderOutcome.AMBIGUOUS, Math.max(bestExcl, bestIncl), Collections.emptySet());
+            return new MaxPDecision(t, ColliderOutcome.AMBIGUOUS, TMath.max(bestExcl, bestIncl), Collections.emptySet());
         } else if (hasExcl) {
             Set<Node> bestS = firstTieMatchingContainsZ(indep, t.z, false, bestExcl);
             return new MaxPDecision(t, ColliderOutcome.INDEPENDENT, bestExcl, bestS);
@@ -795,9 +797,9 @@ public class Pc implements IGraphSearch {
         adjy.sort(Comparator.comparing(Node::getName));
 
         final int depthCap = (depth < 0) ? Integer.MAX_VALUE : depth;
-        int maxAdj = Math.max(adjx.size(), adjy.size());
+        int maxAdj = TMath.max(adjx.size(), adjy.size());
 
-        for (int d = 0; d <= Math.min(depthCap, maxAdj); d++) {
+        for (int d = 0; d <= TMath.min(depthCap, maxAdj); d++) {
             for (List<Node> adj : new List[]{adjx, adjy}) {
                 if (d > adj.size()) continue;
 
@@ -819,7 +821,7 @@ public class Pc implements IGraphSearch {
 
     private String setKey(Set<Node> S) {
         List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());;
         return String.join("\u0001", names);
     }
 
@@ -827,57 +829,6 @@ public class Pc implements IGraphSearch {
     // Meek closure (cycle-safe)
     // ------------------------------------------------------------------------------------
 
-//    private void applyMeekRules(Graph g) {
-//        if (!meekCycleSafe || !forbidDirectedCycles) {
-//            MeekRules meekRules = new MeekRules();
-//            meekRules.setKnowledge(knowledge);
-//            meekRules.orientImplied(g);
-//            return;
-//        }
-//
-//        // Cycle-safe Meek: repeatedly apply Meek, but only keep implied orientations that do not introduce cycles.
-//        boolean changed;
-//        int guard = 0;
-//
-//        do {
-//            changed = false;
-//            guard++;
-//            if (guard > 10_000) break; // safety
-//
-//            // snapshot edges before
-//            List<Edge> before = new ArrayList<>(g.getEdges());
-//
-//            MeekRules meekRules = new MeekRules();
-//            meekRules.setKnowledge(knowledge);
-//            meekRules.orientImplied(g);
-//
-//            // detect new directed edges introduced (or newly oriented)
-//            List<Edge> after = new ArrayList<>(g.getEdges());
-//
-//            // Build a map key -> edge for comparisons
-//            Map<String, Edge> beforeMap = new HashMap<>();
-//            for (Edge e : before) beforeMap.put(edgeKey(e), e);
-//
-//            for (Edge eAfter : after) {
-//                Edge eBefore = beforeMap.get(edgeKey(eAfter));
-//                if (eBefore == null) continue;
-//
-//                // If orientation changed to introduce arrowhead(s), validate it
-//                if (!sameOrientation(eBefore, eAfter)) {
-//                    // If this particular change creates a cycle, rollback it.
-//                    // Rollback by restoring the old edge.
-//                    if (wouldCreateCycleIfSetEdge(g, eAfter)) {
-//                        // revert
-//                        g.removeEdge(eAfter);
-//                        g.addEdge(eBefore);
-//                        changed = true;
-//                    }
-//                }
-//            }
-//
-//            // If we reverted anything, we should rerun meek to closure again, hence loop.
-//        } while (changed);
-//    }
 
     private void applyMeekRules(Graph g) {
         if (!meekCycleSafe || !forbidDirectedCycles) {
@@ -976,22 +927,7 @@ public class Pc implements IGraphSearch {
 
     /** Return true if the current graph contains any directed cycle. */
     private static boolean hasDirectedCycle(Graph g) {
-        // Cheap test: for each node, check if there is a directed path from it to itself.
-        // If your GraphPaths has a cycle check, use that instead.
-        for (Node v : g.getNodes()) {
-            if (g.paths().existsDirectedPath(v, v)) return true;
-        }
-        return false;
-    }
-
-    /**
-     * Conservative check: temporarily set the edge orientation (already in graph),
-     * then check for directed cycles; revert handled by caller.
-     */
-    private boolean wouldCreateCycleIfSetEdge(Graph g, Edge orientedEdgeNowInGraph) {
-        // Quick local sufficient check is hard for arbitrary Meek changes; just test cycle presence.
-        // (Graph sizes here are usually small/moderate in PC.)
-        return hasDirectedCycle(g);
+        return g.paths().existsDirectedCycle();
     }
 
     private static boolean sameOrientation(Edge a, Edge b) {

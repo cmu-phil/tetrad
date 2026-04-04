@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -22,6 +22,8 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.Tetrad;
+import edu.cmu.tetradapp.ThemeUtils;
+import edu.cmu.tetradapp.editor.SaveScreenshot;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
@@ -106,6 +108,7 @@ final class TetradMenuBar extends JMenuBar {
         JMenuItem loadSession = new JMenuItem(new LoadSessionAction());
         JMenuItem closeSession = new JMenuItem(new CloseSessionAction());
         JMenuItem saveSession = new JMenuItem(new SaveSessionAction());
+        JMenuItem saveSessionAs = new JMenuItem(new SaveSessionAsAction());
 
         fileMenu.add(newSession);
         fileMenu.add(loadSession);
@@ -113,9 +116,9 @@ final class TetradMenuBar extends JMenuBar {
 
         fileMenu.addSeparator();
         fileMenu.add(saveSession);
-        fileMenu.add(new SaveSessionAsAction());
+        fileMenu.add(saveSession);
         fileMenu.addSeparator();
-        fileMenu.add(new SessionVersionAction());
+        fileMenu.add(saveSessionAs);
         fileMenu.addSeparator();
 //      fileMenu.add(new SaveScreenshot(desktop, true, "Save Screenshot..."));
 
@@ -147,9 +150,21 @@ final class TetradMenuBar extends JMenuBar {
             Tetrad.enableExperimental = box.isSelected();
         });
 
+        JCheckBoxMenuItem darkModeItem = new JCheckBoxMenuItem("Dark Mode");
+
+        boolean darkMode = Preferences.userRoot().getBoolean("darkMode", false);
+        darkModeItem.setSelected(darkMode);
+
+        darkModeItem.addActionListener(e -> {
+            boolean dark = darkModeItem.isSelected();
+            Preferences.userRoot().putBoolean("darkMode", dark);
+            ThemeUtils.applyTheme(dark);
+        });
+
         settingsMenu.add(loggingSettingMenuItem);
         settingsMenu.add(new JMenuItem(new NumberFormatAction()));
         settingsMenu.add(showExperimentalBox);
+        settingsMenu.add(darkModeItem);
 
         fileMenu.add(settingsMenu);
         fileMenu.addSeparator();
@@ -158,13 +173,14 @@ final class TetradMenuBar extends JMenuBar {
         fileMenu.add(exit);
         exit.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK));
-
         newSession.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK));
         loadSession.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
         saveSession.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
+        saveSessionAs.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
         closeSession.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.CTRL_DOWN_MASK));
 
@@ -240,13 +256,13 @@ final class TetradMenuBar extends JMenuBar {
 
             // Create a clickable link
             JLabel label = new JLabel("<html>" +
-                                      "<p>Please submit any issues you may have,</p>" +
-                                      "<p>whether bug reports, general encouragement,</p>" +
-                                      "<p>or feature requests, to our issues list. We'd</p>" +
-                                      "<p>love to hear from you as we continue to</p>" +
-                                      "<p>improve the Tetrad tools!</p>" +
-                                      "<p><center><a href=\"" + url + "\">" + url + "</a></center>" +
-                                      "</html>");
+                    "<p>Please submit any issues you may have,</p>" +
+                    "<p>whether bug reports, general encouragement,</p>" +
+                    "<p>or feature requests, to our issues list. We'd</p>" +
+                    "<p>love to hear from you as we continue to</p>" +
+                    "<p>improve the Tetrad tools!</p>" +
+                    "<p><center><a href=\"" + url + "\">" + url + "</a></center>" +
+                    "</html>");
             label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             label.setFont(label.getFont().deriveFont(Font.PLAIN, 14));
             label.addMouseListener(new MouseAdapter() {

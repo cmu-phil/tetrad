@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -703,27 +703,6 @@ public final class MlBayesImObs implements BayesIm {
         return simulateDataHelper(dataSet, latentDataSaved);
     }
 
-//    /**
-//     * Simulates a sample with the given sample size.
-//     *
-//     * @param sampleSize the sample size.
-//     * @param seed       the random number generator seed allows you recreate the
-//     *                   simulated data by passing in the same seed (so you don't have to store
-//     *                   the sample data
-//     * @return the simulated sample as a DataSet.
-//     */
-//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-//        RandomUtil random = RandomUtil.getInstance();
-//        random.setSeed(seed);
-//        return simulateData(sampleSize, latentDataSaved);
-//    }
-
-//    public DataSet simulateData(DataSet dataSet, long seed, boolean latentDataSaved) {
-//        RandomUtil random = RandomUtil.getInstance();
-//        random.setSeed(seed);
-//        return simulateDataHelper(dataSet, latentDataSaved);
-//    }
-
     private DataSet simulateTimeSeries(int sampleSize) {
         TimeLagGraph timeSeriesGraph = getBayesPm().getDag().getTimeLagGraph();
 
@@ -963,7 +942,7 @@ public final class MlBayesImObs implements BayesIm {
                         continue;
                     }
 
-                    if (FastMath.abs(prob - otherProb) > MlBayesImObs.ALLOWABLE_DIFFERENCE) {
+                    if (TMath.abs(prob - otherProb) > MlBayesImObs.ALLOWABLE_DIFFERENCE) {
                         return false;
                     }
                 }

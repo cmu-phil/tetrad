@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
@@ -43,45 +44,69 @@ import java.util.concurrent.ConcurrentHashMap;
 public class IndTestProbabilistic implements IndependenceTest {
 
     /**
-     * A cache of results for independence facts, used only if threshold is false.
+     * Sentinel value used by the Tetrad discrete data layer to indicate a missing observation.
+     * Centralising it here avoids scattering the magic number throughout the class and makes the
+     * intent clear at every call site.
+     */
+    private static final int MISSING_VALUE = -99;
+
+    /**
+     * A cache of results for independence facts, used only in threshold (deterministic) mode.
+     * In randomized mode every call must draw a fresh Bernoulli sample from the posterior, so
+     * caching results there would suppress the intended stochasticity.
+     * ConcurrentHashMap is used defensively in case the test object is ever shared across threads.
      */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
+
     /**
-     * The data set for which conditional  independence judgments are requested.
+     * The data set for which conditional independence judgments are requested.
      */
     private final DataSet data;
+
     /**
      * The nodes of the data set.
      */
     private final List<Node> nodes;
+
     /**
      * Indices of the nodes.
      */
     private final Map<Node, Integer> indices;
+
     /**
-     * A map from independence facts to their probabilities of independence.
+     * A cache of posterior probabilities of independence keyed by independence fact. Only
+     * populated in threshold mode, where the probability itself (not a random draw from it) is
+     * the stable, repeatable quantity worth caching. In randomized mode the cache is bypassed so
+     * that each call independently samples from the posterior.
+     * ConcurrentHashMap is used for the same defensive thread-safety reason as {@code facts}.
      */
     private final Map<IndependenceFact, Double> H;
+
     /**
      * The BCInference object.
      */
     private final BCInference bci;
+
     /**
      * True if the independence test should be thresholded, false if it should be randomized.
      */
     private boolean threshold;
+
     /**
      * The posterior probability of the last independence test.
      */
     private double posterior;
+
     /**
      * True if verbose output should be printed.
      */
     private boolean verbose;
+
     /**
      * The cutoff for the independence test.
      */
     private double cutoff = 0.5;
+
     /**
      * The prior equivalent sample size.
      */
@@ -107,7 +132,7 @@ public class IndTestProbabilistic implements IndependenceTest {
         }
 
         this.data = dataSet;
-        this.H = new HashMap<>();
+        this.H = new ConcurrentHashMap<>();
 
         int[] _cols = new int[this.nodes.size()];
         for (int i = 0; i < _cols.length; i++) _cols[i] = this.indices.get(this.nodes.get(i));
@@ -137,32 +162,50 @@ public class IndTestProbabilistic implements IndependenceTest {
     /**
      * {@inheritDoc}
      * <p>
-     * Returns an independence result that states whether x _||_y | z and what the p-value of the test is.
+     * Returns an independence result that states whether x _||_ y | z and what the p-value of the test is.
+     * <p>
+     * In threshold mode the result is deterministic and is cached after the first computation so that
+     * repeated queries for the same fact are answered instantly. In randomized mode no caching is
+     * performed: each call draws a fresh Bernoulli sample from the posterior probability of independence,
+     * which is the source of stochasticity that drives the ensemble search in {@code PagSamplingRfci}.
      *
      * @see IndependenceResult
      */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
-        if (!threshold && facts.containsKey(new IndependenceFact(x, y, _z))) {
-            return facts.get(new IndependenceFact(x, y, _z));
+        // In threshold mode the result is fully determined by the data and the cutoff, so caching
+        // is both correct and worthwhile. In randomized mode we must not cache: returning the same
+        // Boolean from a prior draw would defeat the purpose of stochastic sampling.
+        if (threshold) {
+            IndependenceFact factKey = new IndependenceFact(x, y, _z);
+            if (facts.containsKey(factKey)) {
+                return facts.get(factKey);
+            }
         }
 
-        // Notice that we do not cache the results of the independence tests here. This is because
-        // these results have a random component and so caching them would be inappropriate.
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         Node[] nodes = new Node[z.size()];
         for (int i = 0; i < z.size(); i++) nodes[i] = z.get(i);
+
         IndependenceResult independenceResult = checkIndependence(x, y, nodes);
-        if (!threshold) facts.put(new IndependenceFact(x, y, _z), independenceResult);
+
+        if (threshold) {
+            facts.put(new IndependenceFact(x, y, _z), independenceResult);
+        }
+
         return independenceResult;
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * Returns an independence result that states whether x _||_y | z and what the p-value of the test is.
+     * Returns an independence result that states whether x _||_ y | z and what the p-value of the test is.
+     * <p>
+     * The posterior probability of independence is cached in {@code H} only in threshold mode. In
+     * randomized mode the probability is recomputed on every call so that the random draw made below
+     * is truly independent across calls for the same fact.
      *
      * @see IndependenceResult
      */
@@ -209,18 +252,23 @@ public class IndTestProbabilistic implements IndependenceTest {
 
         double pInd;
 
-        if (!this.H.containsKey(key)) {
-            pInd = probConstraint(bci, BCInference.OP.independent, x, y, z, indices);
-            H.put(key, pInd);
-        } else {
+        if (threshold && this.H.containsKey(key)) {
+            // Threshold mode: the posterior is a stable quantity; reuse the cached value.
             pInd = H.get(key);
+        } else {
+            // Randomized mode: always recompute so that the Bernoulli draw below is independent.
+            // Threshold mode on first visit: compute and cache for future calls.
+            pInd = probConstraint(bci, BCInference.OP.independent, x, y, z, indices);
+            if (threshold) {
+                H.put(key, pInd);
+            }
         }
 
         double p = pInd;
 
         if (Double.isNaN(p)) {
             throw new RuntimeException("Undefined p-value encountered when testing " +
-                                       LogUtilsSearch.independenceFact(x, y, GraphUtils.asSet(z)));
+                    LogUtilsSearch.independenceFact(x, y, GraphUtils.asSet(z)));
         }
 
         posterior = p;
@@ -243,7 +291,6 @@ public class IndTestProbabilistic implements IndependenceTest {
         // Note p here is not a p-value but rather a posterior probability.
         return new IndependenceResult(new IndependenceFact(x, y, z), ind, p, Double.NaN);
     }
-
 
     /**
      * Returns the probability of the constraint x op y | z.
@@ -338,9 +385,11 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     /**
-     * Returns a map from independence facts to their probabilities of independence.
+     * Returns a map from independence facts to their posterior probabilities of independence.
+     * Only facts evaluated in threshold mode are present; randomized-mode calls do not populate
+     * this map.
      *
-     * @return The map.
+     * @return A defensive copy of the map.
      */
     public Map<IndependenceFact, Double> getH() {
         return new HashMap<>(this.H);
@@ -433,13 +482,14 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     /**
-     * Retrieves the list of row indices where all variables in `allVars` have non-null values in `dataSet`. If any
-     * variable has a null value for a particular row, the row is skipped.
+     * Retrieves the list of row indices where all variables in {@code allVars} have non-missing values
+     * in {@code dataSet}. Rows containing a missing-value sentinel ({@link #MISSING_VALUE}) for any
+     * variable are excluded.
      *
      * @param dataSet   The DataSet object containing the data.
-     * @param allVars   The list of variables to check for non-null values.
-     * @param nodesHash A mapping of variables to their corresponding indices in the DataSet.
-     * @return A List of Integer objects representing the row indices where all variables have non-null values.
+     * @param allVars   The list of variables to check for non-missing values.
+     * @param nodesHash A mapping of variables to their corresponding column indices in the DataSet.
+     * @return A List of Integer objects representing the row indices where all variables are present.
      */
     private List<Integer> getRows(DataSet dataSet, List<Node> allVars, Map<Node, Integer> nodesHash) {
         List<Integer> rows = new ArrayList<>();
@@ -447,7 +497,7 @@ public class IndTestProbabilistic implements IndependenceTest {
         K:
         for (int k = 0; k < dataSet.getNumRows(); k++) {
             for (Node node : allVars) {
-                if (dataSet.getInt(k, nodesHash.get(node)) == -99) continue K;
+                if (dataSet.getInt(k, nodesHash.get(node)) == MISSING_VALUE) continue K;
             }
 
             rows.add(k);
@@ -456,7 +506,3 @@ public class IndTestProbabilistic implements IndependenceTest {
         return rows;
     }
 }
-
-
-
-

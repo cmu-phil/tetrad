@@ -214,10 +214,10 @@ final class BayesPmEditorWizard extends JPanel {
 
             ++current;
 
-            if (current == max) {
-                JOptionPane.showMessageDialog(this,
-                        "There are no more variables.");
-            }
+//            if (current == max) {
+//                JOptionPane.showMessageDialog(this,
+//                        "There are no more variables.");
+//            }
 
             int set = (current < max) ? current : 0;
 
@@ -355,7 +355,7 @@ final class BayesPmEditorWizard extends JPanel {
 
     private void createVariableChooser(BayesPm bayesPm, GraphWorkbench workbench) {
         this.variableChooser = new JComboBox<>();
-        this.variableChooser.setBackground(Color.white);
+//        this.variableChooser.setBackground(Color.white);
 
         Graph graphModel = bayesPm.getDag();
 

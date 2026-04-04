@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -38,7 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * NL SEM simulation.
@@ -106,52 +106,23 @@ public class GpSemSimulation implements Simulation {
             this.graphs.add(graph);
             SimpleMatrix data = new SimpleMatrix(sampleSize, numVars);
 
-            int errorType = parameters.getInt(Params.SIMULATION_ERROR_TYPE);
-
             for (int k = 0; k < numVars; k++) {
                 Node x = variables.get(k);
                 List<Node> Pa = graph.getParents(x);
 
                 // Additive Error
 
-                if (errorType == 1) {
-                    double low = parameters.getDouble(Params.VAR_LOW);
-                    double high = parameters.getDouble(Params.VAR_HIGH);
-                    double std = sqrt(RandomUtil.getInstance().nextUniform(low, high));
-                    for (int j = 0; j < sampleSize; j++) {
-                        data.set(j, k, RandomUtil.getInstance().nextGaussian(0, std));
-                    }
-                } else if (errorType == 2) {
-                    double low = parameters.getDouble(Params.SIMULATION_PARAM1);
-                    double high = parameters.getDouble(Params.SIMULATION_PARAM1);
-                    for (int j = 0; j < sampleSize; j++) {
-                        data.set(j, k, RandomUtil.getInstance().nextUniform(low, high));
-                    }
-                } else if (errorType == 3) {
-                    double lambda = parameters.getDouble(Params.SIMULATION_PARAM1);
-                    for (int j = 0; j < sampleSize; j++) {
-                        data.set(j, k, RandomUtil.getInstance().nextExponential(lambda));
-                    }
-                } else if (errorType == 4) {
-                    double mu = parameters.getDouble(Params.SIMULATION_PARAM1);
-                    double beta = parameters.getDouble(Params.SIMULATION_PARAM2);
-                    for (int j = 0; j < sampleSize; j++) {
-                        data.set(j, k, RandomUtil.getInstance().nextGumbel(mu, beta));
-                    }
-                } else if (errorType == 5) {
-                    double shape = parameters.getDouble(Params.SIMULATION_PARAM1);
-                    double scale = parameters.getDouble(Params.SIMULATION_PARAM2);
-                    for (int j = 0; j < sampleSize; j++) {
-                        data.set(j, k, RandomUtil.getInstance().nextGamma(shape, scale));
-                    }
+                double low = parameters.getDouble(Params.VAR_LOW);
+                double high = parameters.getDouble(Params.VAR_HIGH);
+                double std = sqrt(RandomUtil.getInstance().nextUniform(low, high));
+                for (int j = 0; j < sampleSize; j++) {
+                    data.set(j, k, RandomUtil.getInstance().nextGaussian(0, std));
                 }
 
                 // Parents effect
 
                 if (Pa.isEmpty()) continue;
 
-                double low = parameters.getDouble(Params.COEF_LOW);
-                double high = parameters.getDouble(Params.COEF_HIGH);
                 double beta = RandomUtil.getInstance().nextUniform(low, high);
                 double[] mu = new double[sampleSize];
 
@@ -264,11 +235,8 @@ public class GpSemSimulation implements Simulation {
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.COEF_LOW);
         parameters.add(Params.COEF_HIGH);
-        parameters.add(Params.SIMULATION_ERROR_TYPE);
         parameters.add(Params.VAR_LOW);
         parameters.add(Params.VAR_HIGH);
-        parameters.add(Params.SIMULATION_PARAM1);
-        parameters.add(Params.SIMULATION_PARAM2);
         parameters.add(Params.SEED);
 
         return parameters;

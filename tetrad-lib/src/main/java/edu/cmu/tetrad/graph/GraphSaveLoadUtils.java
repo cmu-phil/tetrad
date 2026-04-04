@@ -20,6 +20,8 @@
 
 package edu.cmu.tetrad.graph;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.util.*;
@@ -83,10 +85,9 @@ public class GraphSaveLoadUtils {
         try {
             Reader in1 = new FileReader(file);
             return readerToGraphTxt(in1);
-
         } catch (Exception e) {
             e.printStackTrace();
-            throw new IllegalStateException();
+            throw new RuntimeException(e);
         }
     }
 
@@ -1237,6 +1238,17 @@ public class GraphSaveLoadUtils {
             case TAIL   -> 3;
             default     -> 0; // NULL or anything else
         };
+    }
+
+    /**
+     * Converts a graph object to a JSON-formatted string.
+     *
+     * @param graph the graph object to be serialized into JSON
+     * @return a JSON-formatted string representing the graph
+     */
+    public static String graphToJson(Graph graph) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return gson.toJson(graph);
     }
 
     /**

@@ -20,16 +20,17 @@
 
 package edu.cmu.tetrad.search.ntad_test;
 
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static java.lang.Math.sqrt;
+import static edu.cmu.tetrad.util.TMath.sqrt;
 
 /**
  * NtadTest is an abstract base class for implementing ntad-based statistical tests. A ntad specifies structural
@@ -210,12 +211,11 @@ public abstract class NtadTest {
      * @return a SimpleMatrix containing the sampled rows from the input matrix
      */
     protected SimpleMatrix sampleRows(SimpleMatrix matrix, double frac) {
-        int numSamples = (int) Math.ceil(frac * matrix.getNumRows());
+        int numSamples = (int) TMath.ceil(frac * matrix.getNumRows());
         List<Integer> sampledIndices = new ArrayList<>();
-        Random rand = new Random();
 
         while (sampledIndices.size() < numSamples) {
-            int idx = rand.nextInt(matrix.getNumRows());
+            int idx = RandomUtil.getInstance().nextInt(matrix.getNumRows());
             if (!sampledIndices.contains(idx)) {
                 sampledIndices.add(idx);
             }
@@ -277,7 +277,7 @@ public abstract class NtadTest {
 //        int[] a = ntad[0];
 //        int[] b = ntad[1];
 //
-//        int minpq = Math.min(a.length, b.length);
+//        int minpq = TMath.min(a.length, b.length);
 //
 //        for (int r = 0; r < a.length; r++) {
 //            if (r >= minpq) {

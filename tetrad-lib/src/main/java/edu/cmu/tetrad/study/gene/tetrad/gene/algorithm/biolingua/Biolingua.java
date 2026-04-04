@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.biolingua;
 
 import edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util.SymMatrixF;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 /**
  * Implements an algorithm for revising regulatory models with expression data. This implementation is based on the
@@ -396,7 +396,7 @@ public class Biolingua {
 
 
     private static boolean isZero(float x) {
-        return (FastMath.abs(x) <= Biolingua.ALMOST_ZERO);
+        return (TMath.abs(x) <= Biolingua.ALMOST_ZERO);
     }
 
 }

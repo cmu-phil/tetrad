@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.FfMl;
+import edu.cmu.tetrad.search.score.FfMlContinuous;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -36,18 +36,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Huang Marginal Likelihood Score.
- *
- * @author josephramsey
- * @version $Id: $Id
- */
-@edu.cmu.tetrad.annotation.Score(
-        name = "Huang ML Score",
-        command = "huang-ml-score",
-        dataType = {DataType.Continuous}
-)
-@General
-@Experimental
+// * Wrapper for Huang Marginal Likelihood Score.
+// *
+// * @author josephramsey
+// * @version $Id: $Id
+// */
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "Huang ML Score",
+//        command = "huang-ml-score",
+//        dataType = {DataType.Continuous}
+//)
+//@General
+//@Experimental
 public class HuangMarginalLikelihoodScore implements ScoreWrapper {
 
     @Serial
@@ -84,8 +84,8 @@ public class HuangMarginalLikelihoodScore implements ScoreWrapper {
         score.setJitter(parameters.getDouble(Params.KML_JITTER));
         score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
 
-        FfMl.FeatureType[] values
-                = FfMl.FeatureType.values();
+        FfMlContinuous.FeatureType[] values
+                = FfMlContinuous.FeatureType.values();
 
 
         return score;

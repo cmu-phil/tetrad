@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -53,7 +53,14 @@ public final class ImageUtils {
             throw new NullPointerException("Path must not be null.");
         }
 
-        String fullPath = "/docs/images/" + path;
+        String fullPath;
+
+        if (isDarkMode()) {
+            fullPath = "/docs/darkmode/images/" + path;
+        } else {
+            fullPath = "/docs/images/" + path;
+        }
+
         URL url = anchor.getClass().getResource(fullPath);
 
         if (url == null) {
@@ -62,6 +69,10 @@ public final class ImageUtils {
         }
 
         return Toolkit.getDefaultToolkit().createImage(url);
+    }
+
+    private static boolean isDarkMode() {
+        return com.formdev.flatlaf.FlatLaf.isLafDark();
     }
 }
 

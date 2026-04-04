@@ -37,6 +37,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -185,7 +186,12 @@ public class PerformanceTestsDan {
             _vars_temp = _vars_temp.replace("X", "");
             out2.println(_vars_temp);
 
-            DataSet fullData = im.simulateData(numCases, false);
+            DataSet fullData = null;
+            try {
+                fullData = im.simulateData(numCases, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
 
             DataSet data = DataTransforms.restrictToMeasured(fullData);
 

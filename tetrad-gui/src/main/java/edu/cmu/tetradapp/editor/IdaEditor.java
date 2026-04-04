@@ -23,8 +23,10 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.OrderedPair;
+import edu.cmu.tetrad.search.Ida;
 import edu.cmu.tetrad.search.IdaCheck;
 import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.IdaModel;
 import edu.cmu.tetradapp.util.WatchedProcess;
@@ -38,10 +40,8 @@ import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -157,6 +157,8 @@ public class IdaEditor extends JPanel {
         table.setFillsViewportHeight(true);
 
         this.sorter = new TableRowSorter<>(tableModel);
+        sorter.setComparator(1, Comparator.comparing(NaturalSort.NaturalKey::from));  // From col
+        sorter.setComparator(2, Comparator.comparing(NaturalSort.NaturalKey::from));  // To col
         table.setRowSorter(sorter);
 
         // When the user sorts, recompute the summary statistics using only visible rows.
@@ -252,25 +254,45 @@ public class IdaEditor extends JPanel {
         runButton.addActionListener(e -> {
             try {
                 idaModel.setOptimalIdaSelected(showOptimalIda.isSelected());
-                recomputeTable(); // sets currentPairs
-                idaCheckEst.recompute(currentPairs); // compute only those pairs
+                idaModel.setTreatmentsText(treatmentsField.getText());
+                idaModel.setOutcomesText(outcomesField.getText());
+                idaModel.setHideZeroEffects(hideZeroEffects.isSelected());
 
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
+                idaCheckEst.setIdaType(
+                        showOptimalIda.isSelected()
+                                ? Ida.IDA_TYPE.OPTIMAL
+                                : Ida.IDA_TYPE.REGULAR);
 
-                        // then rebuild model, or (better) rebuild after computing
-                        tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
-                        table.setModel(tableModel);
+                List<OrderedPair<Node>> newPairs = computeCurrentPairs(); // synchronous
+                currentPairs = newPairs;
+                idaModel.setCurrentPairs(currentPairs);
+
+                idaCheckEst.recompute(currentPairs);
+
+                tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
+                table.setModel(tableModel);
+
+                this.sorter = new TableRowSorter<>(tableModel);
+                sorter.setComparator(1, Comparator.comparing(NaturalSort.NaturalKey::from));  // From col
+                sorter.setComparator(2, Comparator.comparing(NaturalSort.NaturalKey::from));  // To col
+                table.setRowSorter(sorter);
+
+                sorter.addRowSorterListener(e2 -> {
+                    if (e2.getType() == RowSorterEvent.Type.SORTED) {
+                        updateStatsForVisibleRows();
                     }
                 });
+
+                if (idaModel.getTrueSemIm() != null) {
+                    setSummaryText(numberFormat, idaCheckEst, currentPairs);
+                }
+
             } catch (IllegalArgumentException ex) {
                 JOptionPane.showMessageDialog(this,
                         ex.getMessage(),
                         "Invalid selection",
                         JOptionPane.ERROR_MESSAGE);
             }
-
         });
 
         // ---- Tabbed pane with Table + Help ----
@@ -293,6 +315,46 @@ public class IdaEditor extends JPanel {
 
         revalidate();
         repaint();
+    }
+
+    private List<OrderedPair<Node>> computeCurrentPairs() {
+        Graph graph = idaCheckEst.getGraph();
+
+        Set<Node> X = parseNodeList(graph, treatmentsField.getText().trim());
+        Set<Node> Y = parseNodeList(graph, outcomesField.getText().trim());
+
+        if (X.isEmpty() || Y.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Treatments (X) and outcomes (Y) sets must not be empty.");
+        }
+
+        List<OrderedPair<Node>> newPairs = new ArrayList<>();
+        boolean filterZeros = hideZeroEffects.isSelected();
+
+        for (OrderedPair<Node> pair : allPairs) {
+            Node x = pair.getFirst();
+            Node y = pair.getSecond();
+
+            if (X.contains(x) && Y.contains(y)) {
+                if (filterZeros) {
+                    double min = idaCheckEst.getMinTotalEffect(x, y);
+                    double max = idaCheckEst.getMaxTotalEffect(x, y);
+
+                    if (min == 0.0 && max == 0.0) {
+                        continue;
+                    }
+                }
+
+                newPairs.add(pair);
+            }
+        }
+
+        if (newPairs.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "No ordered pairs (X, Y) matched the given treatments/outcomes.");
+        }
+
+        return newPairs;
     }
 
     /**
@@ -440,7 +502,8 @@ public class IdaEditor extends JPanel {
 
                     // Replace sorter (and its listeners) to match the new model.
                     sorter = new TableRowSorter<>(tableModel);
-                    table.setRowSorter(sorter);
+                    sorter.setComparator(1, Comparator.comparing(NaturalSort.NaturalKey::from));
+                    sorter.setComparator(2, Comparator.comparing(NaturalSort.NaturalKey::from));
 
                     sorter.addRowSorterListener(e -> {
                         if (e.getType() == RowSorterEvent.Type.SORTED) {
@@ -598,8 +661,7 @@ class IdaTableModel extends AbstractTableModel {
      * where if the true total effect falls between the minimum and maximum total effect zero is reported. If the true
      * model is not given, the last two columns are not included.
      */
-    private final String[] columnNames = {"#", "Pair", "Min TE", "Max TE", "IDA Min Effect", "True TE", "Sq Dist"};
-
+    private final String[] columnNames = {"#", "From", "To", "Min TE", "Max TE", "IDA Min Effect", "True TE", "Sq Dist"};
     /**
      * The data for the table.
      */
@@ -614,27 +676,24 @@ class IdaTableModel extends AbstractTableModel {
      */
     IdaTableModel(List<OrderedPair<Node>> pairs, IdaCheck estModel, SemIm trueSemIm) {
         boolean hasTrue = trueSemIm != null;
-        data = new Object[pairs.size()][hasTrue ? 7 : 5];
+        data = new Object[pairs.size()][hasTrue ? 8 : 6];
 
         for (int i = 0; i < pairs.size(); i++) {
             OrderedPair<Node> pair = pairs.get(i);
-            String edge = pair.getFirst().getName() + " ~~> " + pair.getSecond().getName();
             double minTotalEffect = estModel.getMinTotalEffect(pair.getFirst(), pair.getSecond());
             double maxTotalEffect = estModel.getMaxTotalEffect(pair.getFirst(), pair.getSecond());
             double minAbsTotalEffect = estModel.getIdaMinEffect(pair.getFirst(), pair.getSecond());
 
-            data[i][0] = i + 1;   // 1-based index
-            data[i][1] = edge;
-            data[i][2] = minTotalEffect;
-            data[i][3] = maxTotalEffect;
-            data[i][4] = minAbsTotalEffect;
+            data[i][0] = i + 1;
+            data[i][1] = pair.getFirst().getName();   // From
+            data[i][2] = pair.getSecond().getName();  // To
+            data[i][3] = minTotalEffect;
+            data[i][4] = maxTotalEffect;
+            data[i][5] = minAbsTotalEffect;
 
             if (hasTrue) {
-                double trueTotalEffect = estModel.getTrueTotalEffect(pair);
-                double squaredDistance = estModel.getSquaredDistance(pair);
-
-                data[i][5] = trueTotalEffect;
-                data[i][6] = squaredDistance;
+                data[i][6] = estModel.getTrueTotalEffect(pair);
+                data[i][7] = estModel.getSquaredDistance(pair);
             }
         }
     }
@@ -646,7 +705,7 @@ class IdaTableModel extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return data.length == 0 ? 4 : data[0].length;
+        return data.length == 0 ? 5 : data[0].length;
     }
 
     @Override
@@ -657,7 +716,8 @@ class IdaTableModel extends AbstractTableModel {
     @Override
     public Class<?> getColumnClass(int col) {
         if (col == 0) return Integer.class;  // index
-        if (col == 1) return String.class;   // pair label
+        if (col == 1) return String.class;   // From
+        if (col == 2) return String.class;   // To
         return Double.class;
     }
 

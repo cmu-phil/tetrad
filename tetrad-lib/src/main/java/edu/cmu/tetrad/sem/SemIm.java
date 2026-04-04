@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -30,7 +30,6 @@ import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
-import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -38,9 +37,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.rmi.MarshalledObject;
+import java.text.ParseException;
 import java.util.*;
 
-import static org.apache.commons.math3.util.FastMath.sqrt;
+import static edu.cmu.tetrad.util.TMath.sqrt;
 
 /**
  * Stores an instantiated structural equation model (SEM), with error covariance terms, possibly cyclic, suitable for
@@ -189,15 +189,15 @@ public final class SemIm implements Im, ISemIm {
      */
     private ScoreType scoreType = ScoreType.Fml;
 
-    /**
-     * Error distribution parameters.
-     */
-    private double errorParam1;
-
-    /**
-     * Error distribution parameters.
-     */
-    private double errorParam2 = 1.0;
+//    /**
+//     * Error distribution parameters.
+//     */
+//    private double errorParam1;
+//
+//    /**
+//     * Error distribution parameters.
+//     */
+//    private double errorParam2 = 1.0;
 
     /**
      * Number of random calls.
@@ -278,9 +278,9 @@ public final class SemIm implements Im, ISemIm {
 
         this.distributions = new HashMap<>();
 
-        // 1 = Normal, 2 = Uniform, 3 = Exponential, 4 = Gumbel
-        this.errorParam1 = parameters.getDouble(Params.SIMULATION_PARAM1);
-        this.errorParam2 = parameters.getDouble(Params.SIMULATION_PARAM2);
+//        // 1 = Normal, 2 = Uniform, 3 = Exponential, 4 = Gumbel
+//        this.errorParam1 = parameters.getDouble(Params.SIMULATION_PARAM1);
+//        this.errorParam2 = parameters.getDouble(Params.SIMULATION_PARAM2);
 
         this.functions = new HashMap<>();
     }
@@ -310,7 +310,7 @@ public final class SemIm implements Im, ISemIm {
 
         if (!MatrixUtils.isPositiveDefinite(covariances)) {
             throw new IllegalArgumentException("Covariances must be symmetric "
-                                               + "positive definite.");
+                    + "positive definite.");
         }
 
         if (means.size() != this.semPm.getVariableNodes().size()) {
@@ -321,7 +321,7 @@ public final class SemIm implements Im, ISemIm {
         if (covariances.getNumRows() != this.semPm.getVariableNodes().size()) {
             throw new IllegalArgumentException(
                     "Dimension of covariance matrix "
-                    + "does not equal number of variables.");
+                            + "does not equal number of variables.");
         }
 
         this.errCovar = covariances;
@@ -405,6 +405,8 @@ public final class SemIm implements Im, ISemIm {
         parameters.add(Params.VAR_HIGH);
         parameters.add(Params.COEF_SYMMETRIC);
         parameters.add(Params.COV_SYMMETRIC);
+        parameters.add(Params.CUSTOM_NOISE_OPTION);
+        parameters.add(Params.CUSTOM_NOISE_EXPRESSION);
 
         parameters.add(Params.CYCLIC_COEF_LOW);
         parameters.add(Params.CYCLIC_COEF_HIGH);
@@ -461,7 +463,7 @@ public final class SemIm implements Im, ISemIm {
 //            if (!(d > 0.0) || Double.isNaN(d) || Double.isInfinite(d)) {
 //                throw new IllegalStateException("Cholesky diagonal not positive.");
 //            }
-//            sum += Math.log(d);
+//            sum += TMath.log(d);
 //        }
 //        return 2.0 * sum;
 //    }
@@ -478,14 +480,14 @@ public final class SemIm implements Im, ISemIm {
                 if (!(d > 0.0) || Double.isNaN(d) || Double.isInfinite(d)) {
                     throw new IllegalStateException("Cholesky diagonal not positive.");
                 }
-                sum += Math.log(d);
+                sum += TMath.log(d);
             }
             return 2.0 * sum;
         } catch (Throwable t) {
             // Add a tiny jitter proportional to average diagonal, retry once
             int n = S.getNumRows();
             double avgDiag = 0.0;
-            for (int i = 0; i < n; i++) avgDiag += Math.max(0.0, S.get(i, i));
+            for (int i = 0; i < n; i++) avgDiag += TMath.max(0.0, S.get(i, i));
             avgDiag = (n > 0 ? avgDiag / n : 1.0);
             double eps = 1e-8 * (avgDiag > 0.0 ? avgDiag : 1.0);
 
@@ -494,7 +496,7 @@ public final class SemIm implements Im, ISemIm {
 
             Matrix L = MatrixUtils.cholesky(Sj); // will throw if truly not SPD
             double sum = 0.0;
-            for (int i = 0; i < n; i++) sum += Math.log(L.get(i, i));
+            for (int i = 0; i < n; i++) sum += TMath.log(L.get(i, i));
             return 2.0 * sum;
         }
     }
@@ -546,8 +548,9 @@ public final class SemIm implements Im, ISemIm {
      * @param g The graph on which the shrinkage simulation is performed.
      * @return A Result object containing the shrinkage mode, simulated dataset, sample size,
      *         and the SEM (Structural Equation Model) instance representing the data-generating process.
+     * @throws ParseException If there is an issue parsing the input parameters.
      */
-    public static @NotNull Result simulatePossibleShrinkage(Parameters params, Graph g) {
+    public static @NotNull Result simulatePossibleShrinkage(Parameters params, Graph g) throws ParseException {
         // Shrinkage: 1=None, 2=Ridge, 3=LedoitâWolf
         params.set(Params.SHRINKAGE_MODE, 3);
         // Optional ridge/pinv knobs (used if present)
@@ -597,7 +600,6 @@ public final class SemIm implements Im, ISemIm {
                         params.getDouble(Params.CYCLIC_RADIUS),
                         params.getDouble(Params.CYCLIC_COEF_LOW),
                         params.getDouble(Params.CYCLIC_COEF_HIGH),
-                        params.getLong(Params.SEED),
                         params);
                 ds = result.dataSet();
                 im = result.semIm();
@@ -724,7 +726,7 @@ public final class SemIm implements Im, ISemIm {
     public void setFreeParamValues(double[] params) {
         if (params.length != getNumFreeParams()) {
             throw new IllegalArgumentException("The array provided must be "
-                                               + "of the same length as the number of free parameters.");
+                    + "of the same length as the number of free parameters.");
         }
 
         for (int i = 0; i < freeMappings().size(); i++) {
@@ -790,7 +792,7 @@ public final class SemIm implements Im, ISemIm {
             this.standardErrors = null;     // invalidate SE cache
         } else {
             throw new IllegalArgumentException("That parameter cannot be set in "
-                                               + "this model: " + parameter);
+                    + "this model: " + parameter);
         }
     }
 
@@ -970,10 +972,10 @@ public final class SemIm implements Im, ISemIm {
     public void setIntercept(Node node, double intercept) {
         if (isCyclic()) {
             throw new UnsupportedOperationException("Setting and getting of "
-                                                    + "intercepts is supported for acyclic SEMs only. The internal "
-                                                    + "parameterizations uses variable means; the relationship "
-                                                    + "between variable means and intercepts has not been fully "
-                                                    + "worked out for the cyclic case.");
+                    + "intercepts is supported for acyclic SEMs only. The internal "
+                    + "parameterizations uses variable means; the relationship "
+                    + "between variable means and intercepts has not been fully "
+                    + "worked out for the cyclic case.");
         }
 
         SemGraph semGraph = getSemPm().getGraph();
@@ -1129,7 +1131,7 @@ public final class SemIm implements Im, ISemIm {
     public double getParamValue(Node nodeA, Node nodeB) {
         Parameter parameter = null;
 
-        if (nodeA == nodeB) {
+        if (nodeA.equals(nodeB)) {
             parameter = getSemPm().getVarianceParameter(nodeA);
         }
 
@@ -1185,7 +1187,7 @@ public final class SemIm implements Im, ISemIm {
 
         if (parameter == null) {
             throw new IllegalArgumentException("There is no parameter in "
-                                               + "model for an edge from " + nodeA + " to " + nodeB + ".");
+                    + "model for an edge from " + nodeA + " to " + nodeB + ".");
         }
 
         if (!this.getFreeParameters().contains(parameter)) {
@@ -1356,7 +1358,7 @@ public final class SemIm implements Im, ISemIm {
             } catch (Throwable t) {
                 int n = Sigma.getNumRows();
                 double avgDiag = 0.0;
-                for (int i = 0; i < n; i++) avgDiag += Math.max(0.0, Sigma.get(i, i));
+                for (int i = 0; i < n; i++) avgDiag += TMath.max(0.0, Sigma.get(i, i));
                 avgDiag = (n > 0 ? avgDiag / n : 1.0);
                 double eps = 1e-8 * (avgDiag > 0.0 ? avgDiag : 1.0);
 
@@ -1395,7 +1397,7 @@ public final class SemIm implements Im, ISemIm {
             // Near-SPD fallback: add a tiny jitter to the diagonal and retry
             int n = S.getNumRows();
             double avgDiag = 0.0;
-            for (int i = 0; i < n; i++) avgDiag += Math.max(0.0, S.get(i, i));
+            for (int i = 0; i < n; i++) avgDiag += TMath.max(0.0, S.get(i, i));
             avgDiag = (n > 0 ? avgDiag / n : 1.0);
             double eps = 1e-8 * (avgDiag > 0.0 ? avgDiag : 1.0);
             Matrix Sj = S.copy();
@@ -1459,7 +1461,7 @@ public final class SemIm implements Im, ISemIm {
      */
     public double getBicScore() {
         int dof = getSemPm().getDof();
-        return getChiSquare() - dof * FastMath.log(this.sampleSize);
+        return getChiSquare() - dof * TMath.log(this.sampleSize);
 
     }
 
@@ -1470,15 +1472,15 @@ public final class SemIm implements Im, ISemIm {
     public double getRmsea() {
         double chi2 = getChiSquare();
         int dof = this.semPm.getDof();
-        int n = Math.max(1, getSampleSize() - 1);
+        int n = TMath.max(1, getSampleSize() - 1);
 
         if (dof <= 0 || Double.isNaN(chi2)) return Double.NaN;
 
-        double num = Math.max(0.0, chi2 - dof);
+        double num = TMath.max(0.0, chi2 - dof);
         double den = dof * n;
         if (den <= 0.0) return Double.NaN;
 
-        return Math.sqrt(num / den);
+        return TMath.sqrt(num / den);
     }
 
     /**
@@ -1504,10 +1506,16 @@ public final class SemIm implements Im, ISemIm {
     }
 
     private SemIm independenceModel() {
-        Graph nullModel = new SemGraph(getSemPm().getGraph());
-        nullModel.removeEdges(nullModel.getEdges());
-        SemPm nullPm = new SemPm(nullModel);
-        CovarianceMatrix sampleCovar = new CovarianceMatrix(getMeasuredNodes(), getSampleCovar(), getSampleSize());
+        // Build the null model from a fresh EdgeListGraph to avoid SemGraph
+        // error-term inconsistencies when edges are removed post-construction.
+        SemGraph original = getSemPm().getGraph();
+        Graph nullGraph = new EdgeListGraph(original.getNodes());
+        SemGraph nullSemGraph = new SemGraph(nullGraph);
+        nullSemGraph.setShowErrorTerms(true);
+
+        SemPm nullPm = new SemPm(nullSemGraph);
+        CovarianceMatrix sampleCovar = new CovarianceMatrix(
+                getMeasuredNodes(), getSampleCovar(), getSampleSize());
 
         return new SemEstimator(sampleCovar, nullPm).estimate();
     }
@@ -1545,7 +1553,7 @@ public final class SemIm implements Im, ISemIm {
      * This simulate method uses the implied covariance metrix directly to simulate data, instead of going tier by tier.
      * It should work for cyclic graphs as well as acyclic graphs.
      */
-    public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
+    public DataSet simulateData(int sampleSize, boolean latentDataSaved) throws ParseException {
         if (this.semPm.getGraph().isTimeLagModel()) {
             return simulateTimeSeries(sampleSize, latentDataSaved);
         }
@@ -1608,7 +1616,7 @@ public final class SemIm implements Im, ISemIm {
                         Node child = semGraph.getChildren(parent).iterator().next();
 
                         double var = getParamValue(child, child); // variance parameter is on the child variable
-                        sum += getNextNormal(0.0, Math.sqrt(Math.max(0.0, var)));
+                        sum += getNextNormal(0.0, TMath.sqrt(TMath.max(0.0, var)));
                     } else {
                         TimeLagGraph.NodeId id = timeSeriesGraph.getNodeId(parent);
                         int fromIndex = nodeIndices.get(timeSeriesGraph.getNode(id.getName(), 0));
@@ -1677,7 +1685,7 @@ public final class SemIm implements Im, ISemIm {
             double[] exoData = new double[cholesky.getNumRows()];
 
             for (int i = 0; i < exoData.length; i++) {
-                exoData[i] = RandomUtil.getInstance().nextGaussian(0, 1);
+                exoData[i] = RandomUtil.getInstance().nextGaussian();
                 //            exoData[i] = randomUtil.nextUniform(-1, 1);
             }
 
@@ -1724,9 +1732,10 @@ public final class SemIm implements Im, ISemIm {
      * @param sampleSize      a int
      * @param latentDataSaved a boolean
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @throws java.text.ParseException if any.
      */
     public DataSet simulateDataRecursive(int sampleSize,
-                                         boolean latentDataSaved) {
+                                         boolean latentDataSaved) throws ParseException {
         return simulateDataRecursive(sampleSize, null, latentDataSaved);
     }
 
@@ -1738,8 +1747,28 @@ public final class SemIm implements Im, ISemIm {
      * @return the simulated data set.
      */
     private DataSet simulateDataRecursive(int sampleSize, DataSet initialValues,
-                                          boolean latentDataSaved) {
-        int errorType = this.params.getInt(Params.SIMULATION_ERROR_TYPE);
+                                          boolean latentDataSaved) throws ParseException {
+
+        // Warn if non-Gaussian noise is requested but model has correlated errors,
+        // since off-diagonal errCovar entries are silently ignored in that path.
+        if (params.getInt(Params.CUSTOM_NOISE_OPTION) == 2) {
+            Matrix ec = errCovar();
+            boolean hasOffDiagCovar = false;
+            for (int i = 0; i < ec.getNumRows() && !hasOffDiagCovar; i++) {
+                for (int j = 0; j < ec.getNumColumns() && !hasOffDiagCovar; j++) {
+                    if (i != j && Math.abs(ec.get(i, j)) > 1e-10) {
+                        hasOffDiagCovar = true;
+                    }
+                }
+            }
+            if (hasOffDiagCovar) {
+                TetradLogger.getInstance().log("WARNING: simulateDataRecursive with non-Gaussian " +
+                        "noise ignores off-diagonal error covariances. Errors will be simulated " +
+                        "as independent despite correlated error terms in the model.");
+            }
+        }
+
+        Sampler sampler = new ExpressionSampler(this.params.getString(Params.CUSTOM_NOISE_EXPRESSION));
 
         List<Node> variables = new LinkedList<>();
         List<Node> variableNodes = getVariableNodes();
@@ -1790,17 +1819,12 @@ public final class SemIm implements Im, ISemIm {
             double[] exoData = new double[cholesky.getNumRows()];
 
             for (int i = 0; i < exoData.length; i++) {
-                if (errorType == 1) {
-                    exoData[i] = getNextNormal(0,
-                            sqrt(this.errCovar.get(i, i)));
-                } else if (errorType == 2) {
-                    exoData[i] = getNextUniform();
-                } else if (errorType == 3) {
-                    exoData[i] = getNextExponential();
-                } else if (errorType == 4) {
-                    exoData[i] = getNextGumbel();
-                } else if (errorType == 5) {
-                    exoData[i] = getNextGamma();
+                if (this.params.getInt(Params.CUSTOM_NOISE_OPTION) == 1) {
+                    exoData[i] = getNextNormal(0, sqrt(this.errCovar.get(i, i)));
+                } else if (this.params.getInt(Params.CUSTOM_NOISE_OPTION) == 2) {
+                    exoData[i] = sampler.sample();
+                } else {
+                    throw new IllegalArgumentException("Invalid value for useGeneralExogenousNoise: " + this.params.getInt(Params.CUSTOM_NOISE_OPTION));
                 }
             }
 
@@ -1835,12 +1859,12 @@ public final class SemIm implements Im, ISemIm {
 
                 if (initialValues != null) {
                     initNode = initialValues.getVariable(node1.getName());
-                    initCol = initialValues.getColumn(initNode);
+                    initCol = initialValues.getColumnIndex(initNode);
                 }
 
                 if (_parents[col].length == 0 && initialValues != null
-                    && initCol != -1) {
-                    int column = initialValues.getColumn(initNode);
+                        && initCol != -1) {
+                    int column = initialValues.getColumnIndex(initNode);
                     value = initialValues.getDouble(row, column);
                 } else {
                     if (distribution == null) {
@@ -1898,27 +1922,27 @@ public final class SemIm implements Im, ISemIm {
         }
     }
 
-    private double getNextGamma() {
-        numRandomCalls++;
-        return RandomUtil.getInstance().nextGamma(this.errorParam1,
-                this.errorParam2);
-    }
-
-    private double getNextGumbel() {
-        numRandomCalls++;
-        return RandomUtil.getInstance().nextGumbel(this.errorParam1,
-                this.errorParam2);
-    }
-
-    private double getNextExponential() {
-        numRandomCalls++;
-        return RandomUtil.getInstance().nextExponential(this.errorParam1);
-    }
-
-    private double getNextUniform() {
-        numRandomCalls++;
-        return RandomUtil.getInstance().nextUniform(this.errorParam1, this.errorParam2);
-    }
+//    private double getNextGamma() {
+//        numRandomCalls++;
+//        return RandomUtil.getInstance().nextGamma(this.errorParam1,
+//                this.errorParam2);
+//    }
+//
+//    private double getNextGumbel() {
+//        numRandomCalls++;
+//        return RandomUtil.getInstance().nextGumbel(this.errorParam1,
+//                this.errorParam2);
+//    }
+//
+//    private double getNextExponential() {
+//        numRandomCalls++;
+//        return RandomUtil.getInstance().nextExponential(this.errorParam1);
+//    }
+//
+//    private double getNextUniform() {
+//        numRandomCalls++;
+//        return RandomUtil.getInstance().nextUniform(this.errorParam1, this.errorParam2);
+//    }
 
     // For testing.
 
@@ -1928,13 +1952,11 @@ public final class SemIm implements Im, ISemIm {
      * @param sampleSize      a int
      * @param latentDataSaved a boolean
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @throws java.text.ParseException if any.
      */
-    public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
-        int errorType = this.params.getInt(Params.SIMULATION_ERROR_TYPE);
-        double errorParam1 = params.getDouble(Params.SIMULATION_PARAM1);
-        double errorParam2 = params.getDouble(Params.SIMULATION_PARAM2);
-
+    public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) throws ParseException {
         int numVars = getVariableNodes().size();
+        Sampler sampler = new ExpressionSampler(this.params.getString(Params.CUSTOM_NOISE_EXPRESSION));
 
         // Compute A = I - Báµ and (optionally) its inverse
         Matrix B = edgeCoef().transpose();
@@ -1949,8 +1971,7 @@ public final class SemIm implements Im, ISemIm {
 
         // Prepare correlated error generator when Gaussian
         Matrix L = null;
-        boolean useCorrelatedGaussian = (errorType == 1); // Normal
-        if (useCorrelatedGaussian) {
+        if (params.getInt(Params.CUSTOM_NOISE_OPTION) == 1) {
             try {
                 L = MatrixUtils.cholesky(errCovar()); // lower-tri; throws if not PD
             } catch (Exception ex) {
@@ -1964,7 +1985,7 @@ public final class SemIm implements Im, ISemIm {
         for (int row = 0; row < sampleSize; row++) {
             Vector e = new Vector(numVars);
 
-            if (useCorrelatedGaussian) {
+            if (params.getInt(Params.CUSTOM_NOISE_OPTION) == 1) {
                 // e = L z, z ~ N(0, I)
                 double[] z = new double[numVars];
                 for (int i = 0; i < numVars; i++) z[i] = RandomUtil.getInstance().nextGaussian(0, 1.0);
@@ -1974,26 +1995,14 @@ public final class SemIm implements Im, ISemIm {
                     for (int j = 0; j <= i; j++) s += L.get(i, j) * z[j];
                     e.set(i, s);
                 }
-            } else {
+            } else if (params.getInt(Params.CUSTOM_NOISE_OPTION) == 2) {
                 // Non-Gaussian path: preserve original per-coordinate draws (independent).
                 // Note: off-diagonal errCovar entries are ignored for non-Gaussian error types.
                 for (int i = 0; i < numVars; i++) {
-                    if (errorType == 1) {
-                        // not taken; kept for completeness
-                        double v = this.errCovar.get(i, i);
-                        e.set(i, v == 0.0 ? 0.0 : RandomUtil.getInstance().nextGaussian(0, Math.sqrt(v)));
-                    } else if (errorType == 2) {
-                        e.set(i, RandomUtil.getInstance().nextUniform(errorParam1, errorParam2));
-                    } else if (errorType == 3) {
-                        e.set(i, RandomUtil.getInstance().nextExponential(errorParam1));
-                    } else if (errorType == 4) {
-                        e.set(i, RandomUtil.getInstance().nextGumbel(errorParam1, errorParam2));
-                    } else if (errorType == 5) {
-                        e.set(i, RandomUtil.getInstance().nextGamma(errorParam1, errorParam2));
-                    } else {
-                        e.set(i, 0.0);
-                    }
+                    e.set(i, sampler.sample());
                 }
+            } else {
+                throw new IllegalArgumentException("Invalid noise expression option: " + params.getInt(Params.CUSTOM_NOISE_EXPRESSION));
             }
 
             // x = A^{-1} e
@@ -2147,7 +2156,7 @@ public final class SemIm implements Im, ISemIm {
      */
     public double getTValue(Parameter parameter, int maxFreeParams) {
         return getParamValue(parameter)
-               / getStandardError(parameter, maxFreeParams);
+                / getStandardError(parameter, maxFreeParams);
     }
 
     /**
@@ -2156,7 +2165,7 @@ public final class SemIm implements Im, ISemIm {
     public double getPValue(Parameter parameter, int maxFreeParams) {
         double tValue = getTValue(parameter, maxFreeParams);
         int df = getSampleSize() - 1;
-        return 2.0 * (1.0 - ProbUtils.tCdf(FastMath.abs(tValue), df));
+        return 2.0 * (1.0 - ProbUtils.tCdf(TMath.abs(tValue), df));
     }
 
     /**
@@ -2344,6 +2353,10 @@ public final class SemIm implements Im, ISemIm {
                         Parameter _parameter = oldSemIm.getSemPm().getParameter(_nodeA, _nodeB);
                         Parameter parameter = getSemPm().getParameter(nodeA, nodeB);
 
+                        if (parameter == null || _parameter == null) {
+                            continue;
+                        }
+
                         if (parameter.getType() != _parameter.getType()) {
                             continue;
                         }
@@ -2446,7 +2459,7 @@ public final class SemIm implements Im, ISemIm {
                 if (getParams().getBoolean("coefSymmetric", true)) {
                     return value;
                 } else {
-                    return FastMath.abs(value);
+                    return TMath.abs(value);
                 }
             } else if (parameter.getType() == ParamType.COVAR) {
                 double covLow = getParams().getDouble("covLow", 0.1);
@@ -2455,7 +2468,7 @@ public final class SemIm implements Im, ISemIm {
                 if (getParams().getBoolean("covSymmetric", true)) {
                     return value;
                 } else {
-                    return FastMath.abs(value);
+                    return TMath.abs(value);
                 }
             } else { //if (parameter.getType() == ParamType.VAR) {
                 return RandomUtil.getInstance().nextUniform(getParams().getDouble("varLow", 1), getParams().getDouble("varHigh", 3));
@@ -2553,7 +2566,7 @@ public final class SemIm implements Im, ISemIm {
 
 //    private double logDet(Matrix matrix2D) {
 //        double det = matrix2D.det();
-//        return FastMath.log(FastMath.abs(det));
+//        return TMath.log(TMath.abs(det));
 
     /**
      * Computes the implied covariance matrices of the Sem. There are two:
@@ -2570,7 +2583,7 @@ public final class SemIm implements Im, ISemIm {
 
     }
 
-    /// /        return det > 0 ? FastMath.log(det) : 0;
+    /// /        return det > 0 ? TMath.log(det) : 0;
 //    }
     private double logDet(Matrix matrix2D) {
         // Keep signature but route to robust SPD log-det.
@@ -2611,7 +2624,7 @@ public final class SemIm implements Im, ISemIm {
             out.defaultWriteObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
@@ -2630,7 +2643,7 @@ public final class SemIm implements Im, ISemIm {
             in.defaultReadObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
@@ -2713,6 +2726,43 @@ public final class SemIm implements Im, ISemIm {
         return numRandomCalls;
     }
 
+//    /**
+//     * Calculates the total effect between two nodes.
+//     *
+//     * @param x the source node
+//     * @param y the target node
+//     * @return the total effect from node x to node y
+//     */
+//    public synchronized double getTotalEffect(Node x, Node y) {
+//        List<Node> parents = getSemPm().getGraph().getParents(x);
+//
+//        Map<Parameter, Double> paramValues = new HashMap<>();
+//
+//        for (Node parent : parents) {
+//            Parameter param = this.semPm.getCoefficientParameter(parent, x);
+//            paramValues.put(param, getParamValue(param));
+//            setParamValue(param, 0);
+//        }
+//
+//        Matrix impl = getImplCovar(!paramValues.isEmpty());
+//
+//        int i = variableNodes.indexOf(x);
+//        int j = variableNodes.indexOf(y);
+//
+//        double totalEffect = impl.get(i, j);
+//        totalEffect /= impl.get(i, i);
+//
+//        if (!paramValues.isEmpty()) {
+//            for (Parameter param : paramValues.keySet()) {
+//                setParamValue(param, paramValues.get(param));
+//            }
+//
+//            getImplCovar(true);
+//        }
+//
+//        return totalEffect;
+//    }
+
     /**
      * Calculates the total effect between two nodes.
      *
@@ -2721,33 +2771,48 @@ public final class SemIm implements Im, ISemIm {
      * @return the total effect from node x to node y
      */
     public synchronized double getTotalEffect(Node x, Node y) {
-        List<Node> parents = getSemPm().getGraph().getParents(x);
+        // Get the SEM graph with error terms hidden to avoid including error nodes as parents.
+        SemGraph graph = getSemPm().getGraph();
+        graph.setShowErrorTerms(false);
+        List<Node> parents = graph.getParents(x);
 
         Map<Parameter, Double> paramValues = new HashMap<>();
 
+        // Zero out all coefficient parameters for edges into X.
         for (Node parent : parents) {
+            if (parent.getNodeType() == NodeType.ERROR) continue;
             Parameter param = this.semPm.getCoefficientParameter(parent, x);
+            if (param == null) continue;
             paramValues.put(param, getParamValue(param));
             setParamValue(param, 0);
         }
 
-        Matrix impl = getImplCovar(!paramValues.isEmpty());
+        try {
+            // Recompute implied covariance under the interventional distribution do(X).
+            Matrix impl = getImplCovar(true);
 
-        int i = variableNodes.indexOf(x);
-        int j = variableNodes.indexOf(y);
+            int i = variableNodes.indexOf(x);
+            int j = variableNodes.indexOf(y);
 
-        double totalEffect = impl.get(i, j);
-        totalEffect /= impl.get(i, i);
+            if (i == -1) throw new IllegalArgumentException("Node x not found in variable nodes: " + x);
+            if (j == -1) throw new IllegalArgumentException("Node y not found in variable nodes: " + y);
 
-        if (!paramValues.isEmpty()) {
-            for (Parameter param : paramValues.keySet()) {
-                setParamValue(param, paramValues.get(param));
+            double varX = impl.get(i, i);
+            if (varX == 0) return 0.0;
+
+            // Total effect = Cov_do(X)(X, Y) / Var_do(X)
+            return impl.get(i, j) / varX;
+
+        } finally {
+            // Always restore original parameter values, even if an exception occurred.
+            if (!paramValues.isEmpty()) {
+                for (Map.Entry<Parameter, Double> entry : paramValues.entrySet()) {
+                    setParamValue(entry.getKey(), entry.getValue());
+                }
+                // Force recomputation to restore the implied covariance cache.
+                getImplCovar(true);
             }
-
-            getImplCovar(true);
         }
-
-        return totalEffect;
     }
 
     /**

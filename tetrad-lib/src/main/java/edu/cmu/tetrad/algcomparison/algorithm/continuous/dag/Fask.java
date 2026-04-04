@@ -23,7 +23,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.continuous.dag;
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -52,7 +52,7 @@ import static edu.cmu.tetrad.util.Params.*;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
-public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesScoreWrapper,
+public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge, TakesScoreWrapper,
         TakesExternalGraph {
     @Serial
     private static final long serialVersionUID = 23L;
@@ -114,26 +114,25 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
         edu.cmu.tetrad.search.Fask fask = new edu.cmu.tetrad.search.Fask(dataSet, this.score.getScore(dataSet, parameters));
 
-        int lrRule = parameters.getInt(FASK_LEFT_RIGHT_RULE);
-
-        if (lrRule == 1) {
-            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK1);
-        } else if (lrRule == 2) {
-            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK2);
-        } else if (lrRule == 3) {
-            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.RSKEW);
-        } else if (lrRule == 4) {
-            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.SKEW);
-        } else if (lrRule == 5) {
-            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.TANH);
-        } else {
-            throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
-        }
+//        int lrRule = 2;//parameters.getInt(FASK_LEFT_RIGHT_RULE);
+//
+//        if (lrRule == 1) {
+//            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK1);
+//        } else if (lrRule == 2) {
+//            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK2);
+//        } else if (lrRule == 3) {
+//            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.RSKEW);
+//        } else if (lrRule == 4) {
+//            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.SKEW);
+//        } else if (lrRule == 5) {
+//            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.TANH);
+//        } else {
+//            throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
+//        }
 
         fask.setDepth(parameters.getInt(DEPTH));
-        fask.setAlpha(parameters.getDouble(ALPHA));
+//        fask.setTwoCycleAlpha(parameters.getDouble(TWO_CYCLE_ALPHA));
         fask.setExtraEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
-        edu.cmu.tetrad.search.Fask.setDelta(parameters.getDouble(FASK_DELTA));
         fask.setUseFasAdjacencies(true);
         fask.setUseSkewAdjacencies(true);
 
@@ -193,9 +192,8 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
         parameters.add(DEPTH);
         parameters.add(SKEW_EDGE_THRESHOLD);
-        parameters.add(ALPHA);
-        parameters.add(FASK_DELTA);
-        parameters.add(FASK_LEFT_RIGHT_RULE);
+//        parameters.add(TWO_CYCLE_ALPHA);
+//        parameters.add(FASK_LEFT_RIGHT_RULE);
 
         return parameters;
     }

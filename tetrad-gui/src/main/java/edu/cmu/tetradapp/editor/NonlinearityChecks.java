@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.NonlinearityTests;
 import edu.cmu.tetradapp.util.WatchedProcess;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -311,8 +312,8 @@ public final class NonlinearityChecks extends JPanel {
                     }
 
                     // --- parallel execute jobs ---
-                    int cores = Math.max(1, Runtime.getRuntime().availableProcessors());
-                    int threads = Math.max(1, cores - 1); // leave one core for UI/GC
+                    int cores = TMath.max(1, Runtime.getRuntime().availableProcessors());
+                    int threads = TMath.max(1, cores - 1); // leave one core for UI/GC
                     ExecutorService pool = java.util.concurrent.Executors.newFixedThreadPool(threads);
 
                     try {

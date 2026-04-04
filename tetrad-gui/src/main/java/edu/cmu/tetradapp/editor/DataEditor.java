@@ -56,7 +56,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     /**
      * The data wrapper being displayed.
      */
-    private DataWrapper dataWrapper;
+    private DataWrapper dataWrapper = new DataWrapper(new Parameters());
 
     /**
      * A tabbed pane containing displays for all data models and displaying 'dataModel' currently.
@@ -67,6 +67,13 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      * True if menus should be shown.
      */
     private boolean showMenus = true;
+
+    // Models currently displayed in the tabbed pane, in tab order.
+    // This is the source of truth for getSelectedDataModel().
+    private final java.util.List<DataModel> displayedModels = new java.util.ArrayList<>();
+
+    // Avoid stacking multiple change listeners across resets.
+    private boolean selectionListenerInstalled = false;
 
     //==========================CONSTRUCTORS===============================//
 
@@ -85,6 +92,13 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     public DataEditor(int tabPlacement) {
         this.tabbedPane = new JTabbedPane(tabPlacement);
         this.parameters = new Parameters();
+    }
+
+    public DataEditor(int tabPlacement, boolean showMenus) {
+        this.tabbedPane = new JTabbedPane(tabPlacement);
+        this.tabbedPane.setPreferredSize(new Dimension(1000, 800));
+        this.parameters = new Parameters();
+        this.showMenus = showMenus;
     }
 
     /**
@@ -190,19 +204,62 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                         DataEditor.this.grabFocus();
                         firePropertyChange("modelChanged", null, null);
                     });
-                } else if (SwingUtilities.isLeftMouseButton(e)) {
-                    DataModel selectedModel = getSelectedDataModel();
-                    getDataWrapper().getDataModelList().setSelectedModel(selectedModel);
-
-                    firePropertyChange("modelChanged", null, null);
                 }
             }
         });
     }
 
-    //==========================PUBLIC METHODS=============================//
+    private void rebuildTabsFrom(DataModelList list, DataModel selectedModel) {
+        tabbedPane.removeAll();
+        displayedModels.clear();
 
-    //=============================PRIVATE METHODS======================//
+        int selectedIndex = -1;
+
+        for (int i = 0; i < list.size(); i++) {
+            DataModel dm = list.get(i);
+            displayedModels.add(dm);
+
+            String name = dm.getName();
+            if (name == null) {
+                name = "" + (i + 1);
+            }
+
+            tabbedPane.addTab(name, dataDisplay(dm));
+            if (dm == selectedModel) {
+                selectedIndex = i;
+            }
+        }
+
+        if (tabbedPane.getTabCount() > 0) {
+            if (selectedIndex < 0) {
+                selectedIndex = 0;
+                list.setSelectedModel(list.get(0));
+            }
+            tabbedPane.setSelectedIndex(selectedIndex);
+        }
+
+        updateTabbedPanePreferredSize();
+    }
+
+    private void ensureSelectionListener() {
+        if (selectionListenerInstalled) return;
+
+        tabbedPane.addChangeListener(e -> {
+            DataModel m = getSelectedDataModel();
+            if (m != null) {
+                dataWrapper.getDataModelList().setSelectedModel(m);
+            }
+
+            updateTabbedPanePreferredSize();
+            revalidate();
+            repaint();
+
+            firePropertyChange("modelChanged", null, null);
+        });
+
+        selectionListenerInstalled = true;
+    }
+
     private static void removeEmptyModels(DataModelList dataModelList) {
         for (int i = dataModelList.size() - 1; i >= 0; i--) {
             DataModel dataModel = dataModelList.get(i);
@@ -233,116 +290,46 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      * @param model - The model, must not be null
      */
     public void replace(DataModel model) {
-        if (model == null) {
-            throw new NullPointerException("The given model must not be null");
-        }
+        if (model == null) throw new NullPointerException("The given model must not be null");
 
-        this.tabbedPane.removeAll();
-        setPreferredSize(new Dimension(600, 400));
-        DataModelList dataModelList = this.dataWrapper.getDataModelList();
+        DataModelList dataModelList = dataWrapper.getDataModelList();
         dataModelList.clear();
 
-        // now rebuild
-        if (model instanceof DataModelList) {
-            dataModelList.addAll((DataModelList) model);
-        } else {
-            dataModelList.add(model);
-        }
+        if (model instanceof DataModelList) dataModelList.addAll((DataModelList) model);
+        else dataModelList.add(model);
+
+        removeEmptyModels(dataModelList);
 
         removeAll();
+        rebuildTabsFrom(dataModelList, dataModelList.getSelectedModel());
+        ensureSelectionListener();
 
-        if (model instanceof DataModelList) {
-            for (int i = 0; i < ((DataModelList) model).size(); i++) {
-                DataModel _model = ((DataModelList) model).get(i);
-                this.tabbedPane.addTab(DataEditor.tabName(_model, 1), dataDisplay(_model));
-            }
+        add(tabbedPane, BorderLayout.CENTER);
+        if (showMenus) add(menuBar(), BorderLayout.NORTH);
 
-            add(this.tabbedPane, BorderLayout.CENTER);
+        revalidate();
+        repaint();
 
-            if (this.showMenus) {
-                add(menuBar(), BorderLayout.NORTH);
-            }
-        } else {
-            this.tabbedPane.addTab(DataEditor.tabName(model, 1), dataDisplay(model));
-            add(this.tabbedPane, BorderLayout.CENTER);
-
-            if (this.showMenus) {
-                add(menuBar(), BorderLayout.NORTH);
-            }
-
-            validate();
-        }
-
-        this.dataWrapper.setDataModelList(dataModelList);
+        dataWrapper.setDataModelList(dataModelList);
     }
 
     /**
      * Sets this editor to display contents of the given data model wrapper.
      */
     public void reset() {
-        tabbedPane().removeAll();
-        setPreferredSize(new Dimension(600, 400));
-
-        DataModelList dataModelList = this.dataWrapper.getDataModelList();
+        DataModelList dataModelList = dataWrapper.getDataModelList();
         DataModel selectedModel = dataModelList.getSelectedModel();
 
         removeAll();
-        DataEditor.removeEmptyModels(dataModelList);
+        removeEmptyModels(dataModelList);
 
-        int selectedIndex = -1;
+        rebuildTabsFrom(dataModelList, selectedModel);
+        ensureSelectionListener();
 
-        for (int i = 0; i < dataModelList.size(); i++) {
-            DataModel dataModel = dataModelList.get(i);
-//            tabbedPane().addTab(DataEditor.tabName(dataModel, i + 1), dataDisplay(dataModel));
-            tabbedPane().addTab("" + (i + 1), dataDisplay(dataModel));
-
-            if (selectedModel == dataModel) {
-                selectedIndex = i;
-            }
-        }
-
-        // NEW: pick a valid tab index
-        if (tabbedPane().getTabCount() > 0) {
-            if (selectedIndex < 0) selectedIndex = 0;
-            tabbedPane().setSelectedIndex(selectedIndex);
-
-            // Optional: keep DataModelList in sync if it had no selected model
-            if (dataModelList.getSelectedModel() == null) {
-                dataModelList.setSelectedModel(dataModelList.get(selectedIndex));
-            }
-        }
-
-//        int selectedIndex = -1;
-//
-//        for (int i = 0; i < dataModelList.size(); i++) {
-//            DataModel dataModel = dataModelList.get(i);
-//            tabbedPane().addTab(DataEditor.tabName(dataModel, i + 1),
-//                    dataDisplay(dataModel));
-//            if (selectedModel == dataModel) {
-//                selectedIndex = i;
-//            }
-//        }
-
-        tabbedPane().setSelectedIndex(selectedIndex);
-
-        tabbedPane().addChangeListener(e -> {
-            DataModel selectedModel1 = getSelectedDataModel();
-
-            if (selectedModel1 == null) {
-                return;
-            }
-
-            getDataWrapper().getDataModelList().setSelectedModel(
-                    selectedModel1);
-        });
-
-        add(tabbedPane(), BorderLayout.CENTER);
-
-        if (this.showMenus) {
-            add(menuBar(), BorderLayout.NORTH);
-        }
-
-        validate();
+        add(tabbedPane, BorderLayout.CENTER);
+        if (showMenus) add(menuBar(), BorderLayout.NORTH);
+        revalidate();
+        repaint();
     }
 
     /**
@@ -351,29 +338,20 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      * @param extraModels a {@link edu.cmu.tetrad.data.DataModelList} object
      */
     public void reset(DataModelList extraModels) {
-        tabbedPane().removeAll();
-        setPreferredSize(new Dimension(600, 400));
+        tabbedPane.removeAll();
 
-        DataModelList dataModelList = this.dataWrapper.getDataModelList();
+        DataModelList dataModelList = dataWrapper.getDataModelList();
         dataModelList.addAll(extraModels);
 
         removeAll();
-        tabbedPane().removeAll();
-        DataEditor.removeEmptyModels(dataModelList);
+        removeEmptyModels(dataModelList);
 
-        int tabIndex = 0;
+        // preserve whatever was selected (if any)
+        rebuildTabsFrom(dataModelList, dataModelList.getSelectedModel());
+        ensureSelectionListener();
 
-        for (DataModel dataModel : dataModelList) {
-            tabbedPane().addTab(DataEditor.tabName(dataModel, ++tabIndex),
-                    dataDisplay(dataModel));
-        }
-
-        add(tabbedPane(), BorderLayout.CENTER);
-
-        if (this.showMenus) {
-            add(menuBar(), BorderLayout.NORTH);
-        }
-
+        add(tabbedPane, BorderLayout.CENTER);
+        if (showMenus) add(menuBar(), BorderLayout.NORTH);
         validate();
 
         firePropertyChange("modelChanged", null, null);
@@ -385,32 +363,25 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      * @param dataModel a {@link edu.cmu.tetrad.data.DataModel} object
      */
     public void reset(DataModel dataModel) {
-        tabbedPane().removeAll();
-        setPreferredSize(new Dimension(600, 400));
+        tabbedPane.removeAll();
 
-        DataModelList dataModelList = this.dataWrapper.getDataModelList();
+        DataModelList dataModelList = dataWrapper.getDataModelList();
         dataModelList.clear();
         dataModelList.add(dataModel);
 
-        DataEditor.removeEmptyModels(dataModelList);
-        tabbedPane().removeAll();
+        removeAll();
+        removeEmptyModels(dataModelList);
 
-        for (int i = 0; i < dataModelList.size(); i++) {
-            Object _dataModel = dataModelList.get(i);
-            tabbedPane().addTab(DataEditor.tabName(dataModel, i + 1),
-                    dataDisplay(_dataModel));
-        }
+        rebuildTabsFrom(dataModelList, dataModel);
+        ensureSelectionListener();
 
-        add(tabbedPane(), BorderLayout.CENTER);
-
-        if (this.showMenus) {
-            add(menuBar(), BorderLayout.NORTH);
-        }
-
+        add(tabbedPane, BorderLayout.CENTER);
+        if (showMenus) add(menuBar(), BorderLayout.NORTH);
         validate();
 
         firePropertyChange("modelChanged", null, null);
     }
+
 
     /**
      * <p>getSelectedDataModel.</p>
@@ -418,21 +389,16 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      * @return the data sets that's currently in front.
      */
     public DataModel getSelectedDataModel() {
-        Component selectedComponent = tabbedPane().getSelectedComponent();
-        DataModelContainer scrollPane = (DataModelContainer) selectedComponent;
-
-        if (scrollPane == null) {
-            return null;
-        }
-
-        return scrollPane.getDataModel();
+        int idx = tabbedPane.getSelectedIndex();
+        if (idx < 0) return null;
+        if (idx >= displayedModels.size()) return null;
+        return displayedModels.get(idx);
     }
 
     /**
      * <p>selectFirstTab.</p>
      */
     public void selectFirstTab() {
-//        tabbedPane().setSelectedIndex(tabbedPane().getTabCount() - 1);
         tabbedPane().setSelectedIndex(0);
         DataModel selectedModel = getSelectedDataModel();
 
@@ -502,6 +468,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     private JTable getSelectedJTable() {
         Object display = tabbedPane().getSelectedComponent();
 
+        if (display == null && getNumJTables() > 0) {
+            display = tabbedPane().getComponentAt(0);
+            tabbedPane.setSelectedIndex(0);
+        }
+
         if (display instanceof DataDisplay) {
             return ((DataDisplay) display).getDataDisplayJTable();
         } else if (display instanceof CovMatrixDisplay) {
@@ -548,8 +519,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
         JMenu editMenu = new JMenu("Edit");
 
-        JMenuItem clearCells = new JMenuItem("Clear Cells");
-        JMenuItem deleteSelectedRowsOrColumns = new JMenuItem("Delete Selected Rows or Columns");
+//        JMenuItem clearCells = new JMenuItem("Clear Cells");
+//        JMenuItem deleteSelectedRowsOrColumns = new JMenuItem("Delete Selected Rows or Columns");
         JMenuItem deleteNamedColumns = new JMenuItem("Delete named columns");
         JMenuItem selectNamedColumns = new JMenuItem("Select named columns");
         JMenuItem copyCells = new JMenuItem("Copy Cells");
@@ -557,22 +528,24 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         JMenuItem pasteCells = new JMenuItem("Paste Cells");
         JMenuItem setToMissingCells = new JMenuItem("Set Constants Col To Missing");
 
-        clearCells.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.CTRL_DOWN_MASK));
-        deleteSelectedRowsOrColumns.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_DOWN_MASK));
-        copyCells.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
-        cutCells.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
-        pasteCells.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
+//        clearCells.setAccelerator(
+//                KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.CTRL_DOWN_MASK));
+//        deleteSelectedRowsOrColumns.setAccelerator(
+//                KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_DOWN_MASK));
 
-        clearCells.addActionListener(e -> {
-            TabularDataJTable table = (TabularDataJTable) getSelectedJTable();
-            assert table != null;
-            table.clearSelected();
-        });
+        int menuMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+
+        copyCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, menuMask));
+        cutCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, menuMask));
+        pasteCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, menuMask));
+
+//        clearCells.addActionListener(e -> {
+//            TabularDataJTable table = (TabularDataJTable) getSelectedJTable();
+//            assert table != null;
+//            table.clearSelected();
+//            syncDisplayedModelsToWrapper();
+//            firePropertyChange("modelChanged", null, null);
+//        });
 
         ActionListener deleteSelectedRowsOrColumnsActionListener = e -> {
             JTable table = getSelectedJTable();
@@ -588,9 +561,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                 covTable.deleteSelected();
             }
 
+            syncDisplayedModelsToWrapper();
+            firePropertyChange("modelChanged", null, null);
         };
 
-        deleteSelectedRowsOrColumns.addActionListener(deleteSelectedRowsOrColumnsActionListener);
+//        deleteSelectedRowsOrColumns.addActionListener(deleteSelectedRowsOrColumnsActionListener);
 
         ActionListener removeNamedColumnsActionListener = e -> {
             String variables = JOptionPane.showInputDialog(JOptionUtils.getCenteringFrame(),
@@ -621,6 +596,9 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
                 }
             }
+
+            syncDisplayedModelsToWrapper();
+            firePropertyChange("modelChanged", null, null);
         };
 
         ActionListener selectNamedColumnsActionListener = e -> {
@@ -653,6 +631,9 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                     model.fireTableDataChanged();
                 }
             }
+
+            syncDisplayedModelsToWrapper();
+            firePropertyChange("modelChanged", null, null);
         };
 
         deleteNamedColumns.addActionListener(removeNamedColumnsActionListener);
@@ -715,6 +696,9 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                     model.fireTableDataChanged();
                 }
             }
+
+            syncDisplayedModelsToWrapper();
+            firePropertyChange("modelChanged", null, null);
         });
 
         JCheckBoxMenuItem categoryNames
@@ -733,8 +717,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             tableTabular.setShowCategoryNames(source.isSelected());
         });
 
-        editMenu.add(clearCells);
-        editMenu.add(deleteSelectedRowsOrColumns);
+//        editMenu.add(clearCells);
+//        editMenu.add(deleteSelectedRowsOrColumns);
         editMenu.add(deleteNamedColumns);
         editMenu.add(selectNamedColumns);
         editMenu.add(copyCells);
@@ -745,7 +729,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         editMenu.add(setToMissingCells);
 
         menuBar.add(editMenu);
-//        menuBar.add(new Knowledge2Menu(this));
 
         JMenu tools = new JMenu("Tools");
         menuBar.add(tools);
@@ -754,68 +737,70 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         tools.add(new DescriptiveStatsAction(this));
         tools.add(new QQPlotAction(this));
         tools.add(new NonlinearityChecksAction(this));
+        tools.add(new CheckIndependenceFacts(this));
 
         return menuBar;
     }
 
     private void closeTab() {
-        int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+        int ret = JOptionPane.showConfirmDialog(
+                JOptionUtils.centeringComp(),
                 "Closing this tab will remove the data it contains. Continue?",
-                "Confirm", JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.WARNING_MESSAGE);
+                "Confirm",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
 
-        if (ret == JOptionPane.OK_OPTION) {
-            DataModel dataModel = getSelectedDataModel();
-            setPreferredSize(new Dimension(600, 400));
-            DataModelList dataModelList = this.dataWrapper.getDataModelList();
-            dataModelList.remove(dataModel);
-            this.dataWrapper.setDataModel(dataModelList);
-            this.tabbedPane.removeAll();
-
-            for (int i = 0; i < dataModelList.size(); i++) {
-                Object _dataModel = dataModelList.get(i);
-                JComponent display = dataDisplay(_dataModel);
-                tabbedPane().addTab(DataEditor.tabName(_dataModel, i + 1), display);
-            }
-
-            tabbedPane().addPropertyChangeListener(propertyChangeEvent -> {
-                if ("proposedVariableNameChange".equals(propertyChangeEvent.getPropertyName())) {
-                    String newName = (String) propertyChangeEvent.getNewValue();
-
-                    // Have to make sure none of the data sets already has the new name...
-                    for (int i = 0; i < tabbedPane().getTabCount(); i++) {
-                        DataModel model = DataEditor.this.dataWrapper.getDataModelList().get(i);
-
-                        for (Node node : model.getVariables()) {
-                            if (newName.equals(node.getName())) {
-                                throw new IllegalArgumentException(model.getName() + " already has that variable name.");
-                            }
-                        }
-                    }
-                } else if ("variableNameChange".equals(propertyChangeEvent.getPropertyName())) {
-                    String oldName = (String) propertyChangeEvent.getOldValue();
-                    String newName = (String) propertyChangeEvent.getNewValue();
-
-                    for (int i = 0; i < tabbedPane().getTabCount(); i++) {
-                        DataModel model = DataEditor.this.dataWrapper.getDataModelList().get(i);
-
-                        for (Node node : model.getVariables()) {
-                            if (oldName.equals(node.getName())) {
-                                node.setName(newName);
-                            }
-                        }
-                    }
-                }
-            });
-
-            add(tabbedPane(), BorderLayout.CENTER);
-
-            if (this.showMenus) {
-                add(menuBar(), BorderLayout.NORTH);
-            }
-
-            validate();
+        if (ret != JOptionPane.OK_OPTION) {
+            return;
         }
+
+        DataModel toRemove = getSelectedDataModel();
+        if (toRemove == null) {
+            return;
+        }
+
+        // ---- update the underlying model list first ----
+        DataModelList dataModelList = dataWrapper.getDataModelList();
+        dataModelList.remove(toRemove);
+
+        // If nothing left, do nothing (or you could add a new empty DataSet here if desired).
+        if (dataModelList.isEmpty()) {
+            // Keep UI consistent.
+            tabbedPane.removeAll();
+            displayedModels.clear();
+            removeAll();
+            add(tabbedPane, BorderLayout.CENTER);
+            if (showMenus) add(menuBar(), BorderLayout.NORTH);
+            revalidate();
+            repaint();
+            firePropertyChange("modelChanged", null, null);
+            return;
+        }
+
+        // Maintain a sane selected model in the wrapper list.
+        // Prefer the list's existing selected model if it still exists; else pick first.
+        DataModel selected = dataModelList.getSelectedModel();
+        if (selected == null || !dataModelList.contains(selected)) {
+            selected = dataModelList.get(0);
+            dataModelList.setSelectedModel(selected);
+        }
+
+        // Persist back to wrapper (safe even if it already references the same list).
+        dataWrapper.setDataModelList(dataModelList);
+
+        // ---- rebuild UI from the single source of truth ----
+        removeAll();
+        rebuildTabsFrom(dataModelList, selected);
+        ensureSelectionListener();
+
+        add(tabbedPane, BorderLayout.CENTER);
+        if (showMenus) add(menuBar(), BorderLayout.NORTH);
+
+        revalidate();
+        repaint();
+
+        firePropertyChange("modelChanged", null, null);
     }
 
     /**
@@ -823,8 +808,26 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      */
     private JComponent dataDisplay(Object model) {
         if (model instanceof DataSet) {
-            DataDisplay dataDisplay = new DataDisplay((DataSet) model);
+            DataDisplay dataDisplay = new DataDisplay(((DataSet) model).copy());
             dataDisplay.addPropertyChangeListener(this);
+
+            JTable table = dataDisplay.getDataDisplayJTable();
+            if (table != null) {
+                table.getModel().addTableModelListener(e -> {
+                    syncDisplayedModelsToWrapper();
+                    firePropertyChange("modelChanged", null, null);
+                });
+
+                // Also sync when column selection changes, since that updates
+                // DataSet.selection but does not fire a tableChanged event.
+                table.getColumnModel().getSelectionModel().addListSelectionListener(e -> {
+                    if (!e.getValueIsAdjusting()) {
+                        syncDisplayedModelsToWrapper();
+                        firePropertyChange("modelChanged", null, null);
+                    }
+                });
+            }
+
             return dataDisplay;
         } else if (model instanceof ICovarianceMatrix) {
             CovMatrixDisplay covMatrixDisplay = new CovMatrixDisplay((ICovarianceMatrix) model);
@@ -857,6 +860,52 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      */
     public Parameters getParameters() {
         return this.parameters;
+    }
+
+    private void updateTabbedPanePreferredSize() {
+        Component selected = this.tabbedPane.getSelectedComponent();
+
+        if (selected == null && this.tabbedPane.getTabCount() > 0) {
+            selected = this.tabbedPane.getComponentAt(0);
+        }
+
+        Dimension d;
+
+        if (selected != null) {
+            d = selected.getPreferredSize();
+        } else {
+            d = new Dimension(800, 800);
+        }
+
+        this.tabbedPane.setPreferredSize(new Dimension(
+                Math.max(800, d.width),
+                Math.max(600, d.height)
+        ));
+    }
+
+    private void syncDisplayedModelsToWrapper() {
+        DataModelList dataModelList = dataWrapper.getDataModelList();
+
+        // Remember which tab is currently selected by index.
+        int selectedIndex = tabbedPane.getSelectedIndex();
+
+        dataModelList.clear();
+
+        for (int i = 0; i < getNumJTables(); i++) {
+            JTable jTable = getJTableAt(i);
+            if (jTable instanceof TabularDataJTable tableTabular) {
+                dataModelList.add(tableTabular.getDataSet());
+            }
+            // CovMatrix and TimeSeries are not copied in dataDisplay(), so they
+            // are already the upstream object — no sync needed for them.
+        }
+
+        // Restore the selected model in the wrapper to match the selected tab.
+        if (selectedIndex >= 0 && selectedIndex < dataModelList.size()) {
+            dataModelList.setSelectedModel(dataModelList.get(selectedIndex));
+        }
+
+        dataWrapper.setDataModelList(dataModelList);
     }
 }
 

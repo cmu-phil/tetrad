@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -180,9 +180,9 @@ public class StARS implements Algorithm {
 
     private static double getValue(double value, Parameters parameters) {
         if (parameters.getBoolean("logScale")) {
-            return FastMath.round(FastMath.pow(10.0, value) * 1000000000.0) / 1000000000.0;
+            return TMath.round(TMath.pow(10.0, value) * 1000000000.0) / 1000000000.0;
         } else {
-            return FastMath.round(value * 1000000000.0) / 1000000000.0;
+            return TMath.round(value * 1000000000.0) / 1000000000.0;
         }
     }
 

@@ -33,7 +33,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -199,11 +199,11 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
             variables.add(newVar);
 
             dataSet.addVariable(newVar);
-            int newVarIndex = dataSet.getColumn(newVar);
+            int newVarIndex = dataSet.getColumnIndex(newVar);
             int numCases = dataSet.getNumRows();
 
             for (int l = 0; l < numCases; l++) {
-                Object dataCell = dataSet.getObject(l, dataSet.getColumn(node));
+                Object dataCell = dataSet.getObject(l, dataSet.getColumnIndex(node));
                 int dataCellIndex = ((DiscreteVariable) node).getIndex(dataCell.toString());
 
                 if (dataCellIndex == ((DiscreteVariable) node).getIndex(cat))
@@ -255,7 +255,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
             int k = regressors1.size() + 1;
 
             for (int i = 0; i < this.variablesPerNode.get(y).size(); i++) {
-                double wald = FastMath.abs(result1.getCoefs()[i + 1] / result1.getStdErrs()[i + 1]);
+                double wald = TMath.abs(result1.getCoefs()[i + 1] / result1.getStdErrs()[i + 1]);
                 //double val = (1.0 - new NormalDistribution(0,1).cumulativeProbability(wald))*2;//two-tailed test
                 //double val = 1-result1.getProbs()[i+1];
 
@@ -313,7 +313,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     }
 
     private boolean isMissing(Node x, int i) {
-        int j = this.internalData.getColumn(x);
+        int j = this.internalData.getColumnIndex(x);
 
         if (x instanceof DiscreteVariable) {
             int v = this.internalData.getInt(i, j);

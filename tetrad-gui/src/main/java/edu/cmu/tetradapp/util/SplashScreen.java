@@ -97,7 +97,7 @@ public class SplashScreen {
             //setSize(200, 100);
 
             JPanel panel = new JPanel();
-            panel.setBackground(Color.white);
+//            panel.setBackground(Color.white);
             panel.setBorder(BorderFactory.createLineBorder(Color.black));
             panel.setLayout(new BorderLayout());
             add(panel, BorderLayout.CENTER);
@@ -122,7 +122,7 @@ public class SplashScreen {
             b.add(textArea);
 
             this.bar = new JProgressBar(0, SplashScreen.MAX);
-            this.bar.setBackground(Color.white);
+//            this.bar.setBackground(Color.white);
             this.bar.setBorderPainted(false);
             b.add(this.bar);
 

@@ -20,6 +20,7 @@
 
 package edu.cmu.tetradapp.util;
 
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -253,7 +254,7 @@ public class ListDoubleTextField extends JTextField {
                 double value = aDouble;
 
                 if (!Double.isNaN(value) && !Double.isInfinite(value)) {
-                    if (Math.abs(value) < this.smallNumberCutoff && value != 0.0) {
+                    if (TMath.abs(value) < this.smallNumberCutoff && value != 0.0) {
                         valueStrings.add(this.smallNumberFormat.format(value));
                     } else {
                         valueStrings.add(nf.format(value));

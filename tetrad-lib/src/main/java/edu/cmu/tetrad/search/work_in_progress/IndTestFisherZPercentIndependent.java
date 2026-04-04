@@ -29,15 +29,12 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.*;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Calculates independence from pooled residuals.
@@ -159,7 +156,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         try {
             List<Node> z = new ArrayList<>(_z);
-            Collections.sort(z);
+            z.sort(NaturalSort.naturalComparator());
 
             int[] all = new int[z.size() + 2];
             all[0] = this.variablesMap.get(x);

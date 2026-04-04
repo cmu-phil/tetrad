@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
@@ -85,7 +86,7 @@ class GeneralizedSemImParamsEditor extends JPanel {
         Box b = Box.createVerticalBox();
 
         java.util.List<String> parameters = new ArrayList<>(semPm().getParameters());
-        Collections.sort(parameters);
+        parameters.sort(NaturalSort.naturalComparator());
 
         // Need to keep these in a particular order.
         class MyTextField extends DoubleTextField {
@@ -102,7 +103,7 @@ class GeneralizedSemImParamsEditor extends JPanel {
         }
 
         List<String> _parameters = new ArrayList(this.semPm.getParameters());
-        Collections.sort(_parameters);
+        _parameters.sort(NaturalSort.naturalComparator());
 
         for (String parameter : _parameters) {
 

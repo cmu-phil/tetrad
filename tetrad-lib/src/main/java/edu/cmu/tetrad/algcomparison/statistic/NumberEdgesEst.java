@@ -23,7 +23,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 
@@ -70,7 +70,7 @@ public class NumberEdgesEst implements Statistic {
      */
     @Override
     public double getNormValue(double value) {
-        return 1.0 - FastMath.tanh(value / 1000.);
+        return 1.0 - TMath.tanh(value / 1000.);
     }
 
     /**

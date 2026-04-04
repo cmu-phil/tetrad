@@ -119,7 +119,7 @@ public final class BossFci extends StarFci {
     }
 
     /**
-     * Returns the number of times to restart the search.
+     * Sets the number of times to restart the search.
      *
      * @param numStarts The number of times to restart the search.
      */

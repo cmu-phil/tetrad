@@ -24,7 +24,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -44,12 +44,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "dPAG-Sampling-RFCI",
+        name = "PAG-Sampling-RFCI",
         command = "pag-sampling-rfci",
         algoType = AlgType.allow_latent_common_causes
 )
 //@Experimental
-public class PagSamplingRfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge {
+public class PagSamplingRfci extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge {
 
     /**
      * Constant <code>PAG_SAMPLING_RFCI_PARAMETERS</code>

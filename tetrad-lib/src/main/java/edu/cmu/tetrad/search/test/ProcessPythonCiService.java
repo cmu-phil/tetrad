@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -30,47 +31,27 @@ public final class ProcessPythonCiService implements PythonCiService {
     private File csvTemp;
 
     /**
-     * Constructs a new instance of the ProcessPythonCiService class, initializing
-     * the service with the specified Python executable and server script path.
+     * Constructor for ProcessPythonCiService, which sets up the Python executable
+     * and the server script path for the service.
      *
-     * @param pythonExe the path to the Python executable to be used by this service;
-     *                  must not be null.
-     * @param serverScriptPath the path to the server script to be executed by the Python
-     *                         process; must not be null.
+     * @param pythonExe the path to the Python executable. Must nojt be null or empty.
+     * @param serverScriptPath the path to the Python server script. Must not be null or empty.
+     * @throws NullPointerException if either {@code pythonExe} or {@code serverScriptPath} is null.
+     * @throws IllegalArgumentException if either {@code pythonExe} or {@code serverScriptPath} is empty.
      */
     public ProcessPythonCiService(String pythonExe, String serverScriptPath) {
-        this.pythonExe = Objects.requireNonNull(pythonExe, "pythonExe");
-        this.serverScriptPath = Objects.requireNonNull(serverScriptPath, "serverScriptPath");
+        this.pythonExe = Objects.requireNonNull(pythonExe, "pythonExe").trim();
+        this.serverScriptPath = Objects.requireNonNull(serverScriptPath, "serverScriptPath").trim();
+
+        if (this.pythonExe.isEmpty()) throw new IllegalArgumentException("pythonExe is empty");
+        if (this.serverScriptPath.isEmpty()) throw new IllegalArgumentException("serverScriptPath is empty");
     }
 
-    /**
-     * Enables or disables verbose output for the service. When verbose mode is enabled,
-     * additional details about the process execution may be logged for debugging or
-     * informational purposes.
-     *
-     * @param verbose a boolean indicating whether verbose mode should be enabled (true)
-     *                or disabled (false)
-     */
     @Override
     public synchronized void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    /**
-     * Initializes the service and its underlying resources if not already initialized.
-     * This method ensures the setup required for executing Python-based conditional
-     * independence tests is complete. Initialization involves preparing a temporary
-     * CSV file from the provided dataset, starting the Python process, and configuring
-     * the server with the necessary parameters.
-     *
-     * The method is thread-safe and skips initialization if it has already been completed.
-     *
-     * @param data the dataset to be used for the initialization; must not be null.
-     * @param vars a list of {@code Node} objects representing variables; may be null.
-     * @param kciParams a map of key-value pairs representing initialization parameters;
-     *                  may be null, in which case an empty map is used.
-     * @throws RuntimeException if an error occurs while setting up the server or resources.
-     */
     @Override
     public synchronized void initializeIfNeeded(DataSet data, List<Node> vars, Map<String, Object> kciParams) {
         if (initialized.get()) return;
@@ -88,7 +69,6 @@ public final class ProcessPythonCiService implements PythonCiService {
                 throw new IOException("Python server not ready: " + ready);
             }
 
-            // init message
             String init = "{"
                     + "\"op\":\"init\","
                     + "\"csv_path\":" + jsonString(csvTemp.getAbsolutePath()) + ","
@@ -105,25 +85,12 @@ public final class ProcessPythonCiService implements PythonCiService {
 
             initialized.set(true);
         } catch (IOException ioe) {
+            // best-effort cleanup if init fails partway
+            try { close(); } catch (Exception ignored) {}
             throw new RuntimeException(ioe);
         }
     }
 
-    /**
-     * Updates the service's internal parameters with the provided key-value pairs.
-     * This method ensures that the update operation is propagated to the Python process
-     * if the service has been initialized. If the parameters are null, an empty map is used instead.
-     *
-     * In case of communication failure or an unsuccessful update acknowledgment from
-     * the Python process, a {@code RuntimeException} is thrown.
-     *
-     * This method is thread-safe.
-     *
-     * @param kciParams a map containing key-value pairs to be used as the new parameters;
-     *                  may be null, in which case the parameters are reset to an empty map.
-     * @throws RuntimeException if there is an I/O issue or the update operation is rejected
-     *                          by the Python process.
-     */
     @Override
     public synchronized void updateParams(Map<String, Object> kciParams) {
         this.params = (kciParams == null) ? new HashMap<>() : new HashMap<>(kciParams);
@@ -146,34 +113,22 @@ public final class ProcessPythonCiService implements PythonCiService {
         }
     }
 
-    /**
-     * Calculates the p-value for testing conditional independence between two variables (x and y),
-     * with respect to a set of conditional variables (z), given a significance level (alpha).
-     * This method communicates with an external Python process to perform the underlying statistical computation.
-     *
-     * @param xIndex the index of the first variable (x) to be tested.
-     * @param yIndex the index of the second variable (y) to be tested.
-     * @param zIndices an array of indices representing the conditional variables (z).
-     *                 If the array is empty or null, no conditioning is performed.
-     * @param alpha the significance level for the test. Typical values are in the range (0, 1).
-     * @return the computed p-value as a double. If an error occurs or the computation cannot be completed,
-     *         {@code Double.NaN} is returned.
-     * @throws IllegalStateException if the service has not been initialized.
-     * @throws RuntimeException if there is an issue during communication with the Python process or the computation fails.
-     */
     @Override
     public synchronized double pValue(int xIndex, int yIndex, int[] zIndices, double alpha) {
         if (!initialized.get()) {
             throw new IllegalStateException("ProcessPythonCiService not initialized");
         }
+
         try {
             String z = intArrayJson(zIndices);
 
+            // Include alpha so the Python side has it (even if it doesn't strictly need it for p-values).
             String msg = "{"
                     + "\"op\":\"pvalue\","
                     + "\"x\":" + xIndex + ","
                     + "\"y\":" + yIndex + ","
-                    + "\"z\":" + z
+                    + "\"z\":" + z + ","
+                    + "\"alpha\":" + alpha
                     + "}";
 
             writeJsonLine(msg);
@@ -191,21 +146,6 @@ public final class ProcessPythonCiService implements PythonCiService {
         }
     }
 
-    /**
-     * Closes the resources associated with the ProcessPythonCiService instance and terminates
-     * the underlying Python process if it is running. This method performs the cleanup of
-     * internal streams, the Python process reference, and any temporary files created during
-     * the instance's lifecycle.
-     *
-     * The method ensures a best-effort cleanup, including the deletion of the temporary CSV
-     * file if it exists. It also attempts a graceful termination of the Python process by
-     * sending a "close" operation before forcefully destroying the process, if necessary.
-     *
-     * Thread safety is guaranteed as the method is synchronized. Any errors during resource
-     * cleanup are intentionally ignored to avoid throwing exceptions during the closing stage.
-     *
-     * @throws IOException if an I/O error occurs during the closing operation.
-     */
     @Override
     public synchronized void close() throws IOException {
         initialized.set(false);
@@ -230,7 +170,6 @@ public final class ProcessPythonCiService implements PythonCiService {
         fromPy = null;
 
         if (csvTemp != null && csvTemp.exists()) {
-            // best effort cleanup
             //noinspection ResultOfMethodCallIgnored
             csvTemp.delete();
             csvTemp = null;
@@ -241,7 +180,15 @@ public final class ProcessPythonCiService implements PythonCiService {
 
     private void startProcess() throws IOException {
         ProcessBuilder pb = new ProcessBuilder(pythonExe, "-u", serverScriptPath);
-        pb.redirectErrorStream(true); // merge stderr -> stdout so we see stack traces
+
+        // If you want: set a working dir to the script’s folder
+        File scriptFile = new File(serverScriptPath);
+        File wd = scriptFile.getParentFile();
+        if (wd != null && wd.isDirectory()) {
+            pb.directory(wd);
+        }
+
+        pb.redirectErrorStream(true);
         proc = pb.start();
 
         toPy = new BufferedWriter(new OutputStreamWriter(proc.getOutputStream(), StandardCharsets.UTF_8));
@@ -249,15 +196,17 @@ public final class ProcessPythonCiService implements PythonCiService {
     }
 
     private void writeJsonLine(String json) throws IOException {
+        if (toPy == null) throw new IOException("Python process not started (toPy == null)");
         toPy.write(json);
         toPy.write("\n");
         toPy.flush();
     }
 
     private Map<String, String> readJsonLine() throws IOException {
+        if (fromPy == null) throw new IOException("Python process not started (fromPy == null)");
         String line = fromPy.readLine();
         if (line == null) throw new EOFException("Python process terminated");
-        if (verbose) System.out.println("[py] " + line);
+        if (verbose) TetradLogger.getInstance().log("[py] " + line);
         return parseFlatJson(line);
     }
 
@@ -271,10 +220,10 @@ public final class ProcessPythonCiService implements PythonCiService {
         if (s.startsWith("{")) s = s.substring(1);
         if (s.endsWith("}")) s = s.substring(0, s.length() - 1);
 
-        // split on commas not inside quotes (responses are simple; keep it small)
         List<String> parts = new ArrayList<>();
         StringBuilder cur = new StringBuilder();
         boolean inQ = false;
+
         for (int i = 0; i < s.length(); i++) {
             char ch = s.charAt(i);
             if (ch == '"' && (i == 0 || s.charAt(i - 1) != '\\')) inQ = !inQ;
@@ -294,6 +243,7 @@ public final class ProcessPythonCiService implements PythonCiService {
             String v = strip(kv[1]);
             out.put(unquote(k), unquote(v));
         }
+
         return out;
     }
 
@@ -365,8 +315,6 @@ public final class ProcessPythonCiService implements PythonCiService {
                     if (j > 0) w.write(",");
                     double v = data.getDouble(i, j);
                     if (Double.isNaN(v)) {
-                        // causal-learn KCI generally doesn't like NaNs; choose a policy:
-                        // either write empty and impute on Python side, or throw here.
                         w.write("nan");
                     } else {
                         w.write(Double.toString(v));

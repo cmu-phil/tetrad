@@ -5,6 +5,8 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 import java.util.function.Function;
@@ -66,11 +68,11 @@ public final class CdnodPag {
      */
     private final Function<Graph, Boolean> legalityCheck;
     /**
-     * Names for Tier-0 contexts (set these from your Knowledge / UI)
+     * Names for Tier-0 contexts.
      */
     private final List<String> contextNames = new ArrayList<>();
     /**
-     * Optional: extra protected nodes (no arrowheads into these)
+     * Optional: extra protected nodes (no arrowheads into these).
      */
     private final Set<String> forbidHeadsIntoByName = new LinkedHashSet<>();
     /**
@@ -104,6 +106,10 @@ public final class CdnodPag {
      * Default value is {@code true}.
      */
     private boolean useProxyGuard = true;
+    /**
+     * A flag indicating whether contexts should be excluded from the conditioning set S in the change tests.
+     */
+    private boolean excludeContextsFromS = true;
 
     /**
      * Constructs an instance of the CdnodPag class with the specified parameters.
@@ -167,7 +173,7 @@ public final class CdnodPag {
      * @return the current instance of {@code CdnodPag} with the updated maximum subset size.
      */
     public CdnodPag withMaxSubsetSize(int k) {
-        this.maxSubsetSize = Math.max(0, k);
+        this.maxSubsetSize = TMath.max(0, k);
         return this;
     }
 
@@ -185,34 +191,27 @@ public final class CdnodPag {
     }
 
     /**
-     * <p>
+     * Configures whether contexts should be excluded from the conditioning set S in the change tests.
+     *
+     * @param on a boolean value indicating whether to exclude (true) or include (false) contexts in S.
+     * @return the current instance of {@code CdnodPag} with updated configuration.
+     */
+    public CdnodPag withExcludeContextsFromS(boolean on) {
+        this.excludeContextsFromS = on;
+        return this;
+    }
+
+    /**
      * Executes the algorithm to construct and orient a causal PAG (Partial Ancestral Graph) using the provided data,
      * context variables, and prior knowledge.
-     * </p>
-     *
-     * <p>The method performs the following operations in order:</p>
-     *
-     * <ol>
-     *   <li>Clears current context names and updates forbidden nodes.</li>
-     *   <li>Builds a baseline PAG based on all variables and propagates any necessary changes.</li>
-     *   <li>Resolves context nodes and applies constraints to remove specific arrowheads in the graph.</li>
-     *   <li>Constructs a change oracle for assessing effects related to context changes.</li>
-     *   <li>Protects specified nodes, including context and other user-specified nodes, from orientation changes.</li>
-     *   <li>Optionally associates nodes with tiers based on prior knowledge to enforce tier-based orientation rules.</li>
-     *   <li>Runs the orientation mechanism to refine the PAG structure based on causal and tier constraints.</li>
-     * </ol>
-     *
-     * <p>
-     * <b>Returns:</b> the resulting PAG (Partial Ancestral Graph) after applying change-based orientation
-     * and enforcing constraints informed by contexts and prior knowledge.
-     * </p>
      *
      * @return the resulting PAG (Partial Ancestral Graph) after applying change-based orientation and enforcing
-     * nforcing constraints informed by contexts and prior knowledge
+     * constraints informed by contexts and prior knowledge.
      */
     public Graph run() {
 
         contextNames.clear();
+        forbidHeadsIntoByName.clear();
 
         for (String name : knowledge.getTier(0)) {
             contextNames.add(name);
@@ -226,15 +225,12 @@ public final class CdnodPag {
         // Resolve Node handles
         List<Node> contexts = resolveNodes(pag, contextNames);
         if (contexts.isEmpty()) {
-            System.out.println("[CD-NOD-PAG] No context variables provided; skipping change-based orientation.");
+            TetradLogger.getInstance().log("[CD-NOD-PAG] No context variables provided; skipping change-based orientation.");
             return pag;
         }
 
         // 1a) Post-hoc safeguard: remove arrowheads INTO any context
-        boolean stripArrowheadsIntoContexts = true;
-        if (stripArrowheadsIntoContexts) {
-            for (Node c : contexts) stripHeadsInto(pag, c);
-        }
+        for (Node c : contexts) stripHeadsInto(pag, c);
 
         // 2) Make the change oracle over ALL contexts
         ChangeOracle oracle = new ChangeOracle(dataAll, contexts, alpha, changeTest);
@@ -257,9 +253,9 @@ public final class CdnodPag {
         CdnodPagOrienter orienter = new CdnodPagOrienter(pag, oracle, legalityCheck, propagator)
                 .withMaxSubsetSize(maxSubsetSize)
                 .withProxyGuard(useProxyGuard)
-                .withExcludeContextsFromS(true)      // exclude all contexts from S
+                .withExcludeContextsFromS(excludeContextsFromS)
                 .forbidArrowheadsInto(protectedNodes)
-                .withTiers(tiers);                   // only orient X->Y if tier(X) < tier(Y) when both known
+                .withTiers(tiers);
 
         orienter.run();
         return pag;

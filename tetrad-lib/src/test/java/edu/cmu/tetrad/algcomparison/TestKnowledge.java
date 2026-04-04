@@ -27,7 +27,7 @@ import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
@@ -37,13 +37,14 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.List;
 
 import static junit.framework.TestCase.assertTrue;
 
 public class TestKnowledge {
 
-    private static void testKnowledge(DataSet dataSet, Knowledge knowledge, Parameters parameters, HasKnowledge algorithm) {
+    private static void testKnowledge(DataSet dataSet, Knowledge knowledge, Parameters parameters, AcceptsKnowledge algorithm) {
         algorithm.setKnowledge(knowledge);
         Graph _graph = null;
         try {
@@ -66,7 +67,12 @@ public class TestKnowledge {
         Graph graph = RandomGraph.randomGraph(10, 0, 10, 100, 1090, 100, false);
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(100, false);
+        DataSet dataSet = null;
+        try {
+            dataSet = im.simulateData(100, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         Knowledge knowledge = new Knowledge();
         knowledge.addToTier(1, "X1");

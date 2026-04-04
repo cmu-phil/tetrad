@@ -31,7 +31,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.MultiKeyMap;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
@@ -43,7 +43,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static java.util.Collections.sort;
-import static org.apache.commons.math3.util.FastMath.max;
+import static edu.cmu.tetrad.util.TMath.max;
 
 /**
  * Provides some graph utilities for search algorithm.
@@ -192,7 +192,6 @@ public final class GraphSearchUtils {
                 graph.setEndpoint(x, y, Endpoint.ARROW);
                 graph.setEndpoint(z, y, Endpoint.ARROW);
 
-                System.out.println(LogUtilsSearch.colliderOrientedMsg(x, y, z) + " sepset = " + sepset);
                 String message = LogUtilsSearch.colliderOrientedMsg(x, y, z);
                 TetradLogger.getInstance().log(message);
             }
@@ -207,7 +206,7 @@ public final class GraphSearchUtils {
         adj.remove(c);
         adj.remove(a);
 
-        for (int d = 0; d <= FastMath.min(1000, adj.size()); d++) {
+        for (int d = 0; d <= TMath.min(1000, adj.size()); d++) {
             ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
             int[] choice;
 
@@ -610,6 +609,8 @@ public final class GraphSearchUtils {
             }
         }
 
+        repositionLatents(graph);
+
         LayoutUtil.repositionLatents(graph);
     }
 
@@ -663,7 +664,6 @@ public final class GraphSearchUtils {
             int x = 60;
 
             for (Node node : tier) {
-                System.out.println(node + " " + x + " " + y);
                 node.setCenterX(x);
                 node.setCenterY(y);
                 x += 90;
@@ -672,6 +672,8 @@ public final class GraphSearchUtils {
             y += ySpace;
 
         }
+
+        repositionLatents(graph);
 
         LayoutUtil.repositionLatents(graph);
     }
@@ -771,7 +773,7 @@ public final class GraphSearchUtils {
      */
     public static List<Set<Node>> powerSet(List<Node> nodes) {
         List<Set<Node>> subsets = new ArrayList<>();
-        int total = (int) FastMath.pow(2, nodes.size());
+        int total = (int) TMath.pow(2, nodes.size());
         for (int i = 0; i < total; i++) {
             Set<Node> newSet = new HashSet<>();
             String selection = Integer.toBinaryString(i);
@@ -811,7 +813,7 @@ public final class GraphSearchUtils {
         if (_depth == -1) {
             _depth = 1000;
         }
-        _depth = FastMath.min(_depth, _nodes.size());
+        _depth = TMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
@@ -838,7 +840,7 @@ public final class GraphSearchUtils {
         _nodes.remove(x);
         TetradLogger.getInstance().log("Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
-        _depth = FastMath.min(_depth, _nodes.size());
+        _depth = TMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
@@ -1191,6 +1193,10 @@ public final class GraphSearchUtils {
             Method method = annotation.annotationType().getDeclaredMethod("algoType");
             AlgType ret = (AlgType) method.invoke(annotation);
 
+//            if (algorithm instanceof CyclicPairwise) {
+//                return false;
+//            }
+
             if (ret == AlgType.allow_latent_common_causes) {
                 return true;
             }
@@ -1298,6 +1304,49 @@ public final class GraphSearchUtils {
         public Node getTo() {
             return this.to;
         }
+    }
+
+    /**
+     * Repositions each latent node to the average (x, y) location of its
+     * adjacent measured nodes (parents and children combined). Latents that
+     * have no measured neighbors are left where they are.
+     *
+     * <p>A single pass is sufficient for tree-shaped latent structures; for
+     * graphs where latents are adjacent to other latents, iterating until
+     * convergence gives a better result.
+     *
+     * @param graph the graph whose latent nodes are to be repositioned; mutated in place
+     */
+    public static void repositionLatents(Graph graph) {
+        boolean changed;
+        do {
+            changed = false;
+
+            for (Node node : graph.getNodes()) {
+                if (node.getNodeType() != NodeType.LATENT) continue;
+
+                List<Node> neighbors = graph.getAdjacentNodes(node);
+
+                if (neighbors.isEmpty()) continue;
+
+                double avgX = 0, avgY = 0;
+                for (Node nb : neighbors) {
+                    avgX += nb.getCenterX();
+                    avgY += nb.getCenterY();
+                }
+                avgX /= neighbors.size();
+                avgY /= neighbors.size();
+
+                int newX = (int) Math.round(avgX);
+                int newY = (int) Math.round(avgY);
+
+                if (newX != node.getCenterX() || newY != node.getCenterY()) {
+                    node.setCenterX(newX);
+                    node.setCenterY(newY);
+                    changed = true;
+                }
+            }
+        } while (changed);
     }
 }
 

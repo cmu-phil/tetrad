@@ -24,6 +24,8 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
+import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -153,7 +155,7 @@ public class Sp implements SuborderSearch {
 
                 bestSuborders.add(new ArrayList<>(suborder));
                 seen.add(canonicalOrderKey(suborder));
-            } else if (Math.abs(s - bestScore) <= eps) {
+            } else if (TMath.abs(s - bestScore) <= eps) {
                 String key = canonicalOrderKey(suborder);
                 if (seen.add(key)) {
                     bestSuborders.add(new ArrayList<>(suborder));
@@ -175,12 +177,12 @@ public class Sp implements SuborderSearch {
 
         // Print all tied best permutations (highest-scoring).
         if (bestSuborders.size() > 1) {
-            System.out.println("SP: found " + bestSuborders.size() + " highest-scoring permutations (score=" + bestScore + "):");
+            TetradLogger.getInstance().log("SP: found " + bestSuborders.size() + " highest-scoring permutations (score=" + bestScore + "):");
         } else {
-            System.out.println("SP: found 1 highest-scoring permutation (score=" + bestScore + "):");
+            TetradLogger.getInstance().log("SP: found 1 highest-scoring permutation (score=" + bestScore + "):");
         }
         for (List<Node> ord : bestSuborders) {
-            System.out.println("  " + canonicalOrderKey(ord));
+            TetradLogger.getInstance().log("  " + canonicalOrderKey(ord));
         }
     }
 

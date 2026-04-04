@@ -22,6 +22,8 @@ package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 import java.util.function.Function;
@@ -86,15 +88,15 @@ public final class UnmixDiagnostics {
         int n = responsibilities.length;
         int K = responsibilities[0].length;
 
-        double logK = Math.log(K);
+        double logK = TMath.log(K);
         double sumH = 0.0;
         int confident90 = 0, confident80 = 0;
 
         for (int i = 0; i < n; i++) {
             double max = 0.0, Hi = 0.0;
             for (int k = 0; k < K; k++) {
-                double r = Math.max(responsibilities[i][k], 1e-15);
-                Hi -= r * Math.log(r);
+                double r = TMath.max(responsibilities[i][k], 1e-15);
+                Hi -= r * TMath.log(r);
                 if (r > max) max = r;
             }
             sumH += Hi / logK; // normalized to [0,1]
@@ -126,11 +128,10 @@ public final class UnmixDiagnostics {
     public static StabilityResult stabilityAcrossRestarts(DataSet data, EmUnmix.Config cfg, ResidualRegressor regressor, Function<DataSet, Graph> pooled, Function<DataSet, Graph> perCluster, int repeats, long seedBase) {
 
         List<int[]> labelings = new ArrayList<>(repeats);
-        Random rnd = new Random(seedBase);
 
         for (int r = 0; r < repeats; r++) {
             EmUnmix.Config c = cfg.copy();
-            c.randomSeed = rnd.nextLong();    // if you support seeds
+            c.randomSeed = RandomUtil.getInstance().nextLong();    // if you support seeds
             UnmixResult res = EmUnmix.run(data, c, regressor, pooled, perCluster);
             labelings.add(res.labels);
         }
@@ -144,7 +145,7 @@ public final class UnmixDiagnostics {
             }
         }
         double mean = aris.stream().mapToDouble(x -> x).average().orElse(Double.NaN);
-        double sd = Math.sqrt(aris.stream().mapToDouble(x -> (x - mean) * (x - mean)).sum() / Math.max(1, aris.size() - 1));
+        double sd = TMath.sqrt(aris.stream().mapToDouble(x -> (x - mean) * (x - mean)).sum() / TMath.max(1, aris.size() - 1));
         return new StabilityResult(mean, sd, aris.size());
     }
 
@@ -199,7 +200,7 @@ public final class UnmixDiagnostics {
 
         Set<String> inter = new HashSet<>(skelT);
         inter.retainAll(skelH);
-        int tp = inter.size(), fp = Math.max(skelH.size() - tp, 0), fn = Math.max(skelT.size() - tp, 0);
+        int tp = inter.size(), fp = TMath.max(skelH.size() - tp, 0), fn = TMath.max(skelT.size() - tp, 0);
         double precA = tp == 0 ? 0 : tp / (double) (tp + fp);
         double recA = tp == 0 ? 0 : tp / (double) (tp + fn);
         double adjF1 = (precA + recA == 0) ? 0.0 : 2 * precA * recA / (precA + recA);
@@ -246,7 +247,7 @@ public final class UnmixDiagnostics {
             for (int k = 0; k < K; k++) {
                 lik += m.weights[k] * GaussianMixtureEM.gaussianPdf(X[i], m.means[k], m.covs[k], m.covType);
             }
-            sum += Math.log(Math.max(lik, 1e-300));
+            sum += TMath.log(TMath.max(lik, 1e-300));
         }
         return sum / n;
     }

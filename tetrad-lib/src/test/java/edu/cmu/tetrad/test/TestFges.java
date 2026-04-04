@@ -28,7 +28,7 @@ import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.statistic.AdjacencyPrecision;
 import edu.cmu.tetrad.algcomparison.statistic.AdjacencyRecall;
@@ -55,6 +55,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.text.ParseException;
 import java.util.*;
 
 import static junit.framework.TestCase.assertFalse;
@@ -102,8 +103,12 @@ public class TestFges {
             parameters.set(Params.RANDOMIZE_COLUMNS, true);
 
             RandomGraph graph = new RandomForward();
-            LinearFisherModel sim = new LinearFisherModel(graph);
-            sim.createData(parameters, false);
+            Simulation sim = new SemSimulation(graph);
+            try {
+                sim.createData(parameters, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
             ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
             Algorithm alg = new Fges(score);
 
@@ -192,7 +197,12 @@ public class TestFges {
 
         SemPm pm = new SemPm(dag);
         SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(numCases, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(numCases, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println("data done");
 
@@ -387,11 +397,15 @@ public class TestFges {
     public void clarkTest() {
         RandomGraph randomGraph = new RandomForward();
 
-        Simulation simulation = new LinearFisherModel(randomGraph);
+        Simulation simulation = new SemSimulation(randomGraph);
 
         Parameters parameters = getParameters();
 
-        simulation.createData(parameters, false);
+        try {
+            simulation.createData(parameters, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         DataSet dataSet = (DataSet) simulation.getDataModel(0);
         Graph trueGraph = simulation.getTrueGraph(0);
@@ -800,7 +814,12 @@ public class TestFges {
         buildIndexing(nodes);
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(N, false);
+        DataSet dataSet = null;
+        try {
+            dataSet = im.simulateData(N, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         SemBicScore score = new SemBicScore(dataSet, precomputeCovariances);
 
         MsepTest msep = new MsepTest(graph);

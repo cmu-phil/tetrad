@@ -1,28 +1,9 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-//                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
-// and Richard Scheines.                                                     //
-//                                                                           //
-// This program is free software: you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation, either version 3 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.PointPair;
 
+import javax.swing.*;
 import java.awt.*;
 
 /**
@@ -33,31 +14,20 @@ import java.awt.*;
 final class SessionEditorEdge extends DisplayEdge {
 
     /* Modes */
-    /**
-     * Constant <code>UNRANDOMIZED=0</code>
-     */
     public static final int UNRANDOMIZED = 0;
-    /* Colors */
-    private static final Color DIE_BACKGROUND = Color.red;
-    private static final Color DIE_DOT = Color.black;
     private static final int RANDOMIZED = 1;
 
-    /* States */
-
-    private final Color curr_color = SessionEditorEdge.DIE_BACKGROUND;
     private int sessionEdgeMode;
 
     /**
-     * Constructs a new SessionEditorEdge connecting two components, 'node1' and 'node2'.  The anchor component will be
-     * node1.
+     * Constructs a new SessionEditorEdge connecting two components, 'node1' and 'node2'.
      *
-     * @param node1           the 'from' component.
-     * @param node2           the 'to' component.
-     * @param sessionEdgeMode the sessionEdgeMode of the edge, either UNRANDOMIZED or RANDOMIZED.
+     * @param node1 the 'from' component
+     * @param node2 the 'to' component
+     * @param sessionEdgeMode the mode of the edge, either UNRANDOMIZED or RANDOMIZED
      */
     public SessionEditorEdge(SessionEditorNode node1, SessionEditorNode node2,
                              int sessionEdgeMode) {
-
         super(node1, node2, DisplayEdge.SESSION);
 
         if ((sessionEdgeMode >= 0) && (sessionEdgeMode <= 1)) {
@@ -68,31 +38,21 @@ final class SessionEditorEdge extends DisplayEdge {
     }
 
     /**
-     * Constructs a new unanchored session edge.  The end of the edge at 'node1' is anchored, but the other end tracks a
-     * mouse point. The mouse point should be updated by the parent component using repeated calls to
-     * 'updateTrackPoint'; this process is finished by finally anchoring the second end of the of edge using
-     * 'anchorSecondEnd'.  Once this is done, the edge is considered anchored and will not be able to track a mouse
-     * point any longer.
+     * Constructs a new unanchored session edge.
      *
-     * @param node1           the 'from' component.
-     * @param mouseTrackPoint the initial value of the mouse track point.
-     * @see #updateTrackPoint
+     * @param node1 the 'from' component
+     * @param mouseTrackPoint the initial mouse track point
      */
     public SessionEditorEdge(SessionEditorNode node1, Point mouseTrackPoint) {
         super(node1, mouseTrackPoint, DisplayEdge.SESSION);
     }
 
     /**
-     * Constructs a new unanchored session edge.  The end of the edge a 'node1' is anchored, but the other end tracks a
-     * mouse point. The mouse point should be updated by the parent component using repeated calls to
-     * 'updateTrackPoint'; this process is finished by finally anchoring the second end of the of edge using
-     * 'anchorSecondEnd'.  Once this is done, the edge is considered anchored and will not be able to track a mouse
-     * point any longer.
+     * Constructs a new unanchored session edge.
      *
-     * @param node1           the 'from' component.
-     * @param mouseTrackPoint the initial value of the mouse track point.
-     * @param mode            ??
-     * @see #updateTrackPoint
+     * @param node1 the 'from' component
+     * @param mouseTrackPoint the initial mouse track point
+     * @param mode edge mode
      */
     public SessionEditorEdge(SessionEditorNode node1, Point mouseTrackPoint,
                              int mode) {
@@ -100,14 +60,72 @@ final class SessionEditorEdge extends DisplayEdge {
         this.sessionEdgeMode = mode;
     }
 
+    // ============================================================
+    // Theme helpers
+    // ============================================================
+
+    private static Color uiColor(String key, Color fallback) {
+        Color c = UIManager.getColor(key);
+        return c != null ? c : fallback;
+    }
+
+    private static boolean isDarkMode() {
+        LookAndFeel laf = UIManager.getLookAndFeel();
+        return laf != null && laf.getName().toLowerCase().contains("dar");
+    }
+
+    private static Color blend(Color a, Color b, double t) {
+        t = Math.max(0.0, Math.min(1.0, t));
+        int r = (int) Math.round((1.0 - t) * a.getRed() + t * b.getRed());
+        int g = (int) Math.round((1.0 - t) * a.getGreen() + t * b.getGreen());
+        int b2 = (int) Math.round((1.0 - t) * a.getBlue() + t * b.getBlue());
+        return new Color(
+                Math.max(0, Math.min(255, r)),
+                Math.max(0, Math.min(255, g)),
+                Math.max(0, Math.min(255, b2))
+        );
+    }
+
+    private static Color getDieFillColor() {
+        Color c = UIManager.getColor("Table.selectionBackground");
+        if (c != null) {
+            // Slightly soften it so it reads as a marker, not a selected component.
+            return isDarkMode() ? blend(c, Color.GRAY, 0.15) : blend(c, Color.WHITE, 0.10);
+        }
+
+        c = UIManager.getColor("Component.focusColor");
+        if (c != null) return c;
+
+        return isDarkMode() ? new Color(200, 90, 90) : Color.RED;
+    }
+
+    private static Color getDieStrokeColor() {
+        Color c = UIManager.getColor("Label.foreground");
+        if (c != null) return c;
+
+        c = UIManager.getColor("Component.borderColor");
+        if (c != null) return c;
+
+        return isDarkMode() ? new Color(220, 220, 220) : Color.BLACK;
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        repaint();
+    }
+
+    // ============================================================
+    // Dice geometry
+    // ============================================================
+
     /**
      * Calculates the sleeve of the die.
      *
-     * @param dice the four points defining the die.
+     * @param dice the four points defining the die
      * @return the sleeve
      */
     private static Polygon calcDiceSleeve(Point[] dice) {
-
         int[] xpoint = new int[4];
         int[] ypoint = new int[4];
 
@@ -123,35 +141,33 @@ final class SessionEditorEdge extends DisplayEdge {
         return new Polygon(xpoint, ypoint, 4);
     }
 
-    private void drawDice(Graphics g, Color c) {
-
+    private void drawDice(Graphics2D g2, Color fillColor) {
         Polygon dice = getDiceSleeve();
-
         Circle[] dicedot = getDiceDot();
 
-        g.setColor(c);
-        g.fillPolygon(dice);
-        g.setColor(SessionEditorEdge.DIE_DOT);
-        g.drawPolygon(dice);
+        g2.setColor(fillColor);
+        g2.fillPolygon(dice);
+
+        g2.setColor(getDieStrokeColor());
+        g2.drawPolygon(dice);
 
         int height = dicedot[0].radius * 2;
 
         for (Circle aDicedot : dicedot) {
-            g.fillOval(aDicedot.center.x, aDicedot.center.y, height,
-                    height);
+            g2.fillOval(aDicedot.center.x, aDicedot.center.y, height, height);
         }
     }
 
     /**
-     * Calculates the four corners of the die
+     * Calculates the four corners of the die.
      *
-     * @return this array of points.
+     * @return the array of points
      */
     private Point[] getDiceArea() {
-
         int[] xpoint = new int[4];
         int[] ypoint = new int[4];
         PointPair pp = getConnectedPoints();
+
         Point midPoint = new Point((pp.getFrom().x + pp.getTo().x) / 2,
                 (pp.getFrom().y + pp.getTo().y) / 2);
         double d = DisplayEdge.distance(pp.getFrom(), pp.getTo());
@@ -173,7 +189,6 @@ final class SessionEditorEdge extends DisplayEdge {
         ypoint[3] = (int) (midPoint.y + 10 * cos);
 
         Point[] dice = new Point[4];
-
         dice[0] = new Point(xpoint[0], ypoint[0]);
         dice[1] = new Point(xpoint[1], ypoint[1]);
         dice[2] = new Point(xpoint[2], ypoint[2]);
@@ -207,115 +222,91 @@ final class SessionEditorEdge extends DisplayEdge {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * This method paints the component.
+     * Paints the component.
      */
+    @Override
     public void paint(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g.create();
 
-        Graphics2D g2d = (Graphics2D) g;
+        try {
+            Stroke solid = new BasicStroke(2.5f);
+            g2d.setStroke(solid);
 
-        // NOTE:  For this component, the resetBounds() methods should ALWAYS
-        // be called before repaint().
+            PointPair pp;
 
-        Stroke s;
+            switch (getMode()) {
+                case DisplayEdge.HALF_ANCHORED:
+                    g2d.setColor(getLineColor());
+                    pp = calculateEdge(getNode1(), getRelativeMouseTrackPoint());
 
-        boolean thick = true;
-        float width = thick ? 2.5f : 1.1f;
+                    if (pp != null) {
+                        pp.getFrom().translate(-getLocation().x, -getLocation().y);
+                        pp.getTo().translate(-getLocation().x, -getLocation().y);
 
-        Stroke solid = new BasicStroke(width);
+                        setClickRegion(null);
 
-        g2d.setStroke(solid);
+                        g2d.drawLine(pp.getFrom().x, pp.getFrom().y, pp.getTo().x, pp.getTo().y);
+                        drawEndpoints(pp, g2d);
+                        firePropertyChange("newPointPair", null, pp);
+                    }
+                    break;
 
-        PointPair pp;
+                case DisplayEdge.ANCHORED_UNSELECTED:
+                    g2d.setColor(getLineColor());
+                    pp = calculateEdge(getNode1(), getNode2());
 
-        switch (getMode()) {
-            case DisplayEdge.HALF_ANCHORED:
-                g2d.setColor(getLineColor());
-                pp = calculateEdge(getNode1(), getRelativeMouseTrackPoint());
+                    if (pp != null) {
+                        pp.getFrom().translate(-getLocation().x, -getLocation().y);
+                        pp.getTo().translate(-getLocation().x, -getLocation().y);
 
-                if (pp != null) {
-                    pp.getFrom().translate(-getLocation().x, -getLocation().y);
-                    pp.getTo().translate(-getLocation().x, -getLocation().y);
+                        setClickRegion(null);
 
-                    setClickRegion(null);
+                        g2d.drawLine(pp.getFrom().x, pp.getFrom().y, pp.getTo().x, pp.getTo().y);
+                        drawEndpoints(pp, g2d);
+                        firePropertyChange("newPointPair", null, pp);
+                    }
+                    break;
 
-                    g2d.drawLine(pp.getFrom().x, pp.getFrom().y, pp.getTo().x,
-                            pp.getTo().y);
-                    drawEndpoints(pp, g2d);
-                    firePropertyChange("newPointPair", null, pp);
-                }
-                break;
+                case DisplayEdge.ANCHORED_SELECTED:
+                    g2d.setColor(getSelectedColor());
+                    pp = calculateEdge(getNode1(), getNode2());
 
-            case DisplayEdge.ANCHORED_UNSELECTED:
-                g2d.setColor(getLineColor());
+                    if (pp != null) {
+                        pp.getFrom().translate(-getLocation().x, -getLocation().y);
+                        pp.getTo().translate(-getLocation().x, -getLocation().y);
 
-                pp = calculateEdge(getNode1(), getNode2());
+                        setClickRegion(null);
 
-                if (pp != null) {
-                    pp.getFrom().translate(-getLocation().x, -getLocation().y);
-                    pp.getTo().translate(-getLocation().x, -getLocation().y);
+                        g2d.drawLine(pp.getFrom().x, pp.getFrom().y, pp.getTo().x, pp.getTo().y);
+                        drawEndpoints(pp, g2d);
+                        firePropertyChange("newPointPair", null, pp);
+                    }
+                    break;
 
-                    setClickRegion(null);
+                default:
+                    throw new IllegalStateException();
+            }
 
-                    g2d.drawLine(pp.getFrom().x, pp.getFrom().y, pp.getTo().x,
-                            pp.getTo().y);
-                    drawEndpoints(pp, g2d);
-                    firePropertyChange("newPointPair", null, pp);
-                }
-                break;
+            setConnectedPoints(pp);
 
-            case DisplayEdge.ANCHORED_SELECTED:
-                g2d.setColor(getSelectedColor());
-
-                pp = calculateEdge(getNode1(), getNode2());
-
-                if (pp != null) {
-                    pp.getFrom().translate(-getLocation().x, -getLocation().y);
-                    pp.getTo().translate(-getLocation().x, -getLocation().y);
-
-                    setClickRegion(null);
-
-                    g2d.drawLine(pp.getFrom().x, pp.getFrom().y, pp.getTo().x,
-                            pp.getTo().y);
-                    drawEndpoints(pp, g2d);
-                    firePropertyChange("newPointPair", null, pp);
-                }
-                break;
-
-            default:
-                throw new IllegalStateException();
-        }
-
-        setConnectedPoints(pp);
-
-        if (this.sessionEdgeMode == SessionEditorEdge.RANDOMIZED) {
-            drawDice(g2d, this.curr_color);
+            if (this.sessionEdgeMode == SessionEditorEdge.RANDOMIZED && pp != null) {
+                drawDice(g2d, getDieFillColor());
+            }
+        } finally {
+            g2d.dispose();
         }
     }
 
     /**
-     * Holds the radius and diameter of a circle.
-     *
-     * @author Pucktada
+     * Holds the radius and center of a circle.
      */
     private static final class Circle {
         public final int radius;
         public final Point center;
 
-        /**
-         * @param c the center of the circle.
-         * @param r the radius of the circle.
-         */
         public Circle(Point c, int r) {
             this.radius = r;
             this.center = c;
         }
     }
 }
-
-
-
-
-
-

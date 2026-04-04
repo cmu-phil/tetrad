@@ -28,18 +28,16 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.*;
-import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static java.lang.StrictMath.log;
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.sqrt;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Fisher's Z CI test with shrinkage (RIDGE/LedoitâWolf) and optional pseudoinverse fallback.
@@ -202,7 +200,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         double w22 = P.getEntry(1, 1);
         double w12 = P.getEntry(0, 1);
         if (w11 <= 0 || w22 <= 0) throw new RuntimeException("Nonpositive diagonal in precision.");
-        return -w12 / Math.sqrt(w11 * w22);
+        return -w12 / TMath.sqrt(w11 * w22);
     }
 
     /* ======================= API ======================= */
@@ -264,7 +262,11 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         try {
             p = getPValue(x, y, z);
         } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singular matrix encountered for test: " + LogUtilsSearch.independenceFact(x, y, z));
+            IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), false, 0.0, alpha);
+            if (this.verbose) {
+                TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, z, 0.0));
+            }
+            return result;
         }
 
         boolean independent = p > this.alpha;
@@ -303,6 +305,11 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         }
 
         this.r = r;
+
+        if (abs(r) >= 1.0) {
+            return 0.0;
+        }
+
         double q = .5 * (log(1.0 + abs(r)) - log(1.0 - abs(r)));
         double df = n - 3. - z.size();
         if (df < 1) {
@@ -340,7 +347,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      *         and the correlation coefficient squared.
      */
     public double getBic() {
-        return -getEffectiveSampleSize() * FastMath.log(1.0 - this.r * this.r) - FastMath.log(getEffectiveSampleSize());
+        return -getEffectiveSampleSize() * log(1.0 - this.r * this.r) - log(getEffectiveSampleSize());
     }
 
     /**
@@ -545,7 +552,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
                         }
                     }
                     double delta = 0.0;
-                    if (denom > 0.0) delta = Math.min(1.0, Math.max(0.0, num / denom));
+                    if (denom > 0.0) delta = TMath.min(1.0, TMath.max(0.0, num / denom));
                     this.lastLedoitWolfDelta = delta;
                     if (delta > 0.0) {
                         Matrix I = Matrix.identity(p);
@@ -559,10 +566,9 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
             case NONE -> { /* no-op */ }
         }
 
-        // Try standard inversion via Cholesky; fallback to pseudoinverse if requested.
         try {
             return partialViaCholesky(corSub);
-        } catch (RuntimeException e) {
+        } catch (SingularMatrixException | NonPositiveDefiniteMatrixException | NonSquareMatrixException e) {
             if (!usePseudoinverse) {
                 // Mirror previous behavior: surface as singular unless pinv allowed
                 throw new SingularMatrixException();
@@ -575,7 +581,19 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * Fast path: Cholesky on SPD correlation; throws if not SPD.
      */
     private double partialViaCholesky(Matrix corSub) {
+        if (corSub.getNumRows() == 2) {
+            double r = corSub.get(0, 1);
+            if (TMath.abs(r) >= 1.0) {
+                return r > 0 ? 1.0 : -1.0;
+            }
+        }
+        
         RealMatrix A = toReal(corSub);
+
+        if (TMath.abs(new LUDecomposition(A).getDeterminant()) < 1e-16) {
+            throw new SingularMatrixException();
+        }
+
         // The small "relativeSymmetryThreshold" & "absolutePositivityThreshold" keep it strict.
         CholeskyDecomposition chol = new CholeskyDecomposition(A, 1e-10, 1e-12);
         RealMatrix L = chol.getL();
@@ -596,7 +614,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         RealMatrix V = eig.getV();
 
         double maxEig = 0.0;
-        for (double v : vals) maxEig = Math.max(maxEig, Math.abs(v));
+        for (double v : vals) maxEig = TMath.max(maxEig, TMath.abs(v));
         double cut = tolRel * (maxEig > 0 ? maxEig : 1.0);
 
         // Build precision = V diag(1/max(eig,cut)) V^T
@@ -604,7 +622,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         double[][] Dinv = new double[p][p];
         for (int i = 0; i < p; i++) {
             double v = vals[i];
-            double adj = Math.abs(v) < cut ? cut : v;
+            double adj = TMath.abs(v) < cut ? cut : v;
             Dinv[i][i] = 1.0 / adj;
         }
         RealMatrix Pinv = V.multiply(new Array2DRowRealMatrix(Dinv)).multiply(V.transpose());

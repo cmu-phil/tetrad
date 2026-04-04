@@ -78,9 +78,16 @@ public final class SpFci extends StarFci {
         this.score = score;
     }
 
+    /**
+     * Executes the SP algorithm to compute the Markov equivalence class in the form of a completed partially directed
+     * acyclic graph (CPDAG) based on the provided score and algorithm configuration.
+     *
+     * @return The resulting CPDAG representing the Markov equivalence class.
+     * @throws InterruptedException if the operation is interrupted.
+     */
     public Graph getMarkovCpdag() throws InterruptedException {
         Graph cpdag;
-        if (isCompleteRuleSetUsed()) {
+        if (isVerbose()) {
             TetradLogger.getInstance().log("Starting SP.");
         }
 

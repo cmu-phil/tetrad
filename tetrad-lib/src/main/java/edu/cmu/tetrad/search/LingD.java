@@ -1,0 +1,478 @@
+/// ////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+/// ////////////////////////////////////////////////////////////////////////////
+
+package edu.cmu.tetrad.search;
+
+import edu.cmu.tetrad.data.AndersonDarlingTest;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.utils.HungarianAlgorithm;
+import edu.cmu.tetrad.search.utils.NRooks;
+import edu.cmu.tetrad.search.utils.PermutationMatrixPair;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TMath;
+import org.ejml.simple.SimpleEVD;
+import org.ejml.simple.SimpleMatrix;
+import org.jetbrains.annotations.NotNull;
+
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.*;
+
+import static edu.cmu.tetrad.util.TMath.abs;
+
+/**
+ * LiNG-D (Lacerda, Spirtes, Ramsey, Hoyer, 2012).
+ * <p>
+ * Stability hardening: - Uses fixed FastICA (sym. update derivative, whitening ridge, orthonormal wInit). - Robust
+ * diagonal scaling with epsilon guard. - Prefer Hungarian "best-diagonal" permutation; then enumerate NRooks
+ * permutations. - Spectral radius stability check with small tolerance.
+ * <p>
+ * API is unchanged.
+ *
+ * @author peterspirtes
+ * @author gustavolacerda
+ * @author patrickhoyer
+ * @author josephramsey
+ * @version $Id: $Id
+ * @see Lingam
+ */
+public class LingD {
+
+    /**
+     * Small guard used when scaling by diagonal.
+     */
+    private static final double DIAG_EPS = 1e-8;
+    /**
+     * Spectral-radius tolerance for stability (rho < 1 - tol).
+     */
+    private static final double STAB_TOL = 1e-8;
+    /**
+     * Entries |W_ij| < wThreshold -> 0 before permutation search.
+     */
+    private double wThreshold = 0.1;
+    /**
+     * Entries |B_ij| < bThreshold -> 0 after forming B̂.
+     */
+    private double bThreshold = 0.1;
+
+    /**
+     * Default constructor for the IcaLingD class.
+     * <p>
+     * This initializes an instance of the IcaLingD class, which provides functionality related to Independent Component
+     * Analysis (ICA) and Linear Non-Gaussian Acyclic Model (LiNGAM) for directional inference and graph estimation
+     * tasks.
+     */
+    public LingD() {
+    }
+
+    // ----------------------------------------------------------------------
+    // Estimation of W via FastICA
+    // ----------------------------------------------------------------------
+
+    /**
+     * Estimates the weight matrix W using the Fast Independent Component Analysis (FastICA) algorithm.
+     *
+     * @param data             the input dataset used for the estimation process
+     * @param fastIcaMaxIter   the maximum number of iterations for the FastICA algorithm
+     * @param fastIcaTolerance the convergence tolerance for the FastICA algorithm
+     * @param fastIcaA         the scaling parameter used for the FastICA nonlinearity function
+     * @return the estimated weight matrix W
+     */
+    public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance, double fastIcaA) {
+        return estimateW(data, fastIcaMaxIter, fastIcaTolerance, fastIcaA, false);
+    }
+
+    /**
+     * Estimates the weight matrix (W) using the Fast Independent Component Analysis (FastICA) algorithm. This method
+     * centers and preprocesses the input data, applies the FastICA algorithm, and optionally logs Anderson Darling test
+     * results for non-Gaussianity of the input variables if verbose mode is enabled.
+     *
+     * @param data             the input dataset containing variables used for the estimation process
+     * @param fastIcaMaxIter   the maximum number of iterations for the FastICA algorithm
+     * @param fastIcaTolerance the convergence tolerance threshold for the FastICA algorithm
+     * @param fastIcaA         the scaling parameter alpha used in the FastICA nonlinearity function
+     * @param verbose          a flag indicating whether logging of intermediate results, such as non-Gaussianity
+     *                         statistics, should be enabled
+     * @return the estimated weight matrix (W) derived from the FastICA algorithm
+     */
+    public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance, double fastIcaA, boolean verbose) {
+        double[][] _data = data.getDoubleData().transpose().toArray();
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Anderson Darling P-values Per Variables (p < alpha means Non-Gaussian)");
+            TetradLogger.getInstance().log("");
+            for (int i = 0; i < _data.length; i++) {
+                Node node = data.getVariable(i);
+                AndersonDarlingTest test = new AndersonDarlingTest(_data[i]);
+                double p = test.getP();
+                NumberFormat nf = new DecimalFormat("0.000");
+                TetradLogger.getInstance().log(node.getName() + ": p = " + nf.format(p));
+            }
+        }
+
+        // ICA expects (p x N); Tetrad stores (N x p). We'll transpose internally in FastIca call context.
+        Matrix X = data.getDoubleData();
+        X = DataTransforms.centerData(X).transpose();
+
+        FastIca fastIca = new FastIca(X, X.getNumRows());
+        fastIca.setVerbose(false);
+        fastIca.setMaxIterations(fastIcaMaxIter);
+        fastIca.setAlgorithmType(FastIca.PARALLEL);
+        fastIca.setTolerance(fastIcaTolerance);
+        fastIca.setFunction(FastIca.LOGCOSH);
+        fastIca.setRowNorm(false);
+        fastIca.setAlpha(fastIcaA);
+
+        FastIca.IcaResult result = fastIca.findComponents();
+        return result.W().transpose();
+    }
+
+    // ----------------------------------------------------------------------
+    // Graph helper
+    // ----------------------------------------------------------------------
+
+    /**
+     * Constructs a directed graph based on the input binary adjacency matrix and a list of nodes. The method creates a
+     * graph where an edge is added from node j to node i if the value at position (i, j) in the matrix is non-zero.
+     *
+     * @param B         the binary adjacency matrix representing the edge structure of the graph
+     * @param variables the list of nodes corresponding to the graph's variables
+     * @return the constructed directed graph
+     */
+    @NotNull
+    public static Graph makeGraph(Matrix B, List<Node> variables) {
+        Graph g = new EdgeListGraph(variables);
+        for (int j = 0; j < B.getNumColumns(); j++) {
+            for (int i = 0; i < B.getNumRows(); i++) {
+                if (B.get(i, j) != 0) {
+                    g.addDirectedEdge(variables.get(j), variables.get(i));
+                }
+            }
+        }
+        return g;
+    }
+
+    // ----------------------------------------------------------------------
+    // Diagonal permutation helpers
+    // ----------------------------------------------------------------------
+
+    /**
+     * Computes a permutation matrix pair that maximizes the diagonal elements of a given matrix W. This involves
+     * finding an optimal arrangement of rows and columns to achieve this goal.
+     *
+     * @param W the matrix for which the diagonal is to be maximized
+     * @return a PermutationMatrixPair containing the optimized permutations and resulting matrix
+     */
+    public static PermutationMatrixPair maximizeDiagonal(Matrix W) {
+        return maximizeDiagonalSum(W);
+    }
+
+    /**
+     * Spectral-radius stability with small tolerance.
+     *
+     * @param bHat the matrix to check for spectral radius stability
+     * @return true if the spectral radius of the matrix is less than 1 - STAB_TOL, false otherwise
+     */
+    public static boolean isStable(Matrix bHat) {
+        SimpleMatrix B = bHat.getSimpleMatrix();
+        SimpleEVD<SimpleMatrix> evd = B.eig();
+
+        for (int i = 0; i < evd.getNumberOfEigenvalues(); i++) {
+            double real = evd.getEigenvalue(i).getReal();
+            double imag = evd.getEigenvalue(i).getImaginary();
+            double mod = TMath.hypot(real, imag);
+
+            if (!(mod < 1.0 - STAB_TOL)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Scales a given square matrix such that each row is normalized by its diagonal element.
+     * If a diagonal element is near zero (within a small tolerance), it is replaced by a
+     * predefined constant to avoid division by zero and maintain stability.
+     *
+     * @param M the square matrix to be scaled
+     * @return a new matrix where each row is scaled by its corresponding diagonal element
+     * @throws IllegalArgumentException if the given matrix is not square
+     */
+    public static Matrix scale(Matrix M) {
+        SimpleMatrix A = M.getSimpleMatrix().copy();
+        int n = A.numRows();
+        int m = A.numCols();
+
+        if (n != m) {
+            throw new IllegalArgumentException("Expected a square matrix, got " + n + "x" + m);
+        }
+
+        for (int i = 0; i < n; i++) {
+            double d = A.get(i, i);
+            if (Math.abs(d) < DIAG_EPS) {
+                d = (d >= 0.0 ? DIAG_EPS : -DIAG_EPS);
+            }
+
+            for (int j = 0; j < m; j++) {
+                A.set(i, j, A.get(i, j) / d);
+            }
+        }
+
+        return new Matrix(A);
+    }
+
+    /**
+     * Hard threshold (copy).
+     *
+     * @param M the matrix to threshold
+     * @param threshold the threshold value
+     * @return the thresholded matrix
+     */
+    public static Matrix threshold(Matrix M, double threshold) {
+        if (threshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + threshold);
+        Matrix _M = M.copy();
+        for (int i = 0; i < M.getNumRows(); i++) {
+            for (int j = 0; j < M.getNumColumns(); j++) {
+                if (abs(M.get(i, j)) < abs(threshold)) _M.set(i, j, 0.0);
+            }
+        }
+        return _M;
+    }
+
+    /**
+     * Computes the scaled matrix B̂ from a given permutation matrix pair. The method involves
+     * normalizing the rows of the permuted matrix by their diagonal entries, forming the matrix B̂,
+     * and undoing the row permutation to return the result in the original variable order.
+     *
+     * @param pair the permutation matrix pair containing the permuted matrix and its row permutation array
+     * @return the scaled matrix B̂ in the original variable order
+     * @throws IllegalArgumentException if the permuted matrix is not square
+     */
+    public static Matrix getScaledBHat(PermutationMatrixPair pair) {
+//        Matrix permuted = pair.getPermutedMatrix();
+
+        if (pair.getRowPerm() == null && pair.getColPerm() != null) {
+            // Defensive: should not happen after pairsNRook fix, but guard anyway.
+            throw new IllegalArgumentException(
+                    "getScaledBHat requires a rowPerm-based pair; got a colPerm-only pair.");
+        }
+        Matrix permuted = pair.getPermutedMatrix();
+
+        SimpleMatrix wTilde = permuted.transpose().getSimpleMatrix().copy();
+
+        int p = wTilde.numRows();
+        if (p != wTilde.numCols()) {
+            throw new IllegalArgumentException("Expected square W, got " + p + "x" + wTilde.numCols());
+        }
+
+        // Normalize rows by their diagonal entries.
+        for (int i = 0; i < p; i++) {
+            double d = wTilde.get(i, i);
+            if (Math.abs(d) < DIAG_EPS) {
+                d = (d >= 0.0 ? DIAG_EPS : -DIAG_EPS);
+            }
+
+            for (int j = 0; j < p; j++) {
+                wTilde.set(i, j, wTilde.get(i, j) / d);
+            }
+        }
+
+        SimpleMatrix bHat = SimpleMatrix.identity(p).minus(wTilde);
+
+        // Undo row permutation back to original variable order.
+        int[] perm = pair.getRowPerm();
+        if (perm != null) {
+            int[] inverse = inversePermutation(perm);
+            PermutationMatrixPair inversePair = new PermutationMatrixPair(new Matrix(bHat), inverse, inverse);
+            return inversePair.getPermutedMatrix();
+        }
+
+        return new Matrix(bHat);
+    }
+
+    @NotNull
+    private static PermutationMatrixPair maximizeDiagonalSum(Matrix W) {
+        double[][] costMatrix = new double[W.getNumRows()][W.getNumColumns()];
+        for (int i = 0; i < W.getNumRows(); i++) {
+            for (int j = 0; j < W.getNumColumns(); j++) {
+                double a = abs(W.get(i, j));
+                costMatrix[i][j] = (a > 0.0) ? 1.0 / a : 1e6; // prefer larger |W_ij|
+            }
+        }
+        HungarianAlgorithm alg = new HungarianAlgorithm(costMatrix);
+        int[][] assignment = alg.findOptimalAssignment();
+        int[] perm = new int[assignment.length];
+        for (int i = 0; i < perm.length; i++) perm[i] = assignment[i][1];
+        return new PermutationMatrixPair(W, perm, null);
+    }
+
+//    @NotNull
+//    private static List<PermutationMatrixPair> pairsNRook(Matrix W) {
+//        boolean[][] allowable = new boolean[W.getNumRows()][W.getNumColumns()];
+//        for (int i = 0; i < W.getNumRows(); i++) {
+//            for (int j = 0; j < W.getNumColumns(); j++) {
+//                allowable[i][j] = abs(W.get(i, j)) > 0;
+//            }
+//        }
+//        List<PermutationMatrixPair> pairs = new ArrayList<>();
+//        List<int[]> colPerms = NRooks.nRooks(allowable);
+//        for (int[] colPerm : colPerms) pairs.add(new PermutationMatrixPair(W, null, colPerm));
+//        return pairs;
+//    }
+
+    @NotNull
+    private static List<PermutationMatrixPair> pairsNRook(Matrix W) {
+        boolean[][] allowable = new boolean[W.getNumRows()][W.getNumColumns()];
+        for (int i = 0; i < W.getNumRows(); i++) {
+            for (int j = 0; j < W.getNumColumns(); j++) {
+                allowable[i][j] = abs(W.get(i, j)) > 0;
+            }
+        }
+        List<PermutationMatrixPair> pairs = new ArrayList<>();
+        List<int[]> colPerms = NRooks.nRooks(allowable);
+        for (int[] colPerm : colPerms) {
+            // colPerm[i] = j means row i of W goes to diagonal position j,
+            // which is equivalent to a row permutation: row colPerm[i] moves to row i.
+            // Convert to rowPerm so getScaledBHat's undo step fires correctly.
+            int[] rowPerm = inversePermutation(colPerm);
+            pairs.add(new PermutationMatrixPair(W, rowPerm, null));
+        }
+        return pairs;
+    }
+
+    private static int[] inversePermutation(int[] perm) {
+        int[] inverse = new int[perm.length];
+        for (int i = 0; i < perm.length; i++) inverse[perm[i]] = i;
+        return inverse;
+    }
+
+    // ----------------------------------------------------------------------
+    // Public pipeline
+    // ----------------------------------------------------------------------
+
+    /**
+     * Convenience: estimate W via FastICA, then enumerate B̂ candidates.
+     *
+     * @param D the dataset to fit
+     * @return the list of scaled B̂ matrices
+     */
+    public List<Matrix> fit(DataSet D) {
+        Matrix W = LingD.estimateW(D, 10000, 1e-6, 1.1, true);
+        return getScaledBHats(W);
+    }
+
+    /**
+     * Local LiNG-D from a given W: 1) Threshold W (small entries -> 0). 2) Try best-diagonal permutation (Hungarian)
+     * first; then all NRooks permutations. 3) For each permutation, scale to WTilde with diag≈1, form B̂ = I - WTilde,
+     * threshold B̂. 4) Return the list (caller can filter with isStable).
+     *
+     * @param W the weight matrix to process
+     * @return the list of scaled B̂ matrices
+     */
+    public List<Matrix> getScaledBHats(Matrix W) {
+        W = new Matrix(W);
+
+        double wt = TMath.max(0.0, this.wThreshold);
+        for (int i = 0; i < W.getNumRows(); i++) {
+            for (int j = 0; j < W.getNumColumns(); j++) {
+                if (abs(W.get(i, j)) < wt) {
+                    W.set(i, j, 0.0);
+                }
+            }
+        }
+
+        List<PermutationMatrixPair> pairs = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+
+        try {
+            PermutationMatrixPair best = maximizeDiagonalSum(W);
+            String key = Arrays.toString(best.getRowPerm()) + "|" + Arrays.toString(best.getColPerm());
+            if (seen.add(key)) {
+                pairs.add(best);
+            }
+        } catch (Exception ignore) {
+        }
+
+        for (PermutationMatrixPair p : pairsNRook(W)) {
+            String key = Arrays.toString(p.getRowPerm()) + "|" + Arrays.toString(p.getColPerm());
+            if (seen.add(key)) {
+                pairs.add(p);
+            }
+        }
+
+        if (pairs.isEmpty()) {
+            throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");
+        }
+
+        List<Matrix> results = new ArrayList<>();
+        double bt = TMath.max(0.0, this.bThreshold);
+
+        for (PermutationMatrixPair pair : pairs) {
+            Matrix bHat = getScaledBHat(pair);
+
+            for (int i = 0; i < bHat.getNumRows(); i++) {
+                for (int j = 0; j < bHat.getNumColumns(); j++) {
+                    if (abs(bHat.get(i, j)) < bt) {
+                        bHat.set(i, j, 0.0);
+                    }
+                }
+            }
+
+            results.add(bHat);
+        }
+
+        return results;
+    }
+
+    // ----------------------------------------------------------------------
+    // Params
+    // ----------------------------------------------------------------------
+
+    /**
+     * Sets the threshold value for the `bThreshold` field. This is used to define
+     * a specific limit or boundary for the `bThreshold` parameter. Only non-negative
+     * values are allowed; an exception will be thrown otherwise.
+     *
+     * @param bThreshold the new threshold value to be assigned. Must be a non-negative number.
+     * @throws IllegalArgumentException if the provided value is negative.
+     */
+    public void setBThreshold(double bThreshold) {
+        if (bThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + bThreshold);
+        this.bThreshold = bThreshold;
+    }
+
+    /**
+     * Sets the threshold value for the `wThreshold` field. This is used to define
+     * a specific limit or boundary for the `wThreshold` parameter. Only non-negative
+     * values are allowed; an exception will be thrown otherwise.
+     *
+     * @param wThreshold the new threshold value to be assigned. Must be a non-negative number.
+     */
+    public void setWThreshold(double wThreshold) {
+        if (wThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + wThreshold);
+        this.wThreshold = wThreshold;
+    }
+}

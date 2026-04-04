@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -218,7 +219,12 @@ public class SemThenDiscretize implements Simulation {
     private DataSet simulate(Graph graph, Parameters parameters) {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet continuousData = im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);
+        DataSet continuousData = null;
+        try {
+            continuousData = im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         if (this.shuffledOrder == null) {
             List<Node> shuffledNodes = new ArrayList<>(continuousData.getVariables());

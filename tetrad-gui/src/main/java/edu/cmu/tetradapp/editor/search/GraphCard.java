@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -30,9 +30,6 @@ import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
-import javax.help.CSH;
-import javax.help.HelpBroker;
-import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -228,6 +225,7 @@ public class GraphCard extends JPanel {
         graph.add(GraphUtils.getHighlightMenu(this.workbench));
         graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
         addGraphManipItems(graph, this.workbench);
+        graph.add(new CheckMSeparationFacts(this.workbench));
         graph.addSeparator();
 
         graph.add(GraphUtils.addPagEdgeSpecializationsItems(this.workbench));
@@ -280,24 +278,52 @@ public class GraphCard extends JPanel {
         infoBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Initialize helpSet
-                final String helpHS = "/docs/javahelp/TetradHelp.hs";
+                final String helpPage = "/docs/javahelp/manual/graph_edge_types.html";
 
                 try {
-                    URL url = this.getClass().getResource(helpHS);
-                    HelpSet helpSet = new HelpSet(null, url);
+                    URL url = getClass().getResource(helpPage);
+                    if (url == null) {
+                        throw new IllegalArgumentException("Help page not found: " + helpPage);
+                    }
 
-                    helpSet.setHomeID("graph_edge_types");
-                    HelpBroker broker = helpSet.createHelpBroker();
-                    ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-                    listener.actionPerformed(e);
+                    JEditorPane editorPane = new JEditorPane();
+                    editorPane.setEditable(false);
+                    editorPane.setContentType("text/html");
+                    editorPane.setPage(url);
+                    editorPane.setCaretPosition(0);
+
+                    JScrollPane scrollPane = new JScrollPane(editorPane);
+                    scrollPane.setPreferredSize(new Dimension(900, 650));
+
+                    Window owner = SwingUtilities.getWindowAncestor(infoBtn);
+                    JDialog dialog = new JDialog(owner, "PAG Edge Types", Dialog.ModalityType.APPLICATION_MODAL);
+                    dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                    dialog.getContentPane().setLayout(new BorderLayout());
+                    dialog.getContentPane().add(scrollPane, BorderLayout.CENTER);
+
+                    JButton closeButton = new JButton("Close");
+                    closeButton.addActionListener(ev -> dialog.dispose());
+
+                    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+                    buttonPanel.add(closeButton);
+                    dialog.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+
+                    dialog.pack();
+                    dialog.setLocationRelativeTo(owner);
+                    dialog.setVisible(true);
                 } catch (Exception ee) {
-                    System.out.println("HelpSet " + ee.getMessage());
-                    System.out.println("HelpSet " + helpHS + " not found");
-                    throw new IllegalArgumentException();
+                    ee.printStackTrace();
+                    JOptionPane.showMessageDialog(
+                            SwingUtilities.getWindowAncestor(infoBtn),
+                            "Could not load help page:\n" + ee.getMessage(),
+                            "Help Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
                 }
             }
         });
+        ;
+        ;
 
         Box instruction = Box.createHorizontalBox();
         instruction.add(label);

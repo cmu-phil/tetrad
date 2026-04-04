@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.algcomparison.simulation;
 
@@ -27,13 +27,15 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.ExpressionSampler;
+import edu.cmu.tetrad.sem.Sampler;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.distribution.BetaDistribution;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -91,7 +93,7 @@ public class GeneralNoiseSimulation implements Simulation {
             for (int k = 0; k < dataSet.getNumRows(); k++) {
                 for (int j = 0; j < dataSet.getNumColumns(); j++) {
                     double d = dataSet.getDouble(k, j);
-                    double norm = RandomUtil.getInstance().nextGaussian(0, FastMath.sqrt(variance));
+                    double norm = RandomUtil.getInstance().nextGaussian(0, TMath.sqrt(variance));
                     dataSet.setDouble(k, j, d + norm);
                 }
             }
@@ -119,9 +121,10 @@ public class GeneralNoiseSimulation implements Simulation {
      * @param parameters The parameters used to control the simulation process, including settings for seed, number of
      *                   runs, and other configurations.
      * @param newModel   A flag indicating whether a new model should be created for the simulation.
+     * @throws ParseException if there is an error parsing the hidden dimensions string
      */
     @Override
-    public void createData(Parameters parameters, boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) throws ParseException {
         if (parameters.getLong(Params.SEED) != -1L) {
             RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
         }
@@ -135,9 +138,13 @@ public class GeneralNoiseSimulation implements Simulation {
             List<Node> continuousVars = new ArrayList<>();
 
             for (Node node : graph.getNodes()) {
-                ContinuousVariable var = new ContinuousVariable(node.getName());
-                var.setNodeType(node.getNodeType());
-                continuousVars.add(var);
+                if (!(node instanceof ContinuousVariable)) {
+                    ContinuousVariable var = new ContinuousVariable(node.getName());
+                    var.setNodeType(node.getNodeType());
+                    continuousVars.add(var);
+                } else {
+                    continuousVars.add(node);
+                }
             }
 
             graph = GraphUtils.replaceNodes(graph, continuousVars);
@@ -226,10 +233,7 @@ public class GeneralNoiseSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-//        parameters.add(Params.AM_RESCALE_MIN);
-//        parameters.add(Params.AM_RESCALE_MAX);
-        parameters.add(Params.AM_BETA_ALPHA);
-        parameters.add(Params.AM_BETA_BETA);
+        parameters.add(Params.NOISE_EXPRESSION);
         parameters.add(Params.HIDDEN_DIMENSIONS);
         parameters.add(Params.INPUT_SCALE);
         parameters.add(Params.NUM_RUNS);
@@ -270,8 +274,9 @@ public class GeneralNoiseSimulation implements Simulation {
      * @param graph      the graph to use in the simulation
      * @param parameters the parameters to use in the simulation
      * @return a DataSet object representing the simulated data
+     * @throws ParseException if there is an error parsing the hidden dimensions string
      */
-    private DataSet simulate(Graph graph, Parameters parameters) {
+    private DataSet simulate(Graph graph, Parameters parameters) throws ParseException {
         return runModel(graph, parameters);
     }
 
@@ -280,8 +285,9 @@ public class GeneralNoiseSimulation implements Simulation {
      *
      * @param graph the graph representing the causal relationships used in the simulation.
      * @return the generated synthetic dataset as a DataSet object.
+     * @throws ParseException if there is an error parsing the hidden dimensions string
      */
-    private DataSet runModel(Graph graph, Parameters parameters) {
+    private DataSet runModel(Graph graph, Parameters parameters) throws ParseException {
         String hiddenDimensionsString = parameters.getString(Params.HIDDEN_DIMENSIONS);
         String[] hiddenDimensionsSplit = hiddenDimensionsString.split(",");
         int[] hiddenDimensions = new int[hiddenDimensionsSplit.length];
@@ -289,13 +295,20 @@ public class GeneralNoiseSimulation implements Simulation {
             hiddenDimensions[i] = Integer.parseInt(hiddenDimensionsSplit[i].trim());
         }
 
-        Function<Double, Double> activation = Math::tanh;// x -> Math.max(0.1 * x, x);
+        Function<Double, Double> activation = TMath::tanh;
+
+        Sampler sampler = new ExpressionSampler(parameters.getString(Params.NOISE_EXPRESSION));
 
         edu.cmu.tetrad.sem.GeneralNoiseSimulation generator = new edu.cmu.tetrad.sem.GeneralNoiseSimulation(
-                graph, parameters.getInt(Params.SAMPLE_SIZE),
-                new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
-//                parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
-                hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
+                graph,
+                parameters.getInt(Params.SAMPLE_SIZE),
+                sampler,
+                hiddenDimensions,
+                parameters.getDouble(Params.INPUT_SCALE),
+                activation,
+                false,   // reportSaturation
+                .97     // saturation threshold on |tanh activation|
+        );
 
         return generator.generateData();
     }

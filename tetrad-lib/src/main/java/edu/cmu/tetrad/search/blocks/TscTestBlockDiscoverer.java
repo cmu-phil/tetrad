@@ -40,7 +40,7 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
     private final DataSet dataSet;
     private final double alpha;
     private final int ess;
-    private final SingleClusterPolicy policy;
+    private final SingletonClusterPolicy policy;
     private final boolean verbose;
     private final int rMax;
     private final int minRedundancy;
@@ -61,7 +61,7 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
      * @throws IllegalArgumentException If the ridge parameter is less than 0.
      */
     public TscTestBlockDiscoverer(DataSet dataSet, double alpha, int ess, double ridge, int rMax,
-                                  SingleClusterPolicy policy, int minRedundancy, boolean verbose) {
+                                  SingletonClusterPolicy policy, int minRedundancy, boolean verbose) {
         this.dataSet = dataSet;
         this.alpha = alpha;
         this.ess = ess;

@@ -23,12 +23,9 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -55,15 +52,15 @@ import java.util.List;
  *
  * @author josephramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "FCIT0",
-        command = "FCIT0",
-        algoType = AlgType.allow_latent_common_causes
-)
-@Bootstrapping
-@Experimental
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "FCIT0",
+//        command = "FCIT0",
+//        algoType = AlgType.allow_latent_common_causes
+//)
+//@Bootstrapping
+//@Experimental
 public class Fcit0 extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, TakesIndependenceWrapper,
-        HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+        AcceptsKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -143,14 +140,15 @@ public class Fcit0 extends AbstractBootstrapAlgorithm implements Algorithm, Take
         }
 
         IndependenceTest test = this.test.getTest(dataModel, parameters);
-        test = new CachedIndependenceQueries(test);
-        Score score = this.score.getScore(dataModel, parameters);
 
         if (test instanceof MsepTest) {
             if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
                 throw new IllegalArgumentException("For d-separation oracle input, please use the GRaSP option.");
             }
         }
+
+        test = new CachedIndependenceQueries(test);
+        Score score = this.score.getScore(dataModel, parameters);
 
         edu.cmu.tetrad.search.Fcit0 search = new edu.cmu.tetrad.search.Fcit0(test, score);
 

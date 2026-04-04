@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.List;
 
@@ -55,7 +55,7 @@ public class KernelUtils {
         Matrix gram = new Matrix(m, m);
         for (int k = 0; k < nodes.size(); k++) {
             Node node = nodes.get(k);
-            int col = dataset.getColumn(node);
+            int col = dataset.getColumnIndex(node);
             Kernel kernel = kernels.get(k);
             for (int i = 0; i < m; i++) {
                 for (int j = i; j < m; j++) {
@@ -169,7 +169,7 @@ public class KernelUtils {
 
             // compute next column
             double diag =
-                    FastMath.sqrt(Dadv[k]);
+                    TMath.sqrt(Dadv[k]);
             G.set(k, k, diag);
             for (int j = (k + 1); j < m; j++) {
                 double s = 0.0;
@@ -181,7 +181,7 @@ public class KernelUtils {
 
             // update diagonal
             for (int j = (k + 1); j < m; j++) {
-                Dadv[j] -= FastMath.pow(G.get(j, k), 2);
+                Dadv[j] -= TMath.pow(G.get(j, k), 2);
             }
             Dadv[k] = 0;
         }
@@ -199,10 +199,10 @@ public class KernelUtils {
     // evaluates tensor product for kernels
 
     private static double evaluate(List<Kernel> kernels, DataSet dataset, List<Node> vars, int i, int j) {
-        int col = dataset.getColumn(vars.get(0));
+        int col = dataset.getColumnIndex(vars.get(0));
         double keval = kernels.get(0).eval(dataset.getDouble(i, col), dataset.getDouble(j, col));
         for (int k = 1; k < vars.size(); k++) {
-            col = dataset.getColumn(vars.get(k));
+            col = dataset.getColumnIndex(vars.get(k));
             keval *= kernels.get(k).eval(dataset.getDouble(i, col), dataset.getDouble(j, col));
         }
         return keval;

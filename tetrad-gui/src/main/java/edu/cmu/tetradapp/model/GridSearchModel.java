@@ -48,6 +48,7 @@ import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetradapp.ui.model.*;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
@@ -55,6 +56,7 @@ import org.reflections.scanners.Scanners;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
 import java.util.*;
 import java.util.prefs.Preferences;
 
@@ -182,7 +184,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * is categorized or scoped, influencing the analysis process in probabilistic or causal models. It is initialized
      * to `ConditioningSetType.LOCAL_MARKOV`, indicating that the default scope pertains to local Markovity.
      */
-    private ConditioningSetType markovCheckerConditioningSetType = ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG;
+    private ConditioningSetType markovCheckerConditioningSetType = ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY;
     /**
      * Stores the selected independendence test model for the GridSearchEditor. It needs to be stored here in case the
      * user closes the editor and re-opens it.
@@ -461,7 +463,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
      */
     private void syncMarkovCheckerConditioningSetTypeFromParameters() {
         try {
-            String s = parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG.name());
+            String s = parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY.name());
             if (s != null && !s.isBlank()) {
                 this.markovCheckerConditioningSetType = ConditioningSetType.valueOf(s);
                 return;
@@ -480,7 +482,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * @param ps1 A print stream to write the verbose output.
      * @param ps2 A print stream to write the verbose output.
      */
-    public void runComparison(PrintStream ps1, PrintStream ps2) {
+    public void runComparison(PrintStream ps1, PrintStream ps2) throws ParseException {
         initializeIfNull();
 
         Simulations simulations = new Simulations();
@@ -635,7 +637,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         list.clear();
         list.addAll(algorithms);
 
-        if (selectedAlgorithm >= list.size()) selectedAlgorithm = Math.max(0, list.size() - 1);
+        if (selectedAlgorithm >= list.size()) selectedAlgorithm = TMath.max(0, list.size() - 1);
         if (selectedAlgorithm < 0) selectedAlgorithm = 0;
     }
 
@@ -1512,7 +1514,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
     public ConditioningSetType getMarkovCheckerConditioningSetType() {
         // Source of truth is parameters, so Grid Search execution and UI cannot diverge.
         try {
-            String s = ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG.name();// parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, null);
+            String s = ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY.name();// parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, null);
             if (s != null && !s.isBlank()) {
                 return ConditioningSetType.valueOf(s);
             }

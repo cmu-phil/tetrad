@@ -29,30 +29,31 @@ import edu.cmu.tetrad.search.test.IndTestGin;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Wrapper for GIN (Generalized Independent Noise) residual-independence test.
- *
- * By default uses OLS(ridge=1e-8) for residualization and dCor backend with
- * an *approximate* p-value unless permutations > 0 is specified.
- *
- * Exposed parameters (proposed; add to Params as needed):
- *  - Params.ALPHA
- *  - Params.GIN_BACKEND           // "dcor" (default) or "pearson"
- *  - Params.GIN_PERMUTATIONS      // int, default 0 (use approx p for dCor)
- *  - Params.GIN_RIDGE             // double, default 1e-8
- *  - Params.SEED                  // (optional; included for consistency)
- */
-@TestOfIndependence(
-        name = "GIN (Residual Independence)",
-        command = "gin-test",
-        dataType = DataType.Continuous
-)
-@General
+///**
+// * Wrapper for GIN (Generalized Independent Noise) residual-independence test.
+// *
+// * By default uses OLS(ridge=1e-8) for residualization and dCor backend with
+// * an *approximate* p-value unless permutations > 0 is specified.
+// *
+// * Exposed parameters (proposed; add to Params as needed):
+// *  - Params.ALPHA
+// *  - Params.GIN_BACKEND           // "dcor" (default) or "pearson"
+// *  - Params.GIN_PERMUTATIONS      // int, default 0 (use approx p for dCor)
+// *  - Params.GIN_RIDGE             // double, default 1e-8
+// *  - Params.SEED                  // (optional; included for consistency)
+// */
+//@TestOfIndependence(
+//        name = "GIN (Residual Independence)",
+//        command = "gin-test",
+//        dataType = DataType.Continuous
+//)
+//@General
 public class Gin implements IndependenceWrapper {
 
     @Serial
@@ -98,7 +99,7 @@ public class Gin implements IndependenceWrapper {
             test.setNumPermutations(0); // permutations not used for Pearson
         } else {
             test.setBackend(new IndTestGin.DistanceCorrTest());
-            test.setNumPermutations(Math.max(0, permutations));
+            test.setNumPermutations(TMath.max(0, permutations));
         }
 
         return test;

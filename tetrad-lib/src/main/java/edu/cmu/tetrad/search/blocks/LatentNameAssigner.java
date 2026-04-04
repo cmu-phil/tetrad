@@ -24,6 +24,8 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.util.NaturalSort;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -104,7 +106,7 @@ public final class LatentNameAssigner {
 
         // Canonicalize true clusters deterministically
         final List<String> trueKeysSorted = new ArrayList<>(trueClusters.keySet());
-        Collections.sort(trueKeysSorted);
+        trueKeysSorted.sort(NaturalSort.naturalComparator());
 
         final Map<String, Set<String>> trueSetsCanon = new LinkedHashMap<>();
         final Map<String, String> sanitizedTrueName = new LinkedHashMap<>();
@@ -274,7 +276,7 @@ public final class LatentNameAssigner {
 
                 final String base = uniqueOrFallback(baseCandidate, origCandidate, used, config);
 
-                final int r = (ranksOut != null && ranksOut.get(bi) != null) ? Math.max(1, ranksOut.get(bi)) : 1;
+                final int r = (ranksOut != null && ranksOut.get(bi) != null) ? TMath.max(1, ranksOut.get(bi)) : 1;
 
                 for (int j = 0; j < r; j++) {
                     final String candidate;

@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import org.apache.commons.math3.special.Gamma;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.List;
 
@@ -354,7 +355,7 @@ public class BDeuScoreWOprior implements Score {
      */
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(Math.log(Math.max(2, sampleSize)));
+        return (int) TMath.ceil(TMath.log(TMath.max(2, sampleSize)));
     }
 
     /**

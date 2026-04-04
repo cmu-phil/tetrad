@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.NaturalSort;
 import org.junit.Test;
 
 import java.util.*;
@@ -37,7 +38,7 @@ public class RecursiveAdjustmentMultipleTest {
     private String keyOf(Set<Node> z) {
         List<String> names = new ArrayList<>();
         for (Node v : z) names.add(v.getName());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());;
         return names.toString();
     }
 

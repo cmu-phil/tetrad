@@ -1,104 +1,63 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-//                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
-// and Richard Scheines.                                                     //
-//                                                                           //
-// This program is free software: you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation, either version 3 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.graph.GraphUtils.distinct;
 
 /**
- * Represents a discriminating path in a graph. The triangles that must be oriented this way (won't be done by another
- * rule) all look like the ABC triangle below, where the dots are a collider path from X to V (excluding X and V but
- * including W) with each node on the collider path a parent of Y. The orientation of W *-* V *-* Y is not a feature of
- * the discriminating path. Note that if there is not a circle at V, the path no longer needs to be oriented by the
- * rule. Whether the path exists in a given graph and is as yet unoriented can be checked with the existsAndUnorientedIn
- * method.
- * <pre>
- *          V
- *         *o           * is either an arrowhead or a circle; note V *-> W is not a condition in Zhang's rule
- *        /  \
- *       v    v
- * X....W --> Y
- * </pre>
- * This is equivalent to Zhang's rule R4. (Zhang, J. (2008). On the completeness of orientation rules for causal
- * discovery in the presence of latent confounders and selection bias. Artificial Intelligence, 172(16-17), 1873-1896.)
- * A similar rule was originally given in Spirtes et al. (1993). Note that as in Zhang, the discriminating path itself
- * is X...W, V, Y. We refer to the part of this path between X to V as the 'collider path.' The collider path is
- * included in any sepset of X and Y. Note also that in Zhang's tail-complete version of the rule, the arrow endpoint V
- * *-> W is not a condition of the rule, as in previous code, so we do not check for it.
+ * Represents a discriminating path in a graph.
  * <p>
- * The idea is that if we know that X is independent of Y given all the nodes on the collider path plus perhaps some
- * other nodes in the graph, then there should be a collider at V; otherwise, there should be a noncollider at V. If
- * there should be a collider at V, we orient W *-&gt; V &lt;-&gt; Y; otherwise, we orient W *-* V -&gt; Y.
- *
- * @author josephramsey
- * @see #existsIn(Graph)
+ * The path has the form &lt;X, ..., W, V, Y&gt;, where:
+ * - V is the discriminated vertex,
+ * - V is adjacent to Y on the path,
+ * - X is not adjacent to Y (in the strict/original setting),
+ * - every vertex between X and V is a collider on the path and a parent of Y.
+ * <p>
+ * The colliderPath field stores the subpath from X to V excluding X and V but including W.
+ * Its order is from W backward toward X, matching the historical Tetrad convention; thus,
+ * if the full path is &lt;X, A, ..., W, V, Y&gt;f, colliderPath is [W, ..., A].
  */
 public class DiscriminatingPath {
-    /**
-     * The X node.
-     */
     private final Node x;
-    /**
-     * The W node.
-     */
     private final Node w;
-    /**
-     * The V node.
-     */
     private final Node v;
-    /**
-     * The Y node.
-     */
     private final Node y;
-    /**
-     * Represents a list of nodes that make up a path in a graph, specifically referred to as "collider path". This list
-     * includes all the nodes between X and V along the discriminating path, excluding X and V, but including W. The
-     * collider path will be included in any sepset of X and Y if this is a discriminating path in the graph.
-     *
-     * @since 1.0
-     */
-    private final List<Node> colliderPath;
-    private boolean checkXYNonadjacency = true;
 
     /**
-     * Represents a discriminating path construct in a graph. A discriminating path is a path in a graph that meets
-     * certain criteria, as explained in the class documentation. This class stores the nodes in the discriminating
-     * path, as well as a reference to collider subpath of the discriminating path itself, which consists of all the
-     * nodes between X and V along the discriminating path, excluding X and V but including W. These nodes need to be
-     * included in any sepset of X and Y in the graph, which can be checked.
-     *
-     * @param x                   the node X in the discriminating path
-     * @param w                   the node W in the discriminating path
-     * @param v                   the node V in the discriminating path
-     * @param y                   the node Y in the discriminating path
-     * @param colliderPath        the collider subpath of the discriminating path
-     * @param checkEcNonadjacency whether to check that X is not adjacent to Y
+     * Stores the vertices between X and V, excluding X and V but including W,
+     * in reverse order: [W, ..., first-after-X].
      */
-    public DiscriminatingPath(Node x, Node w, Node v, Node y, LinkedList<Node> colliderPath, boolean checkEcNonadjacency) {
+    private final List<Node> colliderPath;
+
+    /**
+     * If true, require X not adjacent to Y and require each interior node to be a parent of Y.
+     * If false, use the relaxed condition that each interior node is adjacent to Y and not Y -> interior.
+     */
+    private final boolean checkXYNonadjacency;
+
+    /**
+     * Constructs a DiscriminatingPath object with the specified parameters.
+     *
+     * @param x                   the starting node in the discriminating path.
+     * @param w                   the node following x in the discriminating path.
+     * @param v                   the middle node that forms a collider in the path.
+     * @param y                   the ending node in the discriminating path.
+     * @param colliderPath        the list of nodes that represents the collider path between nodes.
+     * @param checkEcNonadjacency a flag indicating whether non-adjacency between certain nodes should be checked.
+     */
+    public DiscriminatingPath(Node x,
+                              Node w,
+                              Node v,
+                              Node y,
+                              LinkedList<Node> colliderPath,
+                              boolean checkEcNonadjacency) {
         this.x = x;
         this.w = w;
         this.v = v;
@@ -108,54 +67,64 @@ public class DiscriminatingPath {
     }
 
     /**
-     * Checks this discriminating path construct to make sure it is a discriminating path in the given graph. See the
-     * class documentation, above, for a description of the requirements.
+     * Determines whether a discriminating path exists in the given graph.
+     * <p>
+     * The method evaluates specific conditions such as adjacency, collider properties,
+     * and path structure to verify the existence of the discriminating path that starts
+     * with a sequence of nodes and satisfies the required constraints.
      *
-     * @param graph the graph to check
-     * @return true if the discriminating path construct is valid, false otherwise.
+     * @param graph the graph in which to verify the existence of the discriminating path.
+     * @return true if the discriminating path exists in the graph; false otherwise.
      */
     public boolean existsIn(Graph graph) {
-
-        // Check that the nodes are distinct.
+        // Distinct distinguished vertices.
         if (!distinct(x, w, v, y)) {
             return false;
         }
 
-        // Relabeling as in Zhang's article:
-        //  *         B
-        // *         **           * is either an arrowhead, a tail, or a circle.
-        // *        /  \
-        // *       v    *
-        // * E....A --> C
-
-        //  *         V
-        // *         **            * is either an arrowhead, a tail, or a circle
-        // *        /  \
-        // *       v    *
-        // * X....W --> Y
-
-        // Make sure there should be a sepset of E and C in the path (Zhang's X and Y). This is the case
-        // if E is not adjacent to C.
+        // Strict/original FCI setting: X not adjacent to Y.
         if (checkXYNonadjacency && graph.isAdjacentTo(x, y)) {
             return false;
         }
 
-        // C is adjacent to B on the path.
+        // V must be adjacent to Y on the path.
         if (!graph.isAdjacentTo(v, y)) {
             return false;
         }
 
-        // Make sure the path is at least of length 3, which means that E, A, and B need to be on the path. First,
-        // we need to make sure A is on the path:
+        // The path must include W among the vertices between X and V.
         if (!colliderPath.contains(w)) {
             return false;
         }
 
-        // Then we need to make sure E and B are on the path, E first, B last:
-        LinkedList<Node> p = new LinkedList<>(colliderPath.reversed());
-        p.addFirst(x);
-        p.addLast(v);
+        // Reconstruct the X ... V part of the path in forward order.
+        // colliderPath is stored as [W, ..., first-after-X], so reverse it.
+        LinkedList<Node> p = new LinkedList<>();
+        p.add(x);
+        for (int i = colliderPath.size() - 1; i >= 0; i--) {
+            p.add(colliderPath.get(i));
+        }
+        p.add(v);
 
+        // R4 requires at least three edges in <X, ..., W, V, Y>.
+        // Since p is <X, ..., V>, this means p must contain at least 3 vertices:
+        // X, W, V at minimum.
+        if (p.size() < 3) {
+            return false;
+        }
+
+        // Enforce that this is a genuine path: all vertices distinct,
+        // and Y does not occur earlier in the path.
+        Set<Node> seen = new HashSet<>(p);
+        if (seen.size() != p.size()) {
+            return false;
+        }
+        if (p.contains(y)) {
+            return false;
+        }
+
+        // Every vertex between X and V must be a collider on the path and a parent of Y
+        // (or the relaxed analogue if checkXYNonadjacency is false).
         for (int i = 1; i < p.size() - 1; i++) {
             Node n1 = p.get(i - 1);
             Node n2 = p.get(i);
@@ -165,82 +134,84 @@ public class DiscriminatingPath {
                 return false;
             }
 
-            if (checkXYNonadjacency && !graph.isParentOf(n2, y)) {
-                return false;
-            }
-
             if (checkXYNonadjacency) {
                 if (!graph.isParentOf(n2, y)) {
                     return false;
                 }
             } else {
-                if (!graph.isAdjacentTo(y, n2) || graph.getEndpoint(y, n2) == Endpoint.ARROW) {
+                if (!graph.isAdjacentTo(n2, y)) {
+                    return false;
+                }
+                if (graph.getEndpoint(y, n2) == Endpoint.ARROW) {
                     return false;
                 }
             }
         }
 
-        if (graph.getEndpoint(v, w) != Endpoint.ARROW) {
-            throw new IllegalArgumentException("The edge from v to w must be an arrow.");
-        }
-
+        // Zhang's definition does NOT require V *-> W.
         return true;
     }
 
     /**
-     * Returns the node X in the discriminating path.
+     * Retrieves the starting node of the discriminating path.
      *
-     * @return the node X in the discriminating path.
+     * @return the starting node in the discriminating path.
      */
     public Node getX() {
         return x;
     }
 
     /**
-     * Retrieves the node W in the discriminating path.
+     * Retrieves the node following the starting node in the discriminating path.
      *
-     * @return the node W in the discriminating path
+     * @return the node immediately after the starting node in the discriminating path.
      */
     public Node getW() {
         return w;
     }
 
     /**
-     * Returns the node V in the discriminating path.
+     * Retrieves the middle node that forms a collider in the discriminating path.
      *
-     * @return the node V in the discriminating path.
+     * @return the middle node in the discriminating path.
      */
     public Node getV() {
         return v;
     }
 
     /**
-     * Returns the node Y in the discriminating path.
+     * Retrieves the ending node of the discriminating path.
      *
-     * @return the node Y in the discriminating path.
+     * @return the ending node in the discriminating path.
      */
     public Node getY() {
         return y;
     }
 
     /**
-     * Returns the collider subpath of the discriminating path.
+     * Retrieves the list of nodes that represents the collider path in the discriminating path.
      *
-     * @return the collider subpath of the discriminating path.
+     * @return a list of nodes constituting the collider path.
      */
     public List<Node> getColliderPath() {
         return colliderPath;
     }
 
+    /**
+     * Returns a string representation of the DiscriminatingPath object.
+     * The string provides a detailed view of the object's fields including the
+     * starting node, intermediate nodes, ending node, and the collider path.
+     *
+     * @return a string describing the DiscriminatingPath object and its field values.
+     */
+    @Override
     public String toString() {
         return "DiscriminatingPath{" +
-               "x=" + x +
-               ", w=" + w +
-               ", v=" + v +
-               ", y=" + y +
-               ", colliderPath=" + colliderPath +
-               '}';
+                "x=" + x +
+                ", w=" + w +
+                ", v=" + v +
+                ", y=" + y +
+                ", colliderPath=" + colliderPath +
+                '}';
     }
-
 }
-

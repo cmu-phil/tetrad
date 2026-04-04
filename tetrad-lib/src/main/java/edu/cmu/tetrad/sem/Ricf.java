@@ -34,7 +34,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.util.MatrixUtils;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -117,7 +117,7 @@ public class Ricf {
             for (int i = 0; i < p; i++) {
                 double d = L.get(i, i);
                 if (!(d > 0.0) || Double.isNaN(d)) throw new RuntimeException("non-SPD");
-                sumLogDiag += Math.log(d);
+                sumLogDiag += TMath.log(d);
             }
             logdetK = 2.0 * sumLogDiag;
         } catch (Exception e) {
@@ -132,10 +132,10 @@ public class Ricf {
                         new cern.colt.matrix.linalg.CholeskyDecomposition(Ks);
                 DoubleMatrix2D L2 = chol2.getL();
                 double sumLogDiag2 = 0.0;
-                for (int i = 0; i < p; i++) sumLogDiag2 += Math.log(Math.max(1e-300, L2.get(i, i)));
+                for (int i = 0; i < p; i++) sumLogDiag2 += TMath.log(TMath.max(1e-300, L2.get(i, i)));
                 logdetK = 2.0 * sumLogDiag2;
             } catch (Exception e2) {
-                logdetK = Math.log(Math.max(1e-300, Math.abs(A.det(Ks))));
+                logdetK = TMath.log(TMath.max(1e-300, TMath.abs(A.det(Ks))));
             }
         }
 
@@ -842,7 +842,7 @@ public class Ricf {
     private double lik(DoubleMatrix2D K, DoubleMatrix2D S, int n, int k) {
         Algebra algebra = new Algebra();
         DoubleMatrix2D SK = algebra.mult(S, K);
-        return (algebra.trace(SK) - FastMath.log(algebra.det(SK)) - k) * n;
+        return (algebra.trace(SK) - TMath.log(algebra.det(SK)) - k) * n;
     }
 
     private int[] range(int from, int to) {

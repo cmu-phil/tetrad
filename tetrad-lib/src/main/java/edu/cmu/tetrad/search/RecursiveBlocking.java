@@ -73,7 +73,7 @@ public class RecursiveBlocking {
                                                   Set<Node> containing,
                                                   Set<Node> notFollowed,
                                                   int maxPathLength) throws InterruptedException {
-        return blockPathsRecursivelyVisit(
+        return blockPathsRecursivelyAdj(
                 graph, x, y, containing, notFollowed,
                 graph.paths().getDescendantsMap(), maxPathLength, null
         );
@@ -105,25 +105,7 @@ public class RecursiveBlocking {
                                                   Set<Node> notFollowed,
                                                   int maxPathLength,
                                                   Knowledge knowledge) throws InterruptedException {
-
-//        RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph);
-//        recursiveAdjustment.setColliderPolicy(RecursiveAdjustment.ColliderPolicy.NONCOLLIDER_FIRST);
-//        recursiveAdjustment.setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy.SEARCH);
-////
-//        return recursiveAdjustment.adjustmentSets(
-//                x, y,
-//                "PAG",
-//                4,
-//                8,
-//                1,
-//                maxPathLength,
-//                RecursiveAdjustment.ColliderPolicy.PREFER_NONCOLLIDERS,
-//                false,
-//                Set.of(), Set.of(), Set.of()
-//        ).getFirst();
-
-
-        return blockPathsRecursivelyVisit(
+        return blockPathsRecursivelyAdj(
                 graph, x, y, containing, notFollowed,
                 graph.paths().getDescendantsMap(), maxPathLength, knowledge
         );
@@ -161,7 +143,7 @@ public class RecursiveBlocking {
      * separating set exists
      * @throws InterruptedException if the search is interrupted
      */
-    private static Set<Node> blockPathsRecursivelyVisit(
+    private static Set<Node> blockPathsRecursivelyAdj(
             Graph graph,
             Node x,
             Node y,
@@ -191,7 +173,7 @@ public class RecursiveBlocking {
             // leave x via a node other than y.
             if (b == y) continue;
 
-            Blockable r = findPathToTarget(
+            Blockable r = findPathToTargetVisit(
                     graph, x, b, y, path, z, maxPathLength, notFollowed, descendantsMap
             );
 
@@ -261,15 +243,15 @@ public class RecursiveBlocking {
      * @return one of {@code BLOCKED}, {@code UNBLOCKABLE}, or {@code INDETERMINATE}
      * @throws InterruptedException if the traversal is interrupted
      */
-    public static Blockable findPathToTarget(Graph graph,
-                                             Node a,
-                                             Node b,
-                                             Node y,
-                                             Set<Node> path,
-                                             Set<Node> z,
-                                             int maxPathLength,
-                                             Set<Node> notFollowed,
-                                             Map<Node, Set<Node>> descendantsMap) throws InterruptedException {
+    public static Blockable findPathToTargetVisit(Graph graph,
+                                                  Node a,
+                                                  Node b,
+                                                  Node y,
+                                                  Set<Node> path,
+                                                  Set<Node> z,
+                                                  int maxPathLength,
+                                                  Set<Node> notFollowed,
+                                                  Map<Node, Set<Node>> descendantsMap) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
             return Blockable.INDETERMINATE;
         }
@@ -297,7 +279,8 @@ public class RecursiveBlocking {
             }
 
             // Case 1: if b is latent or already in Z, we cannot (or need not) condition on it.
-            if (b.getNodeType() == NodeType.LATENT || z.contains(b)) {
+
+            if (b.getNodeType() == NodeType.LATENT) {// || z.contains(b)) {
                 List<Node> passNodes = getReachableNodes(graph, a, b, z, descendantsMap);
                 passNodes.removeAll(notFollowed);
 
@@ -306,7 +289,7 @@ public class RecursiveBlocking {
                         return Blockable.INDETERMINATE;
                     }
 
-                    Blockable blockable = findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, descendantsMap);
+                    Blockable blockable = findPathToTargetVisit(graph, b, c, y, path, z, maxPathLength, notFollowed, descendantsMap);
 
                     if (blockable == Blockable.UNBLOCKABLE || blockable == Blockable.INDETERMINATE) {
                         return Blockable.UNBLOCKABLE;
@@ -329,7 +312,7 @@ public class RecursiveBlocking {
                         return Blockable.INDETERMINATE;
                     }
 
-                    Blockable blockType = findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, descendantsMap);
+                    Blockable blockType = findPathToTargetVisit(graph, b, c, y, path, z, maxPathLength, notFollowed, descendantsMap);
 
                     if (blockType == Blockable.UNBLOCKABLE || blockType == Blockable.INDETERMINATE) {
                         blockable1 = false;
@@ -358,7 +341,7 @@ public class RecursiveBlocking {
                         return Blockable.INDETERMINATE;
                     }
 
-                    Blockable blockable = findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, descendantsMap);
+                    Blockable blockable = findPathToTargetVisit(graph, b, c, y, path, z, maxPathLength, notFollowed, descendantsMap);
 
                     if (blockable == Blockable.UNBLOCKABLE || blockable == Blockable.INDETERMINATE) {
                         blockable2 = false;

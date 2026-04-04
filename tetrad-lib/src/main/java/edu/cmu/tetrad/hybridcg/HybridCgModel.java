@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Pm;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.io.Serial;
@@ -407,7 +408,7 @@ public final class HybridCgModel {
             double[][] cuts = new double[cps.length][];
             for (int t = 0; t < cps.length; t++) {
                 Node p = nodes[cps[t]];
-                int col = data.getColumn(p);
+                int col = data.getColumnIndex(p);
                 if (col < 0) throw new IllegalArgumentException("Data is missing column for parent: " + p.getName());
 
                 // collect non-missing
@@ -423,7 +424,7 @@ public final class HybridCgModel {
                         cuts[t] = new double[0]; // all in one bin
                         continue;
                     }
-                    int m = Math.min(unique.length - 1, binsPerParent - 1);
+                    int m = TMath.min(unique.length - 1, binsPerParent - 1);
                     double[] cp = new double[m];
                     int step = (unique.length - 1) / m;
                     for (int k = 0; k < m; k++) {
@@ -440,12 +441,12 @@ public final class HybridCgModel {
                 double[] cp = new double[binsPerParent - 1];
                 for (int k = 1; k < binsPerParent; k++) {
                     double q = k / (double) binsPerParent;
-                    int idx = Math.min(vals.size() - 1, Math.max(0, (int) Math.round(q * (vals.size() - 1))));
+                    int idx = TMath.min(vals.size() - 1, TMath.max(0, (int) TMath.round(q * (vals.size() - 1))));
                     cp[k - 1] = vals.get(idx);
                 }
                 // ensure strictly increasing (nudge ties)
                 for (int k = 1; k < cp.length; k++) {
-                    if (!(cp[k] > cp[k - 1])) cp[k] = Math.nextUp(cp[k - 1]);
+                    if (!(cp[k] > cp[k - 1])) cp[k] = TMath.nextUp(cp[k - 1]);
                 }
                 cuts[t] = cp;
             }
@@ -552,12 +553,12 @@ public final class HybridCgModel {
             int[] discStates = new int[dps.length];
             for (int i = 0; i < dps.length; i++) {
                 Node parent = nodes[dps[i]];
-                int col = data.getColumn(parent);
+                int col = data.getColumnIndex(parent);
                 if (col < 0) {
                     Node byName = data.getVariable(parent.getName());
                     if (byName == null)
                         throw new IllegalArgumentException("Dataset missing parent: " + parent.getName());
-                    col = data.getColumn(byName);
+                    col = data.getColumnIndex(byName);
                 }
                 discStates[i] = data.getInt(row, col);
             }
@@ -567,12 +568,12 @@ public final class HybridCgModel {
                 contVals = new double[cps.length];
                 for (int t = 0; t < cps.length; t++) {
                     Node parent = nodes[cps[t]];
-                    int col = data.getColumn(parent);
+                    int col = data.getColumnIndex(parent);
                     if (col < 0) {
                         Node byName = data.getVariable(parent.getName());
                         if (byName == null)
                             throw new IllegalArgumentException("Dataset missing parent: " + parent.getName());
-                        col = data.getColumn(byName);
+                        col = data.getColumnIndex(byName);
                     }
                     contVals[t] = data.getDouble(row, col);
                 }
@@ -682,8 +683,8 @@ public final class HybridCgModel {
             return order;
         }
 
-        private static int sampleCategorical(double[] probs, Random rng) {
-            double u = rng.nextDouble();
+        private static int sampleCategorical(double[] probs) {
+            double u = RandomUtil.getInstance().nextDouble();
             double c = 0.0;
             for (int k = 0; k < probs.length; k++) {
                 c += probs[k];
@@ -903,11 +904,9 @@ public final class HybridCgModel {
          * </ul>
          *
          * @param n   number of rows to sample
-         * @param rng random number generator
          * @return sample
          */
-        public Sample sample(int n, Random rng) {
-            if (rng == null) rng = new Random();
+        public Sample sample(int n) {
             final int p = pm.nodes.length;
 
             // Precompute topo order
@@ -948,7 +947,7 @@ public final class HybridCgModel {
                             }
                         }
                         int rowIndex = pm.getRowIndex(y, discVals, contBins);
-                        discCols[y][r] = sampleCategorical(discProbs[y][rowIndex], rng);
+                        discCols[y][r] = sampleCategorical(discProbs[y][rowIndex]);
                     } else {
                         // Continuous child
                         int[] discVals = new int[dps[y].length];
@@ -958,8 +957,8 @@ public final class HybridCgModel {
                         for (int t = 0; t < cps[y].length; t++)
                             mean += getCoefficient(y, rowIndex, t) * contCols[cps[y][t]][r];
                         double var = getVariance(y, rowIndex);
-                        double sd = var > 0 ? Math.sqrt(var) : 0.0;
-                        contCols[y][r] = mean + sd * rng.nextGaussian();
+                        double sd = var > 0 ? TMath.sqrt(var) : 0.0;
+                        contCols[y][r] = mean + sd * RandomUtil.getInstance().nextGaussian();
                     }
                 }
             }
@@ -1003,7 +1002,7 @@ public final class HybridCgModel {
                 }
                 sb.append("  rows=").append(rows).append("\n");
 
-                int maxRowsToShow = Math.min(rows, 6);
+                int maxRowsToShow = TMath.min(rows, 6);
 
                 if (pm.isDiscrete(y)) {
                     int K = pm.getCardinality(y);
@@ -1245,7 +1244,7 @@ public final class HybridCgModel {
                     // Residual variance
                     SimpleMatrix resid = ym.minus(Xm.mult(beta));
                     double rss = resid.elementPower(2.0).elementSum();
-                    int df = Math.max(1, n - (m + 1));
+                    int df = TMath.max(1, n - (m + 1));
                     double s2 = rss / df;
                     im.setVariance(y, row, s2);
 

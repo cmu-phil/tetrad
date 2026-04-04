@@ -2,7 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -18,6 +18,7 @@ import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class Cdnod extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+public class Cdnod extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
@@ -103,7 +104,7 @@ public class Cdnod extends AbstractBootstrapAlgorithm implements Algorithm, HasK
                 .alpha(alpha)                             // kept for parity
                 .stable(stable)
                 .colliderStyle(colliderOrientationStyle)
-                .maxPMargin(Math.max(0.0, maxPMargin))
+                .maxPMargin(TMath.max(0.0, maxPMargin))
                 .depth(depth)
                 .knowledge(knowledge)                     // IMPORTANT: provides tier 0 contexts and tier constraints
                 .verbose(verbose)

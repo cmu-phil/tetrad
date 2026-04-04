@@ -241,9 +241,9 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.BayesPmEditor
                 </editor-class>
-                <!--                <params-editor-class>-->
-                <!--                    edu.cmu.tetradapp.editor.BayesPmParamsEditor-->
-                <!--                </params-editor-class>-->
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.BayesPmParamsEditor
+                </params-editor-class>
             </model>
             <model name="SEM Parametric Model" acronym="SEM PM" help="sem_im">
                 <logger>
@@ -299,9 +299,9 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.BayesImEditor
                 </editor-class>
-                <params-editor-class>
-                    edu.cmu.tetradapp.editor.BayesImParamsEditor
-                </params-editor-class>
+<!--                <params-editor-class>-->
+<!--                    edu.cmu.tetradapp.editor.BayesImParamsEditor-->
+<!--                </params-editor-class>-->
             </model>
             <model name="Dirichlet Bayes Instantiated Model"
                    acronym="Dir Bayes IM" help="dirichlet_bayes_im">
@@ -1054,46 +1054,46 @@
     </session-node>
     <session-node id="Updater">
         <models>
-            <model name="Approximate Updater" acronym="Aprox Up"
-                   help="aproximmate_updater">
+            <model name="Bayes Updater" acronym="Bayes Updater"
+                   help="bayes_updater">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="details" description="Details"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.ApproximateUpdaterWrapper
+                <model-class>edu.cmu.tetradapp.model.TextBayesUpdateModel
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor
+                <editor-class>edu.cmu.tetradapp.editor.TextBayesUpdateEditor
                 </editor-class>
             </model>
-            <model name="Row Summing Exact Updater" acronym="Row Sum"
-                   help="row_summing_updater">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="details" description="Details"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.RowSummingExactWrapper
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor
-                </editor-class>
-            </model>
-            <model name="Junction Tree Updater" acronym="Row Sum"
-                   help="junction_tree_updater">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="details" description="Details"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.JunctionTreeWrapper
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor
-                </editor-class>
-            </model>
-            <!--            <model name="CPT Invariant Exact Updater" acronym="CPT Inv"-->
-            <!--                   help="cpt_updater">-->
+            <!--            <model name="Approximate Updater" acronym="Aprox Up"-->
+            <!--                   help="aproximmate_updater">-->
             <!--                <logger>-->
             <!--                    <event id="info" description="Information" default="on"/>-->
             <!--                    <event id="details" description="Details"/>-->
             <!--                </logger>-->
-            <!--                <model-class>edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper-->
+            <!--                <model-class>edu.cmu.tetradapp.model.ApproximateUpdaterWrapper-->
+            <!--                </model-class>-->
+            <!--                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor-->
+            <!--                </editor-class>-->
+            <!--            </model>-->
+            <!--            <model name="Row Summing Exact Updater" acronym="Row Sum"-->
+            <!--                   help="row_summing_updater">-->
+            <!--                <logger>-->
+            <!--                    <event id="info" description="Information" default="on"/>-->
+            <!--                    <event id="details" description="Details"/>-->
+            <!--                </logger>-->
+            <!--                <model-class>edu.cmu.tetradapp.model.RowSummingExactWrapper-->
+            <!--                </model-class>-->
+            <!--                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor-->
+            <!--                </editor-class>-->
+            <!--            </model>-->
+            <!--            <model name="Junction Tree Updater" acronym="Junction Tree"-->
+            <!--                   help="junction_tree_updater">-->
+            <!--                <logger>-->
+            <!--                    <event id="info" description="Information" default="on"/>-->
+            <!--                    <event id="details" description="Details"/>-->
+            <!--                </logger>-->
+            <!--                <model-class>edu.cmu.tetradapp.model.JunctionTreeWrapper-->
             <!--                </model-class>-->
             <!--                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor-->
             <!--                </editor-class>-->
@@ -1238,17 +1238,37 @@
             <!--                </model-class>-->
             <!--                <editor-class>edu.cmu.tetradapp.editor.LinearAdjustmentRegressionEditor</editor-class>-->
             <!--            </model>-->
-            <model name="Adjustment Total Effects" acronym="Adjustment Total Effects"
+            <model name="Linear Adjustment Effects" acronym="Linear Adjustment Effects"
                    help="indep_facts" category="Independence Facts Comparison">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.AdjustmentTotalEffectsModel
+                <model-class>edu.cmu.tetradapp.model.LinearAdjustmentTotalEffectsModel
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.AdjustmentTotalEffectsEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.LinearAdjustmentTotalEffectsEditor</editor-class>
             </model>
-            <model name="IDA Check" acronym="IDA Check"
+            <model name="Doubly Robust ATE" acronym="Doubly Robust ATE"
+                   help="indep_facts" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.DoublyRobustEstModelV2
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DoublyRobustEstEditorV2</editor-class>
+            </model>
+            <model name="Interventional Histogram" acronym="Interventional Histogram"
+                   help="indep_facts" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.InterventionalHistogramModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.InterventionalHistogramEditor</editor-class>
+            </model>
+            <model name="Linear IDA Check" acronym="IDA Check"
                    help="indep_facts" category="Independence Facts Comparison">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -1326,15 +1346,25 @@
                 <editor-class>edu.cmu.tetradapp.editor.GraphIntersectionsEditor
                 </editor-class>
             </model>
+            <!--            <model name="Independence Facts" acronym="Ind Facts"-->
+            <!--                   help="indep_facts" category="Independence Facts Comparison">-->
+            <!--                <logger>-->
+            <!--                    <event id="info" description="Information" default="on"/>-->
+            <!--                    <event id="comparison" description="Comparison" default="on"/>-->
+            <!--                </logger>-->
+            <!--                <model-class>edu.cmu.tetradapp.model.IndTestModel-->
+            <!--                </model-class>-->
+            <!--                <editor-class>edu.cmu.tetradapp.editor.IndependenceFactsEditor</editor-class>-->
+            <!--            </model>-->
             <model name="Independence Facts" acronym="Ind Facts"
                    help="indep_facts" category="Independence Facts Comparison">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.IndTestModel
+                <model-class>edu.cmu.tetradapp.model.IndependenceFactsDslModel
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.IndependenceFactsEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.IndependenceFactsDslEditor</editor-class>
             </model>
             <model name="Markov Check" acronym="Markov Check"
                    help="indep_facts" category="Independence Facts Comparison">
@@ -1355,6 +1385,26 @@
                 <model-class>edu.cmu.tetradapp.model.VertexCheckIndTestModel
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.VertexCheckEditor</editor-class>
+            </model>
+            <model name="Dag Factorization Comparison" acronym="DAG Factorization"
+                   help="dag_factorization" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.DagFactorizationCompare
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DagFactorizationCompareEditor</editor-class>
+            </model>
+            <model name="Dag Model Scores" acronym="DAG Model Scores"
+                   help="dag_factorization" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.DagModelScoreComparisonModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DagModelScoreComparisonEditor</editor-class>
             </model>
             <!--            <model name="Grid Search" acronym="Grid Search"-->
             <!--                   help="indep_facts" category="Independence Facts Comparison">-->

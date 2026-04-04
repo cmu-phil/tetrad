@@ -24,6 +24,8 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetradapp.model.GraphWrapper;
+import edu.cmu.tetradapp.model.Simulation;
 
 import javax.swing.*;
 import java.beans.PropertyChangeListener;
@@ -226,7 +228,7 @@ public class SessionNode implements Node {
             if (!(SessionModel.class.isAssignableFrom(modelClasses[i]))) {
                 throw new ClassCastException(
                         "Model class must implement SessionModel: "
-                        + modelClasses[i]);
+                                + modelClasses[i]);
             }
         }
 
@@ -246,55 +248,6 @@ public class SessionNode implements Node {
     }
 
     //==========================PUBLIC METHODS============================//
-
-    /**
-     * Adds a parent to this node provided the resulting set of parents taken together provides some combination of
-     * possible model classes that can be used as a constructor to some one of the model classes for this node.
-     *
-     * @param parent a {@link SessionNode} object
-     * @return a boolean
-     */
-    public boolean addParent(SessionNode parent) {
-        if (this.parents.contains(parent)) {
-            return false;
-        }
-
-        if (parent == this) {
-            return false;
-        }
-
-        // Construct a list of the parents of this node
-        // (SessionNode's) together with the new putative parent.
-        List<SessionNode> newParents = new ArrayList<>(this.parents);
-        newParents.add(parent);
-
-        for (Class modelClass : this.modelClasses) {
-            // Put all of the model classes of the nodes into a
-            // single two-dimensional array. At the same time,
-            // construct an int[] array containing the number of
-            // model classes for each node. Use this int[] array
-            // to construct a generator for all the combinations
-            // of model nodes.
-            Class[][] parentClasses = new Class[newParents.size()][];
-            int[] numModels = new int[newParents.size()];
-
-            for (int j = 0; j < newParents.size(); j++) {
-                SessionNode node = newParents.get(j);
-                parentClasses[j] = node.getModelClasses();
-                numModels[j] = parentClasses[j].length;
-            }
-
-            if (isConsistentModelClass(modelClass, parentClasses, false, null)) {
-                this.parents.add(parent);
-                parent.addChild(this);
-                parent.addSessionListener(getSessionHandler());
-                getSessionSupport().fireParentAdded(parent, this);
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     /**
      * <p>isConsistentParent.</p>
@@ -356,91 +309,53 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Same as addParent except tests if this has already been created. If so the user is asked whether to add parent
-     * and update parent's desendents or to cancel the operation.
+     * Same as addParent except that if a model already exists on this node,
+     * the user is first asked (via a fired event) whether to proceed. If
+     * allowed, the existing model and all downstream models are destroyed
+     * before the parent is added.
      *
      * @param parent a {@link SessionNode} object
-     * @return a boolean
+     * @return true iff the parent was successfully added.
      */
     public boolean addParent2(SessionNode parent) {
-        if (this.parents.contains(parent)) {
-            return false;
-        }
+        if (this.parents.contains(parent)) return false;
+        if (parent == this) return false;
 
-        if (parent == this) {
-            return false;
-        }
-
-        // Construct a list of the parents of this node
-        // (SessionNode's) together with the new putative parent.
         List<SessionNode> newParents = new ArrayList<>(this.parents);
         newParents.add(parent);
 
         for (Class modelClass : this.modelClasses) {
-            // Put all of the model classes of the nodes into a
-            // single two-dimensional array. At the same time,
-            // construct an int[] array containing the number of
-            // model classes for each node. Use this int[] array
-            // to construct a generator for all the combinations
-            // of model nodes.
             Class[][] parentClasses = new Class[newParents.size()][];
-            int[] numModels = new int[newParents.size()];
 
             for (int j = 0; j < newParents.size(); j++) {
-                SessionNode node = newParents.get(j);
-                parentClasses[j] = node.getModelClasses();
-                numModels[j] = parentClasses[j].length;
+                parentClasses[j] = newParents.get(j).getModelClasses();
             }
 
             if (isConsistentModelClass(modelClass, parentClasses, false, null)) {
                 if (this.getModel() == null) {
+                    // No existing model — just add cleanly, same as addParent.
                     this.parents.add(parent);
-                    parent.addChild(this);
+                    parent.linkChild(this);
                     parent.addSessionListener(getSessionHandler());
                     getSessionSupport().fireParentAdded(parent, this);
                     return true;
                 } else {
-
-                    // Allows nextEdgeAllowed to be set to false if the next
-                    // edge should not be added.
+                    // Existing model — ask listeners whether to proceed.
                     this.sessionSupport.fireAddingEdge();
 
                     if (isNextEdgeAddAllowed()) {
-
-                        // Must reset nextEdgeAllowed to true.
                         setNextEdgeAddAllowed(true);
                         this.parents.add(parent);
-                        parent.addChild(this);
+                        parent.linkChild(this);
                         parent.addSessionListener(getSessionHandler());
                         getSessionSupport().fireParentAdded(parent, this);
-
-                        // Destroys model & downstream models.
-                        destroyModel();
+                        destroyModel(); // destroys this model and downstream models
                         return true;
                     } else {
                         return false;
                     }
                 }
             }
-        }
-
-        return false;
-    }
-
-    /**
-     * Removes a parent from the node.
-     *
-     * @param parent a {@link SessionNode} object
-     * @return a boolean
-     */
-    public boolean removeParent(SessionNode parent) {
-        if (this.parents.contains(parent)) {
-            this.parents.remove(parent);
-            parent.removeChild(this);
-            parent.removeSessionListener(getSessionHandler());
-            getSessionSupport().fireParentRemoved(parent, this);
-
-            return true;
         }
 
         return false;
@@ -465,22 +380,64 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Adds a child to the node, provided this node can be added as a parent to the child node.
+     * Adds a child to this node by delegating to addParent on the child.
+     * All consistency checking, bookkeeping, and event firing is handled
+     * there. This method exists purely as a convenience for callers who
+     * think in terms of children rather than parents.
      *
-     * @param child a {@link SessionNode} object
-     * @return a boolean
+     * @param child the node to add as a child.
+     * @return true iff the child was successfully added.
      */
     public boolean addChild(SessionNode child) {
-        if (!this.children.contains(child)) {
-            child.addParent(this);
+        return child.addParent(this);
+    }
 
-            if (child.containsParent(this)) {
-                this.children.add(child);
+    /**
+     * Adds a parent to this node provided the resulting set of parents
+     * taken together provides some combination of possible model classes
+     * that can be used as a constructor argument to some one of the model
+     * classes for this node.
+     *
+     * @param parent the node to add as a parent.
+     * @return true iff the parent was successfully added.
+     */
+    public boolean addParent(SessionNode parent) {
+        if (this.parents.contains(parent)) return false;
+        if (parent == this) return false;
+
+        List<SessionNode> newParents = new ArrayList<>(this.parents);
+        newParents.add(parent);
+
+        for (Class modelClass : this.modelClasses) {
+            Class[][] parentClasses = new Class[newParents.size()][];
+
+            for (int j = 0; j < newParents.size(); j++) {
+                parentClasses[j] = newParents.get(j).getModelClasses();
+            }
+
+            if (isConsistentModelClass(modelClass, parentClasses, false, null)) {
+                // Update both sides directly without recursing.
+                this.parents.add(parent);
+                parent.linkChild(this);   // private: just adds to children set
+                parent.addSessionListener(getSessionHandler());
+                getSessionSupport().fireParentAdded(parent, this);
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Directly registers this node as a parent of {@code child} in the
+     * children set, without any consistency checking or event firing.
+     * Called only from {@link #addParent} to break the mutual recursion
+     * that would otherwise occur between addParent and addChild.
+     *
+     * @param child the child node to register.
+     */
+    private void linkChild(SessionNode child) {
+        this.children.add(child);
     }
 
     /**
@@ -493,24 +450,23 @@ public class SessionNode implements Node {
         return this.children.contains(child);
     }
 
-    /**
-     * Removes a child from the node.
-     *
-     * @param child a {@link SessionNode} object
-     * @return a boolean
-     */
-    public boolean removeChild(SessionNode child) {
-        if (this.children.contains(child)) {
-            child.removeParent(this);
-
-            if (!child.containsParent(this)) {
-                this.children.remove(child);
-
-                return true;
-            }
+    public boolean removeParent(SessionNode parent) {
+        if (this.parents.contains(parent)) {
+            this.parents.remove(parent);
+            parent.unlinkChild(this);   // private: just removes from children set
+            parent.removeSessionListener(getSessionHandler());
+            getSessionSupport().fireParentRemoved(parent, this);
+            return true;
         }
-
         return false;
+    }
+
+    public boolean removeChild(SessionNode child) {
+        return child.removeParent(this);
+    }
+
+    private void unlinkChild(SessionNode child) {
+        this.children.remove(child);
     }
 
     /**
@@ -570,13 +526,13 @@ public class SessionNode implements Node {
             throws Exception {
         if (!Arrays.asList(this.modelClasses).contains(modelClass)) {
             throw new IllegalArgumentException("Class not among possible "
-                                               + "model classes: " + modelClass);
+                    + "model classes: " + modelClass);
         }
 
         this.loggerConfig = getLoggerConfig(modelClass);
         TetradLogger.getInstance().setTetradLoggerConfig(this.loggerConfig);
         String message1 = "\n========LOGGING " + getDisplayName()
-                          + "\n";
+                + "\n";
         TetradLogger.getInstance().log(message1);
 
         // Collect up the parentModels from the parents. If any model is
@@ -719,45 +675,45 @@ public class SessionNode implements Node {
     }
 
     /**
-     * <p>getConsistentModelClasses.</p>
+     * Returns those model classes among the possible model classes that are
+     * consistent with the current parent models. A model class is consistent
+     * if the parent models (in their current state) can be used as arguments
+     * to some constructor of that class.
      *
-     * @param exact a boolean
-     * @return those model classes among the possible model classes that are at least consistent with the model class of
-     * the parent session nodes, in the sense that possibly with the addition of more parent session nodes, and assuming
-     * that the models of the parent session nodes are non-null, it is possible to construct a model in one of the legal
-     * classes for this node using the parent models as arguments to some constructor in that class.
+     * <p>If any parent has no model yet, no model class can be consistent,
+     * so an empty array is returned rather than null. Callers should treat
+     * an empty array as "nothing is constructible right now" and a non-empty
+     * array as the set of currently constructible choices.
+     *
+     * @param exact if true, the parent model types must exactly fill the
+     *              constructor; if false, additional parents may be added later.
+     * @return a non-null (possibly empty) array of consistent model classes.
      */
     public Class[] getConsistentModelClasses(boolean exact) {
-        List<Class> classes = new ArrayList<>();
         List<SessionNode> parents = new ArrayList<>(this.parents);
         Class[][] parentModelClasses = new Class[parents.size()][1];
 
-        // Construct the parent model classes; they must all be
-        // non-null.
         for (int i = 0; i < parents.size(); i++) {
-            SessionNode sessionNode = parents.get(i);
-            Object model = sessionNode.getModel();
+            Object model = parents.get(i).getModel();
 
-            if (model != null) {
-                parentModelClasses[i][0] = model.getClass();
-            } else {
-                return null;
+            if (model == null) {
+                // A parent with no model means nothing is constructible yet.
+                // Return empty rather than null so callers can iterate safely.
+                return new Class[0];
             }
+
+            parentModelClasses[i][0] = model.getClass();
         }
 
-        // Go through the model classes of this node and see which
-        // ones are consistent with the array of parent classes just
-        // constructed.
+        List<Class> consistent = new ArrayList<>();
+
         for (Class modelClass : this.modelClasses) {
-
-            // If this model class is consistent, add it to the list.
-            if (isConsistentModelClass(modelClass,
-                    parentModelClasses, exact, null)) {
-                classes.add(modelClass);
+            if (isConsistentModelClass(modelClass, parentModelClasses, exact, null)) {
+                consistent.add(modelClass);
             }
         }
 
-        return classes.toArray(new Class[0]);
+        return consistent.toArray(new Class[0]);
     }
 
     /**
@@ -805,32 +761,29 @@ public class SessionNode implements Node {
      */
     public boolean isFreshlyCreated() {
         return (this.model == null) && (this.modelParamTypes == null)
-               && (this.parents.size() == 0) && (this.children.size() == 0)
-               && (this.sessionHandler == null) && (this.sessionSupport == null);
+                && (this.parents.size() == 0) && (this.children.size() == 0)
+                && (this.sessionHandler == null) && (this.sessionSupport == null);
     }
 
     /**
-     * Resets this sesion node to the state it was in when first constructed. Removes any parents or children, destroys
-     * the model if there is one, and resets all listeners. Fires an event for each action taken.
+     * Resets this session node to the state it was in when first constructed.
+     * Removes all parents and children (firing events for each), destroys the
+     * model if there is one, and clears all listeners.
      */
     public void resetToFreshlyCreated() {
         if (!isFreshlyCreated()) {
-            Set<SessionNode> _parents = new HashSet<>(this.parents);
-            Set<SessionNode> _children
-                    = new HashSet<>(this.children);
-
-            for (SessionNode _parent : _parents) {
-                removeParent(_parent);
+            for (SessionNode parent : new HashSet<>(this.parents)) {
+                removeParent(parent);
             }
 
-            for (SessionNode a_children : _children) {
-                removeChild(a_children);
+            for (SessionNode child : new HashSet<>(this.children)) {
+                removeChild(child);
             }
 
             destroyModel();
 
-            this.parents = new HashSet<>();
-            this.children = new HashSet<>();
+            // By this point parents and children are already empty from the
+            // remove calls above; null out the transient listener fields.
             this.sessionSupport = null;
             this.sessionHandler = null;
         }
@@ -889,33 +842,16 @@ public class SessionNode implements Node {
 
         // Check equality of possible model classes.
         Set<Class> set1 = new HashSet<>(Arrays.asList(getModelClasses()));
-        Set<Class> set2
-                = new HashSet<>(Arrays.asList(node.getModelClasses()));
+        Set<Class> set2 = new HashSet<>(Arrays.asList(node.getModelClasses()));
 
         if (!set1.equals(set2)) {
             return false;
         }
 
         // Check equality of model parameter type arrays.
-        Class[] arr1 = this.getModelParamTypes();
-        Class[] arr2 = node.getModelParamTypes();
-
-        if ((arr1 != null) && (arr2 != null)) {
-            if (arr1.length != arr2.length) {
-                return false;
-            }
-
-            for (int i = 0; i < arr1.length; i++) {
-                if (!arr1[i].equals(arr2[i])) {
-                    return false;
-                }
-            }
-        } else if ((arr1 == null) && (arr2 != null)) {
+        if (!modelParamTypesEqual(this.getModelParamTypes(), node.getModelParamTypes())) {
             return false;
         }
-//        else if ((arr1 != null) && (arr2 != null)) {
-//            return false;
-//        }
 
         // Check equality of models.
         Object model1 = getModel();
@@ -976,6 +912,27 @@ public class SessionNode implements Node {
         }
 
         return set1.equals(set2);
+    }
+
+    /**
+     * Compares the model parameter type arrays of this node and the given
+     * node for structural equality. Handles all four null combinations
+     * explicitly so no case falls through incorrectly.
+     *
+     * <p>Both null     → equal (neither node has been used to construct a model yet)
+     * <p>One null      → not equal (asymmetric construction state)
+     * <p>Both non-null → element-wise comparison after length check
+     */
+    private static boolean modelParamTypesEqual(Class[] arr1, Class[] arr2) {
+        if (arr1 == null && arr2 == null) return true;
+        if (arr1 == null || arr2 == null) return false;  // exactly one is null
+        if (arr1.length != arr2.length)   return false;
+
+        for (int i = 0; i < arr1.length; i++) {
+            if (!arr1[i].equals(arr2[i])) return false;
+        }
+
+        return true;
     }
 
     /**
@@ -1040,14 +997,19 @@ public class SessionNode implements Node {
     }
 
     /**
-     * <p>getModelConstructorArguments.</p>
+     * Returns the constructor arguments that would be used to create a model
+     * of the given class, or null if no matching constructor exists. Uses
+     * listParentModels() rather than getParentModels() so
+     * that parents with null models are silently skipped rather than causing
+     * a NullPointerException.
      *
-     * @param modelClass a {@link java.lang.Class} object
-     * @return an array of {@link java.lang.Object} objects
+     * @param modelClass the model class to find constructor arguments for.
+     * @return a matching argument array, or null if none exists.
      */
     public Object[] getModelConstructorArguments(Class modelClass) {
-        List<Object> parentModels = getParentModels();
+        List<Object> parentModels = listParentModels(); // never returns null
         parentModels.add(getParam(modelClass));
+
         Constructor[] constructors = modelClass.getConstructors();
 
         for (Constructor constructor : constructors) {
@@ -1260,7 +1222,7 @@ public class SessionNode implements Node {
             this.model.setName(getDisplayName());
 
             if (this.model instanceof ParamsResettable
-                && temp instanceof ParamsResettable) {
+                    && temp instanceof ParamsResettable) {
                 Object resettableParams = ((ParamsResettable) temp).getResettableParams();
                 ((ParamsResettable) this.model).resetParams(resettableParams);
             }
@@ -1282,14 +1244,22 @@ public class SessionNode implements Node {
     }
 
     /**
-     * <p>restoreOriginalModel.</p>
+     * Restores the model to the saved clone created by {@link #useClonedModel()}.
+     * Does nothing if no saved model exists, rather than throwing NPE.
+     *
+     * @throws IllegalStateException if called when no saved model is available.
      */
     public void restoreOriginalModel() {
+        if (this.savedModel == null) {
+            throw new IllegalStateException(
+                    "restoreOriginalModel() called but no saved model exists. " +
+                            "useClonedModel() must succeed before restoreOriginalModel() is called.");
+        }
+
         this.model = this.savedModel;
         this.model.setName(getDisplayName());
         this.savedModel = null;
     }
-
     /**
      * Determines whether a given model class is consistent with the models contained in the given List of nodes, in the
      * sense that the model class has a constructor that can take the models of the nodes as arguments.
@@ -1383,71 +1353,78 @@ public class SessionNode implements Node {
     }
 
     /**
-     * <p>
-     * Returns the objects in the List as an array in the same order as the parameter types. If an exact match cannot be
-     * found, throws a RuntimeException with an appropriate message.
+     * Returns the objects in the List as an array in the same order as the
+     * parameter types, or null if no valid assignment exists. Uses backtracking
+     * with early pruning rather than exhaustive permutation enumeration, so it
+     * is safe for large parent counts.
      *
-     * @param parameterTypes a list of classes; if any of them is null, a NullPointerException will be thrown.
-     * @param objects        a List of objects. (The nulls will be automatically thrown out for this one.)
-     * @return an array of {@link java.lang.Object} objects
-     * @throws java.lang.RuntimeException if any.
+     * @param parameterTypes a list of classes; nulls throw NullPointerException.
+     * @param objects        a List of objects (nulls are removed automatically).
+     * @return an argument array matching the parameter types, or null if none exists.
      */
     public Object[] assignParameters(Class[] parameterTypes, List objects)
             throws RuntimeException {
-        if (parameterTypes.length > 5) {
-            System.out.println("Oops");
-        }
 
-        for (Class parameterType1 : parameterTypes) {
-            if (parameterType1 == null) {
-                throw new NullPointerException(
-                        "Parameter types must all be non-null.");
+        for (Class parameterType : parameterTypes) {
+            if (parameterType == null) {
+                throw new NullPointerException("Parameter types must all be non-null.");
             }
         }
 
-        // Create a new Object[] array the same size as the
-        // parameterTypes array, try to fill it up with objects of the
-        // corresponding types from the object List. If at any point
-        // an object cannot be found, return null. If there are any
-        // objects left over, return null. Otherwise, return the
-        // constructed argument array.
+        List<Object> candidates = removeNulls(objects);
+
+        if (parameterTypes.length != candidates.size()) {
+            return null;
+        }
+
         Object[] arguments = new Object[parameterTypes.length];
-        List<Object> _objects = removeNulls(objects);
+        boolean[] used     = new boolean[candidates.size()];
 
-        if (parameterTypes.length != _objects.size()) {
-            return null;
-        }
-
-        PermutationGenerator gen = new PermutationGenerator(parameterTypes.length);
-        int[] perm;
-        boolean foundAConstructor = false;
-
-        while ((perm = gen.next()) != null) {
-            boolean allAssigned = true;
-
-            for (int i = 0; i < perm.length; i++) {
-
-                Class<?> parameterType = parameterTypes[i];
-                Class<?> aClass = _objects.get(perm[i]).getClass();
-
-                if (parameterType.isAssignableFrom(aClass)) {
-                    arguments[i] = _objects.get(perm[i]);
-                } else {
-                    allAssigned = false;
-                }
-            }
-
-            if (allAssigned) {
-                foundAConstructor = true;
-                break;
-            }
-        }
-
-        if (foundAConstructor) {
+        if (matchByBacktrack(parameterTypes, candidates, arguments, used, 0)) {
             return arguments;
-        } else {
-            return null;
         }
+
+        return null;
+    }
+
+    /**
+     * Recursive backtracking helper. Assigns candidates to parameterTypes slots
+     * one at a time, pruning branches as soon as a slot cannot be filled.
+     * Respects thread interruption so it cannot hang indefinitely.
+     */
+    private boolean matchByBacktrack(Class[] parameterTypes,
+                                     List<Object> candidates,
+                                     Object[] arguments,
+                                     boolean[] used,
+                                     int slot) {
+        if (Thread.currentThread().isInterrupted()) {
+            return false;
+        }
+
+        if (slot == parameterTypes.length) {
+            return true; // all slots filled
+        }
+
+        Class<?> needed = parameterTypes[slot];
+
+        for (int i = 0; i < candidates.size(); i++) {
+            if (used[i]) continue;
+
+            if (needed.isAssignableFrom(candidates.get(i).getClass())) {
+                arguments[slot] = candidates.get(i);
+                used[i] = true;
+
+                if (matchByBacktrack(parameterTypes, candidates, arguments, used, slot + 1)) {
+                    return true;
+                }
+
+                // backtrack
+                arguments[slot] = null;
+                used[i] = false;
+            }
+        }
+
+        return false; // no valid assignment found for this slot
     }
 
     /**
@@ -1631,22 +1608,6 @@ public class SessionNode implements Node {
         this.nextEdgeAddAllowed = nextEdgeAddAllowed;
     }
 
-    private List<Object> getParentModels() {
-        List<Object> models = new ArrayList<>();
-
-        for (SessionNode node : this.parents) {
-            SessionModel model = node.getModel();
-
-            if (model != null) {
-                models.add(model);
-            } else {
-                return null;
-            }
-        }
-
-        return models;
-    }
-
     private List<Object> listParentModels() {
         List<Object> models = new ArrayList<>();
 
@@ -1671,6 +1632,34 @@ public class SessionNode implements Node {
                     "Model class must implement SessionModel: " + modelClass);
         }
 
+        // If the model class is a Simulation and there is exactly one parent
+        // that is not itself a Simulation, use that parent's parameters instead
+        // of this node's parameters.
+        if (Simulation.class.isAssignableFrom(modelClass)) {
+            Parameters parentParams = null;
+            int nonSimulationParentCount = 0;
+
+            for (SessionNode parent : this.parents) {
+                Object parentModel = parent.getModel();
+                if (parentModel != null && !(parentModel instanceof Simulation)) {
+                    nonSimulationParentCount++;
+                    // Get the parameters the parent is actually using for its current model.
+                    if (parent.getLastModelClass() != null) {
+                        Parameters p = parent.getParam(parent.getLastModelClass());
+                        if (p != null) {
+                            parentParams = p;
+                        }
+                    }
+                }
+            }
+
+            if (nonSimulationParentCount == 1 && parentParams != null) {
+                // Replace any existing Parameters in models with the parent's parameters.
+                models.removeIf(o -> o instanceof Parameters);
+                models.add(parentParams);
+            }
+        }
+
         // Try to find a constructor of the model class that exactly
         // matches the types of these models.
         Constructor[] constructors = modelClass.getConstructors();
@@ -1680,7 +1669,7 @@ public class SessionNode implements Node {
             Object[] arguments = null;
 
             if (constructorTypes.length == 2 && constructorTypes[0].isArray()
-                && constructorTypes[1] == Parameters.class) {
+                    && constructorTypes[1] == Parameters.class) {
                 List<Object> _objects = new ArrayList<>();
                 Class<?> c1 = constructorTypes[0].getComponentType();
                 Parameters parameters = null;
@@ -1721,7 +1710,7 @@ public class SessionNode implements Node {
 
             if (constructorTypes.length == 0) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "UI models shouldn't have blank constructors. " +
-                                                                            "This one did: " + modelClass.getName());
+                        "This one did: " + modelClass.getName());
                 continue;
             }
 
@@ -1736,7 +1725,6 @@ public class SessionNode implements Node {
                 } catch (InstantiationException | IllegalAccessException e) {
                     e.printStackTrace();
                     continue;
-//                    throw e;
                 } catch (InvocationTargetException e) {
                     String packagePath = modelClass.getName();
                     int begin = packagePath.lastIndexOf('.') + 1;
@@ -1752,7 +1740,7 @@ public class SessionNode implements Node {
                     } else {
                         throw new InvocationTargetException(e,
                                 "Could not construct node; root cause: " + e.getCause().getMessage()
-                                + " " + packagePath + " " + begin + " " + name
+                                        + " " + packagePath + " " + begin + " " + name
                         );
                     }
                 }
@@ -1761,7 +1749,6 @@ public class SessionNode implements Node {
                 this.lastModelClass = modelClass;
 
                 getSessionSupport().fireModelCreated(this);
-//                continue;
                 break;
             }
         }
@@ -1904,7 +1891,11 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Reassesses whether the getModel model is permitted in light of the destruction of one of the parent models.
+     * Reassesses whether the current model is still valid given the current
+     * parent models. Destroys the model if the multiset of current parent model
+     * types no longer matches the multiset of types that were used to construct
+     * it. Uses a frequency-count comparison so that duplicate types are handled
+     * correctly (e.g. two DataModel parents are distinct from one).
      */
     private void reassessModel() {
         if (this.modelParamTypes == null) {
@@ -1917,24 +1908,46 @@ public class SessionNode implements Node {
             }
         }
 
-        // Collect up the model types from the parents.
-        ArrayList<Class<?>> list1 = new ArrayList<>();
-
+        // Collect the types of models currently present in parent nodes,
+        // excluding Parameters (which is not a parent model, it's a config object).
+        List<Class<?>> currentTypes = new ArrayList<>();
         for (SessionNode node : this.parents) {
             Object model = node.getModel();
-
             if (model != null) {
-                list1.add(model.getClass());
+                currentTypes.add(model.getClass());
             }
         }
 
-        // Make a second list of the stored model param types.
-        List<Class> list2 = Arrays.asList(this.modelParamTypes);
+        // Collect the non-Parameters types that were used to construct the model.
+        List<Class<?>> constructedTypes = new ArrayList<>();
+        for (Class clazz : this.modelParamTypes) {
+            if (clazz != Parameters.class) {
+                constructedTypes.add(clazz);
+            }
+        }
 
-        // If the lists aren't equal, destroy the model.
-        if (!list1.contains(list2) || !list2.contains(list1)) {
+        // Compare as multisets via frequency maps. If they differ, the model
+        // was built from a parent configuration that no longer exists.
+        if (!sameMultiset(currentTypes, constructedTypes)) {
             destroyModel();
         }
+    }
+
+    /**
+     * Returns true iff two lists contain the same elements with the same
+     * frequencies, regardless of order.
+     */
+    private static boolean sameMultiset(List<Class<?>> a, List<Class<?>> b) {
+        if (a.size() != b.size()) return false;
+
+        Map<Class<?>, Integer> freq = new HashMap<>();
+        for (Class<?> c : a) freq.merge(c, 1, Integer::sum);
+        for (Class<?> c : b) {
+            int count = freq.getOrDefault(c, 0);
+            if (count == 0) return false;
+            freq.put(c, count - 1);
+        }
+        return true;
     }
 
     /**
@@ -2084,15 +2097,6 @@ public class SessionNode implements Node {
                     restarter.newExecution();
                 }
             }
-//
-//            if (model != null) {
-//                Object param = getParam(model.getClass());
-//
-//                if (param instanceof ExecutionRestarter) {
-//                    ExecutionRestarter restarter = (ExecutionRestarter) param;
-//                    restarter.newExecution();
-//                }
-//            }
 
             // Pass the message along.
             getSessionSupport().fireSessionEvent(event);

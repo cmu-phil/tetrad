@@ -26,8 +26,10 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 import edu.cmu.tetrad.search.test.RowsSettable;
 
@@ -232,7 +234,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
                              Map<Integer, List<Integer>> embedding, boolean doOneEquationOnly,
                              double lambda, SimpleMatrix covarianceMatrix, int sampleSize) {
         List<Node> zList = new ArrayList<>(z);
-        Collections.sort(zList);
+        zList.sort(NaturalSort.naturalComparator());
 
         int _x = nodeHash.get(x);
         int _y = nodeHash.get(y);
@@ -265,11 +267,11 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
 
         // Compute variance estimates
         double eps = 1e-20;
-        double sigma0_sq = Math.max(eps, computeResidualVariance(xIndices, zIndices, covarianceMatrix, lambda));
-        double sigma1_sq = Math.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices), covarianceMatrix, lambda));
+        double sigma0_sq = TMath.max(eps, computeResidualVariance(xIndices, zIndices, covarianceMatrix, lambda));
+        double sigma1_sq = TMath.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices), covarianceMatrix, lambda));
 
         // Log-likelihood ratio statistic
-        double LR_stat = sampleSize * Math.log(sigma0_sq / sigma1_sq);
+        double LR_stat = sampleSize * TMath.log(sigma0_sq / sigma1_sq);
 
         // Degrees of freedom is the number of additional basis columns in Y
         int df = yIndices.length;

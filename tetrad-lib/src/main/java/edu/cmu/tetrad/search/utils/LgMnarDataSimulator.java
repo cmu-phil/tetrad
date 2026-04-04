@@ -29,8 +29,10 @@ import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -124,12 +126,17 @@ public class LgMnarDataSimulator {
         // Simulate data over all variables
         SemPm pm = new SemPm(expandedGraph);
         SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(numRows, false);
+        DataSet dataSet = null;
+        try {
+            dataSet = im.simulateData(numRows, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         // Threshold missingness variables to produce binary 0's and 1's
         for (Node node : dataSet.getVariables()) {
             if (node.getName().endsWith("_missing")) {
-                int colIndex = dataSet.getColumn(node);
+                int colIndex = dataSet.getColumnIndex(node);
 
                 // Retrieve the data for the node column as a double[] array.
                 double[] data = new double[dataSet.getNumRows()];
@@ -142,11 +149,12 @@ public class LgMnarDataSimulator {
                 Arrays.sort(data);
 
                 // Find the threshold value at the 90th percentile.
-                double _threshold = data[data.length - (int) Math.ceil(threshold * data.length)];
+                double _threshold = data[data.length - (int) TMath.ceil(threshold * data.length)];
 
+                DataSet finalDataSet = dataSet;
                 IntStream.range(0, dataSet.getNumRows()).parallel().forEach(row -> {
-                    double value = dataSet.getDouble(row, colIndex);
-                    dataSet.setDouble(row, colIndex, value > _threshold ? 0.0 : 1.0);
+                    double value = finalDataSet.getDouble(row, colIndex);
+                    finalDataSet.setDouble(row, colIndex, value > _threshold ? 0.0 : 1.0);
                 });
             }
         }
@@ -156,12 +164,13 @@ public class LgMnarDataSimulator {
             if (indicator.getName().endsWith("_missing")) {
                 Node associatedColumn = dataSet.getVariable(indicator.getName().replace("_missing", ""));
                 if (associatedColumn != null) {
-                    int indicatorIndex = dataSet.getColumn(indicator);
-                    int columnIndex = dataSet.getColumn(associatedColumn);
+                    int indicatorIndex = dataSet.getColumnIndex(indicator);
+                    int columnIndex = dataSet.getColumnIndex(associatedColumn);
 
+                    DataSet finalDataSet1 = dataSet;
                     IntStream.range(0, dataSet.getNumRows()).parallel().forEach(row -> {
-                        if (dataSet.getDouble(row, indicatorIndex) == 0.0) {
-                            dataSet.setDouble(row, columnIndex, Double.NaN);
+                        if (finalDataSet1.getDouble(row, indicatorIndex) == 0.0) {
+                            finalDataSet1.setDouble(row, columnIndex, Double.NaN);
                         }
                     });
                 }

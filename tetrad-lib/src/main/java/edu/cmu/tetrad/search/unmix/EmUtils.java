@@ -20,6 +20,8 @@
 
 package edu.cmu.tetrad.search.unmix;
 
+import edu.cmu.tetrad.util.TMath;
+
 /**
  * A utility class for operations commonly used in the Expectation-Maximization (EM) algorithm. This class contains
  * methods to handle responsibilities, calculate metrics, and perform numerical operations in a numerically stable
@@ -89,8 +91,8 @@ public final class EmUtils {
         double m = Double.NEGATIVE_INFINITY;
         for (double v : a) if (v > m) m = v;
         double s = 0.0;
-        for (double v : a) s += Math.exp(v - m);
-        return m + Math.log(s);
+        for (double v : a) s += TMath.exp(v - m);
+        return m + TMath.log(s);
     }
 
     /**

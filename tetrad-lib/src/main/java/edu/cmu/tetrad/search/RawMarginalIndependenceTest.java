@@ -20,6 +20,8 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.util.TMath;
+
 /**
  * Functional interface for performing a raw marginal independence test.
  * <p>
@@ -46,7 +48,7 @@ public interface RawMarginalIndependenceTest {
      * multivariate set of variables.
      * <p>
      * Default implementation: fall back to pairwise tests of (x, y_j) for each column y_j in Y, and combine the
-     * resulting p-values with Fisherâs method. Implementations that support true multivariate tests (e.g. HSIC, KCI
+     * resulting p-values with Fisher's method. Implementations that support true multivariate tests (e.g. HSIC, KCI
      * with vector Y) should override this method.
      *
      * @param x the first variable (scalar), represented as an array of doubles of length n
@@ -65,8 +67,8 @@ public interface RawMarginalIndependenceTest {
             for (int i = 0; i < Y.length; i++) yj[i] = Y[i][j];
             double pj = computePValue(x, yj);
             if (Double.isNaN(pj)) continue;
-            double pc = Math.max(pj, 1e-300); // clamp low
-            stat += -2.0 * Math.log(pc);
+            double pc = TMath.max(pj, 1e-300); // clamp low
+            stat += -2.0 * TMath.log(pc);
             k++;
         }
         if (k == 0) return 1.0;

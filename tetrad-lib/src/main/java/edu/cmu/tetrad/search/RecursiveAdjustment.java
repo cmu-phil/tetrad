@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -378,7 +379,7 @@ public final class RecursiveAdjustment {
                     int dx = endpointDistance(v, shellsFromX);
                     int dy = endpointDistance(v, shellsFromY);
                     return (nearWhichEndpoint == 1) ? dx :
-                            (nearWhichEndpoint == 2 ? dy : Math.min(dx, dy));
+                            (nearWhichEndpoint == 2 ? dy : TMath.min(dx, dy));
                 })
                 .thenComparingInt(v -> graph.getAdjacentNodes(v).size())
                 .thenComparing(Node::getName));

@@ -22,7 +22,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -53,10 +53,11 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FCI",
         command = "fci",
-        algoType = AlgType.allow_latent_common_causes
+        algoType = AlgType.allow_latent_common_causes,
+        dataType = DataType.All
 )
 @Bootstrapping
-public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
+public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge, TakesIndependenceWrapper,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial

@@ -36,7 +36,7 @@ import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -46,14 +46,56 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import static org.apache.commons.math3.util.FastMath.exp;
-import static org.apache.commons.math3.util.FastMath.log;
+import static edu.cmu.tetrad.util.TMath.exp;
+import static edu.cmu.tetrad.util.TMath.log;
 
 /**
- * Dec 17, 2018 3:28:15 PM
+ * Implements the RFCI-BSC (Really Fast Causal Inference with Bayesian Scoring
+ * of Constraints) algorithm for learning PAGs (Partial Ancestral Graphs) from
+ * discrete data with probabilistic uncertainty quantification.
+ *
+ * <p>The algorithm proceeds in four stages:
+ * <ol>
+ *   <li><b>Randomized PAG search.</b> RFCI is run multiple times using a
+ *       probabilistic independence test (BSC test) to generate a collection
+ *       of candidate PAGs. Independence facts whose probabilities of independence
+ *       fall within a specified uncertainty band [lowerBound, upperBound] are
+ *       retained as "uncertain constraints" for downstream scoring.</li>
+ *   <li><b>Bootstrap constraint data construction.</b> Bootstrap samples of the
+ *       original data are drawn and a probabilistic independence test is applied
+ *       to each sample, recording the independence/dependence outcome for each
+ *       uncertain constraint. This yields an empirical dataset whose rows are
+ *       bootstrap samples and whose columns are uncertain independence facts.</li>
+ *   <li><b>Constraint structure learning.</b> FGES with a BDeu score is run on
+ *       the bootstrap constraint dataset to learn a Bayesian network over the
+ *       uncertain constraints, and its parameters are estimated via Dirichlet
+ *       estimation. This learned model captures the dependency structure among
+ *       the uncertain constraints.</li>
+ *   <li><b>PAG scoring.</b> Each candidate PAG is scored under two methods:
+ *       <ul>
+ *         <li><b>BSC-I</b> (independent scoring): each constraint fact is scored
+ *             independently using its marginal probability of independence.</li>
+ *         <li><b>BSC-D</b> (dependent scoring): constraint facts are scored
+ *             using the learned Bayesian network over constraints, accounting
+ *             for dependencies among facts.</li>
+ *       </ul>
+ *       The highest-scoring PAG under each method is returned as graphRBI and
+ *       graphRBD respectively. Normalized BSC-I and BSC-D scores are attached
+ *       as attributes on both output graphs. The method selected for the primary
+ *       return value is controlled by the {@code outputRBD} flag.</li>
+ * </ol>
+ *
+ * <p>Edge type probabilities across the sampled PAGs are computed and attached
+ * to the edges of the returned graph, providing bootstrap uncertainty estimates
+ * for each edge.
+ *
+ * <p>All PAG searches and bootstrap evaluations are parallelized using a
+ * {@link java.util.concurrent.ForkJoinPool}.
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
  * @version $Id: $Id
+ * @see Rfci
+ * @see IndTestProbabilistic
  */
 public class RfciBsc implements IGraphSearch {
 
@@ -108,7 +150,7 @@ public class RfciBsc implements IGraphSearch {
         if (lnYminusLnX < RfciBsc.MININUM_EXPONENT) {
             return lnX;
         } else {
-            double w = FastMath.log1p(exp(lnYminusLnX));
+            double w = TMath.log1p(exp(lnYminusLnX));
             return w + lnX;
         }
     }

@@ -22,8 +22,6 @@ package edu.cmu.tetrad.util;
 
 import org.ejml.simple.SimpleMatrix;
 
-import java.util.Random;
-
 /**
  * The EssLikePython class provides methods for estimating the Effective Sample Size (ESS) of a dataset using procedures
  * that closely mimic functionality found my Python script. This includes column standardization, row sampling, and
@@ -45,15 +43,12 @@ public final class EssLikePython {
      * @param X                the input data matrix where rows represent observations and columns represent variables
      * @param sampleSize       the number of rows to sample without replacement during the estimation process
      * @param clampNonnegative a flag indicating whether to clamp avgRowCorr to nonnegative values
-     * @param rng              a Random object to control the random sampling of rows (if null, a default seed is used)
      * @return a Result object containing the estimated avgRowCorr, computed ESS, and the number of rows used
      */
-    public static Result estimateLikePython(SimpleMatrix X, int sampleSize, boolean clampNonnegative, Random rng) {
-        if (rng == null) rng = new Random(0);
-
+    public static Result estimateLikePython(SimpleMatrix X, int sampleSize, boolean clampNonnegative) {
         final int N = X.getNumRows();
         final int P = X.getNumCols();
-        if (N < 2 || P < 1) return new Result(0.0, N, Math.max(0, N));
+        if (N < 2 || P < 1) return new Result(0.0, N, TMath.max(0, N));
 
         // 1) Column-standardize with ddof=0 (population)
         SimpleMatrix Z = new SimpleMatrix(N, P);
@@ -68,7 +63,7 @@ public final class EssLikePython {
                 varPop += d * d;
             }
             varPop /= N; // ddof=0
-            double sd = Math.sqrt(Math.max(varPop, 1e-24));
+            double sd = TMath.sqrt(TMath.max(varPop, 1e-24));
 
             for (int i = 0; i < N; i++) {
                 Z.set(i, j, (X.get(i, j) - mean) / sd);
@@ -88,7 +83,7 @@ public final class EssLikePython {
                 varPop += d * d;
             }
             varPop /= P; // ddof=0
-            double sd = Math.sqrt(Math.max(varPop, 1e-24));
+            double sd = TMath.sqrt(TMath.max(varPop, 1e-24));
 
             for (int j = 0; j < P; j++) {
                 Z.set(i, j, (Z.get(i, j) - mean) / sd);
@@ -96,8 +91,8 @@ public final class EssLikePython {
         }
 
         // 2) Sample m rows without replacement (like df.sample(..., random_state=0))
-        int m = Math.min(sampleSize, N);
-        int[] rows = shuffledRange(N, rng);
+        int m = TMath.min(sampleSize, N);
+        int[] rows = shuffledRange(N);
         int[] pick = new int[m];
         System.arraycopy(rows, 0, pick, 0, m);
 
@@ -122,7 +117,7 @@ public final class EssLikePython {
                 varPop += d * d;
             }
             varPop /= P; // ddof=0
-            rStd[i] = Math.sqrt(Math.max(varPop, 1e-24));
+            rStd[i] = TMath.sqrt(TMath.max(varPop, 1e-24));
         }
 
         for (int i = 0; i < m; i++) {
@@ -154,11 +149,11 @@ public final class EssLikePython {
         return new Result(avgCorr, ess, m);
     }
 
-    private static int[] shuffledRange(int n, Random rng) {
+    private static int[] shuffledRange(int n) {
         int[] idx = new int[n];
         for (int i = 0; i < n; i++) idx[i] = i;
         for (int i = n - 1; i > 0; i--) {
-            int j = rng.nextInt(i + 1);
+            int j = RandomUtil.getInstance().nextInt(i + 1);
             int tmp = idx[i];
             idx[i] = idx[j];
             idx[j] = tmp;

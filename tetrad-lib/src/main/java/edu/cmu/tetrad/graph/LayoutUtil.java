@@ -20,11 +20,7 @@
 
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.PointXy;
-import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.*;
 
 import javax.swing.*;
 import java.text.NumberFormat;
@@ -38,11 +34,109 @@ import java.util.*;
  */
 public class LayoutUtil {
 
+    // ---- Circle layout constants ----
+    private static final int CIRCLE_BASE_OFFSET = 120;
+    private static final int CIRCLE_NODE_FACTOR = 7;
+    private static final int CIRCLE_MARGIN = 50;
+
     /**
      * Constructor.
      */
     public LayoutUtil() {
     }
+
+    // ========================================================================
+    // Progress listener interface (decouples layout from Swing)
+    // ========================================================================
+
+    /**
+     * Callback interface for reporting layout progress. Implementations can
+     * tie into Swing, a logger, or simply do nothing (headless use).
+     */
+    public interface LayoutProgressListener {
+        /**
+         * Reports the progress of a layout operation.
+         *
+         * @param percent the completion percentage of the layout process, ranging from 0 to 100
+         * @param message a descriptive message providing additional information about the current state of progress
+         */
+        void onProgress(int percent, String message);
+
+        /**
+         * Determines if the layout operation has been canceled.
+         *
+         * @return {@code true} if the layout operation has been canceled, {@code false} otherwise.
+         */
+        boolean isCanceled();
+    }
+
+    /**
+     * No-op listener for headless / non-GUI use.
+     */
+    public static class NoOpProgressListener implements LayoutProgressListener {
+
+        /**
+         * A no-operation implementation of the LayoutProgressListener interface.
+         * This listener performs no actions and is intended for use in non-interactive
+         * or headless environments where progress updates are unnecessary.
+         */
+        public NoOpProgressListener() {}
+
+        @Override
+        public void onProgress(int percent, String message) {
+            // do nothing
+        }
+
+        @Override
+        public boolean isCanceled() {
+            return false;
+        }
+    }
+
+    /**
+     * Swing adapter that wraps a {@link ProgressMonitor}.
+     */
+    public static class SwingProgressListener implements LayoutProgressListener {
+        private final ProgressMonitor monitor;
+
+        /**
+         * Constructs a SwingProgressListener instance. This listener acts as a Swing adapter
+         * that wraps a {@link ProgressMonitor}, providing a visual progress indication for
+         * tasks that report progress.
+         *
+         * The constructed {@link ProgressMonitor} is initialized with the following settings:
+         * - No parent component (null).
+         * - Title message: "Energy settling...".
+         * - Initial note: "Energy = ?".
+         * - Minimum progress value: 0.
+         * - Maximum progress value: 100.
+         * - Time to decide to pop up: 10 milliseconds.
+         * - Time to pop up: 0 milliseconds.
+         * - Initial progress: 0%.
+         */
+        public SwingProgressListener() {
+            this.monitor = new ProgressMonitor(null, "Energy settling...",
+                    "Energy = ?", 0, 100);
+            monitor.setMillisToDecideToPopup(10);
+            monitor.setMillisToPopup(0);
+            monitor.setProgress(0);
+        }
+
+        @Override
+        public void onProgress(int percent, String message) {
+            monitor.setProgress(percent);
+            monitor.setNote(message);
+        }
+
+        @Override
+        public boolean isCanceled() {
+            return monitor.isCanceled();
+        }
+    }
+
+    // ========================================================================
+    // Public static layout entry points
+    // ========================================================================
 
     /**
      * <p>kamadaKawaiLayout.</p>
@@ -53,12 +147,35 @@ public class LayoutUtil {
      * @param springConstant      a double
      * @param stopEnergy          a double
      */
-    public static void kamadaKawaiLayout(Graph graph, boolean randomlyInitialized, double naturalEdgeLength, double springConstant, double stopEnergy) {
+    public static void kamadaKawaiLayout(Graph graph, boolean randomlyInitialized,
+                                         double naturalEdgeLength, double springConstant,
+                                         double stopEnergy) {
+        kamadaKawaiLayout(graph, randomlyInitialized, naturalEdgeLength,
+                springConstant, stopEnergy, null);
+    }
+
+    /**
+     * Overload that accepts an optional progress listener.
+     *
+     * @param graph               a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param randomlyInitialized a boolean
+     * @param naturalEdgeLength   a double
+     * @param springConstant      a double
+     * @param stopEnergy          a double
+     * @param listener            a {@link LayoutProgressListener}, or null for Swing default
+     */
+    public static void kamadaKawaiLayout(Graph graph, boolean randomlyInitialized,
+                                         double naturalEdgeLength, double springConstant,
+                                         double stopEnergy,
+                                         LayoutProgressListener listener) {
         KamadaKawaiLayout layout = new KamadaKawaiLayout(graph);
         layout.setRandomlyInitialized(randomlyInitialized);
         layout.setNaturalEdgeLength(naturalEdgeLength);
         layout.setSpringConstant(springConstant);
         layout.setStopEnergy(stopEnergy);
+        if (listener != null) {
+            layout.setProgressListener(listener);
+        }
         layout.doLayout();
     }
 
@@ -86,7 +203,8 @@ public class LayoutUtil {
     }
 
     /**
-     * Arranges the nodes in the graph in a circle if there are 20 or fewer nodes, otherwise arranges them in a square.
+     * Arranges the nodes in the graph in a circle if there are 20 or fewer
+     * nodes, otherwise arranges them in a square.
      *
      * @param graph the graph to be arranged.
      */
@@ -120,19 +238,19 @@ public class LayoutUtil {
             return;
         }
 
-        int centerx = 120 + 7 * graph.getNumNodes();
-        int centery = 120 + 7 * graph.getNumNodes();
-        int radius = centerx - 50;
+        int centerx = CIRCLE_BASE_OFFSET + CIRCLE_NODE_FACTOR * graph.getNumNodes();
+        int centery = CIRCLE_BASE_OFFSET + CIRCLE_NODE_FACTOR * graph.getNumNodes();
+        int radius = centerx - CIRCLE_MARGIN;
 
         List<Node> nodes = graph.getNodes();
-        Collections.sort(nodes);
+        nodes.sort(NaturalSort.naturalComparator());
 
-        double rad = 6.28 / nodes.size();
-        double phi = .75 * 6.28;    // start from 12 o'clock.
+        double rad = 2.0 * Math.PI / nodes.size();
+        double phi = 1.5 * Math.PI; // start from 12 o'clock
 
         for (Node node : nodes) {
-            int centerX = centerx + (int) (radius * FastMath.cos(phi));
-            int centerY = centery + (int) (radius * FastMath.sin(phi));
+            int centerX = centerx + (int) (radius * TMath.cos(phi));
+            int centerY = centery + (int) (radius * TMath.sin(phi));
 
             node.setCenterX(centerX);
             node.setCenterY(centerY);
@@ -151,7 +269,7 @@ public class LayoutUtil {
     public static void squareLayout(Graph graph) {
         List<Node> nodes = new ArrayList<>(graph.getNodes());
 
-        Collections.sort(nodes);
+        nodes.sort(NaturalSort.naturalComparator());
 
         int bufferx = 70;
         int buffery = 50;
@@ -241,14 +359,9 @@ public class LayoutUtil {
     }
 
     /**
-     * Finds the set of nodes which have no children, followed by the set of their parents, then the set of the parents'
-     * parents, and so on.  The result is returned as a List of Lists.
-     *
-     * @return the tiers of this digraph.
-     */
-    /**
-     * Finds the set of nodes which have no children, followed by the set of their parents, then the set of the parents'
-     * parents, and so on.  The result is returned as a List of Lists.
+     * Finds the set of nodes which have no children, followed by the set of
+     * their parents, then the set of the parents' parents, and so on.  The
+     * result is returned as a List of Lists.
      *
      * @return the tiers of this digraph.
      */
@@ -290,9 +403,9 @@ public class LayoutUtil {
         return tiers;
     }
 
-
     /**
-     * Arranges the nodes in the result graph according to their positions in the source graph.
+     * Arranges the nodes in the result graph according to their positions in
+     * the source graph.
      *
      * @param resultGraph a {@link edu.cmu.tetrad.graph.Graph} object
      * @param sourceGraph a {@link edu.cmu.tetrad.graph.Graph} object
@@ -329,11 +442,8 @@ public class LayoutUtil {
     }
 
     /**
-     * Repositions latent nodes in the given graph based on their non-latent neighbors.
-     * <p>
-     * This method iterates through all nodes in the graph, identifies latent nodes, and repositions them using the
-     * non-latent neighbors only. The method works by filtering out latent neighbors of each latent node before
-     * repositioning.
+     * Repositions latent nodes in the given graph based on their non-latent
+     * neighbors.
      *
      * @param graph the graph containing the nodes to be repositioned.
      */
@@ -354,14 +464,14 @@ public class LayoutUtil {
     }
 
     /**
-     * Positions a latent node based on the average position of its measured neighbors. The method calculates the
-     * average x and y coordinates of the measured neighbors and repositions the latent node to this calculated center.
+     * Positions a latent node based on the average position of its measured
+     * neighbors.
      *
      * @param latent    the latent node to be positioned
-     * @param neighbors the set of neighboring nodes; only measured neighbors are used to calculate the position
+     * @param neighbors the set of neighboring nodes
      */
     public static void positionLatentNode(Node latent, Set<Node> neighbors) {
-        if (neighbors.isEmpty()) return; // safety check to prevent division by zero.
+        if (neighbors.isEmpty()) return;
 
         float avgX = 0f;
         float avgY = 0f;
@@ -381,12 +491,27 @@ public class LayoutUtil {
         latent.setCenter((int) avgX, (int) avgY);
     }
 
+    // ========================================================================
+    // Kamada-Kawai layout
+    // ========================================================================
+
     /**
-     * Lays out a graph by placing springs between the nodes and letting the system settle (one node at a time).
+     * Lays out a graph by placing springs between the nodes and letting the
+     * system settle (one node at a time).
      *
      * @author josephramsey
      */
     public static final class KamadaKawaiLayout {
+
+        /**
+         * Step size for central-difference first partial derivative.
+         */
+        private static final double FIRST_PARTIAL_H = 1.e-4;
+
+        /**
+         * Step size for second partial derivative (finite-difference).
+         */
+        private static final double SECOND_PARTIAL_H = 1.e-2;
 
         /**
          * The graph being laid out.
@@ -414,12 +539,14 @@ public class LayoutUtil {
         private double[][] p;
 
         /**
-         * l[i][j] is the natural length of the spring between node i and node j defined by L * d[i][j].
+         * l[i][j] is the natural length of the spring between node i and
+         * node j defined by L * d[i][j].
          */
         private double[][] l;
 
         /**
-         * k[i][j] is the strength of the spring between node i and node j, defined by K / (d[i][j] * d[i][j]).
+         * k[i][j] is the strength of the spring between node i and node j,
+         * defined by K / (d[i][j] * d[i][j]).
          */
         private double[][] k;
 
@@ -429,13 +556,13 @@ public class LayoutUtil {
         private double leftmostX = -50.;
 
         /**
-         * Monitors progress for the user.
+         * Progress listener (replaces Swing ProgressMonitor).
          */
-        private ProgressMonitor monitor;
+        private LayoutProgressListener progressListener;
 
         /**
-         * True if nodes should be initialized in random locations, false if they should be initialized in their
-         * getModel locations.
+         * True if nodes should be initialized in random locations, false if
+         * they should be initialized in their getModel locations.
          */
         private boolean randomlyInitialized;
 
@@ -467,11 +594,12 @@ public class LayoutUtil {
         public void doLayout() {
             defaultLayout(this.graph);
 
-            this.monitor = new ProgressMonitor(null, "Energy settling...",
-                    "Energy = ?", 0, 100);
-            getMonitor().setMillisToDecideToPopup(10);
-            getMonitor().setMillisToPopup(0);
-            getMonitor().setProgress(0);
+            // Default to SwingProgressListener for backward compatibility.
+            if (this.progressListener == null) {
+                this.progressListener = new SwingProgressListener();
+            }
+
+            this.progressListener.onProgress(0, "Energy = ?");
 
             List<List<Node>> components = this.graph.paths().connectedComponents();
 
@@ -486,20 +614,19 @@ public class LayoutUtil {
                 layoutComponent(component1);
             }
 
-            getMonitor().setProgress(100);
+            this.progressListener.onProgress(100, "Done");
         }
-
 
         private boolean isRandomlyInitialized() {
             return this.randomlyInitialized;
         }
 
         /**
-         * Sets whether the spring layout should start from a randomlyInitialized position or from the getModel
-         * positions of the nodes.
+         * Sets whether the spring layout should start from a randomly
+         * initialized position or from the getModel positions of the nodes.
          *
-         * @param randomlyInitialized true if the spring layout should start from a randomlyInitialized position, false
-         *                            if the spring layout should start from the getModel positions of the nodes.
+         * @param randomlyInitialized true for random start, false for current
+         *                            positions.
          */
         public void setRandomlyInitialized(boolean randomlyInitialized) {
             this.randomlyInitialized = randomlyInitialized;
@@ -512,17 +639,16 @@ public class LayoutUtil {
         /**
          * Sets the max delta at which the algorithm will stop settling.
          *
-         * @param stopEnergy the max delta at which the algorithm will stop settling.
+         * @param stopEnergy the max delta at which the algorithm will stop.
          */
         public void setStopEnergy(double stopEnergy) {
             if (stopEnergy <= 0.0) {
                 throw new IllegalArgumentException(
-                        "Stop energy must be greater than" + " zero.");
+                        "Stop energy must be greater than zero.");
             }
 
             this.stopEnergy = stopEnergy;
         }
-
 
         private double getNaturalEdgeLength() {
             return this.naturalEdgeLength;
@@ -536,7 +662,7 @@ public class LayoutUtil {
         public void setNaturalEdgeLength(double naturalEdgeLength) {
             if (naturalEdgeLength < 0.0) {
                 throw new IllegalArgumentException(
-                        "Natural edge length should be " + "greater than zero.");
+                        "Natural edge length should be greater than zero.");
             }
 
             this.naturalEdgeLength = naturalEdgeLength;
@@ -549,25 +675,31 @@ public class LayoutUtil {
         /**
          * Sets the spring constant; higher for more elasticity.
          *
-         * @param springConstant the spring constant; higher for more elasticity.
+         * @param springConstant the spring constant.
          */
         public void setSpringConstant(double springConstant) {
             if (springConstant < 0.0) {
                 throw new IllegalArgumentException(
-                        "Spring constant should be " + "greater than zero.");
+                        "Spring constant should be greater than zero.");
             }
 
             this.springConstant = springConstant;
+        }
+
+        /**
+         * Sets the progress listener. Pass a {@link NoOpProgressListener} for
+         * headless use.
+         *
+         * @param listener the listener to use.
+         */
+        public void setProgressListener(LayoutProgressListener listener) {
+            this.progressListener = listener;
         }
 
         //============================PRIVATE METHODS=========================//
 
         /**
          * Initializes the layout for the given nodes.
-         *
-         * @param nodes               the nodes to be laid out.
-         * @param randomlyInitialized true if the spring layout should start from a randomlyInitialized position, false
-         *                            if the spring layout should start from the getModel positions of the nodes.
          */
         private void initialize(List<Node> nodes, boolean randomlyInitialized) {
             setComponentNodes(Collections.unmodifiableList(nodes));
@@ -588,7 +720,6 @@ public class LayoutUtil {
                     this.p[i][0] = node.getCenterX();
                     this.p[i][1] = node.getCenterY();
                 }
-
             }
 
             d = allPairsShortestPath();
@@ -661,7 +792,7 @@ public class LayoutUtil {
             int oldM = -1;
 
             do {
-                if (this.monitor.isCanceled()) {
+                if (this.progressListener.isCanceled()) {
                     return;
                 }
 
@@ -690,8 +821,8 @@ public class LayoutUtil {
                 if (progress > 99) {
                     progress = 99;
                 }
-                getMonitor().setProgress(progress);
-                getMonitor().setNote("Energy = " + nf.format(maxDelta));
+                this.progressListener.onProgress(progress,
+                        "Energy = " + nf.format(maxDelta));
 
                 if (m[0] == -1) {
                     throw new IllegalStateException();
@@ -702,11 +833,11 @@ public class LayoutUtil {
 
                 while ((delta = delta(m[0])) > deltaCutoff) {
                     Thread.yield();
-                    if (this.monitor.isCanceled()) {
+                    if (this.progressListener.isCanceled()) {
                         return;
                     }
 
-                    if (FastMath.abs(delta - oldDelta) < 0.001) {
+                    if (TMath.abs(delta - oldDelta) < 0.001) {
                         this.p[m[0]][0] += RandomUtil.getInstance().nextInt(
                                 2 * jump) - jump;
                         this.p[m[0]][1] += RandomUtil.getInstance().nextInt(
@@ -714,13 +845,11 @@ public class LayoutUtil {
                         continue;
                     }
 
-                    final double h = 1.e-2;
-
                     double partialXX = secondPartial(m[0], 0, 0);
                     double partialXY = secondPartial(m[0], 0, 1);
-                    double partialX = firstPartial(m[0], 0, h);
+                    double partialX = firstPartial(m[0], 0);
                     double partialYY = secondPartial(m[0], 1, 1);
-                    double partialY = firstPartial(m[0], 1, h);
+                    double partialY = firstPartial(m[0], 1);
 
                     a.set(0, 0, partialXX);
                     a.set(0, 1, partialXY);
@@ -733,7 +862,8 @@ public class LayoutUtil {
                     Matrix c;
 
                     try {
-                        c = new Matrix(a.getSimpleMatrix().solve(b.getSimpleMatrix()));
+                        c = new Matrix(a.getSimpleMatrix().solve(
+                                b.getSimpleMatrix()));
                     } catch (Exception e) {
                         this.p[m[0]][0] += RandomUtil.getInstance().nextInt(
                                 2 * jump) - jump;
@@ -759,7 +889,8 @@ public class LayoutUtil {
 
             for (int i = 0; i < n - 1; i++) {
                 for (int j = i + 1; j < n; j++) {
-                    sum += 0.5 * this.k[i][j] * FastMath.pow(distance(i, j) - this.l[i][j], 2.0);
+                    sum += 0.5 * this.k[i][j]
+                            * TMath.pow(distance(i, j) - this.l[i][j], 2.0);
                 }
             }
 
@@ -783,52 +914,59 @@ public class LayoutUtil {
                 }
             }
 
-            //        System.out.println("maxDelta = " + maxDelta);
             index[0] = m;
             return maxDelta;
         }
 
         private double delta(int i) {
-            double partialX = firstPartial(i, 0, 1.e-4);
-            double partialY = firstPartial(i, 1, 1.e-4);
-            return FastMath.sqrt(partialX * partialX + partialY * partialY);
+            double partialX = firstPartial(i, 0);
+            double partialY = firstPartial(i, 1);
+            return TMath.sqrt(partialX * partialX + partialY * partialY);
         }
 
-        private double firstPartial(int i, int var, double h) {
+        /**
+         * Central-difference first partial derivative of energy w.r.t.
+         * p[i][var].
+         */
+        private double firstPartial(int i, int var) {
             double storedCoord = this.p[i][var];
 
-            this.p[i][var] -= h;
+            this.p[i][var] -= FIRST_PARTIAL_H;
             double energy1 = energy();
 
-            this.p[i][var] += h;
+            this.p[i][var] += 2.0 * FIRST_PARTIAL_H;
             double energy2 = energy();
 
             this.p[i][var] = storedCoord;
-            return (energy2 - energy1) / (2. * h);
+            return (energy2 - energy1) / (2.0 * FIRST_PARTIAL_H);
         }
 
+        /**
+         * Finite-difference second partial derivative of energy.
+         */
         private double secondPartial(int m, int i, int j) {
             double storedX = this.p[m][0];
             double storedY = this.p[m][1];
 
-            this.p[m][i] += 0.01;
-            this.p[m][j] += 0.01;
+            this.p[m][i] += SECOND_PARTIAL_H;
+            this.p[m][j] += SECOND_PARTIAL_H;
             double ff1 = energy();
 
-            this.p[m][j] -= 2 * 0.01;
+            this.p[m][j] -= 2 * SECOND_PARTIAL_H;
             double ff2 = energy();
 
-            this.p[m][i] -= 2 * 0.01;
-            this.p[m][j] += 2 * 0.01;
+            this.p[m][i] -= 2 * SECOND_PARTIAL_H;
+            this.p[m][j] += 2 * SECOND_PARTIAL_H;
             double ff3 = energy();
 
-            this.p[m][j] -= 2 * 0.01;
+            this.p[m][j] -= 2 * SECOND_PARTIAL_H;
             double ff4 = energy();
 
             this.p[m][0] = storedX;
             this.p[m][1] = storedY;
 
-            return (ff1 - ff2 - ff3 + ff4) / (4.0 * 0.01 * 0.01);
+            return (ff1 - ff2 - ff3 + ff4)
+                    / (4.0 * SECOND_PARTIAL_H * SECOND_PARTIAL_H);
         }
 
         private double distance(int i, int j) {
@@ -837,50 +975,48 @@ public class LayoutUtil {
             double x2 = this.p[j][0];
             double y2 = this.p[j][1];
 
-            return FastMath.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+            return TMath.sqrt(
+                    (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
         }
 
         /**
-         * Floyd's all-pairs shortest-path algorithm, restricted to integral lengths. Returns an int[][] matrix I, where
-         * I[i][j] is the length of the shortest path from i to j.
+         * BFS-based all-pairs shortest path. O(n*(n+e)), better than
+         * Floyd-Warshall O(n^3) for sparse graphs.
          */
         private int[][] allPairsShortestPath() {
-            int[][] I1 = new int[getComponentNodes().size()][getComponentNodes()
-                    .size()];
-            int[][] I2 = new int[getComponentNodes().size()][getComponentNodes()
-                    .size()];
-            int infinity = getComponentNodes().size() * getComponentNodes().size();
+            int n = getComponentNodes().size();
+            int[][] dist = new int[n][n];
+            int infinity = n * n;
 
-            for (int i = 0; i < getComponentNodes().size(); i++) {
-                for (int j = 0; j < getComponentNodes().size(); j++) {
-                    Node node1 = getComponentNodes().get(i);
-                    Node node2 = getComponentNodes().get(j);
-                    if (this.graph.getEdge(node1, node2) != null) {
-                        I2[i][j] = 1;
-                    } else {
-                        I2[i][j] = infinity;
+            for (int[] row : dist) {
+                Arrays.fill(row, infinity);
+            }
+
+            for (int source = 0; source < n; source++) {
+                dist[source][source] = 0;
+                Queue<Integer> queue = new LinkedList<>();
+                queue.add(source);
+
+                while (!queue.isEmpty()) {
+                    int current = queue.poll();
+                    Node currentNode = getComponentNodes().get(current);
+
+                    for (int neighbor = 0; neighbor < n; neighbor++) {
+                        if (neighbor == current) continue;
+                        Node neighborNode = getComponentNodes().get(neighbor);
+
+                        if (this.graph.getEdge(currentNode, neighborNode) != null
+                                && dist[source][neighbor]
+                                > dist[source][current] + 1) {
+                            dist[source][neighbor] =
+                                    dist[source][current] + 1;
+                            queue.add(neighbor);
+                        }
                     }
                 }
             }
 
-            for (int k = 0; k < getComponentNodes().size(); k++) {
-                int[][] temp = I1;
-                I1 = I2;
-                I2 = temp;
-
-                for (int i = 0; i < getComponentNodes().size(); i++) {
-                    for (int j = 0; j < getComponentNodes().size(); j++) {
-                        I2[i][j] = FastMath.min(I1[i][j], I1[i][k] + I1[k][j]);
-                    }
-                }
-
-            }
-
-            return I2;
-        }
-
-        private ProgressMonitor getMonitor() {
-            return this.monitor;
+            return dist;
         }
 
         private List<Node> getComponentNodes() {
@@ -892,13 +1028,23 @@ public class LayoutUtil {
         }
     }
 
+    // ========================================================================
+    // Fruchterman-Reingold layout
+    // ========================================================================
+
     /**
-     * Lays out a graph by linearly summing repulsive force between all nodes and attractive force between adjacent
-     * nodes.
+     * Lays out a graph by linearly summing repulsive force between all nodes
+     * and attractive force between adjacent nodes.  Includes a linear cooling
+     * schedule and early termination when the layout stabilizes.
      *
      * @author josephramsey
      */
     public static final class FruchtermanReingoldLayout {
+
+        /**
+         * Average displacement per node below which the algorithm stops early.
+         */
+        private static final double CONVERGENCE_THRESHOLD = 0.01;
 
         /**
          * The graph being laid out.
@@ -906,17 +1052,20 @@ public class LayoutUtil {
         private final Graph graph;
 
         /**
-         * Array of e for the graph. The ith edge is e[i][0]-->e[i][[1].
+         * Array of edges for the graph.
+         * The ith edge is edges[i][0] --> edges[i][1].
          */
         private int[][] edges;
 
         /**
-         * The position of each node. The position of the ith node is (pos[i][0], pos[i][1]).
+         * The position of each node.
+         * The position of the ith node is (pos[i][0], pos[i][1]).
          */
         private double[][] nodePosition;
 
         /**
-         * The disposition of each node. The disposition of the ith node is (disp[i][0], disp[i][1]).
+         * The disposition of each node.
+         * The disposition of the ith node is (disp[i][0], disp[i][1]).
          */
         private double[][] nodeDisposition;
 
@@ -929,6 +1078,12 @@ public class LayoutUtil {
          * Temperature.
          */
         private double temperature;
+
+        /**
+         * Initial temperature, stored so cooling can be computed relative to
+         * it.
+         */
+        private double initialTemperature;
 
         /**
          * Leftmost x position to help layout components left to right.
@@ -958,7 +1113,8 @@ public class LayoutUtil {
         public void doLayout() {
             defaultLayout(this.graph);
 
-            List<List<Node>> components = this.graph.paths().connectedComponents();
+            List<List<Node>> components =
+                    this.graph.paths().connectedComponents();
 
             components.sort((o1, o2) -> {
                 int i1 = o1.size();
@@ -967,7 +1123,7 @@ public class LayoutUtil {
             });
 
             for (List<Node> component1 : components) {
-                Collections.sort(component1);
+                components.sort(NaturalSort.naturalComparator());
                 layoutComponent(component1);
             }
         }
@@ -983,27 +1139,29 @@ public class LayoutUtil {
                 nodePosition()[i][1] = node.getCenterY();
             }
 
-            List<Edge> edges = new ArrayList<>(GraphUtils.undirectedGraph(graph()).getEdges());
+            List<Edge> edgeList = new ArrayList<>(
+                    GraphUtils.undirectedGraph(graph()).getEdges());
 
-            edges.removeIf(edge -> !nodes.contains(edge.getNode1()) ||
-                                   !nodes.contains(edge.getNode2()));
+            edgeList.removeIf(edge -> !nodes.contains(edge.getNode1())
+                    || !nodes.contains(edge.getNode2()));
 
-            this.edges = new int[edges.size()][2];
+            this.edges = new int[edgeList.size()][2];
 
-            for (int i = 0; i < edges.size(); i++) {
-                Edge edge = edges.get(i);
+            for (int i = 0; i < edgeList.size(); i++) {
+                Edge edge = edgeList.get(i);
                 int v = nodes.indexOf(edge.getNode1());
                 int u = nodes.indexOf(edge.getNode2());
                 this.edges()[i][0] = v;
                 this.edges()[i][1] = u;
             }
 
-            double avgDegree = 2 * this.graph.getNumEdges() / (double) this.graph.getNumNodes();
+            double avgDegree = 2 * this.graph.getNumEdges()
+                    / (double) this.graph.getNumNodes();
 
             setOptimalDistance(20.0 + 20.0 * avgDegree);
-            setTemperature();
+            initTemperature();
 
-            for (int i = 0; i < numIterations(); i++) {
+            for (int iter = 0; iter < numIterations(); iter++) {
 
                 // Calculate repulsive forces.
                 for (int v = 0; v < numNodes; v++) {
@@ -1011,8 +1169,10 @@ public class LayoutUtil {
                     nodeDisposition()[v][1] = 0.1;
 
                     for (int u = 0; u < numNodes; u++) {
-                        double deltaX = nodePosition()[u][0] - nodePosition()[v][0];
-                        double deltaY = nodePosition()[u][1] - nodePosition()[v][1];
+                        double deltaX =
+                                nodePosition()[u][0] - nodePosition()[v][0];
+                        double deltaY =
+                                nodePosition()[u][1] - nodePosition()[v][1];
 
                         double norm = norm(deltaX, deltaY);
 
@@ -1022,18 +1182,22 @@ public class LayoutUtil {
 
                         double repulsiveForce = fr(norm);
 
-                        nodeDisposition()[v][0] += (deltaX / norm) * repulsiveForce;
-                        nodeDisposition()[v][1] += (deltaY / norm) * repulsiveForce;
+                        nodeDisposition()[v][0] +=
+                                (deltaX / norm) * repulsiveForce;
+                        nodeDisposition()[v][1] +=
+                                (deltaY / norm) * repulsiveForce;
                     }
                 }
 
                 // Calculate attractive forces.
-                for (int j = 0; j < edges.size(); j++) {
+                for (int j = 0; j < edgeList.size(); j++) {
                     int u = this.edges()[j][0];
                     int v = this.edges()[j][1];
 
-                    double deltaX = nodePosition()[v][0] - nodePosition()[u][0];
-                    double deltaY = nodePosition()[v][1] - nodePosition()[u][1];
+                    double deltaX =
+                            nodePosition()[v][0] - nodePosition()[u][0];
+                    double deltaY =
+                            nodePosition()[v][1] - nodePosition()[u][1];
 
                     double norm = norm(deltaX, deltaY);
 
@@ -1048,32 +1212,52 @@ public class LayoutUtil {
                     nodeDisposition()[v][0] -= attractX;
                     nodeDisposition()[v][1] -= attractY;
 
-                    if (Double.isNaN(nodeDisposition()[v][0]) ||
-                        Double.isNaN(nodeDisposition()[v][1])) {
-                        throw new IllegalStateException("Undefined disposition.");
+                    if (Double.isNaN(nodeDisposition()[v][0])
+                            || Double.isNaN(nodeDisposition()[v][1])) {
+                        throw new IllegalStateException(
+                                "Undefined disposition.");
                     }
 
                     nodeDisposition()[u][0] += attractX;
                     nodeDisposition()[u][1] += attractY;
 
-                    if (Double.isNaN(nodeDisposition()[u][0]) ||
-                        Double.isNaN(nodeDisposition()[u][1])) {
-                        throw new IllegalStateException("Undefined disposition.");
+                    if (Double.isNaN(nodeDisposition()[u][0])
+                            || Double.isNaN(nodeDisposition()[u][1])) {
+                        throw new IllegalStateException(
+                                "Undefined disposition.");
                     }
                 }
 
+                // Apply displacement clamped by temperature;
+                // track total movement for early termination.
+                double totalDisplacement = 0.0;
+
                 for (int v = 0; v < numNodes; v++) {
-                    double norm = norm(nodeDisposition()[v][0], nodeDisposition()[v][1]);
+                    double norm = norm(nodeDisposition()[v][0],
+                            nodeDisposition()[v][1]);
 
-                    nodePosition()[v][0] += (nodeDisposition()[v][0] / norm) *
-                                            FastMath.min(norm, getTemperature());
-                    nodePosition()[v][1] += (nodeDisposition()[v][1] / norm) *
-                                            FastMath.min(norm, getTemperature());
+                    double clampedX = (nodeDisposition()[v][0] / norm)
+                            * TMath.min(norm, getTemperature());
+                    double clampedY = (nodeDisposition()[v][1] / norm)
+                            * TMath.min(norm, getTemperature());
 
-                    if (Double.isNaN(nodePosition()[v][0]) ||
-                        Double.isNaN(nodePosition()[v][1])) {
-                        throw new IllegalStateException("Undefined position.");
+                    nodePosition()[v][0] += clampedX;
+                    nodePosition()[v][1] += clampedY;
+
+                    totalDisplacement += norm(clampedX, clampedY);
+
+                    if (Double.isNaN(nodePosition()[v][0])
+                            || Double.isNaN(nodePosition()[v][1])) {
+                        throw new IllegalStateException(
+                                "Undefined position.");
                     }
+                }
+
+                cool(iter);
+
+                // Early termination if the layout has stabilized.
+                if (totalDisplacement / numNodes < CONVERGENCE_THRESHOLD) {
+                    break;
                 }
             }
 
@@ -1112,7 +1296,7 @@ public class LayoutUtil {
             }
         }
 
-        //============================PRIVATE METHODS=========================//  \
+        //============================PRIVATE METHODS=========================//
 
         private double fa(double d) {
             return (d * d) / getOptimalDistance();
@@ -1123,7 +1307,7 @@ public class LayoutUtil {
         }
 
         private double norm(double x, double y) {
-            return FastMath.sqrt(x * x + y * y);
+            return TMath.sqrt(x * x + y * y);
         }
 
         private Graph graph() {
@@ -1162,9 +1346,22 @@ public class LayoutUtil {
             return this.temperature;
         }
 
-        private void setTemperature() {
-            this.temperature = 5.0;
+        /**
+         * Initializes temperature proportional to graph size.
+         */
+        private void initTemperature() {
+            this.initialTemperature =
+                    10.0 * Math.sqrt(graph().getNumNodes());
+            this.temperature = this.initialTemperature;
+        }
+
+        /**
+         * Linear cooling schedule: temperature decreases toward zero over
+         * the total number of iterations.
+         */
+        private void cool(int iteration) {
+            this.temperature = this.initialTemperature
+                    * (1.0 - (double) iteration / numIterations());
         }
     }
 }
-

@@ -21,6 +21,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -88,13 +89,12 @@ public class EditorUtils {
             return new File(directory, prefix + "." + suffix);
         }
 
-        List<String> files = Arrays.asList(Objects.requireNonNull(directory.list()));
         String name;
         int i = 0;
 
         do {
             name = prefix + (++i) + "." + suffix;
-        } while (files.contains(name));
+        } while (new File(directory, name).exists());
 
         return new File(directory, name);
     }
@@ -127,6 +127,7 @@ public class EditorUtils {
     public static File getSaveFileWithPath(String prefix, String suffix,
                                            Component parent, boolean overwrite, String dialogName, String saveLocation) {
         JFileChooser chooser = EditorUtils.createJFileChooser(dialogName, saveLocation);
+        renameButton(chooser, "Cancel", "Don't Save");
 
         String fileSaveLocation;
         if (saveLocation == null) {
@@ -183,6 +184,20 @@ public class EditorUtils {
         }
 
         return outfile;
+    }
+
+    private static void renameButton(Container container, String originalText, String newText) {
+        for (Component c : container.getComponents()) {
+            if (c instanceof JButton button) {
+                String text = button.getText();
+                if (text != null && text.equals(originalText)) {
+                    button.setText(newText);
+                    return;
+                }
+            } else if (c instanceof Container child) {
+                renameButton(child, originalText, newText);
+            }
+        }
     }
 
     /**
@@ -276,7 +291,7 @@ public class EditorUtils {
     }
 
     private static String commonPrefix(String s1, String s2) {
-        int minLength = Math.min(s1.length(), s2.length());
+        int minLength = TMath.min(s1.length(), s2.length());
         int i = 0;
         while (i < minLength && s1.charAt(i) == s2.charAt(i)) {
             i++;
@@ -289,9 +304,6 @@ public class EditorUtils {
      * component does not have focus.
      */
     public static class JTextFieldWithPrompt extends JTextField {
-        /**
-         * The prompt text.
-         */
         private final String promptText;
         /**
          * The color of the prompt text.
@@ -342,6 +354,13 @@ public class EditorUtils {
                 g2d.drawString(promptText, getInsets().left, getHeight() - padding - 1);
                 g2d.dispose();
             }
+        }
+
+        /**
+         * The prompt text.
+         */
+        public String getPromptText() {
+            return promptText;
         }
     }
 }

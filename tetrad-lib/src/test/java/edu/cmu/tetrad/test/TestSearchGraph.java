@@ -36,10 +36,11 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.SublistGenerator;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.*;
 
-import static org.apache.commons.math3.util.FastMath.log;
-import static org.apache.commons.math3.util.FastMath.pow;
+import static edu.cmu.tetrad.util.TMath.log;
+import static edu.cmu.tetrad.util.TMath.pow;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -355,7 +356,12 @@ public final class TestSearchGraph {
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         IndependenceTest test2 = new IndTestFisherZ(data, 0.001);
 
         Rfci fci3 = new Rfci(test2);

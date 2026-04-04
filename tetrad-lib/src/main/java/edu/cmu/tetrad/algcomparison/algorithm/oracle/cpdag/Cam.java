@@ -4,7 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.LatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.Experimental;
@@ -15,10 +15,9 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.score.AdditiveLocalScorer;
-import edu.cmu.tetrad.search.score.CamAdditivePsplineBic;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -33,12 +32,13 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "CAM",
         command = "cam",
-        algoType = AlgType.forbid_latent_common_causes
+        algoType = AlgType.forbid_latent_common_causes,
+        dataType = DataType.Continuous
 )
 @Bootstrapping
 @Experimental
 public class Cam extends AbstractBootstrapAlgorithm implements Algorithm,
-        HasKnowledge, ReturnsBootstrapGraphs, LatentStructureAlgorithm {
+        AcceptsKnowledge, ReturnsBootstrapGraphs, LatentStructureAlgorithm {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -82,8 +82,8 @@ public class Cam extends AbstractBootstrapAlgorithm implements Algorithm,
         final int maxParents = 20;//parameters.getInt(Params.MAX_PARENTS, 20);
 
         // PNS strength: keep top-K univariate candidates per target (set to large value to effectively disable)
-        final int pnsTopK = Math.min(10, Math.max(1, data.getNumColumns() - 1));//parameters.getInt(Params.PNS_TOP_K,
-//                Math.min(10, Math.max(1, data.getNumColumns() - 1)));
+        final int pnsTopK = TMath.min(10, TMath.max(1, data.getNumColumns() - 1));//parameters.getInt(Params.PNS_TOP_K,
+//                TMath.min(10, TMath.max(1, data.getNumColumns() - 1)));
 
         // Ridge: use a dedicated param if present; otherwise tiny default
         final double ridge = parameters.getDouble(Params.GIN_RIDGE, ridgeDefault);

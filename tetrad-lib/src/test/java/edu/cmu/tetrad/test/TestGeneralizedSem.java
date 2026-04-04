@@ -201,7 +201,12 @@ public class TestGeneralizedSem {
 
         SemPm semPm = new SemPm(graph);
         SemIm semIm = new SemIm(semPm);
-        DataSet dataSet = semIm.simulateData(sampleSize, false);
+        DataSet dataSet = null;
+        try {
+            dataSet = semIm.simulateData(sampleSize, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         print(semPm);
 
@@ -409,7 +414,11 @@ public class TestGeneralizedSem {
         SemPm semPm = new SemPm(graph);
         SemIm semIm = new SemIm(semPm);
 
-        semIm.simulateDataReducedForm(1000, false);
+        try {
+            semIm.simulateDataReducedForm(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         GeneralizedSemPm pm = new GeneralizedSemPm(semPm);
         GeneralizedSemIm im = new GeneralizedSemIm(pm, semIm);

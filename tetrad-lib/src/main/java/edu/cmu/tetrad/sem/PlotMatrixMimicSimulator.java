@@ -5,7 +5,9 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
@@ -210,10 +212,10 @@ public final class PlotMatrixMimicSimulator {
                     s += da * db;
                 }
                 double cov = s / (n - 1.0);
-                double denom = Math.sqrt(Math.max(1e-18, var[a] * var[b]));
+                double denom = TMath.sqrt(TMath.max(1e-18, var[a] * var[b]));
                 double corr = cov / denom;
                 // clamp a hair to avoid numerical >1
-                corr = Math.max(-0.999999, Math.min(0.999999, corr));
+                corr = TMath.max(-0.999999, TMath.min(0.999999, corr));
                 C.set(a, b, corr);
             }
         }
@@ -240,18 +242,16 @@ public final class PlotMatrixMimicSimulator {
         int n = Z.length;
         int p = Z[0].length;
 
-        SplittableRandom rng = new SplittableRandom(seed);
-
         for (int j = 0; j < p; j++) {
-            double q = 1.0 + (2.0 * rng.nextDouble() - 1.0) * s; // [1-s, 1+s]
+            double q = 1.0 + (2.0 * RandomUtil.getInstance().nextDouble() - 1.0) * s; // [1-s, 1+s]
             if (q < 0.2) q = 0.2;
 
             // transform
             for (int i = 0; i < n; i++) {
                 double z = Z[i][j];
-                double a = Math.abs(z);
-                double t = Math.pow(a, q);
-                Z[i][j] = Math.copySign(t, z);
+                double a = TMath.abs(z);
+                double t = TMath.pow(a, q);
+                Z[i][j] = TMath.copySign(t, z);
             }
 
             // re-standardize
@@ -272,8 +272,8 @@ public final class PlotMatrixMimicSimulator {
         if (n == 1) return sorted[0];
 
         double x = u * (n - 1);
-        int i = (int) Math.floor(x);
-        int j = Math.min(n - 1, i + 1);
+        int i = (int) TMath.floor(x);
+        int j = TMath.min(n - 1, i + 1);
         double t = x - i;
 
         double a = sorted[i];
@@ -325,7 +325,7 @@ public final class PlotMatrixMimicSimulator {
 
             // average rank in [start+1, end+1]
             double avg = (start + 1 + end + 1) / 2.0;
-            int avgInt = (int) Math.rint(avg);
+            int avgInt = (int) TMath.rint(avg);
 
             for (int k = start; k <= end; k++) {
                 r[idx[k]] = avgInt;
@@ -338,13 +338,6 @@ public final class PlotMatrixMimicSimulator {
 
     // ---------------- core: copula fitting ----------------
 
-    private static double nextGaussian(SplittableRandom rng) {
-        // Box-Muller
-        double u1 = Math.max(1e-12, rng.nextDouble());
-        double u2 = rng.nextDouble();
-        return Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
-    }
-
     private static void standardizeInPlace(double[] x) {
         int n = x.length;
         double mean = 0.0;
@@ -356,8 +349,8 @@ public final class PlotMatrixMimicSimulator {
             x[i] -= mean;
             ss += x[i] * x[i];
         }
-        double var = ss / Math.max(1, (n - 1));
-        double sd = Math.sqrt(Math.max(1e-12, var));
+        double var = ss / TMath.max(1, (n - 1));
+        double sd = TMath.sqrt(TMath.max(1e-12, var));
         for (int i = 0; i < n; i++) x[i] /= sd;
     }
 
@@ -449,7 +442,7 @@ public final class PlotMatrixMimicSimulator {
      * @param cholRetries the maximum number of retries for the Cholesky decomposition; must be a positive integer.
      */
     public void setCholRetries(int cholRetries) {
-        this.cholRetries = Math.max(1, cholRetries);
+        this.cholRetries = TMath.max(1, cholRetries);
     }
 
     /**
@@ -514,14 +507,12 @@ public final class PlotMatrixMimicSimulator {
 
         DMatrixRMaj L = chol.getT(null); // lower-tri
 
-        SplittableRandom rng = new SplittableRandom(seed);
-
         double[][] Z = new double[m][p];
 
         // For each row: g ~ N(0,I), z = L g
         double[] g = new double[p];
         for (int i = 0; i < m; i++) {
-            for (int j = 0; j < p; j++) g[j] = nextGaussian(rng);
+            for (int j = 0; j < p; j++) g[j] = RandomUtil.getInstance().nextGaussian();
 
             for (int a = 0; a < p; a++) {
                 double s = 0;

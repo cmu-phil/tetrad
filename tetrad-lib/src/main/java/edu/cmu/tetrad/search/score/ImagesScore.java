@@ -82,7 +82,7 @@ public class ImagesScore implements Score {
         for (Score score : this.scores) {
             double _score = score.localScoreDiff(x, y, z);
 
-            if (Double.isNaN(_score)) {
+            if (!Double.isNaN(_score)) {
                 sum += _score;
                 count++;
             }

@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.Parameters;
 import java.io.Serial;
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.tanh;
+import static edu.cmu.tetrad.util.TMath.tanh;
 
 /**
  * Number of parameters for a discrete Bayes model of the data. Must be for a discrete dataset.

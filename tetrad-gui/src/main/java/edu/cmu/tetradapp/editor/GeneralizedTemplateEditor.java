@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.TemplateExpander;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.util.StringTextField;
 import org.jetbrains.annotations.NotNull;
@@ -602,7 +603,7 @@ class GeneralizedTemplateEditor extends JComponent {
             }
         } else if ("Parameter Initializations".equals(this.combo.getSelectedItem())) {
             List<String> _parameters = new ArrayList<>(getSemPm().getParameters());
-            Collections.sort(_parameters);
+            _parameters.sort(NaturalSort.naturalComparator());
 
             for (String parameter : _parameters) {
                 String formula;
@@ -627,7 +628,7 @@ class GeneralizedTemplateEditor extends JComponent {
             }
         } else if ("Estimation Starting Values".equals(this.combo.getSelectedItem())) {
             List<String> _parameters = new ArrayList<>(getSemPm().getParameters());
-            Collections.sort(_parameters);
+            _parameters.sort(NaturalSort.naturalComparator());
 
             for (String parameter : _parameters) {
                 String formula;
@@ -685,7 +686,7 @@ class GeneralizedTemplateEditor extends JComponent {
             }
         } else if ("Parameter Initializations".equals(this.combo.getSelectedItem())) {
             List<String> _parameters = new ArrayList<>(getSemPm().getParameters());
-            Collections.sort(_parameters);
+            _parameters.sort(NaturalSort.naturalComparator());
 
             for (String parameter : _parameters) {
                 Box c = Box.createHorizontalBox();
@@ -699,7 +700,7 @@ class GeneralizedTemplateEditor extends JComponent {
             }
         } else if ("Estimation Starting Values".equals(this.combo.getSelectedItem())) {
             List<String> _parameters = new ArrayList<>(getSemPm().getParameters());
-            Collections.sort(_parameters);
+            _parameters.sort(NaturalSort.naturalComparator());
 
             for (String parameter : _parameters) {
                 Box c = Box.createHorizontalBox();

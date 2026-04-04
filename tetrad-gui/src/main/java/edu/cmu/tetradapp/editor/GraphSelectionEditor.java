@@ -21,6 +21,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
@@ -203,26 +204,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
         // Add to buttonPanel
         buttonPanel.add(executeButton);
-
-//        // Info button added by Zhou to show edge types
-//        JLabel infoLabel = new JLabel("More information on FCI graph edge types");
-//        infoLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
-//
-//        // Info button added by Zhou to show edge types
-//        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
-//        infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
-//
-//        // Clock info button to show edge types instructions - Zhou
-//        infoBtn.addActionListener(e -> {
-//            helpSet.setHomeID("graph_edge_types");
-//            HelpBroker broker = helpSet.createHelpBroker();
-//            ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-//            listener.actionPerformed(e);
-//        });
-//
-//        // Add to buttonPanel
-//        buttonPanel.add(infoLabel);
-//        buttonPanel.add(infoBtn);
 
         // Add top level componments to container
         add(createTopMenuBar(), BorderLayout.NORTH);
@@ -1225,7 +1206,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
              * Sorts the elements in the list.
              */
             public void sort() {
-                Collections.sort(this.delegate);
+                this.delegate.sort(NaturalSort.naturalComparator());
                 this.fireContentsChanged(this, 0, this.delegate.size());
             }
         }

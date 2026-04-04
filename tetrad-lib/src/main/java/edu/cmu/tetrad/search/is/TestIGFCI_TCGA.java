@@ -13,6 +13,7 @@ import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetReader;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.File;
 import java.io.IOException;
@@ -147,7 +148,7 @@ public class TestIGFCI_TCGA {
             Path outDir
     ) {
         final int n = trainData.getNumRows();
-        final int nameColIndex = trainWithNames.getColumn(trainWithNames.getVariable(DEFAULT_NAME_COLUMN));
+        final int nameColIndex = trainWithNames.getColumnIndex(trainWithNames.getVariable(DEFAULT_NAME_COLUMN));
 
         BDeuScore populationScore = new BDeuScore(bs); // for structure prior only
 
@@ -212,13 +213,13 @@ public class TestIGFCI_TCGA {
 
     private static DataSet stripNameColumn(DataSet withNames, String nameCol) {
         DataSet copy = withNames.copy();
-        int idx = copy.getColumn(copy.getVariable(nameCol));
+        int idx = copy.getColumnIndex(copy.getVariable(nameCol));
         copy.removeColumn(idx);
         return copy;
     }
 
     private static DataSet bootstrap(DataSet data, double fraction) {
-        int numRows = (int) Math.round(fraction * data.getNumRows());
+        int numRows = (int) TMath.round(fraction * data.getNumRows());
         return new BootstrapSampler().sample(data, numRows);
         // NOTE: BootstrapSampler().sample() samples with replacement in Tetrad.
     }

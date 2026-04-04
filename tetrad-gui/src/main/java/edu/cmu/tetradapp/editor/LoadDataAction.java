@@ -29,6 +29,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -40,6 +41,7 @@ import java.util.prefs.Preferences;
  */
 final class LoadDataAction extends AbstractAction {
 
+    @Serial
     private static final long serialVersionUID = 929333197876935694L;
 
     /**
@@ -133,6 +135,10 @@ final class LoadDataAction extends AbstractAction {
         }
 
         dataModelList.addAll(_dataModelList);
+
+        if (dataModelList.getSelectedModel() == null && !dataModelList.isEmpty()) {
+            dataModelList.setSelectedModel(dataModelList.get(0));
+        }
 
         this.dataEditor.replace(dataModelList);
         this.dataEditor.selectFirstTab();

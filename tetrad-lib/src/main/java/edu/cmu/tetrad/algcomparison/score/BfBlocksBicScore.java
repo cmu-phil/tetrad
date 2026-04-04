@@ -20,13 +20,12 @@
 
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.annotation.General;
-import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.search.score.BlocksBicScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.Parameters;
@@ -37,19 +36,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Wrapper for Blocks BIC Score (Blocks-BIC) version.
- *
- * @author josephramsey
- * @author bryanandrews
- * @version $Id: $Id
- */
-@edu.cmu.tetrad.annotation.Score(
-        name = "BF-Blocks-BIC",
-        command = "bf-blocks-bic-score",
-        dataType = DataType.Mixed)
-@Mixed
-@General
+///**
+// * Wrapper for Blocks BIC Score (Blocks-BIC) version.
+// *
+// * @author josephramsey
+// * @author bryanandrews
+// * @version $Id: $Id
+// */
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "BF-Blocks-BIC",
+//        command = "bf-blocks-bic-score",
+//        dataType = DataType.Mixed)
+//@Mixed
+//@General
 public class BfBlocksBicScore implements ScoreWrapper {
 
     @Serial
@@ -109,7 +108,7 @@ public class BfBlocksBicScore implements ScoreWrapper {
 
         this.blockSpec = new BlockSpec(embeddedDataSetFull, blocks, variables);
 
-        edu.cmu.tetrad.search.score.BlocksBicScore score = new edu.cmu.tetrad.search.score.BlocksBicScore(
+        BlocksBicScore score = new BlocksBicScore(
                 this.blockSpec);
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));

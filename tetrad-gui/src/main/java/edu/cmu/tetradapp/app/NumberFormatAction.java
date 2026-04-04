@@ -74,7 +74,7 @@ final class NumberFormatAction extends AbstractAction
                 new DecimalFormat(constructSimpleFormatString()).format(sample));
         renderFieldBasic.setMaximumSize(new Dimension(150, 50));
         renderFieldBasic.setEditable(false);
-        renderFieldBasic.setBackground(Color.WHITE);
+//        renderFieldBasic.setBackground(Color.WHITE);
 
         JCheckBox scientific = new JCheckBox(
                 "Use scientific notation",
@@ -182,7 +182,7 @@ final class NumberFormatAction extends AbstractAction
         JTextField sampleFieldAdvanced = new JTextField("" + sample);
         JTextField renderFieldAdvanced = new JTextField(getNumberFormat().format(sample));
         renderFieldAdvanced.setEditable(false);
-        renderFieldAdvanced.setBackground(Color.WHITE);
+//        renderFieldAdvanced.setBackground(Color.WHITE);
 
         this.formatField.addKeyListener(new KeyAdapter() {
             public void keyReleased(KeyEvent e) {
@@ -334,8 +334,8 @@ final class NumberFormatAction extends AbstractAction
         double sample = Double.parseDouble(sampleFieldAdvanced.getText());
         NumberFormat nf = new DecimalFormat(format);
         renderFieldAdvanced.setText(nf.format(sample));
-        sampleFieldAdvanced.setForeground(Color.BLACK);
-        this.formatField.setForeground(Color.BLACK);
+//        sampleFieldAdvanced.setForeground(Color.BLACK);
+//        this.formatField.setForeground(Color.BLACK);
         Preferences.userRoot().put("numberFormat", format);
     }
 

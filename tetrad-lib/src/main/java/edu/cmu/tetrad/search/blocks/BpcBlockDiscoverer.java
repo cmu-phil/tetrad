@@ -49,7 +49,7 @@ public class BpcBlockDiscoverer implements BlockDiscoverer {
     private final DataSet dataSet;
     private final double alpha;
     private final int ess;
-    private final SingleClusterPolicy policy;
+    private final SingletonClusterPolicy policy;
     private final boolean verbose;
 
     /**
@@ -62,7 +62,7 @@ public class BpcBlockDiscoverer implements BlockDiscoverer {
      * @param policy  the policy applied to adjust or refine single clusters during block discovery
      * @param verbose flag indicating whether verbose output should be generated during the discovery process
      */
-    public BpcBlockDiscoverer(DataSet dataSet, double alpha, int ess, SingleClusterPolicy policy, boolean verbose) {
+    public BpcBlockDiscoverer(DataSet dataSet, double alpha, int ess, SingletonClusterPolicy policy, boolean verbose) {
         this.dataSet = dataSet;
         this.alpha = alpha;
         this.ess = ess;

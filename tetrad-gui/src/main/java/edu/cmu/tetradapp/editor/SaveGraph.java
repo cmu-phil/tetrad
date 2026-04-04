@@ -20,8 +20,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
@@ -158,8 +156,7 @@ public class SaveGraph extends AbstractAction {
             }
 
             try {
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                String text = gson.toJson(graph);
+                String text = GraphSaveLoadUtils.graphToJson(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);

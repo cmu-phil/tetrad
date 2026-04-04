@@ -40,8 +40,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
-import static org.apache.commons.math3.util.FastMath.max;
-import static org.apache.commons.math3.util.FastMath.min;
+import static edu.cmu.tetrad.util.TMath.max;
+import static edu.cmu.tetrad.util.TMath.min;
 
 /**
  * Implements the Fast Greedy Equivalence Search (FGES) algorithm. This is an implementation of the Greedy Equivalence
@@ -86,11 +86,11 @@ public class Fges implements IGraphSearch, DagScorer {
      */
     private final Set<Node> emptySet = new HashSet<>();
     /**
-     * Used to find potentially directed paths for cycle checking.
+     * Counter for logging progress during initialization.
      */
     private final int[] count = new int[1];
     /**
-     * Used to find potentially directed paths for cycle checking.
+     * Maximum depth for cycle checking and path searching.
      */
     private final int depth = 10000;
     /**
@@ -109,11 +109,6 @@ public class Fges implements IGraphSearch, DagScorer {
      * Map from edges to arrows.
      */
     private final Map<Edge, ArrowConfig> arrowsMap = new ConcurrentHashMap<>();
-    /**
-     * Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows. The ordering
-     * doesn't matter; it just has to be transitive.
-     */
-    // private int arrowIndex = 0;
     private final AtomicInteger arrowIndex = new AtomicInteger(0);
     /**
      * The fork join pool.
@@ -226,8 +221,8 @@ public class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Greedy equivalence search: Start from the empty graph, add edges tillsetre the model is significant. Then start
-     * deleting edges till a minimum is achieved.
+     * Greedy equivalence search: Start from the empty graph, add edges until the model is significant. Then start
+     * deleting edges until a minimum is achieved.
      *
      * @return the resulting Pattern.
      */
@@ -497,6 +492,11 @@ public class Fges implements IGraphSearch, DagScorer {
     private void fes() {
         int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
 
+        // Clear stale cross-pass cache so the config guard cannot suppress
+        // arrows whose previous queue entry was consumed in an earlier pass.
+        sortedArrows.clear();
+        arrowsMap.clear();
+
         try {
             reevaluateForward(new HashSet<>(variables));
         } catch (InterruptedException e) {
@@ -540,11 +540,33 @@ public class Fges implements IGraphSearch, DagScorer {
 
             insert(x, y, arrow.getHOrT(), arrow.getBump());
 
+//            Set<Node> process = revertToCpdag();
+//
+//            process.add(x);
+//            process.add(y);
+//            process.addAll(getCommonAdjacents(x, y));
+//
+//            try {
+//                reevaluateForward(new HashSet<>(process));
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+
+            // Fges.java — inside fes(), after revertToCpdag() (around line 538)
+
             Set<Node> process = revertToCpdag();
 
             process.add(x);
             process.add(y);
             process.addAll(getCommonAdjacents(x, y));
+
+            // Add non-adjacent forward candidates of every Meek-affected node so that
+            // TNeighbors changes propagated by Meek are captured for Insert scoring.
+            Set<Node> meekExpansion = new HashSet<>();
+            for (Node m : process) {
+                meekExpansion.addAll(getPotentialForwardAdjacents(m));
+            }
+            process.addAll(meekExpansion);
 
             try {
                 reevaluateForward(new HashSet<>(process));
@@ -587,82 +609,37 @@ public class Fges implements IGraphSearch, DagScorer {
      * @param nodes the set of nodes for which to reevaluate arrows
      */
     private void reevaluateForward(final Set<Node> nodes) throws InterruptedException {
-        class AdjTask implements Callable<Boolean> {
+        List<Callable<Boolean>> tasks = new ArrayList<>();
 
-            private final List<Node> nodes;
-            private final int from;
-            private final int to;
+        int chunkSize = getChunkSize(nodes.size());
+        List<Node> nodesList = new ArrayList<>(nodes);
 
-            private AdjTask(List<Node> nodes, int from, int to) {
-                this.nodes = nodes;
-                this.from = from;
-                this.to = to;
+        for (int i = 0; i < nodesList.size(); i += chunkSize) {
+            if (Thread.currentThread().isInterrupted()) {
+                pool.shutdownNow();
+                throw new RuntimeException("Interrupted");
             }
 
-            @Override
-            public Boolean call() {
+            final int from = i;
+            final int to = min(nodesList.size(), i + chunkSize);
+            tasks.add(() -> {
                 for (int _y = from; _y < to; _y++) {
                     if (Thread.currentThread().isInterrupted()) break;
 
-                    Node y = nodes.get(_y);
+                    Node y = nodesList.get(_y);
 
-                    List<Node> adj;
-
-                    if (mode == Mode.heuristicSpeedup) {
-                        adj = effectEdgesGraph.getAdjacentNodes(y);
-                    } else if (mode == Mode.coverNoncolliders) {
-                        Set<Node> g = new HashSet<>();
-
-                        for (Node n : graph.getAdjacentNodes(y)) {
-                            for (Node m : graph.getAdjacentNodes(n)) {
-                                if (graph.isAdjacentTo(y, m)) {
-                                    continue;
-                                }
-
-                                if (graph.isDefCollider(m, n, y)) {
-                                    continue;
-                                }
-
-                                g.add(m);
-                            }
-                        }
-
-                        adj = new ArrayList<>(g);
-                    } else if (mode == Mode.allowUnfaithfulness) {
-                        adj = new ArrayList<>(variables);
-                    } else {
-                        throw new IllegalStateException();
-                    }
+                    List<Node> adj = getPotentialForwardAdjacents(y);
 
                     for (Node x : adj) {
                         if (boundGraph != null && !(boundGraph.isAdjacentTo(x, y))) {
                             continue;
                         }
 
-                        try {
-                            calculateArrowsForward(x, y);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
+                        calculateArrowsForward(x, y);
                     }
                 }
-
                 return true;
-            }
-        }
-
-        List<Callable<Boolean>> tasks = new ArrayList<>();
-
-        int chunkSize = getChunkSize(nodes.size());
-
-        for (int i = 0; i < nodes.size(); i += chunkSize) {
-            if (Thread.currentThread().isInterrupted()) {
-                pool.shutdownNow();
-                throw new RuntimeException("Interrupted");
-            }
-
-            AdjTask task = new AdjTask(new ArrayList<>(nodes), i, min(nodes.size(), i + chunkSize));
-            tasks.add(task);
+            });
         }
 
         try {
@@ -671,6 +648,33 @@ public class Fges implements IGraphSearch, DagScorer {
             Thread.currentThread().interrupt();
             throw e;
         }
+    }
+
+    /**
+     * Returns a list of potential nodes to consider for forward arrows to node y, based on the current mode.
+     */
+    private List<Node> getPotentialForwardAdjacents(Node y) {
+        return switch (mode) {
+            case heuristicSpeedup -> effectEdgesGraph.getAdjacentNodes(y);
+            case coverNoncolliders -> {
+                Set<Node> g = new HashSet<>();
+                for (Node n : graph.getAdjacentNodes(y)) {
+                    for (Node m : graph.getAdjacentNodes(n)) {
+                        if (graph.isAdjacentTo(y, m)) {
+                            continue;
+                        }
+
+                        if (graph.isDefCollider(m, n, y)) {
+                            continue;
+                        }
+
+                        g.add(m);
+                    }
+                }
+                yield new ArrayList<>(g);
+            }
+            case allowUnfaithfulness -> new ArrayList<>(variables);
+        };
     }
 
     /**
@@ -738,10 +742,6 @@ public class Fges implements IGraphSearch, DagScorer {
      * @param parents    the set of parent nodes
      * @param bump       the bump value of the arrow
      */
-//    private void addArrowForward(Node a, Node b, Set<Node> hOrT, Set<Node> TNeighbors, Set<Node> naYX, Set<Node> parents, double bump) {
-//        Arrow arrow = new Arrow(bump, a, b, hOrT, TNeighbors, naYX, parents, arrowIndex++);
-//        sortedArrows.add(arrow);
-//    }
     private void addArrowForward(Node a, Node b, Set<Node> hOrT, Set<Node> TNeighbors,
                                  Set<Node> naYX, Set<Node> parents, double bump) {
         Arrow arrow = new Arrow(bump, a, b, hOrT, TNeighbors, naYX, parents,
@@ -1416,22 +1416,22 @@ public class Fges implements IGraphSearch, DagScorer {
         private Set<Node> TNeighbors;
 
         /**
-         * Constructs a new instance of the Arrow class with the given parameters.
+         * Constructs a new instance of the Arrow class.
          *
-         * @param bump    The bump value of the arrow.
-         * @param a       The first node of the arrow.
-         * @param b       The second node of the arrow.
-         * @param hOrT    The set of nodes representing H or T.
-         * @param capTorH The set of nodes representing Cap or H.
-         * @param naYX    The set of nodes representing Na or YX.
-         * @param parents The set of parent nodes.
-         * @param index   The index of the arrow.
+         * @param bump       The bump value of the arrow.
+         * @param a          The first node of the arrow.
+         * @param b          The second node of the arrow.
+         * @param hOrT       The set of nodes representing H or T.
+         * @param TNeighbors The set of nodes representing tail neighbors.
+         * @param naYX       The set of nodes representing NaYX.
+         * @param parents    The set of parent nodes.
+         * @param index      The index of the arrow.
          */
-        Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> capTorH, Set<Node> naYX, Set<Node> parents, int index) {
+        Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> TNeighbors, Set<Node> naYX, Set<Node> parents, int index) {
             this.bump = bump;
             this.a = a;
             this.b = b;
-            this.setTNeighbors(capTorH);
+            this.TNeighbors = TNeighbors;
             this.hOrT = hOrT;
             this.naYX = naYX;
             this.index = index;
@@ -1617,23 +1617,10 @@ public class Fges implements IGraphSearch, DagScorer {
                         continue;
                     }
 
-//                    int child = hashIndices.get(y);
-//                    int parent = hashIndices.get(x);
-//                    double bump = score.localScoreDiff(parent, child);
-//
-//                    if (symmetricFirstStep) {
-//                        double bump2 = score.localScoreDiff(child, parent);
-//                        bump = max(bump, bump2);
-//                    }
-
                     double bump = initialPairBump(x, y, hashIndices);
                     if (symmetricFirstStep) {
                         double bump2 = initialPairBumpReverse(x, y, hashIndices);
                         bump = max(bump, bump2);
-                    }
-
-                    if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) {
-                        continue;
                     }
 
                     if (bump > 0) {

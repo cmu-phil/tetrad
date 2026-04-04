@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.algcomparison.simulation;
 
@@ -209,13 +209,13 @@ public class BayesNetSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-//        if (this.pm == null) {
-        parameters.addAll(BayesPm.getParameterNames());
-//        }
+        if (this.pm == null) {
+            parameters.addAll(BayesPm.getParameterNames());
+        }
 
-//        if (this.semIm == null) {
-        parameters.addAll(MlBayesIm.getParameterNames());
-//        }
+        if (this.im == null) {
+            parameters.addAll(MlBayesIm.getParameterNames());
+        }
 
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
@@ -289,7 +289,7 @@ public class BayesNetSimulation implements Simulation {
         } catch (Exception e) {
             e.printStackTrace();
             throw new IllegalArgumentException("Sorry, I couldn't simulate from that Bayes IM; perhaps not all of\n"
-                                               + "the parameters have been specified.");
+                    + "the parameters have been specified.");
         }
     }
 

@@ -10,8 +10,10 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Example adapter for a Conditional-Gaussian LRT residual-vs-environment change test. Replace TODOs with your concrete
- * API (you already ran CG-LRT this morning).
+ * Example adapter for a Conditional-Gaussian LRT residual-vs-environment change test.
+ * <p>
+ * This class uses a basis-function-based independence test to detect changes in the distribution of residuals
+ * with respect to an environment variable.
  */
 public final class CgLrtChangeTest implements ChangeTest {
 
@@ -60,10 +62,5 @@ public final class CgLrtChangeTest implements ChangeTest {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
-        // Pseudocode outline you can wire to your existing plumbing:
-        // 1) Fit Y ~ Z under conditional-Gaussian; obtain residuals R.
-        // 2) Test dependence of R on E via (degenerate or conditional Gaussian) LRT.
-        // 3) Return (p < alpha).
     }
 }

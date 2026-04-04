@@ -16,23 +16,25 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.*;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -107,30 +109,31 @@ public class Simulation extends DataWrapper implements
      * @param graphSource the source of the graph to be used in the simulation
      * @param parameters  the parameters to be used in the simulation
      */
-    public Simulation(GraphSource graphSource, Parameters parameters) {
-        if (graphSource instanceof Simulation _simulation) {
-            this.simulation = _simulation.simulation;
-            this.parameters = new Parameters(_simulation.parameters);
-            this.name = _simulation.name + ".copy";
-            this.fixedGraph = _simulation.fixedGraph;
-            this.fixedSimulation = _simulation.fixedSimulation;
-            createSimulation(); // The suggestion is that you shouldn't simulate before the user clicks 'simulate'
-        } else {
-            this.fixedGraph = true;
-            this.parameters = parameters;
-            this.fixedSimulation = false;
-            setSourceGraph(graphSource.getGraph());
+    public Simulation(GraphSource graphSource, Parameters parameters) throws ParseException {
+        this.fixedGraph = true;
 
-            if (parameters.getParametersNames().contains("simulationsDropdownPreference")) {
-                String simulationType = String.valueOf(parameters.getValues("simulationsDropdownPreference")[0]);
-                this.simulation = SimulationUtils.create(simulationType, new SingleGraph(graphSource.getGraph()));
+        this.parameters = parameters;
+        this.fixedSimulation = false;
+        setSourceGraph(graphSource.getGraph());
 
-                // Resimulation whenever graph source changed and "Execute" button is clicked.
-                createSimulation();
-            } else {
-                this.simulation = new BayesNetSimulation(new SingleGraph(graphSource.getGraph()));
+        String simulationType = String.valueOf(parameters.getValues("simulationsDropdownPreference")[0]);
+
+        try {
+            this.simulation = SimulationUtils.create(simulationType, new SingleGraph(graphSource.getGraph()));
+        } catch (Exception e) {
+            this.simulation = SimulationUtils.create(SimulationTypes.STRUCTURAL_EQUATION_MODEL, new SingleGraph(graphSource.getGraph()));
+        }
+
+        this.simulation.createData(parameters, true);
+        List<String> parameters1 = this.simulation.getParameters();
+
+        for (String key : parameters1) {
+            if (this.parameters.get(key) == null) {
+                this.parameters.set(key, ParamDescriptions.getInstance().get(key).getDefaultValue());
             }
         }
+
+        createSimulation();
     }
 
     /**
@@ -139,7 +142,7 @@ public class Simulation extends DataWrapper implements
      * @param wrapper    the BayesImWrapper instance used to create the simulation
      * @param parameters the Parameters instance used for configuring the simulation
      */
-    public Simulation(BayesImWrapper wrapper, Parameters parameters) {
+    public Simulation(BayesImWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new BayesNetSimulation(wrapper.getBayesIm());
         this.parameters = parameters;
         createSimulation();
@@ -151,7 +154,7 @@ public class Simulation extends DataWrapper implements
      * @param wrapper    the BayesImWrapperObs object to use for creating the simulation
      * @param parameters the Parameters object for the simulation
      */
-    public Simulation(BayesImWrapperObs wrapper, Parameters parameters) {
+    public Simulation(BayesImWrapperObs wrapper, Parameters parameters) throws ParseException {
         this.simulation = new BayesNetSimulation(wrapper.getBayesIm());
         this.parameters = parameters;
         createSimulation();
@@ -163,7 +166,7 @@ public class Simulation extends DataWrapper implements
      * @param wrapper    The BayesPmWrapper object containing the Bayesian network model.
      * @param parameters The Parameters object containing the simulation parameters.
      */
-    public Simulation(BayesPmWrapper wrapper, Parameters parameters) {
+    public Simulation(BayesPmWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new BayesNetSimulation(wrapper.getBayesPm());
         this.parameters = parameters;
         createSimulation();
@@ -175,7 +178,7 @@ public class Simulation extends DataWrapper implements
      * @param wrapper    The BayesEstimatorWrapper object.
      * @param parameters The Parameters object.
      */
-    public Simulation(BayesEstimatorWrapper wrapper, Parameters parameters) {
+    public Simulation(BayesEstimatorWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
         this.parameters = parameters;
         createSimulation();
@@ -187,7 +190,7 @@ public class Simulation extends DataWrapper implements
      * @param wrapper    The DirichletBayesImWrapper used by the simulation.
      * @param parameters The Parameters used for the simulation.
      */
-    public Simulation(DirichletBayesImWrapper wrapper, Parameters parameters) {
+    public Simulation(DirichletBayesImWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new BayesNetSimulation(wrapper.getDirichletBayesIm());
         this.parameters = parameters;
         createSimulation();
@@ -199,20 +202,8 @@ public class Simulation extends DataWrapper implements
      * @param wrapper    The DirichletEstimatorWrapper object used to estimate the Bayesian network.
      * @param parameters The Parameters object used for the simulation.
      */
-    public Simulation(DirichletEstimatorWrapper wrapper, Parameters parameters) {
+    public Simulation(DirichletEstimatorWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
-        this.parameters = parameters;
-        createSimulation();
-    }
-
-    /**
-     * Creates a Simulation object.
-     *
-     * @param wrapper    the CptInvariantUpdaterWrapper object used for initializing the simulation
-     * @param parameters the Parameters object used for configuring the simulation
-     */
-    public Simulation(CptInvariantUpdaterWrapper wrapper, Parameters parameters) {
-        this.simulation = new BayesNetSimulation(wrapper.getBayesUpdater().getManipulatedBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
@@ -223,7 +214,7 @@ public class Simulation extends DataWrapper implements
      * @param wrapper    the SemPmWrapper object for accessing the SEM-PM functionality
      * @param parameters the Parameters object containing simulation parameters
      */
-    public Simulation(SemPmWrapper wrapper, Parameters parameters) {
+    public Simulation(SemPmWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new SemSimulation(wrapper.getSemPm());
         this.parameters = parameters;
         createSimulation();
@@ -235,13 +226,13 @@ public class Simulation extends DataWrapper implements
      * @param wrapper    the SemImWrapper object used to initialize the simulation
      * @param parameters the Parameters object used to configure the simulation
      */
-    public Simulation(HybridCgPmWrapper wrapper, Parameters parameters) {
+    public Simulation(HybridCgPmWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new HybridCgSimulation(wrapper.getHybridCgPm());
         this.parameters = parameters;
         createSimulation();
     }
 
-    public Simulation(HybridCgImWrapper wrapper, Parameters parameters) {
+    public Simulation(HybridCgImWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new HybridCgSimulation(wrapper.getHybridCgIm());
         this.parameters = parameters;
         createSimulation();
@@ -253,7 +244,7 @@ public class Simulation extends DataWrapper implements
      * @param wrapper    the SemImWrapper object used to initialize the simulation
      * @param parameters the Parameters object used to configure the simulation
      */
-    public Simulation(SemImWrapper wrapper, Parameters parameters) {
+    public Simulation(SemImWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new SemSimulation(wrapper.getSemIm());
         this.parameters = parameters;
         createSimulation();
@@ -265,7 +256,7 @@ public class Simulation extends DataWrapper implements
      * @param wrapper    The StandardizedSemImWrapper object that encapsulates the standardized semantic image.
      * @param parameters The Parameters object that specifies the simulation parameters.
      */
-    public Simulation(StandardizedSemImWrapper wrapper, Parameters parameters) {
+    public Simulation(StandardizedSemImWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new StandardizedSemSimulation(wrapper.getStandardizedSemIm());
         this.parameters = parameters;
         createSimulation();
@@ -277,7 +268,7 @@ public class Simulation extends DataWrapper implements
      * @param wrapper    the SemEstimatorWrapper containing the estimated SEM image
      * @param parameters the Parameters object containing the simulation parameters
      */
-    public Simulation(SemEstimatorWrapper wrapper, Parameters parameters) {
+    public Simulation(SemEstimatorWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new SemSimulation(wrapper.getEstimatedSemIm());
         this.parameters = parameters;
         createSimulation();
@@ -289,7 +280,7 @@ public class Simulation extends DataWrapper implements
      * @param wrapper    the SemUpdaterWrapper object containing the SEM updater
      * @param parameters the Parameters object containing simulation parameters
      */
-    public Simulation(SemUpdaterWrapper wrapper, Parameters parameters) {
+    public Simulation(SemUpdaterWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new SemSimulation(wrapper.getSemUpdater().getManipulatedSemIm());
         this.parameters = parameters;
         createSimulation();
@@ -301,7 +292,7 @@ public class Simulation extends DataWrapper implements
      * @param wrapper    the wrapper object that provides the necessary SEM-PM model for the simulation
      * @param parameters the parameters needed for running the simulation
      */
-    public Simulation(GeneralizedSemPmWrapper wrapper, Parameters parameters) {
+    public Simulation(GeneralizedSemPmWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new GeneralSemSimulation(wrapper.getSemPm());
         this.parameters = parameters;
         createSimulation();
@@ -314,7 +305,7 @@ public class Simulation extends DataWrapper implements
      * @param parameters the Parameters object containing simulation parameters
      * @throws IllegalArgumentException if the wrapper contains more than one SEM IM
      */
-    public Simulation(GeneralizedSemImWrapper wrapper, Parameters parameters) {
+    public Simulation(GeneralizedSemImWrapper wrapper, Parameters parameters) throws ParseException {
         if (wrapper.getSemIms().size() != 1) {
             throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
         }
@@ -331,12 +322,6 @@ public class Simulation extends DataWrapper implements
      * @param parameters  the parameters for the simulation
      */
     public Simulation(DataWrapper dataWrapper, Parameters parameters) {
-//        if (this.simulation == null) {
-//            this.simulation = new LinearFisherModel(new RandomForward(), dataWrapper.getDataModelList());
-//            this.parameters = parameters;
-//            this.fixedGraph = false;
-//            this.fixedSimulation = false;
-
         inputGraph = new RandomForward().createGraph(parameters);
         inputData = (DataSet) dataWrapper.getDataModelList().getFirst();
 
@@ -348,17 +333,10 @@ public class Simulation extends DataWrapper implements
         this.parameters = parameters;
         this.fixedGraph = true;
         this.fixedSimulation = false;
-//        }
     }
 
-    public Simulation(DataWrapper dataWrapper, GraphWrapper graph, Parameters parameters) {
-//        if (this.simulation == null) {
-//            this.simulation = new LinearFisherModel(new RandomForward(), dataWrapper.getDataModelList());
-//            this.parameters = parameters;
-//            this.fixedGraph = false;
-//            this.fixedSimulation = false;
-//        }
-
+    public Simulation(DataWrapper dataWrapper, GraphWrapper graph, Parameters parameters)
+            throws ParseException {
         inputGraph = graph.getGraph();
         inputData = (DataSet) dataWrapper.getDataModelList().getFirst();
 
@@ -517,8 +495,10 @@ public class Simulation extends DataWrapper implements
      * This method is called when the user clicks the "Simulate" button. It creates new data for the simulation,
      * regardless of any previously created data.
      * </p>
+     *
+     * @throws ParseException if there is an error parsing the parameters
      */
-    public void createSimulation() {
+    public void createSimulation() throws ParseException {
         // Every time the users click the Simulate button, new data needs to be created
         // regardless of already created data - Zhou
         this.simulation.createData(this.parameters, false);
@@ -583,8 +563,8 @@ public class Simulation extends DataWrapper implements
      * implement HasKnowledge
      */
     public Knowledge getKnowledge() {
-        if (this.simulation instanceof HasKnowledge) {
-            return ((HasKnowledge) this.simulation).getKnowledge();
+        if (this.simulation instanceof AcceptsKnowledge) {
+            return ((AcceptsKnowledge) this.simulation).getKnowledge();
         } else {
             return new Knowledge();
         }

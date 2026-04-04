@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
@@ -7,13 +8,13 @@ import org.apache.commons.math3.stat.inference.TTest;
 
 import java.util.*;
 
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.factory.LinearSolverFactory_DDRM;
 import org.ejml.interfaces.linsol.LinearSolverDense;
 
 import java.util.Arrays;
-import java.util.Random;
 
 /**
  * Practical nonlinearity tests for conditional mean E(Y|X).
@@ -220,7 +221,7 @@ public final class NonlinearityTests {
         int d = (X.length == 0) ? 0 : X[0].length;
         if (n < 20 || d == 0) return new TestResult(Double.NaN, Double.NaN, false);
 
-        kfold = Math.max(2, Math.min(kfold, Math.max(2, n / 5)));
+        kfold = TMath.max(2, TMath.min(kfold, TMath.max(2, n / 5)));
 
         int[] idx = shuffledIndices(n, 1729L);
         int[][] folds = makeFolds(idx, kfold);
@@ -235,7 +236,7 @@ public final class NonlinearityTests {
 
             // Nonlinear: kernel ridge via RFF
             // (simple, deterministic; enough for “is nonlinear predictor better?”)
-            double sigma = medianPairwiseDistanceND(sp.XTr, Math.min(sp.XTr.length, 300));
+            double sigma = medianPairwiseDistanceND(sp.XTr, TMath.min(sp.XTr.length, 300));
             double mseNl = mseKernelRidgeRff(sp.yTr, sp.XTr, sp.yTe, sp.XTe,
                     /*numFeat*/200, /*lambda*/1e-3, sigma, 2468L + f);
 
@@ -421,9 +422,9 @@ public final class NonlinearityTests {
 
         for (int p = 0; p < n; p++) {
             int max = p;
-            double best = Math.abs(M[p][p]);
+            double best = TMath.abs(M[p][p]);
             for (int i = p + 1; i < n; i++) {
-                double v = Math.abs(M[i][p]);
+                double v = TMath.abs(M[i][p]);
                 if (v > best) {
                     best = v;
                     max = i;
@@ -438,7 +439,7 @@ public final class NonlinearityTests {
                 x[max] = t;
             }
             double piv = M[p][p];
-            if (Math.abs(piv) < 1e-12) piv = (piv >= 0 ? 1e-12 : -1e-12);
+            if (TMath.abs(piv) < 1e-12) piv = (piv >= 0 ? 1e-12 : -1e-12);
 
             for (int i = p + 1; i < n; i++) {
                 double a = M[i][p] / piv;
@@ -452,7 +453,7 @@ public final class NonlinearityTests {
             double sum = x[i];
             for (int j = i + 1; j < n; j++) sum -= M[i][j] * sol[j];
             double piv = M[i][i];
-            if (Math.abs(piv) < 1e-12) piv = (piv >= 0 ? 1e-12 : -1e-12);
+            if (TMath.abs(piv) < 1e-12) piv = (piv >= 0 ? 1e-12 : -1e-12);
             sol[i] = sum / piv;
         }
         return sol;
@@ -473,9 +474,8 @@ public final class NonlinearityTests {
     private static int[] shuffledIndices(int n, long seed) {
         int[] idx = new int[n];
         for (int i = 0; i < n; i++) idx[i] = i;
-        Random r = new Random(seed);
         for (int i = n - 1; i > 0; i--) {
-            int j = r.nextInt(i + 1);
+            int j = RandomUtil.getInstance().nextInt(i + 1);
             int t = idx[i];
             idx[i] = idx[j];
             idx[j] = t;
@@ -560,20 +560,19 @@ public final class NonlinearityTests {
         int n = X.length;
         int d = X[0].length;
 
-        int mf = Math.max(1, m / 2);
+        int mf = TMath.max(1, m / 2);
         int outM = 2 * mf;
 
-        Random rng = new Random(seed);
         double[][] W = new double[mf][d];
         double[] b = new double[mf];
 
         double wStd = 1.0 / sigma;
         for (int i = 0; i < mf; i++) {
-            for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * wStd;
-            b[i] = rng.nextDouble() * 2.0 * Math.PI;
+            for (int j = 0; j < d; j++) W[i][j] = RandomUtil.getInstance().nextGaussian() * wStd;
+            b[i] = RandomUtil.getInstance().nextDouble() * 2.0 * TMath.PI;
         }
 
-        double scale = Math.sqrt(2.0 / outM);
+        double scale = TMath.sqrt(2.0 / outM);
         double[][] Phi = new double[n][outM];
 
         for (int i = 0; i < n; i++) {
@@ -582,8 +581,8 @@ public final class NonlinearityTests {
                 double dot = 0.0;
                 for (int j = 0; j < d; j++) dot += W[f][j] * X[i][j];
                 double t = dot + b[f];
-                Phi[i][col++] = scale * Math.cos(t);
-                Phi[i][col++] = scale * Math.sin(t);
+                Phi[i][col++] = scale * TMath.cos(t);
+                Phi[i][col++] = scale * TMath.sin(t);
             }
         }
         return Phi;
@@ -599,7 +598,7 @@ public final class NonlinearityTests {
 
     private static double[] pow(double[] x, int p) {
         double[] out = new double[x.length];
-        for (int i = 0; i < x.length; i++) out[i] = Math.pow(x[i], p);
+        for (int i = 0; i < x.length; i++) out[i] = TMath.pow(x[i], p);
         return out;
     }
 
@@ -650,11 +649,11 @@ public final class NonlinearityTests {
 
             for (int k = 1; k <= knotsPerVar; k++) {
                 double q = k / (double) (knotsPerVar + 1);
-                int idx = Math.min(xs.length - 1, Math.max(0, (int) Math.floor(q * (xs.length - 1))));
+                int idx = TMath.min(xs.length - 1, TMath.max(0, (int) TMath.floor(q * (xs.length - 1))));
                 double knot = xs[idx];
 
                 double[] h = new double[n];
-                for (int i = 0; i < n; i++) h[i] = Math.max(0.0, x[i] - knot);
+                for (int i = 0; i < n; i++) h[i] = TMath.max(0.0, x[i] - knot);
                 feats.add(h);
             }
         }
@@ -691,7 +690,7 @@ public final class NonlinearityTests {
         }
 
         // --- sane fold count (like your other CV method) ---
-        int folds = Math.max(2, Math.min(kfold, Math.max(2, n / 5)));
+        int folds = TMath.max(2, TMath.min(kfold, TMath.max(2, n / 5)));
 
         final long seed = 1729L;
 
@@ -707,7 +706,7 @@ public final class NonlinearityTests {
         // ---- make folds ----
         int[] perm = new int[n];
         for (int i = 0; i < n; i++) perm[i] = i;
-        shuffleInPlace(perm, new Random(seed));
+        shuffleInPlace(perm);
 
         int[] foldId = new int[n];
         for (int i = 0; i < n; i++) foldId[perm[i]] = i % folds;
@@ -757,11 +756,10 @@ public final class NonlinearityTests {
             double mseAdd = mse(yTe, yHatAdd);
 
             // ---- RFF design (RBF) ----
-            double sigma = medianPairwiseDistanceND(XTr, Math.min(400, XTr.length));
+            double sigma = medianPairwiseDistanceND(XTr, TMath.min(400, XTr.length));
             if (!(sigma > 0) || !Double.isFinite(sigma)) sigma = 1.0;
 
-            Random rng = new Random(mix64(seed ^ (long) f));
-            RffMap rff = new RffMap(d, rffFeatures, sigma, rng, useCosSinPairs);
+            RffMap rff = new RffMap(d, rffFeatures, sigma, useCosSinPairs);
 
             DMatrixRMaj PhiTr = rff.transform(XTr);
             DMatrixRMaj PhiTe = rff.transform(XTe);
@@ -818,7 +816,7 @@ public final class NonlinearityTests {
             }
             double mean = sum / nTr;
             double var = (sumsq - nTr * mean * mean) / (nTr - 1);
-            double sd = (var > 0) ? Math.sqrt(var) : 1.0;
+            double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
 
             for (int i = 0; i < nTr; i++) train.set(i, j, (train.get(i, j) - mean) / sd);
             for (int i = 0; i < nTe; i++) test.set(i, j, (test.get(i, j) - mean) / sd);
@@ -838,7 +836,7 @@ public final class NonlinearityTests {
             }
             double mean = sum / n;
             double var = (sumsq - n * mean * mean) / (n - 1);
-            double sd = (var > 0) ? Math.sqrt(var) : 1.0;
+            double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
 
             for (int i = 0; i < n; i++) M.set(i, j, (M.get(i, j) - mean) / sd);
         }
@@ -858,7 +856,7 @@ public final class NonlinearityTests {
             }
             double mean = sum / nTr;
             double var = (sumsq - nTr * mean * mean) / (nTr - 1);
-            double sd = (var > 0) ? Math.sqrt(var) : 1.0;
+            double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
 
             for (int i = 0; i < n; i++) M.set(i, j, (M.get(i, j) - mean) / sd);
         }
@@ -883,7 +881,7 @@ public final class NonlinearityTests {
         if (!solver.setA(A)) {
             // mild fallback jitter
             DMatrixRMaj Aj = A.copy();
-            addDiagonalInPlace(Aj, Math.max(1e-10, ridge));
+            addDiagonalInPlace(Aj, TMath.max(1e-10, ridge));
             if (!solver.setA(Aj)) return fillNaN(PhiTe.numRows);
         }
 
@@ -943,7 +941,7 @@ public final class NonlinearityTests {
         double s2 = varSample(diffs);
         if (!(s2 > 0) || !Double.isFinite(s2)) return Double.NaN;
 
-        double t = mu / Math.sqrt(s2 / n);
+        double t = mu / TMath.sqrt(s2 / n);
 
         // Use normal approx if you don't want Apache commons:
         // p = 1 - Phi(t)
@@ -955,14 +953,14 @@ public final class NonlinearityTests {
     private static double normalCdf(double z) {
         // Abramowitz-Stegun erf approximation
         // Phi(z) = 0.5 * (1 + erf(z/sqrt(2)))
-        double x = z / Math.sqrt(2.0);
+        double x = z / TMath.sqrt(2.0);
         return 0.5 * (1.0 + erfApprox(x));
     }
 
     private static double erfApprox(double x) {
         // numerical approximation to erf
         double sign = (x < 0) ? -1.0 : 1.0;
-        x = Math.abs(x);
+        x = TMath.abs(x);
 
         double a1 = 0.254829592;
         double a2 = -0.284496736;
@@ -972,13 +970,13 @@ public final class NonlinearityTests {
         double p = 0.3275911;
 
         double t = 1.0 / (1.0 + p * x);
-        double y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+        double y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * TMath.exp(-x * x);
         return sign * y;
     }
 
-    private static void shuffleInPlace(int[] a, Random rng) {
+    private static void shuffleInPlace(int[] a) {
         for (int i = a.length - 1; i > 0; i--) {
-            int j = rng.nextInt(i + 1);
+            int j = RandomUtil.getInstance().nextInt(i + 1);
             int tmp = a[i]; a[i] = a[j]; a[j] = tmp;
         }
     }
@@ -1028,7 +1026,7 @@ public final class NonlinearityTests {
                     ss += v * v;
                 }
                 double var = (n > 1) ? ss / (n - 1) : 0.0;
-                sd[j] = (var > 0) ? Math.sqrt(var) : 1.0;
+                sd[j] = (var > 0) ? TMath.sqrt(var) : 1.0;
             }
         }
 
@@ -1050,7 +1048,7 @@ public final class NonlinearityTests {
 
         AdditiveHingeBasis(double[][] Xtr, int knotsPerVar) {
             this.d = Xtr[0].length;
-            this.k = Math.max(2, knotsPerVar);
+            this.k = TMath.max(2, knotsPerVar);
             this.knots = new double[d][k];
 
             for (int j = 0; j < d; j++) {
@@ -1061,8 +1059,8 @@ public final class NonlinearityTests {
                 // choose interior quantile knots
                 for (int t = 0; t < k; t++) {
                     double q = (t + 1.0) / (k + 1.0); // (0,1)
-                    int idx = (int) Math.round(q * (col.length - 1));
-                    idx = Math.max(0, Math.min(col.length - 1, idx));
+                    int idx = (int) TMath.round(q * (col.length - 1));
+                    idx = TMath.max(0, TMath.min(col.length - 1, idx));
                     knots[j][t] = col[idx];
                 }
             }
@@ -1102,31 +1100,31 @@ public final class NonlinearityTests {
         final boolean useCosSinPairs;
         final double scale;
 
-        RffMap(int d, int m, double sigma, Random rng, boolean useCosSinPairs) {
+        RffMap(int d, int m, double sigma, boolean useCosSinPairs) {
             this.d = d;
             this.useCosSinPairs = useCosSinPairs;
 
             if (!useCosSinPairs) {
-                this.outM = Math.max(1, m);
+                this.outM = TMath.max(1, m);
                 this.W = new double[outM][d];
                 this.b = new double[outM];
                 double wStd = 1.0 / sigma;
                 for (int i = 0; i < outM; i++) {
-                    for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * wStd;
-                    b[i] = rng.nextDouble() * 2.0 * Math.PI;
+                    for (int j = 0; j < d; j++) W[i][j] = RandomUtil.getInstance().nextGaussian() * wStd;
+                    b[i] = RandomUtil.getInstance().nextDouble() * 2.0 * TMath.PI;
                 }
-                this.scale = Math.sqrt(2.0 / outM);
+                this.scale = TMath.sqrt(2.0 / outM);
             } else {
-                int mf = Math.max(1, m / 2);
+                int mf = TMath.max(1, m / 2);
                 this.outM = 2 * mf;
                 this.W = new double[mf][d];
                 this.b = new double[mf];
                 double wStd = 1.0 / sigma;
                 for (int i = 0; i < mf; i++) {
-                    for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * wStd;
-                    b[i] = rng.nextDouble() * 2.0 * Math.PI;
+                    for (int j = 0; j < d; j++) W[i][j] = RandomUtil.getInstance().nextGaussian() * wStd;
+                    b[i] = RandomUtil.getInstance().nextDouble() * 2.0 * TMath.PI;
                 }
-                this.scale = Math.sqrt(2.0 / outM);
+                this.scale = TMath.sqrt(2.0 / outM);
             }
         }
 
@@ -1141,7 +1139,7 @@ public final class NonlinearityTests {
                         double dot = 0.0;
                         double[] wf = W[f];
                         for (int j = 0; j < d; j++) dot += wf[j] * xi[j];
-                        Phi.set(i, f, scale * Math.cos(dot + b[f]));
+                        Phi.set(i, f, scale * TMath.cos(dot + b[f]));
                     }
                 }
                 return Phi;
@@ -1156,8 +1154,8 @@ public final class NonlinearityTests {
                     double[] wf = W[f];
                     for (int j = 0; j < d; j++) dot += wf[j] * xi[j];
                     double t = dot + b[f];
-                    Phi.set(i, col++, scale * Math.cos(t));
-                    Phi.set(i, col++, scale * Math.sin(t));
+                    Phi.set(i, col++, scale * TMath.cos(t));
+                    Phi.set(i, col++, scale * TMath.sin(t));
                 }
             }
             return Phi;
@@ -1165,7 +1163,7 @@ public final class NonlinearityTests {
     }
 
     private static double medianPairwiseDistanceND(double[][] X, int limit) {
-        int n = Math.min(X.length, limit);
+        int n = TMath.min(X.length, limit);
         if (n < 3) return 1.0;
         int d = X[0].length;
 
@@ -1179,7 +1177,7 @@ public final class NonlinearityTests {
                     double diff = X[i][k] - X[j][k];
                     ss += diff * diff;
                 }
-                double dist = Math.sqrt(ss);
+                double dist = TMath.sqrt(ss);
                 if (dist > 0 && Double.isFinite(dist)) dists[idx++] = dist;
             }
         }
@@ -1189,7 +1187,7 @@ public final class NonlinearityTests {
     }
 
     private static void addDiagonalInPlace(DMatrixRMaj M, double v) {
-        int n = Math.min(M.numRows, M.numCols);
+        int n = TMath.min(M.numRows, M.numCols);
         for (int i = 0; i < n; i++) M.add(i, i, v);
     }
 

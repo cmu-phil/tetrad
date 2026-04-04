@@ -27,7 +27,7 @@ import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.Vector;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -617,8 +617,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
                             }
 //
 //                            if (bump > 0.0) {
-                            if (bump > -getPenaltyDiscount() * FastMath.log(sampleSize())) {
-//                                if (bump > -getPenaltyDiscount() * FastMath.log(sampleSize())) {
+                            if (bump > -getPenaltyDiscount() * TMath.log(sampleSize())) {
+//                                if (bump > -getPenaltyDiscount() * TMath.log(sampleSize())) {
                                 Edge edge = Edges.undirectedEdge(x, y);
                                 effectEdgesGraph.addEdge(edge);
                             }
@@ -899,7 +899,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         Set<Node> naYX = FgesOrienter.getNaYX(a, b, graph);
         List<Node> t = FgesOrienter.getTNeighbors(a, b, graph);
 
-        int _depth = FastMath.min(t.size(), this.depth == -1 ? 1000 : this.depth);
+        int _depth = TMath.min(t.size(), this.depth == -1 ? 1000 : this.depth);
 
         clearArrow(a, b);
 
@@ -1026,7 +1026,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         clearArrow(a, b);
 
         List<Node> _naYX = new ArrayList<>(naYX);
-//        final int _depth = FastMath.min(_naYX.size(), depth == -1 ? 1000 : depth);
+//        final int _depth = TMath.min(_naYX.size(), depth == -1 ? 1000 : depth);
 
         SublistGenerator gen = new SublistGenerator(_naYX.size(), _naYX.size());
         int[] choice;
@@ -1579,7 +1579,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     // Calculates the BIC score.
     private double score(double residualVariance, int n, int p, double c) {
-        return -n * FastMath.log(residualVariance) - c * getK(p) * FastMath.log(n);
+        return -n * TMath.log(residualVariance) - c * getK(p) * TMath.log(n);
     }
 
     // Degrees of freedom--a stringent choice.

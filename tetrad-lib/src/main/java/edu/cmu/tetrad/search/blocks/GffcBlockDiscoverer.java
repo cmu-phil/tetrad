@@ -40,7 +40,7 @@ public class GffcBlockDiscoverer implements BlockDiscoverer {
     private final DataSet dataSet;
     private final double alpha;
     private final int ess;
-    private final SingleClusterPolicy policy;
+    private final SingletonClusterPolicy policy;
     private final boolean verbose;
     private int rMax = 2;
 
@@ -57,7 +57,7 @@ public class GffcBlockDiscoverer implements BlockDiscoverer {
      * @param verbose whether to print verbose output during the block discovery process.
      */
     public GffcBlockDiscoverer(DataSet dataSet, double alpha, int ess,
-                               int rMax, SingleClusterPolicy policy, boolean verbose) {
+                               int rMax, SingletonClusterPolicy policy, boolean verbose) {
         this.dataSet = dataSet;
         this.alpha = alpha;
         this.ess = ess;

@@ -706,7 +706,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @return a boolean
      */
     public boolean isSessionChanged() {
-        return this.session.isSessionChanged();
+        return this.session.isSessionUnsaved();
     }
 
     /**
@@ -715,7 +715,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @param sessionChanged a boolean
      */
     public void setSessionChanged(boolean sessionChanged) {
-        this.session.setSessionChanged(sessionChanged);
+        this.session.setSessionUnsaved(sessionChanged);
     }
 
     /**

@@ -87,6 +87,7 @@ public final class TestEdgeListGraph {
         assertEquals(this.graph, graph3);
     }
 
+    @Test
     public void testSequence2() {
         setUp();
 
@@ -120,6 +121,44 @@ public final class TestEdgeListGraph {
         this.graph.setEndpoint(this.x3, this.x4, Endpoint.ARROW);
 
         assertTrue(this.graph.paths().existsDirectedCycle());
+    }
+
+    @Test
+    public void testIsDefNoncollider() {
+        setUp();
+        this.graph.addNode(this.x1);
+        this.graph.addNode(this.x2);
+        this.graph.addNode(this.x3);
+
+        // x1 --- x2 --- x3  (undirected)
+        this.graph.addUndirectedEdge(this.x1, this.x2);
+        this.graph.addUndirectedEdge(this.x2, this.x3);
+
+        // In the current implementation, undirected edges are NOT def noncolliders
+        // unless they have a tail at the middle node.
+        // x1 --- x2 is Tail-Tail. x2 --- x3 is Tail-Tail.
+        // So x1 --- x2 --- x3 should be a def noncollider because of the tails at x2.
+        assertTrue(this.graph.isDefNoncollider(this.x1, this.x2, this.x3));
+
+        this.graph.clear();
+        this.graph.addNode(this.x1);
+        this.graph.addNode(this.x2);
+        this.graph.addNode(this.x3);
+        // x1 -> x2 <- x3
+        this.graph.addDirectedEdge(this.x1, this.x2);
+        this.graph.addDirectedEdge(this.x3, this.x2);
+        assertFalse(this.graph.isDefNoncollider(this.x1, this.x2, this.x3));
+        assertTrue(this.graph.isDefCollider(this.x1, this.x2, this.x3));
+
+        this.graph.clear();
+        this.graph.addNode(this.x1);
+        this.graph.addNode(this.x2);
+        this.graph.addNode(this.x3);
+        // x1 -> x2 -> x3
+        this.graph.addDirectedEdge(this.x1, this.x2);
+        this.graph.addDirectedEdge(this.x2, this.x3);
+        assertTrue(this.graph.isDefNoncollider(this.x1, this.x2, this.x3));
+        assertFalse(this.graph.isDefCollider(this.x1, this.x2, this.x3));
     }
 
     @Test

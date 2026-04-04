@@ -320,13 +320,12 @@ public class NonlinearFunctionOfLinear {
         Function<Double, Double> g = new MultiLayerPerceptronFunction1D(
                 this.hiddenDimension, // Number of hidden neurons
                 this.inputScale, // Input scaling, affects bumpiness of function
-                Math::tanh, // Activation function
-                -1 // Random seed
+                Math::tanh // Activation function
         )::evaluate;
 
 //        g = Math::tanh;
-//        g = x -> Math.max(0, x);
-//        g = x -> Math.max(0.01 * x, x);
+//        g = x -> TMath.max(0, x);
+//        g = x -> TMath.max(0.01 * x, x);
 
         for (int sample = 0; sample < numSamples; sample++) {
             double y = g.apply(data.getDouble(sample, nodeToIndex.get(node))) / rescaleMax;

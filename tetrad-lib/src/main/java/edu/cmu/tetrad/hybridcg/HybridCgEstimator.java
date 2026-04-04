@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -63,7 +64,7 @@ public final class HybridCgEstimator {
                                                    " (expected equal_frequency, equal_interval, or none)");
         }
 
-        final int binsRequested = Math.max(2, params.getInt("hybridcg.bins", 3));
+        final int binsRequested = TMath.max(2, params.getInt("hybridcg.bins", 3));
 
         if ("none".equals(binPolicy)) {
             // Ensure PM already carries cutpoints for any discrete child with continuous parents
@@ -114,14 +115,14 @@ public final class HybridCgEstimator {
     private static void verifyAlignment(HybridCgPm pm, DataSet data) {
         var nodes = pm.getNodes();
         for (var v : nodes) {
-            int col = data.getColumn(v);
+            int col = data.getColumnIndex(v);
             if (col < 0) {
                 // Retry by name, safely
                 var byNameVar = data.getVariable(v.getName());
                 if (byNameVar == null) {
                     throw new IllegalArgumentException("Variable from PM not found in dataset: " + v.getName());
                 }
-                col = data.getColumn(byNameVar);
+                col = data.getColumnIndex(byNameVar);
                 if (col < 0) {
                     throw new IllegalArgumentException("Variable from PM not found in dataset: " + v.getName());
                 }
@@ -130,13 +131,13 @@ public final class HybridCgEstimator {
     }
 
     private static double[] columnAsDoubles(DataSet data, Node contVar) {
-        int c = data.getColumn(contVar);
+        int c = data.getColumnIndex(contVar);
         if (c < 0) {
             var byNameVar = data.getVariable(contVar.getName());
             if (byNameVar == null) {
                 throw new IllegalArgumentException("Variable not in dataset: " + contVar.getName());
             }
-            c = data.getColumn(byNameVar);
+            c = data.getColumnIndex(byNameVar);
             if (c < 0) {
                 throw new IllegalArgumentException("Variable not in dataset: " + contVar.getName());
             }
@@ -170,7 +171,7 @@ public final class HybridCgEstimator {
         // Nudge ties upward in one pass
         for (int i = 1; i < out.length; i++) {
             if (!(out[i] > out[i - 1])) {
-                out[i] = Math.nextUp(out[i - 1]);
+                out[i] = TMath.nextUp(out[i - 1]);
             }
         }
         for (int i = 1; i < out.length; i++) if (!(out[i] > out[i - 1])) {
@@ -193,8 +194,8 @@ public final class HybridCgEstimator {
         double[] e = new double[bins - 1];
         for (int k = 1; k <= bins - 1; k++) {
             double q = k / (double) bins;
-            int idx = (int) Math.ceil(q * n) - 1;
-            idx = Math.min(Math.max(idx, 0), n - 1);
+            int idx = (int) TMath.ceil(q * n) - 1;
+            idx = TMath.min(TMath.max(idx, 0), n - 1);
             e[k - 1] = data[idx];
         }
         return e;
