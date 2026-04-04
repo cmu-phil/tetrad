@@ -23,22 +23,22 @@ package edu.cmu.tetradapp.app;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 /**
- * Closes the frontmost session of the given desktop.
+ * Shows Peter's algorithm flowcharts.
  *
  * @author josephramsey
  */
-final class LaunchFlowchartAction extends AbstractAction {
+final class AlgorithmFlowchartAction extends AbstractAction {
+
+    private final Component parent;
 
     /**
      * Creates a new close session action for the given desktop.
      */
-    public LaunchFlowchartAction() {
-        super("Launch Algorithm Flowchart");
+    public AlgorithmFlowchartAction(Component parent) {
+        super("Algorithm Flowchart");
+        this.parent = parent;
     }
 
     /**
@@ -47,13 +47,33 @@ final class LaunchFlowchartAction extends AbstractAction {
      * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
-        Desktop d = Desktop.getDesktop();
-        try {
-            d.browse(new URI("https://htmlpreview.github.io/?https:///github.com/cmu-phil/" +
-                             "tetrad/blob/development/tetrad-lib/src/main/resources/docs/manual/flowchart.html"));
-        } catch (IOException | URISyntaxException e2) {
-            e2.printStackTrace();
-        }
+        showFlowchartDialog(parent);
+    }
+
+    public static void showFlowchartDialog(Component parent) {
+        // Load images from resources
+        ImageIcon slide1 = new ImageIcon(AlgorithmFlowchartAction.class.getResource("/docs/manual/images/flowchart/Slide1.png"));
+        ImageIcon slide2 = new ImageIcon(AlgorithmFlowchartAction.class.getResource("/docs/manual/images/flowchart/Slide2.png"));
+
+        // Stack them vertically in a panel
+        JPanel imagePanel = new JPanel();
+        imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS));
+        imagePanel.setBackground(Color.WHITE);
+        imagePanel.add(new JLabel(slide1));
+        imagePanel.add(Box.createVerticalStrut(10));
+        imagePanel.add(new JLabel(slide2));
+
+        // Wrap in a scroll pane
+        JScrollPane scrollPane = new JScrollPane(imagePanel);
+        scrollPane.setPreferredSize(new Dimension(750, 700));
+
+        // Show in a dialog
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(parent),
+                "Tetrad Flowchart", false); // false = non-modal
+        dialog.setContentPane(scrollPane);
+        dialog.pack();
+        dialog.setLocationRelativeTo(parent);
+        dialog.setVisible(true);
     }
 }
 
