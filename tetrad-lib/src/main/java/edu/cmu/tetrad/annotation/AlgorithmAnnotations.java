@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.annotation;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
@@ -90,7 +90,7 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
      * @return true if the algorithm takes knowledge
      */
     public boolean takesKnowledge(Class clazz) {
-        return clazz != null && HasKnowledge.class.isAssignableFrom(clazz);
+        return clazz != null && AcceptsKnowledge.class.isAssignableFrom(clazz);
     }
 
     /**

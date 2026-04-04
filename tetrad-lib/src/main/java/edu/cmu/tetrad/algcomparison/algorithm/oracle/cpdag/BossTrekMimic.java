@@ -25,9 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.BlocksIndTestTs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -65,7 +63,7 @@ import java.util.Set;
 //@Bootstrapping
 @Deprecated(since = "7.9", forRemoval = false)
 public class BossTrekMimic extends AbstractBootstrapAlgorithm
-        implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
+        implements Algorithm, AcceptsKnowledge, ReturnsBootstrapGraphs {
 
     @Serial
     private static final long serialVersionUID = 23L;

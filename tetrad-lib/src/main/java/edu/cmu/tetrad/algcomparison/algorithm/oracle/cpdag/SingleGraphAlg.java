@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -39,7 +39,7 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class SingleGraphAlg implements Algorithm, HasKnowledge {
+public class SingleGraphAlg implements Algorithm, AcceptsKnowledge {
 
     @Serial
     private static final long serialVersionUID = 23L;

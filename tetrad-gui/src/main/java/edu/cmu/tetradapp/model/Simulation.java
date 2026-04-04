@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.*;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
@@ -563,8 +563,8 @@ public class Simulation extends DataWrapper implements
      * implement HasKnowledge
      */
     public Knowledge getKnowledge() {
-        if (this.simulation instanceof HasKnowledge) {
-            return ((HasKnowledge) this.simulation).getKnowledge();
+        if (this.simulation instanceof AcceptsKnowledge) {
+            return ((AcceptsKnowledge) this.simulation).getKnowledge();
         } else {
             return new Knowledge();
         }

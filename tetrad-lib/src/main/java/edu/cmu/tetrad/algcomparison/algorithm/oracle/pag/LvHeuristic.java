@@ -25,7 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -61,7 +61,7 @@ import java.util.List;
 @Bootstrapping
 @Experimental
 public class LvHeuristic extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
-        HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
+        AcceptsKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;

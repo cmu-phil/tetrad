@@ -27,7 +27,7 @@ import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
@@ -44,7 +44,7 @@ import static junit.framework.TestCase.assertTrue;
 
 public class TestKnowledge {
 
-    private static void testKnowledge(DataSet dataSet, Knowledge knowledge, Parameters parameters, HasKnowledge algorithm) {
+    private static void testKnowledge(DataSet dataSet, Knowledge knowledge, Parameters parameters, AcceptsKnowledge algorithm) {
         algorithm.setKnowledge(knowledge);
         Graph _graph = null;
         try {

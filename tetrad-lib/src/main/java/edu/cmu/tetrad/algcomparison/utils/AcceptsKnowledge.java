@@ -28,7 +28,7 @@ import edu.cmu.tetrad.data.Knowledge;
  * @author dmalinsky
  * @version $Id: $Id
  */
-public interface HasKnowledge {
+public interface AcceptsKnowledge {
 
     /**
      * Returns a knowledge object.

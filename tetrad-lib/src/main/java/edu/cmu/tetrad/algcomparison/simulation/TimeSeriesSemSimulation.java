@@ -22,7 +22,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -46,7 +46,7 @@ import java.util.List;
  * @author danielmalinsky
  * @version $Id: $Id
  */
-public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
+public class TimeSeriesSemSimulation implements Simulation, AcceptsKnowledge {
 
     @Serial
     private static final long serialVersionUID = 23L;

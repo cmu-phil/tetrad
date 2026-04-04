@@ -27,7 +27,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.LatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SingleGraphAlg;
 import edu.cmu.tetrad.algcomparison.independence.BlockIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BlockScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.*;
 import edu.cmu.tetrad.data.*;
@@ -217,8 +217,8 @@ public class AlgorithmCard extends JPanel {
     private static final String UI_DATA_FILTER = "ui.search.dataset_filter";
     private static final String UI_KNOWLEDGE   = "ui.search.knowledge";
 
-    private static final java.util.prefs.Preferences PREFS =
-            java.util.prefs.Preferences.userRoot().node("/edu/cmu/tetradapp/editor/search");
+//    private static final java.util.prefs.Preferences PREFS =
+//            java.util.prefs.Preferences.userRoot().node("/edu/cmu/tetradapp/editor/search");
 
     /**
      * <p>Constructor for AlgorithmCard.</p>
@@ -286,33 +286,33 @@ public class AlgorithmCard extends JPanel {
     private void saveGlobalPreferences() {
         AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
         if (algoModel != null && algoModel.getAlgorithm() != null && algoModel.getAlgorithm().annotation() != null) {
-            PREFS.put(UI_ALGO, algoModel.getAlgorithm().annotation().name());
+            parameters.set(UI_ALGO, algoModel.getAlgorithm().annotation().name());
         }
 
         ButtonModel algoTypeSel = this.algoFilterBtnGrp.getSelection();
         if (algoTypeSel != null) {
-            PREFS.put(UI_ALGO_TYPE, algoTypeSel.getActionCommand());
+            parameters.set(UI_ALGO_TYPE, algoTypeSel.getActionCommand());
         }
 
         ButtonModel dataFilterSel = this.datasetFilterBtnGrp.getSelection();
         if (dataFilterSel != null) {
-            PREFS.put(UI_DATA_FILTER, dataFilterSel.getActionCommand());
+            parameters.set(UI_DATA_FILTER, dataFilterSel.getActionCommand());
         }
 
-        PREFS.putBoolean(UI_KNOWLEDGE, this.knowledgeChkBox.isSelected());
+        parameters.set(UI_KNOWLEDGE, this.knowledgeChkBox.isSelected());
 
         IndependenceTestModel testModel =
                 (IndependenceTestModel) this.indTestComboBox.getSelectedItem();
         if (testModel != null && testModel.getIndependenceTest() != null
                 && testModel.getIndependenceTest().annotation() != null) {
-            PREFS.put(UI_IND_TEST, testModel.getIndependenceTest().annotation().command());
+            parameters.set(UI_IND_TEST, testModel.getIndependenceTest().annotation().command());
         }
 
         ScoreModel scoreModel =
                 (ScoreModel) this.scoreComboBox.getSelectedItem();
         if (scoreModel != null && scoreModel.getScore() != null
                 && scoreModel.getScore().annotation() != null) {
-            PREFS.put(UI_SCORE, scoreModel.getScore().annotation().command());
+            parameters.set(UI_SCORE, scoreModel.getScore().annotation().command());
         }
     }
 
@@ -322,7 +322,7 @@ public class AlgorithmCard extends JPanel {
             return s;
         }
 
-        String s = PREFS.get(UI_ALGO, null);
+        String s = parameters.getString(UI_ALGO, null);
         if (s != null && !s.isBlank()) {
             return s;
         }
@@ -336,7 +336,7 @@ public class AlgorithmCard extends JPanel {
             return s;
         }
 
-        return PREFS.get(UI_ALGO_TYPE, "all");
+        return parameters.getString(UI_ALGO_TYPE, "all");
     }
 
     private String getSavedDatasetFilter(Map<String, Object> userAlgoSelections) {
@@ -345,7 +345,7 @@ public class AlgorithmCard extends JPanel {
             return s;
         }
 
-        return PREFS.get(UI_DATA_FILTER, "all");
+        return parameters.getString(UI_DATA_FILTER, "all");
     }
 
     private boolean getSavedKnowledgeFlag(Map<String, Object> userAlgoSelections) {
@@ -354,7 +354,7 @@ public class AlgorithmCard extends JPanel {
             return b;
         }
 
-        return PREFS.getBoolean(UI_KNOWLEDGE, false);
+        return parameters.getBoolean(UI_KNOWLEDGE, false);
     }
 
     private IndependenceTestModel findTestByName(String name) {
@@ -617,7 +617,7 @@ public class AlgorithmCard extends JPanel {
             savedTest = findTestByName(s);
         }
         if (savedTest == null) {
-            String savedCmd = this.parameters.getString(UI_IND_TEST, PREFS.get(UI_IND_TEST, null));
+            String savedCmd = this.parameters.getString(UI_IND_TEST, parameters.getString(UI_IND_TEST, null));
             savedTest = findTestByCommand(savedCmd);
         }
         if (savedTest != null) {
@@ -634,7 +634,7 @@ public class AlgorithmCard extends JPanel {
             savedScore = findScoreByName(s);
         }
         if (savedScore == null) {
-            String savedCmd = this.parameters.getString(UI_SCORE, PREFS.get(UI_SCORE, null));
+            String savedCmd = this.parameters.getString(UI_SCORE, parameters.getString(UI_SCORE, null));
             savedScore = findScoreByCommand(savedCmd);
         }
         if (savedScore != null) {
@@ -813,7 +813,7 @@ public class AlgorithmCard extends JPanel {
             // Optional HasKnowledge filter
             if (this.knowledgeChkBox.isSelected()) {
                 baseStream = baseStream.filter(m ->
-                        HasKnowledge.class.isAssignableFrom(m.getAlgorithm().clazz()));
+                        AcceptsKnowledge.class.isAssignableFrom(m.getAlgorithm().clazz()));
             }
 
             // Block-mode gating:
@@ -837,7 +837,7 @@ public class AlgorithmCard extends JPanel {
                 this.algoDescTextArea.setText("");
                 firePropertyChange("algoFwdBtn", null, false);
             } else {
-                String savedAlgo = this.parameters.getString(UI_ALGO, PREFS.get(UI_ALGO, null));
+                String savedAlgo = this.parameters.getString(UI_ALGO, parameters.getString(UI_ALGO, null));
                 AlgorithmModel model = findAlgorithmByName(savedAlgo);
                 if (model != null) {
                     this.algorithmList.setSelectedValue(model, true);

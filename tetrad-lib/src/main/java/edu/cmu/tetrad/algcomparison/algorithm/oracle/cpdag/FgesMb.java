@@ -25,7 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -56,7 +56,7 @@ import java.util.List;
         algoType = AlgType.search_for_Markov_blankets
 )
 @Bootstrapping
-public class FgesMb extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesScoreWrapper,
+public class FgesMb extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge, TakesScoreWrapper,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial

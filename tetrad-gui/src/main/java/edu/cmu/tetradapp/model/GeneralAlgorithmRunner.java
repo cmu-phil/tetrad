@@ -30,7 +30,7 @@ import edu.cmu.tetrad.algcomparison.independence.TakesGraph;
 import edu.cmu.tetrad.algcomparison.score.BlockScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.MSepScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.data.*;
@@ -452,8 +452,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         // Knowledge into algo if it accepts it
         if (this.knowledge != null && !knowledge.isEmpty()) {
-            if (algo instanceof HasKnowledge) {
-                ((HasKnowledge) algo).setKnowledge(this.knowledge.copy());
+            if (algo instanceof AcceptsKnowledge) {
+                ((AcceptsKnowledge) algo).setKnowledge(this.knowledge.copy());
             } else {
                 throw new IllegalArgumentException("Knowledge has been supplied, but this algorithm does not use knowledge.");
             }
@@ -487,12 +487,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 ((TakesGraph) algo).setGraph(this.sourceGraph);
             }
 
-            if (this.algorithm instanceof HasKnowledge) {
+            if (this.algorithm instanceof AcceptsKnowledge) {
                 Knowledge knowledge1 = TsUtils.getKnowledge(getSourceGraph());
                 if (this.knowledge.isEmpty() && !knowledge1.isEmpty()) {
-                    ((HasKnowledge) algo).setKnowledge(knowledge1);
+                    ((AcceptsKnowledge) algo).setKnowledge(knowledge1);
                 } else {
-                    ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+                    ((AcceptsKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
                 }
             }
 
@@ -537,8 +537,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         ((TakesGraph) algo).setGraph(this.sourceGraph);
                     }
 
-                    if (this.algorithm instanceof HasKnowledge) {
-                        ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+                    if (this.algorithm instanceof AcceptsKnowledge) {
+                        ((AcceptsKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
                     }
 
                     try {
@@ -571,8 +571,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         if (scoreWrapper instanceof BlockScoreWrapper) {
                             ((BlockScoreWrapper) scoreWrapper).setBlockSpec(blockSpec);
                         }
-                        if (scoreWrapper instanceof HasKnowledge) {
-                            ((HasKnowledge) scoreWrapper).setKnowledge(knowledge);
+                        if (scoreWrapper instanceof AcceptsKnowledge) {
+                            ((AcceptsKnowledge) scoreWrapper).setKnowledge(knowledge);
                         }
                     }
 
@@ -581,8 +581,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         if (wrapper instanceof BlockIndependenceWrapper) {
                             ((BlockIndependenceWrapper) wrapper).setBlockSpec(blockSpec);
                         }
-                        if (wrapper instanceof HasKnowledge) {
-                            ((HasKnowledge) wrapper).setKnowledge(knowledge);
+                        if (wrapper instanceof AcceptsKnowledge) {
+                            ((AcceptsKnowledge) wrapper).setKnowledge(knowledge);
                         }
                     }
 
@@ -592,8 +592,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         ((TakesGraph) algo).setGraph(this.sourceGraph);
                     }
 
-                    if (this.algorithm instanceof HasKnowledge) {
-                        ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+                    if (this.algorithm instanceof AcceptsKnowledge) {
+                        ((AcceptsKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
                     }
 
                     // Guard: bootstrapping requires tabular, not covariance

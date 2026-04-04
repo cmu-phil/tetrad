@@ -22,13 +22,10 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -62,7 +59,7 @@ import java.util.List;
 //        dataType = DataType.All
 //)
 //@Bootstrapping
-public class ImagesFges implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWrapper {
+public class ImagesFges implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;

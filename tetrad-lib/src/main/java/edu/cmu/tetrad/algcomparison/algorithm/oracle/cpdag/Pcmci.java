@@ -2,7 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Experimental;
@@ -33,7 +33,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Experimental
-public class Pcmci implements Algorithm, TakesIndependenceWrapper, HasKnowledge {
+public class Pcmci implements Algorithm, TakesIndependenceWrapper, AcceptsKnowledge {
 
     @Serial
     private static final long serialVersionUID = 23L;

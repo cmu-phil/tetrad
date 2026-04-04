@@ -23,7 +23,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -54,7 +54,7 @@ import java.util.*;
 //@Bootstrapping
 @Deprecated
 public class Tgin extends AbstractBootstrapAlgorithm
-        implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
+        implements Algorithm, AcceptsKnowledge, ReturnsBootstrapGraphs {
 
     @Serial
     private static final long serialVersionUID = 23L;

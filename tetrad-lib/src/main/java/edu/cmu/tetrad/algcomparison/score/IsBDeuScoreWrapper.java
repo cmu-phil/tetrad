@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.is.IsBDeuScore;
@@ -22,7 +22,7 @@ import java.util.Map;
         command = "is-bdeu-score",
         dataType = {DataType.Discrete}
 )
-public final class IsBDeuScoreWrapper implements ScoreWrapper, HasKnowledge {
+public final class IsBDeuScoreWrapper implements ScoreWrapper, AcceptsKnowledge {
 
     /**
      * Represents a knowledge structure used within the IsBDeuScoreWrapper class. This variable stores an instance of

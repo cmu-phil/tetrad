@@ -25,10 +25,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -62,7 +60,7 @@ import java.util.List;
 //        algoType = AlgType.forbid_latent_common_causes
 //)
 //@Bootstrapping
-public class Dm extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+public class Dm extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge,
         ReturnsBootstrapGraphs, TakesIndependenceWrapper {
 
     @Serial

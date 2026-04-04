@@ -3,12 +3,9 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -45,7 +42,7 @@ import java.util.function.Function;
 //)
 //@Bootstrapping
 //@Experimental
-public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge,
         TakesIndependenceWrapper, TakesScoreWrapper,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 

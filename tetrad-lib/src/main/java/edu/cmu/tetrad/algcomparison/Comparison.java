@@ -35,7 +35,7 @@ import edu.cmu.tetrad.algcomparison.statistic.ElapsedCpuTime;
 import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
@@ -1359,8 +1359,8 @@ public class Comparison implements TetradSerializable {
         try {
             Algorithm algorithm = algorithmWrapper.getAlgorithm();
 
-            if (setAlgorithmKnowledge && algorithm instanceof HasKnowledge && knowledge != null) {
-                ((HasKnowledge) algorithm).setKnowledge(knowledge);
+            if (setAlgorithmKnowledge && algorithm instanceof AcceptsKnowledge && knowledge != null) {
+                ((AcceptsKnowledge) algorithm).setKnowledge(knowledge);
             }
 
             if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
@@ -1467,8 +1467,8 @@ public class Comparison implements TetradSerializable {
                         continue;
                     }
 
-                    if (_stat instanceof HasKnowledge) {
-                        ((HasKnowledge) _stat).setKnowledge(knowledge);
+                    if (_stat instanceof AcceptsKnowledge) {
+                        ((AcceptsKnowledge) _stat).setKnowledge(knowledge);
                     }
 
                     double stat;
@@ -1499,8 +1499,8 @@ public class Comparison implements TetradSerializable {
                     continue;
                 }
 
-                if (_stat instanceof HasKnowledge) {
-                    ((HasKnowledge) _stat).setKnowledge(knowledge);
+                if (_stat instanceof AcceptsKnowledge) {
+                    ((AcceptsKnowledge) _stat).setKnowledge(knowledge);
                 }
 
                 double stat;
