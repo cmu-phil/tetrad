@@ -72,25 +72,6 @@ public class DaoSimulation implements Simulation {
     private static final long serialVersionUID = 1L;
 
     // -----------------------------------------------------------------------
-    // Parameter name constants
-    // -----------------------------------------------------------------------
-
-//    /**
-//     * Constant <code>DAO_SF_OUT="daoSfOut"</code>
-//     */
-//    public static final String DAO_SF_OUT = "daoSfOut";
-//
-//    /**
-//     * Constant <code>DAO_SF_IN="daoSfIn"</code>
-//     */
-//    public static final String DAO_SF_IN = "daoSfIn";
-//
-//    /**
-//     * Constant <code>DAO_RANDOMIZE_ORDER="daoRandomizeOrder"</code>
-//     */
-//    public static final String DAO_RANDOMIZE_ORDER = "daoRandomizeOrder";
-
-    // -----------------------------------------------------------------------
     // Fields
     // -----------------------------------------------------------------------
 
