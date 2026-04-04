@@ -38,7 +38,6 @@ import java.util.Set;
  */
 public final class Params {
 
-
     private Params() {
     }
 
@@ -1348,6 +1347,19 @@ public final class Params {
      * Constant <code>LEGENDRE_INIT_SCALE="minimaxLegendreMaxIterations"</code>
      */
     public static final String LEGENDRE_INIT_SCALE = "minimaxLegendreInitScale";
+    /**
+     * Constant <code>DAO_SF_OUT="daoSfOut"</code>
+     */
+    public static final String DAO_SF_OUT = "daoSfOut";
+    /**
+     * Constant <code>DAO_RANDOMIZE_ORDER="daoRandomizeOrder"</code>
+     */
+    public static final String DAO_RANDOMIZE_ORDER = "daoRandomizeOrder";
+    /**
+     * Constant <code>DAO_SF_IN="daoSfIn"</code>
+     */
+    public static final String DAO_SF_IN = "daoSfIn";
+
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
