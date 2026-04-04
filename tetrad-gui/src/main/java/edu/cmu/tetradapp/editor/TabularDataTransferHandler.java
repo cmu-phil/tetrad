@@ -81,9 +81,9 @@ class TabularDataTransferHandler extends TransferHandler {
             } else {
                 int[] _rows = tabularData.getSelectedRows();
 
-                if (Arrays.binarySearch(_rows, 1) == -1) {
+                if (Arrays.binarySearch(_rows, 0) == -1) { // was checking for 1
                     rows = new int[_rows.length + 1];
-                    rows[0] = 1;
+                    rows[0] = 0;                             // was 1
                     System.arraycopy(_rows, 0, rows, 1, _rows.length);
                 } else {
                     rows = _rows;
@@ -110,61 +110,50 @@ class TabularDataTransferHandler extends TransferHandler {
 
             for (int displayRow : rows) {
                 if (displayRow == 0) {
+                    // row 0 is now variable names — include it, don't skip
+                    for (int displayCol : cols) {
+                        if (displayCol == 0) continue;
+                        String name = (String) tabularData.getValueAt(0, displayCol); // was getValueAt(1,...)
+                        if (name == null) name = "";
+                        String s = name.trim().isEmpty() ? "C" + (displayCol - 1) : name;
+                        buf.append(s).append("\t");
+                    }
+                    if (buf.length() - 1 > 0) {
+                        buf.deleteCharAt(buf.length() - 1).append("\n");
+                    }
                     continue;
                 }
 
                 for (int displayCol : cols) {
-                    if (displayCol == 0) {
-                        continue;
-                    }
+                    if (displayCol == 0) continue;
 
-                    // Always treat null header as empty string so we don't drop the column.
-                    String name = (String) tabularData.getValueAt(1, displayCol);
-                    if (name == null) {
-                        name = "";
-                    }
+                    int dataRow = displayRow - getNumLeadingRows(); // now subtracts 1
+                    int dataCol = displayCol - getNumLeadingCols();
 
-                    if (displayRow == 1) {
-                        String s = name;
+                    if (dataCol < 0) continue;
 
-                        if (s.trim().equals("")) {
-                            s = "C" + (displayCol - 1);
-                        }
+                    if (dataCol < dataSet.getNumColumns()) {
+                        if (dataRow < dataSet.getNumRows()) {
+                            Object datumObj = dataSet.getObject(dataRow, dataCol);
+                            String datumString = "";
 
-                        buf.append(s).append("\t");
-                    } else {
-                        int dataRow = displayRow - getNumLeadingRows();
-                        int dataCol = displayCol - getNumLeadingCols();
-
-                        if (dataCol < 0) {
-                            continue;
-                        }
-
-                        if (dataCol < dataSet.getNumColumns()) {
-                            if (dataRow < dataSet.getNumRows()) {
-                                Object datumObj = dataSet.getObject(dataRow, dataCol);
-                                String datumString = "";
-
-                                if (datumObj != null) {
-                                    if (datumObj instanceof Number) {
-                                        datumString = datumObj.toString();
-                                    } else if (datumObj instanceof String) {
-                                        // Quote all Strings.
-                                        datumString = "\"" + datumObj + "\"";
-                                    } else {
-                                        throw new IllegalArgumentException();
-                                    }
+                            if (datumObj != null) {
+                                if (datumObj instanceof Number) {
+                                    datumString = datumObj.toString();
+                                } else if (datumObj instanceof String) {
+                                    datumString = "\"" + datumObj + "\"";
+                                } else {
+                                    throw new IllegalArgumentException();
                                 }
-
-                                buf.append(datumString).append("\t");
-                            } else {
-                                buf.append("\t");
                             }
+
+                            buf.append(datumString).append("\t");
+                        } else {
+                            buf.append("\t");
                         }
                     }
                 }
 
-                // we want a newline at the end of each line and not a tab
                 if (buf.length() - 1 > 0) {
                     buf.deleteCharAt(buf.length() - 1).append("\n");
                 }
@@ -194,13 +183,13 @@ class TabularDataTransferHandler extends TransferHandler {
                 int selectedCol = tabularData.getSelectedColumn();
 
                 // Header/column paste if user targets the header row (1) or above (0).
-                boolean headerPaste = selectedRow <= 1;
+                boolean headerPaste = selectedRow <= 0; // was <= 1; row 0 is now variable names
 
                 int startRow = selectedRow;
                 int startCol = selectedCol;
 
-                if (startRow == 0) {
-                    startRow = 1;
+                if (startRow < 0) {       // was startRow == 0; now row 0 is valid (variable names)
+                    startRow = 0;
                 }
 
                 if (startCol < getNumLeadingCols()) {
@@ -502,8 +491,7 @@ class TabularDataTransferHandler extends TransferHandler {
      * The number of initial "special" rows not used to display the data set.
      */
     private int getNumLeadingRows() {
-
-        return 2;
+        return 1; // was 2
     }
 }
 

@@ -519,8 +519,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
         JMenu editMenu = new JMenu("Edit");
 
-        JMenuItem clearCells = new JMenuItem("Clear Cells");
-        JMenuItem deleteSelectedRowsOrColumns = new JMenuItem("Delete Selected Rows or Columns");
+//        JMenuItem clearCells = new JMenuItem("Clear Cells");
+//        JMenuItem deleteSelectedRowsOrColumns = new JMenuItem("Delete Selected Rows or Columns");
         JMenuItem deleteNamedColumns = new JMenuItem("Delete named columns");
         JMenuItem selectNamedColumns = new JMenuItem("Select named columns");
         JMenuItem copyCells = new JMenuItem("Copy Cells");
@@ -528,24 +528,24 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         JMenuItem pasteCells = new JMenuItem("Paste Cells");
         JMenuItem setToMissingCells = new JMenuItem("Set Constants Col To Missing");
 
-        clearCells.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.CTRL_DOWN_MASK));
-        deleteSelectedRowsOrColumns.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_DOWN_MASK));
-        copyCells.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
-        cutCells.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
-        pasteCells.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
+//        clearCells.setAccelerator(
+//                KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.CTRL_DOWN_MASK));
+//        deleteSelectedRowsOrColumns.setAccelerator(
+//                KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_DOWN_MASK));
 
-        clearCells.addActionListener(e -> {
-            TabularDataJTable table = (TabularDataJTable) getSelectedJTable();
-            assert table != null;
-            table.clearSelected();
-            syncDisplayedModelsToWrapper();
-            firePropertyChange("modelChanged", null, null);
-        });
+        int menuMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+
+        copyCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, menuMask));
+        cutCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, menuMask));
+        pasteCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, menuMask));
+
+//        clearCells.addActionListener(e -> {
+//            TabularDataJTable table = (TabularDataJTable) getSelectedJTable();
+//            assert table != null;
+//            table.clearSelected();
+//            syncDisplayedModelsToWrapper();
+//            firePropertyChange("modelChanged", null, null);
+//        });
 
         ActionListener deleteSelectedRowsOrColumnsActionListener = e -> {
             JTable table = getSelectedJTable();
@@ -565,7 +565,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             firePropertyChange("modelChanged", null, null);
         };
 
-        deleteSelectedRowsOrColumns.addActionListener(deleteSelectedRowsOrColumnsActionListener);
+//        deleteSelectedRowsOrColumns.addActionListener(deleteSelectedRowsOrColumnsActionListener);
 
         ActionListener removeNamedColumnsActionListener = e -> {
             String variables = JOptionPane.showInputDialog(JOptionUtils.getCenteringFrame(),
@@ -717,8 +717,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             tableTabular.setShowCategoryNames(source.isSelected());
         });
 
-        editMenu.add(clearCells);
-        editMenu.add(deleteSelectedRowsOrColumns);
+//        editMenu.add(clearCells);
+//        editMenu.add(deleteSelectedRowsOrColumns);
         editMenu.add(deleteNamedColumns);
         editMenu.add(selectNamedColumns);
         editMenu.add(copyCells);

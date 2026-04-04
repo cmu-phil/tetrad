@@ -76,7 +76,31 @@ class TabularDataTable extends AbstractTableModel {
      * Note that returning null here has two effects. First, it
      */
     public String getColumnName(int col) {
-        return null;
+        int columnIndex = col - getNumLeadingCols();
+
+        if (col == 0) return null; // row number column
+
+        if (columnIndex >= 0 && columnIndex < dataSet.getNumColumns()) {
+            Node variable = dataSet.getVariable(columnIndex);
+
+            String header = "C" + (columnIndex + 1);
+
+            if (variable instanceof DiscreteVariable) {
+                header += "-D";
+            } else if (variable instanceof ContinuousVariable) {
+                header += "-C";
+            }
+
+            if (variable.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS) {
+                header += "-I_S";
+            } else if (variable.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) {
+                header += "-I_V";
+            }
+
+            return header;
+        }
+
+        return "C" + (columnIndex + 1); // trailing empty columns
     }
 
     /**
@@ -85,7 +109,7 @@ class TabularDataTable extends AbstractTableModel {
      * @return the number of rows in the wrapper table model. Guarantees that this number will be at least 100.
      */
     public int getRowCount() {
-        int maxRowCount = this.dataSet.getNumRows() + 3;
+        int maxRowCount = this.dataSet.getNumRows() + 2; // was +3, one fewer leading row
         return TMath.max(maxRowCount, 100);
     }
 
@@ -107,47 +131,15 @@ class TabularDataTable extends AbstractTableModel {
     @Override
     public Object getValueAt(int row, int col) {
         int columnIndex = col - getNumLeadingCols();
-        int rowIndex = row - 2;
+        int rowIndex = row - getNumLeadingRows(); // now subtracts 1 instead of 2
 
-//        if (col == 1) {
-//            if (row == 1) {
-//                return "MULT";
-//            }
-//            else if (rowIndex >= 0 && rowIndex < dataSet.getNumRows()) {
-//                return dataSet.getMultiplier(rowIndex);
-//            }
-//        }
-//        else
         if (col >= getNumLeadingCols()
-            && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
+                && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
             Node variable = this.dataSet.getVariable(columnIndex);
 
             if (row == 0) {
-                // Append "-D" notation to discrete variables, "-C" for continuous
-                // and append additional "-I" for those added interventional variables - Zhou
-                String columnHeaderNotationDefault = "C";
-                String columnHeader = columnHeaderNotationDefault + (columnIndex + 1);
-
-                if (variable instanceof DiscreteVariable) {
-                    String columnHeaderNotationDiscrete = "-D";
-                    columnHeader += columnHeaderNotationDiscrete;
-                } else if (variable instanceof ContinuousVariable) {
-                    String columnHeaderNotationContinuous = "-C";
-                    columnHeader += columnHeaderNotationContinuous;
-                }
-
-                // Add header notations for interventional status and value
-                if (variable.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS) {
-                    String columnHeaderNotationInterventionStatus = "-I_S";
-                    columnHeader += columnHeaderNotationInterventionStatus;
-                } else if (variable.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) {
-                    String columnHeaderNotationInterventionValue = "-I_V";
-                    columnHeader += columnHeaderNotationInterventionValue;
-                }
-
-                return columnHeader;
-            } else if (row == 1) {
-                return this.dataSet.getVariable(columnIndex).getName();
+                // Variable name row (was row 1)
+                return variable.getName();
             } else if (rowIndex >= this.dataSet.getNumRows()) {
                 return null;
             } else {
@@ -177,7 +169,7 @@ class TabularDataTable extends AbstractTableModel {
      * {@inheritDoc}
      */
     public boolean isCellEditable(int row, int col) {
-        return row > 0 && col >= 1;
+        return row >= 0 && col >= 1; // was row > 0; row 0 is now variable names
     }
 
     /**
@@ -197,10 +189,10 @@ class TabularDataTable extends AbstractTableModel {
         }
 
         if (col >= getNumLeadingCols()
-            && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
-            if (row == 1) {
+                && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
+            if (row == 0) {          // was row == 1
                 setColumnName(col, value);
-            } else if (row > 1) {
+            } else if (row > 0) {   // was row > 1
                 try {
                     pasteIntoColumn(row, col, value);
                 } catch (Exception e) {
@@ -329,11 +321,7 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     private int getNumLeadingRows() {
-        /*
-      The number of initial "special" columns not used to display the data
-      set.
-         */
-        return 2;
+        return 1; // was 2; row 0 (type notation) moved to header
     }
 
     private int getNumLeadingCols() {

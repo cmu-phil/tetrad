@@ -171,6 +171,19 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         });
 
         setTransferHandler(new TabularDataTransferHandler());
+
+        getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                                                           boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = (JLabel) super.getTableCellRendererComponent(
+                        table, value, isSelected, hasFocus, row, column);
+                label.setFont(new Font("SansSerif", Font.BOLD, 12));
+                label.setHorizontalAlignment(SwingConstants.CENTER);
+                label.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+                return label;
+            }
+        });
     }
 
     /**
@@ -222,15 +235,9 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
      * {@inheritDoc}
      */
     public TableCellEditor getCellEditor(int row, int column) {
-        if (!this.editable) {
-            return new DoNothingEditor();
-        }
-        if (row == 1) {
-            return new VariableNameEditor();
-        } else if (row > 1) {
-            return new DataCellEditor();
-        }
-
+        if (!this.editable) return new DoNothingEditor();
+        if (row == 0) return new VariableNameEditor(); // was row == 1
+        else if (row > 0) return new DataCellEditor(); // was row > 1
         return null;
     }
 
@@ -238,15 +245,9 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
      * {@inheritDoc}
      */
     public TableCellRenderer getCellRenderer(int row, int column) {
-        if (column == 0) {
-            return new RowNumberRenderer();
-        } else {
-            if (row == 0 || row == 1) {
-                return new VariableNameRenderer();
-            }
-
-            return new DataCellRenderer(this, getNumLeadingCols());
-        }
+        if (column == 0) return new RowNumberRenderer();
+        if (row == 0) return new VariableNameRenderer(); // was row == 0 || row == 1
+        return new DataCellRenderer(this, getNumLeadingCols());
     }
 
     /**
@@ -354,7 +355,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
     }
 
     private int getNumLeadingRows() {
-        return 2;
+        return 1; // was 2
     }
 
     /**
@@ -417,16 +418,9 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
                         .getMissingValueMarker();
 
                 for (int j = selectedRows.length - 1; j >= 0; j--) {
-                    if (selectedRows[j] < 2) {
-                        continue;
-                    }
-
-                    if (selectedRows[j] > dataSet.getNumRows() + 1) {
-                        continue;
-                    }
-
-                    dataSet.setObject(selectedRows[j] - 2, dataCol,
-                            missingValue);
+                    if (selectedRows[j] < 1) continue;           // was < 2
+                    if (selectedRows[j] > dataSet.getNumRows()) continue; // was > getNumRows() + 1
+                    dataSet.setObject(selectedRows[j] - 1, dataCol, missingValue); // was - 2
                 }
             }
         } else {
@@ -459,18 +453,10 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
                 Node variable = dataSet.getVariable(dataCol);
                 Object missingValue = ((Variable) variable)
                         .getMissingValueMarker();
-
                 for (int j = selectedRows.length - 1; j >= 0; j--) {
-                    if (selectedRows[j] < 2) {
-                        continue;
-                    }
-
-                    if (selectedRows[j] > dataSet.getNumRows() + 1) {
-                        continue;
-                    }
-
-                    dataSet.setObject(selectedRows[j] - 2, dataCol,
-                            missingValue);
+                    if (selectedRows[j] < 1) continue;           // was < 2
+                    if (selectedRows[j] > dataSet.getNumRows()) continue; // was > getNumRows() + 1
+                    dataSet.setObject(selectedRows[j] - 1, dataCol, missingValue); // was - 2
                 }
             }
         }
@@ -543,8 +529,8 @@ class RowNumberRenderer extends DefaultTableCellRenderer {
         JLabel label = (JLabel) super.getTableCellRendererComponent(table,
                 value, isSelected, hasFocus, row, column);
 
-        if (row > 1) {
-            setText(Integer.toString(row - 1));
+        if (row > 0) {
+            setText(Integer.toString(row));
             label.setHorizontalAlignment(SwingConstants.CENTER);
             label.setFont(new Font("SansSerif", Font.BOLD, 12));
         }
