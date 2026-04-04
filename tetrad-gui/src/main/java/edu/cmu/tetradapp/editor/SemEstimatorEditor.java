@@ -44,6 +44,7 @@ import javax.swing.event.AncestorListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -1349,6 +1350,11 @@ public final class SemEstimatorEditor extends JPanel {
             this.tableModel.addTableModelListener((e) -> {
                 this.firePropertyChange("modelChanged", null, null);
             });
+
+            TableRowSorter<ParamTableModel> sorter = new TableRowSorter<>(this.tableModel);
+            sorter.setComparator(0, NaturalSort.naturalComparator()); // From
+            sorter.setComparator(1, NaturalSort.naturalComparator()); // To
+            table.setRowSorter(sorter);
 
             add(new JScrollPane(table), BorderLayout.CENTER);
         }

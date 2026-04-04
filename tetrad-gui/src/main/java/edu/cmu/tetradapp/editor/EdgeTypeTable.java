@@ -1,6 +1,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
@@ -58,7 +59,7 @@ public class EdgeTypeTable extends JPanel {
     };
 
     private final JLabel title = new JLabel();
-    private final JTable table = new EdgeInfoTable(new DefaultTableModel());
+    private final EdgeInfoTable table = new EdgeInfoTable(new DefaultTableModel());
     private Graph graph;
 
     public EdgeTypeTable() {
@@ -174,6 +175,7 @@ public class EdgeTypeTable extends JPanel {
         }
 
         tableModel.fireTableDataChanged();
+        this.table.installSorter();
         this.graph = graph;
     }
 
@@ -423,13 +425,7 @@ public class EdgeTypeTable extends JPanel {
             setSelectionBackground(UIManager.getColor("Table.selectionBackground"));
             setSelectionForeground(UIManager.getColor("Table.selectionForeground"));
             setGridColor(UIManager.getColor("Table.gridColor"));
-
-            setRowSorter(new TableRowSorter<TableModel>(getModel()) {
-                @Override
-                public boolean isSortable(int column) {
-                    return column != 0;
-                }
-            });
+            installSorter();
         }
 
         @Override
@@ -477,6 +473,21 @@ public class EdgeTypeTable extends JPanel {
         @Override
         public void setValueAt(Object value, int row, int col) {
             // No op. Don't allow values in the table to be changed.
+        }
+
+        public void installSorter() {
+            TableRowSorter<TableModel> sorter = new TableRowSorter<>(getModel()) {
+                @Override
+                public boolean isSortable(int column) {
+                    return column != 0;
+                }
+            };
+
+            if (getModel().getColumnCount() > 2) {
+                sorter.setComparator(1, NaturalSort.naturalComparator()); // Node 1
+                sorter.setComparator(3, NaturalSort.naturalComparator()); // Node 2
+                setRowSorter(sorter);
+            }
         }
     }
 }

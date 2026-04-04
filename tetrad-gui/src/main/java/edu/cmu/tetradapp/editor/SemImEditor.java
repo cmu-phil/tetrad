@@ -23,10 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.ProbUtils;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.model.EditorUtils;
 import edu.cmu.tetradapp.model.SemEstimatorWrapper;
 import edu.cmu.tetradapp.model.SemImWrapper;
@@ -39,7 +36,6 @@ import edu.cmu.tetradapp.workbench.LayoutMenu;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Serializer;
-import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -48,6 +44,7 @@ import javax.swing.event.AncestorListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -1883,6 +1880,11 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             };
             this.tableModel = new ParamTableModel(wrapper, editor, maxFreeParamsForStatistics);
             table.setModel(getTableModel());
+
+            TableRowSorter<ParamTableModel> sorter = new TableRowSorter<>(this.tableModel);
+            sorter.setComparator(0, NaturalSort.naturalComparator()); // From
+            sorter.setComparator(1, NaturalSort.naturalComparator()); // To
+            table.setRowSorter(sorter);
             this.tableModel.addTableModelListener((e) -> this.firePropertyChange("modelChanged", null, null));
 
             add(new JScrollPane(table), BorderLayout.CENTER);
