@@ -596,6 +596,10 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return useAndersonDarling;
     }
 
+    public void setUseAndersonDarling(boolean useAndersonDarling) {
+        this.useAndersonDarling = useAndersonDarling;
+    }
+
     private record ConditioningSetSizeRange(int min, int max) {
     }
 

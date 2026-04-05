@@ -146,7 +146,8 @@ public class VertexCheckEditor extends JPanel {
     private AbstractTableModel overviewModel;
     private AbstractTableModel factsModel;
     private JPanel histogramPanel = new JPanel(new BorderLayout());
-    private JButton runAll = new JButton("Run All");
+    //    private JButton runAll = new JButton("Run All");
+    private JComboBox<String> modelUniformityTest;
     private IndependenceWrapper independenceWrapper;
     private boolean initializing;
     private boolean applyingGraphProgrammatically = false; // prevents history double-push
@@ -165,6 +166,13 @@ public class VertexCheckEditor extends JPanel {
         if (this.knowledge.isViolatedBy(model.getGraph())) {
             throw new IllegalArgumentException("Knowledge conflicts with current graph structure.");
         }
+
+        modelUniformityTest = new JComboBox<>(new String[]{"Use KS", "Use AD"});
+        modelUniformityTest.setSelectedIndex(model.getUseAndersonDarling() ? 1 : 0);
+        modelUniformityTest.addActionListener(e -> {
+            model.setUseAndersonDarling(modelUniformityTest.getSelectedIndex() == 1);
+            runAllAndRefresh(null);
+        });
 
         setPreferredSize(new Dimension(1100, 650));
         setLayout(new BorderLayout(10, 10));
@@ -207,6 +215,8 @@ public class VertexCheckEditor extends JPanel {
 
             SwingUtilities.invokeLater(this::onModelGraphChanged);
         });
+
+        runAllAndRefresh(null);
     }
 
     private static DataType guessDataType(DataModel dm) {
@@ -490,7 +500,8 @@ public class VertexCheckEditor extends JPanel {
         controls.add(conditioningCombo);
 
         controls.add(verbose);
-        controls.add(runAll);
+//        controls.add(runAll);
+        controls.add(modelUniformityTest);
 
         controls.add(Box.createHorizontalGlue());
 
@@ -553,31 +564,10 @@ public class VertexCheckEditor extends JPanel {
             resetResultsUI();
         });
 
-//            runAll.addActionListener(e -> new WatchedProcess() {
-//                @Override
-//                public void watch() {
-//                    String selectedVertex = getSelectedVertexName();
-//                    model.runAllVertices(true);
-//    //                SwingUtilities.invokeLater(() -> {
-//    //                    overviewModel.fireTableDataChanged();
-//    //                    restoreOverviewSelection(selectedVertex);
-//    ////                    selectFirstRowIfAny();
-//    //
-//    //                });
-//
-//                    SwingUtilities.invokeLater(() -> {
-//                        overviewModel.fireTableDataChanged();
-//                        refreshModelDiagnostics();
-//                        restoreOverviewSelection(selectedVertex);
-//                    });
-//
-//                }
-//            });
-
-        runAll.addActionListener(e -> {
-            String selectedVertex = getSelectedVertexName();
-            runAllAndRefresh(selectedVertex);
-        });
+//        runAll.addActionListener(e -> {
+//            String selectedVertex = getSelectedVertexName();
+//            runAllAndRefresh(selectedVertex);
+//        });
     }
 
     private void buildMainPanels() {
@@ -1550,21 +1540,20 @@ public class VertexCheckEditor extends JPanel {
     private void refreshModelDiagnostics() {
         String type = model.getUseAndersonDarling() ? "Anderson-Darling" : "Kolmogorov-Smirnov";
 
-        // You decide semantics: either only valid after Run All, or “over computed so far”.
-        VertexCheckIndTestModel.ModelSummary ms = model.getModelSummary(); // you add this
+        VertexCheckIndTestModel.ModelSummary ms = model.getModelSummary();
         if (ms == null) {
-            modelNpLabel.setText(type + " Model Uniformity P: (not computed)");
-            modelPLabel.setText("# p-values: (not computed)");
+            modelNpLabel.setText("# p-values: (not computed)");
+            modelPLabel.setText(type + " Model Uniformity P: (not computed)");
             return;
         }
-        modelNpLabel.setText("# P-values: " + ms.numPValues());
+        modelNpLabel.setText("# p-values: " + ms.numPValues());
         modelPLabel.setText(type + " Model Uniformity P: " + fmt(ms.modelP()));
     }
 
     private void runAllAndRefresh(String preferredVertexToReselect) {
         if (runningAll) return;
         runningAll = true;
-        runAll.setEnabled(false);
+//        runAll.setEnabled(false);
 
         new WatchedProcess() {
             @Override
@@ -1603,7 +1592,7 @@ public class VertexCheckEditor extends JPanel {
                             refreshDetails(active);   // <-- this makes facts/histogram appear immediately
                         }
 
-                        runAll.setEnabled(true);
+//                        runAll.setEnabled(true);
                         runningAll = false;
                     });
                 }
