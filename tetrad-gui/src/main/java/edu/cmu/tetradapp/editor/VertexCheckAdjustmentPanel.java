@@ -79,12 +79,78 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
     // ---- Preferences (persist α and model-P top-K) ----
     static double alpha = 0.01;
 
+//    private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
+//        if (a == null && b == null) return 0;
+//        if (a == null) return 1;
+//        if (b == null) return -1;
+//
+//        // 0) Guards first (true before false)
+//        if (a.passesGuards() != b.passesGuards()) {
+//            return a.passesGuards() ? -1 : 1;
+//        }
+//        if (!a.passesGuards()) {
+//            int c = Integer.compare(a.delta(), b.delta());
+//            if (c != 0) return c;
+//            c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+//            if (c != 0) return c;
+//            c = Integer.compare(editSize(a), editSize(b));
+//            if (c != 0) return c;
+//            return stableTieBreak(a, b);
+//        }
+//
+//        // 1) Δ violations (more negative is better)
+//        int c = Integer.compare(a.delta(), b.delta());
+//        if (c != 0) return c;
+//
+//        // 2) Node-P: FINITE first, then log-odds DESC
+//        //    (moved above edge/edit counts: when delta ties, quality beats parsimony)
+//        c = finiteFirst(a.nodePAfter(), b.nodePAfter());
+//        if (c != 0) return c;
+//
+//        double npA = nodeLogOdds(a);
+//        double npB = nodeLogOdds(b);
+//        c = -Double.compare(npA, npB);
+//        if (c != 0) return c;
+//
+//        // 3) Model-P improvement over baseline (dMp DESC)
+//        c = finiteFirst(modelDeltaValueOrNaN(a), modelDeltaValueOrNaN(b));
+//        if (c != 0) return c;
+//
+//        double dMpA = modelDelta(a);
+//        double dMpB = modelDelta(b);
+//        c = -Double.compare(dMpA, dMpB);
+//        if (c != 0) return c;
+//
+//        // 4) Absolute Model-P: FINITE first, then log-odds DESC
+//        c = finiteFirst(a.modelPAfter(), b.modelPAfter());
+//        if (c != 0) return c;
+//
+//        double mpA = modelLogOdds(a);
+//        double mpB = modelLogOdds(b);
+//        c = -Double.compare(mpA, mpB);
+//        if (c != 0) return c;
+//
+//        // 5) Move-type bias
+//        c = -Integer.compare(moveBiasScore(a), moveBiasScore(b));
+//        if (c != 0) return c;
+//
+//        // 6) Fewer edges preferred (parsimony as late tiebreaker)
+//        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+//        if (c != 0) return c;
+//
+//        // 7) Smaller edit size preferred
+//        c = Integer.compare(editSize(a), editSize(b));
+//        if (c != 0) return c;
+//
+//        // 8) Stable tie-break
+//        return stableTieBreak(a, b);
+//    };
+
     private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
         if (a == null && b == null) return 0;
         if (a == null) return 1;
         if (b == null) return -1;
 
-        // 0) Guards first (true before false)
         if (a.passesGuards() != b.passesGuards()) {
             return a.passesGuards() ? -1 : 1;
         }
@@ -98,51 +164,33 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
             return stableTieBreak(a, b);
         }
 
-        // 1) Δ violations (more negative is better)
         int c = Integer.compare(a.delta(), b.delta());
         if (c != 0) return c;
 
-        // 2) Node-P: FINITE first, then log-odds DESC
-        //    (moved above edge/edit counts: when delta ties, quality beats parsimony)
+        // 2) Node-P: FINITE first, then DESC
         c = finiteFirst(a.nodePAfter(), b.nodePAfter());
         if (c != 0) return c;
-
-        double npA = nodeLogOdds(a);
-        double npB = nodeLogOdds(b);
-        c = -Double.compare(npA, npB);
+        c = -Double.compare(a.nodePAfter(), b.nodePAfter());
         if (c != 0) return c;
 
-        // 3) Model-P improvement over baseline (dMp DESC)
+        // 3) Model-P delta DESC
         c = finiteFirst(modelDeltaValueOrNaN(a), modelDeltaValueOrNaN(b));
         if (c != 0) return c;
-
-        double dMpA = modelDelta(a);
-        double dMpB = modelDelta(b);
-        c = -Double.compare(dMpA, dMpB);
+        c = -Double.compare(modelDelta(a), modelDelta(b));
         if (c != 0) return c;
 
-        // 4) Absolute Model-P: FINITE first, then log-odds DESC
+        // 4) Absolute Model-P: FINITE first, then DESC
         c = finiteFirst(a.modelPAfter(), b.modelPAfter());
         if (c != 0) return c;
-
-        double mpA = modelLogOdds(a);
-        double mpB = modelLogOdds(b);
-        c = -Double.compare(mpA, mpB);
+        c = -Double.compare(a.modelPAfter(), b.modelPAfter());
         if (c != 0) return c;
 
-        // 5) Move-type bias
         c = -Integer.compare(moveBiasScore(a), moveBiasScore(b));
         if (c != 0) return c;
-
-        // 6) Fewer edges preferred (parsimony as late tiebreaker)
         c = Integer.compare(a.edgesAfter(), b.edgesAfter());
         if (c != 0) return c;
-
-        // 7) Smaller edit size preferred
         c = Integer.compare(editSize(a), editSize(b));
         if (c != 0) return c;
-
-        // 8) Stable tie-break
         return stableTieBreak(a, b);
     };
 
