@@ -79,6 +79,79 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
     // ---- Preferences (persist α and model-P top-K) ----
     static double alpha = 0.01;
 
+//    private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
+//        if (a == null && b == null) return 0;
+//        if (a == null) return 1;
+//        if (b == null) return -1;
+//
+//        // 0) Guards first (true before false)
+//        if (a.passesGuards() != b.passesGuards()) {
+//            return a.passesGuards() ? -1 : 1;
+//        }
+//        if (!a.passesGuards()) {
+//            // Within the failed-guards group, apply the same structural
+//            // preferences before falling back to stable tie-break.
+//            int c = Integer.compare(a.delta(), b.delta()); // ASC: fewer violations first
+//            if (c != 0) return c;
+//
+//            c = Integer.compare(a.edgesAfter(), b.edgesAfter()); // ASC: fewer edges first
+//            if (c != 0) return c;
+//
+//            c = Integer.compare(editSize(a), editSize(b)); // ASC: smaller edits first
+//            if (c != 0) return c;
+//
+//            return stableTieBreak(a, b);
+//        }
+//
+//        // 1) Δ violations (more negative is better)
+//        int c = Integer.compare(a.delta(), b.delta()); // ASC
+//        if (c != 0) return c;
+//
+//        // 2) Fewer edges preferred
+//        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+//        if (c != 0) return c;
+//
+//        // 3) Smaller edit size preferred (single-edge before multi-edge)
+//        c = Integer.compare(editSize(a), editSize(b));
+//        if (c != 0) return c;
+//
+//        // 4) Node-P: FINITE first, then log-odds DESC
+//        c = finiteFirst(a.nodePAfter(), b.nodePAfter());
+//        if (c != 0) return c;
+//
+//        double npA = nodeLogOdds(a);
+//        double npB = nodeLogOdds(b);
+//        c = -Double.compare(npA, npB);
+//        if (c != 0) return c;
+//
+//        // 5) Model-P improvement over baseline (dMp DESC)
+//        // (Optional but recommended: finite improvement beats "unknown improvement")
+//        c = finiteFirst(modelDeltaValueOrNaN(a), modelDeltaValueOrNaN(b));
+//        if (c != 0) return c;
+//
+//        double dMpA = modelDelta(a);
+//        double dMpB = modelDelta(b);
+//        c = -Double.compare(dMpA, dMpB);
+//        if (c != 0) return c;
+//
+//        // 6) Move-type bias (your existing heuristic)
+//        c = -Integer.compare(moveBiasScore(a), moveBiasScore(b)); // DESC
+//        if (c != 0) return c;
+//
+//        // 7) Absolute Model-P: FINITE first, then log-odds DESC
+//        c = finiteFirst(a.modelPAfter(), b.modelPAfter());
+//        if (c != 0) return c;
+//
+//        double mpA = modelLogOdds(a);
+//        double mpB = modelLogOdds(b);
+//        c = -Double.compare(mpA, mpB);
+//        if (c != 0) return c;
+//
+//        // 8) Stable tie-break
+//        return stableTieBreak(a, b);
+//    };
+
+
     private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
         if (a == null && b == null) return 0;
         if (a == null) return 1;
@@ -1921,7 +1994,6 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
 
         JLabel msg = new JLabel("Running. Click Cancel to stop (may stop between tests).");
         JProgressBar bar = new JProgressBar();
-        bar.setIndeterminate(true);
         bar.setIndeterminate(true);
 
         JButton cancel = new JButton("Cancel");
