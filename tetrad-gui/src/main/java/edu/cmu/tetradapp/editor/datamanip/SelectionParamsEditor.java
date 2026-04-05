@@ -50,7 +50,7 @@ import java.util.List;
  * {@code Map<Node, SelectionSpec>} and are later consumed by
  * {@link edu.cmu.tetradapp.model.datamanip.SelectionWrapper}.
  *
- * <h3>Layout</h3>
+ * Layout
  * <pre>
  * ┌─────────────────────────────────────────────────────────────────────────┐
  * │ [x] Select on SELECTION-type variables only                             │
@@ -65,13 +65,13 @@ import java.util.List;
  * └─────────────────────┴───────────────────────────────────────────────────┘
  * </pre>
  *
- * <h3>Continuous constraint editor</h3>
+ * Continuous constraint editor
  * The user builds a union of closed intervals {@code [lo, hi]}.  Each interval
  * is a row with two validated {@link JTextField}s and a "Remove" button.  An
  * "Add interval" button appends a new row pre-filled with the variable's
  * observed [min, max].
  *
- * <h3>Discrete constraint editor</h3>
+ * Discrete constraint editor
  * One {@link JCheckBox} per category value.  At least one box must be checked.
  *
  * @author josephramsey
