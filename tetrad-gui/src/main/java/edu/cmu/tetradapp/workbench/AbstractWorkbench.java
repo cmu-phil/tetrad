@@ -383,6 +383,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * @param graph Ibid.
      */
     public final void setGraph(Graph graph) {
+        if (!(graph instanceof SessionWrapper)) {
+            graph = graph.copy();
+        }
+
         setGraphWithoutNotify(graph);
 
         // if this workbench is sitting inside of a scrollpane,

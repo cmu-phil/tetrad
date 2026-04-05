@@ -860,17 +860,17 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         suppressHistory = true;
 
         try {
-            // ---- Phase 1: add-only forward sweep --------------------------------
+//            // ---- Phase 1: add-only forward sweep --------------------------------
             SwingUtilities.invokeLater(() -> statusLabel.setText("Phase 1 (add edges)..."));
             runRepairPhase(gt, RepairPhase.ADD_ONLY, seenSweepStates, cycleWarnings);
             if (stopRequested()) return;
+//
+//            // ---- Phase 2: remove/reorient backward sweep ------------------------
+//            SwingUtilities.invokeLater(() -> statusLabel.setText("Phase 2 (remove/reorient)..."));
+//            runRepairPhase(gt, RepairPhase.NON_ADD, seenSweepStates, cycleWarnings);
 
-            // ---- Phase 2: remove/reorient backward sweep ------------------------
-            SwingUtilities.invokeLater(() -> statusLabel.setText("Phase 2 (remove/reorient)..."));
-            runRepairPhase(gt, RepairPhase.NON_ADD, seenSweepStates, cycleWarnings);
-
-//            SwingUtilities.invokeLater(() -> statusLabel.setText("Run all..."));
-//            runRepairPhase(gt, RepairPhase.ALL, seenSweepStates, cycleWarnings);
+            SwingUtilities.invokeLater(() -> statusLabel.setText("Run all..."));
+            runRepairPhase(gt, RepairPhase.ALL, seenSweepStates, cycleWarnings);
 
 
         } finally {
