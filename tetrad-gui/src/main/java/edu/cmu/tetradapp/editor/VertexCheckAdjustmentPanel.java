@@ -910,15 +910,6 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         do {
             if (stopRequested()) return;
 
-            // Inter-sweep cycle guard (shared across phases)
-            String sweepStartState = workingGraph.toString();
-            if (!seenSweepStates.add(sweepStartState)) {
-                cycleWarnings.add("Inter-sweep cycle detected during "
-                        + phaseName(phase)
-                        + ": the graph returned to a previously visited state. Stopping this phase.");
-                return;
-            }
-
             anyChangeInSweep = false;
 
             List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
@@ -930,7 +921,6 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
                 Node current = workingGraph.getNode(node.getName());
                 if (current == null) continue;
 
-                // Intra-node cycle guard: tracks keys attempted for this node in this visit.
                 Set<String> attemptedKeys = new LinkedHashSet<>();
 
                 while (true) {
@@ -968,6 +958,18 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
                     Node refreshed = workingGraph.getNode(current.getName());
                     if (refreshed == null) break;
                     current = refreshed;
+                }
+            }
+
+            // Only check for cycles when the graph actually changed —
+            // convergence (no change) is normal termination, not a cycle.
+            if (anyChangeInSweep) {
+                String state = workingGraph.toString();
+                if (!seenSweepStates.add(state)) {
+                    cycleWarnings.add("Inter-sweep cycle detected during "
+                            + phaseName(phase)
+                            + ": the graph returned to a previously visited state. Stopping this phase.");
+                    return;
                 }
             }
 
@@ -1844,7 +1846,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         OTHER
     }
 
-    public enum AdjustmentGraphType {DAG, CPDAG, PDAG, MAG, PAG}
+    public enum AdjustmentGraphType { CPDAG, PDAG, PAG, DAG,MAG}
 
     public interface CandidateEdit {
 
