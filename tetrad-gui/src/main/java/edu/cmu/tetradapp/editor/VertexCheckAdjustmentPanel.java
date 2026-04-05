@@ -79,6 +79,79 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
     // ---- Preferences (persist α and model-P top-K) ----
     static double alpha = 0.01;
 
+//    private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
+//        if (a == null && b == null) return 0;
+//        if (a == null) return 1;
+//        if (b == null) return -1;
+//
+//        // 0) Guards first (true before false)
+//        if (a.passesGuards() != b.passesGuards()) {
+//            return a.passesGuards() ? -1 : 1;
+//        }
+//        if (!a.passesGuards()) {
+//            // Within the failed-guards group, apply the same structural
+//            // preferences before falling back to stable tie-break.
+//            int c = Integer.compare(a.delta(), b.delta()); // ASC: fewer violations first
+//            if (c != 0) return c;
+//
+//            c = Integer.compare(a.edgesAfter(), b.edgesAfter()); // ASC: fewer edges first
+//            if (c != 0) return c;
+//
+//            c = Integer.compare(editSize(a), editSize(b)); // ASC: smaller edits first
+//            if (c != 0) return c;
+//
+//            return stableTieBreak(a, b);
+//        }
+//
+//        // 1) Δ violations (more negative is better)
+//        int c = Integer.compare(a.delta(), b.delta()); // ASC
+//        if (c != 0) return c;
+//
+//        // 2) Fewer edges preferred
+//        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+//        if (c != 0) return c;
+//
+//        // 3) Smaller edit size preferred (single-edge before multi-edge)
+//        c = Integer.compare(editSize(a), editSize(b));
+//        if (c != 0) return c;
+//
+//        // 4) Node-P: FINITE first, then log-odds DESC
+//        c = finiteFirst(a.nodePAfter(), b.nodePAfter());
+//        if (c != 0) return c;
+//
+//        double npA = nodeLogOdds(a);
+//        double npB = nodeLogOdds(b);
+//        c = -Double.compare(npA, npB);
+//        if (c != 0) return c;
+//
+//        // 5) Model-P improvement over baseline (dMp DESC)
+//        // (Optional but recommended: finite improvement beats "unknown improvement")
+//        c = finiteFirst(modelDeltaValueOrNaN(a), modelDeltaValueOrNaN(b));
+//        if (c != 0) return c;
+//
+//        double dMpA = modelDelta(a);
+//        double dMpB = modelDelta(b);
+//        c = -Double.compare(dMpA, dMpB);
+//        if (c != 0) return c;
+//
+//        // 6) Move-type bias (your existing heuristic)
+//        c = -Integer.compare(moveBiasScore(a), moveBiasScore(b)); // DESC
+//        if (c != 0) return c;
+//
+//        // 7) Absolute Model-P: FINITE first, then log-odds DESC
+//        c = finiteFirst(a.modelPAfter(), b.modelPAfter());
+//        if (c != 0) return c;
+//
+//        double mpA = modelLogOdds(a);
+//        double mpB = modelLogOdds(b);
+//        c = -Double.compare(mpA, mpB);
+//        if (c != 0) return c;
+//
+//        // 8) Stable tie-break
+//        return stableTieBreak(a, b);
+//    };
+
+
     private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
         if (a == null && b == null) return 0;
         if (a == null) return 1;
@@ -89,33 +162,21 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
             return a.passesGuards() ? -1 : 1;
         }
         if (!a.passesGuards()) {
-            // Within the failed-guards group, apply the same structural
-            // preferences before falling back to stable tie-break.
-            int c = Integer.compare(a.delta(), b.delta()); // ASC: fewer violations first
+            int c = Integer.compare(a.delta(), b.delta());
             if (c != 0) return c;
-
-            c = Integer.compare(a.edgesAfter(), b.edgesAfter()); // ASC: fewer edges first
+            c = Integer.compare(a.edgesAfter(), b.edgesAfter());
             if (c != 0) return c;
-
-            c = Integer.compare(editSize(a), editSize(b)); // ASC: smaller edits first
+            c = Integer.compare(editSize(a), editSize(b));
             if (c != 0) return c;
-
             return stableTieBreak(a, b);
         }
 
         // 1) Δ violations (more negative is better)
-        int c = Integer.compare(a.delta(), b.delta()); // ASC
+        int c = Integer.compare(a.delta(), b.delta());
         if (c != 0) return c;
 
-        // 2) Fewer edges preferred
-        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
-        if (c != 0) return c;
-
-        // 3) Smaller edit size preferred (single-edge before multi-edge)
-        c = Integer.compare(editSize(a), editSize(b));
-        if (c != 0) return c;
-
-        // 4) Node-P: FINITE first, then log-odds DESC
+        // 2) Node-P: FINITE first, then log-odds DESC
+        //    (moved above edge/edit counts: when delta ties, quality beats parsimony)
         c = finiteFirst(a.nodePAfter(), b.nodePAfter());
         if (c != 0) return c;
 
@@ -124,8 +185,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         c = -Double.compare(npA, npB);
         if (c != 0) return c;
 
-        // 5) Model-P improvement over baseline (dMp DESC)
-        // (Optional but recommended: finite improvement beats "unknown improvement")
+        // 3) Model-P improvement over baseline (dMp DESC)
         c = finiteFirst(modelDeltaValueOrNaN(a), modelDeltaValueOrNaN(b));
         if (c != 0) return c;
 
@@ -134,17 +194,25 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         c = -Double.compare(dMpA, dMpB);
         if (c != 0) return c;
 
-        // 6) Move-type bias (your existing heuristic)
-        c = -Integer.compare(moveBiasScore(a), moveBiasScore(b)); // DESC
-        if (c != 0) return c;
-
-        // 7) Absolute Model-P: FINITE first, then log-odds DESC
+        // 4) Absolute Model-P: FINITE first, then log-odds DESC
         c = finiteFirst(a.modelPAfter(), b.modelPAfter());
         if (c != 0) return c;
 
         double mpA = modelLogOdds(a);
         double mpB = modelLogOdds(b);
         c = -Double.compare(mpA, mpB);
+        if (c != 0) return c;
+
+        // 5) Move-type bias
+        c = -Integer.compare(moveBiasScore(a), moveBiasScore(b));
+        if (c != 0) return c;
+
+        // 6) Fewer edges preferred (parsimony as late tiebreaker)
+        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+        if (c != 0) return c;
+
+        // 7) Smaller edit size preferred
+        c = Integer.compare(editSize(a), editSize(b));
         if (c != 0) return c;
 
         // 8) Stable tie-break
@@ -1004,7 +1072,8 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
                                                   List<CandidateEdit> candidates) {
         GlobalEvalCache baseCache = buildBaselineCache(base);
         int baseline = evalGraphLocality(baseCache, base, Set.of()).violations();
-        double mpBefore = evalGraphOnce(base).modelP();
+//        double mpBefore = evalGraphOnce(base).modelP();
+        double mpBefore = evalGraphLocality(baseCache, base, Set.of()).modelP();
 
         Map<String, Graph> candGraphByKey = new HashMap<>();
         List<ScoredCandidate> scored = new ArrayList<>();
@@ -1054,7 +1123,12 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         for (String key : keysToEval) {
             if (stopRequested()) return List.of();
             Graph g2 = candGraphByKey.get(key);
-            if (g2 != null) mpAfterByKey.put(key, evalGraphOnce(g2).modelP());
+//            if (g2 != null) mpAfterByKey.put(key, evalGraphOnce(g2).modelP());
+
+            if (g2 != null) {
+                Set<String> affected = affectedVertices(base, node, g2);
+                mpAfterByKey.put(key, evalModelPLocality(baseCache, g2, affected));
+            }
         }
 
         // Patch Model-P and guard flags
@@ -1654,29 +1728,29 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         return model.getUniformityP(pvals);
     }
 
-    private GraphEval evalGraphOnce(Graph g) {
-        if (g == null) return new GraphEval(0, Double.NaN, 0);
-
-        ConditioningSetType type = baseModel.getConditioningSetType();
-
-        List<IndependenceFact> facts = MarkovCheck.computeAllImpliedFacts(g, type);
-        if (facts.isEmpty()) return new GraphEval(0, Double.NaN, 0);
-
-        List<CachedIndependenceQueries.Eval> evals =
-                Q.evalAll(facts, CachedIndependenceQueries.Dedup.BY_CACHE_KEY);
-
-        int violations = 0;
-        List<Double> pvals = new ArrayList<>(evals.size());
-
-        for (CachedIndependenceQueries.Eval e : evals) {
-            if (!e.independent()) violations++;
-            double p = e.pValue();
-            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) pvals.add(p);
-        }
-
-        double p = model.getUniformityP(pvals);
-        return new GraphEval(violations, p, evals.size());
-    }
+//    private GraphEval evalGraphOnce(Graph g) {
+//        if (g == null) return new GraphEval(0, Double.NaN, 0);
+//
+//        ConditioningSetType type = baseModel.getConditioningSetType();
+//
+//        List<IndependenceFact> facts = MarkovCheck.computeAllImpliedFacts(g, type);
+//        if (facts.isEmpty()) return new GraphEval(0, Double.NaN, 0);
+//
+//        List<CachedIndependenceQueries.Eval> evals =
+//                Q.evalAll(facts, CachedIndependenceQueries.Dedup.BY_CACHE_KEY);
+//
+//        int violations = 0;
+//        List<Double> pvals = new ArrayList<>(evals.size());
+//
+//        for (CachedIndependenceQueries.Eval e : evals) {
+//            if (!e.independent()) violations++;
+//            double p = e.pValue();
+//            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) pvals.add(p);
+//        }
+//
+//        double p = model.getUniformityP(pvals);
+//        return new GraphEval(violations, p, evals.size());
+//    }
 
     private int evalViolationsOnly(Graph g) {
         if (g == null) return 0;
@@ -1746,6 +1820,12 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         return new VertexContribution(viol, pByKey);
     }
 
+    private double evalModelPLocality(GlobalEvalCache baseCache,
+                                      Graph candidateGraph,
+                                      Set<String> affectedVertexNames) {
+        return evalGraphLocality(baseCache, candidateGraph, affectedVertexNames).modelP();
+    }
+
     private GraphEval evalGraphLocality(GlobalEvalCache baseCache,
                                         Graph candidateGraph,
                                         Set<String> affectedVertexNames) {
@@ -1772,7 +1852,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
 
         // 3) Merge to global dedup by factKey (stable traversal for repeatability)
         Map<String, Boolean> globalViolationByKey = new HashMap<>();
-        Map<String, Double> globalPByKey = false ? new HashMap<>() : null;
+        Map<String, Double> globalPByKey = true ? new HashMap<>() : null;
 
         List<String> names = new ArrayList<>(contrib.keySet());
         names.sort(NaturalSort.naturalComparator());
@@ -1787,7 +1867,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
                 globalViolationByKey.putIfAbsent(key, e.getValue());
             }
 
-            if (false) {
+            if (true) {
                 for (Map.Entry<String, Double> e : vc.pByKey().entrySet()) {
                     String key = e.getKey();
                     if (key == null) continue;
@@ -1802,7 +1882,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         }
 
         double modelP = Double.NaN;
-        if (false && globalPByKey.size() >= 2) {
+        if (true && globalPByKey.size() >= 2) {
             List<Double> pvals = new ArrayList<>(globalPByKey.values());
 
             pvals.sort(Double::compareTo);
