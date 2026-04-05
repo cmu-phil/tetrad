@@ -1965,8 +1965,8 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
 
         int currentEdges = base.getNumEdges();
 
-        Graph cand = buildCandidateGraph(base, sc.edit(), gt);
-        if (cand == null) return false;
+//        Graph cand = buildCandidateGraph(base, sc.edit(), gt);
+//        if (cand == null) return false;
 
         // Use the SAME table numbers already computed:
         int baselineViol = sc.violationsBaseline();
