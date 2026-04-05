@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -128,10 +129,34 @@ public class DiscretizationWrapper extends DataWrapper {
                         + "variables in one of the datasets. Check that variable names are consistent.");
             }
 
+            // Record which variable names carried NodeType.SELECTION before
+            // discretization, so we can restore that marking afterwards.
+            // The Discretizer always produces new Node objects (typically
+            // DiscreteVariable) whose NodeType defaults to MEASURED, so the
+            // SELECTION marking would otherwise be silently lost.
+            Map<String, NodeType> selectionNames = new HashMap<>();
+            for (Node node : originalData.getVariables()) {
+                if (node.getNodeType() == NodeType.SELECTION) {
+                    selectionNames.put(node.getName(), NodeType.SELECTION);
+                }
+            }
+
             Discretizer discretizer = new Discretizer(originalData, datasetSpecs);
             discretizer.setVariablesCopied(Preferences.userRoot().getBoolean("copyUnselectedColumns", true));
 
-            discretizedDataSets.add(discretizer.discretize());
+            DataSet discretized = discretizer.discretize();
+
+            // Restore NodeType.SELECTION on any output variable whose source
+            // variable had that type.
+            if (!selectionNames.isEmpty()) {
+                for (Node node : discretized.getVariables()) {
+                    if (selectionNames.containsKey(node.getName())) {
+                        node.setNodeType(NodeType.SELECTION);
+                    }
+                }
+            }
+
+            discretizedDataSets.add(discretized);
         }
 
         boolean anyDiscretized = false;
