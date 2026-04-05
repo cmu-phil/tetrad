@@ -76,11 +76,6 @@ public final class SessionEditorNode extends DisplayNode {
      * The configuration for this editor node.
      */
     private final SessionNodeConfig config;
-
-    /**
-     * The popup for this node.
-     */
-    JPopupMenu popup;
     /**
      * If an editor has been opened, this is a reference to that editor. Used to close the editor if necessary.
      */
@@ -126,7 +121,7 @@ public final class SessionEditorNode extends DisplayNode {
                         ToolTipManager toolTipManager
                                 = ToolTipManager.sharedInstance();
                         toolTipManager.setInitialDelay(750);
-                        getNotePopup().show(SessionEditorNode.this, e.getX(), e.getY());
+                        createNotePopup().show(SessionEditorNode.this, e.getX(), e.getY());
                     }
 
                     e.consume();
@@ -374,7 +369,6 @@ public final class SessionEditorNode extends DisplayNode {
 
     private void addListeners(SessionEditorNode sessionEditorNode,
                               SessionNodeWrapper modelNode) {
-        // Add a mouse listener for popups.
         sessionEditorNode.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -382,7 +376,7 @@ public final class SessionEditorNode extends DisplayNode {
                     ToolTipManager toolTipManager
                             = ToolTipManager.sharedInstance();
                     toolTipManager.setInitialDelay(750);
-                    sessionEditorNode.getPopup().show(sessionEditorNode, e.getX(), e.getY());
+                    sessionEditorNode.createPopup().show(sessionEditorNode, e.getX(), e.getY());
                 }
 
                 e.consume();
@@ -471,7 +465,7 @@ public final class SessionEditorNode extends DisplayNode {
      *
      * @return - popup
      */
-    private JPopupMenu getNotePopup() {
+    private JPopupMenu createNotePopup() {
         JPopupMenu popup = new JPopupMenu();
 
         JMenuItem renameBox = new JMenuItem("Rename note");
@@ -546,12 +540,8 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * Creates the popup for the node.
      */
-    private JPopupMenu getPopup() {
-        if (this.popup != null) {
-            return this.popup;
-        }
-
-        this.popup = new JPopupMenu();
+    private JPopupMenu createPopup() {
+        JPopupMenu popup = new JPopupMenu();
 
         JMenuItem createModel = new JMenuItem("Create Contents");
         createModel.setToolTipText("<html>Creates new contents for this node"
@@ -735,11 +725,11 @@ public final class SessionEditorNode extends DisplayNode {
                 }
             }
         });
-        this.popup.add(editParamsItem);
+        popup.add(editParamsItem);
 
         // Enable/disable the parameter editor item dynamically when the
         // popup is about to show, reflecting the current model state.
-        this.popup.addPopupMenuListener(new PopupMenuListener() {
+        popup.addPopupMenuListener(new PopupMenuListener() {
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                 SessionModel model = getSessionNode().getModel();
                 Class<?> mc = (model == null)
@@ -784,26 +774,26 @@ public final class SessionEditorNode extends DisplayNode {
                         }
                     }
                 });
-                this.popup.add(editSimulationParameters);
+                popup.add(editSimulationParameters);
             }
         }
 
-        this.popup.add(createModel);
+        popup.add(createModel);
 
-        this.popup.add(editModel);
-        this.popup.add(destroyModel);
+        popup.add(editModel);
+        popup.add(destroyModel);
 
-        this.popup.addSeparator();
+        popup.addSeparator();
 
-        this.popup.add(renameBox);
-        this.popup.add(cloneBox);
-        this.popup.add(deleteBox);
+        popup.add(renameBox);
+        popup.add(cloneBox);
+        popup.add(deleteBox);
 
-        this.popup.addSeparator();
+        popup.addSeparator();
 
-        this.popup.add(propagateDownstream);
+        popup.add(propagateDownstream);
 
-        return this.popup;
+        return popup;
     }
 
     private ParameterEditor getParameterEditor(Class<?> modelClass) {
