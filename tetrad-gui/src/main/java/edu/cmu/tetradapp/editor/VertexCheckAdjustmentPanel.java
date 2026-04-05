@@ -1071,7 +1071,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
             result.add(new ScoredCandidate(
                     patched.edit(), patched.violationsBaseline(), patched.violationsAfter(),
                     patched.nodePAfter(), patched.modelPBefore(), patched.modelPAfter(),
-                    patched.edgesAfter(), wouldPassGuards(base, patched, gt)));
+                    patched.edgesAfter(), wouldPassGuards(base, patched)));
         }
 
         result.sort(CANONICAL_TABLE_ORDER);
@@ -1960,23 +1960,17 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         return (w != null && w.isCancelled()) || Thread.currentThread().isInterrupted();
     }
 
-    private boolean wouldPassGuards(Graph base, ScoredCandidate sc, AdjustmentGraphType gt) {
+    private boolean wouldPassGuards(Graph base, ScoredCandidate sc) {
         if (sc == null || sc.edit() == null || sc.edit().isNoOp()) return false;
 
-        int currentEdges = base.getNumEdges();
-
-//        Graph cand = buildCandidateGraph(base, sc.edit(), gt);
-//        if (cand == null) return false;
-
-        // Use the SAME table numbers already computed:
-        int baselineViol = sc.violationsBaseline();
-        int afterViol = sc.violationsAfter();
-        int afterEdges = sc.edgesAfter();
-
-        double mpBefore = sc.modelPBefore();
-        double mpAfter = sc.modelPAfter();
-
-        return isProgress(baselineViol, afterViol, currentEdges, afterEdges, mpBefore, mpAfter);
+        return isProgress(
+                sc.violationsBaseline(),
+                sc.violationsAfter(),
+                base.getNumEdges(),
+                sc.edgesAfter(),
+                sc.modelPBefore(),
+                sc.modelPAfter()
+        );
     }
 
     private enum MoveType {
