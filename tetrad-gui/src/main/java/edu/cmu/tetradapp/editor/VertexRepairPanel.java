@@ -72,7 +72,7 @@ import java.util.concurrent.CancellationException;
  * On construction, the panel checks whether the supplied graph matches any recognized legal
  * graph type. If it does not, the user is given a warning.
  */
-public final class VertexCheckAdjustmentPanel extends JPanel {
+public final class VertexRepairPanel extends JPanel {
 
     private static final String CARD_TABLE = "table";
     private static final String CARD_NONE = "none";
@@ -152,7 +152,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
     private volatile JDialog watchDialog;
     private volatile boolean suppressHistory = false;
 
-    public VertexCheckAdjustmentPanel(VertexCheckEditor editor, Node x) {
+    public VertexRepairPanel(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
 
         this.baseModel = Objects.requireNonNull(editor.getIndTestModel(), "editor.getIndTestModel()");
@@ -861,9 +861,9 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
 
         try {
 //            // ---- Phase 1: add-only forward sweep --------------------------------
-            SwingUtilities.invokeLater(() -> statusLabel.setText("Phase 1 (add edges)..."));
-            runRepairPhase(gt, RepairPhase.ADD_ONLY, seenSweepStates, cycleWarnings);
-            if (stopRequested()) return;
+//            SwingUtilities.invokeLater(() -> statusLabel.setText("Phase 1 (add edges)..."));
+//            runRepairPhase(gt, RepairPhase.ADD_ONLY, seenSweepStates, cycleWarnings);
+//            if (stopRequested()) return;
 //
 //            // ---- Phase 2: remove/reorient backward sweep ------------------------
 //            SwingUtilities.invokeLater(() -> statusLabel.setText("Phase 2 (remove/reorient)..."));
@@ -883,7 +883,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
                     + "\n\nThese nodes or states may need manual review.";
             SwingUtilities.invokeLater(() ->
                     JOptionPane.showMessageDialog(
-                            VertexCheckAdjustmentPanel.this,
+                            VertexRepairPanel.this,
                             message,
                             "Cycle Detected During Repair",
                             JOptionPane.WARNING_MESSAGE));
@@ -1133,6 +1133,9 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
 
         workingGraph = g2;
 
+        // Write the repaired graph back to the model so it persists across panel open/close
+        baseModel.setGraph(workingGraph);
+
         if (x != null && x.getName() != null) {
             Node inGraph = workingGraph.getNode(x.getName());
             if (inGraph != null) x = inGraph;
@@ -1196,19 +1199,26 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         List<CandidateEdit> out = new ArrayList<>();
         out.add(CandidateEdit.noOp());
 
-        Set<Node> pool = new LinkedHashSet<>(g.getNodes());
+//        Set<Node> pool = new LinkedHashSet<>(g.getNodes());
+//        pool.remove(x);
+//
+        List<Node> pool = new ArrayList<>(g.getNodes());
         pool.remove(x);
+        pool.sort(Comparator.comparing(Node::getName, NaturalSort.NATURAL_NAME_COMPARATOR));
 
         // ---- Remove existing edge incident to x ----
+        ArrayList<Edge> edges = new ArrayList<>(g.getEdges(x));
+        Collections.sort(edges);
+
         if (phase != RepairPhase.ADD_ONLY) {
-            for (Edge e : new ArrayList<>(g.getEdges(x))) {
+            for (Edge e : edges) {
                 out.add(CandidateEdit.removeEdge(e));
             }
         }
 
         // ---- Replace existing edge x—y with type-specific orientation variants ----
         if (phase != RepairPhase.ADD_ONLY) {
-            for (Edge e : new ArrayList<>(g.getEdges(x))) {
+            for (Edge e : edges) {
                 Node y = e.getDistalNode(x);
                 if (y == null) continue;
 
@@ -1588,7 +1598,10 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         if (g == null) return new GlobalEvalCache(Map.of());
 
         Map<String, VertexContribution> out = new HashMap<>();
-        for (Node v : g.getNodes()) {
+        List<Node> nodes = g.getNodes();
+        nodes.sort(NaturalSort.naturalComparator());
+
+        for (Node v : nodes) {
             if (v == null) continue;
             out.put(v.getName(), evalVertexContribution(g, v));
         }
@@ -1606,8 +1619,8 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         List<IndependenceFact> facts = MarkovCheck.computeImpliedFactsForVertex(g, v, type);
         if (facts.isEmpty()) return new VertexContribution(Map.of(), Map.of());
 
-        Map<String, Boolean> viol = new HashMap<>();
-        Map<String, Double> pByKey = new HashMap<>();
+        Map<String, Boolean> viol = new LinkedHashMap<>();
+        Map<String, Double> pByKey = new LinkedHashMap<>();
 
         for (IndependenceFact f : facts) {
             if (f == null) continue;
@@ -1658,6 +1671,27 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         Map<String, Boolean> globalViolationByKey = new HashMap<>();
         Map<String, Double> globalPByKey = new HashMap<>();
 
+//        List<String> names = new ArrayList<>(contrib.keySet());
+//        names.sort(NaturalSort.naturalComparator());
+//
+//        for (String name : names) {
+//            VertexContribution vc = contrib.get(name);
+//            if (vc == null) continue;
+//
+//            for (Map.Entry<String, Boolean> e : vc.violationByKey().entrySet()) {
+//                String key = e.getKey();
+//                if (key == null) continue;
+//                globalViolationByKey.putIfAbsent(key, e.getValue());
+//            }
+//
+//            for (Map.Entry<String, Double> e : vc.pByKey().entrySet()) {
+//                String key = e.getKey();
+//                if (key == null) continue;
+//                globalPByKey.putIfAbsent(key, e.getValue());
+//            }
+//        }
+
+        // Already sorted:
         List<String> names = new ArrayList<>(contrib.keySet());
         names.sort(NaturalSort.naturalComparator());
 
@@ -1665,16 +1699,17 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
             VertexContribution vc = contrib.get(name);
             if (vc == null) continue;
 
-            for (Map.Entry<String, Boolean> e : vc.violationByKey().entrySet()) {
-                String key = e.getKey();
-                if (key == null) continue;
-                globalViolationByKey.putIfAbsent(key, e.getValue());
+            // Sort the fact keys within each vertex too, for full determinism
+            List<String> violKeys = new ArrayList<>(vc.violationByKey().keySet());
+            violKeys.sort(NaturalSort.naturalComparator());
+            for (String key : violKeys) {
+                globalViolationByKey.putIfAbsent(key, vc.violationByKey().get(key));
             }
 
-            for (Map.Entry<String, Double> e : vc.pByKey().entrySet()) {
-                String key = e.getKey();
-                if (key == null) continue;
-                globalPByKey.putIfAbsent(key, e.getValue());
+            List<String> pKeys = new ArrayList<>(vc.pByKey().keySet());
+            pKeys.sort(NaturalSort.naturalComparator());
+            for (String key : pKeys) {
+                globalPByKey.putIfAbsent(key, vc.pByKey().get(key));
             }
         }
 
@@ -1730,10 +1765,10 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         Node xc = candidate.getNode(x.getName());
         if (xb == null || xc == null) return affected;
 
-        Set<String> nb = new HashSet<>();
+        Set<String> nb = new LinkedHashSet<>();
         for (Node n : base.getAdjacentNodes(xb)) if (n != null) nb.add(n.getName());
 
-        Set<String> nc = new HashSet<>();
+        Set<String> nc = new LinkedHashSet<>();
         for (Node n : candidate.getAdjacentNodes(xc)) if (n != null) nc.add(n.getName());
 
         for (String name : nb) if (!nc.contains(name)) affected.add(name);

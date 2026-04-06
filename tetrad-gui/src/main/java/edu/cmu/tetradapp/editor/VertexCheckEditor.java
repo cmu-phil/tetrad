@@ -52,7 +52,7 @@ import java.util.function.Function;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
-import static edu.cmu.tetradapp.editor.VertexCheckAdjustmentPanel.factKey;
+import static edu.cmu.tetradapp.editor.VertexRepairPanel.factKey;
 import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
 
 /**
@@ -87,7 +87,7 @@ import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
  * </p>
  *
  * <p>
- * Integrated with this editor is the {@link VertexCheckAdjustmentPanel}, which allows
+ * Integrated with this editor is the {@link VertexRepairPanel}, which allows
  * users to explore local graph modifications when Markov violations are present.
  * Accepted repairs update the underlying graph, trigger recomputation of affected
  * results, and preserve table selections where possible.
@@ -1225,7 +1225,7 @@ public class VertexCheckEditor extends JPanel {
         Node x = getSelectedVertex();
         if (x == null) return;
 
-        VertexCheckAdjustmentPanel panel = new VertexCheckAdjustmentPanel(this, x);
+        VertexRepairPanel panel = new VertexRepairPanel(this, x);
         panel.setKnowledge(knowledge);
 
         JDialog dialog = new JDialog(

@@ -1169,6 +1169,9 @@ public class MarkovCheckEditor extends JPanel {
             updateTables(model, tableIndep, tableDep);
         });
 
+        nodeSelection.setMinimumSize(new Dimension(100, 20) );
+        nodeSelection.setMaximumSize(new Dimension(300, 20) );
+
         nodeSelectionBox.add(nodeSelection);
         nodeSelectionBox.add(Box.createHorizontalGlue());
 
