@@ -271,7 +271,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
             case ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION: {
                 Graph mag;
-                boolean isPag = false;
 
                 if (alignedGraph.paths().isLegalDag()) {
                     mag = GraphTransforms.dagToMag(alignedGraph);
@@ -282,7 +281,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     mag = alignedGraph;
                 } else if (alignedGraph.paths().isLegalPag()) {
                     mag = GraphTransforms.zhangMagFromPag(alignedGraph);
-                    isPag = true;
                 } else {
                     boolean hasCircle = false;
 
@@ -303,23 +301,11 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 Node _x = mag.getNode(x.getName());
 
                 Set<IndependenceFact> raw = OrderedLocalMarkovPropertySinkElimination.getModelForNode(mag, _x);
-
-                if (isPag) {
-                    MsepTest msepTest = new MsepTest(alignedGraph);
-
-                    for (IndependenceFact fact : new HashSet<>(raw)) {
-                        if (!msepTest.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).isIndependent()) {
-                            raw.remove(fact);
-                        }
-                    }
-                }
-
                 return new ArrayList<>(raw);
             }
 
             case ORDERED_LOCAL_MARKOV_PROPERTY: {
                 Graph mag;
-                boolean isPag = false;
 
                 if (alignedGraph.paths().isLegalDag()) {
                     mag = GraphTransforms.dagToMag(alignedGraph);
@@ -330,7 +316,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     mag = alignedGraph;
                 } else if (alignedGraph.paths().isLegalPag()) {
                     mag = GraphTransforms.zhangMagFromPag(alignedGraph);
-                    isPag = true;
                 } else {
                     boolean hasCircle = false;
 
@@ -351,23 +336,11 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 Node _x = mag.getNode(x.getName());
 
                 Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModelForNode(mag, _x);
-
-                if (isPag) {
-                    MsepTest msepTest = new MsepTest(alignedGraph);
-
-                    for (IndependenceFact fact : new HashSet<>(raw)) {
-                        if (!msepTest.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).isIndependent()) {
-                            raw.remove(fact);
-                        }
-                    }
-                }
-
                 return new ArrayList<>(raw);
             }
 
             case PAIRWISE_MARKOV_PROPERTY: {
                 Graph mag;
-                boolean isPag = false;
 
                 if (alignedGraph.paths().isLegalDag()) {
                     mag = GraphTransforms.dagToMag(alignedGraph);
@@ -378,7 +351,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     mag = alignedGraph;
                 } else if (alignedGraph.paths().isLegalPag()) {
                     mag = GraphTransforms.zhangMagFromPag(alignedGraph);
-                    isPag = true;
                 } else {
                     boolean hasCircle = false;
 
@@ -394,24 +366,11 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     } else {
                         mag = alignedGraph;
                     }
-
-                    isPag = true;
                 }
 
                 Node _x = mag.getNode(x.getName());
 
                 Set<IndependenceFact> raw = PairwiseMarkovProperty.getModelForNode(mag, _x);
-
-                if (isPag) {
-                    MsepTest msepTest = new MsepTest(mag);
-
-                    for (IndependenceFact fact : new HashSet<>(raw)) {
-                        if (!msepTest.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).isIndependent()) {
-                            raw.remove(fact);
-                        }
-                    }
-                }
-
                 return new ArrayList<>(raw);
             }
 
@@ -1351,7 +1310,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
         if (setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION) {
             Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
-            boolean isPag = false;
 
             if (graph.paths().isLegalDag()) {
                 mag = graph;
@@ -1361,7 +1319,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 mag = graph;
             } else {
                 mag = GraphTransforms.zhangMagFromPag(graph);
-                isPag = true;
             }
 
             if (mag.paths().existsDirectedCycle()) {
@@ -1369,21 +1326,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             }
 
             Set<IndependenceFact> raw = OrderedLocalMarkovPropertySinkElimination.getModel(mag);
-
-            if (isPag) {
-                MsepTest msepTest = new MsepTest(mag);
-
-                for (IndependenceFact fact : new HashSet<>(raw)) {
-                    if (!msepTest.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).isIndependent()) {
-                        raw.remove(fact);
-                    }
-                }
-            }
-
             allIndependenceFacts = raw;
         } else if (setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY) {
             Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
-            boolean isPag = false;
 
             if (graph.paths().isLegalDag()) {
                 mag = graph;
@@ -1393,29 +1338,15 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 mag = graph;
             } else {
                 mag = GraphTransforms.zhangMagFromPag(graph);
-                isPag = true;
             }
 
             if (mag.paths().existsDirectedCycle()) {
                 return null;
             }
 
-            Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModel(mag);
-
-            if (isPag) {
-                MsepTest msepTest = new MsepTest(mag);
-
-                for (IndependenceFact fact : new HashSet<>(raw)) {
-                    if (!msepTest.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).isIndependent()) {
-                        raw.remove(fact);
-                    }
-                }
-            }
-
-            allIndependenceFacts = raw;
+            allIndependenceFacts = OrderedLocalMarkovProperty.getModel(mag);
         } else if (setType == ConditioningSetType.PAIRWISE_MARKOV_PROPERTY) {
             Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
-            boolean isPag = false;
 
             if (graph.paths().isLegalDag()) {
                 mag = graph;
@@ -1425,26 +1356,12 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 mag = graph;
             } else {
                 mag = GraphTransforms.zhangMagFromPag(graph);
-                isPag = true;
             }
 
             if (mag.paths().existsDirectedCycle()) {
                 return null;
             }
-
-            Set<IndependenceFact> raw = PairwiseMarkovProperty.getModel(mag);
-
-            if (isPag) {
-                MsepTest msepTest = new MsepTest(mag);
-
-                for (IndependenceFact fact : new HashSet<>(raw)) {
-                    if (!msepTest.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).isIndependent()) {
-                        raw.remove(fact);
-                    }
-                }
-            }
-
-            allIndependenceFacts = raw;
+            allIndependenceFacts = PairwiseMarkovProperty.getModel(mag);
         } else if (setType == ConditioningSetType.RECURSIVE_BLOCKING) {
             if (graph.paths().existsDirectedCycle()) {
                 return null;

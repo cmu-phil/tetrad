@@ -78,10 +78,6 @@ public final class VertexRepairPanel extends JPanel {
     private static final String CARD_NONE = "none";
     private static final DecimalFormat MODEL_P_FORMAT = new DecimalFormat("0.0000");
     private static final int DEFAULT_MODELP_TOP_K = 25;
-
-    // ---- Preferences (persist α and model-P top-K) ----
-    static double alpha = 0.01;
-
     private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
         if (a == null && b == null) return 0;
         if (a == null) return 1;
@@ -129,7 +125,8 @@ public final class VertexRepairPanel extends JPanel {
         if (c != 0) return c;
         return stableTieBreak(a, b);
     };
-
+    // ---- Preferences (persist α and model-P top-K) ----
+    static double alpha = 0.01;
     private final VertexCheckIndTestModel baseModel;
     private final Deque<Graph> history = new ArrayDeque<>();
     // UI
@@ -187,23 +184,6 @@ public final class VertexRepairPanel extends JPanel {
     // -------------------------------------------------------------------------
     // RepairPhase: controls which move types are visible during each repair phase
     // -------------------------------------------------------------------------
-
-    /**
-     * Controls which move types {@link #enumerateCandidates} will produce during
-     * the two-phase GES-style repair sweep.
-     *
-     * <ul>
-     *   <li>{@code ADD_ONLY}  – Phase 1: forward pass, only edge additions.</li>
-     *   <li>{@code NON_ADD}   – Phase 2: backward pass, removals and reorientations
-     *       but no new additions.</li>
-     *   <li>{@code ALL}       – Interactive/manual use: the full move set (default).</li>
-     * </ul>
-     */
-    private enum RepairPhase {
-        ADD_ONLY,
-        NON_ADD,
-        ALL
-    }
 
     private static int finiteFirst(double a, double b) {
         boolean fa = Double.isFinite(a);
@@ -544,6 +524,17 @@ public final class VertexRepairPanel extends JPanel {
         }
     }
 
+    /**
+     * Returns a human-readable label for a phase, used in status/warning messages.
+     */
+    private static String phaseName(RepairPhase phase) {
+        return switch (phase) {
+            case ADD_ONLY -> "Phase 1 (add)";
+            case NON_ADD -> "Phase 2 (remove/reorient)";
+            case ALL -> "all-moves";
+        };
+    }
+
     private Node resolveInitialNode(Graph g, Node requested) {
         if (g == null) return requested;
         List<Node> nodes = new ArrayList<>(g.getNodes());
@@ -875,6 +866,8 @@ public final class VertexRepairPanel extends JPanel {
 
         } finally {
             suppressHistory = false;
+            // Flush final graph to model exactly once, after all repair edits are done
+            baseModel.setGraph(workingGraph);
             // Single UI refresh now that all edits are done
             SwingUtilities.invokeLater(() -> {
                 populateNodeCombo();
@@ -981,19 +974,6 @@ public final class VertexRepairPanel extends JPanel {
         } while (anyChangeInSweep);
     }
 
-    /** Returns a human-readable label for a phase, used in status/warning messages. */
-    private static String phaseName(RepairPhase phase) {
-        return switch (phase) {
-            case ADD_ONLY -> "Phase 1 (add)";
-            case NON_ADD  -> "Phase 2 (remove/reorient)";
-            case ALL      -> "all-moves";
-        };
-    }
-
-    // -------------------------------------------------------------------------
-    // Scoring
-    // -------------------------------------------------------------------------
-
     private List<ScoredCandidate> scoreCandidates(Graph base, Node node,
                                                   AdjustmentGraphType gt,
                                                   List<CandidateEdit> candidates) {
@@ -1073,6 +1053,10 @@ public final class VertexRepairPanel extends JPanel {
         return result;
     }
 
+    // -------------------------------------------------------------------------
+    // Scoring
+    // -------------------------------------------------------------------------
+
     private void applyCandidate(CandidateEdit cand) {
         applyCandidateInternal(cand);
         updateButtons();
@@ -1139,7 +1123,10 @@ public final class VertexRepairPanel extends JPanel {
         workingGraph = g2;
 
         // Write the repaired graph back to the model so it persists across panel open/close
-        baseModel.setGraph(workingGraph);
+        // During repair (suppressHistory=true), we batch this to avoid hammering the calling panel
+        if (!suppressHistory) {
+            baseModel.setGraph(workingGraph);
+        }
 
         if (x != null && x.getName() != null) {
             Node inGraph = workingGraph.getNode(x.getName());
@@ -1149,7 +1136,8 @@ public final class VertexRepairPanel extends JPanel {
         }
 
         vlog("APPLIED successfully");
-        if (!suppressHistory) SwingUtilities.invokeLater(() -> statusLabel.setText("Applied: " + cand.description()));
+//        if (!suppressHistory)
+        SwingUtilities.invokeLater(() -> statusLabel.setText("Applied: " + cand.description()));
     }
 
     private void goBack() {
@@ -1181,10 +1169,6 @@ public final class VertexRepairPanel extends JPanel {
 
         JOptionPane.showMessageDialog(this, tabs, "Current Graph", JOptionPane.INFORMATION_MESSAGE);
     }
-
-    // -------------------------------------------------------------------------
-    // Candidate enumeration
-    // -------------------------------------------------------------------------
 
     /**
      * Enumerates candidate edits for node {@code x} in graph {@code g}, filtered to
@@ -1262,6 +1246,10 @@ public final class VertexRepairPanel extends JPanel {
         return dedupCandidateEdits(out);
     }
 
+    // -------------------------------------------------------------------------
+    // Candidate enumeration
+    // -------------------------------------------------------------------------
+
     private List<CandidateEdit> enumerateIncidentOrientationPatternMoves(Graph g, Node x, AdjustmentGraphType gt) {
         if (g == null || x == null) return List.of();
 
@@ -1332,8 +1320,14 @@ public final class VertexRepairPanel extends JPanel {
                         : new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW);
 
                 if (gt == AdjustmentGraphType.DAG) {
-                    if (intoX && hasDirectedPath(g, x, y)) { earlyReject = true; break; }
-                    if (!intoX && hasDirectedPath(g, y, x)) { earlyReject = true; break; }
+                    if (intoX && hasDirectedPath(g, x, y)) {
+                        earlyReject = true;
+                        break;
+                    }
+                    if (!intoX && hasDirectedPath(g, y, x)) {
+                        earlyReject = true;
+                        break;
+                    }
                 }
 
                 news.add(ne);
@@ -1878,6 +1872,23 @@ public final class VertexRepairPanel extends JPanel {
         );
     }
 
+    /**
+     * Controls which move types {@link #enumerateCandidates} will produce during
+     * the two-phase GES-style repair sweep.
+     *
+     * <ul>
+     *   <li>{@code ADD_ONLY}  – Phase 1: forward pass, only edge additions.</li>
+     *   <li>{@code NON_ADD}   – Phase 2: backward pass, removals and reorientations
+     *       but no new additions.</li>
+     *   <li>{@code ALL}       – Interactive/manual use: the full move set (default).</li>
+     * </ul>
+     */
+    private enum RepairPhase {
+        ADD_ONLY,
+        NON_ADD,
+        ALL
+    }
+
     private enum MoveType {
         REORIENT_SIMPLE,
         COLLIDER_FIX,
@@ -1886,48 +1897,93 @@ public final class VertexRepairPanel extends JPanel {
         OTHER
     }
 
-    public enum AdjustmentGraphType { CPDAG, PDAG, PAG, DAG,MAG}
+    public enum AdjustmentGraphType {CPDAG, PDAG, PAG, DAG, MAG}
 
     public interface CandidateEdit {
 
         static CandidateEdit noOp() {
             return new CandidateEdit() {
-                @Override public String description() { return "No change"; }
-                @Override public Graph applyTo(Graph g) { return (g == null) ? null : new EdgeListGraph(g); }
-                @Override public boolean isNoOp() { return true; }
-                @Override public String key() { return "NO_OP"; }
-                @Override public Edge getEdge() { return null; }
+                @Override
+                public String description() {
+                    return "No change";
+                }
+
+                @Override
+                public Graph applyTo(Graph g) {
+                    return (g == null) ? null : new EdgeListGraph(g);
+                }
+
+                @Override
+                public boolean isNoOp() {
+                    return true;
+                }
+
+                @Override
+                public String key() {
+                    return "NO_OP";
+                }
+
+                @Override
+                public Edge getEdge() {
+                    return null;
+                }
             };
         }
 
         static CandidateEdit addEdge(Edge edgeToAdd) {
             Objects.requireNonNull(edgeToAdd, "edgeToAdd");
             return new CandidateEdit() {
-                @Override public String description() { return "Add edge " + edgeToAdd; }
-                @Override public Graph applyTo(Graph g) {
+                @Override
+                public String description() {
+                    return "Add edge " + edgeToAdd;
+                }
+
+                @Override
+                public Graph applyTo(Graph g) {
                     Graph g2 = new EdgeListGraph(g);
                     Edge rebound = rebindEdgeToGraph(g2, edgeToAdd);
                     if (rebound == null) return g2;
                     g2.addEdge(rebound);
                     return g2;
                 }
-                @Override public String key() { return "ADD:" + stableEdgeKey(edgeToAdd); }
-                @Override public Edge getEdge() { return edgeToAdd; }
+
+                @Override
+                public String key() {
+                    return "ADD:" + stableEdgeKey(edgeToAdd);
+                }
+
+                @Override
+                public Edge getEdge() {
+                    return edgeToAdd;
+                }
             };
         }
 
         static CandidateEdit removeEdge(Edge edgeToRemove) {
             Objects.requireNonNull(edgeToRemove, "edgeToRemove");
             return new CandidateEdit() {
-                @Override public String description() { return "Remove edge " + edgeToRemove; }
-                @Override public Graph applyTo(Graph g) {
+                @Override
+                public String description() {
+                    return "Remove edge " + edgeToRemove;
+                }
+
+                @Override
+                public Graph applyTo(Graph g) {
                     Graph g2 = new EdgeListGraph(g);
                     Edge e = getEdgeByNames(g2, edgeToRemove);
                     if (e != null) g2.removeEdge(e);
                     return g2;
                 }
-                @Override public String key() { return "REM:" + stableEdgeKey(edgeToRemove); }
-                @Override public Edge getEdge() { return edgeToRemove; }
+
+                @Override
+                public String key() {
+                    return "REM:" + stableEdgeKey(edgeToRemove);
+                }
+
+                @Override
+                public Edge getEdge() {
+                    return edgeToRemove;
+                }
             };
         }
 
@@ -1935,8 +1991,13 @@ public final class VertexRepairPanel extends JPanel {
             Objects.requireNonNull(oldEdge, "oldEdge");
             Objects.requireNonNull(newEdge, "newEdge");
             return new CandidateEdit() {
-                @Override public String description() { return "Replace " + oldEdge + " with " + newEdge; }
-                @Override public Graph applyTo(Graph g) {
+                @Override
+                public String description() {
+                    return "Replace " + oldEdge + " with " + newEdge;
+                }
+
+                @Override
+                public Graph applyTo(Graph g) {
                     Graph g2 = new EdgeListGraph(g);
                     Edge eOld = getEdgeByNames(g2, oldEdge);
                     if (eOld != null) g2.removeEdge(eOld);
@@ -1944,8 +2005,16 @@ public final class VertexRepairPanel extends JPanel {
                     if (eNew != null) g2.addEdge(eNew);
                     return g2;
                 }
-                @Override public String key() { return "REP:" + stableEdgeKey(oldEdge) + "->" + stableEdgeKey(newEdge); }
-                @Override public Edge getEdge() { return newEdge; }
+
+                @Override
+                public String key() {
+                    return "REP:" + stableEdgeKey(oldEdge) + "->" + stableEdgeKey(newEdge);
+                }
+
+                @Override
+                public Edge getEdge() {
+                    return newEdge;
+                }
             };
         }
 
@@ -1958,8 +2027,13 @@ public final class VertexRepairPanel extends JPanel {
             List<Edge> news = List.copyOf(newEdges);
 
             return new CandidateEdit() {
-                @Override public String description() { return label; }
-                @Override public Graph applyTo(Graph g) {
+                @Override
+                public String description() {
+                    return label;
+                }
+
+                @Override
+                public Graph applyTo(Graph g) {
                     Graph g2 = new EdgeListGraph(g);
                     for (Edge oe : olds) {
                         if (oe == null) continue;
@@ -1979,15 +2053,25 @@ public final class VertexRepairPanel extends JPanel {
                     }
                     return g2;
                 }
-                @Override public String key() {
+
+                @Override
+                public String key() {
                     List<String> parts = new ArrayList<>();
                     for (Edge oe : olds) parts.add("O:" + stableEdgeKey(oe));
                     for (Edge ne : news) parts.add("N:" + stableEdgeKey(ne));
                     parts.sort(NaturalSort.naturalComparator());
                     return "MULTI:" + label + ":" + String.join("|", parts);
                 }
-                @Override public Edge getEdge() { return news.isEmpty() ? null : news.getFirst(); }
-                @Override public List<Edge> getEdges() { return news; }
+
+                @Override
+                public Edge getEdge() {
+                    return news.isEmpty() ? null : news.getFirst();
+                }
+
+                @Override
+                public List<Edge> getEdges() {
+                    return news;
+                }
             };
         }
 
@@ -2001,10 +2085,19 @@ public final class VertexRepairPanel extends JPanel {
         }
 
         String description();
+
         Graph applyTo(Graph g);
-        default boolean isNoOp() { return false; }
-        default String key() { return description(); }
+
+        default boolean isNoOp() {
+            return false;
+        }
+
+        default String key() {
+            return description();
+        }
+
         Edge getEdge();
+
         default List<Edge> getEdges() {
             Edge e = getEdge();
             return (e == null) ? List.of() : List.of(e);
@@ -2021,7 +2114,9 @@ public final class VertexRepairPanel extends JPanel {
             int edgesAfter,
             boolean passesGuards
     ) {
-        int delta() { return violationsAfter - violationsBaseline; }
+        int delta() {
+            return violationsAfter - violationsBaseline;
+        }
     }
 
     private static final class CandidateTableModel extends AbstractTableModel {
@@ -2050,39 +2145,52 @@ public final class VertexRepairPanel extends JPanel {
             fireTableDataChanged();
         }
 
-        CandidateEdit getCandidate(int row) { return rows.get(row).edit(); }
+        CandidateEdit getCandidate(int row) {
+            return rows.get(row).edit();
+        }
 
-        @Override public int getRowCount() { return rows.size(); }
-        @Override public int getColumnCount() { return cols.length; }
-        @Override public String getColumnName(int column) { return cols[column]; }
+        @Override
+        public int getRowCount() {
+            return rows.size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return cols.length;
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            return cols[column];
+        }
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             ScoredCandidate r = rows.get(rowIndex);
             return switch (columnIndex) {
-                case COL_EDIT    -> r.edit().description();
-                case COL_BASE    -> r.violationsBaseline();
-                case COL_AFTER   -> r.violationsAfter();
-                case COL_DELTA   -> r.delta();
-                case COL_NODE_P  -> r.nodePAfter();
+                case COL_EDIT -> r.edit().description();
+                case COL_BASE -> r.violationsBaseline();
+                case COL_AFTER -> r.violationsAfter();
+                case COL_DELTA -> r.delta();
+                case COL_NODE_P -> r.nodePAfter();
                 case COL_MODEL_P -> r.modelPAfter();
-                case COL_EDGES   -> r.edgesAfter();
-                case COL_APPLY   -> r.edit().isNoOp() ? "" : "Accept";
-                default          -> "";
+                case COL_EDGES -> r.edgesAfter();
+                case COL_APPLY -> r.edit().isNoOp() ? "" : "Accept";
+                default -> "";
             };
         }
 
         public Class<?> getColumnClass(int col) {
             return switch (col) {
-                case COL_EDIT    -> String.class;
-                case COL_BASE    -> Integer.class;
-                case COL_AFTER   -> Integer.class;
-                case COL_DELTA   -> Integer.class;
-                case COL_NODE_P  -> Double.class;
+                case COL_EDIT -> String.class;
+                case COL_BASE -> Integer.class;
+                case COL_AFTER -> Integer.class;
+                case COL_DELTA -> Integer.class;
+                case COL_NODE_P -> Double.class;
                 case COL_MODEL_P -> Double.class;
-                case COL_EDGES   -> Integer.class;
-                case COL_APPLY   -> Object.class;
-                default          -> Object.class;
+                case COL_EDGES -> Integer.class;
+                case COL_APPLY -> Object.class;
+                default -> Object.class;
             };
         }
 
@@ -2093,7 +2201,9 @@ public final class VertexRepairPanel extends JPanel {
     }
 
     private static final class ButtonRenderer extends JButton implements TableCellRenderer {
-        ButtonRenderer() { setOpaque(true); }
+        ButtonRenderer() {
+            setOpaque(true);
+        }
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
@@ -2129,19 +2239,27 @@ public final class VertexRepairPanel extends JPanel {
             return button;
         }
 
-        @Override public Object getCellEditorValue() { return button.getText(); }
+        @Override
+        public Object getCellEditorValue() {
+            return button.getText();
+        }
 
-        interface RowAction { void run(int row); }
+        interface RowAction {
+            void run(int row);
+        }
     }
 
-    private record GraphEval(int violations, double modelP, int nFacts) {}
+    private record GraphEval(int violations, double modelP, int nFacts) {
+    }
 
     private record VertexContribution(
             Map<String, Boolean> violationByKey,
             Map<String, Double> pByKey
-    ) {}
+    ) {
+    }
 
     private record GlobalEvalCache(
             Map<String, VertexContribution> contribByVertexName
-    ) {}
+    ) {
+    }
 }
