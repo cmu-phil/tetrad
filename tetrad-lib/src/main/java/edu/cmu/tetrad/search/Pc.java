@@ -441,22 +441,25 @@ public class Pc implements IGraphSearch {
         checkVars(nodes);
         this.startTimeMs = System.currentTimeMillis();
 
-        // 1) Skeleton via FAS
+        // Phase 1: skeleton
         this.fas = new Fas(test);
         fas.setReplicatingGraph(replicatingGraph);
         fas.setKnowledge(knowledge);
         fas.setDepth(depth);
         fas.setStable(fasStable);
         fas.setVerbose(verbose);
-
         Graph g = fas.search(nodes);
-
         SepsetMap sepsets = fas.getSepsets();
 
-        // 2) Orient colliders
+        // Phase 2: orient v-structures
         orientUnshieldedTriples(g, sepsets);
 
-        // 3) Meek rules to closure (cycle-safe)
+        // Pre-Meek reversion: enforce Chickering compelledness.
+        // Reverts any directed edge that is not the tail of a genuine
+        // v-structure back to undirected, giving Meek a clean input.
+        revertNonCompelledEdges(g);
+
+        // Phase 3: Meek R1-R4 to closure
         applyMeekRules(g);
 
         return g;
@@ -830,118 +833,126 @@ public class Pc implements IGraphSearch {
     // ------------------------------------------------------------------------------------
 
 
+//    private void applyMeekRules(Graph g) {
+//        if (!meekCycleSafe || !forbidDirectedCycles) {
+//            MeekRules meekRules = new MeekRules();
+//            meekRules.setKnowledge(knowledge);
+//            meekRules.orientImplied(g);
+//            return;
+//        }
+//
+//        int guard = 0;
+//
+//        while (true) {
+//            guard++;
+//            if (guard > 10_000) break;
+//
+//            // Snapshot current graph edges (this is our "before" for this round)
+//            List<Edge> before = new ArrayList<>(g.getEdges());
+//
+//            // Run full Meek to closure on the current graph to discover what it *wants* to change
+//            MeekRules meekRules = new MeekRules();
+//            meekRules.setMeekPreventCycles(true);
+//            meekRules.setKnowledge(knowledge);
+//            meekRules.orientImplied(g);
+//
+//            List<Edge> after = new ArrayList<>(g.getEdges());
+//
+//            // Build maps keyed by unordered node-pair
+//            Map<String, Edge> beforeMap = new HashMap<>();
+//            for (Edge e : before) beforeMap.put(edgeKey(e), e);
+//
+//            Map<String, Edge> afterMap = new HashMap<>();
+//            for (Edge e : after) afterMap.put(edgeKey(e), e);
+//
+//            // Collect candidate changes: those pairs that existed before and after but orientation differs
+//            List<EdgeChange> changes = new ArrayList<>();
+//            for (Map.Entry<String, Edge> ent : afterMap.entrySet()) {
+//                String k = ent.getKey();
+//                Edge eAfter = ent.getValue();
+//                Edge eBefore = beforeMap.get(k);
+//                if (eBefore == null) continue; // ignore truly-new edges (PC/Meek shouldn't add adjacencies anyway)
+//                if (!sameOrientation(eBefore, eAfter)) {
+//                    changes.add(new EdgeChange(eBefore, eAfter));
+//                }
+//            }
+//
+//            // If Meek produced no orientation changes, we're done.
+//            if (changes.isEmpty()) {
+//                // IMPORTANT: we are currently sitting at the "after" graph from the meek call.
+//                // That's fine since no changes were proposed; it equals the prior state.
+//                return;
+//            }
+//
+//            // Revert graph *completely* back to "before"
+//            // (We do this by restoring each edge pair to its before version.)
+//            for (EdgeChange ch : changes) {
+//                // Remove current edge for that pair and restore before
+//                Edge cur = afterMap.get(edgeKey(ch.after));
+//                if (cur != null) g.removeEdge(cur);
+//                // Ensure before edge is present
+//                g.addEdge(ch.before);
+//            }
+//
+//            // Now replay proposed changes one by one, keeping only those that don't create cycles
+//            boolean acceptedAny = false;
+//
+//            for (EdgeChange ch : changes) {
+//                // Apply the proposed oriented edge
+//                g.removeEdge(ch.before);
+//                g.addEdge(ch.after);
+//
+//                if (hasDirectedCycle(g)) {
+//                    // Roll back THIS change
+//                    g.removeEdge(ch.after);
+//                    g.addEdge(ch.before);
+//                } else {
+//                    acceptedAny = true;
+//                }
+//            }
+//
+//            // If we couldn't accept anything without a cycle, stop.
+//            if (!acceptedAny) return;
+//
+//            // Otherwise, loop: run Meek again from this new (partially oriented) state.
+//        }
+//    }
+
     private void applyMeekRules(Graph g) {
-        if (!meekCycleSafe || !forbidDirectedCycles) {
-            MeekRules meekRules = new MeekRules();
-            meekRules.setKnowledge(knowledge);
-            meekRules.orientImplied(g);
-            return;
-        }
-
-        int guard = 0;
-
-        while (true) {
-            guard++;
-            if (guard > 10_000) break;
-
-            // Snapshot current graph edges (this is our "before" for this round)
-            List<Edge> before = new ArrayList<>(g.getEdges());
-
-            // Run full Meek to closure on the current graph to discover what it *wants* to change
-            MeekRules meekRules = new MeekRules();
-            meekRules.setMeekPreventCycles(true);
-            meekRules.setKnowledge(knowledge);
-            meekRules.orientImplied(g);
-
-            List<Edge> after = new ArrayList<>(g.getEdges());
-
-            // Build maps keyed by unordered node-pair
-            Map<String, Edge> beforeMap = new HashMap<>();
-            for (Edge e : before) beforeMap.put(edgeKey(e), e);
-
-            Map<String, Edge> afterMap = new HashMap<>();
-            for (Edge e : after) afterMap.put(edgeKey(e), e);
-
-            // Collect candidate changes: those pairs that existed before and after but orientation differs
-            List<EdgeChange> changes = new ArrayList<>();
-            for (Map.Entry<String, Edge> ent : afterMap.entrySet()) {
-                String k = ent.getKey();
-                Edge eAfter = ent.getValue();
-                Edge eBefore = beforeMap.get(k);
-                if (eBefore == null) continue; // ignore truly-new edges (PC/Meek shouldn't add adjacencies anyway)
-                if (!sameOrientation(eBefore, eAfter)) {
-                    changes.add(new EdgeChange(eBefore, eAfter));
-                }
-            }
-
-            // If Meek produced no orientation changes, we're done.
-            if (changes.isEmpty()) {
-                // IMPORTANT: we are currently sitting at the "after" graph from the meek call.
-                // That's fine since no changes were proposed; it equals the prior state.
-                return;
-            }
-
-            // Revert graph *completely* back to "before"
-            // (We do this by restoring each edge pair to its before version.)
-            for (EdgeChange ch : changes) {
-                // Remove current edge for that pair and restore before
-                Edge cur = afterMap.get(edgeKey(ch.after));
-                if (cur != null) g.removeEdge(cur);
-                // Ensure before edge is present
-                g.addEdge(ch.before);
-            }
-
-            // Now replay proposed changes one by one, keeping only those that don't create cycles
-            boolean acceptedAny = false;
-
-            for (EdgeChange ch : changes) {
-                // Apply the proposed oriented edge
-                g.removeEdge(ch.before);
-                g.addEdge(ch.after);
-
-                if (hasDirectedCycle(g)) {
-                    // Roll back THIS change
-                    g.removeEdge(ch.after);
-                    g.addEdge(ch.before);
-                } else {
-                    acceptedAny = true;
-                }
-            }
-
-            // If we couldn't accept anything without a cycle, stop.
-            if (!acceptedAny) return;
-
-            // Otherwise, loop: run Meek again from this new (partially oriented) state.
-        }
+        MeekRules meekRules = new MeekRules();
+        meekRules.setKnowledge(knowledge);
+        meekRules.setMeekPreventCycles(true);       // defensive, should not fire
+        meekRules.setRevertToUnshieldedColliders(false); // reversion already done
+        meekRules.orientImplied(g);
     }
 
-    private static final class EdgeChange {
-        final Edge before;
-        final Edge after;
-
-        EdgeChange(Edge before, Edge after) {
-            this.before = before;
-            this.after = after;
-        }
-    }
-
-    /** Return true if the current graph contains any directed cycle. */
-    private static boolean hasDirectedCycle(Graph g) {
-        return g.paths().existsDirectedCycle();
-    }
-
-    private static boolean sameOrientation(Edge a, Edge b) {
-        return a.getEndpoint1() == b.getEndpoint1() && a.getEndpoint2() == b.getEndpoint2();
-    }
-
-    private static String edgeKey(Edge e) {
-        Node n1 = e.getNode1();
-        Node n2 = e.getNode2();
-        String a = n1.getName();
-        String b = n2.getName();
-        if (a.compareTo(b) <= 0) return a + "||" + b;
-        return b + "||" + a;
-    }
+//    private static final class EdgeChange {
+//        final Edge before;
+//        final Edge after;
+//
+//        EdgeChange(Edge before, Edge after) {
+//            this.before = before;
+//            this.after = after;
+//        }
+//    }
+//
+//    /** Return true if the current graph contains any directed cycle. */
+//    private static boolean hasDirectedCycle(Graph g) {
+//        return g.paths().existsDirectedCycle();
+//    }
+//
+//    private static boolean sameOrientation(Edge a, Edge b) {
+//        return a.getEndpoint1() == b.getEndpoint1() && a.getEndpoint2() == b.getEndpoint2();
+//    }
+//
+//    private static String edgeKey(Edge e) {
+//        Node n1 = e.getNode1();
+//        Node n2 = e.getNode2();
+//        String a = n1.getName();
+//        String b = n2.getName();
+//        if (a.compareTo(b) <= 0) return a + "||" + b;
+//        return b + "||" + a;
+//    }
 
     // ------------------------------------------------------------------------------------
     // Checks / timeouts
@@ -1109,5 +1120,93 @@ public class Pc implements IGraphSearch {
             this.bestP = bestP;
             this.bestS = bestS;
         }
+    }
+
+    /**
+     * Pre-Meek reversion: enforce Chickering (2002) compelledness.
+     *
+     * After Phase 2 has oriented unshielded colliders, some directed edges
+     * may exist that are not individually "compelled" in the sense of
+     * Chickering Definition 3 — i.e. they were implicitly fixed by the
+     * collider orientations but are not themselves v-structure tails.
+     * Meek's rules (R1-R4) are the correct mechanism for deciding those.
+     * Leaving them pre-oriented corrupts Meek's starting state and can
+     * produce output that is not a valid CPDAG.
+     *
+     * A directed edge X→Z is compelled iff there exists at least one node W
+     * such that:
+     *   (a) W is adjacent to Z,
+     *   (b) W is NOT adjacent to X, and
+     *   (c) W→Z is directed (so X→Z is the non-collider tail of the
+     *       unshielded triple W→Z←X, which is an actual v-structure).
+     *
+     * Every directed edge that fails this test is reverted to undirected.
+     * Knowledge-required edges are exempt from reversion.
+     *
+     * This must be called AFTER orientUnshieldedTriples() and BEFORE
+     * applyMeekRules().
+     */
+    private void revertNonCompelledEdges(Graph g) {
+        // Collect directed edges that fail the compelledness test.
+        // We collect first to avoid ConcurrentModificationException.
+        List<Edge> toRevert = new ArrayList<>();
+
+        for (Edge e : g.getEdges()) {
+            if (!Edges.isDirectedEdge(e)) continue;
+
+            // Canonicalise: x is the tail (parent), z is the head (child).
+            Node x = e.getNode1();
+            Node z = e.getNode2();
+            if (!g.isParentOf(x, z)) {
+                // Edge is directed z→x; swap so x→z is our convention.
+                Node tmp = x; x = z; z = tmp;
+            }
+
+            // Exempt edges required by background knowledge — those are
+            // compelled by the user, not by the graph structure.
+            if (!knowledge.isEmpty()) {
+                if (knowledge.isRequired(x.getName(), z.getName())) continue;
+                if (knowledge.isForbidden(z.getName(), x.getName())) continue;
+            }
+
+            // Test compelledness: does any W exist satisfying (a), (b), (c)?
+            if (!isCompelled(g, x, z)) {
+                toRevert.add(e);
+            }
+        }
+
+        // Revert: replace each non-compelled directed edge with undirected.
+        for (Edge e : toRevert) {
+            Node n1 = e.getNode1();
+            Node n2 = e.getNode2();
+            g.removeEdge(e);
+            g.addUndirectedEdge(n1, n2);
+
+            if (verbose) {
+                // Report in canonical x→z form.
+                Node x = g.isParentOf(n1, n2) ? n1 : n2;
+                Node z = (x == n1) ? n2 : n1;
+                TetradLogger.getInstance().log(
+                        "Reverted non-compelled edge to undirected: "
+                                + x.getName() + " -- " + z.getName());
+            }
+        }
+    }
+
+    /**
+     * Returns true iff X→Z is a compelled edge in the sense of
+     * Chickering (2002): there exists W adjacent to Z, not adjacent
+     * to X, with W→Z directed.
+     *
+     * This is equivalent to asking: is X the non-collider tail of
+     * at least one genuine unshielded v-structure involving Z?
+     */
+    private boolean isCompelled(Graph g, Node x, Node z) {
+        for (Node w : g.getAdjacentNodes(z)) {
+            if (w.equals(x)) continue;                   // W must differ from X
+            if (g.isAdjacentTo(w, x)) continue;          // (b): W not adjacent to X
+            if (g.isParentOf(w, z)) return true;          // (c): W→Z directed
+        }
+        return false;
     }
 }
