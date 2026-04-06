@@ -488,11 +488,11 @@ public class VertexCheckEditor extends JPanel {
 
         controls.add(new JLabel("Conditioning Sets:"));
 
+        conditioningCombo.addItem("Ordered Local Markov Property");
+        conditioningCombo.addItem("Ordered Local Markov Property (Sink Elimination)");
         conditioningCombo.addItem("MarkovBlanket(X)");
         conditioningCombo.addItem("Parents(X)");
         conditioningCombo.addItem("Parents(X) and Neighbors(X)");
-        conditioningCombo.addItem("Andrews Ordered Local Markov Property");
-        conditioningCombo.addItem("Richardson Ordered Local Markov Property");
         conditioningCombo.addItem("Pairwise Markov Property");
         conditioningCombo.addItem("Recursive Blocking");
         conditioningCombo.addItem("Recursive Adjustment");
@@ -936,7 +936,7 @@ public class VertexCheckEditor extends JPanel {
     }
 
     private void applySavedSetType() {
-        String saved = PREFS.get(PREF_KEY_SET_TYPE, "MarkovBlanket(X)");
+        String saved = PREFS.get(PREF_KEY_SET_TYPE, "Ordered Local Markov Property");
 
         conditioningCombo.setSelectedItem(saved);
 
@@ -951,9 +951,8 @@ public class VertexCheckEditor extends JPanel {
             case "Parents(X)" -> ConditioningSetType.LOCAL_MARKOV;
             case "Parents(X) and Neighbors(X)" -> ConditioningSetType.PARENTS_AND_NEIGHBORS;
             case "MarkovBlanket(X)" -> ConditioningSetType.MARKOV_BLANKET;
-            case "Andrews Ordered Local Markov Property" -> ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY;
-            case "Richardson Ordered Local Markov Property" ->
-                    ConditioningSetType.RICHARDSON_ORDERED_LOCAL_MARKOV_PROPERTY;
+            case "Ordered Local Markov Property" -> ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY;
+            case "Ordered Local Markov Property (Sink Elimination)" -> ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION;
             case "Pairwise Markov Property" -> ConditioningSetType.PAIRWISE_MARKOV_PROPERTY;
             case "Recursive Blocking" -> ConditioningSetType.RECURSIVE_BLOCKING;
             case "Recursive Adjustment" -> ConditioningSetType.RECURSIVE_ADJUSTMENT;
