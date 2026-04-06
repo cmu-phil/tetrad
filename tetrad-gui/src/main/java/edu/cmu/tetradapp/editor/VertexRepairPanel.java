@@ -869,12 +869,17 @@ public final class VertexRepairPanel extends JPanel {
 //            SwingUtilities.invokeLater(() -> statusLabel.setText("Phase 2 (remove/reorient)..."));
 //            runRepairPhase(gt, RepairPhase.NON_ADD, seenSweepStates, cycleWarnings);
 
-            SwingUtilities.invokeLater(() -> statusLabel.setText("Run all..."));
+            SwingUtilities.invokeLater(() -> statusLabel.setText("..."));
             runRepairPhase(gt, RepairPhase.ALL, seenSweepStates, cycleWarnings);
 
 
         } finally {
             suppressHistory = false;
+            // Single UI refresh now that all edits are done
+            SwingUtilities.invokeLater(() -> {
+                populateNodeCombo();
+                statusLabel.setText("Repair complete.");
+            });
         }
 
         if (!cycleWarnings.isEmpty()) {
@@ -1140,11 +1145,11 @@ public final class VertexRepairPanel extends JPanel {
             Node inGraph = workingGraph.getNode(x.getName());
             if (inGraph != null) x = inGraph;
             else x = resolveInitialNode(workingGraph, null);
-            SwingUtilities.invokeLater(this::populateNodeCombo);
+            if (!suppressHistory) SwingUtilities.invokeLater(this::populateNodeCombo);
         }
 
         vlog("APPLIED successfully");
-        statusLabel.setText("Applied: " + cand.description());
+        if (!suppressHistory) SwingUtilities.invokeLater(() -> statusLabel.setText("Applied: " + cand.description()));
     }
 
     private void goBack() {
