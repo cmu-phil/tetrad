@@ -75,8 +75,17 @@ public class DaoSimulation implements Simulation {
     // Fields
     // -----------------------------------------------------------------------
 
+    /**
+     * Source of true DAGs; must not be null.
+     */
     private final RandomGraph randomGraph;
+    /**
+     * List of generated data sets; may be empty.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
+    /**
+     * List of generated DAGs; may be empty.
+     */
     private List<Graph>   graphs   = new ArrayList<>();
 
     // -----------------------------------------------------------------------
