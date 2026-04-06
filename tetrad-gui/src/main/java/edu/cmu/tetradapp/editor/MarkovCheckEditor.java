@@ -236,7 +236,7 @@ public class MarkovCheckEditor extends JPanel {
         conditioningSetTypeJComboBox.addItem("Parents(X)");
         conditioningSetTypeJComboBox.addItem("Parents(X) and Neighbors(X)");
         conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
-        conditioningSetTypeJComboBox.addItem("Recursive Blocking");
+//        conditioningSetTypeJComboBox.addItem("Recursive Blocking");
         conditioningSetTypeJComboBox.addItem("All Subsets (Global Markov)");
 
         conditioningSetTypeJComboBox.addActionListener(e -> {
