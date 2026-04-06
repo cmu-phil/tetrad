@@ -174,8 +174,6 @@ public class Bes {
 
             delete(x, y, arrow.getHOrT(), _bump, arrow.getNaYX(), graph);
 
-            delete(x, y, arrow.getHOrT(), _bump, arrow.getNaYX(), graph);
-
             Set<Node> process = revertToCPDAG(graph);
             process.add(x);
             process.add(y);
