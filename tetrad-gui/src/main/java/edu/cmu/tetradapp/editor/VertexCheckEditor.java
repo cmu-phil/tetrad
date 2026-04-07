@@ -494,7 +494,7 @@ public class VertexCheckEditor extends JPanel {
         conditioningCombo.addItem("MarkovBlanket(X)");
         conditioningCombo.addItem("Parents(X)");
         conditioningCombo.addItem("Parents(X) and Neighbors(X)");
-//        conditioningCombo.addItem("Recursive Blocking");
+        conditioningCombo.addItem("Recursive Blocking");
 //        conditioningCombo.addItem("Recursive Adjustment");
         conditioningCombo.setPreferredSize(new Dimension(220, 24));
         controls.add(conditioningCombo);
