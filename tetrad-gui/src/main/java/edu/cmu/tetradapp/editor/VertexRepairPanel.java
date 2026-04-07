@@ -7,6 +7,7 @@ import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.util.NaturalSort;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -20,6 +21,7 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CancellationException;
+import java.util.prefs.Preferences;
 
 
 /**
@@ -148,9 +150,17 @@ public final class VertexRepairPanel extends JPanel {
     private volatile SwingWorker<?, ?> activeWorker;
     private volatile JDialog watchDialog;
     private volatile boolean suppressHistory = false;
+    private int repairSeed = 0;
+    private final JSpinner seedSpinner;
 
     public VertexRepairPanel(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
+
+        seedSpinner = new JSpinner(new SpinnerNumberModel(
+                Preferences.userRoot().getInt("vertexRepairSeed", RandomUtil.getInstance().nextInt(50000)),
+                0, Integer.MAX_VALUE, 1));
+
+        Preferences.userRoot().putInt("vertexRepairSeed", ((SpinnerNumberModel)seedSpinner.getModel()).getNumber().intValue());
 
         this.baseModel = Objects.requireNonNull(editor.getIndTestModel(), "editor.getIndTestModel()");
         this.Q = Objects.requireNonNull(editor.getCachedQueries(), "editor.getCachedQueries()");
@@ -579,6 +589,19 @@ public final class VertexRepairPanel extends JPanel {
         c.gridx = 0;
         c.gridy = 2;
         c.gridwidth = 1;
+        c.weightx = 0;
+        c.fill = GridBagConstraints.NONE;
+        controls.add(new JLabel("Seed:"), c);
+
+        c.gridx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 0.5;
+        ((JSpinner.DefaultEditor) seedSpinner.getEditor()).getTextField().setColumns(6);
+        controls.add(seedSpinner, c);
+
+        c.gridx = 0;
+        c.gridy = 2;
+        c.gridwidth = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 1;
 
@@ -727,6 +750,11 @@ public final class VertexRepairPanel extends JPanel {
         repairButton.addActionListener(e ->
                 startWatched("Repairing", this::runRepairWatched,
                         () -> startWatched("Searching", this::runSearchWatched, null)));
+
+        seedSpinner.addChangeListener(e -> {
+            repairSeed = (Integer) seedSpinner.getValue();
+            Preferences.userRoot().putInt("vertexRepairSeed", repairSeed);
+        });
     }
 
     private void updateButtons() {
@@ -843,9 +871,11 @@ public final class VertexRepairPanel extends JPanel {
     private void runRepairWatched() {
         AdjustmentGraphType gt = (AdjustmentGraphType) graphTypeCombo.getSelectedItem();
         List<String> cycleWarnings = new ArrayList<>();
-
-        // Shared inter-sweep cycle guard across both phases.
         Set<String> seenSweepStates = new LinkedHashSet<>();
+
+        repairSeed = (Integer) seedSpinner.getValue();
+        long previousSeed = RandomUtil.getInstance().getSeed();
+        RandomUtil.getInstance().setSeed(repairSeed);
 
         history.push(safeCopy(workingGraph));
         suppressHistory = true;
@@ -866,12 +896,11 @@ public final class VertexRepairPanel extends JPanel {
 
         } finally {
             suppressHistory = false;
-            // Flush final graph to model exactly once, after all repair edits are done
+            RandomUtil.getInstance().setSeed(previousSeed);
             baseModel.setGraph(workingGraph);
-            // Single UI refresh now that all edits are done
             SwingUtilities.invokeLater(() -> {
                 populateNodeCombo();
-                statusLabel.setText("Repair complete.");
+                statusLabel.setText("Repair complete. (seed=" + repairSeed + ")");
             });
         }
 
@@ -910,8 +939,12 @@ public final class VertexRepairPanel extends JPanel {
 
             anyChangeInSweep = false;
 
+//            List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
+//            nodes.sort(Comparator.comparing(Node::getName, NaturalSort.NATURAL_NAME_COMPARATOR));
+
             List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
             nodes.sort(Comparator.comparing(Node::getName, NaturalSort.NATURAL_NAME_COMPARATOR));
+            RandomUtil.shuffle(nodes);
 
             for (Node node : nodes) {
                 if (stopRequested()) return;
@@ -1009,6 +1042,7 @@ public final class VertexRepairPanel extends JPanel {
         if (stopRequested()) return List.of();
 
         List<ScoredCandidate> ranked = new ArrayList<>(scored);
+        RandomUtil.shuffle(ranked);
         ranked.sort(CANONICAL_TABLE_ORDER);
 
         LinkedHashSet<String> keysToEval = new LinkedHashSet<>();
@@ -1194,6 +1228,9 @@ public final class VertexRepairPanel extends JPanel {
         List<Node> pool = new ArrayList<>(g.getNodes());
         pool.remove(x);
         pool.sort(Comparator.comparing(Node::getName, NaturalSort.NATURAL_NAME_COMPARATOR));
+        RandomUtil.shuffle(pool);
+//        poo
+//        pool.sort(Comparator.comparing(Node::getName, NaturalSort.NATURAL_NAME_COMPARATOR));
 
         // ---- Remove existing edge incident to x ----
         ArrayList<Edge> edges = new ArrayList<>(g.getEdges(x));
@@ -1339,6 +1376,9 @@ public final class VertexRepairPanel extends JPanel {
 
             if (earlyReject) continue;
             if (news.isEmpty()) continue;
+
+//            RandomUtil.shuffle(parents);
+//            RandomUtil.shuffle(children);
 
             parents.sort(NaturalSort.naturalComparator());
             children.sort(NaturalSort.naturalComparator());

@@ -558,4 +558,8 @@ public class RandomUtil {
     public double nextGaussian() {
         return this.math3RandomGenerator.nextGaussian();
     }
+
+    public long getSeed() {
+        return this.randomGenerator.nextLong();
+    }
 }
