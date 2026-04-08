@@ -256,8 +256,8 @@ public class TestLingD {
         for (Edge edge1 : graph1.getEdges()) {
             if (graph2.getEdge(edge1.getNode1(), edge1.getNode2()) != null) {
                 Edge edge2 = graph2.getEdge(edge1.getNode1(), edge1.getNode2());
-                if (edge1.getEndpoint(edge1.getNode2()) == edge2.getEndpoint(edge2.getNode2()) &&
-                    edge1.getEndpoint(edge1.getNode1()) == edge2.getEndpoint(edge2.getNode1())) {
+                if (edge1.getProximalEndpoint(edge1.getNode2()) == edge2.getProximalEndpoint(edge2.getNode2()) &&
+                    edge1.getProximalEndpoint(edge1.getNode1()) == edge2.getProximalEndpoint(edge2.getNode1())) {
                     tp++;
                 } else {
                     fp++;
@@ -272,8 +272,8 @@ public class TestLingD {
                 fn++;
             } else {
                 Edge edge1 = graph1.getEdge(edge2.getNode1(), edge2.getNode2());
-                if (edge1.getEndpoint(edge1.getNode2()) != edge2.getEndpoint(edge2.getNode2()) ||
-                    edge1.getEndpoint(edge1.getNode1()) != edge2.getEndpoint(edge2.getNode1())) {
+                if (edge1.getProximalEndpoint(edge1.getNode2()) != edge2.getProximalEndpoint(edge2.getNode2()) ||
+                    edge1.getProximalEndpoint(edge1.getNode1()) != edge2.getProximalEndpoint(edge2.getNode1())) {
                     fn++;
                 }
             }

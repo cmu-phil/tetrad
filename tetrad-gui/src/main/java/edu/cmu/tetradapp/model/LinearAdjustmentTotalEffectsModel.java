@@ -95,7 +95,7 @@ public final class LinearAdjustmentTotalEffectsModel implements SessionModel, Gr
         boolean containsCircle = false;
 
         for (Edge edge : graph.getEdges()) {
-            if (edge.getEndpoint(edge.getNode1()) == Endpoint.CIRCLE || edge.getEndpoint(edge.getNode2()) == Endpoint.CIRCLE) {
+            if (edge.getProximalEndpoint(edge.getNode1()) == Endpoint.CIRCLE || edge.getProximalEndpoint(edge.getNode2()) == Endpoint.CIRCLE) {
                 containsCircle = true;
                 break;
             }

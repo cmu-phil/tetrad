@@ -386,7 +386,7 @@ public final class VertexCheckAdjustmentPanel2 extends JPanel {
 
     private static Endpoint endpointAt(Edge e, Node n) {
         if (e == null || n == null) return null;
-        return e.getEndpoint(n);
+        return e.getProximalEndpoint(n);
     }
 
     private static Edge rebindEdgeToGraph(Graph g, Edge e) {
@@ -404,8 +404,8 @@ public final class VertexCheckAdjustmentPanel2 extends JPanel {
         Node b = g.getNode(bn);
         if (a == null || b == null) return null;
 
-        Endpoint ea = e.getEndpoint(a0);
-        Endpoint eb = e.getEndpoint(b0);
+        Endpoint ea = e.getProximalEndpoint(a0);
+        Endpoint eb = e.getProximalEndpoint(b0);
         return new Edge(a, b, ea, eb);
     }
 
@@ -429,9 +429,9 @@ public final class VertexCheckAdjustmentPanel2 extends JPanel {
         Edge inG = g.getEdge(reb.getNode1(), reb.getNode2());
         if (inG == null) return false;
 
-        Endpoint a1 = inG.getEndpoint(reb.getNode1());
-        Endpoint b1 = inG.getEndpoint(reb.getNode2());
-        return a1 == reb.getEndpoint(reb.getNode1()) && b1 == reb.getEndpoint(reb.getNode2());
+        Endpoint a1 = inG.getProximalEndpoint(reb.getNode1());
+        Endpoint b1 = inG.getProximalEndpoint(reb.getNode2());
+        return a1 == reb.getProximalEndpoint(reb.getNode1()) && b1 == reb.getProximalEndpoint(reb.getNode2());
     }
 
     private static boolean requiresEdgePresenceCheck(CandidateEdit cand) {

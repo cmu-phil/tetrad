@@ -188,49 +188,6 @@ public class ReplicatingGraph extends EdgeListGraph {
     }
 
     /**
-     * Mirrors endpoint changes across all policy-mirrored edges. This keeps algorithms that orient by setEndpoint()
-     * fully SVAR-aware without needing a custom endpoint strategy.
-     *
-     * @param from the node from which the edge originates
-     * @param to   the node to which the edge points
-     * @return true if the endpoint was successfully set and the graph was modified, false otherwise
-     */
-    @Override
-    public synchronized boolean setEndpoint(Node from, Node to, Endpoint ep)
-            throws IllegalArgumentException {
-        if (Boolean.TRUE.equals(IN_REPLICATION.get())) {
-            return super.setEndpoint(from, to, ep);
-        }
-
-        // First orient the requested endpoint.
-        boolean ok = super.setEndpoint(from, to, ep);
-
-        // Mirror endpoint to all existing mirrored edges (do not create new ones here).
-        try {
-            IN_REPLICATION.set(Boolean.TRUE);
-
-            Edge seed = getEdge(from, to);
-            if (seed == null) return ok; // nothing to mirror
-
-            for (Edge m : policy.mirrorsFor(this, seed)) {
-                if (m.equals(seed)) continue;
-
-                Node m1 = m.getNode1();
-                Node m2 = m.getNode2();
-                Edge existing = getEdge(m1, m2);
-                if (existing != null) {
-                    // We only set the endpoint at 'm2' (analogous to 'to') to 'ep',
-                    // retaining the proximal endpoint at 'm1' as-is.
-                    super.setEndpoint(m1, m2, ep);
-                }
-            }
-        } finally {
-            IN_REPLICATION.set(Boolean.FALSE);
-        }
-        return ok;
-    }
-
-    /**
      * Reorients all applicable edges in the graph to align with the specified endpoint. This method leverages the
      * superclass implementation to perform the reorientation and ensures that any custom mirroring behavior required by
      * this class is preserved.

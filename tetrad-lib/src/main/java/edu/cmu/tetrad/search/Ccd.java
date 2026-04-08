@@ -22,7 +22,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.CachingIndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.search.utils.SepsetsMaxP;
@@ -296,7 +295,7 @@ public final class Ccd implements IGraphSearch {
                 boolean skip = false;
                 for (Node node : new ArrayList<>(adjx)) {
                     Edge ex = psi.getEdge(node, x);
-                    if (ex != null && ex.getEndpoint(x) == Endpoint.ARROW && psi.isUnderlineTriple(y, x, node)) {
+                    if (ex != null && ex.getProximalEndpoint(x) == Endpoint.ARROW && psi.isUnderlineTriple(y, x, node)) {
                         skip = true;
                         break;
                     }
