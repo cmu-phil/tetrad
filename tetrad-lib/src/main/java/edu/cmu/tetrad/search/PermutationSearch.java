@@ -179,32 +179,6 @@ public class PermutationSearch {
      * @param replicating A flag indicating whether graph replication is enabled, allowing mirrored changes in replicated graphs.
      * @return The constructed graph, which may be a DAG or CPDAG depending on the value of the cpDag flag.
      */
-//    public static Graph getGraph(List<Node> nodes,
-//                                 Map<Node, Set<Node>> parents,
-//                                 Knowledge knowledge,
-//                                 boolean cpDag,
-//                                 boolean replicating) {
-//        Graph graph = GraphFactoryUtil.newGraph(nodes, replicating);
-//
-//        // materialize edges (ReplicatingGraph will mirror on add)
-//        for (Node child : nodes) {
-//            for (Node par : parents.get(child)) {
-//                graph.addDirectedEdge(par, child);
-//            }
-//        }
-//
-//        if (cpDag) {
-////            return GraphTransforms.dagToCpdag(graph);
-//            MeekRules rules = new MeekRules();
-//            rules.setRevertToUnshieldedColliders(true);
-//            if (knowledge != null) rules.setKnowledge(knowledge);
-//            rules.setVerbose(false);
-//            rules.orientImplied(graph);f
-//        }
-//
-//        return graph;
-//    }
-
     public static Graph getGraph(List<Node> nodes,
                                  Map<Node, Set<Node>> parents,
                                  Knowledge knowledge,
