@@ -179,50 +179,80 @@ public class PermutationSearch {
      * @param replicating A flag indicating whether graph replication is enabled, allowing mirrored changes in replicated graphs.
      * @return The constructed graph, which may be a DAG or CPDAG depending on the value of the cpDag flag.
      */
+//    public static Graph getGraph(List<Node> nodes,
+//                                 Map<Node, Set<Node>> parents,
+//                                 Knowledge knowledge,
+//                                 boolean cpDag,
+//                                 boolean replicating) {
+//        Graph graph = GraphFactoryUtil.newGraph(nodes, replicating);
+//
+//        // materialize edges (ReplicatingGraph will mirror on add)
+//        for (Node child : nodes) {
+//            for (Node par : parents.get(child)) {
+//                graph.addDirectedEdge(par, child);
+//            }
+//        }
+//
+//        if (cpDag) {
+////            return GraphTransforms.dagToCpdag(graph);
+//            MeekRules rules = new MeekRules();
+//            rules.setRevertToUnshieldedColliders(true);
+//            if (knowledge != null) rules.setKnowledge(knowledge);
+//            rules.setVerbose(false);
+//            rules.orientImplied(graph);f
+//        }
+//
+//        return graph;
+//    }
+
     public static Graph getGraph(List<Node> nodes,
                                  Map<Node, Set<Node>> parents,
                                  Knowledge knowledge,
                                  boolean cpDag,
                                  boolean replicating) {
-        Graph graph = GraphFactoryUtil.newGraph(nodes, replicating);
+        if (replicating) {
+            // Build a fresh replicating graph over all nodes
+            ReplicatingGraph graph = new ReplicatingGraph(nodes, new LagReplicationPolicy());
 
-        // materialize edges (ReplicatingGraph will mirror on add)
-        for (Node child : nodes) {
-            for (Node par : parents.get(child)) {
-                graph.addDirectedEdge(par, child);
+            // Only seed edges where the child is a lag-0 node (no colon in name).
+            // Replication will mirror these to all other lag-slices automatically.
+            for (Node child : nodes) {
+                if (child.getName().contains(":")) continue;
+                for (Node par : parents.get(child)) {
+                    graph.addDirectedEdge(par, child);
+                }
             }
+
+            Graph plain = new EdgeListGraph(graph);
+
+            if (cpDag) {
+                MeekRules rules = new MeekRules();
+                rules.setRevertToUnshieldedColliders(true);
+                if (knowledge != null) rules.setKnowledge(knowledge);
+                rules.setVerbose(false);
+                rules.orientImplied(plain);
+            }
+
+            return plain;
+        } else {
+            Graph graph = new EdgeListGraph(nodes);
+
+            for (Node child : nodes) {
+                for (Node par : parents.get(child)) {
+                    graph.addDirectedEdge(par, child);
+                }
+            }
+
+            if (cpDag) {
+                MeekRules rules = new MeekRules();
+                rules.setRevertToUnshieldedColliders(true);
+                if (knowledge != null) rules.setKnowledge(knowledge);
+                rules.setVerbose(false);
+                rules.orientImplied(graph);
+            }
+
+            return graph;
         }
-
-        if (cpDag) {
-//            return GraphTransforms.dagToCpdag(graph);
-//            MeekRules rules = new MeekRules();
-//            rules.setRevertToUnshieldedColliders(true);
-//            if (knowledge != null) rules.setKnowledge(knowledge);
-//            rules.setVerbose(false);
-//            rules.orientImplied(graph);
-
-            Graph plain = graph;//new EdgeListGraph(graph);
-            MeekRules rules = new MeekRules();
-            rules.setRevertToUnshieldedColliders(true);
-//            if (knowledge != null) rules.setKnowledge(knowledge);
-            rules.setVerbose(false);
-            rules.orientImplied(plain);
-
-//            if (graph instanceof ReplicatingGraph) {
-//                graph = new ReplicatingGraph(graph.getNodes(), new LagReplicationPolicy());
-//
-//                // Copy orientations back into the replicating graph
-//                for (Edge e : plain.getEdges()) {
-//                    Node n1 = graph.getNode(e.getNode1().getName());
-//                    Node n2 = graph.getNode(e.getNode2().getName());
-//                    if (n1 == null || n2 == null) continue;
-//                    graph.removeEdge(n1, n2);
-//                    graph.addEdge(new Edge(n1, n2, e.getEndpoint1(), e.getEndpoint2()));
-//                }
-//            }
-        }
-
-        return graph;
     }
 
     /**
