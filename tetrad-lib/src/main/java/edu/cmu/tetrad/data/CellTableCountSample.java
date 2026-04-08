@@ -58,28 +58,28 @@ public final class CellTableCountSample implements CellTable {
      * The table of cell counts.
      */
     private MultiDimIntTable table;
+    private int[][] data;
 
-    /**
-     * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
-     * This constructor assumes no subsampling.
-     *
-     * @param dataSet     the data set to be used in the table.
-     * @param testIndices the indices of the variables to be used in the table.
-     */
-    public CellTableCountSample(DataSet dataSet, int[] testIndices) {
-        this(dataSet, testIndices, getAllRows(dataSet.getNumRows()));
-    }
+//    /**
+//     * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
+//     * This constructor assumes no subsampling.
+//     *
+//     * @param dataSet     the data set to be used in the table.
+//     * @param testIndices the indices of the variables to be used in the table.
+//     */
+//    public CellTableCountSample(DataSet dataSet, int[] testIndices) {
+//        this(dataSet, testIndices, getAllRows(dataSet.getNumRows()));
+//    }
 
     /**
      * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
      * The rows of the dataset to use; the default is to use all the rows. This is useful for subsampling.
      *
-     * @param dataSet     the data set to be used in the table.
      * @param testIndices the indices of the variables to be used in the table.
      * @param rows        the rows of the dataset to use; if null, all rows are used.
      */
-    public CellTableCountSample(DataSet dataSet, int[] testIndices, List<Integer> rows) {
-        if (dataSet == null) {
+    public CellTableCountSample(int[][] data, List<DiscreteVariable> variables, int[] testIndices, List<Integer> rows) {
+        if (data == null) {
             throw new IllegalArgumentException("Data set must not be null.");
         }
 
@@ -87,28 +87,36 @@ public final class CellTableCountSample implements CellTable {
             throw new IllegalArgumentException("Test indices must not be null.");
         }
 
+        this.data = data;
+
         // Make sure all test indices are less than the number of variables in the dataset.
         for (int testIndex : testIndices) {
-            if (testIndex >= dataSet.getNumColumns()) {
+            if (testIndex >= data.length) {
                 throw new IllegalArgumentException("Test index out of bounds: " + testIndex);
             }
         }
 
         if (rows == null) {
-            rows = getAllRows(dataSet.getNumRows());
+            rows = getAllRows(data[0].length);
         }
 
         // Make sure all rows are less than the number of rows in the dataset.
         for (int row : rows) {
-            if (row >= dataSet.getNumRows()) {
+            if (row >= data[0].length) {
                 throw new IllegalArgumentException("Row index out of bounds: " + row);
             }
         }
 
-        dims = selectDims(getDiscreteVariables(dataSet, testIndices));
+//        // Pre-extract columns as raw int arrays — do this once, not per-row
+//        _data = new int[data.length][];
+//        for (int j = 0; j < data.length; j++) {
+//            _data[j] = extractColumn(dataSet, j);
+//        }
+
+        dims = selectDims(variables, testIndices);
         this.table = new MultiDimIntTable(dims);
         this.rows = rows;
-        countTable(dataSet, testIndices, rows);
+        countTable(testIndices, rows);
     }
 
     /**
@@ -131,14 +139,14 @@ public final class CellTableCountSample implements CellTable {
     /**
      * Selects dimensions for the given list of discrete variables.
      *
-     * @param vars the list of discrete variables
+     * @param variables the list of discrete variables
      * @return an array of dimensions for the variables
      */
-    private int @NotNull [] selectDims(List<DiscreteVariable> vars) {
-        int[] _dims = new int[vars.size()];
+    private int[] selectDims(List<DiscreteVariable> variables, int[] testIndices) { 
+        int[] _dims = new int[testIndices.length];
 
-        for (DiscreteVariable variable : vars) {
-            _dims[vars.indexOf(variable)] = variable.getNumCategories();
+        for (int j = 0; j < testIndices.length; j++) {
+            _dims[j] = variables.get(testIndices[j]).getNumCategories();
         }
 
         return _dims;
@@ -147,41 +155,68 @@ public final class CellTableCountSample implements CellTable {
     /**
      * Adds the given data set to the table, using the given indices to specify the variables to be used in the table.
      *
-     * @param dataSet the data set to be used in the table.
      * @param indices the indices of the variables to be used in the table.
      */
-    private void countTable(DataSet dataSet, int[] indices, List<Integer> rows) {
-        if (rows == null) {
-            rows = getAllRows(dataSet.getNumRows());
-        }
+//    private void countTable(DataSet dataSet, int[] indices, List<Integer> rows) {
+//        if (rows == null) {
+//            rows = getAllRows(dataSet.getNumRows());
+//        }
+//
+//        int[] dims = new int[indices.length];
+//
+//        for (int i = 0; i < indices.length; i++) {
+//            DiscreteVariable variable = (DiscreteVariable) dataSet.getVariable(indices[i]);
+//            dims[i] = variable.getNumCategories();
+//        }
+//
+//        this.table = new MultiDimIntTable(dims);
+//
+//        int[] coords = new int[indices.length];
+//
+//        POINTS:
+//        for (int i : rows) {
+//            for (int j = 0; j < indices.length; j++) {
+//                try {
+//                    coords[j] = dataSet.getInt(i, indices[j]);
+//                } catch (Exception e) {
+//                    coords[j] = dataSet.getInt(i, j);
+//                }
+//
+//                if (coords[j] == -99) {
+//                    continue POINTS;
+//                }
+//            }
+//
+//            this.table.increment(coords, 1);
+//        }
+//    }
 
-        int[] dims = new int[indices.length];
-
-        for (int i = 0; i < indices.length; i++) {
-            DiscreteVariable variable = (DiscreteVariable) dataSet.getVariable(indices[i]);
-            dims[i] = variable.getNumCategories();
-        }
-
-        this.table = new MultiDimIntTable(dims);
+    private void countTable(int[] indices, List<Integer> rows) {
 
         int[] coords = new int[indices.length];
 
         POINTS:
         for (int i : rows) {
             for (int j = 0; j < indices.length; j++) {
-                try {
-                    coords[j] = dataSet.getInt(i, indices[j]);
-                } catch (Exception e) {
-                    coords[j] = dataSet.getInt(i, j);
-                }
-
-                if (coords[j] == -99) {
-                    continue POINTS;
-                }
+                int val = data[indices[j]][i];
+                if (val == -99) continue POINTS;
+                coords[j] = val;
             }
-
             this.table.increment(coords, 1);
         }
+    }
+
+    private int[] extractColumn(DataSet dataSet, int col) {
+        // Use VerticalIntDataBox fast path if available
+        if (dataSet instanceof BoxDataSet bds &&
+                bds.getDataBox() instanceof VerticalIntDataBox box) {
+            return box.getVariableVectors()[col];
+        }
+        int[] column = new int[dataSet.getNumRows()];
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            column[i] = dataSet.getInt(i, col);
+        }
+        return column;
     }
 
     /**
