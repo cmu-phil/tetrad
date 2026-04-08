@@ -264,20 +264,8 @@ public class Fges implements IGraphSearch, DagScorer {
         }
 
         if (replicating) {
-            Graph _graph = GraphFactoryUtil.newGraph(getVariables(), true);
-
-            // Only seed edges where the child is a lag-0 node (no colon in name).
-            // Replication will mirror these to all other lag-slices automatically.
-            for (Node child : getVariables()) {
-                if (child.getName().contains(":")) continue;
-                for (Node par : graph.getParents(child)) {
-                    _graph.addDirectedEdge(par, child);
-                }
-            }
-
-            graph = _graph;
+            graph = GraphUtils.getReplicatingGraph(graph);
         }
-
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - start;

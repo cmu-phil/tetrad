@@ -3485,6 +3485,21 @@ public final class GraphUtils {
         }
     }
 
+    public static @NotNull Graph getReplicatingGraph(Graph graph) {
+        Graph replicating = GraphFactoryUtil.newGraph(graph.getNodes(), true);
+
+        // Only seed edges where the child is a lag-0 node (no colon in name).
+        // Replication will mirror these to all other lag-slices automatically.
+        for (Node child : graph.getNodes()) {
+            if (child.getName().contains(":")) continue;
+            for (Node par : graph.getParents(child)) {
+                replicating.addDirectedEdge(par, child);
+            }
+        }
+
+        return replicating;
+    }
+
     /**
      * The GraphType enum represents the types of graphs that can be used in the application.
      */

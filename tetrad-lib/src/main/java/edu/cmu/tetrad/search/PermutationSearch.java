@@ -21,7 +21,10 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
 import edu.cmu.tetrad.search.utils.MeekRules;
@@ -123,7 +126,7 @@ public class PermutationSearch {
      *
      * @param nodes   The nodes.
      * @param parents A map from each node to its parents.
-     * @param pdag   Whether a PDAG is wanted, if false, a DAG.
+     * @param pdag    Whether a PDAG is wanted, if false, a DAG.
      * @return The constructed graph.
      */
     public static Graph getGraph(List<Node> nodes, Map<Node, Set<Node>> parents, boolean pdag) {
@@ -141,10 +144,10 @@ public class PermutationSearch {
     /**
      * Constructs a graph given a specification of the parents for each node.
      *
-     * @param nodes      The list of nodes to include in the graph.
-     * @param parents    A map specifying the parents for each node. Each key is a node, and its value is the set of parent nodes.
-     * @param knowledge  The knowledge object, if any, to guide the orientation of edges in the graph.
-     * @param pdag      A flag indicating whether a PDAG (partially directed acyclic graph) is desired. If false, a DAG (directed acyclic graph) is constructed.
+     * @param nodes       The list of nodes to include in the graph.
+     * @param parents     A map specifying the parents for each node. Each key is a node, and its value is the set of parent nodes.
+     * @param knowledge   The knowledge object, if any, to guide the orientation of edges in the graph.
+     * @param pdag        A flag indicating whether a PDAG (partially directed acyclic graph) is desired. If false, a DAG (directed acyclic graph) is constructed.
      * @param replicating A flag indicating whether graph replication is enabled, allowing mirrored changes in replicated graphs.
      * @return The constructed graph, which may be a DAG or PDAG depending on the value of the pdag flag.
      */
@@ -153,41 +156,35 @@ public class PermutationSearch {
                                  Knowledge knowledge,
                                  boolean pdag,
                                  boolean replicating) {
-        if (replicating) {
-            if (pdag) throw new IllegalArgumentException("PDAGs do not guarantee replication; the PDAG option should be to false.");
+        if (replicating && pdag)
+            throw new IllegalArgumentException("PDAGs do not guarantee replication; the PDAG option should be to false.");
+        Graph graph = new EdgeListGraph(nodes);
 
-            // Build a fresh replicating graph over all nodes
-            ReplicatingGraph graph = new ReplicatingGraph(nodes, new LagReplicationPolicy());
-
-            // Only seed edges where the child is a lag-0 node (no colon in name).
-            // Replication will mirror these to all other lag-slices automatically.
-            for (Node child : nodes) {
-                if (child.getName().contains(":")) continue;
-                for (Node par : parents.get(child)) {
-                    graph.addDirectedEdge(par, child);
-                }
+        for (Node child : nodes) {
+            for (Node par : parents.get(child)) {
+                graph.addDirectedEdge(par, child);
             }
-
-            return new EdgeListGraph(graph);
-        } else {
-            Graph graph = new EdgeListGraph(nodes);
-
-            for (Node child : nodes) {
-                for (Node par : parents.get(child)) {
-                    graph.addDirectedEdge(par, child);
-                }
-            }
-
-            if (pdag) {
-                MeekRules rules = new MeekRules();
-                rules.setRevertToUnshieldedColliders(true);
-                if (knowledge != null) rules.setKnowledge(knowledge);
-                rules.setVerbose(false);
-                rules.orientImplied(graph);
-            }
-
-            return graph;
         }
+
+        if (pdag) {
+            MeekRules rules = new MeekRules();
+            rules.setRevertToUnshieldedColliders(true);
+            if (knowledge != null) rules.setKnowledge(knowledge);
+            rules.setVerbose(false);
+            rules.orientImplied(graph);
+        }
+
+        if (replicating) {
+            graph = GraphUtils.getReplicatingGraph(graph);
+        } else if (pdag) {
+            MeekRules rules = new MeekRules();
+            rules.setRevertToUnshieldedColliders(true);
+            if (knowledge != null) rules.setKnowledge(knowledge);
+            rules.setVerbose(false);
+            rules.orientImplied(graph);
+        }
+
+        return graph;
     }
 
     /**
