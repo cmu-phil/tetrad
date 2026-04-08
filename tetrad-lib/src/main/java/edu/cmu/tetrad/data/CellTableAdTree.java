@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.search.utils.AdTree;
+import edu.cmu.tetrad.search.utils.AdTreeCount;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -42,7 +43,7 @@ public final class CellTableAdTree implements CellTable {
     /**
      * An AD tree for the given dataset. The AD tree is used to store the cell counts and calculate marginals.
      */
-    private final AdTree adTree;
+    private final AdTreeCount adTree;
     /**
      * The dimensions of the test variables.
      */
@@ -93,14 +94,12 @@ public final class CellTableAdTree implements CellTable {
         }
 
         List<DiscreteVariable> vars = getDiscreteVariables(dataSet, testIndices);
-        this.adTree = new AdTree(dataSet, rows);
+        this.adTree = new AdTreeCount(dataSet, rows);
         this.adTree.buildTable(vars);
         this.dims = new int[vars.size()];
         for (int i = 0; i < vars.size(); i++) {
             dims[i] = vars.get(i).getNumCategories();
         }
-
-        System.out.println("CellTableAdTree constructed: rows.size()=" + rows.size());
     }
 
     /**

@@ -80,7 +80,7 @@ public class AdTree {
     /**
      * The maximum size of the cache.
      */
-    private int maxCacheSize = 1000; // Example cache size limit
+    private int maxCacheSize = 100; // Example cache size limit
     /**
      * Cache to store subdivisions for reuse, using a List<Node> as the key.
      */
@@ -94,7 +94,7 @@ public class AdTree {
     /**
      * The maximum depth of the cache.
      */
-    private int cacheDepthLimit = 5;
+    private int cacheDepthLimit = 3;
     /**
      * The number of categories for each of the variables in the table.
      */
@@ -156,6 +156,12 @@ public class AdTree {
      * @param variables A list of discrete variables.
      */
     public void buildTable(List<DiscreteVariable> variables) {
+        // Clear cache if it's grown too large to avoid memory pressure.
+        // Each entry can hold many thousands of row indices.
+        if (subdivisionCache.size() > maxCacheSize) {
+            subdivisionCache.clear();
+        }
+
         ArrayList<DiscreteVariable> originalOrder = new ArrayList<>(variables);
         ArrayList<DiscreteVariable> sortedOrder = new ArrayList<>(variables);
 
@@ -190,9 +196,15 @@ public class AdTree {
             cacheKey.add(v);
             List<Node> key = Collections.unmodifiableList(new ArrayList<>(cacheKey));
 
-            // If the key length is <= depth limit, look up the value in the cache if it is there or if not, compute it.
-            // If the key length is > depth limit, compute it without caching.
-            if (key.size() <= cacheDepthLimit) {
+////            If the key length is <= depth limit, look up the value in the cache if it is there or if not, compute it.
+////             If the key length is > depth limit, compute it without caching.
+//            if (key.size() <= cacheDepthLimit) {
+//                subdivisionsHolder[0] = subdivisionCache.computeIfAbsent(key, k -> subdivide(subdivisionsHolder[0], v));
+//            } else {
+//                subdivisionsHolder[0] = subdivide(subdivisionsHolder[0], v);
+//            }
+
+            if (cacheDepthLimit > 0 && key.size() <= cacheDepthLimit) {
                 subdivisionsHolder[0] = subdivisionCache.computeIfAbsent(key, k -> subdivide(subdivisionsHolder[0], v));
             } else {
                 subdivisionsHolder[0] = subdivide(subdivisionsHolder[0], v);
@@ -200,6 +212,10 @@ public class AdTree {
         }
 
         this.leaves = subdivisionsHolder[0];
+    }
+
+    public void clearCache() {
+        subdivisionCache.clear();
     }
 
     /**

@@ -246,11 +246,9 @@ public class ChiSquareTest {
             }
         }
 
-        System.out.println("calcChiSquare: fraction=" + fraction + " rows.size()=" + rows.size());
-
         if (df == 0) {
             return new Result(Double.NaN, Double.NaN, 0,
-                    /* isIndep = */ false,
+                    /* isIndep = */ false,  
                     /* isValid = */ false);
         } else {
 
