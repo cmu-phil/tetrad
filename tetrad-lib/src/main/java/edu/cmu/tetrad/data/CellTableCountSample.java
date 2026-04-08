@@ -60,23 +60,21 @@ public final class CellTableCountSample implements CellTable {
     private MultiDimIntTable table;
     private int[][] data;
 
-//    /**
-//     * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
-//     * This constructor assumes no subsampling.
-//     *
-//     * @param dataSet     the data set to be used in the table.
-//     * @param testIndices the indices of the variables to be used in the table.
-//     */
-//    public CellTableCountSample(DataSet dataSet, int[] testIndices) {
-//        this(dataSet, testIndices, getAllRows(dataSet.getNumRows()));
-//    }
-
     /**
-     * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
-     * The rows of the dataset to use; the default is to use all the rows. This is useful for subsampling.
+     * Constructs a CellTableCountSample object with the specified data, variables, test indices, and rows.
+     * Initializes the table to count occurrences for specific variables and rows in a multi-dimensional
+     * data set.
      *
-     * @param testIndices the indices of the variables to be used in the table.
-     * @param rows        the rows of the dataset to use; if null, all rows are used.
+     * @param data       a 2D integer array representing the data set; each column corresponds to a variable
+     *                   and each row to an observation
+     * @param variables  a list of DiscreteVariable objects representing the variables being analyzed
+     * @param testIndices an integer array specifying the indices of the variables to be used for table
+     *                    construction
+     * @param rows       a list of integer indices specifying the rows of the data set to include in the
+     *                   count; if null, all rows will be used
+     * @throws IllegalArgumentException if the data set or testIndices array is null, if a test index exceeds
+     *                                  the bounds of the data set, or if a row index exceeds the bounds of
+     *                                  the data set
      */
     public CellTableCountSample(int[][] data, List<DiscreteVariable> variables, int[] testIndices, List<Integer> rows) {
         if (data == null) {
@@ -142,7 +140,7 @@ public final class CellTableCountSample implements CellTable {
      * @param variables the list of discrete variables
      * @return an array of dimensions for the variables
      */
-    private int[] selectDims(List<DiscreteVariable> variables, int[] testIndices) { 
+    private int[] selectDims(List<DiscreteVariable> variables, int[] testIndices) {
         int[] _dims = new int[testIndices.length];
 
         for (int j = 0; j < testIndices.length; j++) {
@@ -157,40 +155,6 @@ public final class CellTableCountSample implements CellTable {
      *
      * @param indices the indices of the variables to be used in the table.
      */
-//    private void countTable(DataSet dataSet, int[] indices, List<Integer> rows) {
-//        if (rows == null) {
-//            rows = getAllRows(dataSet.getNumRows());
-//        }
-//
-//        int[] dims = new int[indices.length];
-//
-//        for (int i = 0; i < indices.length; i++) {
-//            DiscreteVariable variable = (DiscreteVariable) dataSet.getVariable(indices[i]);
-//            dims[i] = variable.getNumCategories();
-//        }
-//
-//        this.table = new MultiDimIntTable(dims);
-//
-//        int[] coords = new int[indices.length];
-//
-//        POINTS:
-//        for (int i : rows) {
-//            for (int j = 0; j < indices.length; j++) {
-//                try {
-//                    coords[j] = dataSet.getInt(i, indices[j]);
-//                } catch (Exception e) {
-//                    coords[j] = dataSet.getInt(i, j);
-//                }
-//
-//                if (coords[j] == -99) {
-//                    continue POINTS;
-//                }
-//            }
-//
-//            this.table.increment(coords, 1);
-//        }
-//    }
-
     private void countTable(int[] indices, List<Integer> rows) {
 
         int[] coords = new int[indices.length];

@@ -874,7 +874,7 @@ public final class VertexRepairPanel extends JPanel {
         Set<String> seenSweepStates = new LinkedHashSet<>();
 
         repairSeed = (Integer) seedSpinner.getValue();
-        long previousSeed = RandomUtil.getInstance().getSeed();
+        long previousSeed = RandomUtil.getInstance().nextLong();
         RandomUtil.getInstance().setSeed(repairSeed);
 
         history.push(safeCopy(workingGraph));

@@ -3237,6 +3237,16 @@ public class Paths implements TetradSerializable {
      *                  This value is {@code null} when {@code isLegal} is {@code true}.
      */
     public record CpdagCheckResult(boolean isLegal, CpdagViolation violation, String detail) {
+
+        /**
+         * Creates a {@code CpdagCheckResult} instance representing a legal CPDAG.
+         *
+         * This method provides a standardized way to indicate the legality of a CPDAG
+         * when no violations or additional details exist.
+         *
+         * @return A {@code CpdagCheckResult} object with {@code isLegal} set to {@code true},
+         *         and both {@code violation} and {@code detail} set to {@code null}.
+         */
         public static CpdagCheckResult legal() {
             return new CpdagCheckResult(true, null, null);
         }

@@ -100,6 +100,20 @@ public final class CellTableAdTree implements CellTable {
         }
     }
 
+    /**
+     * Constructs a new CellTableAdTree instance using the provided data, variables, test indices,
+     * and rows. The constructor initializes the ADTree for efficient cell table operations
+     * and computes dimensions for the test variables.
+     *
+     * @param data       a 2D array representing the dataset, where each inner array corresponds to
+     *                   an observation, and columns represent variable values.
+     * @param variables  a list of discrete variables corresponding to the columns of the dataset.
+     * @param testIndices an array containing the indices of the variables to be used for constructing
+     *                    the cell table.
+     * @param rows       a list of row indices to be used in the cell table; if null, all rows in the
+     *                   dataset are included.
+     * @throws IllegalArgumentException if any row index in {@code rows} is out of bounds for the dataset.
+     */
     public CellTableAdTree(int[][] data, List<DiscreteVariable> variables, int[] testIndices, List<Integer> rows) {
         Map<Node, Integer> nodesHash = new HashMap<>();
         for (int i = 0; i < variables.size(); i++) {
@@ -129,7 +143,7 @@ public final class CellTableAdTree implements CellTable {
             dims[i] = testVars.get(i).getNumCategories();
         }
     }
-    
+
     /**
      * Retrieves a list of discrete variables from a given data set, based on the provided test indices.
      *

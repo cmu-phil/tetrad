@@ -559,7 +559,4 @@ public class RandomUtil {
         return this.math3RandomGenerator.nextGaussian();
     }
 
-    public long getSeed() {
-        return this.randomGenerator.nextLong();
-    }
 }
