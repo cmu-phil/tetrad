@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -201,13 +201,25 @@ public class PermutationSearch {
 //            rules.setVerbose(false);
 //            rules.orientImplied(graph);
 
-            // Need to make a copy of the graph in case graph is replicating.
-            Graph cpdag = new EdgeListGraph(graph);
+            Graph plain = graph;//new EdgeListGraph(graph);
             MeekRules rules = new MeekRules();
             rules.setRevertToUnshieldedColliders(true);
-            if (knowledge != null) rules.setKnowledge(knowledge);
+//            if (knowledge != null) rules.setKnowledge(knowledge);
             rules.setVerbose(false);
-            rules.orientImplied(cpdag);
+            rules.orientImplied(plain);
+
+//            if (graph instanceof ReplicatingGraph) {
+//                graph = new ReplicatingGraph(graph.getNodes(), new LagReplicationPolicy());
+//
+//                // Copy orientations back into the replicating graph
+//                for (Edge e : plain.getEdges()) {
+//                    Node n1 = graph.getNode(e.getNode1().getName());
+//                    Node n2 = graph.getNode(e.getNode2().getName());
+//                    if (n1 == null || n2 == null) continue;
+//                    graph.removeEdge(n1, n2);
+//                    graph.addEdge(new Edge(n1, n2, e.getEndpoint1(), e.getEndpoint2()));
+//                }
+//            }
         }
 
         return graph;

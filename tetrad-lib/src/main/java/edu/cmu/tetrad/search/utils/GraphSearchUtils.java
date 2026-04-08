@@ -656,7 +656,7 @@ public final class GraphSearchUtils {
             sort(tiers.get(i));
         }
 
-        int ySpace = maxLag == 0 ? 150 : 150 / maxLag;
+        int ySpace = 80;// maxLag == 0 ? 100 : 250 / maxLag;
         int y = 60;
 
         for (int i = maxLag; i >= 0; i--) {

@@ -411,7 +411,7 @@ public class MeekRules {
 
                 Edge before = graph.getEdge(z, y);
 
-                graph.removeEdge(z, y);
+                graph.removeEdges(z, y);
                 graph.addUndirectedEdge(z, y);
 
                 Edge after = graph.getEdge(z, y);
