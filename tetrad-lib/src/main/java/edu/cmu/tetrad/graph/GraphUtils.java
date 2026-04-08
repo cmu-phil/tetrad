@@ -473,6 +473,15 @@ public final class GraphUtils {
             Node a = nameToConverted.getOrDefault(edge.getNode1().getName(), edge.getNode1());
             Node b = nameToConverted.getOrDefault(edge.getNode2().getName(), edge.getNode2());
             Edge newEdge = new Edge(a, b, edge.getEndpoint1(), edge.getEndpoint2());
+
+            for (Property property : edge.getProperties()) {
+                newEdge.addProperty(property);
+            }
+
+            for (EdgeTypeProbability p : edge.getEdgeTypeProbabilities()) {
+                newEdge.addEdgeTypeProbability(p);
+            }
+
             convertedGraph.addEdge(newEdge);
         }
 

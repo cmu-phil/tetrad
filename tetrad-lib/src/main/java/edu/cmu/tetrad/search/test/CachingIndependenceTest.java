@@ -29,7 +29,7 @@ import java.util.*;
 /**
  * A caching wrapper for IndependenceTest.
  * <p>
- * Ensures that each unique conditional independence test (X â Y | Z) is evaluated at most once. Results are cached and
+ * Ensures that each unique conditional independence test (X _||_ Y | Z) is evaluated at most once. Results are cached and
  * re-used. Both (X,Y|Z) and (Y,X|Z) map to the same cache entry.
  * <p>
  * Useful for expensive tests such as KCI.

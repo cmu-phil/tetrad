@@ -87,7 +87,7 @@ public final class Ccd implements IGraphSearch {
      */
     public Ccd(IndependenceTest test) {
         if (test == null) throw new NullPointerException("Test is not provided");
-        this.test = (test instanceof CachingIndependenceTest) ? test : new CachingIndependenceTest(test);
+        this.test = test;
         this.nodes = this.test.getVariables();
     }
 
@@ -154,7 +154,7 @@ public final class Ccd implements IGraphSearch {
         if (!oldSet.equals(newSet)) {
             throw new IllegalArgumentException("New test must have the same variable set as the existing test.");
         }
-        this.test = (test instanceof CachingIndependenceTest) ? test : new CachingIndependenceTest(test);
+        this.test = test;
     }
 
     /**

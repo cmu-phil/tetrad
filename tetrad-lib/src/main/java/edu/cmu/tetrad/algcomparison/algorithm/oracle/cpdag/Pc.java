@@ -34,6 +34,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
+import edu.cmu.tetrad.search.test.CachingIndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
@@ -114,10 +115,10 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, Accepts
         };
 
         IndependenceTest test = getIndependenceWrapper().getTest(dataModel, parameters);
+        test = new CachingIndependenceTest(test);
 
         Graph graph;
 
-        test = new CachedIndependenceQueries(test);
         edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(test);
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setDepth(parameters.getInt(Params.DEPTH));

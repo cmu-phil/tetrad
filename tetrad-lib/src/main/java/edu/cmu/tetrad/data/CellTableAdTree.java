@@ -99,6 +99,8 @@ public final class CellTableAdTree implements CellTable {
         for (int i = 0; i < vars.size(); i++) {
             dims[i] = vars.get(i).getNumCategories();
         }
+
+        System.out.println("CellTableAdTree constructed: rows.size()=" + rows.size());
     }
 
     /**

@@ -34,6 +34,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
+import edu.cmu.tetrad.search.test.CachingIndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
@@ -117,9 +118,10 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, Accept
             default -> throw new IllegalArgumentException("Invalid collider orientation style");
         };
 
-        IndependenceTest test1 = this.test.getTest(dataModel, parameters);
-        test1 = new CachedIndependenceQueries(test1);
-        edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test1);
+        IndependenceTest test = getIndependenceWrapper().getTest(dataModel, parameters);
+        test = new CachingIndependenceTest(test);
+
+        edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test);
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setR0ColliderRule(colliderOrientationStyle);
