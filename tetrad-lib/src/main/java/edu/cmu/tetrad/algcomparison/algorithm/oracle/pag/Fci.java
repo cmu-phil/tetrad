@@ -198,7 +198,7 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, Accept
         parameters.add(Params.FDR_Q);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.EXCLUDE_SELECTION_BIAS);
-        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
+//        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
         parameters.add(Params.GUARANTEE_PAG);
         parameters.add(Params.VERBOSE);
 

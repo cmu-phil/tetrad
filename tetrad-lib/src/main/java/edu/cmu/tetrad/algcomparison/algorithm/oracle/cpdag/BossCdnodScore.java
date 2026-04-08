@@ -319,7 +319,7 @@ public class BossCdnodScore extends AbstractBootstrapAlgorithm implements Algori
         params.add(Params.USE_BES);
         params.add(Params.NUM_STARTS);
         params.add(Params.TIME_LAG);
-        params.add(Params.TIME_LAG_REPLICATING_GRAPH);
+//        params.add(Params.TIME_LAG_REPLICATING_GRAPH);
         params.add(Params.NUM_THREADS);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.OUTPUT_PDAG);

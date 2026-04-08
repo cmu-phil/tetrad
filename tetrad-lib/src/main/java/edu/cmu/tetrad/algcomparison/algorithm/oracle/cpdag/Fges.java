@@ -161,7 +161,7 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         parameters.add(Params.NUM_THREADS);
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.TIME_LAG);
-        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
+//        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
         parameters.add(Params.VERBOSE);
 
         return parameters;

@@ -179,7 +179,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.TIME_LAG);
-        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
+//        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
         parameters.add(Params.GUARANTEE_PAG);
         parameters.add(Params.USE_MAX_P_HEURISTIC);
         parameters.add(Params.NUM_THREADS);

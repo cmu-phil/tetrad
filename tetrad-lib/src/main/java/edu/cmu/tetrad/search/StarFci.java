@@ -259,7 +259,7 @@ public abstract class StarFci implements IGraphSearch {
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
         Graph cpdag = getMarkovCpdag();
-        Graph pag = wrapWorkingGraph(cpdag);
+        Graph pag = new EdgeListGraph(cpdag);
         Set<Triple> unshieldedColliders = new HashSet<>();
         SepsetMap sepsetMap = new SepsetMap();
 
@@ -370,14 +370,6 @@ public abstract class StarFci implements IGraphSearch {
         }
 
         return pag;
-    }
-
-    private Graph wrapWorkingGraph(Graph cpdag) {
-        if (replicatingGraph) {
-            return new ReplicatingGraph(cpdag, new LagReplicationPolicy());
-        } else {
-            return new EdgeListGraph(cpdag);
-        }
     }
 
     /**

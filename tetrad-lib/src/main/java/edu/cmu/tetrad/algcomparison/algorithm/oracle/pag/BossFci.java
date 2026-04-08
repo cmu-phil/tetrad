@@ -197,7 +197,7 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
-        params.add(Params.TIME_LAG_REPLICATING_GRAPH);
+//        params.add(Params.TIME_LAG_REPLICATING_GRAPH);
         params.add(Params.SEED);
         params.add(Params.NUM_THREADS);
         params.add(Params.GUARANTEE_PAG);
