@@ -21,9 +21,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphFactoryUtil;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
 import edu.cmu.tetrad.search.utils.MeekRules;
@@ -197,11 +195,19 @@ public class PermutationSearch {
 
         if (cpDag) {
 //            return GraphTransforms.dagToCpdag(graph);
+//            MeekRules rules = new MeekRules();
+//            rules.setRevertToUnshieldedColliders(true);
+//            if (knowledge != null) rules.setKnowledge(knowledge);
+//            rules.setVerbose(false);
+//            rules.orientImplied(graph);
+
+            // Need to make a copy of the graph in case graph is replicating.
+            Graph cpdag = new EdgeListGraph(graph);
             MeekRules rules = new MeekRules();
             rules.setRevertToUnshieldedColliders(true);
             if (knowledge != null) rules.setKnowledge(knowledge);
             rules.setVerbose(false);
-            rules.orientImplied(graph); // setEndpoint/edge ops mirror automatically if replicating
+            rules.orientImplied(cpdag);
         }
 
         return graph;
