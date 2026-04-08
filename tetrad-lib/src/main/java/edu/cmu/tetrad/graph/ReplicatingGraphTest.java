@@ -273,4 +273,40 @@ public class ReplicatingGraphTest {
         assertFalse("Factory should NOT return a ReplicatingGraph when replicating=false",
                 g2 instanceof ReplicatingGraph);
     }
+
+    // ================================================================
+    // 11. completeGraph preserves ReplicatingGraph and connects all nodes
+    // ================================================================
+
+    /**
+     * Three variables (X, Y, Z) each replicated across three lags (0, 1, 2).
+     * After GraphUtils.completeGraph(), every pair of nodes should be adjacent
+     * and the graph should still be a ReplicatingGraph.
+     */
+    @Test
+    public void completeGraph_allNodesAdjacentAndTypePreserved() {
+        Node z0 = new GraphNode("Z");
+        Node z1 = new GraphNode("Z:1");
+        Node z2 = new GraphNode("Z:2");
+
+        List<Node> nodes = List.of(x0, x1, x2, y0, y1, y2, z0, z1, z2);
+        Graph rg = GraphFactoryUtil.newGraph(nodes, true);
+
+        Graph completed = GraphUtils.completeGraph(rg);
+
+        assertTrue("completeGraph should preserve ReplicatingGraph type",
+                completed instanceof ReplicatingGraph);
+
+        // Every pair of the 9 nodes should be adjacent.
+        List<Node> all = completed.getNodes();
+        for (int i = 0; i < all.size(); i++) {
+            for (int j = i + 1; j < all.size(); j++) {
+                Node a = all.get(i);
+                Node b = all.get(j);
+                assertTrue("After completeGraph, " + a.getName()
+                                + " should be adjacent to " + b.getName(),
+                        completed.isAdjacentTo(a, b));
+            }
+        }
+    }
 }
