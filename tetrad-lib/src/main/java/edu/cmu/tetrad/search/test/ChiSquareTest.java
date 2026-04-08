@@ -21,12 +21,15 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.CombinationIterator;
 import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static edu.cmu.tetrad.util.TMath.log;
 
@@ -159,7 +162,7 @@ public class ChiSquareTest {
         if (cellTableType == CellTableType.COUNT_SAMPLE) {
             cellTable = new CellTableCountSample(data, variables, testIndices, rows);
         } else if (cellTableType == CellTableType.AD_TREE) {
-            cellTable = new CellTableAdTree(getDataSet(), testIndices, rows);
+            cellTable = new CellTableAdTree(data, variables, testIndices, rows);
         } else {
             throw new IllegalArgumentException("Unknown cell table type: " + cellTableType);
         }
@@ -427,7 +430,7 @@ public class ChiSquareTest {
      * @param cellTableType The type of cell table to use.
      */
     public void setCellTableType(CellTableType cellTableType) {
-//        this.cellTableType = cellTableType;
+        this.cellTableType = cellTableType;
     }
 
     /**

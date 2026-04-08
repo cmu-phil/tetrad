@@ -20,13 +20,12 @@
 
 package edu.cmu.tetrad.data;
 
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.AdTree;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -101,6 +100,36 @@ public final class CellTableAdTree implements CellTable {
         }
     }
 
+    public CellTableAdTree(int[][] data, List<DiscreteVariable> variables, int[] testIndices, List<Integer> rows) {
+        Map<Node, Integer> nodesHash = new HashMap<>();
+        for (int i = 0; i < variables.size(); i++) {
+            nodesHash.put(variables.get(i), i);
+        }
+
+        if (rows == null) {
+            rows = GraphSearchUtils.getAllRows(data[0].length);
+        }
+
+        for (int row : rows) {
+            if (row >= data[0].length) {
+                throw new IllegalArgumentException("Row index out of bounds: " + row);
+            }
+        }
+
+        // Select only the variables for this test
+        List<DiscreteVariable> testVars = new ArrayList<>();
+        for (int i : testIndices) {
+            testVars.add(variables.get(i));
+        }
+
+        this.adTree = new AdTree(data, nodesHash, rows, data[0].length);
+        this.adTree.buildTable(testVars);  // ← only the test variables
+        this.dims = new int[testVars.size()];  // ← sized correctly
+        for (int i = 0; i < testVars.size(); i++) {
+            dims[i] = testVars.get(i).getNumCategories();
+        }
+    }
+    
     /**
      * Retrieves a list of discrete variables from a given data set, based on the provided test indices.
      *
