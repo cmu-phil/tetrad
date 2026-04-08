@@ -846,7 +846,7 @@ public final class Params {
     /**
      * Constant <code>TIME_LAG="timeLag"</code>
      */
-    public static final String TIME_LAG = "timeLag";
+        public static final String TIME_LAG = "timeLag";
     /**
      * Constant <code>PRECOMPUTE_COVARIANCES="precomputeCovariances"</code>
      */
