@@ -3485,6 +3485,18 @@ public final class GraphUtils {
         }
     }
 
+    /**
+     * Creates a replicating graph based on the provided graph. The method generates a new graph
+     * where edges are replicated only for child nodes that are lag-0 (i.e., nodes without a colon
+     * in their name). Lag-0 nodes and their parent relationships are preserved and replicated
+     * automatically to all other lag-slices.
+     *
+     * @param graph the source graph from which the replicating graph is generated. The input
+     *              graph contains nodes and edges that determine the structure of the resulting
+     *              replicating graph.
+     * @return a new {@code Graph} instance representing the replicating graph. This graph includes
+     *         all the replicated relationships as described.
+     */
     public static @NotNull Graph getReplicatingGraph(Graph graph) {
         Graph replicating = GraphFactoryUtil.newGraph(graph.getNodes(), true);
 

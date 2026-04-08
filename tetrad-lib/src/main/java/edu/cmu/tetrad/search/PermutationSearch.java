@@ -133,7 +133,20 @@ public class PermutationSearch {
         return getGraph(nodes, parents, null, pdag);
     }
 
-    // existing method stays, delegates to the new one with default (no replication)
+    /**
+     * Constructs a graph based on the provided nodes, parent relationships, knowledge,
+     * and whether a PDAG or DAG is desired.
+     *
+     * @param nodes       The list of nodes to include in the graph.
+     * @param parents     A map specifying the parents for each node. Each key is a node,
+     *                    and its value is the set of parent nodes.
+     * @param knowledge   The knowledge object, if any, to guide the orientation of edges
+     *                    in the graph.
+     * @param pdag        A flag indicating whether a PDAG (partially directed acyclic graph)
+     *                    is desired. If false, a DAG (directed acyclic graph) is constructed.
+     * @return The constructed graph, which may be a DAG or PDAG depending on the value
+     *         of the pdag flag.
+     */
     public static Graph getGraph(List<Node> nodes,
                                  Map<Node, Set<Node>> parents,
                                  Knowledge knowledge,

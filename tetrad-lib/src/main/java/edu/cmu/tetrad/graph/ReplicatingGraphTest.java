@@ -24,6 +24,30 @@ public class ReplicatingGraphTest {
     private Node y0, y1, y2;
     private ReplicatingGraph g;
 
+    /**
+     * Default constructor for the ReplicatingGraphTest class.
+     * Initializes the test class and its environment. This constructor
+     * is typically used to set up the test class before executing test cases.
+     */
+    public ReplicatingGraphTest() {
+
+    }
+
+    /**
+     * Sets up the test environment by initializing the graph nodes and
+     * creating a new instance of the {@code ReplicatingGraph} class with
+     * a predefined list of nodes and a lag replication policy. This method
+     * is executed before each test case to ensure a clean and consistent
+     * starting state.
+     *
+     * The initialized nodes include:
+     * - Three lagged slices for variable X: {@code x0}, {@code x1}, {@code x2}.
+     * - Three lagged slices for variable Y: {@code y0}, {@code y1}, {@code y2}.
+     *
+     * The {@code ReplicatingGraph} instance {@code g} incorporates these
+     * nodes to enable operations and tests that rely on replication across
+     * lagged slices.
+     */
     @Before
     public void setUp() {
         x0 = new GraphNode("X");
