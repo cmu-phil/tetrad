@@ -100,10 +100,7 @@ public class PermutationSearch {
      */
     public PermutationSearch(SuborderSearch suborderSearch) {
         this.suborderSearch = suborderSearch;
-        List<Node> variables = suborderSearch.getVariables();
-
-
-        this.variables = variables;
+        this.variables = suborderSearch.getVariables();
 
         this.order = new ArrayList<>();
         this.gsts = new HashMap<>();
@@ -157,7 +154,7 @@ public class PermutationSearch {
                                  boolean pdag,
                                  boolean replicating) {
         if (replicating) {
-            if (pdag) throw new IllegalArgumentException("PDAGs do not guarantee replication; this should be to false.");
+            if (pdag) throw new IllegalArgumentException("PDAGs do not guarantee replication; the PDAG option should be to false.");
 
             // Build a fresh replicating graph over all nodes
             ReplicatingGraph graph = new ReplicatingGraph(nodes, new LagReplicationPolicy());

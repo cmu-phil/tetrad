@@ -131,7 +131,7 @@ public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, Take
         grasp.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         grasp.setKnowledge(this.knowledge);
         grasp.bestOrder(myScore.getVariables());
-        Graph graph = grasp.getGraph(parameters.getBoolean(Params.OUTPUT_CPDAG),
+        Graph graph = grasp.getGraph(parameters.getBoolean(Params.OUTPUT_PDAG),
                 parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH))   ;
         LogUtilsSearch.stampWithScore(graph, myScore);
         LogUtilsSearch.stampWithBic(graph, dataModel);
@@ -179,7 +179,7 @@ public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, Take
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.ALLOW_INTERNAL_RANDOMNESS);
-        params.add(Params.OUTPUT_CPDAG);
+        params.add(Params.OUTPUT_PDAG);
         params.add(Params.TIME_LAG);
         params.add(Params.TIME_LAG_REPLICATING_GRAPH);
         params.add(Params.SEED);

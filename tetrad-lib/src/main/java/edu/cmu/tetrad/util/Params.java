@@ -730,9 +730,9 @@ public final class Params {
      */
     public static final String BOSS_ALG = "bossAlg";
     /**
-     * Constant <code>OUTPUT_CPDAG="outputCpdag"</code>
+     * Constant <code>OUTPUT_PDAG="outputPdag"</code>
      */
-    public static final String OUTPUT_CPDAG = "outputCpdag";
+    public static final String OUTPUT_PDAG = "outputPdag";
     /**
      * Constant <code>ZS_RISK_BOUND="zSRiskBound"</code>
      */
