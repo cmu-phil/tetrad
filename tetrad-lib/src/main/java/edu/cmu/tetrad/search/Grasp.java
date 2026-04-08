@@ -180,18 +180,6 @@ public class Grasp {
     }
 
     /**
-     * Returns the graph implied by the discovered permutation.
-     *
-     * @param cpDag True if a CPDAG should be returned, false if a DAG should be returned.
-     * @return This graph.
-     */
-//    @NotNull
-//    public Graph getGraph(boolean cpDag) {
-//        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
-//        return this.scorer.getGraph(cpDag);
-//    }
-
-    /**
      * Retrieves a graph based on specified parameters.
      *
      * @param cpDag True if a CPDAG (Completed Partially Directed Acyclic Graph) should be returned.
