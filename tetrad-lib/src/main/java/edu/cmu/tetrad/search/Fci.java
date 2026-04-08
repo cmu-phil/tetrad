@@ -76,7 +76,7 @@ public final class Fci implements IGraphSearch {
      */
     public Fci(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
-        this.test = new CachingIndependenceTest(test);
+        this.test = test;
         this.variables.addAll(test.getVariables());
     }
 

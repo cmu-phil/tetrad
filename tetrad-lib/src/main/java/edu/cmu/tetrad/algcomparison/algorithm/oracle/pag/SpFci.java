@@ -183,7 +183,7 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Take
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
-        params.add(Params.TIME_LAG_REPLICATING_GRAPH);
+//        params.add(Params.TIME_LAG_REPLICATING_GRAPH);
         params.add(Params.GUARANTEE_PAG);
         params.add(Params.USE_MAX_P_HEURISTIC);
         params.add(Params.EXCLUDE_SELECTION_BIAS);

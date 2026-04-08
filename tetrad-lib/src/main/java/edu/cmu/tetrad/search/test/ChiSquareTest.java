@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,16 +16,20 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.CombinationIterator;
 import edu.cmu.tetrad.util.StatUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static edu.cmu.tetrad.util.TMath.log;
 
@@ -60,6 +64,8 @@ public class ChiSquareTest {
      * useful for subsampling, for instance.
      */
     private final List<Integer> rows;
+    private final int[][] data;
+    private final List<DiscreteVariable> variables;
     /**
      * The significance level of the test.
      * <p>
@@ -77,7 +83,7 @@ public class ChiSquareTest {
     /**
      * The type of cell table to use.
      */
-    private CellTableType cellTableType = CellTableType.AD_TREE;
+    private CellTableType cellTableType = CellTableType.COUNT_SAMPLE;
 
     /**
      * Constructs a test using the given data set and significance level.
@@ -99,10 +105,36 @@ public class ChiSquareTest {
             this.getDims()[i] = variable.getNumCategories();
         }
 
+        this.variables = new ArrayList<>();
+
+        for (int i = 0; i < dataSet.getNumColumns(); i++) {
+            this.variables.add((DiscreteVariable) dataSet.getVariable(i));
+        }
+
+        // Pre-extract columns as raw int arrays — do this once, not per-row
+        data = new int[dataSet.getNumColumns()][];
+        for (int j = 0; j < dataSet.getNumColumns(); j++) {
+            data[j] = extractColumn(dataSet, j);
+        }
+
         this.testType = testType;
         this.dataSet = dataSet;
         this.alpha = alpha;
         this.rows = rows == null ? GraphSearchUtils.getAllRows(dataSet.getNumRows()) : rows;
+    }
+
+
+    private int[] extractColumn(DataSet dataSet, int col) {
+//        // Use VerticalIntDataBox fast path if available
+//        if (dataSet instanceof BoxDataSet bds &&
+//                bds.getDataBox() instanceof VerticalIntDataBox box) {
+//            return box.getVariableVectors()[col];
+//        }
+        int[] column = new int[dataSet.getNumRows()];
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            column[i] = dataSet.getInt(i, col);
+        }
+        return column;
     }
 
     /**
@@ -128,9 +160,9 @@ public class ChiSquareTest {
         CellTable cellTable;
 
         if (cellTableType == CellTableType.COUNT_SAMPLE) {
-            cellTable = new CellTableCountSample(getDataSet(), testIndices, rows);
+            cellTable = new CellTableCountSample(data, variables, testIndices, rows);
         } else if (cellTableType == CellTableType.AD_TREE) {
-            cellTable = new CellTableAdTree(getDataSet(), testIndices, rows);
+            cellTable = new CellTableAdTree(data, variables, testIndices, rows);
         } else {
             throw new IllegalArgumentException("Unknown cell table type: " + cellTableType);
         }
@@ -272,7 +304,7 @@ public class ChiSquareTest {
         CellTable cellTable;
 
         if (cellTableType == CellTableType.COUNT_SAMPLE) {
-            cellTable = new CellTableCountSample(getDataSet(), testIndices, rows);
+            cellTable = new CellTableCountSample(data, variables, testIndices, rows);
         } else if (cellTableType == CellTableType.AD_TREE) {
             cellTable = new CellTableAdTree(getDataSet(), testIndices, rows);
         } else {

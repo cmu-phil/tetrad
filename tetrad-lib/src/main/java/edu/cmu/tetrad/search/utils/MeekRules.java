@@ -97,7 +97,7 @@ public class MeekRules {
             for (Edge edge : graph.getEdges()) {
                 if (!(Edges.isDirectedEdge(edge) || Edges.isUndirectedEdge(edge))) {
                     throw new IllegalArgumentException("In order to guarantee the graph is a CPDAG, the graph must " +
-                                                       "contain only directed or undirected edges.");
+                                                       "contain only directed or undirected edges:" + edge);
                 }
             }
         }
@@ -411,7 +411,7 @@ public class MeekRules {
 
                 Edge before = graph.getEdge(z, y);
 
-                graph.removeEdge(z, y);
+                graph.removeEdges(z, y);
                 graph.addUndirectedEdge(z, y);
 
                 Edge after = graph.getEdge(z, y);

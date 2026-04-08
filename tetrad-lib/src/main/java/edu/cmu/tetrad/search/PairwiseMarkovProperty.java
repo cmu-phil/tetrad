@@ -52,7 +52,7 @@ import java.util.*;
  * Composition holds for all strictly positive distributions (Gaussian, multinomial with
  * positive cell probabilities, etc.) but may fail for singular or degenerate cases.
  *
- * <p>By contrast, Richardson's full OLMP ({@link RichardsonOrderedLocalMarkovProperty})
+ * <p>By contrast, Richardson's full OLMP ({@link OrderedLocalMarkovProperty})
  * generates set-level facts directly and achieves completeness with only (C1)–(C4).
  *
  * <h2>Complexity</h2>
@@ -62,8 +62,8 @@ import java.util.*;
  *
  * <h2>Relationship to other procedures</h2>
  * <ul>
- *   <li>{@link AndrewsOrderedLocalMarkovProperty} (Andrews): sound but not complete.
- *   <li>{@link RichardsonOrderedLocalMarkovProperty}: sound and complete, no composition
+ *   <li>{@link OrderedLocalMarkovPropertySinkElimination} (Andrews): sound but not complete.
+ *   <li>{@link OrderedLocalMarkovProperty}: sound and complete, no composition
  *       needed, but potentially exponential in district size.
  *   <li>This class: sound and complete under composition, polynomial cost.
  * </ul>

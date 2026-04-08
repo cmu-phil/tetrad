@@ -324,8 +324,16 @@ public final class SimulationStudyTsbi {
     // -----------------------------------------------------------------------
 
     /**
-     * Runs the study with default settings.
-     * Optional integer argument overrides the number of replications (default 100).
+     * The entry point of the SimulationStudyTsbi program.
+     * This method initializes and configures a simulation study, then executes it.
+     * Optionally, the number of replications per sample-size condition can be set
+     * via the first command-line argument.
+     *
+     * @param args an array of Strings representing the command-line arguments:
+     *             - args[0] (optional): the number of replications to perform,
+     *               which must be an integer greater than or equal to 1. If not
+     *               provided, a default value will be used. If parsing fails,
+     *               the program will display a usage message and terminate.
      */
     public static void main(String[] args) {
         SimulationStudyTsbi study = new SimulationStudyTsbi();

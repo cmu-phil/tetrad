@@ -60,7 +60,7 @@ public class CpdagParentDistancesFromTrue {
     }
 
     /**
-     * Calculates the distance matrix for the edges in the given CPDAG (outputCpdag). The nodes in the output CPDAG must
+     * Calculates the distance matrix for the edges in the given PDAG (outputPdag). The nodes in the output CPDAG must
      * all be in the full list of nodes given. The distance for each edge u -> v is computed based on how far the true
      * edge strength (from trueEdgeStrengths) is from the estimated regression coefficients for u -&gt; v. The distances
      * are based on the difference between the true edge strength to the range of estimated regression coefficients. The
@@ -73,7 +73,7 @@ public class CpdagParentDistancesFromTrue {
      * The distance matrix is a square matrix where the entry at row v and column u is the distance for the edge u -&gt;
      * v.
      *
-     * @param outputCpdag       The estimated CPDAG.
+     * @param outputPdag       The estimated CPDAG.
      * @param trueEdgeStrengths The true edge strengths (coefficients) for the true DAG, where trueEdgeStrengths[u][v]
      *                          is the beta coefficient for u -&gt; v.
      * @param dataSet           The dataset used for regression.
@@ -81,15 +81,15 @@ public class CpdagParentDistancesFromTrue {
      * @return A matrix of distances between true edge strengths and estimated strengths. Here, dist[u][v] is the
      * distance for the edge u -&gt; v.
      */
-    public double[][] getDistances(Graph outputCpdag, double[][] trueEdgeStrengths, DataSet dataSet,
+    public double[][] getDistances(Graph outputPdag, double[][] trueEdgeStrengths, DataSet dataSet,
                                    DistanceType distanceType) {
-        int n = outputCpdag.getNumNodes(); // Number of nodes in the graph
+        int n = outputPdag.getNumNodes(); // Number of nodes in the graph
 
-        // Get the list of nodes in the outputCpdag
-        List<Node> nodes = outputCpdag.getNodes();
+        // Get the list of nodes in the outputPdag
+        List<Node> nodes = outputPdag.getNodes();
 
         // Make sure the nodes in the CPDAG and the data set match name-wise.
-        List<String> names1 = outputCpdag.getNodeNames();
+        List<String> names1 = outputPdag.getNodeNames();
         List<String> names2 = dataSet.getVariableNames();
 
         if (!names1.equals(names2)) {
@@ -113,7 +113,7 @@ public class CpdagParentDistancesFromTrue {
 
         // Iterate over each node v
         for (int v = 0; v < n; v++) {
-            calculateMinMaxCoefPerNode(v, outputCpdag, minCoef, maxCoef, nodes, regressionDataset);
+            calculateMinMaxCoefPerNode(v, outputPdag, minCoef, maxCoef, nodes, regressionDataset);
         }
 
 //        System.out.println("min = " + new Matrix(minCoef));
@@ -140,20 +140,20 @@ public class CpdagParentDistancesFromTrue {
      * stored in the minCoef and maxCoef matrices.
      *
      * @param v                 The target node v.
-     * @param outputCpdag       The estimated CPDAG.
+     * @param outputPdag       The estimated CPDAG.
      * @param minCoef           The matrix of minimum estimated coefficients.
      * @param maxCoef           The matrix of maximum estimated coefficients.
      * @param nodes             The list of nodes in the CPDAG.
      * @param regressionDataSet The dataset wrapper for regression.
      */
-    private void calculateMinMaxCoefPerNode(int v, Graph outputCpdag,
+    private void calculateMinMaxCoefPerNode(int v, Graph outputPdag,
                                             double[][] minCoef, double[][] maxCoef, List<Node> nodes,
                                             RegressionDataset regressionDataSet) {
 
         // Form all possible parent sets of v
-        List<List<Node>> possibleParentSets = formAllPossibleParentSets(nodes.get(v), outputCpdag);
+        List<List<Node>> possibleParentSets = formAllPossibleParentSets(nodes.get(v), outputPdag);
 
-        List<Node> adj = outputCpdag.getAdjacentNodes(nodes.get(v));
+        List<Node> adj = outputPdag.getAdjacentNodes(nodes.get(v));
 
         // Iterate over each parent set
         for (List<Node> parentList : possibleParentSets) {

@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -230,7 +230,7 @@ public class Fges implements IGraphSearch, DagScorer {
         long start = MillisecondTimes.timeMillis();
         topGraphs.clear();
 
-        graph = GraphFactoryUtil.newGraph(getVariables(), replicating);
+        graph = GraphFactoryUtil.newGraph(getVariables(), false);
 
         if (boundGraph != null) {
             boundGraph = GraphUtils.replaceNodes(boundGraph, getVariables());
@@ -263,6 +263,9 @@ public class Fges implements IGraphSearch, DagScorer {
             bes();
         }
 
+        if (replicating) {
+            graph = GraphUtils.getReplicatingGraph(graph);
+        }
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - start;
@@ -589,7 +592,9 @@ public class Fges implements IGraphSearch, DagScorer {
         bes.bes(graph, variables);
     }
 
-    /** Subclasses can override to supply a custom Bes. */
+    /**
+     * Subclasses can override to supply a custom Bes.
+     */
     protected Bes newBes(Score score) {
         return new Bes(score);
     }
@@ -1121,7 +1126,7 @@ public class Fges implements IGraphSearch, DagScorer {
 
         // If the Score supports whole-graph scoring, use it.
         if (score instanceof GraphScore) {
-           TetradLogger.getInstance().log("Cannot score using GraphScore.");
+            TetradLogger.getInstance().log("Cannot score using GraphScore.");
             return Double.NaN;
         }
 
@@ -1226,19 +1231,25 @@ public class Fges implements IGraphSearch, DagScorer {
         return hashIndices;
     }
 
-    /** First-step bump for pair (parent->child) during empty-graph init. */
+    /**
+     * First-step bump for pair (parent->child) during empty-graph init.
+     */
     protected double initialPairBump(Node parent, Node child,
                                      ConcurrentMap<Node, Integer> idx) {
         return score.localScoreDiff(idx.get(parent), idx.get(child));
     }
 
-    /** If symmetricFirstStep==true, reverse-direction bump for (child->parent). */
+    /**
+     * If symmetricFirstStep==true, reverse-direction bump for (child->parent).
+     */
     protected double initialPairBumpReverse(Node parent, Node child,
                                             ConcurrentMap<Node, Integer> idx) {
         return score.localScoreDiff(idx.get(child), idx.get(parent));
     }
 
-    /** Insert bump (Definition 12) used inside calculateArrowsForward. */
+    /**
+     * Insert bump (Definition 12) used inside calculateArrowsForward.
+     */
     protected double insertBump(Node x, Node y, Set<Node> T, Set<Node> naYX,
                                 Set<Node> parents, ConcurrentMap<Node, Integer> idx) throws InterruptedException {
         Set<Node> set = new HashSet<>(naYX);

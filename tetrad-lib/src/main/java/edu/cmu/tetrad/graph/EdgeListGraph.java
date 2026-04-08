@@ -20,7 +20,6 @@
 
 package edu.cmu.tetrad.graph;
 
-import cern.colt.matrix.linalg.Property;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -268,8 +267,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             Node newNode2 = nodeMap.get(edge.getNode2());
 
             Edge newEdge = new Edge(newNode1, newNode2,
-                    edge.getEndpoint(edge.getNode1()),
-                    edge.getEndpoint(edge.getNode2()));
+                    edge.getProximalEndpoint(edge.getNode1()),
+                    edge.getProximalEndpoint(edge.getNode2()));
 
             for (Edge.Property p : edge.getProperties()) {
                 newEdge.addProperty(p);
@@ -392,12 +391,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         if (edge12 == null || edge23 == null) return false;
 
         // If either edge has a tail at node2, it's a def noncollider.
-        if (edge12.getEndpoint(node2) == Endpoint.TAIL || edge23.getEndpoint(node2) == Endpoint.TAIL) {
+        if (edge12.getProximalEndpoint(node2) == Endpoint.TAIL || edge23.getProximalEndpoint(node2) == Endpoint.TAIL) {
             return true;
         }
 
         // If both edges have circles at node2 and are covered, it's a def noncollider.
-        if (edge12.getEndpoint(node2) == Endpoint.CIRCLE && edge23.getEndpoint(node2) == Endpoint.CIRCLE && isAdjacentTo(node1, node3)) {
+        if (edge12.getProximalEndpoint(node2) == Endpoint.CIRCLE && edge23.getProximalEndpoint(node2) == Endpoint.CIRCLE && isAdjacentTo(node1, node3)) {
             return true;
         }
 
@@ -415,7 +414,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
         if (edge1 == null || edge2 == null) return false;
 
-        return edge1.getEndpoint(node2) == Endpoint.ARROW && edge2.getEndpoint(node2) == Endpoint.ARROW;
+        return edge1.getProximalEndpoint(node2) == Endpoint.ARROW && edge2.getProximalEndpoint(node2) == Endpoint.ARROW;
 
     }
 
@@ -496,7 +495,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         }
 
         for (Edge edge : edges) {
-            if (Edges.isDirectedEdge(edge) && edge.getEndpoint(node2) == Endpoint.ARROW) {
+            if (Edges.isDirectedEdge(edge) && edge.getProximalEndpoint(node2) == Endpoint.ARROW) {
                 return edge;
             }
         }
@@ -520,7 +519,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             if (edge == null) continue;
 
             Endpoint endpoint1 = edge.getDistalEndpoint(node);
-            Endpoint endpoint2 = edge.getEndpoint(node);
+            Endpoint endpoint2 = edge.getProximalEndpoint(node);
 
             if (endpoint1 == Endpoint.TAIL && endpoint2 == Endpoint.ARROW) {
                 parents.add(edge.getDistalNode(node));
@@ -570,8 +569,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     public boolean isDirectedFromTo(Node x, Node y) {
         Edge edge = getEdge(x, y);
         return edge != null
-               && edge.getEndpoint(x) == Endpoint.TAIL
-               && edge.getEndpoint(y) == Endpoint.ARROW;
+               && edge.getProximalEndpoint(x) == Endpoint.TAIL
+               && edge.getProximalEndpoint(y) == Endpoint.ARROW;
     }
 
     /**
@@ -820,7 +819,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         Edge edge = getEdge(node1, node2);
 
         if (edge != null) {
-            return edge.getEndpoint(node2);
+            return edge.getProximalEndpoint(node2);
         }
 
         return null;
@@ -839,7 +838,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             throws IllegalArgumentException {
         if (!isAdjacentTo(from, to)) throw new IllegalArgumentException("Not adjacent");
         Edge edge = getEdge(from, to);
-        Edge newEdge = new Edge(from, to, edge.getEndpoint(from), endPoint);
+        Edge newEdge = new Edge(from, to, edge.getProximalEndpoint(from), endPoint);
         removeEdge(edge);
         addEdge(newEdge);
         return true;
@@ -856,7 +855,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         Set<Edge> edges = getEdges(node);
 
         for (Edge edge : edges) {
-            if (edge.getEndpoint(node) == endpoint) {
+            if (edge.getProximalEndpoint(node) == endpoint) {
                 nodes.add(edge.getDistalNode(node));
             }
         }

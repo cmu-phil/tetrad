@@ -3762,19 +3762,20 @@ Source:
     </ul>
 
 
-    === outputCpdag ===
-    <h3 class="parameter_description" id="outputCpdag">outputCpdag</h3>
+    === outputPdag ===
+    <h3 class="parameter_description" id="outputPdag">outputPdag</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="outputCpdag_short_desc">Yes if CPDAG should be output, no if a
+        <li>Short Description: <span id="outputPdag_short_desc">Yes if PDAG should be output, no if a
         DAG.</span></li>
-        <li>Long Description: <span id="outputCpdag_long_desc">BOSS can output a DAG or the CPDAG of the
-        DAG.</span></li>
-        <li>Default Value: <span id="outputCpdag_default_value">true</span></li>
+        <li>Long Description: <span id="outputPdag_long_desc">
+        BOSS can output a DAG or the PDAG of the DAG. The PDAG will be a CPDAG in
+        which additional edges may be oriented by knowledge</span></li>
+        <li>Default Value: <span id="outputPdag_default_value">true</span></li>
         <li>Lower Bound:
-            <span id="outputCpdag_lower_bound"></span></li>
+            <span id="outputPdag_lower_bound"></span></li>
         <li>Upper Bound:
-            <span id="outputCpdag_upper_bound"></span></li>
-        <li>Value Type: <span id="outputCpdag_value_type">Boolean</span></li>
+            <span id="outputPdag_upper_bound"></span></li>
+        <li>Value Type: <span id="outputPdag_value_type">Boolean</span></li>
     </ul>
 
 
@@ -6824,5 +6825,38 @@ Source:
         <li>Value Type:
             <span id="pythonCiServer_value_type">String</span>
         </li>
+    </ul>
+
+    === daoSfOut ===
+    <h3 class="parameter_description" id="daoSfOut">daoSfOut</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="daoSfOut_short_desc">Yes, if rewiring the DAG to have a scale-free out-degree distribution</span></li>
+        <li>Long Description: <span id="daoSfOut_long_desc">Select "Yes" to rewire the generated DAG using preferential attachment so that the out-degree distribution follows a power law, as described in Andrews &amp; Kummerfeld (2024). This produces hub-like source nodes with many children.</span></li>
+        <li>Default Value: <span id="daoSfOut_default_value">false</span></li>
+        <li>Lower Bound: <span id="daoSfOut_lower_bound"></span></li>
+        <li>Upper Bound: <span id="daoSfOut_upper_bound"></span></li>
+        <li>Value Type: <span id="daoSfOut_value_type">Boolean</span></li>
+    </ul>
+
+    === daoSfIn ===
+    <h3 class="parameter_description" id="daoSfIn">daoSfIn</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="daoSfIn_short_desc">Yes, if rewiring the DAG to have a scale-free in-degree distribution</span></li>
+        <li>Long Description: <span id="daoSfIn_long_desc">Select "Yes" to rewire the generated DAG using preferential attachment so that the in-degree distribution follows a power law, as described in Andrews &amp; Kummerfeld (2024). This produces hub-like sink nodes with many parents.</span></li>
+        <li>Default Value: <span id="daoSfIn_default_value">false</span></li>
+        <li>Lower Bound: <span id="daoSfIn_lower_bound"></span></li>
+        <li>Upper Bound: <span id="daoSfIn_upper_bound"></span></li>
+        <li>Value Type: <span id="daoSfIn_value_type">Boolean</span></li>
+    </ul>
+
+    === daoRandomizeOrder ===
+    <h3 class="parameter_description" id="daoRandomizeOrder">daoRandomizeOrder</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="daoRandomizeOrder_short_desc">Yes, if randomly permuting the variable order after graph generation</span></li>
+        <li>Long Description: <span id="daoRandomizeOrder_long_desc">Select "Yes" to randomly shuffle the node ordering of the DAG after generation and any scale-free rewiring. This ensures that the topological order of variables is not reflected in their column order in the output dataset, preventing algorithms from exploiting ordering artifacts.</span></li>
+        <li>Default Value: <span id="daoRandomizeOrder_default_value">true</span></li>
+        <li>Lower Bound: <span id="daoRandomizeOrder_lower_bound"></span></li>
+        <li>Upper Bound: <span id="daoRandomizeOrder_upper_bound"></span></li>
+        <li>Value Type: <span id="daoRandomizeOrder_value_type">Boolean</span></li>
     </ul>
 </div>

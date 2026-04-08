@@ -66,6 +66,7 @@ public class ParameterTab extends JPanel {
     public static final String[] MODEL_TYPE_ITEMS = {
             SimulationTypes.BAYS_NET,
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
+            SimulationTypes.DAO_SIMULATION,
 //            SimulationTypes.LINEAR_FISHER_MODEL,
 //            SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.GENERAL_ADDITIVE_MODEL,
@@ -262,6 +263,9 @@ public class ParameterTab extends JPanel {
                             JOptionPane.showMessageDialog(getPanel(), "The trained DAG model simulation " +
                                     "requires a dataset and a graph whose variables all exist in the dataset.");
                         }
+                        break;
+                    case SimulationTypes.DAO_SIMULATION:
+                        this.simulation.setSimulation(new DaoSimulation(randomGraph), this.simulation.getParams());
                         break;
                     default:
                         throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);

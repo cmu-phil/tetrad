@@ -177,7 +177,7 @@ public class Rfci extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.FDR_Q);
         parameters.add(Params.TIME_LAG);
-        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
+//        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
         parameters.add(Params.EXCLUDE_SELECTION_BIAS);
 
         parameters.add(Params.VERBOSE);

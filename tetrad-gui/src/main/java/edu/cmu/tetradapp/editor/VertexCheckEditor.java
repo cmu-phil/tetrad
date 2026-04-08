@@ -52,7 +52,7 @@ import java.util.function.Function;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
-import static edu.cmu.tetradapp.editor.VertexCheckAdjustmentPanel.factKey;
+import static edu.cmu.tetradapp.editor.VertexRepairPanel.factKey;
 import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
 
 /**
@@ -87,7 +87,7 @@ import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
  * </p>
  *
  * <p>
- * Integrated with this editor is the {@link VertexCheckAdjustmentPanel}, which allows
+ * Integrated with this editor is the {@link VertexRepairPanel}, which allows
  * users to explore local graph modifications when Markov violations are present.
  * Accepted repairs update the underlying graph, trigger recomputation of affected
  * results, and preserve table selections where possible.
@@ -146,7 +146,8 @@ public class VertexCheckEditor extends JPanel {
     private AbstractTableModel overviewModel;
     private AbstractTableModel factsModel;
     private JPanel histogramPanel = new JPanel(new BorderLayout());
-    private JButton runAll = new JButton("Run All");
+    //    private JButton runAll = new JButton("Run All");
+    private JComboBox<String> modelUniformityTest;
     private IndependenceWrapper independenceWrapper;
     private boolean initializing;
     private boolean applyingGraphProgrammatically = false; // prevents history double-push
@@ -165,6 +166,13 @@ public class VertexCheckEditor extends JPanel {
         if (this.knowledge.isViolatedBy(model.getGraph())) {
             throw new IllegalArgumentException("Knowledge conflicts with current graph structure.");
         }
+
+        modelUniformityTest = new JComboBox<>(new String[]{"Use KS", "Use AD"});
+        modelUniformityTest.setSelectedIndex(model.getUseAndersonDarling() ? 1 : 0);
+        modelUniformityTest.addActionListener(e -> {
+            model.setUseAndersonDarling(modelUniformityTest.getSelectedIndex() == 1);
+            runAllAndRefresh(null);
+        });
 
         setPreferredSize(new Dimension(1100, 650));
         setLayout(new BorderLayout(10, 10));
@@ -207,6 +215,8 @@ public class VertexCheckEditor extends JPanel {
 
             SwingUtilities.invokeLater(this::onModelGraphChanged);
         });
+
+        runAllAndRefresh(null);
     }
 
     private static DataType guessDataType(DataModel dm) {
@@ -478,19 +488,20 @@ public class VertexCheckEditor extends JPanel {
 
         controls.add(new JLabel("Conditioning Sets:"));
 
+        conditioningCombo.addItem("Ordered Local Markov Property");
+        conditioningCombo.addItem("Ordered Local Markov Property (Sink Elimination)");
+        conditioningCombo.addItem("Pairwise Markov Property");
         conditioningCombo.addItem("MarkovBlanket(X)");
         conditioningCombo.addItem("Parents(X)");
         conditioningCombo.addItem("Parents(X) and Neighbors(X)");
-        conditioningCombo.addItem("Andrews Ordered Local Markov Property");
-        conditioningCombo.addItem("Richardson Ordered Local Markov Property");
-        conditioningCombo.addItem("Pairwise Markov Property");
         conditioningCombo.addItem("Recursive Blocking");
-        conditioningCombo.addItem("Recursive Adjustment");
+//        conditioningCombo.addItem("Recursive Adjustment");
         conditioningCombo.setPreferredSize(new Dimension(220, 24));
         controls.add(conditioningCombo);
 
         controls.add(verbose);
-        controls.add(runAll);
+//        controls.add(runAll);
+        controls.add(modelUniformityTest);
 
         controls.add(Box.createHorizontalGlue());
 
@@ -553,31 +564,10 @@ public class VertexCheckEditor extends JPanel {
             resetResultsUI();
         });
 
-//            runAll.addActionListener(e -> new WatchedProcess() {
-//                @Override
-//                public void watch() {
-//                    String selectedVertex = getSelectedVertexName();
-//                    model.runAllVertices(true);
-//    //                SwingUtilities.invokeLater(() -> {
-//    //                    overviewModel.fireTableDataChanged();
-//    //                    restoreOverviewSelection(selectedVertex);
-//    ////                    selectFirstRowIfAny();
-//    //
-//    //                });
-//
-//                    SwingUtilities.invokeLater(() -> {
-//                        overviewModel.fireTableDataChanged();
-//                        refreshModelDiagnostics();
-//                        restoreOverviewSelection(selectedVertex);
-//                    });
-//
-//                }
-//            });
-
-        runAll.addActionListener(e -> {
-            String selectedVertex = getSelectedVertexName();
-            runAllAndRefresh(selectedVertex);
-        });
+//        runAll.addActionListener(e -> {
+//            String selectedVertex = getSelectedVertexName();
+//            runAllAndRefresh(selectedVertex);
+//        });
     }
 
     private void buildMainPanels() {
@@ -946,7 +936,7 @@ public class VertexCheckEditor extends JPanel {
     }
 
     private void applySavedSetType() {
-        String saved = PREFS.get(PREF_KEY_SET_TYPE, "MarkovBlanket(X)");
+        String saved = PREFS.get(PREF_KEY_SET_TYPE, "Ordered Local Markov Property");
 
         conditioningCombo.setSelectedItem(saved);
 
@@ -961,9 +951,8 @@ public class VertexCheckEditor extends JPanel {
             case "Parents(X)" -> ConditioningSetType.LOCAL_MARKOV;
             case "Parents(X) and Neighbors(X)" -> ConditioningSetType.PARENTS_AND_NEIGHBORS;
             case "MarkovBlanket(X)" -> ConditioningSetType.MARKOV_BLANKET;
-            case "Andrews Ordered Local Markov Property" -> ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY;
-            case "Richardson Ordered Local Markov Property" ->
-                    ConditioningSetType.RICHARDSON_ORDERED_LOCAL_MARKOV_PROPERTY;
+            case "Ordered Local Markov Property" -> ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY;
+            case "Ordered Local Markov Property (Sink Elimination)" -> ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION;
             case "Pairwise Markov Property" -> ConditioningSetType.PAIRWISE_MARKOV_PROPERTY;
             case "Recursive Blocking" -> ConditioningSetType.RECURSIVE_BLOCKING;
             case "Recursive Adjustment" -> ConditioningSetType.RECURSIVE_ADJUSTMENT;
@@ -1236,7 +1225,7 @@ public class VertexCheckEditor extends JPanel {
         Node x = getSelectedVertex();
         if (x == null) return;
 
-        VertexCheckAdjustmentPanel panel = new VertexCheckAdjustmentPanel(this, x);
+        VertexRepairPanel panel = new VertexRepairPanel(this, x);
         panel.setKnowledge(knowledge);
 
         JDialog dialog = new JDialog(
@@ -1550,21 +1539,20 @@ public class VertexCheckEditor extends JPanel {
     private void refreshModelDiagnostics() {
         String type = model.getUseAndersonDarling() ? "Anderson-Darling" : "Kolmogorov-Smirnov";
 
-        // You decide semantics: either only valid after Run All, or “over computed so far”.
-        VertexCheckIndTestModel.ModelSummary ms = model.getModelSummary(); // you add this
+        VertexCheckIndTestModel.ModelSummary ms = model.getModelSummary();
         if (ms == null) {
-            modelNpLabel.setText(type + " Model Uniformity P: (not computed)");
-            modelPLabel.setText("# p-values: (not computed)");
+            modelNpLabel.setText("# p-values: (not computed)");
+            modelPLabel.setText(type + " Model Uniformity P: (not computed)");
             return;
         }
-        modelNpLabel.setText("# P-values: " + ms.numPValues());
+        modelNpLabel.setText("# p-values: " + ms.numPValues());
         modelPLabel.setText(type + " Model Uniformity P: " + fmt(ms.modelP()));
     }
 
     private void runAllAndRefresh(String preferredVertexToReselect) {
         if (runningAll) return;
         runningAll = true;
-        runAll.setEnabled(false);
+//        runAll.setEnabled(false);
 
         new WatchedProcess() {
             @Override
@@ -1603,7 +1591,7 @@ public class VertexCheckEditor extends JPanel {
                             refreshDetails(active);   // <-- this makes facts/histogram appear immediately
                         }
 
-                        runAll.setEnabled(true);
+//                        runAll.setEnabled(true);
                         runningAll = false;
                     });
                 }

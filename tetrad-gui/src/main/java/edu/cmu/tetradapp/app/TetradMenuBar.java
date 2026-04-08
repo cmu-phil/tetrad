@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.app;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.Tetrad;
 import edu.cmu.tetradapp.ThemeUtils;
-import edu.cmu.tetradapp.editor.SaveScreenshot;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
@@ -243,7 +242,7 @@ final class TetradMenuBar extends JMenuBar {
         helpMenu.addSeparator();
         helpMenu.add(new LaunchWebsiteAction());
         helpMenu.add(new LaunchManualAction());
-        helpMenu.add(new LaunchFlowchartAction());
+        helpMenu.add(new AlgorithmFlowchartAction(desktop));
         helpMenu.add(getSuggestionBoxItem(desktop, helpMenu));
     }
 

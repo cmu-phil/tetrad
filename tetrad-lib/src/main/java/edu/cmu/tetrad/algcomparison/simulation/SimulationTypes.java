@@ -96,6 +96,10 @@ public final class SimulationTypes {
      * Constant <code>TRAINED_DAG_SIMULATION="Trained DAG Simulation"</code>
      */
     public static final String TRAINED_DAG_SIMULATION = "Trained DAG Simulation";
+    /**
+     * Constant <code>DAO_SIMULATION="DAO Simulation"</code>
+     */
+    public static final String DAO_SIMULATION = "DAO Simulation";
 
     private SimulationTypes() {
     }

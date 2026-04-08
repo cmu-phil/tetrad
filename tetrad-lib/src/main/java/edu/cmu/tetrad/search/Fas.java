@@ -110,7 +110,6 @@ public class Fas implements IFas {
      * alternative destinations.
      */
     private PrintStream out = System.out;
-    private boolean replicatingGraph;
 
     /**
      * Constructs a new instance of the Fas algorithm using the specified independence test.
@@ -188,8 +187,7 @@ public class Fas implements IFas {
             throw new IllegalArgumentException("Variables should be a subset of the ones in the test.");
         }
 
-//        Graph modify = new EdgeListGraph(nodes);
-        Graph modify = GraphFactoryUtil.newGraph(nodes, replicatingGraph);
+        Graph modify = new EdgeListGraph(nodes);
         modify = GraphUtils.completeGraph(modify);
 
         // Apply forbidden knowledge upfront.
@@ -209,7 +207,7 @@ public class Fas implements IFas {
             }
         }
 
-        // Normalize depth: -1 (or anything < -1) means "no cap" â up to n-1.
+        // Normalize depth: -1 (or anything < -1) means "no cap".
         final int n = test.getVariables().size();
         final int depthCap = (depth < 0) ? (n - 1) : depth;
 
@@ -520,14 +518,14 @@ public class Fas implements IFas {
     }
 
     /**
-     * Sets the flag indicating whether the graph is in a replicating state.
+     * (Unused))
      *
      * @param replicatingGraph A boolean value; if true, the graph is considered to be in a replicating state.
      *                         Otherwise, it is not.
      */
     @Override
     public void setReplicatingGraph(boolean replicatingGraph) {
-        this.replicatingGraph = replicatingGraph;
+        // Unused.
     }
 
     /**

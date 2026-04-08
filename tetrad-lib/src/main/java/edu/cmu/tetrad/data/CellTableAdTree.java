@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,13 +20,12 @@
 
 package edu.cmu.tetrad.data;
 
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.AdTree;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -98,6 +97,50 @@ public final class CellTableAdTree implements CellTable {
         this.dims = new int[vars.size()];
         for (int i = 0; i < vars.size(); i++) {
             dims[i] = vars.get(i).getNumCategories();
+        }
+    }
+
+    /**
+     * Constructs a new CellTableAdTree instance using the provided data, variables, test indices,
+     * and rows. The constructor initializes the ADTree for efficient cell table operations
+     * and computes dimensions for the test variables.
+     *
+     * @param data       a 2D array representing the dataset, where each inner array corresponds to
+     *                   an observation, and columns represent variable values.
+     * @param variables  a list of discrete variables corresponding to the columns of the dataset.
+     * @param testIndices an array containing the indices of the variables to be used for constructing
+     *                    the cell table.
+     * @param rows       a list of row indices to be used in the cell table; if null, all rows in the
+     *                   dataset are included.
+     * @throws IllegalArgumentException if any row index in {@code rows} is out of bounds for the dataset.
+     */
+    public CellTableAdTree(int[][] data, List<DiscreteVariable> variables, int[] testIndices, List<Integer> rows) {
+        Map<Node, Integer> nodesHash = new HashMap<>();
+        for (int i = 0; i < variables.size(); i++) {
+            nodesHash.put(variables.get(i), i);
+        }
+
+        if (rows == null) {
+            rows = GraphSearchUtils.getAllRows(data[0].length);
+        }
+
+        for (int row : rows) {
+            if (row >= data[0].length) {
+                throw new IllegalArgumentException("Row index out of bounds: " + row);
+            }
+        }
+
+        // Select only the variables for this test
+        List<DiscreteVariable> testVars = new ArrayList<>();
+        for (int i : testIndices) {
+            testVars.add(variables.get(i));
+        }
+
+        this.adTree = new AdTree(data, nodesHash, rows, data[0].length);
+        this.adTree.buildTable(testVars);  // ← only the test variables
+        this.dims = new int[testVars.size()];  // ← sized correctly
+        for (int i = 0; i < testVars.size(); i++) {
+            dims[i] = testVars.get(i).getNumCategories();
         }
     }
 

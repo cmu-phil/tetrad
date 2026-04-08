@@ -69,7 +69,7 @@ import java.util.concurrent.CancellationException;
  * On construction, the panel checks whether the supplied graph matches any recognized legal
  * graph type. If it does not, the user is given a warning.
  */
-public final class VertexCheckAdjustmentPanel extends JPanel {
+public final class VertexCheckAdjustmentPanel1 extends JPanel {
 
     private static final String CARD_TABLE = "table";
     private static final String CARD_NONE = "none";
@@ -79,75 +79,118 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
     // ---- Preferences (persist α and model-P top-K) ----
     static double alpha = 0.01;
 
+//    private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
+//        if (a == null && b == null) return 0;
+//        if (a == null) return 1;
+//        if (b == null) return -1;
+//
+//        // 0) Guards first (true before false)
+//        if (a.passesGuards() != b.passesGuards()) {
+//            return a.passesGuards() ? -1 : 1;
+//        }
+//        if (!a.passesGuards()) {
+//            int c = Integer.compare(a.delta(), b.delta());
+//            if (c != 0) return c;
+//            c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+//            if (c != 0) return c;
+//            c = Integer.compare(editSize(a), editSize(b));
+//            if (c != 0) return c;
+//            return stableTieBreak(a, b);
+//        }
+//
+//        // 1) Δ violations (more negative is better)
+//        int c = Integer.compare(a.delta(), b.delta());
+//        if (c != 0) return c;
+//
+//        // 2) Node-P: FINITE first, then log-odds DESC
+//        //    (moved above edge/edit counts: when delta ties, quality beats parsimony)
+//        c = finiteFirst(a.nodePAfter(), b.nodePAfter());
+//        if (c != 0) return c;
+//
+//        double npA = nodeLogOdds(a);
+//        double npB = nodeLogOdds(b);
+//        c = -Double.compare(npA, npB);
+//        if (c != 0) return c;
+//
+//        // 3) Model-P improvement over baseline (dMp DESC)
+//        c = finiteFirst(modelDeltaValueOrNaN(a), modelDeltaValueOrNaN(b));
+//        if (c != 0) return c;
+//
+//        double dMpA = modelDelta(a);
+//        double dMpB = modelDelta(b);
+//        c = -Double.compare(dMpA, dMpB);
+//        if (c != 0) return c;
+//
+//        // 4) Absolute Model-P: FINITE first, then log-odds DESC
+//        c = finiteFirst(a.modelPAfter(), b.modelPAfter());
+//        if (c != 0) return c;
+//
+//        double mpA = modelLogOdds(a);
+//        double mpB = modelLogOdds(b);
+//        c = -Double.compare(mpA, mpB);
+//        if (c != 0) return c;
+//
+//        // 5) Move-type bias
+//        c = -Integer.compare(moveBiasScore(a), moveBiasScore(b));
+//        if (c != 0) return c;
+//
+//        // 6) Fewer edges preferred (parsimony as late tiebreaker)
+//        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+//        if (c != 0) return c;
+//
+//        // 7) Smaller edit size preferred
+//        c = Integer.compare(editSize(a), editSize(b));
+//        if (c != 0) return c;
+//
+//        // 8) Stable tie-break
+//        return stableTieBreak(a, b);
+//    };
+
     private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
         if (a == null && b == null) return 0;
         if (a == null) return 1;
         if (b == null) return -1;
 
-        // 0) Guards first (true before false)
         if (a.passesGuards() != b.passesGuards()) {
             return a.passesGuards() ? -1 : 1;
         }
         if (!a.passesGuards()) {
-            // Within the failed-guards group, apply the same structural
-            // preferences before falling back to stable tie-break.
-            int c = Integer.compare(a.delta(), b.delta()); // ASC: fewer violations first
+            int c = Integer.compare(a.delta(), b.delta());
             if (c != 0) return c;
-
-            c = Integer.compare(a.edgesAfter(), b.edgesAfter()); // ASC: fewer edges first
+            c = Integer.compare(a.edgesAfter(), b.edgesAfter());
             if (c != 0) return c;
-
-            c = Integer.compare(editSize(a), editSize(b)); // ASC: smaller edits first
+            c = Integer.compare(editSize(a), editSize(b));
             if (c != 0) return c;
-
             return stableTieBreak(a, b);
         }
 
-        // 1) Δ violations (more negative is better)
-        int c = Integer.compare(a.delta(), b.delta()); // ASC
+        int c = Integer.compare(a.delta(), b.delta());
         if (c != 0) return c;
 
-        // 2) Fewer edges preferred
-        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
-        if (c != 0) return c;
-
-        // 3) Smaller edit size preferred (single-edge before multi-edge)
-        c = Integer.compare(editSize(a), editSize(b));
-        if (c != 0) return c;
-
-        // 4) Node-P: FINITE first, then log-odds DESC
+        // 2) Node-P: FINITE first, then DESC
         c = finiteFirst(a.nodePAfter(), b.nodePAfter());
         if (c != 0) return c;
-
-        double npA = nodeLogOdds(a);
-        double npB = nodeLogOdds(b);
-        c = -Double.compare(npA, npB);
+        c = -Double.compare(a.nodePAfter(), b.nodePAfter());
         if (c != 0) return c;
 
-        // 5) Model-P improvement over baseline (dMp DESC)
-        // (Optional but recommended: finite improvement beats "unknown improvement")
+        // 3) Model-P delta DESC
         c = finiteFirst(modelDeltaValueOrNaN(a), modelDeltaValueOrNaN(b));
         if (c != 0) return c;
-
-        double dMpA = modelDelta(a);
-        double dMpB = modelDelta(b);
-        c = -Double.compare(dMpA, dMpB);
+        c = -Double.compare(modelDelta(a), modelDelta(b));
         if (c != 0) return c;
 
-        // 6) Move-type bias (your existing heuristic)
-        c = -Integer.compare(moveBiasScore(a), moveBiasScore(b)); // DESC
-        if (c != 0) return c;
-
-        // 7) Absolute Model-P: FINITE first, then log-odds DESC
+        // 4) Absolute Model-P: FINITE first, then DESC
         c = finiteFirst(a.modelPAfter(), b.modelPAfter());
         if (c != 0) return c;
-
-        double mpA = modelLogOdds(a);
-        double mpB = modelLogOdds(b);
-        c = -Double.compare(mpA, mpB);
+        c = -Double.compare(a.modelPAfter(), b.modelPAfter());
         if (c != 0) return c;
 
-        // 8) Stable tie-break
+        c = -Integer.compare(moveBiasScore(a), moveBiasScore(b));
+        if (c != 0) return c;
+        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+        if (c != 0) return c;
+        c = Integer.compare(editSize(a), editSize(b));
+        if (c != 0) return c;
         return stableTieBreak(a, b);
     };
 
@@ -177,7 +220,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
     private volatile JDialog watchDialog;
     private volatile boolean suppressHistory = false;
 
-    public VertexCheckAdjustmentPanel(VertexCheckEditor editor, Node x) {
+    public VertexCheckAdjustmentPanel1(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
 
         this.baseModel = Objects.requireNonNull(editor.getIndTestModel(), "editor.getIndTestModel()");
@@ -414,7 +457,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
 
     private static Endpoint endpointAt(Edge e, Node n) {
         if (e == null || n == null) return null;
-        return e.getEndpoint(n);
+        return e.getProximalEndpoint(n);
     }
 
     private static Edge rebindEdgeToGraph(Graph g, Edge e) {
@@ -433,8 +476,8 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         if (a == null || b == null) return null;
 
         // Preserve endpoint-at-node semantics, regardless of node order
-        Endpoint ea = e.getEndpoint(a0);
-        Endpoint eb = e.getEndpoint(b0);
+        Endpoint ea = e.getProximalEndpoint(a0);
+        Endpoint eb = e.getProximalEndpoint(b0);
         return new Edge(a, b, ea, eb);
     }
 
@@ -461,9 +504,9 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         if (inG == null) return false;
 
         // Compare endpoints at each named node (order-independent)
-        Endpoint a1 = inG.getEndpoint(reb.getNode1());
-        Endpoint b1 = inG.getEndpoint(reb.getNode2());
-        return a1 == reb.getEndpoint(reb.getNode1()) && b1 == reb.getEndpoint(reb.getNode2());
+        Endpoint a1 = inG.getProximalEndpoint(reb.getNode1());
+        Endpoint b1 = inG.getProximalEndpoint(reb.getNode2());
+        return a1 == reb.getProximalEndpoint(reb.getNode1()) && b1 == reb.getProximalEndpoint(reb.getNode2());
     }
 
     private static boolean requiresEdgePresenceCheck(CandidateEdit cand) {
@@ -992,7 +1035,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
                     + "\n\nThese nodes or states may need manual review.";
             SwingUtilities.invokeLater(() ->
                     JOptionPane.showMessageDialog(
-                            VertexCheckAdjustmentPanel.this,
+                            VertexCheckAdjustmentPanel1.this,
                             message,
                             "Cycle Detected During Repair",
                             JOptionPane.WARNING_MESSAGE));
@@ -1004,7 +1047,8 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
                                                   List<CandidateEdit> candidates) {
         GlobalEvalCache baseCache = buildBaselineCache(base);
         int baseline = evalGraphLocality(baseCache, base, Set.of()).violations();
-        double mpBefore = evalGraphOnce(base).modelP();
+//        double mpBefore = evalGraphOnce(base).modelP();
+        double mpBefore = evalGraphLocality(baseCache, base, Set.of()).modelP();
 
         Map<String, Graph> candGraphByKey = new HashMap<>();
         List<ScoredCandidate> scored = new ArrayList<>();
@@ -1054,7 +1098,12 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         for (String key : keysToEval) {
             if (stopRequested()) return List.of();
             Graph g2 = candGraphByKey.get(key);
-            if (g2 != null) mpAfterByKey.put(key, evalGraphOnce(g2).modelP());
+//            if (g2 != null) mpAfterByKey.put(key, evalGraphOnce(g2).modelP());
+
+            if (g2 != null) {
+                Set<String> affected = affectedVertices(base, node, g2);
+                mpAfterByKey.put(key, evalModelPLocality(baseCache, g2, affected));
+            }
         }
 
         // Patch Model-P and guard flags
@@ -1070,7 +1119,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
             result.add(new ScoredCandidate(
                     patched.edit(), patched.violationsBaseline(), patched.violationsAfter(),
                     patched.nodePAfter(), patched.modelPBefore(), patched.modelPAfter(),
-                    patched.edgesAfter(), wouldPassGuards(base, patched, gt)));
+                    patched.edgesAfter(), wouldPassGuards(base, patched)));
         }
 
         result.sort(CANONICAL_TABLE_ORDER);
@@ -1654,29 +1703,29 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         return model.getUniformityP(pvals);
     }
 
-    private GraphEval evalGraphOnce(Graph g) {
-        if (g == null) return new GraphEval(0, Double.NaN, 0);
-
-        ConditioningSetType type = baseModel.getConditioningSetType();
-
-        List<IndependenceFact> facts = MarkovCheck.computeAllImpliedFacts(g, type);
-        if (facts.isEmpty()) return new GraphEval(0, Double.NaN, 0);
-
-        List<CachedIndependenceQueries.Eval> evals =
-                Q.evalAll(facts, CachedIndependenceQueries.Dedup.BY_CACHE_KEY);
-
-        int violations = 0;
-        List<Double> pvals = new ArrayList<>(evals.size());
-
-        for (CachedIndependenceQueries.Eval e : evals) {
-            if (!e.independent()) violations++;
-            double p = e.pValue();
-            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) pvals.add(p);
-        }
-
-        double p = model.getUniformityP(pvals);
-        return new GraphEval(violations, p, evals.size());
-    }
+//    private GraphEval evalGraphOnce(Graph g) {
+//        if (g == null) return new GraphEval(0, Double.NaN, 0);
+//
+//        ConditioningSetType type = baseModel.getConditioningSetType();
+//
+//        List<IndependenceFact> facts = MarkovCheck.computeAllImpliedFacts(g, type);
+//        if (facts.isEmpty()) return new GraphEval(0, Double.NaN, 0);
+//
+//        List<CachedIndependenceQueries.Eval> evals =
+//                Q.evalAll(facts, CachedIndependenceQueries.Dedup.BY_CACHE_KEY);
+//
+//        int violations = 0;
+//        List<Double> pvals = new ArrayList<>(evals.size());
+//
+//        for (CachedIndependenceQueries.Eval e : evals) {
+//            if (!e.independent()) violations++;
+//            double p = e.pValue();
+//            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) pvals.add(p);
+//        }
+//
+//        double p = model.getUniformityP(pvals);
+//        return new GraphEval(violations, p, evals.size());
+//    }
 
     private int evalViolationsOnly(Graph g) {
         if (g == null) return 0;
@@ -1746,6 +1795,12 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         return new VertexContribution(viol, pByKey);
     }
 
+    private double evalModelPLocality(GlobalEvalCache baseCache,
+                                      Graph candidateGraph,
+                                      Set<String> affectedVertexNames) {
+        return evalGraphLocality(baseCache, candidateGraph, affectedVertexNames).modelP();
+    }
+
     private GraphEval evalGraphLocality(GlobalEvalCache baseCache,
                                         Graph candidateGraph,
                                         Set<String> affectedVertexNames) {
@@ -1772,7 +1827,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
 
         // 3) Merge to global dedup by factKey (stable traversal for repeatability)
         Map<String, Boolean> globalViolationByKey = new HashMap<>();
-        Map<String, Double> globalPByKey = false ? new HashMap<>() : null;
+        Map<String, Double> globalPByKey = true ? new HashMap<>() : null;
 
         List<String> names = new ArrayList<>(contrib.keySet());
         names.sort(NaturalSort.naturalComparator());
@@ -1787,7 +1842,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
                 globalViolationByKey.putIfAbsent(key, e.getValue());
             }
 
-            if (false) {
+            if (true) {
                 for (Map.Entry<String, Double> e : vc.pByKey().entrySet()) {
                     String key = e.getKey();
                     if (key == null) continue;
@@ -1802,7 +1857,7 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         }
 
         double modelP = Double.NaN;
-        if (false && globalPByKey.size() >= 2) {
+        if (true && globalPByKey.size() >= 2) {
             List<Double> pvals = new ArrayList<>(globalPByKey.values());
 
             pvals.sort(Double::compareTo);
@@ -1953,23 +2008,17 @@ public final class VertexCheckAdjustmentPanel extends JPanel {
         return (w != null && w.isCancelled()) || Thread.currentThread().isInterrupted();
     }
 
-    private boolean wouldPassGuards(Graph base, ScoredCandidate sc, AdjustmentGraphType gt) {
+    private boolean wouldPassGuards(Graph base, ScoredCandidate sc) {
         if (sc == null || sc.edit() == null || sc.edit().isNoOp()) return false;
 
-        int currentEdges = base.getNumEdges();
-
-        Graph cand = buildCandidateGraph(base, sc.edit(), gt);
-        if (cand == null) return false;
-
-        // Use the SAME table numbers already computed:
-        int baselineViol = sc.violationsBaseline();
-        int afterViol = sc.violationsAfter();
-        int afterEdges = sc.edgesAfter();
-
-        double mpBefore = sc.modelPBefore();
-        double mpAfter = sc.modelPAfter();
-
-        return isProgress(baselineViol, afterViol, currentEdges, afterEdges, mpBefore, mpAfter);
+        return isProgress(
+                sc.violationsBaseline(),
+                sc.violationsAfter(),
+                base.getNumEdges(),
+                sc.edgesAfter(),
+                sc.modelPBefore(),
+                sc.modelPAfter()
+        );
     }
 
     private enum MoveType {

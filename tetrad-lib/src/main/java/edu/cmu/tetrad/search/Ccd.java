@@ -22,7 +22,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.CachingIndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.search.utils.SepsetsMaxP;
@@ -87,7 +86,7 @@ public final class Ccd implements IGraphSearch {
      */
     public Ccd(IndependenceTest test) {
         if (test == null) throw new NullPointerException("Test is not provided");
-        this.test = (test instanceof CachingIndependenceTest) ? test : new CachingIndependenceTest(test);
+        this.test = test;
         this.nodes = this.test.getVariables();
     }
 
@@ -154,7 +153,7 @@ public final class Ccd implements IGraphSearch {
         if (!oldSet.equals(newSet)) {
             throw new IllegalArgumentException("New test must have the same variable set as the existing test.");
         }
-        this.test = (test instanceof CachingIndependenceTest) ? test : new CachingIndependenceTest(test);
+        this.test = test;
     }
 
     /**
@@ -296,7 +295,7 @@ public final class Ccd implements IGraphSearch {
                 boolean skip = false;
                 for (Node node : new ArrayList<>(adjx)) {
                     Edge ex = psi.getEdge(node, x);
-                    if (ex != null && ex.getEndpoint(x) == Endpoint.ARROW && psi.isUnderlineTriple(y, x, node)) {
+                    if (ex != null && ex.getProximalEndpoint(x) == Endpoint.ARROW && psi.isUnderlineTriple(y, x, node)) {
                         skip = true;
                         break;
                     }

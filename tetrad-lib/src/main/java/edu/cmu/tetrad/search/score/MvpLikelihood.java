@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.AdTree;
+import edu.cmu.tetrad.search.utils.AdTreeStoreRows;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.TMath;
@@ -58,7 +59,7 @@ public class MvpLikelihood {
     // Discrete data only.
     private final int[][] discreteData;
     // Partitions
-    private final AdTree adTree;
+    private final AdTreeStoreRows adTree;
     // Fix degree
     private final int fDegree;
     // Structure Prior
@@ -123,7 +124,7 @@ public class MvpLikelihood {
         if (discretize) {
             DataSet discreteDataSet = useErsatzVariables();
             this.discreteVariables = discreteDataSet.getVariables();
-            this.adTree = new AdTree(discreteDataSet);
+            this.adTree = new AdTreeStoreRows(discreteDataSet);
             // All discrete data
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
                 int[] col = new int[discreteDataSet.getNumRows()];
@@ -133,7 +134,7 @@ public class MvpLikelihood {
                 this.discreteData[j] = col;
             }
         } else {
-            this.adTree = new AdTree(dataSet);
+            this.adTree = new AdTreeStoreRows(dataSet);
         }
 
     }

@@ -372,11 +372,11 @@ public class TestCheckNodewiseMarkov {
     /**
      * For LV-light paper's usage under ORDERED_LOCAL_MARKOV_MAG conditioning set type
      *
-     * @see AndrewsOrderedLocalMarkovProperty
+     * @see OrderedLocalMarkovPropertySinkElimination
      * @see ConditioningSetType
      */
     private static void testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(File statsFile, IndependenceTest fisherZTest, DataSet data, Graph trueGraph, Graph estimatedPAG, double threshold, double shuffleThreshold, double lowRecallBound) {
-        MarkovCheck markovCheck = new MarkovCheck(estimatedPAG, fisherZTest, ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY);
+        MarkovCheck markovCheck = new MarkovCheck(estimatedPAG, fisherZTest, ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION);
         markovCheck.generateAllResults();
         double andersonDarlingA2 = markovCheck.getAndersonDarlingA2(true);
         double andersonDarlingP = markovCheck.getAndersonDarlingP(true);

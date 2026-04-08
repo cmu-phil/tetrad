@@ -22,13 +22,11 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.AndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.lang3.tuple.Pair;
@@ -393,8 +391,8 @@ public final class GraphUtils {
             } else if (graph.getEdges(n0, n1).size() == 2) {
                 buf.append("<=>");
             } else {
-                Endpoint endpoint0 = edge.getEndpoint(n0);
-                Endpoint endpoint1 = edge.getEndpoint(n1);
+                Endpoint endpoint0 = edge.getProximalEndpoint(n0);
+                Endpoint endpoint1 = edge.getProximalEndpoint(n1);
 
                 if (endpoint0 == Endpoint.ARROW) {
                     buf.append("<");
@@ -473,6 +471,15 @@ public final class GraphUtils {
             Node a = nameToConverted.getOrDefault(edge.getNode1().getName(), edge.getNode1());
             Node b = nameToConverted.getOrDefault(edge.getNode2().getName(), edge.getNode2());
             Edge newEdge = new Edge(a, b, edge.getEndpoint1(), edge.getEndpoint2());
+
+            for (Property property : edge.getProperties()) {
+                newEdge.addProperty(property);
+            }
+
+            for (EdgeTypeProbability p : edge.getEdgeTypeProbabilities()) {
+                newEdge.addEdgeTypeProbability(p);
+            }
+
             convertedGraph.addEdge(newEdge);
         }
 
@@ -1875,11 +1882,11 @@ public final class GraphUtils {
         Node x = edge1.getNode1();
         Node y = edge1.getNode2();
 
-        Endpoint ex1 = edge1.getEndpoint(x);
-        Endpoint ey1 = edge1.getEndpoint(y);
+        Endpoint ex1 = edge1.getProximalEndpoint(x);
+        Endpoint ey1 = edge1.getProximalEndpoint(y);
 
-        Endpoint ex2 = edge2.getEndpoint(x);
-        Endpoint ey2 = edge2.getEndpoint(y);
+        Endpoint ex2 = edge2.getProximalEndpoint(x);
+        Endpoint ey2 = edge2.getProximalEndpoint(y);
 
         return (ex1 == Endpoint.CIRCLE || (ex1 == ex2 || ex2 == Endpoint.CIRCLE)) && (ey1 == Endpoint.CIRCLE || (ey1 == ey2 || ey2 == Endpoint.CIRCLE));
     }
@@ -3476,6 +3483,33 @@ public final class GraphUtils {
             } while (!w.equals(v));
             sccs.add(comp);
         }
+    }
+
+    /**
+     * Creates a replicating graph based on the provided graph. The method generates a new graph
+     * where edges are replicated only for child nodes that are lag-0 (i.e., nodes without a colon
+     * in their name). Lag-0 nodes and their parent relationships are preserved and replicated
+     * automatically to all other lag-slices.
+     *
+     * @param graph the source graph from which the replicating graph is generated. The input
+     *              graph contains nodes and edges that determine the structure of the resulting
+     *              replicating graph.
+     * @return a new {@code Graph} instance representing the replicating graph. This graph includes
+     *         all the replicated relationships as described.
+     */
+    public static @NotNull Graph getReplicatingGraph(Graph graph) {
+        Graph replicating = GraphFactoryUtil.newGraph(graph.getNodes(), true);
+
+        // Only seed edges where the child is a lag-0 node (no colon in name).
+        // Replication will mirror these to all other lag-slices automatically.
+        for (Node child : graph.getNodes()) {
+            if (child.getName().contains(":")) continue;
+            for (Node par : graph.getParents(child)) {
+                replicating.addDirectedEdge(par, child);
+            }
+        }
+
+        return replicating;
     }
 
     /**

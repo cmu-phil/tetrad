@@ -269,7 +269,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 return factsForUniformZ(alignedGraph, x, z);
             }
 
-            case ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY: {
+            case ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION: {
                 Graph mag;
 
                 if (alignedGraph.paths().isLegalDag()) {
@@ -300,11 +300,11 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
                 Node _x = mag.getNode(x.getName());
 
-                Set<IndependenceFact> raw = AndrewsOrderedLocalMarkovProperty.getModelForNode(mag, _x);
+                Set<IndependenceFact> raw = OrderedLocalMarkovPropertySinkElimination.getModelForNode(mag, _x);
                 return new ArrayList<>(raw);
             }
 
-            case RICHARDSON_ORDERED_LOCAL_MARKOV_PROPERTY: {
+            case ORDERED_LOCAL_MARKOV_PROPERTY: {
                 Graph mag;
 
                 if (alignedGraph.paths().isLegalDag()) {
@@ -335,7 +335,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
                 Node _x = mag.getNode(x.getName());
 
-                Set<IndependenceFact> raw = RichardsonOrderedLocalMarkovProperty.getModelForNode(mag, _x);
+                Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModelForNode(mag, _x);
                 return new ArrayList<>(raw);
             }
 
@@ -1308,7 +1308,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     private @Nullable Set<IndependenceFact> getAllIndependenceFacts(List<Node> order) {
         Set<IndependenceFact> allIndependenceFacts = new HashSet<>();
 
-        if (setType == ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY) {
+        if (setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION) {
             Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
 
             if (graph.paths().isLegalDag()) {
@@ -1325,8 +1325,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 return null;
             }
 
-            allIndependenceFacts = AndrewsOrderedLocalMarkovProperty.getModel(mag);
-        } else if (setType == ConditioningSetType.RICHARDSON_ORDERED_LOCAL_MARKOV_PROPERTY) {
+            Set<IndependenceFact> raw = OrderedLocalMarkovPropertySinkElimination.getModel(mag);
+            allIndependenceFacts = raw;
+        } else if (setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY) {
             Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
 
             if (graph.paths().isLegalDag()) {
@@ -1343,7 +1344,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 return null;
             }
 
-            allIndependenceFacts = RichardsonOrderedLocalMarkovProperty.getModel(mag);
+            allIndependenceFacts = OrderedLocalMarkovProperty.getModel(mag);
         } else if (setType == ConditioningSetType.PAIRWISE_MARKOV_PROPERTY) {
             Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
 
@@ -1360,7 +1361,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             if (mag.paths().existsDirectedCycle()) {
                 return null;
             }
-
             allIndependenceFacts = PairwiseMarkovProperty.getModel(mag);
         } else if (setType == ConditioningSetType.RECURSIVE_BLOCKING) {
             if (graph.paths().existsDirectedCycle()) {

@@ -1573,74 +1573,168 @@ public final class SemIm implements Im, ISemIm {
         this.scoreType = scoreType;
     }
 
+//    private DataSet simulateTimeSeries(int sampleSize, boolean latentDataSaved) {
+//        SemGraph semGraph = new SemGraph(this.semPm.getGraph());
+//        semGraph.setShowErrorTerms(true);
+//        TimeLagGraph timeSeriesGraph = this.semPm.getGraph().getTimeLagGraph();
+//
+//        List<Node> variables = new ArrayList<>();
+//
+//        List<Node> lag0Nodes = timeSeriesGraph.getLag0Nodes();
+//
+//        for (Node node : lag0Nodes) {
+//            ContinuousVariable _node = new ContinuousVariable(timeSeriesGraph.getNodeId(node).getName());
+//            _node.setNodeType(node.getNodeType());
+//            variables.add(_node);
+//        }
+//
+//        DataSet fullData = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
+//
+//        Map<Node, Integer> nodeIndices = new HashMap<>();
+//
+//        for (int i = 0; i < lag0Nodes.size(); i++) {
+//            nodeIndices.put(lag0Nodes.get(i), i);
+//        }
+//
+//        Graph contemporaneousDag = timeSeriesGraph.subgraph(timeSeriesGraph.getLag0Nodes());
+//
+//        Paths paths = contemporaneousDag.paths();
+//        List<Node> initialOrder = contemporaneousDag.getNodes();
+//        List<Node> tierOrdering = paths.getValidOrder(initialOrder, true);
+//
+//        for (int currentStep = 0; currentStep < sampleSize; currentStep++) {
+//            for (Node to : tierOrdering) {
+//                List<Node> parents = semGraph.getNodesInTo(to, Endpoint.ARROW);
+//
+//                double sum = 0.0;
+//
+//                for (Node parent : parents) {
+//                    if (parent.getNodeType() == NodeType.ERROR) {
+//                        if (semGraph.getChildren(parent).size() != 1) {
+//                            continue;
+//                        }
+//                        Node child = semGraph.getChildren(parent).iterator().next();
+//
+//                        double var = getParamValue(child, child); // variance parameter is on the child variable
+//                        sum += getNextNormal(0.0, TMath.sqrt(TMath.max(0.0, var)));
+//                    } else {
+//                        TimeLagGraph.NodeId id = timeSeriesGraph.getNodeId(parent);
+//                        int fromIndex = nodeIndices.get(timeSeriesGraph.getNode(id.getName(), 0));
+//                        int lag = id.getLag();
+//                        if (currentStep > lag) {
+//                            double coef = getParamValue(parent, to);
+//                            double fromValue = fullData.getDouble(currentStep - lag, fromIndex);
+//                            sum += coef * fromValue;
+//                        } else {
+//                            sum += getNextNormal(0.0, 0.5);
+//                        }
+//                    }
+//                }
+//
+//                if (to.getNodeType() != NodeType.ERROR) {
+//                    int toIndex = nodeIndices.get(to);
+//                    fullData.setDouble(currentStep, toIndex, sum);
+//                }
+//            }
+//        }
+//
+//        return latentDataSaved ? fullData : DataTransforms.restrictToMeasured(fullData);
+//    }
+
+
     private DataSet simulateTimeSeries(int sampleSize, boolean latentDataSaved) {
         SemGraph semGraph = new SemGraph(this.semPm.getGraph());
         semGraph.setShowErrorTerms(true);
         TimeLagGraph timeSeriesGraph = this.semPm.getGraph().getTimeLagGraph();
 
         List<Node> variables = new ArrayList<>();
-
         List<Node> lag0Nodes = timeSeriesGraph.getLag0Nodes();
 
         for (Node node : lag0Nodes) {
-            ContinuousVariable _node = new ContinuousVariable(timeSeriesGraph.getNodeId(node).getName());
+            ContinuousVariable _node = new ContinuousVariable(
+                    timeSeriesGraph.getNodeId(node).getName());
             _node.setNodeType(node.getNodeType());
             variables.add(_node);
         }
 
-        DataSet fullData = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
+        int maxLag = timeSeriesGraph.getMaxLag();
+
+        // Allocate extra rows at the front for burn-in history
+        int totalRows = sampleSize + maxLag;
+        DataSet allData = new BoxDataSet(
+                new VerticalDoubleDataBox(totalRows, variables.size()), variables);
 
         Map<Node, Integer> nodeIndices = new HashMap<>();
-
         for (int i = 0; i < lag0Nodes.size(); i++) {
             nodeIndices.put(lag0Nodes.get(i), i);
         }
 
-        Graph contemporaneousDag = timeSeriesGraph.subgraph(timeSeriesGraph.getLag0Nodes());
+        // Draw burn-in rows from implied marginal distribution via Cholesky
+        Matrix implCov = implCovarMeas();
+        Matrix cholesky = MatrixUtils.cholesky(implCov);
 
+        for (int burnRow = 0; burnRow < maxLag; burnRow++) {
+            double[] z = new double[variables.size()];
+            for (int i = 0; i < z.length; i++) {
+                z[i] = RandomUtil.getInstance().nextGaussian(0, 1.0);
+            }
+            for (int i = 0; i < variables.size(); i++) {
+                double val = 0.0;
+                for (int j = 0; j <= i; j++) {
+                    val += cholesky.get(i, j) * z[j];
+                }
+                allData.setDouble(burnRow, i, val);
+            }
+        }
+
+        Graph contemporaneousDag = timeSeriesGraph.subgraph(lag0Nodes);
         Paths paths = contemporaneousDag.paths();
-        List<Node> initialOrder = contemporaneousDag.getNodes();
-        List<Node> tierOrdering = paths.getValidOrder(initialOrder, true);
+        List<Node> tierOrdering = paths.getValidOrder(
+                contemporaneousDag.getNodes(), true);
 
+        // Main simulation loop, offset by maxLag
         for (int currentStep = 0; currentStep < sampleSize; currentStep++) {
+            int row = currentStep + maxLag;
+
             for (Node to : tierOrdering) {
                 List<Node> parents = semGraph.getNodesInTo(to, Endpoint.ARROW);
-
                 double sum = 0.0;
 
                 for (Node parent : parents) {
                     if (parent.getNodeType() == NodeType.ERROR) {
-                        if (semGraph.getChildren(parent).size() != 1) {
-                            continue;
-                        }
+                        if (semGraph.getChildren(parent).size() != 1) continue;
                         Node child = semGraph.getChildren(parent).iterator().next();
-
-                        double var = getParamValue(child, child); // variance parameter is on the child variable
+                        double var = getParamValue(child, child);
                         sum += getNextNormal(0.0, TMath.sqrt(TMath.max(0.0, var)));
                     } else {
                         TimeLagGraph.NodeId id = timeSeriesGraph.getNodeId(parent);
-                        int fromIndex = nodeIndices.get(timeSeriesGraph.getNode(id.getName(), 0));
+                        int fromIndex = nodeIndices.get(
+                                timeSeriesGraph.getNode(id.getName(), 0));
                         int lag = id.getLag();
-                        if (currentStep > lag) {
-                            double coef = getParamValue(parent, to);
-                            double fromValue = fullData.getDouble(currentStep - lag, fromIndex);
-                            sum += coef * fromValue;
-                        } else {
-                            sum += getNextNormal(0.0, 0.5);
-                        }
+                        double coef = getParamValue(parent, to);
+                        // row - lag is always >= 0 because burn-in rows pad the front
+                        sum += coef * allData.getDouble(row - lag, fromIndex);
                     }
                 }
 
                 if (to.getNodeType() != NodeType.ERROR) {
-                    int toIndex = nodeIndices.get(to);
-                    fullData.setDouble(currentStep, toIndex, sum);
+                    allData.setDouble(row, nodeIndices.get(to), sum);
                 }
+            }
+        }
+
+        // Extract just the sampleSize rows, discarding the burn-in
+        DataSet fullData = new BoxDataSet(
+                new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
+        for (int i = 0; i < sampleSize; i++) {
+            for (int j = 0; j < variables.size(); j++) {
+                fullData.setDouble(i, j, allData.getDouble(i + maxLag, j));
             }
         }
 
         return latentDataSaved ? fullData : DataTransforms.restrictToMeasured(fullData);
     }
-
+    
     private double getNextNormal(double mean, double stdDev) {
         numRandomCalls++;
         return RandomUtil.getInstance().nextGaussian(mean, stdDev);

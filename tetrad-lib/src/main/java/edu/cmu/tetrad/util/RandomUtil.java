@@ -558,4 +558,5 @@ public class RandomUtil {
     public double nextGaussian() {
         return this.math3RandomGenerator.nextGaussian();
     }
+
 }

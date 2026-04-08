@@ -230,8 +230,8 @@ public class MarkovCheckEditor extends JPanel {
 
         setPreferredSize(new Dimension(1100, 600));
 
-        conditioningSetTypeJComboBox.addItem("Andrews Ordered Local Markov Property");
-        conditioningSetTypeJComboBox.addItem("Richardson Ordered Local Markov Property");
+        conditioningSetTypeJComboBox.addItem("Ordered Local Markov Property");
+        conditioningSetTypeJComboBox.addItem("Ordered Local Markov Property (Sink Elimination)");
         conditioningSetTypeJComboBox.addItem("Pairwise Markov Property");
         conditioningSetTypeJComboBox.addItem("Parents(X)");
         conditioningSetTypeJComboBox.addItem("Parents(X) and Neighbors(X)");
@@ -258,19 +258,19 @@ public class MarkovCheckEditor extends JPanel {
                     }
 
                     break;
-                case "Andrews Ordered Local Markov Property":
-                    model.getMarkovCheck().setSetType(ConditioningSetType.ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY);
+                case "Ordered Local Markov Property (Sink Elimination)":
+                    model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION);
 
                     if (model.getMarkovCheck() != null) {
-                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Ordered Local Markov Property");
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Ordered Local Markov Property (Sink Elimination)");
                     }
 
                     break;
-                case "Richardson Ordered Local Markov Property":
-                    model.getMarkovCheck().setSetType(ConditioningSetType.RICHARDSON_ORDERED_LOCAL_MARKOV_PROPERTY);
+                case "Ordered Local Markov Property":
+                    model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
 
                     if (model.getMarkovCheck() != null) {
-                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Andrews Ordered Local Markov Property");
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Ordered Local Markov Property");
                     }
 
                     break;
@@ -278,7 +278,7 @@ public class MarkovCheckEditor extends JPanel {
                     model.getMarkovCheck().setSetType(ConditioningSetType.PAIRWISE_MARKOV_PROPERTY);
 
                     if (model.getMarkovCheck() != null) {
-                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Andrews Ordered Local Markov Property");
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Ordered Local Markov Property (Sink Elimination)");
                     }
 
                     break;
@@ -350,7 +350,7 @@ public class MarkovCheckEditor extends JPanel {
 
         setTest();
 
-        conditioningSetTypeJComboBox.setSelectedItem(Preferences.userRoot().get("markovCheckerConditioningSetType", "Ordered Local Markov Property"));
+        conditioningSetTypeJComboBox.setSelectedItem(Preferences.userRoot().get("markovCheckerConditioningSetType", "Ordered Local Markov Property (Sink Elimination)"));
 
         Graph _graph = model.getGraph();
         Graph graph = GraphUtils.replaceNodes(_graph, model.getMarkovCheck().getVariables(model.getGraph().getNodes(), model.getMarkovCheck().getIndependenceNodes(), model.getMarkovCheck().getConditioningNodes()));
@@ -1168,6 +1168,9 @@ public class MarkovCheckEditor extends JPanel {
             // Make bottom stats/histograms reflect what's visible
             updateTables(model, tableIndep, tableDep);
         });
+
+        nodeSelection.setMinimumSize(new Dimension(100, 20) );
+        nodeSelection.setMaximumSize(new Dimension(300, 20) );
 
         nodeSelectionBox.add(nodeSelection);
         nodeSelectionBox.add(Box.createHorizontalGlue());

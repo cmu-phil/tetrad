@@ -656,7 +656,7 @@ public final class GraphSearchUtils {
             sort(tiers.get(i));
         }
 
-        int ySpace = maxLag == 0 ? 150 : 150 / maxLag;
+        int ySpace = 80;// maxLag == 0 ? 100 : 250 / maxLag;
         int y = 60;
 
         for (int i = maxLag; i >= 0; i--) {
@@ -1008,8 +1008,8 @@ public final class GraphSearchUtils {
                 Edge edge = trueGraph.getEdge(x, y);
                 Edge _edge = targetGraph.getEdge(x, y);
 
-                boolean existsArrow = edge != null && edge.getEndpoint(y) == Endpoint.ARROW;
-                boolean _existsArrow = _edge != null && _edge.getEndpoint(y) == Endpoint.ARROW;
+                boolean existsArrow = edge != null && edge.getProximalEndpoint(y) == Endpoint.ARROW;
+                boolean _existsArrow = _edge != null && _edge.getProximalEndpoint(y) == Endpoint.ARROW;
 
                 if (existsArrow && !_existsArrow) {
                     arrowptFn++;
@@ -1066,10 +1066,10 @@ public final class GraphSearchUtils {
             Node node2 = edge.getNode2();
 
             for (Edge _edge : targetGraph.getEdges(node1, node2)) {
-                Endpoint e1a = edge.getEndpoint(node1);
-                Endpoint e1b = edge.getEndpoint(node2);
-                Endpoint e2a = _edge.getEndpoint(node1);
-                Endpoint e2b = _edge.getEndpoint(node2);
+                Endpoint e1a = edge.getProximalEndpoint(node1);
+                Endpoint e1b = edge.getProximalEndpoint(node2);
+                Endpoint e2a = _edge.getProximalEndpoint(node1);
+                Endpoint e2b = _edge.getProximalEndpoint(node2);
 
                 if (!((e1a != Endpoint.CIRCLE && e2a != Endpoint.CIRCLE && e1a != e2a) || (e1b != Endpoint.CIRCLE && e2b != Endpoint.CIRCLE && e1b != e2b))) {
                     continue;

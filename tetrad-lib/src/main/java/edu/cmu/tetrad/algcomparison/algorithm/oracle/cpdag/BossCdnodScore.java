@@ -11,6 +11,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -120,7 +121,7 @@ public class BossCdnodScore extends AbstractBootstrapAlgorithm implements Algori
         permutationSearch.setSeed(seed);
         permutationSearch.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
 
-        final boolean outputCpdag = parameters.getBoolean(Params.OUTPUT_CPDAG);
+        final boolean outputPdag = parameters.getBoolean(Params.OUTPUT_PDAG);
 
         Graph g;
         try {
@@ -142,9 +143,13 @@ public class BossCdnodScore extends AbstractBootstrapAlgorithm implements Algori
         // Enforce no edges into contexts (defensive cleanup).
         enforceNoIncomingToContexts(g, contexts);
 
-        // Convert to CPDAG if requested.
-        if (outputCpdag) {
-            g = GraphTransforms.dagToCpdag(g);
+        // Convert to PDAG if requested.
+        if (outputPdag) {
+            MeekRules rules = new MeekRules();
+            rules.setRevertToUnshieldedColliders(true);
+            if (knowledge != null) rules.setKnowledge(knowledge);
+            rules.setVerbose(false);
+            rules.orientImplied(g);
         }
 
         LogUtilsSearch.stampWithScore(g, boss.getScore());
@@ -314,10 +319,10 @@ public class BossCdnodScore extends AbstractBootstrapAlgorithm implements Algori
         params.add(Params.USE_BES);
         params.add(Params.NUM_STARTS);
         params.add(Params.TIME_LAG);
-        params.add(Params.TIME_LAG_REPLICATING_GRAPH);
+//        params.add(Params.TIME_LAG_REPLICATING_GRAPH);
         params.add(Params.NUM_THREADS);
         params.add(Params.USE_DATA_ORDER);
-        params.add(Params.OUTPUT_CPDAG);
+        params.add(Params.OUTPUT_PDAG);
         params.add(Params.SEED);
         params.add(Params.VERBOSE);
 

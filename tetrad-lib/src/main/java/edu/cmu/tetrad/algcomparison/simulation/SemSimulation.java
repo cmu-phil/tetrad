@@ -181,17 +181,7 @@ public class SemSimulation implements Simulation {
                 graph = this.randomGraph.createGraph(parameters);
             }
 
-//            SemPm pm = this.pm;
             SemIm im = this.im;
-
-//            if (this.pm == null) {
-//                pm = new SemPm(graph);
-//            }
-
-//            if (this.semIm == null) {
-//                semIm = new SemIm(pm, parameters);
-//            }
-
             SemIm.Result result = null;
 
             if (this.im != null) {
@@ -210,13 +200,6 @@ public class SemSimulation implements Simulation {
                     throw new RuntimeException(e);
                 }
             }
-
-//            SemIm.Result result = null;
-//            try {
-//                result = SemIm.simulatePossibleShrinkage(parameters, graph);
-//            } catch (ParseException e) {
-//                throw new RuntimeException(e);
-//            }
 
             DataSet dataSet = result.dataSet();// simulate(semIm, parameters);
 
@@ -346,20 +329,5 @@ public class SemSimulation implements Simulation {
     public Class<? extends Simulation> getSimulationClass() {
         return getClass();
     }
-
-//    /**
-//     * Simulates a data set based on the given SemIm and Parameters.
-//     *
-//     * @param im         the SemIm object used for simulation
-//     * @param parameters the parameters to use in the simulation
-//     * @return a DataSet object representing the simulated data
-//     */
-//    private DataSet simulate(SemIm im, Parameters parameters) {
-//        try {
-//            return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
-//        } catch (ParseException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
 }
 

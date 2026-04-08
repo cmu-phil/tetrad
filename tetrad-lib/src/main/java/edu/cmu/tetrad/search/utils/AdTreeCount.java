@@ -19,7 +19,7 @@ import java.util.*;
  *
  * @author josephramsey 2024-9-1 (refactored from AdTree)
  */
-public class AdTree {
+public class AdTreeCount {
 
     /**
      * Indices of variables.
@@ -83,7 +83,7 @@ public class AdTree {
      *
      * @param dataSet A discrete dataset.
      */
-    public AdTree(DataSet dataSet) {
+    public AdTreeCount(DataSet dataSet) {
         this(dataSet, getAllRows(dataSet.getNumRows()));
     }
 
@@ -93,7 +93,7 @@ public class AdTree {
      * @param dataSet A discrete dataset.
      * @param rows    The rows to use; if null, all rows are used.
      */
-    public AdTree(DataSet dataSet, List<Integer> rows) {
+    public AdTreeCount(DataSet dataSet, List<Integer> rows) {
         validateDataSet(dataSet);
         this.rows = (rows == null) ? getAllRows(dataSet.getNumRows()) : validateRows(dataSet, rows);
         this.discreteData = initializeDiscreteData(dataSet);
@@ -109,7 +109,7 @@ public class AdTree {
      * @param rows         The rows for this bootstrap sample.
      * @param numRows      The total number of rows in the dataset (for validation).
      */
-    public AdTree(int[][] discreteData, Map<Node, Integer> nodesHash, List<Integer> rows, int numRows) {
+    public AdTreeCount(int[][] discreteData, Map<Node, Integer> nodesHash, List<Integer> rows, int numRows) {
         this.discreteData = discreteData;
         this.nodesHash = nodesHash;
         this.rows = (rows == null) ? getAllRows(numRows) : rows;

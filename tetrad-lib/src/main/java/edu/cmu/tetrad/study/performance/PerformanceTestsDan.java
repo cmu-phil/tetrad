@@ -259,7 +259,7 @@ public class PerformanceTestsDan {
                 if (edge == null) {
                     out.print(0 + "\t");
                 } else {
-                    Endpoint ej = edge.getEndpoint(var);
+                    Endpoint ej = edge.getProximalEndpoint(var);
                     if (ej == Endpoint.TAIL) {
                         out.print(3 + "\t");
                     } else if (ej == Endpoint.ARROW) {

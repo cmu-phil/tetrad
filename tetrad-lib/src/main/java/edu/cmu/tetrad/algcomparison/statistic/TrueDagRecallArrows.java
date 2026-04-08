@@ -25,7 +25,6 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.PagCache;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -81,7 +80,7 @@ public class TrueDagRecallArrows implements Statistic {
                     Edge edge2 = estGraph.getEdge(x, y);
 
                     if (edge2 != null) {
-                        if (edge2.getEndpoint(y) == Endpoint.ARROW) {
+                        if (edge2.getProximalEndpoint(y) == Endpoint.ARROW) {
                             tp++;
                         } else {
                             fn++;

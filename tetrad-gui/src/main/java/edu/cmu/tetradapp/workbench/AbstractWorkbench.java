@@ -383,6 +383,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * @param graph Ibid.
      */
     public final void setGraph(Graph graph) {
+        if (!(graph instanceof SessionWrapper)) {
+            graph = graph.copy();
+        }
+
         setGraphWithoutNotify(graph);
 
         // if this workbench is sitting inside of a scrollpane,
@@ -1636,32 +1640,32 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         getActionMap().put("DELETE", deleteAction);
 
-        if (this.controlDispatcher == null) {
-            this.controlDispatcher = this::respondToControlKey;
-        }
+//        if (this.controlDispatcher == null) {
+//            this.controlDispatcher = this::respondToControlKey;
+//        }
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this.controlDispatcher);
     }
 
-    private boolean respondToControlKey(KeyEvent e) {
-        if (hasFocus()) {
-            int keyCode = e.getKeyCode();
-            int id = e.getID();
-
-            if (keyCode == KeyEvent.VK_ALT) {
-                if (id == KeyEvent.KEY_PRESSED) {
-                    this.workbenchMode = AbstractWorkbench.ADD_EDGE;
-                    setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-                } else if (id == KeyEvent.KEY_RELEASED) {
-                    finishEdge();
-                    this.workbenchMode = AbstractWorkbench.SELECT_MOVE;
-                    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                }
-            }
-        }
-
-        return false;
-    }
+//    private boolean respondToControlKey(KeyEvent e) {
+//        if (hasFocus()) {
+//            int keyCode = e.getKeyCode();
+//            int id = e.getID();
+//
+//            if (keyCode == KeyEvent.VK_ALT) {
+//                if (id == KeyEvent.KEY_PRESSED) {
+//                    this.workbenchMode = AbstractWorkbench.ADD_EDGE;
+//                    setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+//                } else if (id == KeyEvent.KEY_RELEASED) {
+//                    finishEdge();
+//                    this.workbenchMode = AbstractWorkbench.SELECT_MOVE;
+//                    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//                }
+//            }
+//        }
+//
+//        return false;
+//    }
 
     AbstractWorkbench getWorkbench() {
         return this;

@@ -261,29 +261,33 @@ public class LogUtilsSearch {
     public static void stampWithScore(Graph graph, Score score) {
         if (score instanceof GraphScore) return;
 
-        if (true) {//!graph.getAllAttributes().containsKey("Score")) {
-            Graph dag = GraphTransforms.dagFromCpdag(graph);
-            Map<Node, Integer> hashIndices = buildIndexing(dag.getNodes());
+        try {
+            if (true) {//!graph.getAllAttributes().containsKey("Score")) {
+                Graph dag = GraphTransforms.dagFromCpdag(graph);
+                Map<Node, Integer> hashIndices = buildIndexing(dag.getNodes());
 
-            double _score = 0.0;
+                double _score = 0.0;
 
-            for (Node node : dag.getNodes()) {
-                List<Node> x = dag.getParents(node);
+                for (Node node : dag.getNodes()) {
+                    List<Node> x = dag.getParents(node);
 
-                int[] parentIndices = new int[x.size()];
+                    int[] parentIndices = new int[x.size()];
 
-                int count = 0;
-                for (Node parent : x) {
-                    parentIndices[count++] = hashIndices.get(parent);
+                    int count = 0;
+                    for (Node parent : x) {
+                        parentIndices[count++] = hashIndices.get(parent);
+                    }
+
+                    double score1 = score.localScore(hashIndices.get(node), parentIndices);
+
+                    if (!Double.isNaN(score1)) _score += score1;
+    //                _score += score1;
                 }
 
-                double score1 = score.localScore(hashIndices.get(node), parentIndices);
-
-                if (!Double.isNaN(score1)) _score += score1;
-//                _score += score1;
+                graph.addAttribute("Score", _score);
             }
-
-            graph.addAttribute("Score", _score);
+        } catch (Exception e) {
+            // Don't stamp if there is an error.
         }
     }
 
