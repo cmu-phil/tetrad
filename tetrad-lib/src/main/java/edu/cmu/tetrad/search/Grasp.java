@@ -25,7 +25,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -40,7 +39,7 @@ import static java.util.Collections.shuffle;
 
 /**
  * Implements the GRaSP algorithms, which uses a certain procedure to search in the space of permutations of variables
- * for ones that imply CPDAGs that are especially close to the CPDAG of the true model. The reference is here:
+ * for ones that imply PDAGs that are especially close to the PDAG of the true model. The reference is here:
  * <p>
  * Lam, W. Y., Andrews, B., &amp; Ramsey, J. (2022, August). Greedy relaxations of the sparsest permutation algorithm.
  * In Uncertainty in Artificial Intelligence (pp. 1052-1062). PMLR.
@@ -180,35 +179,22 @@ public class Grasp {
     }
 
     /**
-     * Retrieves a graph based on specified parameters.
-     *
-     * @param cpDag True if a CPDAG (Completed Partially Directed Acyclic Graph) should be returned.
-     *              If false, a DAG (Directed Acyclic Graph) will be returned.
-     * @return A non-null Graph object, either a CPDAG or DAG depending on the input parameter.
-     */
-    public @NotNull Graph getGraph(boolean cpDag) {
-        return getGraph(cpDag, /*replicating*/ false);
-    }
-
-    /**
      * Returns the graph based on the specified parameters. If the parameter `replicating` is true,
      * a replicating graph is returned; otherwise, a regular graph is returned.
      *
-     * @param pdag      True if a CPDAG (Completed Partially Directed Acyclic Graph) should be returned,
-     *                   false if a DAG (Directed Acyclic Graph) should be returned.
-     * @param replicating True if a replicating graph, which applies a lag replication policy,
-     *                    should be returned.
-     * @return The generated graph, either a CPDAG or DAG, wrapped in a replicating graph
-     *         if `replicating` is true.
+     * @param pdag True if a PDAG (Completed Partially Directed Acyclic Graph) should be returned,
+     *             false if a DAG (Directed Acyclic Graph) should be returned.
+     * @return The generated graph, either a PDAG or DAG, wrapped in a replicating graph
+     * if `replicating` is true.
      */
-    public Graph getGraph(boolean pdag, boolean replicating) {
-        if (pdag && replicating) {
+    public Graph getGraph(boolean pdag) {
+        if (pdag && this.replicatingGraph) {
             throw new IllegalArgumentException("PDAGs are not guaranteed to be replicating graphs; please set the PDAG parameter to false.");
         }
 
         Graph g = this.scorer.getGraph(pdag);
 
-        if (replicating) {
+        if (this.replicatingGraph) {
             g = GraphUtils.getReplicatingGraph(g);
         }
 
