@@ -772,6 +772,11 @@ public final class Fcit implements IGraphSearch {
         this.excludeSelectionBias = excludeSelectionBias;
     }
 
+    /**
+     * Sets the maximum blocking path length.
+     *
+     * @param maxPathLength the maximum length for the blocking path to be set
+     */
     public void setMaxBlockingPathLength(int maxPathLength) {
         this.maxPathLength = maxPathLength;
     }

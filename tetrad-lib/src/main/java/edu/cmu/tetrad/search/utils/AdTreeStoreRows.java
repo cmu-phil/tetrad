@@ -214,10 +214,6 @@ public class AdTreeStoreRows {
         this.leaves = subdivisionsHolder[0];
     }
 
-    public void clearCache() {
-        subdivisionCache.clear();
-    }
-
     /**
      * Return the number of cells in the table.
      *

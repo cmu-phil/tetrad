@@ -111,12 +111,15 @@ public class TeyssierScorer {
      * @param knowledge Knowledge of forbidden edges.
      */
     public void setKnowledge(Knowledge knowledge) {
-        if (this.score instanceof GraphScore) {
-            throw new IllegalArgumentException(
-                    "Cannot set knowledge here if you're searching from a graph as Oracle.");
-        }
-
         this.knowledge = knowledge;
+
+        // If the test is GraphScore, this.trees won't have been populated, so
+        // we can't set the knowledge on the trees. We still need to set the
+        // knowledge on the score, though. This is an issue for GraSP-FCI, which
+        // uses the GraphScore to compute the score. jdramsey 2026-4-9
+        if (this.score instanceof GraphScore) {
+            return;
+        }
 
         for (Node node : this.variables) {
             List<Node> required = new ArrayList<>();
