@@ -142,22 +142,15 @@ public final class IndependenceTestModels {
     }
 
     private String getProperty(DataType dataType) {
-        switch (dataType) {
-            case Continuous:
-                return "datatype.continuous.test.default";
-            case ContinuousMixed:
-                return "datatype.continuous.test.mixed.default";
-            case ContinuousGeneral:
-                return "datatype.continuous.test.general.default";
-            case Discrete:
-                return "datatype.discrete.test.default";
-            case Mixed:
-                return "datatype.mixed.test.default";
-            case Blocks:
-                return "datatype.blocks.test.default";
-            default:
-                return null;
-        }
+        return switch (dataType) {
+            case Continuous -> "datatype.continuous.test.default";
+            case ContinuousMixed -> "datatype.continuous.test.mixed.default";
+            case ContinuousGeneral -> "datatype.continuous.test.general.default";
+            case Discrete -> "datatype.discrete.test.default";
+            case Mixed -> "datatype.mixed.test.default";
+            case Blocks -> "datatype.blocks.test.default";
+            default -> null;
+        };
     }
 
     /**
