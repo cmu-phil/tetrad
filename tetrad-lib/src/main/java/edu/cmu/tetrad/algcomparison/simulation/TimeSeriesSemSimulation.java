@@ -161,11 +161,6 @@ public class TimeSeriesSemSimulation implements Simulation, AcceptsKnowledge {
                 throw new RuntimeException(e);
             }
 
-            // This causes issues downstream when further time lag datasets are created, making for some weird
-            // variable names.
-//            int numLags = ((TimeLagGraph) graph).getMaxLag();
-//            dataSet = TsUtils.createLagData(dataSet, numLags);
-
             if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
                 double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
                 dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);

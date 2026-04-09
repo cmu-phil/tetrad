@@ -444,9 +444,7 @@ public class TsUtils {
         }
 
         knowledge.setDefaultToKnowledgeLayout(true);
-//        knowledge.setLagged(true);
         laggedData.setKnowledge(knowledge);
-//        laggedData.setName(data.getNode());
         return laggedData;
     }
 
