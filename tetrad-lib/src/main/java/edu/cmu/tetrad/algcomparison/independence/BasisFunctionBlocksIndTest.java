@@ -35,20 +35,20 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-///**
-// * Wrapper for BF-Blocks-Test.
-// *
-// * @author josephramsey
-// * @author bryanandrews
-// * @version $Id: $Id
-// */
-//@TestOfIndependence(
-//        name = "BF-Blocks-Test",
-//        command = "bf-blocks-test",
-//        dataType = DataType.Mixed
-//)
-//@Mixed
-//@General
+/**
+ * Wrapper for BF-Blocks-Test.
+ *
+ * @author josephramsey
+ * @author bryanandrews
+ * @version $Id: $Id
+ */
+@TestOfIndependence(
+        name = "BF-Blocks-Test",
+        command = "bf-blocks-test",
+        dataType = DataType.Mixed
+)
+@Mixed
+@General
 public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
 
     @Serial

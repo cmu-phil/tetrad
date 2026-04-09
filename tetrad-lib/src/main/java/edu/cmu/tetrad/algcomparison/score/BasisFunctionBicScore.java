@@ -34,16 +34,16 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-///**
-// * Wrapper for Basis Function BIC Score (Basis-BIC) version.
-// *
-// * @author josephramsey
-// * @author bryanandrews
-// * @version $Id: $Id
-// */
-//@edu.cmu.tetrad.annotation.Score(name = "BF-SEM-BIC", command = "bf-sem-bic-score", dataType = DataType.Mixed)
-//@Mixed
-//@General
+/**
+ * Wrapper for Basis Function BIC Score (Basis-BIC) version.
+ *
+ * @author josephramsey
+ * @author bryanandrews
+ * @version $Id: $Id
+ */
+@edu.cmu.tetrad.annotation.Score(name = "BF-SEM-BIC", command = "bf-sem-bic-score", dataType = DataType.Mixed)
+@Mixed
+@General
 public class BasisFunctionBicScore implements ScoreWrapper {
 
     @Serial
