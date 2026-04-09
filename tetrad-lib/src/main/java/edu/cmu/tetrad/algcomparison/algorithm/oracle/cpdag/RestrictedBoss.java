@@ -173,7 +173,7 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm
         }
 
         List<Node> restrictedList = new ArrayList<>(restrictedSet);
-        restrictedList.sort(NaturalSort.naturalComparator());
+        restrictedList.sort(NaturalSort.    naturalComparator());
 
         DataSet restrictedData = dataSet.subsetColumns(restrictedList);
 
