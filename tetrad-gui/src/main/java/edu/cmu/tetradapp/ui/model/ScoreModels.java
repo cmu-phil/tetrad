@@ -71,13 +71,11 @@ public final class ScoreModels {
     }
 
     private void initModelMap() {
-        // initialize enum map
         DataType[] dataTypes = DataType.values();
         for (DataType dataType : dataTypes) {
             this.modelMap.put(dataType, new LinkedList<>());
         }
 
-        // group by datatype
         this.models.forEach(e -> {
             DataType[] types = e.getScore().annotation().dataType();
             for (DataType dataType : types) {
@@ -86,25 +84,22 @@ public final class ScoreModels {
         });
 
         // merge continuous datatype with mixed datatype
-        List<ScoreModel> mergedModels = Stream.concat(this.modelMap.get(DataType.Continuous).stream(), this.modelMap.get(DataType.Mixed).stream())
+        List<ScoreModel> mergedModels = Stream.concat(
+                        this.modelMap.get(DataType.Continuous).stream(),
+                        this.modelMap.get(DataType.Mixed).stream())
                 .sorted()
                 .collect(Collectors.toList());
         this.modelMap.put(DataType.Continuous, mergedModels);
 
         // merge discrete datatype with mixed datatype
-        mergedModels = Stream.concat(this.modelMap.get(DataType.Discrete).stream(), this.modelMap.get(DataType.Mixed).stream())
+        mergedModels = Stream.concat(
+                        this.modelMap.get(DataType.Discrete).stream(),
+                        this.modelMap.get(DataType.Mixed).stream())
                 .sorted()
                 .collect(Collectors.toList());
         this.modelMap.put(DataType.Discrete, mergedModels);
 
-        List<ScoreModel> continuousMixedModels = Stream.concat(
-                        this.modelMap.get(DataType.Continuous).stream(),
-                        this.modelMap.get(DataType.ContinuousMixed).stream())
-                .distinct()
-                .sorted()
-                .collect(Collectors.toList());
-        this.modelMap.put(DataType.ContinuousMixed, continuousMixedModels);
-
+        // ContinuousGeneral gets the same models as Continuous
         List<ScoreModel> continuousGeneralModels = Stream.concat(
                         this.modelMap.get(DataType.Continuous).stream(),
                         this.modelMap.get(DataType.ContinuousGeneral).stream())
@@ -113,8 +108,18 @@ public final class ScoreModels {
                 .collect(Collectors.toList());
         this.modelMap.put(DataType.ContinuousGeneral, continuousGeneralModels);
 
-        // make map values unmodifiable
         this.modelMap.forEach((k, v) -> this.modelMap.put(k, Collections.unmodifiableList(v)));
+    }
+
+    private String getProperty(DataType dataType) {
+        return switch (dataType) {
+            case Continuous -> "datatype.continuous.score.default";
+            case ContinuousGeneral -> "datatype.continuous.score.general.default";
+            case Discrete -> "datatype.discrete.score.default";
+            case Mixed -> "datatype.mixed.score.default";
+            case Blocks -> "datatype.blocks.score.default";
+            case Covariance, Graph, All -> null;
+        };
     }
 
     private void initDefaultModelMap() {
@@ -138,18 +143,6 @@ public final class ScoreModels {
                 }
             }
         }
-    }
-
-    private String getProperty(DataType dataType) {
-        return switch (dataType) {
-            case Continuous -> "datatype.continuous.score.default";
-            case ContinuousMixed -> "datatype.continuous.score.mixed.default";
-            case ContinuousGeneral -> "datatype.continuous.score.general.default";
-            case Discrete -> "datatype.discrete.score.default";
-            case Mixed -> "datatype.mixed.score.default";
-            case Blocks -> "datatype.blocks.score.default";
-            default -> null;
-        };
     }
 
     /**

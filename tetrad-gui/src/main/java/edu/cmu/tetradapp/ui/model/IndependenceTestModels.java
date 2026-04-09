@@ -70,13 +70,11 @@ public final class IndependenceTestModels {
     }
 
     private void initModelMap() {
-        // initialize enum map
         DataType[] dataTypes = DataType.values();
         for (DataType dataType : dataTypes) {
             this.modelMap.put(dataType, new LinkedList<>());
         }
 
-        // group by datatype
         this.models.forEach(e -> {
             DataType[] types = e.getIndependenceTest().annotation().dataType();
             for (DataType dataType : types) {
@@ -85,27 +83,22 @@ public final class IndependenceTestModels {
         });
 
         // merge continuous datatype with mixed datatype
-        List<IndependenceTestModel> mergedModels = Stream.concat(this.modelMap.get(DataType.Continuous).stream(), this.modelMap.get(DataType.Mixed).stream())
+        List<IndependenceTestModel> mergedModels = Stream.concat(
+                        this.modelMap.get(DataType.Continuous).stream(),
+                        this.modelMap.get(DataType.Mixed).stream())
                 .sorted()
                 .collect(Collectors.toList());
         this.modelMap.put(DataType.Continuous, mergedModels);
 
         // merge discrete datatype with mixed datatype
-        mergedModels = Stream.concat(this.modelMap.get(DataType.Discrete).stream(), this.modelMap.get(DataType.Mixed).stream())
+        mergedModels = Stream.concat(
+                        this.modelMap.get(DataType.Discrete).stream(),
+                        this.modelMap.get(DataType.Mixed).stream())
                 .sorted()
                 .collect(Collectors.toList());
         this.modelMap.put(DataType.Discrete, mergedModels);
 
-        // ContinuousGeneral gets the same models as Continuous (General-annotated ones will be filtered by AlgorithmCard)
-        List<IndependenceTestModel> continuousMixedModels = Stream.concat(
-                        this.modelMap.get(DataType.Continuous).stream(),
-                        this.modelMap.get(DataType.ContinuousMixed).stream())
-                .distinct()
-                .sorted()
-                .collect(Collectors.toList());
-        this.modelMap.put(DataType.ContinuousMixed, continuousMixedModels);
-
-        // ContinuousGeneral gets the same models as Continuous (General-annotated ones will be filtered by AlgorithmCard)
+        // ContinuousGeneral gets the same models as Continuous
         List<IndependenceTestModel> continuousGeneralModels = Stream.concat(
                         this.modelMap.get(DataType.Continuous).stream(),
                         this.modelMap.get(DataType.ContinuousGeneral).stream())
@@ -114,7 +107,6 @@ public final class IndependenceTestModels {
                 .collect(Collectors.toList());
         this.modelMap.put(DataType.ContinuousGeneral, continuousGeneralModels);
 
-        // make map values unmodifiable
         this.modelMap.forEach((k, v) -> this.modelMap.put(k, Collections.unmodifiableList(v)));
     }
 
@@ -144,7 +136,6 @@ public final class IndependenceTestModels {
     private String getProperty(DataType dataType) {
         return switch (dataType) {
             case Continuous -> "datatype.continuous.test.default";
-            case ContinuousMixed -> "datatype.continuous.test.mixed.default";
             case ContinuousGeneral -> "datatype.continuous.test.general.default";
             case Discrete -> "datatype.discrete.test.default";
             case Mixed -> "datatype.mixed.test.default";
