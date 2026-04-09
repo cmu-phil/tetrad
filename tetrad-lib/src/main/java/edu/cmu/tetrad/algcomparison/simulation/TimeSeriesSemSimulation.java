@@ -126,10 +126,6 @@ public class TimeSeriesSemSimulation implements Simulation, AcceptsKnowledge {
      */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-//        if (parameters.getLong(Params.SEED) != -1L) {
-//            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
-//        }
-
         this.dataSets = new ArrayList<>();
         this.graphs = new ArrayList<>();
 
