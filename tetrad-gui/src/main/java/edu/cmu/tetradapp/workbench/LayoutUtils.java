@@ -538,7 +538,7 @@ public class LayoutUtils {
      *
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
      */
-    public static void knowledgeLayout(LayoutEditable layoutEditable) {
+    public static void layoutByKnowledgeIndices(LayoutEditable layoutEditable) {
         Graph graph = new EdgeListGraph(layoutEditable.getGraph());
 
         try {
@@ -549,7 +549,7 @@ public class LayoutUtils {
                 }
             }
 
-            GraphSearchUtils.arrangeByKnowledgeTiers(graph);
+            GraphSearchUtils.layoutByKnowledgeIndices(graph);
             layoutEditable.layoutByGraph(graph);
         } catch (Exception e1) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -721,7 +721,7 @@ public class LayoutUtils {
                 LayoutUtils.sourceGraphLayout(layoutEditable);
                 break;
             case knowledge:
-                LayoutUtils.knowledgeLayout(layoutEditable);
+                LayoutUtils.layoutByKnowledgeIndices(layoutEditable);
                 break;
             case circle:
                 LayoutUtils.circleLayout(layoutEditable);

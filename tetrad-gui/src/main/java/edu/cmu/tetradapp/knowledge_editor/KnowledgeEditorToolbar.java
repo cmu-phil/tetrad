@@ -230,7 +230,7 @@ class KnowledgeEditorToolbar extends JPanel {
             KnowledgeGraph graph = (KnowledgeGraph) this.workbench.getGraph();
             Knowledge knowledge = graph.getKnowledge();
             try {
-                GraphSearchUtils.arrangeByKnowledgeTiers(graph, knowledge);
+                GraphSearchUtils.layoutByKnowledgeTiers(graph, knowledge);
                 this.workbench.setGraph(graph);
             } catch (IllegalArgumentException ex) {
                 System.out.print(ex.getMessage());

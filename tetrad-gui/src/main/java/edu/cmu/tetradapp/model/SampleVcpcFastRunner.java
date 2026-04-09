@@ -265,7 +265,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
         if (getSourceGraph() != null) {
             LayoutUtil.arrangeBySourceGraph(graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
-            GraphSearchUtils.arrangeByKnowledgeTiers(graph, knowledge);
+            GraphSearchUtils.layoutByKnowledgeTiers(graph, knowledge);
         } else {
             LayoutUtil.defaultLayout(graph);
         }

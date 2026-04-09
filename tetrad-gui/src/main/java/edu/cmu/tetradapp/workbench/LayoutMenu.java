@@ -191,7 +191,7 @@ public class LayoutMenu extends JMenu {
             this.add(knowledgeTiersLayout);
 
             knowledgeTiersLayout.addActionListener(e -> {
-                GraphSearchUtils.arrangeByKnowledgeTiers(getLayoutEditable().getGraph(), getLayoutEditable().getKnowledge());
+                GraphSearchUtils.layoutByKnowledgeTiers(getLayoutEditable().getGraph(), getLayoutEditable().getKnowledge());
                 getLayoutEditable().layoutByGraph(getLayoutEditable().getGraph());
 
                 // Copy the laid out graph to the clipboard.
@@ -203,7 +203,7 @@ public class LayoutMenu extends JMenu {
         this.add(knowledgeLayout);
 
         knowledgeLayout.addActionListener(e -> {
-            LayoutUtils.knowledgeLayout(LayoutMenu.this.getLayoutEditable());
+            LayoutUtils.layoutByKnowledgeIndices(LayoutMenu.this.getLayoutEditable());
 
             // Copy the laid out graph to the clipboard.
             LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);

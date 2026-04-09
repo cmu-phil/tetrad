@@ -635,7 +635,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         // Final layout pass by knowledge tiers (if any)
         if (knowledge != null && knowledge.getNumTiers() > 0) {
             for (Graph graph : graphList) {
-                GraphSearchUtils.arrangeByKnowledgeTiers(graph, knowledge);
+                GraphSearchUtils.layoutByKnowledgeTiers(graph, knowledge);
             }
         } else {
             for (Graph graph : graphList) {

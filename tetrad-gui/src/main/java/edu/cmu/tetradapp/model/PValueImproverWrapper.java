@@ -374,7 +374,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         if (getSourceGraph() != null) {
             LayoutUtil.arrangeBySourceGraph(this.graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
-            GraphSearchUtils.arrangeByKnowledgeTiers(this.graph, knowledge);
+            GraphSearchUtils.layoutByKnowledgeTiers(this.graph, knowledge);
         } else {
             LayoutUtil.defaultLayout(this.graph);
         }
