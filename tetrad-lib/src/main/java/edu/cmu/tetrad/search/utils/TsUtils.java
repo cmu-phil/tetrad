@@ -74,7 +74,6 @@ public class TsUtils {
         }
 
         Regression regression = new RegressionDataset(timeLags);
-//        Regression regression = new RegressionDatasetGeneralized(timeLags);
 
         Matrix residuals = new Matrix(timeLags.getNumRows(), timeSeries.getNumColumns());
 
@@ -82,7 +81,6 @@ public class TsUtils {
             Node target = timeLags.getVariable(i);
             RegressionResult result = regression.regress(target, regressors);
             Vector residualsColumn = result.getResiduals();
-//            residuals.viewColumn(i).assign(residualsColumn);
             residuals.assignColumn(i, residualsColumn);
         }
 
@@ -223,7 +221,6 @@ public class TsUtils {
 
             RegressionResult result = regression.regress(target, regressors);
             Vector residualsColumn = result.getResiduals();
-//            residuals.viewColumn(i).assign(residualsColumn);
             residuals.assignColumn(i, residualsColumn);
         }
 
@@ -334,7 +331,6 @@ public class TsUtils {
             }
 
             Vector residualsColumn = result.getResiduals();
-//            residuals.viewColumn(i).assign(residualsColumn);
             residuals.assignColumn(i, residualsColumn);
         }
 
@@ -409,7 +405,6 @@ public class TsUtils {
                 newVariables.add(laggedNode);
                 laggedNode.setCenter(80 * col + 50, 80 * (numLags - lag) + 50);
                 laggedNodes[lag][col] = laggedNode;
-//                knowledge.addToTier(numLags - lag, laggedNode.getName());
             }
         }
 
@@ -476,19 +471,12 @@ public class TsUtils {
 
     }
 
-//    public static TimeLagGraph graphToLagGraph(Graph _graph, int numLags) {
-//        // Backward-compatible default: roughly matches your old ~0.15 density when n~10
-//        final double defaultAvgOutDeg = 0.15 * TMath.max(0, _graph.getNodes().size() - 1);
-//        final int noHardMax = -1;
-//        return graphToLagGraph(_graph, numLags, defaultAvgOutDeg, noHardMax, 0.05);
-//    }
-
     /**
      * Converts a directed graph into a time-lagged graph representation.
      * The resulting graph includes lagged copies of nodes, self-lagged edges,
      * contemporaneous edges, and probabilistically generated inter-variable lagged edges up to the specified maximum lag.
      *
-     * @param _graph The base directed graph to be converted. Must only contain directed edges.
+     * @param _graph The base DAG graph to be converted. Must only contain directed edges.
      *               Throws IllegalArgumentException if the input graph is not fully directed.
      * @param numLags The maximum number of lags to include in the time-lagged graph.
      * @param extraLaggedEdges The number of extra lagged edges to include in the time-lagged graph.
@@ -668,22 +656,18 @@ public class TsUtils {
             }
         });
 
-//        System.out.println("Variable list after the sort = " + variables);
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
-//                laglist.add(lag);
             } else {
                 tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
-//                laglist.add(lag);
             }
             knowledge.addToTier(numLags - lag, node.getName());
         }
 
-        //System.out.println("Knowledge in graph = " + knowledge);
         return knowledge;
     }
 
