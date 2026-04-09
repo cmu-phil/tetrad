@@ -954,6 +954,7 @@ public class AlgorithmCard extends JPanel {
             this.updatingTestModels = true;
             this.indTestComboBox.setSelectedItem(testModel);
             this.updatingTestModels = false;
+            setIndepTestDescription();
 
         } else {
             this.indTestComboBox.setEnabled(false);
@@ -1040,6 +1041,7 @@ public class AlgorithmCard extends JPanel {
             this.updatingScoreModels = true;
             this.scoreComboBox.setSelectedItem(scoreModel);
             this.updatingScoreModels = false;
+            setScoreDescription();
 
         } else {
             this.scoreComboBox.setEnabled(false);
