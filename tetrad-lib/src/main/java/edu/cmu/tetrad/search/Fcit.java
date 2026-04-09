@@ -292,7 +292,7 @@ public final class Fcit implements IGraphSearch {
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
         fciOrient.setParallel(true);
-        fciOrient.setCompleteRuleSetUsed(true);
+//        fciOrient.setCompleteRuleSetUsed(true);
         fciOrient.setKnowledge(knowledge);
 
         Graph dag;
@@ -338,7 +338,7 @@ public final class Fcit implements IGraphSearch {
             long start = MillisecondTimes.wallTimeMillis();
 
             Grasp grasp = getGraspSearch();
-            grasp.setReplicatingGraph(this.replicatingGraph);
+            grasp.setReplicatingGraph(replicatingGraph);
             best = grasp.bestOrder(nodes);
             dag = grasp.getGraph(false);
 
@@ -582,11 +582,11 @@ public final class Fcit implements IGraphSearch {
 
             Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
 
-            // Use recursive blocking to propose a blocking set B; null => no sepset under this NF
-//            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1);
-            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, maxPathLength, this.knowledge);
+            // Use recursive blocking to propose a blocking set B; null => no sepset
+            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, maxPathLength);
+
             if (B == null) {
-                continue; // No separating set possible for this NF; try another NF
+                continue;
             }
 
             // Trim B by removing a subset C of common neighbors of x and y (only those present in B)
