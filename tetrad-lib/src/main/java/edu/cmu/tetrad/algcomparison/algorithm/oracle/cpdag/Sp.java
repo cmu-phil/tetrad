@@ -109,6 +109,7 @@ public class Sp extends AbstractBootstrapAlgorithm implements Algorithm, TakesSc
         edu.cmu.tetrad.search.Sp suborderSearch = new edu.cmu.tetrad.search.Sp(myScore);
         PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(this.knowledge);
+        permutationSearch.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         Graph graph = permutationSearch.search(parameters.getBoolean(Params.OUTPUT_PDAG));
         LogUtilsSearch.stampWithScore(graph, myScore);
         LogUtilsSearch.stampWithBic(graph, dataModel);
@@ -148,6 +149,7 @@ public class Sp extends AbstractBootstrapAlgorithm implements Algorithm, TakesSc
         ArrayList<String> params = new ArrayList<>();
         params.add(Params.OUTPUT_PDAG);
         params.add(Params.TIME_LAG);
+        params.add(Params.TIME_LAG_REPLICATING_GRAPH);
         return params;
     }
 

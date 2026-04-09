@@ -182,13 +182,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
 
-        Graph graph = search.search();
-
-//        if (parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH)) {
-//            graph = GraphUtils.getReplicatingGraph(graph);
-//        }
-
-        return graph;
+        return search.search();
     }
 
     /**
