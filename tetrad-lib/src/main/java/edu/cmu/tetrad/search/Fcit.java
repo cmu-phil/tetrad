@@ -467,6 +467,12 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
 
+        if (replicatingGraph) {
+            pag = GraphUtils.getReplicatingGraph(pag);
+            redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, excludeSelectionBias, superVerbose);
+//            fciOrient.finalOrientation(pag);
+        }
+
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
 

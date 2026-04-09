@@ -178,8 +178,6 @@ public class PermutationSearch {
                                  Knowledge knowledge,
                                  boolean cpDag,
                                  boolean replicating) {
-//        if (replicating && cpDag)
-//            throw new IllegalArgumentException("PDAGs do not guarantee replication; the PDAG option should be to false.");
         Graph graph = new EdgeListGraph(nodes);
 
         for (Node child : nodes) {
@@ -190,11 +188,14 @@ public class PermutationSearch {
 
         if (replicating) {
             graph = GraphUtils.getReplicatingGraph(graph);
-        } else if (cpDag) {
+            graph = new EdgeListGraph(graph);
+        }
+
+        if (cpDag) {
             MeekRules rules = new MeekRules();
             if (knowledge != null) rules.setKnowledge(knowledge);
             rules.setVerbose(false);
-            rules.orientImplied(graph); // setEndpoint/edge ops mirror automatically if replicating
+            rules.orientImplied(graph);
         }
 
         return graph;

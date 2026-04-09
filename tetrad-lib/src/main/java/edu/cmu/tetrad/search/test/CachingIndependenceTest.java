@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NaturalSort;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A caching wrapper for IndependenceTest.
@@ -39,7 +40,7 @@ public class CachingIndependenceTest implements IndependenceTest {
     private final IndependenceTest base;
 
     // Canonical key -> cached result
-    private final Map<CacheKey, IndependenceResult> cache = new HashMap<>();
+    private final Map<CacheKey, IndependenceResult> cache = new ConcurrentHashMap<>();
 
     /**
      * Constructs a caching wrapper for an IndependenceTest. This wrapper ensures that each unique

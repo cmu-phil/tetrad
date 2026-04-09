@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -188,18 +189,18 @@ public class Grasp {
      * if `replicating` is true.
      */
     public Graph getGraph(boolean cpdag) {
-        if (cpdag && this.replicatingGraph) {
-            cpdag = false;
-//            throw new IllegalArgumentException("PDAGs are not guaranteed to be replicating graphs; please set the PDAG parameter to false.");
-        }
-
-        Graph g;
+        Graph g = this.scorer.getGraph(false);
 
         if (this.replicatingGraph) {
-            g = this.scorer.getGraph(false);
             g = GraphUtils.getReplicatingGraph(g);
-        } else {
-            g = this.scorer.getGraph(cpdag);
+            g = new EdgeListGraph(g);
+        }
+
+        if (cpdag) {
+            MeekRules rules = new MeekRules();
+            if (knowledge != null) rules.setKnowledge(knowledge);
+            rules.setVerbose(false);
+            rules.orientImplied(g);
         }
 
         return g;
@@ -485,9 +486,9 @@ public class Grasp {
 
         if (this.verbose) {
             TetradLogger.getInstance().log("# Edges = " + scorer.getNumEdges()
-                                           + " Score = " + scorer.score()
-                                           + " (GRaSP)"
-                                           + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
+                    + " Score = " + scorer.score()
+                    + " (GRaSP)"
+                    + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
         }
 
         return scorer.getPi();
