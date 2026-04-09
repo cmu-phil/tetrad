@@ -451,10 +451,6 @@ public class Pc implements IGraphSearch {
         Graph g = fas.search(nodes);
         SepsetMap sepsets = fas.getSepsets();
 
-//        if (this.replicatingGraph) {
-//            g = new ReplicatingGraph(g, new LagReplicationPolicy());
-//        }
-
         // Phase 2: orient v-structures
         orientUnshieldedTriples(g, sepsets);
 
