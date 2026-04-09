@@ -141,22 +141,15 @@ public final class ScoreModels {
     }
 
     private String getProperty(DataType dataType) {
-        switch (dataType) {
-            case Continuous:
-                return "datatype.continuous.score.default";
-            case ContinuousMixed:
-                return "datatype.continuous.score.mixed.default";
-            case ContinuousGeneral:
-                return "datatype.continuous.score.general.default";
-            case Discrete:
-                return "datatype.discrete.score.default";
-            case Mixed:
-                return "datatype.mixed.score.default";
-            case Blocks:
-                return "datatype.blocks.score.default";
-            default:
-                return null;
-        }
+        return switch (dataType) {
+            case Continuous -> "datatype.continuous.score.default";
+            case ContinuousMixed -> "datatype.continuous.score.mixed.default";
+            case ContinuousGeneral -> "datatype.continuous.score.general.default";
+            case Discrete -> "datatype.discrete.score.default";
+            case Mixed -> "datatype.mixed.score.default";
+            case Blocks -> "datatype.blocks.score.default";
+            default -> null;
+        };
     }
 
     /**
