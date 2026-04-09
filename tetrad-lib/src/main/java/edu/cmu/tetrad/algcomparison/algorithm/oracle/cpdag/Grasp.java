@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -127,12 +127,12 @@ public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, Take
         grasp.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         grasp.setAllowInternalRandomness(parameters.getBoolean(Params.ALLOW_INTERNAL_RANDOMNESS));
         grasp.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        grasp.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
 
         grasp.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         grasp.setKnowledge(this.knowledge);
         grasp.bestOrder(myScore.getVariables());
-        Graph graph = grasp.getGraph(parameters.getBoolean(Params.OUTPUT_PDAG)
-        )   ;
+        Graph graph = grasp.getGraph(parameters.getBoolean(Params.OUTPUT_PDAG));
         LogUtilsSearch.stampWithScore(graph, myScore);
         LogUtilsSearch.stampWithBic(graph, dataModel);
 
@@ -154,7 +154,7 @@ public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, Take
     @Override
     public String getDescription() {
         return "GRaSP (Greedy Relaxed Sparsest Permutation) using " + this.test.getDescription()
-               + " or " + this.score.getDescription();
+                + " or " + this.score.getDescription();
     }
 
     /**

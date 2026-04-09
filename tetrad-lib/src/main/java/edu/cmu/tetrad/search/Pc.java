@@ -451,6 +451,10 @@ public class Pc implements IGraphSearch {
         Graph g = fas.search(nodes);
         SepsetMap sepsets = fas.getSepsets();
 
+//        if (this.replicatingGraph) {
+//            g = new ReplicatingGraph(g, new LagReplicationPolicy());
+//        }
+
         // Phase 2: orient v-structures
         orientUnshieldedTriples(g, sepsets);
 
@@ -461,10 +465,6 @@ public class Pc implements IGraphSearch {
 
         // Phase 3: Meek R1-R4 to closure
         applyMeekRules(g);
-
-        if (replicatingGraph) {
-            g = GraphUtils.getReplicatingGraph(g);
-        }
 
         return g;
     }

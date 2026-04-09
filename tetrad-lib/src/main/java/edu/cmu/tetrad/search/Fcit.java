@@ -137,8 +137,9 @@ public final class Fcit implements IGraphSearch {
      * instantiated to an empty graph structure.
      */
     private @NotNull Graph pag = new EdgeListGraph();
-    private boolean replicatingGraph = false;
     private boolean excludeSelectionBias = false;
+    private int maxPathLength = -1;
+    private boolean replicatingGraph = false;
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -291,8 +292,8 @@ public final class Fcit implements IGraphSearch {
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
         fciOrient.setParallel(true);
-//        fciOrient.setCompleteRuleSetUsed(true);
-//        fciOrient.setKnowledge(knowledge);
+        fciOrient.setCompleteRuleSetUsed(true);
+        fciOrient.setKnowledge(knowledge);
 
         Graph dag;
         List<Node> best;
@@ -312,6 +313,7 @@ public final class Fcit implements IGraphSearch {
 
             PermutationSearch alg = getBossSearch();
             alg.setKnowledge(knowledge);
+            alg.setReplicatingGraph(this.replicatingGraph);
 
             dag = alg.search(false);
             best = dag.paths().getValidOrder(dag.getNodes(), true);
@@ -336,7 +338,7 @@ public final class Fcit implements IGraphSearch {
             long start = MillisecondTimes.wallTimeMillis();
 
             Grasp grasp = getGraspSearch();
-            grasp.setReplicatingGraph(replicatingGraph);
+            grasp.setReplicatingGraph(this.replicatingGraph);
             best = grasp.bestOrder(nodes);
             dag = grasp.getGraph(false);
 
@@ -403,6 +405,10 @@ public final class Fcit implements IGraphSearch {
         // Initializing the PAG and identifying initial colliders.
         this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias);
 
+        if (replicatingGraph) {
+            this.pag = new ReplicatingGraph(pag, new LagReplicationPolicy());
+        }
+
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
         // In what follows, we look for sepsets to remove edges. After every removal we rebuild the PAG and
@@ -430,7 +436,8 @@ public final class Fcit implements IGraphSearch {
             TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
         }
 
-        return GraphUtils.replaceNodes(this.pag, nodes);
+        Graph graph = GraphUtils.replaceNodes(this.pag, nodes);
+        return new EdgeListGraph(graph);
     }
 
     /**
@@ -448,7 +455,6 @@ public final class Fcit implements IGraphSearch {
         subAlg.setNumThreads(Runtime.getRuntime().availableProcessors());
         subAlg.setVerbose(superVerbose);
         PermutationSearch alg = new PermutationSearch(subAlg);
-        alg.setReplicatingGraph(replicatingGraph);
         alg.setKnowledge(knowledge);
         return alg;
     }
@@ -577,8 +583,8 @@ public final class Fcit implements IGraphSearch {
             Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
 
             // Use recursive blocking to propose a blocking set B; null => no sepset under this NF
-            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1);
-//            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1, this.knowledge);
+//            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1);
+            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, maxPathLength, this.knowledge);
             if (B == null) {
                 continue; // No separating set possible for this NF; try another NF
             }
@@ -764,6 +770,10 @@ public final class Fcit implements IGraphSearch {
      */
     public void setExcludeSelectionBias(boolean excludeSelectionBias) {
         this.excludeSelectionBias = excludeSelectionBias;
+    }
+
+    public void setMaxBlockingPathLength(int maxPathLength) {
+        this.maxPathLength = maxPathLength;
     }
 
     /**

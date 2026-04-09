@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -33,7 +33,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.test.CachingIndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -196,10 +196,12 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, Accept
         parameters.add(Params.DO_POSSIBLE_DSEP);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.FDR_Q);
-        parameters.add(Params.TIME_LAG);
         parameters.add(Params.EXCLUDE_SELECTION_BIAS);
-//        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
         parameters.add(Params.GUARANTEE_PAG);
+
+        parameters.add(Params.TIME_LAG);
+        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
+
         parameters.add(Params.VERBOSE);
 
         return parameters;

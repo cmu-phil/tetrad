@@ -111,6 +111,11 @@ public class TeyssierScorer {
      * @param knowledge Knowledge of forbidden edges.
      */
     public void setKnowledge(Knowledge knowledge) {
+        if (this.score instanceof GraphScore) {
+            throw new IllegalArgumentException(
+                    "Cannot set knowledge here if you're searching from a graph as Oracle.");
+        }
+
         this.knowledge = knowledge;
 
         for (Node node : this.variables) {

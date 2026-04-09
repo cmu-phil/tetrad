@@ -495,53 +495,111 @@ public class TsUtils {
      * @return A time-lagged graph representation of the input graph with the specified properties.
      *         The resulting graph includes lagged nodes, self-lagged edges, and probabilistically generated lagged edges.
      */
+//    public static TimeLagGraph graphToLagGraph(Graph _graph, int numLags, double lagEdgeProb) {
+//        lagEdgeProb = 0.05;
+//
+//        TimeLagGraph graph = new TimeLagGraph();
+//        graph.setMaxLag(numLags);
+//
+//        // Add lagged copies of each node (Lag 0 to Lag numLags)
+//        for (Node node : _graph.getNodes()) {
+//            Node graphNode = new ContinuousVariable(node.getName());
+//            graphNode.setNodeType(node.getNodeType());
+//            graph.addNode(graphNode);
+//
+//            // Add intra-variable lag edge (self lag connection)
+//            Node from = graph.getNode(node.getName(), 1);
+//            Node to = graph.getNode(node.getName(), 0);
+//            Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
+//            graph.addEdge(edge);
+//        }
+//
+//        // Add contemporaneous edges (lag 0)
+//        for (Edge edge : _graph.getEdges()) {
+//            if (!Edges.isDirectedEdge(edge)) {
+//                throw new IllegalArgumentException("Base graph must be fully directed.");
+//            }
+//
+//            Node from = edge.getNode1();
+//            Node to = edge.getNode2();
+//            Node _from = graph.getNode(from.getName(), 0);
+//            Node _to = graph.getNode(to.getName(), 0);
+//            Edge edge1 = new Edge(_from, _to, Endpoint.TAIL, Endpoint.ARROW);
+//            graph.addEdge(edge1);
+//        }
+//
+//        // Add lagged inter-variable edges probabilistically
+//        RandomUtil random = RandomUtil.getInstance();
+//
+//        for (int lag = 1; lag <= numLags; lag++) {
+//            for (Node node1 : graph.getLag0Nodes()) {
+//                Node from = graph.getNode(node1.getName(), lag);
+//                for (Node node2 : graph.getLag0Nodes()) {
+//                    if (node1.getName().equals(node2.getName())) continue;
+//
+//                    // Use configurable probability
+//                    if (random.nextUniform(0, 1) <= lagEdgeProb) {
+//                        Node to = graph.getNode(node2.getName(), 0);
+//                        Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
+//                        graph.addEdge(edge);
+//                    }
+//                }
+//            }
+//        }
+//
+//        return graph;
+//    }
+
+
     public static TimeLagGraph graphToLagGraph(Graph _graph, int numLags, double lagEdgeProb) {
-        lagEdgeProb = 0.05;
+        if (_graph == null) throw new NullPointerException("Base graph must not be null.");
+        if (numLags < 1) throw new IllegalArgumentException("numLags must be >= 1, got: " + numLags);
+        if (lagEdgeProb < 0 || lagEdgeProb > 1) throw new IllegalArgumentException("lagEdgeProb must be in [0, 1], got: " + lagEdgeProb);
 
-        TimeLagGraph graph = new TimeLagGraph();
-        graph.setMaxLag(numLags);
-
-        // Add lagged copies of each node (Lag 0 to Lag numLags)
-        for (Node node : _graph.getNodes()) {
-            Node graphNode = new ContinuousVariable(node.getName());
-            graphNode.setNodeType(node.getNodeType());
-            graph.addNode(graphNode);
-
-            // Add intra-variable lag edge (self lag connection)
-            Node from = graph.getNode(node.getName(), 1);
-            Node to = graph.getNode(node.getName(), 0);
-            Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
-            graph.addEdge(edge);
-        }
-
-        // Add contemporaneous edges (lag 0)
         for (Edge edge : _graph.getEdges()) {
             if (!Edges.isDirectedEdge(edge)) {
                 throw new IllegalArgumentException("Base graph must be fully directed.");
             }
-
-            Node from = edge.getNode1();
-            Node to = edge.getNode2();
-            Node _from = graph.getNode(from.getName(), 0);
-            Node _to = graph.getNode(to.getName(), 0);
-            Edge edge1 = new Edge(_from, _to, Endpoint.TAIL, Endpoint.ARROW);
-            graph.addEdge(edge1);
         }
 
-        // Add lagged inter-variable edges probabilistically
+        TimeLagGraph graph = new TimeLagGraph();
+        graph.setMaxLag(numLags);
+
+        // Add lag-0 nodes
+        for (Node node : _graph.getNodes()) {
+            Node graphNode = new ContinuousVariable(node.getName());
+            graphNode.setNodeType(node.getNodeType());
+            graph.addNode(graphNode);
+        }
+
+        // Add self-lag edges: X:lag -> X:0 for each lag 1..numLags
+        for (Node node : _graph.getNodes()) {
+            for (int lag = 1; lag <= numLags; lag++) {
+                Node from = graph.getNode(node.getName(), lag);
+                Node to   = graph.getNode(node.getName(), 0);
+                graph.addEdge(new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW));
+            }
+        }
+
+        // Add contemporaneous edges at lag 0 (structural edges from base graph)
+        for (Edge edge : _graph.getEdges()) {
+            Node from = graph.getNode(edge.getNode1().getName(), 0);
+            Node to   = graph.getNode(edge.getNode2().getName(), 0);
+            graph.addEdge(new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW));
+        }
+
+        // Add lagged inter-variable edges probabilistically for lag 1..numLags
         RandomUtil random = RandomUtil.getInstance();
 
         for (int lag = 1; lag <= numLags; lag++) {
-            for (Node node1 : graph.getLag0Nodes()) {
-                Node from = graph.getNode(node1.getName(), lag);
-                for (Node node2 : graph.getLag0Nodes()) {
-                    if (node1.getName().equals(node2.getName())) continue;
+            for (Node from0 : _graph.getNodes()) {
+                for (Node to0 : _graph.getNodes()) {
+                    if (from0.getName().equals(to0.getName())) continue;
 
-                    // Use configurable probability
-                    if (random.nextUniform(0, 1) <= lagEdgeProb) {
-                        Node to = graph.getNode(node2.getName(), 0);
-                        Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
-                        graph.addEdge(edge);
+                    if (random.nextUniform(0, 1) < lagEdgeProb) {
+                        Node from = graph.getNode(from0.getName(), lag);
+                        Node to   = graph.getNode(to0.getName(), 0);
+                        graph.addEdge(new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW));
                     }
                 }
             }
@@ -549,7 +607,6 @@ public class TsUtils {
 
         return graph;
     }
-
 
 
 //    /**

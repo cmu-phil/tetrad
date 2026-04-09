@@ -110,6 +110,7 @@ public class Fas implements IFas {
      * alternative destinations.
      */
     private PrintStream out = System.out;
+    private boolean replicatingGraph = false;
 
     /**
      * Constructs a new instance of the Fas algorithm using the specified independence test.
@@ -187,7 +188,14 @@ public class Fas implements IFas {
             throw new IllegalArgumentException("Variables should be a subset of the ones in the test.");
         }
 
-        Graph modify = new EdgeListGraph(nodes);
+        Graph modify;
+
+        if (this.replicatingGraph) {
+            modify = new ReplicatingGraph(nodes, new LagReplicationPolicy());
+        } else {
+            modify = new EdgeListGraph(nodes);
+        }
+
         modify = GraphUtils.completeGraph(modify);
 
         // Apply forbidden knowledge upfront.
@@ -525,7 +533,7 @@ public class Fas implements IFas {
      */
     @Override
     public void setReplicatingGraph(boolean replicatingGraph) {
-        // Unused.
+        this.replicatingGraph = replicatingGraph;
     }
 
     /**
