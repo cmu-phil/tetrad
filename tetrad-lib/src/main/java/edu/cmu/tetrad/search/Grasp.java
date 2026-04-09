@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -182,20 +183,24 @@ public class Grasp {
      * Returns the graph based on the specified parameters. If the parameter `replicating` is true,
      * a replicating graph is returned; otherwise, a regular graph is returned.
      *
-     * @param pdag True if a PDAG (Completed Partially Directed Acyclic Graph) should be returned,
+     * @param cpdag True if a PDAG (Completed Partially Directed Acyclic Graph) should be returned,
      *             false if a DAG (Directed Acyclic Graph) should be returned.
      * @return The generated graph, either a PDAG or DAG, wrapped in a replicating graph
      * if `replicating` is true.
      */
-    public Graph getGraph(boolean pdag) {
-        if (pdag && this.replicatingGraph) {
-            throw new IllegalArgumentException("PDAGs are not guaranteed to be replicating graphs; please set the PDAG parameter to false.");
-        }
-
-        Graph g = this.scorer.getGraph(pdag);
+    public Graph getGraph(boolean cpdag) {
+        Graph g = this.scorer.getGraph(false);
 
         if (this.replicatingGraph) {
             g = GraphUtils.getReplicatingGraph(g);
+            g = new EdgeListGraph(g);
+        }
+
+        if (cpdag) {
+            MeekRules rules = new MeekRules();
+            if (knowledge != null) rules.setKnowledge(knowledge);
+            rules.setVerbose(false);
+            rules.orientImplied(g);
         }
 
         return g;
@@ -481,9 +486,9 @@ public class Grasp {
 
         if (this.verbose) {
             TetradLogger.getInstance().log("# Edges = " + scorer.getNumEdges()
-                                           + " Score = " + scorer.score()
-                                           + " (GRaSP)"
-                                           + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
+                    + " Score = " + scorer.score()
+                    + " (GRaSP)"
+                    + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
         }
 
         return scorer.getPi();

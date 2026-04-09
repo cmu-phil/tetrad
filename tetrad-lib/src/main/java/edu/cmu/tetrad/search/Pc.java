@@ -462,10 +462,6 @@ public class Pc implements IGraphSearch {
         // Phase 3: Meek R1-R4 to closure
         applyMeekRules(g);
 
-        if (replicatingGraph) {
-            g = GraphUtils.getReplicatingGraph(g);
-        }
-
         return g;
     }
 

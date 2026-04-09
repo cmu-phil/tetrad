@@ -97,7 +97,6 @@ public abstract class StarFci implements IGraphSearch {
      * algorithm. The default value is {@code true}, enabling the heuristic by default.
      */
     private boolean useMaxP = false;
-    private boolean replicatingGraph = false;
     private boolean excludeSelectionBias = false;
 
     /**
@@ -471,14 +470,16 @@ public abstract class StarFci implements IGraphSearch {
     public abstract Graph getMarkovCpdag() throws InterruptedException;
 
     /**
-     * Sets the flag indicating whether the graph is being replicated.
+     * Sets the flag indicating whether the graph is being replicated. (Unused.)
      *
      * @param replicatingGraph A boolean value where {@code true} indicates that
      *                         the graph is being replicated, and {@code false}
      *                         otherwise.
+     * @throws UnsupportedOperationException Graph replication is not supported by this algorithm.
      */
     public void setReplicatingGraph(boolean replicatingGraph) {
-        this.replicatingGraph = replicatingGraph;
+//        this.replicatingGraph = replicatingGraph;
+        // Unused.
     }
 
     /**

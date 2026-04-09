@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -210,12 +210,12 @@ public class AlgorithmCard extends JPanel {
      */
     private boolean updatingScoreModels;
 
-    private static final String UI_ALGO        = "ui.search.algo";
-    private static final String UI_IND_TEST    = "ui.search.ind_test";
-    private static final String UI_SCORE       = "ui.search.score";
-    private static final String UI_ALGO_TYPE   = "ui.search.algo_type";
+    private static final String UI_ALGO = "ui.search.algo";
+    private static final String UI_IND_TEST = "ui.search.ind_test";
+    private static final String UI_SCORE = "ui.search.score";
+    private static final String UI_ALGO_TYPE = "ui.search.algo_type";
     private static final String UI_DATA_FILTER = "ui.search.dataset_filter";
-    private static final String UI_KNOWLEDGE   = "ui.search.knowledge";
+    private static final String UI_KNOWLEDGE = "ui.search.knowledge";
 
 //    private static final java.util.prefs.Preferences PREFS =
 //            java.util.prefs.Preferences.userRoot().node("/edu/cmu/tetradapp/editor/search");
@@ -283,38 +283,38 @@ public class AlgorithmCard extends JPanel {
         }
     }
 
-    private void saveGlobalPreferences() {
-        AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
-        if (algoModel != null && algoModel.getAlgorithm() != null && algoModel.getAlgorithm().annotation() != null) {
-            parameters.set(UI_ALGO, algoModel.getAlgorithm().annotation().name());
-        }
-
-        ButtonModel algoTypeSel = this.algoFilterBtnGrp.getSelection();
-        if (algoTypeSel != null) {
-            parameters.set(UI_ALGO_TYPE, algoTypeSel.getActionCommand());
-        }
-
-        ButtonModel dataFilterSel = this.datasetFilterBtnGrp.getSelection();
-        if (dataFilterSel != null) {
-            parameters.set(UI_DATA_FILTER, dataFilterSel.getActionCommand());
-        }
-
-        parameters.set(UI_KNOWLEDGE, this.knowledgeChkBox.isSelected());
-
-        IndependenceTestModel testModel =
-                (IndependenceTestModel) this.indTestComboBox.getSelectedItem();
-        if (testModel != null && testModel.getIndependenceTest() != null
-                && testModel.getIndependenceTest().annotation() != null) {
-            parameters.set(UI_IND_TEST, testModel.getIndependenceTest().annotation().command());
-        }
-
-        ScoreModel scoreModel =
-                (ScoreModel) this.scoreComboBox.getSelectedItem();
-        if (scoreModel != null && scoreModel.getScore() != null
-                && scoreModel.getScore().annotation() != null) {
-            parameters.set(UI_SCORE, scoreModel.getScore().annotation().command());
-        }
-    }
+//    private void saveGlobalPreferences() {
+//        AlgorithmModel algrememberUserAlgoSelectionsoModel = this.algorithmList.getSelectedValue();
+//        if (algoModel != null && algoModel.getAlgorithm() != null && algoModel.getAlgorithm().annotation() != null) {
+//            parameters.set(UI_ALGO, algoModel.getAlgorithm().annotation().name());
+//        }
+//
+//        ButtonModel algoTypeSel = this.algoFilterBtnGrp.getSelection();
+//        if (algoTypeSel != null) {
+//            parameters.set(UI_ALGO_TYPE, algoTypeSel.getActionCommand());
+//        }
+//
+//        ButtonModel dataFilterSel = this.datasetFilterBtnGrp.getSelection();
+//        if (dataFilterSel != null) {
+//            parameters.set(UI_DATA_FILTER, dataFilterSel.getActionCommand());
+//        }
+//
+//        parameters.set(UI_KNOWLEDGE, this.knowledgeChkBox.isSelected());
+//
+//        IndependenceTestModel testModel =
+//                (IndependenceTestModel) this.indTestComboBox.getSelectedItem();
+//        if (testModel != null && testModel.getIndependenceTest() != null
+//                && testModel.getIndependenceTest().annotation() != null) {
+//            parameters.set(UI_IND_TEST, testModel.getIndependenceTest().annotation().command());
+//        }
+//
+//        ScoreModel scoreModel =
+//                (ScoreModel) this.scoreComboBox.getSelectedItem();
+//        if (scoreModel != null && scoreModel.getScore() != null
+//                && scoreModel.getScore().annotation() != null) {
+//            parameters.set(UI_SCORE, scoreModel.getScore().annotation().command());
+//        }
+//    }
 
     private String getSavedAlgoName(Map<String, Object> userAlgoSelections) {
         Object obj = userAlgoSelections.get(this.ALGO_PARAM);
@@ -338,14 +338,21 @@ public class AlgorithmCard extends JPanel {
 
         return parameters.getString(UI_ALGO_TYPE, "all");
     }
-
     private String getSavedDatasetFilter(Map<String, Object> userAlgoSelections) {
         Object obj = userAlgoSelections.get(this.DATASET_FILTER);
         if (obj instanceof String s && !s.isBlank()) {
             return s;
         }
 
-        return parameters.getString(UI_DATA_FILTER, "all");
+        String saved = parameters.getString(UI_DATA_FILTER, null);
+        if (saved != null && !saved.isBlank()) {
+            return saved;
+        }
+
+        // Default based on actual data type rather than "all"
+        if (this.dataType == DataType.Mixed) return "mixed";
+        if (this.dataType == DataType.Discrete) return "mixed"; // discrete uses mixed tests too
+        return "linear-gaussian";
     }
 
     private boolean getSavedKnowledgeFlag(Map<String, Object> userAlgoSelections) {
@@ -444,7 +451,7 @@ public class AlgorithmCard extends JPanel {
                 map.put(this.dataType, sel);
 
                 if (sel != null && sel.getIndependenceTest() != null && sel.getIndependenceTest().annotation() != null) {
-                    this.parameters.set(UI_IND_TEST, sel.getIndependenceTest().annotation().command());
+                    this.parameters.set(getUiIndTestKey(), sel.getIndependenceTest().annotation().command());
                 }
 
                 saveStates();
@@ -465,7 +472,7 @@ public class AlgorithmCard extends JPanel {
                 map.put(this.dataType, sel);
 
                 if (sel != null && sel.getScore() != null && sel.getScore().annotation() != null) {
-                    this.parameters.set(UI_SCORE, sel.getScore().annotation().command());
+                    this.parameters.set(getUiScoreKey(), sel.getScore().annotation().command());
                 }
 
                 saveStates();
@@ -514,6 +521,16 @@ public class AlgorithmCard extends JPanel {
         }
     }
 
+    private DataType getEffectiveDataType() {
+        if (this.generalRadBtn.isSelected() && this.dataType == DataType.Continuous) {
+            return DataType.ContinuousGeneral;
+        }
+        if (this.mixedRadBtn.isSelected()) {
+            return DataType.Mixed;
+        }
+        return this.dataType;
+    }
+
     /**
      * <p>getSelectedAlgorithm.</p>
      *
@@ -521,56 +538,6 @@ public class AlgorithmCard extends JPanel {
      */
     public AlgorithmModel getSelectedAlgorithm() {
         return this.algorithmList.getSelectedValue();
-    }
-
-    private void rememberUserAlgoSelections(Map<String, Object> userAlgoSelections) {
-        AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
-        IndependenceTestModel testModel =
-                (IndependenceTestModel) this.indTestComboBox.getSelectedItem();
-        ScoreModel scoreModel =
-                (ScoreModel) this.scoreComboBox.getSelectedItem();
-
-        ButtonModel algoTypeSel = this.algoFilterBtnGrp.getSelection();
-        ButtonModel dataFilterSel = this.datasetFilterBtnGrp.getSelection();
-
-        if (algoTypeSel != null) {
-            userAlgoSelections.put(this.ALGO_TYPE_PARAM, algoTypeSel.getActionCommand());
-        }
-
-        if (dataFilterSel != null) {
-            userAlgoSelections.put(this.DATASET_FILTER, dataFilterSel.getActionCommand());
-        }
-
-        userAlgoSelections.put(this.KNOWLEDGE_PARAM, this.knowledgeChkBox.isSelected());
-
-        if (algoModel != null) {
-            userAlgoSelections.put(this.ALGO_PARAM, algoModel.toString());
-        }
-
-        if (testModel != null) {
-            userAlgoSelections.put(this.IND_TEST_PARAM, testModel.toString());
-        }
-
-        if (scoreModel != null) {
-            userAlgoSelections.put(this.SCORE_PARAM, scoreModel.toString());
-        }
-
-        if (testModel != null && testModel.getIndependenceTest() != null
-                && testModel.getIndependenceTest().annotation() != null) {
-            this.parameters.set(UI_IND_TEST, testModel.getIndependenceTest().annotation().command());
-        }
-
-        if (scoreModel != null && scoreModel.getScore() != null
-                && scoreModel.getScore().annotation() != null) {
-            this.parameters.set(UI_SCORE, scoreModel.getScore().annotation().command());
-        }
-
-        if (algoModel != null && algoModel.getAlgorithm() != null
-                && algoModel.getAlgorithm().annotation() != null) {
-            this.parameters.set(UI_ALGO, algoModel.getAlgorithm().annotation().name());
-        }
-
-        saveGlobalPreferences();
     }
 
     /**
@@ -609,41 +576,6 @@ public class AlgorithmCard extends JPanel {
         }
 
         refreshTestAndScoreList();
-
-        Object obj = userAlgoSelections.get(this.IND_TEST_PARAM);
-        IndependenceTestModel savedTest = null;
-
-        if (obj instanceof String s) {
-            savedTest = findTestByName(s);
-        }
-        if (savedTest == null) {
-            String savedCmd = this.parameters.getString(UI_IND_TEST, parameters.getString(UI_IND_TEST, null));
-            savedTest = findTestByCommand(savedCmd);
-        }
-        if (savedTest != null) {
-            this.updatingTestModels = true;
-            this.indTestComboBox.setSelectedItem(savedTest);
-            this.updatingTestModels = false;
-            setIndepTestDescription();
-        }
-
-        obj = userAlgoSelections.get(this.SCORE_PARAM);
-        ScoreModel savedScore = null;
-
-        if (obj instanceof String s) {
-            savedScore = findScoreByName(s);
-        }
-        if (savedScore == null) {
-            String savedCmd = this.parameters.getString(UI_SCORE, parameters.getString(UI_SCORE, null));
-            savedScore = findScoreByCommand(savedCmd);
-        }
-        if (savedScore != null) {
-            this.updatingScoreModels = true;
-            this.scoreComboBox.setSelectedItem(savedScore);
-            this.updatingScoreModels = false;
-            setScoreDescription();
-        }
-
         setAlgorithmDescription();
     }
 
@@ -779,12 +711,12 @@ public class AlgorithmCard extends JPanel {
             // SVAR (SvarFci, SvarGfci) algorithms need lagged data
             String cmd = algoModel.getAlgorithm().annotation().command();
             if (cmd.equalsIgnoreCase("ts-fci")
-                || cmd.equalsIgnoreCase("ts-gfci")
-                || cmd.equalsIgnoreCase("ts-imgs")) {
+                    || cmd.equalsIgnoreCase("ts-gfci")
+                    || cmd.equalsIgnoreCase("ts-imgs")) {
                 DataModel dataModel = this.algorithmRunner.getDataModel();
                 Knowledge knowledge = this.algorithmRunner.getKnowledge();
                 if ((knowledge == null || knowledge.isEmpty())
-                    && (dataModel.getKnowledge() == null || dataModel.getKnowledge().isEmpty())) {
+                        && (dataModel.getKnowledge() == null || dataModel.getKnowledge().isEmpty())) {
                     firePropertyChange("algoFwdBtn", null, false);
                     JOptionPane.showMessageDialog(this.desktop, "Time-series algorithm needs lagged data", "Please Note", JOptionPane.INFORMATION_MESSAGE);
                 }
@@ -851,15 +783,109 @@ public class AlgorithmCard extends JPanel {
         this.scoreComboBox.setEnabled(this.scoreComboBox.getItemCount() > 0);
     }
 
+    private String getUiIndTestKey() {
+        if (this.generalRadBtn.isSelected()) return UI_IND_TEST + ".general";
+        if (this.linearGaussianRadBtn.isSelected()) return UI_IND_TEST + ".linear-gaussian";
+        if (this.mixedRadBtn.isSelected()) return UI_IND_TEST + ".mixed";
+        if (this.allRadBtn.isSelected()) return UI_IND_TEST + ".all";
+        return UI_IND_TEST;
+    }
+
+    private String getUiScoreKey() {
+        if (this.generalRadBtn.isSelected()) return UI_SCORE + ".general";
+        if (this.linearGaussianRadBtn.isSelected()) return UI_SCORE + ".linear-gaussian";
+        if (this.mixedRadBtn.isSelected()) return UI_SCORE + ".mixed";
+        if (this.allRadBtn.isSelected()) return UI_SCORE + ".all";
+        return UI_SCORE;
+    }
+
+    private void saveGlobalPreferences() {
+        AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
+        if (algoModel != null && algoModel.getAlgorithm() != null && algoModel.getAlgorithm().annotation() != null) {
+            parameters.set(UI_ALGO, algoModel.getAlgorithm().annotation().name());
+        }
+
+        ButtonModel algoTypeSel = this.algoFilterBtnGrp.getSelection();
+        if (algoTypeSel != null) {
+            parameters.set(UI_ALGO_TYPE, algoTypeSel.getActionCommand());
+        }
+
+        ButtonModel dataFilterSel = this.datasetFilterBtnGrp.getSelection();
+        if (dataFilterSel != null) {
+            parameters.set(UI_DATA_FILTER, dataFilterSel.getActionCommand());
+        }
+
+        parameters.set(UI_KNOWLEDGE, this.knowledgeChkBox.isSelected());
+
+        IndependenceTestModel testModel = (IndependenceTestModel) this.indTestComboBox.getSelectedItem();
+        if (testModel != null && testModel.getIndependenceTest() != null
+                && testModel.getIndependenceTest().annotation() != null) {
+            parameters.set(getUiIndTestKey(), testModel.getIndependenceTest().annotation().command());
+        }
+
+        ScoreModel scoreModel = (ScoreModel) this.scoreComboBox.getSelectedItem();
+        if (scoreModel != null && scoreModel.getScore() != null
+                && scoreModel.getScore().annotation() != null) {
+            parameters.set(getUiScoreKey(), scoreModel.getScore().annotation().command());
+        }
+    }
+
+    private void rememberUserAlgoSelections(Map<String, Object> userAlgoSelections) {
+        AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
+        IndependenceTestModel testModel = (IndependenceTestModel) this.indTestComboBox.getSelectedItem();
+        ScoreModel scoreModel = (ScoreModel) this.scoreComboBox.getSelectedItem();
+
+        ButtonModel algoTypeSel = this.algoFilterBtnGrp.getSelection();
+        ButtonModel dataFilterSel = this.datasetFilterBtnGrp.getSelection();
+
+        if (algoTypeSel != null) {
+            userAlgoSelections.put(this.ALGO_TYPE_PARAM, algoTypeSel.getActionCommand());
+        }
+
+        if (dataFilterSel != null) {
+            userAlgoSelections.put(this.DATASET_FILTER, dataFilterSel.getActionCommand());
+        }
+
+        userAlgoSelections.put(this.KNOWLEDGE_PARAM, this.knowledgeChkBox.isSelected());
+
+        if (algoModel != null) {
+            userAlgoSelections.put(this.ALGO_PARAM, algoModel.toString());
+        }
+
+        if (testModel != null) {
+            userAlgoSelections.put(this.IND_TEST_PARAM, testModel.toString());
+        }
+
+        if (scoreModel != null) {
+            userAlgoSelections.put(this.SCORE_PARAM, scoreModel.toString());
+        }
+
+        if (testModel != null && testModel.getIndependenceTest() != null
+                && testModel.getIndependenceTest().annotation() != null) {
+            this.parameters.set(getUiIndTestKey(), testModel.getIndependenceTest().annotation().command());
+        }
+
+        if (scoreModel != null && scoreModel.getScore() != null
+                && scoreModel.getScore().annotation() != null) {
+            this.parameters.set(getUiScoreKey(), scoreModel.getScore().annotation().command());
+        }
+
+        if (algoModel != null && algoModel.getAlgorithm() != null
+                && algoModel.getAlgorithm().annotation() != null) {
+            this.parameters.set(UI_ALGO, algoModel.getAlgorithm().annotation().name());
+        }
+
+        saveGlobalPreferences();
+    }
+
     private void refreshTestList() {
         this.updatingTestModels = true;
         this.indTestComboBox.removeAllItems();
 
         AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
         if (algoModel != null && algoModel.isRequiredTest()) {
-            List<IndependenceTestModel> models = IndependenceTestModels.getInstance().getModels(this.dataType);
+            List<IndependenceTestModel> models = IndependenceTestModels.getInstance().getModels(getEffectiveDataType());
 
-            // 1) Radio-button based type filter
             java.util.function.Predicate<IndependenceTestModel> typeFilter = m -> {
                 Class<?> c = m.getIndependenceTest().clazz();
 
@@ -879,20 +905,16 @@ public class AlgorithmCard extends JPanel {
                 return true;
             };
 
-            // 2) Blocks gating based on presence of blockSpec
             java.util.function.Predicate<IndependenceTestModel> blocksGate = m -> {
                 Class<?> c = m.getIndependenceTest().clazz();
                 boolean isBlocks = BlockIndependenceWrapper.class.isAssignableFrom(c);
                 if (this.blockSpec == null) {
-                    // No BlockSpec: hide block-based tests
                     return !isBlocks;
                 } else {
-                    // Has BlockSpec: show only block-based tests
                     return isBlocks;
                 }
             };
 
-            // 3) Apply both filters and populate combo
             models.stream()
                     .filter(typeFilter)
                     .filter(blocksGate)
@@ -904,34 +926,35 @@ public class AlgorithmCard extends JPanel {
         if (this.indTestComboBox.getItemCount() > 0) {
             this.indTestComboBox.setEnabled(true);
 
-            // 0) Try restore from Parameters first (if present and not filtered out)
+            // 0) Try restore from per-filter-mode Parameters key
             IndependenceTestModel testModel = null;
-            String savedCmd = this.parameters.getString(UI_IND_TEST, null);
+            String savedCmd = this.parameters.getString(getUiIndTestKey(), null);
             testModel = findTestByCommand(savedCmd);
 
-            // 1) Else fall back to your per-algo-per-datatype defaults
+            // 1) Per-algo-per-datatype default
             if (testModel == null) {
                 Map<DataType, IndependenceTestModel> map = this.defaultIndTestModels.get(algoModel);
                 if (map == null) {
                     map = new EnumMap<>(DataType.class);
                     this.defaultIndTestModels.put(algoModel, map);
                 }
-                testModel = map.get(this.dataType);
+                testModel = map.get(getEffectiveDataType());
             }
 
-            // 2) Else fall back to global default
+            // 2) Global default for effective data type
             if (testModel == null) {
-                testModel = IndependenceTestModels.getInstance().getDefaultModel(this.dataType);
+                testModel = IndependenceTestModels.getInstance().getDefaultModel(getEffectiveDataType());
             }
 
-            // 3) Else first available
+            // 3) First available
             if (testModel == null) {
                 testModel = this.indTestComboBox.getItemAt(0);
             }
 
-            this.updatingTestModels = true;        // <— important: prevent writing back while we programmatically select
+            this.updatingTestModels = true;
             this.indTestComboBox.setSelectedItem(testModel);
             this.updatingTestModels = false;
+            setIndepTestDescription();
 
         } else {
             this.indTestComboBox.setEnabled(false);
@@ -948,9 +971,8 @@ public class AlgorithmCard extends JPanel {
 
         AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
         if (algoModel != null && algoModel.isRequiredScore()) {
-            List<ScoreModel> models = ScoreModels.getInstance().getModels(this.dataType);
+            List<ScoreModel> models = ScoreModels.getInstance().getModels(getEffectiveDataType());
 
-            // 1) Radio-button type filter
             java.util.function.Predicate<ScoreModel> typeFilter = m -> {
                 Class<?> c = m.getScore().clazz();
 
@@ -970,20 +992,16 @@ public class AlgorithmCard extends JPanel {
                 return true;
             };
 
-            // 2) Blocks gating based on presence of blockSpec
             java.util.function.Predicate<ScoreModel> blocksGate = m -> {
                 Class<?> c = m.getScore().clazz();
                 boolean isBlocks = BlockScoreWrapper.class.isAssignableFrom(c);
                 if (this.blockSpec == null) {
-                    // No BlockSpec: hide block-based scores
                     return !isBlocks;
                 } else {
-                    // Has BlockSpec: show only block-based scores
                     return isBlocks;
                 }
             };
 
-            // 3) Apply both filters and populate combo
             models.stream()
                     .filter(typeFilter)
                     .filter(blocksGate)
@@ -995,23 +1013,27 @@ public class AlgorithmCard extends JPanel {
         if (this.scoreComboBox.getItemCount() > 0) {
             this.scoreComboBox.setEnabled(true);
 
+            // 0) Try restore from per-filter-mode Parameters key
             ScoreModel scoreModel = null;
-            String savedCmd = this.parameters.getString(UI_SCORE, null);
+            String savedCmd = this.parameters.getString(getUiScoreKey(), null);
             scoreModel = findScoreByCommand(savedCmd);
 
+            // 1) Per-algo-per-datatype default
             if (scoreModel == null) {
                 Map<DataType, ScoreModel> map = this.defaultScoreModels.get(algoModel);
                 if (map == null) {
                     map = new EnumMap<>(DataType.class);
                     this.defaultScoreModels.put(algoModel, map);
                 }
-                scoreModel = map.get(this.dataType);
+                scoreModel = map.get(getEffectiveDataType());
             }
 
+            // 2) Global default for effective data type
             if (scoreModel == null) {
-                scoreModel = ScoreModels.getInstance().getDefaultModel(this.dataType);
+                scoreModel = ScoreModels.getInstance().getDefaultModel(getEffectiveDataType());
             }
 
+            // 3) First available
             if (scoreModel == null) {
                 scoreModel = this.scoreComboBox.getItemAt(0);
             }
@@ -1019,6 +1041,7 @@ public class AlgorithmCard extends JPanel {
             this.updatingScoreModels = true;
             this.scoreComboBox.setSelectedItem(scoreModel);
             this.updatingScoreModels = false;
+            setScoreDescription();
 
         } else {
             this.scoreComboBox.setEnabled(false);

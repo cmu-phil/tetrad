@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
-import edu.cmu.tetrad.algcomparison.independence.TakesGraph;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
@@ -58,7 +57,7 @@ import java.util.List;
 )
 @Bootstrapping
 public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, AcceptsKnowledge,
-        ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm, TakesGraph {
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -71,11 +70,6 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-
-    /**
-     * An initial graph used to find a causal order permutation to seed the search.
-     */
-    private Graph initialGraph = null;
 
     /**
      * Constructs a new BOSS algorithm.
@@ -130,7 +124,7 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         permutationSearch.setSeed(seed);
         permutationSearch.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         try {
-            Graph graph = permutationSearch.search(parameters.getBoolean(Params.OUTPUT_PDAG));
+            Graph graph = permutationSearch.search(parameters.getBoolean(Params.OUTPUT_CPDAG));
             LogUtilsSearch.stampWithScore(graph, boss.getScore());
             LogUtilsSearch.stampWithBic(graph, dataModel);
             return graph;
@@ -185,7 +179,7 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.TIME_LAG_REPLICATING_GRAPH);
         params.add(Params.NUM_THREADS);
         params.add(Params.USE_DATA_ORDER);
-        params.add(Params.OUTPUT_PDAG);
+        params.add(Params.OUTPUT_CPDAG);
         params.add(Params.SEED);
         params.add(Params.VERBOSE);
 
@@ -232,9 +226,5 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         this.knowledge = knowledge;
     }
 
-    @Override
-    public void setGraph(Graph graph) {
-        this.initialGraph = graph;
-    }
 }
 

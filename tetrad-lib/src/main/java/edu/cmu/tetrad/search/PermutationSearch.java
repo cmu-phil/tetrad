@@ -21,10 +21,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
 import edu.cmu.tetrad.search.utils.MeekRules;
@@ -90,7 +87,7 @@ public class PermutationSearch {
      */
     private Knowledge knowledge = new Knowledge();
 
-    private boolean pdag = true;
+    private boolean cpdag = true;
 
     private long seed = -1;
     private boolean replicatingGraph = false;
@@ -104,7 +101,6 @@ public class PermutationSearch {
     public PermutationSearch(SuborderSearch suborderSearch) {
         this.suborderSearch = suborderSearch;
         this.variables = suborderSearch.getVariables();
-
         this.order = new ArrayList<>();
         this.gsts = new HashMap<>();
 
@@ -126,51 +122,64 @@ public class PermutationSearch {
      *
      * @param nodes   The nodes.
      * @param parents A map from each node to its parents.
-     * @param pdag    Whether a PDAG is wanted, if false, a DAG.
+     * @param cpDag   Whether a CPDAG is wanted, if false, a DAG.
      * @return The constructed graph.
      */
-    public static Graph getGraph(List<Node> nodes, Map<Node, Set<Node>> parents, boolean pdag) {
-        return getGraph(nodes, parents, null, pdag);
-    }
-
-    /**
-     * Constructs a graph based on the provided nodes, parent relationships, knowledge,
-     * and whether a PDAG or DAG is desired.
-     *
-     * @param nodes       The list of nodes to include in the graph.
-     * @param parents     A map specifying the parents for each node. Each key is a node,
-     *                    and its value is the set of parent nodes.
-     * @param knowledge   The knowledge object, if any, to guide the orientation of edges
-     *                    in the graph.
-     * @param pdag        A flag indicating whether a PDAG (partially directed acyclic graph)
-     *                    is desired. If false, a DAG (directed acyclic graph) is constructed.
-     * @return The constructed graph, which may be a DAG or PDAG depending on the value
-     *         of the pdag flag.
-     */
-    public static Graph getGraph(List<Node> nodes,
-                                 Map<Node, Set<Node>> parents,
-                                 Knowledge knowledge,
-                                 boolean pdag) {
-        return getGraph(nodes, parents, knowledge, pdag, /*replicating*/ false);
+    public static Graph getGraph(List<Node> nodes, Map<Node, Set<Node>> parents, boolean cpDag) {
+        return getGraph(nodes, parents, null, cpDag);
     }
 
     /**
      * Constructs a graph given a specification of the parents for each node.
      *
-     * @param nodes       The list of nodes to include in the graph.
-     * @param parents     A map specifying the parents for each node. Each key is a node, and its value is the set of parent nodes.
-     * @param knowledge   The knowledge object, if any, to guide the orientation of edges in the graph.
-     * @param pdag        A flag indicating whether a PDAG (partially directed acyclic graph) is desired. If false, a DAG (directed acyclic graph) is constructed.
+     * @param nodes     The nodes.
+     * @param parents   A map from each node to its parents.
+     * @param knowledge the knowledge to use to construct the graph.
+     * @param cpDag     Whether a CPDAG is wanted, if false, a DAG.
+     * @return The construted graph.
+     */
+//    public static Graph getGraph(List<Node> nodes, Map<Node, Set<Node>> parents, Knowledge knowledge, boolean cpDag) {
+//        Graph graph = new EdgeListGraph(nodes);
+//
+//        for (Node a : nodes) {
+//            for (Node b : parents.get(a)) {
+//                graph.addDirectedEdge(b, a);
+//            }
+//        }
+//
+//        if (cpDag) {
+//            MeekRules rules = new MeekRules();
+//            if (knowledge != null) rules.setKnowledge(knowledge);
+//            rules.setVerbose(false);
+//            rules.orientImplied(graph);
+//        }
+//
+//        return graph;
+//    }
+
+    // existing method stays, delegates to the new one with default (no replication)
+    public static Graph getGraph(List<Node> nodes,
+                                 Map<Node, Set<Node>> parents,
+                                 Knowledge knowledge,
+                                 boolean cpDag) {
+        return getGraph(nodes, parents, knowledge, cpDag, /*replicating*/ false);
+    }
+
+    /**
+     * Constructs a graph given a specification of the parents for each node.
+     *
+     * @param nodes      The list of nodes to include in the graph.
+     * @param parents    A map specifying the parents for each node. Each key is a node, and its value is the set of parent nodes.
+     * @param knowledge  The knowledge object, if any, to guide the orientation of edges in the graph.
+     * @param cpdag      A flag indicating whether a CPDAG (partially directed acyclic graph) is desired. If false, a DAG (directed acyclic graph) is constructed.
      * @param replicating A flag indicating whether graph replication is enabled, allowing mirrored changes in replicated graphs.
-     * @return The constructed graph, which may be a DAG or PDAG depending on the value of the pdag flag.
+     * @return The constructed graph, which may be a DAG or CPDAG depending on the value of the cpDag flag.
      */
     public static Graph getGraph(List<Node> nodes,
                                  Map<Node, Set<Node>> parents,
                                  Knowledge knowledge,
-                                 boolean pdag,
+                                 boolean cpdag,
                                  boolean replicating) {
-        if (replicating && pdag)
-            throw new IllegalArgumentException("PDAGs do not guarantee replication; the PDAG option should be to false.");
         Graph graph = new EdgeListGraph(nodes);
 
         for (Node child : nodes) {
@@ -179,7 +188,7 @@ public class PermutationSearch {
             }
         }
 
-        if (pdag) {
+        if (cpdag) {
             MeekRules rules = new MeekRules();
             rules.setRevertToUnshieldedColliders(true);
             if (knowledge != null) rules.setKnowledge(knowledge);
@@ -189,7 +198,7 @@ public class PermutationSearch {
 
         if (replicating) {
             graph = GraphUtils.getReplicatingGraph(graph);
-        } else if (pdag) {
+        } else if (cpdag) {
             MeekRules rules = new MeekRules();
             rules.setRevertToUnshieldedColliders(true);
             if (knowledge != null) rules.setKnowledge(knowledge);
@@ -203,7 +212,7 @@ public class PermutationSearch {
     /**
      * Performs a search for a graph using the default options. Returns the resulting graph.
      *
-     * @return The constructed PDAG.
+     * @return The constructed CPDAG.
      * @throws InterruptedException if any
      */
     public Graph search() throws InterruptedException {
@@ -211,13 +220,13 @@ public class PermutationSearch {
     }
 
     /**
-     * Performe the search and return a PDAG.
+     * Performe the search and return a CPDAG.
      *
-     * @param pdag True a PDAG is wanted, if false, a DAG.
-     * @return The PDAG.
+     * @param cpdag True a CPDAG is wanted, if false, a DAG.
+     * @return The CPDAG.
      * @throws InterruptedException if any
      */
-    public Graph search(boolean pdag) throws InterruptedException {
+    public Graph search(boolean cpdag) throws InterruptedException {
         if (this.seed != -1) {
             RandomUtil.getInstance().setSeed(this.seed);
         }
@@ -263,7 +272,7 @@ public class PermutationSearch {
             this.suborderSearch.searchSuborder(prefix, this.order, this.gsts);
         }
 
-        return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, pdag, replicatingGraph);
+        return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, cpdag, replicatingGraph);
     }
 
     /**
@@ -328,21 +337,21 @@ public class PermutationSearch {
     }
 
     /**
-     * Retrieves the value of pdag.
+     * Retrieves the value of cpdag.
      *
-     * @return The value of the pdag flag.
+     * @return The value of the cpdag flag.
      */
-    public boolean getPdag() {
-        return pdag;
+    public boolean getCpdag() {
+        return cpdag;
     }
 
     /**
-     * Sets the flag indicating whether a PDAG is wanted or not.
+     * Sets the flag indicating whether a CPDAG (partially directed acyclic graph) is wanted or not.
      *
-     * @param pdag The value indicating whether a PDAG is wanted or not.
+     * @param cpdag The value indicating whether a CPDAG is wanted or not.
      */
-    public void setPdag(boolean pdag) {
-        this.pdag = pdag;
+    public void setCpdag(boolean cpdag) {
+        this.cpdag = cpdag;
     }
 
     /**

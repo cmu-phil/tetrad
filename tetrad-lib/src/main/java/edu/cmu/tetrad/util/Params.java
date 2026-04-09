@@ -732,7 +732,7 @@ public final class Params {
     /**
      * Constant <code>OUTPUT_PDAG="outputPdag"</code>
      */
-    public static final String OUTPUT_PDAG = "outputPdag";
+    public static final String OUTPUT_CPDAG = "outputCpdag";
     /**
      * Constant <code>ZS_RISK_BOUND="zSRiskBound"</code>
      */
@@ -846,7 +846,7 @@ public final class Params {
     /**
      * Constant <code>TIME_LAG="timeLag"</code>
      */
-    public static final String TIME_LAG = "timeLag";
+        public static final String TIME_LAG = "timeLag";
     /**
      * Constant <code>PRECOMPUTE_COVARIANCES="precomputeCovariances"</code>
      */
