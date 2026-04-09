@@ -413,10 +413,10 @@ public class TeyssierScorer {
     /**
      * Returns the DAG build for the current permutation, or its PDAG.
      *
-     * @param pdag True iff the PDAG should be returned, False if the DAG.
+     * @param cpdag True iff the PDAG should be returned, False if the DAG.
      * @return This graph.
      */
-    public Graph getGraph(boolean pdag) {
+    public Graph getGraph(boolean cpdag) {
         Graph graph = new EdgeListGraph(this.variables);
         for (Node a : this.variables) {
             for (Node b : getParents(a)) {
@@ -424,7 +424,7 @@ public class TeyssierScorer {
             }
         }
 
-        if (pdag) {
+        if (cpdag) {
             MeekRules rules = new MeekRules();
             rules.setKnowledge(this.knowledge);
             rules.setVerbose(false);

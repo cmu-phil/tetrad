@@ -182,20 +182,24 @@ public class Grasp {
      * Returns the graph based on the specified parameters. If the parameter `replicating` is true,
      * a replicating graph is returned; otherwise, a regular graph is returned.
      *
-     * @param pdag True if a PDAG (Completed Partially Directed Acyclic Graph) should be returned,
+     * @param cpdag True if a PDAG (Completed Partially Directed Acyclic Graph) should be returned,
      *             false if a DAG (Directed Acyclic Graph) should be returned.
      * @return The generated graph, either a PDAG or DAG, wrapped in a replicating graph
      * if `replicating` is true.
      */
-    public Graph getGraph(boolean pdag) {
-        if (pdag && this.replicatingGraph) {
-            throw new IllegalArgumentException("PDAGs are not guaranteed to be replicating graphs; please set the PDAG parameter to false.");
+    public Graph getGraph(boolean cpdag) {
+        if (cpdag && this.replicatingGraph) {
+            cpdag = false;
+//            throw new IllegalArgumentException("PDAGs are not guaranteed to be replicating graphs; please set the PDAG parameter to false.");
         }
 
-        Graph g = this.scorer.getGraph(pdag);
+        Graph g;
 
         if (this.replicatingGraph) {
+            g = this.scorer.getGraph(false);
             g = GraphUtils.getReplicatingGraph(g);
+        } else {
+            g = this.scorer.getGraph(cpdag);
         }
 
         return g;
