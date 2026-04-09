@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.ui.model;
 
@@ -97,6 +97,22 @@ public final class ScoreModels {
                 .collect(Collectors.toList());
         this.modelMap.put(DataType.Discrete, mergedModels);
 
+        List<ScoreModel> continuousMixedModels = Stream.concat(
+                        this.modelMap.get(DataType.Continuous).stream(),
+                        this.modelMap.get(DataType.ContinuousMixed).stream())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+        this.modelMap.put(DataType.ContinuousMixed, continuousMixedModels);
+
+        List<ScoreModel> continuousGeneralModels = Stream.concat(
+                        this.modelMap.get(DataType.Continuous).stream(),
+                        this.modelMap.get(DataType.ContinuousGeneral).stream())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+        this.modelMap.put(DataType.ContinuousGeneral, continuousGeneralModels);
+
         // make map values unmodifiable
         this.modelMap.forEach((k, v) -> this.modelMap.put(k, Collections.unmodifiableList(v)));
     }
@@ -128,6 +144,10 @@ public final class ScoreModels {
         switch (dataType) {
             case Continuous:
                 return "datatype.continuous.score.default";
+            case ContinuousMixed:
+                return "datatype.continuous.score.mixed.default";
+            case ContinuousGeneral:
+                return "datatype.continuous.score.general.default";
             case Discrete:
                 return "datatype.discrete.score.default";
             case Mixed:

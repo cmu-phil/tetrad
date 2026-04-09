@@ -35,6 +35,16 @@ public enum DataType {
     Continuous,
 
     /**
+     * Continuous, mixed.
+     */
+    ContinuousMixed,
+
+    /**
+     * Continuous, general distriubtions
+     */
+    ContinuousGeneral,
+
+    /**
      * Discrete.
      */
     Discrete,
