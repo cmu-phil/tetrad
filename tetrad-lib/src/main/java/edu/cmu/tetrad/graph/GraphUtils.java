@@ -3500,12 +3500,23 @@ public final class GraphUtils {
     public static @NotNull Graph getReplicatingGraph(Graph graph) {
         Graph replicating = GraphFactoryUtil.newGraph(graph.getNodes(), true);
 
-        // Only seed edges where the child is a lag-0 node (no colon in name).
-        // Replication will mirror these to all other lag-slices automatically.
-        for (Node child : graph.getNodes()) {
-            if (child.getName().contains(":")) continue;
-            for (Node par : graph.getParents(child)) {
-                replicating.addDirectedEdge(par, child);
+        // Seed edges where at least one endpoint is a lag-0 node (no colon in name).
+        // This covers:
+        //   - contemporaneous edges: X -> Y (both lag-0)
+        //   - cross-lag edges: X:1 -> Y (parent is lagged, child is lag-0)
+        //   - latent->observed: L -> Y where L is lag-0
+        // Replication mirrors these to all other lag-slices automatically.
+        // Edges entirely within higher lags (X:1 -> Y:1) are skipped —
+        // replication will produce them.
+        for (Edge edge : graph.getEdges()) {
+            Node n1 = edge.getNode1();
+            Node n2 = edge.getNode2();
+
+            boolean n1IsLag0 = !n1.getName().contains(":");
+            boolean n2IsLag0 = !n2.getName().contains(":");
+
+            if (n1IsLag0 || n2IsLag0) {
+                replicating.addEdge(edge);
             }
         }
 

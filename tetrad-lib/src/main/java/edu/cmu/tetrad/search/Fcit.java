@@ -367,6 +367,7 @@ public final class Fcit implements IGraphSearch {
             Sp subAlg = new Sp(this.score);
             PermutationSearch alg = new PermutationSearch(subAlg);
             alg.setKnowledge(this.knowledge);
+            alg.setReplicatingGraph(this.replicatingGraph);
 
             dag = alg.search(false);
             best = dag.paths().getValidOrder(dag.getNodes(), true);

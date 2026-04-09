@@ -35,7 +35,7 @@ public final class TMath {
      * mathematical operations provided by the TMath class, balancing
      * between precision and efficiency.
      */
-    private static final Impl IMPL = Impl.FAST;
+    private static final Impl IMPL = Impl.MATH;
 
     // ----------------------------------------------------------------
     // constants
