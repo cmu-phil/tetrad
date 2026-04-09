@@ -137,9 +137,9 @@ public final class Fcit implements IGraphSearch {
      * instantiated to an empty graph structure.
      */
     private @NotNull Graph pag = new EdgeListGraph();
-    private boolean excludeSelectionBias = false;
-    private int maxPathLength = -1;
     private boolean replicatingGraph = false;
+    private boolean excludeSelectionBias = false;
+    private int maxBlockingPathLength = -1;
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -257,8 +257,10 @@ public final class Fcit implements IGraphSearch {
                 }
 
                 if (!sepsets.get(x, y).contains(node)) {
-                    pag.setEndpoint(x, node, Endpoint.ARROW);
-                    pag.setEndpoint(y, node, Endpoint.ARROW);
+                    if (!pag.isDefCollider(x, node, y)) {
+                        pag.setEndpoint(x, node, Endpoint.ARROW);
+                        pag.setEndpoint(y, node, Endpoint.ARROW);
+                    }
                 }
             }
         }
@@ -279,9 +281,7 @@ public final class Fcit implements IGraphSearch {
             nodes = new ArrayList<>(test.getVariables());
         }
 
-        if (verbose) {
-            TetradLogger.getInstance().log("===Starting FCIT===");
-        }
+        TetradLogger.getInstance().log("===Starting FCIT===");
 
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
         strategy.setSepsetMap(sepsets);
@@ -292,7 +292,7 @@ public final class Fcit implements IGraphSearch {
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
         fciOrient.setParallel(true);
-//        fciOrient.setCompleteRuleSetUsed(true);
+        fciOrient.setCompleteRuleSetUsed(true);
         fciOrient.setKnowledge(knowledge);
 
         Graph dag;
@@ -338,7 +338,7 @@ public final class Fcit implements IGraphSearch {
             long start = MillisecondTimes.wallTimeMillis();
 
             Grasp grasp = getGraspSearch();
-            grasp.setReplicatingGraph(replicatingGraph);
+            grasp.setReplicatingGraph(this.replicatingGraph);
             best = grasp.bestOrder(nodes);
             dag = grasp.getGraph(false);
 
@@ -393,8 +393,10 @@ public final class Fcit implements IGraphSearch {
 
         long start2 = System.currentTimeMillis();
 
+        TeyssierScorer scorer = null;
+
         if (score != null) {
-            TeyssierScorer scorer = new TeyssierScorer(test, score);
+            scorer = new TeyssierScorer(test, score);
             scorer.score(best);
             scorer.setKnowledge(knowledge);
             scorer.setUseScore(!(score instanceof GraphScore));
@@ -402,7 +404,30 @@ public final class Fcit implements IGraphSearch {
             scorer.bookmark();
         }
 
-        // Initializing the PAG and identifying initial colliders.
+        if (superVerbose) {
+            TetradLogger.getInstance().log("Initializing PAG to PAG of BOSS DAG.");
+            TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
+        }
+
+        if (scorer != null) {
+            scorer.score(best);
+        }
+
+        if (superVerbose) {
+            TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
+        }
+
+        // We make all latent variables at this point measured for the duration of the
+        // procedure so that the latent structure search will work.
+        List<Node> latents = new ArrayList<>();
+        for (Node node : dag.getNodes()) {
+            if (node.getNodeType() == NodeType.LATENT) {
+                latents.add(node);
+                node.setNodeType(NodeType.MEASURED);
+            }
+        }
+
+        // The main procedure.
         this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias);
 
         if (replicatingGraph) {
@@ -418,9 +443,7 @@ public final class Fcit implements IGraphSearch {
         int round = 0;
 
         do {
-            if (verbose) {
-                TetradLogger.getInstance().log("Round: " + (++round));
-            }
+            System.out.println("Round: " + (++round));
         } while (removeEdgesRecursively(checks, excludeSelectionBias));
 
         if (superVerbose) {
@@ -430,14 +453,20 @@ public final class Fcit implements IGraphSearch {
         long stop2 = System.currentTimeMillis();
 
         if (verbose) {
-            TetradLogger.getInstance().log("FCIT finished.");
-            TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
-            TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
-            TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
+            System.out.println();
         }
 
-        Graph graph = GraphUtils.replaceNodes(this.pag, nodes);
-        return new EdgeListGraph(graph);
+        // Revert nodes made latent to latent.
+        for (Node node : latents) {
+            node.setNodeType(NodeType.LATENT);
+        }
+
+        TetradLogger.getInstance().log("FCIT finished.");
+        TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
+        TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
+        TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
+
+        return GraphUtils.replaceNodes(this.pag, nodes);
     }
 
     /**
@@ -497,8 +526,8 @@ public final class Fcit implements IGraphSearch {
      * @return true if at least one edge was removed, false otherwise
      */
     private boolean removeEdgesRecursively(Set<IndependenceCheck> checks, boolean excludeSelectionBias) {
-        if (verbose) {
-            TetradLogger.getInstance().log("Searching for removable edges using discriminating paths.");
+        if (superVerbose) {
+            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
 
         boolean changed = false;
@@ -522,14 +551,13 @@ public final class Fcit implements IGraphSearch {
 
         List<Result> results = findIndependenceChecksRecursive(edgePool, pathsByEdge, checks);
 
+        if (verbose) {
+            System.out.println();
+        }
+
         for (Result result : results) {
             Edge edge = result.edge();
             Set<Node> b = result.cond();
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Found independence for " + edge + " given " + b + ". Attempting removal.");
-            }
-
             boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "recursive", excludeSelectionBias);
             changed |= didChange;
         }
@@ -582,11 +610,11 @@ public final class Fcit implements IGraphSearch {
 
             Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
 
-            // Use recursive blocking to propose a blocking set B; null => no sepset
-            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, maxPathLength);
-
+            // Use recursive blocking to propose a blocking set B; null => no sepset under this NF
+//            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1);
+            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, maxBlockingPathLength, this.knowledge);
             if (B == null) {
-                continue;
+                continue; // No separating set possible for this NF; try another NF
             }
 
             // Trim B by removing a subset C of common neighbors of x and y (only those present in B)
@@ -640,27 +668,27 @@ public final class Fcit implements IGraphSearch {
     }
 
     private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type, boolean excludeSelectionBias) {
-        Edge edgeToRemove = pag.getEdge(x, y);
-        Graph originalPag = new EdgeListGraph(pag);
-        Set<Node> originalSepset = sepsets.get(x, y);
+        Edge _edge = pag.getEdge(x, y);
+        Graph _pag = new EdgeListGraph(pag);
 
-        this.pag.removeEdge(edgeToRemove);
+        this.pag.removeEdge(_edge);
+        Set<Node> sepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, excludeSelectionBias, superVerbose);
 
         if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
             if (verbose) {
-                TetradLogger.getInstance().log("Tried removing " + edgeToRemove + " given " + b + " for " + type
-                        + " reasons, but it didn't lead to a legal PAG. Reverting.");
+                TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
+                        + " reasons, but it didn't lead to a PAG");
             }
 
-            this.pag = originalPag;
-            sepsets.set(x, y, originalSepset);
+            this.pag = _pag;
+            sepsets.set(x, y, sepset);
             return false;
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Removing " + edgeToRemove + " given " + b + " for " + type + " reasons.");
+            TetradLogger.getInstance().log("Removing " + _edge + " for " + type + " reasons.");
         }
 
         return true;
@@ -772,13 +800,8 @@ public final class Fcit implements IGraphSearch {
         this.excludeSelectionBias = excludeSelectionBias;
     }
 
-    /**
-     * Sets the maximum blocking path length.
-     *
-     * @param maxPathLength the maximum length for the blocking path to be set
-     */
-    public void setMaxBlockingPathLength(int maxPathLength) {
-        this.maxPathLength = maxPathLength;
+    public void setMaxBlockingPathLength(int maxBlockingPathLength) {
+        this.maxBlockingPathLength = maxBlockingPathLength;
     }
 
     /**

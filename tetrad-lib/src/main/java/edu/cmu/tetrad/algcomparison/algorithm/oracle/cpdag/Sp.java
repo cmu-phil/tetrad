@@ -110,7 +110,7 @@ public class Sp extends AbstractBootstrapAlgorithm implements Algorithm, TakesSc
         PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(this.knowledge);
         permutationSearch.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
-        Graph graph = permutationSearch.search(parameters.getBoolean(Params.OUTPUT_PDAG));
+        Graph graph = permutationSearch.search(parameters.getBoolean(Params.OUTPUT_CPDAG));
         LogUtilsSearch.stampWithScore(graph, myScore);
         LogUtilsSearch.stampWithBic(graph, dataModel);
 
@@ -147,7 +147,7 @@ public class Sp extends AbstractBootstrapAlgorithm implements Algorithm, TakesSc
     @Override
     public List<String> getParameters() {
         ArrayList<String> params = new ArrayList<>();
-        params.add(Params.OUTPUT_PDAG);
+        params.add(Params.OUTPUT_CPDAG);
         params.add(Params.TIME_LAG);
         params.add(Params.TIME_LAG_REPLICATING_GRAPH);
         return params;

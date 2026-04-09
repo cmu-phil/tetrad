@@ -121,7 +121,7 @@ public class BossCdnodScore extends AbstractBootstrapAlgorithm implements Algori
         permutationSearch.setSeed(seed);
         permutationSearch.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
 
-        final boolean outputPdag = parameters.getBoolean(Params.OUTPUT_PDAG);
+        final boolean outputPdag = parameters.getBoolean(Params.OUTPUT_CPDAG);
 
         Graph g;
         try {
@@ -322,7 +322,7 @@ public class BossCdnodScore extends AbstractBootstrapAlgorithm implements Algori
 //        params.add(Params.TIME_LAG_REPLICATING_GRAPH);
         params.add(Params.NUM_THREADS);
         params.add(Params.USE_DATA_ORDER);
-        params.add(Params.OUTPUT_PDAG);
+        params.add(Params.OUTPUT_CPDAG);
         params.add(Params.SEED);
         params.add(Params.VERBOSE);
 

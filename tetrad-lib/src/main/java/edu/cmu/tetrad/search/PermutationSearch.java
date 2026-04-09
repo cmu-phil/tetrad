@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -192,10 +192,9 @@ public class PermutationSearch {
             graph = GraphUtils.getReplicatingGraph(graph);
         } else if (cpDag) {
             MeekRules rules = new MeekRules();
-            rules.setRevertToUnshieldedColliders(true);
             if (knowledge != null) rules.setKnowledge(knowledge);
             rules.setVerbose(false);
-            rules.orientImplied(graph);
+            rules.orientImplied(graph); // setEndpoint/edge ops mirror automatically if replicating
         }
 
         return graph;

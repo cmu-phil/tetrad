@@ -732,7 +732,7 @@ public final class Params {
     /**
      * Constant <code>OUTPUT_PDAG="outputPdag"</code>
      */
-    public static final String OUTPUT_PDAG = "outputPdag";
+    public static final String OUTPUT_CPDAG = "outputCpdag";
     /**
      * Constant <code>ZS_RISK_BOUND="zSRiskBound"</code>
      */
