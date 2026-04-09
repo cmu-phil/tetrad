@@ -108,7 +108,9 @@ public class PermutationSearch {
         Map<Node, Integer> index = new HashMap<>();
 
         int i = 0;
-        for (Node node : this.variables) {
+        for (Node _node : this.variables) {
+            Node node = score.getVariable(_node.getName());
+
             index.put(node, i++);
             this.gsts.put(node, new GrowShrinkTree(score, index, node));
             this.order.add(node);
@@ -169,14 +171,14 @@ public class PermutationSearch {
      * @param nodes      The list of nodes to include in the graph.
      * @param parents    A map specifying the parents for each node. Each key is a node, and its value is the set of parent nodes.
      * @param knowledge  The knowledge object, if any, to guide the orientation of edges in the graph.
-     * @param cpDag      A flag indicating whether a CPDAG (partially directed acyclic graph) is desired. If false, a DAG (directed acyclic graph) is constructed.
+     * @param cpdag      A flag indicating whether a CPDAG (partially directed acyclic graph) is desired. If false, a DAG (directed acyclic graph) is constructed.
      * @param replicating A flag indicating whether graph replication is enabled, allowing mirrored changes in replicated graphs.
      * @return The constructed graph, which may be a DAG or CPDAG depending on the value of the cpDag flag.
      */
     public static Graph getGraph(List<Node> nodes,
                                  Map<Node, Set<Node>> parents,
                                  Knowledge knowledge,
-                                 boolean cpDag,
+                                 boolean cpdag,
                                  boolean replicating) {
         Graph graph = new EdgeListGraph(nodes);
 
@@ -186,13 +188,19 @@ public class PermutationSearch {
             }
         }
 
-        if (replicating) {
-            graph = GraphUtils.getReplicatingGraph(graph);
-            graph = new EdgeListGraph(graph);
+        if (cpdag) {
+            MeekRules rules = new MeekRules();
+            rules.setRevertToUnshieldedColliders(true);
+            if (knowledge != null) rules.setKnowledge(knowledge);
+            rules.setVerbose(false);
+            rules.orientImplied(graph);
         }
 
-        if (cpDag) {
+        if (replicating) {
+            graph = GraphUtils.getReplicatingGraph(graph);
+        } else if (cpdag) {
             MeekRules rules = new MeekRules();
+            rules.setRevertToUnshieldedColliders(true);
             if (knowledge != null) rules.setKnowledge(knowledge);
             rules.setVerbose(false);
             rules.orientImplied(graph);

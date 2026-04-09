@@ -32,6 +32,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.text.ParseException;
@@ -133,14 +134,15 @@ public class TimeSeriesSemSimulation implements Simulation, AcceptsKnowledge {
         this.graphs = new ArrayList<>();
 
         Graph graph = this.randomGraph.createGraph(parameters);
-        graph = TsUtils.graphToLagGraph(graph, parameters.getInt(Params.NUM_LAGS), 0.1);
+        int numExtraLagged = (int) TMath.floor(graph.getNumEdges() * 1.5);
+        graph = TsUtils.graphToLagGraph(graph, parameters.getInt(Params.NUM_LAGS), numExtraLagged);
         TimeSeriesSemSimulation.topToBottomLayout((TimeLagGraph) graph);
         this.knowledge = TsUtils.getKnowledge(graph);
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
                 graph = this.randomGraph.createGraph(parameters);
-                graph = TsUtils.graphToLagGraph(graph, 2, 0.1);
+                graph = TsUtils.graphToLagGraph(graph, 2, numExtraLagged);
                 TimeSeriesSemSimulation.topToBottomLayout((TimeLagGraph) graph);
             }
 

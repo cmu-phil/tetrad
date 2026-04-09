@@ -40,10 +40,7 @@ import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.sem.ScoreType;
-import edu.cmu.tetrad.util.DataConvertUtils;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.MillisecondTimes;
-import edu.cmu.tetrad.util.TextTable;
+import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
@@ -159,7 +156,8 @@ public class Comparison2 {
             if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
                 trueDag = RandomGraph.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
-                trueDag = TsUtils.graphToLagGraph(trueDag, 2, 0.1);
+                int numExtraLagged = (int) TMath.floor(trueDag.getNumEdges() * 1.5);
+                trueDag = TsUtils.graphToLagGraph(trueDag, 2, numExtraLagged);
                 System.out.println("Creating Time Lag Graph : " + trueDag);
             }
 
@@ -243,7 +241,8 @@ public class Comparison2 {
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
                     trueDag = RandomGraph.randomGraphRandomForwardEdges(
                             nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
-                    trueDag = TsUtils.graphToLagGraph(trueDag, 2, 0.1);
+                    int numExtraLagged = (int) TMath.floor(trueDag.getNumEdges() * 1.5);
+                    trueDag = TsUtils.graphToLagGraph(trueDag, 2, numExtraLagged);
                     System.out.println("Creating Time Lag Graph : " + trueDag);
                 }
 
