@@ -15,6 +15,7 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.*;
 import java.awt.*;
+import java.awt.color.CMMException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -1941,7 +1942,7 @@ public final class VertexCheckAdjustmentPanel2 extends JPanel {
                     List<String> parts = new ArrayList<>();
                     for (Edge oe : olds) parts.add("O:" + stableEdgeKey(oe));
                     for (Edge ne : news) parts.add("N:" + stableEdgeKey(ne));
-                    parts.sort(NaturalSort.naturalComparator());
+                    parts.sort(Comparator.naturalOrder());
                     return "MULTI:" + label + ":" + String.join("|", parts);
                 }
                 @Override public Edge getEdge() { return news.isEmpty() ? null : news.getFirst(); }

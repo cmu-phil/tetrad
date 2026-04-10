@@ -936,6 +936,7 @@ public final class VertexRepairPanel extends JPanel {
 
         do {
             if (stopRequested()) return;
+            cycleWarnings.clear();
 
             anyChangeInSweep = false;
 
@@ -2099,7 +2100,7 @@ public final class VertexRepairPanel extends JPanel {
                     List<String> parts = new ArrayList<>();
                     for (Edge oe : olds) parts.add("O:" + stableEdgeKey(oe));
                     for (Edge ne : news) parts.add("N:" + stableEdgeKey(ne));
-                    parts.sort(NaturalSort.naturalComparator());
+                    parts.sort(Comparator.naturalOrder());
                     return "MULTI:" + label + ":" + String.join("|", parts);
                 }
 
