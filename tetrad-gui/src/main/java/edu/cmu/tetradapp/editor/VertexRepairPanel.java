@@ -79,10 +79,9 @@ public final class VertexRepairPanel extends JPanel {
     private static final String CARD_TABLE = "table";
     private static final String CARD_NONE = "none";
     private static final DecimalFormat MODEL_P_FORMAT = new DecimalFormat("0.0000");
-    private static final int DEFAULT_MODELP_TOP_K = 25;
-
-    Comparator<ScoredCandidate> comparator = CANONICAL_TABLE_ORDER;
-
+    private static final int DEFAULT_MODELP_TOP_K = 50;
+    // ---- Preferences (persist α and model-P top-K) ----
+    static double alpha = 0.01;
     private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
         if (a == null && b == null) return 0;
         if (a == null) return 1;
@@ -90,20 +89,22 @@ public final class VertexRepairPanel extends JPanel {
 
         int c;
 
+        // Otherwise, compare on which one has lower delta for fewer Markov violations.
+        c = Integer.compare(a.delta(), b.delta());
+        if (c != 0) return c;
+
+        int edges1 = a.modelPAfter() > VertexRepairPanel.alpha ? a.edgesAfter() : Integer.MAX_VALUE;
+        int edges2 = b.modelPAfter() > VertexRepairPanel.alpha ? b.edgesAfter() : Integer.MAX_VALUE;
+
         // Otherwise, compare on which one has the fewer edges.
-        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+        c = Integer.compare(edges1, edges2);
         if (c != 0) return c;
 
         // Otherwise, compare on which one has the larger model P.
         c = -Double.compare(a.modelPAfter(), b.modelPAfter());
         if (c != 0) return c;
 
-        // Otherwise, compare on which one has the fewer Markov violations.
-        c = Integer.compare(a.violationsAfter(), b.violationsAfter());
-        if (c != 0) return c;
-
         return 0;
-
 
 
 //        // Otherwise, compare on which one edits the smaller number of edges.
@@ -126,12 +127,8 @@ public final class VertexRepairPanel extends JPanel {
 //        return 0;
 
 
-
 //        return stableTieBreak(a, b);
     };
-
-    // ---- Preferences (persist α and model-P top-K) ----
-    static double alpha = 0.01;
     private final VertexCheckIndTestModel baseModel;
     private final Deque<Graph> history = new ArrayDeque<>();
     // UI
