@@ -25,7 +25,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fci;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IndTestType;
@@ -200,7 +199,7 @@ public class FciRunner extends AbstractAlgorithmRunner
         if (getSourceGraph() != null) {
             LayoutUtil.arrangeBySourceGraph(graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
-            GraphSearchUtils.layoutByKnowledgeTiers(graph, knowledge);
+            LayoutUtil.layoutByKnowledgeTiers(graph, knowledge);
         } else {
             LayoutUtil.defaultLayout(graph);
         }

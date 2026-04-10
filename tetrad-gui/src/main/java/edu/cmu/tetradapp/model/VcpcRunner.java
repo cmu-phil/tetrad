@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.work_in_progress.VcPc;
 import edu.cmu.tetrad.util.Parameters;
@@ -317,7 +316,7 @@ public class VcpcRunner extends AbstractAlgorithmRunner
         if (getSourceGraph() != null) {
             LayoutUtil.arrangeBySourceGraph(graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
-            GraphSearchUtils.layoutByKnowledgeTiers(graph, knowledge);
+            LayoutUtil.layoutByKnowledgeTiers(graph, knowledge);
         } else {
             LayoutUtil.defaultLayout(graph);
         }

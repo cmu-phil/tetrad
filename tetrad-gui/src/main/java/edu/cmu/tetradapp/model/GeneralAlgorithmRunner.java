@@ -42,7 +42,6 @@ import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.*;
@@ -635,7 +634,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         // Final layout pass by knowledge tiers (if any)
         if (knowledge != null && knowledge.getNumTiers() > 0) {
             for (Graph graph : graphList) {
-                GraphSearchUtils.layoutByKnowledgeTiers(graph, knowledge);
+                LayoutUtil.layoutByKnowledgeTiers(graph, knowledge);
             }
         } else {
             for (Graph graph : graphList) {

@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -94,7 +94,7 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
             Graph graph = runSearch(dataModel, parameters);
 
             if (parameters.getInt(Params.TIME_LAG) > 0) {
-                GraphSearchUtils.layoutByKnowledgeIndices(graph);
+                LayoutUtil.layoutByKnowledgeIndices(graph);
             }
 
             return graph;

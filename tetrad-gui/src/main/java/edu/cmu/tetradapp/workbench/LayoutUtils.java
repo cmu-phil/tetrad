@@ -22,7 +22,6 @@ package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.GraphEditorUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
@@ -550,7 +549,7 @@ public class LayoutUtils {
                 }
             }
 
-            GraphSearchUtils.layoutByKnowledgeTiers(graph, knowledge);
+            LayoutUtil.layoutByKnowledgeTiers(graph, knowledge);
             layoutEditable.layoutByGraph(graph);
         } catch (Exception e1) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -575,7 +574,7 @@ public class LayoutUtils {
                 }
             }
 
-            GraphSearchUtils.layoutByKnowledgeIndices(graph);
+            LayoutUtil.layoutByKnowledgeIndices(graph);
             layoutEditable.layoutByGraph(graph);
         } catch (Exception e1) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
