@@ -90,16 +90,7 @@ public final class VertexRepairPanel extends JPanel {
         if (a.passesGuards() != b.passesGuards()) {
             return a.passesGuards() ? -1 : 1;
         }
-        if (!a.passesGuards()) {
-            c = Integer.compare(a.delta(), b.delta());
-            if (c != 0) return c;
-            c = Integer.compare(a.edgesAfter(), b.edgesAfter());
-            if (c != 0) return c;
-            c = Integer.compare(editSize(a), editSize(b));
-            if (c != 0) return c;
-            return stableTieBreak(a, b);
-        }
-
+//        if (!a.passesGuards()) {
         c = Integer.compare(a.delta(), b.delta());
         if (c != 0) return c;
 
@@ -107,22 +98,16 @@ public final class VertexRepairPanel extends JPanel {
         if (c != 0) return c;
 
         // 4) Absolute Model-P: FINITE first, then ASC
-        c = finiteFirst(a.modelPAfter(), b.modelPAfter());
-        if (c != 0) return c;
+//        c = finiteFirst(a.modelPAfter(), b.modelPAfter());
+//        if (c != 0) return c;
         c = Double.compare(a.modelPAfter(), b.modelPAfter());
         if (c != 0) return c;
 
         // 2) Node-P: FINITE first, then ASC
-        c = finiteFirst(a.nodePAfter(), b.nodePAfter());
-        if (c != 0) return c;
+//        c = finiteFirst(a.nodePAfter(), b.nodePAfter());
+//        if (c != 0) return c;
         c = Double.compare(a.nodePAfter(), b.nodePAfter());
         if (c != 0) return c;
-
-//        // 3) Model-P delta DESC
-//        c = finiteFirst(modelDeltaValueOrNaN(a), modelDeltaValueOrNaN(b));
-//        if (c != 0) return c;
-//        c = -Double.compare(modelDelta(a), modelDelta(b));
-//        if (c != 0) return c;
 
         c = Integer.compare(editSize(a), editSize(b));
         if (c != 0) return c;
@@ -130,7 +115,38 @@ public final class VertexRepairPanel extends JPanel {
         c = -Integer.compare(moveBiasScore(a), moveBiasScore(b));
         if (c != 0) return c;
 
+
         return stableTieBreak(a, b);
+//        } else {
+
+
+//            // 4) Absolute Model-P: FINITE first, then ASC
+//            c = finiteFirst(a.modelPAfter(), b.modelPAfter());
+//            if (c != 0) return c;
+//            c = Double.compare(a.modelPAfter(), b.modelPAfter());
+//            if (c != 0) return c;
+//
+//            // 2) Node-P: FINITE first, then ASC
+//            c = finiteFirst(a.nodePAfter(), b.nodePAfter());
+//            if (c != 0) return c;
+//            c = Double.compare(a.nodePAfter(), b.nodePAfter());
+//            if (c != 0) return c;
+//
+//
+////        // 3) Model-P delta DESC
+////        c = finiteFirst(modelDeltaValueOrNaN(a), modelDeltaValueOrNaN(b));
+////        if (c != 0) return c;
+////        c = -Double.compare(modelDelta(a), modelDelta(b));
+////        if (c != 0) return c;
+//
+//            c = Integer.compare(editSize(a), editSize(b));
+//            if (c != 0) return c;
+//
+//            c = -Integer.compare(moveBiasScore(a), moveBiasScore(b));
+//            if (c != 0) return c;
+//
+//            return stableTieBreak(a, b);
+//        }
     };
     // ---- Preferences (persist α and model-P top-K) ----
     static double alpha = 0.01;
@@ -149,6 +165,7 @@ public final class VertexRepairPanel extends JPanel {
     private final CachedIndependenceQueries Q;
     private final VertexCheckIndTestModel model;
     private final JComboBox<Node> nodeCombo = new JComboBox<>();
+    private final JSpinner seedSpinner;
     private Node x;
     private Graph workingGraph;
     private Knowledge knowledge = new Knowledge();
@@ -156,7 +173,6 @@ public final class VertexRepairPanel extends JPanel {
     private volatile JDialog watchDialog;
     private volatile boolean suppressHistory = false;
     private int repairSeed = 0;
-    private final JSpinner seedSpinner;
 
     public VertexRepairPanel(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
@@ -165,7 +181,7 @@ public final class VertexRepairPanel extends JPanel {
                 Preferences.userRoot().getInt("vertexRepairSeed", RandomUtil.getInstance().nextInt(50000)),
                 0, Integer.MAX_VALUE, 1));
 
-        Preferences.userRoot().putInt("vertexRepairSeed", ((SpinnerNumberModel)seedSpinner.getModel()).getNumber().intValue());
+        Preferences.userRoot().putInt("vertexRepairSeed", ((SpinnerNumberModel) seedSpinner.getModel()).getNumber().intValue());
 
         this.baseModel = Objects.requireNonNull(editor.getIndTestModel(), "editor.getIndTestModel()");
         this.Q = Objects.requireNonNull(editor.getCachedQueries(), "editor.getCachedQueries()");
@@ -521,10 +537,10 @@ public final class VertexRepairPanel extends JPanel {
             if (afterEdges < currentEdges) return true;
 
             final double MIN_MP_GAIN = 0;
-            return afterEdges == currentEdges;
-//                    && Double.isFinite(mpBefore)
-//                    && Double.isFinite(mpAfter)
-//                    && (mpAfter - mpBefore) >= MIN_MP_GAIN;
+            return afterEdges == currentEdges
+                    && Double.isFinite(mpBefore)
+                    && Double.isFinite(mpAfter)
+                    && (mpAfter - mpBefore) >= MIN_MP_GAIN;
         }
 
         return false;
@@ -909,17 +925,17 @@ public final class VertexRepairPanel extends JPanel {
             });
         }
 
-        if (!cycleWarnings.isEmpty()) {
-            String message = "Repair completed, but cycles were detected and skipped:\n\n"
-                    + String.join("\n", cycleWarnings)
-                    + "\n\nThese nodes or states may need manual review.";
-            SwingUtilities.invokeLater(() ->
-                    JOptionPane.showMessageDialog(
-                            VertexRepairPanel.this,
-                            message,
-                            "Cycle Detected During Repair",
-                            JOptionPane.WARNING_MESSAGE));
-        }
+//        if (!cycleWarnings.isEmpty()) {
+//            String message = "Repair completed, but cycles were detected and skipped:\n\n"
+//                    + String.join("\n", cycleWarnings)
+//                    + "\n\nThese nodes or states may need manual review.";
+//            SwingUtilities.invokeLater(() ->
+//                    JOptionPane.showMessageDialog(
+//                            VertexRepairPanel.this,
+//                            message,
+//                            "Cycle Detected During Repair",
+//                            JOptionPane.WARNING_MESSAGE));
+//        }
     }
 
     /**
