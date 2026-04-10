@@ -20,6 +20,7 @@
 
 package edu.cmu.tetradapp.workbench;
 
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -531,6 +532,31 @@ public class LayoutUtils {
         LayoutUtil.arrangeBySourceGraph(graph, sourceGraph);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.source;
+    }
+
+    /**
+     * <p>knowledgeLayout.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
+    public static void layoutByKnowledgeTiers(LayoutEditable layoutEditable, Knowledge knowledge) {
+        Graph graph = new EdgeListGraph(layoutEditable.getGraph());
+
+        try {
+
+            for (Node node : new ArrayList<>(graph.getNodes())) {
+                if (node.getNodeType() == NodeType.ERROR) {
+                    graph.removeNode(node);
+                }
+            }
+
+            GraphSearchUtils.layoutByKnowledgeTiers(graph, knowledge);
+            layoutEditable.layoutByGraph(graph);
+        } catch (Exception e1) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    e1.getMessage());
+        }
+        LayoutUtils.layout = Layout.knowledge;
     }
 
     /**

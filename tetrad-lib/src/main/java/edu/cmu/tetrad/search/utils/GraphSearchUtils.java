@@ -405,6 +405,7 @@ public final class GraphSearchUtils {
         sort(notInTier);
         int x = 60;
         int y = 60;
+        
         if (!notInTier.isEmpty()) {
             for (String name : notInTier) {
                 Node node = graph.getNode(name);
@@ -416,10 +417,11 @@ public final class GraphSearchUtils {
             }
             y += ySpace;
         }
+
         for (int i = 0; i < knowledge.getNumTiers(); i++) {
             List<String> tier = knowledge.getTier(i);
             tier.sort(NaturalSort.naturalComparator());
-//            sort(tier);
+
             x = 60;
             for (String name : tier) {
                 Node node = graph.getNode(name);
@@ -431,6 +433,7 @@ public final class GraphSearchUtils {
             }
             y += ySpace;
         }
+
         repositionLatents(graph);
         LayoutUtil.repositionLatents(graph);
     }
@@ -474,7 +477,6 @@ public final class GraphSearchUtils {
         }
 
         for (int i = 0; i <= maxLag; i++) {
-//            sort(tiers.get(i));
             tiers.get(i).sort(NaturalSort.naturalComparator());
         }
 

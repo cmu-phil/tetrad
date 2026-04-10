@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -90,7 +91,13 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
                 throw new IllegalArgumentException("This search cannot take a covariance matrix as input.");
             }
         } else if (parameters.getInt(Params.NUMBER_RESAMPLING) == 0) {
-            return runSearch(dataModel, parameters);
+            Graph graph = runSearch(dataModel, parameters);
+
+            if (parameters.getInt(Params.TIME_LAG) > 0) {
+                GraphSearchUtils.layoutByKnowledgeIndices(graph);
+            }
+
+            return graph;
         }
 
         // create a new random generator if a seed is given

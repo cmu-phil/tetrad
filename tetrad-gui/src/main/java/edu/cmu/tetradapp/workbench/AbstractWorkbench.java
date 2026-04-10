@@ -985,7 +985,13 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Not implemented for the workbench.
      */
     public void layoutByKnowledge() {
-        GraphSearchUtils.layoutByKnowledgeTiers(this.graph, getKnowledge());
+
+        if (getKnowledge() != null) {
+            GraphSearchUtils.layoutByKnowledgeTiers(this.graph, getKnowledge());
+        } else {
+            GraphSearchUtils.layoutByKnowledgeIndices(this.graph);
+        }
+
         revalidate();
         repaint();
     }
