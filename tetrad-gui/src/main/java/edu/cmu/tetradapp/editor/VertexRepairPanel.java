@@ -85,11 +85,13 @@ public final class VertexRepairPanel extends JPanel {
         if (a == null) return 1;
         if (b == null) return -1;
 
+        int c;
+
         if (a.passesGuards() != b.passesGuards()) {
             return a.passesGuards() ? -1 : 1;
         }
         if (!a.passesGuards()) {
-            int c = Integer.compare(a.delta(), b.delta());
+            c = Integer.compare(a.delta(), b.delta());
             if (c != 0) return c;
             c = Integer.compare(a.edgesAfter(), b.edgesAfter());
             if (c != 0) return c;
@@ -98,33 +100,36 @@ public final class VertexRepairPanel extends JPanel {
             return stableTieBreak(a, b);
         }
 
-        int c = Integer.compare(a.delta(), b.delta());
+        c = Integer.compare(a.delta(), b.delta());
         if (c != 0) return c;
 
-        // 2) Node-P: FINITE first, then DESC
-        c = finiteFirst(a.nodePAfter(), b.nodePAfter());
-        if (c != 0) return c;
-        c = -Double.compare(a.nodePAfter(), b.nodePAfter());
+        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
         if (c != 0) return c;
 
-        // 3) Model-P delta DESC
-        c = finiteFirst(modelDeltaValueOrNaN(a), modelDeltaValueOrNaN(b));
-        if (c != 0) return c;
-        c = -Double.compare(modelDelta(a), modelDelta(b));
-        if (c != 0) return c;
-
-        // 4) Absolute Model-P: FINITE first, then DESC
+        // 4) Absolute Model-P: FINITE first, then ASC
         c = finiteFirst(a.modelPAfter(), b.modelPAfter());
         if (c != 0) return c;
-        c = -Double.compare(a.modelPAfter(), b.modelPAfter());
+        c = Double.compare(a.modelPAfter(), b.modelPAfter());
+        if (c != 0) return c;
+
+        // 2) Node-P: FINITE first, then ASC
+        c = finiteFirst(a.nodePAfter(), b.nodePAfter());
+        if (c != 0) return c;
+        c = Double.compare(a.nodePAfter(), b.nodePAfter());
+        if (c != 0) return c;
+
+//        // 3) Model-P delta DESC
+//        c = finiteFirst(modelDeltaValueOrNaN(a), modelDeltaValueOrNaN(b));
+//        if (c != 0) return c;
+//        c = -Double.compare(modelDelta(a), modelDelta(b));
+//        if (c != 0) return c;
+
+        c = Integer.compare(editSize(a), editSize(b));
         if (c != 0) return c;
 
         c = -Integer.compare(moveBiasScore(a), moveBiasScore(b));
         if (c != 0) return c;
-        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
-        if (c != 0) return c;
-        c = Integer.compare(editSize(a), editSize(b));
-        if (c != 0) return c;
+
         return stableTieBreak(a, b);
     };
     // ---- Preferences (persist α and model-P top-K) ----
@@ -516,10 +521,10 @@ public final class VertexRepairPanel extends JPanel {
             if (afterEdges < currentEdges) return true;
 
             final double MIN_MP_GAIN = 0;
-            return afterEdges == currentEdges
-                    && Double.isFinite(mpBefore)
-                    && Double.isFinite(mpAfter)
-                    && (mpAfter - mpBefore) >= MIN_MP_GAIN;
+            return afterEdges == currentEdges;
+//                    && Double.isFinite(mpBefore)
+//                    && Double.isFinite(mpAfter)
+//                    && (mpAfter - mpBefore) >= MIN_MP_GAIN;
         }
 
         return false;
