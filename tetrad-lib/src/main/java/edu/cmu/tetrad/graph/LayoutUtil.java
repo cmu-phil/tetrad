@@ -50,10 +50,15 @@ public class LayoutUtil {
     }
 
     /**
-     * <p>arrangeByKnowledgeTiers.</p>
+     * Arranges the nodes of the given graph in tiers based on their grouping
+     * as defined in the provided knowledge object. Nodes not assigned to any
+     * tier are arranged first, followed by nodes in each tier, with both groups
+     * laid out in a 2D space with horizontal and vertical spacing. Latent nodes
+     * are repositioned after arranging other nodes.
      *
-     * @param graph     a {@link Graph} object
-     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @param graph    the graph whose nodes are to be arranged and positioned.
+     * @param knowledge the knowledge object containing tier information and
+     *                  ungrouped variables for the graph nodes.
      */
     public static void layoutByKnowledgeTiers(Graph graph, Knowledge knowledge) {
         if (knowledge.getNumTiers() == 0) {
@@ -98,9 +103,13 @@ public class LayoutUtil {
     }
 
     /**
-     * <p>arrangeByKnowledgeTiers.</p>
+     * Arranges the nodes of the given graph in tiers based on numerical indices
+     * derived from the node names, and positions them accordingly in a 2D layout.
+     * The method processes the nodes to determine their tier, sorts them, and
+     * spaces them in both horizontal and vertical directions. Latent nodes are
+     * repositioned after arranging all other nodes.
      *
-     * @param graph a {@link Graph} object
+     * @param graph the graph whose nodes are to be arranged and positioned.
      */
     public static void layoutByKnowledgeIndices(Graph graph) {
         int maxLag = 0;
