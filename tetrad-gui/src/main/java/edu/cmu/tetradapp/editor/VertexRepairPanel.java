@@ -80,6 +80,9 @@ public final class VertexRepairPanel extends JPanel {
     private static final String CARD_NONE = "none";
     private static final DecimalFormat MODEL_P_FORMAT = new DecimalFormat("0.0000");
     private static final int DEFAULT_MODELP_TOP_K = 25;
+
+    Comparator<ScoredCandidate> comparator = CANONICAL_TABLE_ORDER;
+
     private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
         if (a == null && b == null) return 0;
         if (a == null) return 1;
@@ -87,67 +90,46 @@ public final class VertexRepairPanel extends JPanel {
 
         int c;
 
-        if (a.passesGuards() != b.passesGuards()) {
-            return a.passesGuards() ? -1 : 1;
-        }
-//        if (!a.passesGuards()) {
-        c = Integer.compare(a.delta(), b.delta());
-        if (c != 0) return c;
-
+        // Otherwise, compare on which one has the fewer edges.
         c = Integer.compare(a.edgesAfter(), b.edgesAfter());
         if (c != 0) return c;
 
-        // 4) Absolute Model-P: FINITE first, then ASC
-//        c = finiteFirst(a.modelPAfter(), b.modelPAfter());
+        // Otherwise, compare on which one has the larger model P.
+        c = -Double.compare(a.modelPAfter(), b.modelPAfter());
+        if (c != 0) return c;
+
+        // Otherwise, compare on which one has the fewer Markov violations.
+        c = Integer.compare(a.violationsAfter(), b.violationsAfter());
+        if (c != 0) return c;
+
+        return 0;
+
+
+
+//        // Otherwise, compare on which one edits the smaller number of edges.
+//        c = Integer.compare(editSize(a), editSize(b));
 //        if (c != 0) return c;
-        c = Double.compare(a.modelPAfter(), b.modelPAfter());
-        if (c != 0) return c;
 
-        // 2) Node-P: FINITE first, then ASC
-//        c = finiteFirst(a.nodePAfter(), b.nodePAfter());
+//        // Otherwise, compare on which one has the larger node P.
+//        c = -Double.compare(a.nodePAfter(), b.nodePAfter());
 //        if (c != 0) return c;
-        c = Double.compare(a.nodePAfter(), b.nodePAfter());
-        if (c != 0) return c;
 
-        c = Integer.compare(editSize(a), editSize(b));
-        if (c != 0) return c;
+//        // Otherwise, compare on which one has the fewer edges.
+//        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
+//        if (c != 0) return c;
 
-        c = -Integer.compare(moveBiasScore(a), moveBiasScore(b));
-        if (c != 0) return c;
-
-
-        return stableTieBreak(a, b);
-//        } else {
-
-
-//            // 4) Absolute Model-P: FINITE first, then ASC
-//            c = finiteFirst(a.modelPAfter(), b.modelPAfter());
-//            if (c != 0) return c;
-//            c = Double.compare(a.modelPAfter(), b.modelPAfter());
-//            if (c != 0) return c;
-//
-//            // 2) Node-P: FINITE first, then ASC
-//            c = finiteFirst(a.nodePAfter(), b.nodePAfter());
-//            if (c != 0) return c;
-//            c = Double.compare(a.nodePAfter(), b.nodePAfter());
-//            if (c != 0) return c;
-//
-//
-////        // 3) Model-P delta DESC
-////        c = finiteFirst(modelDeltaValueOrNaN(a), modelDeltaValueOrNaN(b));
-////        if (c != 0) return c;
-////        c = -Double.compare(modelDelta(a), modelDelta(b));
-////        if (c != 0) return c;
-//
-//            c = Integer.compare(editSize(a), editSize(b));
-//            if (c != 0) return c;
-//
-//            c = -Integer.compare(moveBiasScore(a), moveBiasScore(b));
-//            if (c != 0) return c;
-//
-//            return stableTieBreak(a, b);
+//        // If one passes the guards but the other doesn't, pick whichever passes the guards.
+//        if (a.passesGuards() != b.passesGuards()) {
+//            return a.passesGuards() ? -1 : 1;
 //        }
+
+//        return 0;
+
+
+
+//        return stableTieBreak(a, b);
     };
+
     // ---- Preferences (persist α and model-P top-K) ----
     static double alpha = 0.01;
     private final VertexCheckIndTestModel baseModel;
