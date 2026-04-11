@@ -136,9 +136,9 @@ public class VertexCheckEditor extends JPanel {
             throw new IllegalArgumentException("Knowledge conflicts with current graph structure.");
 
         modelUniformityTest = new JComboBox<>(new String[]{"Use KS", "Use AD"});
-        modelUniformityTest.setSelectedIndex(model.getUseAndersonDarling() ? 1 : 0);
+        modelUniformityTest.setSelectedIndex(Preferences.userRoot().getBoolean("useAndersonDarling", false) ? 1 : 0);
         modelUniformityTest.addActionListener(e -> {
-            model.setUseAndersonDarling(modelUniformityTest.getSelectedIndex() == 1);
+            Preferences.userRoot().putBoolean("useAndersonDarling", modelUniformityTest.getSelectedIndex() == 1);
             runAllAndRefresh(null, null);
         });
 
@@ -465,13 +465,19 @@ public class VertexCheckEditor extends JPanel {
             public void watch() {
                 for (String v : toCompute) model.ensureVertexComputed(v);
                 SwingUtilities.invokeLater(() -> {
-                    try {
-                        for (int mr : sel.modelRows()) overviewModel.fireTableRowsUpdated(mr, mr);
-                    } catch (Exception ex) { return; }
-                    refreshModelDiagnostics();
-                    String stillActive = getActiveSelectedVertexName();
-                    if (stillActive != null) refreshDetails(stillActive);
+                    updateTable();
                 });
+            }
+
+            private synchronized void updateTable() {
+                try {
+                    for (int mr : sel.modelRows()) overviewModel.fireTableRowsUpdated(mr, mr);
+                } catch (Exception ex) {
+                    return;
+                }
+                refreshModelDiagnostics();
+                String stillActive = getActiveSelectedVertexName();
+                if (stillActive != null) refreshDetails(stillActive);
             }
         };
     }
@@ -638,7 +644,7 @@ public class VertexCheckEditor extends JPanel {
     }
 
     private void refreshModelDiagnostics() {
-        String type = model.getUseAndersonDarling() ? "Anderson-Darling" : "Kolmogorov-Smirnov";
+        String type = Preferences.userRoot().getBoolean("useAndersonDarling", false) ? "Anderson-Darling" : "Kolmogorov-Smirnov";
         VertexCheckIndTestModel.ModelSummary ms = model.getModelSummary();
         if (ms == null) {
             modelNpLabel.setText("# p-values: (not computed)");
