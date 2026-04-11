@@ -94,17 +94,17 @@ public class VertexCheckEditor extends JPanel {
     private final JLabel modelPLabel  = new JLabel("Model Uniformity P: (not computed)");
     private final JLabel modelNpLabel = new JLabel("# p-values (not computed): -");
 
-    private CachedIndependenceQueries Q;
+    private final CachedIndependenceQueries Q;
     private JTable overviewTable;
     private JTable factsTable;
     private AbstractTableModel overviewModel;
     private AbstractTableModel factsModel;
-    private JPanel histogramPanel = new JPanel(new BorderLayout());
-    private JComboBox<String> modelUniformityTest;
+    private final JPanel histogramPanel = new JPanel(new BorderLayout());
+    private final JComboBox<String> modelUniformityTest;
     private IndependenceWrapper independenceWrapper;
     private boolean initializing;
     private boolean applyingGraphProgrammatically = false;
-    private Knowledge knowledge;
+    private final Knowledge knowledge;
     private volatile boolean runningAll = false;
 
     /** Right-hand tabbed pane ("Check" | "Repair"). */
