@@ -88,7 +88,6 @@ public final class VertexRepairPanel extends JPanel {
         if (b == null) return -1;
 
         int c;
-        ;
 
         // Otherwise, compare on which one has lower delta for fewer Markov violations.
         if (abs(a.delta()) >= 0 && abs(b.delta()) >= 0) {
@@ -108,30 +107,7 @@ public final class VertexRepairPanel extends JPanel {
         c = -Double.compare(a.modelPAfter(), b.modelPAfter());
         if (c != 0) return c;
 
-        return 0;
-
-
-//        // Otherwise, compare on which one edits the smaller number of edges.
-//        c = Integer.compare(editSize(a), editSize(b));
-//        if (c != 0) return c;
-
-//        // Otherwise, compare on which one has the larger node P.
-//        c = -Double.compare(a.nodePAfter(), b.nodePAfter());
-//        if (c != 0) return c;
-
-//        // Otherwise, compare on which one has the fewer edges.
-//        c = Integer.compare(a.edgesAfter(), b.edgesAfter());
-//        if (c != 0) return c;
-
-//        // If one passes the guards but the other doesn't, pick whichever passes the guards.
-//        if (a.passesGuards() != b.passesGuards()) {
-//            return a.passesGuards() ? -1 : 1;
-//        }
-
-//        return 0;
-
-
-//        return stableTieBreak(a, b);
+        return stableTieBreak(a, b);
     };
     // ---- Preferences (persist α and model-P top-K) ----
     static double alpha = 0.01;
@@ -280,10 +256,6 @@ public final class VertexRepairPanel extends JPanel {
 
         if (containsAny(s, "rem:") || containsAny(s, "remove", "delete")) return MoveType.REMOVE_EDGE;
         if (containsAny(s, "add:") || containsAny(s, "add", "insert")) return MoveType.ADD_EDGE;
-
-        if (containsAny(s, "orient collider", "orient away from collider")) {
-            return MoveType.COLLIDER_FIX;
-        }
 
         if (containsAny(s, "rep:") || containsAny(s, "replace", "reorient", "orient", "flip", "reverse", "endpoint")) {
             return MoveType.REORIENT_SIMPLE;
@@ -509,6 +481,8 @@ public final class VertexRepairPanel extends JPanel {
                 - (TMath.log(a) - TMath.log(1.0 - a));
     }
 
+    // Only display candidate edits that improve one of the measures the canonical sort
+    // cares about: Markov violations, number of edges, or model uniformity p-value.
     private static boolean isProgress(int baselineViol,
                                       int afterViol,
                                       int currentEdges,
@@ -517,18 +491,11 @@ public final class VertexRepairPanel extends JPanel {
                                       double mpAfter) {
 
         if (afterViol < baselineViol) return true;
+        if (afterEdges < currentEdges) return true;
 
-        if (afterViol == baselineViol) {
-            if (afterEdges < currentEdges) return true;
-
-            final double MIN_MP_GAIN = 0;
-            return afterEdges == currentEdges
-                    && Double.isFinite(mpBefore)
-                    && Double.isFinite(mpAfter)
-                    && (mpAfter - mpBefore) >= MIN_MP_GAIN;
-        }
-
-        return false;
+        final double MIN_MP_GAIN = 0.001;
+        return Double.isFinite(mpBefore) && Double.isFinite(mpAfter)
+                && (mpAfter - mpBefore) >= MIN_MP_GAIN;
     }
 
     private static boolean hasDirectedPath(Graph g, Node from, Node to) {
@@ -887,19 +854,8 @@ public final class VertexRepairPanel extends JPanel {
         suppressHistory = true;
 
         try {
-//            // ---- Phase 1: add-only forward sweep --------------------------------
-//            SwingUtilities.invokeLater(() -> statusLabel.setText("Phase 1 (add edges)..."));
-//            runRepairPhase(gt, RepairPhase.ADD_ONLY, seenSweepStates, cycleWarnings);
-//            if (stopRequested()) return;
-//
-//            // ---- Phase 2: remove/reorient backward sweep ------------------------
-//            SwingUtilities.invokeLater(() -> statusLabel.setText("Phase 2 (remove/reorient)..."));
-//            runRepairPhase(gt, RepairPhase.NON_ADD, seenSweepStates, cycleWarnings);
-
             SwingUtilities.invokeLater(() -> statusLabel.setText("..."));
             runRepairPhase(gt, RepairPhase.ALL, seenSweepStates, cycleWarnings);
-
-
         } finally {
             suppressHistory = false;
             RandomUtil.getInstance().setSeed(previousSeed);
@@ -909,18 +865,6 @@ public final class VertexRepairPanel extends JPanel {
                 statusLabel.setText("Repair complete. (seed=" + repairSeed + ")");
             });
         }
-
-//        if (!cycleWarnings.isEmpty()) {
-//            String message = "Repair completed, but cycles were detected and skipped:\n\n"
-//                    + String.join("\n", cycleWarnings)
-//                    + "\n\nThese nodes or states may need manual review.";
-//            SwingUtilities.invokeLater(() ->
-//                    JOptionPane.showMessageDialog(
-//                            VertexRepairPanel.this,
-//                            message,
-//                            "Cycle Detected During Repair",
-//                            JOptionPane.WARNING_MESSAGE));
-//        }
     }
 
     /**
@@ -945,9 +889,6 @@ public final class VertexRepairPanel extends JPanel {
             cycleWarnings.clear();
 
             anyChangeInSweep = false;
-
-//            List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
-//            nodes.sort(Comparator.comparing(Node::getName, NaturalSort.NATURAL_NAME_COMPARATOR));
 
             List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
             nodes.sort(Comparator.comparing(Node::getName, NaturalSort.NATURAL_NAME_COMPARATOR));
@@ -1076,6 +1017,20 @@ public final class VertexRepairPanel extends JPanel {
         }
 
         List<ScoredCandidate> result = new ArrayList<>(scored.size());
+//        for (ScoredCandidate sc : scored) {
+//            Double mpAfter = mpAfterByKey.get(sc.edit().key());
+//            ScoredCandidate patched = new ScoredCandidate(
+//                    sc.edit(), sc.violationsBaseline(), sc.violationsAfter(),
+//                    sc.nodePAfter(), mpBefore,
+//                    (mpAfter == null ? Double.NaN : mpAfter),
+//                    sc.edgesAfter(), true);
+//
+//            result.add(new ScoredCandidate(
+//                    patched.edit(), patched.violationsBaseline(), patched.violationsAfter(),
+//                    patched.nodePAfter(), patched.modelPBefore(), patched.modelPAfter(),
+//                    patched.edgesAfter(), wouldPassGuards(base, patched)));
+//        }
+
         for (ScoredCandidate sc : scored) {
             Double mpAfter = mpAfterByKey.get(sc.edit().key());
             ScoredCandidate patched = new ScoredCandidate(
@@ -1084,10 +1039,15 @@ public final class VertexRepairPanel extends JPanel {
                     (mpAfter == null ? Double.NaN : mpAfter),
                     sc.edgesAfter(), true);
 
+            boolean passes = wouldPassGuards(base, patched);
+
+            // Skip candidates that don't constitute progress, except no-ops
+            if (!passes && !patched.edit().isNoOp()) continue;
+
             result.add(new ScoredCandidate(
                     patched.edit(), patched.violationsBaseline(), patched.violationsAfter(),
                     patched.nodePAfter(), patched.modelPBefore(), patched.modelPAfter(),
-                    patched.edgesAfter(), wouldPassGuards(base, patched)));
+                    patched.edgesAfter(), passes));
         }
 
         result.sort(CANONICAL_TABLE_ORDER);
@@ -1177,7 +1137,6 @@ public final class VertexRepairPanel extends JPanel {
         }
 
         vlog("APPLIED successfully");
-//        if (!suppressHistory)
         SwingUtilities.invokeLater(() -> statusLabel.setText("Applied: " + cand.description()));
     }
 
@@ -1229,15 +1188,10 @@ public final class VertexRepairPanel extends JPanel {
         List<CandidateEdit> out = new ArrayList<>();
         out.add(CandidateEdit.noOp());
 
-//        Set<Node> pool = new LinkedHashSet<>(g.getNodes());
-//        pool.remove(x);
-//
         List<Node> pool = new ArrayList<>(g.getNodes());
         pool.remove(x);
         pool.sort(Comparator.comparing(Node::getName, NaturalSort.NATURAL_NAME_COMPARATOR));
         RandomUtil.shuffle(pool);
-//        poo
-//        pool.sort(Comparator.comparing(Node::getName, NaturalSort.NATURAL_NAME_COMPARATOR));
 
         // ---- Remove existing edge incident to x ----
         ArrayList<Edge> edges = new ArrayList<>(g.getEdges(x));
@@ -1282,125 +1236,9 @@ public final class VertexRepairPanel extends JPanel {
             out.addAll(enumerateIncidentOrientationPatternMoves(g, x, gt));
         }
 
-//        // ---- CPDAG-only: 2-edge collider fixes ----
-//        if (phase != RepairPhase.ADD_ONLY && gt == AdjustmentGraphType.CPDAG) {
-//            out.addAll(enumerateCpdagColliderPairMoves(g, x));
-//        }
-
         return dedupCandidateEdits(out);
     }
 
-    // -------------------------------------------------------------------------
-    // Candidate enumeration
-    // -------------------------------------------------------------------------
-//
-//    private List<CandidateEdit> enumerateIncidentOrientationPatternMoves(Graph g, Node x, AdjustmentGraphType gt) {
-//        if (g == null || x == null) return List.of();
-//
-//        List<Node> adj = new ArrayList<>(g.getAdjacentNodes(x));
-//        adj.sort(Comparator.comparing(Node::getName, Comparator.nullsLast(String::compareTo)));
-//
-//        List<Edge> freeEdges = new ArrayList<>();
-//
-//        for (Node y : adj) {
-//            if (y == null) continue;
-//            Edge e = g.getEdge(x, y);
-//            if (e == null) continue;
-//
-//            Endpoint ex = endpointAt(e, x);
-//            Endpoint ey = endpointAt(e, y);
-//
-//            if (gt == AdjustmentGraphType.DAG) {
-//                if (ex == Endpoint.TAIL && ey == Endpoint.ARROW) continue;
-//                if (ex == Endpoint.ARROW && ey == Endpoint.TAIL) continue;
-//                freeEdges.add(e);
-//                continue;
-//            }
-//
-//            if (ex == Endpoint.TAIL && ey == Endpoint.TAIL) {
-//                freeEdges.add(e);
-//            } else if ((ex == Endpoint.TAIL && ey == Endpoint.ARROW) || (ex == Endpoint.ARROW && ey == Endpoint.TAIL)) {
-//                // directed — compelled, skip
-//            }
-//        }
-//
-//        if (freeEdges.isEmpty()) return List.of();
-//
-//        final int MAX_FREE = 12;
-//        final int MAX_PARENTS = 6;
-//        final int MAX_MOVES = 5000;
-//
-//        if (freeEdges.size() > MAX_FREE) return List.of();
-//
-//        List<CandidateEdit> out = new ArrayList<>();
-//
-//        int m = freeEdges.size();
-//        int total = 1 << m;
-//        String xName = (x.getName() == null) ? "?" : x.getName();
-//
-//        for (int mask = 0; mask < total; mask++) {
-//            if (out.size() >= MAX_MOVES) break;
-//            if (Integer.bitCount(mask) > MAX_PARENTS) continue;
-//
-//            List<Edge> olds = new ArrayList<>(m);
-//            List<Edge> news = new ArrayList<>(m);
-//            List<String> parents = new ArrayList<>();
-//            List<String> children = new ArrayList<>();
-//            boolean earlyReject = false;
-//
-//            for (int i = 0; i < m; i++) {
-//                Edge old = freeEdges.get(i);
-//                if (old == null) continue;
-//
-//                Node y = old.getDistalNode(x);
-//                if (y == null) continue;
-//
-//                olds.add(old);
-//
-//                boolean intoX = ((mask & (1 << i)) != 0);
-//
-//                Edge ne = intoX
-//                        ? new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW)
-//                        : new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW);
-//
-//                if (gt == AdjustmentGraphType.DAG) {
-//                    if (intoX && hasDirectedPath(g, x, y)) {
-//                        earlyReject = true;
-//                        break;
-//                    }
-//                    if (!intoX && hasDirectedPath(g, y, x)) {
-//                        earlyReject = true;
-//                        break;
-//                    }
-//                }
-//
-//                news.add(ne);
-//
-//                String yn = (y.getName() == null) ? "?" : y.getName();
-//                if (intoX) parents.add(yn);
-//                else children.add(yn);
-//            }
-//
-//            if (earlyReject) continue;
-//            if (news.isEmpty()) continue;
-//
-
-    /// /            RandomUtil.shuffle(parents);
-    /// /            RandomUtil.shuffle(children);
-//
-//            parents.sort(NaturalSort.naturalComparator());
-//            children.sort(NaturalSort.naturalComparator());
-//
-//            String label =
-//                    "Orient incident edges at " + xName +
-//                            " | Pa={" + String.join(",", parents) + "}" +
-//                            " | Ch={" + String.join(",", children) + "}";
-//
-//            out.add(CandidateEdit.replaceEdges(label, olds, news));
-//        }
-//
-//        return out;
-//    }
     private List<CandidateEdit> enumerateIncidentOrientationPatternMoves(Graph g, Node x, AdjustmentGraphType gt) {
         if (g == null || x == null) return List.of();
 
@@ -1818,26 +1656,6 @@ public final class VertexRepairPanel extends JPanel {
         Map<String, Boolean> globalViolationByKey = new HashMap<>();
         Map<String, Double> globalPByKey = new HashMap<>();
 
-//        List<String> names = new ArrayList<>(contrib.keySet());
-//        names.sort(NaturalSort.naturalComparator());
-//
-//        for (String name : names) {
-//            VertexContribution vc = contrib.get(name);
-//            if (vc == null) continue;
-//
-//            for (Map.Entry<String, Boolean> e : vc.violationByKey().entrySet()) {
-//                String key = e.getKey();
-//                if (key == null) continue;
-//                globalViolationByKey.putIfAbsent(key, e.getValue());
-//            }
-//
-//            for (Map.Entry<String, Double> e : vc.pByKey().entrySet()) {
-//                String key = e.getKey();
-//                if (key == null) continue;
-//                globalPByKey.putIfAbsent(key, e.getValue());
-//            }
-//        }
-
         // Already sorted:
         List<String> names = new ArrayList<>(contrib.keySet());
         names.sort(NaturalSort.naturalComparator());
@@ -2039,7 +1857,6 @@ public final class VertexRepairPanel extends JPanel {
 
     private enum MoveType {
         REORIENT_SIMPLE,
-        COLLIDER_FIX,
         REMOVE_EDGE,
         ADD_EDGE,
         OTHER
