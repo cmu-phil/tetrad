@@ -103,8 +103,8 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
             if (c != 0) return c;
         }
 
-        // Otherwise, compare on which one has the fewer edges with alpha > 0.05.
-        double alpha1 = 0.05;
+        // Otherwise, compare on which one has the fewer edges with alpha > 0.01.
+        double alpha1 = 0.01;
         int edges1 = a.modelPAfter() > alpha1 ? a.edgesAfter() : Integer.MAX_VALUE;
         int edges2 = b.modelPAfter() > alpha1 ? b.edgesAfter() : Integer.MAX_VALUE;
 
