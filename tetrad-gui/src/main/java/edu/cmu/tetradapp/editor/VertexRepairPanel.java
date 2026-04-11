@@ -109,8 +109,8 @@ public final class VertexRepairPanel extends JPanel {
 
         return stableTieBreak(a, b);
     };
+
     // ---- Preferences (persist α and model-P top-K) ----
-    static double alpha = 0.01;
     private final VertexCheckIndTestModel baseModel;
     private final Deque<Graph> history = new ArrayDeque<>();
     // UI
@@ -176,50 +176,6 @@ public final class VertexRepairPanel extends JPanel {
     // -------------------------------------------------------------------------
     // RepairPhase: controls which move types are visible during each repair phase
     // -------------------------------------------------------------------------
-
-    private static int finiteFirst(double a, double b) {
-        boolean fa = Double.isFinite(a);
-        boolean fb = Double.isFinite(b);
-        if (fa == fb) return 0;
-        return fa ? -1 : 1;
-    }
-
-    private static double modelDeltaValueOrNaN(ScoredCandidate s) {
-        if (s == null) return Double.NaN;
-        double before = s.modelPBefore();
-        double after = s.modelPAfter();
-        return (Double.isFinite(before) && Double.isFinite(after)) ? (after - before) : Double.NaN;
-    }
-
-    private static double modelDelta(ScoredCandidate s) {
-        if (s == null) return 0.0;
-        double before = s.modelPBefore();
-        double after = s.modelPAfter();
-        if (Double.isFinite(before) && Double.isFinite(after)) {
-            return after - before;
-        }
-        return 0.0;
-    }
-
-    private static double modelLogOdds(ScoredCandidate s) {
-        double p = s.modelPAfter();
-        return Double.isFinite(p) ? alphaLogOdds(p, alpha) : 0.0;
-    }
-
-    private static double nodeLogOdds(ScoredCandidate s) {
-        double p = s.nodePAfter();
-        return Double.isFinite(p) ? alphaLogOdds(p, alpha) : 0.0;
-    }
-
-    private static int editSize(ScoredCandidate s) {
-        try {
-            if (s.edit() != null && s.edit().getEdges() != null) {
-                return TMath.max(1, s.edit().getEdges().size());
-            }
-        } catch (Throwable ignored) {
-        }
-        return 1;
-    }
 
     private static int stableTieBreak(ScoredCandidate a, ScoredCandidate b) {
         String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
@@ -452,20 +408,6 @@ public final class VertexRepairPanel extends JPanel {
         return dag.paths().isLegalDag() ? dag : null;
     }
 
-    private static double alphaLogOdds(double p, double alpha) {
-        if (!Double.isFinite(p)) return -50.0;
-        if (!Double.isFinite(alpha) || alpha <= 0.0 || alpha >= 1.0)
-            throw new IllegalArgumentException("alpha must be in (0,1)");
-
-        final double eps = 1e-12;
-
-        double q = TMath.min(1.0 - eps, TMath.max(eps, p));
-        double a = TMath.min(1.0 - eps, TMath.max(eps, alpha));
-
-        return (TMath.log(q) - TMath.log(1.0 - q))
-                - (TMath.log(a) - TMath.log(1.0 - a));
-    }
-
     // Only display candidate edits that improve one of the measures the canonical sort
     // cares about: Markov violations, number of edges, or model uniformity p-value.
     private static boolean isProgress(int baselineViol,
@@ -481,26 +423,6 @@ public final class VertexRepairPanel extends JPanel {
         final double MIN_MP_GAIN = 0.001;
         return Double.isFinite(mpBefore) && Double.isFinite(mpAfter)
                 && (mpAfter - mpBefore) >= MIN_MP_GAIN;
-    }
-
-    private static boolean hasDirectedPath(Graph g, Node from, Node to) {
-        if (g == null || from == null || to == null) return false;
-        try {
-            return g.paths().existsDirectedPath(from, to);
-        } catch (Throwable t) {
-            return false;
-        }
-    }
-
-    /**
-     * Returns a human-readable label for a phase, used in status/warning messages.
-     */
-    private static String phaseName(RepairPhase phase) {
-        return switch (phase) {
-            case ADD_ONLY -> "Phase 1 (add)";
-            case NON_ADD -> "Phase 2 (remove/reorient)";
-            case ALL -> "all-moves";
-        };
     }
 
     private Node resolveInitialNode(Graph g, Node requested) {
@@ -751,7 +673,7 @@ public final class VertexRepairPanel extends JPanel {
         }
 
         // Interactive search always uses the full move set
-        List<CandidateEdit> candidates = new ArrayList<>(enumerateCandidates(base, x, gt, RepairPhase.ALL));
+        List<CandidateEdit> candidates = new ArrayList<>(enumerateCandidates(base, x, gt));
         if (candidates.stream().noneMatch(CandidateEdit::isNoOp)) {
             candidates.addFirst(CandidateEdit.noOp());
         }
@@ -801,9 +723,8 @@ public final class VertexRepairPanel extends JPanel {
     }
 
     private List<ScoredCandidate> computeScoredCandidatesForNode(Graph base, Node node,
-                                                                 AdjustmentGraphType gt,
-                                                                 RepairPhase phase) {
-        List<CandidateEdit> candidates = new ArrayList<>(enumerateCandidates(base, node, gt, phase));
+                                                                 AdjustmentGraphType gt) {
+        List<CandidateEdit> candidates = new ArrayList<>(enumerateCandidates(base, node, gt));
         if (candidates.stream().noneMatch(CandidateEdit::isNoOp)) {
             candidates.addFirst(CandidateEdit.noOp());
         }
@@ -840,7 +761,7 @@ public final class VertexRepairPanel extends JPanel {
 
         try {
             SwingUtilities.invokeLater(() -> statusLabel.setText("..."));
-            runRepairPhase(gt, RepairPhase.ALL, seenSweepStates, cycleWarnings);
+            runRepairPhase(gt, seenSweepStates, cycleWarnings);
         } finally {
             suppressHistory = false;
             RandomUtil.getInstance().setSeed(previousSeed);
@@ -859,12 +780,10 @@ public final class VertexRepairPanel extends JPanel {
      * shared {@code seenSweepStates} set so cycles that span phases are detected.
      *
      * @param gt              graph type (controls legality and canonicalization)
-     * @param phase           which move types are permitted this phase
      * @param seenSweepStates shared set of graph-state fingerprints (mutated in place)
      * @param cycleWarnings   list to append human-readable cycle descriptions to
      */
     private void runRepairPhase(AdjustmentGraphType gt,
-                                RepairPhase phase,
                                 Set<String> seenSweepStates,
                                 List<String> cycleWarnings) {
         boolean anyChangeInSweep;
@@ -898,7 +817,7 @@ public final class VertexRepairPanel extends JPanel {
                     }
 
                     List<ScoredCandidate> candidates =
-                            computeScoredCandidatesForNode(base, current, gt, phase);
+                            computeScoredCandidatesForNode(base, current, gt);
                     if (candidates.isEmpty()) break;
 
                     ScoredCandidate top = candidates.getFirst();
@@ -907,7 +826,7 @@ public final class VertexRepairPanel extends JPanel {
                     String key = top.edit().key();
                     if (!attemptedKeys.add(key)) {
                         cycleWarnings.add(current.getName()
-                                + " (" + phaseName(phase) + "): \""
+                                + ": \""
                                 + top.edit().description() + "\"");
                         break;
                     }
@@ -930,9 +849,7 @@ public final class VertexRepairPanel extends JPanel {
             if (anyChangeInSweep) {
                 String state = workingGraph.toString();
                 if (!seenSweepStates.add(state)) {
-                    cycleWarnings.add("Inter-sweep cycle detected during "
-                            + phaseName(phase)
-                            + ": the graph returned to a previously visited state. Stopping this phase.");
+                    cycleWarnings.add("Inter-sweep cycle detected: the graph returned to a previously visited state. Stopping this phase.");
                     return;
                 }
             }
@@ -1145,16 +1062,9 @@ public final class VertexRepairPanel extends JPanel {
     /**
      * Enumerates candidate edits for node {@code x} in graph {@code g}, filtered to
      * the move types permitted by {@code phase}.
-     *
-     * <ul>
-     *   <li>{@link RepairPhase#ADD_ONLY} – only {@code ADD:} moves (plus NO_OP).</li>
-     *   <li>{@link RepairPhase#NON_ADD}  – everything except {@code ADD:} moves.</li>
-     *   <li>{@link RepairPhase#ALL}      – the full move set (interactive default).</li>
-     * </ul>
      */
     private List<CandidateEdit> enumerateCandidates(Graph g, Node x,
-                                                    AdjustmentGraphType gt,
-                                                    RepairPhase phase) {
+                                                    AdjustmentGraphType gt) {
         if (g == null || x == null) return List.of(CandidateEdit.noOp());
 
         List<CandidateEdit> out = new ArrayList<>();
@@ -1169,14 +1079,11 @@ public final class VertexRepairPanel extends JPanel {
         ArrayList<Edge> edges = new ArrayList<>(g.getEdges(x));
         Collections.sort(edges);
 
-        if (phase != RepairPhase.ADD_ONLY) {
             for (Edge e : edges) {
                 out.add(CandidateEdit.removeEdge(e));
             }
-        }
 
         // ---- Replace existing edge x—y with type-specific orientation variants ----
-        if (phase != RepairPhase.ADD_ONLY) {
             for (Edge e : edges) {
                 Node y = e.getDistalNode(x);
                 if (y == null) continue;
@@ -1186,10 +1093,8 @@ public final class VertexRepairPanel extends JPanel {
                     out.add(CandidateEdit.replaceEdge(e, v));
                 }
             }
-        }
 
         // ---- Add edges x—y for non-adjacent y ----
-        if (phase != RepairPhase.NON_ADD) {
             for (Node y : pool) {
                 if (y == null) continue;
                 if (g.isAdjacentTo(x, y)) continue;
@@ -1198,13 +1103,11 @@ public final class VertexRepairPanel extends JPanel {
                     out.add(CandidateEdit.addEdge(add));
                 }
             }
-        }
 
         // ---- Multi-edge incident orientation patterns ----
-        if (phase != RepairPhase.ADD_ONLY
-                && (gt == AdjustmentGraphType.DAG
+        if (gt == AdjustmentGraphType.DAG
                 || gt == AdjustmentGraphType.CPDAG
-                || gt == AdjustmentGraphType.PDAG)) {
+                || gt == AdjustmentGraphType.PDAG) {
             out.addAll(enumerateIncidentOrientationPatternMoves(g, x, gt));
         }
 
@@ -1307,50 +1210,6 @@ public final class VertexRepairPanel extends JPanel {
                             " | Ch={" + String.join(",", children) + "}";
 
             out.add(CandidateEdit.replaceEdges(label, olds, news));
-        }
-
-        return out;
-    }
-
-    private List<CandidateEdit> enumerateCpdagColliderPairMoves(Graph g, Node x) {
-        if (g == null || x == null) return List.of();
-
-        List<CandidateEdit> out = new ArrayList<>();
-        List<Node> adj = new ArrayList<>(g.getAdjacentNodes(x));
-        adj.sort(Comparator.comparing(Node::getName, Comparator.nullsLast(String::compareTo)));
-
-        for (int i = 0; i < adj.size(); i++) {
-            Node y = adj.get(i);
-            if (y == null) continue;
-
-            Edge exy = g.getEdge(x, y);
-            if (exy == null) continue;
-
-            for (int j = i + 1; j < adj.size(); j++) {
-                Node z = adj.get(j);
-                if (z == null) continue;
-                if (g.isAdjacentTo(y, z)) continue;
-
-                Edge exz = g.getEdge(x, z);
-                if (exz == null) continue;
-
-                Endpoint endXy = endpointAt(exy, x);
-                Endpoint endXz = endpointAt(exz, x);
-
-                if (!(endXy == Endpoint.ARROW && endXz == Endpoint.ARROW)) {
-                    Edge yToX = new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW);
-                    Edge zToX = new Edge(z, x, Endpoint.TAIL, Endpoint.ARROW);
-                    String label = "Orient collider " + y.getName() + "->" + x.getName() + "<-" + z.getName();
-                    out.add(CandidateEdit.replaceEdges(label, List.of(exy, exz), List.of(yToX, zToX)));
-                }
-
-                if (endXy == Endpoint.ARROW && endXz == Endpoint.ARROW) {
-                    Edge xToY = new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW);
-                    Edge xToZ = new Edge(x, z, Endpoint.TAIL, Endpoint.ARROW);
-                    String label = "Orient away from collider " + y.getName() + "<-" + x.getName() + "->" + z.getName();
-                    out.add(CandidateEdit.replaceEdges(label, List.of(exy, exz), List.of(xToY, xToZ)));
-                }
-            }
         }
 
         return out;
@@ -1808,23 +1667,6 @@ public final class VertexRepairPanel extends JPanel {
                 sc.modelPBefore(),
                 sc.modelPAfter()
         );
-    }
-
-    /**
-     * Controls which move types {@link #enumerateCandidates} will produce during
-     * the two-phase GES-style repair sweep.
-     *
-     * <ul>
-     *   <li>{@code ADD_ONLY}  – Phase 1: forward pass, only edge additions.</li>
-     *   <li>{@code NON_ADD}   – Phase 2: backward pass, removals and reorientations
-     *       but no new additions.</li>
-     *   <li>{@code ALL}       – Interactive/manual use: the full move set (default).</li>
-     * </ul>
-     */
-    private enum RepairPhase {
-        ADD_ONLY,
-        NON_ADD,
-        ALL
     }
 
     private enum MoveType {
