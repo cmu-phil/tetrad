@@ -28,53 +28,61 @@ import static edu.cmu.tetrad.util.TMath.abs;
 
 /**
  * Interactive panel for locally adjusting a causal graph around a selected node {@code x}
- * using feedback from the Vertex Checker.
- *
- * <h2>Candidate Enumeration</h2>
+ * using feedback from the Markov checker.
+ * <p>
+ * Candidate Enumeration:
  * <p>
  * For the selected node {@code x}, the panel enumerates a conservative set of candidate
- * single-step edge edits (additions, removals, and replacements) that are consistent with
+ * single-step edge edits — additions, removals, and replacements — that are consistent with
  * the chosen graph type (DAG, CPDAG, PDAG, MAG, or PAG). Each candidate is applied to a
  * copy of the current graph and scored using Markov-checker diagnostics derived from
- * conditional independence tests. For DAGs and CPDAGs, multi-edge orientation patterns
- * over the undirected edges incident to {@code x} are also enumerated, subject to a
- * combinatorial cap.
- *
- * <h2>Scoring and Table Order</h2>
+ * conditional independence tests. For DAGs, CPDAGs, and PDAGs, multi-edge orientation
+ * patterns over the undirected edges incident to {@code x} are also enumerated, subject to
+ * a combinatorial cap.
  * <p>
- * Candidates are ranked by a priority chain: first by whether the edit constitutes genuine
- * progress (fewer Markov violations, or equal violations with fewer edges, or equal
- * violations and edges with a higher Model-P score); then within the passing group by
- * decreasing violation reduction, edge parsimony, local Node-P, and global Model-P. The
- * top row in the table is therefore the most conservative recommended edit for the current
- * node. Candidates that do not constitute progress are shown below, ordered by the same
- * structural criteria, for reference.
- *
- * <h2>Model Repair</h2>
+ * Scoring and Table Order:
  * <p>
- * The Repair button performs a two-phase automated sweep inspired by the GES algorithm.
- * <ul>
- *   <li><b>Phase 1 (Forward / Add):</b> Only addition moves are considered. The sweep
- *       repeats over all nodes until no addition move constitutes progress.</li>
- *   <li><b>Phase 2 (Backward / Remove+Reorient):</b> Only non-addition moves (removals
- *       and reorientations) are considered. The sweep repeats until convergence.</li>
- * </ul>
- * Both phases share a single inter-sweep cycle guard: if the graph returns to any
- * previously visited state across either phase, repair stops and the user is notified.
- * Because the repair is greedy and local, it is not guaranteed to find a global optimum;
- * the user is encouraged to inspect the results and consider whether alternative top moves
- * in the per-node tables might have been more appropriate.
- *
- * <h2>Knowledge Constraints</h2>
+ * Candidates are ranked by a priority chain: first by change in Markov violations
+ * ({@code delta}); then by edge count (fewer edges preferred when violations are equal);
+ * then by Model-P (higher preferred when both prior criteria are tied). Only candidates
+ * that constitute genuine progress — fewer violations, fewer edges, or a meaningfully
+ * higher Model-P — are shown in the table. Candidates that do not constitute progress are
+ * silently excluded. The top row is therefore the most conservatively recommended edit for
+ * the current node.
+ * <p>
+ * Model Repair:
+ * <p>
+ * The Repair button performs a greedy sweep over all nodes in random order, repeatedly
+ * applying the top-ranked candidate for each node until a full pass produces no change.
+ * A shared cycle guard tracks all graph states seen across the sweep; if the graph returns
+ * to any previously visited state, repair halts and the user is notified. Because the
+ * sweep is greedy and local, it is not guaranteed to find a global optimum. Users are
+ * encouraged to inspect the result and consider whether alternative top candidates in the
+ * per-node table might have been more appropriate.
+ * <p>
+ * Knowledge Constraints:
  * <p>
  * A {@link Knowledge} object may be supplied via {@link #setKnowledge(Knowledge)}. When
  * present, any candidate edit whose resulting graph violates the knowledge is silently
  * excluded from the table and will not be applied during repair.
- *
- * <h2>Graph Type Legality</h2>
+ * <p>
+ * Graph Type Legality:
  * <p>
  * On construction, the panel checks whether the supplied graph matches any recognized legal
- * graph type. If it does not, the user is given a warning.
+ * graph type. If it does not, a warning dialog is shown. The graph type combo is
+ * pre-populated with the types the graph satisfies; if none match, all types are offered.
+ * <p>
+ * Undo and Graph Inspection:
+ * <p>
+ * Each accepted candidate edit is pushed onto an undo stack accessible via the Undo button.
+ * The current working graph can be inspected at any time via the Graph button, which shows
+ * both a rendered workbench view and the graph's text representation.
+ * <p>
+ * Reproducibility:
+ * <p>
+ * The repair sweep uses a configurable random seed (persisted across sessions via
+ * {@link java.util.prefs.Preferences}) to determine node traversal order. Setting the same
+ * seed reproduces the same repair trajectory given the same graph and independence test.
  */
 public final class VertexRepairPanel extends JPanel {
 
@@ -1079,30 +1087,30 @@ public final class VertexRepairPanel extends JPanel {
         ArrayList<Edge> edges = new ArrayList<>(g.getEdges(x));
         Collections.sort(edges);
 
-            for (Edge e : edges) {
-                out.add(CandidateEdit.removeEdge(e));
-            }
+        for (Edge e : edges) {
+            out.add(CandidateEdit.removeEdge(e));
+        }
 
         // ---- Replace existing edge x—y with type-specific orientation variants ----
-            for (Edge e : edges) {
-                Node y = e.getDistalNode(x);
-                if (y == null) continue;
+        for (Edge e : edges) {
+            Node y = e.getDistalNode(x);
+            if (y == null) continue;
 
-                for (Edge v : edgeMenuForPair(x, y, gt)) {
-                    if (edgeStructurallyEqual(e, v, x, y)) continue;
-                    out.add(CandidateEdit.replaceEdge(e, v));
-                }
+            for (Edge v : edgeMenuForPair(x, y, gt)) {
+                if (edgeStructurallyEqual(e, v, x, y)) continue;
+                out.add(CandidateEdit.replaceEdge(e, v));
             }
+        }
 
         // ---- Add edges x—y for non-adjacent y ----
-            for (Node y : pool) {
-                if (y == null) continue;
-                if (g.isAdjacentTo(x, y)) continue;
+        for (Node y : pool) {
+            if (y == null) continue;
+            if (g.isAdjacentTo(x, y)) continue;
 
-                for (Edge add : addMenuForPair(x, y, gt)) {
-                    out.add(CandidateEdit.addEdge(add));
-                }
+            for (Edge add : addMenuForPair(x, y, gt)) {
+                out.add(CandidateEdit.addEdge(add));
             }
+        }
 
         // ---- Multi-edge incident orientation patterns ----
         if (gt == AdjustmentGraphType.DAG
