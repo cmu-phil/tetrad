@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.prefs.Preferences;
 
+import static edu.cmu.tetrad.util.TMath.abs;
+
 
 /**
  * Interactive panel for locally adjusting a causal graph around a selected node {@code x}
@@ -80,21 +82,23 @@ public final class VertexRepairPanel extends JPanel {
     private static final String CARD_NONE = "none";
     private static final DecimalFormat MODEL_P_FORMAT = new DecimalFormat("0.0000");
     private static final int DEFAULT_MODELP_TOP_K = 50;
-    // ---- Preferences (persist α and model-P top-K) ----
-    static double alpha = 0.01;
     private static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
         if (a == null && b == null) return 0;
         if (a == null) return 1;
         if (b == null) return -1;
 
         int c;
+        ;
 
         // Otherwise, compare on which one has lower delta for fewer Markov violations.
-        c = Integer.compare(a.delta(), b.delta());
-        if (c != 0) return c;
+        if (abs(a.delta()) >= 0 && abs(b.delta()) >= 0) {
+            c = Integer.compare(a.delta(), b.delta());
+            if (c != 0) return c;
+        }
 
-        int edges1 = a.modelPAfter() > VertexRepairPanel.alpha ? a.edgesAfter() : Integer.MAX_VALUE;
-        int edges2 = b.modelPAfter() > VertexRepairPanel.alpha ? b.edgesAfter() : Integer.MAX_VALUE;
+        double alpha1 = 0.05;
+        int edges1 = a.modelPAfter() > alpha1 ? a.edgesAfter() : Integer.MAX_VALUE;
+        int edges2 = b.modelPAfter() > alpha1 ? b.edgesAfter() : Integer.MAX_VALUE;
 
         // Otherwise, compare on which one has the fewer edges.
         c = Integer.compare(edges1, edges2);
@@ -129,6 +133,8 @@ public final class VertexRepairPanel extends JPanel {
 
 //        return stableTieBreak(a, b);
     };
+    // ---- Preferences (persist α and model-P top-K) ----
+    static double alpha = 0.01;
     private final VertexCheckIndTestModel baseModel;
     private final Deque<Graph> history = new ArrayDeque<>();
     // UI
@@ -239,20 +245,20 @@ public final class VertexRepairPanel extends JPanel {
         return 1;
     }
 
-    private static int moveBiasScore(ScoredCandidate s) {
-        MoveType mt = moveType(s.edit());
-        double dMp = modelDelta(s);
-
-        if (Double.isFinite(dMp) && dMp > 0.0) {
-            if (mt == MoveType.REORIENT_SIMPLE) return 2;
-            if (mt == MoveType.COLLIDER_FIX) return -1;
-        } else if (!Double.isFinite(s.modelPAfter())) {
-            if (mt == MoveType.REORIENT_SIMPLE) return 1;
-            if (mt == MoveType.COLLIDER_FIX) return -1;
-        }
-
-        return 0;
-    }
+//    private static int moveBiasScore(ScoredCandidate s) {
+//        MoveType mt = moveType(s.edit());
+//        double dMp = modelDelta(s);
+//
+//        if (Double.isFinite(dMp) && dMp > 0.0) {
+//            if (mt == MoveType.REORIENT_SIMPLE) return 2;
+//            if (mt == MoveType.COLLIDER_FIX) return -1;
+//        } else if (!Double.isFinite(s.modelPAfter())) {
+//            if (mt == MoveType.REORIENT_SIMPLE) return 1;
+//            if (mt == MoveType.COLLIDER_FIX) return -1;
+//        }
+//
+//        return 0;
+//    }
 
     private static int stableTieBreak(ScoredCandidate a, ScoredCandidate b) {
         String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
@@ -1276,10 +1282,10 @@ public final class VertexRepairPanel extends JPanel {
             out.addAll(enumerateIncidentOrientationPatternMoves(g, x, gt));
         }
 
-        // ---- CPDAG-only: 2-edge collider fixes ----
-        if (phase != RepairPhase.ADD_ONLY && gt == AdjustmentGraphType.CPDAG) {
-            out.addAll(enumerateCpdagColliderPairMoves(g, x));
-        }
+//        // ---- CPDAG-only: 2-edge collider fixes ----
+//        if (phase != RepairPhase.ADD_ONLY && gt == AdjustmentGraphType.CPDAG) {
+//            out.addAll(enumerateCpdagColliderPairMoves(g, x));
+//        }
 
         return dedupCandidateEdits(out);
     }
@@ -1287,7 +1293,114 @@ public final class VertexRepairPanel extends JPanel {
     // -------------------------------------------------------------------------
     // Candidate enumeration
     // -------------------------------------------------------------------------
+//
+//    private List<CandidateEdit> enumerateIncidentOrientationPatternMoves(Graph g, Node x, AdjustmentGraphType gt) {
+//        if (g == null || x == null) return List.of();
+//
+//        List<Node> adj = new ArrayList<>(g.getAdjacentNodes(x));
+//        adj.sort(Comparator.comparing(Node::getName, Comparator.nullsLast(String::compareTo)));
+//
+//        List<Edge> freeEdges = new ArrayList<>();
+//
+//        for (Node y : adj) {
+//            if (y == null) continue;
+//            Edge e = g.getEdge(x, y);
+//            if (e == null) continue;
+//
+//            Endpoint ex = endpointAt(e, x);
+//            Endpoint ey = endpointAt(e, y);
+//
+//            if (gt == AdjustmentGraphType.DAG) {
+//                if (ex == Endpoint.TAIL && ey == Endpoint.ARROW) continue;
+//                if (ex == Endpoint.ARROW && ey == Endpoint.TAIL) continue;
+//                freeEdges.add(e);
+//                continue;
+//            }
+//
+//            if (ex == Endpoint.TAIL && ey == Endpoint.TAIL) {
+//                freeEdges.add(e);
+//            } else if ((ex == Endpoint.TAIL && ey == Endpoint.ARROW) || (ex == Endpoint.ARROW && ey == Endpoint.TAIL)) {
+//                // directed — compelled, skip
+//            }
+//        }
+//
+//        if (freeEdges.isEmpty()) return List.of();
+//
+//        final int MAX_FREE = 12;
+//        final int MAX_PARENTS = 6;
+//        final int MAX_MOVES = 5000;
+//
+//        if (freeEdges.size() > MAX_FREE) return List.of();
+//
+//        List<CandidateEdit> out = new ArrayList<>();
+//
+//        int m = freeEdges.size();
+//        int total = 1 << m;
+//        String xName = (x.getName() == null) ? "?" : x.getName();
+//
+//        for (int mask = 0; mask < total; mask++) {
+//            if (out.size() >= MAX_MOVES) break;
+//            if (Integer.bitCount(mask) > MAX_PARENTS) continue;
+//
+//            List<Edge> olds = new ArrayList<>(m);
+//            List<Edge> news = new ArrayList<>(m);
+//            List<String> parents = new ArrayList<>();
+//            List<String> children = new ArrayList<>();
+//            boolean earlyReject = false;
+//
+//            for (int i = 0; i < m; i++) {
+//                Edge old = freeEdges.get(i);
+//                if (old == null) continue;
+//
+//                Node y = old.getDistalNode(x);
+//                if (y == null) continue;
+//
+//                olds.add(old);
+//
+//                boolean intoX = ((mask & (1 << i)) != 0);
+//
+//                Edge ne = intoX
+//                        ? new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW)
+//                        : new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW);
+//
+//                if (gt == AdjustmentGraphType.DAG) {
+//                    if (intoX && hasDirectedPath(g, x, y)) {
+//                        earlyReject = true;
+//                        break;
+//                    }
+//                    if (!intoX && hasDirectedPath(g, y, x)) {
+//                        earlyReject = true;
+//                        break;
+//                    }
+//                }
+//
+//                news.add(ne);
+//
+//                String yn = (y.getName() == null) ? "?" : y.getName();
+//                if (intoX) parents.add(yn);
+//                else children.add(yn);
+//            }
+//
+//            if (earlyReject) continue;
+//            if (news.isEmpty()) continue;
+//
 
+    /// /            RandomUtil.shuffle(parents);
+    /// /            RandomUtil.shuffle(children);
+//
+//            parents.sort(NaturalSort.naturalComparator());
+//            children.sort(NaturalSort.naturalComparator());
+//
+//            String label =
+//                    "Orient incident edges at " + xName +
+//                            " | Pa={" + String.join(",", parents) + "}" +
+//                            " | Ch={" + String.join(",", children) + "}";
+//
+//            out.add(CandidateEdit.replaceEdges(label, olds, news));
+//        }
+//
+//        return out;
+//    }
     private List<CandidateEdit> enumerateIncidentOrientationPatternMoves(Graph g, Node x, AdjustmentGraphType gt) {
         if (g == null || x == null) return List.of();
 
@@ -1302,26 +1415,29 @@ public final class VertexRepairPanel extends JPanel {
             if (e == null) continue;
 
             Endpoint ex = endpointAt(e, x);
-            Endpoint ey = endpointAt(e, y);
 
-            if (gt == AdjustmentGraphType.DAG) {
-                if (ex == Endpoint.TAIL && ey == Endpoint.ARROW) continue;
-                if (ex == Endpoint.ARROW && ey == Endpoint.TAIL) continue;
-                freeEdges.add(e);
-                continue;
-            }
-
-            if (ex == Endpoint.TAIL && ey == Endpoint.TAIL) {
-                freeEdges.add(e);
-            } else if ((ex == Endpoint.TAIL && ey == Endpoint.ARROW) || (ex == Endpoint.ARROW && ey == Endpoint.TAIL)) {
-                // directed — compelled, skip
+            switch (gt) {
+                case DAG, CPDAG, PDAG -> {
+                    // Only undirected (tail-tail) edges are orientable
+                    if (ex == Endpoint.TAIL && endpointAt(e, y) == Endpoint.TAIL)
+                        freeEdges.add(e);
+                }
+                case PAG -> {
+                    // Circle endpoint at x means orientable
+                    if (ex == Endpoint.CIRCLE)
+                        freeEdges.add(e);
+                }
+                case MAG -> {
+                    // Undirected edges only
+                    if (ex == Endpoint.TAIL && endpointAt(e, y) == Endpoint.TAIL)
+                        freeEdges.add(e);
+                }
             }
         }
 
         if (freeEdges.isEmpty()) return List.of();
 
         final int MAX_FREE = 12;
-        final int MAX_PARENTS = 6;
         final int MAX_MOVES = 5000;
 
         if (freeEdges.size() > MAX_FREE) return List.of();
@@ -1334,13 +1450,11 @@ public final class VertexRepairPanel extends JPanel {
 
         for (int mask = 0; mask < total; mask++) {
             if (out.size() >= MAX_MOVES) break;
-            if (Integer.bitCount(mask) > MAX_PARENTS) continue;
 
             List<Edge> olds = new ArrayList<>(m);
             List<Edge> news = new ArrayList<>(m);
             List<String> parents = new ArrayList<>();
             List<String> children = new ArrayList<>();
-            boolean earlyReject = false;
 
             for (int i = 0; i < m; i++) {
                 Edge old = freeEdges.get(i);
@@ -1352,34 +1466,27 @@ public final class VertexRepairPanel extends JPanel {
                 olds.add(old);
 
                 boolean intoX = ((mask & (1 << i)) != 0);
+                String yn = (y.getName() == null) ? "?" : y.getName();
 
-                Edge ne = intoX
-                        ? new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW)
-                        : new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW);
-
-                if (gt == AdjustmentGraphType.DAG) {
-                    if (intoX && hasDirectedPath(g, x, y)) {
-                        earlyReject = true;
-                        break;
-                    }
-                    if (!intoX && hasDirectedPath(g, y, x)) {
-                        earlyReject = true;
-                        break;
-                    }
+                Edge ne;
+                if (gt == AdjustmentGraphType.PAG) {
+                    Endpoint eyKeep = endpointAt(old, y);
+                    ne = intoX
+                            ? new Edge(y, x, eyKeep, Endpoint.ARROW)
+                            : new Edge(y, x, eyKeep, Endpoint.TAIL);
+                } else {
+                    ne = intoX
+                            ? new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW)
+                            : new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW);
                 }
 
                 news.add(ne);
 
-                String yn = (y.getName() == null) ? "?" : y.getName();
                 if (intoX) parents.add(yn);
                 else children.add(yn);
             }
 
-            if (earlyReject) continue;
             if (news.isEmpty()) continue;
-
-//            RandomUtil.shuffle(parents);
-//            RandomUtil.shuffle(children);
 
             parents.sort(NaturalSort.naturalComparator());
             children.sort(NaturalSort.naturalComparator());
