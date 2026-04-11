@@ -96,9 +96,8 @@ public final class VertexRepairSearch implements IGraphSearch {
             if (c != 0) return c;
         }
 
-        double alpha1 = 0.01;
-        int edges1 = a.modelPAfter() > alpha1 ? a.edgesAfter() : Integer.MAX_VALUE;
-        int edges2 = b.modelPAfter() > alpha1 ? b.edgesAfter() : Integer.MAX_VALUE;
+        int edges1 = a.modelPAfter() > a.alpha() ? a.edgesAfter() : Integer.MAX_VALUE;
+        int edges2 = b.modelPAfter() > b.alpha() ? b.edgesAfter() : Integer.MAX_VALUE;
         c = Integer.compare(edges1, edges2);
         if (c != 0) return c;
 
@@ -546,7 +545,8 @@ public final class VertexRepairSearch implements IGraphSearch {
                     cand, baseline, after,
                     nodePValue(g2, node),
                     Double.NaN, Double.NaN,
-                    g2.getNumEdges(), true);
+                    g2.getNumEdges(), true,
+                    Q.getAlpha());
 
             if (!cand.isNoOp()) {
                 boolean couldProgress = after < baseline || g2.getNumEdges() < base.getNumEdges();
@@ -583,7 +583,7 @@ public final class VertexRepairSearch implements IGraphSearch {
 
             scored.add(new ScoredCandidate(cand, baseline, after,
                     nodePValue(g2, node), Double.NaN, Double.NaN,
-                    g2.getNumEdges(), true));
+                    g2.getNumEdges(), true, Q.getAlpha()));
         }
 
         if (stopRequested()) return List.of();
@@ -622,7 +622,7 @@ public final class VertexRepairSearch implements IGraphSearch {
                     sc.edit(), sc.violationsBaseline(), sc.violationsAfter(),
                     sc.nodePAfter(), mpBefore,
                     (mpAfter == null ? Double.NaN : mpAfter),
-                    sc.edgesAfter(), true);
+                    sc.edgesAfter(), true, Q.getAlpha());
 
             boolean passes = wouldPassGuards(base, patched);
             if (!passes && !patched.edit().isNoOp()) continue;
@@ -630,7 +630,7 @@ public final class VertexRepairSearch implements IGraphSearch {
             result.add(new ScoredCandidate(
                     patched.edit(), patched.violationsBaseline(), patched.violationsAfter(),
                     patched.nodePAfter(), patched.modelPBefore(), patched.modelPAfter(),
-                    patched.edgesAfter(), passes));
+                    patched.edgesAfter(), passes, Q.getAlpha()));
         }
 
         result.sort(CANONICAL_TABLE_ORDER);
@@ -664,7 +664,7 @@ public final class VertexRepairSearch implements IGraphSearch {
                 base.getNumEdges(), g2.getNumEdges(), mpBefore, mpAfter);
 
         return new ScoredCandidate(cand, baseline, after,
-                sc.nodePAfter(), mpBefore, mpAfter, g2.getNumEdges(), passes);
+                sc.nodePAfter(), mpBefore, mpAfter, g2.getNumEdges(), passes, Q.getAlpha());
     }
 
     // =========================================================================
@@ -1529,7 +1529,8 @@ public final class VertexRepairSearch implements IGraphSearch {
             double modelPBefore,
             double modelPAfter,
             int edgesAfter,
-            boolean passesGuards
+            boolean passesGuards,
+            double alpha
     ) {
         public int delta() { return violationsAfter - violationsBaseline; }
     }

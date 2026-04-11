@@ -37,7 +37,7 @@ import java.io.Serial;
  *
  * @author josephramsey
  */
-public class MarkovCheckKolmogorovSmirnoffP implements Statistic, MarkovCheckerStatistic {
+    public class MarkovCheckKolmogorovSmirnoffP implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
     /**
