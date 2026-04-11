@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
-import edu.cmu.tetrad.search.test.CachingIndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.NaturalSort;
@@ -1324,6 +1323,19 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     private void fireRepairConverged(int totalEdits, String message) {
         for (RepairListener l : listeners) l.repairConverged(totalEdits, message);
+    }
+
+    /**
+     * Sets whether to use the Anderson-Darling test during the repair process.
+     * The Anderson-Darling test evaluates the goodness-of-fit for a distribution
+     * and can influence decision-making in the repair strategy. If not, the
+     * Kolmogorov-Smirnov test is used instead. The default is to use the
+     * Kolmogorov-Smirnov test (false).
+     *
+     * @param useAndersonDarling true to enable the Anderson-Darling test, false to disable it
+     */
+    public void setUseAndersonDarling(boolean useAndersonDarling) {
+        this.useAndersonDarling = useAndersonDarling;
     }
 
     // =========================================================================
