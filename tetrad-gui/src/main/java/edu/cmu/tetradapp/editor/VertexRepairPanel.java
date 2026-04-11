@@ -803,8 +803,9 @@ public final class VertexRepairPanel extends JPanel {
             anyChangeInSweep = false;
 
             List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
-            nodes.sort(Comparator.comparing(Node::getName, NaturalSort.NATURAL_NAME_COMPARATOR));
             RandomUtil.shuffle(nodes);
+//            nodes.sort(Comparator.comparing(Node::getName, NaturalSort.NATURAL_NAME_COMPARATOR));
+//            RandomUtil.shuffle(nodes);
 
             for (Node node : nodes) {
                 if (stopRequested()) return;
@@ -1080,12 +1081,13 @@ public final class VertexRepairPanel extends JPanel {
 
         List<Node> pool = new ArrayList<>(g.getNodes());
         pool.remove(x);
-        pool.sort(Comparator.comparing(Node::getName, NaturalSort.NATURAL_NAME_COMPARATOR));
+//        pool.sort(Comparator.comparing(Node::getName, NaturalSort.NATURAL_NAME_COMPARATOR));
         RandomUtil.shuffle(pool);
 
         // ---- Remove existing edge incident to x ----
         ArrayList<Edge> edges = new ArrayList<>(g.getEdges(x));
-        Collections.sort(edges);
+        RandomUtil.shuffle(edges);
+//        Collections.sort(edges);
 
         for (Edge e : edges) {
             out.add(CandidateEdit.removeEdge(e));
@@ -1126,7 +1128,8 @@ public final class VertexRepairPanel extends JPanel {
         if (g == null || x == null) return List.of();
 
         List<Node> adj = new ArrayList<>(g.getAdjacentNodes(x));
-        adj.sort(Comparator.comparing(Node::getName, Comparator.nullsLast(String::compareTo)));
+        RandomUtil.shuffle(adj);
+//        adj.sort(Comparator.comparing(Node::getName, Comparator.nullsLast(String::compareTo)));
 
         List<Edge> freeEdges = new ArrayList<>();
 
@@ -1209,8 +1212,11 @@ public final class VertexRepairPanel extends JPanel {
 
             if (news.isEmpty()) continue;
 
-            parents.sort(NaturalSort.naturalComparator());
-            children.sort(NaturalSort.naturalComparator());
+            RandomUtil.shuffle(parents);
+            RandomUtil.shuffle(children);
+
+//            parents.sort(NaturalSort.naturalComparator());
+//            children.sort(NaturalSort.naturalComparator());
 
             String label =
                     "Orient incident edges at " + xName +
@@ -1423,7 +1429,8 @@ public final class VertexRepairPanel extends JPanel {
 
         Map<String, VertexContribution> out = new HashMap<>();
         List<Node> nodes = g.getNodes();
-        nodes.sort(NaturalSort.naturalComparator());
+        RandomUtil.shuffle(nodes);
+//        nodes.sort(NaturalSort.naturalComparator());
 
         for (Node v : nodes) {
             if (v == null) continue;
@@ -1497,7 +1504,8 @@ public final class VertexRepairPanel extends JPanel {
 
         // Already sorted:
         List<String> names = new ArrayList<>(contrib.keySet());
-        names.sort(NaturalSort.naturalComparator());
+        RandomUtil.shuffle(names);
+//        names.sort(NaturalSort.naturalComparator());
 
         for (String name : names) {
             VertexContribution vc = contrib.get(name);
@@ -1505,13 +1513,15 @@ public final class VertexRepairPanel extends JPanel {
 
             // Sort the fact keys within each vertex too, for full determinism
             List<String> violKeys = new ArrayList<>(vc.violationByKey().keySet());
-            violKeys.sort(NaturalSort.naturalComparator());
+            RandomUtil.shuffle(violKeys);
+//            violKeys.sort(NaturalSort.naturalComparator());
             for (String key : violKeys) {
                 globalViolationByKey.putIfAbsent(key, vc.violationByKey().get(key));
             }
 
             List<String> pKeys = new ArrayList<>(vc.pByKey().keySet());
-            pKeys.sort(NaturalSort.naturalComparator());
+            RandomUtil.shuffle(pKeys);
+//            pKeys.sort(NaturalSort.naturalComparator());
             for (String key : pKeys) {
                 globalPByKey.putIfAbsent(key, vc.pByKey().get(key));
             }
