@@ -89,17 +89,17 @@ public final class VertexRepairPanel extends JPanel {
 
         int c;
 
-        // Otherwise, compare on which one has lower delta for fewer Markov violations.
+        // Compare on which one has lower delta for fewer Markov violations.
         if (abs(a.delta()) >= 0 && abs(b.delta()) >= 0) {
             c = Integer.compare(a.delta(), b.delta());
             if (c != 0) return c;
         }
 
+        // Otherwise, compare on which one has the fewer edges with alpha > 0.05.
         double alpha1 = 0.05;
         int edges1 = a.modelPAfter() > alpha1 ? a.edgesAfter() : Integer.MAX_VALUE;
         int edges2 = b.modelPAfter() > alpha1 ? b.edgesAfter() : Integer.MAX_VALUE;
 
-        // Otherwise, compare on which one has the fewer edges.
         c = Integer.compare(edges1, edges2);
         if (c != 0) return c;
 
@@ -220,21 +220,6 @@ public final class VertexRepairPanel extends JPanel {
         }
         return 1;
     }
-
-//    private static int moveBiasScore(ScoredCandidate s) {
-//        MoveType mt = moveType(s.edit());
-//        double dMp = modelDelta(s);
-//
-//        if (Double.isFinite(dMp) && dMp > 0.0) {
-//            if (mt == MoveType.REORIENT_SIMPLE) return 2;
-//            if (mt == MoveType.COLLIDER_FIX) return -1;
-//        } else if (!Double.isFinite(s.modelPAfter())) {
-//            if (mt == MoveType.REORIENT_SIMPLE) return 1;
-//            if (mt == MoveType.COLLIDER_FIX) return -1;
-//        }
-//
-//        return 0;
-//    }
 
     private static int stableTieBreak(ScoredCandidate a, ScoredCandidate b) {
         String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
@@ -1017,19 +1002,6 @@ public final class VertexRepairPanel extends JPanel {
         }
 
         List<ScoredCandidate> result = new ArrayList<>(scored.size());
-//        for (ScoredCandidate sc : scored) {
-//            Double mpAfter = mpAfterByKey.get(sc.edit().key());
-//            ScoredCandidate patched = new ScoredCandidate(
-//                    sc.edit(), sc.violationsBaseline(), sc.violationsAfter(),
-//                    sc.nodePAfter(), mpBefore,
-//                    (mpAfter == null ? Double.NaN : mpAfter),
-//                    sc.edgesAfter(), true);
-//
-//            result.add(new ScoredCandidate(
-//                    patched.edit(), patched.violationsBaseline(), patched.violationsAfter(),
-//                    patched.nodePAfter(), patched.modelPBefore(), patched.modelPAfter(),
-//                    patched.edgesAfter(), wouldPassGuards(base, patched)));
-//        }
 
         for (ScoredCandidate sc : scored) {
             Double mpAfter = mpAfterByKey.get(sc.edit().key());
