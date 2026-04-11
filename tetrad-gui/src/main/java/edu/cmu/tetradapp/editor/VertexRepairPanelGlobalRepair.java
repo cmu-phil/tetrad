@@ -84,7 +84,7 @@ import static edu.cmu.tetrad.util.TMath.abs;
  * {@link Preferences}) to determine node traversal order. Setting the same
  * seed reproduces the same repair trajectory given the same graph and independence test.
  */
-public final class VertexRepairPanel1 extends JPanel {
+public final class VertexRepairPanelGlobalRepair extends JPanel {
 
     private static final String CARD_TABLE = "table";
     private static final String CARD_NONE = "none";
@@ -135,15 +135,32 @@ public final class VertexRepairPanel1 extends JPanel {
     private final VertexCheckIndTestModel model;
     private final JComboBox<Node> nodeCombo = new JComboBox<>();
     private final JSpinner seedSpinner;
+    // Strategy selector — persisted preference key "vertexRepairStrategy"
+    private final JComboBox<RepairStrategy> repairStrategyCombo =
+            new JComboBox<>(RepairStrategy.values());
+    // Global-queue state (only populated during a global repair run)
+// Maps node name -> current scored candidates for that node.
+// Entries are invalidated and recomputed after each accepted edit.
+    private final Map<String, List<ScoredCandidate>> globalCandsByNode = new HashMap<>();
     private Node x;
     private Graph workingGraph;
     private Knowledge knowledge = new Knowledge();
+
+    // -----------------------------------------------------------------------------
+// 3.  NEW FIELDS
+//
+//  Add these in the field block near  activeWorker  and  watchDialog.
+// -----------------------------------------------------------------------------
     private volatile SwingWorker<?, ?> activeWorker;
     private volatile JDialog watchDialog;
+    // The priority queue itself.  We use a standard min-heap; QueueEntry.compareTo
+// puts the best candidate first (CANONICAL_TABLE_ORDER rank 0 = highest priority).
+    private PriorityQueue<QueueEntry> globalQueue = new PriorityQueue<>();
+
     private volatile boolean suppressHistory = false;
     private int repairSeed = 0;
 
-    public VertexRepairPanel1(VertexCheckEditor editor, Node x) {
+    public VertexRepairPanelGlobalRepair(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
 
         seedSpinner = new JSpinner(new SpinnerNumberModel(
@@ -474,6 +491,41 @@ public final class VertexRepairPanel1 extends JPanel {
         c.weightx = 1;
         controls.add(graphTypeCombo, c);
 
+        // -----------------------------------------------------------------------------
+// 4.  UI ADDITIONS
+//
+//  In buildUI(), after the existing controls panel is assembled, add the
+//  strategy combo to the controls grid. Insert this block immediately after
+//  the seed spinner is added (around the "c.gridx = 0; c.gridy = 2" block):
+// -----------------------------------------------------------------------------
+
+///*  ---- INSERT into buildUI(), in the controls GridBagLayout block ----
+
+        c.gridx = 2;
+        c.gridy = 2;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1;
+        repairStrategyCombo.setSelectedItem(
+                RepairStrategy.valueOf(
+                        Preferences.userRoot().get("vertexRepairStrategy",
+                                RepairStrategy.LOCAL_SWEEP.name())));
+        controls.add(repairStrategyCombo, c);
+
+//    ---- END INSERT ----
+//*/
+
+///*  ---- INSERT into wireActions(), after the seedSpinner change listener ----
+
+        repairStrategyCombo.addActionListener(e -> {
+            RepairStrategy s = (RepairStrategy) repairStrategyCombo.getSelectedItem();
+            if (s != null) {
+                Preferences.userRoot().put("vertexRepairStrategy", s.name());
+            }
+        });
+
+//    ---- END INSERT ----
+//*/
+
         c.gridx = 0;
         c.gridy = 2;
         c.gridwidth = 1;
@@ -755,10 +807,43 @@ public final class VertexRepairPanel1 extends JPanel {
      * <p>Both phases share one {@code seenSweepStates} set. If the graph returns to any
      * state seen in either phase, repair halts with a cycle warning.
      */
+//    private void runRepairWatched() {
+//        AdjustmentGraphType gt = (AdjustmentGraphType) graphTypeCombo.getSelectedItem();
+//        List<String> cycleWarnings = new ArrayList<>();
+//        Set<String> seenSweepStates = new LinkedHashSet<>();
+//
+//        repairSeed = (Integer) seedSpinner.getValue();
+//        long previousSeed = RandomUtil.getInstance().nextLong();
+//        RandomUtil.getInstance().setSeed(repairSeed);
+//
+//        history.push(safeCopy(workingGraph));
+//        suppressHistory = true;
+//
+//        try {
+//            SwingUtilities.invokeLater(() -> statusLabel.setText("..."));
+//            runRepairPhase(gt, seenSweepStates, cycleWarnings);
+//        } finally {
+//            suppressHistory = false;
+//            RandomUtil.getInstance().setSeed(previousSeed);
+//            baseModel.setGraph(workingGraph);
+//            SwingUtilities.invokeLater(() -> {
+//                populateNodeCombo();
+//                statusLabel.setText("Repair complete. (seed=" + repairSeed + ")");
+//            });
+//        }
+//    }
+
+    // -----------------------------------------------------------------------------
+// 5a.  REPLACEMENT  runRepairWatched()
+//
+//  Replace the existing runRepairWatched() with this version.  It delegates
+//  to the local sweep or global queue depending on the selected strategy.
+// -----------------------------------------------------------------------------
+
     private void runRepairWatched() {
         AdjustmentGraphType gt = (AdjustmentGraphType) graphTypeCombo.getSelectedItem();
-        List<String> cycleWarnings = new ArrayList<>();
-        Set<String> seenSweepStates = new LinkedHashSet<>();
+        RepairStrategy strategy = (RepairStrategy) repairStrategyCombo.getSelectedItem();
+        if (strategy == null) strategy = RepairStrategy.LOCAL_SWEEP;
 
         repairSeed = (Integer) seedSpinner.getValue();
         long previousSeed = RandomUtil.getInstance().nextLong();
@@ -769,7 +854,14 @@ public final class VertexRepairPanel1 extends JPanel {
 
         try {
             SwingUtilities.invokeLater(() -> statusLabel.setText("..."));
-            runRepairPhase(gt, seenSweepStates, cycleWarnings);
+
+            if (strategy == RepairStrategy.GLOBAL_QUEUE) {
+                runGlobalRepairWatched(gt);
+            } else {
+                List<String> cycleWarnings = new ArrayList<>();
+                Set<String> seenSweepStates = new LinkedHashSet<>();
+                runRepairPhase(gt, seenSweepStates, cycleWarnings);
+            }
         } finally {
             suppressHistory = false;
             RandomUtil.getInstance().setSeed(previousSeed);
@@ -780,6 +872,353 @@ public final class VertexRepairPanel1 extends JPanel {
             });
         }
     }
+
+// -----------------------------------------------------------------------------
+// 5b.  NEW METHOD  runGlobalRepairWatched(AdjustmentGraphType)
+//
+//  The global queue repair loop.
+// -----------------------------------------------------------------------------
+
+    /**
+     * Global priority-queue repair.
+     *
+     * <p>On entry, every node's candidates are scored and inserted into a single
+     * global min-heap (best candidate first). The loop:
+     * <ol>
+     *   <li>Pops the best candidate from the queue.</li>
+     *   <li>Computes Model-P lazily (only at pop time, not during queue population).</li>
+     *   <li>Checks whether it passes the progress guard. If not, discards it and pops
+     *       again (stale or non-improving entries are drained this way).</li>
+     *   <li>Applies the edit.</li>
+     *   <li>Computes the affected vertex set and invalidates + recomputes only those
+     *       nodes' candidate lists in the queue.</li>
+     * </ol>
+     * <p>Terminates when the queue is empty, a cycle is detected (same graph state
+     * seen twice), or the worker is cancelled.
+     */
+    private void runGlobalRepairWatched(AdjustmentGraphType gt) {
+        Set<String> seenStates = new LinkedHashSet<>();
+        int editsApplied = 0;
+
+        // --- Phase 1: populate the global queue over all nodes ---
+        SwingUtilities.invokeLater(() -> statusLabel.setText("Building global candidate queue..."));
+
+        if (!initGlobalQueue(gt)) return;   // canonicalization failure or stop requested
+
+        // --- Phase 2: drain the queue greedily ---
+        while (!globalQueue.isEmpty()) {
+            if (stopRequested()) return;
+
+            QueueEntry entry = globalQueue.poll();
+            if (entry == null) break;
+
+            // The candidate may be stale: the node's list was invalidated and this
+            // entry was not removed (PriorityQueue doesn't support O(1) remove-by-key).
+            // Check that this entry is still the current top for its node.
+            List<ScoredCandidate> currentForNode = globalCandsByNode.get(entry.nodeName());
+            if (currentForNode == null || currentForNode.isEmpty()) continue;
+            if (currentForNode.getFirst() != entry.scored()) continue;  // stale
+
+            ScoredCandidate sc = entry.scored();
+            if (sc.edit().isNoOp()) continue;
+
+            // Lazy Model-P evaluation: compute now, at pop time.
+            ScoredCandidate withMp = evalModelPForEntry(entry, gt);
+            if (withMp == null) continue;
+
+            if (!wouldPassGuards(workingGraph, withMp)) continue;
+
+            // Apply the edit.
+            Graph before = safeCopy(workingGraph);
+            applyCandidateInternal(withMp.edit());
+
+            if (workingGraph.equals(before)) continue;  // no-op after canonicalization
+
+            editsApplied++;
+            vlog("Global queue: applied edit #%d: %s", editsApplied, withMp.edit().description());
+
+            // Cycle detection.
+            String state = workingGraph.toString();
+            if (!seenStates.add(state)) {
+                int finalEditsApplied = editsApplied;
+                SwingUtilities.invokeLater(() ->
+                        statusLabel.setText("Global repair: cycle detected after "
+                                + finalEditsApplied + " edits. Stopping."));
+                return;
+            }
+
+            // Invalidate and recompute only affected nodes.
+            Set<String> affected = affectedVertices(before,
+                    resolveNode(before, entry.nodeName()), workingGraph)
+                    .stream().filter(n -> workingGraph.getNode(n) != null)
+                    .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+
+            // Also include the node on the other end of the edited edge, if determinable.
+            CandidateEdit edit = withMp.edit();
+            Edge editedEdge = edit.getEdge();
+            if (editedEdge != null) {
+                Node n1 = editedEdge.getNode1(), n2 = editedEdge.getNode2();
+                if (n1 != null && n1.getName() != null) affected.add(n1.getName());
+                if (n2 != null && n2.getName() != null) affected.add(n2.getName());
+            }
+
+            if (!invalidateAndRecompute(affected, gt)) return;
+
+            final int count = editsApplied;
+            SwingUtilities.invokeLater(() ->
+                    statusLabel.setText("Global repair: " + count + " edits applied..."));
+        }
+
+        final int total = editsApplied;
+        SwingUtilities.invokeLater(() ->
+                statusLabel.setText("Global repair converged after " + total + " edits."));
+    }
+// -----------------------------------------------------------------------------
+// 5c.  NEW METHOD  initGlobalQueue(AdjustmentGraphType)
+//
+//  Populates globalCandsByNode and globalQueue from scratch.
+//  Returns false if canonicalization fails or the worker is stopped.
+// -----------------------------------------------------------------------------
+
+    /**
+     * Initialises the global candidate queue by scoring every node in the current
+     * working graph.  Clears any previous queue state first.
+     *
+     * <p>Model-P is intentionally left as {@code NaN} at this stage; it is filled
+     * in lazily when a candidate reaches the top of the queue.
+     *
+     * @return {@code true} if initialisation completed successfully.
+     */
+    private boolean initGlobalQueue(AdjustmentGraphType gt) {
+        globalCandsByNode.clear();
+        globalQueue = new PriorityQueue<>();
+
+        Graph base = prepareBase(gt);
+        if (base == null) {
+            SwingUtilities.invokeLater(() ->
+                    statusLabel.setText("Canonicalization failed during queue init."));
+            return false;
+        }
+
+        List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
+        nodes.sort(Comparator.comparing(Node::getName, NaturalSort.NATURAL_NAME_COMPARATOR));
+
+        for (Node node : nodes) {
+            if (stopRequested()) return false;
+
+            Node inBase = base.getNode(node.getName());
+            if (inBase == null) continue;
+
+            // Score without Model-P (NaN placeholder) to keep init fast.
+            List<ScoredCandidate> scored = computeScoredCandidatesForNodeNoModelP(base, inBase, gt);
+            if (scored.isEmpty()) continue;
+
+            globalCandsByNode.put(node.getName(), scored);
+            for (ScoredCandidate sc : scored) {
+                if (!sc.edit().isNoOp()) {
+                    globalQueue.offer(new QueueEntry(node.getName(), sc));
+                }
+            }
+        }
+
+        return true;
+    }
+
+    // -----------------------------------------------------------------------------
+// 5d.  NEW METHOD  invalidateAndRecompute(Set<String>, AdjustmentGraphType)
+//
+//  After an edit, recomputes candidate lists for affected nodes only.
+//  Stale QueueEntry objects for those nodes are left in the heap but are
+//  skipped at pop time via the "still current for its node?" check in the
+//  main loop.
+//
+//  Returns false if canonicalization fails or the worker is stopped.
+// -----------------------------------------------------------------------------
+
+    /**
+     * Invalidates cached candidate lists for the given node names and recomputes
+     * them against the current working graph.  Stale {@link QueueEntry} objects
+     * for those nodes remain in {@link #globalQueue} but are discarded at pop
+     * time because the freshness check ({@code currentForNode.getFirst() != entry.scored()})
+     * will fail.
+     *
+     * @param affectedNames node names whose candidate lists must be refreshed
+     * @param gt            graph type for candidate enumeration and legality checks
+     * @return {@code true} if recomputation completed without error
+     */
+    private boolean invalidateAndRecompute(Set<String> affectedNames, AdjustmentGraphType gt) {
+        Graph base = prepareBase(gt);
+        if (base == null) {
+            SwingUtilities.invokeLater(() ->
+                    statusLabel.setText("Canonicalization failed during queue update."));
+            return false;
+        }
+
+        for (String name : affectedNames) {
+            if (stopRequested()) return false;
+            if (name == null) continue;
+
+            Node inGraph = workingGraph.getNode(name);
+            Node inBase = (inGraph != null) ? base.getNode(name) : null;
+
+            if (inBase == null) {
+                // Node no longer present — clear its entries.
+                globalCandsByNode.remove(name);
+                continue;
+            }
+
+            List<ScoredCandidate> fresh = computeScoredCandidatesForNodeNoModelP(base, inBase, gt);
+            globalCandsByNode.put(name, fresh);
+
+            // Insert fresh entries; stale ones self-expire at poll time.
+            for (ScoredCandidate sc : fresh) {
+                if (!sc.edit().isNoOp()) {
+                    globalQueue.offer(new QueueEntry(name, sc));
+                }
+            }
+        }
+
+        return true;
+    }
+
+    // -----------------------------------------------------------------------------
+// 5e.  NEW METHOD  computeScoredCandidatesForNodeNoModelP
+//
+//  Like computeScoredCandidatesForNode but skips Model-P evaluation entirely.
+//  Used during queue init and invalidation to keep those passes fast.
+// -----------------------------------------------------------------------------
+
+    /**
+     * Scores candidates for {@code node} without computing Model-P.
+     * Model-P is set to {@link Double#NaN} for all returned candidates.
+     * It is filled in lazily by {@link #evalModelPForEntry} at pop time.
+     */
+    private List<ScoredCandidate> computeScoredCandidatesForNodeNoModelP(
+            Graph base, Node node, AdjustmentGraphType gt) {
+
+        List<CandidateEdit> candidates = new ArrayList<>(enumerateCandidates(base, node, gt));
+        if (candidates.stream().noneMatch(CandidateEdit::isNoOp)) {
+            candidates.addFirst(CandidateEdit.noOp());
+        }
+
+        GlobalEvalCache baseCache = buildBaselineCache(base);
+        int baseline = evalGraphLocality(baseCache, base, Set.of()).violations();
+
+        Map<String, Graph> candGraphByKey = new HashMap<>();
+        List<ScoredCandidate> result = new ArrayList<>();
+
+        for (CandidateEdit cand : candidates) {
+            if (stopRequested()) return List.of();
+
+            Graph g2 = candGraphByKey.computeIfAbsent(cand.key(),
+                    k -> buildCandidateGraph(base, cand, gt));
+            if (g2 == null) continue;
+            if (knowledge != null && knowledge.isViolatedBy(g2)) continue;
+
+            boolean useLocality = (gt == AdjustmentGraphType.DAG
+                    || gt == AdjustmentGraphType.CPDAG
+                    || gt == AdjustmentGraphType.PDAG);
+
+            Set<String> affected = affectedVertices(base, node, g2);
+            int after = useLocality
+                    ? evalGraphLocality(baseCache, g2, affected).violations()
+                    : evalViolationsOnly(g2);
+
+            // modelPBefore and modelPAfter are NaN — filled lazily.
+            ScoredCandidate sc = new ScoredCandidate(
+                    cand, baseline, after,
+                    nodePValue(g2, node),
+                    Double.NaN, Double.NaN,
+                    g2.getNumEdges(), true);
+
+            if (!cand.isNoOp()) {
+                // Only include candidates that could constitute progress —
+                // we check against violations and edge count since we have no Model-P yet.
+                boolean couldProgress =
+                        after < baseline || g2.getNumEdges() < base.getNumEdges();
+                if (!couldProgress) continue;
+            }
+
+            result.add(sc);
+        }
+
+        result.sort(CANONICAL_TABLE_ORDER);
+        return result;
+    }
+
+    // -----------------------------------------------------------------------------
+// 5f.  NEW METHOD  evalModelPForEntry
+//
+//  Fills in Model-P for a popped QueueEntry.  Returns a patched ScoredCandidate
+//  with modelPAfter set, or null if the candidate graph can no longer be built.
+// -----------------------------------------------------------------------------
+
+    /**
+     * Lazily computes Model-P for a {@link QueueEntry} that was popped from the
+     * global queue.  Rebuilds the candidate graph against the current working graph,
+     * evaluates Model-P locally, and returns a new {@link ScoredCandidate} with
+     * {@code modelPAfter} filled in.
+     *
+     * @return a patched {@link ScoredCandidate}, or {@code null} if the candidate
+     *         graph can no longer be built (e.g. because the graph has changed
+     *         enough that the edit is no longer applicable)
+     */
+    private ScoredCandidate evalModelPForEntry(QueueEntry entry, AdjustmentGraphType gt) {
+        Graph base = prepareBase(gt);
+        if (base == null) return null;
+
+        ScoredCandidate sc = entry.scored();
+        CandidateEdit cand = sc.edit();
+
+        Graph g2 = buildCandidateGraph(base, cand, gt);
+        if (g2 == null) return null;
+
+        Node node = workingGraph.getNode(entry.nodeName());
+        if (node == null) return null;
+
+        GlobalEvalCache baseCache = buildBaselineCache(base);
+        Set<String> affected = affectedVertices(base, node, g2);
+
+        double mpBefore = evalGraphLocality(baseCache, base, Set.of()).modelP();
+        double mpAfter = evalModelPLocality(baseCache, g2, affected);
+
+        // Re-evaluate violations against the current base (graph may have changed
+        // since this entry was inserted).
+        int baseline = evalGraphLocality(baseCache, base, Set.of()).violations();
+
+        boolean useLocality = (gt == AdjustmentGraphType.DAG
+                || gt == AdjustmentGraphType.CPDAG
+                || gt == AdjustmentGraphType.PDAG);
+        int after = useLocality
+                ? evalGraphLocality(baseCache, g2, affected).violations()
+                : evalViolationsOnly(g2);
+
+        boolean passes = isProgress(baseline, after,
+                base.getNumEdges(), g2.getNumEdges(),
+                mpBefore, mpAfter);
+
+        return new ScoredCandidate(
+                cand, baseline, after,
+                sc.nodePAfter(), mpBefore, mpAfter,
+                g2.getNumEdges(), passes);
+    }
+
+    // -----------------------------------------------------------------------------
+// 5g.  NEW PRIVATE HELPER  resolveNode
+//
+//  Looks up a node by name in a graph; returns null if not found.
+//  Used in runGlobalRepairWatched to get the Node object from a name.
+// -----------------------------------------------------------------------------
+
+    /**
+     * Returns the {@link Node} with the given name in graph {@code g},
+     * or {@code null} if no such node exists.
+     */
+    private Node resolveNode(Graph g, String name) {
+        if (g == null || name == null) return null;
+        return g.getNode(name);
+    }
+
 
     /**
      * Executes one phase of the repair sweep (forward or backward).
@@ -1696,6 +2135,26 @@ public final class VertexRepairPanel1 extends JPanel {
 
     public enum AdjustmentGraphType {CPDAG, PDAG, PAG, DAG, MAG}
 
+    // -----------------------------------------------------------------------------
+// 1.  NEW ENUM  —  add inside VertexRepairPanel, near AdjustmentGraphType
+// -----------------------------------------------------------------------------
+
+    public enum RepairStrategy {
+        LOCAL_SWEEP("Local sweep"),
+        GLOBAL_QUEUE("Global queue");
+
+        private final String label;
+
+        RepairStrategy(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+    }
+
     public interface CandidateEdit {
 
         static CandidateEdit noOp() {
@@ -1901,21 +2360,6 @@ public final class VertexRepairPanel1 extends JPanel {
         }
     }
 
-    private record ScoredCandidate(
-            CandidateEdit edit,
-            int violationsBaseline,
-            int violationsAfter,
-            double nodePAfter,
-            double modelPBefore,
-            double modelPAfter,
-            int edgesAfter,
-            boolean passesGuards
-    ) {
-        int delta() {
-            return violationsAfter - violationsBaseline;
-        }
-    }
-
     private static final class CandidateTableModel extends AbstractTableModel {
         private static final int COL_EDIT = 0;
         private static final int COL_BASE = 1;
@@ -2043,6 +2487,48 @@ public final class VertexRepairPanel1 extends JPanel {
 
         interface RowAction {
             void run(int row);
+        }
+    }
+
+    private record ScoredCandidate(
+            CandidateEdit edit,
+            int violationsBaseline,
+            int violationsAfter,
+            double nodePAfter,
+            double modelPBefore,
+            double modelPAfter,
+            int edgesAfter,
+            boolean passesGuards
+    ) {
+        int delta() {
+            return violationsAfter - violationsBaseline;
+        }
+    }
+
+    // -----------------------------------------------------------------------------
+// 2.  NEW RECORD  QueueEntry
+//
+//  Wraps a ScoredCandidate with the name of the node it belongs to, so the
+//  global queue can invalidate entries by node name without a linear scan.
+//
+//  Add inside VertexRepairPanel alongside ScoredCandidate and GraphEval.
+// -----------------------------------------------------------------------------
+
+    private record QueueEntry(
+            String nodeName,          // name of the node this candidate is for
+            ScoredCandidate scored    // the scored candidate (may have NaN modelPAfter)
+    ) implements Comparable<QueueEntry> {
+
+        // Natural order: BEST candidate first (min-heap used as max-heap via reversal,
+        // so we invert CANONICAL_TABLE_ORDER here — smaller CANONICAL rank = higher
+        // priority = comes first when we poll).
+        @Override
+        public int compareTo(QueueEntry other) {
+            // CANONICAL_TABLE_ORDER: returns negative when 'a' is better than 'b'.
+            // We want the best (most negative) to come out of poll() first, so we
+            // store with reversed sign: the "smallest" entry in the PriorityQueue
+            // will be the one CANONICAL_TABLE_ORDER ranks first.
+            return CANONICAL_TABLE_ORDER.compare(this.scored(), other.scored());
         }
     }
 

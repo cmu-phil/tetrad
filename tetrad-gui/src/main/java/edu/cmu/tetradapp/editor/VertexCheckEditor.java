@@ -1225,7 +1225,7 @@ public class VertexCheckEditor extends JPanel {
         Node x = getSelectedVertex();
         if (x == null) return;
 
-        VertexRepairPanel panel = new VertexRepairPanel(this, x);
+        VertexRepairPanelGlobalRepair panel = new VertexRepairPanelGlobalRepair(this, x);
         panel.setKnowledge(knowledge);
 
         JDialog dialog = new JDialog(
