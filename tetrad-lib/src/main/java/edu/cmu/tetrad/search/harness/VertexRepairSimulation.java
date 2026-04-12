@@ -110,6 +110,11 @@ public class VertexRepairSimulation {
      */
     private static final double PENALTY_DISCOUNT = 2.0;
 
+    /**
+     * Alpha for pruning.
+     */
+    private static final double PRUNE_ALPHA = 0.3;
+
     public static void main(String[] args) throws Exception {
         new VertexRepairSimulation().run();
     }
@@ -229,6 +234,7 @@ public class VertexRepairSimulation {
             repair.setGraphType(GRAPH_TYPE);
             repair.setRepairStrategy(REPAIR_STRATEGY);
             repair.setUseAndersonDarling(false);
+            repair.setPruneAlpha(PRUNE_ALPHA);
 //            repair.setSeed(run);
 
             Graph repairedGraph = repair.search();
@@ -325,6 +331,7 @@ public class VertexRepairSimulation {
         System.out.printf("  Alpha                            : %.4f%n", ALPHA);
         System.out.printf("  Score                            : SEM BIC%n");
         System.out.printf("  Penalty discount                 : %.1f%n", PENALTY_DISCOUNT);
+        System.out.printf("  Prune alpha                      : %.4f%n", PRUNE_ALPHA);
         System.out.println("-------------------------------------------------");
         System.out.printf("  Graph type                       : %s%n", GRAPH_TYPE);
         System.out.printf("  Repair strategy                  : %s%n", REPAIR_STRATEGY);

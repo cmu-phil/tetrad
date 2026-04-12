@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -77,8 +77,6 @@ public final class VertexRepairSearch implements IGraphSearch {
     // Constants
     // -------------------------------------------------------------------------
 
-    private static final int DEFAULT_MODELP_TOP_K = 50;
-
     /**
      * Canonical ranking: best candidate sorts first.
      * Priority chain: (1) fewer Markov violations; (2) fewer edges when alpha > 0.01;
@@ -96,8 +94,12 @@ public final class VertexRepairSearch implements IGraphSearch {
             if (c != 0) return c;
         }
 
-        int edges1 = a.modelPAfter() > a.alpha() ? a.edgesAfter() : Integer.MAX_VALUE;
-        int edges2 = b.modelPAfter() > b.alpha() ? b.edgesAfter() : Integer.MAX_VALUE;
+        // Removals always use actual edge count; additions only get credit
+        // if modelP already clears alpha — otherwise they sort to the back.
+        boolean aIsRemoval = moveType(a.edit()) == MoveType.REMOVE_EDGE;
+        boolean bIsRemoval = moveType(b.edit()) == MoveType.REMOVE_EDGE;
+        int edges1 = (aIsRemoval || a.modelPAfter() > a.alpha()) ? a.edgesAfter() : Integer.MAX_VALUE;
+        int edges2 = (bIsRemoval || b.modelPAfter() > b.alpha()) ? b.edgesAfter() : Integer.MAX_VALUE;
         c = Integer.compare(edges1, edges2);
         if (c != 0) return c;
 
@@ -106,37 +108,34 @@ public final class VertexRepairSearch implements IGraphSearch {
 
         return stableTieBreak(a, b);
     };
+    private static final int DEFAULT_MODELP_TOP_K = 50;
 
     // -------------------------------------------------------------------------
     // Configuration fields (set before calling search())
     // -------------------------------------------------------------------------
-
     private final CachedIndependenceQueries Q;
     private final ConditioningSetType type;
-
+    private final List<RepairListener> listeners = new CopyOnWriteArrayList<>();
+    private final Map<String, List<ScoredCandidate>> globalCandsByNode = new HashMap<>();
+    private double pruneAlpha = 0.01;
     private Graph workingGraph;
     private Knowledge knowledge = new Knowledge();
     private AdjustmentGraphType graphType = AdjustmentGraphType.DAG;
-    private RepairStrategy repairStrategy = RepairStrategy.LOCAL_SWEEP;
-    private int seed = 0;
 
     // -------------------------------------------------------------------------
     // Listener infrastructure
     // -------------------------------------------------------------------------
-
-    private final List<RepairListener> listeners = new CopyOnWriteArrayList<>();
+    private RepairStrategy repairStrategy = RepairStrategy.LOCAL_SWEEP;
 
     // -------------------------------------------------------------------------
     // Cancellation
     // -------------------------------------------------------------------------
-
-    private volatile boolean cancelRequested = false;
+    private int seed = 0;
 
     // -------------------------------------------------------------------------
     // Global-queue state (populated only during a GLOBAL_QUEUE run)
     // -------------------------------------------------------------------------
-
-    private final Map<String, List<ScoredCandidate>> globalCandsByNode = new HashMap<>();
+    private volatile boolean cancelRequested = false;
     private PriorityQueue<QueueEntry> globalQueue = new PriorityQueue<>();
     private boolean useAndersonDarling = false;
 
@@ -163,6 +162,242 @@ public final class VertexRepairSearch implements IGraphSearch {
     // =========================================================================
     // IGraphSearch
     // =========================================================================
+
+    private static boolean isProgress(int baselineViol, int afterViol,
+                                      int currentEdges, int afterEdges,
+                                      double mpBefore, double mpAfter,
+                                      MoveType moveType) {
+        if (afterViol < baselineViol) return true;
+        if (afterEdges < currentEdges) return true;
+        double minGain = (moveType == MoveType.REMOVE_EDGE) ? 0.0 : 0.001;
+        return Double.isFinite(mpBefore) && Double.isFinite(mpAfter)
+                && (mpAfter - mpBefore) >= minGain;
+    }
+
+    private static Graph seedDagFromAnyGraph(Graph g) {
+        if (g == null) return null;
+        List<Node> nodes = new ArrayList<>(g.getNodes());
+        nodes.sort(Comparator.comparing(Node::getName,
+                Comparator.nullsLast(NaturalSort.NATURAL_NAME_COMPARATOR)));
+        if (nodes.isEmpty()) return null;
+        Map<String, Integer> idx = new HashMap<>();
+        for (int i = 0; i < nodes.size(); i++) {
+            String name = nodes.get(i).getName();
+            if (name != null) idx.put(name, i);
+        }
+        Graph dag = new EdgeListGraph(nodes);
+        Set<String> seenPairs = new HashSet<>();
+        for (Edge e : g.getEdges()) {
+            Node a0 = e.getNode1(), b0 = e.getNode2();
+            if (a0 == null || b0 == null) continue;
+            String an0 = a0.getName(), bn0 = b0.getName();
+            if (an0 == null || bn0 == null) continue;
+            Node a = dag.getNode(an0), b = dag.getNode(bn0);
+            if (a == null || b == null || a.equals(b)) continue;
+            String key = (an0.compareTo(bn0) <= 0) ? (an0 + "|" + bn0) : (bn0 + "|" + an0);
+            if (!seenPairs.add(key)) continue;
+            int ia = idx.getOrDefault(a.getName(), 0);
+            int ib = idx.getOrDefault(b.getName(), 0);
+            if (ia <= ib) dag.addEdge(new Edge(a, b, Endpoint.TAIL, Endpoint.ARROW));
+            else dag.addEdge(new Edge(b, a, Endpoint.TAIL, Endpoint.ARROW));
+        }
+        return dag.paths().isLegalDag() ? dag : null;
+    }
+
+    // =========================================================================
+    // Configuration setters / getters
+    // =========================================================================
+
+    private static Node resolveNode(Graph g, String name) {
+        if (g == null || name == null) return null;
+        return g.getNode(name);
+    }
+
+    private static List<CandidateEdit> dedupCandidateEdits(List<CandidateEdit> edits) {
+        if (edits == null || edits.isEmpty()) return List.of();
+        Map<String, CandidateEdit> seen = new LinkedHashMap<>();
+        for (CandidateEdit ce : edits) {
+            if (ce == null) continue;
+            String key = ce.key();
+            if (key == null) key = UUID.randomUUID().toString();
+            seen.putIfAbsent(key, ce);
+        }
+        return new ArrayList<>(seen.values());
+    }
+
+    private static boolean edgeStructurallyEqual(Edge a, Edge b, Node x, Node y) {
+        if (a == null || b == null) return false;
+        Endpoint aX, aY;
+        if (a.getNode1().equals(x) && a.getNode2().equals(y)) {
+            aX = a.getEndpoint1();
+            aY = a.getEndpoint2();
+        } else if (a.getNode1().equals(y) && a.getNode2().equals(x)) {
+            aX = a.getEndpoint2();
+            aY = a.getEndpoint1();
+        } else return false;
+
+        Endpoint bX, bY;
+        if (b.getNode1().equals(x) && b.getNode2().equals(y)) {
+            bX = b.getEndpoint1();
+            bY = b.getEndpoint2();
+        } else if (b.getNode1().equals(y) && b.getNode2().equals(x)) {
+            bX = b.getEndpoint2();
+            bY = b.getEndpoint1();
+        } else return false;
+
+        return aX == bX && aY == bY;
+    }
+
+    private static boolean requiresEdgePresenceCheck(CandidateEdit cand) {
+        if (cand == null || cand.isNoOp()) return false;
+        String k = cand.key();
+        if (k != null && k.startsWith("REM:")) return false;
+        List<Edge> intended = cand.getEdges();
+        return intended != null && !intended.isEmpty();
+    }
+
+    private static boolean allIntendedNewEdgesPresent(Graph g, CandidateEdit cand) {
+        if (g == null || cand == null) return false;
+        List<Edge> intended = cand.getEdges();
+        if (intended == null || intended.isEmpty()) return true;
+        for (Edge e : intended) {
+            if (!containsStructuralEdge(g, e)) return false;
+        }
+        return true;
+    }
+
+    private static boolean containsStructuralEdge(Graph g, Edge template) {
+        if (g == null || template == null) return false;
+        Edge reb = rebindEdgeToGraph(g, template);
+        if (reb == null) return false;
+        Edge inG = g.getEdge(reb.getNode1(), reb.getNode2());
+        if (inG == null) return false;
+        Endpoint a1 = inG.getProximalEndpoint(reb.getNode1());
+        Endpoint b1 = inG.getProximalEndpoint(reb.getNode2());
+        return a1 == reb.getProximalEndpoint(reb.getNode1())
+                && b1 == reb.getProximalEndpoint(reb.getNode2());
+    }
+
+    // =========================================================================
+    // Listener management
+    // =========================================================================
+
+    private static Edge rebindEdgeToGraph(Graph g, Edge e) {
+        if (g == null || e == null) return null;
+        Node a0 = e.getNode1(), b0 = e.getNode2();
+        if (a0 == null || b0 == null) return null;
+        String an = a0.getName(), bn = b0.getName();
+        if (an == null || bn == null) return null;
+        Node a = g.getNode(an), b = g.getNode(bn);
+        if (a == null || b == null) return null;
+        Endpoint ea = e.getProximalEndpoint(a0);
+        Endpoint eb = e.getProximalEndpoint(b0);
+        return new Edge(a, b, ea, eb);
+    }
+
+    private static Endpoint endpointAt(Edge e, Node n) {
+        if (e == null || n == null) return null;
+        return e.getProximalEndpoint(n);
+    }
+
+    // =========================================================================
+    // Cancellation
+    // =========================================================================
+
+    /**
+     * Builds a canonical fact-key for deduplication.
+     */
+    public static String factKey(IndependenceFact f) {
+        if (f == null || f.getX() == null || f.getY() == null) return UUID.randomUUID().toString();
+        String a = f.getX().getName(), b = f.getY().getName();
+        if (a == null) a = "";
+        if (b == null) b = "";
+        if (a.compareTo(b) > 0) {
+            String t = a;
+            a = b;
+            b = t;
+        }
+        List<String> z = new ArrayList<>();
+        for (Node n : f.getZ()) if (n != null && n.getName() != null) z.add(n.getName());
+        z.sort(NaturalSort.naturalComparator());
+        return a + "|" + b + "|" + String.join(",", z);
+    }
+
+    // =========================================================================
+    // Per-node search (used interactively by the panel)
+    // =========================================================================
+
+    private static MoveType moveType(CandidateEdit e) {
+        if (e == null) return MoveType.OTHER;
+        String s = (safeLower(e.key()) + " " + safeLower(e.description())).trim();
+        if (containsAny(s, "rem:") || containsAny(s, "remove", "delete")) return MoveType.REMOVE_EDGE;
+        if (containsAny(s, "add:") || containsAny(s, "add", "insert")) return MoveType.ADD_EDGE;
+        if (containsAny(s, "rep:") || containsAny(s, "replace", "reorient", "orient", "flip", "reverse", "endpoint"))
+            return MoveType.REORIENT_SIMPLE;
+        return MoveType.OTHER;
+    }
+
+    private static String safeLower(String s) {
+        return s == null ? "" : s.toLowerCase();
+    }
+
+    // =========================================================================
+    // Private: repair strategies
+    // =========================================================================
+
+    private static boolean containsAny(String s, String... needles) {
+        for (String n : needles) if (n != null && !n.isEmpty() && s.contains(n)) return true;
+        return false;
+    }
+
+    private static int stableTieBreak(ScoredCandidate a, ScoredCandidate b) {
+        String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
+        String kb = (b.edit() == null || b.edit().key() == null) ? "" : b.edit().key();
+        int c = ka.compareTo(kb);
+        if (c != 0) return c;
+        String da = (a.edit() == null || a.edit().description() == null) ? "" : a.edit().description();
+        String db = (b.edit() == null || b.edit().description() == null) ? "" : b.edit().description();
+        return da.compareTo(db);
+    }
+
+    // =========================================================================
+    // Private: queue management
+    // =========================================================================
+
+    private static void vlog(String fmt, Object... args) {
+        System.out.println("[VertexRepairSearch] " + String.format(fmt, args));
+    }
+
+    private static Edge getEdgeByNames(Graph g, Edge e) {
+        if (g == null || e == null) return null;
+        String a = e.getNode1() == null ? null : e.getNode1().getName();
+        String b = e.getNode2() == null ? null : e.getNode2().getName();
+        if (a == null || b == null) return null;
+        Node ga = g.getNode(a), gb = g.getNode(b);
+        if (ga == null || gb == null) return null;
+        return g.getEdge(ga, gb);
+    }
+
+    // =========================================================================
+    // Private: candidate computation
+    // =========================================================================
+
+    private static double getKolomogorovP(List<Double> pvals) {
+        double[] x = pvals.stream().mapToDouble(Double::doubleValue).toArray();
+        KolmogorovSmirnovTest ks = new KolmogorovSmirnovTest();
+        return ks.kolmogorovSmirnovTest(new UniformRealDistribution(0.0, 1.0), x);
+    }
+
+    /**
+     * Tests a list of p-values against the Anderson-Darling Test.
+     *
+     * @param pValues the list of p-values to be tested
+     * @return the p-value obtained from the Anderson-Darling Test
+     */
+    public static double getAndersonDarlingP(List<Double> pValues) {
+        GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
+        return generalAndersonDarlingTest.getP();
+    }
 
     /**
      * Runs the full repair sweep (using the configured strategy) and returns the
@@ -208,17 +443,17 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     // =========================================================================
-    // Configuration setters / getters
+    // Private: candidate enumeration
     // =========================================================================
-
-    /** Replaces the working graph used for repair. */
-    public void setGraph(Graph graph) {
-        this.workingGraph = safeCopy(Objects.requireNonNull(graph, "graph"));
-    }
 
     /** Returns the current working graph (may be updated during search). */
     public Graph getGraph() {
         return workingGraph;
+    }
+
+    /** Replaces the working graph used for repair. */
+    public void setGraph(Graph graph) {
+        this.workingGraph = safeCopy(Objects.requireNonNull(graph, "graph"));
     }
 
     /** Sets background knowledge constraints. Null is treated as empty knowledge. */
@@ -231,6 +466,10 @@ public final class VertexRepairSearch implements IGraphSearch {
         this.graphType = Objects.requireNonNull(graphType, "graphType");
     }
 
+    // =========================================================================
+    // Private: graph preparation and apply
+    // =========================================================================
+
     /** Sets the repair strategy. */
     public void setRepairStrategy(RepairStrategy repairStrategy) {
         this.repairStrategy = Objects.requireNonNull(repairStrategy, "repairStrategy");
@@ -242,7 +481,7 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     // =========================================================================
-    // Listener management
+    // Private: graph evaluation
     // =========================================================================
 
     /** Registers a listener for repair-progress events. */
@@ -255,10 +494,6 @@ public final class VertexRepairSearch implements IGraphSearch {
         listeners.remove(listener);
     }
 
-    // =========================================================================
-    // Cancellation
-    // =========================================================================
-
     /**
      * Requests early termination of an in-progress {@link #search()} call.
      * The call will return cleanly at the next cancellation checkpoint.
@@ -266,10 +501,6 @@ public final class VertexRepairSearch implements IGraphSearch {
     public void cancel() {
         cancelRequested = true;
     }
-
-    // =========================================================================
-    // Per-node search (used interactively by the panel)
-    // =========================================================================
 
     /**
      * Computes and returns the ranked list of scored candidate edits for the given
@@ -305,10 +536,6 @@ public final class VertexRepairSearch implements IGraphSearch {
         applyCandidateInternal(cand);
         return workingGraph;
     }
-
-    // =========================================================================
-    // Private: repair strategies
-    // =========================================================================
 
     private void runRepairPhase(Set<String> seenSweepStates, List<String> cycleWarnings) {
         boolean anyChangeInSweep;
@@ -381,8 +608,13 @@ public final class VertexRepairSearch implements IGraphSearch {
         Set<String> seenStates = new LinkedHashSet<>();
         int editsApplied = 0;
 
+        fireStatus("Pruning obvious false-positive edges...");
+        pruneObviousFalsePositives(workingGraph, 3); // depth 3 is a reasonable default
+        Q.clearCaches(); // flush cached results since graph changed
+
         fireStatus("Building global candidate queue...");
         if (!initGlobalQueue()) return;
+        // ... rest unchanged
 
         while (!globalQueue.isEmpty()) {
             if (stopRequested()) return;
@@ -441,7 +673,7 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     // =========================================================================
-    // Private: queue management
+    // Private: guards and progress
     // =========================================================================
 
     private boolean initGlobalQueue() {
@@ -504,7 +736,7 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     // =========================================================================
-    // Private: candidate computation
+    // Private: graph type helpers
     // =========================================================================
 
     private List<ScoredCandidate> computeScoredCandidatesForNode(Graph base, Node node) {
@@ -548,9 +780,21 @@ public final class VertexRepairSearch implements IGraphSearch {
                     g2.getNumEdges(), true,
                     Q.getAlpha());
 
+//            if (!cand.isNoOp()) {
+//                boolean couldProgress = after < baseline || g2.getNumEdges() < base.getNumEdges();
+//                if (!couldProgress) continue;
+//            }
+
+            // TODO keep?
             if (!cand.isNoOp()) {
-                boolean couldProgress = after < baseline || g2.getNumEdges() < base.getNumEdges();
-                if (!couldProgress) continue;
+                if (moveType(cand) == MoveType.REMOVE_EDGE) {
+                    // Always keep removals — they can't add false structure,
+                    // and ModelP evaluation will filter bad ones out.
+                } else {
+                    boolean couldProgress = after < baseline
+                            || g2.getNumEdges() < base.getNumEdges();
+                    if (!couldProgress) continue;
+                }
             }
 
             result.add(sc);
@@ -661,15 +905,12 @@ public final class VertexRepairSearch implements IGraphSearch {
                 : evalViolationsOnly(g2);
 
         boolean passes = isProgress(baseline, after,
-                base.getNumEdges(), g2.getNumEdges(), mpBefore, mpAfter);
+                base.getNumEdges(), g2.getNumEdges(), mpBefore, mpAfter,
+                moveType(cand));
 
         return new ScoredCandidate(cand, baseline, after,
                 sc.nodePAfter(), mpBefore, mpAfter, g2.getNumEdges(), passes, Q.getAlpha());
     }
-
-    // =========================================================================
-    // Private: candidate enumeration
-    // =========================================================================
 
     private List<CandidateEdit> enumerateCandidates(Graph g, Node x) {
         if (g == null || x == null) return List.of(CandidateEdit.noOp());
@@ -709,6 +950,10 @@ public final class VertexRepairSearch implements IGraphSearch {
 
         return dedupCandidateEdits(out);
     }
+
+    // =========================================================================
+    // Private: utilities
+    // =========================================================================
 
     private List<CandidateEdit> enumerateIncidentOrientationPatternMoves(Graph g, Node x) {
         if (g == null || x == null) return List.of();
@@ -858,10 +1103,6 @@ public final class VertexRepairSearch implements IGraphSearch {
         return adds;
     }
 
-    // =========================================================================
-    // Private: graph preparation and apply
-    // =========================================================================
-
     private Graph prepareBase() {
         Graph base = safeCopy(workingGraph);
         if (graphType == AdjustmentGraphType.CPDAG) {
@@ -901,10 +1142,6 @@ public final class VertexRepairSearch implements IGraphSearch {
         workingGraph = g2;
         vlog("APPLIED successfully");
     }
-
-    // =========================================================================
-    // Private: graph evaluation
-    // =========================================================================
 
     private GlobalEvalCache buildBaselineCache(Graph g) {
         if (g == null) return new GlobalEvalCache(Map.of());
@@ -957,7 +1194,10 @@ public final class VertexRepairSearch implements IGraphSearch {
             for (String name : affectedVertexNames) {
                 if (name == null) continue;
                 Node v = candidateGraph.getNode(name);
-                if (v == null) { contrib.remove(name); continue; }
+                if (v == null) {
+                    contrib.remove(name);
+                    continue;
+                }
                 contrib.put(name, evalVertexContribution(candidateGraph, v));
             }
         }
@@ -1037,29 +1277,13 @@ public final class VertexRepairSearch implements IGraphSearch {
         return g2;
     }
 
-    // =========================================================================
-    // Private: guards and progress
-    // =========================================================================
-
     private boolean wouldPassGuards(Graph base, ScoredCandidate sc) {
         if (sc == null || sc.edit() == null || sc.edit().isNoOp()) return false;
         return isProgress(sc.violationsBaseline(), sc.violationsAfter(),
-                base.getNumEdges(), sc.edgesAfter(), sc.modelPBefore(), sc.modelPAfter());
+                base.getNumEdges(), sc.edgesAfter(),
+                sc.modelPBefore(), sc.modelPAfter(),
+                moveType(sc.edit()));
     }
-
-    private static boolean isProgress(int baselineViol, int afterViol,
-                                      int currentEdges, int afterEdges,
-                                      double mpBefore, double mpAfter) {
-        if (afterViol < baselineViol) return true;
-        if (afterEdges < currentEdges) return true;
-        final double MIN_MP_GAIN = 0.001;
-        return Double.isFinite(mpBefore) && Double.isFinite(mpAfter)
-                && (mpAfter - mpBefore) >= MIN_MP_GAIN;
-    }
-
-    // =========================================================================
-    // Private: graph type helpers
-    // =========================================================================
 
     private boolean isLegalGraphType(Graph g) {
         return switch (graphType) {
@@ -1105,40 +1329,6 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
     }
 
-    private static Graph seedDagFromAnyGraph(Graph g) {
-        if (g == null) return null;
-        List<Node> nodes = new ArrayList<>(g.getNodes());
-        nodes.sort(Comparator.comparing(Node::getName,
-                Comparator.nullsLast(NaturalSort.NATURAL_NAME_COMPARATOR)));
-        if (nodes.isEmpty()) return null;
-        Map<String, Integer> idx = new HashMap<>();
-        for (int i = 0; i < nodes.size(); i++) {
-            String name = nodes.get(i).getName();
-            if (name != null) idx.put(name, i);
-        }
-        Graph dag = new EdgeListGraph(nodes);
-        Set<String> seenPairs = new HashSet<>();
-        for (Edge e : g.getEdges()) {
-            Node a0 = e.getNode1(), b0 = e.getNode2();
-            if (a0 == null || b0 == null) continue;
-            String an0 = a0.getName(), bn0 = b0.getName();
-            if (an0 == null || bn0 == null) continue;
-            Node a = dag.getNode(an0), b = dag.getNode(bn0);
-            if (a == null || b == null || a.equals(b)) continue;
-            String key = (an0.compareTo(bn0) <= 0) ? (an0 + "|" + bn0) : (bn0 + "|" + an0);
-            if (!seenPairs.add(key)) continue;
-            int ia = idx.getOrDefault(a.getName(), 0);
-            int ib = idx.getOrDefault(b.getName(), 0);
-            if (ia <= ib) dag.addEdge(new Edge(a, b, Endpoint.TAIL, Endpoint.ARROW));
-            else dag.addEdge(new Edge(b, a, Endpoint.TAIL, Endpoint.ARROW));
-        }
-        return dag.paths().isLegalDag() ? dag : null;
-    }
-
-    // =========================================================================
-    // Private: utilities
-    // =========================================================================
-
     private IndependenceResult checkIndependence(IndependenceFact f) {
         if (stopRequested()) return null;
         if (f == null || Q == null) return null;
@@ -1150,18 +1340,21 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
     }
 
+    // =========================================================================
+    // Event firing
+    // =========================================================================
+
     private boolean stopRequested() {
         return cancelRequested || Thread.currentThread().isInterrupted();
     }
 
     private Graph safeCopy(Graph g) {
         if (g == null) return null;
-        try { return g.copy(); } catch (Throwable t) { return new EdgeListGraph(g); }
-    }
-
-    private static Node resolveNode(Graph g, String name) {
-        if (g == null || name == null) return null;
-        return g.getNode(name);
+        try {
+            return g.copy();
+        } catch (Throwable t) {
+            return new EdgeListGraph(g);
+        }
     }
 
     private Set<String> affectedVertices(Graph base, Node x, Graph candidate) {
@@ -1184,135 +1377,6 @@ public final class VertexRepairSearch implements IGraphSearch {
         return affected;
     }
 
-    private static List<CandidateEdit> dedupCandidateEdits(List<CandidateEdit> edits) {
-        if (edits == null || edits.isEmpty()) return List.of();
-        Map<String, CandidateEdit> seen = new LinkedHashMap<>();
-        for (CandidateEdit ce : edits) {
-            if (ce == null) continue;
-            String key = ce.key();
-            if (key == null) key = UUID.randomUUID().toString();
-            seen.putIfAbsent(key, ce);
-        }
-        return new ArrayList<>(seen.values());
-    }
-
-    private static boolean edgeStructurallyEqual(Edge a, Edge b, Node x, Node y) {
-        if (a == null || b == null) return false;
-        Endpoint aX, aY;
-        if (a.getNode1().equals(x) && a.getNode2().equals(y)) {
-            aX = a.getEndpoint1(); aY = a.getEndpoint2();
-        } else if (a.getNode1().equals(y) && a.getNode2().equals(x)) {
-            aX = a.getEndpoint2(); aY = a.getEndpoint1();
-        } else return false;
-
-        Endpoint bX, bY;
-        if (b.getNode1().equals(x) && b.getNode2().equals(y)) {
-            bX = b.getEndpoint1(); bY = b.getEndpoint2();
-        } else if (b.getNode1().equals(y) && b.getNode2().equals(x)) {
-            bX = b.getEndpoint2(); bY = b.getEndpoint1();
-        } else return false;
-
-        return aX == bX && aY == bY;
-    }
-
-    private static boolean requiresEdgePresenceCheck(CandidateEdit cand) {
-        if (cand == null || cand.isNoOp()) return false;
-        String k = cand.key();
-        if (k != null && k.startsWith("REM:")) return false;
-        List<Edge> intended = cand.getEdges();
-        return intended != null && !intended.isEmpty();
-    }
-
-    private static boolean allIntendedNewEdgesPresent(Graph g, CandidateEdit cand) {
-        if (g == null || cand == null) return false;
-        List<Edge> intended = cand.getEdges();
-        if (intended == null || intended.isEmpty()) return true;
-        for (Edge e : intended) {
-            if (!containsStructuralEdge(g, e)) return false;
-        }
-        return true;
-    }
-
-    private static boolean containsStructuralEdge(Graph g, Edge template) {
-        if (g == null || template == null) return false;
-        Edge reb = rebindEdgeToGraph(g, template);
-        if (reb == null) return false;
-        Edge inG = g.getEdge(reb.getNode1(), reb.getNode2());
-        if (inG == null) return false;
-        Endpoint a1 = inG.getProximalEndpoint(reb.getNode1());
-        Endpoint b1 = inG.getProximalEndpoint(reb.getNode2());
-        return a1 == reb.getProximalEndpoint(reb.getNode1())
-                && b1 == reb.getProximalEndpoint(reb.getNode2());
-    }
-
-    private static Edge rebindEdgeToGraph(Graph g, Edge e) {
-        if (g == null || e == null) return null;
-        Node a0 = e.getNode1(), b0 = e.getNode2();
-        if (a0 == null || b0 == null) return null;
-        String an = a0.getName(), bn = b0.getName();
-        if (an == null || bn == null) return null;
-        Node a = g.getNode(an), b = g.getNode(bn);
-        if (a == null || b == null) return null;
-        Endpoint ea = e.getProximalEndpoint(a0);
-        Endpoint eb = e.getProximalEndpoint(b0);
-        return new Edge(a, b, ea, eb);
-    }
-
-    private static Endpoint endpointAt(Edge e, Node n) {
-        if (e == null || n == null) return null;
-        return e.getProximalEndpoint(n);
-    }
-
-    /**
-     * Builds a canonical fact-key for deduplication.
-     */
-    public static String factKey(IndependenceFact f) {
-        if (f == null || f.getX() == null || f.getY() == null) return UUID.randomUUID().toString();
-        String a = f.getX().getName(), b = f.getY().getName();
-        if (a == null) a = "";
-        if (b == null) b = "";
-        if (a.compareTo(b) > 0) { String t = a; a = b; b = t; }
-        List<String> z = new ArrayList<>();
-        for (Node n : f.getZ()) if (n != null && n.getName() != null) z.add(n.getName());
-        z.sort(NaturalSort.naturalComparator());
-        return a + "|" + b + "|" + String.join(",", z);
-    }
-
-    private static MoveType moveType(CandidateEdit e) {
-        if (e == null) return MoveType.OTHER;
-        String s = (safeLower(e.key()) + " " + safeLower(e.description())).trim();
-        if (containsAny(s, "rem:") || containsAny(s, "remove", "delete")) return MoveType.REMOVE_EDGE;
-        if (containsAny(s, "add:") || containsAny(s, "add", "insert")) return MoveType.ADD_EDGE;
-        if (containsAny(s, "rep:") || containsAny(s, "replace", "reorient", "orient", "flip", "reverse", "endpoint"))
-            return MoveType.REORIENT_SIMPLE;
-        return MoveType.OTHER;
-    }
-
-    private static String safeLower(String s) { return s == null ? "" : s.toLowerCase(); }
-
-    private static boolean containsAny(String s, String... needles) {
-        for (String n : needles) if (n != null && !n.isEmpty() && s.contains(n)) return true;
-        return false;
-    }
-
-    private static int stableTieBreak(ScoredCandidate a, ScoredCandidate b) {
-        String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
-        String kb = (b.edit() == null || b.edit().key() == null) ? "" : b.edit().key();
-        int c = ka.compareTo(kb);
-        if (c != 0) return c;
-        String da = (a.edit() == null || a.edit().description() == null) ? "" : a.edit().description();
-        String db = (b.edit() == null || b.edit().description() == null) ? "" : b.edit().description();
-        return da.compareTo(db);
-    }
-
-    private static void vlog(String fmt, Object... args) {
-        System.out.println("[VertexRepairSearch] " + String.format(fmt, args));
-    }
-
-    // =========================================================================
-    // Event firing
-    // =========================================================================
-
     private void fireStatus(String message) {
         for (RepairListener l : listeners) l.statusUpdated(message);
     }
@@ -1320,6 +1384,12 @@ public final class VertexRepairSearch implements IGraphSearch {
     private void fireEditApplied(CandidateEdit edit, Graph currentGraph) {
         for (RepairListener l : listeners) l.editApplied(edit, currentGraph);
     }
+
+    // =========================================================================
+    // Public types
+    // =========================================================================
+
+    // ---- Enums ---------------------------------------------------------------
 
     private void fireRepairConverged(int totalEdits, String message) {
         for (RepairListener l : listeners) l.repairConverged(totalEdits, message);
@@ -1338,14 +1408,117 @@ public final class VertexRepairSearch implements IGraphSearch {
         this.useAndersonDarling = useAndersonDarling;
     }
 
-    // =========================================================================
-    // Public types
-    // =========================================================================
+    // ---- Listener ------------------------------------------------------------
 
-    // ---- Enums ---------------------------------------------------------------
+    public void setPruneAlpha(double pruneAlpha) {
+        this.pruneAlpha = pruneAlpha;
+    }
+
+    // ---- CandidateEdit -------------------------------------------------------
+
+    public double getUniformityP(List<Double> pvals) {
+        if (pvals == null || pvals.size() < 2) return Double.NaN;
+
+        if (useAndersonDarling) {
+            return getAndersonDarlingP(pvals);
+        } else {
+            return getKolomogorovP(pvals);
+        }
+    }
+
+    // ---- Records (package-accessible for use in the panel) -------------------
+
+    /**
+     * Searches for a separating set for x and y among subsets of their
+     * combined neighbors in g, up to the given depth. Returns the sepset
+     * if found, null otherwise.
+     */
+    private Set<Node> findSepset(Graph g, Node x, Node y, int maxDepth) {
+        Set<Node> candidates = new LinkedHashSet<>();
+        for (Node n : g.getAdjacentNodes(x)) if (!n.equals(y)) candidates.add(n);
+        for (Node n : g.getAdjacentNodes(y)) if (!n.equals(x)) candidates.add(n);
+
+        List<Node> candList = new ArrayList<>(candidates);
+        int depth = Math.min(maxDepth, candList.size());
+
+        for (int size = 0; size <= depth; size++) {
+            int[] indices = new int[size];
+            for (int i = 0; i < size; i++) indices[i] = i;
+
+            while (true) {
+                Set<Node> z = new LinkedHashSet<>();
+                for (int idx : indices) z.add(candList.get(idx));
+
+                IndependenceResult result = checkIndependenceAtAlpha(x, y, z, pruneAlpha);
+                if (result != null && result.isIndependent()) return z;
+
+                int i = size - 1;
+                while (i >= 0 && indices[i] == candList.size() - size + i) i--;
+                if (i < 0) break;
+                indices[i]++;
+                for (int j = i + 1; j < size; j++) indices[j] = indices[j - 1] + 1;
+            }
+        }
+        return null;
+    }
+
+    // ---- Private types -------------------------------------------------------
+
+    private IndependenceResult checkIndependenceAtAlpha(Node x, Node y, Set<Node> z, double alpha) {
+        if (stopRequested()) return null;
+        try {
+            IndependenceResult r = Q.checkIndependence(x, y, new LinkedHashSet<>(z));
+            double p = r.getPValue();
+            if (Double.isNaN(p)) return r;
+            // Construct a new result with isIndependent() reflecting pruneAlpha,
+            // preserving the original p-value and score.
+            return new IndependenceResult(r.getFact(), p > alpha, p, r.getScore());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Removes edges from g whose endpoints are d-separated by some subset
+     * of their neighbors. This targets false-positive edges that the starting
+     * algorithm left in. Modifies g in place.
+     */
+    private void pruneObviousFalsePositives(Graph g, int maxDepth) {
+        List<Edge> edges = new ArrayList<>(g.getEdges());
+        RandomUtil.shuffle(edges);
+        for (Edge e : edges) {
+            if (stopRequested()) return;
+            Node x = e.getNode1();
+            Node y = e.getNode2();
+            if (!g.isAdjacentTo(x, y)) continue;
+            Set<Node> sep = findSepset(g, x, y, maxDepth);
+            if (sep != null) {
+                g.removeEdge(g.getEdge(x, y));
+                fireStatus("Pruning false-positive edge " + x.getName() + " -- " + y.getName());
+                vlog("Pruned false-positive edge %s -- %s | %s", x.getName(), y.getName(), sep);
+            }
+        }
+
+        if (graphType == AdjustmentGraphType.CPDAG) {
+            Graph canonicalized = canonicalizeToCpdagOrNull(g);
+            if (canonicalized != null) {
+                // Only assign back to workingGraph if g IS workingGraph
+                if (g == workingGraph) workingGraph = canonicalized;
+            } else {
+                fireStatus("Warning: canonicalization after pruning failed, continuing with pruned graph.");
+            }
+        } else if (graphType == AdjustmentGraphType.PAG) {
+            Graph canonicalized = canonicalizeToPagOrNull(g);
+            if (canonicalized != null) {
+                if (g == workingGraph) workingGraph = canonicalized;
+            } else {
+                fireStatus("Warning: canonicalization after pruning failed, continuing with pruned graph.");
+            }
+        }
+    }
 
     /** Graph types supported by the repair search. */
-    public enum AdjustmentGraphType { CPDAG, PDAG, PAG, DAG, MAG }
+    public enum AdjustmentGraphType {CPDAG, PDAG, PAG, DAG, MAG}
 
     /** Which repair sweep strategy to use. */
     public enum RepairStrategy {
@@ -1353,12 +1526,20 @@ public final class VertexRepairSearch implements IGraphSearch {
         GLOBAL_QUEUE("Global queue");
 
         private final String label;
-        RepairStrategy(String label) { this.label = label; }
 
-        @Override public String toString() { return label; }
+        RepairStrategy(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
     }
 
-    // ---- Listener ------------------------------------------------------------
+    private enum MoveType {REORIENT_SIMPLE, REMOVE_EDGE, ADD_EDGE, OTHER}
+
+    // ---- Static edge helpers (kept package-private for potential reuse) -------
 
     /**
      * Callback interface for repair-progress events fired by {@link VertexRepairSearch}.
@@ -1373,7 +1554,8 @@ public final class VertexRepairSearch implements IGraphSearch {
          *
          * @param message the status string (never null)
          */
-        default void statusUpdated(String message) {}
+        default void statusUpdated(String message) {
+        }
 
         /**
          * Called each time a candidate edit is successfully applied to the graph.
@@ -1381,7 +1563,8 @@ public final class VertexRepairSearch implements IGraphSearch {
          * @param edit         the edit that was applied (never null)
          * @param currentGraph the graph state after applying the edit (a safe copy)
          */
-        default void editApplied(CandidateEdit edit, Graph currentGraph) {}
+        default void editApplied(CandidateEdit edit, Graph currentGraph) {
+        }
 
         /**
          * Called when the repair terminates normally (convergence or empty queue).
@@ -1389,10 +1572,9 @@ public final class VertexRepairSearch implements IGraphSearch {
          * @param totalEdits number of edits applied during this run
          * @param message    human-readable summary
          */
-        default void repairConverged(int totalEdits, String message) {}
+        default void repairConverged(int totalEdits, String message) {
+        }
     }
-
-    // ---- CandidateEdit -------------------------------------------------------
 
     /**
      * A single proposed graph modification, together with metadata needed for
@@ -1402,18 +1584,41 @@ public final class VertexRepairSearch implements IGraphSearch {
 
         static CandidateEdit noOp() {
             return new CandidateEdit() {
-                @Override public String description() { return "No change"; }
-                @Override public Graph applyTo(Graph g) { return (g == null) ? null : new EdgeListGraph(g); }
-                @Override public boolean isNoOp() { return true; }
-                @Override public String key() { return "NO_OP"; }
-                @Override public Edge getEdge() { return null; }
+                @Override
+                public String description() {
+                    return "No change";
+                }
+
+                @Override
+                public Graph applyTo(Graph g) {
+                    return (g == null) ? null : new EdgeListGraph(g);
+                }
+
+                @Override
+                public boolean isNoOp() {
+                    return true;
+                }
+
+                @Override
+                public String key() {
+                    return "NO_OP";
+                }
+
+                @Override
+                public Edge getEdge() {
+                    return null;
+                }
             };
         }
 
         static CandidateEdit addEdge(Edge edgeToAdd) {
             Objects.requireNonNull(edgeToAdd, "edgeToAdd");
             return new CandidateEdit() {
-                @Override public String description() { return "Add edge " + edgeToAdd; }
+                @Override
+                public String description() {
+                    return "Add edge " + edgeToAdd;
+                }
+
                 @Override
                 public Graph applyTo(Graph g) {
                     Graph g2 = new EdgeListGraph(g);
@@ -1423,16 +1628,32 @@ public final class VertexRepairSearch implements IGraphSearch {
                     g2.addEdge(rebound);
                     return g2;
                 }
-                @Override public boolean isNoOp() { return false; }
-                @Override public String key() { return "ADD:" + edgeToAdd; }
-                @Override public Edge getEdge() { return edgeToAdd; }
+
+                @Override
+                public boolean isNoOp() {
+                    return false;
+                }
+
+                @Override
+                public String key() {
+                    return "ADD:" + edgeToAdd;
+                }
+
+                @Override
+                public Edge getEdge() {
+                    return edgeToAdd;
+                }
             };
         }
 
         static CandidateEdit removeEdge(Edge edgeToRemove) {
             Objects.requireNonNull(edgeToRemove, "edgeToRemove");
             return new CandidateEdit() {
-                @Override public String description() { return "Remove edge " + edgeToRemove; }
+                @Override
+                public String description() {
+                    return "Remove edge " + edgeToRemove;
+                }
+
                 @Override
                 public Graph applyTo(Graph g) {
                     Graph g2 = new EdgeListGraph(g);
@@ -1441,9 +1662,21 @@ public final class VertexRepairSearch implements IGraphSearch {
                     g2.removeEdge(existing);
                     return g2;
                 }
-                @Override public boolean isNoOp() { return false; }
-                @Override public String key() { return "REM:" + edgeToRemove; }
-                @Override public Edge getEdge() { return edgeToRemove; }
+
+                @Override
+                public boolean isNoOp() {
+                    return false;
+                }
+
+                @Override
+                public String key() {
+                    return "REM:" + edgeToRemove;
+                }
+
+                @Override
+                public Edge getEdge() {
+                    return edgeToRemove;
+                }
             };
         }
 
@@ -1451,7 +1684,11 @@ public final class VertexRepairSearch implements IGraphSearch {
             Objects.requireNonNull(edgeToRemove, "edgeToRemove");
             Objects.requireNonNull(edgeToAdd, "edgeToAdd");
             return new CandidateEdit() {
-                @Override public String description() { return "Replace " + edgeToRemove + " → " + edgeToAdd; }
+                @Override
+                public String description() {
+                    return "Replace " + edgeToRemove + " → " + edgeToAdd;
+                }
+
                 @Override
                 public Graph applyTo(Graph g) {
                     Graph g2 = new EdgeListGraph(g);
@@ -1468,9 +1705,21 @@ public final class VertexRepairSearch implements IGraphSearch {
                     }
                     return g2;
                 }
-                @Override public boolean isNoOp() { return false; }
-                @Override public String key() { return "REP:" + edgeToRemove + "→" + edgeToAdd; }
-                @Override public Edge getEdge() { return edgeToAdd; }
+
+                @Override
+                public boolean isNoOp() {
+                    return false;
+                }
+
+                @Override
+                public String key() {
+                    return "REP:" + edgeToRemove + "→" + edgeToAdd;
+                }
+
+                @Override
+                public Edge getEdge() {
+                    return edgeToAdd;
+                }
             };
         }
 
@@ -1479,7 +1728,11 @@ public final class VertexRepairSearch implements IGraphSearch {
             List<Edge> rem = List.copyOf(Objects.requireNonNull(edgesToRemove));
             List<Edge> add = List.copyOf(Objects.requireNonNull(edgesToAdd));
             return new CandidateEdit() {
-                @Override public String description() { return label; }
+                @Override
+                public String description() {
+                    return label;
+                }
+
                 @Override
                 public Graph applyTo(Graph g) {
                     Graph g2 = new EdgeListGraph(g);
@@ -1500,25 +1753,44 @@ public final class VertexRepairSearch implements IGraphSearch {
                     }
                     return g2;
                 }
-                @Override public boolean isNoOp() { return false; }
-                @Override public String key() { return "MREPL:" + label; }
-                @Override public Edge getEdge() { return add.isEmpty() ? null : add.getFirst(); }
-                @Override public List<Edge> getEdges() { return add; }
+
+                @Override
+                public boolean isNoOp() {
+                    return false;
+                }
+
+                @Override
+                public String key() {
+                    return "MREPL:" + label;
+                }
+
+                @Override
+                public Edge getEdge() {
+                    return add.isEmpty() ? null : add.getFirst();
+                }
+
+                @Override
+                public List<Edge> getEdges() {
+                    return add;
+                }
             };
         }
 
         String description();
+
         Graph applyTo(Graph g);
+
         boolean isNoOp();
+
         String key();
+
         Edge getEdge();
+
         default List<Edge> getEdges() {
             Edge e = getEdge();
             return (e == null) ? List.of() : List.of(e);
         }
     }
-
-    // ---- Records (package-accessible for use in the panel) -------------------
 
     /** A scored candidate edit ready for display or application. */
     public record ScoredCandidate(
@@ -1532,12 +1804,10 @@ public final class VertexRepairSearch implements IGraphSearch {
             boolean passesGuards,
             double alpha
     ) {
-        public int delta() { return violationsAfter - violationsBaseline; }
+        public int delta() {
+            return violationsAfter - violationsBaseline;
+        }
     }
-
-    // ---- Private types -------------------------------------------------------
-
-    private enum MoveType { REORIENT_SIMPLE, REMOVE_EDGE, ADD_EDGE, OTHER }
 
     private record QueueEntry(String nodeName, ScoredCandidate scored)
             implements Comparable<QueueEntry> {
@@ -1547,48 +1817,12 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
     }
 
-    private record GraphEval(int violations, double modelP, int nFacts) {}
-
-    private record VertexContribution(Map<String, Boolean> violationByKey, Map<String, Double> pByKey) {}
-
-    private record GlobalEvalCache(Map<String, VertexContribution> contribByVertexName) {}
-
-    // ---- Static edge helpers (kept package-private for potential reuse) -------
-
-    private static Edge getEdgeByNames(Graph g, Edge e) {
-        if (g == null || e == null) return null;
-        String a = e.getNode1() == null ? null : e.getNode1().getName();
-        String b = e.getNode2() == null ? null : e.getNode2().getName();
-        if (a == null || b == null) return null;
-        Node ga = g.getNode(a), gb = g.getNode(b);
-        if (ga == null || gb == null) return null;
-        return g.getEdge(ga, gb);
+    private record GraphEval(int violations, double modelP, int nFacts) {
     }
 
-    public double getUniformityP(List<Double> pvals) {
-        if (pvals == null || pvals.size() < 2) return Double.NaN;
-
-        if (useAndersonDarling) {
-            return getAndersonDarlingP(pvals);
-        } else {
-            return getKolomogorovP(pvals);
-        }
+    private record VertexContribution(Map<String, Boolean> violationByKey, Map<String, Double> pByKey) {
     }
 
-    private static double getKolomogorovP(List<Double> pvals) {
-        double[] x = pvals.stream().mapToDouble(Double::doubleValue).toArray();
-        KolmogorovSmirnovTest ks = new KolmogorovSmirnovTest();
-        return ks.kolmogorovSmirnovTest(new UniformRealDistribution(0.0, 1.0), x);
-    }
-
-    /**
-     * Tests a list of p-values against the Anderson-Darling Test.
-     *
-     * @param pValues the list of p-values to be tested
-     * @return the p-value obtained from the Anderson-Darling Test
-     */
-    public static double getAndersonDarlingP(List<Double> pValues) {
-        GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
-        return generalAndersonDarlingTest.getP();
+    private record GlobalEvalCache(Map<String, VertexContribution> contribByVertexName) {
     }
 }
