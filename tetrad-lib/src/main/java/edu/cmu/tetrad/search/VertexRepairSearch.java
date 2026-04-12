@@ -117,7 +117,7 @@ public final class VertexRepairSearch implements IGraphSearch {
     private final ConditioningSetType type;
     private final List<RepairListener> listeners = new CopyOnWriteArrayList<>();
     private final Map<String, List<ScoredCandidate>> globalCandsByNode = new HashMap<>();
-    private double pruneAlpha = 0.01;
+    private double pruneAlpha = 0.2;
     private Graph workingGraph;
     private Knowledge knowledge = new Knowledge();
     private AdjustmentGraphType graphType = AdjustmentGraphType.DAG;
