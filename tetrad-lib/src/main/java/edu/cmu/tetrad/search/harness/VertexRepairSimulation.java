@@ -64,7 +64,7 @@ public class VertexRepairSimulation {
     /**
      * Which starting-graph scenario to use. Change this to try different scenarios.
      */
-    public static final StartingGraph scenario = StartingGraph.FGES ;
+    public static final StartingGraph scenario = StartingGraph.PC ;
 
     // =========================================================================
     // Simulation parameters — edit these as desired
@@ -80,7 +80,7 @@ public class VertexRepairSimulation {
     /**
      * Sample size for each simulated data set.
      */
-    private static final int SAMPLE_SIZE = 1000;
+    private static final int SAMPLE_SIZE = 2000;
     /**
      * Number of independent simulation runs to average over.
      */
@@ -103,7 +103,7 @@ public class VertexRepairSimulation {
     /**
      * Alpha for the independence test.
      */
-    private static final double ALPHA = 0.05;
+    private static final double ALPHA = 0.01;
 
     /**
      * Penalty discount for the score

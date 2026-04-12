@@ -148,17 +148,6 @@ public class Bes {
                 continue;
             }
 
-//            if (!validDelete(x, y, arrow.getHOrT(), arrow.getNaYX(), graph)) {
-//                continue;
-//            }
-//
-//            Set<Node> complement = new HashSet<>(arrow.getNaYX());
-//            complement.removeAll(arrow.getHOrT());
-//
-//            double _bump = deleteEval(x, y, complement, arrow.parents, hashIndices);
-
-            // Bes.java — inside the while loop in bes() (around line 155)
-
             if (!validDelete(x, y, arrow.getHOrT(), arrow.getNaYX(), graph)) {
                 continue;
             }
@@ -166,11 +155,8 @@ public class Bes {
             Set<Node> complement = new HashSet<>(arrow.getNaYX());
             complement.removeAll(arrow.getHOrT());
 
-            double _bump = deleteEval(x, y, complement, arrow.parents, hashIndices);
-
-            if (_bump <= 0) {   // add this guard
-                continue;
-            }
+            Set<Node> currentParents = new HashSet<>(graph.getParents(y));
+            double _bump = deleteEval(x, y, complement, currentParents, hashIndices);
 
             delete(x, y, arrow.getHOrT(), _bump, arrow.getNaYX(), graph);
 
