@@ -365,6 +365,7 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
             }
         }
 
+        rows.sort(Integer::compareTo);
         this.rows = new ArrayList<>(rows);
         this.n = this.rows.size();
         invalidateFeatureCache();
@@ -648,28 +649,21 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
         final int d = (nRows == 0) ? 0 : Z[0].length;
 
         double[][] Phi = new double[nRows][mFeatures];
-        if (nRows == 0) {
-            return Phi;
-        }
+        if (nRows == 0) return Phi;
 
-        // Handle d=0: constant features (cos(b))
+        final Random localRng = new Random(seed);
+
         if (d == 0) {
             double scale0 = TMath.sqrt(2.0 / mFeatures);
             double[] b0 = new double[mFeatures];
-            for (int j = 0; j < mFeatures; j++) {
-                b0[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
-            }
-            for (int i = 0; i < nRows; i++) {
-                for (int j = 0; j < mFeatures; j++) {
+            for (int j = 0; j < mFeatures; j++) b0[j] = 2.0 * TMath.PI * localRng.nextDouble();
+            for (int i = 0; i < nRows; i++)
+                for (int j = 0; j < mFeatures; j++)
                     Phi[i][j] = scale0 * TMath.cos(b0[j]);
-                }
-            }
             return Phi;
         }
 
-        if (!(bw2 > 0) || !Double.isFinite(bw2)) {
-            bw2 = 1.0;
-        }
+        if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
 
         final double wStd = TMath.sqrt(2.0 / bw2);
         final double scale = TMath.sqrt(2.0 / mFeatures);
@@ -680,16 +674,12 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
         if (featureType == FeatureType.RFF) {
             W = new double[mFeatures][d];
             for (int j = 0; j < mFeatures; j++) {
-                for (int k = 0; k < d; k++) {
-                    W[j][k] = wStd * RandomUtil.getInstance().nextGaussian();
-                }
-                b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+                for (int k = 0; k < d; k++) W[j][k] = wStd * nextGaussian(localRng);
+                b[j] = 2.0 * TMath.PI * localRng.nextDouble();
             }
         } else if (featureType == FeatureType.ORF) {
-            W = sampleOrthogonalW(mFeatures, d, wStd);
-            for (int j = 0; j < mFeatures; j++) {
-                b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
-            }
+            W = sampleOrthogonalW(mFeatures, d, wStd, localRng);
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * localRng.nextDouble();
         } else {
             throw new IllegalArgumentException("featureType must be RFF or ORF");
         }
@@ -699,13 +689,10 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
             for (int j = 0; j < mFeatures; j++) {
                 double dot = 0.0;
                 double[] wj = W[j];
-                for (int k = 0; k < d; k++) {
-                    dot += wj[k] * Zi[k];
-                }
+                for (int k = 0; k < d; k++) dot += wj[k] * Zi[k];
                 Phi[i][j] = scale * TMath.cos(dot + b[j]);
             }
         }
-
         return Phi;
     }
 
@@ -917,66 +904,60 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
     /**
      * ORF: block-orthogonal rows in blocks of size d.
      */
-    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd) {
+    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd, Random rng) {
         double[][] W = new double[mFeatures][d];
-        if (d <= 0) {
-            return W;
-        }
+        if (d <= 0) return W;
 
         int filled = 0;
         while (filled < mFeatures) {
             int block = TMath.min(d, mFeatures - filled);
 
             double[][] Q = new double[block][d];
-            for (int i = 0; i < block; i++) {
-                for (int j = 0; j < d; j++) {
-                    Q[i][j] = RandomUtil.getInstance().nextGaussian();
-                }
-            }
+            for (int i = 0; i < block; i++)
+                for (int j = 0; j < d; j++)
+                    Q[i][j] = nextGaussian(rng);
 
-            // Gram–Schmidt rows of Q
             for (int i = 0; i < block; i++) {
                 for (int k = 0; k < i; k++) {
                     double dot = 0.0;
-                    for (int j = 0; j < d; j++) {
-                        dot += Q[i][j] * Q[k][j];
-                    }
-                    for (int j = 0; j < d; j++) {
-                        Q[i][j] -= dot * Q[k][j];
-                    }
+                    for (int j = 0; j < d; j++) dot += Q[i][j] * Q[k][j];
+                    for (int j = 0; j < d; j++) Q[i][j] -= dot * Q[k][j];
                 }
                 double norm2 = 0.0;
-                for (int j = 0; j < d; j++) {
-                    norm2 += Q[i][j] * Q[i][j];
-                }
+                for (int j = 0; j < d; j++) norm2 += Q[i][j] * Q[i][j];
                 double norm = TMath.sqrt(TMath.max(1e-18, norm2));
-                for (int j = 0; j < d; j++) {
-                    Q[i][j] /= norm;
-                }
+                for (int j = 0; j < d; j++) Q[i][j] /= norm;
             }
 
             for (int i = 0; i < block; i++) {
-                double r = chiRadius(d);
+                double r = chiRadius(d, rng);
                 double s = wStd * r;
                 int outRow = filled + i;
-                for (int j = 0; j < d; j++) {
-                    W[outRow][j] = s * Q[i][j];
-                }
+                for (int j = 0; j < d; j++) W[outRow][j] = s * Q[i][j];
             }
 
             filled += block;
         }
-
         return W;
     }
 
-    private static double chiRadius(int d) {
+    private static double chiRadius(int d, Random rng) {
         double ss = 0.0;
         for (int k = 0; k < d; k++) {
-            double g = RandomUtil.getInstance().nextGaussian();
+            double g = nextGaussian(rng);
             ss += g * g;
         }
         return TMath.sqrt(TMath.max(1e-18, ss));
+    }
+
+    private static double nextGaussian(Random rng) {
+        double u, v, s;
+        do {
+            u = 2.0 * rng.nextDouble() - 1.0;
+            v = 2.0 * rng.nextDouble() - 1.0;
+            s = u * u + v * v;
+        } while (s >= 1.0 || s == 0.0);
+        return u * TMath.sqrt(-2.0 * TMath.log(s) / s);
     }
 
     /**

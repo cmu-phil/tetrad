@@ -467,6 +467,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
                 if (r < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
                 if (r >= data.getNumRows()) throw new IllegalArgumentException("Row " + i + " out of bounds: " + r);
             }
+            rows.sort(Comparator.naturalOrder());
             this.rows = new ArrayList<>(rows);
         } else {
             this.rows = null;
@@ -885,11 +886,13 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
 
         if (n == 0 || mFeatures <= 0) return new double[n][TMath.max(mFeatures, 0)];
 
+        final Random localRng = new Random(seed);
+
         if (d == 0) {
             double[][] Phi = new double[n][mFeatures];
             double scale0 = TMath.sqrt(2.0 / mFeatures);
             double[] b0 = new double[mFeatures];
-            for (int j = 0; j < mFeatures; j++) b0[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+            for (int j = 0; j < mFeatures; j++) b0[j] = 2.0 * TMath.PI * localRng.nextDouble();
             for (int i = 0; i < n; i++)
                 for (int j = 0; j < mFeatures; j++)
                     Phi[i][j] = scale0 * TMath.cos(b0[j]);
@@ -907,12 +910,12 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         if (featureType == FfCiContinuous.FeatureType.RFF) {
             W = new double[mFeatures][d];
             for (int j = 0; j < mFeatures; j++) {
-                for (int k = 0; k < d; k++) W[j][k] = wStd * RandomUtil.getInstance().nextGaussian();
-                b[j] = 2.0 * TMath.PI * rng.nextDouble();
+                for (int k = 0; k < d; k++) W[j][k] = wStd * nextGaussian(localRng);
+                b[j] = 2.0 * TMath.PI * localRng.nextDouble();
             }
         } else {
-            W = sampleOrthogonalW(mFeatures, d, wStd);
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+            W = sampleOrthogonalW(mFeatures, d, wStd, localRng);
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * localRng.nextDouble();
         }
 
         double[][] Phi = new double[n][mFeatures];
@@ -928,7 +931,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         return Phi;
     }
 
-    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd) {
+    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd, Random rng) {
         double[][] W = new double[mFeatures][d];
         if (d <= 0) return W;
 
@@ -939,7 +942,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
             double[][] Q = new double[block][d];
             for (int i = 0; i < block; i++)
                 for (int j = 0; j < d; j++)
-                    Q[i][j] = RandomUtil.getInstance().nextGaussian();
+                    Q[i][j] = nextGaussian(rng);
 
             for (int i = 0; i < block; i++) {
                 for (int k = 0; k < i; k++) {
@@ -954,7 +957,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
             }
 
             for (int i = 0; i < block; i++) {
-                double r = chiRadius(d);
+                double r = chiRadius(d, rng);
                 double s = wStd * r;
                 int outRow = filled + i;
                 for (int j = 0; j < d; j++) W[outRow][j] = s * Q[i][j];
@@ -965,13 +968,26 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         return W;
     }
 
-    private static double chiRadius(int d) {
+    private static double chiRadius(int d, Random rng) {
         double ss = 0.0;
         for (int k = 0; k < d; k++) {
-            double g = RandomUtil.getInstance().nextGaussian();
+            double g = nextGaussian(rng);
             ss += g * g;
         }
         return TMath.sqrt(TMath.max(1e-18, ss));
+    }
+
+    private static double nextGaussian(Random rng) {
+        // Box-Muller: produces one N(0,1) draw from two uniforms.
+        // java.util.Random.nextGaussian() caches a spare value internally,
+        // which can cause draw-count asymmetry across threads; this avoids that.
+        double u, v, s;
+        do {
+            u = 2.0 * rng.nextDouble() - 1.0;
+            v = 2.0 * rng.nextDouble() - 1.0;
+            s = u * u + v * v;
+        } while (s >= 1.0 || s == 0.0);
+        return u * TMath.sqrt(-2.0 * TMath.log(s) / s);
     }
 
     private static double medianDistanceSquaredND(double[][] Z, int maxRows) {
