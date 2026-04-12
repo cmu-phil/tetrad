@@ -46,27 +46,29 @@ import static edu.cmu.tetrad.util.TMath.abs;
  * counterpart to {@code VertexRepairPanelGlobalRepair}: the panel delegates every
  * repair/search computation to this class and listens for progress via
  * {@link RepairListener}.
- *
- * <h3>Candidate enumeration</h3>
+ * <p>
+ * Candidate enumeration:
  * For each node {@code x}, single-step edge edits (additions, removals, replacements)
  * consistent with the chosen {@link AdjustmentGraphType} are enumerated. For DAG /
  * CPDAG / PDAG types, multi-edge incident-orientation patterns are also enumerated
  * subject to a combinatorial cap. Candidates are scored with Markov-checker
  * diagnostics derived from a {@link CachedIndependenceQueries} object.
- *
- * <h3>Repair strategies</h3>
+ * <p>
+ * Repair strategies:
  * <ul>
  *   <li>{@link RepairStrategy#LOCAL_SWEEP}: greedy node-by-node sweep repeated until
  *       convergence.</li>
  *   <li>{@link RepairStrategy#GLOBAL_QUEUE}: priority-queue driven; the best candidate
  *       across all nodes is always applied next, with lazy Model-P evaluation.</li>
  * </ul>
- *
- * <h3>Progress events</h3>
+ * <p>
+ * Progress events:
+ * <p>
  * Register a {@link RepairListener} via {@link #addRepairListener} to receive
  * status strings, edit-applied notifications, and completion/cycle events.
- *
- * <h3>Cancellation</h3>
+ * <p>
+ * Cancellation:
+ * <p>
  * Call {@link #cancel()} from any thread to request early termination.
  *
  * @author josephramsey (extracted from VertexRepairPanelGlobalRepair)
@@ -147,8 +149,8 @@ public final class VertexRepairSearch implements IGraphSearch {
      * Constructs a new instance of VertexRepairSearch.
      *
      * @param graph the graph to be repaired; must not be null
-     * @param test the independence test to be used during the repair process; must not be null
-     * @param type the type of conditioning set to be used; must not be null
+     * @param test  the independence test to be used during the repair process; must not be null
+     * @param type  the type of conditioning set to be used; must not be null
      */
     public VertexRepairSearch(Graph graph, IndependenceTest test, ConditioningSetType type) {
         Objects.requireNonNull(graph, "graph");
@@ -446,22 +448,30 @@ public final class VertexRepairSearch implements IGraphSearch {
     // Private: candidate enumeration
     // =========================================================================
 
-    /** Returns the current working graph (may be updated during search). */
+    /**
+     * Returns the current working graph (may be updated during search).
+     */
     public Graph getGraph() {
         return workingGraph;
     }
 
-    /** Replaces the working graph used for repair. */
+    /**
+     * Replaces the working graph used for repair.
+     */
     public void setGraph(Graph graph) {
         this.workingGraph = safeCopy(Objects.requireNonNull(graph, "graph"));
     }
 
-    /** Sets background knowledge constraints. Null is treated as empty knowledge. */
+    /**
+     * Sets background knowledge constraints. Null is treated as empty knowledge.
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = (knowledge == null) ? new Knowledge() : knowledge;
     }
 
-    /** Sets the graph type that governs which edits are legal. */
+    /**
+     * Sets the graph type that governs which edits are legal.
+     */
     public void setGraphType(AdjustmentGraphType graphType) {
         this.graphType = Objects.requireNonNull(graphType, "graphType");
     }
@@ -470,12 +480,16 @@ public final class VertexRepairSearch implements IGraphSearch {
     // Private: graph preparation and apply
     // =========================================================================
 
-    /** Sets the repair strategy. */
+    /**
+     * Sets the repair strategy.
+     */
     public void setRepairStrategy(RepairStrategy repairStrategy) {
         this.repairStrategy = Objects.requireNonNull(repairStrategy, "repairStrategy");
     }
 
-    /** Sets the random seed used for node-traversal order. */
+    /**
+     * Sets the random seed used for node-traversal order.
+     */
     public void setSeed(int seed) {
         this.seed = seed;
     }
@@ -484,12 +498,16 @@ public final class VertexRepairSearch implements IGraphSearch {
     // Private: graph evaluation
     // =========================================================================
 
-    /** Registers a listener for repair-progress events. */
+    /**
+     * Registers a listener for repair-progress events.
+     */
     public void addRepairListener(RepairListener listener) {
         listeners.add(Objects.requireNonNull(listener, "listener"));
     }
 
-    /** Removes a previously registered listener. */
+    /**
+     * Removes a previously registered listener.
+     */
     public void removeRepairListener(RepairListener listener) {
         listeners.remove(listener);
     }
@@ -1517,10 +1535,14 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
     }
 
-    /** Graph types supported by the repair search. */
+    /**
+     * Graph types supported by the repair search.
+     */
     public enum AdjustmentGraphType {CPDAG, PDAG, PAG, DAG, MAG}
 
-    /** Which repair sweep strategy to use. */
+    /**
+     * Which repair sweep strategy to use.
+     */
     public enum RepairStrategy {
         LOCAL_SWEEP("Local sweep"),
         GLOBAL_QUEUE("Global queue");
@@ -1792,7 +1814,9 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
     }
 
-    /** A scored candidate edit ready for display or application. */
+    /**
+     * A scored candidate edit ready for display or application.
+     */
     public record ScoredCandidate(
             CandidateEdit edit,
             int violationsBaseline,
