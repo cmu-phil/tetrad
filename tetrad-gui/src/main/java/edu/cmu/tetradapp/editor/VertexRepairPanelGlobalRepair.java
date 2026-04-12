@@ -65,6 +65,7 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
     private final JComboBox<RepairStrategy> repairStrategyCombo =
             new JComboBox<>(RepairStrategy.values());
     private boolean populatingNodeCombo = false;
+    private final JSpinner pruneAlphaSpinner;
 
     private Node x;
 
@@ -84,6 +85,9 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         seedSpinner = new JSpinner(new SpinnerNumberModel(
                 Preferences.userRoot().getInt("vertexRepairSeed", RandomUtil.getInstance().nextInt(50000)),
                 0, Integer.MAX_VALUE, 1));
+        pruneAlphaSpinner = new JSpinner(new SpinnerNumberModel(
+                Preferences.userRoot().getDouble("vertexRepairPruneAlpha", 0.2),
+                0.0, 1.0, 0.01));
 
         Preferences.userRoot().putInt("vertexRepairSeed",
                 ((SpinnerNumberModel) seedSpinner.getModel()).getNumber().intValue());
@@ -212,6 +216,14 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         ((JSpinner.DefaultEditor) seedSpinner.getEditor()).getTextField().setColumns(6);
         controls.add(seedSpinner, c);
 
+        c.gridx = 0; c.gridy = 3; c.gridwidth = 1; c.weightx = 0;
+        c.fill = GridBagConstraints.NONE;
+        controls.add(new JLabel("Prune alpha:"), c);
+
+        c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 0.5;
+        ((JSpinner.DefaultEditor) pruneAlphaSpinner.getEditor()).getTextField().setColumns(6);
+        controls.add(pruneAlphaSpinner, c);
+
         JPanel topButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         topButtons.add(backButton);
         topButtons.add(showGraphButton);
@@ -316,6 +328,12 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
             repairSearch.setSeed(seed);
         });
 
+        pruneAlphaSpinner.addChangeListener(e -> {
+            double pruneAlpha = ((Number) pruneAlphaSpinner.getValue()).doubleValue();
+            Preferences.userRoot().putDouble("vertexRepairPruneAlpha", pruneAlpha);
+            repairSearch.setPruneAlpha(pruneAlpha);
+        });
+
         graphTypeCombo.addActionListener(e -> syncSearchFromUI());
     }
 
@@ -328,6 +346,7 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         if (rs != null) repairSearch.setRepairStrategy(rs);
 
         repairSearch.setSeed((Integer) seedSpinner.getValue());
+        repairSearch.setPruneAlpha(((Number) pruneAlphaSpinner.getValue()).doubleValue());
     }
 
     // =========================================================================

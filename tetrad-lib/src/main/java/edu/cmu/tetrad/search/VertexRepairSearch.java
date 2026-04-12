@@ -120,12 +120,12 @@ public final class VertexRepairSearch implements IGraphSearch {
     private double pruneAlpha = 0.2;
     private Graph workingGraph;
     private Knowledge knowledge = new Knowledge();
-    private AdjustmentGraphType graphType = AdjustmentGraphType.DAG;
+    private AdjustmentGraphType graphType = AdjustmentGraphType.CPDAG;
 
     // -------------------------------------------------------------------------
     // Listener infrastructure
     // -------------------------------------------------------------------------
-    private RepairStrategy repairStrategy = RepairStrategy.LOCAL_SWEEP;
+    private RepairStrategy repairStrategy = RepairStrategy.GLOBAL_QUEUE;
 
     // -------------------------------------------------------------------------
     // Cancellation
