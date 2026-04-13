@@ -80,7 +80,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     // tests. Please keep this set to false unless you know what you're doing.
     private boolean useAndersonDarling = false;
     private String savedClassName = null;
-    private String keySetType = "Ordered Local Markov Property";
 
     /**
      * Constructs a new Vertex checer with the given data model, graph, and parameters.
@@ -660,10 +659,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     public void setSavedClassName(String savedClassName) {
         this.savedClassName = savedClassName;
-    }
-
-    public String getKeySetType() {
-        return this.keySetType;
     }
 
     private record ConditioningSetSizeRange(int min, int max) {
