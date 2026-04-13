@@ -81,22 +81,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     private boolean useAndersonDarling = false;
     private String savedClassName = null;
     private String keySetType = "Ordered Local Markov Property";
-//
-//    public VertexCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, Parameters parameters) {
-//        this(dataModel, graphSource, null, parameters);
-//    }
-//
-//    public VertexCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, KnowledgeBoxModel knowledgeBox,
-//                                   Parameters parameters) {
-//        this.dataModel = dataModel.getSelectedDataModel();
-//        this.graph = graphSource.getGraph();
-//        this.parameters = parameters;
-//
-//        if (knowledgeBox != null) {
-//            this.knowledge = knowledgeBox.getKnowledge();
-//        }
-//    }
-
 
     /**
      * Constructs a new Vertex checer with the given data model, graph, and parameters.
@@ -207,10 +191,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
         cachedQueries.setTest(test);  // clears caches, rebuilds mapping
         clearResults();
-
-//        List<Integer> rows = getSubsampleRows(1.0);
-//        cachedQueries.setRows(rows); // FisherZ will only calc pvalues to those rows
-
     }
 
     /**
