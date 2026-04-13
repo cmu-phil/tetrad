@@ -173,7 +173,8 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
      */
     public FfCi(DataSet dataSet, Parameters params) {
         DataSet _data = Objects.requireNonNull(dataSet, "data");
-        this.data = DataTransforms.standardizeData(_data);
+//        this.data = DataTransforms.standardizeData(_data);
+        this.data = _data;
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
         this.n = getActiveRowCount();
 

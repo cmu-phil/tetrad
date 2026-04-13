@@ -73,41 +73,43 @@ import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
  */
 public class VertexCheckEditor extends JPanel {
 
-    private static final String PREF_KEY_TEST     = "markovCheckerIndependenceTest";
+    private static final String PREF_KEY_TEST = "markovCheckerIndependenceTest";
     private static final String PREF_KEY_SET_TYPE = "markovCheckerConditioningSetType";
     private static final Preferences PREFS =
             Preferences.userNodeForPackage(VertexCheckEditor.class);
 
-    private static final int TAB_CHECK  = 0;
+    private static final int TAB_CHECK = 0;
     private static final int TAB_REPAIR = 1;
 
     private final VertexCheckIndTestModel model;
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-    private final JComboBox<IndependenceTestModel> indTestCombo     = new JComboBox<>();
-    private final JComboBox<String>               conditioningCombo = new JComboBox<>();
-    private final JCheckBox verbose          = new JCheckBox("Verbose");
-    private final JButton   showIndepsForRow = new JButton("Independencies");
-    private final JButton   undoGraphButton  = new JButton("Undo");
-    private final JButton   showGraphButton  = new JButton("Graph");
-    private final Deque<Graph> graphHistory  = new ArrayDeque<>();
-    private final JLabel modelPLabel  = new JLabel("Model Uniformity P: (not computed)");
+    private final JComboBox<IndependenceTestModel> indTestCombo = new JComboBox<>();
+    private final JComboBox<String> conditioningCombo = new JComboBox<>();
+    private final JCheckBox verbose = new JCheckBox("Verbose");
+    private final JButton showIndepsForRow = new JButton("Independencies");
+    private final JButton undoGraphButton = new JButton("Undo");
+    private final JButton showGraphButton = new JButton("Graph");
+    private final Deque<Graph> graphHistory = new ArrayDeque<>();
+    private final JLabel modelPLabel = new JLabel("Model Uniformity P: (not computed)");
     private final JLabel modelNpLabel = new JLabel("# p-values (not computed): -");
 
     private final CachedIndependenceQueries Q;
+    private final JPanel histogramPanel = new JPanel(new BorderLayout());
+    private final JComboBox<String> modelUniformityTest;
+    private final Knowledge knowledge;
     private JTable overviewTable;
     private JTable factsTable;
     private AbstractTableModel overviewModel;
     private AbstractTableModel factsModel;
-    private final JPanel histogramPanel = new JPanel(new BorderLayout());
-    private final JComboBox<String> modelUniformityTest;
     private IndependenceWrapper independenceWrapper;
     private boolean initializing;
     private boolean applyingGraphProgrammatically = false;
-    private final Knowledge knowledge;
     private volatile boolean runningAll = false;
 
-    /** Right-hand tabbed pane ("Check" | "Repair"). */
+    /**
+     * Right-hand tabbed pane ("Check" | "Repair").
+     */
     private JTabbedPane rightTabs;
 
     /**
@@ -116,7 +118,9 @@ public class VertexCheckEditor extends JPanel {
      */
     private JPanel repairTabContent;
 
-    /** Live repair panel, or null when the Check tab is showing. */
+    /**
+     * Live repair panel, or null when the Check tab is showing.
+     */
     private VertexRepairPanelGlobalRepair repairPanel;
 
     // =========================================================================
@@ -178,8 +182,160 @@ public class VertexCheckEditor extends JPanel {
     // Public API
     // =========================================================================
 
-    public VertexCheckIndTestModel getIndTestModel()    { return model; }
-    public CachedIndependenceQueries getCachedQueries() { return Q; }
+    private static DataType guessDataType(DataModel dm) {
+        if (dm instanceof DataSet ds) {
+            boolean cont = ds.getVariables().stream().anyMatch(v -> v instanceof ContinuousVariable);
+            boolean disc = ds.getVariables().stream().anyMatch(v -> v instanceof DiscreteVariable);
+            if (cont && disc) return DataType.Mixed;
+            if (disc) return DataType.Discrete;
+            return DataType.Continuous;
+        }
+        return DataType.Continuous;
+    }
+
+    private static String factString(IndependenceFact fact) {
+        List<Node> z = new ArrayList<>(fact.getZ());
+        String zStr = z.stream().map(Node::getName).sorted().collect(Collectors.joining(", "));
+        if (z.isEmpty())
+            return "Ind(" + fact.getX().getName() + ", " + fact.getY().getName() + ")";
+        return "Ind(" + fact.getX().getName() + ", " + fact.getY().getName() + " | " + zStr + ")";
+    }
+
+    private static JPanel createParamsPanel(IndependenceWrapper iw, Parameters params) {
+        return createParamsPanel(new HashSet<>(iw.getParameters()), params);
+    }
+
+    // =========================================================================
+    // UI construction
+    // =========================================================================
+
+    public static JPanel createParamsPanel(Set<String> params, Parameters parameters) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createTitledBorder("Parameters"));
+        Box paramsBox = Box.createVerticalBox();
+        Box[] boxes = toArray(createParameterComponents(params, parameters));
+        for (int i = 0; i < boxes.length - 1; i++) {
+            paramsBox.add(boxes[i]);
+            paramsBox.add(Box.createVerticalStrut(10));
+        }
+        paramsBox.add(boxes[boxes.length - 1]);
+        panel.add(new PaddingPanel(paramsBox), BorderLayout.CENTER);
+        return panel;
+    }
+
+    private static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
+        ParamDescriptions pd = ParamDescriptions.getInstance();
+        return params.stream().collect(Collectors.toMap(
+                Function.identity(),
+                e -> createParameterComponent(e, parameters, pd.get(e)),
+                (u, v) -> {
+                    throw new IllegalStateException("Duplicate key: " + u);
+                },
+                TreeMap::new));
+    }
+
+    // =========================================================================
+    // Repair tab lifecycle
+    // =========================================================================
+
+    private static Box createParameterComponent(String parameter, Parameters parameters,
+                                                ParamDescription pd) {
+        JComponent comp;
+        Object dv = pd.getDefaultValue();
+        if (dv instanceof Double) comp = getDoubleField(parameter, parameters, (Double) dv,
+                pd.getLowerBoundDouble(), pd.getUpperBoundDouble());
+        else if (dv instanceof Integer) comp = getIntTextField(parameter, parameters, (Integer) dv,
+                pd.getLowerBoundInt(), pd.getUpperBoundInt());
+        else if (dv instanceof Long) comp = getLongTextField(parameter, parameters, (Long) dv,
+                pd.getLowerBoundLong(), pd.getUpperBoundLong());
+        else if (dv instanceof Boolean) comp = getBooleanSelectionBox(parameter, parameters, (Boolean) dv);
+        else if (dv instanceof String) comp = getStringField(parameter, parameters, (String) dv);
+        else throw new IllegalArgumentException("Unexpected type: " + dv.getClass());
+
+        Box row = Box.createHorizontalBox();
+        JLabel label = new JLabel(pd.getShortDescription());
+        if (pd.getLongDescription() != null) label.setToolTipText(pd.getLongDescription());
+        row.add(label);
+        row.add(Box.createHorizontalGlue());
+        row.add(comp);
+        return row;
+    }
+
+    private static DoubleTextField getDoubleField(String p, Parameters ps,
+                                                  double dv, double lo, double hi) {
+        return ParameterComponents.getDoubleField(p, ps, dv, lo, hi);
+    }
+
+    // =========================================================================
+    // Overview selection
+    // =========================================================================
+
+    private static IntTextField getIntTextField(String p, Parameters ps,
+                                                int dv, double lo, double hi) {
+        return ParameterComponents.getIntTextField(p, ps, dv, lo, hi);
+    }
+
+    // =========================================================================
+    // Detail refresh (Check tab only)
+    // =========================================================================
+
+    private static LongTextField getLongTextField(String p, Parameters ps,
+                                                  long dv, long lo, long hi) {
+        LongTextField f = new LongTextField(ps.getLong(p, dv), 8);
+        f.setFilter((value, old) -> {
+            if (value >= lo && value <= hi) {
+                ps.set(p, value);
+                return value;
+            }
+            return old;
+        });
+        return f;
+    }
+
+    private static Box getBooleanSelectionBox(String p, Parameters ps, boolean dv) {
+        Box box = Box.createHorizontalBox();
+        JRadioButton yes = new JRadioButton("Yes");
+        JRadioButton no = new JRadioButton("No");
+        new ButtonGroup() {{
+            add(yes);
+            add(no);
+        }};
+        if (ps.getBoolean(p, dv)) yes.setSelected(true);
+        else no.setSelected(true);
+        box.add(yes);
+        box.add(no);
+        yes.addActionListener(e -> {
+            if (yes.isSelected()) ps.set(p, true);
+        });
+        no.addActionListener(e -> {
+            if (no.isSelected()) ps.set(p, false);
+        });
+        return box;
+    }
+
+    private static StringTextField getStringField(String p, Parameters ps, String dv) {
+        return PathsAction.getStringField(p, ps, dv);
+    }
+
+    // =========================================================================
+    // Graph-change handling
+    // =========================================================================
+
+    public VertexCheckIndTestModel getIndTestModel() {
+        return model;
+    }
+
+    // =========================================================================
+    // runAllAndRefresh
+    // =========================================================================
+
+    public CachedIndependenceQueries getCachedQueries() {
+        return Q;
+    }
+
+    // =========================================================================
+    // Misc UI helpers
+    // =========================================================================
 
     public Node getSelectedVertex() {
         List<Node> nodes = model.getGraph().getNodes();
@@ -188,10 +344,6 @@ public class VertexCheckEditor extends JPanel {
             if (node.getName().equals(selectedName)) return node;
         return model.getGraph().getNodes().getFirst();
     }
-
-    // =========================================================================
-    // UI construction
-    // =========================================================================
 
     private void buildControls() {
         Box controls = Box.createHorizontalBox();
@@ -256,9 +408,21 @@ public class VertexCheckEditor extends JPanel {
         overviewModel = new AbstractTableModel() {
             private final String[] cols =
                     {"Vertex", "CS", "#p", "KS", "AD", "Fish", "Bin", "frac≤q", "min", "med"};
-            @Override public int getRowCount()    { return model.getVertexNames().size(); }
-            @Override public int getColumnCount() { return cols.length; }
-            @Override public String getColumnName(int col) { return cols[col]; }
+
+            @Override
+            public int getRowCount() {
+                return model.getVertexNames().size();
+            }
+
+            @Override
+            public int getColumnCount() {
+                return cols.length;
+            }
+
+            @Override
+            public String getColumnName(int col) {
+                return cols[col];
+            }
 
             @Override
             public Object getValueAt(int rowIndex, int columnIndex) {
@@ -291,7 +455,7 @@ public class VertexCheckEditor extends JPanel {
         ocm.getColumn(0).setPreferredWidth(80);
         ocm.getColumn(1).setPreferredWidth(45);
         ocm.getColumn(2).setPreferredWidth(45);
-        for (int c : new int[]{3,4,5,6,7,8,9}) ocm.getColumn(c).setPreferredWidth(70);
+        for (int c : new int[]{3, 4, 5, 6, 7, 8, 9}) ocm.getColumn(c).setPreferredWidth(70);
         overviewTable.setRowSorter(new TableRowSorter<>(overviewModel));
         overviewTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         overviewTable.getSelectionModel().addListSelectionListener(this::overviewSelectionChanged);
@@ -311,13 +475,25 @@ public class VertexCheckEditor extends JPanel {
         // ---- Facts table ----
         factsModel = new AbstractTableModel() {
             private final String[] cols = {"#", "Fact", "Result", "p-value"};
-            @Override public int getRowCount() {
+
+            @Override
+            public int getRowCount() {
                 String v = getSelectedVertexName();
                 return (v == null) ? 0 : model.getResultsForVertex(v).size();
             }
-            @Override public int getColumnCount() { return cols.length; }
-            @Override public String getColumnName(int col) { return cols[col]; }
-            @Override public Object getValueAt(int rowIndex, int columnIndex) {
+
+            @Override
+            public int getColumnCount() {
+                return cols.length;
+            }
+
+            @Override
+            public String getColumnName(int col) {
+                return cols[col];
+            }
+
+            @Override
+            public Object getValueAt(int rowIndex, int columnIndex) {
                 String v = getSelectedVertexName();
                 if (v == null) return "";
                 List<IndependenceResult> rs = model.getResultsForVertex(v);
@@ -331,7 +507,9 @@ public class VertexCheckEditor extends JPanel {
                     default -> "";
                 };
             }
-            @Override public Class<?> getColumnClass(int col) {
+
+            @Override
+            public Class<?> getColumnClass(int col) {
                 return (col == 0) ? Integer.class : String.class;
             }
         };
@@ -339,9 +517,12 @@ public class VertexCheckEditor extends JPanel {
         factsTable = new JTable(factsModel);
         factsTable.setTransferHandler(new DefaultTableTransferHandler(0));
         TableColumnModel cm = factsTable.getColumnModel();
-        cm.getColumn(0).setPreferredWidth(40);  cm.getColumn(0).setMaxWidth(40);
-        cm.getColumn(2).setPreferredWidth(100); cm.getColumn(2).setMaxWidth(100);
-        cm.getColumn(3).setMinWidth(70);        cm.getColumn(3).setPreferredWidth(70);
+        cm.getColumn(0).setPreferredWidth(40);
+        cm.getColumn(0).setMaxWidth(40);
+        cm.getColumn(2).setPreferredWidth(100);
+        cm.getColumn(2).setMaxWidth(100);
+        cm.getColumn(3).setMinWidth(70);
+        cm.getColumn(3).setPreferredWidth(70);
         cm.getColumn(1).setMinWidth(300);
         factsTable.setRowSorter(new TableRowSorter<>(factsModel));
 
@@ -378,22 +559,18 @@ public class VertexCheckEditor extends JPanel {
 
         // ---- Tabbed pane ----
         rightTabs = new JTabbedPane();
-        rightTabs.addTab("Check",  checkTab);
+        rightTabs.addTab("Check", checkTab);
         rightTabs.addTab("Repair", repairTabContent);
 
         rightTabs.addChangeListener(e -> {
             if (rightTabs.getSelectedIndex() == TAB_REPAIR) openRepairTab();
-            else                                             closeRepairTab();
+            else closeRepairTab();
         });
 
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, left, rightTabs);
         split.setResizeWeight(0.45);
         add(split, BorderLayout.CENTER);
     }
-
-    // =========================================================================
-    // Repair tab lifecycle
-    // =========================================================================
 
     private void openRepairTab() {
         Node x = getSelectedVertex();
@@ -437,10 +614,6 @@ public class VertexCheckEditor extends JPanel {
         if (active != null) refreshDetails(active);
     }
 
-    // =========================================================================
-    // Overview selection
-    // =========================================================================
-
     private void overviewSelectionChanged(ListSelectionEvent e) {
         if (e.getValueIsAdjusting()) return;
         if (runningAll) return;
@@ -482,10 +655,6 @@ public class VertexCheckEditor extends JPanel {
         };
     }
 
-    // =========================================================================
-    // Detail refresh (Check tab only)
-    // =========================================================================
-
     private void refreshDetails(String v) {
         if (rightTabs.getSelectedIndex() == TAB_CHECK) {
             factsModel.fireTableDataChanged();
@@ -524,12 +693,12 @@ public class VertexCheckEditor extends JPanel {
     }
 
     // =========================================================================
-    // Graph-change handling
+    // Selection helpers
     // =========================================================================
 
     private void onModelGraphChanged() {
         var selectedVertexNames = getSelectedOverviewVertexNames();
-        var selectedFactKeys    = getSelectedFactsKeys();
+        var selectedFactKeys = getSelectedFactsKeys();
         String active = getActiveSelectedVertexName();
 
         model.clearResults();
@@ -544,10 +713,6 @@ public class VertexCheckEditor extends JPanel {
 
         firePropertyChange("modelChanged", null, null);
     }
-
-    // =========================================================================
-    // runAllAndRefresh
-    // =========================================================================
 
     private void runAllAndRefresh(String preferredVertex, Runnable onDone) {
         if (runningAll) return;
@@ -581,10 +746,6 @@ public class VertexCheckEditor extends JPanel {
         };
     }
 
-    // =========================================================================
-    // Misc UI helpers
-    // =========================================================================
-
     private void refreshTestList() {
         DataType dt = guessDataType(model.getDataModel());
         indTestCombo.removeAllItems();
@@ -598,7 +759,8 @@ public class VertexCheckEditor extends JPanel {
             for (int i = 0; i < indTestCombo.getItemCount(); i++) {
                 IndependenceTestModel m = indTestCombo.getItemAt(i);
                 if (m.getIndependenceTest().clazz().getName().equals(savedClassName)) {
-                    toSelect = m; break;
+                    toSelect = m;
+                    break;
                 }
             }
         }
@@ -615,9 +777,10 @@ public class VertexCheckEditor extends JPanel {
         try {
             independenceWrapper = clazz.getDeclaredConstructor().newInstance();
             IndependenceTest test = independenceWrapper.getTest(model.getDataModel(), model.getParameters());
-            model.  setIndependenceTest(test);
+            model.setIndependenceTest(test);
             PREFS.put(PREF_KEY_TEST, clazz.getName());
-            invalidate(); repaint();
+            invalidate();
+            repaint();
         } catch (InstantiationException | IllegalAccessException
                  | InvocationTargetException | NoSuchMethodException e) {
             TetradLogger.getInstance().log("Error: " + e.getMessage());
@@ -680,35 +843,43 @@ public class VertexCheckEditor extends JPanel {
         JScrollPane renderScroll = new JScrollPane(workbench);
         renderScroll.setPreferredSize(new Dimension(820, 520));
         JTextArea ta = new JTextArea(String.valueOf(graph));
-        ta.setEditable(false); ta.setCaretPosition(0);
+        ta.setEditable(false);
+        ta.setCaretPosition(0);
         JScrollPane textScroll = new JScrollPane(ta);
         textScroll.setPreferredSize(new Dimension(820, 520));
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Graph", renderScroll);
-        tabs.addTab("Text",  textScroll);
+        tabs.addTab("Text", textScroll);
         tabs.setTabPlacement(JTabbedPane.RIGHT);
         EditorWindow ew = new EditorWindow(tabs, "Current Graph", "OK", false, this);
         DesktopController.getInstance().addEditorWindow(ew, JLayeredPane.PALETTE_LAYER);
-        ew.pack(); ew.setVisible(true);
+        ew.pack();
+        ew.setVisible(true);
     }
 
     private void undoGraph() {
         if (graphHistory.isEmpty()) return;
         Graph prev = graphHistory.pop();
         applyingGraphProgrammatically = true;
-        try { model.setGraph(prev); }
-        finally { applyingGraphProgrammatically = false; updateUndoButtonEnabled(); }
+        try {
+            model.setGraph(prev);
+        } finally {
+            applyingGraphProgrammatically = false;
+            updateUndoButtonEnabled();
+        }
     }
+
+    // =========================================================================
+    // Independence-test utilities
+    // =========================================================================
 
     private void updateUndoButtonEnabled() {
         undoGraphButton.setEnabled(!graphHistory.isEmpty());
     }
 
-    // =========================================================================
-    // Selection helpers
-    // =========================================================================
-
-    private String getSelectedVertexName() { return getActiveSelectedVertexName(); }
+    private String getSelectedVertexName() {
+        return getActiveSelectedVertexName();
+    }
 
     private String getActiveSelectedVertexName() {
         int leadView = overviewTable.getSelectionModel().getLeadSelectionIndex();
@@ -726,7 +897,7 @@ public class VertexCheckEditor extends JPanel {
         if (viewRows == null || viewRows.length == 0)
             return new SelectedRows(List.of(), List.of());
         List<Integer> modelRows = new ArrayList<>(viewRows.length);
-        List<String>  vertices  = new ArrayList<>(viewRows.length);
+        List<String> vertices = new ArrayList<>(viewRows.length);
         for (int vr : viewRows) {
             int mr = overviewTable.convertRowIndexToModel(vr);
             modelRows.add(mr);
@@ -734,6 +905,10 @@ public class VertexCheckEditor extends JPanel {
         }
         return new SelectedRows(modelRows, vertices);
     }
+
+    // =========================================================================
+    // Misc
+    // =========================================================================
 
     private void selectFirstRowIfAny() {
         if (overviewTable.getRowCount() > 0) {
@@ -765,6 +940,10 @@ public class VertexCheckEditor extends JPanel {
         }
         return names;
     }
+
+    // =========================================================================
+    // Static helpers
+    // =========================================================================
 
     private Set<String> getSelectedFactsKeys() {
         Set<String> keys = new HashSet<>();
@@ -812,10 +991,6 @@ public class VertexCheckEditor extends JPanel {
         }
     }
 
-    // =========================================================================
-    // Independence-test utilities
-    // =========================================================================
-
     private Node nodeInTestByName(String name) {
         if (name == null) return null;
         IndependenceTest test = (Q != null ? Q.getTest() : null);
@@ -849,7 +1024,8 @@ public class VertexCheckEditor extends JPanel {
             }
             case ALL_NODES -> pool.addAll(g.getNodes());
         }
-        pool.remove(x); pool.remove(y);
+        pool.remove(x);
+        pool.remove(y);
 
         List<Node> poolList = new ArrayList<>(pool);
         poolList.sort(Comparator.comparing(Node::getName));
@@ -865,7 +1041,9 @@ public class VertexCheckEditor extends JPanel {
                             ? Q.checkIndependence(x, y, new LinkedHashSet<>(subset))
                             : test.checkIndependence(x, y, new LinkedHashSet<>(subset));
                     if (r != null && r.isIndependent()) found.add(r);
-                } catch (InterruptedException ex) { throw new RuntimeException(ex); }
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
                 return true;
             });
         }
@@ -884,7 +1062,10 @@ public class VertexCheckEditor extends JPanel {
     }
 
     private void enumerateSubsets(List<Node> pool, int k, Function<List<Node>, Boolean> accept) {
-        if (k == 0) { accept.apply(Collections.emptyList()); return; }
+        if (k == 0) {
+            accept.apply(Collections.emptyList());
+            return;
+        }
         if (pool.isEmpty() || k > pool.size()) return;
         Node[] a = pool.toArray(new Node[0]);
         int n = a.length;
@@ -899,145 +1080,37 @@ public class VertexCheckEditor extends JPanel {
             while (i >= 0 && idx[i] == n - k + i) i--;
             if (i < 0) break;
             idx[i]++;
-            for (int j = i + 1; j < k; j++) idx[j] = idx[j-1] + 1;
+            for (int j = i + 1; j < k; j++) idx[j] = idx[j - 1] + 1;
         }
     }
 
-    // =========================================================================
-    // Misc
-    // =========================================================================
-
-    private String fmt(double x) { return Double.isNaN(x) ? "" : nf.format(x); }
+    private String fmt(double x) {
+        return Double.isNaN(x) ? "" : nf.format(x);
+    }
 
     private Graph safeCopy(Graph g) {
         if (g == null) return null;
-        try { return g.copy(); } catch (Throwable t) { return new EdgeListGraph(g); }
+        try {
+            return g.copy();
+        } catch (Throwable t) {
+            return new EdgeListGraph(g);
+        }
     }
 
     private ConditioningSetType toSetType(String s) {
         if (s == null) return ConditioningSetType.MARKOV_BLANKET;
         return switch (s) {
-            case "Parents(X)"                  -> ConditioningSetType.LOCAL_MARKOV;
+            case "Parents(X)" -> ConditioningSetType.LOCAL_MARKOV;
             case "Parents(X) and Neighbors(X)" -> ConditioningSetType.PARENTS_AND_NEIGHBORS;
-            case "MarkovBlanket(X)"            -> ConditioningSetType.MARKOV_BLANKET;
-            case "Ordered Local Markov Property"
-                    -> ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY;
-            case "Ordered Local Markov Property (Sink Elimination)"
-                    -> ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION;
-            case "Pairwise Markov Property"    -> ConditioningSetType.PAIRWISE_MARKOV_PROPERTY;
-            case "Recursive Blocking"          -> ConditioningSetType.RECURSIVE_BLOCKING;
-            case "Recursive Adjustment"        -> ConditioningSetType.RECURSIVE_ADJUSTMENT;
+            case "MarkovBlanket(X)" -> ConditioningSetType.MARKOV_BLANKET;
+            case "Ordered Local Markov Property" -> ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY;
+            case "Ordered Local Markov Property (Sink Elimination)" ->
+                    ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION;
+            case "Pairwise Markov Property" -> ConditioningSetType.PAIRWISE_MARKOV_PROPERTY;
+            case "Recursive Blocking" -> ConditioningSetType.RECURSIVE_BLOCKING;
+            case "Recursive Adjustment" -> ConditioningSetType.RECURSIVE_ADJUSTMENT;
             default -> ConditioningSetType.MARKOV_BLANKET;
         };
-    }
-
-    // =========================================================================
-    // Static helpers
-    // =========================================================================
-
-    private static DataType guessDataType(DataModel dm) {
-        if (dm instanceof DataSet ds) {
-            boolean cont = ds.getVariables().stream().anyMatch(v -> v instanceof ContinuousVariable);
-            boolean disc = ds.getVariables().stream().anyMatch(v -> v instanceof DiscreteVariable);
-            if (cont && disc) return DataType.Mixed;
-            if (disc) return DataType.Discrete;
-            return DataType.Continuous;
-        }
-        return DataType.Continuous;
-    }
-
-    private static String factString(IndependenceFact fact) {
-        List<Node> z = new ArrayList<>(fact.getZ());
-        String zStr = z.stream().map(Node::getName).sorted().collect(Collectors.joining(", "));
-        if (z.isEmpty())
-            return "Ind(" + fact.getX().getName() + ", " + fact.getY().getName() + ")";
-        return "Ind(" + fact.getX().getName() + ", " + fact.getY().getName() + " | " + zStr + ")";
-    }
-
-    private static JPanel createParamsPanel(IndependenceWrapper iw, Parameters params) {
-        return createParamsPanel(new HashSet<>(iw.getParameters()), params);
-    }
-
-    public static JPanel createParamsPanel(Set<String> params, Parameters parameters) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Parameters"));
-        Box paramsBox = Box.createVerticalBox();
-        Box[] boxes = toArray(createParameterComponents(params, parameters));
-        for (int i = 0; i < boxes.length - 1; i++) {
-            paramsBox.add(boxes[i]);
-            paramsBox.add(Box.createVerticalStrut(10));
-        }
-        paramsBox.add(boxes[boxes.length - 1]);
-        panel.add(new PaddingPanel(paramsBox), BorderLayout.CENTER);
-        return panel;
-    }
-
-    private static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
-        ParamDescriptions pd = ParamDescriptions.getInstance();
-        return params.stream().collect(Collectors.toMap(
-                Function.identity(),
-                e -> createParameterComponent(e, parameters, pd.get(e)),
-                (u, v) -> { throw new IllegalStateException("Duplicate key: " + u); },
-                TreeMap::new));
-    }
-
-    private static Box createParameterComponent(String parameter, Parameters parameters,
-                                                ParamDescription pd) {
-        JComponent comp;
-        Object dv = pd.getDefaultValue();
-        if      (dv instanceof Double)  comp = getDoubleField(parameter, parameters, (Double) dv,
-                pd.getLowerBoundDouble(), pd.getUpperBoundDouble());
-        else if (dv instanceof Integer) comp = getIntTextField(parameter, parameters, (Integer) dv,
-                pd.getLowerBoundInt(), pd.getUpperBoundInt());
-        else if (dv instanceof Long)    comp = getLongTextField(parameter, parameters, (Long) dv,
-                pd.getLowerBoundLong(), pd.getUpperBoundLong());
-        else if (dv instanceof Boolean) comp = getBooleanSelectionBox(parameter, parameters, (Boolean) dv);
-        else if (dv instanceof String)  comp = getStringField(parameter, parameters, (String) dv);
-        else throw new IllegalArgumentException("Unexpected type: " + dv.getClass());
-
-        Box row = Box.createHorizontalBox();
-        JLabel label = new JLabel(pd.getShortDescription());
-        if (pd.getLongDescription() != null) label.setToolTipText(pd.getLongDescription());
-        row.add(label);
-        row.add(Box.createHorizontalGlue());
-        row.add(comp);
-        return row;
-    }
-
-    private static DoubleTextField getDoubleField(String p, Parameters ps,
-                                                  double dv, double lo, double hi) {
-        return ParameterComponents.getDoubleField(p, ps, dv, lo, hi);
-    }
-
-    private static IntTextField getIntTextField(String p, Parameters ps,
-                                                int dv, double lo, double hi) {
-        return ParameterComponents.getIntTextField(p, ps, dv, lo, hi);
-    }
-
-    private static LongTextField getLongTextField(String p, Parameters ps,
-                                                  long dv, long lo, long hi) {
-        LongTextField f = new LongTextField(ps.getLong(p, dv), 8);
-        f.setFilter((value, old) -> {
-            if (value >= lo && value <= hi) { ps.set(p, value); return value; }
-            return old;
-        });
-        return f;
-    }
-
-    private static Box getBooleanSelectionBox(String p, Parameters ps, boolean dv) {
-        Box box = Box.createHorizontalBox();
-        JRadioButton yes = new JRadioButton("Yes");
-        JRadioButton no  = new JRadioButton("No");
-        new ButtonGroup() {{ add(yes); add(no); }};
-        if (ps.getBoolean(p, dv)) yes.setSelected(true); else no.setSelected(true);
-        box.add(yes); box.add(no);
-        yes.addActionListener(e -> { if (yes.isSelected()) ps.set(p, true);  });
-        no .addActionListener(e -> { if (no .isSelected()) ps.set(p, false); });
-        return box;
-    }
-
-    private static StringTextField getStringField(String p, Parameters ps, String dv) {
-        return PathsAction.getStringField(p, ps, dv);
     }
 
     // =========================================================================
@@ -1050,21 +1123,29 @@ public class VertexCheckEditor extends JPanel {
         PARENTS_AND_NEIGHBORS_UNION("Parents-and-Neighbors(x) U Parents-and-Neighbors(y)"),
         ALL_NODES("All nodes \\ {x, y}");
         private final String label;
-        PoolChoice(String label) { this.label = label; }
-        @Override public String toString() { return label; }
+
+        PoolChoice(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
     }
 
-    private record SelectedRows(List<Integer> modelRows, List<String> vertices) {}
+    private record SelectedRows(List<Integer> modelRows, List<String> vertices) {
+    }
 
     // ---- ShowIndepsDialog --------------------------------------------------
 
     private final class ShowIndepsDialog extends JDialog {
         private final Node x, y;
-        private final JComboBox<PoolChoice> poolBox    = new JComboBox<>(PoolChoice.values());
+        private final JComboBox<PoolChoice> poolBox = new JComboBox<>(PoolChoice.values());
         private final JSpinner depthSpinner = new JSpinner(new SpinnerNumberModel(3, 0, 10, 1));
-        private final JButton  showButton   = new JButton("Show independencies");
-        private final JPanel   resultsPanel = new JPanel(new BorderLayout(6, 6));
-        private final JLabel   emptyLabel   =
+        private final JButton showButton = new JButton("Show independencies");
+        private final JPanel resultsPanel = new JPanel(new BorderLayout(6, 6));
+        private final JLabel emptyLabel =
                 new JLabel("No independencies found under those constraints.");
         private final IndepTableModel tableModel = new IndepTableModel();
         private final JTable table = new JTable(tableModel);
@@ -1072,13 +1153,17 @@ public class VertexCheckEditor extends JPanel {
         ShowIndepsDialog(Window owner, Node x, Node y) {
             super(owner, "Independencies for <" + x.getName() + ", " + y.getName() + ">",
                     Dialog.ModalityType.APPLICATION_MODAL);
-            this.x = x; this.y = y;
+            this.x = x;
+            this.y = y;
 
             table.setTransferHandler(new DefaultTableTransferHandler(0));
             TableColumnModel cm = table.getColumnModel();
-            cm.getColumn(0).setPreferredWidth(40);  cm.getColumn(0).setMaxWidth(40);
-            cm.getColumn(2).setPreferredWidth(100); cm.getColumn(2).setMaxWidth(100);
-            cm.getColumn(3).setMinWidth(70);        cm.getColumn(3).setPreferredWidth(70);
+            cm.getColumn(0).setPreferredWidth(40);
+            cm.getColumn(0).setMaxWidth(40);
+            cm.getColumn(2).setPreferredWidth(100);
+            cm.getColumn(2).setMaxWidth(100);
+            cm.getColumn(3).setMinWidth(70);
+            cm.getColumn(3).setPreferredWidth(70);
             cm.getColumn(1).setMinWidth(350);
             table.setRowSorter(new TableRowSorter<>(tableModel));
             setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -1086,18 +1171,31 @@ public class VertexCheckEditor extends JPanel {
             JPanel controls = new JPanel(new GridBagLayout());
             controls.setBorder(new EmptyBorder(10, 10, 6, 10));
             GridBagConstraints gc = new GridBagConstraints();
-            gc.insets = new Insets(3,3,3,3); gc.anchor = GridBagConstraints.WEST;
-            gc.gridx=0; gc.gridy=0; controls.add(new JLabel("Candidate pool:"), gc);
-            gc.gridx=1; gc.fill=GridBagConstraints.HORIZONTAL; gc.weightx=1.0;
+            gc.insets = new Insets(3, 3, 3, 3);
+            gc.anchor = GridBagConstraints.WEST;
+            gc.gridx = 0;
+            gc.gridy = 0;
+            controls.add(new JLabel("Candidate pool:"), gc);
+            gc.gridx = 1;
+            gc.fill = GridBagConstraints.HORIZONTAL;
+            gc.weightx = 1.0;
             controls.add(poolBox, gc);
-            gc.gridx=0; gc.gridy=1; gc.fill=GridBagConstraints.NONE; gc.weightx=0;
+            gc.gridx = 0;
+            gc.gridy = 1;
+            gc.fill = GridBagConstraints.NONE;
+            gc.weightx = 0;
             controls.add(new JLabel("Depth:"), gc);
-            gc.gridx=1; controls.add(depthSpinner, gc);
-            gc.gridx=0; gc.gridy=2; gc.gridwidth=2; controls.add(showButton, gc);
+            gc.gridx = 1;
+            controls.add(depthSpinner, gc);
+            gc.gridx = 0;
+            gc.gridy = 2;
+            gc.gridwidth = 2;
+            controls.add(showButton, gc);
 
-            resultsPanel.setBorder(new EmptyBorder(0,10,10,10));
+            resultsPanel.setBorder(new EmptyBorder(0, 10, 10, 10));
             resultsPanel.add(new JLabel("(Click 'Show independencies' to run)"), BorderLayout.CENTER);
-            table.setFillsViewportHeight(true); table.setAutoCreateRowSorter(true);
+            table.setFillsViewportHeight(true);
+            table.setAutoCreateRowSorter(true);
             showButton.addActionListener(e -> runSearch());
 
             getContentPane().setLayout(new BorderLayout());
@@ -1110,14 +1208,18 @@ public class VertexCheckEditor extends JPanel {
             showButton.setEnabled(false);
             resultsPanel.removeAll();
             resultsPanel.add(new JLabel("Searching..."), BorderLayout.CENTER);
-            resultsPanel.revalidate(); resultsPanel.repaint();
+            resultsPanel.revalidate();
+            resultsPanel.repaint();
             final PoolChoice choice = (PoolChoice) poolBox.getSelectedItem();
             final int k = (Integer) depthSpinner.getValue();
             new SwingWorker<List<IndependenceResult>, Void>() {
-                @Override protected List<IndependenceResult> doInBackground() {
+                @Override
+                protected List<IndependenceResult> doInBackground() {
                     return findIndependencies(x, y, choice, k);
                 }
-                @Override protected void done() {
+
+                @Override
+                protected void done() {
                     try {
                         List<IndependenceResult> found = get();
                         tableModel.setResults(found);
@@ -1129,7 +1231,8 @@ public class VertexCheckEditor extends JPanel {
                         resultsPanel.add(new JLabel("Error: " + ex.getMessage()), BorderLayout.CENTER);
                     } finally {
                         showButton.setEnabled(true);
-                        resultsPanel.revalidate(); resultsPanel.repaint();
+                        resultsPanel.revalidate();
+                        resultsPanel.repaint();
                     }
                 }
             }.execute();
@@ -1138,16 +1241,35 @@ public class VertexCheckEditor extends JPanel {
 
     private final class IndepTableModel extends AbstractTableModel {
         private List<IndependenceResult> results = Collections.emptyList();
+
         void setResults(List<IndependenceResult> rs) {
             this.results = (rs == null) ? Collections.emptyList() : new ArrayList<>(rs);
             fireTableDataChanged();
         }
-        @Override public int getRowCount()    { return results.size(); }
-        @Override public int getColumnCount() { return 4; }
-        @Override public String getColumnName(int col) {
-            return switch (col) { case 0->"#"; case 1->"Fact"; case 2->"Result"; case 3->"P-value"; default->""; };
+
+        @Override
+        public int getRowCount() {
+            return results.size();
         }
-        @Override public Object getValueAt(int row, int col) {
+
+        @Override
+        public int getColumnCount() {
+            return 4;
+        }
+
+        @Override
+        public String getColumnName(int col) {
+            return switch (col) {
+                case 0 -> "#";
+                case 1 -> "Fact";
+                case 2 -> "Result";
+                case 3 -> "P-value";
+                default -> "";
+            };
+        }
+
+        @Override
+        public Object getValueAt(int row, int col) {
             IndependenceResult r = results.get(row);
             return switch (col) {
                 case 0 -> row + 1;

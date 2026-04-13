@@ -21,6 +21,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
@@ -198,7 +199,40 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         this.independenceTest = test;
         cachedQueries.setTest(test);  // clears caches, rebuilds mapping
         clearResults();
+
+        List<Integer> rows = getSubsampleRows(1.0);
+        cachedQueries.setRows(rows); // FisherZ will only calc pvalues to those rows
+
     }
+
+    /**
+     * Returns a list of row indices for a subsample of the data set.
+     *
+     * @param v The fraction of the data set to use.
+     * @return A list of row indices for a subsample of the data set.
+     */
+    private List<Integer> getSubsampleRows(double v) {
+        int sampleSize = ((DataSet) dataModel).getNumRows();
+        int subsampleSize = (int) TMath.floor(sampleSize * v);
+        List<Integer> rows = new ArrayList<>(sampleSize);
+        for (int i = 0; i < sampleSize; i++) {
+            rows.add(i);
+        }
+
+        Collections.shuffle(rows);
+        List<Integer> integers = rows.subList(0, subsampleSize);
+
+        List<Integer> selectedRows = new ArrayList<>(integers.size());
+
+        for (int row : rows) {
+            if (integers.contains(row)) {
+                selectedRows.add(row);
+            }
+        }
+
+        return selectedRows;
+    }
+
 
     public ConditioningSetType getConditioningSetType() {
         return conditioningSetType;

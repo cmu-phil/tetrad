@@ -1271,6 +1271,7 @@ public final class VertexRepairSearch implements IGraphSearch {
         return new GraphEval(violations, modelP, globalViolationByKey.size());
     }
 
+
     private double evalModelPLocality(GlobalEvalCache baseCache, Graph g, Set<String> affected) {
         return evalGraphLocality(baseCache, g, affected).modelP();
     }

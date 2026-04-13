@@ -116,7 +116,8 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
      */
     public FfCiContinuous(DataSet dataSet) {
         DataSet _data = Objects.requireNonNull(dataSet, "data");
-        this.data = DataTransforms.standardizeData(_data);
+//        this.data = DataTransforms.standardizeData(_data);
+        this.data = _data;
         this.vars = Collections.unmodifiableList(new ArrayList<>(this.data.getVariables()));
         this.n = getActiveRowCount();
     }
@@ -656,8 +657,11 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
             }
         }
 
-//        rows.sort(Integer::compareTo);
+        rows.sort(Integer::compareTo);
         this.rows = new ArrayList<>(rows);
+
+        System.out.println("setRows: " + rows);
+
         this.n = this.rows.size();
         invalidateFeatureCache();
     }
@@ -893,6 +897,7 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
      */
     private long seedForBlock(String tag, List<Node> block) {
         long h = 1469598103934665603L; // FNV-ish
+
         h = 1099511628211L * (h ^ tag.hashCode());
 
         ArrayList<String> names = new ArrayList<>(block.size());
@@ -904,7 +909,7 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
             h = 1099511628211L * (h ^ s.hashCode());
         }
 
-        h = 1099511628211L * (h ^ block.hashCode());
+//        h = 1099511628211L * (h ^ block.hashCode());
 
         h = 1099511628211L * (h ^ getActiveRowCount());
         h = 1099511628211L * (h ^ activeRowsHash());
