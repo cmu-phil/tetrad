@@ -134,7 +134,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
      */
     public void setIndependenceTest(IndependenceTest test) {
         if (this.getMarkovCheck() == null) {
-            this.markovCheck = new MarkovCheck(this.graph, test, ConditioningSetType.LOCAL_MARKOV);
+            this.markovCheck = new MarkovCheck(this.graph, test, ConditioningSetType.ORDERED_LOCAL_MARKOV);
         } else {
             this.markovCheck.setIndependenceTest(test);
         }

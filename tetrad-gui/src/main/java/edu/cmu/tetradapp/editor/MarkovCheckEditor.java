@@ -219,15 +219,6 @@ public class MarkovCheckEditor extends JPanel {
             conditioningSetTypeJComboBox.addItem(type);
         }
 
-//        conditioningSetTypeJComboBox.addItem("Ordered Local Markov Property");
-//        conditioningSetTypeJComboBox.addItem("Ordered Local Markov Property (Sink Elimination)");
-//        conditioningSetTypeJComboBox.addItem("Pairwise Markov Property");
-//        conditioningSetTypeJComboBox.addItem("Parents(X)");
-//        conditioningSetTypeJComboBox.addItem("Parents(X) and Neighbors(X)");
-//        conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
-//        conditioningSetTypeJComboBox.addItem("Recursive Blocking");
-//        conditioningSetTypeJComboBox.addItem("All Subsets (Global Markov)");
-
         conditioningSetTypeJComboBox.addActionListener(e -> {
             ConditioningSetType selectedItem = (ConditioningSetType) conditioningSetTypeJComboBox.getSelectedItem();
             model.getMarkovCheck().setSetType(selectedItem);
@@ -271,15 +262,9 @@ public class MarkovCheckEditor extends JPanel {
 
         setTest();
 
-        model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
-
-        // Restore saved conditioning set type from model, falling back to default
-        ConditioningSetType savedConditioningSetType = model.getMarkovCheck().getSetType();
-        if (savedConditioningSetType != null) {
-            conditioningSetTypeJComboBox.setSelectedItem(savedConditioningSetType);
-        } else {
-            conditioningSetTypeJComboBox.setSelectedItem(model.getMarkovCheck().getSetType());
-        }
+        ConditioningSetType saved = model.getMarkovCheck().getSetType(); // reads from model, not MarkovCheck
+        conditioningSetTypeJComboBox.setSelectedItem(
+                saved != null ? saved : ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
 
         Graph _graph = model.getGraph();
         Graph graph = GraphUtils.replaceNodes(_graph, model.getMarkovCheck().getVariables(model.getGraph().getNodes(), model.getMarkovCheck().getIndependenceNodes(), model.getMarkovCheck().getConditioningNodes()));

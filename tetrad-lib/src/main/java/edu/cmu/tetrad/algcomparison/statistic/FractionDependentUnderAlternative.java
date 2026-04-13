@@ -83,7 +83,7 @@ public class FractionDependentUnderAlternative implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, alpha), ConditioningSetType.LOCAL_MARKOV);
+        MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, alpha), ConditioningSetType.ORDERED_LOCAL_MARKOV);
         markovCheck.generateResults(false, true);
         return markovCheck.getFractionDependent(false);
     }

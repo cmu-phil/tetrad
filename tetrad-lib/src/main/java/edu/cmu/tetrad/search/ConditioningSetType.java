@@ -35,78 +35,26 @@ package edu.cmu.tetrad.search;
  */
 public enum ConditioningSetType {
 
-    /**
-     * Testing all possible independence facts implied by the graph.  Some independence facts obtained in this way may
-     * be for implied dependencies.
-     */
-    GLOBAL_MARKOV,
+    ORDERED_LOCAL_MARKOV("Ordered Local Markov"),
+    ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION("Ordered Local Markov (Sink Elimination)"),
+    MARKOV_BLANKET("Markov Blanket"),
+    RECURSIVE_BLOCKING("Recursive Blocking"),
+    RECURSIVE_ADJUSTMENT("Recursive Adjustment"),
+    LOCAL_MARKOV("Local Markov (Parents)"),
+    PARENTS_AND_NEIGHBORS("Parents and Neighbors"),
+    NONCOLLIDERS_ONLY("Noncolliders Only"),
+    ORDERED_LOCAL_MARKOV_PROPERTY("Ordered Local Markov Property"),
+    PAIRWISE_MARKOV_PROPERTY("Pairwise Markov Property"),
+    GLOBAL_MARKOV("All Subsets (Global Markov)");
 
-    /**
-     * Testing independence facts implied by the graph, conditioning on the parents of each variable in the graph. Some
-     * independence facts obtained in this way may be for implied dependencies.
-     */
-    LOCAL_MARKOV,
+    private final String displayName;
 
-    /**
-     * Conditioning on the parents and neighbors of each variable in the graph. Some independence facts obtained in this
-     * way may be for implied dependencies.
-     */
-    PARENTS_AND_NEIGHBORS,
+    ConditioningSetType(String displayName) {
+        this.displayName = displayName;
+    }
 
-    /**
-     * Conditioning on the Markov blanket of each variable in the graph. These are all conditional independence facts,
-     * so no conditional dependence facts will be listed if this option is selected.
-     */
-    MARKOV_BLANKET,
-
-    /**
-     * Conditioning on variables in the recursive order of a depth-first M-separation search. Some independence facts
-     * obtained in this way may be for implied dependencies.
-     */
-    RECURSIVE_BLOCKING,
-
-    /**
-     * Conditioning on variables in the recursive order of a depth-first M-separation search. Some independence facts
-     * obtained in this way may be for implied dependencies.
-     */
-    RECURSIVE_ADJUSTMENT,
-
-    /**
-     * Conditioning on noncolliders only. Some independence facts obtained in this way may be for implied dependencies.
-     * This is equivalent to the "noncolliders only" option in the PC algorithm.
-     */
-    NONCOLLIDERS_ONLY,
-
-    /**
-     * Testing independence facts implied by the graph, conditioning on the parents of each variable in the graph, in a
-     * causal order of the graph. Some independence facts obtained in this way may be for implied dependencies.
-     */
-    ORDERED_LOCAL_MARKOV,
-
-    /**
-     * Generates a set of independence facts that implies Global Markov for MAG. Taking a MAG in the given PAG in the
-     * calling method.
-     *
-     * @see OrderedLocalMarkovPropertySinkElimination
-     */
-    ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION,
-
-    /**
-     * Specifies a conditioning set type that generates a set of independence facts conforming to the
-     * Richardson Ordered Local Markov Property for Markov equivalent models such as MAGs (Maximal Ancestral Graphs).
-     * This method leverages a specific causal ordering in the graph to verify causal and conditional independence
-     * relationships, taking into account the structure of the underlying Markov equivalence class.
-     */
-    ORDERED_LOCAL_MARKOV_PROPERTY,
-
-    /**
-     * Represents the assumption or property in probabilistic graphical models that
-     * given any two variables in the model, they are conditionally independent
-     * given a direct connection or edge between them. This property is widely
-     * applicable to pairwise Markov random fields where the edges encode
-     * direct probabilistic relationships between the connected variables.
-     */
-    PAIRWISE_MARKOV_PROPERTY
-
+    @Override
+    public String toString() {
+        return displayName;
+    }
 }
-

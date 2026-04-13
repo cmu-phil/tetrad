@@ -97,7 +97,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * The type of conditioning sets to use in the Markov check.
      */
-    private ConditioningSetType setType;
+    private ConditioningSetType setType = ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY;
     /**
      * True if the checks should be parallelized. (Not always a good idea.)
      */
