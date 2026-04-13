@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,21 +16,21 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.util;
 
 import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.rng.UniformRandomProvider;
-import org.apache.commons.rng.sampling.SharedStateSampler;
-import org.apache.commons.rng.sampling.distribution.GaussianSampler;
 import org.apache.commons.rng.sampling.distribution.NormalizedGaussianSampler;
-import org.apache.commons.rng.sampling.distribution.SharedStateContinuousSampler;
 import org.apache.commons.rng.sampling.distribution.ZigguratSampler;
 import org.apache.commons.rng.simple.RandomSource;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.RandomAccess;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -51,19 +51,21 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class RandomUtil {
 
+    private static final int SHUFFLE_THRESHOLD = 5;
+    private static final AtomicLong seedCounter =
+            new AtomicLong(System.nanoTime());
     /**
      * Per-thread singleton instances.
      */
     private static final ThreadLocal<RandomUtil> randomUtils =
             ThreadLocal.withInitial(RandomUtil::new);
-
-    private static final int SHUFFLE_THRESHOLD = 5;
-
     /**
      * Underlying RNG used everywhere in this class.
      */
     private UniformRandomProvider randomGenerator;
+    private NormalizedGaussianSampler gaussianSampler;  // add this field
 
+    //========================================CONSTRUCTORS===================================//
     /**
      * Adapter for Commons Math distributions that still require a RandomGenerator.
      * All randomness is delegated to the underlying UniformRandomProvider above.
@@ -131,30 +133,9 @@ public class RandomUtil {
 
         @Override
         public double nextGaussian() {
-            // Fast ziggurat-based sampler (best general choice)
-            NormalizedGaussianSampler normalized = ZigguratSampler.NormalizedGaussian.of(randomGenerator);
-
-            // Scale to mean/stddev of your choice
-            SharedStateContinuousSampler sampler = GaussianSampler.of(normalized, 0, 1);
-            return sampler.sample();
-
-//            // Box-Muller transform.
-//            double u1 = randomGenerator.nextDouble();
-//            while (u1 <= 0.0) {
-//                u1 = randomGenerator.nextDouble();
-//            }
-//
-//            double u2 = randomGenerator.nextDouble();
-//
-//            return TMath.sqrt(-2.0 * TMath.log(u1)) *
-//                    TMath.cos(2.0 * TMath.PI * u2);
+            return gaussianSampler.sample();
         }
     };
-
-    //========================================CONSTRUCTORS===================================//
-
-    private static final AtomicLong seedCounter =
-            new AtomicLong(System.nanoTime());
 
     private RandomUtil() {
         setSeed(seedCounter.getAndIncrement());
@@ -318,15 +299,7 @@ public class RandomUtil {
      * @throws IllegalArgumentException if {@code sd} is negative.
      */
     public double nextGaussian(double mean, double sd) {
-        if (sd < 0) {
-            throw new IllegalArgumentException("Standard deviation must be non-negative: " + sd);
-        }
-
-        if (sd == 0) {
-            return mean;
-        }
-
-        return new NormalDistribution(this.math3RandomGenerator, mean, sd).sample();
+        return getInstance().nextGaussian();
     }
 
     /**
@@ -368,15 +341,6 @@ public class RandomUtil {
         return d;
     }
 
-    /**
-     * Resets the internal random number generator with the specified seed value,
-     * ensuring deterministic behavior for subsequent random operations starting from this seed.
-     *
-     * @param seed the seed value to initialize the random generator. Must be a long value.
-     */
-    public void revertSeed(long seed) {
-        this.randomGenerator = RandomSource.XO_RO_SHI_RO_128_PP.create(seed);
-    }
 
     /**
      * Generates a random value sampled from a Poisson distribution with the specified mean (lambda).
@@ -530,6 +494,18 @@ public class RandomUtil {
      */
     public void setSeed(long seed) {
         this.randomGenerator = RandomSource.XO_RO_SHI_RO_128_PP.create(seed);
+        this.gaussianSampler = ZigguratSampler.NormalizedGaussian.of(this.randomGenerator);
+    }
+
+    /**
+     * Resets the internal random number generator with the specified seed value,
+     * ensuring deterministic behavior for subsequent random operations starting from this seed.
+     *
+     * @param seed the seed value to initialize the random generator. Must be a long value.
+     */
+    public void revertSeed(long seed) {
+        this.randomGenerator = RandomSource.XO_RO_SHI_RO_128_PP.create(seed);
+        this.gaussianSampler = ZigguratSampler.NormalizedGaussian.of(this.randomGenerator);
     }
 
     /**

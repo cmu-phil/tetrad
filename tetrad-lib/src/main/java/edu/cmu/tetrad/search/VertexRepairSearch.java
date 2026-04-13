@@ -626,9 +626,11 @@ public final class VertexRepairSearch implements IGraphSearch {
         Set<String> seenStates = new LinkedHashSet<>();
         int editsApplied = 0;
 
-        fireStatus("Pruning obvious false-positive edges...");
-        pruneObviousFalsePositives(workingGraph, 3); // depth 3 is a reasonable default
-        Q.clearCaches(); // flush cached results since graph changed
+        if (pruneAlpha < 1) {
+            fireStatus("Pruning obvious false-positive edges...");
+            pruneObviousFalsePositives(workingGraph, 2); // depth 3 is a reasonable default
+            Q.clearCaches(); // flush cached results since graph changed
+        }
 
         fireStatus("Building global candidate queue...");
         if (!initGlobalQueue()) return;
@@ -1429,6 +1431,9 @@ public final class VertexRepairSearch implements IGraphSearch {
     // ---- Listener ------------------------------------------------------------
 
     public void setPruneAlpha(double pruneAlpha) {
+        if (pruneAlpha < 0.0 || pruneAlpha > 1.0) {
+            throw new IllegalArgumentException("Prune alpha must be between 0 and 1: " + pruneAlpha);
+        }
         this.pruneAlpha = pruneAlpha;
     }
 
