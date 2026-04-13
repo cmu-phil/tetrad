@@ -24,7 +24,10 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.IndependenceFact;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
@@ -36,7 +39,6 @@ import edu.cmu.tetradapp.session.SessionModel;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
-import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.beans.PropertyChangeListener;
@@ -70,7 +72,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     private Graph graph;
     private String name = "";
     private transient IndependenceTest independenceTest;
-    private ConditioningSetType conditioningSetType = ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY;
+    //    private ConditioningSetType conditioningSetType = ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY;
     private Knowledge knowledge = new Knowledge();
     private List<String> vertexNames = new ArrayList<>();
     private boolean verbose = false;
@@ -127,16 +129,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         }
     }
 
-    public double getUniformityP(List<Double> pvals) {
-        if (pvals == null || pvals.size() < 2) return Double.NaN;
-
-        if (useAndersonDarling) {
-            return getAndersonDarlingP(pvals);
-        } else {
-            return getKolomogorovP(pvals);
-        }
-    }
-
     private static double getKolomogorovP(List<Double> pvals) {
         double[] x = pvals.stream().mapToDouble(Double::doubleValue).toArray();
         KolmogorovSmirnovTest ks = new KolmogorovSmirnovTest();
@@ -152,6 +144,20 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public static double getAndersonDarlingP(List<Double> pValues) {
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
         return generalAndersonDarlingTest.getP();
+    }
+
+    public static List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x, ConditioningSetType conditioningSetType) {
+        return MarkovCheck.computeImpliedFactsForVertex(alignedGraph, x, conditioningSetType);
+    }
+
+    public double getUniformityP(List<Double> pvals) {
+        if (pvals == null || pvals.size() < 2) return Double.NaN;
+
+        if (useAndersonDarling) {
+            return getAndersonDarlingP(pvals);
+        } else {
+            return getKolomogorovP(pvals);
+        }
     }
 
     public CachedIndependenceQueries getCachedQueries() {
@@ -220,15 +226,14 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return selectedRows;
     }
 
-
-    public ConditioningSetType getConditioningSetType() {
-        return conditioningSetType;
-    }
-
     // --- Core API used by the editor ------------------------------------------------------------
 
+    public ConditioningSetType getConditioningSetType() {
+        return (ConditioningSetType) this.parameters.get("conditioningSetParam", ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
+    }
+
     public void setConditioningSetType(ConditioningSetType conditioningSetType) {
-        this.conditioningSetType = conditioningSetType;
+        this.parameters.set("conditioningSetParam", conditioningSetType);
     }
 
     public Knowledge getKnowledge() {
@@ -243,11 +248,11 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return verbose;
     }
 
+    // --- Implementation -------------------------------------------------------------------------
+
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
-
-    // --- Implementation -------------------------------------------------------------------------
 
     @Override
     public String getName() {
@@ -326,7 +331,8 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     private void runVertex(Graph alignedGraph, Node x) {
-        List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x, conditioningSetType);
+        List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x,
+                getConditioningSetType());
 
         List<IndependenceResult> results = new ArrayList<>(impliedFacts.size());
         List<Double> pvals = new ArrayList<>();
@@ -454,10 +460,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return pValue;
     }
 
-    public static List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x, ConditioningSetType conditioningSetType) {
-        return MarkovCheck.computeImpliedFactsForVertex(alignedGraph, x, conditioningSetType);
-    }
-
     @Override
     public Graph getSourceGraph() {
         return null;
@@ -547,7 +549,9 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         Node x = alignedGraph.getNode(vertexName);
         if (x == null) return new ConditioningSetSizeRange(-1, -1);
 
-        List<IndependenceFact> facts = computeImpliedFactsForVertex(alignedGraph, x, conditioningSetType);
+        List<IndependenceFact> facts = computeImpliedFactsForVertex(alignedGraph, x,
+                (ConditioningSetType) parameters.get("conditioningSetType",
+                        ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY));
         if (facts.isEmpty()) return new ConditioningSetSizeRange(0, 0);
 
         int min = Integer.MAX_VALUE;
@@ -654,11 +658,11 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     public String getSavedClassName() {
-        return this.savedClassName;
+        return this.parameters.getString("independenceTestClassParam", null);
     }
 
-    public void setSavedClassName(String savedClassName) {
-        this.savedClassName = savedClassName;
+    public void setSavedClassName(String name) {
+        this.parameters.set("independenceTestClassParam", name);
     }
 
     private record ConditioningSetSizeRange(int min, int max) {
