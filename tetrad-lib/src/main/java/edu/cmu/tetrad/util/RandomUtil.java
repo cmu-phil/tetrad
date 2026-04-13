@@ -23,6 +23,11 @@ package edu.cmu.tetrad.util;
 import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.rng.UniformRandomProvider;
+import org.apache.commons.rng.sampling.SharedStateSampler;
+import org.apache.commons.rng.sampling.distribution.GaussianSampler;
+import org.apache.commons.rng.sampling.distribution.NormalizedGaussianSampler;
+import org.apache.commons.rng.sampling.distribution.SharedStateContinuousSampler;
+import org.apache.commons.rng.sampling.distribution.ZigguratSampler;
 import org.apache.commons.rng.simple.RandomSource;
 
 import java.util.*;
@@ -126,16 +131,23 @@ public class RandomUtil {
 
         @Override
         public double nextGaussian() {
-            // Box-Muller transform.
-            double u1 = randomGenerator.nextDouble();
-            while (u1 <= 0.0) {
-                u1 = randomGenerator.nextDouble();
-            }
+            // Fast ziggurat-based sampler (best general choice)
+            NormalizedGaussianSampler normalized = ZigguratSampler.NormalizedGaussian.of(randomGenerator);
 
-            double u2 = randomGenerator.nextDouble();
+            // Scale to mean/stddev of your choice
+            SharedStateContinuousSampler sampler = GaussianSampler.of(normalized, 0, 1);
+            return sampler.sample();
 
-            return TMath.sqrt(-2.0 * TMath.log(u1)) *
-                    TMath.cos(2.0 * TMath.PI * u2);
+//            // Box-Muller transform.
+//            double u1 = randomGenerator.nextDouble();
+//            while (u1 <= 0.0) {
+//                u1 = randomGenerator.nextDouble();
+//            }
+//
+//            double u2 = randomGenerator.nextDouble();
+//
+//            return TMath.sqrt(-2.0 * TMath.log(u1)) *
+//                    TMath.cos(2.0 * TMath.PI * u2);
         }
     };
 
