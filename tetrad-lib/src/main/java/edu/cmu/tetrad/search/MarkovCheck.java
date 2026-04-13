@@ -513,7 +513,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         }
 
         for (IndependenceFact fact : allIndependenceFacts) {
-            if (this.setType == ConditioningSetType.ORDERED_LOCAL_MARKOV) {
+            if (this.setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY) {
                 if (x.equals((fact.getX()))) facts.add(fact);
             } else {
                 if (x.equals((fact.getX())) || x.equals(fact.getY())) facts.add(fact);
@@ -1449,21 +1449,21 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                         }
 
                         break;
-                    case ORDERED_LOCAL_MARKOV:
-                        if (order == null) throw new IllegalArgumentException("No valid order found.");
-                        z = new HashSet<>(graph.getAdjacentNodes(x));
-
-                        // Keep only the parents in Prefix(x)--i.e., nodes adjacent to x that are in Prefix(X)
-                        for (Node w : new ArrayList<>(z)) {
-                            int i1 = order.indexOf(x);
-                            int i2 = order.indexOf(w);
-
-                            if (i2 >= i1) {
-                                z.remove(w);
-                            }
-                        }
-
-                        break;
+//                    case ORDERED_LOCAL_MARKOV:
+//                        if (order == null) throw new IllegalArgumentException("No valid order found.");
+//                        z = new HashSet<>(graph.getAdjacentNodes(x));
+//
+//                        // Keep only the parents in Prefix(x)--i.e., nodes adjacent to x that are in Prefix(X)
+//                        for (Node w : new ArrayList<>(z)) {
+//                            int i1 = order.indexOf(x);
+//                            int i2 = order.indexOf(w);
+//
+//                            if (i2 >= i1) {
+//                                z.remove(w);
+//                            }
+//                        }
+//
+//                        break;
                     case MARKOV_BLANKET:
                         z = GraphUtils.markovBlanket(x, graph);
                         break;

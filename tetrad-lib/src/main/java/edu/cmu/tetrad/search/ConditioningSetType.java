@@ -35,16 +35,16 @@ package edu.cmu.tetrad.search;
  */
 public enum ConditioningSetType {
 
-    ORDERED_LOCAL_MARKOV("Ordered Local Markov"),
+    ORDERED_LOCAL_MARKOV_PROPERTY("Ordered Local Markov Property"),
     ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION("Ordered Local Markov (Sink Elimination)"),
+    PAIRWISE_MARKOV_PROPERTY("Pairwise Markov Property"),
+//    ORDERED_LOCAL_MARKOV("Ordered Local Markov"),
     MARKOV_BLANKET("Markov Blanket"),
     RECURSIVE_BLOCKING("Recursive Blocking"),
     RECURSIVE_ADJUSTMENT("Recursive Adjustment"),
     LOCAL_MARKOV("Local Markov (Parents)"),
     PARENTS_AND_NEIGHBORS("Parents and Neighbors"),
     NONCOLLIDERS_ONLY("Noncolliders Only"),
-    ORDERED_LOCAL_MARKOV_PROPERTY("Ordered Local Markov Property"),
-    PAIRWISE_MARKOV_PROPERTY("Pairwise Markov Property"),
     GLOBAL_MARKOV("All Subsets (Global Markov)");
 
     private final String displayName;

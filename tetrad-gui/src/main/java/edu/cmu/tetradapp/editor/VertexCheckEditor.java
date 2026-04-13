@@ -72,11 +72,6 @@ import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
  */
 public class VertexCheckEditor extends JPanel {
 
-//    private static final String PREF_KEY_TEST = "markovCheckerIndependenceTest";
-//    private static final String PREF_KEY_SET_TYPE = "markovCheckerConditioningSetType";
-    private static final Preferences PREFS =
-            Preferences.userNodeForPackage(VertexCheckEditor.class);
-
     private static final int TAB_CHECK = 0;
     private static final int TAB_REPAIR = 1;
 
@@ -84,7 +79,7 @@ public class VertexCheckEditor extends JPanel {
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     private final JComboBox<IndependenceTestModel> indTestCombo = new JComboBox<>();
-    private final JComboBox<String> conditioningCombo = new JComboBox<>();
+    private final JComboBox<ConditioningSetType> conditioningCombo = new JComboBox<>();
     private final JCheckBox verbose = new JCheckBox("Verbose");
     private final JButton showIndepsForRow = new JButton("Independencies");
     private final JButton undoGraphButton = new JButton("Undo");
@@ -354,14 +349,10 @@ public class VertexCheckEditor extends JPanel {
         controls.add(paramsButton);
         controls.add(new JLabel("Conditioning Sets:"));
 
-        conditioningCombo.addItem("Ordered Local Markov Property");
-        conditioningCombo.addItem("Ordered Local Markov Property (Sink Elimination)");
-        conditioningCombo.addItem("Pairwise Markov Property");
-        conditioningCombo.addItem("MarkovBlanket(X)");
-        conditioningCombo.addItem("Parents(X)");
-        conditioningCombo.addItem("Parents(X) and Neighbors(X)");
-        conditioningCombo.addItem("Recursive Blocking");
-        conditioningCombo.setPreferredSize(new Dimension(220, 24));
+        for (ConditioningSetType type : ConditioningSetType.values()) {
+            conditioningCombo.addItem(type);
+        }
+
         controls.add(conditioningCombo);
         controls.add(verbose);
         controls.add(modelUniformityTest);
@@ -382,9 +373,7 @@ public class VertexCheckEditor extends JPanel {
         });
         conditioningCombo.addActionListener(e -> {
             if (initializing) return;
-            String s = (String) conditioningCombo.getSelectedItem();
-            model.setConditioningSetType(toSetType(s));
-//            PREFS.put(PREF_KEY_SET_TYPE, s == null ? "" : s);
+            model.setConditioningSetType((ConditioningSetType) conditioningCombo.getSelectedItem());
             resetResultsUI();
         });
         verbose.addActionListener(e -> model.setVerbose(verbose.isSelected()));
@@ -793,9 +782,10 @@ public class VertexCheckEditor extends JPanel {
     }
 
     private void applySavedSetType() {
-        String saved = model.getKeySetType(); // PREFS.get(PREF_KEY_SET_TYPE, "Ordered Local Markov Property");
-        conditioningCombo.setSelectedItem(saved);
-        model.setConditioningSetType(toSetType((String) conditioningCombo.getSelectedItem()));
+        ConditioningSetType saved = model.getConditioningSetType();
+        conditioningCombo.setSelectedItem(
+                saved != null ? saved : ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
+        model.setConditioningSetType((ConditioningSetType) conditioningCombo.getSelectedItem());
     }
 
     private void resetResultsUI() {
@@ -1099,22 +1089,6 @@ public class VertexCheckEditor extends JPanel {
         } catch (Throwable t) {
             return new EdgeListGraph(g);
         }
-    }
-
-    private ConditioningSetType toSetType(String s) {
-        if (s == null) return ConditioningSetType.MARKOV_BLANKET;
-        return switch (s) {
-            case "Parents(X)" -> ConditioningSetType.LOCAL_MARKOV;
-            case "Parents(X) and Neighbors(X)" -> ConditioningSetType.PARENTS_AND_NEIGHBORS;
-            case "MarkovBlanket(X)" -> ConditioningSetType.MARKOV_BLANKET;
-            case "Ordered Local Markov Property" -> ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY;
-            case "Ordered Local Markov Property (Sink Elimination)" ->
-                    ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION;
-            case "Pairwise Markov Property" -> ConditioningSetType.PAIRWISE_MARKOV_PROPERTY;
-            case "Recursive Blocking" -> ConditioningSetType.RECURSIVE_BLOCKING;
-            case "Recursive Adjustment" -> ConditioningSetType.RECURSIVE_ADJUSTMENT;
-            default -> ConditioningSetType.MARKOV_BLANKET;
-        };
     }
 
     // =========================================================================
