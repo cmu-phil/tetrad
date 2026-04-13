@@ -20,12 +20,14 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.RowsSettable;
 import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
@@ -159,7 +161,40 @@ public final class VertexRepairSearch implements IGraphSearch {
         this.Q = new CachedIndependenceQueries(test);
         this.workingGraph = safeCopy(graph);
         this.type = type;
+
+        if (test instanceof RowsSettable) {
+            ((RowsSettable) test).setRows(getSubsampleRows(1.0));
+        }
     }
+
+    /**
+     * Returns a list of row indices for a subsample of the data set.
+     *
+     * @param v The fraction of the data set to use.
+     * @return A list of row indices for a subsample of the data set.
+     */
+    private List<Integer> getSubsampleRows(double v) {
+        int sampleSize = ((DataSet) Q.getTest().getData()).getNumRows();
+        int subsampleSize = (int) TMath.floor(sampleSize * v);
+        List<Integer> rows = new ArrayList<>(sampleSize);
+        for (int i = 0; i < sampleSize; i++) {
+            rows.add(i);
+        }
+
+        Collections.shuffle(rows);
+        List<Integer> integers = rows.subList(0, subsampleSize);
+
+        List<Integer> selectedRows = new ArrayList<>(integers.size());
+
+        for (int row : rows) {
+            if (integers.contains(row)) {
+                selectedRows.add(row);
+            }
+        }
+
+        return selectedRows;
+    }
+
 
     // =========================================================================
     // IGraphSearch

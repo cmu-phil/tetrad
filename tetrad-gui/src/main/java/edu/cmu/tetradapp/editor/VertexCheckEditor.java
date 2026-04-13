@@ -40,7 +40,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
@@ -73,8 +72,8 @@ import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
  */
 public class VertexCheckEditor extends JPanel {
 
-    private static final String PREF_KEY_TEST = "markovCheckerIndependenceTest";
-    private static final String PREF_KEY_SET_TYPE = "markovCheckerConditioningSetType";
+//    private static final String PREF_KEY_TEST = "markovCheckerIndependenceTest";
+//    private static final String PREF_KEY_SET_TYPE = "markovCheckerConditioningSetType";
     private static final Preferences PREFS =
             Preferences.userNodeForPackage(VertexCheckEditor.class);
 
@@ -385,7 +384,7 @@ public class VertexCheckEditor extends JPanel {
             if (initializing) return;
             String s = (String) conditioningCombo.getSelectedItem();
             model.setConditioningSetType(toSetType(s));
-            PREFS.put(PREF_KEY_SET_TYPE, s == null ? "" : s);
+//            PREFS.put(PREF_KEY_SET_TYPE, s == null ? "" : s);
             resetResultsUI();
         });
         verbose.addActionListener(e -> model.setVerbose(verbose.isSelected()));
@@ -633,27 +632,31 @@ public class VertexCheckEditor extends JPanel {
             return;
         }
 
-        new WatchedProcess() {
-            @Override
-            public void watch() {
-                for (String v : toCompute) model.ensureVertexComputed(v);
-                SwingUtilities.invokeLater(() -> {
-                    updateTable();
-                });
-            }
-
-            private synchronized void updateTable() {
-                try {
-                    for (int mr : sel.modelRows()) overviewModel.fireTableRowsUpdated(mr, mr);
-                } catch (Exception ex) {
-                    return;
-                }
-                refreshModelDiagnostics();
-                String stillActive = getActiveSelectedVertexName();
-                if (stillActive != null) refreshDetails(stillActive);
-            }
-        };
+//        new WatchedProcess() {
+//            @Override
+//            public void watch() {
+        for (String v : toCompute) model.ensureVertexComputed(v);
+        SwingUtilities.invokeLater(() -> {
+            updateTable(sel);
+        });
     }
+//            }
+//
+//
+//        };
+//…}
+
+    private synchronized void updateTable(SelectedRows sel) {
+        try {
+            for (int mr : sel.modelRows()) overviewModel.fireTableRowsUpdated(mr, mr);
+        } catch (Exception ex) {
+            return;
+        }
+        refreshModelDiagnostics();
+        String stillActive = getActiveSelectedVertexName();
+        if (stillActive != null) refreshDetails(stillActive);
+    }
+
 
     private void refreshDetails(String v) {
         if (rightTabs.getSelectedIndex() == TAB_CHECK) {
@@ -718,9 +721,9 @@ public class VertexCheckEditor extends JPanel {
         if (runningAll) return;
         runningAll = true;
 
-        new WatchedProcess() {
-            @Override
-            public void watch() {
+//        new WatchedProcess() {
+//            @Override
+//            public void watch() {
                 try {
                     model.runAllVertices(true);
                 } finally {
@@ -742,8 +745,8 @@ public class VertexCheckEditor extends JPanel {
                         if (onDone != null) onDone.run();
                     });
                 }
-            }
-        };
+//            }
+//        };
     }
 
     private void refreshTestList() {
@@ -753,7 +756,7 @@ public class VertexCheckEditor extends JPanel {
         for (IndependenceTestModel m : models) indTestCombo.addItem(m);
         indTestCombo.setEnabled(indTestCombo.getItemCount() > 0);
 
-        String savedClassName = PREFS.get(PREF_KEY_TEST, null);
+        String savedClassName = model.getSavedClassName();// PREFS.get(PREF_KEY_TEST, null);
         IndependenceTestModel toSelect = null;
         if (savedClassName != null) {
             for (int i = 0; i < indTestCombo.getItemCount(); i++) {
@@ -778,7 +781,8 @@ public class VertexCheckEditor extends JPanel {
             independenceWrapper = clazz.getDeclaredConstructor().newInstance();
             IndependenceTest test = independenceWrapper.getTest(model.getDataModel(), model.getParameters());
             model.setIndependenceTest(test);
-            PREFS.put(PREF_KEY_TEST, clazz.getName());
+            model.setSavedClassName(clazz.getName());
+//            PREFS.put(PREF_KEY_TEST, clazz.getName());
             invalidate();
             repaint();
         } catch (InstantiationException | IllegalAccessException
@@ -789,7 +793,7 @@ public class VertexCheckEditor extends JPanel {
     }
 
     private void applySavedSetType() {
-        String saved = PREFS.get(PREF_KEY_SET_TYPE, "Ordered Local Markov Property");
+        String saved = model.getKeySetType(); // PREFS.get(PREF_KEY_SET_TYPE, "Ordered Local Markov Property");
         conditioningCombo.setSelectedItem(saved);
         model.setConditioningSetType(toSetType((String) conditioningCombo.getSelectedItem()));
     }

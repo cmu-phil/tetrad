@@ -660,8 +660,6 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
         rows.sort(Integer::compareTo);
         this.rows = new ArrayList<>(rows);
 
-        System.out.println("setRows: " + rows);
-
         this.n = this.rows.size();
         invalidateFeatureCache();
     }
@@ -895,24 +893,36 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
     /**
      * Deterministic seed for a block; makes results stable across runs.
      */
-    private long seedForBlock(String tag, List<Node> block) {
-        long h = 1469598103934665603L; // FNV-ish
+//    private long seedForBlock(String tag, List<Node> block) {
+//        long h = 1469598103934665603L; // FNV-ish
+//
+//        h = 1099511628211L * (h ^ tag.hashCode());
+//
+//        ArrayList<String> names = new ArrayList<>(block.size());
+//        for (Node v : block) {
+//            names.add(v.getName());
+//        }
+//        names.sort(String::compareTo);
+//        for (String s : names) {
+//            h = 1099511628211L * (h ^ s.hashCode());
+//        }
+//
+//        h = 1099511628211L * (h ^ block.hashCode());
+//
+//        h = 1099511628211L * (h ^ getActiveRowCount());
+//        h = 1099511628211L * (h ^ activeRowsHash());
+//        return h;
+//    }
 
+    private long seedForBlock(String tag, List<Node> block) {
+        long h = 1469598103934665603L;
         h = 1099511628211L * (h ^ tag.hashCode());
 
         ArrayList<String> names = new ArrayList<>(block.size());
-        for (Node v : block) {
-            names.add(v.getName());
-        }
+        for (Node v : block) names.add(v.getName());
         names.sort(String::compareTo);
-        for (String s : names) {
-            h = 1099511628211L * (h ^ s.hashCode());
-        }
+        for (String s : names) h = 1099511628211L * (h ^ s.hashCode());
 
-//        h = 1099511628211L * (h ^ block.hashCode());
-
-        h = 1099511628211L * (h ^ getActiveRowCount());
-        h = 1099511628211L * (h ^ activeRowsHash());
         return h;
     }
 

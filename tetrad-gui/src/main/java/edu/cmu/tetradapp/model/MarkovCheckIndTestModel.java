@@ -83,6 +83,9 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
      * Whether verbose output should be printed.
      */
     private boolean verbose = false;
+    private double fractionSample = 1.0;
+    private String selectedTab;
+    private String independenceTestClass = "FisherZ";
 
     /**
      * Constructs a new Markov checer with the given data model, graph, and parameters.
@@ -279,6 +282,34 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
         if (this.markovCheck != null) {
             this.markovCheck.setVerbose(verbose);
         }
+    }
+
+    public double getFractionSample() {
+        return this.fractionSample;
+    }
+
+    public void setFractionSample(double value) {
+        if (value < 0.0 || value > 1.0) {
+            throw new IllegalArgumentException("Fraction sample must be between 0 and 1.");
+        }
+
+        this.fractionSample = value;
+    }
+
+    public void setSelectedTab(String selectedTab) {
+        this.selectedTab = selectedTab;
+    }
+
+    public String getSelectedTab() {
+        return this.selectedTab;
+    }
+
+    public void setIndependenceTestClass(String name) {
+        this.independenceTestClass = name;
+    }
+
+    public String getIndependenceTestClass() {
+        return this.independenceTestClass;
     }
 }
 

@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.RowsSettable;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.session.SessionModel;
 import org.apache.commons.math3.distribution.BinomialDistribution;
@@ -78,6 +79,8 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     // This controls whether the Vertex checker pays attention to Anderson-Darling or Kolomogorov-Smirnov uniformity
     // tests. Please keep this set to false unless you know what you're doing.
     private boolean useAndersonDarling = false;
+    private String savedClassName = null;
+    private String keySetType = "Ordered Local Markov Property";
 //
 //    public VertexCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, Parameters parameters) {
 //        this(dataModel, graphSource, null, parameters);
@@ -112,7 +115,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
      * @param dataModel   the data model.
      * @param graphSource the graph source.
      * @param parameters  the parameters.
-     * @param knowlegeBox a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @param knowlegeBox a {@link KnowledgeBoxModel} object
      */
     public VertexCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, KnowledgeBoxModel knowlegeBox,
                                    Parameters parameters) {
@@ -197,11 +200,16 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     public void setIndependenceTest(IndependenceTest test) {
         this.independenceTest = test;
+
+        if (test instanceof RowsSettable) {
+            ((RowsSettable) test).setRows(getSubsampleRows(1.0));
+        }
+
         cachedQueries.setTest(test);  // clears caches, rebuilds mapping
         clearResults();
 
-        List<Integer> rows = getSubsampleRows(1.0);
-        cachedQueries.setRows(rows); // FisherZ will only calc pvalues to those rows
+//        List<Integer> rows = getSubsampleRows(1.0);
+//        cachedQueries.setRows(rows); // FisherZ will only calc pvalues to those rows
 
     }
 
@@ -664,6 +672,18 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     public void setUseAndersonDarling(boolean useAndersonDarling) {
         this.useAndersonDarling = useAndersonDarling;
+    }
+
+    public String getSavedClassName() {
+        return this.savedClassName;
+    }
+
+    public void setSavedClassName(String savedClassName) {
+        this.savedClassName = savedClassName;
+    }
+
+    public String getKeySetType() {
+        return this.keySetType;
     }
 
     private record ConditioningSetSizeRange(int min, int max) {
