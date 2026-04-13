@@ -892,7 +892,7 @@ public class MarkovCheckEditor extends JPanel {
         if (clazz != null) {
             try {
                 independenceWrapper =
-                        clazz.getDeclaredConstructor(new Class[0]).newInstance();
+                        clazz.getDeclaredConstructor().newInstance();
                 independenceTest =
                         independenceWrapper.getTest(model.getDataModel(),
                                 model.getParameters());

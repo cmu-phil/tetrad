@@ -615,7 +615,7 @@ public class VertexCheckEditor extends JPanel {
         try {
             independenceWrapper = clazz.getDeclaredConstructor().newInstance();
             IndependenceTest test = independenceWrapper.getTest(model.getDataModel(), model.getParameters());
-            model.setIndependenceTest(test);
+            model.  setIndependenceTest(test);
             PREFS.put(PREF_KEY_TEST, clazz.getName());
             invalidate(); repaint();
         } catch (InstantiationException | IllegalAccessException

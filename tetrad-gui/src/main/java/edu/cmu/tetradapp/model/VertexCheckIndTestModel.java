@@ -77,19 +77,50 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     // This controls whether the Vertex checker pays attention to Anderson-Darling or Kolomogorov-Smirnov uniformity
     // tests. Please keep this set to false unless you know what you're doing.
     private boolean useAndersonDarling = false;
+//
+//    public VertexCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, Parameters parameters) {
+//        this(dataModel, graphSource, null, parameters);
+//    }
+//
+//    public VertexCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, KnowledgeBoxModel knowledgeBox,
+//                                   Parameters parameters) {
+//        this.dataModel = dataModel.getSelectedDataModel();
+//        this.graph = graphSource.getGraph();
+//        this.parameters = parameters;
+//
+//        if (knowledgeBox != null) {
+//            this.knowledge = knowledgeBox.getKnowledge();
+//        }
+//    }
 
+
+    /**
+     * Constructs a new Vertex checer with the given data model, graph, and parameters.
+     *
+     * @param dataModel   the data model.
+     * @param graphSource the graph source.
+     * @param parameters  the parameters.
+     */
     public VertexCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, Parameters parameters) {
         this(dataModel, graphSource, null, parameters);
     }
 
-    public VertexCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, KnowledgeBoxModel knowledgeBox,
+    /**
+     * Constructs a new Vertex checker with the given data model, graph, and parameters.
+     *
+     * @param dataModel   the data model.
+     * @param graphSource the graph source.
+     * @param parameters  the parameters.
+     * @param knowlegeBox a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     */
+    public VertexCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, KnowledgeBoxModel knowlegeBox,
                                    Parameters parameters) {
         this.dataModel = dataModel.getSelectedDataModel();
         this.graph = graphSource.getGraph();
         this.parameters = parameters;
 
-        if (knowledgeBox != null) {
-            this.knowledge = knowledgeBox.getKnowledge();
+        if (knowlegeBox != null) {
+            this.knowledge = knowlegeBox.getKnowledge();
         }
     }
 
@@ -214,6 +245,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         summariesByVertex.clear();
         resultsByVertex.clear();
         modelSummary = null;
+        cachedQueries.clearCaches();
     }
 
     /**

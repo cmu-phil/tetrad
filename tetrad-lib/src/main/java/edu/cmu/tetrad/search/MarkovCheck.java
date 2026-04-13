@@ -92,6 +92,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * The independence test.
      */
     private IndependenceTest independenceTest;
+    private final CachedIndependenceQueries cachedQueries =
+            new CachedIndependenceQueries(CachedIndependenceQueries.ErrorPolicy.TREAT_AS_INDEPENDENT);
     /**
      * The type of conditioning sets to use in the Markov check.
      */
@@ -201,7 +203,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         this.graph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
         this.isPdag = graph.paths().isLegalPdag();
 
-        this.independenceTest = independenceTest;// new CachedIndependenceQueries(independenceTest);
+        setIndependenceTest(independenceTest);
 
         this.setType = setType;
         this.independenceNodes = new ArrayList<>(independenceTest.getVariables());
@@ -1701,7 +1703,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @return The variable with the given name.
      */
     public Node getVariable(String name) {
-        return independenceTest.getVariable(name);
+        return cachedQueries.getVariable(name);
     }
 
     /**
@@ -1710,7 +1712,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @return This test.
      */
     public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
+        return cachedQueries.getTest();
     }
 
     /**
@@ -1724,7 +1726,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             throw new IllegalArgumentException("Independence test cannot be null.");
         }
 
-        this.independenceTest = new CachedIndependenceQueries(test);
+        this.independenceTest = test;
+        cachedQueries.setTest(test);  // clears caches, rebuilds mapping
     }
 
     /**
@@ -2036,7 +2039,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 break;
             }
 
-            IndCheckTask task = new IndCheckTask(i, new ArrayList<>(facts), independenceTest);
+            IndCheckTask task = new IndCheckTask(i, new ArrayList<>(facts), cachedQueries);
 
             if (!parallelized) {
                 Pair<Set<IndependenceResult>, Set<IndependenceResult>> _results = task.call();
@@ -2107,7 +2110,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         int dependent = 0;
 
         for (IndependenceResult result : results) {
-            if (result.getPValue() <= independenceTest.getAlpha()) dependent++;
+            if (result.getPValue() <= cachedQueries.getAlpha()) dependent++;
         }
 
         List<Double> pValues = getPValues(results);
@@ -2151,7 +2154,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @return A list of row indices for a subsample of the data set.
      */
     private List<Integer> getSubsampleRows(double v) {
-        int sampleSize = independenceTest.getSampleSize();
+        int sampleSize = cachedQueries.getSampleSize();
         int subsampleSize = (int) TMath.floor(sampleSize * v);
         List<Integer> rows = new ArrayList<>(sampleSize);
         for (int i = 0; i < sampleSize; i++) {
@@ -2173,7 +2176,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     }
 
     private List<Integer> getBootstrapRows(double v) {
-        int sampleSize = independenceTest.getSampleSize();
+        int sampleSize = cachedQueries.getSampleSize();
         int subsampleSize = (int) TMath.floor(sampleSize * v);
 
         // Draw a sample of size subsampleSize with replacement from the set of all rows.
@@ -2214,7 +2217,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     private double getBinomialPValue_(List<Double> pValues) {
         int n = pValues.size();
-        double q = independenceTest.getAlpha();
+        double q = cachedQueries.getAlpha();
         int k = (int) pValues.stream().filter(p -> p <= q).count();
 
         BinomialDistribution bd = new BinomialDistribution(n, q);

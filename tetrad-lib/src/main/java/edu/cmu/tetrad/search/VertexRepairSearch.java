@@ -1226,30 +1226,47 @@ public final class VertexRepairSearch implements IGraphSearch {
         Map<String, Double> globalPByKey = new HashMap<>();
 
         List<String> names = new ArrayList<>(contrib.keySet());
-        RandomUtil.shuffle(names);
+        Collections.sort(names);
 
         for (String name : names) {
             VertexContribution vc = contrib.get(name);
             if (vc == null) continue;
 
             List<String> violKeys = new ArrayList<>(vc.violationByKey().keySet());
-            RandomUtil.shuffle(violKeys);
+            Collections.sort(violKeys);
             for (String key : violKeys) globalViolationByKey.putIfAbsent(key, vc.violationByKey().get(key));
 
             List<String> pKeys = new ArrayList<>(vc.pByKey().keySet());
-            RandomUtil.shuffle(pKeys);
+            Collections.sort(pKeys);
             for (String key : pKeys) globalPByKey.putIfAbsent(key, vc.pByKey().get(key));
         }
 
         int violations = 0;
         for (boolean isViol : globalViolationByKey.values()) if (isViol) violations++;
 
-        double modelP = Double.NaN;
-        if (globalPByKey.size() >= 2) {
-            List<Double> pvals = new ArrayList<>(globalPByKey.values());
-            pvals.sort(Double::compareTo);
-            modelP = getUniformityP(pvals);
+        List<IndependenceFact> allFacts = MarkovCheck.computeAllImpliedFacts(candidateGraph, type);
+        List<Double> allPValues = new ArrayList<>();
+
+        for (IndependenceFact f : allFacts) {
+            try {
+                allPValues.add(Q.checkIndependence(f.getX(), f.getY(), f.getZ()).getPValue());
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
+
+        double modelP = Double.NaN;
+
+        if (allPValues.size() > 2) {
+            modelP = getUniformityP(allPValues);
+        }
+//
+//        double modelP = Double.NaN;
+//        if (globalPByKey.size() >= 2) {
+//            List<Double> pvals = new ArrayList<>(globalPByKey.values());
+//            pvals.sort(Double::compareTo);
+//            modelP = getUniformityP(pvals);
+//        }
 
         return new GraphEval(violations, modelP, globalViolationByKey.size());
     }

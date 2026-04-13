@@ -899,10 +899,9 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
         for (Node v : block) {
             names.add(v.getName());
         }
-//        names.sort(String::compareTo);
+        names.sort(String::compareTo);
         for (String s : names) {
-            h *= s.hashCode();
-//            h = 1099511628211L * (h ^ s.hashCode());
+            h = 1099511628211L * (h ^ s.hashCode());
         }
 
         h = 1099511628211L * (h ^ block.hashCode());

@@ -1305,24 +1305,24 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         invalidateCaches();
     }
 
-    private long seedForPermutation(IndependenceFact fact) {
-        long h = 1469598103934665603L;          // FNV offset
-        h = 1099511628211L * (h ^ "PERM".hashCode());
-
-        // include dataset identity/version + active rows
-        h = 1099511628211L * (h ^ Long.hashCode(dataVersion));
-        h = 1099511628211L * (h ^ Integer.hashCode(getActiveRowCount()));
-        h = 1099511628211L * (h ^ Integer.hashCode(activeRowsHash()));
-
-        // include the actual CI query: X, Y, and conditioning set Z (sorted)
-        h = 1099511628211L * (h ^ fact.getX().getName().hashCode());
-        h = 1099511628211L * (h ^ fact.getY().getName().hashCode());
-
-        ArrayList<String> zNames = new ArrayList<>();
-        for (Node z : fact.getZ()) zNames.add(z.getName());
-        zNames.sort(NaturalSort.naturalComparator());
-        for (String s : zNames) h = 1099511628211L * (h ^ s.hashCode());
-
-        return h;
-    }
+//    private long seedForPermutation(IndependenceFact fact) {
+//        long h = 1469598103934665603L;          // FNV offset
+//        h = 1099511628211L * (h ^ "PERM".hashCode());
+//
+//        // include dataset identity/version + active rows
+//        h = 1099511628211L * (h ^ Long.hashCode(dataVersion));
+//        h = 1099511628211L * (h ^ Integer.hashCode(getActiveRowCount()));
+//        h = 1099511628211L * (h ^ Integer.hashCode(activeRowsHash()));
+//
+//        // include the actual CI query: X, Y, and conditioning set Z (sorted)
+//        h = 1099511628211L * (h ^ fact.getX().getName().hashCode());
+//        h = 1099511628211L * (h ^ fact.getY().getName().hashCode());
+//
+//        ArrayList<String> zNames = new ArrayList<>();
+//        for (Node z : fact.getZ()) zNames.add(z.getName());
+//        zNames.sort(NaturalSort.naturalComparator());
+//        for (String s : zNames) h = 1099511628211L * (h ^ s.hashCode());
+//
+//        return h;
+//    }
 }
