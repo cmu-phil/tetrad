@@ -77,7 +77,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     private ModelSummary modelSummary;
 
     // This controls whether the Vertex checker pays attention to Anderson-Darling or Kolomogorov-Smirnov uniformity
-    // tests. Please keep this set to false unless you know what you're doing.
+    // tests. Please keep this set to false unless you know what you're doing.f
     private boolean useAndersonDarling = false;
     private String savedClassName = null;
 

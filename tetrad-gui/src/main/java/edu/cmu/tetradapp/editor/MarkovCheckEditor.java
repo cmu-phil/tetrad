@@ -222,6 +222,7 @@ public class MarkovCheckEditor extends JPanel {
         conditioningSetTypeJComboBox.addActionListener(e -> {
             ConditioningSetType selectedItem = (ConditioningSetType) conditioningSetTypeJComboBox.getSelectedItem();
             model.getMarkovCheck().setSetType(selectedItem);
+            model.setConditioningSetType(selectedItem);
 
             class MyWatchedProcess extends WatchedProcess {
                 public void watch() {
@@ -262,7 +263,16 @@ public class MarkovCheckEditor extends JPanel {
 
         setTest();
 
-        ConditioningSetType saved = model.getMarkovCheck().getSetType(); // reads from model, not MarkovCheck
+//        ConditioningSetType saved = model.getMarkovCheck().getSetType(); // reads from model, not MarkovCheck
+
+        ConditioningSetType saved = model.getConditioningSetType();
+        conditioningSetTypeJComboBox.setSelectedItem(
+                saved != null ? saved : ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
+        // Sync both MarkovCheck and model field to the resolved selection
+        ConditioningSetType resolved = (ConditioningSetType) conditioningSetTypeJComboBox.getSelectedItem();
+        model.getMarkovCheck().setSetType(resolved);
+        model.setConditioningSetType(resolved);
+
         conditioningSetTypeJComboBox.setSelectedItem(
                 saved != null ? saved : ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
 

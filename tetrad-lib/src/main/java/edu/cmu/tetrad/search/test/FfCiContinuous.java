@@ -1019,8 +1019,7 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
         }
         int h = 1;
         for (int r : rows) {
-//            h = 31 * h + r;
-            h += r;
+            h = 31 * h + r;
         }
         return h;
     }
