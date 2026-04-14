@@ -72,17 +72,12 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     /**
      * The Markov check object.
      */
-    private MarkovCheck markovCheck = null;
+    private transient MarkovCheck markovCheck = null;
     /**
      * The knowledge to use. This will be passed to the underlying Markov check object. For facts odf the form X _||_ Y
      * | Z, X and Y should be in the last tier, and Z should be in previous tiers.
      */
     private Knowledge knowledge;
-
-//    private String independenceTestClass;
-//    private ConditioningSetType conditioningSetType = ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY;
-//    private String selectedTab = "indep";
-//    private double fractionSample = 1.0;
 
     /**
      * Constructs a new Markov checer with the given data model, graph, and parameters.

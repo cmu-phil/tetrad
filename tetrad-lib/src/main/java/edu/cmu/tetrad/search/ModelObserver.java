@@ -20,10 +20,16 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.util.TetradSerializable;
+
+import java.io.Serial;
+
 /**
  * The ModelObserver interface is implemented by classes that want to observe changes in a model.
  */
-public interface ModelObserver {
+public interface ModelObserver extends TetradSerializable {
+    @Serial
+    long serialVersionUID = 20250125L;
 
     /**
      * This method is called when the model changes.
