@@ -153,7 +153,7 @@ public final class FfCi1 implements IndependenceTest, RowsSettable {
     public void setSeed(long seed) {
         this.rng.setSeed(seed);
         invalidateCaches();
-        this.continuousDelegate.setSeed(seed);
+//        this.continuousDelegate.setSeed(seed);
     }
 
     /**

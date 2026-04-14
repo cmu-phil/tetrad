@@ -99,7 +99,9 @@ public class VertexCheckEditor extends JPanel {
     private IndependenceWrapper independenceWrapper;
     private boolean initializing;
     private boolean applyingGraphProgrammatically = false;
-    private volatile boolean runningAll = false;
+    //    private volatile boolean runningAll = false;
+    private SwingWorker<Void,Void> activeWorker = null;
+    private Runnable pendingTask = null;
 
     /**
      * Right-hand tabbed pane ("Check" | "Repair").
@@ -154,7 +156,7 @@ public class VertexCheckEditor extends JPanel {
         updateUndoButtonEnabled();
         initializing = false;
 
-        SwingUtilities.invokeLater(() -> runAllAndRefresh(null, null));
+//        SwingUtilities.invokeLater(() -> runAllAndRefresh(null, null));
 
         model.addPropertyChangeListener(evt -> {
             if (!VertexCheckIndTestModel.PROP_GRAPH.equals(evt.getPropertyName())) return;
@@ -162,7 +164,12 @@ public class VertexCheckEditor extends JPanel {
                 Object oldV = evt.getOldValue();
                 if (oldV instanceof Graph oldG) {
                     graphHistory.push(safeCopy(oldG));
-                    SwingUtilities.invokeLater(this::updateUndoButtonEnabled);
+//                    SwingUtilities.invokeLater(this::updateUndoButtonEnabled);
+
+                    SwingUtilities.invokeLater(() -> {
+                        graphHistory.push(safeCopy(oldG));
+                        updateUndoButtonEnabled();
+                    });
                 }
             }
             SwingUtilities.invokeLater(this::onModelGraphChanged);
@@ -601,45 +608,8 @@ public class VertexCheckEditor extends JPanel {
         if (active != null) refreshDetails(active);
     }
 
-    private void overviewSelectionChanged(ListSelectionEvent e) {
-        if (e.getValueIsAdjusting()) return;
-        if (runningAll) return;
-
-        SelectedRows sel = getSelectedVertices();
-        if (sel.vertices().isEmpty()) return;
-
-        final String active = getActiveSelectedVertexName();
-        if (active == null) return;
-
-        List<String> toCompute = sel.vertices().stream()
-                .filter(v -> !model.isVertexComputed(v))
-                .collect(Collectors.toList());
-
-        if (toCompute.isEmpty()) {
-            refreshDetails(active);
-            return;
-        }
-
-//        new WatchedProcess() {
-//            @Override
-//            public void watch() {
-        for (String v : toCompute) model.ensureVertexComputed(v);
-        SwingUtilities.invokeLater(() -> {
-            updateTable(sel);
-        });
-    }
-//            }
-//
-//
-//        };
-//…}
-
-    private synchronized void updateTable(SelectedRows sel) {
-        try {
-            for (int mr : sel.modelRows()) overviewModel.fireTableRowsUpdated(mr, mr);
-        } catch (Exception ex) {
-            return;
-        }
+    private void updateTable(SelectedRows sel) {
+        for (int mr : sel.modelRows()) overviewModel.fireTableRowsUpdated(mr, mr);
         refreshModelDiagnostics();
         String stillActive = getActiveSelectedVertexName();
         if (stillActive != null) refreshDetails(stillActive);
@@ -706,35 +676,85 @@ public class VertexCheckEditor extends JPanel {
     }
 
     private void runAllAndRefresh(String preferredVertex, Runnable onDone) {
-        if (runningAll) return;
-        runningAll = true;
+        // If a worker is running, cancel it and queue this as the next task
+        if (activeWorker != null && !activeWorker.isDone()) {
+            activeWorker.cancel(true);
+            pendingTask = () -> runAllAndRefresh(preferredVertex, onDone);
+            return;
+        }
 
-//        new WatchedProcess() {
-//            @Override
-//            public void watch() {
-                try {
-                    model.runAllVertices(true);
-                } finally {
-                    SwingUtilities.invokeLater(() -> {
-                        overviewModel.fireTableDataChanged();
-                        refreshModelDiagnostics();
+        activeWorker = new SwingWorker<>() {
+            @Override
+            protected Void doInBackground() {
+                model.runAllVertices(true);
+                return null;
+            }
 
-                        String active;
-                        if (preferredVertex != null) {
-                            restoreOverviewSelection(preferredVertex);
-                            active = preferredVertex;
-                        } else {
-                            selectFirstRowIfAny();
-                            active = getActiveSelectedVertexName();
-                        }
-                        if (active != null) refreshDetails(active);
+            @Override
+            protected void done() {
+                if (!isCancelled()) {
+                    overviewModel.fireTableDataChanged();
+                    refreshModelDiagnostics();
 
-                        runningAll = false;
-                        if (onDone != null) onDone.run();
-                    });
+                    String active;
+                    if (preferredVertex != null) {
+                        restoreOverviewSelection(preferredVertex);
+                        active = preferredVertex;
+                    } else {
+                        selectFirstRowIfAny();
+                        active = getActiveSelectedVertexName();
+                    }
+                    if (active != null) refreshDetails(active);
+
+                    if (onDone != null) onDone.run();
                 }
-//            }
-//        };
+
+                // Always drain — even if cancelled, the pending task must run
+                Runnable next = pendingTask;
+                pendingTask = null;
+                if (next != null) next.run();
+            }
+        };
+        activeWorker.execute();
+    }
+
+    private void overviewSelectionChanged(ListSelectionEvent e) {
+        if (e.getValueIsAdjusting()) return;
+        if (activeWorker != null && !activeWorker.isDone()) return; // still running
+
+        SelectedRows sel = getSelectedVertices();
+        if (sel.vertices().isEmpty()) return;
+
+        final String active = getActiveSelectedVertexName();
+        if (active == null) return;
+
+        List<String> toCompute = sel.vertices().stream()
+                .filter(v -> !model.isVertexComputed(v))
+                .collect(Collectors.toList());
+
+        if (toCompute.isEmpty()) {
+            refreshDetails(active);
+            return;
+        }
+
+        // Compute off the EDT, then update
+        SwingWorker<Void,Void> worker = new SwingWorker<>() {
+            @Override
+            protected Void doInBackground() {
+                for (String v : toCompute) {
+                    if (isCancelled()) break;
+                    model.ensureVertexComputed(v);
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                if (isCancelled()) return;
+                updateTable(sel);
+            }
+        };
+        worker.execute();
     }
 
     private void refreshTestList() {

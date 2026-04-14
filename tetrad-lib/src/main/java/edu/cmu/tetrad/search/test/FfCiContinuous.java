@@ -799,15 +799,15 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
         invalidateFeatureCache();
     }
 
-    /**
-     * Sets the seed value to be used, updating the internal state and invalidating the feature cache.
-     *
-     * @param seed the seed value used to initialize or modify the current state
-     */
-    public void setSeed(long seed) {
-        this.seed = seed;
-        invalidateFeatureCache();
-    }
+//    /**
+//     * Sets the seed value to be used, updating the internal state and invalidating the feature cache.
+//     *
+//     * @param seed the seed value used to initialize or modify the current state
+//     */
+//    public void setSeed(long seed) {
+//        this.seed = seed;
+//        invalidateFeatureCache();
+//    }
 
     /**
      * Clears the feature cache by removing all stored entries.
@@ -852,7 +852,7 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
             }
         }
 
-        long localSeed = seedForBlock(tag, vs) ^ seed;
+        long localSeed = seedForBlock(tag, vs);// ^ seed;
         double[][] Phi = rffFeatures(Zraw, mFeatures, bw2, localSeed);
 
         SimpleMatrix M = new SimpleMatrix(Phi);
@@ -882,7 +882,7 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
                 .append("|ft=").append(featureType.name())
                 .append("|bwMult=").append(Double.doubleToLongBits(bandwidthMultiplier))
                 .append("|bwMax=").append(bwMaxRows)
-                .append("|seed=").append(seed)
+//                .append("|seed=").append(seed)
                 .append("|vars=");
         for (String s : names) {
             sb.append(s).append(",");
@@ -893,38 +893,39 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
     /**
      * Deterministic seed for a block; makes results stable across runs.
      */
+//    private long seedForBlock(String tag, List<Node> block) {
+//        long h = 1469598103934665603L; // FNV-ish
+//
+//        h = 1099511628211L * (h ^ tag.hashCode());
+//
+//        ArrayList<String> names = new ArrayList<>(block.size());
+//        for (Node v : block) {
+//            names.add(v.getName());
+//        }
+////        names.sort(String::compareTo);
+//        for (String s : names) {
+//            h = 1099511628211L * (h ^ s.hashCode());
+//        }
+//
+//        h = 1099511628211L * (h ^ block.hashCode());
+//
+//        h = 1099511628211L * (h ^ getActiveRowCount());
+//        h = 1099511628211L * (h ^ activeRowsHash());
+//        return h;
+//    }
+
     private long seedForBlock(String tag, List<Node> block) {
-        long h = 1469598103934665603L; // FNV-ish
+        long h = 1469598103934665603L;
 
         h = 1099511628211L * (h ^ tag.hashCode());
 
         ArrayList<String> names = new ArrayList<>(block.size());
-        for (Node v : block) {
-            names.add(v.getName());
-        }
-//        names.sort(String::compareTo);
-        for (String s : names) {
-            h = 1099511628211L * (h ^ s.hashCode());
-        }
+        for (Node v : block) names.add(v.getName());
+        names.sort(String::compareTo);
+        for (String s : names) h = 1099511628211L * (h ^ s.hashCode());
 
-        h = 1099511628211L * (h ^ block.hashCode());
-
-        h = 1099511628211L * (h ^ getActiveRowCount());
-        h = 1099511628211L * (h ^ activeRowsHash());
         return h;
     }
-
-//    private long seedForBlock(String tag, List<Node> block) {
-//        long h = 1469598103934665603L;
-//        h = 1099511628211L * (h ^ tag.hashCode());
-//
-//        ArrayList<String> names = new ArrayList<>(block.size());
-//        for (Node v : block) names.add(v.getName());
-//        names.sort(String::compareTo);
-//        for (String s : names) h = 1099511628211L * (h ^ s.hashCode());
-//
-//        return h;
-//    }
 
     /**
      * Extract raw data for vars in vs over the active rows.
@@ -1015,12 +1016,15 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
 
     private int activeRowsHash() {
         if (rows == null) {
+            System.out.println("Warning: activeRowsHash() called with null rows");
             return 0;
         }
+
         int h = 1;
         for (int r : rows) {
             h = 31 * h + r;
         }
+
         return h;
     }
 

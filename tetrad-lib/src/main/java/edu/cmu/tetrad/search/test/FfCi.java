@@ -215,7 +215,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         this.seed = seed;
         this.rng.setSeed(seed);
         invalidateCaches();
-        this.continuousDelegate.setSeed(seed);
+//        this.continuousDelegate.setSeed(seed);
     }
 
     /**
@@ -652,7 +652,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         continuousDelegate.setApprox(pValueMethod);
         continuousDelegate.setRows(rows);
         // Make sure the delegate uses the same RNG seed for reproducibility
-        continuousDelegate.setSeed(this.seed);
+//        continuousDelegate.setSeed(this.seed);
         // NOTE: bandwidthMultiplier/bwMaxRows/featureType/catRho are mixed-only here.
     }
 
