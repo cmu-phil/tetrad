@@ -156,15 +156,12 @@ public class VertexCheckEditor extends JPanel {
         updateUndoButtonEnabled();
         initializing = false;
 
-//        SwingUtilities.invokeLater(() -> runAllAndRefresh(null, null));
-
         model.addPropertyChangeListener(evt -> {
             if (!VertexCheckIndTestModel.PROP_GRAPH.equals(evt.getPropertyName())) return;
             if (!applyingGraphProgrammatically) {
                 Object oldV = evt.getOldValue();
                 if (oldV instanceof Graph oldG) {
                     graphHistory.push(safeCopy(oldG));
-//                    SwingUtilities.invokeLater(this::updateUndoButtonEnabled);
 
                     SwingUtilities.invokeLater(() -> {
                         graphHistory.push(safeCopy(oldG));
@@ -614,7 +611,6 @@ public class VertexCheckEditor extends JPanel {
         String stillActive = getActiveSelectedVertexName();
         if (stillActive != null) refreshDetails(stillActive);
     }
-
 
     private void refreshDetails(String v) {
         if (rightTabs.getSelectedIndex() == TAB_CHECK) {

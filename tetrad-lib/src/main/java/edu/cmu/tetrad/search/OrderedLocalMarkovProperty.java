@@ -106,35 +106,64 @@ public class OrderedLocalMarkovProperty {
      * @param x    The node of interest.
      * @return Independence facts from the full OLMP model that involve x.
      */
+//    public static Set<IndependenceFact> getModelForNode(Graph admg, Node x) {
+//        Set<IndependenceFact> all = getModel(admg);
+//
+//        Map<String, Node> byName = new HashMap<>();
+//        for (Node n : admg.getNodes()) byName.put(n.getName(), n);
+//
+//        String xName = x.getName();
+//        Set<IndependenceFact> out = new HashSet<>();
+//
+//        for (IndependenceFact f : all) {
+//            boolean xIsLeft  = f.getX().getName().equals(xName);
+//            boolean xIsRight = f.getY().getName().equals(xName);
+//            if (!xIsLeft && !xIsRight) continue;
+//
+//            Node X = byName.get(f.getX().getName());
+//            Node Y = byName.get(f.getY().getName());
+//
+//            Set<Node> Z = new HashSet<>();
+//            for (Node z : f.getZ()) {
+//                Node zz = byName.get(z.getName());
+//                if (zz != null) Z.add(zz);
+//            }
+//
+//            if (X != null && Y != null) {
+//                if (xIsLeft) out.add(new IndependenceFact(X, Y, Z));
+//                else         out.add(new IndependenceFact(Y, X, Z));
+//            }
+//        }
+//
+//        return out;
+//    }
+
     public static Set<IndependenceFact> getModelForNode(Graph admg, Node x) {
         Set<IndependenceFact> all = getModel(admg);
-
         Map<String, Node> byName = new HashMap<>();
         for (Node n : admg.getNodes()) byName.put(n.getName(), n);
-
         String xName = x.getName();
         Set<IndependenceFact> out = new HashSet<>();
-
         for (IndependenceFact f : all) {
             boolean xIsLeft  = f.getX().getName().equals(xName);
             boolean xIsRight = f.getY().getName().equals(xName);
             if (!xIsLeft && !xIsRight) continue;
-
             Node X = byName.get(f.getX().getName());
             Node Y = byName.get(f.getY().getName());
-
             Set<Node> Z = new HashSet<>();
             for (Node z : f.getZ()) {
                 Node zz = byName.get(z.getName());
                 if (zz != null) Z.add(zz);
             }
-
             if (X != null && Y != null) {
-                if (xIsLeft) out.add(new IndependenceFact(X, Y, Z));
-                else         out.add(new IndependenceFact(Y, X, Z));
+                // Sort by name so role assignment is consistent with getModel / MarkovCheck
+                if (X.getName().compareTo(Y.getName()) <= 0) {
+                    out.add(new IndependenceFact(X, Y, Z));
+                } else {
+                    out.add(new IndependenceFact(Y, X, Z));
+                }
             }
         }
-
         return out;
     }
 
@@ -235,7 +264,12 @@ public class OrderedLocalMarkovProperty {
         for (Node w : A) {
             if (w.equals(x)) continue;
             if (blanket.contains(w)) continue;
-            model.add(new IndependenceFact(x, w, new HashSet<>(blanket)));
+            // Sort by name so role assignment is consistent everywhere
+            if (x.getName().compareTo(w.getName()) <= 0) {
+                model.add(new IndependenceFact(x, w, new HashSet<>(blanket)));
+            } else {
+                model.add(new IndependenceFact(w, x, new HashSet<>(blanket)));
+            }
         }
     }
 

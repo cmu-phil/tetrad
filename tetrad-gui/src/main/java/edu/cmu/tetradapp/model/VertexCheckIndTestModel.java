@@ -561,34 +561,34 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return new ConditioningSetSizeRange(min, max);
     }
 
-    public boolean hasViolationsForVertex(Node x) {
-        if (x == null || graph == null || independenceTest == null) {
-            return false;
-        }
+//    public boolean hasViolationsForVertex(Node x) {
+//        if (x == null || graph == null || independenceTest == null) {
+//            return false;
+//        }
+//
+//        String name = x.getName();
+//
+//        // Only compute if needed
+//        if (!isVertexComputed(name)) {
+//            Graph aligned = alignGraphToTest(graph);
+//
+//            Node ax = aligned.getNode(name);
+//            if (ax == null) {
+//                return false; // should not happen, but safe
+//            }
+//
+//            runVertex(aligned, ax);
+//        }
+//
+//        VertexSummary s = summariesByVertex.get(name);
+//        return s != null && s.numReject > 0;
+//    }
 
-        String name = x.getName();
-
-        // Only compute if needed
-        if (!isVertexComputed(name)) {
-            Graph aligned = alignGraphToTest(graph);
-
-            Node ax = aligned.getNode(name);
-            if (ax == null) {
-                return false; // should not happen, but safe
-            }
-
-            runVertex(aligned, ax);
-        }
-
-        VertexSummary s = summariesByVertex.get(name);
-        return s != null && s.numReject > 0;
-    }
-
-    private Graph alignGraphToTest(Graph g) {
-        IndependenceTest test = this.independenceTest;
-        if (g == null || test == null) return g;
-        return GraphUtils.replaceNodes(g, test.getVariables());
-    }
+//    private Graph alignGraphToTest(Graph g) {
+//        IndependenceTest test = this.independenceTest;
+//        if (g == null || test == null) return g;
+//        return GraphUtils.replaceNodes(g, test.getVariables());
+//    }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
         pcs.addPropertyChangeListener(l);
