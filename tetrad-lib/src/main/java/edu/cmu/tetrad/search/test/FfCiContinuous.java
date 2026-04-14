@@ -1016,15 +1016,17 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
 
     private int activeRowsHash() {
         if (rows == null) {
-            System.out.println("Warning: activeRowsHash() called with null rows");
-            return 0;
+            int h = 1;
+            for (int r = 0; r < data.getNumRows(); r++) {
+                h = 31 * h + r;
+            }
+            return h;
         }
 
         int h = 1;
         for (int r : rows) {
             h = 31 * h + r;
         }
-
         return h;
     }
 
