@@ -104,9 +104,7 @@ import org.apache.commons.rng.simple.RandomSource;
  * @see RawMarginalIndependenceTest
  */
 public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIndependenceTest {
-
-    // ---------------- feature representation ----------------
-
+    
     // ---------------- core data ----------------
     private final DataSet data;
     private final List<Node> vars;
@@ -546,6 +544,13 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
             return continuousDelegate.checkIndependence(x, y, z);
         }
 
+        // If x.getName() is lexically after y.getName(), swap x and y.
+        if (x.getName().compareTo(y.getName()) > 0) {
+            Node temp = x;
+            x = y;
+            y = temp;
+        }
+
         this.n = getActiveRowCount();
 
         final List<Node> Z = (z == null) ? new ArrayList<>() : new ArrayList<>(z);
@@ -651,9 +656,6 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         continuousDelegate.setPermutations(permutations);
         continuousDelegate.setApprox(pValueMethod);
         continuousDelegate.setRows(rows);
-        // Make sure the delegate uses the same RNG seed for reproducibility
-//        continuousDelegate.setSeed(this.seed);
-        // NOTE: bandwidthMultiplier/bwMaxRows/featureType/catRho are mixed-only here.
     }
 
     // ---------------- Mixed feature construction ----------------

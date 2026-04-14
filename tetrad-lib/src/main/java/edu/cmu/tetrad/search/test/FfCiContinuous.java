@@ -443,6 +443,13 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
             throw new InterruptedException();
         }
 
+        // If x.getName() is lexically after y.getName(), swap x and y.
+        if (x.getName().compareTo(y.getName()) > 0) {
+            Node temp = x;
+            x = y;
+            y = temp;
+        }
+
         List<Node> Z = (z == null) ? List.of() : new ArrayList<>(z);
 
         SimpleMatrix X = rffOrOrfFeaturesFor(List.of(x), numFeatXY, "X");
