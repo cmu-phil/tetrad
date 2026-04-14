@@ -408,8 +408,8 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      *
      * @return the DataSet object representing the data in this instance
      */
-    public DataSet getData() {
-        return this.dataSet;
+    public DataModel getData() {
+        return this.dataSet != null ? dataSet : cor;
     }
 
     /**

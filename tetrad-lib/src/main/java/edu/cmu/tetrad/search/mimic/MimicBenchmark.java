@@ -76,8 +76,6 @@ public final class MimicBenchmark {
         this.latentLatentEvaluator = new LatentLatentEvaluator();
         this.runners = new ArrayList<>();
 
-        this.runners.add(new DmMergeRunner());
-
         // I think we can savely take out DM as too conservative.
 //        this.runners.add(new DmRunner());
         this.runners.add(new TrekMimicRunner());
