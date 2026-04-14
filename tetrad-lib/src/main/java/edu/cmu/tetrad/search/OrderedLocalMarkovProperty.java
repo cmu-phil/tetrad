@@ -264,6 +264,7 @@ public class OrderedLocalMarkovProperty {
         for (Node w : A) {
             if (w.equals(x)) continue;
             if (blanket.contains(w)) continue;
+            
             // Sort by name so role assignment is consistent everywhere
             if (x.getName().compareTo(w.getName()) <= 0) {
                 model.add(new IndependenceFact(x, w, new HashSet<>(blanket)));
