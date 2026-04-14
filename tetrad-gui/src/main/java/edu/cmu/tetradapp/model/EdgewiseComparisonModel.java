@@ -87,19 +87,22 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
         this.params = params;
 
         String referenceName = params.getString("referenceGraphName", null);
+        String targetName = params.getString("targetGraphName", null);
 
         String model1Name = model1.getName();
         String model2Name = model2.getName();
 
-        if (referenceName.equals(model1Name)) {
+        if (referenceName.equals(model1Name) && targetName.equals(model2Name)) {
             this.referenceGraph = model1.getGraph();
             this.targetGraph = model2.getGraph();
-        } else if (referenceName.equals(model2Name)) {
+        } else if (referenceName.equals(model2Name) && targetName.equals(model1Name)) {
             this.referenceGraph = model2.getGraph();
             this.targetGraph = model1.getGraph();
         } else {
-            this.referenceGraph = model1.getGraph();
-            this.targetGraph = model2.getGraph();
+            throw new IllegalArgumentException(
+                    "Cannot resolve reference/target graphs from names: referenceName='"
+                            + referenceName + "', targetName='" + targetName
+                            + "', model1='" + model1Name + "', model2='" + model2Name + "'");
         }
 
         TetradLogger.getInstance().log("Graph Comparison");

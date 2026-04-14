@@ -152,15 +152,17 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         String model1Name = model1.getName();
         String model2Name = model2.getName();
 
-        if (this.referenceName.equals(model1Name)) {
+        if (this.referenceName.equals(model1Name) && this.targetName.equals(model2Name)) {
             this.referenceGraph = model1.getGraph();
             this.targetGraph = model2.getGraph();
-        } else if (this.referenceName.equals(model2Name)) {
+        } else if (this.referenceName.equals(model2Name) && this.targetName.equals(model1Name)) {
             this.referenceGraph = model2.getGraph();
             this.targetGraph = model1.getGraph();
         } else {
-            this.referenceGraph = model1.getGraph();
-            this.targetGraph = model2.getGraph();
+            throw new IllegalArgumentException(
+                    "Cannot resolve reference/target graphs from names: referenceName='"
+                            + this.referenceName + "', targetName='" + this.targetName
+                            + "', model1='" + model1Name + "', model2='" + model2Name + "'");
         }
 
         newExecution();
