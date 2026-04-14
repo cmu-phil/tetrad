@@ -134,12 +134,11 @@ public class VertexCheckEditor extends JPanel {
             throw new IllegalArgumentException("Knowledge conflicts with current graph structure.");
 
         modelUniformityTest = new JComboBox<>(new String[]{"Use KS", "Use AD"});
-        modelUniformityTest.setSelectedIndex(Preferences.userRoot().getBoolean("useAndersonDarling", false) ? 1 : 0);
+        modelUniformityTest.setSelectedIndex(model.isUseAndersonDarling() ? 1 : 0);
         modelUniformityTest.addActionListener(e -> {
-            Preferences.userRoot().putBoolean("useAndersonDarling", modelUniformityTest.getSelectedIndex() == 1);
+            model.setUseAndersonDarling(modelUniformityTest.getSelectedIndex() == 1);
             runAllAndRefresh(null, null);
         });
-
         setPreferredSize(new Dimension(1100, 650));
         setLayout(new BorderLayout(10, 10));
         setBorder(new EmptyBorder(8, 8, 8, 8));
@@ -801,7 +800,7 @@ public class VertexCheckEditor extends JPanel {
     }
 
     private void refreshModelDiagnostics() {
-        String type = Preferences.userRoot().getBoolean("useAndersonDarling", false) ? "Anderson-Darling" : "Kolmogorov-Smirnov";
+        String type = model.isUseAndersonDarling() ? "Anderson-Darling" : "Kolmogorov-Smirnov";
         VertexCheckIndTestModel.ModelSummary ms = model.getModelSummary();
         if (ms == null) {
             modelNpLabel.setText("# p-values: (not computed)");

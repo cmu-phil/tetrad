@@ -78,11 +78,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     private boolean verbose = false;
     private ModelSummary modelSummary;
 
-    // This controls whether the Vertex checker pays attention to Anderson-Darling or Kolomogorov-Smirnov uniformity
-    // tests. Please keep this set to false unless you know what you're doing.f
-    private boolean useAndersonDarling = false;
-    private String savedClassName = null;
-
     /**
      * Constructs a new Vertex checer with the given data model, graph, and parameters.
      *
@@ -153,7 +148,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public double getUniformityP(List<Double> pvals) {
         if (pvals == null || pvals.size() < 2) return Double.NaN;
 
-        if (useAndersonDarling) {
+        if (parameters.getBoolean("useAndersonDarlingParam", false)) {
             return getAndersonDarlingP(pvals);
         } else {
             return getKolomogorovP(pvals);
@@ -649,12 +644,8 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return out;
     }
 
-    public boolean getUseAndersonDarling() {
-        return useAndersonDarling;
-    }
-
     public void setUseAndersonDarling(boolean useAndersonDarling) {
-        this.useAndersonDarling = useAndersonDarling;
+        parameters.set("useAndersonDarlingParam", useAndersonDarling);
     }
 
     public String getSavedClassName() {
@@ -663,6 +654,10 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     public void setSavedClassName(String name) {
         this.parameters.set("independenceTestClassParam", name);
+    }
+
+    public boolean isUseAndersonDarling() {
+        return parameters.getBoolean("useAndersonDarlingParam", false);
     }
 
     private record ConditioningSetSizeRange(int min, int max) {
