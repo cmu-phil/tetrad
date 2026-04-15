@@ -53,6 +53,8 @@ import java.util.prefs.Preferences;
  *   <li>Arrowhead Precision (common edges only)</li>
  *   <li>Arrowhead Recall (common edges only)</li>
  *   <li>Markov Check KS p-value</li>
+ *   <li>Number of edges</li>
+ *   <li>BIC score</li>
  * </ul>
  */
 public class VertexRepairSimulation {
@@ -64,7 +66,7 @@ public class VertexRepairSimulation {
     /**
      * Which starting-graph scenario to use. Change this to try different scenarios.
      */
-    public static final StartingGraph scenario = StartingGraph.FGES ;
+    public static final StartingGraph scenario = StartingGraph.BOSS;
 
     // =========================================================================
     // Simulation parameters — edit these as desired
@@ -76,11 +78,11 @@ public class VertexRepairSimulation {
     /**
      * Average degree (expected edges per node).
      */
-    private static final double AVG_DEGREE = 4.0;
+    private static final double AVG_DEGREE = 5.0;
     /**
      * Sample size for each simulated data set.
      */
-    private static final int SAMPLE_SIZE = 2000;
+    private static final int SAMPLE_SIZE = 10000;
     /**
      * Number of independent simulation runs to average over.
      */
@@ -141,20 +143,25 @@ public class VertexRepairSimulation {
         double sumArrPrec = 0, sumArrRec = 0, sumArrF1 = 0;
         double sumArrPrecCommon = 0, sumArrRecCommon = 0;
         double sumMarkovKS = 0;
+        double sumEdges = 0, sumBic = 0;
         int cntAdjPrec = 0, cntAdjRec = 0, cntAdjF1 = 0;
         int cntArrPrec = 0, cntArrRec = 0, cntArrF1 = 0;
         int cntArrPrecCommon = 0, cntArrRecCommon = 0;
         int cntMarkovKS = 0;
+        int cntEdges = 0, cntBic = 0;
 
         // Starting-graph accumulators
         double sumStartAdjPrec = 0, sumStartAdjRec = 0, sumStartAdjF1 = 0;
         double sumStartArrPrec = 0, sumStartArrRec = 0, sumStartArrF1 = 0;
         double sumStartArrPrecCommon = 0, sumStartArrRecCommon = 0;
         double sumStartMarkovKS = 0;
+        double sumStartEdges = 0, sumStartBic = 0;
         int cntStartAdjPrec = 0, cntStartAdjRec = 0, cntStartAdjF1 = 0;
         int cntStartArrPrec = 0, cntStartArrRec = 0, cntStartArrF1 = 0;
         int cntStartArrPrecCommon = 0, cntStartArrRecCommon = 0;
         int cntStartMarkovKS = 0;
+        int cntStartEdges = 0, cntStartBic = 0;
+
         DecimalFormat df = new DecimalFormat("0.0000");
 
         for (int run = 1; run <= NUM_RUNS; run++) {
@@ -194,37 +201,33 @@ public class VertexRepairSimulation {
             startingGraph = GraphUtils.replaceNodes(startingGraph, trueDAG.getNodes());
 
             // Stats on the starting graph (before repair)
-            Statistics startStats = computeStats(trueCpdag, startingGraph, data, fisherZ);
+            Statistics startStats = computeStats(trueCpdag, startingGraph, data, fisherZ, score);
 
             System.out.printf("Start  | AdjP=%-6s AdjR=%-6s AdjF1=%-6s " +
                             "ArrP=%-6s ArrR=%-6s ArrF1=%-6s " +
-                            "ArrPC=%-6s ArrRC=%-6s MarkovKS=%-6s%n",
+                            "ArrPC=%-6s ArrRC=%-6s MarkovKS=%-6s " +
+                            "Edges=%-4s BIC=%-10s%n",
                     df.format(startStats.adjPrec), df.format(startStats.adjRec),
                     df.format(startStats.adjF1),
                     df.format(startStats.arrPrec), df.format(startStats.arrRec),
                     df.format(startStats.arrF1),
                     df.format(startStats.arrPrecCommon), df.format(startStats.arrRecCommon),
-                    df.format(startStats.markovKS));
+                    df.format(startStats.markovKS),
+                    startStats.numEdges,
+                    Double.isNaN(startStats.bic) ? "N/A" : df.format(startStats.bic));
 
-//            sumStartAdjPrec += startStats.adjPrec;
-//            sumStartAdjRec += startStats.adjRec;
-//            sumStartAdjF1 += startStats.adjF1;
-//            sumStartArrPrec += startStats.arrPrec;
-//            sumStartArrRec += startStats.arrRec;
-//            sumStartArrF1 += startStats.arrF1;
-//            sumStartArrPrecCommon += startStats.arrPrecCommon;
-//            sumStartArrRecCommon += startStats.arrRecCommon;
-//            sumStartMarkovKS += startStats.markovKS;
             // Starting graph accumulation
-            if (!Double.isNaN(startStats.adjPrec))      { sumStartAdjPrec      += startStats.adjPrec;      cntStartAdjPrec++; }
-            if (!Double.isNaN(startStats.adjRec))       { sumStartAdjRec       += startStats.adjRec;       cntStartAdjRec++; }
-            if (!Double.isNaN(startStats.adjF1))        { sumStartAdjF1        += startStats.adjF1;        cntStartAdjF1++; }
-            if (!Double.isNaN(startStats.arrPrec))      { sumStartArrPrec      += startStats.arrPrec;      cntStartArrPrec++; }
-            if (!Double.isNaN(startStats.arrRec))       { sumStartArrRec       += startStats.arrRec;       cntStartArrRec++; }
-            if (!Double.isNaN(startStats.arrF1))        { sumStartArrF1        += startStats.arrF1;        cntStartArrF1++; }
-            if (!Double.isNaN(startStats.arrPrecCommon)){ sumStartArrPrecCommon += startStats.arrPrecCommon; cntStartArrPrecCommon++; }
-            if (!Double.isNaN(startStats.arrRecCommon)) { sumStartArrRecCommon  += startStats.arrRecCommon;  cntStartArrRecCommon++; }
-            if (!Double.isNaN(startStats.markovKS))    { sumStartMarkovKS     += startStats.markovKS;     cntStartMarkovKS++; }
+            if (!Double.isNaN(startStats.adjPrec))       { sumStartAdjPrec       += startStats.adjPrec;       cntStartAdjPrec++; }
+            if (!Double.isNaN(startStats.adjRec))        { sumStartAdjRec        += startStats.adjRec;        cntStartAdjRec++; }
+            if (!Double.isNaN(startStats.adjF1))         { sumStartAdjF1         += startStats.adjF1;         cntStartAdjF1++; }
+            if (!Double.isNaN(startStats.arrPrec))       { sumStartArrPrec       += startStats.arrPrec;       cntStartArrPrec++; }
+            if (!Double.isNaN(startStats.arrRec))        { sumStartArrRec        += startStats.arrRec;        cntStartArrRec++; }
+            if (!Double.isNaN(startStats.arrF1))         { sumStartArrF1         += startStats.arrF1;         cntStartArrF1++; }
+            if (!Double.isNaN(startStats.arrPrecCommon)) { sumStartArrPrecCommon += startStats.arrPrecCommon; cntStartArrPrecCommon++; }
+            if (!Double.isNaN(startStats.arrRecCommon))  { sumStartArrRecCommon  += startStats.arrRecCommon;  cntStartArrRecCommon++; }
+            if (!Double.isNaN(startStats.markovKS))      { sumStartMarkovKS      += startStats.markovKS;      cntStartMarkovKS++; }
+            if (!Double.isNaN(startStats.numEdges))      { sumStartEdges         += startStats.numEdges;      cntStartEdges++; }
+            if (!Double.isNaN(startStats.bic))           { sumStartBic           += startStats.bic;           cntStartBic++; }
 
             // ------------------------------------------------------------------
             // 4. Run VertexRepairSearch
@@ -235,48 +238,40 @@ public class VertexRepairSimulation {
             repair.setRepairStrategy(REPAIR_STRATEGY);
             repair.setUseAndersonDarling(false);
             repair.setPruneAlpha(PRUNE_ALPHA);
-//            repair.setSeed(run);
 
             Graph repairedGraph = repair.search();
 
             // ------------------------------------------------------------------
             // 5. Compute statistics
             // ------------------------------------------------------------------
-            Statistics stats = computeStats(trueCpdag, repairedGraph, data, fisherZ);
+            Statistics stats = computeStats(trueCpdag, repairedGraph, data, fisherZ, score);
 
             System.out.printf("Run %2d | AdjP=%-6s AdjR=%-6s AdjF1=%-6s " +
                             "ArrP=%-6s ArrR=%-6s ArrF1=%-6s " +
-                            "ArrPC=%-6s ArrRC=%-6s MarkovKS=%-6s%n",
+                            "ArrPC=%-6s ArrRC=%-6s MarkovKS=%-6s " +
+                            "Edges=%-4s BIC=%-10s%n",
                     run,
                     df.format(stats.adjPrec), df.format(stats.adjRec),
                     df.format(stats.adjF1),
                     df.format(stats.arrPrec), df.format(stats.arrRec),
                     df.format(stats.arrF1),
                     df.format(stats.arrPrecCommon), df.format(stats.arrRecCommon),
-                    df.format(stats.markovKS));
-
-//            sumAdjPrec += stats.adjPrec;
-//            sumAdjRec += stats.adjRec;
-//            sumAdjF1 += stats.adjF1;
-//            sumArrPrec += stats.arrPrec;
-//            sumArrRec += stats.arrRec;
-//            sumArrF1 += stats.arrF1;
-//            sumArrPrecCommon += stats.arrPrecCommon;
-//            sumArrRecCommon += stats.arrRecCommon;
-//            sumMarkovKS += stats.markovKS;
-
+                    df.format(stats.markovKS),
+                    stats.numEdges,
+                    Double.isNaN(stats.bic) ? "N/A" : df.format(stats.bic));
 
             // Repaired graph accumulation
-            if (!Double.isNaN(stats.adjPrec))      { sumAdjPrec      += stats.adjPrec;      cntAdjPrec++; }
-            if (!Double.isNaN(stats.adjRec))       { sumAdjRec       += stats.adjRec;       cntAdjRec++; }
-            if (!Double.isNaN(stats.adjF1))        { sumAdjF1        += stats.adjF1;        cntAdjF1++; }
-            if (!Double.isNaN(stats.arrPrec))      { sumArrPrec      += stats.arrPrec;      cntArrPrec++; }
-            if (!Double.isNaN(stats.arrRec))       { sumArrRec       += stats.arrRec;       cntArrRec++; }
-            if (!Double.isNaN(stats.arrF1))        { sumArrF1        += stats.arrF1;        cntArrF1++; }
-            if (!Double.isNaN(stats.arrPrecCommon)){ sumArrPrecCommon += stats.arrPrecCommon; cntArrPrecCommon++; }
-            if (!Double.isNaN(stats.arrRecCommon)) { sumArrRecCommon  += stats.arrRecCommon;  cntArrRecCommon++; }
-            if (!Double.isNaN(stats.markovKS))    { sumMarkovKS     += stats.markovKS;     cntMarkovKS++; }
-
+            if (!Double.isNaN(stats.adjPrec))       { sumAdjPrec       += stats.adjPrec;       cntAdjPrec++; }
+            if (!Double.isNaN(stats.adjRec))        { sumAdjRec        += stats.adjRec;        cntAdjRec++; }
+            if (!Double.isNaN(stats.adjF1))         { sumAdjF1         += stats.adjF1;         cntAdjF1++; }
+            if (!Double.isNaN(stats.arrPrec))       { sumArrPrec       += stats.arrPrec;       cntArrPrec++; }
+            if (!Double.isNaN(stats.arrRec))        { sumArrRec        += stats.arrRec;        cntArrRec++; }
+            if (!Double.isNaN(stats.arrF1))         { sumArrF1         += stats.arrF1;         cntArrF1++; }
+            if (!Double.isNaN(stats.arrPrecCommon)) { sumArrPrecCommon += stats.arrPrecCommon; cntArrPrecCommon++; }
+            if (!Double.isNaN(stats.arrRecCommon))  { sumArrRecCommon  += stats.arrRecCommon;  cntArrRecCommon++; }
+            if (!Double.isNaN(stats.markovKS))      { sumMarkovKS      += stats.markovKS;      cntMarkovKS++; }
+            if (!Double.isNaN(stats.numEdges))      { sumEdges         += stats.numEdges;      cntEdges++; }
+            if (!Double.isNaN(stats.bic))           { sumBic           += stats.bic;           cntBic++; }
         }
 
         // ------------------------------------------------------------------
@@ -284,27 +279,32 @@ public class VertexRepairSimulation {
         // ------------------------------------------------------------------
         printSettings();
         System.out.printf("STARTING GRAPH AVERAGES (n=%d runs):%n", NUM_RUNS);
-        System.out.printf("  Adjacency Precision              : %s  (n=%d)%n", avg(sumStartAdjPrec,      cntStartAdjPrec,      df), cntStartAdjPrec);
-        System.out.printf("  Adjacency Recall                 : %s  (n=%d)%n", avg(sumStartAdjRec,       cntStartAdjRec,       df), cntStartAdjRec);
-        System.out.printf("  Adjacency F1                     : %s  (n=%d)%n", avg(sumStartAdjF1,        cntStartAdjF1,        df), cntStartAdjF1);
-        System.out.printf("  Arrowhead Precision              : %s  (n=%d)%n", avg(sumStartArrPrec,      cntStartArrPrec,      df), cntStartArrPrec);
-        System.out.printf("  Arrowhead Recall                 : %s  (n=%d)%n", avg(sumStartArrRec,       cntStartArrRec,       df), cntStartArrRec);
-        System.out.printf("  Arrowhead F1                     : %s  (n=%d)%n", avg(sumStartArrF1,        cntStartArrF1,        df), cntStartArrF1);
+        System.out.printf("  Adjacency Precision              : %s  (n=%d)%n", avg(sumStartAdjPrec,       cntStartAdjPrec,       df), cntStartAdjPrec);
+        System.out.printf("  Adjacency Recall                 : %s  (n=%d)%n", avg(sumStartAdjRec,        cntStartAdjRec,        df), cntStartAdjRec);
+        System.out.printf("  Adjacency F1                     : %s  (n=%d)%n", avg(sumStartAdjF1,         cntStartAdjF1,         df), cntStartAdjF1);
+        System.out.printf("  Arrowhead Precision              : %s  (n=%d)%n", avg(sumStartArrPrec,       cntStartArrPrec,       df), cntStartArrPrec);
+        System.out.printf("  Arrowhead Recall                 : %s  (n=%d)%n", avg(sumStartArrRec,        cntStartArrRec,        df), cntStartArrRec);
+        System.out.printf("  Arrowhead F1                     : %s  (n=%d)%n", avg(sumStartArrF1,         cntStartArrF1,         df), cntStartArrF1);
         System.out.printf("  Arrowhead Precision (common adj) : %s  (n=%d)%n", avg(sumStartArrPrecCommon, cntStartArrPrecCommon, df), cntStartArrPrecCommon);
         System.out.printf("  Arrowhead Recall    (common adj) : %s  (n=%d)%n", avg(sumStartArrRecCommon,  cntStartArrRecCommon,  df), cntStartArrRecCommon);
-        System.out.printf("  Markov KS p-value                : %s  (n=%d)%n", avg(sumStartMarkovKS,     cntStartMarkovKS,     df), cntStartMarkovKS);
+        System.out.printf("  Markov KS p-value                : %s  (n=%d)%n", avg(sumStartMarkovKS,      cntStartMarkovKS,      df), cntStartMarkovKS);
+        System.out.printf("  Number of edges                  : %s  (n=%d)%n", avg(sumStartEdges,         cntStartEdges,         df), cntStartEdges);
+        System.out.printf("  BIC score                        : %s  (n=%d)%n", avg(sumStartBic,           cntStartBic,           df), cntStartBic);
         System.out.println("-------------------------------------------------");
         System.out.printf("REPAIRED GRAPH AVERAGES (n=%d runs):%n", NUM_RUNS);
-        System.out.printf("  Adjacency Precision              : %s  (n=%d)%n", avg(sumAdjPrec,      cntAdjPrec,      df), cntAdjPrec);
-        System.out.printf("  Adjacency Recall                 : %s  (n=%d)%n", avg(sumAdjRec,       cntAdjRec,       df), cntAdjRec);
-        System.out.printf("  Adjacency F1                     : %s  (n=%d)%n", avg(sumAdjF1,        cntAdjF1,        df), cntAdjF1);
-        System.out.printf("  Arrowhead Precision              : %s  (n=%d)%n", avg(sumArrPrec,      cntArrPrec,      df), cntArrPrec);
-        System.out.printf("  Arrowhead Recall                 : %s  (n=%d)%n", avg(sumArrRec,       cntArrRec,       df), cntArrRec);
-        System.out.printf("  Arrowhead F1                     : %s  (n=%d)%n", avg(sumArrF1,        cntArrF1,        df), cntArrF1);
+        System.out.printf("  Adjacency Precision              : %s  (n=%d)%n", avg(sumAdjPrec,       cntAdjPrec,       df), cntAdjPrec);
+        System.out.printf("  Adjacency Recall                 : %s  (n=%d)%n", avg(sumAdjRec,        cntAdjRec,        df), cntAdjRec);
+        System.out.printf("  Adjacency F1                     : %s  (n=%d)%n", avg(sumAdjF1,         cntAdjF1,         df), cntAdjF1);
+        System.out.printf("  Arrowhead Precision              : %s  (n=%d)%n", avg(sumArrPrec,       cntArrPrec,       df), cntArrPrec);
+        System.out.printf("  Arrowhead Recall                 : %s  (n=%d)%n", avg(sumArrRec,        cntArrRec,        df), cntArrRec);
+        System.out.printf("  Arrowhead F1                     : %s  (n=%d)%n", avg(sumArrF1,         cntArrF1,        df), cntArrF1);
         System.out.printf("  Arrowhead Precision (common adj) : %s  (n=%d)%n", avg(sumArrPrecCommon, cntArrPrecCommon, df), cntArrPrecCommon);
         System.out.printf("  Arrowhead Recall    (common adj) : %s  (n=%d)%n", avg(sumArrRecCommon,  cntArrRecCommon,  df), cntArrRecCommon);
-        System.out.printf("  Markov KS p-value                : %s  (n=%d)%n", avg(sumMarkovKS,     cntMarkovKS,     df), cntMarkovKS);
-        System.out.println("=================================================");    }
+        System.out.printf("  Markov KS p-value                : %s  (n=%d)%n", avg(sumMarkovKS,      cntMarkovKS,      df), cntMarkovKS);
+        System.out.printf("  Number of edges                  : %s  (n=%d)%n", avg(sumEdges,         cntEdges,         df), cntEdges);
+        System.out.printf("  BIC score                        : %s  (n=%d)%n", avg(sumBic,           cntBic,           df), cntBic);
+        System.out.println("=================================================");
+    }
 
     private String avg(double sum, int count, DecimalFormat df) {
         return count == 0 ? "N/A" : df.format(sum / count);
@@ -385,11 +385,11 @@ public class VertexRepairSimulation {
      * Computes all reported statistics for one run.
      *
      * <p>Each statistic is obtained from a Tetrad {@link Statistic} implementation.
-     * The {@code getValue()} call signature varies by class; placeholders are
-     * provided where the exact call is uncertain — fill these in when integrating.
+     * Edge count is read directly from the graph. BIC is computed via
      */
     private Statistics computeStats(Graph trueCpdag, Graph estimated,
-                                    DataSet data, IndependenceTest test) {
+                                    DataSet data, IndependenceTest test,
+                                    SemBicScore score) {
         Statistics s = new Statistics();
         Parameters params = new Parameters();
 
@@ -406,21 +406,39 @@ public class VertexRepairSimulation {
             // leave as-is if canonicalization fails
         }
 
-        s.adjPrec = new AdjacencyPrecision().getValue(trueCpdag, estCpdag, data, params);
-        s.adjRec = new AdjacencyRecall().getValue(trueCpdag, estCpdag, data, params);
-        s.adjF1 = new F1Adj().getValue(trueCpdag, estCpdag, data, params);
-        s.arrPrec = new ArrowheadPrecision().getValue(trueCpdag, estCpdag, data, params);
-        s.arrRec = new ArrowheadRecall().getValue(trueCpdag, estCpdag, data, params);
-        s.arrF1 = new F1Arrow().getValue(trueCpdag, estCpdag, data, params);
+        s.adjPrec       = new AdjacencyPrecision().getValue(trueCpdag, estCpdag, data, params);
+        s.adjRec        = new AdjacencyRecall().getValue(trueCpdag, estCpdag, data, params);
+        s.adjF1         = new F1Adj().getValue(trueCpdag, estCpdag, data, params);
+        s.arrPrec       = new ArrowheadPrecision().getValue(trueCpdag, estCpdag, data, params);
+        s.arrRec        = new ArrowheadRecall().getValue(trueCpdag, estCpdag, data, params);
+        s.arrF1         = new F1Arrow().getValue(trueCpdag, estCpdag, data, params);
         s.arrPrecCommon = new ArrowheadPrecisionCommonEdges().getValue(trueCpdag, estCpdag, data, params);
-        s.arrRecCommon = new ArrowheadRecallCommonEdges().getValue(trueCpdag, estCpdag, data, params);
+        s.arrRecCommon  = new ArrowheadRecallCommonEdges().getValue(trueCpdag, estCpdag, data, params);
 
         // Markov KS: evaluated on the estimated graph against the data
         s.markovKS = new MarkovCheckKolmogorovSmirnoffP(
-                new FisherZ(), ConditioningSetType.RECURSIVE_BLOCKING, params)
+                new FisherZ(), ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY, params)
                 .getValue(trueCpdag, estCpdag, data, params);
 
+        s.numEdges = new NumberEdgesEst().getValue(trueCpdag, estCpdag, data, params);
+        s.bic = new BicEst().getValue(trueCpdag, estCpdag, data, params);
+
         return s;
+    }
+
+    // =========================================================================
+    // Hooks — fill these in
+    // =========================================================================
+
+    /**
+     * Returns the number of edges in {@code graph}.
+     *
+     * <p>Currently delegates to {@link Graph#getNumEdges()}. Override or adjust
+     * if you need a different edge-counting convention (e.g. counting only
+     * directed edges, or working on the CPDAG form).
+     */
+    private double countEdges(Graph graph) {
+        return graph.getNumEdges();
     }
 
     /**
@@ -458,5 +476,7 @@ public class VertexRepairSimulation {
         double arrPrec, arrRec, arrF1;
         double arrPrecCommon, arrRecCommon;
         double markovKS;
+        double numEdges;
+        double bic;
     }
 }
