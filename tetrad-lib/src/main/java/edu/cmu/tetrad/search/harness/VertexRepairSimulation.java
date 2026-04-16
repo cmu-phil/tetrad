@@ -78,7 +78,7 @@ public class VertexRepairSimulation {
     /**
      * Average degree (expected edges per node).
      */
-    private static final double AVG_DEGREE = 5.0;
+    private static final double AVG_DEGREE = 4.0;
     /**
      * Sample size for each simulated data set.
      */
@@ -115,7 +115,7 @@ public class VertexRepairSimulation {
     /**
      * Alpha for pruning.
      */
-    private static final double PRUNE_ALPHA = 0.2;
+    private static final double PRUNE_ALPHA = 0.05;
 
     public static void main(String[] args) throws Exception {
         new VertexRepairSimulation().run();
