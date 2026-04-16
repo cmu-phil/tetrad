@@ -48,10 +48,8 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
 import java.util.function.Function;
-import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
-import static edu.cmu.tetradapp.editor.VertexRepairPanel.factKey;
 import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
 
 /**
@@ -100,7 +98,7 @@ public class VertexCheckEditor extends JPanel {
     private boolean initializing;
     private boolean applyingGraphProgrammatically = false;
     //    private volatile boolean runningAll = false;
-    private SwingWorker<Void,Void> activeWorker = null;
+    private SwingWorker<Void, Void> activeWorker = null;
     private Runnable pendingTask = null;
 
     /**
@@ -318,21 +316,44 @@ public class VertexCheckEditor extends JPanel {
     // Graph-change handling
     // =========================================================================
 
-    public VertexCheckIndTestModel getIndTestModel() {
-        return model;
+    private static String factKey(IndependenceFact f) {
+        if (f == null || f.getX() == null || f.getY() == null) return UUID.randomUUID().toString();
+
+        String a = f.getX().getName();
+        String b = f.getY().getName();
+        if (a == null) a = "";
+        if (b == null) b = "";
+
+        if (a.compareTo(b) > 0) {
+            String t = a;
+            a = b;
+            b = t;
+        }
+
+        List<String> z = new ArrayList<>();
+        for (Node n : f.getZ()) {
+            if (n != null && n.getName() != null) z.add(n.getName());
+        }
+        z.sort(NaturalSort.naturalComparator());
+
+        return a + "|" + b + "|" + String.join(",", z);
     }
 
     // =========================================================================
     // runAllAndRefresh
     // =========================================================================
 
-    public CachedIndependenceQueries getCachedQueries() {
-        return Q;
+    public VertexCheckIndTestModel getIndTestModel() {
+        return model;
     }
 
     // =========================================================================
     // Misc UI helpers
     // =========================================================================
+
+    public CachedIndependenceQueries getCachedQueries() {
+        return Q;
+    }
 
     public Node getSelectedVertex() {
         List<Node> nodes = model.getGraph().getNodes();
@@ -634,6 +655,10 @@ public class VertexCheckEditor extends JPanel {
         histogramPanel.repaint();
     }
 
+    // =========================================================================
+    // Selection helpers
+    // =========================================================================
+
     private JPanel buildHistogramPanel(List<Double> pvals) {
         DataSet ds = new BoxDataSet(new VerticalDoubleDataBox(pvals.size(), 1),
                 Collections.singletonList(new ContinuousVariable("p")));
@@ -648,10 +673,6 @@ public class VertexCheckEditor extends JPanel {
         p.add(view, BorderLayout.CENTER);
         return p;
     }
-
-    // =========================================================================
-    // Selection helpers
-    // =========================================================================
 
     private void onModelGraphChanged() {
         var selectedVertexNames = getSelectedOverviewVertexNames();
@@ -734,7 +755,7 @@ public class VertexCheckEditor extends JPanel {
         }
 
         // Compute off the EDT, then update
-        SwingWorker<Void,Void> worker = new SwingWorker<>() {
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() {
                 for (String v : toCompute) {
@@ -866,6 +887,10 @@ public class VertexCheckEditor extends JPanel {
         ew.setVisible(true);
     }
 
+    // =========================================================================
+    // Independence-test utilities
+    // =========================================================================
+
     private void undoGraph() {
         if (graphHistory.isEmpty()) return;
         Graph prev = graphHistory.pop();
@@ -877,10 +902,6 @@ public class VertexCheckEditor extends JPanel {
             updateUndoButtonEnabled();
         }
     }
-
-    // =========================================================================
-    // Independence-test utilities
-    // =========================================================================
 
     private void updateUndoButtonEnabled() {
         undoGraphButton.setEnabled(!graphHistory.isEmpty());
@@ -901,6 +922,10 @@ public class VertexCheckEditor extends JPanel {
         return sel.vertices().isEmpty() ? null : sel.vertices().get(0);
     }
 
+    // =========================================================================
+    // Misc
+    // =========================================================================
+
     private SelectedRows getSelectedVertices() {
         int[] viewRows = overviewTable.getSelectedRows();
         if (viewRows == null || viewRows.length == 0)
@@ -914,10 +939,6 @@ public class VertexCheckEditor extends JPanel {
         }
         return new SelectedRows(modelRows, vertices);
     }
-
-    // =========================================================================
-    // Misc
-    // =========================================================================
 
     private void selectFirstRowIfAny() {
         if (overviewTable.getRowCount() > 0) {
@@ -940,6 +961,10 @@ public class VertexCheckEditor extends JPanel {
         }
     }
 
+    // =========================================================================
+    // Static helpers
+    // =========================================================================
+
     private Set<String> getSelectedOverviewVertexNames() {
         Set<String> names = new HashSet<>();
         for (int r : overviewTable.getSelectedRows()) {
@@ -949,10 +974,6 @@ public class VertexCheckEditor extends JPanel {
         }
         return names;
     }
-
-    // =========================================================================
-    // Static helpers
-    // =========================================================================
 
     private Set<String> getSelectedFactsKeys() {
         Set<String> keys = new HashSet<>();
