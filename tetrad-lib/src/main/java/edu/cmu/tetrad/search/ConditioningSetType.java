@@ -35,16 +35,45 @@ package edu.cmu.tetrad.search;
  */
 public enum ConditioningSetType {
 
+    /**
+     * Richardson's ordered local Markov property.
+     */
     ORDERED_LOCAL_MARKOV_PROPERTY("Ordered Local Markov Property"),
+    /**
+     * Andrews' ordered local Markov property, with sink elimination.
+     */
     ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION("Ordered Local Markov (Sink Elimination)"),
+    /**
+     * Pairwise Markov property, conditioing on the anteriority of the endpoints.
+     */
     PAIRWISE_MARKOV_PROPERTY("Pairwise Markov Property"),
-//    ORDERED_LOCAL_MARKOV("Ordered Local Markov"),
+    /**
+     * The Markov blanket of the target variable.
+     */
     MARKOV_BLANKET("Markov Blanket"),
+    /**
+     * Recursive blocking.
+     */
     RECURSIVE_BLOCKING("Recursive Blocking"),
+    /**
+     * Recursive adjustment.
+     */
     RECURSIVE_ADJUSTMENT("Recursive Adjustment"),
+    /**
+     * Local Markov property, conditioning on the parents of the target variable.
+     */
     LOCAL_MARKOV("Local Markov (Parents)"),
+    /**
+     * Causal Markov property, conditioning on the parents and neighbors of the target variable.
+     */
     PARENTS_AND_NEIGHBORS("Parents and Neighbors"),
+    /**
+     * Noncolliders only.
+     */
     NONCOLLIDERS_ONLY("Noncolliders Only"),
+    /**
+     * Global Markov property, conditioning on all subsets implied by global Markov. For small models only.
+     */
     GLOBAL_MARKOV("All Subsets (Global Markov)");
 
     private final String displayName;

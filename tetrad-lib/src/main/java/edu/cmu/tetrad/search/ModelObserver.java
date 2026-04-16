@@ -28,6 +28,10 @@ import java.io.Serial;
  * The ModelObserver interface is implemented by classes that want to observe changes in a model.
  */
 public interface ModelObserver extends TetradSerializable {
+
+    /**
+     * The serial version UID.
+     */
     @Serial
     long serialVersionUID = 20250125L;
 

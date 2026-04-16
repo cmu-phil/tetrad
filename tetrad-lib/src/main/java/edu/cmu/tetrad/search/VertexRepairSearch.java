@@ -312,6 +312,10 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     /**
      * Builds a canonical fact-key for deduplication.
+     *
+     * @param f the fact to be deduplicated; may be {@code null}
+     *          (in which case, a random UUID is returned)
+     * @return a canonical fact-key for the given fact; never {@code null}
      */
     public static String factKey(IndependenceFact f) {
         if (f == null || f.getX() == null || f.getY() == null) return UUID.randomUUID().toString();
@@ -488,6 +492,8 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     /**
      * Returns the current working graph (may be updated during search).
+     *
+     * @return the current working graph
      */
     public Graph getGraph() {
         return workingGraph;
@@ -495,6 +501,8 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     /**
      * Replaces the working graph used for repair.
+     *
+     * @param graph the new graph to use; may be {@code null}
      */
     public void setGraph(Graph graph) {
         this.workingGraph = safeCopy(Objects.requireNonNull(graph, "graph"));
@@ -502,6 +510,8 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     /**
      * Sets background knowledge constraints. Null is treated as empty knowledge.
+     *
+     * @param knowledge the knowledge to use; may be {@code null}
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = (knowledge == null) ? new Knowledge() : knowledge;
@@ -509,6 +519,8 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     /**
      * Sets the graph type that governs which edits are legal.
+     *
+     * @param graphType the graph type to use; must not be {@code null}
      */
     public void setGraphType(AdjustmentGraphType graphType) {
         this.graphType = Objects.requireNonNull(graphType, "graphType");
@@ -520,6 +532,8 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     /**
      * Sets the repair strategy.
+     *
+     * @param repairStrategy the repair strategy to use; must not be {@code null}
      */
     public void setRepairStrategy(RepairStrategy repairStrategy) {
         this.repairStrategy = Objects.requireNonNull(repairStrategy, "repairStrategy");
@@ -527,6 +541,8 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     /**
      * Sets the random seed used for node-traversal order.
+     *
+     * @param seed the random seed to use; if {@code null} or {@code 0}, a random seed is used
      */
     public void setSeed(int seed) {
         this.seed = seed;
@@ -538,6 +554,8 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     /**
      * Registers a listener for repair-progress events.
+     *
+     * @param listener the listener to register
      */
     public void addRepairListener(RepairListener listener) {
         listeners.add(Objects.requireNonNull(listener, "listener"));
@@ -545,6 +563,7 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     /**
      * Removes a previously registered listener.
+     * @param listener the listener to remove
      */
     public void removeRepairListener(RepairListener listener) {
         listeners.remove(listener);
@@ -586,6 +605,9 @@ public final class VertexRepairSearch implements IGraphSearch {
      * resulting graph (or {@code null} if the edit could not be applied).
      *
      * <p>On success the internal working graph is updated.
+     *
+     * @param cand the candidate edit to apply
+     * @return the resulting graph (or {@code null} if the edit could not be applied)
      */
     public Graph applyEdit(CandidateEdit cand) {
         if (cand == null || cand.isNoOp()) return workingGraph;
@@ -1486,6 +1508,13 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     // ---- Listener ------------------------------------------------------------
 
+    /**
+     * Sets the prune alpha value, which must be within the range [0, 1].
+     * The prune alpha is used to control pruning false positice edges froem the starting graph.
+     *
+     * @param pruneAlpha the prune alpha value; must be between 0 and 1 (inclusive)
+     * @throws IllegalArgumentException if the prune alpha value is outside the valid range
+     */
     public void setPruneAlpha(double pruneAlpha) {
         if (pruneAlpha < 0.0 || pruneAlpha > 1.0) {
             throw new IllegalArgumentException("Prune alpha must be between 0 and 1: " + pruneAlpha);
@@ -1495,6 +1524,13 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     // ---- CandidateEdit -------------------------------------------------------
 
+    /**
+     * Calculates the uniformity p-value of a given list of p-values using either the Anderson-Darling
+     * test or the Kolmogorov-Smirnov test based on the configured method.
+     *
+     * @param pvals a list of p-values to evaluate. The list must not be null, and should contain at least two elements.
+     * @return the calculated uniformity p-value, or Double.NaN if the input list is null or contains fewer than two elements.
+     */
     public double getUniformityP(List<Double> pvals) {
         if (pvals == null || pvals.size() < 2) return Double.NaN;
 
@@ -1596,6 +1632,12 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
     }
 
+    /**
+     * Configures the verbosity level for logging output.
+     *
+     * @param verbose a boolean flag where {@code true} enables verbose logging
+     *                and {@code false} disables it.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
@@ -1603,13 +1645,50 @@ public final class VertexRepairSearch implements IGraphSearch {
     /**
      * Graph types supported by the repair search.
      */
-    public enum AdjustmentGraphType {CPDAG, PDAG, PAG, DAG, MAG}
+    public enum AdjustmentGraphType {
+
+        /**
+         * A directed acyclic graph (DAG).
+         */
+        CPDAG,
+
+        /**
+         * A directed acyclic graph (DAG) with a special node type that represents
+         */
+        PDAG,
+
+        /**
+         * A directed acyclic graph (DAG) with a special node type that represents
+         */
+        PAG,
+
+        /**
+         * A directed acyclic graph (DAG) with a special node type that represents
+         */
+        DAG,
+
+        /**
+         * A directed acyclic graph (DAG) with a special node type that represents
+         */
+        MAG
+    }
 
     /**
      * Which repair sweep strategy to use.
      */
     public enum RepairStrategy {
+
+        /**
+         * Represents the local sweep strategy for repairs.
+         * This strategy focuses on performing repairs in a localized manner,
+         * targeting specific areas or regions as needed.
+         */
         LOCAL_SWEEP("Local sweep"),
+
+        /**
+         * Represents the global queue strategy for repairs.
+         * This strategy uses a global queue to manage and coordinate the repair process.
+         */
         GLOBAL_QUEUE("Global queue");
 
         private final String label;
@@ -1669,6 +1748,12 @@ public final class VertexRepairSearch implements IGraphSearch {
      */
     public interface CandidateEdit {
 
+        /**
+         * Creates a no-operation CandidateEdit, indicating no changes to be applied to a graph.
+         *
+         * @return a CandidateEdit instance representing a no-op operation, with a fixed description,
+         *         key, and behavior that does not modify the input graph.
+         */
         static CandidateEdit noOp() {
             return new CandidateEdit() {
                 @Override
@@ -1698,6 +1783,16 @@ public final class VertexRepairSearch implements IGraphSearch {
             };
         }
 
+        /**
+         * Creates a {@code CandidateEdit} operation to add the specified edge to a graph.
+         * This operation applies a change to the graph by adding the edge, ensuring it does not already exist
+         * between the specified nodes. If the edge cannot be added due to conflicts (e.g., already adjacent nodes),
+         * the operation will be invalid.
+         *
+         * @param edgeToAdd the edge to be added to the graph; must not be null.
+         * @return a {@code CandidateEdit} instance representing the addition of the edge,
+         *         or null if the edge cannot be added to the graph.
+         */
         static CandidateEdit addEdge(Edge edgeToAdd) {
             Objects.requireNonNull(edgeToAdd, "edgeToAdd");
             return new CandidateEdit() {
@@ -1733,6 +1828,15 @@ public final class VertexRepairSearch implements IGraphSearch {
             };
         }
 
+        /**
+         * Creates a {@code CandidateEdit} operation to remove the specified edge from a graph.
+         * This operation applies a change to the graph by removing the edge if it exists.
+         * If the edge does not exist in the graph, the operation will return null when applied.
+         *
+         * @param edgeToRemove the edge to be removed from the graph; must not be null.
+         * @return a {@code CandidateEdit} instance representing the removal of the edge
+         *         from the graph, or null if the operation cannot be applied.
+         */
         static CandidateEdit removeEdge(Edge edgeToRemove) {
             Objects.requireNonNull(edgeToRemove, "edgeToRemove");
             return new CandidateEdit() {
@@ -1767,15 +1871,37 @@ public final class VertexRepairSearch implements IGraphSearch {
             };
         }
 
+        /**
+         * Replaces an existing edge in a graph with a new edge, creating a candidate edit operation.
+         *
+         * @param edgeToRemove the edge to be removed from the graph; must not be null.
+         * @param edgeToAdd the edge to be added to the graph; must not be null.
+         * @return a {@code CandidateEdit} representing the operation of replacing the specified edge with the new edge.
+         *         Returns null if the replacement cannot be applied to the graph.
+         */
         static CandidateEdit replaceEdge(Edge edgeToRemove, Edge edgeToAdd) {
             Objects.requireNonNull(edgeToRemove, "edgeToRemove");
             Objects.requireNonNull(edgeToAdd, "edgeToAdd");
             return new CandidateEdit() {
+
+                /**
+                 * Provides a textual description of the operation to replace an existing edge in the graph
+                 * with a new edge.
+                 *
+                 * @return a string detailing the replacement operation in the format "Replace edgeToRemove → edgeToAdd".
+                 */
                 @Override
                 public String description() {
                     return "Replace " + edgeToRemove + " → " + edgeToAdd;
                 }
 
+                /**
+                 * Applies the modification to the given graph by replacing an existing edge
+                 * with a new edge. If the modification cannot be successfully applied, returns null.
+                 *
+                 * @param g the graph to which the modification will be applied; must not be null.
+                 * @return a new modified graph after applying the edge replacement, or null if the replacement fails.
+                 */
                 @Override
                 public Graph applyTo(Graph g) {
                     Graph g2 = new EdgeListGraph(g);
@@ -1793,6 +1919,11 @@ public final class VertexRepairSearch implements IGraphSearch {
                     return g2;
                 }
 
+                /**
+                 * Indicates whether this edit operation performs no modifications.
+                 *
+                 * @return {@code true} if the operation does not modify the graph; {@code false} otherwise.
+                 */
                 @Override
                 public boolean isNoOp() {
                     return false;
@@ -1803,6 +1934,11 @@ public final class VertexRepairSearch implements IGraphSearch {
                     return "REP:" + edgeToRemove + "→" + edgeToAdd;
                 }
 
+                /**
+                 * Retrieves the edge that is being added as part of this edit operation.
+                 *
+                 * @return the edge to be added to the graph.
+                 */
                 @Override
                 public Edge getEdge() {
                     return edgeToAdd;
@@ -1810,6 +1946,18 @@ public final class VertexRepairSearch implements IGraphSearch {
             };
         }
 
+        /**
+         * Creates a {@code CandidateEdit} operation to replace multiple edges in a graph.
+         * This operation applies the specified changes by first removing the edges in the
+         * provided removal list and then adding the edges in the addition list.
+         *
+         * @param label a descriptive label for the edit operation; must not be null.
+         * @param edgesToRemove a list of edges to be removed from the graph; must not be null.
+         * @param edgesToAdd a list of edges to be added to the graph; must not be null.
+         * @return a {@code CandidateEdit} instance representing the specified replacement
+         *         operation. The returned instance includes the provided label and applies
+         *         the removal and addition of edges as specified.
+         */
         static CandidateEdit replaceEdges(String label, List<Edge> edgesToRemove, List<Edge> edgesToAdd) {
             Objects.requireNonNull(label);
             List<Edge> rem = List.copyOf(Objects.requireNonNull(edgesToRemove));
@@ -1863,16 +2011,59 @@ public final class VertexRepairSearch implements IGraphSearch {
             };
         }
 
+        /**
+         * Provides a textual description of the {@code CandidateEdit} operation. The description
+         * typically explains the type of edit being performed (e.g., adding, removing, or replacing edges)
+         * and may include additional details relevant to the operation.
+         *
+         * @return a string representing the description of this {@code CandidateEdit} instance.
+         */
         String description();
 
+        /**
+         * Applies the specified {@code CandidateEdit} operation to the given graph.
+         * This method modifies the provided graph according to the edit action defined
+         * in the {@code CandidateEdit} instance, such as adding, removing, or replacing edges.
+         *
+         * @param g the graph to which the edit operation will be applied; must not be null.
+         * @return the modified graph after applying the edit operation, or null if the
+         *         operation cannot be applied.
+         */
         Graph applyTo(Graph g);
 
+        /**
+         * Indicates whether this {@code CandidateEdit} instance represents a no-operation (no-op).
+         * A no-op edit implies that no changes will be applied to the graph, and the instance
+         * is effectively a placeholder with no effect on the graph when executed.
+         *
+         * @return {@code true} if this {@code CandidateEdit} instance is a no-op; {@code false} otherwise.
+         */
         boolean isNoOp();
 
+        /**
+         * Retrieves the unique key identifying this {@code CandidateEdit} instance.
+         * The key is typically used to distinguish this edit from others or for lookup purposes.
+         *
+         * @return a string representing the unique key of this {@code CandidateEdit} instance.
+         */
         String key();
 
+        /**
+         * Retrieves the edge associated with this {@code CandidateEdit}
+         * operation, if applicable.
+         *
+         * @return the edge associated with this {@code CandidateEdit}, or
+         *         null if no edge is associated with the operation.
+         */
         Edge getEdge();
 
+        /**
+         * Retrieves a list containing the edge associated with this {@code CandidateEdit}, if applicable.
+         * If no edge is associated with the operation, an empty list is returned.
+         *
+         * @return a list of one edge if an edge is associated with this {@code CandidateEdit};
+         *         otherwise, an empty list.
+         */
         default List<Edge> getEdges() {
             Edge e = getEdge();
             return (e == null) ? List.of() : List.of(e);
@@ -1880,7 +2071,19 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     /**
-     * A scored candidate edit ready for display or application.
+     * Represents a scored candidate with various metrics including violations, probabilities,
+     * and whether it passes certain guards. This record is used to encapsulate the data required
+     * to evaluate a candidate's quality according to a scoring model.
+     *
+     * @param edit             The candidate edit associated with the scored candidate.
+     * @param violationsBaseline The initial number of violations in the baseline.
+     * @param violationsAfter  The number of violations after applying the edit.
+     * @param nodePAfter       The node-level probability after applying the edit.
+     * @param modelPBefore     The model-level probability before applying the edit.
+     * @param modelPAfter      The model-level probability after applying the edit.
+     * @param edgesAfter       The number of edges present after applying the edit.
+     * @param passesGuards     A flag indicating if the candidate passes predefined guards/criteria.
+     * @param alpha            An additional parameter used in scoring computations.
      */
     public record ScoredCandidate(
             CandidateEdit edit,
@@ -1893,6 +2096,12 @@ public final class VertexRepairSearch implements IGraphSearch {
             boolean passesGuards,
             double alpha
     ) {
+
+        /**
+         * Computes the difference between the number of violations after and the baseline violations.
+         *
+         * @return The difference between violationsAfter and violationsBaseline.
+         */
         public int delta() {
             return violationsAfter - violationsBaseline;
         }

@@ -28,9 +28,23 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
+/**
+ * The VertexRepairBattery class is responsible for executing a comprehensive suite of tests
+ * to evaluate vertex repair algorithms. It simulates various graph scenarios, applies
+ * vertex repair strategies, and generates statistical results for comparison and analysis.
+ * This class includes methods for initializing and running tests, building starting graphs,
+ * computing statistical metrics, and generating output tables.
+ * <p>
+ * The primary focus of VertexRepairBattery is to facilitate experimentation and analysis
+ * in graph-based algorithms, specifically those related to vertex repairs in causal
+ * inference and related domains.
+ */
 public class VertexRepairBattery {
 
     // =========================================================================
@@ -38,38 +52,58 @@ public class VertexRepairBattery {
     // =========================================================================
 
     private static final int NUM_NODES = 10;
-    private static final int NUM_RUNS  = 20;      // runs per cell
+    private static final int NUM_RUNS = 20;      // runs per cell
 
-    private static final double[] AVG_DEGREES   = {2.0, 4.0};
-    private static final int[]    SAMPLE_SIZES  = {500, 1000, 10000};
-
+    private static final double[] AVG_DEGREES = {2.0, 4.0};
+    private static final int[] SAMPLE_SIZES = {500, 1000, 10000};
     private static final VertexRepairSimulation.StartingGraph[] SCENARIOS = {
             VertexRepairSimulation.StartingGraph.PC,
             VertexRepairSimulation.StartingGraph.FGES,
             VertexRepairSimulation.StartingGraph.BOSS,
             VertexRepairSimulation.StartingGraph.EMPTY
     };
-
     // Fixed parameters — must match the paper's stated settings
-    private static final double ALPHA            = 0.01;
+    private static final double ALPHA = 0.01;
     private static final double PENALTY_DISCOUNT = 2.0;
-    private static final double PRUNE_ALPHA      = 0.05;
-
-    private static final ConditioningSetType              CONDITIONING_TYPE =
+    private static final double PRUNE_ALPHA = 0.05;
+    private static final ConditioningSetType CONDITIONING_TYPE =
             ConditioningSetType.RECURSIVE_BLOCKING;
-    private static final VertexRepairSearch.RepairStrategy REPAIR_STRATEGY  =
+    private static final VertexRepairSearch.RepairStrategy REPAIR_STRATEGY =
             VertexRepairSearch.RepairStrategy.GLOBAL_QUEUE;
-    private static final VertexRepairSearch.AdjustmentGraphType GRAPH_TYPE  =
+    private static final VertexRepairSearch.AdjustmentGraphType GRAPH_TYPE =
             VertexRepairSearch.AdjustmentGraphType.CPDAG;
+    /**
+     * Creates a new VertexRepairBattery object. This constructor is private,
+     * intended for internal use only.
+     */
+    public VertexRepairBattery() {
+
+    }
 
     // =========================================================================
     // Entry point
     // =========================================================================
 
+    /**
+     * The entry point for the VertexRepairBattery program. This method initializes
+     * and executes the full battery of tests for vertex repair operations, including
+     * the simulation of graphs, the application of vertex repair algorithms, and
+     * the generation of statistical results.
+     *
+     * @param args Command-line arguments. Not utilized in this method.
+     * @throws Exception If an error occurs during execution, such as issues with
+     *                   graph simulation, statistical operations, or result handling.
+     */
     public static void main(String[] args) throws Exception {
         new VertexRepairBattery().runFullBattery();
     }
 
+    /**
+     * Executes a comprehensive battery of tests on the VertexRepair algorithm using a variety of
+     * different graph scenarios, average degrees, sample sizes, and repetition runs.
+     *
+     * @throws Exception If an error occurs during the execution of the battery.
+     */
     public void runFullBattery() throws Exception {
         Preferences.userRoot().putBoolean("useAndersonDarling", false);
 
@@ -78,7 +112,7 @@ public class VertexRepairBattery {
 
         int totalRuns = SCENARIOS.length * AVG_DEGREES.length
                 * SAMPLE_SIZES.length * NUM_RUNS;
-        int runsDone  = 0;
+        int runsDone = 0;
 
         System.out.printf("VertexRepair battery: %d scenarios × %d degrees × "
                         + "%d sample sizes × %d runs = %d total runs%n%n",
@@ -130,8 +164,8 @@ public class VertexRepairBattery {
 
                         // --- stats ---
                         Parameters params = new Parameters();
-                        RunStats startStats  = computeStats(trueCpdag, startGraph,  data, params);
-                        RunStats repairedStats = computeStats(trueCpdag, repaired,  data, params);
+                        RunStats startStats = computeStats(trueCpdag, startGraph, data, params);
+                        RunStats repairedStats = computeStats(trueCpdag, repaired, data, params);
 
                         cell.accumulateStart(startStats);
                         cell.accumulateRepaired(repairedStats);
@@ -143,7 +177,7 @@ public class VertexRepairBattery {
                                         + "Repaired AdjF1=%.3f ArrF1=%.3f KS=%.3f%n",
                                 runsDone, totalRuns,
                                 scenario, avgDegree, sampleSize, run,
-                                startStats.adjF1,   startStats.arrF1,
+                                startStats.adjF1, startStats.arrF1,
                                 startStats.markovKS,
                                 repairedStats.adjF1, repairedStats.arrF1,
                                 repairedStats.markovKS);
@@ -225,11 +259,11 @@ public class VertexRepairBattery {
                     System.out.printf(
                             "%6d & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s \\\\%n",
                             sampleSize,
-                            df2.format(s.adjF1),        df2.format(r.adjF1),
-                            df2.format(s.arrF1),        df2.format(r.arrF1),
-                            df2.format(s.arrPrecCommon),df2.format(r.arrPrecCommon),
+                            df2.format(s.adjF1), df2.format(r.adjF1),
+                            df2.format(s.arrF1), df2.format(r.arrF1),
+                            df2.format(s.arrPrecCommon), df2.format(r.arrPrecCommon),
                             df2.format(s.arrRecCommon), df2.format(r.arrRecCommon),
-                            df3.format(s.markovKS),     df3.format(r.markovKS));
+                            df3.format(s.markovKS), df3.format(r.markovKS));
                 }
 
                 System.out.println("\\bottomrule");
@@ -250,10 +284,12 @@ public class VertexRepairBattery {
             edu.cmu.tetrad.search.score.Score score,
             List<Node> nodes) throws Exception {
         return switch (scenario) {
-            case BOSS  -> { Boss b = new Boss(score);
-                yield new PermutationSearch(b).search(); }
-            case PC    -> new Pc(test).search();
-            case FGES  -> new Fges(score).search();
+            case BOSS -> {
+                Boss b = new Boss(score);
+                yield new PermutationSearch(b).search();
+            }
+            case PC -> new Pc(test).search();
+            case FGES -> new Fges(score).search();
             case EMPTY -> new EdgeListGraph(nodes);
         };
     }
@@ -273,16 +309,17 @@ public class VertexRepairBattery {
                 Graph dag = GraphTransforms.dagFromCpdag(estimated);
                 est = GraphTransforms.dagToCpdag(dag);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         RunStats s = new RunStats();
-        s.adjF1         = new F1Adj().getValue(trueCpdag, est, data, params);
-        s.arrF1         = new F1Arrow().getValue(trueCpdag, est, data, params);
+        s.adjF1 = new F1Adj().getValue(trueCpdag, est, data, params);
+        s.arrF1 = new F1Arrow().getValue(trueCpdag, est, data, params);
         s.arrPrecCommon = new ArrowheadPrecisionCommonEdges()
                 .getValue(trueCpdag, est, data, params);
-        s.arrRecCommon  = new ArrowheadRecallCommonEdges()
+        s.arrRecCommon = new ArrowheadRecallCommonEdges()
                 .getValue(trueCpdag, est, data, params);
-        s.markovKS      = new MarkovCheckKolmogorovSmirnoffP(
+        s.markovKS = new MarkovCheckKolmogorovSmirnoffP(
                 new edu.cmu.tetrad.algcomparison.independence.FisherZ(),
                 ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY, params)
                 .getValue(trueCpdag, est, data, params);
@@ -293,18 +330,25 @@ public class VertexRepairBattery {
     // Inner types
     // =========================================================================
 
-    /** Identifies one experimental cell. */
+    /**
+     * Identifies one experimental cell.
+     */
     private record CellKey(
             VertexRepairSimulation.StartingGraph scenario,
             double avgDegree,
-            int sampleSize) {}
+            int sampleSize) {
+    }
 
-    /** One run's worth of the five reported statistics. */
+    /**
+     * One run's worth of the five reported statistics.
+     */
     private static class RunStats {
         double adjF1, arrF1, arrPrecCommon, arrRecCommon, markovKS;
     }
 
-    /** Accumulates stats over NUM_RUNS runs for one cell, computes averages. */
+    /**
+     * Accumulates stats over NUM_RUNS runs for one cell, computes averages.
+     */
     private static class CellResult {
 
         // start-graph accumulators
@@ -313,12 +357,16 @@ public class VertexRepairBattery {
         private double rAdjF1, rArrF1, rArrPC, rArrRC, rKS;
         private int count = 0;
 
+        private static double nanSafe(double v) {
+            return Double.isNaN(v) ? 0.0 : v;
+        }
+
         void accumulateStart(RunStats s) {
             sAdjF1 += nanSafe(s.adjF1);
             sArrF1 += nanSafe(s.arrF1);
             sArrPC += nanSafe(s.arrPrecCommon);
             sArrRC += nanSafe(s.arrRecCommon);
-            sKS    += nanSafe(s.markovKS);
+            sKS += nanSafe(s.markovKS);
         }
 
         void accumulateRepaired(RunStats s) {
@@ -326,25 +374,28 @@ public class VertexRepairBattery {
             rArrF1 += nanSafe(s.arrF1);
             rArrPC += nanSafe(s.arrPrecCommon);
             rArrRC += nanSafe(s.arrRecCommon);
-            rKS    += nanSafe(s.markovKS);
+            rKS += nanSafe(s.markovKS);
             count++;
         }
 
-        Averages startAverages()    { return avg(sAdjF1, sArrF1, sArrPC, sArrRC, sKS); }
-        Averages repairedAverages() { return avg(rAdjF1, rArrF1, rArrPC, rArrRC, rKS); }
+        Averages startAverages() {
+            return avg(sAdjF1, sArrF1, sArrPC, sArrRC, sKS);
+        }
+
+        Averages repairedAverages() {
+            return avg(rAdjF1, rArrF1, rArrPC, rArrRC, rKS);
+        }
 
         private Averages avg(double aF1, double rF1, double aPC, double aRC, double ks) {
             Averages a = new Averages();
             if (count == 0) return a;
-            a.adjF1         = aF1 / count;
-            a.arrF1         = rF1 / count;
-            a.arrPrecCommon = aPC  / count;
-            a.arrRecCommon  = aRC  / count;
-            a.markovKS      = ks   / count;
+            a.adjF1 = aF1 / count;
+            a.arrF1 = rF1 / count;
+            a.arrPrecCommon = aPC / count;
+            a.arrRecCommon = aRC / count;
+            a.markovKS = ks / count;
             return a;
         }
-
-        private static double nanSafe(double v) { return Double.isNaN(v) ? 0.0 : v; }
 
         static class Averages {
             double adjF1, arrF1, arrPrecCommon, arrRecCommon, markovKS;

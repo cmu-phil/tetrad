@@ -32,6 +32,12 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.prefs.Preferences;
 
+/**
+ * The VertexRepairBattery2 class is responsible for conducting and evaluating a comprehensive
+ * suite of tests on the VertexRepair algorithm under various configurations. This includes
+ * simulating data, building graphs, applying the VertexRepair algorithm, and aggregating
+ * performance metrics to systematically analyze the algorithm's behavior.
+ */
 public class VertexRepairBattery2 {
 
     // =========================================================================
@@ -43,6 +49,12 @@ public class VertexRepairBattery2 {
 
     private static final double[] AVG_DEGREES  = {2.0, 4.0};
     private static final int[]    SAMPLE_SIZES = {500, 1000, 10000};
+
+    /**
+     * Constructs a new VertexRepairBattery2 object. This constructor is private to ensure
+     * that instances can only be created internally, promoting encapsulation and controlled usage.
+     */
+    public VertexRepairBattery2() {}
 
     private static final VertexRepairSimulation.StartingGraph[] SCENARIOS = {
             VertexRepairSimulation.StartingGraph.PC,
@@ -70,10 +82,38 @@ public class VertexRepairBattery2 {
     // Entry point
     // =========================================================================
 
+    /**
+     * The entry point of the application.
+     *
+     * @param args Command-line arguments passed to the application. These arguments
+     *             are not used in the current implementation.
+     * @throws Exception If any error occurs while executing the comprehensive test
+     *                   battery for the VertexRepair algorithm.
+     */
     public static void main(String[] args) throws Exception {
         new VertexRepairBattery2().runFullBattery();
     }
 
+    /**
+     * Executes a comprehensive battery of tests on the VertexRepair algorithm using a variety of
+     * configurations and parameters. The method iterates over all combinations of conditioning types,
+     * scenarios, average degrees, and sample sizes, followed by multiple simulation runs for each
+     * combination, to evaluate the algorithm's performance.
+     *
+     * The following steps are performed during each simulation run:
+     * 1. Generate a true graph (DAG) and its corresponding CPDAG.
+     * 2. Simulate data from the true graph using a structural equation model.
+     * 3. Build a starting graph based on the specified configuration.
+     * 4. Repair the starting graph using the VertexRepair algorithm.
+     * 5. Compute and accumulate performance statistics for both the starting and repaired graphs.
+     * 6. Print detailed progress logs to the console for each run.
+     *
+     * Results are aggregated into a map with keys representing unique (conditioning type, scenario,
+     * average degree, sample size) combinations. After all runs are completed, LaTeX tables are
+     * emitted to summarize the performance metrics across the configurations.
+     *
+     * @throws Exception If any error occurs during the simulation process. This exception may include
+     */
     public void runFullBattery() throws Exception {
         Preferences.userRoot().putBoolean("useAndersonDarling", false);
 

@@ -59,6 +59,15 @@ import java.util.prefs.Preferences;
  */
 public class VertexRepairSimulation {
 
+    /**
+     * Default constructor for the VertexRepairSimulation class.
+     *
+     * Initializes a new instance of the VertexRepairSimulation class.
+     * This constructor sets up the necessary state for running the vertex
+     * repair simulation process on directed acyclic graphs (DAGs).
+     */
+    public VertexRepairSimulation() {}
+
     // =========================================================================
     // Scenario enum — set this to choose the starting graph
     // =========================================================================
@@ -122,6 +131,16 @@ public class VertexRepairSimulation {
      */
     private static final double PRUNE_ALPHA = 0.2;
 
+    /**
+     * The entry point of the VertexRepairSimulation application.
+     * This method starts the simulation process by invoking the run method
+     * of the VertexRepairSimulation class, which orchestrates the execution
+     * of the vertex repair algorithm on directed acyclic graphs (DAGs).
+     *
+     * @param args command line arguments passed to the program; currently unused
+     *             but reserved for potential future use.
+     * @throws Exception if an error occurs during the execution of the simulation.
+     */
     public static void main(String[] args) throws Exception {
         new VertexRepairSimulation().run();
     }
@@ -130,6 +149,25 @@ public class VertexRepairSimulation {
     // Entry point
     // =========================================================================
 
+    /**
+     * Executes the VertexRepairSearch simulation process for a specified number of runs.
+     * This method initializes configurations, simulates data, computes statistics, and
+     * evaluates the effectiveness of repairing strategies on directed acyclic graphs (DAGs).
+     *
+     * The simulation involves the following steps:
+     * 1. Simulating random DAGs and generating corresponding linear Gaussian data.
+     * 2. Building the required independence tests and scoring mechanisms (e.g., SEM BIC score).
+     * 3. Producing the starting graph based on a predefined scenario, evaluating key metrics,
+     *    and accumulating initial statistics.
+     * 4. Applying the VertexRepairSearch algorithm to refine the starting graph.
+     * 5. Computing and accumulating final statistics for the repaired graph.
+     *
+     * Various metrics such as adjacency precision, adjacency recall, adjacency F1 score,
+     * arrow precision, arrow recall, arrow F1 score, Markov equivalence, number of edges,
+     * and Bayesian Information Criterion (BIC) are output and analyzed for performance.
+     *
+     * @throws Exception if any errors occur during the simulation or processing.
+     */
     public void run() throws Exception {
         Preferences.userRoot().putBoolean("useAndersonDarling", false);
 
