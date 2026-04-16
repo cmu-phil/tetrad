@@ -66,32 +66,37 @@ public class VertexRepairSimulation {
     /**
      * Which starting-graph scenario to use. Change this to try different scenarios.
      */
-    public static final StartingGraph scenario = StartingGraph.BOSS;
+    public static final StartingGraph scenario = StartingGraph.PC;
 
     // =========================================================================
     // Simulation parameters — edit these as desired
     // =========================================================================
-    /**
-     * Number of nodes in the simulated graph.
-     */
-    private static final int NUM_NODES = 10;
-    /**
-     * Average degree (expected edges per node).
-     */
-    private static final double AVG_DEGREE = 4.0;
-    /**
-     * Sample size for each simulated data set.
-     */
-    private static final int SAMPLE_SIZE = 10000;
-    /**
-     * Number of independent simulation runs to average over.
-     */
-    private static final int NUM_RUNS = 10;
+
     /**
      * Conditioning set type passed to VertexRepairSearch.
      */
     private static final ConditioningSetType CONDITIONING_TYPE =
-            ConditioningSetType.RECURSIVE_BLOCKING;
+            ConditioningSetType.RECURSIVE_ADJUSTMENT;
+
+    /**
+     * Average degree (expected edges per node).
+     */
+    private static final double AVG_DEGREE = 4.0;
+
+    /**
+     * Number of nodes in the simulated graph.
+     */
+    private static final int NUM_NODES = 10;
+
+    /**
+     * Sample size for each simulated data set.
+     */
+    private static final int SAMPLE_SIZE = 500;
+    /**
+     * Number of independent simulation runs to average over.
+     */
+    private static final int NUM_RUNS = 10;
+
     /**
      * Repair strategy passed to VertexRepairSearch.
      */
@@ -115,7 +120,7 @@ public class VertexRepairSimulation {
     /**
      * Alpha for pruning.
      */
-    private static final double PRUNE_ALPHA = 0.05;
+    private static final double PRUNE_ALPHA = 0.2;
 
     public static void main(String[] args) throws Exception {
         new VertexRepairSimulation().run();

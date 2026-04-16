@@ -142,6 +142,7 @@ public final class VertexRepairSearch implements IGraphSearch {
     private volatile boolean cancelRequested = false;
     private PriorityQueue<QueueEntry> globalQueue = new PriorityQueue<>();
     private boolean useAndersonDarling = false;
+    private boolean verbose = false;
 
     // =========================================================================
     // Construction
@@ -167,39 +168,6 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
     }
 
-    /**
-     * Returns a list of row indices for a subsample of the data set.
-     *
-     * @param v The fraction of the data set to use.
-     * @return A list of row indices for a subsample of the data set.
-     */
-    private List<Integer> getSubsampleRows(double v) {
-        int sampleSize = ((DataSet) Q.getTest().getData()).getNumRows();
-        int subsampleSize = (int) TMath.floor(sampleSize * v);
-        List<Integer> rows = new ArrayList<>(sampleSize);
-        for (int i = 0; i < sampleSize; i++) {
-            rows.add(i);
-        }
-
-        Collections.shuffle(rows);
-        List<Integer> integers = rows.subList(0, subsampleSize);
-
-        List<Integer> selectedRows = new ArrayList<>(integers.size());
-
-        for (int row : rows) {
-            if (integers.contains(row)) {
-                selectedRows.add(row);
-            }
-        }
-
-        return selectedRows;
-    }
-
-
-    // =========================================================================
-    // IGraphSearch
-    // =========================================================================
-
     private static boolean isProgress(int baselineViol, int afterViol,
                                       int currentEdges, int afterEdges,
                                       double mpBefore, double mpAfter,
@@ -210,6 +178,11 @@ public final class VertexRepairSearch implements IGraphSearch {
         return Double.isFinite(mpBefore) && Double.isFinite(mpAfter)
                 && (mpAfter - mpBefore) >= minGain;
     }
+
+
+    // =========================================================================
+    // IGraphSearch
+    // =========================================================================
 
     private static Graph seedDagFromAnyGraph(Graph g) {
         if (g == null) return null;
@@ -241,14 +214,14 @@ public final class VertexRepairSearch implements IGraphSearch {
         return dag.paths().isLegalDag() ? dag : null;
     }
 
-    // =========================================================================
-    // Configuration setters / getters
-    // =========================================================================
-
     private static Node resolveNode(Graph g, String name) {
         if (g == null || name == null) return null;
         return g.getNode(name);
     }
+
+    // =========================================================================
+    // Configuration setters / getters
+    // =========================================================================
 
     private static List<CandidateEdit> dedupCandidateEdits(List<CandidateEdit> edits) {
         if (edits == null || edits.isEmpty()) return List.of();
@@ -315,10 +288,6 @@ public final class VertexRepairSearch implements IGraphSearch {
                 && b1 == reb.getProximalEndpoint(reb.getNode2());
     }
 
-    // =========================================================================
-    // Listener management
-    // =========================================================================
-
     private static Edge rebindEdgeToGraph(Graph g, Edge e) {
         if (g == null || e == null) return null;
         Node a0 = e.getNode1(), b0 = e.getNode2();
@@ -332,14 +301,14 @@ public final class VertexRepairSearch implements IGraphSearch {
         return new Edge(a, b, ea, eb);
     }
 
+    // =========================================================================
+    // Listener management
+    // =========================================================================
+
     private static Endpoint endpointAt(Edge e, Node n) {
         if (e == null || n == null) return null;
         return e.getProximalEndpoint(n);
     }
-
-    // =========================================================================
-    // Cancellation
-    // =========================================================================
 
     /**
      * Builds a canonical fact-key for deduplication.
@@ -361,7 +330,7 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     // =========================================================================
-    // Per-node search (used interactively by the panel)
+    // Cancellation
     // =========================================================================
 
     private static MoveType moveType(CandidateEdit e) {
@@ -374,18 +343,22 @@ public final class VertexRepairSearch implements IGraphSearch {
         return MoveType.OTHER;
     }
 
+    // =========================================================================
+    // Per-node search (used interactively by the panel)
+    // =========================================================================
+
     private static String safeLower(String s) {
         return s == null ? "" : s.toLowerCase();
     }
-
-    // =========================================================================
-    // Private: repair strategies
-    // =========================================================================
 
     private static boolean containsAny(String s, String... needles) {
         for (String n : needles) if (n != null && !n.isEmpty() && s.contains(n)) return true;
         return false;
     }
+
+    // =========================================================================
+    // Private: repair strategies
+    // =========================================================================
 
     private static int stableTieBreak(ScoredCandidate a, ScoredCandidate b) {
         String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
@@ -397,13 +370,15 @@ public final class VertexRepairSearch implements IGraphSearch {
         return da.compareTo(db);
     }
 
+    private void vlog(String fmt, Object... args) {
+        if (this.verbose) {
+            System.out.println("[VertexRepairSearch] " + String.format(fmt, args));
+        }
+    }
+
     // =========================================================================
     // Private: queue management
     // =========================================================================
-
-    private static void vlog(String fmt, Object... args) {
-        System.out.println("[VertexRepairSearch] " + String.format(fmt, args));
-    }
 
     private static Edge getEdgeByNames(Graph g, Edge e) {
         if (g == null || e == null) return null;
@@ -415,15 +390,15 @@ public final class VertexRepairSearch implements IGraphSearch {
         return g.getEdge(ga, gb);
     }
 
-    // =========================================================================
-    // Private: candidate computation
-    // =========================================================================
-
     private static double getKolomogorovP(List<Double> pvals) {
         double[] x = pvals.stream().mapToDouble(Double::doubleValue).toArray();
         KolmogorovSmirnovTest ks = new KolmogorovSmirnovTest();
         return ks.kolmogorovSmirnovTest(new UniformRealDistribution(0.0, 1.0), x);
     }
+
+    // =========================================================================
+    // Private: candidate computation
+    // =========================================================================
 
     /**
      * Tests a list of p-values against the Anderson-Darling Test.
@@ -434,6 +409,34 @@ public final class VertexRepairSearch implements IGraphSearch {
     public static double getAndersonDarlingP(List<Double> pValues) {
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
         return generalAndersonDarlingTest.getP();
+    }
+
+    /**
+     * Returns a list of row indices for a subsample of the data set.
+     *
+     * @param v The fraction of the data set to use.
+     * @return A list of row indices for a subsample of the data set.
+     */
+    private List<Integer> getSubsampleRows(double v) {
+        int sampleSize = ((DataSet) Q.getTest().getData()).getNumRows();
+        int subsampleSize = (int) TMath.floor(sampleSize * v);
+        List<Integer> rows = new ArrayList<>(sampleSize);
+        for (int i = 0; i < sampleSize; i++) {
+            rows.add(i);
+        }
+
+        Collections.shuffle(rows);
+        List<Integer> integers = rows.subList(0, subsampleSize);
+
+        List<Integer> selectedRows = new ArrayList<>(integers.size());
+
+        for (int row : rows) {
+            if (integers.contains(row)) {
+                selectedRows.add(row);
+            }
+        }
+
+        return selectedRows;
     }
 
     /**
@@ -1591,6 +1594,10 @@ public final class VertexRepairSearch implements IGraphSearch {
                 fireStatus("Warning: canonicalization after pruning failed, continuing with pruned graph.");
             }
         }
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     /**
