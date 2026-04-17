@@ -100,7 +100,7 @@ public class VertexRepairSimulation {
     /**
      * Sample size for each simulated data set.
      */
-    private static final int SAMPLE_SIZE = 500;
+    private static final int SAMPLE_SIZE = 1000;
     /**
      * Number of independent simulation runs to average over.
      */

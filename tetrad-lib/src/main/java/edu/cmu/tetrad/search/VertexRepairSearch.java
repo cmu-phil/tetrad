@@ -38,8 +38,6 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
-import static edu.cmu.tetrad.util.TMath.abs;
-
 /**
  * Greedy local-search model-repair algorithm for causal graphs.
  *
@@ -91,15 +89,17 @@ public final class VertexRepairSearch implements IGraphSearch {
         if (a == null) return 1;
         if (b == null) return -1;
 
+        // We're sorting so that the best option is at the top, not the bottom.
+
         int c;
 
-        if (abs(a.delta()) >= 0 && abs(b.delta()) >= 0) {
-            c = Integer.compare(a.delta(), b.delta());
-            if (c != 0) return c;
-        }
+        // Lower deltas are preferred.
+        c = Integer.compare(a.violationsAfter(), b.violationsAfter());
+        if (c != 0) return c;
 
         // Removals always use actual edge count; additions only get credit
         // if modelP already clears alpha — otherwise they sort to the back.
+        // Lower values preferred.
         boolean aIsRemoval = moveType(a.edit()) == MoveType.REMOVE_EDGE;
         boolean bIsRemoval = moveType(b.edit()) == MoveType.REMOVE_EDGE;
         int edges1 = (aIsRemoval || a.modelPAfter() > a.alpha()) ? a.edgesAfter() : Integer.MAX_VALUE;
@@ -107,6 +107,7 @@ public final class VertexRepairSearch implements IGraphSearch {
         c = Integer.compare(edges1, edges2);
         if (c != 0) return c;
 
+        // Higher Model-P is preferred, so reverse sort order.
         c = -Double.compare(a.modelPAfter(), b.modelPAfter());
         if (c != 0) return c;
 
@@ -374,16 +375,6 @@ public final class VertexRepairSearch implements IGraphSearch {
         return da.compareTo(db);
     }
 
-    private void vlog(String fmt, Object... args) {
-        if (this.verbose) {
-            System.out.println("[VertexRepairSearch] " + String.format(fmt, args));
-        }
-    }
-
-    // =========================================================================
-    // Private: queue management
-    // =========================================================================
-
     private static Edge getEdgeByNames(Graph g, Edge e) {
         if (g == null || e == null) return null;
         String a = e.getNode1() == null ? null : e.getNode1().getName();
@@ -394,15 +385,15 @@ public final class VertexRepairSearch implements IGraphSearch {
         return g.getEdge(ga, gb);
     }
 
+    // =========================================================================
+    // Private: queue management
+    // =========================================================================
+
     private static double getKolomogorovP(List<Double> pvals) {
         double[] x = pvals.stream().mapToDouble(Double::doubleValue).toArray();
         KolmogorovSmirnovTest ks = new KolmogorovSmirnovTest();
         return ks.kolmogorovSmirnovTest(new UniformRealDistribution(0.0, 1.0), x);
     }
-
-    // =========================================================================
-    // Private: candidate computation
-    // =========================================================================
 
     /**
      * Tests a list of p-values against the Anderson-Darling Test.
@@ -413,6 +404,16 @@ public final class VertexRepairSearch implements IGraphSearch {
     public static double getAndersonDarlingP(List<Double> pValues) {
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
         return generalAndersonDarlingTest.getP();
+    }
+
+    // =========================================================================
+    // Private: candidate computation
+    // =========================================================================
+
+    private void vlog(String fmt, Object... args) {
+        if (this.verbose) {
+            System.out.println("[VertexRepairSearch] " + String.format(fmt, args));
+        }
     }
 
     /**
@@ -563,6 +564,7 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     /**
      * Removes a previously registered listener.
+     *
      * @param listener the listener to remove
      */
     public void removeRepairListener(RepairListener listener) {
@@ -1752,7 +1754,7 @@ public final class VertexRepairSearch implements IGraphSearch {
          * Creates a no-operation CandidateEdit, indicating no changes to be applied to a graph.
          *
          * @return a CandidateEdit instance representing a no-op operation, with a fixed description,
-         *         key, and behavior that does not modify the input graph.
+         * key, and behavior that does not modify the input graph.
          */
         static CandidateEdit noOp() {
             return new CandidateEdit() {
@@ -1791,7 +1793,7 @@ public final class VertexRepairSearch implements IGraphSearch {
          *
          * @param edgeToAdd the edge to be added to the graph; must not be null.
          * @return a {@code CandidateEdit} instance representing the addition of the edge,
-         *         or null if the edge cannot be added to the graph.
+         * or null if the edge cannot be added to the graph.
          */
         static CandidateEdit addEdge(Edge edgeToAdd) {
             Objects.requireNonNull(edgeToAdd, "edgeToAdd");
@@ -1835,7 +1837,7 @@ public final class VertexRepairSearch implements IGraphSearch {
          *
          * @param edgeToRemove the edge to be removed from the graph; must not be null.
          * @return a {@code CandidateEdit} instance representing the removal of the edge
-         *         from the graph, or null if the operation cannot be applied.
+         * from the graph, or null if the operation cannot be applied.
          */
         static CandidateEdit removeEdge(Edge edgeToRemove) {
             Objects.requireNonNull(edgeToRemove, "edgeToRemove");
@@ -1875,9 +1877,9 @@ public final class VertexRepairSearch implements IGraphSearch {
          * Replaces an existing edge in a graph with a new edge, creating a candidate edit operation.
          *
          * @param edgeToRemove the edge to be removed from the graph; must not be null.
-         * @param edgeToAdd the edge to be added to the graph; must not be null.
+         * @param edgeToAdd    the edge to be added to the graph; must not be null.
          * @return a {@code CandidateEdit} representing the operation of replacing the specified edge with the new edge.
-         *         Returns null if the replacement cannot be applied to the graph.
+         * Returns null if the replacement cannot be applied to the graph.
          */
         static CandidateEdit replaceEdge(Edge edgeToRemove, Edge edgeToAdd) {
             Objects.requireNonNull(edgeToRemove, "edgeToRemove");
@@ -1951,12 +1953,12 @@ public final class VertexRepairSearch implements IGraphSearch {
          * This operation applies the specified changes by first removing the edges in the
          * provided removal list and then adding the edges in the addition list.
          *
-         * @param label a descriptive label for the edit operation; must not be null.
+         * @param label         a descriptive label for the edit operation; must not be null.
          * @param edgesToRemove a list of edges to be removed from the graph; must not be null.
-         * @param edgesToAdd a list of edges to be added to the graph; must not be null.
+         * @param edgesToAdd    a list of edges to be added to the graph; must not be null.
          * @return a {@code CandidateEdit} instance representing the specified replacement
-         *         operation. The returned instance includes the provided label and applies
-         *         the removal and addition of edges as specified.
+         * operation. The returned instance includes the provided label and applies
+         * the removal and addition of edges as specified.
          */
         static CandidateEdit replaceEdges(String label, List<Edge> edgesToRemove, List<Edge> edgesToAdd) {
             Objects.requireNonNull(label);
@@ -2027,7 +2029,7 @@ public final class VertexRepairSearch implements IGraphSearch {
          *
          * @param g the graph to which the edit operation will be applied; must not be null.
          * @return the modified graph after applying the edit operation, or null if the
-         *         operation cannot be applied.
+         * operation cannot be applied.
          */
         Graph applyTo(Graph g);
 
@@ -2053,7 +2055,7 @@ public final class VertexRepairSearch implements IGraphSearch {
          * operation, if applicable.
          *
          * @return the edge associated with this {@code CandidateEdit}, or
-         *         null if no edge is associated with the operation.
+         * null if no edge is associated with the operation.
          */
         Edge getEdge();
 
@@ -2062,7 +2064,7 @@ public final class VertexRepairSearch implements IGraphSearch {
          * If no edge is associated with the operation, an empty list is returned.
          *
          * @return a list of one edge if an edge is associated with this {@code CandidateEdit};
-         *         otherwise, an empty list.
+         * otherwise, an empty list.
          */
         default List<Edge> getEdges() {
             Edge e = getEdge();
@@ -2075,15 +2077,15 @@ public final class VertexRepairSearch implements IGraphSearch {
      * and whether it passes certain guards. This record is used to encapsulate the data required
      * to evaluate a candidate's quality according to a scoring model.
      *
-     * @param edit             The candidate edit associated with the scored candidate.
+     * @param edit               The candidate edit associated with the scored candidate.
      * @param violationsBaseline The initial number of violations in the baseline.
-     * @param violationsAfter  The number of violations after applying the edit.
-     * @param nodePAfter       The node-level probability after applying the edit.
-     * @param modelPBefore     The model-level probability before applying the edit.
-     * @param modelPAfter      The model-level probability after applying the edit.
-     * @param edgesAfter       The number of edges present after applying the edit.
-     * @param passesGuards     A flag indicating if the candidate passes predefined guards/criteria.
-     * @param alpha            An additional parameter used in scoring computations.
+     * @param violationsAfter    The number of violations after applying the edit.
+     * @param nodePAfter         The node-level probability after applying the edit.
+     * @param modelPBefore       The model-level probability before applying the edit.
+     * @param modelPAfter        The model-level probability after applying the edit.
+     * @param edgesAfter         The number of edges present after applying the edit.
+     * @param passesGuards       A flag indicating if the candidate passes predefined guards/criteria.
+     * @param alpha              An additional parameter used in scoring computations.
      */
     public record ScoredCandidate(
             CandidateEdit edit,
