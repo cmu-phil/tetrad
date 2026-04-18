@@ -90,27 +90,34 @@ public final class VertexRepairSearch implements IGraphSearch {
         if (b == null) return -1;
 
         // We're sorting so that the best option is at the top, not the bottom.
-
         int c;
 
         // Lower deltas are preferred.
         c = Integer.compare(a.violationsAfter(), b.violationsAfter());
         if (c != 0) return c;
 
-        // Removals always use actual edge count; additions only get credit
-        // if modelP already clears alpha — otherwise they sort to the back.
-        // Lower values preferred.
         boolean aIsRemoval = moveType(a.edit()) == MoveType.REMOVE_EDGE;
         boolean bIsRemoval = moveType(b.edit()) == MoveType.REMOVE_EDGE;
-        int edges1 = (aIsRemoval || a.modelPAfter() > a.alpha()) ? a.edgesAfter() : Integer.MAX_VALUE;
-        int edges2 = (bIsRemoval || b.modelPAfter() > b.alpha()) ? b.edgesAfter() : Integer.MAX_VALUE;
+        boolean aIsNoOp = a.edit() != null && a.edit().isNoOp();
+        boolean bIsNoOp = b.edit() != null && b.edit().isNoOp();
+        int edges1 = (aIsRemoval || aIsNoOp || a.modelPAfter() > a.alpha())
+                ? a.edgesAfter() : Integer.MAX_VALUE;
+        int edges2 = (bIsRemoval || bIsNoOp || b.modelPAfter() > b.alpha())
+                ? b.edgesAfter() : Integer.MAX_VALUE;
         c = Integer.compare(edges1, edges2);
         if (c != 0) return c;
 
-        // Higher Model-P is preferred, so reverse sort order.
-        c = -Double.compare(a.modelPAfter(), b.modelPAfter());
-        if (c != 0) return c;
+        // Higher Model-P is preferred; NaN means "unknown", treat as tie
+        double mpA = a.modelPAfter();
+        double mpB = b.modelPAfter();
+        if (!Double.isNaN(mpA) || !Double.isNaN(mpB)) {
+            if (Double.isNaN(mpA)) return 1;   // known beats unknown
+            if (Double.isNaN(mpB)) return -1;
+            c = -Double.compare(mpA, mpB);
+            if (c != 0) return c;
+        }
 
+        // both NaN: fall through to stable tiebreak
         return stableTieBreak(a, b);
     };
     private static final int DEFAULT_MODELP_TOP_K = 50;
