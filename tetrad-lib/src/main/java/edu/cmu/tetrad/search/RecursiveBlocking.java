@@ -1,9 +1,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.*;
 
 import java.util.*;
 
@@ -607,6 +605,12 @@ public class RecursiveBlocking {
             }
             return collider && hasZDesc;
         }
+    }
+
+    private static boolean isColliderViaEdges(Edge e1, Edge e2, Node b) {
+        return e1 != null && e2 != null
+                && e1.getProximalEndpoint(b) == Endpoint.ARROW
+                && e2.getProximalEndpoint(b) == Endpoint.ARROW;
     }
 
     /**
