@@ -147,6 +147,31 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
      * EDT-safe Swing updates. This is the only place in the panel that handles
      * search events.
      */
+//    private final class PanelRepairListener implements RepairListener {
+//
+//        @Override
+//        public void statusUpdated(String message) {
+//            SwingUtilities.invokeLater(() -> statusLabel.setText(message));
+//        }
+//
+//        @Override
+//        public void editApplied(CandidateEdit edit, Graph currentGraph) {
+//            // Keep the model's persisted graph in sync during batch repair
+//            baseModel.setGraph(currentGraph);
+//            SwingUtilities.invokeLater(() ->
+//                    statusLabel.setText("Applied: " + edit.description()));
+//        }
+//
+//        @Override
+//        public void repairConverged(int totalEdits, String message) {
+//            SwingUtilities.invokeLater(() -> {
+//                populateNodeCombo();
+//                statusLabel.setText(message);
+//                baseModel.setGraph(repairSearch.getGraph());
+//            });
+//        }
+//    }
+
     private final class PanelRepairListener implements RepairListener {
 
         @Override
@@ -156,8 +181,9 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
 
         @Override
         public void editApplied(CandidateEdit edit, Graph currentGraph) {
-            // Keep the model's persisted graph in sync during batch repair
-            baseModel.setGraph(currentGraph);
+            // Don't publish per-edit during batch repair — it's expensive (rescores
+            // every vertex in the enclosing editor) and also silently no-ops because
+            // we'd be passing the same Graph reference repeatedly. Just update status.
             SwingUtilities.invokeLater(() ->
                     statusLabel.setText("Applied: " + edit.description()));
         }
@@ -167,7 +193,8 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
             SwingUtilities.invokeLater(() -> {
                 populateNodeCombo();
                 statusLabel.setText(message);
-                baseModel.setGraph(repairSearch.getGraph());
+                // Pass a distinct instance so PROP_GRAPH actually fires in the base model.
+                baseModel.setGraph(safeCopy(repairSearch.getGraph()));
             });
         }
     }
@@ -406,12 +433,36 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
     // Candidate application (interactive, single edit from the table)
     // =========================================================================
 
+//    private void applyCandidate(CandidateEdit cand) {
+//        if (cand == null || cand.isNoOp()) return;
+//
+//        history.push(safeCopy(repairSearch.getGraph()));
+//        repairSearch.applyEdit(cand);
+//        baseModel.setGraph(repairSearch.getGraph());
+//
+//        // Refresh the node reference and node combo
+//        Graph wg = repairSearch.getGraph();
+//        if (x != null && x.getName() != null) {
+//            Node inGraph = wg.getNode(x.getName());
+//            x = (inGraph != null) ? inGraph : resolveInitialNode(wg, null);
+//        }
+//        SwingUtilities.invokeLater(this::populateNodeCombo);
+//
+//        updateButtons();
+//        statusLabel.setText("Applied: " + cand.description());
+//    }
+
     private void applyCandidate(CandidateEdit cand) {
         if (cand == null || cand.isNoOp()) return;
 
         history.push(safeCopy(repairSearch.getGraph()));
         repairSearch.applyEdit(cand);
-        baseModel.setGraph(repairSearch.getGraph());
+
+        // Publish to the enclosing model. We MUST pass a distinct Graph instance here,
+        // otherwise VertexCheckIndTestModel.setGraph may short-circuit (same reference
+        // or .equals()) and never fire PROP_GRAPH — which is what VertexCheckEditor
+        // listens to in order to refresh its overview/facts tables.
+        baseModel.setGraph(safeCopy(repairSearch.getGraph()));
 
         // Refresh the node reference and node combo
         Graph wg = repairSearch.getGraph();
@@ -423,17 +474,31 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
 
         updateButtons();
         statusLabel.setText("Applied: " + cand.description());
+
+        // Re-score candidates against the updated graph so the table reflects the
+        // new state instead of the stale pre-edit candidates.
+        startWatched("Searching", this::runSearchWatched, null);
     }
 
     // =========================================================================
     // Undo / history
     // =========================================================================
 
+//    private void goBack() {
+//        if (history.isEmpty()) return;
+//        Graph prev = history.pop();
+//        repairSearch.setGraph(prev);
+//        baseModel.setGraph(prev);
+//        statusLabel.setText("Reverted to previous graph.");
+//        updateButtons();
+//        startWatched("Searching", this::runSearchWatched, null);
+//    }
+
     private void goBack() {
         if (history.isEmpty()) return;
         Graph prev = history.pop();
         repairSearch.setGraph(prev);
-        baseModel.setGraph(prev);
+        baseModel.setGraph(safeCopy(prev));  // force a distinct instance
         statusLabel.setText("Reverted to previous graph.");
         updateButtons();
         startWatched("Searching", this::runSearchWatched, null);

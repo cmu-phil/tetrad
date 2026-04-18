@@ -597,7 +597,20 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public ModelSummary getModelSummary() {
         if (modelSummary != null) return modelSummary;
 
-        List<Double> pvals = getDedupedPvalues();
+        ConditioningSetType conditioningSetType = getConditioningSetType();
+        Set<IndependenceFact> impliedFacts = MarkovCheck.computeAllImpliedFacts(graph, conditioningSetType);
+
+        List<Double> pvals = new ArrayList<>();
+        for (IndependenceFact fact : impliedFacts) {
+
+            // Cached eval keyed by (X,Y|Z) via name->id maps; rebinding handled internally.
+            CachedIndependenceQueries.Eval e = cachedQueries.eval(fact);
+
+            double p = e.pValue();
+            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
+                pvals.add(p);
+            }
+        }
 
         double modelP = getUniformityP(pvals);
         modelSummary = new ModelSummary(pvals.size(), modelP);

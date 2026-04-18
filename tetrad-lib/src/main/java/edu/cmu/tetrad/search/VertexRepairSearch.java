@@ -176,18 +176,18 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
     }
 
-    private static boolean isProgress(int baselineViol, int afterViol,
-                                      int currentEdges, int afterEdges,
-                                      double mpBefore, double mpAfter,
-                                      MoveType moveType) {
-        if (true) return true;
-
-        if (afterViol < baselineViol) return true;
-        if (afterEdges < currentEdges) return true;
-        double minGain = (moveType == MoveType.REMOVE_EDGE) ? 0.0 : 0.001;
-        return Double.isFinite(mpBefore) && Double.isFinite(mpAfter)
-                && (mpAfter - mpBefore) >= minGain;
-    }
+//    private static boolean isProgress(int baselineViol, int afterViol,
+//                                      int currentEdges, int afterEdges,
+//                                      double mpBefore, double mpAfter,
+//                                      MoveType moveType) {
+//        if (true) return true;
+//
+//        if (afterViol < baselineViol) return true;
+//        if (afterEdges < currentEdges) return true;
+//        double minGain = (moveType == MoveType.REMOVE_EDGE) ? 0.0 : 0.001;
+//        return Double.isFinite(mpBefore) && Double.isFinite(mpAfter)
+//                && (mpAfter - mpBefore) >= minGain;
+//    }
 
 
     // =========================================================================
@@ -995,12 +995,12 @@ public final class VertexRepairSearch implements IGraphSearch {
                 ? evalGraphLocality(baseCache, g2, affected).violations()
                 : evalViolationsOnly(g2);
 
-        boolean passes = isProgress(baseline, after,
-                base.getNumEdges(), g2.getNumEdges(), mpBefore, mpAfter,
-                moveType(cand));
+//        boolean passes = isProgress(baseline, after,
+//                base.getNumEdges(), g2.getNumEdges(), mpBefore, mpAfter,
+//                moveType(cand));
 
         return new ScoredCandidate(cand, baseline, after,
-                sc.nodePAfter(), mpBefore, mpAfter, g2.getNumEdges(), passes, Q.getAlpha());
+                sc.nodePAfter(), mpBefore, mpAfter, g2.getNumEdges(), true, Q.getAlpha());
     }
 
     private List<CandidateEdit> enumerateCandidates(Graph g, Node x) {
@@ -1315,7 +1315,7 @@ public final class VertexRepairSearch implements IGraphSearch {
         int violations = 0;
         for (boolean isViol : globalViolationByKey.values()) if (isViol) violations++;
 
-        List<IndependenceFact> allFacts = MarkovCheck.computeAllImpliedFacts(candidateGraph, type);
+        Set<IndependenceFact> allFacts = MarkovCheck.computeAllImpliedFacts(candidateGraph, type);
         List<Double> allPValues = new ArrayList<>();
 
         for (IndependenceFact f : allFacts) {
@@ -1349,7 +1349,7 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     private int evalViolationsOnly(Graph g) {
         if (g == null) return 0;
-        List<IndependenceFact> facts = MarkovCheck.computeAllImpliedFacts(g, type);
+        Set<IndependenceFact> facts = MarkovCheck.computeAllImpliedFacts(g, type);
         if (facts.isEmpty()) return 0;
         List<CachedIndependenceQueries.Eval> evals =
                 Q.evalAll(facts, CachedIndependenceQueries.Dedup.BY_CACHE_KEY);
@@ -1388,10 +1388,11 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     private boolean wouldPassGuards(Graph base, ScoredCandidate sc) {
         if (sc == null || sc.edit() == null || sc.edit().isNoOp()) return false;
-        return isProgress(sc.violationsBaseline(), sc.violationsAfter(),
-                base.getNumEdges(), sc.edgesAfter(),
-                sc.modelPBefore(), sc.modelPAfter(),
-                moveType(sc.edit()));
+        return true;
+//        return isProgress(sc.violationsBaseline(), sc.violationsAfter(),
+//                base.getNumEdges(), sc.edgesAfter(),
+//                sc.modelPBefore(), sc.modelPAfter(),
+//                moveType(sc.edit()));
     }
 
     private boolean isLegalGraphType(Graph g) {
