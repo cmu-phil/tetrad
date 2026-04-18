@@ -444,6 +444,7 @@ public final class Fcit implements IGraphSearch {
         int round = 0;
 
         do {
+            System.out.println();
             System.out.println("Round: " + (++round));
         } while (removeEdgesRecursively(checks, excludeSelectionBias));
 

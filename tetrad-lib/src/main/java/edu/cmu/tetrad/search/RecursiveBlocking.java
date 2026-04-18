@@ -192,6 +192,184 @@ public class RecursiveBlocking {
         return z;
     }
 
+//    /**
+//     * Evaluates whether all paths from a→b onward to y can be blocked by the current candidate set Z, possibly
+//     * augmented with b.
+//     *
+//     * <p>The method explores continuations from the triple (a, b, c) under PAG
+//     * semantics and returns one of three outcomes:</p>
+//     * <ul>
+//     *   <li>{@code BLOCKED} — all continuations through b are blocked given the
+//     *       current Z (with or without conditioning on b).</li>
+//     *   <li>{@code UNBLOCKABLE} — some continuation cannot be blocked even after
+//     *       adding b to Z.</li>
+//     *   <li>{@code INDETERMINATE} — traversal was aborted (interrupted or path
+//     *       length exceeded) or could not be decided safely.</li>
+//     * </ul>
+//     *
+//     * <p>Special cases:</p>
+//     * <ul>
+//     *   <li>If b == y, the path immediately certifies as {@code UNBLOCKABLE}.</li>
+//     *   <li>If b has already been visited in the current path, it is treated as
+//     *       {@code UNBLOCKABLE} (cycle guard).</li>
+//     *   <li>If b is in {@code notFollowed}, the branch is aborted as
+//     *       {@code INDETERMINATE}.</li>
+//     *   <li>If y is in {@code notFollowed}, that branch is treated as
+//     *       {@code BLOCKED} (refusing to follow into y cannot make paths less
+//     *       blockable).</li>
+//     * </ul>
+//     *
+//     * <p>Traversal policy:</p>
+//     * <ol>
+//     *   <li>If b is latent or already in Z, traversal continues without
+//     *       conditioning on b.</li>
+//     *   <li>Otherwise, the method first tries to block without conditioning on
+//     *       b. If that fails, it retries with b added to Z, rolling back if
+//     *       this does not succeed.</li>
+//     * </ol>
+//     *
+//     * <p>Path bookkeeping: after adding b to the current path, this method
+//     * guarantees that b is removed again before returning.</p>
+//     *
+//     * @param graph          the PAG structure
+//     * @param a              predecessor node in the path
+//     * @param b              current node under consideration
+//     * @param y              target node to be separated from x
+//     * @param path           nodes visited so far (cycle guard)
+//     * @param z              current candidate blocking set
+//     * @param maxPathLength  maximum allowed path length (-1 for unlimited)
+//     * @param notFollowed    nodes not to be traversed into
+//     * @param descendantsMap precomputed node→descendants map (for collider checks)
+//     * @return one of {@code BLOCKED}, {@code UNBLOCKABLE}, or {@code INDETERMINATE}
+//     * @throws InterruptedException if the traversal is interrupted
+//     */
+//    public static Blockable findPathToTargetVisit(Graph graph,
+//                                                  Node a,
+//                                                  Node b,
+//                                                  Node y,
+//                                                  Set<Node> path,
+//                                                  Set<Node> z,
+//                                                  int maxPathLength,
+//                                                  Set<Node> notFollowed,
+//                                                  Map<Node, Set<Node>> descendantsMap) throws InterruptedException {
+//        if (Thread.currentThread().isInterrupted()) {
+//            return Blockable.INDETERMINATE;
+//        }
+//
+//        // Immediate termination cases before adding b to path.
+//        if (b == y) {
+//            return Blockable.UNBLOCKABLE;
+//        }
+//        if (path.contains(b)) {
+//            return Blockable.BLOCKED;
+//        }
+//        if (notFollowed.contains(b)) {
+//            return Blockable.INDETERMINATE;
+//        }
+//        // IMPORTANT: If y is "not followed", treat as BLOCKED for this branch.
+//        if (notFollowed.contains(y)) {
+//            return Blockable.BLOCKED;
+//        }
+//
+//        path.add(b);
+//
+//        try {
+//            if (maxPathLength != -1 && path.size() > maxPathLength) {
+//                return Blockable.INDETERMINATE;
+//            }
+//
+//            // Case 1: if b is latent or already in Z, we cannot (or need not) condition on it.
+//
+//            if (b.getNodeType() == NodeType.LATENT) {// || z.contains(b)) {
+//                for (int i = 0; i < 2; i++) {
+//
+//                    List<Node> passNodes = getReachableNodes(graph, a, b, z, descendantsMap);
+//                    passNodes.removeAll(notFollowed);
+//
+//                    for (Node c : passNodes) {
+//                        if (Thread.currentThread().isInterrupted()) {
+//                            return Blockable.INDETERMINATE;
+//                        }
+//
+//                        Blockable blockable = findPathToTargetVisit(graph, b, c, y, path, z, maxPathLength, notFollowed, descendantsMap);
+//
+//                        if (blockable == Blockable.UNBLOCKABLE || blockable == Blockable.INDETERMINATE) {
+//                            return Blockable.UNBLOCKABLE;
+//                        }
+//                    }
+//                }
+//
+//                // All continuations are blocked without needing to add b.
+//                return Blockable.BLOCKED;
+//            }
+//
+//            // Case 2: Try first WITHOUT conditioning on b.
+//            {
+//
+//                boolean blockable1 = true;
+//
+//
+//                for (int i = 0; i < 2; i++) {
+//                    List<Node> passNodes = getReachableNodes(graph, a, b, z, descendantsMap);
+//                    passNodes.removeAll(notFollowed);
+//
+//                    for (Node c : passNodes) {
+//                        if (Thread.currentThread().isInterrupted()) {
+//                            return Blockable.INDETERMINATE;
+//                        }
+//
+//                        Blockable blockType = findPathToTargetVisit(graph, b, c, y, path, z, maxPathLength, notFollowed, descendantsMap);
+//
+//                        if (blockType == Blockable.UNBLOCKABLE || blockType == Blockable.INDETERMINATE) {
+//                            blockable1 = false;
+//                            break;
+//                        }
+//                    }
+//                }
+//
+//                if (blockable1) {
+//                    // Already blocked without adding b.
+//                    return Blockable.BLOCKED;
+//                }
+//            }
+//
+//            // Case 3: Try WITH conditioning on b.
+//            z.add(b);
+//            {
+//                boolean blockable2 = true;
+//
+//                List<Node> passNodes = getReachableNodes(graph, a, b, z, descendantsMap);
+//                passNodes.removeAll(notFollowed);
+//
+//                for (Node c : passNodes) {
+//                    if (Thread.currentThread().isInterrupted()) {
+//                        // Roll back Z before returning.
+//                        z.remove(b);
+//                        return Blockable.INDETERMINATE;
+//                    }
+//
+//                    Blockable blockable = findPathToTargetVisit(graph, b, c, y, path, z, maxPathLength, notFollowed, descendantsMap);
+//
+//                    if (blockable == Blockable.UNBLOCKABLE || blockable == Blockable.INDETERMINATE) {
+//                        blockable2 = false;
+//                        break;
+//                    }
+//                }
+//
+//                if (blockable2) {
+//                    return Blockable.BLOCKED;
+//                } else {
+//                    // Roll back Z: adding b did not help, leave Z unchanged.
+//                    z.remove(b);
+//                    return Blockable.UNBLOCKABLE;
+//                }
+//            }
+//        } finally {
+//            // ALWAYS clean up the path.
+//            path.remove(b);
+//        }
+//    }
+
     /**
      * Evaluates whether all paths from a→b onward to y can be blocked by the current candidate set Z, possibly
      * augmented with b.
@@ -278,88 +456,111 @@ public class RecursiveBlocking {
                 return Blockable.INDETERMINATE;
             }
 
-            // Case 1: if b is latent or already in Z, we cannot (or need not) condition on it.
+            // Case 1: if b is latent, we cannot condition on it.
+            if (b.getNodeType() == NodeType.LATENT) {
+                return tryBlockAllContinuations(graph, a, b, y, path, z,
+                        maxPathLength, notFollowed, descendantsMap);
+            }
 
-            if (b.getNodeType() == NodeType.LATENT) {// || z.contains(b)) {
-                List<Node> passNodes = getReachableNodes(graph, a, b, z, descendantsMap);
-                passNodes.removeAll(notFollowed);
+            // Snapshot Z so we can roll back cleanly if neither option succeeds.
+            Set<Node> zSnapshot = new HashSet<>(z);
 
-                for (Node c : passNodes) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        return Blockable.INDETERMINATE;
-                    }
+            // Case 2: Try first WITHOUT conditioning on b.
+            Blockable withoutB = tryBlockAllContinuations(graph, a, b, y, path, z,
+                    maxPathLength, notFollowed, descendantsMap);
 
-                    Blockable blockable = findPathToTargetVisit(graph, b, c, y, path, z, maxPathLength, notFollowed, descendantsMap);
-
-                    if (blockable == Blockable.UNBLOCKABLE || blockable == Blockable.INDETERMINATE) {
-                        return Blockable.UNBLOCKABLE;
-                    }
-                }
-
-                // All continuations are blocked without needing to add b.
+            if (withoutB == Blockable.BLOCKED) {
                 return Blockable.BLOCKED;
             }
 
-            // Case 2: Try first WITHOUT conditioning on b.
-            {
-                boolean blockable1 = true;
-
-                List<Node> passNodes = getReachableNodes(graph, a, b, z, descendantsMap);
-                passNodes.removeAll(notFollowed);
-
-                for (Node c : passNodes) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        return Blockable.INDETERMINATE;
-                    }
-
-                    Blockable blockType = findPathToTargetVisit(graph, b, c, y, path, z, maxPathLength, notFollowed, descendantsMap);
-
-                    if (blockType == Blockable.UNBLOCKABLE || blockType == Blockable.INDETERMINATE) {
-                        blockable1 = false;
-                        break;
-                    }
-                }
-
-                if (blockable1) {
-                    // Already blocked without adding b.
-                    return Blockable.BLOCKED;
-                }
-            }
+            // Roll back any additions made while attempting without b, so that
+            // Case 3 starts from a clean state (plus b itself).
+            z.clear();
+            z.addAll(zSnapshot);
 
             // Case 3: Try WITH conditioning on b.
             z.add(b);
-            {
-                boolean blockable2 = true;
+            Blockable withB = tryBlockAllContinuations(graph, a, b, y, path, z,
+                    maxPathLength, notFollowed, descendantsMap);
 
-                List<Node> passNodes = getReachableNodes(graph, a, b, z, descendantsMap);
-                passNodes.removeAll(notFollowed);
-
-                for (Node c : passNodes) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        // Roll back Z before returning.
-                        z.remove(b);
-                        return Blockable.INDETERMINATE;
-                    }
-
-                    Blockable blockable = findPathToTargetVisit(graph, b, c, y, path, z, maxPathLength, notFollowed, descendantsMap);
-
-                    if (blockable == Blockable.UNBLOCKABLE || blockable == Blockable.INDETERMINATE) {
-                        blockable2 = false;
-                        break;
-                    }
-                }
-
-                if (blockable2) {
-                    return Blockable.BLOCKED;
-                } else {
-                    // Roll back Z: adding b did not help, leave Z unchanged.
-                    z.remove(b);
-                    return Blockable.UNBLOCKABLE;
-                }
+            if (withB == Blockable.BLOCKED) {
+                return Blockable.BLOCKED;
             }
+
+            // Neither option worked: roll Z back to its original state.
+            z.clear();
+            z.addAll(zSnapshot);
+
+            return (withB == Blockable.INDETERMINATE || withoutB == Blockable.INDETERMINATE)
+                    ? Blockable.INDETERMINATE
+                    : Blockable.UNBLOCKABLE;
         } finally {
             // ALWAYS clean up the path.
             path.remove(b);
+        }
+    }
+
+    /**
+     * Attempts to block every continuation c reachable from (a, b) under the
+     * current Z. Because Z may grow as deeper recursive calls add nodes to it,
+     * new continuations may become reachable mid-loop; this method re-derives
+     * the reachable set until a full pass processes no new c.
+     *
+     * <p>Returns BLOCKED iff every reachable continuation (including any that
+     * become reachable as Z grows) is itself BLOCKED. Any UNBLOCKABLE short-
+     * circuits to UNBLOCKABLE. Any INDETERMINATE short-circuits to INDETERMINATE.</p>
+     */
+    private static Blockable tryBlockAllContinuations(Graph graph,
+                                                      Node a,
+                                                      Node b,
+                                                      Node y,
+                                                      Set<Node> path,
+                                                      Set<Node> z,
+                                                      int maxPathLength,
+                                                      Set<Node> notFollowed,
+                                                      Map<Node, Set<Node>> descendantsMap)
+            throws InterruptedException {
+        Set<Node> handled = new HashSet<>();
+
+        while (true) {
+            if (Thread.currentThread().isInterrupted()) {
+                return Blockable.INDETERMINATE;
+            }
+
+            List<Node> passNodes = getReachableNodes(graph, a, b, z, descendantsMap);
+            passNodes.removeAll(notFollowed);
+
+            boolean progressed = false;
+
+            for (Node c : passNodes) {
+                if (handled.contains(c)) continue;
+                progressed = true;
+
+                if (Thread.currentThread().isInterrupted()) {
+                    return Blockable.INDETERMINATE;
+                }
+
+                Blockable result = findPathToTargetVisit(graph, b, c, y, path, z,
+                        maxPathLength, notFollowed, descendantsMap);
+
+                if (result == Blockable.UNBLOCKABLE) {
+                    return Blockable.UNBLOCKABLE;
+                }
+                if (result == Blockable.INDETERMINATE) {
+                    return Blockable.INDETERMINATE;
+                }
+                // result == BLOCKED
+                handled.add(c);
+                // Z may have grown inside the recursive call; we'll recompute
+                // passNodes on the next outer-loop iteration to catch any newly
+                // reachable continuations.
+            }
+
+            if (!progressed) {
+                // A full pass added nothing new to `handled`. Every currently
+                // reachable continuation under the current Z is BLOCKED.
+                return Blockable.BLOCKED;
+            }
         }
     }
 

@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Set;
 
 import static edu.cmu.tetrad.search.SepsetFinder.blockPathsLocalMarkov;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * The TestSepsetMethods class  is responsible for testing various methods for finding a sepset of two nodes in a DAG.
@@ -440,5 +440,26 @@ public class TestSepsetMethods {
         }
 
         return false;
+    }
+
+    @Test
+    public void test7() {
+
+        // Bryan's example.
+        Graph graph = GraphUtils.convert("a-->b,b-->c,c<--d,d-->y,c-->e,e-->f,f-->y");
+        Node a = graph.getNode("a");
+        Node y = graph.getNode("y");
+
+        try {
+            Set<Node> z = RecursiveBlocking.blockPathsRecursively(graph, a, y, Set.of(), Set.of(), -1);
+            System.out.println("z = " + z);
+
+            Node f = graph.getNode("f");
+            Set<Node> _z = Set.of(f);
+
+            assertNotEquals(_z, z);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
