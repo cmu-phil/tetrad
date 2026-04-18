@@ -80,6 +80,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * List of observers to be notified when changes are made to the model.
      */
     private final List<ModelObserver> observers = new ArrayList<>();
+    private final CachedIndependenceQueries cachedQueries =
+            new CachedIndependenceQueries(CachedIndependenceQueries.ErrorPolicy.TREAT_AS_INDEPENDENT);
     /**
      * The Anderson-Darling p-value for the independent case.
      */
@@ -92,8 +94,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * The independence test.
      */
     private IndependenceTest independenceTest;
-    private final CachedIndependenceQueries cachedQueries =
-            new CachedIndependenceQueries(CachedIndependenceQueries.ErrorPolicy.TREAT_AS_INDEPENDENT);
     /**
      * The type of conditioning sets to use in the Markov check.
      */
@@ -383,12 +383,12 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     if (alignedGraph.isAdjacentTo(w, x)) continue;
 
                     try {
-                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(alignedGraph, x, w, Set.of(), Set.of(), -1);
 
-                        if (blocking != null) {
-                            if (alignedGraph.paths().isMSeparatedFrom(x, w, blocking, false)) {
-                                facts.add(new IndependenceFact(x, w, blocking));
-                            }
+                        // Look for a blocking set near x... so search from the side of w.
+                        Set<Node> blockingwx = RecursiveBlocking.blockPathsRecursively(alignedGraph, w, x, Set.of(), Set.of(), -1);
+
+                        if (blockingwx != null) {
+                            facts.add(new IndependenceFact(x, w, blockingwx));
                         }
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
@@ -1376,7 +1376,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 //                    if (graph.isAdjacentTo(w, x)) continue;
 
                     try {
-                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, x, w, Set.of(), Set.of(), -1);
+
+                        // Look for a blocking set near x... so search from the side of w.
+                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, w, x, Set.of(), Set.of(), -1);
 
                         if (blocking != null) {
                             facts.add(new IndependenceFact(x, w, blocking));

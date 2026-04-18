@@ -180,6 +180,8 @@ public final class VertexRepairSearch implements IGraphSearch {
                                       int currentEdges, int afterEdges,
                                       double mpBefore, double mpAfter,
                                       MoveType moveType) {
+        if (true) return true;
+
         if (afterViol < baselineViol) return true;
         if (afterEdges < currentEdges) return true;
         double minGain = (moveType == MoveType.REMOVE_EDGE) ? 0.0 : 0.001;
