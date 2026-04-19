@@ -215,7 +215,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      *
      * @param g       the graph for which implied independence facts will be computed
      * @param setType the type of conditioning set to be used for inferring independence facts
-     * @return a list of all implied independence facts derived from the graph
+     * @return a set of all implied independence facts derived from the graph
      */
     public static Set<IndependenceFact> computeAllImpliedFacts(Graph g, ConditioningSetType setType) {
         Set<IndependenceFact> allImpliedFacts = new HashSet<>();
