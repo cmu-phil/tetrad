@@ -96,24 +96,24 @@ public final class VertexRepairSearch implements IGraphSearch {
         c = Integer.compare(a.violationsAfter(), b.violationsAfter());
         if (c != 0) return c;
 
-        boolean aIsRemoval = moveType(a.edit()) == MoveType.REMOVE_EDGE;
-        boolean bIsRemoval = moveType(b.edit()) == MoveType.REMOVE_EDGE;
-        boolean aIsNoOp = a.edit() != null && a.edit().isNoOp();
-        boolean bIsNoOp = b.edit() != null && b.edit().isNoOp();
-        int edges1 = (aIsRemoval || aIsNoOp || a.modelPAfter() > a.alpha())
+        boolean aIsRemoval = a.edit().moveType() == MoveType.REMOVE_EDGE;
+        boolean bIsRemoval = b.edit().moveType() == MoveType.REMOVE_EDGE;
+        int edges1 = ((aIsRemoval /*&& a.modelPAfter() >= a.modelPBefore()*/) || a.edit().isNoOp())
                 ? a.edgesAfter() : Integer.MAX_VALUE;
-        int edges2 = (bIsRemoval || bIsNoOp || b.modelPAfter() > b.alpha())
+        int edges2 = ((bIsRemoval /*&& b.modelPAfter() >= b.modelPBefore()*/) || b.edit().isNoOp())
                 ? b.edgesAfter() : Integer.MAX_VALUE;
+
         c = Integer.compare(edges1, edges2);
         if (c != 0) return c;
 
         // Higher Model-P is preferred; NaN means "unknown", treat as tie
-        double mpA = a.modelPAfter();
-        double mpB = b.modelPAfter();
-        if (!Double.isNaN(mpA) || !Double.isNaN(mpB)) {
-            if (Double.isNaN(mpA)) return 1;   // known beats unknown
-            if (Double.isNaN(mpB)) return -1;
-            c = -Double.compare(mpA, mpB);
+        if (!Double.isNaN(a.modelPAfter()) || !Double.isNaN(b.modelPAfter())) {
+            if (Double.isNaN(a.modelPAfter())) return 1;   // known beats unknown
+            if (Double.isNaN(b.modelPAfter())) return -1;
+            c = -Double.compare(a.modelPAfter() - a.modelPBefore(), b.modelPAfter() - b.modelPBefore());
+            if (c != 0) return c;
+
+            c = -Double.compare(a.modelPAfter(), b.modelPAfter());
             if (c != 0) return c;
         }
 
@@ -347,14 +347,18 @@ public final class VertexRepairSearch implements IGraphSearch {
     // Cancellation
     // =========================================================================
 
+//    private static MoveType moveType(CandidateEdit e) {
+//        if (e == null) return MoveType.OTHER;
+//        String s = (safeLower(e.key()) + " " + safeLower(e.description())).trim();
+//        if (containsAny(s, "rem:") || containsAny(s, "remove", "delete")) return MoveType.REMOVE_EDGE;
+//        if (containsAny(s, "add:") || containsAny(s, "add", "insert")) return MoveType.ADD_EDGE;
+//        if (containsAny(s, "rep:") || containsAny(s, "replace", "reorient", "orient", "flip", "reverse", "endpoint"))
+//            return MoveType.REORIENT_SIMPLE;
+//        return MoveType.OTHER;
+//    }
+
     private static MoveType moveType(CandidateEdit e) {
-        if (e == null) return MoveType.OTHER;
-        String s = (safeLower(e.key()) + " " + safeLower(e.description())).trim();
-        if (containsAny(s, "rem:") || containsAny(s, "remove", "delete")) return MoveType.REMOVE_EDGE;
-        if (containsAny(s, "add:") || containsAny(s, "add", "insert")) return MoveType.ADD_EDGE;
-        if (containsAny(s, "rep:") || containsAny(s, "replace", "reorient", "orient", "flip", "reverse", "endpoint"))
-            return MoveType.REORIENT_SIMPLE;
-        return MoveType.OTHER;
+        return (e == null) ? MoveType.OTHER : e.moveType();
     }
 
     // =========================================================================
@@ -721,7 +725,13 @@ public final class VertexRepairSearch implements IGraphSearch {
             if (sc.edit().isNoOp()) continue;
 
             ScoredCandidate withMp = evalModelPForEntry(entry);
-            if (withMp == null) continue;
+//            if (withMp == null) continue;
+
+            if (withMp == null) {
+                // Stale candidate no longer applies; refresh this node's candidates.
+                if (!invalidateAndRecompute(Set.of(entry.nodeName()))) return;
+                continue;
+            }
 
             if (!wouldPassGuards(workingGraph, withMp)) continue;
 
@@ -753,7 +763,12 @@ public final class VertexRepairSearch implements IGraphSearch {
                 if (n2 != null && n2.getName() != null) affected.add(n2.getName());
             }
 
-            if (!invalidateAndRecompute(affected)) return;
+//            if (!invalidateAndRecompute(affected)) return;
+
+            if (!invalidateAndRecompute(
+                    workingGraph.getNodes().stream()
+                            .map(Node::getName)
+                            .collect(Collectors.toCollection(LinkedHashSet::new)))) return;
 
             final int count = editsApplied;
             fireStatus("Global repair: " + count + " edits applied...");
@@ -876,17 +891,27 @@ public final class VertexRepairSearch implements IGraphSearch {
 //                if (!couldProgress) continue;
 //            }
 
-            // TODO keep?
-            if (!cand.isNoOp()) {
-                if (moveType(cand) == MoveType.REMOVE_EDGE) {
-                    // Always keep removals — they can't add false structure,
-                    // and ModelP evaluation will filter bad ones out.
-                } else {
-                    boolean couldProgress = after < baseline
-                            || g2.getNumEdges() < base.getNumEdges();
-                    if (!couldProgress) continue;
-                }
-            }
+//            // TODO keep?
+//            if (!cand.isNoOp()) {
+//                if (moveType(cand) == MoveType.REMOVE_EDGE) {
+//                    // Always keep removals — they can't add false structure,
+//                    // and ModelP evaluation will filter bad ones out.
+//                } else {
+//                    boolean couldProgress = after < baseline
+//                            || g2.getNumEdges() < base.getNumEdges();
+//                    if (!couldProgress) continue;
+//                }
+//            }
+
+//            if (!cand.isNoOp()) {
+//                if (moveType(cand) == MoveType.REMOVE_EDGE) {
+//                    // keep
+//                } else {
+//                    boolean couldProgress = after < baseline
+//                            || g2.getNumEdges() < base.getNumEdges();
+//                    if (!couldProgress) continue;
+//                }
+//            }
 
             result.add(sc);
         }
@@ -1715,7 +1740,7 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
     }
 
-    private enum MoveType {REORIENT_SIMPLE, REMOVE_EDGE, ADD_EDGE, OTHER}
+    enum MoveType {REORIENT_SIMPLE, REMOVE_EDGE, ADD_EDGE, OTHER}
 
     // ---- Static edge helpers (kept package-private for potential reuse) -------
 
@@ -1768,6 +1793,12 @@ public final class VertexRepairSearch implements IGraphSearch {
          */
         static CandidateEdit noOp() {
             return new CandidateEdit() {
+
+                @Override
+                public MoveType moveType() {
+                    return MoveType.OTHER;
+                }
+
                 @Override
                 public String description() {
                     return "No change";
@@ -1793,6 +1824,7 @@ public final class VertexRepairSearch implements IGraphSearch {
                     return null;
                 }
             };
+
         }
 
         /**
@@ -1808,6 +1840,11 @@ public final class VertexRepairSearch implements IGraphSearch {
         static CandidateEdit addEdge(Edge edgeToAdd) {
             Objects.requireNonNull(edgeToAdd, "edgeToAdd");
             return new CandidateEdit() {
+                @Override
+                public MoveType moveType() {
+                    return MoveType.ADD_EDGE;
+                }
+
                 @Override
                 public String description() {
                     return "Add edge " + edgeToAdd;
@@ -1851,7 +1888,13 @@ public final class VertexRepairSearch implements IGraphSearch {
          */
         static CandidateEdit removeEdge(Edge edgeToRemove) {
             Objects.requireNonNull(edgeToRemove, "edgeToRemove");
+
             return new CandidateEdit() {
+                @Override
+                public MoveType moveType() {
+                    return MoveType.REMOVE_EDGE;
+                }
+
                 @Override
                 public String description() {
                     return "Remove edge " + edgeToRemove;
@@ -1895,6 +1938,11 @@ public final class VertexRepairSearch implements IGraphSearch {
             Objects.requireNonNull(edgeToRemove, "edgeToRemove");
             Objects.requireNonNull(edgeToAdd, "edgeToAdd");
             return new CandidateEdit() {
+
+                @Override
+                public MoveType moveType() {
+                    return MoveType.REORIENT_SIMPLE;
+                }
 
                 /**
                  * Provides a textual description of the operation to replace an existing edge in the graph
@@ -1975,6 +2023,12 @@ public final class VertexRepairSearch implements IGraphSearch {
             List<Edge> rem = List.copyOf(Objects.requireNonNull(edgesToRemove));
             List<Edge> add = List.copyOf(Objects.requireNonNull(edgesToAdd));
             return new CandidateEdit() {
+
+                @Override
+                public MoveType moveType() {
+                    return MoveType.REORIENT_SIMPLE;
+                }
+
                 @Override
                 public String description() {
                     return label;
@@ -2022,6 +2076,15 @@ public final class VertexRepairSearch implements IGraphSearch {
                 }
             };
         }
+
+        /**
+         * Returns the structural category of this edit (ADD_EDGE, REMOVE_EDGE,
+         * REORIENT_SIMPLE, or OTHER). Used by ranking and progress checks
+         * in place of fragile string matching on descriptions/keys.
+         *
+         * @return the move type of this edit; never null.
+         */
+        MoveType moveType();
 
         /**
          * Provides a textual description of the {@code CandidateEdit} operation. The description
