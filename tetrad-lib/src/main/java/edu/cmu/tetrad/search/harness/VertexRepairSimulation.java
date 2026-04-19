@@ -55,6 +55,7 @@ import java.util.prefs.Preferences;
  *   <li>Markov Check KS p-value</li>
  *   <li>Number of edges</li>
  *   <li>BIC score</li>
+ *   <li>Percentage of runs where adjacency F1 improves after repair</li>
  * </ul>
  */
 public class VertexRepairSimulation {
@@ -75,7 +76,7 @@ public class VertexRepairSimulation {
     /**
      * Which starting-graph scenario to use. Change this to try different scenarios.
      */
-    public static final StartingGraph scenario = StartingGraph.PC;
+    public static final StartingGraph scenario = StartingGraph.BOSS;
 
     // =========================================================================
     // Simulation parameters — edit these as desired
@@ -205,6 +206,12 @@ public class VertexRepairSimulation {
         int cntStartMarkovKS = 0;
         int cntStartEdges = 0, cntStartBic = 0;
 
+        // Adjacency F1 improvement tracking:
+        // - cntAdjF1Comparable: runs where BOTH start and repaired adj F1 are defined
+        // - cntAdjF1Improved:   subset of above where repaired adj F1 > start adj F1
+        int cntAdjF1Comparable = 0;
+        int cntAdjF1Improved   = 0;
+
         DecimalFormat df = new DecimalFormat("0.0000");
 
         for (int run = 1; run <= NUM_RUNS; run++) {
@@ -289,10 +296,20 @@ public class VertexRepairSimulation {
             // ------------------------------------------------------------------
             Statistics stats = computeStats(trueCpdag, repairedGraph, data, fisherZ, score);
 
+            // Track adjacency F1 improvement (only count runs where both values are defined)
+            boolean improvedThisRun = false;
+            if (!Double.isNaN(startStats.adjF1) && !Double.isNaN(stats.adjF1)) {
+                cntAdjF1Comparable++;
+                if (stats.adjF1 >= startStats.adjF1) {
+                    cntAdjF1Improved++;
+                    improvedThisRun = true;
+                }
+            }
+
             System.out.printf("Run %2d | AdjP=%-6s AdjR=%-6s AdjF1=%-6s " +
                             "ArrP=%-6s ArrR=%-6s ArrF1=%-6s " +
                             "ArrPC=%-6s ArrRC=%-6s MarkovKS=%-6s " +
-                            "Edges=%-4s BIC=%-10s%n",
+                            "Edges=%-4s BIC=%-10s AdjF1Improved=%s%n",
                     run,
                     df.format(stats.adjPrec), df.format(stats.adjRec),
                     df.format(stats.adjF1),
@@ -301,7 +318,8 @@ public class VertexRepairSimulation {
                     df.format(stats.arrPrecCommon), df.format(stats.arrRecCommon),
                     df.format(stats.markovKS),
                     stats.numEdges,
-                    Double.isNaN(stats.bic) ? "N/A" : df.format(stats.bic));
+                    Double.isNaN(stats.bic) ? "N/A" : df.format(stats.bic),
+                    improvedThisRun ? "Y" : "N");
 
             // Repaired graph accumulation
             if (!Double.isNaN(stats.adjPrec))       { sumAdjPrec       += stats.adjPrec;       cntAdjPrec++; }
@@ -346,6 +364,13 @@ public class VertexRepairSimulation {
         System.out.printf("  Markov KS p-value                : %s  (n=%d)%n", avg(sumMarkovKS,      cntMarkovKS,      df), cntMarkovKS);
         System.out.printf("  Number of edges                  : %s  (n=%d)%n", avg(sumEdges,         cntEdges,         df), cntEdges);
         System.out.printf("  BIC score                        : %s  (n=%d)%n", avg(sumBic,           cntBic,           df), cntBic);
+        System.out.println("-------------------------------------------------");
+        System.out.printf("IMPROVEMENT SUMMARY:%n");
+        System.out.printf("  Adjacency F1 improved after repair: %s  (%d of %d comparable runs)%n",
+                cntAdjF1Comparable == 0
+                        ? "N/A"
+                        : df.format(100.0 * cntAdjF1Improved / cntAdjF1Comparable) + "%",
+                cntAdjF1Improved, cntAdjF1Comparable);
         System.out.println("=================================================");
     }
 
