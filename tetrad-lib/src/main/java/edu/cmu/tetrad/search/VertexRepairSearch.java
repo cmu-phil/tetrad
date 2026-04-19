@@ -89,33 +89,21 @@ public final class VertexRepairSearch implements IGraphSearch {
         if (a == null) return 1;
         if (b == null) return -1;
 
-        // We're sorting so that the best option is at the top, not the bottom.
         int c;
 
-        // Lower deltas are preferred.
-        c = Integer.compare(a.violationsAfter(), b.violationsAfter());
+        c = Integer.compare(a.delta(), b.delta());
         if (c != 0) return c;
 
         boolean aIsRemoval = a.edit().moveType() == MoveType.REMOVE_EDGE;
         boolean bIsRemoval = b.edit().moveType() == MoveType.REMOVE_EDGE;
-        int edges1 = ((aIsRemoval /*&& a.modelPAfter() >= a.modelPBefore()*/) || a.edit().isNoOp())
-                ? a.edgesAfter() : Integer.MAX_VALUE;
-        int edges2 = ((bIsRemoval /*&& b.modelPAfter() >= b.modelPBefore()*/) || b.edit().isNoOp())
-                ? b.edgesAfter() : Integer.MAX_VALUE;
+        int edges1 = (aIsRemoval || a.modelPAfter() > a.alpha() || a.edit().isNoOp()) ? a.edgesAfter() : Integer.MAX_VALUE;
+        int edges2 = (bIsRemoval || b.modelPAfter() > b.alpha() || b.edit().isNoOp()) ? b.edgesAfter() : Integer.MAX_VALUE;
 
         c = Integer.compare(edges1, edges2);
         if (c != 0) return c;
 
-        // Higher Model-P is preferred; NaN means "unknown", treat as tie
-        if (!Double.isNaN(a.modelPAfter()) || !Double.isNaN(b.modelPAfter())) {
-            if (Double.isNaN(a.modelPAfter())) return 1;   // known beats unknown
-            if (Double.isNaN(b.modelPAfter())) return -1;
-            c = -Double.compare(a.modelPAfter() - a.modelPBefore(), b.modelPAfter() - b.modelPBefore());
-            if (c != 0) return c;
-
-            c = -Double.compare(a.modelPAfter(), b.modelPAfter());
-            if (c != 0) return c;
-        }
+        c = -Double.compare(a.modelPAfter(), b.modelPAfter());
+        if (c != 0) return c;
 
         // both NaN: fall through to stable tiebreak
         return stableTieBreak(a, b);
@@ -175,20 +163,6 @@ public final class VertexRepairSearch implements IGraphSearch {
             ((RowsSettable) test).setRows(getSubsampleRows(1.0));
         }
     }
-
-//    private static boolean isProgress(int baselineViol, int afterViol,
-//                                      int currentEdges, int afterEdges,
-//                                      double mpBefore, double mpAfter,
-//                                      MoveType moveType) {
-//        if (true) return true;
-//
-//        if (afterViol < baselineViol) return true;
-//        if (afterEdges < currentEdges) return true;
-//        double minGain = (moveType == MoveType.REMOVE_EDGE) ? 0.0 : 0.001;
-//        return Double.isFinite(mpBefore) && Double.isFinite(mpAfter)
-//                && (mpAfter - mpBefore) >= minGain;
-//    }
-
 
     // =========================================================================
     // IGraphSearch
@@ -342,20 +316,6 @@ public final class VertexRepairSearch implements IGraphSearch {
         z.sort(NaturalSort.naturalComparator());
         return a + "|" + b + "|" + String.join(",", z);
     }
-
-    // =========================================================================
-    // Cancellation
-    // =========================================================================
-
-//    private static MoveType moveType(CandidateEdit e) {
-//        if (e == null) return MoveType.OTHER;
-//        String s = (safeLower(e.key()) + " " + safeLower(e.description())).trim();
-//        if (containsAny(s, "rem:") || containsAny(s, "remove", "delete")) return MoveType.REMOVE_EDGE;
-//        if (containsAny(s, "add:") || containsAny(s, "add", "insert")) return MoveType.ADD_EDGE;
-//        if (containsAny(s, "rep:") || containsAny(s, "replace", "reorient", "orient", "flip", "reverse", "endpoint"))
-//            return MoveType.REORIENT_SIMPLE;
-//        return MoveType.OTHER;
-//    }
 
     private static MoveType moveType(CandidateEdit e) {
         return (e == null) ? MoveType.OTHER : e.moveType();
@@ -725,7 +685,6 @@ public final class VertexRepairSearch implements IGraphSearch {
             if (sc.edit().isNoOp()) continue;
 
             ScoredCandidate withMp = evalModelPForEntry(entry);
-//            if (withMp == null) continue;
 
             if (withMp == null) {
                 // Stale candidate no longer applies; refresh this node's candidates.
@@ -762,8 +721,6 @@ public final class VertexRepairSearch implements IGraphSearch {
                 if (n1 != null && n1.getName() != null) affected.add(n1.getName());
                 if (n2 != null && n2.getName() != null) affected.add(n2.getName());
             }
-
-//            if (!invalidateAndRecompute(affected)) return;
 
             if (!invalidateAndRecompute(
                     workingGraph.getNodes().stream()
@@ -886,33 +843,6 @@ public final class VertexRepairSearch implements IGraphSearch {
                     g2.getNumEdges(), true,
                     Q.getAlpha());
 
-//            if (!cand.isNoOp()) {
-//                boolean couldProgress = after < baseline || g2.getNumEdges() < base.getNumEdges();
-//                if (!couldProgress) continue;
-//            }
-
-//            // TODO keep?
-//            if (!cand.isNoOp()) {
-//                if (moveType(cand) == MoveType.REMOVE_EDGE) {
-//                    // Always keep removals — they can't add false structure,
-//                    // and ModelP evaluation will filter bad ones out.
-//                } else {
-//                    boolean couldProgress = after < baseline
-//                            || g2.getNumEdges() < base.getNumEdges();
-//                    if (!couldProgress) continue;
-//                }
-//            }
-
-//            if (!cand.isNoOp()) {
-//                if (moveType(cand) == MoveType.REMOVE_EDGE) {
-//                    // keep
-//                } else {
-//                    boolean couldProgress = after < baseline
-//                            || g2.getNumEdges() < base.getNumEdges();
-//                    if (!couldProgress) continue;
-//                }
-//            }
-
             result.add(sc);
         }
 
@@ -1019,10 +949,6 @@ public final class VertexRepairSearch implements IGraphSearch {
         int after = usesLocality()
                 ? evalGraphLocality(baseCache, g2, affected).violations()
                 : evalViolationsOnly(g2);
-
-//        boolean passes = isProgress(baseline, after,
-//                base.getNumEdges(), g2.getNumEdges(), mpBefore, mpAfter,
-//                moveType(cand));
 
         return new ScoredCandidate(cand, baseline, after,
                 sc.nodePAfter(), mpBefore, mpAfter, g2.getNumEdges(), true, Q.getAlpha());
@@ -1414,10 +1340,6 @@ public final class VertexRepairSearch implements IGraphSearch {
     private boolean wouldPassGuards(Graph base, ScoredCandidate sc) {
         if (sc == null || sc.edit() == null || sc.edit().isNoOp()) return false;
         return true;
-//        return isProgress(sc.violationsBaseline(), sc.violationsAfter(),
-//                base.getNumEdges(), sc.edgesAfter(),
-//                sc.modelPBefore(), sc.modelPAfter(),
-//                moveType(sc.edit()));
     }
 
     private boolean isLegalGraphType(Graph g) {
