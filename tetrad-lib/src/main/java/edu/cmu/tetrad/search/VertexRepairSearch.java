@@ -164,6 +164,20 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
     }
 
+    private static boolean isProgress(int baselineViol, int afterViol,
+                                      int currentEdges, int afterEdges,
+                                      double mpBefore, double mpAfter,
+                                      MoveType moveType) {
+        if (true) return true;
+
+        if (afterViol < baselineViol) return true;
+        if (afterEdges < currentEdges) return true;
+        double minGain = (moveType == MoveType.REMOVE_EDGE) ? 0.0 : 0.001;
+        return Double.isFinite(mpBefore) && Double.isFinite(mpAfter)
+                && (mpAfter - mpBefore) >= minGain;
+    }
+
+
     // =========================================================================
     // IGraphSearch
     // =========================================================================
@@ -1339,7 +1353,11 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     private boolean wouldPassGuards(Graph base, ScoredCandidate sc) {
         if (sc == null || sc.edit() == null || sc.edit().isNoOp()) return false;
-        return true;
+//        return true;
+        return isProgress(sc.violationsBaseline(), sc.violationsAfter(),
+                base.getNumEdges(), sc.edgesAfter(),
+                sc.modelPBefore(), sc.modelPAfter(),
+                moveType(sc.edit()));
     }
 
     private boolean isLegalGraphType(Graph g) {

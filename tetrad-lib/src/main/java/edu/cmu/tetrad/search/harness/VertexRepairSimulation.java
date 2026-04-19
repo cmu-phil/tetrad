@@ -75,7 +75,7 @@ public class VertexRepairSimulation {
     /**
      * Which starting-graph scenario to use. Change this to try different scenarios.
      */
-    public static final StartingGraph scenario = StartingGraph.BOSS;
+    public static final StartingGraph scenario = StartingGraph.PC;
 
     // =========================================================================
     // Simulation parameters — edit these as desired
