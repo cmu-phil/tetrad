@@ -76,7 +76,7 @@ public class VertexRepairSimulation {
     /**
      * Which starting-graph scenario to use. Change this to try different scenarios.
      */
-    public static final StartingGraph scenario = StartingGraph.BOSS;
+    public static final StartingGraph scenario = StartingGraph.PC;
 
     // =========================================================================
     // Simulation parameters — edit these as desired
@@ -130,7 +130,7 @@ public class VertexRepairSimulation {
     /**
      * Alpha for pruning.
      */
-    private static final double PRUNE_ALPHA = 0.2;
+    private static final double PRUNE_ALPHA = 1.0;
 
     /**
      * The entry point of the VertexRepairSimulation application.

@@ -117,7 +117,7 @@ public final class VertexRepairSearch implements IGraphSearch {
     private final ConditioningSetType type;
     private final List<RepairListener> listeners = new CopyOnWriteArrayList<>();
     private final Map<String, List<ScoredCandidate>> globalCandsByNode = new HashMap<>();
-    private double pruneAlpha = 0.2;
+    private double pruneAlpha = 1.0;
     private Graph workingGraph;
     private Knowledge knowledge = new Knowledge();
     private AdjustmentGraphType graphType = AdjustmentGraphType.CPDAG;
@@ -1261,48 +1261,44 @@ public final class VertexRepairSearch implements IGraphSearch {
         Map<String, Boolean> globalViolationByKey = new HashMap<>();
         Map<String, Double> globalPByKey = new HashMap<>();
 
+        // Iterate non-affected vertices first, then affected vertices, so that
+        // fresh candidate-graph values (from affected vertex recomputation)
+        // overwrite any stale values carried over from baseCache for shared facts.
         List<String> names = new ArrayList<>(contrib.keySet());
         Collections.sort(names);
 
+        List<String> nonAffected = new ArrayList<>();
+        List<String> affected = new ArrayList<>();
+        Set<String> affectedSet = (affectedVertexNames == null)
+                ? Set.of() : affectedVertexNames;
         for (String name : names) {
+            if (affectedSet.contains(name)) affected.add(name);
+            else nonAffected.add(name);
+        }
+
+        List<String> orderedNames = new ArrayList<>(nonAffected);
+        orderedNames.addAll(affected);
+
+        for (String name : orderedNames) {
             VertexContribution vc = contrib.get(name);
             if (vc == null) continue;
 
-            List<String> violKeys = new ArrayList<>(vc.violationByKey().keySet());
-            Collections.sort(violKeys);
-            for (String key : violKeys) globalViolationByKey.putIfAbsent(key, vc.violationByKey().get(key));
-
-            List<String> pKeys = new ArrayList<>(vc.pByKey().keySet());
-            Collections.sort(pKeys);
-            for (String key : pKeys) globalPByKey.putIfAbsent(key, vc.pByKey().get(key));
+            // Use put (not putIfAbsent) so affected-vertex values win for shared facts.
+            for (Map.Entry<String, Boolean> e : vc.violationByKey().entrySet()) {
+                globalViolationByKey.put(e.getKey(), e.getValue());
+            }
+            for (Map.Entry<String, Double> e : vc.pByKey().entrySet()) {
+                globalPByKey.put(e.getKey(), e.getValue());
+            }
         }
 
         int violations = 0;
         for (boolean isViol : globalViolationByKey.values()) if (isViol) violations++;
 
-        Set<IndependenceFact> allFacts = MarkovCheck.computeAllImpliedFacts(candidateGraph, type);
-        List<Double> allPValues = new ArrayList<>();
-
-        for (IndependenceFact f : allFacts) {
-            try {
-                allPValues.add(Q.checkIndependence(f.getX(), f.getY(), f.getZ()).getPValue());
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
         double modelP = Double.NaN;
-
-        if (allPValues.size() > 2) {
-            modelP = getUniformityP(allPValues);
+        if (globalPByKey.size() >= 2) {
+            modelP = getUniformityP(new ArrayList<>(globalPByKey.values()));
         }
-//
-//        double modelP = Double.NaN;
-//        if (globalPByKey.size() >= 2) {
-//            List<Double> pvals = new ArrayList<>(globalPByKey.values());
-//            pvals.sort(Double::compareTo);
-//            modelP = getUniformityP(pvals);
-//        }
 
         return new GraphEval(violations, modelP, globalViolationByKey.size());
     }
