@@ -135,30 +135,19 @@ public final class VertexRepairSearch implements IGraphSearch {
     /**
      * Canonical ranking: best candidate sorts first.
      * Priority chain:
-     *   (0a) Strict violation-set reduction: candidates whose set of violated
-     *        implied facts is a strict subset of the baseline's (i.e. they
-     *        demonstrably resolve at least one specific violation and
-     *        introduce no new ones) beat candidates that don't. This requires
-     *        both a {@code violatedFactsBaseline} and a {@code violatedFactsAfter}
-     *        to be populated — non-locality graph types (MAG/PAG) will have empty
-     *        lists and so will tie at this tier and defer to later ones.
-     *   (1)  Fewer Markov violations (violationsAfter).
-     *   (2)  Higher Model-P. Because Model-P above alpha means "passes Markov"
-     *        and below means "fails," a straight descending comparison here
-     *        subsumes the passing/non-passing distinction: a passing candidate
-     *        always has a larger Model-P than any non-passing one. NaN sorts
-     *        last. Importantly, this tier runs <em>before</em> the edges tier:
-     *        when violations tie and two candidates both pass alpha, we prefer
-     *        the one with better Model-P rather than the sparser one — without
-     *        this ordering the search converges prematurely as soon as the no-op
-     *        clears alpha, leaving specific violations unresolved.
-     *   (3)  Fewer edges, but only for candidates that have "earned" the edges
-     *        comparison — removals, or candidates whose Model-P is known and
-     *        clears alpha. NaN Model-P does not earn it. Sparsity is a
-     *        tiebreaker once violations <em>and</em> Model-P agree.
-     *   (4)  Higher node-P.
-     *   (5)  Larger Model-P improvement (modelPAfter - modelPBefore).
-     *   (6)  Stable key/description tie-break.
+     *   (0) Markov-passing beats non-passing. A candidate "passes" when its
+     *       Model-P exceeds alpha. Within the non-passing group, a larger
+     *       Model-P is preferred — this gives the search a gradient toward
+     *       clearing alpha when it's stuck in a non-I-map region. NaN
+     *       Model-P is treated as non-passing and sorts last within that group.
+     *   (1) Fewer Markov violations (violationsAfter).
+     *   (2) Fewer edges, but only for candidates that have "earned" the edges
+     *       comparison — removals, no-ops, or candidates whose Model-P clears
+     *       alpha. NaN Model-P does not earn it.
+     *   (3) Higher Model-P.
+     *   (4) Higher node-P.
+     *   (5) Larger Model-P improvement (modelPAfter - modelPBefore).
+     *   (6) Stable key/description tie-break.
      */
     public static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
         if (a == null && b == null) return 0;
@@ -167,30 +156,32 @@ public final class VertexRepairSearch implements IGraphSearch {
 
         int c;
 
-        // (0a) Strict violation-set reduction wins. A candidate that resolves
-        // at least one specific violated fact without introducing new ones
-        // beats one that doesn't, regardless of raw counts.
-        boolean aResolves = a.resolvesSpecificViolation();
-        boolean bResolves = b.resolvesSpecificViolation();
-        if (aResolves != bResolves) return aResolves ? -1 : 1;
-
         // (1) Fewer Markov violations wins.
         c = Integer.compare(a.violationsAfter(), b.violationsAfter());
         if (c != 0) return c;
 
-        // (2) Higher Model-P wins. NaN sorts last. Runs before edges so that
-        // candidates that improve fit beat sparser candidates of equal violation
-        // count. Subsumes the prior passing-vs-non-passing tier since a passing
-        // Model-P (> alpha) is always numerically larger than a non-passing one.
-        c = compareModelPDesc(a.modelPAfter(), b.modelPAfter());
-        if (c != 0) return c;
+        // (0) Markov-passing beats non-passing.
+        boolean aPasses = passesMarkov(a);
+        boolean bPasses = passesMarkov(b);
+        if (aPasses != bPasses) return aPasses ? -1 : 1;
 
-        // (3) Edges comparison — only "earned" candidates participate; others
-        // are pinned to MAX_VALUE so they tie among themselves and defer to
-        // later tiers. Sparsity matters only when violations and Model-P agree.
+        // If BOTH fail to pass, prefer the one closer to passing (larger Model-P).
+        // Within this group, NaN sorts last (unknown distance to alpha).
+        // If BOTH pass, fall through — downstream tiers handle the ordering.
+        if (!aPasses /* && !bPasses */) {
+            c = compareModelPDesc(a.modelPAfter(), b.modelPAfter());
+            if (c != 0) return c;
+        }
+
+        // (2) Edges comparison — only "earned" candidates participate; others are
+        // pinned to MAX_VALUE so they tie among themselves and defer to later tiers.
         int edges1 = earnsEdgesComparison(a) ? a.edgesAfter() : Integer.MAX_VALUE;
         int edges2 = earnsEdgesComparison(b) ? b.edgesAfter() : Integer.MAX_VALUE;
         c = Integer.compare(edges1, edges2);
+        if (c != 0) return c;
+
+        // (3) Higher Model-P wins. NaN sorts last.
+        c = compareModelPDesc(a.modelPAfter(), b.modelPAfter());
         if (c != 0) return c;
 
         // (4) Higher node-P wins. NaN sorts last.
@@ -217,27 +208,14 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     /**
-     * Whether {@code sc} has "earned" the edges comparison. The edges tier
-     * prefers sparser graphs, but only among candidates for which sparsity is
-     * a legitimate claim:
-     * <ul>
-     *   <li>Removals always earn it — they reduce the edge count by construction.
-     *   <li>The no-op earns it only when its Model-P is known — otherwise, in
-     *       the queue-init regime where every candidate has NaN Model-P, a
-     *       no-op with a finite edge count would beat every ADD pinned at
-     *       MAX_VALUE, effectively blocking exploration of additions before
-     *       they're ever evaluated.
-     *   <li>Other moves earn it only when their Model-P clears alpha — we
-     *       won't prefer a sparser graph over a denser one if the sparser
-     *       one doesn't actually fit the data.
-     * </ul>
-     * A NaN Model-P means "not yet evaluated," so for non-removal moves it
-     * does not earn the comparison.
+     * Whether {@code sc} has "earned" the edges comparison: removals and no-ops
+     * always earn it; other moves earn it only when their Model-P is known and
+     * clears alpha. A NaN Model-P means "not yet evaluated", so it does not earn it.
      */
     private static boolean earnsEdgesComparison(ScoredCandidate sc) {
+        if (sc.edit().isNoOp()) return true;
         if (sc.edit().moveType() == MoveType.REMOVE_EDGE) return true;
         double mp = sc.modelPAfter();
-        if (sc.edit().isNoOp()) return !Double.isNaN(mp);
         return !Double.isNaN(mp) && mp > sc.alpha();
     }
 
@@ -513,20 +491,6 @@ public final class VertexRepairSearch implements IGraphSearch {
         return da.compareTo(db);
     }
 
-    /**
-     * Returns true iff {@code list} contains {@code target} by reference identity
-     * (not {@code equals}). Used by the global-queue staleness check: after a
-     * full recompute the list is rebuilt with new objects, so any old queue
-     * entries whose {@code scored} reference isn't in the current list are stale.
-     */
-    private static boolean listContainsByIdentity(List<ScoredCandidate> list, ScoredCandidate target) {
-        if (list == null || target == null) return false;
-        for (ScoredCandidate sc : list) {
-            if (sc == target) return true;
-        }
-        return false;
-    }
-
     private static Edge getEdgeByNames(Graph g, Edge e) {
         if (g == null || e == null) return null;
         String a = e.getNode1() == null ? null : e.getNode1().getName();
@@ -771,206 +735,147 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     private void runRepairPhase(Set<String> seenSweepStates, List<String> cycleWarnings) {
         boolean anyChangeInSweep;
-        int editsApplied = 0;
-        String terminationMessage = "Local sweep converged.";
 
-        try {
-            do {
-                if (stopRequested()) {
-                    terminationMessage = "Local sweep stopped: cancellation requested after "
-                            + editsApplied + " edits.";
+        do {
+            if (stopRequested()) return;
+            cycleWarnings.clear();
+            anyChangeInSweep = false;
+
+            List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
+            RandomUtil.shuffle(nodes);
+
+            for (Node node : nodes) {
+                if (stopRequested()) return;
+
+                Node current = workingGraph.getNode(node.getName());
+                if (current == null) continue;
+
+                Set<String> attemptedKeys = new LinkedHashSet<>();
+
+                while (true) {
+                    if (stopRequested()) return;
+
+                    Graph base = prepareBase();
+                    if (base == null) {
+                        fireStatus("Canonicalization failed during repair.");
+                        return;
+                    }
+
+                    List<ScoredCandidate> candidates = computeScoredCandidatesForNode(base, current);
+                    if (candidates.isEmpty()) break;
+
+                    ScoredCandidate top = candidates.getFirst();
+                    if (top.edit().isNoOp() || !top.passesGuards()) break;
+
+                    String key = top.edit().key();
+                    if (!attemptedKeys.add(key)) {
+                        cycleWarnings.add(current.getName() + ": \"" + top.edit().description() + "\"");
+                        break;
+                    }
+
+                    Graph before = safeCopy(workingGraph);
+                    applyCandidateInternal(top.edit());
+
+                    if (workingGraph.equals(before)) break;
+
+                    anyChangeInSweep = true;
+                    fireEditApplied(top.edit(), workingGraph);
+
+                    Node refreshed = workingGraph.getNode(current.getName());
+                    if (refreshed == null) break;
+                    current = refreshed;
+                }
+            }
+
+            if (anyChangeInSweep) {
+                String state = workingGraph.toString();
+                if (!seenSweepStates.add(state)) {
+                    fireStatus("Inter-sweep cycle detected: graph returned to a previously visited state. Stopping.");
                     return;
                 }
-                cycleWarnings.clear();
-                anyChangeInSweep = false;
+            }
 
-                List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
-                RandomUtil.shuffle(nodes);
+        } while (anyChangeInSweep);
 
-                for (Node node : nodes) {
-                    if (stopRequested()) {
-                        terminationMessage = "Local sweep stopped: cancellation requested after "
-                                + editsApplied + " edits.";
-                        return;
-                    }
-
-                    Node current = workingGraph.getNode(node.getName());
-                    if (current == null) continue;
-
-                    Set<String> attemptedKeys = new LinkedHashSet<>();
-
-                    while (true) {
-                        if (stopRequested()) {
-                            terminationMessage = "Local sweep stopped: cancellation requested after "
-                                    + editsApplied + " edits.";
-                            return;
-                        }
-
-                        Graph base = prepareBase();
-                        if (base == null) {
-                            fireStatus("Canonicalization failed during repair.");
-                            terminationMessage = "Local sweep stopped: canonicalization failed after "
-                                    + editsApplied + " edits.";
-                            return;
-                        }
-
-                        List<ScoredCandidate> candidates = computeScoredCandidatesForNode(base, current);
-                        if (candidates.isEmpty()) break;
-
-                        ScoredCandidate top = candidates.getFirst();
-                        if (top.edit().isNoOp() || !top.passesGuards()) break;
-
-                        String key = top.edit().key();
-                        if (!attemptedKeys.add(key)) {
-                            cycleWarnings.add(current.getName() + ": \"" + top.edit().description() + "\"");
-                            break;
-                        }
-
-                        Graph before = safeCopy(workingGraph);
-                        applyCandidateInternal(top.edit());
-
-                        if (workingGraph.equals(before)) break;
-
-                        anyChangeInSweep = true;
-                        editsApplied++;
-                        fireEditApplied(top.edit(), workingGraph);
-
-                        Node refreshed = workingGraph.getNode(current.getName());
-                        if (refreshed == null) break;
-                        current = refreshed;
-                    }
-                }
-
-                if (anyChangeInSweep) {
-                    String state = workingGraph.toString();
-                    if (!seenSweepStates.add(state)) {
-                        fireStatus("Inter-sweep cycle detected: graph returned to a previously visited state. Stopping.");
-                        terminationMessage = "Local sweep stopped: inter-sweep cycle detected after "
-                                + editsApplied + " edits.";
-                        return;
-                    }
-                }
-
-            } while (anyChangeInSweep);
-
-            terminationMessage = "Local sweep converged after " + editsApplied + " edits.";
-        } finally {
-            // Always publish the final graph state, regardless of how the sweep exited
-            // (normal convergence, cancellation, canonicalization failure, or inter-sweep
-            // cycle). Without this, the panel's listener never hears about the result and
-            // edits accumulated in workingGraph are never pushed to the enclosing model.
-            fireRepairConverged(editsApplied, terminationMessage);
-        }
+        fireRepairConverged(0, "Local sweep converged.");
     }
 
     private void runGlobalRepair() {
         Set<String> seenStates = new LinkedHashSet<>();
         int editsApplied = 0;
-        String terminationMessage = null;
 
-        try {
-            if (pruneAlpha < 1) {
-                fireStatus("Pruning obvious false-positive edges...");
-                pruneObviousFalsePositives(workingGraph, 2); // depth 3 is a reasonable default
-                Q.clearCaches(); // flush cached results since graph changed
+        if (pruneAlpha < 1) {
+            fireStatus("Pruning obvious false-positive edges...");
+            pruneObviousFalsePositives(workingGraph, 2); // depth 3 is a reasonable default
+            Q.clearCaches(); // flush cached results since graph changed
+        }
+
+        fireStatus("Building global candidate queue...");
+        if (!initGlobalQueue()) return;
+        // ... rest unchanged
+
+        while (!globalQueue.isEmpty()) {
+            if (stopRequested()) return;
+
+            QueueEntry entry = globalQueue.poll();
+            if (entry == null) break;
+
+            List<ScoredCandidate> currentForNode = globalCandsByNode.get(entry.nodeName());
+            if (currentForNode == null || currentForNode.isEmpty()) continue;
+            if (currentForNode.getFirst() != entry.scored()) continue; // stale
+
+            ScoredCandidate sc = entry.scored();
+            if (sc.edit().isNoOp()) continue;
+
+            ScoredCandidate withMp = evalModelPForEntry(entry);
+
+            if (withMp == null) {
+                // Stale candidate no longer applies; refresh this node's candidates.
+                if (!invalidateAndRecompute(Set.of(entry.nodeName()))) return;
+                continue;
             }
 
-            fireStatus("Building global candidate queue...");
-            if (!initGlobalQueue()) {
-                terminationMessage = "Global repair stopped: queue init failed before any edits.";
+            if (!wouldPassGuards(workingGraph, withMp)) continue;
+
+            Graph before = safeCopy(workingGraph);
+            applyCandidateInternal(withMp.edit());
+
+            if (workingGraph.equals(before)) continue;
+
+            editsApplied++;
+            vlog("Global queue: applied edit #%d: %s", editsApplied, withMp.edit().description());
+            fireEditApplied(withMp.edit(), workingGraph);
+
+            String state = workingGraph.toString();
+            if (!seenStates.add(state)) {
+                fireStatus("Global repair: cycle detected after " + editsApplied + " edits. Stopping.");
                 return;
             }
 
-            while (!globalQueue.isEmpty()) {
-                if (stopRequested()) {
-                    terminationMessage = "Global repair stopped: cancellation requested after "
-                            + editsApplied + " edits.";
-                    return;
-                }
+            Set<String> affected = affectedVertices(before,
+                    resolveNode(before, entry.nodeName()), workingGraph)
+                    .stream().filter(n -> workingGraph.getNode(n) != null)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
 
-                QueueEntry entry = globalQueue.poll();
-                if (entry == null) break;
-
-                List<ScoredCandidate> currentForNode = globalCandsByNode.get(entry.nodeName());
-                if (currentForNode == null || currentForNode.isEmpty()) continue;
-                // Stale iff the polled candidate is no longer in the node's current
-                // scored list. After invalidateAndRecompute, every entry in the list
-                // is a fresh object; old queue entries pointing to prior objects will
-                // fail this identity check. But fresh entries representing non-top
-                // candidates are still valid and process at their queue priority.
-                if (!listContainsByIdentity(currentForNode, entry.scored())) continue;
-
-                ScoredCandidate sc = entry.scored();
-                if (sc.edit().isNoOp()) continue;
-
-                ScoredCandidate withMp = evalModelPForEntry(entry);
-
-                if (withMp == null) {
-                    // Stale candidate no longer applies; refresh this node's candidates.
-                    if (!invalidateAndRecompute(Set.of(entry.nodeName()))) {
-                        terminationMessage = "Global repair stopped: recompute failed after "
-                                + editsApplied + " edits.";
-                        return;
-                    }
-                    continue;
-                }
-
-                if (!wouldPassGuards(workingGraph, withMp)) continue;
-
-                Graph before = safeCopy(workingGraph);
-                applyCandidateInternal(withMp.edit());
-
-                if (workingGraph.equals(before)) continue;
-
-                editsApplied++;
-                vlog("Global queue: applied edit #%d: %s", editsApplied, withMp.edit().description());
-                fireEditApplied(withMp.edit(), workingGraph);
-
-                String state = workingGraph.toString();
-                if (!seenStates.add(state)) {
-                    fireStatus("Global repair: cycle detected after " + editsApplied + " edits. Stopping.");
-                    terminationMessage = "Global repair stopped: cycle detected after "
-                            + editsApplied + " edits.";
-                    return;
-                }
-
-                Set<String> affected = affectedVertices(before,
-                        resolveNode(before, entry.nodeName()), workingGraph)
-                        .stream().filter(n -> workingGraph.getNode(n) != null)
-                        .collect(Collectors.toCollection(LinkedHashSet::new));
-
-                CandidateEdit edit = withMp.edit();
-                Edge editedEdge = edit.getEdge();
-                if (editedEdge != null) {
-                    Node n1 = editedEdge.getNode1(), n2 = editedEdge.getNode2();
-                    if (n1 != null && n1.getName() != null) affected.add(n1.getName());
-                    if (n2 != null && n2.getName() != null) affected.add(n2.getName());
-                }
-
-                if (!invalidateAndRecompute(
-                        workingGraph.getNodes().stream()
-                                .map(Node::getName)
-                                .collect(Collectors.toCollection(LinkedHashSet::new)))) {
-                    terminationMessage = "Global repair stopped: recompute failed after "
-                            + editsApplied + " edits.";
-                    return;
-                }
-
-                final int count = editsApplied;
-                fireStatus("Global repair: " + count + " edits applied...");
+            CandidateEdit edit = withMp.edit();
+            Edge editedEdge = edit.getEdge();
+            if (editedEdge != null) {
+                Node n1 = editedEdge.getNode1(), n2 = editedEdge.getNode2();
+                if (n1 != null && n1.getName() != null) affected.add(n1.getName());
+                if (n2 != null && n2.getName() != null) affected.add(n2.getName());
             }
 
-            terminationMessage = "Global repair converged after " + editsApplied + " edits.";
-        } finally {
-            // Always publish the final graph state, regardless of how the sweep exited
-            // (normal convergence, cancellation, cycle detection, queue/recompute failure).
-            // Without this, the panel's listener never hears about the result and edits
-            // accumulated in workingGraph are never pushed to the enclosing model.
-            fireRepairConverged(editsApplied,
-                    terminationMessage != null
-                            ? terminationMessage
-                            : "Global repair stopped after " + editsApplied + " edits.");
+            if (!invalidateAndRecompute(
+                    workingGraph.getNodes().stream()
+                            .map(Node::getName)
+                            .collect(Collectors.toCollection(LinkedHashSet::new)))) return;
+
+            final int count = editsApplied;
+            fireStatus("Global repair: " + count + " edits applied...");
         }
+
+        fireRepairConverged(editsApplied,
+                "Global repair converged after " + editsApplied + " edits.");
     }
 
     // =========================================================================
@@ -1055,9 +960,7 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
 
         GlobalEvalCache baseCache = buildBaselineCache(base);
-        GraphEval baseEval = evalGraphLocality(baseCache, base, Set.of());
-        int baseline = baseEval.violations();
-        List<IndependenceFact> baselineViolatedFacts = baseEval.violatedFacts();
+        int baseline = evalGraphLocality(baseCache, base, Set.of()).violations();
 
         Map<String, Graph> candGraphByKey = new HashMap<>();
         List<ScoredCandidate> result = new ArrayList<>();
@@ -1072,25 +975,16 @@ public final class VertexRepairSearch implements IGraphSearch {
 
             boolean useLocality = usesLocality();
             Set<String> affected = affectedVertices(base, node, g2);
-            int after;
-            List<IndependenceFact> afterViolatedFacts;
-            if (useLocality) {
-                GraphEval eval = evalGraphLocality(baseCache, g2, affected);
-                after = eval.violations();
-                afterViolatedFacts = eval.violatedFacts();
-            } else {
-                after = evalViolationsOnly(g2);
-                afterViolatedFacts = List.of();
-            }
+            int after = useLocality
+                    ? evalGraphLocality(baseCache, g2, affected).violations()
+                    : evalViolationsOnly(g2);
 
             ScoredCandidate sc = new ScoredCandidate(
                     cand, baseline, after,
                     Double.NaN,
                     Double.NaN, Double.NaN,
                     g2.getNumEdges(), true,
-                    Q.getAlpha(),
-                    baselineViolatedFacts,
-                    afterViolatedFacts);
+                    Q.getAlpha());
 
             result.add(sc);
         }
@@ -1101,10 +995,8 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     private List<ScoredCandidate> scoreCandidates(Graph base, Node node, List<CandidateEdit> candidates) {
         GlobalEvalCache baseCache = buildBaselineCache(base);
-        GraphEval baseEval = evalGraphLocality(baseCache, base, Set.of());
-        int baseline = baseEval.violations();
-        double mpBefore = baseEval.modelP();
-        List<IndependenceFact> baselineViolatedFacts = baseEval.violatedFacts();
+        int baseline = evalGraphLocality(baseCache, base, Set.of()).violations();
+        double mpBefore = evalGraphLocality(baseCache, base, Set.of()).modelP();
 
         Map<String, Graph> candGraphByKey = new HashMap<>();
         List<ScoredCandidate> scored = new ArrayList<>();
@@ -1118,21 +1010,13 @@ public final class VertexRepairSearch implements IGraphSearch {
             if (knowledge != null && knowledge.isViolatedBy(g2)) continue;
 
             Set<String> affected = affectedVertices(base, node, g2);
-            int after;
-            List<IndependenceFact> afterViolatedFacts;
-            if (usesLocality()) {
-                GraphEval eval = evalGraphLocality(baseCache, g2, affected);
-                after = eval.violations();
-                afterViolatedFacts = eval.violatedFacts();
-            } else {
-                after = evalViolationsOnly(g2);
-                afterViolatedFacts = List.of();
-            }
+            int after = usesLocality()
+                    ? evalGraphLocality(baseCache, g2, affected).violations()
+                    : evalViolationsOnly(g2);
 
             scored.add(new ScoredCandidate(cand, baseline, after,
                     Double.NaN, Double.NaN, Double.NaN,
-                    g2.getNumEdges(), true, Q.getAlpha(),
-                    baselineViolatedFacts, afterViolatedFacts));
+                    g2.getNumEdges(), true, Q.getAlpha()));
         }
 
         if (stopRequested()) return List.of();
@@ -1171,8 +1055,7 @@ public final class VertexRepairSearch implements IGraphSearch {
                     sc.edit(), sc.violationsBaseline(), sc.violationsAfter(),
                     sc.nodePAfter(), mpBefore,
                     (mpAfter == null ? Double.NaN : mpAfter),
-                    sc.edgesAfter(), true, Q.getAlpha(),
-                    sc.violatedFactsBaseline(), sc.violatedFactsAfter());
+                    sc.edgesAfter(), true, Q.getAlpha());
 
             boolean passes = wouldPassGuards(base, patched);
             if (!passes && !patched.edit().isNoOp()) continue;
@@ -1180,8 +1063,7 @@ public final class VertexRepairSearch implements IGraphSearch {
             result.add(new ScoredCandidate(
                     patched.edit(), patched.violationsBaseline(), patched.violationsAfter(),
                     patched.nodePAfter(), patched.modelPBefore(), patched.modelPAfter(),
-                    patched.edgesAfter(), passes, Q.getAlpha(),
-                    patched.violatedFactsBaseline(), patched.violatedFactsAfter()));
+                    patched.edgesAfter(), passes, Q.getAlpha()));
         }
 
         result.sort(CANONICAL_TABLE_ORDER);
@@ -1204,28 +1086,15 @@ public final class VertexRepairSearch implements IGraphSearch {
         GlobalEvalCache baseCache = buildBaselineCache(base);
         Set<String> affected = affectedVertices(base, node, g2);
 
-        GraphEval baseEval = evalGraphLocality(baseCache, base, Set.of());
-        double mpBefore = baseEval.modelP();
-        int baseline = baseEval.violations();
-        List<IndependenceFact> baselineViolatedFacts = baseEval.violatedFacts();
-
-        double mpAfter;
-        int after;
-        List<IndependenceFact> afterViolatedFacts;
-        if (usesLocality()) {
-            GraphEval afterEval = evalGraphLocality(baseCache, g2, affected);
-            mpAfter = afterEval.modelP();
-            after = afterEval.violations();
-            afterViolatedFacts = afterEval.violatedFacts();
-        } else {
-            mpAfter = evalModelPLocality(baseCache, g2, affected);
-            after = evalViolationsOnly(g2);
-            afterViolatedFacts = List.of();
-        }
+        double mpBefore = evalGraphLocality(baseCache, base, Set.of()).modelP();
+        double mpAfter = evalModelPLocality(baseCache, g2, affected);
+        int baseline = evalGraphLocality(baseCache, base, Set.of()).violations();
+        int after = usesLocality()
+                ? evalGraphLocality(baseCache, g2, affected).violations()
+                : evalViolationsOnly(g2);
 
         return new ScoredCandidate(cand, baseline, after,
-                sc.nodePAfter(), mpBefore, mpAfter, g2.getNumEdges(), true, Q.getAlpha(),
-                baselineViolatedFacts, afterViolatedFacts);
+                sc.nodePAfter(), mpBefore, mpAfter, g2.getNumEdges(), true, Q.getAlpha());
     }
 
     private List<CandidateEdit> enumerateCandidates(Graph g, Node x) {
@@ -1472,16 +1341,15 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     private VertexContribution evalVertexContribution(Graph g, Node vInGraph) {
-        if (g == null || vInGraph == null) return new VertexContribution(Map.of(), Map.of(), Map.of());
+        if (g == null || vInGraph == null) return new VertexContribution(Map.of(), Map.of());
         Node v = g.getNode(vInGraph.getName());
-        if (v == null) return new VertexContribution(Map.of(), Map.of(), Map.of());
+        if (v == null) return new VertexContribution(Map.of(), Map.of());
 
         List<IndependenceFact> facts = MarkovCheck.computeImpliedFactsForVertex(g, v, type);
-        if (facts.isEmpty()) return new VertexContribution(Map.of(), Map.of(), Map.of());
+        if (facts.isEmpty()) return new VertexContribution(Map.of(), Map.of());
 
         Map<String, Boolean> viol = new LinkedHashMap<>();
         Map<String, Double> pByKey = new LinkedHashMap<>();
-        Map<String, IndependenceFact> factByKey = new LinkedHashMap<>();
 
         for (IndependenceFact f : facts) {
             if (f == null) continue;
@@ -1490,18 +1358,17 @@ public final class VertexRepairSearch implements IGraphSearch {
             IndependenceResult r = checkIndependence(f);
             if (r == null) continue;
             viol.put(key, !r.isIndependent());
-            factByKey.put(key, f);
             double p = r.getPValue();
             if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) pByKey.put(key, p);
         }
 
-        return new VertexContribution(viol, pByKey, factByKey);
+        return new VertexContribution(viol, pByKey);
     }
 
     private GraphEval evalGraphLocality(GlobalEvalCache baseCache,
                                         Graph candidateGraph,
                                         Set<String> affectedVertexNames) {
-        if (candidateGraph == null) return new GraphEval(0, Double.NaN, 0, List.of());
+        if (candidateGraph == null) return new GraphEval(0, Double.NaN, 0);
 
         Map<String, VertexContribution> contrib = new HashMap<>();
         if (baseCache != null && baseCache.contribByVertexName() != null) {
@@ -1522,7 +1389,6 @@ public final class VertexRepairSearch implements IGraphSearch {
 
         Map<String, Boolean> globalViolationByKey = new HashMap<>();
         Map<String, Double> globalPByKey = new HashMap<>();
-        Map<String, IndependenceFact> globalFactByKey = new HashMap<>();
 
         // Iterate non-affected vertices first, then affected vertices, so that
         // fresh candidate-graph values (from affected vertex recomputation)
@@ -1553,27 +1419,17 @@ public final class VertexRepairSearch implements IGraphSearch {
             for (Map.Entry<String, Double> e : vc.pByKey().entrySet()) {
                 globalPByKey.put(e.getKey(), e.getValue());
             }
-            for (Map.Entry<String, IndependenceFact> e : vc.factByKey().entrySet()) {
-                globalFactByKey.put(e.getKey(), e.getValue());
-            }
         }
 
         int violations = 0;
-        List<IndependenceFact> violatedFacts = new ArrayList<>();
-        for (Map.Entry<String, Boolean> e : globalViolationByKey.entrySet()) {
-            if (Boolean.TRUE.equals(e.getValue())) {
-                violations++;
-                IndependenceFact f = globalFactByKey.get(e.getKey());
-                if (f != null) violatedFacts.add(f);
-            }
-        }
+        for (boolean isViol : globalViolationByKey.values()) if (isViol) violations++;
 
         double modelP = Double.NaN;
         if (globalPByKey.size() >= 2) {
             modelP = getUniformityP(new ArrayList<>(globalPByKey.values()));
         }
 
-        return new GraphEval(violations, modelP, globalViolationByKey.size(), violatedFacts);
+        return new GraphEval(violations, modelP, globalViolationByKey.size());
     }
 
 
@@ -2359,21 +2215,15 @@ public final class VertexRepairSearch implements IGraphSearch {
      * and whether it passes certain guards. This record is used to encapsulate the data required
      * to evaluate a candidate's quality according to a scoring model.
      *
-     * @param edit                  The candidate edit associated with the scored candidate.
-     * @param violationsBaseline    The initial number of violations in the baseline.
-     * @param violationsAfter       The number of violations after applying the edit.
-     * @param nodePAfter            The node-level probability after applying the edit.
-     * @param modelPBefore          The model-level probability before applying the edit.
-     * @param modelPAfter           The model-level probability after applying the edit.
-     * @param edgesAfter            The number of edges present after applying the edit.
-     * @param passesGuards          A flag indicating if the candidate passes predefined guards/criteria.
-     * @param alpha                 An additional parameter used in scoring computations.
-     * @param violatedFactsBaseline The set of implied independence facts that the data rejects in
-     *                              the baseline graph (before the edit). May be empty if not
-     *                              available (e.g. non-locality graph types).
-     * @param violatedFactsAfter    The set of implied independence facts that the data rejects in
-     *                              the candidate graph (after the edit). May be empty if not
-     *                              available.
+     * @param edit               The candidate edit associated with the scored candidate.
+     * @param violationsBaseline The initial number of violations in the baseline.
+     * @param violationsAfter    The number of violations after applying the edit.
+     * @param nodePAfter         The node-level probability after applying the edit.
+     * @param modelPBefore       The model-level probability before applying the edit.
+     * @param modelPAfter        The model-level probability after applying the edit.
+     * @param edgesAfter         The number of edges present after applying the edit.
+     * @param passesGuards       A flag indicating if the candidate passes predefined guards/criteria.
+     * @param alpha              An additional parameter used in scoring computations.
      */
     public record ScoredCandidate(
             CandidateEdit edit,
@@ -2384,9 +2234,7 @@ public final class VertexRepairSearch implements IGraphSearch {
             double modelPAfter,
             int edgesAfter,
             boolean passesGuards,
-            double alpha,
-            List<IndependenceFact> violatedFactsBaseline,
-            List<IndependenceFact> violatedFactsAfter
+            double alpha
     ) {
 
         /**
@@ -2396,33 +2244,6 @@ public final class VertexRepairSearch implements IGraphSearch {
          */
         public int delta() {
             return violationsAfter - violationsBaseline;
-        }
-
-        /**
-         * Returns {@code true} iff the set of violated facts after applying the edit is a strict
-         * subset of the set of violated facts in the baseline — i.e. this edit demonstrably
-         * resolves at least one specific violation and introduces no new ones.
-         * <p>
-         * Uses {@link VertexRepairSearch#factKey(IndependenceFact)} for equality, so two
-         * {@code IndependenceFact}s that refer to the same statement (same unordered {X, Y}
-         * and same conditioning set by name) are treated as equal.
-         * <p>
-         * Returns {@code false} if either list is empty (insufficient information) or if the
-         * "after" set contains any fact not present in the baseline.
-         *
-         * @return {@code true} if the violated-fact set is a strict subset of the baseline set.
-         */
-        public boolean resolvesSpecificViolation() {
-            if (violatedFactsBaseline == null || violatedFactsBaseline.isEmpty()) return false;
-            if (violatedFactsAfter == null) return false;
-            if (violatedFactsAfter.size() >= violatedFactsBaseline.size()) return false;
-
-            Set<String> baselineKeys = new HashSet<>();
-            for (IndependenceFact f : violatedFactsBaseline) baselineKeys.add(factKey(f));
-            for (IndependenceFact f : violatedFactsAfter) {
-                if (!baselineKeys.contains(factKey(f))) return false;
-            }
-            return true;
         }
     }
 
@@ -2434,13 +2255,10 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
     }
 
-    private record GraphEval(int violations, double modelP, int nFacts,
-                             List<IndependenceFact> violatedFacts) {
+    private record GraphEval(int violations, double modelP, int nFacts) {
     }
 
-    private record VertexContribution(Map<String, Boolean> violationByKey,
-                                      Map<String, Double> pByKey,
-                                      Map<String, IndependenceFact> factByKey) {
+    private record VertexContribution(Map<String, Boolean> violationByKey, Map<String, Double> pByKey) {
     }
 
     private record GlobalEvalCache(Map<String, VertexContribution> contribByVertexName) {
