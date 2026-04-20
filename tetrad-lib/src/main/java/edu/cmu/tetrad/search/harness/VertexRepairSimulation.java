@@ -76,7 +76,7 @@ public class VertexRepairSimulation {
     /**
      * Which starting-graph scenario to use. Change this to try different scenarios.
      */
-    public static final StartingGraph scenario = StartingGraph.PC;
+    public static final StartingGraph scenario = StartingGraph.FGES;
 
     // =========================================================================
     // Simulation parameters — edit these as desired
@@ -215,7 +215,7 @@ public class VertexRepairSimulation {
         DecimalFormat df = new DecimalFormat("0.0000");
 
         for (int run = 1; run <= NUM_RUNS; run++) {
-            RandomUtil.getInstance().setSeed(run * 17L + 31L);
+//            RandomUtil.getInstance().setSeed(run * 17L + 31L);
 
             // ------------------------------------------------------------------
             // 1. Simulate a random DAG and linear Gaussian data
@@ -298,9 +298,14 @@ public class VertexRepairSimulation {
 
             // Track adjacency F1 improvement (only count runs where both values are defined)
             boolean improvedThisRun = false;
+            if ((Double.isNaN(startStats.adjF1) && !Double.isNaN(stats.adjF1))) {
+                cntAdjF1Improved++;
+                improvedThisRun = true;
+            }
+
             if (!Double.isNaN(startStats.adjF1) && !Double.isNaN(stats.adjF1)) {
                 cntAdjF1Comparable++;
-                if (stats.adjF1 >= startStats.adjF1) {
+                if ((stats.adjF1 >= startStats.adjF1)) {
                     cntAdjF1Improved++;
                     improvedThisRun = true;
                 }

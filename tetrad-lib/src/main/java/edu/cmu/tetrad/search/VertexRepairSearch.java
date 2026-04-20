@@ -84,6 +84,71 @@ public final class VertexRepairSearch implements IGraphSearch {
      * Priority chain: (1) fewer Markov violations; (2) fewer edges when alpha > 0.01;
      * (3) higher Model-P; (4) stable key tie-break.
      */
+//    /**
+//     * Canonical ranking: best candidate sorts first.
+//     * Priority chain:
+//     *   (1) fewer Markov violations (smaller delta);
+//     *   (2) fewer edges, but only for candidates that have "earned" the edges
+//     *       comparison — removals, no-ops, or candidates whose Model-P clears alpha.
+//     *       Candidates with NaN Model-P are treated as not having earned it (they
+//     *       haven't been evaluated yet), so they sort after those that have.
+//     *   (3) higher Model-P, with NaN sorting last (unknown is worse than known);
+//     *   (4) stable key tie-break.
+//     */
+//    public static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
+//        if (a == null && b == null) return 0;
+//        if (a == null) return 1;
+//        if (b == null) return -1;
+//
+//        int c;
+//
+//        // (1) Fewer Markov violations wins.
+//        c = Integer.compare(a.violationsAfter(), b.violationsAfter());
+//        if (c != 0) return c;
+//
+//        // (2) Edges comparison — only candidates that are removals, no-ops, or
+//        // whose Model-P clears alpha "earn" the edges comparison. Candidates with
+//        // NaN Model-P have not been evaluated yet and so are treated as not earning
+//        // it (MAX_VALUE sinks them relative to earned candidates but ties among
+//        // themselves, so the next key breaks them).
+//        int edges1 = earnsEdgesComparison(a) ? a.edgesAfter() : Integer.MAX_VALUE;
+//        int edges2 = earnsEdgesComparison(b) ? b.edgesAfter() : Integer.MAX_VALUE;
+//        c = Integer.compare(edges1, edges2);
+//        if (c != 0) return c;
+//
+//        // (3) Higher Model-P wins. NaN sorts last (unknown/unevaluated is worse
+//        // than any real value).
+//        c = compareModelPDesc(a.modelPAfter(), b.modelPAfter());
+//        if (c != 0) return c;
+//
+//        c = compareModelPDesc(a.nodePAfter(), b.nodePAfter());
+//        if (c != 0) return c;
+//
+//        c  = compareModelPDesc(a.modelPAfter() - a.modelPBefore(), b.modelPAfter() - b.modelPBefore());
+//        if (c != 0) return c;
+//
+//        // (4) Stable tie-break on keys and descriptions.
+//        return stableTieBreak(a, b);
+//    };
+
+
+    /**
+     * Canonical ranking: best candidate sorts first.
+     * Priority chain:
+     *   (0) Markov-passing beats non-passing. A candidate "passes" when its
+     *       Model-P exceeds alpha. Within the non-passing group, a larger
+     *       Model-P is preferred — this gives the search a gradient toward
+     *       clearing alpha when it's stuck in a non-I-map region. NaN
+     *       Model-P is treated as non-passing and sorts last within that group.
+     *   (1) Fewer Markov violations (violationsAfter).
+     *   (2) Fewer edges, but only for candidates that have "earned" the edges
+     *       comparison — removals, no-ops, or candidates whose Model-P clears
+     *       alpha. NaN Model-P does not earn it.
+     *   (3) Higher Model-P.
+     *   (4) Higher node-P.
+     *   (5) Larger Model-P improvement (modelPAfter - modelPBefore).
+     *   (6) Stable key/description tie-break.
+     */
     public static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
         if (a == null && b == null) return 0;
         if (a == null) return 1;
@@ -91,23 +156,82 @@ public final class VertexRepairSearch implements IGraphSearch {
 
         int c;
 
-        c = Integer.compare(a.delta(), b.delta());
+        // (1) Fewer Markov violations wins.
+        c = Integer.compare(a.violationsAfter(), b.violationsAfter());
         if (c != 0) return c;
 
-        boolean aIsRemoval = a.edit().moveType() == MoveType.REMOVE_EDGE;
-        boolean bIsRemoval = b.edit().moveType() == MoveType.REMOVE_EDGE;
-        int edges1 = (aIsRemoval || a.modelPAfter() > a.alpha() || a.edit().isNoOp()) ? a.edgesAfter() : Integer.MAX_VALUE;
-        int edges2 = (bIsRemoval || b.modelPAfter() > b.alpha() || b.edit().isNoOp()) ? b.edgesAfter() : Integer.MAX_VALUE;
+        // (0) Markov-passing beats non-passing.
+        boolean aPasses = passesMarkov(a);
+        boolean bPasses = passesMarkov(b);
+        if (aPasses != bPasses) return aPasses ? -1 : 1;
 
+        // If BOTH fail to pass, prefer the one closer to passing (larger Model-P).
+        // Within this group, NaN sorts last (unknown distance to alpha).
+        // If BOTH pass, fall through — downstream tiers handle the ordering.
+        if (!aPasses /* && !bPasses */) {
+            c = compareModelPDesc(a.modelPAfter(), b.modelPAfter());
+            if (c != 0) return c;
+        }
+
+        // (2) Edges comparison — only "earned" candidates participate; others are
+        // pinned to MAX_VALUE so they tie among themselves and defer to later tiers.
+        int edges1 = earnsEdgesComparison(a) ? a.edgesAfter() : Integer.MAX_VALUE;
+        int edges2 = earnsEdgesComparison(b) ? b.edgesAfter() : Integer.MAX_VALUE;
         c = Integer.compare(edges1, edges2);
         if (c != 0) return c;
 
-        c = -Double.compare(a.modelPAfter(), b.modelPAfter());
+        // (3) Higher Model-P wins. NaN sorts last.
+        c = compareModelPDesc(a.modelPAfter(), b.modelPAfter());
         if (c != 0) return c;
 
-        // both NaN: fall through to stable tiebreak
+        // (4) Higher node-P wins. NaN sorts last.
+        c = compareModelPDesc(a.nodePAfter(), b.nodePAfter());
+        if (c != 0) return c;
+
+        // (5) Larger Model-P improvement wins. NaN (from NaN arithmetic) sorts last.
+        c = compareModelPDesc(
+                a.modelPAfter() - a.modelPBefore(),
+                b.modelPAfter() - b.modelPBefore());
+        if (c != 0) return c;
+
+        // (6) Stable tie-break.
         return stableTieBreak(a, b);
     };
+
+    /**
+     * Whether {@code sc} clears the Markov gate: Model-P strictly exceeds alpha.
+     * NaN Model-P counts as not passing.
+     */
+    private static boolean passesMarkov(ScoredCandidate sc) {
+        double mp = sc.modelPAfter();
+        return !Double.isNaN(mp) && mp > sc.alpha();
+    }
+
+    /**
+     * Whether {@code sc} has "earned" the edges comparison: removals and no-ops
+     * always earn it; other moves earn it only when their Model-P is known and
+     * clears alpha. A NaN Model-P means "not yet evaluated", so it does not earn it.
+     */
+    private static boolean earnsEdgesComparison(ScoredCandidate sc) {
+        if (sc.edit().isNoOp()) return true;
+        if (sc.edit().moveType() == MoveType.REMOVE_EDGE) return true;
+        double mp = sc.modelPAfter();
+        return !Double.isNaN(mp) && mp > sc.alpha();
+    }
+
+    /**
+     * Descending comparison of Model-P values with explicit NaN handling.
+     * NaN sorts last (i.e. NaN is "worse" than any real value). Two NaNs tie.
+     */
+    private static int compareModelPDesc(double a, double b) {
+        boolean aNaN = Double.isNaN(a);
+        boolean bNaN = Double.isNaN(b);
+        if (aNaN && bNaN) return 0;
+        if (aNaN) return 1;   // a worse → a sorts later
+        if (bNaN) return -1;  // b worse → b sorts later
+        return -Double.compare(a, b);
+    }
+
     private static final int DEFAULT_MODELP_TOP_K = 50;
 
     // -------------------------------------------------------------------------
@@ -169,12 +293,17 @@ public final class VertexRepairSearch implements IGraphSearch {
                                       double mpBefore, double mpAfter,
                                       MoveType moveType) {
         if (true) return true;
-
+//
         if (afterViol < baselineViol) return true;
         if (afterEdges < currentEdges) return true;
-        double minGain = (moveType == MoveType.REMOVE_EDGE) ? 0.0 : 0.001;
+        double minGain = (moveType == MoveType.REMOVE_EDGE) ? 0.0 : 0.0001;
+        if (!Double.isFinite(mpBefore) || Double.isFinite(mpAfter)) {
+            return true;
+        }
         return Double.isFinite(mpBefore) && Double.isFinite(mpAfter)
-                && (mpAfter - mpBefore) >= minGain;
+                && (mpAfter - mpBefore) > minGain;
+//
+//        return false;
     }
 
 
@@ -852,7 +981,7 @@ public final class VertexRepairSearch implements IGraphSearch {
 
             ScoredCandidate sc = new ScoredCandidate(
                     cand, baseline, after,
-                    nodePValue(g2, node),
+                    Double.NaN,
                     Double.NaN, Double.NaN,
                     g2.getNumEdges(), true,
                     Q.getAlpha());
@@ -886,7 +1015,7 @@ public final class VertexRepairSearch implements IGraphSearch {
                     : evalViolationsOnly(g2);
 
             scored.add(new ScoredCandidate(cand, baseline, after,
-                    nodePValue(g2, node), Double.NaN, Double.NaN,
+                    Double.NaN, Double.NaN, Double.NaN,
                     g2.getNumEdges(), true, Q.getAlpha()));
         }
 
