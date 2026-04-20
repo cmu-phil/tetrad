@@ -232,7 +232,7 @@ public final class VertexRepairSearch implements IGraphSearch {
         return -Double.compare(a, b);
     }
 
-    private static final int DEFAULT_MODELP_TOP_K = 100;
+    private static final int DEFAULT_MODELP_TOP_K = 50;
 
     // -------------------------------------------------------------------------
     // Configuration fields (set before calling search())
@@ -491,20 +491,6 @@ public final class VertexRepairSearch implements IGraphSearch {
         return da.compareTo(db);
     }
 
-    /**
-     * Returns true iff {@code list} contains {@code target} by reference identity.
-     * Used by the global-queue staleness check: after invalidateAndRecompute the list
-     * is rebuilt with fresh objects, so old queue entries whose reference is no longer
-     * present are stale. Valid non-top entries still pass and are processed normally.
-     */
-    private static boolean listContainsByIdentity(List<ScoredCandidate> list, ScoredCandidate target) {
-        if (list == null || target == null) return false;
-        for (ScoredCandidate sc : list) {
-            if (sc == target) return true;
-        }
-        return false;
-    }
-
     private static Edge getEdgeByNames(Graph g, Edge e) {
         if (g == null || e == null) return null;
         String a = e.getNode1() == null ? null : e.getNode1().getName();
@@ -749,202 +735,147 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     private void runRepairPhase(Set<String> seenSweepStates, List<String> cycleWarnings) {
         boolean anyChangeInSweep;
-        int editsApplied = 0;
-        String terminationMessage = "Local sweep converged.";
 
-        try {
-            do {
-                if (stopRequested()) {
-                    terminationMessage = "Local sweep stopped: cancellation requested after "
-                            + editsApplied + " edits.";
+        do {
+            if (stopRequested()) return;
+            cycleWarnings.clear();
+            anyChangeInSweep = false;
+
+            List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
+            RandomUtil.shuffle(nodes);
+
+            for (Node node : nodes) {
+                if (stopRequested()) return;
+
+                Node current = workingGraph.getNode(node.getName());
+                if (current == null) continue;
+
+                Set<String> attemptedKeys = new LinkedHashSet<>();
+
+                while (true) {
+                    if (stopRequested()) return;
+
+                    Graph base = prepareBase();
+                    if (base == null) {
+                        fireStatus("Canonicalization failed during repair.");
+                        return;
+                    }
+
+                    List<ScoredCandidate> candidates = computeScoredCandidatesForNode(base, current);
+                    if (candidates.isEmpty()) break;
+
+                    ScoredCandidate top = candidates.getFirst();
+                    if (top.edit().isNoOp() || !top.passesGuards()) break;
+
+                    String key = top.edit().key();
+                    if (!attemptedKeys.add(key)) {
+                        cycleWarnings.add(current.getName() + ": \"" + top.edit().description() + "\"");
+                        break;
+                    }
+
+                    Graph before = safeCopy(workingGraph);
+                    applyCandidateInternal(top.edit());
+
+                    if (workingGraph.equals(before)) break;
+
+                    anyChangeInSweep = true;
+                    fireEditApplied(top.edit(), workingGraph);
+
+                    Node refreshed = workingGraph.getNode(current.getName());
+                    if (refreshed == null) break;
+                    current = refreshed;
+                }
+            }
+
+            if (anyChangeInSweep) {
+                String state = workingGraph.toString();
+                if (!seenSweepStates.add(state)) {
+                    fireStatus("Inter-sweep cycle detected: graph returned to a previously visited state. Stopping.");
                     return;
                 }
-                cycleWarnings.clear();
-                anyChangeInSweep = false;
+            }
 
-                List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
-                RandomUtil.shuffle(nodes);
+        } while (anyChangeInSweep);
 
-                for (Node node : nodes) {
-                    if (stopRequested()) {
-                        terminationMessage = "Local sweep stopped: cancellation requested after "
-                                + editsApplied + " edits.";
-                        return;
-                    }
-
-                    Node current = workingGraph.getNode(node.getName());
-                    if (current == null) continue;
-
-                    Set<String> attemptedKeys = new LinkedHashSet<>();
-
-                    while (true) {
-                        if (stopRequested()) {
-                            terminationMessage = "Local sweep stopped: cancellation requested after "
-                                    + editsApplied + " edits.";
-                            return;
-                        }
-
-                        Graph base = prepareBase();
-                        if (base == null) {
-                            fireStatus("Canonicalization failed during repair.");
-                            terminationMessage = "Local sweep stopped: canonicalization failed after "
-                                    + editsApplied + " edits.";
-                            return;
-                        }
-
-                        List<ScoredCandidate> candidates = computeScoredCandidatesForNode(base, current);
-                        if (candidates.isEmpty()) break;
-
-                        ScoredCandidate top = candidates.getFirst();
-                        if (top.edit().isNoOp() || !top.passesGuards()) break;
-
-                        String key = top.edit().key();
-                        if (!attemptedKeys.add(key)) {
-                            cycleWarnings.add(current.getName() + ": \"" + top.edit().description() + "\"");
-                            break;
-                        }
-
-                        Graph before = safeCopy(workingGraph);
-                        applyCandidateInternal(top.edit());
-
-                        if (workingGraph.equals(before)) break;
-
-                        anyChangeInSweep = true;
-                        editsApplied++;
-                        fireEditApplied(top.edit(), workingGraph);
-
-                        Node refreshed = workingGraph.getNode(current.getName());
-                        if (refreshed == null) break;
-                        current = refreshed;
-                    }
-                }
-
-                if (anyChangeInSweep) {
-                    String state = workingGraph.toString();
-                    if (!seenSweepStates.add(state)) {
-                        fireStatus("Inter-sweep cycle detected: graph returned to a previously visited state. Stopping.");
-                        terminationMessage = "Local sweep stopped: inter-sweep cycle detected after "
-                                + editsApplied + " edits.";
-                        return;
-                    }
-                }
-
-            } while (anyChangeInSweep);
-
-            terminationMessage = "Local sweep converged after " + editsApplied + " edits.";
-        } finally {
-            // Always publish the final graph state, regardless of how the sweep exited
-            // (normal convergence, cancellation, canonicalization failure, or cycle).
-            fireRepairConverged(editsApplied, terminationMessage);
-        }
+        fireRepairConverged(0, "Local sweep converged.");
     }
 
     private void runGlobalRepair() {
         Set<String> seenStates = new LinkedHashSet<>();
         int editsApplied = 0;
-        String terminationMessage = null;
 
-        try {
-            if (pruneAlpha < 1) {
-                fireStatus("Pruning obvious false-positive edges...");
-                pruneObviousFalsePositives(workingGraph, 2); // depth 3 is a reasonable default
-                Q.clearCaches(); // flush cached results since graph changed
+        if (pruneAlpha < 1) {
+            fireStatus("Pruning obvious false-positive edges...");
+            pruneObviousFalsePositives(workingGraph, 2); // depth 3 is a reasonable default
+            Q.clearCaches(); // flush cached results since graph changed
+        }
+
+        fireStatus("Building global candidate queue...");
+        if (!initGlobalQueue()) return;
+        // ... rest unchanged
+
+        while (!globalQueue.isEmpty()) {
+            if (stopRequested()) return;
+
+            QueueEntry entry = globalQueue.poll();
+            if (entry == null) break;
+
+            List<ScoredCandidate> currentForNode = globalCandsByNode.get(entry.nodeName());
+            if (currentForNode == null || currentForNode.isEmpty()) continue;
+            if (currentForNode.getFirst() != entry.scored()) continue; // stale
+
+            ScoredCandidate sc = entry.scored();
+            if (sc.edit().isNoOp()) continue;
+
+            ScoredCandidate withMp = evalModelPForEntry(entry);
+
+            if (withMp == null) {
+                // Stale candidate no longer applies; refresh this node's candidates.
+                if (!invalidateAndRecompute(Set.of(entry.nodeName()))) return;
+                continue;
             }
 
-            fireStatus("Building global candidate queue...");
-            if (!initGlobalQueue()) {
-                terminationMessage = "Global repair stopped: queue init failed before any edits.";
+            if (!wouldPassGuards(workingGraph, withMp)) continue;
+
+            Graph before = safeCopy(workingGraph);
+            applyCandidateInternal(withMp.edit());
+
+            if (workingGraph.equals(before)) continue;
+
+            editsApplied++;
+            vlog("Global queue: applied edit #%d: %s", editsApplied, withMp.edit().description());
+            fireEditApplied(withMp.edit(), workingGraph);
+
+            String state = workingGraph.toString();
+            if (!seenStates.add(state)) {
+                fireStatus("Global repair: cycle detected after " + editsApplied + " edits. Stopping.");
                 return;
             }
 
-            while (!globalQueue.isEmpty()) {
-                if (stopRequested()) {
-                    terminationMessage = "Global repair stopped: cancellation requested after "
-                            + editsApplied + " edits.";
-                    return;
-                }
+            Set<String> affected = affectedVertices(before,
+                    resolveNode(before, entry.nodeName()), workingGraph)
+                    .stream().filter(n -> workingGraph.getNode(n) != null)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
 
-                QueueEntry entry = globalQueue.poll();
-                if (entry == null) break;
-
-                List<ScoredCandidate> currentForNode = globalCandsByNode.get(entry.nodeName());
-                if (currentForNode == null || currentForNode.isEmpty()) continue;
-                // Stale iff the polled candidate is no longer in the node's current list.
-                // After invalidateAndRecompute every object in the list is fresh; old queue
-                // entries pointing to prior objects fail this identity check. But valid
-                // non-top entries still pass and are processed at their queue priority.
-//                if (!listContainsByIdentity(currentForNode, entry.scored())) continue;
-                if (!currentForNode.contains(entry.scored())) continue;
-
-                ScoredCandidate sc = entry.scored();
-                if (sc.edit().isNoOp()) continue;
-
-                ScoredCandidate withMp = evalModelPForEntry(entry);
-
-                if (withMp == null) {
-                    // Stale candidate no longer applies; refresh this node's candidates.
-                    if (!invalidateAndRecompute(Set.of(entry.nodeName()))) {
-                        terminationMessage = "Global repair stopped: recompute failed after "
-                                + editsApplied + " edits.";
-                        return;
-                    }
-                    continue;
-                }
-
-                if (!wouldPassGuards(workingGraph, withMp)) continue;
-
-                Graph before = safeCopy(workingGraph);
-                applyCandidateInternal(withMp.edit());
-
-                if (workingGraph.equals(before)) continue;
-
-                editsApplied++;
-                vlog("Global queue: applied edit #%d: %s", editsApplied, withMp.edit().description());
-                fireEditApplied(withMp.edit(), workingGraph);
-
-                String state = workingGraph.toString();
-                if (!seenStates.add(state)) {
-                    fireStatus("Global repair: cycle detected after " + editsApplied + " edits. Stopping.");
-                    terminationMessage = "Global repair stopped: cycle detected after "
-                            + editsApplied + " edits.";
-                    return;
-                }
-
-                Set<String> affected = affectedVertices(before,
-                        resolveNode(before, entry.nodeName()), workingGraph)
-                        .stream().filter(n -> workingGraph.getNode(n) != null)
-                        .collect(Collectors.toCollection(LinkedHashSet::new));
-
-                CandidateEdit edit = withMp.edit();
-                Edge editedEdge = edit.getEdge();
-                if (editedEdge != null) {
-                    Node n1 = editedEdge.getNode1(), n2 = editedEdge.getNode2();
-                    if (n1 != null && n1.getName() != null) affected.add(n1.getName());
-                    if (n2 != null && n2.getName() != null) affected.add(n2.getName());
-                }
-
-                if (!invalidateAndRecompute(
-                        workingGraph.getNodes().stream()
-                                .map(Node::getName)
-                                .collect(Collectors.toCollection(LinkedHashSet::new)))) {
-                    terminationMessage = "Global repair stopped: recompute failed after "
-                            + editsApplied + " edits.";
-                    return;
-                }
-
-                final int count = editsApplied;
-                fireStatus("Global repair: " + count + " edits applied...");
+            CandidateEdit edit = withMp.edit();
+            Edge editedEdge = edit.getEdge();
+            if (editedEdge != null) {
+                Node n1 = editedEdge.getNode1(), n2 = editedEdge.getNode2();
+                if (n1 != null && n1.getName() != null) affected.add(n1.getName());
+                if (n2 != null && n2.getName() != null) affected.add(n2.getName());
             }
 
-            terminationMessage = "Global repair converged after " + editsApplied + " edits.";
-        } finally {
-            // Always publish the final graph state, regardless of how the sweep exited
-            // (normal convergence, cancellation, cycle detection, queue/recompute failure).
-            fireRepairConverged(editsApplied,
-                    terminationMessage != null
-                            ? terminationMessage
-                            : "Global repair stopped after " + editsApplied + " edits.");
+            if (!invalidateAndRecompute(
+                    workingGraph.getNodes().stream()
+                            .map(Node::getName)
+                            .collect(Collectors.toCollection(LinkedHashSet::new)))) return;
+
+            final int count = editsApplied;
+            fireStatus("Global repair: " + count + " edits applied...");
         }
+
+        fireRepairConverged(editsApplied,
+                "Global repair converged after " + editsApplied + " edits.");
     }
 
     // =========================================================================
