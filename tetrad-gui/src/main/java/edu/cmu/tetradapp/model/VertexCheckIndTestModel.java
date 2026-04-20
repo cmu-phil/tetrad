@@ -72,7 +72,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     private Graph graph;
     private String name = "";
     private transient IndependenceTest independenceTest;
-    //    private ConditioningSetType conditioningSetType = ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY;
     private Knowledge knowledge = new Knowledge();
     private List<String> vertexNames = new ArrayList<>();
     private boolean verbose = false;

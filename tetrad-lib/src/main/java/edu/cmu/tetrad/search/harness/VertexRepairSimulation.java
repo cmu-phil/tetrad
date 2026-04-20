@@ -76,7 +76,7 @@ public class VertexRepairSimulation {
     /**
      * Which starting-graph scenario to use. Change this to try different scenarios.
      */
-    public static final StartingGraph scenario = StartingGraph.PC;
+    public static final StartingGraph scenario = StartingGraph.BOSS;
 
     // =========================================================================
     // Simulation parameters — edit these as desired
@@ -86,12 +86,12 @@ public class VertexRepairSimulation {
      * Conditioning set type passed to VertexRepairSearch.
      */
     private static final ConditioningSetType CONDITIONING_TYPE =
-            ConditioningSetType.RECURSIVE_ADJUSTMENT;
+            ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY;
 
     /**
      * Average degree (expected edges per node).
      */
-    private static final double AVG_DEGREE = 4.0;
+    private static final double AVG_DEGREE = 3.0;
 
     /**
      * Number of nodes in the simulated graph.
@@ -101,7 +101,7 @@ public class VertexRepairSimulation {
     /**
      * Sample size for each simulated data set.
      */
-    private static final int SAMPLE_SIZE = 1000;
+    private static final int SAMPLE_SIZE = 2000;
     /**
      * Number of independent simulation runs to average over.
      */
@@ -125,7 +125,7 @@ public class VertexRepairSimulation {
     /**
      * Penalty discount for the score
      */
-    private static final double PENALTY_DISCOUNT = 2.0;
+    private static final double PENALTY_DISCOUNT = 4.0;
 
     /**
      * Alpha for pruning.
@@ -170,7 +170,6 @@ public class VertexRepairSimulation {
      * @throws Exception if any errors occur during the simulation or processing.
      */
     public void run() throws Exception {
-        Preferences.userRoot().putBoolean("useAndersonDarling", false);
 
         System.out.println("=================================================");
         System.out.printf("VertexRepairSearch Simulation%n");
@@ -216,6 +215,7 @@ public class VertexRepairSimulation {
 
         for (int run = 1; run <= NUM_RUNS; run++) {
 //            RandomUtil.getInstance().setSeed(run * 17L + 31L);
+            RandomUtil.getInstance().setSeed(System.currentTimeMillis());
 
             // ------------------------------------------------------------------
             // 1. Simulate a random DAG and linear Gaussian data
@@ -428,6 +428,7 @@ public class VertexRepairSimulation {
 
     private Graph runBoss(DataSet data, edu.cmu.tetrad.search.score.Score score) throws Exception {
         Boss boss = new Boss(score);
+//        boss.setUseBes(true);
         PermutationSearch ps = new PermutationSearch(boss);
         return ps.search();
     }

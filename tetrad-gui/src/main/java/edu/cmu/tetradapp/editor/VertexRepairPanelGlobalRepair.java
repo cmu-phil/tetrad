@@ -195,7 +195,7 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         @Override
         public void editApplied(CandidateEdit edit, Graph currentGraph) {
             populateNodeCombo();
-            baseModel.setGraph(safeCopy(repairSearch.getGraph()));
+//            baseModel.setGraph(safeCopy(repairSearch.getGraph()));
             tableModel.fireTableDataChanged();
             SwingUtilities.invokeLater(() ->
                     statusLabel.setText("Applied: " + edit.description()));
@@ -207,7 +207,7 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
                 populateNodeCombo();
                 statusLabel.setText(message);
                 // Pass a distinct instance so PROP_GRAPH actually fires in the base model.
-                baseModel.setGraph(safeCopy(repairSearch.getGraph()));
+//                baseModel.setGraph(safeCopy(repairSearch.getGraph()));
             });
         }
     }
@@ -386,6 +386,7 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         if (rs != null) repairSearch.setRepairStrategy(rs);
 
         repairSearch.setSeed((Integer) seedSpinner.getValue());
+//        repairSearch.setSeed(System.currentTimeMillis());
         repairSearch.setPruneAlpha(((Number) pruneAlphaSpinner.getValue()).doubleValue());
     }
 
@@ -437,6 +438,7 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
 
         try {
             repairSearch.search();
+            baseModel.setGraph(safeCopy(repairSearch.getGraph()));
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
         }
@@ -475,7 +477,7 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         // otherwise VertexCheckIndTestModel.setGraph may short-circuit (same reference
         // or .equals()) and never fire PROP_GRAPH — which is what VertexCheckEditor
         // listens to in order to refresh its overview/facts tables.
-        baseModel.setGraph(safeCopy(repairSearch.getGraph()));
+//        baseModel.setGraph(safeCopy(repairSearch.getGraph()));
 
         // Refresh the node reference and node combo
         Graph wg = repairSearch.getGraph();

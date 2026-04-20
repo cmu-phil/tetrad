@@ -610,6 +610,7 @@ public class VertexCheckEditor extends JPanel {
             graphHistory.push(safeCopy(model.getGraph()));
             updateUndoButtonEnabled();
             applyingGraphProgrammatically = true;
+
             try {
                 model.setGraph(repaired);
                 firePropertyChange("modelChanged", null, null);

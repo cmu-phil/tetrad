@@ -67,7 +67,7 @@ public class VertexRepairBattery {
     private static final double PENALTY_DISCOUNT = 2.0;
     private static final double PRUNE_ALPHA = 0.05;
     private static final ConditioningSetType CONDITIONING_TYPE =
-            ConditioningSetType.RECURSIVE_BLOCKING;
+            ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY;
     private static final VertexRepairSearch.RepairStrategy REPAIR_STRATEGY =
             VertexRepairSearch.RepairStrategy.GLOBAL_QUEUE;
     private static final VertexRepairSearch.AdjustmentGraphType GRAPH_TYPE =

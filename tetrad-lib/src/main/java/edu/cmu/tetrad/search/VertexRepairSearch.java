@@ -254,7 +254,7 @@ public final class VertexRepairSearch implements IGraphSearch {
     // -------------------------------------------------------------------------
     // Cancellation
     // -------------------------------------------------------------------------
-    private int seed = 0;
+    private long seed = System.currentTimeMillis();
 
     // -------------------------------------------------------------------------
     // Global-queue state (populated only during a GLOBAL_QUEUE run)
@@ -661,7 +661,7 @@ public final class VertexRepairSearch implements IGraphSearch {
      *
      * @param seed the random seed to use; if {@code null} or {@code 0}, a random seed is used
      */
-    public void setSeed(int seed) {
+    public void setSeed(long seed) {
         this.seed = seed;
     }
 

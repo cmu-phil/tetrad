@@ -305,7 +305,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     public ConditioningSetType getConditioningSetType() {
         return (ConditioningSetType) this.parameters.get("conditioningSetTypeParam", ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
-    }
+    }   
 
     public void setConditioningSetType(ConditioningSetType conditioningSetType) {
         this.parameters.set("conditioningSetTypeParam", conditioningSetType);

@@ -64,8 +64,8 @@ public class VertexRepairBattery2 {
     };
 
     private static final ConditioningSetType[] CONDITIONING_TYPES = {
-            ConditioningSetType.RECURSIVE_BLOCKING,
             ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY,
+            ConditioningSetType.RECURSIVE_BLOCKING,
     };
 
     // Fixed parameters
