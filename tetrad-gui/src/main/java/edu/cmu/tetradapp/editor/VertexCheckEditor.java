@@ -116,6 +116,7 @@ public class VertexCheckEditor extends JPanel {
      * Live repair panel, or null when the Check tab is showing.
      */
     private VertexRepairPanelGlobalRepair repairPanel;
+    private boolean useAndersonDarling = false;
 
     // =========================================================================
     // Construction
@@ -137,6 +138,9 @@ public class VertexCheckEditor extends JPanel {
         modelUniformityTest.setSelectedIndex(model.isUseAndersonDarling() ? 1 : 0);
         modelUniformityTest.addActionListener(e -> {
             model.setUseAndersonDarling(modelUniformityTest.getSelectedIndex() == 1);
+            if (repairPanel != null) {
+                repairPanel.setUseAndersonDarling(modelUniformityTest.getSelectedIndex() == 1);
+            }
             runAllAndRefresh(null, null);
         });
         setPreferredSize(new Dimension(1100, 650));
@@ -590,6 +594,7 @@ public class VertexCheckEditor extends JPanel {
 
         repairPanel = new VertexRepairPanelGlobalRepair(this, x);
         repairPanel.setKnowledge(knowledge);
+        repairPanel.setUseAndersonDarling(model.isUseAndersonDarling());
 
         repairTabContent.removeAll();
         repairTabContent.add(repairPanel, BorderLayout.CENTER);

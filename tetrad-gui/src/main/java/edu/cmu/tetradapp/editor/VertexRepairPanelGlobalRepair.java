@@ -74,6 +74,7 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
 
     private volatile SwingWorker<?, ?> activeWorker;
     private volatile JDialog watchDialog;
+    private boolean useAndersonDarling = false;
 
     // =========================================================================
     // Construction
@@ -98,7 +99,8 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         // Build the search object and configure it
         this.repairSearch = new VertexRepairSearch(editor.getIndTestModel().getGraph(), editor.getIndTestModel().getIndependenceTest(),
                 editor.getIndTestModel().getConditioningSetType());
-        this.repairSearch.addRepairListener(new PanelRepairListener());
+        this.repairSearch.setUseAndersonDarling(useAndersonDarling);
+        this.repairSearch.addRepairListener(new PanelRepairListener(resultsModel));
 
         // Resolve the initial node inside the working graph
         Graph wg = repairSearch.getGraph();
@@ -138,6 +140,11 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         repairSearch.setKnowledge(knowledge);
     }
 
+    public void setUseAndersonDarling(boolean useAndersonDarling) {
+        this.useAndersonDarling = useAndersonDarling;
+        repairSearch.setUseAndersonDarling(useAndersonDarling);  // add this
+    }
+
     // =========================================================================
     // Inner listener — translates search events into EDT UI updates
     // =========================================================================
@@ -174,6 +181,12 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
 
     private final class PanelRepairListener implements RepairListener {
 
+        private final CandidateTableModel tableModel;
+
+        public PanelRepairListener(CandidateTableModel tableModel) {
+            this.tableModel = tableModel;
+        }
+
         @Override
         public void statusUpdated(String message) {
             SwingUtilities.invokeLater(() -> statusLabel.setText(message));
@@ -181,9 +194,9 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
 
         @Override
         public void editApplied(CandidateEdit edit, Graph currentGraph) {
-            // Don't publish per-edit during batch repair — it's expensive (rescores
-            // every vertex in the enclosing editor) and also silently no-ops because
-            // we'd be passing the same Graph reference repeatedly. Just update status.
+            populateNodeCombo();
+            baseModel.setGraph(safeCopy(repairSearch.getGraph()));
+            tableModel.fireTableDataChanged();
             SwingUtilities.invokeLater(() ->
                     statusLabel.setText("Applied: " + edit.description()));
         }
@@ -693,11 +706,12 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
 
     private static boolean isLegalGraphType(Graph g, AdjustmentGraphType gt) {
         return switch (gt) {
-            case DAG -> g.paths().isLegalDag();
+//            case DAG -> g.paths().isLegalDag();
             case CPDAG -> g.paths().isLegalCpdag() || g.paths().isLegalPdag();
-            case PDAG -> g.paths().isLegalPdag();
-            case MAG -> g.paths().isLegalMag();
+//            case PDAG -> g.paths().isLegalPdag();
+//            case MAG -> g.paths().isLegalMag();
             case PAG -> g.paths().isLegalPag();
+            default -> false;
         };
     }
 
