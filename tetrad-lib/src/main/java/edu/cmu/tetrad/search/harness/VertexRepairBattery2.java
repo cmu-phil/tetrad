@@ -47,8 +47,8 @@ public class VertexRepairBattery2 {
     private static final int NUM_NODES = 10;
     private static final int NUM_RUNS  = 20;
 
-    private static final double[] AVG_DEGREES  = {2.0, 4.0};
-    private static final int[]    SAMPLE_SIZES = {500, 1000, 10000};
+    private static final double[] AVG_DEGREES  = {2.0, 3.0, 4.0};
+    private static final int[]    SAMPLE_SIZES = {500, 1000, 5000, 10_000};
 
     /**
      * Constructs a new VertexRepairBattery2 object. This constructor is private to ensure
@@ -60,18 +60,16 @@ public class VertexRepairBattery2 {
             VertexRepairSimulation.StartingGraph.PC,
             VertexRepairSimulation.StartingGraph.FGES,
             VertexRepairSimulation.StartingGraph.BOSS,
-            VertexRepairSimulation.StartingGraph.EMPTY
     };
 
     private static final ConditioningSetType[] CONDITIONING_TYPES = {
             ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY,
-            ConditioningSetType.RECURSIVE_BLOCKING,
     };
 
     // Fixed parameters
     private static final double ALPHA            = 0.01;
-    private static final double PENALTY_DISCOUNT = 2.0;
-    private static final double PRUNE_ALPHA      = 0.20;
+    private static final double PENALTY_DISCOUNT = 4.0;
+    private static final double PRUNE_ALPHA      = 1.0;
 
     private static final VertexRepairSearch.RepairStrategy      REPAIR_STRATEGY =
             VertexRepairSearch.RepairStrategy.GLOBAL_QUEUE;
@@ -185,16 +183,18 @@ public class VertexRepairBattery2 {
                             // one progress line per run
                             System.out.printf(
                                     "[%5d/%5d] %-32s %-6s deg=%.1f n=%6d run=%2d | "
-                                            + "Start AdjF1=%.3f AdjP=%.3f ArrP=%.3f ArrPC=%.3f KS=%.3f | "
-                                            + "Rep   AdjF1=%.3f AdjP=%.3f ArrP=%.3f ArrPC=%.3f KS=%.3f%n",
+                                            + "Start AdjF1=%.3f AdjR=%.3f ArrF1=%.3f ArrP=%.3f ArrR=%.3f ArrPC=%.3f ArrRC=%.3f KS=%.3f | "
+                                            + "Rep   AdjF1=%.3f AdjR=%.3f ArrF1=%.3f ArrP=%.3f ArrR=%.3f ArrPC=%.3f ArrRC=%.3f KS=%.3f%n",
                                     runsDone, totalRuns,
                                     condType, scenario, avgDegree, sampleSize, run,
-                                    startStats.adjF1,      startStats.adjPrec,
-                                    startStats.arrPrec,    startStats.arrPrecCommon,
-                                    startStats.markovKS,
-                                    repairedStats.adjF1,   repairedStats.adjPrec,
-                                    repairedStats.arrPrec, repairedStats.arrPrecCommon,
-                                    repairedStats.markovKS);
+                                    startStats.adjF1,      startStats.adjRec,
+                                    startStats.arrF1,      startStats.arrPrec,
+                                    startStats.arrRec,     startStats.arrPrecCommon,
+                                    startStats.arrRecCommon, startStats.markovKS,
+                                    repairedStats.adjF1,      repairedStats.adjRec,
+                                    repairedStats.arrF1,      repairedStats.arrPrec,
+                                    repairedStats.arrRec,     repairedStats.arrPrecCommon,
+                                    repairedStats.arrRecCommon, repairedStats.markovKS);
                         }
                     }
                 }
@@ -213,178 +213,133 @@ public class VertexRepairBattery2 {
     // LaTeX table emission
     // =========================================================================
 
-    /**
-     * One table per (scenario, avgDegree).
-     * Rows = sample sizes.
-     * Column groups = conditioning types, each showing Start / Repaired
-     * for the five statistics.
-     *
-     * Because five statistics x two phases x four conditioning types would be
-     * unreadably wide, we emit two sub-tables per cell:
-     *   Sub-table A: Adj F1, Adj Precision, Arr Precision
-     *   Sub-table B: Arr Precision (common), Markov KS p
-     * Each sub-table has rows = sample sizes and columns =
-     * conditioning type x {Start, Rep}.
-     */
     private void emitLatexTables(Map<CellKey, CellResult> results) {
         DecimalFormat df2 = new DecimalFormat("0.00");
         DecimalFormat df3 = new DecimalFormat("0.000");
 
-        String[] condLabels = {"RB", "RA", "OLM", "SE"};
-
+        // ------------------------------------------------------------------
+        // Per-scenario main tables: Adj Prec, Adj Rec, Arr Prec, Arr Rec
+        // ------------------------------------------------------------------
         for (VertexRepairSimulation.StartingGraph scenario : SCENARIOS) {
+
+            String tag = scenario.name().toLowerCase();
+
+            System.out.printf("%%%n%% %s starting graph — main table%n%%%n", scenario);
+            System.out.println("\\begin{table}[ht]");
+            System.out.println("\\centering\\small");
+            System.out.printf(
+                    "\\caption{VertexRepair results with %s starting graph, OLM conditioning, "
+                            + "%d nodes, %d runs per cell. Each cell shows Start / Repaired.}%n",
+                    scenario, NUM_NODES, NUM_RUNS);
+            System.out.printf("\\label{tab:%s-main}%n", tag);
+
+            System.out.println("\\begin{tabular}{r r cc cc cc cc}");
+            System.out.println("\\toprule");
+
+            System.out.println("& & \\multicolumn{2}{c}{Adj Prec}"
+                    + " & \\multicolumn{2}{c}{Adj Rec}"
+                    + " & \\multicolumn{2}{c}{Arr Prec}"
+                    + " & \\multicolumn{2}{c}{Arr Rec} \\\\");
+
+            System.out.println("\\cmidrule(lr){3-4}\\cmidrule(lr){5-6}"
+                    + "\\cmidrule(lr){7-8}\\cmidrule(lr){9-10}");
+
+            System.out.println("deg & $n$ & S & R & S & R & S & R & S & R \\\\");
+            System.out.println("\\midrule");
+
             for (double avgDegree : AVG_DEGREES) {
-
-                String tag = String.format("%s-deg%d",
-                        scenario.name().toLowerCase(), (int) avgDegree);
-
-                // ------------------------------------------------------------------
-                // Sub-table A: Adj F1, Adj Precision, Arr Precision
-                // Columns: N | (Start Rep) x 4 conditioning types x 3 stats
-                // We group by conditioning type, each with Start/Rep for 3 stats
-                // ------------------------------------------------------------------
-                System.out.printf(
-                        "%%%n%% %s  avg degree %.0f  — Sub-table A: "
-                                + "Adj F1 / Adj Prec / Arr Prec%n%%%n",
-                        scenario, avgDegree);
-                System.out.println("\\begin{table}[ht]");
-                System.out.println("\\centering\\small");
-                System.out.printf(
-                        "\\caption{%s starting graph, avg degree %.0f, %d nodes, "
-                                + "%d runs. RB = Recursive Blocking, RA = Recursive Adjustment, "
-                                + "OLM = Ordered Local Markov, SE = Sink Elimination. "
-                                + "Each cell: Start / Repaired.}%n",
-                        scenario, avgDegree, NUM_NODES, NUM_RUNS);
-                System.out.printf("\\label{tab:%s-A}%n", tag);
-
-                // 1 col for n, then 4 cond types x 3 stats x 2 phases = 24 cols
-                // Group headers by conditioning type
-                StringBuilder colSpec = new StringBuilder("r");
-                for (int i = 0; i < 4; i++) colSpec.append(" cc cc cc");
-                // That's r + 4*(cc cc cc) but we want grouping by cond type
-                // Simpler: r + 24 c's
-                System.out.println("\\begin{tabular}{r " + "cc cc cc cc cc cc cc cc ".trim() + "}");
-                System.out.println("\\toprule");
-
-                // Row 1: conditioning type headers spanning 6 cols each
-                StringBuilder row1 = new StringBuilder("$n$");
-                for (String cl : condLabels)
-                    row1.append(" & \\multicolumn{6}{c}{").append(cl).append("}");
-                System.out.println(row1 + " \\\\");
-
-                // cmidrule separators
-                int col = 2;
-                for (int i = 0; i < 4; i++) {
-                    System.out.printf("\\cmidrule(lr){%d-%d}", col, col + 5);
-                    col += 6;
-                }
-                System.out.println();
-
-                // Row 2: stat headers spanning 2 cols each within each cond type
-                StringBuilder row2 = new StringBuilder();
-                for (int i = 0; i < 4; i++)
-                    row2.append(" & \\multicolumn{2}{c}{Adj F1}"
-                            + " & \\multicolumn{2}{c}{Adj Prec}"
-                            + " & \\multicolumn{2}{c}{Arr Prec}");
-                System.out.println(row2 + " \\\\");
-
-                // Row 3: Start/Rep for each stat
-                StringBuilder row3 = new StringBuilder("$n$");
-                for (int i = 0; i < 12; i++) row3.append(" & S & R");
-                System.out.println(row3 + " \\\\");
-                System.out.println("\\midrule");
-
-                // Data rows
+                boolean firstRow = true;
                 for (int sampleSize : SAMPLE_SIZES) {
-                    StringBuilder row = new StringBuilder(
-                            String.format("%6d", sampleSize));
-                    for (ConditioningSetType ct : CONDITIONING_TYPES) {
-                        CellKey key = new CellKey(ct, scenario, avgDegree, sampleSize);
-                        CellResult cell = results.get(key);
-                        CellResult.Averages s = cell.startAverages();
-                        CellResult.Averages r = cell.repairedAverages();
-                        row.append(String.format(
-                                " & %s & %s & %s & %s & %s & %s",
-                                df2.format(s.adjF1),   df2.format(r.adjF1),
-                                df2.format(s.adjPrec), df2.format(r.adjPrec),
-                                df2.format(s.arrPrec), df2.format(r.arrPrec)));
-                    }
-                    System.out.println(row + " \\\\");
+                    CellKey key = new CellKey(
+                            CONDITIONING_TYPES[0], scenario, avgDegree, sampleSize);
+                    CellResult cell = results.get(key);
+                    CellResult.Averages s = cell.startAverages();
+                    CellResult.Averages r = cell.repairedAverages();
+
+                    String degStr = firstRow ? String.format("%.0f", avgDegree) : "";
+                    firstRow = false;
+
+                    System.out.printf(
+                            "%s & %6d & %s & %s & %s & %s & %s & %s & %s & %s \\\\%n",
+                            degStr, sampleSize,
+                            df2.format(s.adjPrec), df2.format(r.adjPrec),
+                            df2.format(s.adjRec),  df2.format(r.adjRec),
+                            df2.format(s.arrPrec), df2.format(r.arrPrec),
+                            df2.format(s.arrRec),  df2.format(r.arrRec));
+                }
+                if (avgDegree != AVG_DEGREES[AVG_DEGREES.length - 1]) {
+                    System.out.println("\\midrule");
+                }
+            }
+
+            System.out.println("\\bottomrule");
+            System.out.println("\\end{tabular}");
+            System.out.println("\\end{table}");
+            System.out.println();
+        }
+
+        // ------------------------------------------------------------------
+        // Consolidated KS p table: PC, FGES, BOSS side by side (emitted once)
+        // ------------------------------------------------------------------
+        System.out.println("%");
+        System.out.println("% Consolidated KS p table: PC, FGES, BOSS");
+        System.out.println("%");
+        System.out.println("\\begin{table}[ht]");
+        System.out.println("\\centering\\small");
+        System.out.printf(
+                "\\caption{Markov KS $p$-value for PC, FGES, and BOSS starting graphs, "
+                        + "OLM conditioning, %d nodes, %d runs per cell. "
+                        + "Each cell shows Start / Repaired.}%n",
+                NUM_NODES, NUM_RUNS);
+        System.out.println("\\label{tab:ks-consolidated}");
+
+        System.out.println("\\begin{tabular}{r r cc cc cc}");
+        System.out.println("\\toprule");
+
+        System.out.println("& & \\multicolumn{2}{c}{PC}"
+                + " & \\multicolumn{2}{c}{FGES}"
+                + " & \\multicolumn{2}{c}{BOSS} \\\\");
+
+        System.out.println("\\cmidrule(lr){3-4}\\cmidrule(lr){5-6}\\cmidrule(lr){7-8}");
+        System.out.println("deg & $n$ & S & R & S & R & S & R \\\\");
+        System.out.println("\\midrule");
+
+        VertexRepairSimulation.StartingGraph[] ksScenarios = {
+                VertexRepairSimulation.StartingGraph.PC,
+                VertexRepairSimulation.StartingGraph.FGES,
+                VertexRepairSimulation.StartingGraph.BOSS
+        };
+
+        for (double avgDegree : AVG_DEGREES) {
+            boolean firstRow = true;
+            for (int sampleSize : SAMPLE_SIZES) {
+                String degStr = firstRow ? String.format("%.0f", avgDegree) : "";
+                firstRow = false;
+
+                StringBuilder row = new StringBuilder();
+                row.append(String.format("%s & %6d", degStr, sampleSize));
+
+                for (VertexRepairSimulation.StartingGraph sc : ksScenarios) {
+                    CellKey key = new CellKey(CONDITIONING_TYPES[0], sc, avgDegree, sampleSize);
+                    CellResult cell = results.get(key);
+                    CellResult.Averages s = cell.startAverages();
+                    CellResult.Averages r = cell.repairedAverages();
+                    row.append(String.format(" & %s & %s",
+                            df3.format(s.markovKS), df3.format(r.markovKS)));
                 }
 
-                System.out.println("\\bottomrule");
-                System.out.println("\\end{tabular}");
-                System.out.println("\\end{table}");
-                System.out.println();
-
-                // ------------------------------------------------------------------
-                // Sub-table B: Arr Prec (common), Markov KS p
-                // ------------------------------------------------------------------
-                System.out.printf(
-                        "%%%n%% %s  avg degree %.0f  — Sub-table B: "
-                                + "Arr Prec (common) / Markov KS p%n%%%n",
-                        scenario, avgDegree);
-                System.out.println("\\begin{table}[ht]");
-                System.out.println("\\centering\\small");
-                System.out.printf(
-                        "\\caption{%s starting graph, avg degree %.0f — "
-                                + "Arr Prec (common edges) and Markov KS $p$-value "
-                                + "(continuation of previous table).}%n",
-                        scenario, avgDegree);
-                System.out.printf("\\label{tab:%s-B}%n", tag);
-
-                // 1 col for n, then 4 cond types x 2 stats x 2 phases = 16 cols
-                System.out.println("\\begin{tabular}{r cc cc cc cc cc cc cc cc}");
-                System.out.println("\\toprule");
-
-                // Row 1: conditioning type headers spanning 4 cols each
-                StringBuilder rb1 = new StringBuilder("$n$");
-                for (String cl : condLabels)
-                    rb1.append(" & \\multicolumn{4}{c}{").append(cl).append("}");
-                System.out.println(rb1 + " \\\\");
-
-                col = 2;
-                for (int i = 0; i < 4; i++) {
-                    System.out.printf("\\cmidrule(lr){%d-%d}", col, col + 3);
-                    col += 4;
-                }
-                System.out.println();
-
-                // Row 2: stat headers
-                StringBuilder rb2 = new StringBuilder();
-                for (int i = 0; i < 4; i++)
-                    rb2.append(" & \\multicolumn{2}{c}{Arr Prec (com.)}"
-                            + " & \\multicolumn{2}{c}{KS $p$}");
-                System.out.println(rb2 + " \\\\");
-
-                // Row 3: Start/Rep
-                StringBuilder rb3 = new StringBuilder("$n$");
-                for (int i = 0; i < 8; i++) rb3.append(" & S & R");
-                System.out.println(rb3 + " \\\\");
+                row.append(" \\\\");
+                System.out.println(row);
+            }
+            if (avgDegree != AVG_DEGREES[AVG_DEGREES.length - 1]) {
                 System.out.println("\\midrule");
-
-                for (int sampleSize : SAMPLE_SIZES) {
-                    StringBuilder row = new StringBuilder(
-                            String.format("%6d", sampleSize));
-                    for (ConditioningSetType ct : CONDITIONING_TYPES) {
-                        CellKey key = new CellKey(ct, scenario, avgDegree, sampleSize);
-                        CellResult cell = results.get(key);
-                        CellResult.Averages s = cell.startAverages();
-                        CellResult.Averages r = cell.repairedAverages();
-                        row.append(String.format(
-                                " & %s & %s & %s & %s",
-                                df2.format(s.arrPrecCommon), df2.format(r.arrPrecCommon),
-                                df3.format(s.markovKS),      df3.format(r.markovKS)));
-                    }
-                    System.out.println(row + " \\\\");
-                }
-
-                System.out.println("\\bottomrule");
-                System.out.println("\\end{tabular}");
-                System.out.println("\\end{table}");
-                System.out.println();
             }
         }
+
+        System.out.println("\\bottomrule");
+        System.out.println("\\end{tabular}");
+        System.out.println("\\end{table}");
+        System.out.println();
     }
 
     // =========================================================================
@@ -409,6 +364,10 @@ public class VertexRepairBattery2 {
     // Statistics
     // =========================================================================
 
+    // =========================================================================
+// Statistics
+// =========================================================================
+
     private RunStats computeStats(Graph trueCpdag, Graph estimated,
                                   DataSet data, Parameters params) {
         Graph est = estimated;
@@ -423,10 +382,15 @@ public class VertexRepairBattery2 {
         } catch (Exception ignored) {}
 
         RunStats s = new RunStats();
-        s.adjF1         = new F1Adj().getValue(trueCpdag, est, data, params);
         s.adjPrec       = new AdjacencyPrecision().getValue(trueCpdag, est, data, params);
+        s.adjRec        = new AdjacencyRecall().getValue(trueCpdag, est, data, params);
+        s.adjF1         = new F1Adj().getValue(trueCpdag, est, data, params);
         s.arrPrec       = new ArrowheadPrecision().getValue(trueCpdag, est, data, params);
+        s.arrRec        = new ArrowheadRecall().getValue(trueCpdag, est, data, params);
+        s.arrF1         = new F1Arrow().getValue(trueCpdag, est, data, params);
         s.arrPrecCommon = new ArrowheadPrecisionCommonEdges()
+                .getValue(trueCpdag, est, data, params);
+        s.arrRecCommon  = new ArrowheadRecallCommonEdges()
                 .getValue(trueCpdag, est, data, params);
         s.markovKS      = new MarkovCheckKolmogorovSmirnoffP(
                 new FisherZ(),
@@ -435,9 +399,9 @@ public class VertexRepairBattery2 {
         return s;
     }
 
-    // =========================================================================
-    // Inner types
-    // =========================================================================
+// =========================================================================
+// Inner types
+// =========================================================================
 
     private record CellKey(
             ConditioningSetType condType,
@@ -446,45 +410,68 @@ public class VertexRepairBattery2 {
             int sampleSize) {}
 
     private static class RunStats {
-        double adjF1, adjPrec, arrPrec, arrPrecCommon, markovKS;
+        double adjPrec, adjRec, adjF1;
+        double arrPrec, arrRec, arrF1;
+        double arrPrecCommon, arrRecCommon;
+        double markovKS;
     }
 
     private static class CellResult {
-        private double sAdjF1, sAdjP, sArrP, sArrPC, sKS;
-        private double rAdjF1, rAdjP, rArrP, rArrPC, rKS;
+        private double sAdjP, sAdjR, sAdjF1;
+        private double sArrP, sArrR, sArrF1;
+        private double sArrPC, sArrRC, sKS;
+
+        private double rAdjP, rAdjR, rAdjF1;
+        private double rArrP, rArrR, rArrF1;
+        private double rArrPC, rArrRC, rKS;
+
         private int count = 0;
 
         void accumulateStart(RunStats s) {
-            sAdjF1 += nanSafe(s.adjF1);
             sAdjP  += nanSafe(s.adjPrec);
+            sAdjR  += nanSafe(s.adjRec);
+            sAdjF1 += nanSafe(s.adjF1);
             sArrP  += nanSafe(s.arrPrec);
+            sArrR  += nanSafe(s.arrRec);
+            sArrF1 += nanSafe(s.arrF1);
             sArrPC += nanSafe(s.arrPrecCommon);
+            sArrRC += nanSafe(s.arrRecCommon);
             sKS    += nanSafe(s.markovKS);
         }
 
         void accumulateRepaired(RunStats s) {
-            rAdjF1 += nanSafe(s.adjF1);
             rAdjP  += nanSafe(s.adjPrec);
+            rAdjR  += nanSafe(s.adjRec);
+            rAdjF1 += nanSafe(s.adjF1);
             rArrP  += nanSafe(s.arrPrec);
+            rArrR  += nanSafe(s.arrRec);
+            rArrF1 += nanSafe(s.arrF1);
             rArrPC += nanSafe(s.arrPrecCommon);
+            rArrRC += nanSafe(s.arrRecCommon);
             rKS    += nanSafe(s.markovKS);
             count++;
         }
 
         Averages startAverages()    {
-            return avg(sAdjF1, sAdjP, sArrP, sArrPC, sKS);
+            return avg(sAdjP, sAdjR, sAdjF1, sArrP, sArrR, sArrF1, sArrPC, sArrRC, sKS);
         }
         Averages repairedAverages() {
-            return avg(rAdjF1, rAdjP, rArrP, rArrPC, rKS);
+            return avg(rAdjP, rAdjR, rAdjF1, rArrP, rArrR, rArrF1, rArrPC, rArrRC, rKS);
         }
 
-        private Averages avg(double f1, double ap, double arp, double arpc, double ks) {
+        private Averages avg(double ap, double ar, double af1,
+                             double arrp, double arrr, double arrf1,
+                             double arpc, double arrc, double ks) {
             Averages a = new Averages();
             if (count == 0) return a;
-            a.adjF1         = f1   / count;
             a.adjPrec       = ap   / count;
-            a.arrPrec       = arp  / count;
+            a.adjRec        = ar   / count;
+            a.adjF1         = af1  / count;
+            a.arrPrec       = arrp / count;
+            a.arrRec        = arrr / count;
+            a.arrF1         = arrf1 / count;
             a.arrPrecCommon = arpc / count;
+            a.arrRecCommon  = arrc / count;
             a.markovKS      = ks   / count;
             return a;
         }
@@ -494,7 +481,10 @@ public class VertexRepairBattery2 {
         }
 
         static class Averages {
-            double adjF1, adjPrec, arrPrec, arrPrecCommon, markovKS;
+            double adjPrec, adjRec, adjF1;
+            double arrPrec, arrRec, arrF1;
+            double arrPrecCommon, arrRecCommon;
+            double markovKS;
         }
     }
 }
