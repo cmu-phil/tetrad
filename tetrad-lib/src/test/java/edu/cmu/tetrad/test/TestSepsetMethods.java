@@ -22,9 +22,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.RecursiveBlocking;
-import edu.cmu.tetrad.search.RecursiveBlockingVerbose;
-import edu.cmu.tetrad.search.SepsetFinder;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.MagToPag;
@@ -651,6 +649,36 @@ public class TestSepsetMethods {
                 try {
                     Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(
                             graph, x, w, Set.of(), Set.of(), -1);
+
+                    if (blocking != null && !graph.paths().isMSeparatedFrom(x, w, blocking, false)) {
+                        System.out.println("Seed: " + seed);
+                        System.out.println("x = " + x + ", w = " + w);
+                        System.out.println("Blocking set: " + blocking);
+                        System.out.println("Graph:\n" + graph);
+                        fail("Blocking set not valid for " + x + " and " + w);
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testParanaoid3() {
+        long seed = System.nanoTime();
+        RandomUtil.getInstance().setSeed(seed);
+
+        Graph graph = RandomGraph.randomDag(10, 0, 15, 10, 10, 10, false);
+
+        for (Node x : graph.getNodes()) {
+            for (Node w : graph.getNodes()) {
+                if (x.equals(w)) continue;
+                if (graph.isAdjacentTo(w, x)) continue;
+
+                try {
+                    Set<Node> blocking = RecursiveBlockingRadiusConstrained.blockPathsRecursively(
+                            graph, x, w, Set.of(), Set.of(), -1, -1, 1, null);
 
                     if (blocking != null && !graph.paths().isMSeparatedFrom(x, w, blocking, false)) {
                         System.out.println("Seed: " + seed);
