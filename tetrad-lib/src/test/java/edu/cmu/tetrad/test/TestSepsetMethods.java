@@ -622,7 +622,7 @@ public class TestSepsetMethods {
                     Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(
                             graph, x, w, Set.of(), Set.of(), -1);
 
-                    if (blocking != null && !new MsepTest(graph).isMSeparated(x, w, blocking)) {
+                    if (blocking != null && !graph.paths().isMSeparatedFrom(x, w, blocking, false)) {
                         System.out.println("Seed: " + seed);
                         System.out.println("x = " + x + ", w = " + w);
                         System.out.println("Blocking set: " + blocking);
@@ -652,7 +652,7 @@ public class TestSepsetMethods {
                     Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(
                             graph, x, w, Set.of(), Set.of(), -1);
 
-                    if (blocking != null && !new MsepTest(graph).isMSeparated(x, w, blocking)) {
+                    if (blocking != null && !graph.paths().isMSeparatedFrom(x, w, blocking, false)) {
                         System.out.println("Seed: " + seed);
                         System.out.println("x = " + x + ", w = " + w);
                         System.out.println("Blocking set: " + blocking);
