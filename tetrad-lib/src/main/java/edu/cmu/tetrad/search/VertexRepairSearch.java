@@ -1569,12 +1569,6 @@ public final class VertexRepairSearch implements IGraphSearch {
         for (RepairListener l : listeners) l.editApplied(edit, currentGraph);
     }
 
-    // =========================================================================
-    // Public types
-    // =========================================================================
-
-    // ---- Enums ---------------------------------------------------------------
-
     private void fireRepairConverged(int totalEdits, String message) {
         for (RepairListener l : listeners) l.repairConverged(totalEdits, message);
     }
@@ -1592,8 +1586,6 @@ public final class VertexRepairSearch implements IGraphSearch {
         this.useAndersonDarling = useAndersonDarling;
     }
 
-    // ---- Listener ------------------------------------------------------------
-
     /**
      * Sets the prune alpha value, which must be within the range [0, 1].
      * The prune alpha is used to control pruning false positice edges froem the starting graph.
@@ -1607,8 +1599,6 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
         this.pruneAlpha = pruneAlpha;
     }
-
-    // ---- CandidateEdit -------------------------------------------------------
 
     /**
      * Calculates the uniformity p-value of a given list of p-values using either the Anderson-Darling
@@ -1662,8 +1652,6 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
         return null;
     }
-
-    // ---- Private types -------------------------------------------------------
 
     private IndependenceResult checkIndependenceAtAlpha(Node x, Node y, Set<Node> z, double alpha) {
         if (stopRequested()) return null;
