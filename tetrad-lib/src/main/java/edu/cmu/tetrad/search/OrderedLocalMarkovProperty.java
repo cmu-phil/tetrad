@@ -45,7 +45,7 @@ import java.util.*;
  * only the semi-graphoid axioms (C1)–(C4). No composition axiom (C5) is required.
  *
  * <h2>Key difference from {@link OrderedLocalMarkovPropertySinkElimination}</h2>
- * The Andrews sink-elimination procedure ({@link OrderedLocalMarkovPropertySinkElimination}) generates
+ * The sink-elimination procedure ({@link OrderedLocalMarkovPropertySinkElimination}) generates
  * CI facts only for ancestral sets obtained by removing descendants of district members.
  * This class generates facts for <em>all</em> ancestral subsets of pre(x), including
  * those obtained by removing optional parents of district members. This additional
@@ -106,38 +106,6 @@ public class OrderedLocalMarkovProperty {
      * @param x    The node of interest.
      * @return Independence facts from the full OLMP model that involve x.
      */
-//    public static Set<IndependenceFact> getModelForNode(Graph admg, Node x) {
-//        Set<IndependenceFact> all = getModel(admg);
-//
-//        Map<String, Node> byName = new HashMap<>();
-//        for (Node n : admg.getNodes()) byName.put(n.getName(), n);
-//
-//        String xName = x.getName();
-//        Set<IndependenceFact> out = new HashSet<>();
-//
-//        for (IndependenceFact f : all) {
-//            boolean xIsLeft  = f.getX().getName().equals(xName);
-//            boolean xIsRight = f.getY().getName().equals(xName);
-//            if (!xIsLeft && !xIsRight) continue;
-//
-//            Node X = byName.get(f.getX().getName());
-//            Node Y = byName.get(f.getY().getName());
-//
-//            Set<Node> Z = new HashSet<>();
-//            for (Node z : f.getZ()) {
-//                Node zz = byName.get(z.getName());
-//                if (zz != null) Z.add(zz);
-//            }
-//
-//            if (X != null && Y != null) {
-//                if (xIsLeft) out.add(new IndependenceFact(X, Y, Z));
-//                else         out.add(new IndependenceFact(Y, X, Z));
-//            }
-//        }
-//
-//        return out;
-//    }
-
     public static Set<IndependenceFact> getModelForNode(Graph admg, Node x) {
         Set<IndependenceFact> all = getModel(admg);
         Map<String, Node> byName = new HashMap<>();
@@ -180,10 +148,10 @@ public class OrderedLocalMarkovProperty {
      * Enumerating subsets of these "optional blanket members" R(x) is sufficient
      * to discover every distinct blanket—and hence every distinct CI fact—for x.
      *
-     * <p>This covers strictly more ancestral sets than the Andrews procedure, which
+     * <p>This covers strictly more ancestral sets than the sink elimination procedure, which
      * only removes descendants of district members. R(x) additionally includes
      * non-ancestor parents of district members, and removing those along with their
-     * descendants produces ancestral sets not reachable by the Andrews recursion.
+     * descendants produces ancestral sets not reachable by the sink elimination recursion.
      */
     private static void generateFactsForNode(Set<IndependenceFact> model,
                                              Graph admg,

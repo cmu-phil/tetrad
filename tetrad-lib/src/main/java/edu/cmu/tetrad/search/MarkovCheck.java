@@ -385,7 +385,19 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     try {
 
                         // Look for a blocking set near x... so search from the side of w.
-                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, w, x, Set.of(), Set.of(), -1);
+                        Set<Node> blocking1 = RecursiveBlocking.blockPathsRecursively(graph, w, x, Set.of(), Set.of(), -1);
+                        Set<Node> blocking2 = RecursiveBlocking.blockPathsRecursively(graph, x, w, Set.of(), Set.of(), -1);
+
+                        Set<Node> blocking;
+                        if (blocking1 == null && blocking2 == null) {
+                            blocking = null;
+                        } else if (blocking1 == null) {
+                            blocking = blocking2;
+                        } else if (blocking2 == null) {
+                            blocking = blocking1;
+                        } else {
+                            blocking = blocking1.size() < blocking2.size() ? blocking1 : blocking2;
+                        }
 
                         if (blocking != null) {
                             facts.add(new IndependenceFact(x, w, blocking));
