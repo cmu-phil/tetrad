@@ -76,7 +76,7 @@ public class VertexRepairSimulation {
     /**
      * Which starting-graph scenario to use. Change this to try different scenarios.
      */
-    public static final StartingGraph scenario = StartingGraph.PC;
+    public static final StartingGraph scenario = StartingGraph.BOSS;
 
     // =========================================================================
     // Simulation parameters — edit these as desired
@@ -86,7 +86,7 @@ public class VertexRepairSimulation {
      * Conditioning set type passed to VertexRepairSearch.
      */
     private static final ConditioningSetType CONDITIONING_TYPE =
-            ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY;
+            ConditioningSetType.RECURSIVE_BLOCKING;
 
     /**
      * Average degree (expected edges per node).
@@ -214,8 +214,8 @@ public class VertexRepairSimulation {
         DecimalFormat df = new DecimalFormat("0.0000");
 
         for (int run = 1; run <= NUM_RUNS; run++) {
-//            RandomUtil.getInstance().setSeed(run * 17L + 31L);
-            RandomUtil.getInstance().setSeed(System.currentTimeMillis());
+            RandomUtil.getInstance().setSeed(run * 17L + 37L);
+//            RandomUtil.getInstance().setSeed(System.currentTimeMillis());
 
             // ------------------------------------------------------------------
             // 1. Simulate a random DAG and linear Gaussian data

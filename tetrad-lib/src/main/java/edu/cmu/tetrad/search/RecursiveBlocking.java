@@ -141,6 +141,55 @@ public class RecursiveBlocking {
      * separating set exists
      * @throws InterruptedException if the search is interrupted
      */
+//    private static Set<Node> blockPathsRecursivelyAdj(
+//            Graph graph,
+//            Node x,
+//            Node y,
+//            Set<Node> containing,
+//            Set<Node> notFollowed,
+//            Map<Node, Set<Node>> descendantsMap,
+//            int maxPathLength,
+//            Knowledge knowledge) throws InterruptedException {
+//
+//        if (x == y) {
+//            throw new NullPointerException("x and y are equal");
+//        }
+//
+//        // Z accumulates nodes that block all *blockable* paths.
+//        Set<Node> z = new HashSet<>(containing);
+//
+//        // Maintain visited nodes in the current traversal (cycle guard).
+//        Set<Node> path = new HashSet<>();
+//        path.add(x);
+//
+//        for (Node b : graph.getAdjacentNodes(x)) {
+//            if (Thread.currentThread().isInterrupted()) {
+//                return null; // indeterminate
+//            }
+//
+//            // Ignore the direct edge x—y on the first hop; we only explore paths that
+//            // leave x via a node other than y.
+//            if (b == y) continue;
+//
+//            Blockable r = findPathToTargetVisit(
+//                    graph, x, b, y, path, z, maxPathLength, notFollowed, descendantsMap
+//            );
+//
+//            // STRICT: If any branch is UNBLOCKABLE, then no graphical sepset exists.
+//            if (r == Blockable.UNBLOCKABLE) {
+//                return null;
+//            }
+//            // If analysis is indeterminate anywhere, we cannot certify a sepset.
+//            if (r == Blockable.INDETERMINATE) {
+//                return null;
+//            }
+//            // Otherwise r == BLOCKED: continue checking other branches.
+//        }
+//
+//        // All explored branches are BLOCKED under Z → candidate sepset found.
+//        return z;
+//    }
+
     private static Set<Node> blockPathsRecursivelyAdj(
             Graph graph,
             Node x,
@@ -155,39 +204,49 @@ public class RecursiveBlocking {
             throw new NullPointerException("x and y are equal");
         }
 
-        // Z accumulates nodes that block all *blockable* paths.
         Set<Node> z = new HashSet<>(containing);
 
-        // Maintain visited nodes in the current traversal (cycle guard).
-        Set<Node> path = new HashSet<>();
-        path.add(x);
-
+        List<Node> firstHops = new ArrayList<>();
         for (Node b : graph.getAdjacentNodes(x)) {
-            if (Thread.currentThread().isInterrupted()) {
-                return null; // indeterminate
-            }
-
-            // Ignore the direct edge x—y on the first hop; we only explore paths that
-            // leave x via a node other than y.
-            if (b == y) continue;
-
-            Blockable r = findPathToTargetVisit(
-                    graph, x, b, y, path, z, maxPathLength, notFollowed, descendantsMap
-            );
-
-            // STRICT: If any branch is UNBLOCKABLE, then no graphical sepset exists.
-            if (r == Blockable.UNBLOCKABLE) {
-                return null;
-            }
-            // If analysis is indeterminate anywhere, we cannot certify a sepset.
-            if (r == Blockable.INDETERMINATE) {
-                return null;
-            }
-            // Otherwise r == BLOCKED: continue checking other branches.
+            if (b != y) firstHops.add(b);
         }
 
-        // All explored branches are BLOCKED under Z → candidate sepset found.
-        return z;
+        // Outer fixed-point loop: re-examine every first hop after any Z growth,
+        // because a node added to Z during one branch may activate a collider
+        // on a different branch.
+        while (true) {
+            if (Thread.currentThread().isInterrupted()) {
+                return null;
+            }
+
+            int zSizeBefore = z.size();
+
+            for (Node b : firstHops) {
+                if (Thread.currentThread().isInterrupted()) {
+                    return null;
+                }
+
+                Set<Node> path = new HashSet<>();
+                path.add(x);
+
+                Blockable r = findPathToTargetVisit(
+                        graph, x, b, y, path, z, maxPathLength, notFollowed, descendantsMap
+                );
+
+                if (r == Blockable.UNBLOCKABLE) {
+                    return null;
+                }
+                if (r == Blockable.INDETERMINATE) {
+                    return null;
+                }
+            }
+
+            if (z.size() == zSizeBefore) {
+                // A complete pass made no additions to Z. Every first-hop branch
+                // is now BLOCKED under the current Z.
+                return z;
+            }
+        }
     }
 
 //    /**
@@ -578,6 +637,35 @@ public class RecursiveBlocking {
         return passNodes;
     }
 
+//    private static boolean reachable(Graph graph,
+//                                     Node a,
+//                                     Node b,
+//                                     Node c,
+//                                     Set<Node> z,
+//                                     Map<Node, Set<Node>> descendantsMap) {
+//        boolean collider = graph.isDefCollider(a, b, c);
+//
+//        // Non-collider (or underlined collider) is traversable if we are NOT conditioning on b.
+//        if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
+//            return true;
+//        }
+//
+//        // Collider is traversable iff collider or a DESCENDANT of it is in Z.
+//        if (descendantsMap == null) {
+//            return collider && graph.paths().isAncestorOfAnyZ(b, z);
+//        } else {
+//            Set<Node> desc = descendantsMap.getOrDefault(b, Collections.emptySet());
+//            boolean hasZDesc = false;
+//            for (Node d : desc) {
+//                if (z.contains(d)) {
+//                    hasZDesc = true;
+//                    break;
+//                }
+//            }
+//            return collider && hasZDesc;
+//        }
+//    }
+
     private static boolean reachable(Graph graph,
                                      Node a,
                                      Node b,
@@ -586,24 +674,24 @@ public class RecursiveBlocking {
                                      Map<Node, Set<Node>> descendantsMap) {
         boolean collider = graph.isDefCollider(a, b, c);
 
-        // Non-collider (or underlined collider) is traversable if we are NOT conditioning on b.
+        // Non-collider (or underlined collider) is traversable iff b is not in Z.
         if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
             return true;
         }
 
-        // Collider is traversable iff collider or a DESCENDANT of it is in Z.
+        if (!collider) return false;
+
+        // Collider: open iff b ∈ Z or a descendant of b is in Z (Definition 2.4 of the paper).
+        if (z.contains(b)) return true;
+
         if (descendantsMap == null) {
-            return collider && graph.paths().isAncestorOfAnyZ(b, z);
+            return graph.paths().isAncestorOfAnyZ(b, z);
         } else {
             Set<Node> desc = descendantsMap.getOrDefault(b, Collections.emptySet());
-            boolean hasZDesc = false;
             for (Node d : desc) {
-                if (z.contains(d)) {
-                    hasZDesc = true;
-                    break;
-                }
+                if (z.contains(d)) return true;
             }
-            return collider && hasZDesc;
+            return false;
         }
     }
 

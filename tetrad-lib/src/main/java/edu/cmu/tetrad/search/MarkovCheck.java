@@ -379,33 +379,45 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             case RECURSIVE_BLOCKING: {
                 Set<IndependenceFact> facts = new HashSet<>();
                 for (Node w : graph.getNodes()) {
-                    if (x == w) continue;
+                    if (x.equals(w)) continue;
                     if (graph.isAdjacentTo(w, x)) continue;
 
                     try {
 
                         // Look for a blocking set near x... so search from the side of w.
-                        Set<Node> blocking1 = RecursiveBlocking.blockPathsRecursively(graph, w, x, Set.of(), Set.of(), -1);
-                        Set<Node> blocking2 = RecursiveBlocking.blockPathsRecursively(graph, x, w, Set.of(), Set.of(), -1);
+//                        Set<Node> blocking1 = RecursiveBlocking.blockPathsRecursively(graph, w, x, Set.of(), Set.of(), -1);
+                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, x, w, Set.of(), Set.of(), -1);
 
-                        Set<Node> blocking;
-                        if (blocking1 == null && blocking2 == null) {
-                            blocking = null;
-                        } else if (blocking1 == null) {
-                            blocking = blocking2;
-                        } else if (blocking2 == null) {
-                            blocking = blocking1;
-                        } else {
-                            blocking = blocking1.size() < blocking2.size() ? blocking1 : blocking2;
-                        }
+//                        Set<Node> blocking;
+//                        if (blocking1 == null && blocking2 == null) {
+//                            blocking = null;
+//                        } else if (blocking1 == null) {
+//                            blocking = blocking2;
+//                        } else if (blocking2 == null) {
+//                            blocking = blocking1;
+//                        } else if (blocking1.size() < blocking2.size()) {
+//                            blocking = blocking1;
+//                        } else if (blocking2.size() < blocking1.size()) {
+//                            blocking = blocking2;
+//                        } else {
+//                            // Same size: pick canonically by comparing string representations
+//                            blocking = blocking1.toString().compareTo(blocking2.toString()) <= 0 ? blocking1 : blocking2;
+//                        }
 
                         if (blocking != null) {
-                            facts.add(new IndependenceFact(x, w, blocking));
+//                            if (graph.paths().isMSeparatedFrom(x, w, blocking, false)) {
+                                facts.add(new IndependenceFact(x, w, blocking));
+//                            } else {
+//                                System.out.println("Blocking set not valid for " + x + " and " + w);
+//                                System.out.println("Blocking set: " + blocking);
+//                                System.out.println("Graph: \n" + graph);
+//                            }
                         }
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                 }
+
                 return new ArrayList<>(facts);
             }
 
