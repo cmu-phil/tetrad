@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -23,10 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.utils.PagLegalityCheck;
-import edu.cmu.tetrad.search.utils.Tetrad;
-import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.util.GraphUtils;
-import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -44,10 +41,6 @@ public class CheckGraphForPagAction extends AbstractAction {
      * The desktop containing the target session editor.
      */
     private final GraphWorkbench workbench;
-    /**
-     * The legal PAG result.
-     */
-    private volatile PagLegalityCheck.LegalPagRet legalPag = null;
 
     /**
      * Highlights all latent variables in the given display graph.
