@@ -69,7 +69,7 @@ public final class PagCache {
         return local;
     }
 
-    private static Graph computePag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias) {
+    private static Graph computePag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int maxDiscriminatingPathLength) {
 //        if (graph.paths().isLegalDag()) {
 //            Graph mag = GraphTransforms.dagToMag(graph);
 //            return new MagToPag(mag).convert(false);
@@ -87,9 +87,9 @@ public final class PagCache {
 
         if (graph.paths().isLegalDag()) {
             Graph mag = GraphTransforms.dagToMag(graph);
-            return computePagFromMag(mag, knowledge, excludeSelectionBias);   // no getPag() here, avoiding infinite recursion.
+            return computePagFromMag(mag, knowledge, excludeSelectionBias, maxDiscriminatingPathLength);   // no getPag() here, avoiding infinite recursion.
         } else if (graph.paths().isLegalMag()) {
-            return computePagFromMag(graph, knowledge, excludeSelectionBias);
+            return computePagFromMag(graph, knowledge, excludeSelectionBias, maxDiscriminatingPathLength);
         } else {
             Graph mag = GraphTransforms.zhangMagFromPag(graph);
             return new MagToPag(mag).convert(true, excludeSelectionBias);
@@ -203,9 +203,10 @@ public final class PagCache {
         return h;
     }
 
-    private static Graph computePagFromMag(Graph mag, Knowledge knowledge, boolean excludeSelectionBias) {
+    private static Graph computePagFromMag(Graph mag, Knowledge knowledge, boolean excludeSelectionBias, int maxDiscriminatingPathLength) {
         MagToPag magToPag = new MagToPag(mag);
         magToPag.setKnowledge(knowledge);
+        magToPag.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         return magToPag.convert(false, excludeSelectionBias);
     }
 
@@ -229,7 +230,7 @@ public final class PagCache {
      * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
      */
     public @NotNull Graph getPag(Graph g, boolean excludeSelectionBias) {
-        return getPag(g, new Knowledge(), excludeSelectionBias);
+        return getPag(g, new Knowledge(), excludeSelectionBias, -1);
     }
 
     /**
@@ -238,13 +239,14 @@ public final class PagCache {
      * stored in the cache, and returned. The input graph must be either a DAG (Directed Acyclic Graph) or a MAG
      * (Maximal Ancestral Graph).
      *
-     * @param g                    the input graph, which must be either a DAG or a MAG
-     * @param knowledge            the knowledge object containing additional information for PAG computation
-     * @param excludeSelectionBias whether to exclude selection bias during PAG computation
+     * @param g                           the input graph, which must be either a DAG or a MAG
+     * @param knowledge                   the knowledge object containing additional information for PAG computation
+     * @param excludeSelectionBias        whether to exclude selection bias during PAG computation
+     * @param maxDiscriminatingPathLength
      * @return the corresponding PAG for the provided graph
      * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
      */
-    public @NotNull Graph getPag(Graph g, Knowledge knowledge, boolean excludeSelectionBias) {
+    public @NotNull Graph getPag(Graph g, Knowledge knowledge, boolean excludeSelectionBias, int maxDiscriminatingPathLength) {
         if (!(g.paths().isLegalDag() || g.paths().isLegalMag())) {
             throw new IllegalArgumentException("Graph must be a DAG or a MAG.");
         }
@@ -256,7 +258,7 @@ public final class PagCache {
                 // Guard against external mutation of the cached PAG
                 long currentPagSig = signatureOfPag(e.pag);
                 if (currentPagSig != e.pagSig) {
-                    Graph rebuilt = computePag(g, knowledge, excludeSelectionBias);
+                    Graph rebuilt = computePag(g, knowledge, excludeSelectionBias, -1);
                     syncInPlace(e.pag, rebuilt);               // preserve identity
                     e.pagSig = signatureOfPag(e.pag);          // update sig after sync
                 }
@@ -265,7 +267,7 @@ public final class PagCache {
         }
 
         // Miss or source changed: build fresh
-        final Graph pag = computePag(g, knowledge, excludeSelectionBias);
+        final Graph pag = computePag(g, knowledge, excludeSelectionBias, maxDiscriminatingPathLength);
         synchronized (cache) {
             cache.put(g, new Entry(pag, srcSig, signatureOfPag(pag)));
             return pag;

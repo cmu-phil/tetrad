@@ -888,7 +888,7 @@ public class FciOrient {
         List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = new ArrayList<>();
 
         for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
-            tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, graph, vNodes));
+            tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, maxDiscriminatingPathLength, graph, vNodes));
         }
 
         return tasks;
@@ -1383,7 +1383,8 @@ public class FciOrient {
      */
     public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
         if (!(maxDiscriminatingPathLength == -1 || maxDiscriminatingPathLength >= 4)) {
-            throw new IllegalArgumentException("maxDiscriminatingPathLength must be -1 (unlimited) or >= 4: " + maxDiscriminatingPathLength);
+            TetradLogger.getInstance().log("WARNING: path length must be -1 (unlimited) or >= 4" +
+                    "in order to find discriminating paths: " + maxDiscriminatingPathLength);
         }
 
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;

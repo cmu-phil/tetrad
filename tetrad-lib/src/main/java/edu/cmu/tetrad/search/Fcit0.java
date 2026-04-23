@@ -424,7 +424,7 @@ public final class Fcit0 implements IGraphSearch {
         }
 
         // The main procedure.
-        this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias);
+        this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias, -1);
 
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 

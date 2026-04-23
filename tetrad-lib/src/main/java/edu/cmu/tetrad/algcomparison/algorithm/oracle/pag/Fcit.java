@@ -35,7 +35,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -163,7 +162,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // FCIT
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
+        search.setMaxPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
         search.setRaRadius(parameters.getInt(Params.RA_RADIUS));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 

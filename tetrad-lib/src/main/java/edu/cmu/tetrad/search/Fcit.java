@@ -139,7 +139,7 @@ public final class Fcit implements IGraphSearch {
     private @NotNull Graph pag = new EdgeListGraph();
     private boolean replicatingGraph = false;
     private boolean excludeSelectionBias = false;
-    private int maxBlockingPathLength = -1;
+    private int maxPathLength = -1;
     private int raRadius = -1;
 
     /**
@@ -294,6 +294,7 @@ public final class Fcit implements IGraphSearch {
         fciOrient.setVerbose(superVerbose);
         fciOrient.setParallel(true);
         fciOrient.setCompleteRuleSetUsed(true);
+        fciOrient.setMaxDiscriminatingPathLength(maxPathLength);
         fciOrient.setKnowledge(knowledge);
 
         Graph dag;
@@ -430,7 +431,7 @@ public final class Fcit implements IGraphSearch {
         }
 
         // The main procedure.
-        this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias);
+        this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias, maxPathLength);
 
         if (replicatingGraph) {
             this.pag = new ReplicatingGraph(pag, new LagReplicationPolicy());
@@ -622,7 +623,7 @@ public final class Fcit implements IGraphSearch {
             // Use recursive B to propose a B set B; null => no sepset under this NF
 //            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, maxBlockingPathLength, this.knowledge);
             Set<Node> B = RecursiveBlocking.blockPathsRecursively(
-                    pag, x, y, Set.of(), notFollowed, maxBlockingPathLength, raRadius, depth, 1, knowledge);
+                    pag, x, y, Set.of(), notFollowed, maxPathLength, raRadius, depth, 1, knowledge);
 
             if (B == null) {
                 continue; // No separating set possible for this NF; try another NF
@@ -814,10 +815,10 @@ public final class Fcit implements IGraphSearch {
     /**
      * Sets the maximum blocking path length.
      *
-     * @param maxBlockingPathLength the maximum length of the blocking path to be set
+     * @param maxPathLength the maximum length of the blocking path to be set
      */
-    public void setMaxBlockingPathLength(int maxBlockingPathLength) {
-        this.maxBlockingPathLength = maxBlockingPathLength;
+    public void setMaxPathLength(int maxPathLength) {
+        this.maxPathLength = maxPathLength;
     }
 
     public void setRaRadius(int raRadius) {

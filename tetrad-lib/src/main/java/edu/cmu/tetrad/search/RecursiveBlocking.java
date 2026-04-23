@@ -147,10 +147,12 @@ public class RecursiveBlocking {
         // Nodes in 'containing' are always eligible, even if outside the radius.
         pool.addAll(containing);
 
+        int recursionDepth = maxPathLength < 0 ? Integer.MAX_VALUE : maxPathLength;
+
         return blockPathsRecursivelyAdj(
                 graph, x, y, containing, notFollowed,
                 graph.paths().getDescendantsMap(),
-                maxPathLength, depth, pool, knowledge);
+                maxPathLength, recursionDepth, depth, pool, knowledge);
     }
 
     // -----------------------------------------------------------------------
@@ -224,6 +226,7 @@ public class RecursiveBlocking {
             Set<Node> notFollowed,
             Map<Node, Set<Node>> descendantsMap,
             int maxPathLength,
+            int recursionDepth,
             int depth,
             Set<Node> pool,
             Knowledge knowledge) throws InterruptedException {
@@ -244,14 +247,14 @@ public class RecursiveBlocking {
         // on a different branch.
         while (true) {
             if (Thread.currentThread().isInterrupted()) {
-                return null;
+                throw new InterruptedException();
             }
 
             int zSizeBefore = z.size();
 
             for (Node b : firstHops) {
                 if (Thread.currentThread().isInterrupted()) {
-                    return null;
+                    throw new InterruptedException();
                 }
 
                 Set<Node> path = new HashSet<>();
@@ -259,7 +262,7 @@ public class RecursiveBlocking {
 
                 Blockable r = findPathToTargetVisit(
                         graph, x, b, y, path, z,
-                        maxPathLength, depth, notFollowed, descendantsMap, pool);
+                        maxPathLength, depth, notFollowed, descendantsMap, pool, recursionDepth, 0);
 
                 if (r == Blockable.UNBLOCKABLE) {
                     return null;
@@ -284,32 +287,21 @@ public class RecursiveBlocking {
      * is treated as INDETERMINATE (cannot block via out-of-radius node).
      */
     static Blockable findPathToTargetVisit(Graph graph,
-                                           Node a,
-                                           Node b,
-                                           Node y,
-                                           Set<Node> path,
-                                           Set<Node> z,
-                                           int maxPathLength,
-                                           int depth,
+                                           Node a, Node b, Node y,
+                                           Set<Node> path, Set<Node> z,
+                                           int maxPathLength, int depth,
                                            Set<Node> notFollowed,
                                            Map<Node, Set<Node>> descendantsMap,
-                                           Set<Node> pool) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) {
-            return Blockable.INDETERMINATE;
-        }
+                                           Set<Node> pool,
+                                           int recursionDepth,
+                                           int currentDepth) throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+        if (currentDepth > recursionDepth) return Blockable.INDETERMINATE;  // ← new check
 
-        if (b == y) {
-            return Blockable.UNBLOCKABLE;
-        }
-        if (path.contains(b)) {
-            return Blockable.BLOCKED;
-        }
-        if (notFollowed.contains(b)) {
-            return Blockable.INDETERMINATE;
-        }
-        if (notFollowed.contains(y)) {
-            return Blockable.BLOCKED;
-        }
+        if (b == y) return Blockable.UNBLOCKABLE;
+        if (path.contains(b)) return Blockable.BLOCKED;
+        if (notFollowed.contains(b)) return Blockable.INDETERMINATE;
+        if (notFollowed.contains(y)) return Blockable.BLOCKED;
 
         path.add(b);
 
@@ -318,51 +310,33 @@ public class RecursiveBlocking {
                 return Blockable.INDETERMINATE;
             }
 
-            // Case 1: b is latent — cannot condition on it; just traverse.
             if (b.getNodeType() == NodeType.LATENT) {
                 return tryBlockAllContinuations(graph, a, b, y, path, z,
-                        maxPathLength, depth, notFollowed, descendantsMap, pool);
+                        maxPathLength, depth, notFollowed, descendantsMap, pool,
+                        recursionDepth, currentDepth + 1);  // ← increment
             }
 
-            // Snapshot Z for clean rollback.
             Set<Node> zSnapshot = new HashSet<>(z);
 
-            // Case 2: Try WITHOUT conditioning on b.
             Blockable withoutB = tryBlockAllContinuations(graph, a, b, y, path, z,
-                    maxPathLength, depth, notFollowed, descendantsMap, pool);
+                    maxPathLength, depth, notFollowed, descendantsMap, pool,
+                    recursionDepth, currentDepth + 1);  // ← increment
 
-            if (withoutB == Blockable.BLOCKED) {
-                return Blockable.BLOCKED;
-            }
+            if (withoutB == Blockable.BLOCKED) return Blockable.BLOCKED;
 
-            // Roll back.
             z.clear();
             z.addAll(zSnapshot);
 
-            // Case 3: Try WITH conditioning on b — but only if b is in the pool.
-            if (!pool.contains(b)) {
-                // Out-of-radius: cannot condition on b, and without-b already
-                // failed, so this branch is indeterminate (not unblockable —
-                // a wider radius might succeed).
-                return Blockable.INDETERMINATE;
-            }
-
-            // Also, if the depth limit has already been reached, this branch is indeterminate,
-            // since we cannot determine if conditioning on b would block the path without
-            // adding a new node to Z, exceeding the depth limit.
-            if (depth >= 0 && z.size() > depth) {
-                return Blockable.INDETERMINATE;
-            }
+            if (!pool.contains(b)) return Blockable.INDETERMINATE;
+            if (depth >= 0 && z.size() > depth) return Blockable.INDETERMINATE;
 
             z.add(b);
             Blockable withB = tryBlockAllContinuations(graph, a, b, y, path, z,
-                    maxPathLength, depth, notFollowed, descendantsMap, pool);
+                    maxPathLength, depth, notFollowed, descendantsMap, pool,
+                    recursionDepth, currentDepth + 1);  // ← increment
 
-            if (withB == Blockable.BLOCKED) {
-                return Blockable.BLOCKED;
-            }
+            if (withB == Blockable.BLOCKED) return Blockable.BLOCKED;
 
-            // Neither option worked — roll back.
             z.clear();
             z.addAll(zSnapshot);
 
@@ -376,23 +350,21 @@ public class RecursiveBlocking {
     }
 
     private static Blockable tryBlockAllContinuations(Graph graph,
-                                                      Node a,
-                                                      Node b,
-                                                      Node y,
-                                                      Set<Node> path,
-                                                      Set<Node> z,
-                                                      int maxPathLength,
-                                                      int depth,
+                                                      Node a, Node b, Node y,
+                                                      Set<Node> path, Set<Node> z,
+                                                      int maxPathLength, int depth,
                                                       Set<Node> notFollowed,
                                                       Map<Node, Set<Node>> descendantsMap,
-                                                      Set<Node> pool)
+                                                      Set<Node> pool,
+                                                      int recursionDepth,
+                                                      int currentDepth)
             throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
         Set<Node> handled = new HashSet<>();
 
         while (true) {
-            if (Thread.currentThread().isInterrupted()) {
-                return Blockable.INDETERMINATE;
-            }
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
 
             List<Node> passNodes = getReachableNodes(graph, a, b, z, descendantsMap);
             passNodes.removeAll(notFollowed);
@@ -403,25 +375,19 @@ public class RecursiveBlocking {
                 if (handled.contains(c)) continue;
                 progressed = true;
 
-                if (Thread.currentThread().isInterrupted()) {
-                    return Blockable.INDETERMINATE;
-                }
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
 
                 Blockable result = findPathToTargetVisit(graph, b, c, y, path, z,
-                        maxPathLength, depth, notFollowed, descendantsMap, pool);
+                        maxPathLength, depth, notFollowed, descendantsMap, pool,
+                        recursionDepth, currentDepth);  // ← currentDepth unchanged here,
+                //   increment happens in findPathToTargetVisit
 
-                if (result == Blockable.UNBLOCKABLE) {
-                    return Blockable.UNBLOCKABLE;
-                }
-                if (result == Blockable.INDETERMINATE) {
-                    return Blockable.INDETERMINATE;
-                }
+                if (result == Blockable.UNBLOCKABLE) return Blockable.UNBLOCKABLE;
+                if (result == Blockable.INDETERMINATE) return Blockable.INDETERMINATE;
                 handled.add(c);
             }
 
-            if (!progressed) {
-                return Blockable.BLOCKED;
-            }
+            if (!progressed) return Blockable.BLOCKED;
         }
     }
 
@@ -429,7 +395,12 @@ public class RecursiveBlocking {
                                                 Node a,
                                                 Node b,
                                                 Set<Node> z,
-                                                Map<Node, Set<Node>> descendantsMap) {
+                                                Map<Node, Set<Node>> descendantsMap)
+            throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException();
+        }
+
         List<Node> passNodes = new ArrayList<>();
         for (Node c : graph.getAdjacentNodes(b)) {
             if (c == a) continue;
