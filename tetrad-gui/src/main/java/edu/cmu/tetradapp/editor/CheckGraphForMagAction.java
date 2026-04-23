@@ -33,6 +33,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * CheckGraphForPdagAction is an action class that checks if a given graph is a legal PDAG (Mixed Ancestral Graph) and
@@ -75,42 +76,50 @@ public class CheckGraphForMagAction extends AbstractAction {
         Graph graph = workbench.getGraph();
 
         if (graph == null) {
-            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "No graph to check for MAGness.");
+            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench),
+                    "No graph to check for PAGness.");
             return;
         }
+
+        Graph _graph = new EdgeListGraph(graph);
 
         class MyWatchedProcess extends WatchedProcess {
             @Override
             public void watch() {
-                List<Node> selection = graph.getNodes().stream()
-                        .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+                CompletableFuture<PagLegalityCheck.LegalMagRet> future = CompletableFuture
+                        .supplyAsync(() -> PagLegalityCheck.isLegalMag(_graph, new HashSet<>(), 15));
 
-                Graph _graph = new EdgeListGraph(workbench.getGraph());
-                legalMag = PagLegalityCheck.isLegalMag(_graph, new HashSet<>(selection));
+                PagLegalityCheck.LegalMagRet result;
+                try {
+                    result = future.get(); // blocks watch() until done or exception
+                } catch (Exception ex) {
+                    SwingUtilities.invokeLater(() ->
+                            JOptionPane.showMessageDialog(
+                                    GraphUtils.getContainingScrollPane(workbench),
+                                    "Error or timeout checking PAG legality",
+                                    "Legal PAG check",
+                                    JOptionPane.ERROR_MESSAGE));
+                    return;
+                }
+
+                PagLegalityCheck.LegalMagRet _result = result;
+                SwingUtilities.invokeLater(() -> {
+                    String reason = GraphUtils.breakDown(_result.getReason(), 60);
+                    if (!_result.isLegalMag()) {
+                        JOptionPane.showMessageDialog(
+                                GraphUtils.getContainingScrollPane(workbench),
+                                "This is not a legal PAG--one reason is as follows:\n\n" + reason + ".",
+                                "Legal PAG check",
+                                JOptionPane.WARNING_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(
+                                GraphUtils.getContainingScrollPane(workbench), reason);
+                    }
+                });
             }
         }
 
         new MyWatchedProcess();
-
-        while (legalMag == null) {
-            try {
-                Thread.sleep(100); // Sleep a bit to prevent tight loop
-            } catch (InterruptedException e2) {
-                Thread.currentThread().interrupt();
-            }
-        }
-
-        String reason = GraphUtils.breakDown(legalMag.getReason(), 60);
-
-        if (!legalMag.isLegalMag()) {
-            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench),
-                    "This is not a legal MAG--one reason is as follows:" +
-                    "\n\n" + reason + ".",
-                    "Legal MAG check",
-                    JOptionPane.WARNING_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), reason);
-        }
     }
 }
 

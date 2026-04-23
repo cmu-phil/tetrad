@@ -30,7 +30,7 @@ public class PagLegalityCheck {
     }
 
     /**
-     * Runs {@link #isLegalPagQuiet} with a timeout. Returns {@code false} if the
+     * Runs {@link #isLegalPag} with a timeout. Returns {@code false} if the
      * check does not complete within {@code timeoutSeconds} seconds, treating a
      * timeout as a failed legality check (i.e. the surgery is reverted).
      *
@@ -114,6 +114,40 @@ public class PagLegalityCheck {
         }
 
         return new LegalPagRet(true, "This is a legal PAG");
+    }
+
+    /**
+     * Runs {@link #isLegalMag} with a timeout. Returns {@code false} if the
+     * check does not complete within {@code timeoutSeconds} seconds, treating a
+     * timeout as a failed legality check (i.e. the surgery is reverted).
+     *
+     * @param mag            the MAG to check
+     * @param selection      the selection set
+     * @param timeoutSeconds maximum seconds to wait
+     * @return A LegalMagRet object indicating whether the MAG is legal or not, along with a reason if it is not legal,
+     * if legal and completed within the timeout
+     * @throws RuntimeException if the check fails or times out.
+     */
+    public static LegalMagRet isLegalMag(Graph mag, Set<Node> selection, int timeoutSeconds) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<LegalMagRet> future = executor.submit(
+                (Callable<LegalMagRet>) () -> isLegalMag(mag, selection));
+        try {
+            return future.get(timeoutSeconds, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            TetradLogger.getInstance().log("Timeout on PAG legality check.");
+            throw new RuntimeException("Timeout");
+        } catch (InterruptedException e) {
+            future.cancel(true);
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted");
+        } catch (ExecutionException e) {
+            future.cancel(true);
+            throw new RuntimeException("Execution failed");
+        } finally {
+            executor.shutdownNow();
+        }
     }
 
     /**
