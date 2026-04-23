@@ -15,7 +15,6 @@ import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 
-import java.lang.reflect.Method;
 import java.util.*;
 
 /**

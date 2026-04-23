@@ -621,7 +621,7 @@ public final class Fcit implements IGraphSearch {
 
             // Use recursive B to propose a B set B; null => no sepset under this NF
 //            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, maxBlockingPathLength, this.knowledge);
-            Set<Node> B = RecursiveBlockingRadiusConstrained.blockPathsRecursively(
+            Set<Node> B = RecursiveBlocking.blockPathsRecursively(
                     pag, x, y, Set.of(), notFollowed, maxBlockingPathLength, raRadius, depth, 1, knowledge);
 
             if (B == null) {
