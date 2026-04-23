@@ -306,7 +306,7 @@ public class RecursiveBlockingRadiusConstrained {
             // Also, if the depth limit has already been reached, this branch is indeterminate,
             // since we cannot determine if conditioning on b would block the path without
             // adding a new node to Z, exceeding the depth limit.
-            if (z.size() > depth) {
+            if (depth >= 0 && z.size() > depth) {
                 return Blockable.INDETERMINATE;
             }
 
