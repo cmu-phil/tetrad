@@ -314,7 +314,7 @@ public class RecursiveBlocking {
         path.add(b);
 
         try {
-            if (maxPathLength != -1 && path.size() > maxPathLength) {
+            if (maxPathLength >= 0 && path.size() > maxPathLength) {
                 return Blockable.INDETERMINATE;
             }
 
