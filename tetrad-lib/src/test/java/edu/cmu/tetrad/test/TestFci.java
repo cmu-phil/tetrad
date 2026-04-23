@@ -106,7 +106,8 @@ public class TestFci {
         List<Node> selection = graph.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-        PagLegalityCheck.LegalPagRet legalMag = PagLegalityCheck.isLegalPag(graph, new HashSet<>(selection));
+        PagLegalityCheck.LegalPagRet legalMag = PagLegalityCheck.isLegalPag(graph, new HashSet<>(selection),
+                15 /* second timeout*/);
 
         if (!legalMag.isLegalPag()) {
             System.out.println("Not legal pag, reason = " + legalMag.getReason());
@@ -980,7 +981,8 @@ public class TestFci {
                 List<Node> selection = graph.getNodes().stream()
                         .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-                PagLegalityCheck.LegalPagRet ret = PagLegalityCheck.isLegalPag(pag, new HashSet<>(selection));
+                PagLegalityCheck.LegalPagRet ret = PagLegalityCheck.isLegalPag(pag, new HashSet<>(selection),
+                        15 /* second timeout*/);
 
                 if (mag.paths().isLegalMag() && !pag.paths().isLegalPag()) {
                     List<Node> nodes = pag.getNodes();

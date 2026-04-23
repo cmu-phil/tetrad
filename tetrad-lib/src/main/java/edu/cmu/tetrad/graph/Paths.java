@@ -581,10 +581,11 @@ public class Paths implements TetradSerializable {
      * Checks if the given Directed Acyclic Graph (DAG) is a Legal Partial Ancestral Graph (PAG).
      *
      * @return true if the graph is a Legal PAG, false otherwise
+     * @throws RuntimeException if the check times out or there is an error in the check
      */
-    public boolean isLegalPag() {
+    public boolean isLegalPag() throws RuntimeException {
         List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-        return PagLegalityCheck.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
+        return PagLegalityCheck.isLegalPag(graph, new HashSet<>(selection), 10 /* second timeout*/).isLegalPag();
     }
 
     /**

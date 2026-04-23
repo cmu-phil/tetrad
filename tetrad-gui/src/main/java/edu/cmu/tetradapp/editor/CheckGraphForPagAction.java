@@ -23,6 +23,8 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.utils.PagLegalityCheck;
+import edu.cmu.tetrad.search.utils.Tetrad;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -30,6 +32,7 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.HashSet;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * CheckGraphForPdagAction is an action class that checks if a given graph is a legal PAG (Mixed Ancesgral Graph) and
@@ -71,39 +74,35 @@ public class CheckGraphForPagAction extends AbstractAction {
         Graph graph = workbench.getGraph();
 
         if (graph == null) {
-            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "No graph to check for PAGness.");
+            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench),
+                    "No graph to check for PAGness.");
             return;
         }
 
-        class MyWatchedProcess extends WatchedProcess {
-            @Override
-            public void watch() {
-                Graph _graph = new EdgeListGraph(workbench.getGraph());
-                legalPag = PagLegalityCheck.isLegalPag(_graph, new HashSet<>());
+        Graph _graph = new EdgeListGraph(graph);
+
+        CompletableFuture.supplyAsync(() ->
+                PagLegalityCheck.isLegalPag(_graph, new HashSet<>(), 10)
+        ).thenAcceptAsync(result -> {
+            String reason = GraphUtils.breakDown(result.getReason(), 60);
+            if (!result.isLegalPag()) {
+                JOptionPane.showMessageDialog(
+                        GraphUtils.getContainingScrollPane(workbench),
+                        "This is not a legal PAG--one reason is as follows:\n\n" + reason + ".",
+                        "Legal PAG check",
+                        JOptionPane.WARNING_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(
+                        GraphUtils.getContainingScrollPane(workbench), reason);
             }
-        }
-
-        new MyWatchedProcess();
-
-        while (legalPag == null) {
-            try {
-                Thread.sleep(100); // Sleep a bit to prevent tight loop
-            } catch (InterruptedException e2) {
-                Thread.currentThread().interrupt();
-            }
-        }
-
-        String reason = GraphUtils.breakDown(legalPag.getReason(), 60);
-
-        if (!legalPag.isLegalPag()) {
-            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench),
-                    "This is not a legal PAG--one reason is as follows:" +
-                    "\n\n" + reason + ".",
+        }, SwingUtilities::invokeLater).exceptionally(ex -> {
+            JOptionPane.showMessageDialog(
+                    GraphUtils.getContainingScrollPane(workbench),
+                    "Error checking PAG legality: " + ex.getMessage(),
                     "Legal PAG check",
-                    JOptionPane.WARNING_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), reason);
-        }
+                    JOptionPane.ERROR_MESSAGE);
+            return null;
+        });
     }
 
 }
