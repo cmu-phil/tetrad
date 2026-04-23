@@ -1879,8 +1879,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 try {
 
                     // The type of graph doesn't matter if we're ignoring amenable paths.
-                    RecursiveAdjustment adjustment = new RecursiveAdjustment(graph)
-                            .setRaMode(RecursiveAdjustment.RaMode.O_COMPATIBLE);
+                    RecursiveAdjustment adjustment = new RecursiveAdjustment(graph);
                     adjustments = adjustment.adjustmentSets(node1, node2, "PAG",
                             maxNumSets, maxRadius, nearWhichEndpoint, maxPathLength,
                             RecursiveAdjustment.ColliderPolicy.OFF, avoidAmenable, Set.of(), Set.of(), Set.of());

@@ -2939,7 +2939,7 @@ public class Paths implements TetradSerializable {
         RecursiveAdjustment.ColliderPolicy _colliderPolicy = RecursiveAdjustment.ColliderPolicy.valueOf(colliderPolicy);
 
         RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph)
-                .setUseHenckelPruning(henckelPruning).setRaMode(RecursiveAdjustment.RaMode.O_COMPATIBLE);
+                .setUseHenckelPruning(henckelPruning);
         return recursiveAdjustment.adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
                 nearWhichEndpoint, maxPathLength, _colliderPolicy, true, Set.of(), Set.of(), Set.of());
     }
