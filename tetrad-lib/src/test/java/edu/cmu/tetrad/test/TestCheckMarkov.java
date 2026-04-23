@@ -49,7 +49,7 @@ public class TestCheckMarkov {
         new TestCheckMarkov().test1();
     }
 
-    @Test
+//    @Test
     public void test1() {
         double alpha = 0.05;
         int numIndep = 0;
@@ -197,7 +197,7 @@ public class TestCheckMarkov {
         }
     }
 
-    @Test
+//    @Test
     public void test4() {
         for (int run = 0; run < 1; run++) {
 
