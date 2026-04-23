@@ -177,7 +177,7 @@ public class PagLegalityCheck {
             }
 
             if (!(Edges.isDirectedEdge(edge) || Edges.isBidirectedEdge(edge) || Edges.isUndirectedEdge(edge))) {
-                return new LegalMagRet(false, "Edge " + edge + " should be directed, bidirected, or undirected.");
+                return new LegalMagRet(false, "Edge " + edge + " should be directed, bidirected, or undirected");
             }
         }
 

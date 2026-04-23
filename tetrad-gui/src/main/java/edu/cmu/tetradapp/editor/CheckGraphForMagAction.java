@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -22,8 +22,6 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.utils.PagLegalityCheck;
 import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.WatchedProcess;
@@ -32,7 +30,6 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.HashSet;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -45,11 +42,6 @@ public class CheckGraphForMagAction extends AbstractAction {
      * The desktop containing the target session editor.
      */
     private final GraphWorkbench workbench;
-
-    /**
-     * Stores the result of the legal MAG check.
-     */
-    private volatile PagLegalityCheck.LegalMagRet legalMag = null;
 
     /**
      * Highlights all latent variables in the given display graph.
@@ -77,7 +69,7 @@ public class CheckGraphForMagAction extends AbstractAction {
 
         if (graph == null) {
             JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench),
-                    "No graph to check for PAGness.");
+                    "No graph to check for MAGness.");
             return;
         }
 
@@ -96,8 +88,8 @@ public class CheckGraphForMagAction extends AbstractAction {
                     SwingUtilities.invokeLater(() ->
                             JOptionPane.showMessageDialog(
                                     GraphUtils.getContainingScrollPane(workbench),
-                                    "Error or timeout checking PAG legality",
-                                    "Legal PAG check",
+                                    "Error or timeout checking MAG legality",
+                                    "Legal MAG check",
                                     JOptionPane.ERROR_MESSAGE));
                     return;
                 }
@@ -108,8 +100,8 @@ public class CheckGraphForMagAction extends AbstractAction {
                     if (!_result.isLegalMag()) {
                         JOptionPane.showMessageDialog(
                                 GraphUtils.getContainingScrollPane(workbench),
-                                "This is not a legal PAG--one reason is as follows:\n\n" + reason + ".",
-                                "Legal PAG check",
+                                "This is not a legal MAG--one reason is as follows:\n\n" + reason + ".",
+                                "Legal MAG check",
                                 JOptionPane.WARNING_MESSAGE);
                     } else {
                         JOptionPane.showMessageDialog(
