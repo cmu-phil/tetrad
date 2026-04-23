@@ -98,7 +98,7 @@ public final class RecursiveAdjustment {
             for (Node b : G.getAdjacentNodes(a)) {
                 Edge e = G.getEdge(a, b);
                 if (e == null) continue;
-                if (!isPossiblyOutEdge(graphType, e, a, b)) continue;
+                if (!isPossiblyOutEdge(e, a, b)) continue;
                 if (seen.add(b)) q.addLast(b);
             }
         }
@@ -116,28 +116,19 @@ public final class RecursiveAdjustment {
             for (Node a : G.getAdjacentNodes(b)) {
                 Edge e = G.getEdge(a, b);
                 if (e == null) continue;
-                if (!isPossiblyOutEdge(graphType, e, a, b)) continue;
+                if (!isPossiblyOutEdge(e, a, b)) continue;
                 if (canReach.add(a)) q.addLast(a);
             }
         }
         return canReach;
     }
 
-    private static boolean isPossiblyOutEdge(String graphType, Edge e, Node a, Node b) {
+    private static boolean isPossiblyOutEdge(Edge e, Node a, Node b) {
         if (e.pointsTowards(a)) return false;
         if (Edges.isBidirectedEdge(e)) return false;
-        if (Edges.isUndirectedEdge(e)) return true;
         return true;
     }
 
-//    /**
-//     * Sets the independence test to be used for HPM-style pruning.
-//     * If left null, HPM pruning is never applied.
-//     */
-//    public RecursiveAdjustment setIndependenceTest(@Nullable IndependenceTest test) {
-//        this.independenceTest = test;
-//        return this;
-//    }
 
     private static String keyOf(Set<Node> Z) {
         return Z.stream().map(Node::getName).sorted().reduce((a, b) -> a + "," + b).orElse("");
@@ -570,19 +561,6 @@ public final class RecursiveAdjustment {
             Z.add(pick);
         }
 
-//        boolean changed;
-//        do {
-//            changed = false;
-//            for (Node v : new ArrayList<>(Z)) {
-//                if (ctx.seedZ.contains(v)) continue;
-//                Z.remove(v);
-//                if (findBackdoorWitness(X, Y, Z, ctx.graphType,
-//                        ctx.maxPathLength, ctx.notFollowed, rbMode).isPresent())
-//                    Z.add(v);
-//                else changed = true;
-//            }
-//        } while (changed);
-
         // Optional: HPM-style pruning (Algorithm 1 in Henckel et al. 2020)
         // Only in RA mode (rbMode == false), and only if explicitly enabled
         // and an independence test is provided.
@@ -663,13 +641,13 @@ public final class RecursiveAdjustment {
 
         for (Node v : pool) {
             if (inWitness.contains(v)
-                && (!forbidden.contains(v))
-                && (!amenableBackbone.contains(v))
-                && !Z.contains(v)
-                && !ban.contains(v)
-                && !notFollowed.contains(v)
-                // NEW: in O_COMPATIBLE mode, only allow O-candidates
-                && (raMode != RaMode.O_COMPATIBLE || oCandidates.contains(v))) {
+                    && (!forbidden.contains(v))
+                    && (!amenableBackbone.contains(v))
+                    && !Z.contains(v)
+                    && !ban.contains(v)
+                    && !notFollowed.contains(v)
+                    // NEW: in O_COMPATIBLE mode, only allow O-candidates
+                    && (raMode != RaMode.O_COMPATIBLE || oCandidates.contains(v))) {
                 candidates.add(v);
             }
         }
@@ -678,13 +656,13 @@ public final class RecursiveAdjustment {
             for (Node v : witness) {
                 boolean allow = poolSet.contains(v);
                 if (allow
-                    && (!forbidden.contains(v))
-                    && (!amenableBackbone.contains(v))
-                    && !Z.contains(v)
-                    && !ban.contains(v)
-                    && !notFollowed.contains(v)
-                    // NEW: in O_COMPATIBLE mode, only allow O-candidates
-                    && (raMode != RaMode.O_COMPATIBLE || oCandidates.contains(v))) {
+                        && (!forbidden.contains(v))
+                        && (!amenableBackbone.contains(v))
+                        && !Z.contains(v)
+                        && !ban.contains(v)
+                        && !notFollowed.contains(v)
+                        // NEW: in O_COMPATIBLE mode, only allow O-candidates
+                        && (raMode != RaMode.O_COMPATIBLE || oCandidates.contains(v))) {
                     candidates.add(v);
                 }
             }
@@ -735,13 +713,12 @@ public final class RecursiveAdjustment {
     }
 
     private int roleScore(RoleOnWitness r, ColliderPolicy p) {
-        int base = switch (r) {
+        return switch (r) {
             case NONCOLLIDER -> 100;
             case AMBIGUOUS -> 30;
             case COLLIDER -> -80;
-            default -> -200;
+            case ENDPOINT -> -200;
         };
-        return base;
     }
 
     private int endpointDistance(Node v, Shells s) {
@@ -888,46 +865,21 @@ public final class RecursiveAdjustment {
         AMBIGUOUS
     }
 
-    private static final class PrecomputeContext {
-        final Node X, Y;
-        final String graphType;
-        final int maxRadius, nearWhichEndpoint, maxPathLength;
-        final Set<List<Node>> amenable;
-        final Set<Node> amenableBackbone, forbidden;
-        final Shells shellsFromX, shellsFromY;
-        final List<Node> pool;
-        final Map<Node, Integer> idx, order;
-        final Set<Node> notFollowed;
-        final Set<Node> oCandidates;
-        final LinkedHashSet<Node> seedZ;
-        final boolean graphAmenable;
-
-        PrecomputeContext(Node X, Node Y, String graphType, int maxRadius, int nearWhichEndpoint,
-                          int maxPathLength, Set<List<Node>> amenable, Set<Node> amenableBackbone,
-                          Set<Node> forbidden, Shells sx, Shells sy, List<Node> pool,
-                          Map<Node, Integer> idx, Map<Node, Integer> order,
-                          Set<Node> notFollowed, Set<Node> oCandidates,
-                          LinkedHashSet<Node> seedZ,
-                          boolean graphAmenable) {
-            this.X = X;
-            this.Y = Y;
-            this.graphType = graphType;
-            this.maxRadius = maxRadius;
-            this.nearWhichEndpoint = nearWhichEndpoint;
-            this.maxPathLength = maxPathLength;
-            this.amenable = amenable;
-            this.amenableBackbone = amenableBackbone;
-            this.forbidden = forbidden;
-            this.shellsFromX = sx;
-            this.shellsFromY = sy;
-            this.pool = pool;
-            this.idx = idx;
-            this.order = order;
-            this.oCandidates = oCandidates;
-            this.notFollowed = notFollowed;
-            this.seedZ = seedZ;
-            this.graphAmenable = graphAmenable;
-        }
+    private record PrecomputeContext(
+            Node X, Node Y,
+            String graphType,
+            int maxRadius, int nearWhichEndpoint, int maxPathLength,
+            Set<List<Node>> amenable,
+            Set<Node> amenableBackbone,
+            Set<Node> forbidden,
+            Shells shellsFromX, Shells shellsFromY,
+            List<Node> pool,
+            Map<Node, Integer> idx,
+            Map<Node, Integer> order,
+            Set<Node> notFollowed,
+            Set<Node> oCandidates,
+            LinkedHashSet<Node> seedZ,
+            boolean graphAmenable) {
     }
 
     private record Shells(List<Node>[] layers, Set<Node> reach) {
