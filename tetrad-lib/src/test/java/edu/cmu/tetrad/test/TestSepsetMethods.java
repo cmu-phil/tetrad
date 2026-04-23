@@ -647,7 +647,7 @@ public class TestSepsetMethods {
                 if (graph.isAdjacentTo(w, x)) continue;
 
                 try {
-                    Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(
+                    Set<Node> blocking = RecursiveBlockingRadiusConstrained.blockPathsRecursively(
                             graph, x, w, Set.of(), Set.of(), -1);
 
                     if (blocking != null && !graph.paths().isMSeparatedFrom(x, w, blocking, false)) {

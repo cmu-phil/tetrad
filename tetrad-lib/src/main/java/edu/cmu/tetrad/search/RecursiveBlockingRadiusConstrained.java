@@ -1,7 +1,9 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 
 import java.util.*;
 
@@ -55,9 +57,33 @@ public class RecursiveBlockingRadiusConstrained {
      * @param containing    nodes that must be in Z regardless of radius
      * @param notFollowed   nodes not to be traversed during path search
      * @param maxPathLength maximum path length (-1 = unlimited)
+     * @return a candidate blocking set, or {@code null} if none found within
+     * the radius constraint
+     * @throws InterruptedException if the thread is interrupted
+     */
+    public static <E> Set<Node> blockPathsRecursively(Graph graph,
+                                                      Node x,
+                                                      Node y,
+                                                      Set<Node> containing,
+                                                      Set<Node> notFollowed,
+                                                      int maxPathLength)
+            throws InterruptedException {
+        return blockPathsRecursively(graph, x, y, containing, notFollowed, maxPathLength, -1, -1);
+    }
+
+    /**
+     * Radius-constrained blocking with default pool strategy (union of shells
+     * around both endpoints, {@code nearWhichEndpoint = 3}).
+     *
+     * @param graph         the graph (DAG / CPDAG / MAG / PAG)
+     * @param x             first endpoint
+     * @param y             second endpoint
+     * @param containing    nodes that must be in Z regardless of radius
+     * @param notFollowed   nodes not to be traversed during path search
+     * @param maxPathLength maximum path length (-1 = unlimited)
      * @param maxRadius     BFS radius for pool construction (-1 = unlimited)
      * @return a candidate blocking set, or {@code null} if none found within
-     *         the radius constraint
+     * the radius constraint
      * @throws InterruptedException if the thread is interrupted
      */
     public static Set<Node> blockPathsRecursively(Graph graph,
@@ -427,11 +453,17 @@ public class RecursiveBlockingRadiusConstrained {
      * Three-valued result of path-blocking analysis.
      */
     public enum Blockable {
-        /** All paths through this branch are blocked by Z. */
+        /**
+         * All paths through this branch are blocked by Z.
+         */
         BLOCKED,
-        /** Some path is unblockable regardless of Z (e.g. direct x–y edge or latent bow). */
+        /**
+         * Some path is unblockable regardless of Z (e.g. direct x–y edge or latent bow).
+         */
         UNBLOCKABLE,
-        /** Analysis was inconclusive (interrupted, path-length cap, or radius limit hit). */
+        /**
+         * Analysis was inconclusive (interrupted, path-length cap, or radius limit hit).
+         */
         INDETERMINATE
     }
 }
