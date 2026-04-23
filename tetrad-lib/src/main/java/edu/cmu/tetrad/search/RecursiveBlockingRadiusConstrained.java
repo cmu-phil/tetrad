@@ -66,10 +66,11 @@ public class RecursiveBlockingRadiusConstrained {
                                                   Set<Node> containing,
                                                   Set<Node> notFollowed,
                                                   int maxPathLength,
-                                                  int maxRadius)
+                                                  int maxRadius,
+                                                  int depth)
             throws InterruptedException {
         return blockPathsRecursively(graph, x, y, containing, notFollowed,
-                maxPathLength, maxRadius, 3, null);
+                maxPathLength, maxRadius, depth, 3, null);
     }
 
     /**
@@ -94,6 +95,7 @@ public class RecursiveBlockingRadiusConstrained {
                                                   Set<Node> notFollowed,
                                                   int maxPathLength,
                                                   int maxRadius,
+                                                  int depth,
                                                   int nearWhichEndpoint,
                                                   Knowledge knowledge)
             throws InterruptedException {
@@ -104,7 +106,7 @@ public class RecursiveBlockingRadiusConstrained {
         return blockPathsRecursivelyAdj(
                 graph, x, y, containing, notFollowed,
                 graph.paths().getDescendantsMap(),
-                maxPathLength, pool, knowledge);
+                maxPathLength, depth, pool, knowledge);
     }
 
     // -----------------------------------------------------------------------
@@ -178,6 +180,7 @@ public class RecursiveBlockingRadiusConstrained {
             Set<Node> notFollowed,
             Map<Node, Set<Node>> descendantsMap,
             int maxPathLength,
+            int depth,
             Set<Node> pool,
             Knowledge knowledge) throws InterruptedException {
 
@@ -212,7 +215,7 @@ public class RecursiveBlockingRadiusConstrained {
 
                 Blockable r = findPathToTargetVisit(
                         graph, x, b, y, path, z,
-                        maxPathLength, notFollowed, descendantsMap, pool);
+                        maxPathLength, depth, notFollowed, descendantsMap, pool);
 
                 if (r == Blockable.UNBLOCKABLE) {
                     return null;
@@ -243,6 +246,7 @@ public class RecursiveBlockingRadiusConstrained {
                                            Set<Node> path,
                                            Set<Node> z,
                                            int maxPathLength,
+                                           int depth,
                                            Set<Node> notFollowed,
                                            Map<Node, Set<Node>> descendantsMap,
                                            Set<Node> pool) throws InterruptedException {
@@ -273,7 +277,7 @@ public class RecursiveBlockingRadiusConstrained {
             // Case 1: b is latent — cannot condition on it; just traverse.
             if (b.getNodeType() == NodeType.LATENT) {
                 return tryBlockAllContinuations(graph, a, b, y, path, z,
-                        maxPathLength, notFollowed, descendantsMap, pool);
+                        maxPathLength, depth, notFollowed, descendantsMap, pool);
             }
 
             // Snapshot Z for clean rollback.
@@ -281,7 +285,7 @@ public class RecursiveBlockingRadiusConstrained {
 
             // Case 2: Try WITHOUT conditioning on b.
             Blockable withoutB = tryBlockAllContinuations(graph, a, b, y, path, z,
-                    maxPathLength, notFollowed, descendantsMap, pool);
+                    maxPathLength, depth, notFollowed, descendantsMap, pool);
 
             if (withoutB == Blockable.BLOCKED) {
                 return Blockable.BLOCKED;
@@ -299,9 +303,16 @@ public class RecursiveBlockingRadiusConstrained {
                 return Blockable.INDETERMINATE;
             }
 
+            // Also, if the depth limit has already been reached, this branch is indeterminate,
+            // since we cannot determine if conditioning on b would block the path without
+            // adding a new node to Z, exceeding the depth limit.
+            if (z.size() > depth) {
+                return Blockable.INDETERMINATE;
+            }
+
             z.add(b);
             Blockable withB = tryBlockAllContinuations(graph, a, b, y, path, z,
-                    maxPathLength, notFollowed, descendantsMap, pool);
+                    maxPathLength, depth, notFollowed, descendantsMap, pool);
 
             if (withB == Blockable.BLOCKED) {
                 return Blockable.BLOCKED;
@@ -327,6 +338,7 @@ public class RecursiveBlockingRadiusConstrained {
                                                       Set<Node> path,
                                                       Set<Node> z,
                                                       int maxPathLength,
+                                                      int depth,
                                                       Set<Node> notFollowed,
                                                       Map<Node, Set<Node>> descendantsMap,
                                                       Set<Node> pool)
@@ -352,7 +364,7 @@ public class RecursiveBlockingRadiusConstrained {
                 }
 
                 Blockable result = findPathToTargetVisit(graph, b, c, y, path, z,
-                        maxPathLength, notFollowed, descendantsMap, pool);
+                        maxPathLength, depth, notFollowed, descendantsMap, pool);
 
                 if (result == Blockable.UNBLOCKABLE) {
                     return Blockable.UNBLOCKABLE;

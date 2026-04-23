@@ -421,27 +421,27 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 return new ArrayList<>(facts);
             }
 
-            case RECURSIVE_ADJUSTMENT: {
-                Set<IndependenceFact> facts = new HashSet<>();
-                for (Node w : graph.getNodes()) {
-                    if (x == w) continue;
-                    if (graph.isAdjacentTo(w, x)) continue;
-
-                    RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph)
-                            .setUseHenckelPruning(false).setRaMode(RecursiveAdjustment.RaMode.O_COMPATIBLE);
-                    List<Set<Node>> adjustment = recursiveAdjustment.adjustmentSetsRB(x, w, "CPDAG", 1,
-                            100, 2, 100, false, Set.of(), Set.of());
-
-                    if (!adjustment.isEmpty()) {
-                        Set<Node> first = adjustment.getFirst();
-
-                        if (graph.paths().isMSeparatedFrom(x, w, first, false)) {
-                            facts.add(new IndependenceFact(x, w, first));
-                        }
-                    }
-                }
-                return new ArrayList<>(facts);
-            }
+//            case RECURSIVE_ADJUSTMENT: {
+//                Set<IndependenceFact> facts = new HashSet<>();
+//                for (Node w : graph.getNodes()) {
+//                    if (x == w) continue;
+//                    if (graph.isAdjacentTo(w, x)) continue;
+//
+//                    RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph)
+//                            .setUseHenckelPruning(false).setRaMode(RecursiveAdjustment.RaMode.O_COMPATIBLE);
+//                    List<Set<Node>> adjustment = recursiveAdjustment.adjustmentSetsRB(x, w, "CPDAG", 1,
+//                            100, 2, 100, false, Set.of(), Set.of());
+//
+//                    if (!adjustment.isEmpty()) {
+//                        Set<Node> first = adjustment.getFirst();
+//
+//                        if (graph.paths().isMSeparatedFrom(x, w, first, false)) {
+//                            facts.add(new IndependenceFact(x, w, first));
+//                        }
+//                    }
+//                }
+//                return new ArrayList<>(facts);
+//            }
 
             default:
                 throw new IllegalArgumentException(

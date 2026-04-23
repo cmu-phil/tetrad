@@ -55,10 +55,13 @@ public enum ConditioningSetType {
      * Recursive blocking.
      */
     RECURSIVE_BLOCKING("Recursive Blocking"),
-    /**
-     * Recursive adjustment.
-     */
-    RECURSIVE_ADJUSTMENT("Recursive Adjustment"),
+
+    // Inappropriate for listing m-separations--this will happily return the empty set if x~~>y.
+    // jdramsey 2026/4/22
+//    /**
+//     * Recursive adjustment.
+//     */
+//    RECURSIVE_ADJUSTMENT("Recursive Adjustment"),
     /**
      * Local Markov property, conditioning on the parents of the target variable.
      */
@@ -67,10 +70,12 @@ public enum ConditioningSetType {
      * Causal Markov property, conditioning on the parents and neighbors of the target variable.
      */
     PARENTS_AND_NEIGHBORS("Parents and Neighbors"),
-    /**
-     * Noncolliders only.
-     */
-    NONCOLLIDERS_ONLY("Noncolliders Only"),
+
+    // Recursive blocking already does this. jdramsey 2026/4/22.
+//    /**
+//     * Noncolliders only.
+//     */
+//    NONCOLLIDERS_ONLY("Noncolliders Only"),
     /**
      * Global Markov property, conditioning on all subsets implied by global Markov. For small models only.
      */

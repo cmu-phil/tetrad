@@ -274,7 +274,7 @@ public class MarkovCheckEditor extends JPanel {
         model.setConditioningSetType(resolved);
 
         conditioningSetTypeJComboBox.setSelectedItem(
-                saved != null ? saved : ConditioningSetType.RECURSIVE_ADJUSTMENT);
+                saved != null ? saved : ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
 
         Graph _graph = model.getGraph();
         Graph graph = GraphUtils.replaceNodes(_graph, model.getMarkovCheck().getVariables(model.getGraph().getNodes(), model.getMarkovCheck().getIndependenceNodes(), model.getMarkovCheck().getConditioningNodes()));
