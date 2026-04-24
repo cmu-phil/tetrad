@@ -194,10 +194,10 @@ public class FciOrient {
      * A discriminating path is a specific type of path in a causal graph, used in graph-based causal inference to
      * identify the causal structure that satisfies certain conditions.
      *
-     * @param graph The graph in which to search for discriminating paths.
-     * @param w The starting node for the path, which must satisfy specific adjacency conditions with the target node y.
-     * @param y The target node for which discriminating paths are being identified.
-     * @param maxLen The maximum allowable length for the paths being considered.
+     * @param graph               The graph in which to search for discriminating paths.
+     * @param w                   The starting node for the path, which must satisfy specific adjacency conditions with the target node y.
+     * @param y                   The target node for which discriminating paths are being identified.
+     * @param maxLen              The maximum allowable length for the paths being considered.
      * @param checkEcNonadjacency A flag indicating whether strict adjacency conditions between the nodes w and y should be enforced
      *                            (true for strict adjacency checks, false for relaxed checks).
      * @return A set of discriminating paths that satisfy the required conditions, or an empty set if no such paths are found.
@@ -248,10 +248,10 @@ public class FciOrient {
     /**
      * Search backward from W to find discriminating paths of the form
      * <X, ..., W, V, Y> for V.
-     *
+     * <p>
      * The interior vertices between X and V must be colliders on the path
      * and parents of Y (or satisfy the relaxed analogue).
-     *
+     * <p>
      * The colliderPath stored in DiscriminatingPath is [W, ..., first-after-X].
      */
     private static void discriminatingPathBfs(Node w,
@@ -1185,7 +1185,7 @@ public class FciOrient {
 
     /**
      * R10 (Zhang 2008 FCI orientation rule).
-     *
+     * <p>
      * Suppose alpha o-&gt; gamma, beta -&gt; gamma &lt;- theta.
      * Let p1 be an uncovered potentially directed path from alpha to beta,
      * and p2 be an uncovered potentially directed path from alpha to theta.
@@ -1284,14 +1284,14 @@ public class FciOrient {
     /**
      * Checks whether there exists an uncovered potentially directed path
      * from alpha to target whose first step is alpha--hop.
-     *
+     * <p>
      * This method enforces Zhang's notion of path as a sequence of distinct
      * vertices by using a visited-node set.
-     *
+     * <p>
      * Potentially directed from alpha means:
      * along every step curr--next on the path, the edge must not have an
      * arrowhead into curr.
-     *
+     * <p>
      * Uncovered means:
      * for every triple prev, curr, next on the path, prev and next are not adjacent.
      */
@@ -1320,7 +1320,7 @@ public class FciOrient {
     /**
      * DFS for existence of an uncovered potentially directed SIMPLE path
      * from prev-curr onward to target.
-     *
+     * <p>
      * The visited set contains vertices already on the current path, so all
      * candidate paths are simple (no repeated vertices).
      */
