@@ -140,17 +140,12 @@ public final class LvHeuristic implements IGraphSearch {
         }
 
         Graph mag = GraphTransforms.dagToMag(dag);
-        MagToPag dagToPag = new MagToPag(mag);
-        dagToPag.setVerbose(verbose);
-        dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
-        dagToPag.setKnowledge(knowledge);
-        dagToPag.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        Graph pag = dagToPag.convert(true, excludeSelectionBias);
-
-
-//        Graph pag = new MagToPag(mag).convert(false);
-
-//        Graph pag = GraphTransforms.dagToPag(dag);
+        MagToPag magToPag = new MagToPag(mag);
+        magToPag.setVerbose(verbose);
+        magToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
+        magToPag.setKnowledge(knowledge);
+        magToPag.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        Graph pag = magToPag.convert(true, excludeSelectionBias);
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished calculating PAG from CPDAG.");
