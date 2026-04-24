@@ -7,8 +7,13 @@ import edu.cmu.tetrad.graph.NodeType;
 import java.util.*;
 
 /**
- * Implements a recursive procedure for constructing candidate separating sets
- * between two nodes under PAG semantics.
+ * Implements a procedure for constructing candidate separating sets between two
+ * nodes under PAG semantics.
+ *
+ * <p>This version replaces the mutual recursion between
+ * {@code findPathToTargetVisit} and {@code tryBlockAllContinuations} with an
+ * explicit stack, eliminating the risk of {@link StackOverflowError} on deep
+ * graphs. All semantics are identical to the original recursive version.</p>
  *
  * <p>Given distinct nodes x and y, the algorithm attempts to build a set Z that
  * blocks all blockable paths between x and y, starting from an optional seed set
@@ -35,11 +40,6 @@ import java.util.*;
  * are eligible. A {@code depth} parameter additionally caps the total size of
  * Z; attempts to exceed it are likewise treated as {@code INDETERMINATE}.</p>
  *
- * <p>The locality constraint on the pool and depth keeps conditioning sets
- * small, improving the power of downstream independence tests from sample,
- * while retaining correct m-separation semantics: all paths — causal and
- * non-causal — are considered.</p>
- *
  * <p>Key features:</p>
  * <ul>
  *   <li>Respects PAG semantics for colliders, non-colliders, and latent nodes.</li>
@@ -65,10 +65,10 @@ public class RecursiveBlocking {
     // -----------------------------------------------------------------------
 
     /**
-     * Blocks paths between two specified nodes in a graph by recursively identifying
-     * and selecting nodes to include in a blocking set, subject to constraints
-     * on path length and traversal rules. Assumes a direct edge between x and y
-     * is to be ignored.
+     * Blocks paths between two specified nodes in a graph by iteratively
+     * identifying and selecting nodes to include in a blocking set, subject to
+     * constraints on path length and traversal rules. Assumes a direct edge
+     * between x and y is to be ignored.
      *
      * @param graph         the graph in which the nodes and paths are analyzed
      * @param x             the starting node of the path
@@ -77,7 +77,7 @@ public class RecursiveBlocking {
      * @param notFollowed   a set of nodes that must not be traversed during path search
      * @param maxPathLength the maximum allowable length of the paths to block (-1 for no limit)
      * @return a set of nodes constituting a blocking set for paths between x and y,
-     * or {@code null} if no such set is found within the given constraints
+     *         or {@code null} if no such set is found within the given constraints
      * @throws InterruptedException if the thread executing the method is interrupted
      */
     public static <E> Set<Node> blockPathsRecursively(Graph graph,
@@ -101,6 +101,7 @@ public class RecursiveBlocking {
      * @param notFollowed       nodes not to be traversed
      * @param maxPathLength     maximum path length (-1 = unlimited)
      * @param maxRadius         BFS radius (-1 = unlimited)
+     * @param depth             maximum size of Z (-1 = unlimited)
      * @param nearWhichEndpoint 1 = near x, 2 = near y, 3 = near both
      * @param ignoreDirectEdge  whether to ignore direct edges between x and y
      * @return a candidate blocking set, or {@code null}
@@ -189,7 +190,7 @@ public class RecursiveBlocking {
     }
 
     // -----------------------------------------------------------------------
-    // Core algorithm (identical to RecursiveBlocking except for pool guard)
+    // Core algorithm
     // -----------------------------------------------------------------------
 
     private static Set<Node> blockPathsRecursivelyAdj(
@@ -237,7 +238,8 @@ public class RecursiveBlocking {
 
                 Blockable r = findPathToTargetVisit(
                         graph, x, b, y, path, z,
-                        maxPathLength, depth, notFollowed, descendantsMap, pool, recursionDepth, 0);
+                        maxPathLength, depth, notFollowed, descendantsMap, pool,
+                        recursionDepth, 0);
 
                 if (r == Blockable.UNBLOCKABLE) {
                     return null;
@@ -255,138 +257,457 @@ public class RecursiveBlocking {
         }
     }
 
+    // -----------------------------------------------------------------------
+    // Frame definition for the explicit stack
+    // -----------------------------------------------------------------------
+
     /**
-     * Finds a path from a source node to a target node in a graph, while considering
-     * various constraints such as path length, node visitation rules, recursion depth,
-     * and node subsets. The method determines whether the path is blockable, unblockable,
-     * or indeterminate based on the structure of the graph and the provided parameters.
+     * Which "pass" a frame is currently executing inside
+     * {@code findPathToTargetVisit}.
      *
-     * @param graph The graph containing the nodes and edges to traverse.
-     * @param a The source node from which the path exploration starts.
-     * @param b The current node being explored in the path.
-     * @param y The target node to which the path needs to be discovered.
-     * @param path A set of nodes that have already been visited in the current path.
-     *             Used to track cyclic paths.
-     * @param z A set of nodes representing intermediate nodes in the path that may
-     *          need to be considered for specific rules.
-     * @param maxPathLength The upper bound on the maximum number of nodes allowed
-     *                      in the path. A negative value implies no limit.
-     * @param depth The maximum permitted size of set z during exploration. A negative
-     *              value implies no limit.
-     * @param notFollowed The set of nodes that should not be followed during path exploration.
-     * @param descendantsMap A map representing relationships between nodes where each node
-     *                       maps to its set of descendants.
-     * @param pool A set of candidate nodes that are eligible for inclusion in the path.
-     * @param recursionDepth The maximum permissible recursion depth to prevent stack overflow.
-     * @param currentDepth The current level of recursion during the method's invocation.
-     * @return A {@code Blockable} value indicating whether the path is {@code BLOCKED},
-     *         {@code UNBLOCKABLE}, or {@code INDETERMINATE}, depending on the traversal outcome.
-     * @throws InterruptedException If the current thread is interrupted during execution.
+     * <p>The lifecycle of a non-LATENT frame is:</p>
+     * <pre>
+     *   ENTER  →  [guard checks, path.add(b), take zSnapshot]
+     *   CONTINUATIONS_WITHOUT_B  →  run tryBlockAllContinuations without b in z
+     *                               (may suspend to push child frames)
+     *   CONTINUATIONS_WITH_B     →  run tryBlockAllContinuations with b in z
+     *                               (may suspend to push child frames)
+     *   [path.remove(b), pop, return result]
+     * </pre>
+     *
+     * <p>For LATENT nodes the frame jumps straight to
+     * {@code CONTINUATIONS_WITHOUT_B} and never reaches
+     * {@code CONTINUATIONS_WITH_B}.</p>
+     */
+    private enum Pass {
+        /** Frame has just been pushed; guard checks have not run yet. */
+        ENTER,
+        /**
+         * Running (or resuming) the continuation loop that does NOT add b to z.
+         * For LATENT nodes this is the only pass.
+         */
+        CONTINUATIONS_WITHOUT_B,
+        /**
+         * Running (or resuming) the continuation loop that has added b to z.
+         * Never reached for LATENT nodes.
+         */
+        CONTINUATIONS_WITH_B
+    }
+
+    /**
+     * One stack frame — the explicit equivalent of a single activation record
+     * for {@code findPathToTargetVisit}.
+     *
+     * <p>Fields that would normally live on the JVM call stack (local variables
+     * and the "program counter" within the method) are stored here so that the
+     * driver loop in {@link #findPathToTargetVisit} can suspend and resume a
+     * frame after a child frame completes.</p>
+     */
+    private static final class Frame {
+
+        // --- call parameters (immutable after construction) ----------------
+        final Node a;             // predecessor node on the path
+        final Node b;             // node being visited by this frame
+        final Node y;             // target node
+        final int maxPathLength;
+        final int depth;
+        final int recursionDepth;
+        final int currentDepth;
+
+        // --- resumption state ----------------------------------------------
+
+        /** Which pass is currently active. */
+        Pass pass = Pass.ENTER;
+
+        /**
+         * Snapshot of z taken before the WITHOUT_B pass begins.
+         * Used to restore z before the WITH_B pass, and again on exit.
+         */
+        Set<Node> zSnapshot = null;
+
+        /**
+         * Result of the WITHOUT_B continuation pass.
+         * Saved so it can be combined with the WITH_B result on exit.
+         */
+        Blockable withoutBResult = null;
+
+        /**
+         * Nodes whose sub-call inside {@code tryBlockAllContinuations} has
+         * already completed successfully (returned BLOCKED) for the current
+         * pass.  Mirrors the {@code handled} local variable in the original
+         * {@code tryBlockAllContinuations}.
+         *
+         * <p>Reset to a fresh set when switching from WITHOUT_B to WITH_B.</p>
+         */
+        Set<Node> handled = new HashSet<>();
+
+        /**
+         * The continuation node ({@code c}) whose child frame was most recently
+         * pushed and has not yet completed.  Set just before pushing the child;
+         * read by the driver loop to add {@code c} to {@code handled} when the
+         * child returns BLOCKED.  {@code null} when no child is in flight.
+         */
+        Node pendingC = null;
+
+        Frame(Node a, Node b, Node y,
+              int maxPathLength, int depth, int recursionDepth, int currentDepth) {
+            this.a = a;
+            this.b = b;
+            this.y = y;
+            this.maxPathLength = maxPathLength;
+            this.depth = depth;
+            this.recursionDepth = recursionDepth;
+            this.currentDepth = currentDepth;
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Iterative driver  (replaces both findPathToTargetVisit and
+    //                    tryBlockAllContinuations)
+    // -----------------------------------------------------------------------
+
+    /**
+     * Iterative, stack-based replacement for the mutual recursion between
+     * {@code findPathToTargetVisit} and {@code tryBlockAllContinuations}.
+     *
+     * <p>The semantics are identical to the original recursive
+     * {@code findPathToTargetVisit}: given the edge {@code a → b}, explore all
+     * onwards paths toward {@code y} and decide whether the current branch is
+     * {@link Blockable#BLOCKED}, {@link Blockable#UNBLOCKABLE}, or
+     * {@link Blockable#INDETERMINATE}.</p>
+     *
+     * <p><b>How the stack works</b></p>
+     * <p>Each {@link Frame} on {@code callStack} represents one suspended
+     * activation of {@code findPathToTargetVisit}.  The driver loop peeks at
+     * the top frame, advances it by one "micro-step", and either:</p>
+     * <ul>
+     *   <li>pushes a new child frame (suspending the current one), or</li>
+     *   <li>pops the current frame and writes its result into
+     *       {@code lastResult}, so the parent frame can read it on its next
+     *       step.</li>
+     * </ul>
+     *
+     * <p><b>Shared mutable state ({@code path} and {@code z})</b></p>
+     * <p>{@code path} and {@code z} are still shared across all frames, exactly
+     * as they were in the recursive version.  Each frame adds {@code b} to
+     * {@code path} on entry and removes it on exit (pop), and takes/restores a
+     * snapshot of {@code z} around each continuation pass — again mirroring the
+     * original {@code try/finally} and snapshot pattern precisely.</p>
      */
     static Blockable findPathToTargetVisit(Graph graph,
-                                           Node a, Node b, Node y,
+                                           Node aInit, Node bInit, Node y,
                                            Set<Node> path, Set<Node> z,
                                            int maxPathLength, int depth,
                                            Set<Node> notFollowed,
                                            Map<Node, Set<Node>> descendantsMap,
                                            Set<Node> pool,
                                            int recursionDepth,
-                                           int currentDepth) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-        if (currentDepth > recursionDepth) return Blockable.INDETERMINATE;  // ← new check
-
-        if (b == y) return Blockable.UNBLOCKABLE;
-        if (path.contains(b)) return Blockable.BLOCKED;
-        if (notFollowed.contains(b)) return Blockable.INDETERMINATE;
-        if (notFollowed.contains(y)) return Blockable.BLOCKED;
-
-        path.add(b);
-
-        try {
-            if (maxPathLength >= 0 && path.size() > maxPathLength) {
-                return Blockable.INDETERMINATE;
-            }
-
-            if (b.getNodeType() == NodeType.LATENT) {
-                return tryBlockAllContinuations(graph, a, b, y, path, z,
-                        maxPathLength, depth, notFollowed, descendantsMap, pool,
-                        recursionDepth, currentDepth + 1);  // ← increment
-            }
-
-            Set<Node> zSnapshot = new HashSet<>(z);
-
-            Blockable withoutB = tryBlockAllContinuations(graph, a, b, y, path, z,
-                    maxPathLength, depth, notFollowed, descendantsMap, pool,
-                    recursionDepth, currentDepth + 1);  // ← increment
-
-            if (withoutB == Blockable.BLOCKED) return Blockable.BLOCKED;
-
-            z.clear();
-            z.addAll(zSnapshot);
-
-            if (!pool.contains(b)) return Blockable.INDETERMINATE;
-            if (depth >= 0 && z.size() > depth) return Blockable.INDETERMINATE;
-
-            z.add(b);
-            Blockable withB = tryBlockAllContinuations(graph, a, b, y, path, z,
-                    maxPathLength, depth, notFollowed, descendantsMap, pool,
-                    recursionDepth, currentDepth + 1);  // ← increment
-
-            if (withB == Blockable.BLOCKED) return Blockable.BLOCKED;
-
-            z.clear();
-            z.addAll(zSnapshot);
-
-            return (withB == Blockable.INDETERMINATE || withoutB == Blockable.INDETERMINATE)
-                    ? Blockable.INDETERMINATE
-                    : Blockable.UNBLOCKABLE;
-
-        } finally {
-            path.remove(b);
-        }
-    }
-
-    private static Blockable tryBlockAllContinuations(Graph graph,
-                                                      Node a, Node b, Node y,
-                                                      Set<Node> path, Set<Node> z,
-                                                      int maxPathLength, int depth,
-                                                      Set<Node> notFollowed,
-                                                      Map<Node, Set<Node>> descendantsMap,
-                                                      Set<Node> pool,
-                                                      int recursionDepth,
-                                                      int currentDepth)
+                                           int currentDepthInit)
             throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
 
-        Set<Node> handled = new HashSet<>();
+        // The explicit call stack.
+        Deque<Frame> callStack = new ArrayDeque<>();
+        callStack.push(new Frame(aInit, bInit, y,
+                maxPathLength, depth, recursionDepth, currentDepthInit));
 
-        while (true) {
+        // Result written by a frame just before it is popped.
+        // The parent frame reads this value when it resumes.
+        Blockable lastResult = null;
+
+        while (!callStack.isEmpty()) {
             if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
 
-            List<Node> passNodes = getReachableNodes(graph, a, b, z, descendantsMap);
-            passNodes.removeAll(notFollowed);
+            Frame f = callStack.peek();
 
-            boolean progressed = false;
+            // =================================================================
+            // ENTER — first time we touch this frame; run guard checks and
+            //         add b to path.
+            // =================================================================
+            if (f.pass == Pass.ENTER) {
 
-            for (Node c : passNodes) {
-                if (handled.contains(c)) continue;
-                progressed = true;
+                // --- depth / interrupt guards --------------------------------
+                if (f.currentDepth > f.recursionDepth) {
+                    callStack.pop();
+                    lastResult = Blockable.INDETERMINATE;
+                    continue;
+                }
 
-                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+                // --- structural guards (do not touch path yet) ---------------
+                if (f.b == y) {
+                    callStack.pop();
+                    lastResult = Blockable.UNBLOCKABLE;
+                    continue;
+                }
+                if (path.contains(f.b)) {
+                    callStack.pop();
+                    lastResult = Blockable.BLOCKED;
+                    continue;
+                }
+                if (notFollowed.contains(f.b)) {
+                    callStack.pop();
+                    lastResult = Blockable.INDETERMINATE;
+                    continue;
+                }
+                if (notFollowed.contains(y)) {
+                    callStack.pop();
+                    lastResult = Blockable.BLOCKED;
+                    continue;
+                }
 
-                Blockable result = findPathToTargetVisit(graph, b, c, y, path, z,
-                        maxPathLength, depth, notFollowed, descendantsMap, pool,
-                        recursionDepth, currentDepth);  // ← currentDepth unchanged here,
-                //   increment happens in findPathToTargetVisit
+                // --- add b to path (mirrors original path.add(b)) -----------
+                path.add(f.b);
 
-                if (result == Blockable.UNBLOCKABLE) return Blockable.UNBLOCKABLE;
-                if (result == Blockable.INDETERMINATE) return Blockable.INDETERMINATE;
-                handled.add(c);
+                // --- path-length guard (path already contains b) -------------
+                if (f.maxPathLength >= 0 && path.size() > f.maxPathLength) {
+                    path.remove(f.b);
+                    callStack.pop();
+                    lastResult = Blockable.INDETERMINATE;
+                    continue;
+                }
+
+                // --- snapshot z and start WITHOUT_B pass --------------------
+                f.zSnapshot = new HashSet<>(z);
+                f.pass = Pass.CONTINUATIONS_WITHOUT_B;
+                // fall through immediately into the WITHOUT_B handler below
             }
 
-            if (!progressed) return Blockable.BLOCKED;
+            // =================================================================
+            // CONTINUATIONS_WITHOUT_B — run (or resume) the continuation loop
+            // without b in z.  For LATENT nodes this is the only pass.
+            // =================================================================
+            if (f.pass == Pass.CONTINUATIONS_WITHOUT_B) {
+
+                // If we are resuming after a child frame completed, incorporate
+                // its result before continuing the loop.
+                //
+                // In the original tryBlockAllContinuations:
+                //   UNBLOCKABLE / INDETERMINATE  → return immediately (end loop)
+                //   BLOCKED                      → handled.add(c), continue loop
+                //
+                // But the loop result feeds into findPathToTargetVisit, which
+                // only short-circuits on BLOCKED; UNBLOCKABLE and INDETERMINATE
+                // both fall through to the WITH_B pass.  We therefore must not
+                // propagate UNBLOCKABLE/INDETERMINATE all the way up here —
+                // instead, treat them as the terminal result of the WITHOUT_B
+                // continuation loop and let the normal post-loop code handle them.
+                Blockable contResult;
+                if (lastResult != null) {
+                    if (lastResult == Blockable.UNBLOCKABLE
+                            || lastResult == Blockable.INDETERMINATE) {
+                        // Child ended the continuation loop early.
+                        // Use this as the loop's terminal result and fall through
+                        // to the post-loop handling below (same as if stepContinuationLoop
+                        // had returned this value directly).
+                        contResult = lastResult;
+                        lastResult = null;
+                    } else {
+                        // lastResult == BLOCKED: mark pending child as handled, re-scan.
+                        f.handled.add(f.pendingC);
+                        f.pendingC = null;
+                        lastResult = null;
+
+                        // Run the continuation loop from where we left off.
+                        contResult = stepContinuationLoop(
+                                graph, f, y, path, z, notFollowed, descendantsMap, pool,
+                                callStack, /* isWithBPass= */ false);
+
+                        if (contResult == null) {
+                            // A child frame was pushed; we'll resume here when it pops.
+                            continue;
+                        }
+                    }
+                } else {
+                    // First entry (not a resume): run the continuation loop.
+                    contResult = stepContinuationLoop(
+                            graph, f, y, path, z, notFollowed, descendantsMap, pool,
+                            callStack, /* isWithBPass= */ false);
+
+                    if (contResult == null) {
+                        // A child frame was pushed; we'll resume here when it pops.
+                        continue;
+                    }
+                }
+
+                // The continuation loop finished for this pass.
+                if (f.b.getNodeType() == NodeType.LATENT) {
+                    // LATENT: no "with b" pass — return the single result.
+                    path.remove(f.b);
+                    callStack.pop();
+                    lastResult = contResult;
+                    continue;
+                }
+
+                if (contResult == Blockable.BLOCKED) {
+                    // Blocked without conditioning on b — we're done, no need
+                    // to try adding b.  Mirrors: if (withoutB == BLOCKED) return BLOCKED.
+                    path.remove(f.b);
+                    callStack.pop();
+                    lastResult = Blockable.BLOCKED;
+                    continue;
+                }
+
+                // withoutB is UNBLOCKABLE or INDETERMINATE.  We still try
+                // adding b to z — the original only short-circuits on BLOCKED;
+                // UNBLOCKABLE and INDETERMINATE both fall through to WITH_B.
+                f.withoutBResult = contResult;
+                z.clear();
+                z.addAll(f.zSnapshot);
+
+                if (!pool.contains(f.b)) {
+                    path.remove(f.b);
+                    callStack.pop();
+                    lastResult = Blockable.INDETERMINATE;
+                    continue;
+                }
+                if (f.depth >= 0 && z.size() > f.depth) {
+                    path.remove(f.b);
+                    callStack.pop();
+                    lastResult = Blockable.INDETERMINATE;
+                    continue;
+                }
+
+                // Transition to the WITH_B pass.
+                z.add(f.b);
+                f.handled = new HashSet<>(); // fresh handled set for this pass
+                f.pendingC = null;
+                f.pass = Pass.CONTINUATIONS_WITH_B;
+                lastResult = null;
+                // fall through immediately into the WITH_B handler
+            }
+
+            // =================================================================
+            // CONTINUATIONS_WITH_B — run (or resume) the continuation loop
+            // with b already added to z.
+            // =================================================================
+            if (f.pass == Pass.CONTINUATIONS_WITH_B) {
+
+                // Incorporate child result if resuming.
+                // Same logic as WITHOUT_B: UNBLOCKABLE/INDETERMINATE ends the
+                // continuation loop (mirrors early return in tryBlockAllContinuations)
+                // and becomes the withB terminal result; BLOCKED means handled.add + rescan.
+                Blockable contResult;
+                if (lastResult != null) {
+                    if (lastResult == Blockable.UNBLOCKABLE
+                            || lastResult == Blockable.INDETERMINATE) {
+                        contResult = lastResult;
+                        lastResult = null;
+                    } else {
+                        // BLOCKED — mark pending child as handled and continue loop.
+                        f.handled.add(f.pendingC);
+                        f.pendingC = null;
+                        lastResult = null;
+
+                        contResult = stepContinuationLoop(
+                                graph, f, y, path, z, notFollowed, descendantsMap, pool,
+                                callStack, /* isWithBPass= */ true);
+
+                        if (contResult == null) {
+                            continue; // child pushed, resume later
+                        }
+                    }
+                } else {
+                    contResult = stepContinuationLoop(
+                            graph, f, y, path, z, notFollowed, descendantsMap, pool,
+                            callStack, /* isWithBPass= */ true);
+
+                    if (contResult == null) {
+                        continue; // child pushed, resume later
+                    }
+                }
+
+                // Combine results from both passes.
+                // Mirrors the original:
+                //   if (withB == BLOCKED) return BLOCKED;          // z keeps b
+                //   z.clear(); z.addAll(zSnapshot);                // z restored only here
+                //   return (withB==INDET || withoutB==INDET) ? INDET : UNBLOCKABLE;
+                Blockable withB = contResult;
+                if (withB == Blockable.BLOCKED) {
+                    // z intentionally retains f.b (the node that achieved blocking).
+                    path.remove(f.b);
+                    callStack.pop();
+                    lastResult = Blockable.BLOCKED;
+                } else {
+                    // Not blocked even with b — restore z and report.
+                    z.clear();
+                    z.addAll(f.zSnapshot);
+                    path.remove(f.b);
+                    callStack.pop();
+                    lastResult = (withB == Blockable.INDETERMINATE
+                            || f.withoutBResult == Blockable.INDETERMINATE)
+                            ? Blockable.INDETERMINATE
+                            : Blockable.UNBLOCKABLE;
+                }
+            }
         }
+
+        return lastResult;
     }
+
+    // -----------------------------------------------------------------------
+    // Continuation-loop stepper
+    // -----------------------------------------------------------------------
+
+    /**
+     * Performs one scan of the continuation loop for frame {@code f},
+     * corresponding to one iteration of the {@code while(true)} loop in the
+     * original {@code tryBlockAllContinuations}.
+     *
+     * <p>Rescans reachable nodes (because z may have grown since the last scan),
+     * skips already-handled ones, and for the first unhandled node pushes a
+     * child {@link Frame} onto {@code callStack}, records it in
+     * {@link Frame#pendingC}, and returns {@code null} to suspend.  When no
+     * unhandled node exists returns {@link Blockable#BLOCKED}.</p>
+     *
+     * <p>The driver loop calls this method again each time a child frame returns
+     * {@link Blockable#BLOCKED} (after recording {@link Frame#pendingC} in
+     * {@link Frame#handled}).  This preserves the re-scan-after-z-growth
+     * semantics of the original {@code while(true)} loop without the risk of an
+     * infinite loop.</p>
+     *
+     * @return {@code null} if a child frame was pushed (caller must re-enter),
+     *         or {@link Blockable#BLOCKED} when the loop is fully exhausted.
+     */
+    private static Blockable stepContinuationLoop(
+            Graph graph,
+            Frame f,
+            Node y,
+            Set<Node> path,
+            Set<Node> z,
+            Set<Node> notFollowed,
+            Map<Node, Set<Node>> descendantsMap,
+            Set<Node> pool,
+            Deque<Frame> callStack,
+            boolean isWithBPass) throws InterruptedException {
+
+        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
+        // Rescan reachable nodes — z may have grown since the last call.
+        List<Node> passNodes = getReachableNodes(graph, f.a, f.b, z, descendantsMap);
+        passNodes.removeAll(notFollowed);
+
+        for (Node c : passNodes) {
+            if (f.handled.contains(c)) continue;
+
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
+            // Record which node is in flight so the driver can add it to
+            // handled when the child returns BLOCKED (mirrors handled.add(c)
+            // after the recursive call in the original).
+            f.pendingC = c;
+            callStack.push(new Frame(
+                    f.b, c, y,
+                    f.maxPathLength, f.depth, f.recursionDepth,
+                    f.currentDepth + 1));
+            return null; // suspend — driver resumes when child pops
+        }
+
+        // No unhandled pass-node found — this branch is fully blocked.
+        return Blockable.BLOCKED;
+    }
+
+    // -----------------------------------------------------------------------
+    // Reachability helpers (unchanged)
+    // -----------------------------------------------------------------------
 
     private static List<Node> getReachableNodes(Graph graph,
                                                 Node a,
@@ -435,21 +756,19 @@ public class RecursiveBlocking {
         }
     }
 
+    // -----------------------------------------------------------------------
+    // Result enum (unchanged)
+    // -----------------------------------------------------------------------
+
     /**
      * Three-valued result of path-blocking analysis.
      */
     public enum Blockable {
-        /**
-         * All paths through this branch are blocked by Z.
-         */
+        /** All paths through this branch are blocked by Z. */
         BLOCKED,
-        /**
-         * Some path is unblockable regardless of Z (e.g. direct x–y edge or latent bow).
-         */
+        /** Some path is unblockable regardless of Z (e.g. direct x–y edge or latent bow). */
         UNBLOCKABLE,
-        /**
-         * Analysis was inconclusive (interrupted, path-length cap, or radius limit hit).
-         */
+        /** Analysis was inconclusive (interrupted, path-length cap, or radius limit hit). */
         INDETERMINATE
     }
 }
