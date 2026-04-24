@@ -217,11 +217,6 @@ public class RecursiveBlocking {
             firstHops.remove(y);
         }
 
-//        List<Node> firstHops = new ArrayList<>();
-//        for (Node b : graph.getAdjacentNodes(x)) {
-//            if (b != y) firstHops.add(b);
-//        }
-
         // Outer fixed-point loop: re-examine every first hop after any Z growth,
         // because a node added to Z during one branch may activate a collider
         // on a different branch.
@@ -261,10 +256,32 @@ public class RecursiveBlocking {
     }
 
     /**
-     * Identical to {@link RecursiveBlocking#findPathToTargetVisit} except that
-     * before adding {@code b} to Z the method checks whether {@code b} is in
-     * the pool. If not, conditioning on {@code b} is forbidden and that option
-     * is treated as INDETERMINATE (cannot block via out-of-radius node).
+     * Finds a path from a source node to a target node in a graph, while considering
+     * various constraints such as path length, node visitation rules, recursion depth,
+     * and node subsets. The method determines whether the path is blockable, unblockable,
+     * or indeterminate based on the structure of the graph and the provided parameters.
+     *
+     * @param graph The graph containing the nodes and edges to traverse.
+     * @param a The source node from which the path exploration starts.
+     * @param b The current node being explored in the path.
+     * @param y The target node to which the path needs to be discovered.
+     * @param path A set of nodes that have already been visited in the current path.
+     *             Used to track cyclic paths.
+     * @param z A set of nodes representing intermediate nodes in the path that may
+     *          need to be considered for specific rules.
+     * @param maxPathLength The upper bound on the maximum number of nodes allowed
+     *                      in the path. A negative value implies no limit.
+     * @param depth The maximum permitted size of set z during exploration. A negative
+     *              value implies no limit.
+     * @param notFollowed The set of nodes that should not be followed during path exploration.
+     * @param descendantsMap A map representing relationships between nodes where each node
+     *                       maps to its set of descendants.
+     * @param pool A set of candidate nodes that are eligible for inclusion in the path.
+     * @param recursionDepth The maximum permissible recursion depth to prevent stack overflow.
+     * @param currentDepth The current level of recursion during the method's invocation.
+     * @return A {@code Blockable} value indicating whether the path is {@code BLOCKED},
+     *         {@code UNBLOCKABLE}, or {@code INDETERMINATE}, depending on the traversal outcome.
+     * @throws InterruptedException If the current thread is interrupted during execution.
      */
     static Blockable findPathToTargetVisit(Graph graph,
                                            Node a, Node b, Node y,
