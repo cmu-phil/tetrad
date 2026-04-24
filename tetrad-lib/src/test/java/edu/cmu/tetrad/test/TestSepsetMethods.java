@@ -678,7 +678,8 @@ public class TestSepsetMethods {
 
                 try {
                     Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(
-                            graph, x, w, Set.of(), Set.of(), -1, -1, -1, 1, null);
+                            graph, x, w, Set.of(), Set.of(), -1, -1, -1, 1,
+                            false);
 
                     if (blocking != null && !graph.paths().isMSeparatedFrom(x, w, blocking, false)) {
                         System.out.println("Seed: " + seed);

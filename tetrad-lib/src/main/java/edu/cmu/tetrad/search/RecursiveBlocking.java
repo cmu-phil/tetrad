@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -66,18 +65,20 @@ public class RecursiveBlocking {
     // -----------------------------------------------------------------------
 
     /**
-     * Radius-constrained blocking with default pool strategy (union of shells
-     * around both endpoints, {@code nearWhichEndpoint = 3}).
+     * Blocks paths between two specified nodes in a graph by recursively identifying
+     * and selecting nodes to include in a blocking set, subject to constraints
+     * on path length and traversal rules. Assumes a direct edge between x and y
+     * is to be ignored.
      *
-     * @param graph         the graph (DAG / CPDAG / MAG / PAG)
-     * @param x             first endpoint
-     * @param y             second endpoint
-     * @param containing    nodes that must be in Z regardless of radius
-     * @param notFollowed   nodes not to be traversed during path search
-     * @param maxPathLength maximum path length (-1 = unlimited)
-     * @return a candidate blocking set, or {@code null} if none found within
-     * the radius constraint
-     * @throws InterruptedException if the thread is interrupted
+     * @param graph         the graph in which the nodes and paths are analyzed
+     * @param x             the starting node of the path
+     * @param y             the target node of the path
+     * @param containing    a set of nodes that must be included in the blocking set
+     * @param notFollowed   a set of nodes that must not be traversed during path search
+     * @param maxPathLength the maximum allowable length of the paths to block (-1 for no limit)
+     * @return a set of nodes constituting a blocking set for paths between x and y,
+     * or {@code null} if no such set is found within the given constraints
+     * @throws InterruptedException if the thread executing the method is interrupted
      */
     public static <E> Set<Node> blockPathsRecursively(Graph graph,
                                                       Node x,
@@ -86,35 +87,8 @@ public class RecursiveBlocking {
                                                       Set<Node> notFollowed,
                                                       int maxPathLength)
             throws InterruptedException {
-        return blockPathsRecursively(graph, x, y, containing, notFollowed, maxPathLength, -1, -1);
-    }
-
-    /**
-     * Radius-constrained blocking with default pool strategy (union of shells
-     * around both endpoints, {@code nearWhichEndpoint = 3}).
-     *
-     * @param graph         the graph (DAG / CPDAG / MAG / PAG)
-     * @param x             first endpoint
-     * @param y             second endpoint
-     * @param containing    nodes that must be in Z regardless of radius
-     * @param notFollowed   nodes not to be traversed during path search
-     * @param maxPathLength maximum path length (-1 = unlimited)
-     * @param maxRadius     BFS radius for pool construction (-1 = unlimited)
-     * @return a candidate blocking set, or {@code null} if none found within
-     * the radius constraint
-     * @throws InterruptedException if the thread is interrupted
-     */
-    public static Set<Node> blockPathsRecursively(Graph graph,
-                                                  Node x,
-                                                  Node y,
-                                                  Set<Node> containing,
-                                                  Set<Node> notFollowed,
-                                                  int maxPathLength,
-                                                  int maxRadius,
-                                                  int depth)
-            throws InterruptedException {
         return blockPathsRecursively(graph, x, y, containing, notFollowed,
-                maxPathLength, maxRadius, depth, 3, null);
+                maxPathLength, -1, -1, 1, true);
     }
 
     /**
@@ -128,7 +102,7 @@ public class RecursiveBlocking {
      * @param maxPathLength     maximum path length (-1 = unlimited)
      * @param maxRadius         BFS radius (-1 = unlimited)
      * @param nearWhichEndpoint 1 = near x, 2 = near y, 3 = near both
-     * @param knowledge         optional background knowledge (reserved)
+     * @param ignoreDirectEdge  whether to ignore direct edges between x and y
      * @return a candidate blocking set, or {@code null}
      * @throws InterruptedException if the thread is interrupted
      */
@@ -141,7 +115,7 @@ public class RecursiveBlocking {
                                                   int maxRadius,
                                                   int depth,
                                                   int nearWhichEndpoint,
-                                                  Knowledge knowledge)
+                                                  boolean ignoreDirectEdge)
             throws InterruptedException {
         Set<Node> pool = buildPool(graph, x, y, maxRadius, nearWhichEndpoint);
         // Nodes in 'containing' are always eligible, even if outside the radius.
@@ -152,7 +126,7 @@ public class RecursiveBlocking {
         return blockPathsRecursivelyAdj(
                 graph, x, y, containing, notFollowed,
                 graph.paths().getDescendantsMap(),
-                maxPathLength, recursionDepth, depth, pool, knowledge);
+                maxPathLength, recursionDepth, depth, pool, ignoreDirectEdge);
     }
 
     // -----------------------------------------------------------------------
@@ -229,7 +203,7 @@ public class RecursiveBlocking {
             int recursionDepth,
             int depth,
             Set<Node> pool,
-            Knowledge knowledge) throws InterruptedException {
+            boolean ignoreDirectEdge) throws InterruptedException {
 
         if (x == y) {
             throw new IllegalArgumentException("x and y must be distinct");
@@ -237,10 +211,16 @@ public class RecursiveBlocking {
 
         Set<Node> z = new HashSet<>(containing);
 
-        List<Node> firstHops = new ArrayList<>();
-        for (Node b : graph.getAdjacentNodes(x)) {
-            if (b != y) firstHops.add(b);
+        List<Node> firstHops = new ArrayList<>(graph.getAdjacentNodes(x));
+
+        if (ignoreDirectEdge) {
+            firstHops.remove(y);
         }
+
+//        List<Node> firstHops = new ArrayList<>();
+//        for (Node b : graph.getAdjacentNodes(x)) {
+//            if (b != y) firstHops.add(b);
+//        }
 
         // Outer fixed-point loop: re-examine every first hop after any Z growth,
         // because a node added to Z during one branch may activate a collider
