@@ -383,8 +383,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
                     try {
                         int maxPathLength = -1;
-                        int depth = 4;
-                        int maxRadius = -1;
+                        int depth = -1;
+                        int maxRadius = 2;
                         int nearWhichEndpoint = 1;
                         boolean ignoreDirectEdge = false;
 
