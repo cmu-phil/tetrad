@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -44,7 +45,7 @@ public class PagLegalityCheck {
     public static LegalPagRet isLegalPag(Graph pag, Set<Node> selection, int timeoutSeconds) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<LegalPagRet> future = executor.submit(
-                (Callable<LegalPagRet>) () -> isLegalPag(pag, selection));
+                () -> isLegalPag(pag, selection));
         try {
             return future.get(timeoutSeconds, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
@@ -89,7 +90,8 @@ public class PagLegalityCheck {
             return new LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
         }
 
-        Graph pag2 = GraphTransforms.dagToPag(mag, false);
+//        Graph pag2 = GraphTransforms.dagToPag(mag, false);
+        Graph pag2 = GraphTransforms.dagToPag(mag, new Knowledge(), false, 20);
 
         if (!pag.equals(pag2)) {
             String edgeMismatch = "";

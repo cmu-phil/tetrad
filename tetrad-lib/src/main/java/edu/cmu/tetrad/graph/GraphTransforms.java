@@ -393,11 +393,11 @@ public class GraphTransforms {
      * @param graph                       The input Directed Acyclic Graph (DAG) to be converted.
      * @param knowledge                   Background knowledge used to guide the conversion process.
      * @param excludeSelectionBias        True to exclude selection bias, false otherwise.
-     * @param maxDiscriminatingPathLength
+     * @param maxBlockingPathLength Maximum length of discriminating paths allowed in the PAG.
      * @return The resulting Partial Ancestral Graph (PAG) obtained from the input DAG and knowledge.
      */
-    public static Graph dagToPag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int maxDiscriminatingPathLength) {
-        return PagCache.getInstance().getPag(graph, knowledge, excludeSelectionBias, maxDiscriminatingPathLength);
+    public static Graph dagToPag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int maxBlockingPathLength) {
+        return PagCache.getInstance().getPag(graph, knowledge, excludeSelectionBias, maxBlockingPathLength);
     }
 
     /**

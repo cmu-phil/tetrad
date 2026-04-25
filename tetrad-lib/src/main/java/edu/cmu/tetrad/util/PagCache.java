@@ -69,30 +69,24 @@ public final class PagCache {
         return local;
     }
 
-    private static Graph computePag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int maxDiscriminatingPathLength) {
-//        if (graph.paths().isLegalDag()) {
-//            Graph mag = GraphTransforms.dagToMag(graph);
-//            return new MagToPag(mag).convert(false);
-//
-//            // This does the selection bias conversion. Also, we need to check the DAG case first, because
-//            // if you have a selection node, the legal MAG check will choke because it's expecting all
-//            // measured variables. jdramsey 2025-11-6
-////            return PagCache.getInstance().getPag(GraphTransforms.dagToMag(graph));
-//        } else if (graph.paths().isLegalMag()) {
-//            return new MagToPag(graph).convert(false);
-//        } else {
-//            Graph mag = GraphTransforms.zhangMagFromPag(graph);
-//            return new MagToPag(mag).convert(true);
-//        }
-
+    private static Graph computePag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int maxBlockingPathLength) {
         if (graph.paths().isLegalDag()) {
+            if (graph.paths().existsDirectedCycle()) {
+                throw new IllegalArgumentException("Graph contains directed cycle");
+            }
+
             Graph mag = GraphTransforms.dagToMag(graph);
-            return computePagFromMag(mag, knowledge, excludeSelectionBias, maxDiscriminatingPathLength);   // no getPag() here, avoiding infinite recursion.
+
+            return computePagFromMag(mag, knowledge, excludeSelectionBias, maxBlockingPathLength);   // no getPag() here, avoiding infinite recursion.
         } else if (graph.paths().isLegalMag()) {
-            return computePagFromMag(graph, knowledge, excludeSelectionBias, maxDiscriminatingPathLength);
+            return computePagFromMag(graph, knowledge, excludeSelectionBias, maxBlockingPathLength);
         } else {
             Graph mag = GraphTransforms.zhangMagFromPag(graph);
-            return new MagToPag(mag).convert(true, excludeSelectionBias);
+            MagToPag magToPag = new MagToPag(mag);
+            magToPag.setKnowledge(knowledge);
+            magToPag.setMaxBlockingPathLength(maxBlockingPathLength);
+            magToPag.setMaxDiscriminatingPathLength(-1);
+            return magToPag.convert(true, excludeSelectionBias);
         }
     }
 
@@ -203,10 +197,11 @@ public final class PagCache {
         return h;
     }
 
-    private static Graph computePagFromMag(Graph mag, Knowledge knowledge, boolean excludeSelectionBias, int maxDiscriminatingPathLength) {
+    private static Graph computePagFromMag(Graph mag, Knowledge knowledge, boolean excludeSelectionBias, int maxBlockingPathLength) {
         MagToPag magToPag = new MagToPag(mag);
         magToPag.setKnowledge(knowledge);
-        magToPag.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        magToPag.setMaxBlockingPathLength(maxBlockingPathLength);
+        magToPag.setMaxDiscriminatingPathLength(-1);
         return magToPag.convert(false, excludeSelectionBias);
     }
 
@@ -242,11 +237,11 @@ public final class PagCache {
      * @param g                           the input graph, which must be either a DAG or a MAG
      * @param knowledge                   the knowledge object containing additional information for PAG computation
      * @param excludeSelectionBias        whether to exclude selection bias during PAG computation
-     * @param maxDiscriminatingPathLength
+     * @param maxBlockingPathLength       the maximum length of blocking paths to consider during PAG computation
      * @return the corresponding PAG for the provided graph
      * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
      */
-    public @NotNull Graph getPag(Graph g, Knowledge knowledge, boolean excludeSelectionBias, int maxDiscriminatingPathLength) {
+    public @NotNull Graph getPag(Graph g, Knowledge knowledge, boolean excludeSelectionBias, int maxBlockingPathLength) {
         if (!(g.paths().isLegalDag() || g.paths().isLegalMag())) {
             throw new IllegalArgumentException("Graph must be a DAG or a MAG.");
         }
@@ -258,7 +253,7 @@ public final class PagCache {
                 // Guard against external mutation of the cached PAG
                 long currentPagSig = signatureOfPag(e.pag);
                 if (currentPagSig != e.pagSig) {
-                    Graph rebuilt = computePag(g, knowledge, excludeSelectionBias, -1);
+                    Graph rebuilt = computePag(g, knowledge, excludeSelectionBias, maxBlockingPathLength);
                     syncInPlace(e.pag, rebuilt);               // preserve identity
                     e.pagSig = signatureOfPag(e.pag);          // update sig after sync
                 }
@@ -267,7 +262,7 @@ public final class PagCache {
         }
 
         // Miss or source changed: build fresh
-        final Graph pag = computePag(g, knowledge, excludeSelectionBias, maxDiscriminatingPathLength);
+        final Graph pag = computePag(g, knowledge, excludeSelectionBias, maxBlockingPathLength);
         synchronized (cache) {
             cache.put(g, new Entry(pag, srcSig, signatureOfPag(pag)));
             return pag;

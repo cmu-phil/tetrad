@@ -65,7 +65,9 @@ public interface R0R4Strategy {
      * @throws InterruptedException if the operation is interrupted
      * @see DiscriminatingPath
      */
-    Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, int maxPathLength, Graph graph, Set<Node> vNodes) throws InterruptedException;
+    Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath,
+                                                                      int maxBlockingPathLength, int maxDiscriminatingPathLength,
+                                                                      Graph graph, Set<Node> vNodes) throws InterruptedException;
 
     /**
      * Sets the knowledge object to be used by the strategy.

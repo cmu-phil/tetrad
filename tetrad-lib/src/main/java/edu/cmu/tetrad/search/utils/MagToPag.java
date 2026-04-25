@@ -26,8 +26,12 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -56,11 +60,23 @@ public final class MagToPag {
      */
     private boolean verbose;
     /**
+     * Represents the maximum length of blocking paths to be considered during MAG to PAG conversion. A value of -1
+     * indicates that all possible blocking paths should be considered without any specific length constraint.
+     * This value can be adjusted to limit the depth of analysis based on the specific use case.
+     */
+    private int maxBlockingPathLength = -1;
+    /**
      * Represents the maximum length of discriminating paths to be considered during MAG to PAG conversion. A value of
      * -1 indicates that all possible discriminating paths should be considered without any specific length constraint.
      * This value can be adjusted to limit the depth of analysis based on the specific use case.
      */
     private int maxDiscriminatingPathLength = -1;
+
+    /**
+     * Per-node ancestor sets precomputed once at the start of convert(). Anteriority for
+     * any (x, y) pair is then a cheap set union rather than a full graph traversal.
+     */
+    private Map<Node, Set<Node>> ancestorCache;
 
 
     /**
@@ -73,23 +89,36 @@ public final class MagToPag {
     }
 
     /**
+     * Computes anteriority for a pair of nodes from precomputed per-node ancestor sets.
+     * This is (An(x) ∪ An(y)) \ {x, y}, computed via set union rather than graph traversal.
+     *
+     * @param x             first node
+     * @param y             second node
+     * @param ancestorCache precomputed ancestor sets for all nodes in the MAG
+     * @return the anteriority set for (x, y)
+     */
+    private static Set<Node> anteriorityFromCache(Node x, Node y, Map<Node, Set<Node>> ancestorCache) {
+        Set<Node> result = new HashSet<>(ancestorCache.get(x));
+        result.addAll(ancestorCache.get(y));
+        result.remove(x);
+        result.remove(y);
+        return result;
+    }
+
+    /**
      * Returns the final strategy for finding a PAG using D-SEP.
      *
-     * @param mag       the MAG (Maximum Ancestral Graph) representation of the graph
-     * @param knowledge the background knowledge used for the orientation
-     * @param verbose   a boolean indicating whether verabose output should be printed
+     * @param mag           the MAG (Maximum Ancestral Graph) representation of the graph
+     * @param knowledge     the background knowledge used for the orientation
+     * @param verbose       a boolean indicating whether verbose output should be printed
+     * @param ancestorCache precomputed per-node ancestor sets for O(n) anteriority lookups
      * @return the final strategy for finding a PAG using D-SEP
      */
-    public static R0R4StrategyTestBased getFinalStrategyUsingDsep(Graph mag, Knowledge knowledge, boolean verbose) {
-
-        // Note that we will re-use FCIOrient but override the R0 and discriminating path rules to use D-SEP(A,B) or D-SEP(B,A)
-        // to find the d-separating set between A and B.
+    public static R0R4StrategyTestBased getFinalStrategyUsingDsep(Graph mag, Knowledge knowledge, boolean verbose,
+                                                                  Map<Node, Set<Node>> ancestorCache) {
         return new R0R4StrategyTestBased(new MsepTest(mag)) {
             @Override
             public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k) {
-
-                // We assume the MAG already has the unshielded colliders oriented that the algorithm
-                // says should be oriented.
                 Graph mag1 = ((MsepTest) getTest()).getGraph();
                 return !mag1.isAdjacentTo(i, k) && mag1.isDefCollider(i, j, k);
             }
@@ -99,10 +128,10 @@ public final class MagToPag {
              *
              * @param discriminatingPath the discriminating path
              * @param graph              the graph representation
-             * @param vNodes            the set of nodes that are V-nodes
+             * @param vNodes             the set of nodes that are V-nodes
              * @return a pair of the discriminating path construct and a boolean indicating whether the
              * orientation was determined.
-             * @throws IllegalArgumentException if 'e' is adjacent to 'c'
+             * @throws IllegalArgumentException if x is adjacent to y
              * @see DiscriminatingPath
              */
             public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) {
@@ -111,13 +140,10 @@ public final class MagToPag {
                 Node v = discriminatingPath.getV();
                 Node y = discriminatingPath.getY();
 
-                // Check that the discriminating path construct still exists in the graph.
                 if (!discriminatingPath.existsIn(graph)) {
                     return Pair.of(discriminatingPath, false);
                 }
 
-                // Check that the discriminating path has not yet been oriented; we don't need to list the ones that have
-                // already been oriented.
                 if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
                     return Pair.of(discriminatingPath, false);
                 }
@@ -126,7 +152,11 @@ public final class MagToPag {
                     throw new IllegalArgumentException("x and y must not be adjacent");
                 }
 
-                Set<Node> sepset = mag.isAdjacentTo(x, y) ? null : mag.paths().anteriority(x, y);
+                // Anteriority is now a free set union from precomputed ancestor sets
+                // rather than an O(n^2) graph traversal.
+                Set<Node> sepset = mag.isAdjacentTo(x, y)
+                        ? null
+                        : anteriorityFromCache(x, y, ancestorCache);
 
                 if (verbose) {
                     TetradLogger.getInstance().log("Sepset for x = " + x + " and y = " + y + " = " + sepset);
@@ -165,7 +195,7 @@ public final class MagToPag {
     /**
      * This method does the conversion of MAG to PAG.
      *
-     * @param checkMag           Whether to check if the MAG is legal before conversion.
+     * @param checkMag             Whether to check if the MAG is legal before conversion.
      * @param excludeSelectionBias True to exclude selection bias, false otherwise.
      * @return Returns the converted PAG.
      */
@@ -174,19 +204,36 @@ public final class MagToPag {
             throw new IllegalArgumentException("Not legal mag");
         }
 
-        Graph pag = new EdgeListGraph(mag);
+        // Precompute ancestor sets for all nodes once. Each call to anteriority()
+        // in the original code was O(n * pathSearch); now it's a single O(n * pathSearch)
+        // pass here, and each subsequent anteriority lookup is just a set union — O(n).
+        ancestorCache = new HashMap<>();
+        for (Node n : mag.getNodes()) {
+            ancestorCache.put(n, new HashSet<>(mag.paths().getAncestors(n)));
+        }
 
+        Graph pag = new EdgeListGraph(mag);
         pag.reorientAllWith(Endpoint.CIRCLE);
 
-        FciOrient fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose));
+        FciOrient fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose, ancestorCache));
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
-        fciOrient.setMaxDiscriminatingPathLength(-1);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxBlockingPathLength(maxBlockingPathLength);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
 
-        for (Node y : pag.getNodes()) {
+        // Optimization #6: collect all collider-qualifying triples in parallel, then
+        // apply orientations on the main thread. The parallel scan is safe because we
+        // only read from mag and pag here — writes happen after the stream completes.
+        //
+        // We gather (x, y, z) triples that need orienting into a thread-safe set,
+        // deduplicating by the centre node y (since setEndpoint is idempotent for
+        // arrowheads, duplicate entries are harmless but wasteful).
+        List<Node> nodes = pag.getNodes();
+        Set<Triple> collidersToOrient = ConcurrentHashMap.newKeySet();
+
+        nodes.parallelStream().forEach(y -> {
             List<Node> adjy = pag.getAdjacentNodes(y);
 
             for (int i = 0; i < adjy.size(); i++) {
@@ -194,18 +241,47 @@ public final class MagToPag {
                     Node x = adjy.get(i);
                     Node z = adjy.get(j);
 
-                    if (mag.isDefCollider(x, y, z) && !mag.isAdjacentTo(x, z)) {
-                        pag.setEndpoint(x, y, Endpoint.ARROW);
-                        pag.setEndpoint(z, y, Endpoint.ARROW);
+                    // Optimization #2: skip if both endpoints are already arrowheads —
+                    // setEndpoint would be a no-op and isDefCollider is more expensive.
+                    if (pag.getEndpoint(x, y) == Endpoint.ARROW
+                            && pag.getEndpoint(z, y) == Endpoint.ARROW) {
+                        continue;
+                    }
+
+                    // Optimization #4 (retained): cheap adjacency check before
+                    // expensive isDefCollider.
+                    if (!mag.isAdjacentTo(x, z) && mag.isDefCollider(x, y, z)) {
+                        collidersToOrient.add(new Triple(x, y, z));
                     }
                 }
             }
+        });
+
+        // Apply orientations single-threadedly to avoid any graph mutation races.
+        for (Triple t : collidersToOrient) {
+            pag.setEndpoint(t.x, t.y, Endpoint.ARROW);
+            pag.setEndpoint(t.z, t.y, Endpoint.ARROW);
         }
 
-//        fciOrient.ruleR0(pag, new HashSet<>());
         fciOrient.finalOrientation(pag, excludeSelectionBias);
 
         return pag;
+    }
+
+    /**
+     * Sets the maximum length of blocking paths to be considered during processing.
+     *
+     * @param maxBlockingPathLength the maximum length of blocking paths
+     */
+    public void setMaxBlockingPathLength(int maxBlockingPathLength) {
+        this.maxBlockingPathLength = maxBlockingPathLength;
+    }
+
+    /**
+     * Lightweight value type for a triple of nodes (x, y, z) used to collect
+     * collider orientations from the parallel scan before applying them.
+     */
+    private record Triple(Node x, Node y, Node z) {
     }
 
     /**
@@ -251,7 +327,7 @@ public final class MagToPag {
     }
 
     /**
-     * Setws whether verbose output should be printed.
+     * Sets whether verbose output should be printed.
      *
      * @param verbose True, if so.
      */
@@ -268,8 +344,3 @@ public final class MagToPag {
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 }
-
-
-
-
-

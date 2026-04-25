@@ -122,7 +122,9 @@ public class RecursiveBlocking {
         // Nodes in 'containing' are always eligible, even if outside the radius.
         pool.addAll(containing);
 
-        int recursionDepth = maxPathLength < 0 ? Integer.MAX_VALUE : maxPathLength;
+//        int recursionDepth = maxPathLength < 0 ? Integer.MAX_VALUE : maxPathLength;
+        // In blockPathsRecursively:
+        int recursionDepth = maxPathLength < 0 ? graph.getNumNodes() : maxPathLength;
 
         return blockPathsRecursivelyAdj(
                 graph, x, y, containing, notFollowed,

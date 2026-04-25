@@ -188,7 +188,9 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * @see DiscriminatingPath
      */
     @Override
-    public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, int maxLength, Graph graph, Set<Node> vNodes) throws InterruptedException {
+    public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath,
+                                                                             int maxBlockingPathLength, int maxDiscriminatingPathLength,
+                                                                             Graph graph, Set<Node> vNodes) throws InterruptedException {
         Node x = discriminatingPath.getX();
         Node w = discriminatingPath.getW();
         Node v = discriminatingPath.getV();
@@ -209,19 +211,19 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
         Set<Node> blocking = null;
 
-        // If you already have a sepset, use it.
-        if (sepsetMap.get(x, y) != null) {
-            blocking = sepsetMap.get(x, y);
-        }
+//        // If you already have a sepset, use it.
+//        if (sepsetMap.get(x, y) != null) {
+//            blocking = sepsetMap.get(x, y);
+//        }
 
-        if (blocking == null && blockingType == BlockingType.RECURSIVE) {
-            blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
-                    maxLength, maxLength, preserveMarkovHelper, depth);
-        }
+//        if (blocking == null && blockingType == BlockingType.RECURSIVE) {
+            blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y,
+                    maxBlockingPathLength, maxDiscriminatingPathLength, preserveMarkovHelper, depth);
+//        }
 
-        if (blocking == null) {
-            blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
-        }
+//        if (blocking == null) {
+//            blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
+//        }
 
         if (blocking != null) {
             sepsetMap.set(x, y, blocking);

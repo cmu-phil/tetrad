@@ -344,6 +344,7 @@ public class Gfci implements IGraphSearch {
         strategy.setMaxLength(-1);
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxBlockingPathLength(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setVerbose(verbose);
 

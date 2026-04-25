@@ -64,7 +64,6 @@ public class RecursiveDiscriminatingPathRule {
      * @param pag                   The graph structure, typically a partial ancestral graph (PAG), being analyzed.
      * @param x                     The first target node in the analysis.
      * @param y                     The second target node in the analysis.
-     * @param fciOrient             An orientation helper object used to apply FCI rules to edges in the graph.
      * @param maxBlockingPathLength The maximum allowable length of a blocking path for the analysis.
      * @param maxDdpPathLength      The maximum allowable discriminating path length considered for the analysis.
      * @param preserveMarkovHelper  A helper object for additional Markov property checks during the independence
@@ -75,7 +74,7 @@ public class RecursiveDiscriminatingPathRule {
      * {@code null} if no such set exists.
      * @throws InterruptedException If any.
      */
-    public static Set<Node> findDdpSepsetRecursive(IndependenceTest test, Graph pag, Node x, Node y, FciOrient fciOrient,
+    public static Set<Node> findDdpSepsetRecursive(IndependenceTest test, Graph pag, Node x, Node y,
                                                    int maxBlockingPathLength, int maxDdpPathLength, PreserveMarkov preserveMarkovHelper, int depth)
             throws InterruptedException {
 

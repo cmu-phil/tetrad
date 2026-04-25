@@ -294,6 +294,7 @@ public final class Fcit implements IGraphSearch {
         fciOrient.setVerbose(superVerbose);
         fciOrient.setParallel(true);
         fciOrient.setCompleteRuleSetUsed(true);
+        fciOrient.setMaxBlockingPathLength(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxPathLength);
         fciOrient.setKnowledge(knowledge);
 

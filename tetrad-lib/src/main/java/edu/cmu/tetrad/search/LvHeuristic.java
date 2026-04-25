@@ -80,7 +80,7 @@ public final class LvHeuristic implements IGraphSearch {
      * A value of -1 indicates that no limit is set, meaning the algorithm may consider discriminating paths
      * of any length. Setting this value to a positive integer constrains the maximum length of such paths.
      */
-    private int maxDiscriminatingPathLength = -1;
+    private int maxBlockingPathLength = -1;
     private boolean excludeSelectionBias = false;
 
     /**
@@ -144,7 +144,8 @@ public final class LvHeuristic implements IGraphSearch {
         magToPag.setVerbose(verbose);
         magToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
         magToPag.setKnowledge(knowledge);
-        magToPag.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        magToPag.setMaxBlockingPathLength(maxBlockingPathLength);
+        magToPag.setMaxDiscriminatingPathLength(-1);
         Graph pag = magToPag.convert(true, excludeSelectionBias);
 
         if (verbose) {
@@ -216,10 +217,10 @@ public final class LvHeuristic implements IGraphSearch {
     /**
      * Sets the maximum length of discriminating paths to consider during the search.
      *
-     * @param maxDiscriminatingPathLength The maximum length of discriminating paths.
+     * @param maxBlockingPathLength The maximum length of discriminating paths.
      */
-    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
-        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
+    public void setMaxBlockingPathLength(int maxBlockingPathLength) {
+        this.maxBlockingPathLength = maxBlockingPathLength;
     }
 
     /**

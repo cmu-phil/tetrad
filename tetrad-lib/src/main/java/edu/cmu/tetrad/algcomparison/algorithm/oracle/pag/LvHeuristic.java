@@ -143,7 +143,7 @@ public class LvHeuristic extends AbstractBootstrapAlgorithm implements Algorithm
 
         // DAG to PAG
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
+        search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         // General
@@ -206,7 +206,7 @@ public class LvHeuristic extends AbstractBootstrapAlgorithm implements Algorithm
 
         // FCI-ORIENT
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
+        params.add(Params.MAX_BLOCKING_PATH_LENGTH);
 
         // General
         params.add(Params.EXCLUDE_SELECTION_BIAS);

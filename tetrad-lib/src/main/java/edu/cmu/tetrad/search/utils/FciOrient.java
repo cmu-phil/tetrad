@@ -92,6 +92,12 @@ public class FciOrient {
      */
     private boolean completeRuleSetUsed = true;
     /**
+     * The maximum blocking path length variable.
+     * <p>
+     * This variable represents the maximum length of a blocking path, or -1 if no maximum length is set.
+     */
+    private int maxBlockingPathLength = -1;
+    /**
      * The maximum path length variable.
      * <p>
      * This variable represents the maximum length of a discriminating path, or -1 if no maximum length is set.
@@ -335,7 +341,8 @@ public class FciOrient {
                 // Full path is <x> + reverse(newBody) + <v, y>.
                 int edgeCount = 1 + newBody.size(); // edges from x to v through newBody
                 edgeCount += 1;                     // edge v-y
-                if (maxDiscriminatingPathLength != -1 && edgeCount > maxDiscriminatingPathLength) {
+
+                if (maxDiscriminatingPathLength >= 0 && edgeCount > maxDiscriminatingPathLength) {
                     continue;
                 }
 
@@ -888,7 +895,7 @@ public class FciOrient {
         List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = new ArrayList<>();
 
         for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
-            tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, maxDiscriminatingPathLength, graph, vNodes));
+            tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, maxBlockingPathLength, maxDiscriminatingPathLength, graph, vNodes));
         }
 
         return tasks;
@@ -1540,6 +1547,15 @@ public class FciOrient {
      */
     public void setUseR4(boolean useR4) {
         this.useR4 = useR4;
+    }
+
+    /**
+     * Sets the maximum allowed blocking path length.
+     *
+     * @param maxBlockingPathLength the maximum length of the blocking path, specified as an integer
+     */
+    public void setMaxBlockingPathLength(int maxBlockingPathLength) {
+        this.maxBlockingPathLength = maxBlockingPathLength;
     }
 
     /**
