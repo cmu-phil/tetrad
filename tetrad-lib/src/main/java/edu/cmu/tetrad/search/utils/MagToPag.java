@@ -198,6 +198,8 @@ public final class MagToPag {
      * @param checkMag             Whether to check if the MAG is legal before conversion.
      * @param excludeSelectionBias True to exclude selection bias, false otherwise.
      * @return Returns the converted PAG.
+     * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
+     * bound was exceeded in looking for one, a rare case.)
      */
     public Graph convert(boolean checkMag, boolean excludeSelectionBias) {
         if (checkMag && !this.mag.paths().isLegalMag()) {

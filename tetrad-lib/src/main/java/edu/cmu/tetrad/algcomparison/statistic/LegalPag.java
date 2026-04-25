@@ -23,6 +23,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.Serial;
 
@@ -63,10 +64,15 @@ public class LegalPag implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        if (estGraph.paths().isLegalPag()) {
-            return 1.0;
-        } else {
-            return 0.0;
+        try {
+            if (estGraph.paths().isLegalPag()) {
+                return 1.0;
+            } else {
+                return 0.0;
+            }
+        } catch (IllegalStateException e) {
+            TetradLogger.getInstance().log("Illegal state exception in LegalPag.getValue(): " + e.getMessage());
+            return Double.NaN;
         }
     }
 

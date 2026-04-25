@@ -604,20 +604,19 @@ public final class GraphSearchUtils {
 
         for (Edge e : trueGraph.getEdges()) {
             if (!(Edges.isUndirectedEdge(e) || Edges.isDirectedEdge(e))) {
-                TetradLogger.getInstance().log("True graph is not a legal PDAG.");
                 return -99;
             }
         }
 
         for (Edge e : estGraph.getEdges()) {
             if (!(Edges.isUndirectedEdge(e) || Edges.isDirectedEdge(e))) {
-                TetradLogger.getInstance().log("Est graph is not a legal PDAG.");
+//                TetradLogger.getInstance().log("Est graph is not a legal PDAG.");
                 return -99;
             }
         }
 
         if (trueGraph.paths().existsDirectedCycle()) {
-            TetradLogger.getInstance().log("True graph is not a legal PDAG.");
+//            TetradLogger.getInstance().log("True graph is cyclic.");
             return -99;
         }
 

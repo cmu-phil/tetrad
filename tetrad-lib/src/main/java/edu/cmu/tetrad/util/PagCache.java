@@ -223,6 +223,8 @@ public final class PagCache {
      * @param excludeSelectionBias True to exclude selection bias, false otherwise.
      * @return the corresponding PAG for the provided graph
      * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
+     * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
+     * bound was exceeded in looking for one, a rare case.)
      */
     public @NotNull Graph getPag(Graph g, boolean excludeSelectionBias) {
         return getPag(g, new Knowledge(), excludeSelectionBias, -1);
@@ -240,6 +242,8 @@ public final class PagCache {
      * @param maxBlockingPathLength       the maximum length of blocking paths to consider during PAG computation
      * @return the corresponding PAG for the provided graph
      * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
+     * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
+     * bound was exceeded in looking for one, a rare case.)
      */
     public @NotNull Graph getPag(Graph g, Knowledge knowledge, boolean excludeSelectionBias, int maxBlockingPathLength) {
         if (!(g.paths().isLegalDag() || g.paths().isLegalMag())) {

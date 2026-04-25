@@ -517,7 +517,9 @@ public class FciOrient {
      * If selection bias is excluded, rules R5-R7 are not applied; applies only to Zhang final orientation.
      *
      * @param graph                a {@link Graph} object
-     * @param excludeSelectionBias whether to exclude selection bias
+     * @param excludeSelectionBias whether to exclude selection bias.
+     * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
+     * bound was exceeded in looking for one, a rare case.)
      */
     public void finalOrientation(Graph graph, boolean excludeSelectionBias) {
         if (this.completeRuleSetUsed) {
@@ -532,6 +534,8 @@ public class FciOrient {
      * complete.
      *
      * @param graph The graph containing the sprites.
+     * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
+     * bound was exceeded in looking for one, a rare case.)
      */
     private void spirtesFinalOrientation(Graph graph) {
         this.changeFlag = true;
@@ -564,6 +568,8 @@ public class FciOrient {
      *
      * @param graph                the graph to apply the final orientation algorithm to
      * @param excludeSelectionBias whether to exclude selection bias
+     * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
+     * bound was exceeded in looking for one, a rare case.)
      */
     private void zhangFinalOrientation(Graph graph, boolean excludeSelectionBias) {
         this.changeFlag = true;
@@ -784,6 +790,8 @@ public class FciOrient {
      * potential latent confounding.</p>
      *
      * @param graph The {@link edu.cmu.tetrad.graph.Graph} being oriented.
+     * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
+     * bound was exceeded in looking for one, a rare case.)
      */
     public void ruleR4(Graph graph) {
 
@@ -882,6 +890,7 @@ public class FciOrient {
      * @param graph            the graph
      * @param allowedColliders the allowed colliders
      * @return the list of tasks
+     * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
      */
     private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph, Set<Triple> allowedColliders) {
         Set<DiscriminatingPath> discriminatingPaths = listDiscriminatingPaths(graph, maxDiscriminatingPathLength, true);

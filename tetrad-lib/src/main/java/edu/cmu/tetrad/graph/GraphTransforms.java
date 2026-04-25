@@ -395,6 +395,8 @@ public class GraphTransforms {
      * @param excludeSelectionBias        True to exclude selection bias, false otherwise.
      * @param maxBlockingPathLength Maximum length of discriminating paths allowed in the PAG.
      * @return The resulting Partial Ancestral Graph (PAG) obtained from the input DAG and knowledge.
+     * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
+     * bound was exceeded in looking for one, a rare case.)
      */
     public static Graph dagToPag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int maxBlockingPathLength) {
         return PagCache.getInstance().getPag(graph, knowledge, excludeSelectionBias, maxBlockingPathLength);

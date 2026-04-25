@@ -61,7 +61,41 @@ public class RecursiveBlocking {
     }
 
     // -----------------------------------------------------------------------
-    // Public entry points
+    // Result type
+    // -----------------------------------------------------------------------
+
+    /**
+     * The result of a blocking-set search.
+     *
+     * <p>Three outcomes are possible:</p>
+     * <ul>
+     *   <li><b>Success</b>: {@code blockingSet} is non-null. A candidate
+     *       separating set was found and should be tested for independence.</li>
+     *   <li><b>Unblockable</b>: {@code blockingSet} is null and
+     *       {@code indeterminate} is false. A path exists that cannot be
+     *       blocked regardless of Z — no separator exists within the graph
+     *       structure.</li>
+     *   <li><b>Indeterminate</b>: {@code blockingSet} is null and
+     *       {@code indeterminate} is true. The search hit a path-length or
+     *       depth limit before it could confirm or rule out a separator. A
+     *       legal-PAG verdict of INCONCLUSIVE should be reported upstream
+     *       rather than ILLEGAL.</li>
+     * </ul>
+     *
+     * @param blockingSet   the blocking set found, or {@code null} on failure
+     * @param indeterminate true iff the null result was due to a search limit
+     *                      rather than a proven impossibility
+     */
+    public record BlockingResult(Set<Node> blockingSet, boolean indeterminate) {
+
+        /** True iff a blocking set was found. */
+        public boolean found() {
+            return blockingSet != null;
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Public entry points — Set<Node> convenience overloads (existing callers)
     // -----------------------------------------------------------------------
 
     /**
@@ -69,6 +103,10 @@ public class RecursiveBlocking {
      * identifying and selecting nodes to include in a blocking set, subject to
      * constraints on path length and traversal rules. Assumes a direct edge
      * between x and y is to be ignored.
+     *
+     * <p>This overload collapses UNBLOCKABLE and INDETERMINATE both to
+     * {@code null} for backward compatibility. Use
+     * {@link #blockPathsRecursivelyFull} when the distinction matters.</p>
      *
      * @param graph         the graph in which the nodes and paths are analyzed
      * @param x             the starting node of the path
@@ -87,12 +125,15 @@ public class RecursiveBlocking {
                                                       Set<Node> notFollowed,
                                                       int maxPathLength)
             throws InterruptedException {
-        return blockPathsRecursively(graph, x, y, containing, notFollowed,
-                maxPathLength, -1, -1, 1, true);
+        return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
+                maxPathLength, -1, -1, 1, true).blockingSet();
     }
 
     /**
-     * Full-parameter entry point.
+     * Full-parameter entry point, collapsing UNBLOCKABLE and INDETERMINATE to
+     * {@code null} for backward compatibility.
+     *
+     * <p>Use {@link #blockPathsRecursivelyFull} when the distinction matters.</p>
      *
      * @param graph             the graph
      * @param x                 first endpoint
@@ -118,12 +159,70 @@ public class RecursiveBlocking {
                                                   int nearWhichEndpoint,
                                                   boolean ignoreDirectEdge)
             throws InterruptedException {
+        return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
+                maxPathLength, maxRadius, depth, nearWhichEndpoint,
+                ignoreDirectEdge).blockingSet();
+    }
+
+    // -----------------------------------------------------------------------
+    // Public entry points — full BlockingResult overloads
+    // -----------------------------------------------------------------------
+
+    /**
+     * Short-parameter entry point returning a full {@link BlockingResult},
+     * distinguishing UNBLOCKABLE from INDETERMINATE on failure.
+     *
+     * @param graph         the graph
+     * @param x             first endpoint
+     * @param y             second endpoint
+     * @param containing    nodes forced into Z
+     * @param notFollowed   nodes not to be traversed
+     * @param maxPathLength maximum path length (-1 = unlimited)
+     * @return a {@link BlockingResult} describing the outcome
+     * @throws InterruptedException if the thread is interrupted
+     */
+    public static BlockingResult blockPathsRecursivelyFull(Graph graph,
+                                                           Node x,
+                                                           Node y,
+                                                           Set<Node> containing,
+                                                           Set<Node> notFollowed,
+                                                           int maxPathLength)
+            throws InterruptedException {
+        return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
+                maxPathLength, -1, -1, 1, true);
+    }
+
+    /**
+     * Full-parameter entry point returning a full {@link BlockingResult},
+     * distinguishing UNBLOCKABLE from INDETERMINATE on failure.
+     *
+     * @param graph             the graph
+     * @param x                 first endpoint
+     * @param y                 second endpoint
+     * @param containing        nodes forced into Z
+     * @param notFollowed       nodes not to be traversed
+     * @param maxPathLength     maximum path length (-1 = unlimited)
+     * @param maxRadius         BFS radius (-1 = unlimited)
+     * @param depth             maximum size of Z (-1 = unlimited)
+     * @param nearWhichEndpoint 1 = near x, 2 = near y, 3 = near both
+     * @param ignoreDirectEdge  whether to ignore direct edges between x and y
+     * @return a {@link BlockingResult} describing the outcome
+     * @throws InterruptedException if the thread is interrupted
+     */
+    public static BlockingResult blockPathsRecursivelyFull(Graph graph,
+                                                           Node x,
+                                                           Node y,
+                                                           Set<Node> containing,
+                                                           Set<Node> notFollowed,
+                                                           int maxPathLength,
+                                                           int maxRadius,
+                                                           int depth,
+                                                           int nearWhichEndpoint,
+                                                           boolean ignoreDirectEdge)
+            throws InterruptedException {
         Set<Node> pool = buildPool(graph, x, y, maxRadius, nearWhichEndpoint);
-        // Nodes in 'containing' are always eligible, even if outside the radius.
         pool.addAll(containing);
 
-//        int recursionDepth = maxPathLength < 0 ? Integer.MAX_VALUE : maxPathLength;
-        // In blockPathsRecursively:
         int recursionDepth = maxPathLength < 0 ? graph.getNumNodes() : maxPathLength;
 
         return blockPathsRecursivelyAdj(
@@ -155,7 +254,6 @@ public class RecursiveBlocking {
             pool.addAll(bfsShells(graph, y, maxRadius));
         }
 
-        // x and y themselves are never conditioning candidates.
         pool.remove(x);
         pool.remove(y);
 
@@ -195,7 +293,12 @@ public class RecursiveBlocking {
     // Core algorithm
     // -----------------------------------------------------------------------
 
-    private static Set<Node> blockPathsRecursivelyAdj(
+    /**
+     * Core fixed-point loop. Now returns a {@link BlockingResult} so callers
+     * can distinguish UNBLOCKABLE (proven no separator) from INDETERMINATE
+     * (search limit hit — verdict unknown).
+     */
+    private static BlockingResult blockPathsRecursivelyAdj(
             Graph graph,
             Node x,
             Node y,
@@ -243,18 +346,18 @@ public class RecursiveBlocking {
                         maxPathLength, depth, notFollowed, descendantsMap, pool,
                         recursionDepth, 0);
 
+                // UNBLOCKABLE: a path exists that cannot be blocked — definitive failure.
                 if (r == Blockable.UNBLOCKABLE) {
-                    return null;
+                    return new BlockingResult(null, false);
                 }
+                // INDETERMINATE: search limit hit — we cannot confirm or deny a separator.
                 if (r == Blockable.INDETERMINATE) {
-                    return null;
+                    return new BlockingResult(null, true);
                 }
             }
 
             if (z.size() == zSizeBefore) {
-                // A complete pass made no additions to Z — every first-hop
-                // branch is BLOCKED under the current Z.
-                return z;
+                return new BlockingResult(z, false);
             }
         }
     }
@@ -282,73 +385,29 @@ public class RecursiveBlocking {
      * {@code CONTINUATIONS_WITH_B}.</p>
      */
     private enum Pass {
-        /** Frame has just been pushed; guard checks have not run yet. */
         ENTER,
-        /**
-         * Running (or resuming) the continuation loop that does NOT add b to z.
-         * For LATENT nodes this is the only pass.
-         */
         CONTINUATIONS_WITHOUT_B,
-        /**
-         * Running (or resuming) the continuation loop that has added b to z.
-         * Never reached for LATENT nodes.
-         */
         CONTINUATIONS_WITH_B
     }
 
     /**
      * One stack frame — the explicit equivalent of a single activation record
      * for {@code findPathToTargetVisit}.
-     *
-     * <p>Fields that would normally live on the JVM call stack (local variables
-     * and the "program counter" within the method) are stored here so that the
-     * driver loop in {@link #findPathToTargetVisit} can suspend and resume a
-     * frame after a child frame completes.</p>
      */
     private static final class Frame {
 
-        // --- call parameters (immutable after construction) ----------------
-        final Node a;             // predecessor node on the path
-        final Node b;             // node being visited by this frame
-        final Node y;             // target node
+        final Node a;
+        final Node b;
+        final Node y;
         final int maxPathLength;
         final int depth;
         final int recursionDepth;
         final int currentDepth;
 
-        // --- resumption state ----------------------------------------------
-
-        /** Which pass is currently active. */
         Pass pass = Pass.ENTER;
-
-        /**
-         * Snapshot of z taken before the WITHOUT_B pass begins.
-         * Used to restore z before the WITH_B pass, and again on exit.
-         */
         Set<Node> zSnapshot = null;
-
-        /**
-         * Result of the WITHOUT_B continuation pass.
-         * Saved so it can be combined with the WITH_B result on exit.
-         */
         Blockable withoutBResult = null;
-
-        /**
-         * Nodes whose sub-call inside {@code tryBlockAllContinuations} has
-         * already completed successfully (returned BLOCKED) for the current
-         * pass.  Mirrors the {@code handled} local variable in the original
-         * {@code tryBlockAllContinuations}.
-         *
-         * <p>Reset to a fresh set when switching from WITHOUT_B to WITH_B.</p>
-         */
         Set<Node> handled = new HashSet<>();
-
-        /**
-         * The continuation node ({@code c}) whose child frame was most recently
-         * pushed and has not yet completed.  Set just before pushing the child;
-         * read by the driver loop to add {@code c} to {@code handled} when the
-         * child returns BLOCKED.  {@code null} when no child is in flight.
-         */
         Node pendingC = null;
 
         Frame(Node a, Node b, Node y,
@@ -364,38 +423,9 @@ public class RecursiveBlocking {
     }
 
     // -----------------------------------------------------------------------
-    // Iterative driver  (replaces both findPathToTargetVisit and
-    //                    tryBlockAllContinuations)
+    // Iterative driver
     // -----------------------------------------------------------------------
 
-    /**
-     * Iterative, stack-based replacement for the mutual recursion between
-     * {@code findPathToTargetVisit} and {@code tryBlockAllContinuations}.
-     *
-     * <p>The semantics are identical to the original recursive
-     * {@code findPathToTargetVisit}: given the edge {@code a → b}, explore all
-     * onwards paths toward {@code y} and decide whether the current branch is
-     * {@link Blockable#BLOCKED}, {@link Blockable#UNBLOCKABLE}, or
-     * {@link Blockable#INDETERMINATE}.</p>
-     *
-     * <p><b>How the stack works</b></p>
-     * <p>Each {@link Frame} on {@code callStack} represents one suspended
-     * activation of {@code findPathToTargetVisit}.  The driver loop peeks at
-     * the top frame, advances it by one "micro-step", and either:</p>
-     * <ul>
-     *   <li>pushes a new child frame (suspending the current one), or</li>
-     *   <li>pops the current frame and writes its result into
-     *       {@code lastResult}, so the parent frame can read it on its next
-     *       step.</li>
-     * </ul>
-     *
-     * <p><b>Shared mutable state ({@code path} and {@code z})</b></p>
-     * <p>{@code path} and {@code z} are still shared across all frames, exactly
-     * as they were in the recursive version.  Each frame adds {@code b} to
-     * {@code path} on entry and removes it on exit (pop), and takes/restores a
-     * snapshot of {@code z} around each continuation pass — again mirroring the
-     * original {@code try/finally} and snapshot pattern precisely.</p>
-     */
     static Blockable findPathToTargetVisit(Graph graph,
                                            Node aInit, Node bInit, Node y,
                                            Set<Node> path, Set<Node> z,
@@ -407,13 +437,10 @@ public class RecursiveBlocking {
                                            int currentDepthInit)
             throws InterruptedException {
 
-        // The explicit call stack.
         Deque<Frame> callStack = new ArrayDeque<>();
         callStack.push(new Frame(aInit, bInit, y,
                 maxPathLength, depth, recursionDepth, currentDepthInit));
 
-        // Result written by a frame just before it is popped.
-        // The parent frame reads this value when it resumes.
         Blockable lastResult = null;
 
         while (!callStack.isEmpty()) {
@@ -422,19 +449,16 @@ public class RecursiveBlocking {
             Frame f = callStack.peek();
 
             // =================================================================
-            // ENTER — first time we touch this frame; run guard checks and
-            //         add b to path.
+            // ENTER
             // =================================================================
             if (f.pass == Pass.ENTER) {
 
-                // --- depth / interrupt guards --------------------------------
                 if (f.currentDepth > f.recursionDepth) {
                     callStack.pop();
                     lastResult = Blockable.INDETERMINATE;
                     continue;
                 }
 
-                // --- structural guards (do not touch path yet) ---------------
                 if (f.b == y) {
                     callStack.pop();
                     lastResult = Blockable.UNBLOCKABLE;
@@ -456,10 +480,8 @@ public class RecursiveBlocking {
                     continue;
                 }
 
-                // --- add b to path (mirrors original path.add(b)) -----------
                 path.add(f.b);
 
-                // --- path-length guard (path already contains b) -------------
                 if (f.maxPathLength >= 0 && path.size() > f.maxPathLength) {
                     path.remove(f.b);
                     callStack.pop();
@@ -467,72 +489,41 @@ public class RecursiveBlocking {
                     continue;
                 }
 
-                // --- snapshot z and start WITHOUT_B pass --------------------
                 f.zSnapshot = new HashSet<>(z);
                 f.pass = Pass.CONTINUATIONS_WITHOUT_B;
-                // fall through immediately into the WITHOUT_B handler below
             }
 
             // =================================================================
-            // CONTINUATIONS_WITHOUT_B — run (or resume) the continuation loop
-            // without b in z.  For LATENT nodes this is the only pass.
+            // CONTINUATIONS_WITHOUT_B
             // =================================================================
             if (f.pass == Pass.CONTINUATIONS_WITHOUT_B) {
 
-                // If we are resuming after a child frame completed, incorporate
-                // its result before continuing the loop.
-                //
-                // In the original tryBlockAllContinuations:
-                //   UNBLOCKABLE / INDETERMINATE  → return immediately (end loop)
-                //   BLOCKED                      → handled.add(c), continue loop
-                //
-                // But the loop result feeds into findPathToTargetVisit, which
-                // only short-circuits on BLOCKED; UNBLOCKABLE and INDETERMINATE
-                // both fall through to the WITH_B pass.  We therefore must not
-                // propagate UNBLOCKABLE/INDETERMINATE all the way up here —
-                // instead, treat them as the terminal result of the WITHOUT_B
-                // continuation loop and let the normal post-loop code handle them.
                 Blockable contResult;
                 if (lastResult != null) {
                     if (lastResult == Blockable.UNBLOCKABLE
                             || lastResult == Blockable.INDETERMINATE) {
-                        // Child ended the continuation loop early.
-                        // Use this as the loop's terminal result and fall through
-                        // to the post-loop handling below (same as if stepContinuationLoop
-                        // had returned this value directly).
                         contResult = lastResult;
                         lastResult = null;
                     } else {
-                        // lastResult == BLOCKED: mark pending child as handled, re-scan.
                         f.handled.add(f.pendingC);
                         f.pendingC = null;
                         lastResult = null;
 
-                        // Run the continuation loop from where we left off.
                         contResult = stepContinuationLoop(
                                 graph, f, y, path, z, notFollowed, descendantsMap, pool,
-                                callStack, /* isWithBPass= */ false);
+                                callStack, false);
 
-                        if (contResult == null) {
-                            // A child frame was pushed; we'll resume here when it pops.
-                            continue;
-                        }
+                        if (contResult == null) continue;
                     }
                 } else {
-                    // First entry (not a resume): run the continuation loop.
                     contResult = stepContinuationLoop(
                             graph, f, y, path, z, notFollowed, descendantsMap, pool,
-                            callStack, /* isWithBPass= */ false);
+                            callStack, false);
 
-                    if (contResult == null) {
-                        // A child frame was pushed; we'll resume here when it pops.
-                        continue;
-                    }
+                    if (contResult == null) continue;
                 }
 
-                // The continuation loop finished for this pass.
                 if (f.b.getNodeType() == NodeType.LATENT) {
-                    // LATENT: no "with b" pass — return the single result.
                     path.remove(f.b);
                     callStack.pop();
                     lastResult = contResult;
@@ -540,17 +531,12 @@ public class RecursiveBlocking {
                 }
 
                 if (contResult == Blockable.BLOCKED) {
-                    // Blocked without conditioning on b — we're done, no need
-                    // to try adding b.  Mirrors: if (withoutB == BLOCKED) return BLOCKED.
                     path.remove(f.b);
                     callStack.pop();
                     lastResult = Blockable.BLOCKED;
                     continue;
                 }
 
-                // withoutB is UNBLOCKABLE or INDETERMINATE.  We still try
-                // adding b to z — the original only short-circuits on BLOCKED;
-                // UNBLOCKABLE and INDETERMINATE both fall through to WITH_B.
                 f.withoutBResult = contResult;
                 z.clear();
                 z.addAll(f.zSnapshot);
@@ -568,25 +554,18 @@ public class RecursiveBlocking {
                     continue;
                 }
 
-                // Transition to the WITH_B pass.
                 z.add(f.b);
-                f.handled = new HashSet<>(); // fresh handled set for this pass
+                f.handled = new HashSet<>();
                 f.pendingC = null;
                 f.pass = Pass.CONTINUATIONS_WITH_B;
                 lastResult = null;
-                // fall through immediately into the WITH_B handler
             }
 
             // =================================================================
-            // CONTINUATIONS_WITH_B — run (or resume) the continuation loop
-            // with b already added to z.
+            // CONTINUATIONS_WITH_B
             // =================================================================
             if (f.pass == Pass.CONTINUATIONS_WITH_B) {
 
-                // Incorporate child result if resuming.
-                // Same logic as WITHOUT_B: UNBLOCKABLE/INDETERMINATE ends the
-                // continuation loop (mirrors early return in tryBlockAllContinuations)
-                // and becomes the withB terminal result; BLOCKED means handled.add + rescan.
                 Blockable contResult;
                 if (lastResult != null) {
                     if (lastResult == Blockable.UNBLOCKABLE
@@ -594,42 +573,30 @@ public class RecursiveBlocking {
                         contResult = lastResult;
                         lastResult = null;
                     } else {
-                        // BLOCKED — mark pending child as handled and continue loop.
                         f.handled.add(f.pendingC);
                         f.pendingC = null;
                         lastResult = null;
 
                         contResult = stepContinuationLoop(
                                 graph, f, y, path, z, notFollowed, descendantsMap, pool,
-                                callStack, /* isWithBPass= */ true);
+                                callStack, true);
 
-                        if (contResult == null) {
-                            continue; // child pushed, resume later
-                        }
+                        if (contResult == null) continue;
                     }
                 } else {
                     contResult = stepContinuationLoop(
                             graph, f, y, path, z, notFollowed, descendantsMap, pool,
-                            callStack, /* isWithBPass= */ true);
+                            callStack, true);
 
-                    if (contResult == null) {
-                        continue; // child pushed, resume later
-                    }
+                    if (contResult == null) continue;
                 }
 
-                // Combine results from both passes.
-                // Mirrors the original:
-                //   if (withB == BLOCKED) return BLOCKED;          // z keeps b
-                //   z.clear(); z.addAll(zSnapshot);                // z restored only here
-                //   return (withB==INDET || withoutB==INDET) ? INDET : UNBLOCKABLE;
                 Blockable withB = contResult;
                 if (withB == Blockable.BLOCKED) {
-                    // z intentionally retains f.b (the node that achieved blocking).
                     path.remove(f.b);
                     callStack.pop();
                     lastResult = Blockable.BLOCKED;
                 } else {
-                    // Not blocked even with b — restore z and report.
                     z.clear();
                     z.addAll(f.zSnapshot);
                     path.remove(f.b);
@@ -649,26 +616,6 @@ public class RecursiveBlocking {
     // Continuation-loop stepper
     // -----------------------------------------------------------------------
 
-    /**
-     * Performs one scan of the continuation loop for frame {@code f},
-     * corresponding to one iteration of the {@code while(true)} loop in the
-     * original {@code tryBlockAllContinuations}.
-     *
-     * <p>Rescans reachable nodes (because z may have grown since the last scan),
-     * skips already-handled ones, and for the first unhandled node pushes a
-     * child {@link Frame} onto {@code callStack}, records it in
-     * {@link Frame#pendingC}, and returns {@code null} to suspend.  When no
-     * unhandled node exists returns {@link Blockable#BLOCKED}.</p>
-     *
-     * <p>The driver loop calls this method again each time a child frame returns
-     * {@link Blockable#BLOCKED} (after recording {@link Frame#pendingC} in
-     * {@link Frame#handled}).  This preserves the re-scan-after-z-growth
-     * semantics of the original {@code while(true)} loop without the risk of an
-     * infinite loop.</p>
-     *
-     * @return {@code null} if a child frame was pushed (caller must re-enter),
-     *         or {@link Blockable#BLOCKED} when the loop is fully exhausted.
-     */
     private static Blockable stepContinuationLoop(
             Graph graph,
             Frame f,
@@ -683,7 +630,6 @@ public class RecursiveBlocking {
 
         if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
 
-        // Rescan reachable nodes — z may have grown since the last call.
         List<Node> passNodes = getReachableNodes(graph, f.a, f.b, z, descendantsMap);
         passNodes.removeAll(notFollowed);
 
@@ -692,23 +638,19 @@ public class RecursiveBlocking {
 
             if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
 
-            // Record which node is in flight so the driver can add it to
-            // handled when the child returns BLOCKED (mirrors handled.add(c)
-            // after the recursive call in the original).
             f.pendingC = c;
             callStack.push(new Frame(
                     f.b, c, y,
                     f.maxPathLength, f.depth, f.recursionDepth,
                     f.currentDepth + 1));
-            return null; // suspend — driver resumes when child pops
+            return null;
         }
 
-        // No unhandled pass-node found — this branch is fully blocked.
         return Blockable.BLOCKED;
     }
 
     // -----------------------------------------------------------------------
-    // Reachability helpers (unchanged)
+    // Reachability helpers
     // -----------------------------------------------------------------------
 
     private static List<Node> getReachableNodes(Graph graph,
@@ -759,7 +701,7 @@ public class RecursiveBlocking {
     }
 
     // -----------------------------------------------------------------------
-    // Result enum (unchanged)
+    // Result enum
     // -----------------------------------------------------------------------
 
     /**

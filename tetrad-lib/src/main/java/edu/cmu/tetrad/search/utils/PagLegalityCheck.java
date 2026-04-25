@@ -90,8 +90,14 @@ public class PagLegalityCheck {
             return new LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
         }
 
-//        Graph pag2 = GraphTransforms.dagToPag(mag, false);
-        Graph pag2 = GraphTransforms.dagToPag(mag, new Knowledge(), false, 20);
+        // Checking paths in the discriminiting path check of length up to 20.... TODO... is this restriction OK?
+        Graph pag2 = null;
+        try {
+            pag2 = GraphTransforms.dagToPag(mag, new Knowledge(), false, 15);
+        } catch (IllegalStateException e) {
+            String reason = "Legal PAG could not be determined (path length bound exceeded)";
+            return new LegalPagRet(false, reason);
+        }
 
         if (!pag.equals(pag2)) {
             String edgeMismatch = "";
