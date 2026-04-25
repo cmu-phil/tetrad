@@ -382,9 +382,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     if (graph.isAdjacentTo(w, x)) continue;
 
                     try {
-                        int maxPathLength = -1;
+                        int maxPathLength = 4;
                         int depth = -1;
-                        int maxRadius = 2;
+                        int maxRadius = -1;
                         int nearWhichEndpoint = 1;
                         boolean ignoreDirectEdge = false;
 
