@@ -160,7 +160,7 @@ public class RecursiveBlocking {
                                                   boolean ignoreDirectEdge)
             throws InterruptedException {
         return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
-                maxPathLength, maxRadius, depth, nearWhichEndpoint,
+                maxPathLength, depth, maxRadius, nearWhichEndpoint,
                 ignoreDirectEdge).blockingSet();
     }
 
@@ -202,8 +202,8 @@ public class RecursiveBlocking {
      * @param containing        nodes forced into Z
      * @param notFollowed       nodes not to be traversed
      * @param maxPathLength     maximum path length (-1 = unlimited)
-     * @param maxRadius         BFS radius (-1 = unlimited)
      * @param depth             maximum size of Z (-1 = unlimited)
+     * @param maxRadius         BFS radius (-1 = unlimited)
      * @param nearWhichEndpoint 1 = near x, 2 = near y, 3 = near both
      * @param ignoreDirectEdge  whether to ignore direct edges between x and y
      * @return a {@link BlockingResult} describing the outcome
@@ -215,8 +215,7 @@ public class RecursiveBlocking {
                                                            Set<Node> containing,
                                                            Set<Node> notFollowed,
                                                            int maxPathLength,
-                                                           int maxRadius,
-                                                           int depth,
+                                                           int depth, int maxRadius,
                                                            int nearWhichEndpoint,
                                                            boolean ignoreDirectEdge)
             throws InterruptedException {
@@ -323,15 +322,45 @@ public class RecursiveBlocking {
             firstHops.remove(y);
         }
 
-        // Outer fixed-point loop: re-examine every first hop after any Z growth,
-        // because a node added to Z during one branch may activate a collider
-        // on a different branch.
         while (true) {
             if (Thread.currentThread().isInterrupted()) {
                 throw new InterruptedException();
             }
 
             int zSizeBefore = z.size();
+
+            // Track whether any branch was indeterminate this pass. We only report
+            // INDETERMINATE if we complete the full pass without finding a solution —
+            // a later branch might succeed within the depth bound even if an earlier
+            // one hit the limit.
+            boolean anyIndeterminate = false;
+
+//            for (Node b : firstHops) {
+//                if (Thread.currentThread().isInterrupted()) {
+//                    throw new InterruptedException();
+//                }
+//
+//                Set<Node> path = new HashSet<>();
+//                path.add(x);
+//
+//                Blockable r = findPathToTargetVisit(
+//                        graph, x, b, y, path, z,
+//                        maxPathLength, depth, notFollowed, descendantsMap, pool,
+//                        recursionDepth, 0);
+//
+//                // UNBLOCKABLE: proven no separator exists — definitive failure regardless
+//                // of what other branches say.
+//                if (r == Blockable.UNBLOCKABLE) {
+//                    return new BlockingResult(null, false);
+////                    return BlockingResult.unblockable();
+//                }
+//
+//                // INDETERMINATE: this branch hit a limit, but don't give up yet —
+//                // another branch may still find a valid blocking set within the bounds.
+//                if (r == Blockable.INDETERMINATE) {
+//                    anyIndeterminate = true;
+//                }
+//            }
 
             for (Node b : firstHops) {
                 if (Thread.currentThread().isInterrupted()) {
@@ -341,26 +370,110 @@ public class RecursiveBlocking {
                 Set<Node> path = new HashSet<>();
                 path.add(x);
 
+                // Snapshot Z before this branch so we can roll back if it hits
+                // a limit, allowing a shallower branch to succeed instead.
+                Set<Node> zBefore = new HashSet<>(z);
+
                 Blockable r = findPathToTargetVisit(
                         graph, x, b, y, path, z,
                         maxPathLength, depth, notFollowed, descendantsMap, pool,
                         recursionDepth, 0);
 
-                // UNBLOCKABLE: a path exists that cannot be blocked — definitive failure.
                 if (r == Blockable.UNBLOCKABLE) {
                     return new BlockingResult(null, false);
                 }
-                // INDETERMINATE: search limit hit — we cannot confirm or deny a separator.
+
                 if (r == Blockable.INDETERMINATE) {
-                    return new BlockingResult(null, true);
+                    // Roll back Z mutations from this branch — they exceeded our
+                    // constraints. Another branch may find a shallower solution.
+                    z.clear();
+                    z.addAll(zBefore);
+                    anyIndeterminate = true;
                 }
+                // If BLOCKED, Z growth from this branch is valid — keep it.
             }
 
             if (z.size() == zSizeBefore) {
+                // No Z growth this pass. If every branch was BLOCKED, we're done.
+                // If any branch was indeterminate, we can't claim success — report
+                // inconclusive so the caller knows the result may be incomplete.
+                if (anyIndeterminate) {
+                    return new BlockingResult(null, true);
+//                    return BlockingResult.indeterminate();
+                }
                 return new BlockingResult(z, false);
+//                return BlockingResult.found(z);
             }
+
+            // Z grew — loop again. Note that anyIndeterminate resets each pass,
+            // so a branch that was indeterminate before Z growth may now be
+            // BLOCKED under the larger Z.
         }
     }
+
+//    private static BlockingResult blockPathsRecursivelyAdj(
+//            Graph graph,
+//            Node x,
+//            Node y,
+//            Set<Node> containing,
+//            Set<Node> notFollowed,
+//            Map<Node, Set<Node>> descendantsMap,
+//            int maxPathLength,
+//            int recursionDepth,
+//            int depth,
+//            Set<Node> pool,
+//            boolean ignoreDirectEdge) throws InterruptedException {
+//
+//        if (x == y) {
+//            throw new IllegalArgumentException("x and y must be distinct");
+//        }
+//
+//        Set<Node> z = new HashSet<>(containing);
+//
+//        List<Node> firstHops = new ArrayList<>(graph.getAdjacentNodes(x));
+//
+//        if (ignoreDirectEdge) {
+//            firstHops.remove(y);
+//        }
+//
+//        // Outer fixed-point loop: re-examine every first hop after any Z growth,
+//        // because a node added to Z during one branch may activate a collider
+//        // on a different branch.
+//        while (true) {
+//            if (Thread.currentThread().isInterrupted()) {
+//                throw new InterruptedException();
+//            }
+//
+//            int zSizeBefore = z.size();
+//
+//            for (Node b : firstHops) {
+//                if (Thread.currentThread().isInterrupted()) {
+//                    throw new InterruptedException();
+//                }
+//
+//                Set<Node> path = new HashSet<>();
+//                path.add(x);
+//
+//                Blockable r = findPathToTargetVisit(
+//                        graph, x, b, y, path, z,
+//                        maxPathLength, depth, notFollowed, descendantsMap, pool,
+//                        recursionDepth, 0);
+//
+//                // UNBLOCKABLE: a path exists that cannot be blocked — definitive failure.
+//                if (r == Blockable.UNBLOCKABLE) {
+//                    return new BlockingResult(null, false);
+//                }
+//                // INDETERMINATE: search limit hit — we cannot confirm or deny a separator.
+//                if (r == Blockable.INDETERMINATE) {
+//                    return new BlockingResult(null, true);
+//                }
+//            }
+//
+//            if (z.size() == zSizeBefore) {
+//                return new BlockingResult(z, false);
+//            }
+//        }
+//    }
 
     // -----------------------------------------------------------------------
     // Frame definition for the explicit stack
@@ -547,7 +660,7 @@ public class RecursiveBlocking {
                     lastResult = Blockable.INDETERMINATE;
                     continue;
                 }
-                if (f.depth >= 0 && z.size() > f.depth) {
+                if (f.depth >= 0 && z.size() >= f.depth) {
                     path.remove(f.b);
                     callStack.pop();
                     lastResult = Blockable.INDETERMINATE;

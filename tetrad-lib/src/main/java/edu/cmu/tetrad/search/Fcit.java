@@ -622,7 +622,7 @@ public final class Fcit implements IGraphSearch {
             Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
 
             edu.cmu.tetrad.search.RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursivelyFull(
-                    pag, x, y, Set.of(), notFollowed, maxPathLength, raRadius, depth, 1, true);
+                    pag, x, y, Set.of(), notFollowed, maxPathLength, depth, raRadius, 1, true);
 
             if (result.indeterminate()) {
                 continue;

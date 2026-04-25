@@ -449,7 +449,22 @@ public class TestSepsetMethods {
         Node y = graph.getNode("y");
 
         try {
-            Set<Node> z = RecursiveBlocking.blockPathsRecursively(graph, a, y, Set.of(), Set.of(), -1);
+            int maxPathLength = -1;
+            int depth = -1;
+            int maxRadius = -1;
+            int nearWhichEndpoint = 1;
+            boolean ignoreDirectEdge = false;
+
+            RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursivelyFull(graph, a, y,
+                    Set.of(), Set.of(),  maxPathLength, depth, maxRadius, nearWhichEndpoint, ignoreDirectEdge);
+
+            if (result.indeterminate()) {
+                System.out.println("Indeterminate");
+                return;
+            }
+
+            Set<Node> z = result.blockingSet();
+
             System.out.println("z = " + z);
 
             Node f = graph.getNode("f");
