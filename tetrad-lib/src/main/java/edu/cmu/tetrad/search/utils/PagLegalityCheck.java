@@ -95,7 +95,7 @@ public class PagLegalityCheck {
         try {
             pag2 = GraphTransforms.dagToPag(mag, new Knowledge(), false, 15);
         } catch (IllegalStateException e) {
-            String reason = "Legal PAG could not be determined (path length bound exceeded)";
+            String reason = "Legal PAG status could not be determined";
             return new LegalPagRet(false, reason);
         }
 

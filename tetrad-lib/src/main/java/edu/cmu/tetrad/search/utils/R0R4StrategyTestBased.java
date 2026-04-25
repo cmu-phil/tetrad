@@ -185,8 +185,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * @return The discriminating path is returned as the first element of the pair, and a boolean indicating whether
      * the orientation was done is returned as the second element of the pair.
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
-     * @throws IllegalStateException    if a blocking set cannot be found. (This can only be because a path length
-     * bound was exceeded in looking for one, a rare case.)
+     * @throws IllegalStateException    if a blocking set cannot be found.
      * @see DiscriminatingPath
      */
     @Override

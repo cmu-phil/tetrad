@@ -518,8 +518,7 @@ public class FciOrient {
      *
      * @param graph                a {@link Graph} object
      * @param excludeSelectionBias whether to exclude selection bias.
-     * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
-     * bound was exceeded in looking for one, a rare case.)
+     * @throws IllegalStateException if a discriminating path cannot be found.
      */
     public void finalOrientation(Graph graph, boolean excludeSelectionBias) {
         if (this.completeRuleSetUsed) {
@@ -534,8 +533,7 @@ public class FciOrient {
      * complete.
      *
      * @param graph The graph containing the sprites.
-     * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
-     * bound was exceeded in looking for one, a rare case.)
+     * @throws IllegalStateException if a discriminating path cannot be found.
      */
     private void spirtesFinalOrientation(Graph graph) {
         this.changeFlag = true;
@@ -568,8 +566,7 @@ public class FciOrient {
      *
      * @param graph                the graph to apply the final orientation algorithm to
      * @param excludeSelectionBias whether to exclude selection bias
-     * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
-     * bound was exceeded in looking for one, a rare case.)
+     * @throws IllegalStateException if a discriminating path cannot be found.
      */
     private void zhangFinalOrientation(Graph graph, boolean excludeSelectionBias) {
         this.changeFlag = true;
@@ -790,8 +787,7 @@ public class FciOrient {
      * potential latent confounding.</p>
      *
      * @param graph The {@link edu.cmu.tetrad.graph.Graph} being oriented.
-     * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
-     * bound was exceeded in looking for one, a rare case.)
+     * @throws IllegalStateException if a discriminating path cannot be found.
      */
     public void ruleR4(Graph graph) {
 
