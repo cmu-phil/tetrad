@@ -1807,7 +1807,11 @@ public final class GraphUtils {
             }
             case "PAG" -> {
                 params.set("graphComparisonType", "PAG");
-                return GraphTransforms.dagToPag(graph, params.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+                try {
+                    return GraphTransforms.dagToPag(graph, new Knowledge(), params.getBoolean(Params.EXCLUDE_SELECTION_BIAS), 15);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
             case null, default -> {
                 params.set("graphComparisonType", "Truth");

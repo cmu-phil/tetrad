@@ -356,7 +356,7 @@ public class GraphTransforms {
     public static Graph dagToPag(Graph graph, boolean excludeSelectionBias, int timeoutSeconds) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<Graph> future = executor.submit(
-                (Callable<Graph>) () -> dagToPag(graph, excludeSelectionBias));
+                () -> dagToPag(graph, new Knowledge(), excludeSelectionBias, 15));
         try {
             return future.get(timeoutSeconds, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
@@ -367,7 +367,7 @@ public class GraphTransforms {
             future.cancel(true);
             Thread.currentThread().interrupt();
             throw new RuntimeException("Interrupted waiting for pag to complete");
-        } catch (ExecutionException e) {
+        } catch (Exception e) {
             future.cancel(true);
             throw new RuntimeException("Exception waiting for pag to complete", e.getCause());
         } finally {

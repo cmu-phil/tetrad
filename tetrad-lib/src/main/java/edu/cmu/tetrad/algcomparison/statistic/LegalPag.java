@@ -70,7 +70,7 @@ public class LegalPag implements Statistic {
             } else {
                 return 0.0;
             }
-        } catch (IllegalStateException e) {
+        } catch (Exception e) {
             TetradLogger.getInstance().log("Illegal state exception in LegalPag.getValue(): " + e.getMessage());
             return Double.NaN;
         }
