@@ -383,7 +383,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
                     try {
                         int maxPathLength = -1;
-                        int depth = -1;
+                        int depth = 3;
                         int maxRadius = -1;
                         int nearWhichEndpoint = 1;
                         boolean ignoreDirectEdge = false;
@@ -408,28 +408,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
                 return new ArrayList<>(facts);
             }
-
-//            case RECURSIVE_ADJUSTMENT: {
-//                Set<IndependenceFact> facts = new HashSet<>();
-//                for (Node w : graph.getNodes()) {
-//                    if (x == w) continue;
-//                    if (graph.isAdjacentTo(w, x)) continue;
-//
-//                    RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph)
-//                            .setUseHenckelPruning(false).setRaMode(RecursiveAdjustment.RaMode.O_COMPATIBLE);
-//                    List<Set<Node>> adjustment = recursiveAdjustment.adjustmentSetsRB(x, w, "CPDAG", 1,
-//                            100, 2, 100, false, Set.of(), Set.of());
-//
-//                    if (!adjustment.isEmpty()) {
-//                        Set<Node> first = adjustment.getFirst();
-//
-//                        if (graph.paths().isMSeparatedFrom(x, w, first, false)) {
-//                            facts.add(new IndependenceFact(x, w, first));
-//                        }
-//                    }
-//                }
-//                return new ArrayList<>(facts);
-//            }
 
             default:
                 throw new IllegalArgumentException(

@@ -34,13 +34,12 @@ package edu.cmu.tetrad.search;
  * @see MarkovCheck
  */
 public enum ConditioningSetType {
-
     /**
-     * Richardson's ordered local Markov property.
+     * Full ordered local Markov property  (Richardson)
      */
     ORDERED_LOCAL_MARKOV_PROPERTY("Ordered Local Markov Property"),
     /**
-     * Andrews' ordered local Markov property, with sink elimination.
+     * Sink elimination ordered local Markov property (Andrews)
      */
     ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION("Ordered Local Markov (Sink Elimination)"),
     /**
@@ -55,13 +54,6 @@ public enum ConditioningSetType {
      * Recursive blocking.
      */
     RECURSIVE_BLOCKING("Recursive Blocking"),
-
-    // Inappropriate for listing m-separations--this will happily return the empty set if x~~>y.
-    // jdramsey 2026/4/22
-//    /**
-//     * Recursive adjustment.
-//     */
-//    RECURSIVE_ADJUSTMENT("Recursive Adjustment"),
     /**
      * Local Markov property, conditioning on the parents of the target variable.
      */
@@ -70,12 +62,6 @@ public enum ConditioningSetType {
      * Causal Markov property, conditioning on the parents and neighbors of the target variable.
      */
     PARENTS_AND_NEIGHBORS("Parents and Neighbors"),
-
-    // Recursive blocking already does this. jdramsey 2026/4/22.
-//    /**
-//     * Noncolliders only.
-//     */
-//    NONCOLLIDERS_ONLY("Noncolliders Only"),
     /**
      * Global Markov property, conditioning on all subsets implied by global Markov. For small models only.
      */
