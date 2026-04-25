@@ -230,7 +230,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * Computes the implied independence facts for a given vertex within the specified graph
      * based on the provided conditioning set type.
      *
-     * @param graph        The graph within which the independence facts are computed.
+     * @param graph               The graph within which the independence facts are computed.
      *                            Must be a valid representation of a causal graph or related structure.
      * @param x                   The vertex (node) for which independence facts are to be computed.
      * @param conditioningSetType The type of conditioning set to be used when computing the
@@ -382,35 +382,24 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     if (graph.isAdjacentTo(w, x)) continue;
 
                     try {
+                        int maxPathLength = -1;
+                        int depth = -1;
+                        int maxRadius = -1;
+                        int nearWhichEndpoint = 1;
+                        boolean ignoreDirectEdge = false;
 
-                        // Look for a blocking set near x... so search from the side of w.
-                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, w, x, Set.of(), Set.of(), -1);
-//                        Set<Node> blocking2 = RecursiveBlocking.blockPathsRecursively(graph, x, w, Set.of(), Set.of(), -1);
+                        RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursivelyFull(graph, x, w,
+                                Set.of(), Set.of(), maxPathLength, depth, maxRadius, nearWhichEndpoint, ignoreDirectEdge);
 
-//                        Set<Node> blocking;
-//                        if (blocking1 == null && blocking2 == null) {
-//                            blocking = null;
-//                        } else if (blocking1 == null) {
-//                            blocking = blocking2;
-//                        } else if (blocking2 == null) {
-//                            blocking = blocking1;
-//                        } else if (blocking1.size() < blocking2.size()) {
-//                            blocking = blocking1;
-//                        } else if (blocking2.size() < blocking1.size()) {
-//                            blocking = blocking2;
-//                        } else {
-//                            // Same size: pick canonically by comparing string representations
-//                            blocking = blocking1.toString().compareTo(blocking2.toString()) <= 0 ? blocking1 : blocking2;
-//                        }
+                        if (result.indeterminate()) {
+                            System.out.println("Indeterminate");
+                            continue;
+                        }
+
+                        Set<Node> blocking = result.blockingSet();
 
                         if (blocking != null) {
-//                            if (graph.paths().isMSeparatedFrom(x, w, blocking, false)) {
-                                facts.add(new IndependenceFact(x, w, blocking));
-//                            } else {
-//                                System.out.println("Blocking set not valid for " + x + " and " + w);
-//                                System.out.println("Blocking set: " + blocking);
-//                                System.out.println("Graph: \n" + graph);
-//                            }
+                            facts.add(new IndependenceFact(x, w, blocking));
                         }
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);

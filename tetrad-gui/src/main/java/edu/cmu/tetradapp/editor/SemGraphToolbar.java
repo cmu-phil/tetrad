@@ -27,19 +27,20 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
- * This is the toolbar for the GraphEditor.  Its tools are as follows: <ul> <li> The 'move' tool, allows the user to
- * select and move items in the workbench workbench. <li> The 'addObserved' tool, allows the user to add new observed
- * variables. <li> The 'addLatent' tool, allows the user to add new latent variables. <li> The 'addDirectedEdge' tool,
- * allows the user to add new directed edges. <li> The 'addNondirectedEdge' tool, allows the user to add new nondirected
- * edges. <li> The 'addPartiallyOrientedEdge' tool, allows the user to create new partially oriented edges. <li> The
- * 'addBidirectedEdge' tool, allows the user to create new bidirected edges. </ul>
+ * This is the toolbar for the SEM graph editor. Its tools are as follows:
+ * <ul>
+ *   <li>The 'move' tool: allows the user to select and move items in the workbench.</li>
+ *   <li>The 'addObserved' tool: allows the user to add new observed variables.</li>
+ *   <li>The 'addLatent' tool: allows the user to add new latent variables.</li>
+ *   <li>The 'addDirectedEdge' tool: allows the user to add new directed edges.</li>
+ *   <li>The 'addBidirectedEdge' tool: allows the user to add new bidirected edges.</li>
+ * </ul>
  *
  * @author Donald Crimbchin
  * @author josephramsey
@@ -48,21 +49,28 @@ import java.beans.PropertyChangeListener;
 class SemGraphToolbar extends JPanel implements PropertyChangeListener {
 
     /**
-     * The mutually exclusive button group for the buttons.
+     * The mutually exclusive button group for the toolbar buttons.
      */
-    private final ButtonGroup group;
+    private final ButtonGroup group = new ButtonGroup();
 
     /**
-     * The panel that the buttons are in.
+     * The panel that holds the buttons vertically.
      */
     private final Box buttonsPanel = Box.createVerticalBox();
 
-    // The buttons in the toolbar.
-    private final JToggleButton move;
-    private final JToggleButton addObserved;
-    private final JToggleButton addLatent;
-    private final JToggleButton addDirectedEdge;
-    private final JToggleButton addBidirectedEdge;
+    /**
+     * Toolbar buttons.
+     */
+    private final JToggleButton move            = new JToggleButton();
+    private final JToggleButton addObserved     = new JToggleButton();
+    private final JToggleButton addLatent       = new JToggleButton();
+    private final JToggleButton addDirectedEdge = new JToggleButton();
+    private final JToggleButton addBidirectedEdge = new JToggleButton();
+
+    /**
+     * Maps each button to its icon resource name, used for icon refresh on L&F changes.
+     */
+    private final Map<JToggleButton, String> buttonImageNames = new LinkedHashMap<>();
 
     /**
      * The workbench this toolbar governs.
@@ -70,151 +78,125 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
     private final GraphWorkbench workbench;
 
     /**
-     * Constructs a new Graph toolbar governing the modes of the given GraphWorkbench.
+     * Constructs a new SEM graph toolbar governing the modes of the given GraphWorkbench.
      *
-     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     * @param workbench the {@link GraphWorkbench} this toolbar controls; must not be null
      */
     public SemGraphToolbar(GraphWorkbench workbench) {
         if (workbench == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("workbench must not be null");
         }
 
         this.workbench = workbench;
-        this.group = new ButtonGroup();
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         this.buttonsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         add(this.buttonsPanel);
 
-        // construct the bottons.
-        this.move = new JToggleButton();
-        this.addObserved = new JToggleButton();
-        this.addLatent = new JToggleButton();
-        this.addDirectedEdge = new JToggleButton();
-        this.addBidirectedEdge = new JToggleButton();
-
-        // Adding this listener fixes a previous bug where if you
-        // select a button and then move the mouse away from the
-        // button without releasing the mouse it would deselect. J
-        // Ramsey 11/02/01
-        FocusListener focusListener = new FocusAdapter() {
-            public void focusGained(FocusEvent e) {
-                JToggleButton component = (JToggleButton) e.getComponent();
-                component.doClick();
-            }
-        };
-
-        this.move.addFocusListener(focusListener);
-        this.addObserved.addFocusListener(focusListener);
-        this.addLatent.addFocusListener(focusListener);
-        this.addDirectedEdge.addFocusListener(focusListener);
-        this.addBidirectedEdge.addFocusListener(focusListener);
-
-        // add listeners
+        // Wire up action listeners.
         this.move.addActionListener(e -> {
-            SemGraphToolbar.this.move.getModel().setSelected(true);
+            this.move.getModel().setSelected(true);
             setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
         });
         this.addObserved.addActionListener(e -> {
-            SemGraphToolbar.this.addObserved.getModel().setSelected(true);
+            this.addObserved.getModel().setSelected(true);
             setWorkbenchMode(AbstractWorkbench.ADD_NODE);
-            setNodeMode(GraphWorkbench.MEASURED_NODE);
+            this.workbench.setNodeType(GraphWorkbench.MEASURED_NODE);
         });
         this.addLatent.addActionListener(e -> {
-            SemGraphToolbar.this.addLatent.getModel().setSelected(true);
+            this.addLatent.getModel().setSelected(true);
             setWorkbenchMode(AbstractWorkbench.ADD_NODE);
-            setNodeMode(GraphWorkbench.LATENT_NODE);
+            this.workbench.setNodeType(GraphWorkbench.LATENT_NODE);
         });
         this.addDirectedEdge.addActionListener(e -> {
-            SemGraphToolbar.this.addDirectedEdge.getModel().setSelected(true);
+            this.addDirectedEdge.getModel().setSelected(true);
             setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
-            setEdgeMode(GraphWorkbench.DIRECTED_EDGE);
+            this.workbench.setEdgeMode(GraphWorkbench.DIRECTED_EDGE);
         });
         this.addBidirectedEdge.addActionListener(e -> {
-            SemGraphToolbar.this.addBidirectedEdge.getModel().setSelected(true);
+            this.addBidirectedEdge.getModel().setSelected(true);
             setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
-            setEdgeMode(GraphWorkbench.BIDIRECTED_EDGE);
+            this.workbench.setEdgeMode(GraphWorkbench.BIDIRECTED_EDGE);
         });
 
-        // add buttons to the toolbar.
-        addButton(this.move, "move");
-        addButton(this.addObserved, "variable");
-        addButton(this.addLatent, "latent");
-        addButton(this.addDirectedEdge, "directed");
+        // Register buttons with the toolbar.
+        addButton(this.move,              "move");
+        addButton(this.addObserved,       "variable");
+        addButton(this.addLatent,         "latent");
+        addButton(this.addDirectedEdge,   "directed");
         addButton(this.addBidirectedEdge, "bidirected");
-        workbench.addPropertyChangeListener(this);
-        selectArrowTools();
 
         this.buttonsPanel.add(Box.createGlue());
+
+        workbench.addPropertyChangeListener(this);
+
+        // Select the move tool by default so toolbar and workbench are in sync.
+        this.move.doClick();
     }
 
     /**
-     * Convenience method to set the mode of the workbench.  Placed here because Java will not allow access to the
-     * variable 'workbench' from inner classes.
+     * {@inheritDoc}
+     *
+     * Responds to property change events from the workbench.
+     * Re-enables the edge buttons whenever the graph changes.
      */
-    private void setWorkbenchMode(int mode) {
-        this.workbench.setWorkbenchMode(mode);
-
-        if (mode == AbstractWorkbench.ADD_NODE) {
-            setCursor(this.workbench.getCursor());
-        } else if (mode == AbstractWorkbench.ADD_EDGE) {
-            setCursor(this.workbench.getCursor());
-        } else {
-            setCursor(new Cursor(Cursor.HAND_CURSOR));
+    @Override
+    public void propertyChange(PropertyChangeEvent e) {
+        if ("graph".equals(e.getPropertyName())) {
+            this.addDirectedEdge.setEnabled(true);
+            this.addBidirectedEdge.setEnabled(true);
         }
     }
 
     /**
-     * Convenience method to set the mode of the workbench.  Placed here because Java will not allow access to the
-     * variable 'workbench' from inner classes.
+     * {@inheritDoc}
+     *
+     * Refreshes button icons when the look-and-feel changes.
      */
-    private void setEdgeMode(int mode) {
-        this.workbench.setEdgeMode(mode);
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        if (this.buttonImageNames != null) {
+            refreshButtonIcons();
+        }
+        revalidate();
+        repaint();
+    }
+
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Sets the workbench interaction mode and updates the toolbar cursor accordingly.
+     */
+    private void setWorkbenchMode(int mode) {
+        this.workbench.setWorkbenchMode(mode);
+        setCursor(mode == AbstractWorkbench.SELECT_MOVE
+                ? new Cursor(Cursor.HAND_CURSOR)
+                : this.workbench.getCursor());
     }
 
     /**
-     * Convenience method to set the mode of the workbench.  Placed here because Java will not allow access to the
-     * variable 'workbench' from inner classes.
-     */
-    private void setNodeMode(int mode) {
-        this.workbench.setNodeType(mode);
-    }
-
-    /**
-     * Adds the various buttons to the toolbar, setting their properties appropriately.
+     * Registers a button with the toolbar: sets its icon, size, and adds it
+     * to the panel and button group.
      */
     private void addButton(JToggleButton button, String name) {
-        button.setIcon(
-                new ImageIcon(ImageUtils.getImage(this, name + "3.gif")));
+        String imageName = name + "3.gif";
+        button.setIcon(new ImageIcon(ImageUtils.getImage(this, imageName)));
         button.setMaximumSize(new Dimension(80, 40));
         button.setPreferredSize(new Dimension(80, 40));
+        this.buttonImageNames.put(button, imageName);
         this.buttonsPanel.add(button);
         this.buttonsPanel.add(Box.createVerticalStrut(5));
         this.group.add(button);
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Responds to property change events.
+     * Reloads all button icons; called after a look-and-feel change.
      */
-    public void propertyChange(PropertyChangeEvent e) {
-        if ("graph".equals(e.getPropertyName())) {
-            selectArrowTools();
-        }
-    }
-
-    /**
-     * For each workbench type, enables the arrow tools which that workbench can use and disables all others.
-     */
-    private void selectArrowTools() {
-        this.addDirectedEdge.setEnabled(true);
-        this.addBidirectedEdge.setEnabled(true);
+    private void refreshButtonIcons() {
+        this.buttonImageNames.forEach((button, imageName) ->
+                button.setIcon(new ImageIcon(ImageUtils.getImage(this, imageName))));
     }
 }
-
-
-
-
-
-
