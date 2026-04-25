@@ -226,7 +226,7 @@ public final class PagCache {
      * @throws IllegalStateException if a discriminating path cannot be found.
      */
     public @NotNull Graph getPag(Graph g, boolean excludeSelectionBias) {
-        return getPag(g, new Knowledge(), excludeSelectionBias, -1);
+        return getPag(g, new Knowledge(), excludeSelectionBias, 10);
     }
 
     /**

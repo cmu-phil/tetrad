@@ -216,7 +216,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         if (blocking != null) {
             sepsetMap.set(x, y, blocking);
         } else {
-            TetradLogger.getInstance().log("Discriminating path could not be determined.");
+//            TetradLogger.getInstance().log("Discriminating path could not be determined.");
             throw new IllegalStateException("Discriminating path could not be determined.");
         }
 

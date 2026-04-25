@@ -621,10 +621,14 @@ public final class Fcit implements IGraphSearch {
 
             Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
 
-            // Use recursive B to propose a B set B; null => no sepset under this NF
-//            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, maxBlockingPathLength, this.knowledge);
-            Set<Node> B = RecursiveBlocking.blockPathsRecursively(
-                    pag, x, y, Set.of(), notFollowed, maxPathLength, raRadius, depth, 2, true);
+            edu.cmu.tetrad.search.RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursivelyFull(
+                    pag, x, y, Set.of(), notFollowed, maxPathLength, raRadius, depth, 1, true);
+
+            if (result.indeterminate()) {
+                continue;
+            }
+
+            Set<Node> B = result.blockingSet();
 
             if (B == null) {
                 continue; // No separating set possible for this NF; try another NF
