@@ -420,34 +420,6 @@ public class TestFci {
 
             runLvSearch(outputGraph, fci, graph);
         }
-
-        {
-            Fcit0 fci = new Fcit0(independence, score);
-            fci.setStartWith(Fcit0.START_WITH.GRASP);
-//            fci.setDepth(-1);
-            fci.setKnowledge(knowledge);
-//            fci.setPreserveMarkov(false);
-            fci.setVerbose(verbose);
-
-            runLvSearch(outputGraph, fci, graph);
-        }
-    }
-
-
-
-    @Test
-    public void testFcit0() {
-        String inputGraph = "Latent(L1),Latent(L2),L1-->X1,L1-->X2,L2-->X2,L2-->X3";
-        Graph graph = GraphUtils.convert(inputGraph);
-        IndependenceTest independence = new MsepTest(graph);
-        Score score = new GraphScore(graph);
-
-        Fcit0 search = new Fcit0(independence, score);
-        try {
-            search.search();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     //    @Test
