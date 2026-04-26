@@ -235,7 +235,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.FCIT_STARTS_WITH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DEPTH);
-//        params.add(Params.MAX_BLOCKING_PATH_LENGTH);
+//        params.add(Params.MAX_BLOCKING_PATH_LENGTH); // Setting this to 15.
         params.add(Params.RA_RADIUS);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
 
