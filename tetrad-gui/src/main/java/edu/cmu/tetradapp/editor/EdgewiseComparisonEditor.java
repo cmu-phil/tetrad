@@ -36,7 +36,7 @@ import java.io.Serial;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class EdgewiseComparisonEditor extends JPanel {
+public class EdgewiseComparisonEditor extends JPanel implements DoNotScroll {
 
     @Serial
     private static final long serialVersionUID = 7921819261142670181L;
@@ -91,7 +91,7 @@ public class EdgewiseComparisonEditor extends JPanel {
 
         pane.add(scrollTextPane, new BorderLayout());
 
-        add(pane);
+        add(scrollTextPane);
 
         add(menubar(), BorderLayout.NORTH);
     }
