@@ -87,7 +87,7 @@ public class EdgewiseComparisonEditor extends JPanel {
         }
 
         JScrollPane scrollTextPane = new JScrollPane(area);
-        scrollTextPane.setPreferredSize(new Dimension(500, 600));
+//        scrollTextPane.setPreferredSize(new Dimension(500, 600));
 
         pane.add(scrollTextPane, new BorderLayout());
 
