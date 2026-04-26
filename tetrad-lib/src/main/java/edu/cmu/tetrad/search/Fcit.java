@@ -139,7 +139,7 @@ public final class Fcit implements IGraphSearch {
     private @NotNull Graph pag = new EdgeListGraph();
     private boolean replicatingGraph = false;
     private boolean excludeSelectionBias = false;
-    private int maxPathLength = -1;
+    private int maxPathLength = 15;
     private int raRadius = -1;
 
     /**
@@ -294,8 +294,8 @@ public final class Fcit implements IGraphSearch {
         fciOrient.setVerbose(superVerbose);
         fciOrient.setParallel(true);
         fciOrient.setCompleteRuleSetUsed(true);
-        fciOrient.setMaxBlockingPathLength(-1);
-        fciOrient.setMaxDiscriminatingPathLength(maxPathLength);
+        fciOrient.setMaxBlockingPathLength(maxPathLength);
+        fciOrient.setMaxDiscriminatingPathLength(-1);
         fciOrient.setKnowledge(knowledge);
 
         Graph dag;
@@ -836,14 +836,14 @@ public final class Fcit implements IGraphSearch {
         this.excludeSelectionBias = excludeSelectionBias;
     }
 
-    /**
-     * Sets the maximum blocking path length.
-     *
-     * @param maxPathLength the maximum length of the blocking path to be set
-     */
-    public void setMaxPathLength(int maxPathLength) {
-        this.maxPathLength = maxPathLength;
-    }
+//    /**
+//     * Sets the maximum blocking path length.
+//     *
+//     * @param maxPathLength the maximum length of the blocking path to be set
+//     */
+//    public void setMaxPathLength(int maxPathLength) {
+//        this.maxPathLength = maxPathLength;
+//    }
 
     public void setRaRadius(int raRadius) {
         this.raRadius = raRadius;

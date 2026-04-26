@@ -384,7 +384,7 @@ public class GraphTransforms {
      */
     @NotNull
     public static Graph dagToPag(Graph graph, boolean excludeSelectionBias) {
-        return dagToPag(graph, new Knowledge(), excludeSelectionBias, 10);
+        return dagToPag(graph, new Knowledge(), excludeSelectionBias, 15);
     }
 
     /**
