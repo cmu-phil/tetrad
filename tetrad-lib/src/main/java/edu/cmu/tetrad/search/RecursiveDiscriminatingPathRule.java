@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -112,17 +112,35 @@ public class RecursiveDiscriminatingPathRule {
                 // Convert indices -> actual nodes
                 Set<Node> vNodesNotFollowed = GraphUtils.asSet(indices, _perhapsNotFollowed);
 
-                // (A) blockPathsRecursively
-                RecursiveBlocking.BlockingResult blockingResult = RecursiveBlocking.blockPathsRecursivelyFull(pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength);
+                RecursiveBlocking.BlockingResult result = null;
+                if (depth < 0) {
+                    result = RecursiveBlocking.blockPathsRecursivelyFull(
+                            pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, depth, -1, 1, false);
+                } else {
+//                    if (!result.indeterminate()) {
+                    result = null;
+                    int _depth = 0;
+                    int maxDepth = depth >= 0 ? depth : pag.getNumNodes();
 
-                if (blockingResult.indeterminate()) {
+                    do {
+                        _depth++;
+
+                        if (_depth > maxDepth) break;
+
+                        result = RecursiveBlocking.blockPathsRecursivelyFull(
+                                pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, _depth, -1, 1, false);
+                    } while (result.indeterminate());
+//                    }
+                }
+
+                if (result == null || result.indeterminate()) {
                     continue;
                 }
 
-                Set<Node> blocking = blockingResult.blockingSet();
+                Set<Node> blocking = result.blockingSet();
 
                 if (blocking == null) {
-                    continue;
+                    continue; // No separating set possible for this NF; try another NF
                 }
 
                 for (Node f : vNodes) {

@@ -620,11 +620,30 @@ public final class Fcit implements IGraphSearch {
             if (!this.pag.isAdjacentTo(x, y)) break; // edge already removed upstream
 
             Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
+            RecursiveBlocking.BlockingResult result = null;
+//
+            if (this.depth < 0) {
+                result = RecursiveBlocking.blockPathsRecursivelyFull(
+                        pag, x, y, Set.of(), notFollowed, maxPathLength, depth, raRadius, 1, true);
 
-            edu.cmu.tetrad.search.RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursivelyFull(
-                    pag, x, y, Set.of(), notFollowed, maxPathLength, depth, raRadius, 1, true);
+            } else {
+//                if (!result.indeterminate()) {
+                result = null;
+                int depth = 0;
+                int maxDepth = this.depth >= 0 ? this.depth : pag.getNumNodes();
 
-            if (result.indeterminate()) {
+                do {
+                    depth++;
+
+                    if (depth > maxDepth) break;
+
+                    result = RecursiveBlocking.blockPathsRecursivelyFull(
+                            pag, x, y, Set.of(), notFollowed, maxPathLength, depth, raRadius, 1, true);
+                } while (result.indeterminate());
+//                }
+            }
+
+            if (result == null || result.indeterminate()) {
                 continue;
             }
 

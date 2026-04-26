@@ -382,19 +382,20 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     if (graph.isAdjacentTo(w, x)) continue;
 
                     try {
-                        int maxPathLength = 4;
-                        int depth = -1;
+                        int maxPathLength = -1;
+//                        int depth = 5;
                         int maxRadius = -1;
                         int nearWhichEndpoint = 1;
                         boolean ignoreDirectEdge = false;
 
-                        RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursivelyFull(graph, x, w,
-                                Set.of(), Set.of(), maxPathLength, depth, maxRadius, nearWhichEndpoint, ignoreDirectEdge);
+                        RecursiveBlocking.BlockingResult result;
+                        int depth = 0;
 
-                        if (result.indeterminate()) {
-                            System.out.println("Indeterminate");
-                            continue;
-                        }
+                        do {
+                            depth++;
+                            result = RecursiveBlocking.blockPathsRecursivelyFull(graph, x, w,
+                                    Set.of(), Set.of(), maxPathLength, depth, maxRadius, nearWhichEndpoint, ignoreDirectEdge);
+                        } while (result.indeterminate());
 
                         Set<Node> blocking = result.blockingSet();
 
