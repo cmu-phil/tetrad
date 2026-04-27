@@ -71,7 +71,7 @@ public class EdgewiseComparisonEditor extends JPanel implements DoNotScroll {
     private void setup() {
         setLayout(new BorderLayout());
 
-        JPanel pane = new JPanel();
+//        JPanel pane = new JPanel();
 
         Font font = new Font("Monospaced", Font.PLAIN, 14);
         area = new JTextArea();
@@ -89,7 +89,7 @@ public class EdgewiseComparisonEditor extends JPanel implements DoNotScroll {
         JScrollPane scrollTextPane = new JScrollPane(area);
 //        scrollTextPane.setPreferredSize(new Dimension(500, 600));
 
-        pane.add(scrollTextPane, new BorderLayout());
+//        pane.add(scrollTextPane, new BorderLayout());
 
         add(scrollTextPane);
 

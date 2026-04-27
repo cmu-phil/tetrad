@@ -395,6 +395,17 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                             depth++;
                             result = RecursiveBlocking.blockPathsRecursivelyFull(graph, x, w,
                                     Set.of(), Set.of(), maxPathLength, depth, maxRadius, nearWhichEndpoint, ignoreDirectEdge);
+//                            RecursiveBlocking.BlockingResult result2 = RecursiveBlocking.blockPathsRecursivelyFull(graph, w, x,
+//                                    Set.of(), Set.of(), maxPathLength, depth, maxRadius, nearWhichEndpoint, ignoreDirectEdge);
+//
+//                            if (result1.blockingSet() != null && result2.blockingSet() != null) {
+//                                result = result1.blockingSet().size() <= result2.blockingSet().size() ? result1 : result2;
+//                            } else if (result1.blockingSet() != null) {
+//                                result = result1;
+//                            } else {
+//                                result = result2;
+//                            }
+
                         } while (result.indeterminate());
 
                         Set<Node> blocking = result.blockingSet();
