@@ -114,24 +114,24 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, Accep
 
         edu.cmu.tetrad.search.Fask fask = new edu.cmu.tetrad.search.Fask(dataSet, this.score.getScore(dataSet, parameters));
 
-//        int lrRule = 2;//parameters.getInt(FASK_LEFT_RIGHT_RULE);
-//
-//        if (lrRule == 1) {
-//            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK1);
-//        } else if (lrRule == 2) {
-//            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK2);
-//        } else if (lrRule == 3) {
-//            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.RSKEW);
-//        } else if (lrRule == 4) {
-//            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.SKEW);
-//        } else if (lrRule == 5) {
-//            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.TANH);
-//        } else {
-//            throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
-//        }
+        int lrRule = parameters.getInt(FASK_LEFT_RIGHT_RULE);
+
+        if (lrRule == 1) {
+            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK1);
+        } else if (lrRule == 2) {
+            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK2);
+        } else if (lrRule == 3) {
+            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.RSKEW);
+        } else if (lrRule == 4) {
+            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.SKEW);
+        } else if (lrRule == 5) {
+            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.TANH);
+        } else {
+            throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
+        }
 
         fask.setDepth(parameters.getInt(DEPTH));
-//        fask.setTwoCycleAlpha(parameters.getDouble(TWO_CYCLE_ALPHA));
+        fask.setTwoCycleAlpha(parameters.getDouble(TWO_CYCLE_ALPHA));
         fask.setExtraEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
         fask.setUseFasAdjacencies(true);
         fask.setUseSkewAdjacencies(true);
@@ -192,8 +192,8 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, Accep
 
         parameters.add(DEPTH);
         parameters.add(SKEW_EDGE_THRESHOLD);
-//        parameters.add(TWO_CYCLE_ALPHA);
-//        parameters.add(FASK_LEFT_RIGHT_RULE);
+        parameters.add(TWO_CYCLE_ALPHA);
+        parameters.add(FASK_LEFT_RIGHT_RULE);
 
         return parameters;
     }

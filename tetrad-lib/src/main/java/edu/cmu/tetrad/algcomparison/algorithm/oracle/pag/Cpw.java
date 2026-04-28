@@ -172,7 +172,7 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         }
 
         // Default rule is FASK 2 from harness.
-        int pwRule = 2;
+        int pwRule = 1;
         boolean verbose = parameters.getBoolean(Params.VERBOSE);
 
         // Standardize once; reuse for knowledge + all pairwise decisions
