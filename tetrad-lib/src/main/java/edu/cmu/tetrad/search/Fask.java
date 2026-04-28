@@ -175,9 +175,6 @@ public final class Fask {
         double[] x = data[nodes.indexOf(xi)];
         double[] y = data[nodes.indexOf(xj)];
 
-//        double[] rx = data[nodes.indexOf(xi)];
-//        double[] ry = data[nodes.indexOf(xj)];
-
         double[] rx = residualize(x, z);
         double[] ry = residualize(y, z);
 
@@ -304,7 +301,7 @@ public final class Fask {
      */
     private static double fask2Score(double[] x, double[] y) {
         x = correctSkewness(x, skewness(x));
-        y = correctSkewness(y, skewness(y));j
+        y = correctSkewness(y, skewness(y));
 
         double lr = corrExp(x, y, x) - corrExp(x, y, y);
         double r = StatUtils.correlation(x, y);
