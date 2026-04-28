@@ -609,8 +609,8 @@ public final class Fask {
                             // Raw left-right score on x and y.
                             // The residualized cyclic version of FASK v2 works best in both cyclic and acyclic
                             // settings in the harness, edu.cmu.tetrad.search.harness.FaskLeftRightHarness.
-                            double score = leftRightDiff(x, y, ruleIndex);
-//                            double score = leftRightDiffResidualized(ruleIndex, G0, X, Y, variables, data);
+//                            double score = leftRightDiff(x, y, ruleIndex);
+                            double score = leftRightDiffResidualized(ruleIndex, G0, X, Y, variables, data);
                             if (score > 0) graph.addDirectedEdge(X, Y);
                             else graph.addDirectedEdge(Y, X);
                         }
