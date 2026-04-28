@@ -609,8 +609,8 @@ public final class Fask {
                             // Raw left-right score on x and y.
                             // The residualized cyclic version of FASK v2 works best in both cyclic and acyclic
                             // settings in the harness, edu.cmu.tetrad.search.harness.FaskLeftRightHarness.
-//                            double score = leftRightDiff(x, y, ruleIndex);
-                            double score = leftRightDiffResidualized(ruleIndex, G0, X, Y, variables, data);
+                            double score = leftRightDiff(x, y, ruleIndex);
+//                            double score = leftRightDiffResidualized(ruleIndex, G0, X, Y, variables, data);
                             if (score > 0) graph.addDirectedEdge(X, Y);
                             else graph.addDirectedEdge(Y, X);
                         }
@@ -636,7 +636,7 @@ public final class Fask {
      *
      * @param alpha the significance level, must be between 0.0 and 1.0
      */
-    public void setCutoff(double alpha) {
+    private void setCutoff(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) throw new IllegalArgumentException("Significance out of range: " + alpha);
         this.cutoff = StatUtils.getZForAlpha(alpha);
     }
