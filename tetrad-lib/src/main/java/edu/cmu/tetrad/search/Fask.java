@@ -803,7 +803,7 @@ public final class Fask {
         double[][] Z = new double[zNodes.size()][];
         for (int i = 0; i < zNodes.size(); i++) {
             int col = dataSet.getColumnIndex(zNodes.get(i));
-            Z[i] = data[col];  // was: data[col]
+            Z[i] = data[col];
         }
         return Z;
     }
