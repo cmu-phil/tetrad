@@ -110,10 +110,11 @@ public final class FaskLeftRightHarness {
      *
      * @param pwRule      pairwise rule number, 1..5
      * @param replicates  number of graph/data replicates
-     * @param standardize
+     * @param residualized  whether to residualize the data
+     * @param standardize   whether to standardize the data
      * @return aggregated summary
      */
-    private static HarnessSummary runHarness(int pwRule, int replicates, boolean cyclic, boolean standardize) {
+    private static HarnessSummary runHarness(int pwRule, int replicates, boolean residualized, boolean standardize) {
         long totalMisoriented = 0L;
         long totalEligible = 0L;
         long totalSkippedTwoCycles = 0L;
@@ -161,7 +162,7 @@ public final class FaskLeftRightHarness {
                 double diff;
 
                 if (pwRule >= 1 && pwRule <= 5) {
-                    if (cyclic) {
+                    if (residualized) {
                         diff = Fask.leftRightDiffResidualized(pwRule, graph, xi, xj, nodes, data);
                     } else {
                         diff = Fask.leftRightDiff(data[i], data[j], pwRule);
@@ -186,7 +187,7 @@ public final class FaskLeftRightHarness {
             replicateErrorRates.add(replicateRate);
         }
 
-        return new HarnessSummary(standardize, cyclic, totalMisoriented, totalEligible, totalSkippedTwoCycles, replicateErrorRates);
+        return new HarnessSummary(standardize, residualized, totalMisoriented, totalEligible, totalSkippedTwoCycles, replicateErrorRates);
     }
 
     /**
