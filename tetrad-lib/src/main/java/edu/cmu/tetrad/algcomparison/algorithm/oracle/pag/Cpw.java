@@ -205,7 +205,7 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
             fci.setKnowledge(internalKnowledge);
             fci.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
             fci.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-//            fci.setDoPossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
+            fci.setDoPossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
             fci.setVerbose(verbose);
             fci.setStable(parameters.getBoolean(Params.STABLE_FAS));
 

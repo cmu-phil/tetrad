@@ -716,11 +716,11 @@ public final class Fask {
 
     // ------------ Internals ------------
 
-    private boolean _isBidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
-        double score = leftRightDiffResidualized(leftRight.ordinal() + 1, G0, X, Y,
-                dataSet.getVariables(), data);  // was: data
-        return TMath.abs(score) < alpha;
-    }
+//    private boolean _isBidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
+//        double score = leftRightDiffResidualized(leftRight.ordinal() + 1, G0, X, Y,
+//                dataSet.getVariables(), data);  // was: data
+//        return TMath.abs(score) < alpha;
+//    }
 
     private boolean isTwoCycle(double[] x, double[] y, Graph G0, Node X, Node Y) {
         x = correctSkewness(x, skewness(x));
