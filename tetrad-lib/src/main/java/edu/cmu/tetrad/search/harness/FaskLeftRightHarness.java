@@ -122,7 +122,7 @@ public final class FaskLeftRightHarness {
         List<Double> replicateErrorRates = new ArrayList<>();
 
         for (int r = 0; r < replicates; r++) {
-            Graph graph = generateRandomCyclicGraph();
+            Graph graph = generateRandomAcyclicGraph();
 
             DataSet dataSet = simulateData(graph);
 
@@ -269,7 +269,7 @@ public final class FaskLeftRightHarness {
                         + " | misoriented=" + summary.totalMisoriented
                         + " / eligible=" + summary.totalEligible
                         + " | overallError=" + DF.format(overallErrorRate)
-                        + " | meanRepError=" + DF.format(meanReplicateError)
+//                        + " | meanRepError=" + DF.format(meanReplicateError)
                         + " | sdRepError=" + DF.format(sdReplicateError)
                         + " | skippedTwoCycles=" + summary.totalSkippedTwoCycles
         );

@@ -66,7 +66,7 @@ import static edu.cmu.tetrad.util.TMath.*;
  */
 public final class Fask {
     private final Score score;
-    private final double[][] data;
+    private double[][] data;
     private final DataSet dataSet;
     private Graph externalGraph = null;
     private int depth = -1;
@@ -178,8 +178,8 @@ public final class Fask {
         double[] rx = residualize(x, z);
         double[] ry = residualize(y, z);
 
-        standardize(rx);
-        standardize(ry);
+        center(rx);
+        center(ry);
 
         return leftRightDiff(rx, ry, ruleIndex);
     }
@@ -201,15 +201,13 @@ public final class Fask {
                                                   Node xj,
                                                   int maxPathLength) {
         try {
-            Set<Node> z = RecursiveBlocking.blockPathsRecursively(
-                    graph, xi, xj, Set.of(), Set.of(), maxPathLength
-            );
+            Set<Node> z = RecursiveBlocking.blockPathsRecursivelyFull(
+                    graph, xi, xj, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true).blockingSet();
 
             if (z == null) z = new HashSet<>();
 
-            Set<Node> z2 = RecursiveBlocking.blockPathsRecursively(
-                    graph, xj, xi, Set.of(), Set.of(), maxPathLength
-            );
+            Set<Node> z2 = RecursiveBlocking.blockPathsRecursivelyFull(
+                    graph, xj, xi, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true).blockingSet();
 
             if (z2 == null) {
                 List<Node> adj = graph.getAdjacentNodes(xi);
@@ -555,6 +553,7 @@ public final class Fask {
         DataSet dataSet = DataTransforms.standardizeData(this.dataSet);
         List<Node> variables = dataSet.getVariables();
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
+        this.data = colData;
         Graph G0;
 
         if (externalGraph != null) {
@@ -579,10 +578,11 @@ public final class Fask {
         GraphSearchUtils.pcOrientbk(knowledge, G0, G0.getNodes(), false);
 
         Graph graph = new EdgeListGraph(variables);
-        Graph _graph = new EdgeListGraph();
+        Graph _graph;
 
         do {
             _graph = new EdgeListGraph(graph);
+            graph = new EdgeListGraph(variables);  // reset each iteration
 
             for (int i = 0; i < variables.size(); i++) {
                 for (int j = i + 1; j < variables.size(); j++) {
@@ -601,16 +601,12 @@ public final class Fask {
                             graph.addDirectedEdge(X, Y);
                         } else if (knowledgeOrients(Y, X)) {
                             graph.addDirectedEdge(Y, X);
-                        } else if (alpha > 0 && isBidirected(x, y, G0, X, Y)) {
+                        } else if (alpha > 0 && isTwoCycle(x, y, G0, X, Y)) {
                             graph.addEdge(Edges.directedEdge(X, Y));
                             graph.addEdge(Edges.directedEdge(Y, X));
                         } else {
                             int ruleIndex = leftRight.ordinal() + 1;
-                            // Raw left-right score on x and y.
-                            // The residualized cyclic version of FASK v2 works best in both cyclic and acyclic
-                            // settings in the harness, edu.cmu.tetrad.search.harness.FaskLeftRightHarness.
                             double score = leftRightDiff(x, y, ruleIndex);
-//                            double score = leftRightDiffResidualized(ruleIndex, G0, X, Y, variables, data);
                             if (score > 0) graph.addDirectedEdge(X, Y);
                             else graph.addDirectedEdge(Y, X);
                         }
@@ -722,11 +718,11 @@ public final class Fask {
 
     private boolean _isBidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
         double score = leftRightDiffResidualized(leftRight.ordinal() + 1, G0, X, Y,
-                dataSet.getVariables(), data);
-        return TMath.abs(score) < alpha;/// && _isBidirected(x, y, G0, X, Y);
+                dataSet.getVariables(), data);  // was: data
+        return TMath.abs(score) < alpha;
     }
 
-    private boolean isBidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
+    private boolean isTwoCycle(double[] x, double[] y, Graph G0, Node X, Node Y) {
         x = correctSkewness(x, skewness(x));
         y = correctSkewness(y, skewness(y));
 
@@ -807,7 +803,7 @@ public final class Fask {
         double[][] Z = new double[zNodes.size()][];
         for (int i = 0; i < zNodes.size(); i++) {
             int col = dataSet.getColumnIndex(zNodes.get(i));
-            Z[i] = data[col];
+            Z[i] = data[col];  // was: data[col]
         }
         return Z;
     }
