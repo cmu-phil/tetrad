@@ -70,7 +70,7 @@ public final class Fask {
     private final DataSet dataSet;
     private Graph externalGraph = null;
     private int depth = -1;
-    private double alpha = 1e-5;
+    private double alpha = 0.05;
     private Knowledge knowledge = new Knowledge();
     private double cutoff;
     private double extraEdgeThreshold = 0.3;
