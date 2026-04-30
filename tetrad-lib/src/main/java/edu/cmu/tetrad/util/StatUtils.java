@@ -2308,31 +2308,6 @@ public final class StatUtils {
         return dist.inverseCumulativeProbability(1.0 - alpha / 2.0);
     }
 
-    // Calculates the log of a list of terms, where the argument consists of the logs of the terms.
-
-    /**
-     * <p>logsum.</p>
-     *
-     * @param logs a {@link java.util.List} object
-     * @return a double
-     */
-    public static double logsum(List<Double> logs) {
-
-        logs.sort((o1, o2) -> -Double.compare(o1, o2));
-
-        double sum = 0.0;
-        int N = logs.size() - 1;
-        double loga0 = logs.getFirst();
-
-        for (int i = 1; i <= N; i++) {
-            sum += exp(logs.get(i) - loga0);
-        }
-
-        sum += 1;
-
-        return loga0 + log(sum);
-    }
-
     /**
      * <p>sum.</p>
      *
@@ -2438,7 +2413,6 @@ public final class StatUtils {
 
         for (int i = 0; i < z.length + 2; i++) {
             for (int j = i; j < z.length + 2; j++) {
-//                double c = StatUtils.sxy(subdata[i], subdata[j]);
                 double c = StatUtils.covariance(subdata[i], subdata[j]);
                 cov[i][j] = c;
                 cov[j][i] = c;
