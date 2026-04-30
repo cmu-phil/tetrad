@@ -686,7 +686,10 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
         }
     }
 
-    private static abstract class Mechanism {
+    private static abstract class Mechanism implements TetradSerializable {
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         final int childIndex;
         final int[] parentIdx;         // indices in dataset variable list
         final InputEncoder encoder;    // encodes parent row -> feature vector
