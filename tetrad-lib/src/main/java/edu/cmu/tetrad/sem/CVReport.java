@@ -148,12 +148,33 @@ public final class CVReport implements TetradSerializable {
     /**
      * Returns a compact one-line summary suitable for a status bar.
      */
+//    public String toStatusLine() {
+//        return String.format(
+//                "CV k=%d  |  OOS MMD²=%.4f  |  Mean R²=%.4f  |  Nodes beaten=%.0f%%",
+//                numFolds,
+//                meanOosMmd2,
+//                Double.isFinite(meanOosR2) ? meanOosR2 : Double.NaN,
+//                Double.isFinite(fracNodesBeatBaseline) ? fracNodesBeatBaseline * 100.0 : Double.NaN);
+//    }
+
     public String toStatusLine() {
+        // Count how many non-root nodes beat the baseline.
+        int beaten = 0;
+        int total  = 0;
+        for (NodeCVSummary s : nodeSummaries) {
+            total++;
+            if (!s.discreteChild && Double.isFinite(s.oosR2) && s.oosR2 > 0) beaten++;
+            else if (s.discreteChild && Double.isFinite(s.oosXent)
+                    && Double.isFinite(s.baselineXent)
+                    && s.baselineXent - s.oosXent > 0) beaten++;
+        }
+
         return String.format(
-                "CV k=%d  |  OOS MMD²=%.4f  |  Mean R²=%.4f  |  Nodes beaten=%.0f%%",
+                "CV k=%d  |  OOS MMD²=%.4f  |  Mean R²=%.4f  |  Nodes beaten=%d/%d",
                 numFolds,
                 meanOosMmd2,
                 Double.isFinite(meanOosR2) ? meanOosR2 : Double.NaN,
-                Double.isFinite(fracNodesBeatBaseline) ? fracNodesBeatBaseline * 100.0 : Double.NaN);
+                beaten,
+                total);
     }
 }

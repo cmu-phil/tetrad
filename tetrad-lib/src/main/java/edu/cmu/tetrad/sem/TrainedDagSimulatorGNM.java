@@ -128,6 +128,98 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
         this.mechanisms = new Mechanism[p];
     }
 
+    // =========================================================================
+    // Single-node refit and hybrid simulator support
+    // Add these methods to TrainedDagSimulatorGNM
+    // =========================================================================
+
+    /**
+     * Returns a new simulator that is identical to this one except that the
+     * mechanism for {@code nodeIndex} has been retrained using only the
+     * specified reduced parent set. All other node mechanisms are reused
+     * unchanged from this instance — they are not refitted.
+     *
+     * <p>This is the correct way to isolate the contribution of a single edge:
+     * hold all other mechanisms constant and retrain only the affected child,
+     * rather than refitting the whole graph on a modified DAG.
+     *
+     * <p>{@link #fit()} must have been called on this instance before calling
+     * this method.
+     *
+     * @param nodeIndex            dataset column index of the node to retrain
+     * @param reducedParentIndices dataset column indices of the parents to use
+     *                             (a strict subset of the node's current parents)
+     * @param seed                 random seed for retraining
+     * @return a new {@link TrainedDagSimulatorGNM} with the hybrid mechanism array
+     * @throws IllegalStateException if {@link #fit()} has not been called
+     */
+    public TrainedDagSimulatorGNM withReducedParents(int nodeIndex,
+                                                     int[] reducedParentIndices,
+                                                     long seed) {
+        if (mechanisms[nodeIndex] == null) {
+            throw new IllegalStateException(
+                    "fit() must be called before withReducedParents().");
+        }
+
+        // Shallow-copy the mechanism array — other nodes are reused as-is.
+        Mechanism[] hybridMechanisms = mechanisms.clone();
+
+        // Build a fresh mechanism for the target node with reduced parents.
+        Random initRng = new Random(mixSeed(seed, nodeIndex, 0x1234ABCDL));
+        Random fitRng  = new Random(mixSeed(seed, nodeIndex, 0x5678EF01L));
+
+        InputEncoder reducedEncoder =
+                new InputEncoder(data, reducedParentIndices, params.maxDiscreteLevels);
+
+        Mechanism reduced;
+        if (!isDiscrete[nodeIndex]) {
+            ContinuousMechanism cm = new ContinuousMechanism(
+                    nodeIndex, reducedParentIndices, reducedEncoder, initRng);
+            cm.fit(data, fitRng, params);
+            reduced = cm;
+        } else {
+            int L = ((DiscreteVariable) variables.get(nodeIndex)).getNumCategories();
+            DiscreteMechanism dm = new DiscreteMechanism(
+                    nodeIndex, reducedParentIndices, reducedEncoder, L, initRng);
+            dm.fit(data, fitRng, params);
+            reduced = dm;
+        }
+
+        hybridMechanisms[nodeIndex] = reduced;
+
+        // Construct and return the hybrid simulator with the pre-built mechanisms.
+        return new TrainedDagSimulatorGNM(data, dag, params, hybridMechanisms);
+    }
+
+    /**
+     * Private constructor that accepts a pre-built mechanism array.
+     * Used by {@link #withReducedParents} to construct hybrid simulators
+     * without triggering a full refit.
+     */
+    private TrainedDagSimulatorGNM(DataSet data,
+                                   Graph dag,
+                                   Params params,
+                                   Mechanism[] mechanisms) {
+        if (data == null) throw new NullPointerException("data");
+        if (dag  == null) throw new NullPointerException("dag");
+
+        dag = GraphUtils.replaceNodes(dag, data.getVariables());
+
+        this.data       = data;
+        this.dag        = dag;
+        this.params     = (params == null) ? new Params() : params;
+        this.variables  = data.getVariables();
+
+        int p = variables.size();
+        this.isDiscrete = new boolean[p];
+        for (int j = 0; j < p; j++)
+            isDiscrete[j] = (variables.get(j) instanceof DiscreteVariable);
+
+        // Use the supplied mechanism array directly — no fitting needed.
+        this.mechanisms = mechanisms.clone();
+    }
+
+
     private static int sampleCategorical(double[] probs, Random rng) {
         double u = rng.nextDouble();
         double cdf = 0.0;
@@ -287,6 +379,27 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
         if (m == null) throw new IllegalStateException(
                 "fit() has not been called, or node index " + nodeIndex + " is out of range.");
         return m.predictRow(data, row);
+    }
+
+    /**
+     * Returns the predicted probability distribution for the given node at the
+     * given row of the supplied dataset. For discrete nodes this is the full
+     * softmax distribution. For continuous nodes this is a single-element array
+     * containing the conditional mean prediction. Returns null for root nodes.
+     *
+     * Intended for OOS cross-entropy evaluation in k-fold CV.
+     *
+     * @param nodeIndex dataset column index of the node
+     * @param data      the held-out dataset
+     * @param row       row index within that dataset
+     * @return probability array, or null for root nodes
+     * @throws IllegalStateException if fit() has not been called
+     */
+    public double[] predictNodeProbs(int nodeIndex, DataSet data, int row) {
+        Mechanism m = mechanisms[nodeIndex];
+        if (m == null) throw new IllegalStateException(
+                "fit() has not been called, or node index " + nodeIndex + " is out of range.");
+        return m.predictNodeProbs(data, row);
     }
 
     /**
@@ -464,7 +577,7 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
          * This parameter is used to define the size of a hidden layer when no explicit
          * layer configuration is provided through the hiddenLayers parameter.
          */
-        public int hidden = 64;
+        public int hidden = 48;
         /**
          * Specifies the layer configuration of a neural network by defining the number
          * of hidden units for each layer. This variable is used to explicitly set
@@ -719,6 +832,20 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
          * @return predicted value as a double (discrete levels cast to double)
          */
         abstract double predictRow(DataSet data, int row);
+
+        /**
+         * Returns a probability distribution over outcomes for a single held-out row.
+         * For continuous nodes returns a single-element array containing the predicted
+         * value (point mass). For discrete nodes returns the softmax probabilities over
+         * all classes. Root nodes return null.
+         *
+         * Used for proper cross-entropy evaluation in k-fold CV.
+         *
+         * @param data the held-out DataSet
+         * @param row  the row index within that dataset
+         * @return probability array, or null for root nodes
+         */
+        abstract double[] predictNodeProbs(DataSet data, int row);
     }
 
     /**
@@ -1879,6 +2006,12 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
             workXE[workX.length] = 0.0;   // standardized noise = 0
             return netGNM.predict(workXE);
         }
+
+        @Override
+        double[] predictNodeProbs(DataSet data, int row) {
+            // Point prediction — wrap scalar in a single-element array.
+            return new double[]{ predictRow(data, row) };
+        }
     }
 
     private final class DiscreteMechanism extends Mechanism implements TetradSerializable {
@@ -2017,6 +2150,15 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
             net.predictProbsInto(workX, workPNet);
             return argmax(workPNet);   // return modal class as double
         }
+
+        @Override
+        double[] predictNodeProbs(DataSet data, int row) {
+            encoder.encodeRow(data, row, workX);
+            // Return a copy — workPNet is a reusable buffer.
+            double[] probs = new double[numLevels];
+            net.predictProbsInto(workX, probs);
+            return probs;
+        }
     }
 
     // Root: continuous variable sampled by bootstrap (preserves histogram)
@@ -2067,6 +2209,11 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
         @Override
         double predictRow(DataSet data, int row) {
             return Double.NaN;   // no parents, no conditional prediction
+        }
+
+        @Override
+        double[] predictNodeProbs(DataSet data, int row) {
+            return null;   // no parents, no conditional prediction
         }
     }
 
@@ -2119,6 +2266,11 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
         @Override
         double predictRow(DataSet data, int row) {
             return Double.NaN;   // no parents, no conditional prediction
+        }
+
+        @Override
+        double[] predictNodeProbs(DataSet data, int row) {
+            return null;   // no parents, no conditional prediction
         }
     }
 }

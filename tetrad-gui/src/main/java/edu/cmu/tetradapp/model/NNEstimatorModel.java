@@ -12,6 +12,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetradapp.session.SessionModel;
 
+import java.io.Serial;
 import java.util.Objects;
 
 /**
@@ -36,20 +37,25 @@ import java.util.Objects;
  */
 public final class NNEstimatorModel extends DataWrapper implements SessionModel {
 
-    // ── session inputs ────────────────────────────────────────────────────────
+    @Serial
+    private static final long serialVersionUID = 23L;
 
+    // ── session inputs ──────────────────────────────────────────────────────
     private final Graph inputGraph;
     private final DataSet inputData;
     private final Parameters parameters;
 
-    // ── core estimator ────────────────────────────────────────────────────────
+    // ── core estimator (transient — refitted on demand) ─────────────────────
+    private transient NNEstimator estimator;
 
-    /** The library-level estimator; recreated on each resimulate() call. */
-    private NNEstimator estimator;
-
-    // ── derived state ─────────────────────────────────────────────────────────
-
+    // ── persisted state ─────────────────────────────────────────────────────
     private int sampleSize;
+
+    /**
+     * The CV report is persisted separately from the estimator so it survives
+     * session save/reload without needing to rerun cross-validation.
+     */
+    private CVReport persistedCvReport;
 
     // ── constructor ───────────────────────────────────────────────────────────
 
@@ -117,10 +123,18 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
      * @param k number of folds; must be &ge; 2 and &le; number of data rows
      * @throws IllegalStateException if resimulate() has not been called yet
      */
+//    public void runCrossValidate(int k) {
+//        if (estimator == null)
+//            throw new IllegalStateException("resimulate() must be called before runCrossValidate().");
+//        estimator.crossValidate(k);
+//    }
+
     public void runCrossValidate(int k) {
         if (estimator == null)
             throw new IllegalStateException("resimulate() must be called before runCrossValidate().");
         estimator.crossValidate(k);
+        // Persist the result independently of the estimator.
+        persistedCvReport = estimator.getCvReport();
     }
 
     // ── accessors for the editor ──────────────────────────────────────────────
@@ -148,8 +162,16 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
      * @return the CV report from the most recent runCrossValidate() call,
      *         or null if cross-validation has not yet been run
      */
+//    public CVReport getCvReport() {
+//        return estimator == null ? null : estimator.getCvReport();
+//    }
+
     public CVReport getCvReport() {
-        return estimator == null ? null : estimator.getCvReport();
+        // Return persisted report if estimator has been discarded (e.g. after reload).
+        if (estimator != null && estimator.getCvReport() != null) {
+            return estimator.getCvReport();
+        }
+        return persistedCvReport;
     }
 
     /** @return the sample size used in the most recent resimulate() call */
