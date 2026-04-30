@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -1316,7 +1317,11 @@ public final class TrainedDagSimulatorGNM2 {
         }
     }
 
-    private final class ContinuousMechanism extends Mechanism {
+    private final class ContinuousMechanism extends Mechanism implements TetradSerializable {
+
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         // Stage 1: mean model mu(x)
         final MlpRegressor netMean;
 
@@ -1528,7 +1533,11 @@ public final class TrainedDagSimulatorGNM2 {
         }
     }
 
-    private final class DiscreteMechanism extends Mechanism {
+    private final class DiscreteMechanism extends Mechanism implements TetradSerializable {
+
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         final MlpSoftmaxClassifier net;
         final int numLevels;
 
@@ -1635,7 +1644,10 @@ public final class TrainedDagSimulatorGNM2 {
     }
 
     // Root: continuous variable sampled by bootstrap (preserves histogram)
-    private final class RootContinuousMechanism extends Mechanism {
+    private final class RootContinuousMechanism extends Mechanism implements TetradSerializable {
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         private double[] pool;      // observed values (finite)
         private double baseMean;    // fallback
 
@@ -1678,7 +1690,11 @@ public final class TrainedDagSimulatorGNM2 {
     }
 
     // Root: discrete variable sampled from empirical frequencies (preserves bar plot)
-    private final class RootDiscreteMechanism extends Mechanism {
+    private final class RootDiscreteMechanism extends Mechanism implements TetradSerializable {
+
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         private final int numLevels;
         private double[] probs; // empirical
 

@@ -1,5 +1,8 @@
 package edu.cmu.tetrad.sem;
 
+import edu.cmu.tetrad.util.TetradSerializable;
+
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -9,7 +12,10 @@ import java.util.List;
  * This class is immutable and holds the metrics and metadata associated with a node.
  * It is used to evaluate the performance of a node compared to a baseline.
  */
-public final class NodeAdequacySummary {
+public final class NodeAdequacySummary implements TetradSerializable {
+
+    @Serial
+    private static final long serialVersionUID = 23L;
 
     /**
      * The name or identifier of the node being evaluated within the model.

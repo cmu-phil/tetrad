@@ -6,8 +6,10 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Editor for the Compare-box model DagFactorizationCompare.
- * Reflection entrypoint: public Editor(DagFactorizationCompare model).
+ * Tetrad editor for {@link NNEstimatorModel}.
+ *
+ * <p>Reflection entrypoint: {@code public NNEstimatorEditor(NNEstimatorModel)}.
+ * Delegates all display logic to {@link NNEstimatorComparePanel}.
  */
 public final class NNEstimatorEditor extends JPanel {
 

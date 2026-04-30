@@ -1,5 +1,8 @@
 package edu.cmu.tetrad.sem;
 
+import edu.cmu.tetrad.util.TetradSerializable;
+
+import java.io.Serial;
 import java.util.Collections;
 import java.util.List;
 
@@ -12,7 +15,10 @@ import java.util.List;
  *
  * Instances of this class are immutable, ensuring their contents cannot be modified after creation.
  */
-public final class AdequacyReport {
+public final class AdequacyReport implements TetradSerializable {
+
+    @Serial
+    private static final long serialVersionUID = 23L;
 
     /**
      * Represents the mean improvement of nodes over a baseline metric
@@ -104,5 +110,17 @@ public final class AdequacyReport {
         }
 
         return sb.toString();
+    }
+
+    public double getMmd2() {
+        return mmd2;
+    }
+
+    public double getMeanImprovement() {
+        return meanImprovement;
+    }
+
+    public double getFracImproved() {
+        return fracNodesImproved;
     }
 }

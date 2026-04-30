@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -72,7 +73,10 @@ import java.util.*;
  *       given parents, while still using bootstrapped noise anchored to the observed dataset.</li>
  * </ul>
  */
-public final class TrainedDagSimulatorGNM {
+public final class TrainedDagSimulatorGNM implements TetradSerializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     // -------------------- configuration --------------------
     private final List<NodeReport> nodeReports = Collections.synchronizedList(new ArrayList<>());
@@ -267,6 +271,25 @@ public final class TrainedDagSimulatorGNM {
     }
 
     /**
+     * Returns the predicted value for the given node at the given row of
+     * the supplied dataset, using the already-fitted mechanism for that node.
+     * The dataset does not need to be the training data — this is intended
+     * for OOS evaluation on held-out folds.
+     *
+     * @param nodeIndex dataset column index of the node to predict
+     * @param data      the dataset containing the row to predict
+     * @param row       the row index
+     * @return predicted value, or NaN for root nodes
+     * @throws IllegalStateException if fit() has not been called
+     */
+    public double predictNode(int nodeIndex, DataSet data, int row) {
+        Mechanism m = mechanisms[nodeIndex];
+        if (m == null) throw new IllegalStateException(
+                "fit() has not been called, or node index " + nodeIndex + " is out of range.");
+        return m.predictRow(data, row);
+    }
+
+    /**
      * Fit one mechanism per node given its parents in the supplied DAG.
      */
     public void fit() {
@@ -431,7 +454,11 @@ public final class TrainedDagSimulatorGNM {
      * used for the simulation and training of a directed acyclic graph (DAG) model.
      * This class provides default values for all parameters, which can be modified as needed.
      */
-    public static final class Params {
+    public static final class Params implements TetradSerializable {
+
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         /**
          * Specifies the default number of hidden units in a single layer of the model.
          * This parameter is used to define the size of a hidden layer when no explicit
@@ -571,7 +598,11 @@ public final class TrainedDagSimulatorGNM {
      * The report contains metrics specific to the node, which can vary depending on whether the
      * node represents a discrete or continuous variable. This is an immutable class.
      */
-    public static final class NodeReport {
+    public static final class NodeReport implements TetradSerializable {
+
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         /**
          * Node identifier.
          */
@@ -669,6 +700,22 @@ public final class TrainedDagSimulatorGNM {
         abstract void fit(DataSet data, Random rng, Params p);
 
         abstract void generateOneRow(DataSet data, double[] contRow, int[] discRow, Random rng);
+
+        /**
+         * Returns the predicted value for a single row from the observed dataset,
+         * using only the already-fitted mechanism. For continuous nodes this is
+         * the GNM prediction given the observed parents and a zero noise input
+         * (i.e. the conditional mean estimate). For discrete nodes this returns
+         * the argmax class. Root mechanisms return NaN (continuous) or the modal
+         * class (discrete) since there are no parents to condition on.
+         *
+         * Used for node-level OOS evaluation in k-fold cross-validation.
+         *
+         * @param data the held-out DataSet
+         * @param row  the row index to predict
+         * @return predicted value as a double (discrete levels cast to double)
+         */
+        abstract double predictRow(DataSet data, int row);
     }
 
     /**
@@ -679,7 +726,10 @@ public final class TrainedDagSimulatorGNM {
      * - if variable is DiscreteVariable, uses getNumCategories().
      * - else falls back to max observed + 1 (best-effort).
      */
-    private static final class InputEncoder {
+    private static final class InputEncoder implements TetradSerializable {
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         final DataSet data;
         final int[] parentIdx;
         final boolean[] parentIsDisc;
@@ -849,7 +899,10 @@ public final class TrainedDagSimulatorGNM {
         }
     }
 
-    private static final class TrainingRows {
+    private static final class TrainingRows implements TetradSerializable {
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         final int[] rows;
         final int n;
 
@@ -902,7 +955,11 @@ public final class TrainedDagSimulatorGNM {
         }
     }
 
-    private static final class EncodedRegressionData {
+    private static final class EncodedRegressionData implements TetradSerializable {
+
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         final double[][] X;
         final double[] y;
         final int[] rows;   // original dataset row indices
@@ -916,7 +973,11 @@ public final class TrainedDagSimulatorGNM {
         }
     }
 
-    private static final class EncodedClassificationData {
+    private static final class EncodedClassificationData implements TetradSerializable {
+
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         final double[][] X;
         final int[] y;
         final int[] rows;   // original dataset row indices
@@ -973,7 +1034,10 @@ public final class TrainedDagSimulatorGNM {
         }
     }
 
-    private static final class MlpRegressor {
+    private static final class MlpRegressor implements TetradSerializable {
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         final int din;
         final int[] hiddenLayers;
 
@@ -1134,7 +1198,11 @@ public final class TrainedDagSimulatorGNM {
         }
     }
 
-    private static final class MlpSoftmaxClassifier {
+    private static final class MlpSoftmaxClassifier implements TetradSerializable {
+
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         final int din;
         final int[] hiddenLayers;
         final int k;
@@ -1362,7 +1430,11 @@ public final class TrainedDagSimulatorGNM {
      * This class is designed to encapsulate all relevant outputs of a simulation process
      * including variable data, causal graphs, and warning metrics.
      */
-    public static final class SimResult {
+    public static final class SimResult implements TetradSerializable {
+
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         /**
          * A two-dimensional array representing continuous values for all variables in a simulation result.
          * This array includes numerical data corresponding to continuous variables, while discrete columns
@@ -1581,7 +1653,10 @@ public final class TrainedDagSimulatorGNM {
         }
     }
 
-    private final class ContinuousMechanism extends Mechanism {
+    private final class ContinuousMechanism extends Mechanism implements TetradSerializable {
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         // Stage 1: mean model mu(x)
         final MlpRegressor netMean;
 
@@ -1791,9 +1866,22 @@ public final class TrainedDagSimulatorGNM {
             }
             return h;
         }
+
+        @Override
+        double predictRow(DataSet data, int row) {
+            encoder.encodeRow(data, row, workX);
+            // Use zero noise (e=0) for a point prediction — equivalent to
+            // predicting the conditional mean E[Y | pa(Y)].
+            System.arraycopy(workX, 0, workXE, 0, workX.length);
+            workXE[workX.length] = 0.0;   // standardized noise = 0
+            return netGNM.predict(workXE);
+        }
     }
 
-    private final class DiscreteMechanism extends Mechanism {
+    private final class DiscreteMechanism extends Mechanism implements TetradSerializable {
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         final MlpSoftmaxClassifier net;
         final int numLevels;
 
@@ -1919,10 +2007,20 @@ public final class TrainedDagSimulatorGNM {
             }
             return p;
         }
+
+        @Override
+        double predictRow(DataSet data, int row) {
+            encoder.encodeRow(data, row, workX);
+            net.predictProbsInto(workX, workPNet);
+            return argmax(workPNet);   // return modal class as double
+        }
     }
 
     // Root: continuous variable sampled by bootstrap (preserves histogram)
-    private final class RootContinuousMechanism extends Mechanism {
+    private final class RootContinuousMechanism extends Mechanism implements TetradSerializable {
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         private double[] pool;      // observed values (finite)
         private double baseMean;    // fallback
 
@@ -1962,10 +2060,18 @@ public final class TrainedDagSimulatorGNM {
             }
             contRow[childIndex] = pool[rng.nextInt(pool.length)];
         }
+
+        @Override
+        double predictRow(DataSet data, int row) {
+            return Double.NaN;   // no parents, no conditional prediction
+        }
     }
 
     // Root: discrete variable sampled from empirical frequencies (preserves bar plot)
-    private final class RootDiscreteMechanism extends Mechanism {
+    private final class RootDiscreteMechanism extends Mechanism implements TetradSerializable {
+        @Serial
+        private static final long serialVersionUID = 1L;
+
         private final int numLevels;
         private double[] probs; // empirical
 
@@ -2005,6 +2111,11 @@ public final class TrainedDagSimulatorGNM {
                 return;
             }
             discRow[childIndex] = sampleCategorical(probs, rng);
+        }
+
+        @Override
+        double predictRow(DataSet data, int row) {
+            return Double.NaN;   // no parents, no conditional prediction
         }
     }
 }
