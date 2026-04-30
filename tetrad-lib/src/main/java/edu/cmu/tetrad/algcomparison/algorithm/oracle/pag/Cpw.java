@@ -319,9 +319,6 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
                 Node xi = nodes.get(i);
                 Node xj = nodes.get(j);
 
-                // In buildPwForbiddenKnowledge, gate on adjacency:
-                if (!graph.isAdjacentTo(xi, xj)) continue; // skip non-adjacent pairs
-
                 int i_xi = nodes.indexOf(xi);
                 int i_xj = nodes.indexOf(xj);
 

@@ -2305,7 +2305,7 @@ public final class StatUtils {
      */
     public static double getZForAlpha(double alpha) {
         NormalDistribution dist = new NormalDistribution(0, 1);
-        return 1.0 - dist.inverseCumulativeProbability(alpha / 2.0);
+        return dist.inverseCumulativeProbability(1.0 - alpha / 2.0);
     }
 
     // Calculates the log of a list of terms, where the argument consists of the logs of the terms.
