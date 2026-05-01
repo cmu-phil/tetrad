@@ -11,6 +11,9 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.util.concurrent.atomic.DoubleAdder;
+import java.util.stream.IntStream;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -408,63 +411,106 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
     public void fit() {
         nodeReports.clear();
 
-        // topo order (use dag nodes, but we map to dataset indices)
         List<Node> topo = dag.paths().getValidOrder(dag.getNodes(), true);
 
-        // map name -> dataset index
         Map<String, Integer> indexByName = new HashMap<>();
         for (int j = 0; j < variables.size(); j++) {
             indexByName.put(variables.get(j).getName(), j);
         }
 
-        // Convert topo nodes to dataset indices once
         List<Integer> topoIdx = new ArrayList<>(topo.size());
         for (Node child : topo) {
             Integer idx = indexByName.get(child.getName());
-            if (idx != null) {
-                topoIdx.add(idx);
+            if (idx != null) topoIdx.add(idx);
+        }
+
+        // ── Pre-extract encoded training data per node (single-threaded) ──────
+        // This eliminates shared DataSet contention in the parallel stream below.
+        // Each node gets its own private double[][] arrays to train on.
+
+        Map<Integer, EncodedRegressionData>     encCont = new HashMap<>();
+        Map<Integer, EncodedClassificationData> encDisc = new HashMap<>();
+        Map<Integer, int[]>                     parentIdxMap = new HashMap<>();
+
+        for (int childIdx : topoIdx) {
+            Node child    = variables.get(childIdx);
+            int[] parentIdx = parentIndicesFor(child, indexByName);
+            parentIdxMap.put(childIdx, parentIdx);
+
+            boolean isRoot = parentIdx.length == 0;
+            if (isRoot) continue;  // root nodes don't need encoded data
+
+            InputEncoder encoder = new InputEncoder(
+                    data, parentIdx, params.maxDiscreteLevels);
+
+            TrainingRows tr = TrainingRows.forNode(data, childIdx, parentIdx);
+            if (tr.n < 5) continue;  // too few rows — mechanism will handle this
+
+            if (!isDiscrete[childIdx]) {
+                encCont.put(childIdx,
+                        buildEncodedRegressionData(data, encoder, childIdx, tr));
+            } else {
+                encDisc.put(childIdx,
+                        buildEncodedClassificationData(data, encoder, childIdx, tr));
             }
         }
 
+        // ── Parallel stream: each thread works on its own private arrays ──────
+
         topoIdx.parallelStream().forEach(childIdx -> {
-            Node child = variables.get(childIdx);
-            int[] parentIdx = parentIndicesFor(child, indexByName);
-            boolean isRoot = parentIdx.length == 0;
+            Node child    = variables.get(childIdx);
+            int[] parentIdx = parentIdxMap.get(childIdx);
+            boolean isRoot  = parentIdx.length == 0;
 
-            // Independent RNGs per node to avoid shared contention.
             Random initRng = new Random(mixSeed(params.seed, childIdx, 0x1234ABCDL));
-            Random fitRng = new Random(mixSeed(params.seed, childIdx, 0x5678EF01L));
+            Random fitRng  = new Random(mixSeed(params.seed, childIdx, 0x5678EF01L));
 
-            InputEncoder encoder = new InputEncoder(data, parentIdx, params.maxDiscreteLevels);
+            InputEncoder encoder = new InputEncoder(
+                    data, parentIdx, params.maxDiscreteLevels);
 
             Mechanism m;
 
             if (!isDiscrete[childIdx]) {
                 if (isRoot && params.bootstrapRoots) {
                     m = new RootContinuousMechanism(childIdx);
+                    m.fit(data, fitRng, params);
                 } else {
-                    m = new ContinuousMechanism(childIdx, parentIdx, encoder, initRng);
+                    ContinuousMechanism cm = new ContinuousMechanism(
+                            childIdx, parentIdx, encoder, initRng);
+                    // Pass pre-extracted data to avoid DataSet contention.
+                    EncodedRegressionData enc = encCont.get(childIdx);
+                    if (enc != null) {
+                        cm.fitFromEncoded(enc, fitRng, params);
+                    } else {
+                        cm.fit(data, fitRng, params);  // fallback (< 5 rows)
+                    }
+                    m = cm;
                 }
             } else {
                 int L = ((DiscreteVariable) variables.get(childIdx)).getNumCategories();
-
-                if (L <= 1) {
-                    throw new IllegalArgumentException(
-                            "Discrete variable has <=1 category: " + variables.get(childIdx).getName());
-                }
-                if (L > params.maxDiscreteLevels) {
-                    throw new IllegalArgumentException(
-                            "Discrete child has too many levels: " + variables.get(childIdx).getName() + " L=" + L);
-                }
+                if (L <= 1) throw new IllegalArgumentException(
+                        "Discrete variable has <=1 category: "
+                                + variables.get(childIdx).getName());
+                if (L > params.maxDiscreteLevels) throw new IllegalArgumentException(
+                        "Discrete child has too many levels: "
+                                + variables.get(childIdx).getName() + " L=" + L);
 
                 if (isRoot && params.bootstrapRoots) {
                     m = new RootDiscreteMechanism(childIdx, L);
+                    m.fit(data, fitRng, params);
                 } else {
-                    m = new DiscreteMechanism(childIdx, parentIdx, encoder, L, initRng);
+                    DiscreteMechanism dm = new DiscreteMechanism(
+                            childIdx, parentIdx, encoder, L, initRng);
+                    EncodedClassificationData enc = encDisc.get(childIdx);
+                    if (enc != null) {
+                        dm.fitFromEncoded(enc, fitRng, params);
+                    } else {
+                        dm.fit(data, fitRng, params);  // fallback (< 5 rows)
+                    }
+                    m = dm;
                 }
             }
 
-            m.fit(data, fitRng, params);
             mechanisms[childIdx] = m;
         });
     }
@@ -2127,6 +2173,85 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
             // Point prediction — wrap scalar in a single-element array.
             return new double[]{ predictRow(data, row) };
         }
+
+        // Add to ContinuousMechanism:
+        void fitFromEncoded(EncodedRegressionData enc, Random rng, Params p) {
+            double[][] X  = enc.X;
+            double[]   y  = enc.y;
+            int[]      rows = enc.rows;
+            int        n  = enc.n;
+
+            baseMean = 0.0;  // already encoded; baseMean only used for fallback
+
+            // Stage 1: fit mu(x)
+            int[] order = new int[n];
+            for (int i = 0; i < n; i++) order[i] = i;
+
+            for (int ep = 0; ep < p.epochs; ep++) {
+                shuffleIndices(order, rng);
+                for (int start = 0; start < n; start += p.batchSize) {
+                    int end = TMath.min(n, start + p.batchSize);
+                    netMean.sgdStep(X, y, order, start, end, p.lr, p.l2);
+                }
+            }
+
+            // Residuals e = y - mu(x)
+            residuals  = new double[n];
+            residByRow = new double[data.getNumRows()];
+            Arrays.fill(residByRow, Double.NaN);
+
+            double sse = 0, sumE = 0, sumE2 = 0;
+            boolean doStrata = p.stratifyResidualsByDiscreteParents
+                    && encoder.hasAnyDiscreteParents();
+            Map<Integer, ArrayList<Double>> tmpStrata = doStrata ? new HashMap<>() : null;
+
+            for (int i = 0; i < n; i++) {
+                double yhat = netMean.predict(X[i]);
+                double e    = y[i] - yhat;
+                residuals[i]      = e;
+                residByRow[rows[i]] = e;
+                sse   += e * e;
+                sumE  += e;
+                sumE2 += e * e;
+                if (doStrata) {
+                    int sig = discreteSignatureFromDataRow(data, rows[i], encoder);
+                    tmpStrata.computeIfAbsent(sig, k -> new ArrayList<>()).add(e);
+                }
+            }
+
+            residMean = sumE / n;
+            double varE = (n > 1)
+                    ? (sumE2 - n * residMean * residMean) / (n - 1.0) : 1.0;
+            residSd = TMath.sqrt(TMath.max(1e-12, varE));
+
+            if (doStrata && tmpStrata.size() <= p.maxResidualStrata) {
+                residualsBySig = new HashMap<>();
+                for (var ent : tmpStrata.entrySet()) {
+                    var list = ent.getValue();
+                    double[] arr = new double[list.size()];
+                    for (int k = 0; k < arr.length; k++) arr[k] = list.get(k);
+                    residualsBySig.put(ent.getKey(), arr);
+                }
+            } else {
+                residualsBySig = null;
+            }
+
+            addNodeReportContinuous(childIndex, parentIdx, n, sse / n, residMean, residSd);
+
+            // Stage 2: fit g(x, e)
+            double[][] XE = new double[n][encoder.featureDim + 1];
+            for (int i = 0; i < n; i++) {
+                System.arraycopy(X[i], 0, XE[i], 0, encoder.featureDim);
+                XE[i][encoder.featureDim] = (residuals[i] - residMean) / residSd;
+            }
+            for (int ep = 0; ep < p.epochs; ep++) {
+                shuffleIndices(order, rng);
+                for (int start = 0; start < n; start += p.batchSize) {
+                    int end = TMath.min(n, start + p.batchSize);
+                    netGNM.sgdStep(XE, y, order, start, end, p.lr, p.l2);
+                }
+            }
+        }
     }
 
     private final class DiscreteMechanism extends Mechanism implements TetradSerializable {
@@ -2273,6 +2398,39 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
             double[] probs = new double[numLevels];
             net.predictProbsInto(workX, probs);
             return probs;
+        }
+
+        // Add to DiscreteMechanism:
+        void fitFromEncoded(EncodedClassificationData enc, Random rng, Params p) {
+            double[][] X = enc.X;
+            int[]      y = enc.y;
+            int        n = enc.n;
+
+            // base probs still need data access — read once here.
+            TrainingRows tr = TrainingRows.forNode(data, childIndex, parentIdx);
+            baseProbs = empiricalProbs(data, tr, childIndex, numLevels);
+
+            int[] order = new int[n];
+            for (int i = 0; i < n; i++) order[i] = i;
+
+            for (int ep = 0; ep < p.epochs; ep++) {
+                shuffleIndices(order, rng);
+                for (int start = 0; start < n; start += p.batchSize) {
+                    int end = TMath.min(n, start + p.batchSize);
+                    net.sgdStep(X, y, order, start, end, p.lr, p.l2);
+                }
+            }
+
+            double xent = 0; int used = 0;
+            for (int i = 0; i < n; i++) {
+                int yi = y[i];
+                if (yi < 0 || yi >= numLevels) continue;
+                double[] probs = net.predictProbs(X[i]);
+                xent += -TMath.log(TMath.max(1e-300, probs[yi]));
+                used++;
+            }
+            addNodeReportDiscrete(childIndex, parentIdx, n,
+                    used > 0 ? xent / used : Double.NaN, numLevels);
         }
     }
 

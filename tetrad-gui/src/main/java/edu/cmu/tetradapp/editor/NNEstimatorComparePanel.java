@@ -384,6 +384,10 @@ public final class NNEstimatorComparePanel extends JPanel {
             edgeResultLabel.setText(" ");
             status.setText("Computing parent strengths for " + childName + "…");
 
+//            edgeTableModel.clear();
+
+            edgeTableModel.removeResultsForChild(childName);
+
             new SwingWorker<List<EdgePair>, EdgePair>() {
 
                 @Override
@@ -672,6 +676,16 @@ public final class NNEstimatorComparePanel extends JPanel {
 
         private static String fmt(double v) {
             return Double.isFinite(v) ? String.format("%.4f", v) : "—";
+        }
+
+//        void clear() {
+//            rows.clear();
+//            fireTableDataChanged();
+//        }
+
+        void removeResultsForChild(String childName) {
+            rows.removeIf(r -> r.edge().childName.equals(childName));
+            fireTableDataChanged();
         }
     }
 

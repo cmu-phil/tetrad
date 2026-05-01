@@ -12,6 +12,9 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.Serial;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.DoubleAdder;
+import java.util.stream.IntStream;
 
 /**
  * Pure-library neural-network estimator for a DAG factorization.
@@ -221,54 +224,62 @@ public final class NNEstimator implements TetradSerializable {
         List<Node> variables = observedData.getVariables();
         int p = variables.size();
 
-        // Per-variable OOS accumulators.
-        double[] sseCont = new double[p];  // sum of squared errors (continuous nodes)
-        int[] nCont = new int[p];     // OOS row count (continuous)
-//        double[] lossDisc = new double[p];  // sum of 0-1 loss (discrete nodes)
-        double[] xentDisc = new double[p];  // sum of cross-entropy (discrete nodes)
-        int[] nDisc = new int[p];     // OOS row count (discrete)
+        // Thread-safe per-variable OOS accumulators.
+        DoubleAdder[]        sseCont  = new DoubleAdder[p];
+        AtomicInteger[]      nCont    = new AtomicInteger[p];
+        DoubleAdder[]        xentDisc = new DoubleAdder[p];
+        AtomicInteger[]      nDisc    = new AtomicInteger[p];
+        for (int j = 0; j < p; j++) {
+            sseCont[j]  = new DoubleAdder();
+            nCont[j]    = new AtomicInteger(0);
+            xentDisc[j] = new DoubleAdder();
+            nDisc[j]    = new AtomicInteger(0);
+        }
 
-        // Whole-graph OOS MMD² across folds.
-        double totalMmd2 = 0.0;
-        int mmd2Count = 0;
+        DoubleAdder totalMmd2Adder  = new DoubleAdder();
+        AtomicInteger mmd2CountAtomic = new AtomicInteger(0);
 
         // Baseline statistics from the full dataset.
-        double[] baselineMse = computeBaselineMse(variables);
+        double[] baselineMse  = computeBaselineMse(variables);
         double[] baselineXent = computeBaselineXent(variables);
 
         int foldSize = n / k;
 
-        for (int fold = 0; fold < k; fold++) {
+        // ── Parallel fold loop ────────────────────────────────────────────────────
+        // Each fold trains its own simulator on its own training subset — no shared
+        // mutable state between folds. Accumulators use DoubleAdder/AtomicInteger
+        // for lock-free thread-safe updates.
+
+        IntStream.range(0, k).parallel().forEach(fold -> {
             int testStart = fold * foldSize;
-            int testEnd = (fold == k - 1) ? n : testStart + foldSize;
-            int testN = testEnd - testStart;
-            int trainN = n - testN;
+            int testEnd   = (fold == k - 1) ? n : testStart + foldSize;
+            int testN     = testEnd - testStart;
+            int trainN    = n - testN;
 
             // Partition row indices.
             int[] trainRows = new int[trainN];
-            int[] testRows = new int[testN];
+            int[] testRows  = new int[testN];
             int ti = 0, vi = 0;
             for (int r = 0; r < n; r++) {
                 if (r >= testStart && r < testEnd) testRows[vi++] = r;
-                else trainRows[ti++] = r;
+                else                               trainRows[ti++] = r;
             }
 
             DataSet trainSet = rowSubset(observedData, trainRows);
-            DataSet testSet = rowSubset(observedData, testRows);
+            DataSet testSet  = rowSubset(observedData, testRows);
 
             // Train a fresh simulator on this fold's training data.
             long foldSeed = params.seed ^ (long) fold * 0x9E3779B97F4A7C15L;
             TrainedDagSimulatorGNM sim = buildSimulator(trainSet, foldSeed);
             sim.fit();
 
-            // ── Node-level OOS ────────────────────────────────────────────────
+            // ── Node-level OOS ────────────────────────────────────────────────────
 
             for (int j = 0; j < p; j++) {
-                Node var = variables.get(j);
+                Node var     = variables.get(j);
                 boolean isDisc = (var instanceof DiscreteVariable);
 
                 for (int ti2 = 0; ti2 < testN; ti2++) {
-                    // predictNode operates on testSet indices (0-based within testSet).
                     double pred = sim.predictNode(j, testSet, ti2);
 
                     // NaN signals a root node — no conditional prediction available.
@@ -278,26 +289,20 @@ public final class NNEstimator implements TetradSerializable {
                         double obs = testSet.getDouble(ti2, j);
                         if (!Double.isFinite(obs)) continue;
                         double err = obs - pred;
-                        sseCont[j] += err * err;
-                        nCont[j]++;
+                        sseCont[j].add(err * err);
+                        nCont[j].incrementAndGet();
                     } else {
-//                        int obs = TrainedDagSimulatorGNM.safeGetInt(testSet, ti2, j);
-//                        if (obs < 0) continue;
-//                        // pred is argmax class; use 0-1 loss as proxy for cross-entropy.
-//                        lossDisc[j] += (obs == (int) pred) ? 0.0 : 1.0;
-//                        nDisc[j]++;
-
                         double[] probs = sim.predictNodeProbs(j, testSet, ti2);
                         if (probs == null) continue;
                         int obs = TrainedDagSimulatorGNM.safeGetInt(testSet, ti2, j);
                         if (obs < 0 || obs >= probs.length) continue;
-                        xentDisc[j] += -TMath.log(TMath.max(probs[obs], 1e-300));
-                        nDisc[j]++;
+                        xentDisc[j].add(-TMath.log(TMath.max(probs[obs], 1e-300)));
+                        nDisc[j].incrementAndGet();
                     }
                 }
             }
 
-            // ── Whole-graph OOS MMD² ──────────────────────────────────────────
+            // ── Whole-graph OOS MMD² ──────────────────────────────────────────────
 
             try {
                 TrainedDagSimulatorGNM.SimResult simResult = sim.simulate(testN);
@@ -313,55 +318,43 @@ public final class NNEstimator implements TetradSerializable {
                         1.0,
                         params.mmdMaxRows);
 
-                totalMmd2 += mmd2;
-                mmd2Count++;
+                totalMmd2Adder.add(mmd2);
+                mmd2CountAtomic.incrementAndGet();
             } catch (Exception ignored) {
                 // If simulation fails for a fold, skip its MMD² contribution.
             }
-        }
+        });
 
-        // ── Assemble per-node summaries (non-root nodes only) ─────────────────
+        // ── Assemble per-node summaries (non-root nodes only) ─────────────────────
 
         List<NodeCVSummary> summaries = new ArrayList<>();
 
         for (int j = 0; j < p; j++) {
-            Node var = variables.get(j);
+            Node var     = variables.get(j);
             boolean isDisc = (var instanceof DiscreteVariable);
 
             List<String> parentNames = new ArrayList<>();
             for (Node parent : dag.getParents(var)) parentNames.add(parent.getName());
             if (parentNames.isEmpty()) continue;   // skip roots
 
-//            if (parentNames.isEmpty()) {
-//                summaries.add(new NodeCVSummary(
-//                        var.getName(),
-//                        isDisc,
-//                        parentNames,
-//                        k,
-//                        isDisc ? Double.NaN : 0.0,   // oosMse = baseline (zero improvement)
-//                        isDisc ? Double.NaN : baselineMse[j],
-//                        !isDisc ? Double.NaN : 0.0,  // oosXent = baseline (zero improvement)
-//                        !isDisc ? Double.NaN : baselineXent[j]));
-//                continue;
-//            }
-
-            double oosMse = (nCont[j] > 0) ? sseCont[j] / nCont[j] : Double.NaN;
-//            double oosLoss = (nDisc[j] > 0) ? lossDisc[j] / nDisc[j]  : Double.NaN;
-            double oosXent = (nDisc[j] > 0) ? xentDisc[j] / nDisc[j] : Double.NaN;
+            double oosMse  = (nCont[j].get() > 0)
+                    ? sseCont[j].sum()  / nCont[j].get()  : Double.NaN;
+            double oosXent = (nDisc[j].get() > 0)
+                    ? xentDisc[j].sum() / nDisc[j].get() : Double.NaN;
 
             summaries.add(new NodeCVSummary(
                     var.getName(),
                     isDisc,
                     parentNames,
                     k,
-                    isDisc ? Double.NaN : oosMse,
-                    isDisc ? Double.NaN : baselineMse[j],
-//                    !isDisc ? Double.NaN : oosLoss,
+                    isDisc  ? Double.NaN : oosMse,
+                    isDisc  ? Double.NaN : baselineMse[j],
                     !isDisc ? Double.NaN : oosXent,
                     !isDisc ? Double.NaN : baselineXent[j]));
         }
 
-        double meanMmd2 = (mmd2Count > 0) ? totalMmd2 / mmd2Count : Double.NaN;
+        double meanMmd2 = (mmd2CountAtomic.get() > 0)
+                ? totalMmd2Adder.sum() / mmd2CountAtomic.get() : Double.NaN;
         cvReport = new CVReport(k, summaries, meanMmd2);
         return cvReport;
     }
