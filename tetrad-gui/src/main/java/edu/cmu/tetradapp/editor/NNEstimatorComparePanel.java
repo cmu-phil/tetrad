@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.CVReport;
 import edu.cmu.tetrad.sem.EdgeStrengthResult;
 import edu.cmu.tetrad.sem.NodeCVSummary;
+import edu.cmu.tetrad.sem.PartialEdgeStrengthResult;
 import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetradapp.model.NNEstimatorModel;
@@ -31,9 +32,9 @@ import java.util.concurrent.ExecutionException;
  * <ol>
  *   <li><b>Cross-Validation</b> — k-fold OOS metrics per node plus whole-graph
  *       MMD². Results are restored from the model on relaunch.</li>
- *   <li><b>Edge Strength</b> — select a child node and compute the strength of
- *       each of its parent edges by retraining the child's mechanism without
- *       that parent, holding all other mechanisms fixed.</li>
+ *   <li><b>Edge Strength</b> — select a child node and compute the marginal
+ *       and partial strength of each of its parent edges. Results appear
+ *       progressively as each parent is computed.</li>
  *   <li><b>Observed vs. Resimulated</b> — side-by-side plot matrix.</li>
  * </ol>
  *
@@ -176,7 +177,6 @@ public final class NNEstimatorComparePanel extends JPanel {
         JPanel tab = new JPanel(new BorderLayout(8, 8));
         tab.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
-        // Populate child selector with non-root nodes, sorted.
         populateChildCombo();
 
         JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
@@ -184,9 +184,10 @@ public final class NNEstimatorComparePanel extends JPanel {
         controls.add(childCombo);
         controls.add(new JLabel("Simulated n:"));
         controls.add(edgeSimNSpinner);
+        controls.add(new JLabel("  CV k:"));
+        controls.add(kSpinner);
         controls.add(computeEdgeButton);
 
-        // Progress and result labels.
         edgeProgressLabel.setFont(
                 edgeProgressLabel.getFont().deriveFont(Font.PLAIN, 11f));
         edgeResultLabel.setFont(
@@ -198,10 +199,9 @@ public final class NNEstimatorComparePanel extends JPanel {
         labelPanel.add(edgeResultLabel);
 
         JPanel top = new JPanel(new BorderLayout());
-        top.add(controls,    BorderLayout.NORTH);
-        top.add(labelPanel,  BorderLayout.SOUTH);
+        top.add(controls,   BorderLayout.NORTH);
+        top.add(labelPanel, BorderLayout.SOUTH);
 
-        // History table — accumulates results, newest first, sortable.
         edgeTable.setFillsViewportHeight(true);
         edgeTable.setRowHeight(22);
         edgeTable.setAutoCreateRowSorter(true);
@@ -212,12 +212,10 @@ public final class NNEstimatorComparePanel extends JPanel {
 
         JLabel note = new JLabel(
                 "<html><i>"
-                        + "For the selected child node, each parent's edge is removed in turn "
-                        + "and the child's mechanism is retrained without it (all other mechanisms "
-                        + "unchanged). Higher MMD² = stronger edge. "
-                        + "ΔVar = var(removed) − var(original) for continuous nodes; "
-                        + "positive means the parent was explaining variance. "
-                        + "KL = KL divergence in bits for discrete nodes."
+                        + "MMD² and ΔVar: marginal effect of removing the edge. "
+                        + "Partial R²: OOS R² of residual regression R ~ X after controlling for "
+                        + "other parents — positive (green/bold) = X explains variance beyond other parents. "
+                        + "KL divergence in bits for discrete nodes."
                         + "</i></html>");
         note.setFont(note.getFont().deriveFont(Font.PLAIN, 11f));
         note.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
@@ -263,22 +261,15 @@ public final class NNEstimatorComparePanel extends JPanel {
         return p;
     }
 
-    // ── child combo population ────────────────────────────────────────────────
+    // ── child combo ───────────────────────────────────────────────────────────
 
-    /**
-     * Populates the child node selector with all non-root nodes (those that
-     * have at least one parent), sorted alphabetically.
-     */
     private void populateChildCombo() {
         childCombo.removeAllItems();
-        List<String> childNames = new ArrayList<>();
-        for (Node n : dag.getNodes()) {
-            if (!dag.getParents(n).isEmpty()) {
-                childNames.add(n.getName());
-            }
-        }
-        Collections.sort(childNames);
-        for (String name : childNames) childCombo.addItem(name);
+        List<String> names = new ArrayList<>();
+        for (Node n : dag.getNodes())
+            if (!dag.getParents(n).isEmpty()) names.add(n.getName());
+        Collections.sort(names);
+        for (String name : names) childCombo.addItem(name);
         computeEdgeButton.setEnabled(
                 model.getEstimator() != null && childCombo.getItemCount() > 0);
     }
@@ -359,6 +350,13 @@ public final class NNEstimatorComparePanel extends JPanel {
         });
     }
 
+    /**
+     * Pair holder for SwingWorker publish/process — carries both the marginal
+     * and partial results for one parent edge so they arrive together.
+     */
+    private record EdgePair(EdgeStrengthResult edge,
+                            PartialEdgeStrengthResult partial) {}
+
     private void wireEdgeStrength() {
         computeEdgeButton.addActionListener(e -> {
             String childName = (String) childCombo.getSelectedItem();
@@ -367,7 +365,6 @@ public final class NNEstimatorComparePanel extends JPanel {
             Node childNode = dag.getNode(childName);
             if (childNode == null) return;
 
-            // Collect parents sorted alphabetically.
             List<Node> parents = new ArrayList<>(dag.getParents(childNode));
             parents.sort(Comparator.comparing(Node::getName));
 
@@ -376,7 +373,8 @@ public final class NNEstimatorComparePanel extends JPanel {
                 return;
             }
 
-            int simN = ((Number) edgeSimNSpinner.getValue()).intValue();
+            int simN  = ((Number) edgeSimNSpinner.getValue()).intValue();
+            int cvK   = ((Number) kSpinner.getValue()).intValue();
             int total = parents.size();
 
             computeEdgeButton.setEnabled(false);
@@ -386,50 +384,58 @@ public final class NNEstimatorComparePanel extends JPanel {
             edgeResultLabel.setText(" ");
             status.setText("Computing parent strengths for " + childName + "…");
 
-            new SwingWorker<List<EdgeStrengthResult>, EdgeStrengthResult>() {
+            new SwingWorker<List<EdgePair>, EdgePair>() {
 
                 @Override
-                protected List<EdgeStrengthResult> doInBackground() {
-                    List<EdgeStrengthResult> results = new ArrayList<>();
+                protected List<EdgePair> doInBackground() {
+                    List<EdgePair> results = new ArrayList<>();
                     for (int i = 0; i < parents.size(); i++) {
                         Node parent = parents.get(i);
-                        // Publish progress update before computing.
                         final int idx = i;
                         SwingUtilities.invokeLater(() ->
                                 edgeProgressLabel.setText(
                                         "Computing " + (idx + 1) + " of " + total
-                                                + ": " + parent.getName() + " → " + childName + "…"));
+                                                + ": " + parent.getName()
+                                                + " \u2192 " + childName + "…"));
 
-                        EdgeStrengthResult result = model.getEstimator()
-                                .computeEdgeStrength(parent.getName(), childName, simN);
-                        results.add(result);
-                        publish(result);
+                        EdgeStrengthResult edge = model.getEstimator()
+                                .computeEdgeStrength(
+                                        parent.getName(), childName, simN);
+
+                        PartialEdgeStrengthResult partial = model.getEstimator()
+                                .computePartialEdgeStrength(
+                                        parent.getName(), childName, cvK);
+
+                        EdgePair pair = new EdgePair(edge, partial);
+                        results.add(pair);
+                        publish(pair);
                     }
                     return results;
                 }
 
                 @Override
-                protected void process(List<EdgeStrengthResult> chunks) {
-                    // Add each result to the table as it arrives.
-                    for (EdgeStrengthResult r : chunks) {
-                        edgeTableModel.addResult(r);
+                protected void process(List<EdgePair> chunks) {
+                    for (EdgePair pair : chunks) {
+                        edgeTableModel.addResult(pair.edge(), pair.partial());
                     }
                 }
 
                 @Override
                 protected void done() {
                     try {
-                        List<EdgeStrengthResult> results = get();
-                        // Summary: show strongest edge by MMD².
+                        List<EdgePair> results = get();
+                        // Highlight the strongest edge by MMD².
                         results.stream()
-                                .max(Comparator.comparingDouble(r -> r.mmd2))
+                                .max(Comparator.comparingDouble(p -> p.edge().mmd2))
                                 .ifPresent(strongest ->
                                         edgeResultLabel.setText(
-                                                "Strongest: " + strongest.toSummaryLine()));
+                                                "Strongest: "
+                                                        + strongest.edge().toSummaryLine()));
                         edgeProgressLabel.setText(
-                                "Done — " + results.size() + " parent(s) computed for "
-                                        + childName + ".");
-                        status.setText("Edge strengths computed for " + childName + ".");
+                                "Done — " + results.size()
+                                        + " parent(s) computed for " + childName + ".");
+                        status.setText(
+                                "Edge strengths computed for " + childName + ".");
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
                         edgeProgressLabel.setText("Interrupted.");
@@ -459,7 +465,8 @@ public final class NNEstimatorComparePanel extends JPanel {
             return;
         }
         status.setText(String.format(
-                "n = %d  |  MMD² = %.4f  |  Mean node improvement = %.4f  |  Nodes improved = %.0f%%",
+                "n = %d  |  MMD² = %.4f  |  Mean node improvement = %.4f"
+                        + "  |  Nodes improved = %.0f%%",
                 model.getSampleSize(),
                 report.getMmd2(),
                 report.getMeanImprovement(),
@@ -520,12 +527,35 @@ public final class NNEstimatorComparePanel extends JPanel {
                 Component c = super.getTableCellRendererComponent(
                         table, value, isSelected, hasFocus, row, column);
                 int modelCol = table.convertColumnIndexToModel(column);
+
+                // Left-align the edge name column; right-align everything else.
                 setHorizontalAlignment(modelCol == EdgeStrengthTableModel.COL_EDGE
                         ? SwingConstants.LEFT : SwingConstants.RIGHT);
-                setForeground(isSelected
-                        ? table.getSelectionForeground()
-                        : table.getForeground());
-                setFont(getFont().deriveFont(Font.PLAIN));
+
+                // Color-code the partial R² column the same way as OOS R² in CV.
+                if (modelCol == EdgeStrengthTableModel.COL_PARTIAL
+                        && value instanceof String s && !s.equals("—")) {
+                    try {
+                        double v = Double.parseDouble(s);
+                        if (v > 0) {
+                            setForeground(new Color(0, 130, 0));
+                            setFont(getFont().deriveFont(Font.BOLD));
+                        } else {
+                            setForeground(Color.RED);
+                            setFont(getFont().deriveFont(Font.PLAIN));
+                        }
+                    } catch (NumberFormatException ignored) {
+                        setForeground(isSelected
+                                ? table.getSelectionForeground()
+                                : table.getForeground());
+                        setFont(getFont().deriveFont(Font.PLAIN));
+                    }
+                } else {
+                    setForeground(isSelected
+                            ? table.getSelectionForeground()
+                            : table.getForeground());
+                    setFont(getFont().deriveFont(Font.PLAIN));
+                }
                 return c;
             }
         });
@@ -590,19 +620,24 @@ public final class NNEstimatorComparePanel extends JPanel {
 
     private static final class EdgeStrengthTableModel extends AbstractTableModel {
 
-        static final int COL_EDGE  = 0;
-        static final int COL_MMD2  = 1;
-        static final int COL_DELTA = 2;
-        static final int COL_TYPE  = 3;
-        static final int COL_N     = 4;
-
         private static final String[] COLUMNS =
-                {"Edge", "MMD²", "ΔVar / KL (bits)", "Type", "Sim n"};
+                {"Edge", "MMD²", "ΔVar / KL (bits)",
+                        "Partial R² / Xent Improv.", "Type", "Sim n"};
 
-        private final List<EdgeStrengthResult> rows = new ArrayList<>();
+        static final int COL_EDGE    = 0;
+        static final int COL_MMD2    = 1;
+        static final int COL_DELTA   = 2;
+        static final int COL_PARTIAL = 3;
+        static final int COL_TYPE    = 4;
+        static final int COL_N       = 5;
 
-        void addResult(EdgeStrengthResult r) {
-            rows.add(0, r);   // newest first
+        private record EdgeRow(EdgeStrengthResult edge,
+                               PartialEdgeStrengthResult partial) {}
+
+        private final List<EdgeRow> rows = new ArrayList<>();
+
+        void addResult(EdgeStrengthResult edge, PartialEdgeStrengthResult partial) {
+            rows.add(0, new EdgeRow(edge, partial));   // newest first
             fireTableDataChanged();
         }
 
@@ -612,15 +647,25 @@ public final class NNEstimatorComparePanel extends JPanel {
 
         @Override
         public Object getValueAt(int row, int col) {
-            EdgeStrengthResult r = rows.get(row);
+            EdgeRow er = rows.get(row);
+            EdgeStrengthResult        e = er.edge();
+            PartialEdgeStrengthResult p = er.partial();
             return switch (col) {
-                case COL_EDGE  -> r.parentName + " \u2192 " + r.childName;
-                case COL_MMD2  -> fmt(r.mmd2);
-                case COL_DELTA -> r.discreteChild
-                        ? fmt(r.klDivBits) + " bits"
-                        : fmt(r.varianceDiff);
-                case COL_TYPE  -> r.discreteChild ? "Discrete" : "Continuous";
-                case COL_N     -> r.simulatedN;
+                case COL_EDGE  -> e.parentName + " \u2192 " + e.childName;
+                case COL_MMD2  -> fmt(e.mmd2);
+                case COL_DELTA -> e.discreteChild
+                        ? fmt(e.klDivBits) + " bits"
+                        : fmt(e.varianceDiff);
+                case COL_PARTIAL -> {
+                    if (p == null) yield "—";
+                    yield p.discreteChild
+                            ? (Double.isFinite(p.partialXentImprovement)
+                               ? fmt(p.partialXentImprovement) : "—")
+                            : (Double.isFinite(p.partialR2)
+                               ? fmt(p.partialR2) : "—");
+                }
+                case COL_TYPE -> e.discreteChild ? "Discrete" : "Continuous";
+                case COL_N    -> e.simulatedN;
                 default -> "";
             };
         }

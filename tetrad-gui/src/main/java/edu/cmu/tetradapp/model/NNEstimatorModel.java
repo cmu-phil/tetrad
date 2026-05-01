@@ -4,10 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.sem.NNEstimator;
-import edu.cmu.tetrad.sem.NNEstimatorParams;
-import edu.cmu.tetrad.sem.AdequacyReport;
-import edu.cmu.tetrad.sem.CVReport;
+import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetradapp.session.SessionModel;
@@ -172,6 +169,14 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
             return estimator.getCvReport();
         }
         return persistedCvReport;
+    }
+
+    public PartialEdgeStrengthResult computePartialEdgeStrength(
+            String parentName, String childName, int k) {
+        if (estimator == null)
+            throw new IllegalStateException(
+                    "resimulate() must be called before computePartialEdgeStrength().");
+        return estimator.computePartialEdgeStrength(parentName, childName, k);
     }
 
     /** @return the sample size used in the most recent resimulate() call */

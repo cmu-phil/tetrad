@@ -470,6 +470,121 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
     }
 
     /**
+     * Fits a single-input MLP regression of {@code rVals} ~ {@code xVals} using
+     * k-fold cross-validation and returns the OOS R².
+     *
+     * <p>Used by {@link NNEstimator#computePartialEdgeStrength} to measure how
+     * much a single parent X explains in the residuals R = Y − Ŷ, after the
+     * other parents have already been accounted for by the fitted mechanism.
+     *
+     * <p>Uses the same {@link MlpRegressor} and training hyperparameters as the
+     * main fit, keeping the residual regression consistent with the primary model.
+     *
+     * @param xVals  observed values of the parent variable (length n)
+     * @param rVals  residuals R = Y − Ŷ (length n); NaN entries are skipped
+     * @param k      number of CV folds
+     * @param seed   random seed for weight initialization and fold shuffling
+     * @return OOS R² of the residual regression; NaN if insufficient data
+     */
+    public double fitResidualRegressionOosR2(double[] xVals, double[] rVals,
+                                             int k, long seed) {
+        // Collect valid (finite) rows.
+        List<Integer> valid = new ArrayList<>();
+        for (int i = 0; i < xVals.length; i++) {
+            if (Double.isFinite(xVals[i]) && Double.isFinite(rVals[i]))
+                valid.add(i);
+        }
+
+        int nValid = valid.size();
+        if (nValid < k * 2) return Double.NaN;   // too few rows
+
+        // Baseline: variance of residuals (denominator for R²).
+        double sum = 0, sum2 = 0;
+        for (int i : valid) { sum += rVals[i]; sum2 += rVals[i] * rVals[i]; }
+        double mean    = sum / nValid;
+        double residVar = (sum2 - nValid * mean * mean) / (nValid - 1);
+        if (!Double.isFinite(residVar) || residVar <= 0) return Double.NaN;
+
+        // Shuffle valid indices for CV.
+        int[] order = valid.stream().mapToInt(Integer::intValue).toArray();
+        Random rng = new Random(seed);
+        for (int i = nValid - 1; i > 0; i--) {
+            int j = rng.nextInt(i + 1);
+            int t = order[i]; order[i] = order[j]; order[j] = t;
+        }
+
+        int foldSize = nValid / k;
+        double totalSse = 0.0;
+        int    totalN   = 0;
+
+        int[] layers = params.getHiddenLayers();
+
+        for (int fold = 0; fold < k; fold++) {
+            int testStart = fold * foldSize;
+            int testEnd   = (fold == k - 1) ? nValid : testStart + foldSize;
+
+            // Build encoded train/test arrays — single continuous input, z-scored.
+            // Compute mean/sd of X on training rows only.
+            double xSum = 0, xSum2 = 0;
+            int xCount = 0;
+            for (int vi = 0; vi < nValid; vi++) {
+                if (vi >= testStart && vi < testEnd) continue;
+                double x = xVals[order[vi]];
+                xSum += x; xSum2 += x * x; xCount++;
+            }
+            double xMean = (xCount > 0) ? xSum / xCount : 0.0;
+            double xVar  = (xCount > 1)
+                    ? (xSum2 - xCount * xMean * xMean) / (xCount - 1) : 1.0;
+            double xSd   = TMath.sqrt(TMath.max(1e-12, xVar));
+
+            int trainN = nValid - (testEnd - testStart);
+            int testN  = testEnd - testStart;
+
+            double[][] Xtr = new double[trainN][1];
+            double[]   Ytr = new double[trainN];
+            double[][] Xte = new double[testN][1];
+            double[]   Yte = new double[testN];
+
+            int ti = 0, vi2 = 0;
+            for (int vi = 0; vi < nValid; vi++) {
+                double xz = (xVals[order[vi]] - xMean) / xSd;
+                double r  = rVals[order[vi]];
+                if (vi >= testStart && vi < testEnd) {
+                    Xte[vi2][0] = xz; Yte[vi2] = r; vi2++;
+                } else {
+                    Xtr[ti][0]  = xz; Ytr[ti]  = r; ti++;
+                }
+            }
+
+            // Fit MLP on training fold.
+            MlpRegressor mlp = new MlpRegressor(1, layers,
+                    new Random(mixSeed(seed, fold, 0xCAFEBABEL)));
+
+            int[]   idx = new int[trainN];
+            for (int i = 0; i < trainN; i++) idx[i] = i;
+
+            for (int ep = 0; ep < params.epochs; ep++) {
+                shuffleIndices(idx, new Random(mixSeed(seed, fold * 1000 + ep, 0L)));
+                for (int start = 0; start < trainN; start += params.batchSize) {
+                    int end = TMath.min(trainN, start + params.batchSize);
+                    mlp.sgdStep(Xtr, Ytr, idx, start, end, params.lr, params.l2);
+                }
+            }
+
+            // Evaluate on test fold.
+            for (int i = 0; i < testN; i++) {
+                double pred = mlp.predict(Xte[i]);
+                double err  = Yte[i] - pred;
+                totalSse += err * err;
+                totalN++;
+            }
+        }
+
+        double oosMse = (totalN > 0) ? totalSse / totalN : Double.NaN;
+        return Double.isFinite(oosMse) ? 1.0 - oosMse / residVar : Double.NaN;
+    }
+
+    /**
      * Simulates data by generating continuous and discrete values for all variables in the
      * trained directed acyclic graph (DAG) model. It performs the simulation using a specified
      * number of samples and a seed for random number generation.

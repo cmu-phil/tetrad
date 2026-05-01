@@ -545,6 +545,217 @@ public final class NNEstimator implements TetradSerializable {
                 simulatedN);
     }
 
+    /**
+     * Computes the partial edge strength of X → Y by residualizing Y on its
+     * other parents and measuring how much X explains in the residual via
+     * k-fold cross-validation.
+     *
+     * <p>This is the nonparametric analog of partial R² in regression. Unlike
+     * {@link #computeEdgeStrength}, which measures the marginal contribution
+     * of X averaged over the joint distribution of all parents, this method
+     * controls for the other parents first — making it less sensitive to
+     * inter-parent correlations and giving a cleaner signal about whether X
+     * causally contributes to Y.
+     *
+     * <p>For continuous children:
+     * <ol>
+     *   <li>Compute residuals R = Y − Ŷ on the observed data, where Ŷ is
+     *       the zero-noise point prediction of the fitted mechanism using all
+     *       parents (i.e. the conditional mean estimate).</li>
+     *   <li>Pass R and the observed values of X to
+     *       {@link TrainedDagSimulatorGNM#fitResidualRegressionOosR2}, which
+     *       fits a small MLP of R ~ X via k-fold CV and returns OOS R².</li>
+     * </ol>
+     *
+     * <p>For discrete children, a CV cross-entropy improvement is computed
+     * by comparing the full model (all parents) against the reduced model
+     * (all parents except X) on held-out folds.
+     *
+     * <p>Requires {@link #fit()} to have been called first.
+     *
+     * @param parentName name of the parent variable X
+     * @param childName  name of the child variable Y
+     * @param k          number of CV folds for the residual regression
+     * @return a {@link PartialEdgeStrengthResult} with partial R² (continuous)
+     *         or cross-entropy improvement (discrete)
+     * @throws IllegalStateException    if {@link #fit()} has not been called
+     * @throws IllegalArgumentException if the edge does not exist or either
+     *                                  variable is not found
+     */
+    public PartialEdgeStrengthResult computePartialEdgeStrength(
+            String parentName, String childName, int k) {
+        checkFitted();
+
+        // ── Validate ──────────────────────────────────────────────────────────
+
+        Node parentNode = findVariable(parentName);
+        Node childNode  = findVariable(childName);
+
+        if (!dag.isParentOf(parentNode, childNode)) {
+            throw new IllegalArgumentException(
+                    "No edge " + parentName + " → " + childName + " in the DAG.");
+        }
+
+        boolean isDisc = (childNode instanceof DiscreteVariable);
+
+        int n = observedData.getNumRows();
+        if (k < 2) throw new IllegalArgumentException("k must be >= 2");
+        if (k > n) throw new IllegalArgumentException(
+                "k must be <= number of rows (" + n + ")");
+
+        // ── Build column index map ────────────────────────────────────────────
+
+        List<Node> variables = observedData.getVariables();
+        Map<String, Integer> indexByName = new HashMap<>();
+        for (int j = 0; j < variables.size(); j++) {
+            indexByName.put(variables.get(j).getName(), j);
+        }
+        int childIdx  = indexByName.get(childName);
+        int parentIdx = indexByName.get(parentName);
+
+        // ── Continuous child ──────────────────────────────────────────────────
+
+        if (!isDisc) {
+
+            // Build reduced parent index array: all parents of Y except X.
+            List<Node> allParents = dag.getParents(childNode);
+            int[] reducedParentIndices = allParents.stream()
+                    .filter(p -> !p.getName().equals(parentName))
+                    .mapToInt(p -> indexByName.get(p.getName()))
+                    .toArray();
+
+            // Build reduced simulator: retrain only Y's mechanism without X,
+            // all other mechanisms unchanged.
+            TrainedDagSimulatorGNM reducedSim = fittedSimulator.withReducedParents(
+                    childIdx, reducedParentIndices, params.seed ^ 0xDEADBEEFL);
+
+            // Compute residuals R = Y - Ŷ_reduced on all observed rows.
+            // Ŷ_reduced is the prediction from the reduced mechanism (without X),
+            // so R still contains X's signal — it has not been absorbed yet.
+            double[] xVals = new double[n];
+            double[] rVals = new double[n];
+
+            double residSum = 0, residSum2 = 0;
+            int residCount = 0;
+
+            for (int i = 0; i < n; i++) {
+                double yObs = observedData.getDouble(i, childIdx);
+                double yHat = reducedSim.predictNode(childIdx, observedData, i);
+                double xVal = observedData.getDouble(i, parentIdx);
+
+                xVals[i] = xVal;
+
+                if (Double.isFinite(yObs) && Double.isFinite(yHat)) {
+                    double r = yObs - yHat;
+                    rVals[i] = r;
+                    residSum  += r;
+                    residSum2 += r * r;
+                    residCount++;
+                } else {
+                    rVals[i] = Double.NaN;
+                }
+            }
+
+            // Residual variance — baseline for partial R².
+            double residVar = Double.NaN;
+            if (residCount > 1) {
+                double residMean = residSum / residCount;
+                residVar = (residSum2 - residCount * residMean * residMean)
+                        / (residCount - 1);
+            }
+
+            // OOS R² of residual regression R ~ X via TrainedDagSimulatorGNM.
+            double partialR2 = fittedSimulator.fitResidualRegressionOosR2(
+                    xVals, rVals, k, params.seed ^ 0xDEADBEEFL);
+
+            return new PartialEdgeStrengthResult(
+                    parentName, childName, false,
+                    partialR2, residVar, Double.NaN, k);
+
+            // ── Discrete child ────────────────────────────────────────────────────
+
+        } else {
+
+            // Build reduced parent index array: all parents of Y except X.
+            List<Node> allParents = dag.getParents(childNode);
+            int[] reducedParentIndices = allParents.stream()
+                    .filter(p -> !p.getName().equals(parentName))
+                    .mapToInt(p -> indexByName.get(p.getName()))
+                    .toArray();
+
+            int L = ((DiscreteVariable) childNode).getNumCategories();
+            int foldSize = n / k;
+
+            double totalXentFull    = 0.0;
+            double totalXentReduced = 0.0;
+            int    totalN           = 0;
+
+            for (int fold = 0; fold < k; fold++) {
+                int testStart = fold * foldSize;
+                int testEnd   = (fold == k - 1) ? n : testStart + foldSize;
+                int testN     = testEnd - testStart;
+                int trainN    = n - testN;
+
+
+                // Partition row indices.
+                int[] trainRows = new int[trainN];
+                int[] testRows  = new int[testN];
+                int ti = 0, vi = 0;
+                for (int r = 0; r < n; r++) {
+                    if (r >= testStart && r < testEnd) testRows[vi++]  = r;
+                    else                               trainRows[ti++] = r;
+                }
+
+                DataSet trainSet = rowSubset(observedData, trainRows);
+                DataSet testSet  = rowSubset(observedData, testRows);
+
+                // Full model: all parents, trained on this fold's training data.
+                long foldSeed = params.seed ^ (long) fold * 0x9E3779B97F4A7C15L;
+                TrainedDagSimulatorGNM fullSim = buildSimulator(trainSet, foldSeed);
+                fullSim.fit();
+
+                // Reduced model: all parents except X, retrain child only.
+                TrainedDagSimulatorGNM reducedSim = fullSim.withReducedParents(
+                        childIdx, reducedParentIndices, foldSeed ^ 0xDEADBEEFL);
+
+                // Evaluate cross-entropy of both models on held-out rows.
+                for (int ti2 = 0; ti2 < testN; ti2++) {
+                    int obs = TrainedDagSimulatorGNM.safeGetInt(
+                            testSet, ti2, childIdx);
+                    if (obs < 0 || obs >= L) continue;
+
+                    double[] fullProbs    = fullSim.predictNodeProbs(
+                            childIdx, testSet, ti2);
+                    double[] reducedProbs = reducedSim.predictNodeProbs(
+                            childIdx, testSet, ti2);
+
+                    if (fullProbs == null || reducedProbs == null) continue;
+
+                    totalXentFull    += -TMath.log(
+                            TMath.max(fullProbs[obs],    1e-300));
+                    totalXentReduced += -TMath.log(
+                            TMath.max(reducedProbs[obs], 1e-300));
+                    totalN++;
+                }
+            }
+
+            // Positive improvement = full model (with X) beats reduced model.
+            double xentFull    = (totalN > 0)
+                    ? totalXentFull    / totalN : Double.NaN;
+            double xentReduced = (totalN > 0)
+                    ? totalXentReduced / totalN : Double.NaN;
+            double improvement = (Double.isFinite(xentFull)
+                    && Double.isFinite(xentReduced))
+                    ? xentReduced - xentFull
+                    : Double.NaN;
+
+            return new PartialEdgeStrengthResult(
+                    parentName, childName, true,
+                    Double.NaN, Double.NaN, improvement, k);
+        }
+    }
+
+
     // ── private helpers ───────────────────────────────────────────────────────
 
     private Node findVariable(String name) {
