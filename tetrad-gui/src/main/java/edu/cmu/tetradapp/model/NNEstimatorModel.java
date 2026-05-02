@@ -43,8 +43,8 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
     private final Parameters parameters;
 
     // ── core estimator (transient — refitted on demand) ─────────────────────
-//    private transient NNEstimator estimator;
-    private NNEstimator estimator;
+    private transient NNEstimator estimator;
+//    private NNEstimator estimator;
 
     // ── persisted state ─────────────────────────────────────────────────────
     private int sampleSize;

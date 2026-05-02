@@ -129,7 +129,7 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
         tabbedPane.add("Graph", this.graphicalEditor());
         this.add(tabbedPane, BorderLayout.CENTER);
         JMenuBar menuBar = initializeMenuBar(graphicalEditor);
-        SemGraph graph = (SemGraph) graphicalEditor.getWorkbench().getGraph();
+        SemGraph graph = new SemGraph(graphicalEditor.getWorkbench().getGraph());
         boolean shown = wrapper.isShowErrors();
         graph.setShowErrorTerms(shown);
         initializeErrorTermsMenu(wrapper, shown);

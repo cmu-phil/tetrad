@@ -130,7 +130,7 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
      * By default, hide the error terms.
      */
     private boolean semGraphInitializer(GeneralizedSemPmWrapper wrapper) {
-        SemGraph graph = (SemGraph) this.graphicalEditor.getWorkbench().getGraph();
+        SemGraph graph = new SemGraph(this.graphicalEditor.getWorkbench().getGraph());
         boolean shown = wrapper.isShowErrors();
         graph.setShowErrorTerms(shown);
         return shown;

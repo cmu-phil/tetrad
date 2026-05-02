@@ -448,6 +448,10 @@ public final class NNEstimator implements TetradSerializable {
     public EdgeStrengthResult computeEdgeStrength(String parentName,
                                                   String childName,
                                                   int simulatedN) {
+//        if (true) {
+//            return new EdgeStrengthResult(parentName, childName, false, 0.0, 0.0, 0.0, 0);
+//        }
+
         checkFitted();
         if (simulatedN < 1)
             throw new IllegalArgumentException("simulatedN must be >= 1");

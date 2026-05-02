@@ -112,7 +112,7 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
         file.add(new SaveComponentImage(this.graphicalEditor.getWorkbench(),
                 "Save Graph Image..."));
 
-        SemGraph graph = (SemGraph) this.graphicalEditor.getWorkbench().getGraph();
+        SemGraph graph = new SemGraph(this.graphicalEditor.getWorkbench().getGraph());
         boolean shown = wrapper.isShowErrors();
         graph.setShowErrorTerms(shown);
 
