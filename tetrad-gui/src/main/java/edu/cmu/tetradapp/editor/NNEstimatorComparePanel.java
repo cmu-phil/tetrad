@@ -268,7 +268,8 @@ public final class NNEstimatorComparePanel extends JPanel {
         List<String> names = new ArrayList<>();
         for (Node n : dag.getNodes())
             if (!dag.getParents(n).isEmpty()) names.add(n.getName());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());
+//        Collections.sort(names);
         for (String name : names) childCombo.addItem(name);
         computeEdgeButton.setEnabled(
                 model.getEstimator() != null && childCombo.getItemCount() > 0);
