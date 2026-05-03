@@ -830,7 +830,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         final double[] mult = {0.35, 0.7, 1.4, 2.8};
 
         // Precompute things that do NOT depend on bw2
-        final boolean useNxN = (discParents != null && discParents.length >= 2);
+//        final boolean useNxN = (discParents != null && discParents.length >= 2);
+        final boolean useNxN = useNxNKernel(discParents, n);
 
         final BaseWB base = buildBaseWB(mFeatures, contParents.length, seed);
         final double[] kcatLowerPacked = useNxN ? precomputeKcatLowerPacked(discParents, rows, n) : null;
@@ -877,6 +878,20 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         else bw2OptCache.put(fullKey, bestBw2);
 
         return bestBw2;
+    }
+
+    private boolean useNxNKernel(int[] discParents, int n) {
+        if (discParents == null || discParents.length == 0) return false;
+        long kronDim = numFeatures;
+        for (int dp : discParents) {
+            kronDim *= numLevels(dp);
+            if (kronDim > n || kronDim > MAX_KRONECKER_DIMENSION) return true;
+        }
+        return false;
+    }
+
+    private int numLevels(int varIndex) {
+        return ((DiscreteVariable) variables.get(varIndex)).getNumCategories();
     }
 
     /**
@@ -1204,7 +1219,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
         // Heuristic: Kronecker feature dimension is m * Π L. This explodes quickly.
         // For >= 2 discrete parents, always use the n×n kernel path.
-        if (discParents.length >= 2) {
+        if (useNxNKernel(discParents, n)) {
+//        if (discParents.length >= 2) {
             return gpLogML_mixedKernelNxN(
                     yCentered, contParents, discParents, rows, n,
                     mFeatures, bw2, sigma2, seed
