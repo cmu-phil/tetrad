@@ -18,7 +18,7 @@ import java.util.List;
  * Harness for tuning and comparing FASK left-right pairwise orientation rules
  * on random residualized linear SEMs with skewed errors.
  *
- * <p>Protocol:
+ * x
  * <ul>
  *   <li>Generate a random residualized graph using RandomGraph.randomCyclicGraph3(...)</li>
  *   <li>Simulate data from a linear SEM with Exp(1) errors</li>
@@ -55,7 +55,7 @@ public final class FaskLeftRightHarness {
     /**
      * Average degree used in the graph generator.
      */
-    private static final int AVG_DEGREE = 3;
+    private static final int AVG_DEGREE = 2;
 
     private static final DecimalFormat DF = new DecimalFormat("0.000");
 
