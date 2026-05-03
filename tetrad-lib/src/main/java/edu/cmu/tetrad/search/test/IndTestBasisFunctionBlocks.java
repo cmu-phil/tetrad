@@ -176,6 +176,14 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
      */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+        if (DiscreteIndependenceUtils.isAllDiscrete(x, y, new HashSet<>(z))) {
+            return DiscreteIndependenceUtils.conditionalChiSquare(
+                    (DataSet) getData(), variables, null,
+                    x, y, new ArrayList<>(z),
+                    new IndependenceFact(x, y, z),
+                    alpha);
+        }
+
         // Delegate to the block test to get the p-value, then apply this class's alpha.
         IndependenceResult r = this.blocksTest.checkIndependence(x, y, z);
         double p = r.getPValue();

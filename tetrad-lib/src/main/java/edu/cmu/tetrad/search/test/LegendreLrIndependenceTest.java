@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.LegendreBicScore;
@@ -147,8 +146,12 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
         IndependenceFact fact = new IndependenceFact(x, y, _z);
 
         // If all variables are discrete, fall back to chi-square
-        if (isDiscrete(x) && isDiscrete(y) && z.stream().allMatch(this::isDiscrete)) {
-            return chiSquareTest(x, y, z, fact);
+        if (DiscreteIndependenceUtils.isAllDiscrete(x, y, new HashSet<>(z))) {
+            return DiscreteIndependenceUtils.conditionalChiSquare(
+                    (DataSet) getData(), variables, null,
+                    x, y, z != null ? new ArrayList<>(z) : new ArrayList<>(),
+                    new IndependenceFact(x, y, z != null ? _z : new HashSet<>()),
+                    alpha);
         }
 
         int xi = variables.indexOf(x);
@@ -232,94 +235,6 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
                 }
             }
         }
-    }
-
-    private IndependenceResult chiSquareTest(Node x, Node y, List<Node> z, IndependenceFact fact) {
-        DataSet dataSet = (DataSet) getData();
-        int xi = variables.indexOf(x);
-        int yi = variables.indexOf(y);
-
-        int kx = ((DiscreteVariable) x).getNumCategories();
-        int ky = ((DiscreteVariable) y).getNumCategories();
-
-        // Group rows by Z stratum
-        Map<List<Integer>, int[][]> tables = new HashMap<>();
-
-        for (int r = 0; r < dataSet.getNumRows(); r++) {
-            // Build Z key
-            List<Integer> key = new ArrayList<>(z.size());
-            boolean missing = false;
-
-            for (Node zn : z) {
-                int val = dataSet.getInt(r, variables.indexOf(zn));
-                if (val == DiscreteVariable.MISSING_VALUE) { missing = true; break; }
-                key.add(val);
-            }
-
-            int xval = dataSet.getInt(r, xi);
-            int yval = dataSet.getInt(r, yi);
-
-            if (missing
-                    || xval == DiscreteVariable.MISSING_VALUE
-                    || yval == DiscreteVariable.MISSING_VALUE) continue;
-
-            tables.computeIfAbsent(key, k -> new int[kx][ky])[xval][yval]++;
-        }
-
-        // Accumulate chi-square statistic and df across strata
-        double chiSq = 0.0;
-        double df = 0.0;
-
-        for (int[][] table : tables.values()) {
-            // Row and column marginals
-            int[] rowSums = new int[kx];
-            int[] colSums = new int[ky];
-            int total = 0;
-
-            for (int a = 0; a < kx; a++)
-                for (int b = 0; b < ky; b++) {
-                    rowSums[a] += table[a][b];
-                    colSums[b] += table[a][b];
-                    total += table[a][b];
-                }
-
-            if (total == 0) continue;
-
-            // Count cells with nonzero expected count
-            for (int a = 0; a < kx; a++) {
-                for (int b = 0; b < ky; b++) {
-                    double expected = (double) rowSums[a] * colSums[b] / total;
-                    if (expected > 0) {
-                        double diff = table[a][b] - expected;
-                        chiSq += diff * diff / expected;
-                    }
-                }
-            }
-
-            // df for this stratum = (nonzero rows - 1) * (nonzero cols - 1)
-            long nonzeroRows = Arrays.stream(rowSums).filter(s -> s > 0).count();
-            long nonzeroCols = Arrays.stream(colSums).filter(s -> s > 0).count();
-            df += (nonzeroRows - 1) * (nonzeroCols - 1);
-        }
-
-        if (df < 1) {
-            return new IndependenceResult(fact, true, Double.NaN, Double.NaN);
-        }
-
-        ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
-        double p = 1.0 - chi2.cumulativeProbability(chiSq);
-        p = TMath.max(0.0, TMath.min(1.0, p));
-
-        boolean indep = p > getAlpha();
-        return new IndependenceResult(fact, indep, p, getAlpha() - p);
-    }
-
-    private boolean isDiscrete(Node node) {
-        return node instanceof DiscreteVariable;
-    }
-
-    private boolean isABoolean(double p) {
-        return p > getAlpha();
     }
 
     /**
