@@ -1,13 +1,15 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.LegendreBicScore;
 import edu.cmu.tetrad.util.NaturalSort;
+import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -73,6 +75,7 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
     private final boolean disableInteractionsForTest;
     private boolean verbose = false;
     private double alpha = 0.01;
+    private IndTestChiSquare indTestChiSquare;
 
     /**
      * Constructs a LegendreLrIndependenceTest instance with the provided scoring method.
@@ -90,16 +93,21 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
      * and an option to disable interactions during the test.
      * The test checks for statistical independence using Legendre's minimax score.
      *
-     * @param score the scoring mechanism used to evaluate statistical independence.
-     *              Must be an instance of MinimaxLegendreScore. Cannot be null.
+     * @param score                      the scoring mechanism used to evaluate statistical independence.
+     *                                   Must be an instance of MinimaxLegendreScore. Cannot be null.
      * @param disableInteractionsForTest a boolean indicating whether interactions should be
-     *                                    disabled during the test.
+     *                                   disabled during the test.
      */
     public LegendreLrIndependenceTest(LegendreBicScore score, boolean disableInteractionsForTest) {
         if (score == null) throw new NullPointerException("score");
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.disableInteractionsForTest = disableInteractionsForTest;
+        indTestChiSquare = new IndTestChiSquare((DataSet) getData(), alpha);
+        DataModel dm = getData();
+        if (!(dm instanceof DataSet ds))
+            throw new IllegalArgumentException("LegendreLrIndependenceTest requires a DataSet.");
+        indTestChiSquare = new IndTestChiSquare(ds, alpha);
     }
 
     private static boolean getUseInteractions(LegendreBicScore s) throws Exception {
@@ -121,20 +129,27 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
      * The method evaluates the independence based on Legendre's minimax scoring function and computes a
      * p-value using a likelihood ratio test.
      *
-     * @param x the first node whose independence is to be tested. Must be present in the list of variables.
-     * @param y the second node whose independence is to be tested. Must be present in the list of variables.
+     * @param x  the first node whose independence is to be tested. Must be present in the list of variables.
+     * @param y  the second node whose independence is to be tested. Must be present in the list of variables.
      * @param _z the set of nodes to condition on during the test. All nodes in the set must be present in
      *           the list of variables.
      * @return an IndependenceResult object containing the result of the independence test, including
-     *         whether the nodes are independent, the p-value, and additional diagnostic information.
+     * whether the nodes are independent, the p-value, and additional diagnostic information.
      * @throws InterruptedException if the independence test is interrupted during execution.
      */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) throws InterruptedException {
+
         List<Node> z = new ArrayList<>(_z);
-        z.sort(NaturalSort.naturalComparator());;
+        z.sort(NaturalSort.naturalComparator());
+        ;
 
         IndependenceFact fact = new IndependenceFact(x, y, _z);
+
+        // If all variables are discrete, fall back to chi-square
+        if (isDiscrete(x) && isDiscrete(y) && z.stream().allMatch(this::isDiscrete)) {
+            return chiSquareTest(x, y, z, fact);
+        }
 
         int xi = variables.indexOf(x);
         int yi = variables.indexOf(y);
@@ -219,6 +234,90 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
         }
     }
 
+    private IndependenceResult chiSquareTest(Node x, Node y, List<Node> z, IndependenceFact fact) {
+        DataSet dataSet = (DataSet) getData();
+        int xi = variables.indexOf(x);
+        int yi = variables.indexOf(y);
+
+        int kx = ((DiscreteVariable) x).getNumCategories();
+        int ky = ((DiscreteVariable) y).getNumCategories();
+
+        // Group rows by Z stratum
+        Map<List<Integer>, int[][]> tables = new HashMap<>();
+
+        for (int r = 0; r < dataSet.getNumRows(); r++) {
+            // Build Z key
+            List<Integer> key = new ArrayList<>(z.size());
+            boolean missing = false;
+
+            for (Node zn : z) {
+                int val = dataSet.getInt(r, variables.indexOf(zn));
+                if (val == DiscreteVariable.MISSING_VALUE) { missing = true; break; }
+                key.add(val);
+            }
+
+            int xval = dataSet.getInt(r, xi);
+            int yval = dataSet.getInt(r, yi);
+
+            if (missing
+                    || xval == DiscreteVariable.MISSING_VALUE
+                    || yval == DiscreteVariable.MISSING_VALUE) continue;
+
+            tables.computeIfAbsent(key, k -> new int[kx][ky])[xval][yval]++;
+        }
+
+        // Accumulate chi-square statistic and df across strata
+        double chiSq = 0.0;
+        double df = 0.0;
+
+        for (int[][] table : tables.values()) {
+            // Row and column marginals
+            int[] rowSums = new int[kx];
+            int[] colSums = new int[ky];
+            int total = 0;
+
+            for (int a = 0; a < kx; a++)
+                for (int b = 0; b < ky; b++) {
+                    rowSums[a] += table[a][b];
+                    colSums[b] += table[a][b];
+                    total += table[a][b];
+                }
+
+            if (total == 0) continue;
+
+            // Count cells with nonzero expected count
+            for (int a = 0; a < kx; a++) {
+                for (int b = 0; b < ky; b++) {
+                    double expected = (double) rowSums[a] * colSums[b] / total;
+                    if (expected > 0) {
+                        double diff = table[a][b] - expected;
+                        chiSq += diff * diff / expected;
+                    }
+                }
+            }
+
+            // df for this stratum = (nonzero rows - 1) * (nonzero cols - 1)
+            long nonzeroRows = Arrays.stream(rowSums).filter(s -> s > 0).count();
+            long nonzeroCols = Arrays.stream(colSums).filter(s -> s > 0).count();
+            df += (nonzeroRows - 1) * (nonzeroCols - 1);
+        }
+
+        if (df < 1) {
+            return new IndependenceResult(fact, true, Double.NaN, Double.NaN);
+        }
+
+        ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
+        double p = 1.0 - chi2.cumulativeProbability(chiSq);
+        p = TMath.max(0.0, TMath.min(1.0, p));
+
+        boolean indep = p > getAlpha();
+        return new IndependenceResult(fact, indep, p, getAlpha() - p);
+    }
+
+    private boolean isDiscrete(Node node) {
+        return node instanceof DiscreteVariable;
+    }
+
     private boolean isABoolean(double p) {
         return p > getAlpha();
     }
@@ -227,7 +326,7 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
      * Retrieves the significance level (alpha) used by the independence test.
      *
      * @return the significance level (alpha) as a double. This value represents
-     *         the threshold for determining statistical independence in the test.
+     * the threshold for determining statistical independence in the test.
      */
     @Override
     public double getAlpha() {
@@ -245,14 +344,15 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
     @Override
     public void setAlpha(double alpha) {
         this.alpha = alpha;
+        indTestChiSquare.setAlpha(alpha);
     }
 
     /**
      * Retrieves the list of variables used in the statistical independence test.
      *
      * @return a List of Node objects representing the variables included in the test.
-     *         The returned list is a copy, ensuring that modifications to the returned
-     *         list do not affect the original data structure.
+     * The returned list is a copy, ensuring that modifications to the returned
+     * list do not affect the original data structure.
      */
     @Override
     public List<Node> getVariables() {

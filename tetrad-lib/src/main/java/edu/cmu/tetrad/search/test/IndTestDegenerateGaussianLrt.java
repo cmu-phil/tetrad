@@ -20,10 +20,7 @@
 
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.DoubleDataBox;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
@@ -109,11 +106,110 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
     // IndependenceTest
     // -------------------------------------------------------------------------
 
+//    @Override
+//    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+//        double pValue = getPValue(x, y, z);
+//        boolean independent = pValue > alpha;
+//        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue, alpha - pValue);
+//    }
+
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+        // If all variables are discrete, fall back to chi-square
+        if (isAllDiscrete(x, y, z)) {
+            return chiSquareTest(x, y, z != null ? new ArrayList<>(z) : new ArrayList<>(),
+                    new IndependenceFact(x, y, z != null ? z : new HashSet<>()));
+        }
+
         double pValue = getPValue(x, y, z);
         boolean independent = pValue > alpha;
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue, alpha - pValue);
+    }
+
+    private boolean isAllDiscrete(Node x, Node y, Set<Node> z) {
+        if (!(x instanceof DiscreteVariable)) return false;
+        if (!(y instanceof DiscreteVariable)) return false;
+        if (z != null) {
+            for (Node zn : z) {
+                if (!(zn instanceof DiscreteVariable)) return false;
+            }
+        }
+        return true;
+    }
+
+    private IndependenceResult chiSquareTest(Node x, Node y, List<Node> z, IndependenceFact fact) {
+        int xi = variables.indexOf(x);
+        int yi = variables.indexOf(y);
+
+        int kx = ((DiscreteVariable) x).getNumCategories();
+        int ky = ((DiscreteVariable) y).getNumCategories();
+
+        Map<List<Integer>, int[][]> tables = new HashMap<>();
+
+        for (int r = 0; r < dataSet.getNumRows(); r++) {
+            int row = (rows == null) ? r : rows.get(r);
+
+            List<Integer> key = new ArrayList<>(z.size());
+            boolean missing = false;
+
+            for (Node zn : z) {
+                int val = dataSet.getInt(row, variables.indexOf(zn));
+                if (val == DiscreteVariable.MISSING_VALUE) { missing = true; break; }
+                key.add(val);
+            }
+
+            int xval = dataSet.getInt(row, xi);
+            int yval = dataSet.getInt(row, yi);
+
+            if (missing
+                    || xval == DiscreteVariable.MISSING_VALUE
+                    || yval == DiscreteVariable.MISSING_VALUE) continue;
+
+            tables.computeIfAbsent(key, k -> new int[kx][ky])[xval][yval]++;
+        }
+
+        double chiSq = 0.0;
+        double df = 0.0;
+
+        for (int[][] table : tables.values()) {
+            int[] rowSums = new int[kx];
+            int[] colSums = new int[ky];
+            int total = 0;
+
+            for (int a = 0; a < kx; a++)
+                for (int b = 0; b < ky; b++) {
+                    rowSums[a] += table[a][b];
+                    colSums[b] += table[a][b];
+                    total += table[a][b];
+                }
+
+            if (total == 0) continue;
+
+            for (int a = 0; a < kx; a++) {
+                for (int b = 0; b < ky; b++) {
+                    double expected = (double) rowSums[a] * colSums[b] / total;
+                    if (expected > 0) {
+                        double diff = table[a][b] - expected;
+                        chiSq += diff * diff / expected;
+                    }
+                }
+            }
+
+            long nonzeroRows = Arrays.stream(rowSums).filter(s -> s > 0).count();
+            long nonzeroCols = Arrays.stream(colSums).filter(s -> s > 0).count();
+            df += (nonzeroRows - 1) * (nonzeroCols - 1);
+        }
+
+        if (df < 1) {
+            return new IndependenceResult(fact, true, Double.NaN, Double.NaN);
+        }
+
+        ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
+        double p = 1.0 - chi2.cumulativeProbability(chiSq);
+        p = TMath.max(0.0, TMath.min(1.0, p));
+
+        boolean indep = p > alpha;
+        return new IndependenceResult(fact, indep, p, alpha - p);
     }
 
     private double getPValue(Node x, Node y, Set<Node> z) {
