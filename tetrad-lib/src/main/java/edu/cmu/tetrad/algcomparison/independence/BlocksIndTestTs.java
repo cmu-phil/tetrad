@@ -24,6 +24,7 @@ import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.test.TrekSeparationBlocksIndependence;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -86,6 +87,12 @@ public class BlocksIndTestTs implements BlockIndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
+        for (int i = 0; i < dataModel.getVariables().size(); i++) {
+            if (dataModel.getVariables().get(i) instanceof DiscreteVariable) {
+                throw new IllegalArgumentException("Blocks-Test-TS is not supported for discrete variables.");
+            }
+        }
+
         TrekSeparationBlocksIndependence test = new TrekSeparationBlocksIndependence(blockSpec);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));

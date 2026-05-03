@@ -9,7 +9,13 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetradapp.session.SessionModel;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serial;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -31,11 +37,25 @@ import java.util.Objects;
  *   <li>{@link #runCrossValidate(int)} — runs k-fold CV for honest OOS metrics;
  *       slower (k full fits), should be run via SwingWorker.</li>
  * </ul>
+ *
+ * <p>Persisted state across session save/reload:
+ * <ul>
+ *   <li>{@link #persistedCvReport} — CV report from the most recent
+ *       {@link #runCrossValidate(int)} call.</li>
+ *   <li>{@link #persistedEdgeStrengthResults} — accumulated edge-strength rows
+ *       from all {@link #addEdgeStrengthResult} calls, so the Edge Strength tab
+ *       is repopulated on editor reopen without re-running the computation.</li>
+ * </ul>
  */
 public final class NNEstimatorModel extends DataWrapper implements SessionModel {
 
+    /**
+     * Bump from 23L → 24L to signal the addition of
+     * {@code persistedEdgeStrengthResults}. Older sessions that lack the field
+     * are handled gracefully in {@link #readObject}.
+     */
     @Serial
-    private static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 24L;
 
     // ── session inputs ──────────────────────────────────────────────────────
     private final Graph inputGraph;
@@ -44,7 +64,6 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
 
     // ── core estimator (transient — refitted on demand) ─────────────────────
     private transient NNEstimator estimator;
-//    private NNEstimator estimator;
 
     // ── persisted state ─────────────────────────────────────────────────────
     private int sampleSize;
@@ -54,6 +73,14 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
      * session save/reload without needing to rerun cross-validation.
      */
     private CVReport persistedCvReport;
+
+    /**
+     * Accumulated edge-strength results persisted across session save/reload.
+     * Initialised here so the field is never null in a freshly constructed
+     * instance; {@link #readObject} re-initialises it for old sessions that
+     * were serialised before this field existed.
+     */
+    private List<EdgeStrengthPair> persistedEdgeStrengthResults = new ArrayList<>();
 
     // ── constructor ───────────────────────────────────────────────────────────
 
@@ -121,18 +148,49 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
      * @param k number of folds; must be &ge; 2 and &le; number of data rows
      * @throws IllegalStateException if resimulate() has not been called yet
      */
-//    public void runCrossValidate(int k) {
-//        if (estimator == null)
-//            throw new IllegalStateException("resimulate() must be called before runCrossValidate().");
-//        estimator.crossValidate(k);
-//    }
-
     public void runCrossValidate(int k) {
         if (estimator == null)
-            throw new IllegalStateException("resimulate() must be called before runCrossValidate().");
+            throw new IllegalStateException(
+                    "resimulate() must be called before runCrossValidate().");
         estimator.crossValidate(k);
-        // Persist the result independently of the estimator.
         persistedCvReport = estimator.getCvReport();
+    }
+
+    // ── edge-strength persistence ─────────────────────────────────────────────
+
+    /**
+     * Appends one completed edge-strength result to the persisted list.
+     * Called from the panel's SwingWorker {@code process()} as each parent
+     * finishes, so partial runs are saved even if the editor is closed early.
+     *
+     * @param edge    marginal edge-strength result
+     * @param partial partial (residual) edge-strength result; may be null
+     */
+    public void addEdgeStrengthResult(EdgeStrengthResult edge,
+                                      PartialEdgeStrengthResult partial) {
+        persistedEdgeStrengthResults.add(new EdgeStrengthPair(edge, partial));
+    }
+
+    /**
+     * Removes all persisted edge-strength rows whose child matches
+     * {@code childName}. Call this before re-computing a child's parents so
+     * stale rows are not duplicated on reload.
+     *
+     * @param childName name of the child node being recomputed
+     */
+    public void removeEdgeStrengthResultsForChild(String childName) {
+        persistedEdgeStrengthResults
+                .removeIf(p -> p.edge().childName.equals(childName));
+    }
+
+    /**
+     * Returns an unmodifiable view of all persisted edge-strength results,
+     * ordered oldest-first (the table model reverses this to newest-first).
+     *
+     * @return live unmodifiable list; never null
+     */
+    public List<EdgeStrengthPair> getEdgeStrengthResults() {
+        return Collections.unmodifiableList(persistedEdgeStrengthResults);
     }
 
     // ── accessors for the editor ──────────────────────────────────────────────
@@ -157,15 +215,13 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
     }
 
     /**
-     * @return the CV report from the most recent runCrossValidate() call,
-     *         or null if cross-validation has not yet been run
+     * Returns the CV report from the most recent {@link #runCrossValidate}
+     * call, preferring the live estimator copy and falling back to the
+     * persisted copy after a session reload.
+     *
+     * @return CV report, or null if cross-validation has not yet been run
      */
-//    public CVReport getCvReport() {
-//        return estimator == null ? null : estimator.getCvReport();
-//    }
-
     public CVReport getCvReport() {
-        // Return persisted report if estimator has been discarded (e.g. after reload).
         if (estimator != null && estimator.getCvReport() != null) {
             return estimator.getCvReport();
         }
@@ -190,13 +246,44 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
 
     public Graph getGraph() { return inputGraph; }
 
+    // ── serialization ─────────────────────────────────────────────────────────
+
+    /**
+     * Ensures {@link #persistedEdgeStrengthResults} is never null when
+     * deserializing a session file that was saved before this field existed
+     * (i.e. with {@code serialVersionUID = 23L}).
+     */
+    @Serial
+    private void readObject(ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        if (persistedEdgeStrengthResults == null) {
+            persistedEdgeStrengthResults = new ArrayList<>();
+        }
+    }
+
     // ── private helpers ───────────────────────────────────────────────────────
 
     private NNEstimatorParams buildParams() {
         NNEstimatorParams p = new NNEstimatorParams();
         p.seed = System.nanoTime();
-        // Future: read mmdFeatures, mmdSeed, mmdMaxRows from this.parameters
-        // once they are exposed in the Parameters dialog.
         return p;
+    }
+
+    // ── nested types ──────────────────────────────────────────────────────────
+
+    /**
+     * Immutable pair of marginal and partial edge-strength results for one
+     * parent→child edge. Stored in {@link #persistedEdgeStrengthResults} and
+     * used by the panel to repopulate the Edge Strength table on reopen.
+     *
+     * <p>Must be {@link Serializable} because instances live inside the
+     * persisted {@link NNEstimatorModel}.
+     */
+    public record EdgeStrengthPair(EdgeStrengthResult edge,
+                                   PartialEdgeStrengthResult partial)
+            implements Serializable {
+        @Serial
+        private static final long serialVersionUID = 1L;
     }
 }

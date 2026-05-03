@@ -34,7 +34,9 @@ import java.util.concurrent.ExecutionException;
  *       MMD². Results are restored from the model on relaunch.</li>
  *   <li><b>Edge Strength</b> — select a child node and compute the marginal
  *       and partial strength of each of its parent edges. Results appear
- *       progressively as each parent is computed.</li>
+ *       progressively as each parent is computed, are accumulated across
+ *       multiple child selections, and are restored from the model on
+ *       relaunch.</li>
  *   <li><b>Observed vs. Resimulated</b> — side-by-side plot matrix.</li>
  * </ol>
  *
@@ -109,13 +111,24 @@ public final class NNEstimatorComparePanel extends JPanel {
         add(tabs,          BorderLayout.CENTER);
         add(buildFooter(), BorderLayout.SOUTH);
 
-        // Restore status and CV report if available.
+        // ── Restore persisted CV report ───────────────────────────────────────
         refreshAdequacyStatus(model);
         CVReport existingCv = model.getCvReport();
         if (existingCv != null) {
             cvTableModel.setReport(existingCv);
             cvSummaryLabel.setText(existingCv.toStatusLine());
             status.setText(existingCv.toStatusLine());
+        }
+
+        // ── Restore persisted edge-strength results ───────────────────────────
+        // Results are stored oldest-first in the model; addResult() prepends
+        // (newest-first) in the table, so we iterate in reverse to preserve
+        // the original newest-first display order after restoration.
+        List<NNEstimatorModel.EdgeStrengthPair> savedEdges =
+                model.getEdgeStrengthResults();
+        for (int i = savedEdges.size() - 1; i >= 0; i--) {
+            NNEstimatorModel.EdgeStrengthPair p = savedEdges.get(i);
+            edgeTableModel.addResult(p.edge(), p.partial());
         }
 
         if (!fitted) {
@@ -269,7 +282,6 @@ public final class NNEstimatorComparePanel extends JPanel {
         for (Node n : dag.getNodes())
             if (!dag.getParents(n).isEmpty()) names.add(n.getName());
         names.sort(NaturalSort.naturalComparator());
-//        Collections.sort(names);
         for (String name : names) childCombo.addItem(name);
         computeEdgeButton.setEnabled(
                 model.getEstimator() != null && childCombo.getItemCount() > 0);
@@ -385,9 +397,10 @@ public final class NNEstimatorComparePanel extends JPanel {
             edgeResultLabel.setText(" ");
             status.setText("Computing parent strengths for " + childName + "…");
 
-//            edgeTableModel.clear();
-
+            // Remove stale rows for this child from both the table and the model
+            // before starting, so a re-run replaces rather than duplicates them.
             edgeTableModel.removeResultsForChild(childName);
+            model.removeEdgeStrengthResultsForChild(childName);
 
             new SwingWorker<List<EdgePair>, EdgePair>() {
 
@@ -421,7 +434,10 @@ public final class NNEstimatorComparePanel extends JPanel {
                 @Override
                 protected void process(List<EdgePair> chunks) {
                     for (EdgePair pair : chunks) {
+                        // Update the table immediately (progressive display).
                         edgeTableModel.addResult(pair.edge(), pair.partial());
+                        // Persist to the model so results survive editor close/reopen.
+                        model.addEdgeStrengthResult(pair.edge(), pair.partial());
                     }
                 }
 
@@ -429,7 +445,6 @@ public final class NNEstimatorComparePanel extends JPanel {
                 protected void done() {
                     try {
                         List<EdgePair> results = get();
-                        // Highlight the strongest edge by MMD².
                         results.stream()
                                 .max(Comparator.comparingDouble(p -> p.edge().mmd2))
                                 .ifPresent(strongest ->
@@ -533,11 +548,9 @@ public final class NNEstimatorComparePanel extends JPanel {
                         table, value, isSelected, hasFocus, row, column);
                 int modelCol = table.convertColumnIndexToModel(column);
 
-                // Left-align the edge name column; right-align everything else.
                 setHorizontalAlignment(modelCol == EdgeStrengthTableModel.COL_EDGE
                         ? SwingConstants.LEFT : SwingConstants.RIGHT);
 
-                // Color-code the partial R² column the same way as OOS R² in CV.
                 if (modelCol == EdgeStrengthTableModel.COL_PARTIAL
                         && value instanceof String s && !s.equals("—")) {
                     try {
@@ -678,11 +691,6 @@ public final class NNEstimatorComparePanel extends JPanel {
         private static String fmt(double v) {
             return Double.isFinite(v) ? String.format("%.4f", v) : "—";
         }
-
-//        void clear() {
-//            rows.clear();
-//            fireTableDataChanged();
-//        }
 
         void removeResultsForChild(String childName) {
             rows.removeIf(r -> r.edge().childName.equals(childName));

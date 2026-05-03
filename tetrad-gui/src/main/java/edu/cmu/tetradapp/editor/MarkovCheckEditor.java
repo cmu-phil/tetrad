@@ -21,6 +21,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -252,7 +253,6 @@ public class MarkovCheckEditor extends JPanel {
 
         indTestJComboBox.addActionListener(e -> {
             class MyWatchedProcess extends WatchedProcess {
-
                 public void watch() {
                     setTest();
                 }
@@ -738,7 +738,13 @@ public class MarkovCheckEditor extends JPanel {
         new WatchedProcess() {
             @Override
             public void watch() {
-                setTest();
+                try {
+                    setTest();
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "Error creating independence test: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    throw new RuntimeException(e);
+                }
+
 
                 tableModelIndep.fireTableDataChanged();
                 tableModelDep.fireTableDataChanged();
@@ -746,7 +752,13 @@ public class MarkovCheckEditor extends JPanel {
                 model.getMarkovCheck().setFindSmallestSubset(removeExtraneousVariables.isSelected());
 
                 model.getMarkovCheck().setFractionResample(fraction.getValue());
-                model.getMarkovCheck().generateResults(true, clear);
+                try {
+                    model.getMarkovCheck().generateResults(true, clear);
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "Error generating results: "
+                            + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    throw new RuntimeException(e);
+                }
 
                 if (checkDependentDistribution.isSelected()) {
                     if (clear) {
@@ -1542,6 +1554,8 @@ public class MarkovCheckEditor extends JPanel {
         List<IndependenceTestModel> models = IndependenceTestModels.getInstance().getModels(dataType);
 
         for (IndependenceTestModel m : models) {
+            if (m.getName().equals("Probabilistic Test")) continue;
+            if (m.getName().equals("Blocks-Test-TS (Trek separation)")) continue;
             this.indTestJComboBox.addItem(m);
         }
 
