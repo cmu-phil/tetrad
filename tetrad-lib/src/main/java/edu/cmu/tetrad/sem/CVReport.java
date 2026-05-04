@@ -71,6 +71,16 @@ public final class CVReport implements TetradSerializable {
 
     // ── constructor ───────────────────────────────────────────────────────────
 
+    /**
+     * Constructs an immutable cross-validation report, summarizing the results of
+     * k-fold cross-validation across multiple nodes.
+     *
+     * @param numFolds The number of folds used in the cross-validation.
+     * @param nodeSummaries A list of per-node cross-validation summaries, where
+     *                      each node is represented as a {@link NodeCVSummary}.
+     * @param meanOosMmd2 The mean out-of-sample squared maximum mean discrepancy
+     *                    (OOS MMD²) across all nodes.
+     */
     public CVReport(int numFolds,
                     List<NodeCVSummary> nodeSummaries,
                     double meanOosMmd2) {
@@ -157,6 +167,16 @@ public final class CVReport implements TetradSerializable {
 //                Double.isFinite(fracNodesBeatBaseline) ? fracNodesBeatBaseline * 100.0 : Double.NaN);
 //    }
 
+    /**
+     * Generates a single-line summary of the cross-validation (CV) results for
+     * the current instance, including details such as the number of CV folds,
+     * mean out-of-sample squared maximum mean discrepancy (MMD²), mean out-of-sample
+     * R², and the count of nodes that improved over the baseline.
+     *
+     * @return A formatted string summarizing the CV results, including the number
+     *         of folds, mean OOS MMD², mean R², and the proportion of nodes that
+     *         beat the baseline.
+     */
     public String toStatusLine() {
         // Count how many non-root nodes beat the baseline.
         int beaten = 0;

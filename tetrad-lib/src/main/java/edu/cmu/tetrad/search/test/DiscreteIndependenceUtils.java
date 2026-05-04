@@ -20,6 +20,10 @@ public class DiscreteIndependenceUtils {
 
     /**
      * Returns true if x, y, and all nodes in z are discrete variables.
+     * @param x the first variable (node) to test
+     * @param y the second variable (node) to test
+     * @param z the list of conditioning variables (nodes) for the test
+     * @return true if all variables are discrete, false otherwise
      */
     public static boolean isAllDiscrete(Node x, Node y, Set<Node> z) {
         if (!(x instanceof DiscreteVariable)) return false;
@@ -36,6 +40,16 @@ public class DiscreteIndependenceUtils {
      * Conditional chi-square test for X _||_ Y | Z, stratifying on Z value tuples.
      * Iterates over rows once, grouping into contingency tables by Z stratum.
      * Respects an optional row subset via the rows parameter (null = all rows).
+     *
+     * @param dataSet the input dataset
+     * @param variables the list of variables in the dataset
+     * @param rows the list of row indices to be used in the test (null = all rows)
+     * @param x the first variable (node) to test for independence
+     * @param y the second variable (node) to test for independence
+     * @param z the list of conditioning variables (nodes) for the test
+     * @param fact the independence fact to be tested
+     * @param alpha the significance level for the test
+     * @return an IndependenceResult object containing test results
      */
     public static IndependenceResult conditionalChiSquare(
             DataSet dataSet,

@@ -80,6 +80,7 @@ public class RecursiveBlocking {
      * @param containing    a set of nodes that must be included in the blocking set
      * @param notFollowed   a set of nodes that must not be traversed during path search
      * @param maxPathLength the maximum allowable length of the paths to block (-1 for no limit)
+     * @param <E>           the type of the graph nodes
      * @return a set of nodes constituting a blocking set for paths between x and y,
      * or {@code null} if no such set is found within the given constraints
      * @throws InterruptedException if the thread executing the method is interrupted
@@ -899,6 +900,8 @@ public class RecursiveBlocking {
 
         /**
          * True iff a blocking set was found.
+         *
+         * @return true iff {@link #blockingSet} is non-null
          */
         public boolean found() {
             return blockingSet != null;

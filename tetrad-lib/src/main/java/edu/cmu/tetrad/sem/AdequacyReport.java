@@ -112,14 +112,33 @@ public final class AdequacyReport implements TetradSerializable {
         return sb.toString();
     }
 
+    /**
+     * Retrieves the squared Maximum Mean Discrepancy (MMD²) value,
+     * which quantifies the alignment between real and simulated data distributions.
+     *
+     * @return The global MMD² value as a double, representing the measure of
+     *         distributional similarity.
+     */
     public double getMmd2() {
         return mmd2;
     }
 
+    /**
+     * Retrieves the mean improvement of nodes over a baseline metric.
+     * @return The mean improvement value as a double, indicating the average
+     *         improvement across nodes.
+     */
     public double getMeanImprovement() {
         return meanImprovement;
     }
 
+    /**
+     * Retrieves the fraction of nodes that demonstrated performance improvement
+     * relative to the baseline.
+     *
+     * @return The fraction of nodes improved as a double, representing the proportion
+     *         of nodes with performance enhancement.
+     */
     public double getFracImproved() {
         return fracNodesImproved;
     }

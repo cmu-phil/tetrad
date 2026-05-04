@@ -845,6 +845,11 @@ public final class Fcit implements IGraphSearch {
 //        this.maxPathLength = maxPathLength;
 //    }
 
+    /**
+     * Sets the radius for RA (Recursive Association) algorithm.
+     *
+     * @param raRadius the radius for RA algorithm to be set
+     */
     public void setRaRadius(int raRadius) {
         this.raRadius = raRadius;
     }

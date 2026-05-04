@@ -52,8 +52,17 @@ public final class NNEstimator implements TetradSerializable {
 
     // ── inputs ───────────────────────────────────────────────────────────────
 
+    /**
+     * The dataset to train on.
+     */
     private final DataSet observedData;
+    /**
+     * The DAG defining the factorization structure.
+     */
     private final Graph dag;
+    /**
+     * The parameters used by this estimator.
+     */
     private final NNEstimatorParams params;
 
     // ── state ────────────────────────────────────────────────────────────────
@@ -360,6 +369,7 @@ public final class NNEstimator implements TetradSerializable {
     }
 
     /**
+     * Returns the observed (input) dataset.
      * @return the observed (input) dataset
      */
     public DataSet getObservedData() {
@@ -367,6 +377,7 @@ public final class NNEstimator implements TetradSerializable {
     }
 
     /**
+     * Returns the DAG used for factorization.
      * @return the DAG used for factorization
      */
     public Graph getDag() {
@@ -374,6 +385,7 @@ public final class NNEstimator implements TetradSerializable {
     }
 
     /**
+     * Returns the DAG as a string.
      * @return the parameters used by this estimator
      */
     public NNEstimatorParams getParams() {
@@ -381,6 +393,7 @@ public final class NNEstimator implements TetradSerializable {
     }
 
     /**
+     * Returns the number of nodes in the DAG.
      * @return the most recently simulated dataset, or {@code null} if
      * {@link #simulate} has not yet been called
      */
@@ -389,6 +402,7 @@ public final class NNEstimator implements TetradSerializable {
     }
 
     /**
+     * Returns the most recently fitted simulator, or {@code null} if
      * @return the adequacy report from the most recent {@link #simulate} call,
      * or {@code null} if {@link #simulate} has not yet been called
      */
@@ -399,14 +413,16 @@ public final class NNEstimator implements TetradSerializable {
     // ── private helpers ──────────────────────────────────────────────────────
 
     /**
-     * @return the CV report from the most recent {@link #crossValidate} call,
-     * or {@code null} if {@link #crossValidate} has not yet been called
+     * Retrieves the CVReport object.
+     *
+     * @return the CVReport object representing the generated CV report.
      */
     public CVReport getCvReport() {
         return cvReport;
     }
 
     /**
+     * Computes the baseline MSE for each variable in the DAG.
      * @return {@code true} if {@link #fit()} has been called successfully
      */
     public boolean isFitted() {

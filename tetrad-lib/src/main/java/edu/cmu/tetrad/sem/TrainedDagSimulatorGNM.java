@@ -82,16 +82,44 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
     private static final long serialVersionUID = 1L;
 
     // -------------------- configuration --------------------
+
+    /**
+     * A thread-safe list that holds NodeReport objects.
+     * This list is used to store reports related to nodes in the system.
+     * It is synchronized to ensure safe access and modification in a concurrent environment.
+     */
     private final List<NodeReport> nodeReports = Collections.synchronizedList(new ArrayList<>());
 
     // -------------------- fit reporting --------------------
+    /**
+     * A final variable representing a DataSet object.
+     */
     private final DataSet data;
+    /**
+     * A final variable representing a Graph object.
+     */
     private final Graph dag;
+    /**
+     * A final variable representing a Params object.
+     * It encapsulates parameters and settings for the simulation process.
+     * The immutability of this variable ensures that the reference to the Params
+     * cannot be altered once assigned.
+     */
     private final Params params;
+    /**
+     * A final variable representing a List of Node objects.
+     */
     private final List<Node> variables;
+    /**
+     * A final variable representing a boolean array.
+     */
     private final boolean[] isDiscrete;
 
     // -------------------- trained model per node --------------------
+    /**
+     * A final variable representing an array of Mechanism objects.
+     * Each Mechanism corresponds to a node in the DAG and encapsulates the learned model for that node.
+     */
     private final Mechanism[] mechanisms;
 
     /**

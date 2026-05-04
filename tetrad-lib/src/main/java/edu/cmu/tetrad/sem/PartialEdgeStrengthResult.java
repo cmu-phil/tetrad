@@ -88,6 +88,10 @@ public final class PartialEdgeStrengthResult implements TetradSerializable {
 
     // ── display ───────────────────────────────────────────────────────────────
 
+    /**
+     * Returns a human-readable one-line summary.
+     * @return a human-readable one-line summary
+     */
     public String toSummaryLine() {
         if (!discreteChild) {
             return String.format(

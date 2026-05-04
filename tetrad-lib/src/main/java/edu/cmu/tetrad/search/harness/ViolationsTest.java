@@ -21,8 +21,21 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
+/**
+ * Unit tests for violations in causal discovery algorithms.
+ */
 public class ViolationsTest {
 
+    /**
+     * Constructor.
+     */
+    public ViolationsTest() {
+
+    }
+
+    /**
+     * Test for linear cancellation faithlessness in PC algorithm.
+     */
     @Test
     public void testLinearCancellationFaithlessness() {
 

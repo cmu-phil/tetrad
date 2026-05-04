@@ -6,7 +6,7 @@ import java.io.Serial;
 
 /**
  * Result of a single edge-strength computation performed by
- * {@link NNEstimator#computeEdgeStrength(String, String)}.
+ * {@link NNEstimator#computeEdgeStrength(String, String, int)}.
  *
  * <p>Edge strength is defined as the change in the marginal distribution of
  * the child variable when the edge from parent to child is removed from the
@@ -90,6 +90,7 @@ public final class EdgeStrengthResult implements TetradSerializable {
 
     /**
      * Returns a human-readable one-line summary.
+     * @return a human-readable one-line summary
      */
     public String toSummaryLine() {
         if (!discreteChild) {
