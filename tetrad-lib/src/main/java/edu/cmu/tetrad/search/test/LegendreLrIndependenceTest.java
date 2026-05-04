@@ -74,7 +74,6 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
     private final boolean disableInteractionsForTest;
     private boolean verbose = false;
     private double alpha = 0.01;
-    private IndTestChiSquare indTestChiSquare;
 
     /**
      * Constructs a LegendreLrIndependenceTest instance with the provided scoring method.
@@ -102,11 +101,9 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.disableInteractionsForTest = disableInteractionsForTest;
-        indTestChiSquare = new IndTestChiSquare((DataSet) getData(), alpha);
         DataModel dm = getData();
         if (!(dm instanceof DataSet ds))
             throw new IllegalArgumentException("LegendreLrIndependenceTest requires a DataSet.");
-        indTestChiSquare = new IndTestChiSquare(ds, alpha);
     }
 
     private static boolean getUseInteractions(LegendreBicScore s) throws Exception {
@@ -146,13 +143,13 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
         IndependenceFact fact = new IndependenceFact(x, y, _z);
 
         // If all variables are discrete, fall back to chi-square
-        if (DiscreteIndependenceUtils.isAllDiscrete(x, y, new HashSet<>(z))) {
-            return DiscreteIndependenceUtils.conditionalChiSquare(
-                    (DataSet) getData(), variables, null,
-                    x, y, z != null ? new ArrayList<>(z) : new ArrayList<>(),
-                    new IndependenceFact(x, y, z != null ? _z : new HashSet<>()),
-                    alpha);
-        }
+//        if (DiscreteIndependenceUtils.isAllDiscrete(x, y, new HashSet<>(z))) {
+//            return DiscreteIndependenceUtils.conditionalChiSquare(
+//                    (DataSet) getData(), variables, null,
+//                    x, y, z != null ? new ArrayList<>(z) : new ArrayList<>(),
+//                    new IndependenceFact(x, y, z != null ? _z : new HashSet<>()),
+//                    alpha);
+//        }
 
         int xi = variables.indexOf(x);
         int yi = variables.indexOf(y);
@@ -259,7 +256,6 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
     @Override
     public void setAlpha(double alpha) {
         this.alpha = alpha;
-        indTestChiSquare.setAlpha(alpha);
     }
 
     /**

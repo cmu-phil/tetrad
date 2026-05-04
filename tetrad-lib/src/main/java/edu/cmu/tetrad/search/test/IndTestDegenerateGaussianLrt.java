@@ -116,13 +116,13 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         // If all variables are discrete, fall back to chi-square
-        if (DiscreteIndependenceUtils.isAllDiscrete(x, y, new HashSet<>(z))) {
-            return DiscreteIndependenceUtils.conditionalChiSquare(
-                    (DataSet) getData(), variables, null,
-                    x, y, z != null ? new ArrayList<>(z) : new ArrayList<>(),
-                    new IndependenceFact(x, y, z != null ? z : new HashSet<>()),
-                    alpha);
-        }
+//        if (DiscreteIndependenceUtils.isAllDiscrete(x, y, new HashSet<>(z))) {
+//            return DiscreteIndependenceUtils.conditionalChiSquare(
+//                    (DataSet) getData(), variables, null,
+//                    x, y, z != null ? new ArrayList<>(z) : new ArrayList<>(),
+//                    new IndependenceFact(x, y, z != null ? z : new HashSet<>()),
+//                    alpha);
+//        }
 
         double pValue = getPValue(x, y, z);
         boolean independent = pValue > alpha;
