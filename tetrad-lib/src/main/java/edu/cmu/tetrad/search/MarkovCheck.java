@@ -421,6 +421,33 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 return new ArrayList<>(facts);
             }
 
+            case GLOBAL_MARKOV: {
+                List<Node> allNodes = new ArrayList<>(graph.getNodes());
+                allNodes.remove(x);
+
+                Set<IndependenceFact> facts = new HashSet<>();
+                MsepTest msepTest = new MsepTest(graph);
+
+                for (Node y : allNodes) {
+                    // Conditioning candidates: everything except x and y
+                    List<Node> candidates = new ArrayList<>(allNodes);
+                    candidates.remove(y);
+
+                    SublistGenerator generator = new SublistGenerator(candidates.size(), candidates.size());
+                    int[] choice;
+
+                    while ((choice = generator.next()) != null) {
+                        Set<Node> z = GraphUtils.asSet(choice, candidates);
+
+                        if (msepTest.isMSeparated(x, y, z)) {
+                            facts.add(new IndependenceFact(x, y, z));
+                        }
+                    }
+                }
+
+                return new ArrayList<>(facts);
+            }
+
             default:
                 throw new IllegalArgumentException(
                         "Unsupported conditioning set type for VertexCheck: " + conditioningSetType
@@ -2228,9 +2255,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
         double leftTail = bd.cumulativeProbability(k);
         double rightTail = 1.0 - bd.cumulativeProbability(k - 1);
-        double pValue = TMath.min(1.0, 2.0 * TMath.min(leftTail, rightTail));
 
-        return pValue;
+        return TMath.min(1.0, 2.0 * TMath.min(leftTail, rightTail));
     }
 
     /**

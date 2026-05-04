@@ -107,7 +107,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     /**
      * The maximum total dimension of the Kronecker-expanded feature map.
      */
-    private static final long MAX_KRONECKER_DIMENSION = 50_000L;
+    private static final long MAX_KRONECKER_DIMENSION = 200_000L;
     /**
      * If true, use valid row subsets when missing exists.
      */
