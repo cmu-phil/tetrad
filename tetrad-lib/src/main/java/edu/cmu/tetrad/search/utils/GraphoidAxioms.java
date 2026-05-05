@@ -253,7 +253,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * Checks if decomposition holds, e.g., X â¥â¥ (Y âª W) |Z ==&gt; (X â¥â¥ Y |Z) â§ (X â¥â¥ W |Z)
+     * Checks if decomposition holds, e.g., X _||_ (Y ∪ W) | Z ==> (X _||_ Y | Z) ∧ (X _||_ W | Z)
      *
      * @return a boolean
      */
@@ -331,7 +331,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * Checks is weak union holds, e.g., X _||_ Y U W | Z ==&gt; X _||_ Y | Z U W
+     * Checks if weak union holds, e.g., X _||_ Y ∪ W | Z ==> X _||_ Y | Z ∪ W
      *
      * @return a boolean
      */
@@ -388,7 +388,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * Checks if contraction holds--e.g., (X â¥â¥ Y |Z) â§ (X â¥â¥ W |Z âª Y) ==&gt; X â¥â¥ (Y âª W) |Z
+     * Checks if contraction holds--e.g., (X _||_ Y | Z) ∧ (X _||_ W | Z ∪ Y) ==> X _||_ (Y ∪ W) | Z
      *
      * @return a boolean
      */
@@ -447,7 +447,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * Checks if intersection holds--e.g., (X â¥â¥ Y | (Z âª W)) â§ (X â¥â¥ W | (Z âª Y)) ==&gt; X â¥â¥ (Y âª W) |Z
+     * Checks if intersection holds--e.g., (X _||_ Y | (Z ∪ W)) ∧ (X _||_ W | (Z ∪ Y)) ==> X _||_ (Y ∪ W) | Z
      *
      * @return a boolean
      */
@@ -519,7 +519,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * Checks if composition holds--e.g., (X â¥â¥ Y | Z) â§ (X â¥â¥ W |Z) ==&gt; X â¥â¥ (Y âª W) |Z
+     * Checks if composition holds--e.g., (X _||_ Y | Z) ∧ (X _||_ W | Z) ==> X _||_ (Y ∪ W) | Z
      *
      * @return a boolean
      */
@@ -578,7 +578,9 @@ public class GraphoidAxioms {
     }
 
     /**
-     * Sets symmetry as assumed--i.e., ensures that X â¥â¥ Y | Z ==&gt; Y â¥â¥ X | Z.
+     * Checks if symmetry holds--i.e., X _||_ Y | Z ==> Y _||_ X | Z
+     *
+     * @return a boolean
      */
     public void ensureSymmetry() {
         for (GraphoidIndFact fact : new HashSet<>(facts)) {
