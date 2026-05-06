@@ -100,9 +100,11 @@ public final class NNEstimatorComparePanel extends JPanel {
                 ? model.getSimulatedData() : observed;
 
         boolean fitted = model.getEstimator() != null;
-        runCvButton.setEnabled(fitted);
-        computeEdgeButton.setEnabled(fitted);
-        computeAllButton.setEnabled(fitted && childCombo.getItemCount() > 0);
+//        runCvButton.setEnabled(fitted);
+//        computeEdgeButton.setEnabled(fitted);
+//        computeAllButton.setEnabled(fitted && childCombo.getItemCount() > 0);
+
+        edgeSimNSpinner.setValue(observed.getNumRows());
 
         // Build tabs.
         JTabbedPane tabs = new JTabbedPane();
@@ -287,8 +289,8 @@ public final class NNEstimatorComparePanel extends JPanel {
             if (!dag.getParents(n).isEmpty()) names.add(n.getName());
         names.sort(NaturalSort.naturalComparator());
         for (String name : names) childCombo.addItem(name);
-        computeEdgeButton.setEnabled(
-                model.getEstimator() != null && childCombo.getItemCount() > 0);
+//        computeEdgeButton.setEnabled(
+//                model.getEstimator() != null && childCombo.getItemCount() > 0);
     }
 
     // ── wiring ────────────────────────────────────────────────────────────────
@@ -296,10 +298,10 @@ public final class NNEstimatorComparePanel extends JPanel {
     private void wireResimulate() {
         resimulateButton.addActionListener(e -> {
             int n = ((Number) nSpinner.getValue()).intValue();
-            resimulateButton.setEnabled(false);
-            runCvButton.setEnabled(false);
-            computeEdgeButton.setEnabled(false);
-            computeAllButton.setEnabled(false);
+//            resimulateButton.setEnabled(false);
+//            runCvButton.setEnabled(false);
+//            computeEdgeButton.setEnabled(false);
+//            computeAllButton.setEnabled(false);
             status.setText("Fitting NN estimator and simulating " + n + " rows…");
 
             new SwingWorker<DataSet, Void>() {
@@ -319,10 +321,10 @@ public final class NNEstimatorComparePanel extends JPanel {
                         Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
                         status.setText("Resimulation failed: " + cause.getMessage());
                     } finally {
-                        resimulateButton.setEnabled(true);
-                        runCvButton.setEnabled(true);
-                        computeEdgeButton.setEnabled(childCombo.getItemCount() > 0);
-                        computeAllButton.setEnabled(childCombo.getItemCount() > 0);
+//                        resimulateButton.setEnabled(true);
+//                        runCvButton.setEnabled(true);
+//                        computeEdgeButton.setEnabled(childCombo.getItemCount() > 0);
+//                        computeAllButton.setEnabled(childCombo.getItemCount() > 0);
                     }
                     firePropertyChange("modelChanged", null, null);
                 }
@@ -333,10 +335,10 @@ public final class NNEstimatorComparePanel extends JPanel {
     private void wireCv() {
         runCvButton.addActionListener(e -> {
             int k = ((Number) kSpinner.getValue()).intValue();
-            runCvButton.setEnabled(false);
-            resimulateButton.setEnabled(false);
-            computeEdgeButton.setEnabled(false);
-            computeAllButton.setEnabled(false);
+//            runCvButton.setEnabled(false);
+//            resimulateButton.setEnabled(false);
+//            computeEdgeButton.setEnabled(false);
+//            computeAllButton.setEnabled(false);
             cvSummaryLabel.setText("Running " + k + "-fold cross-validation…");
             status.setText("Running " + k + "-fold cross-validation…");
 
@@ -360,10 +362,10 @@ public final class NNEstimatorComparePanel extends JPanel {
                         cvSummaryLabel.setText("CV failed: " + cause.getMessage());
                         status.setText("CV failed: " + cause.getMessage());
                     } finally {
-                        runCvButton.setEnabled(true);
-                        resimulateButton.setEnabled(true);
-                        computeEdgeButton.setEnabled(childCombo.getItemCount() > 0);
-                        computeAllButton.setEnabled(childCombo.getItemCount() > 0);
+//                        runCvButton.setEnabled(true);
+//                        resimulateButton.setEnabled(true);
+//                        computeEdgeButton.setEnabled(childCombo.getItemCount() > 0);
+//                        computeAllButton.setEnabled(childCombo.getItemCount() > 0);
                     }
                     firePropertyChange("modelChanged", null, null);
                 }
@@ -393,10 +395,10 @@ public final class NNEstimatorComparePanel extends JPanel {
             int cvK   = ((Number) kSpinner.getValue()).intValue();
             int total = allEdges.size();
 
-            computeAllButton.setEnabled(false);
-            computeEdgeButton.setEnabled(false);
-            resimulateButton.setEnabled(false);
-            runCvButton.setEnabled(false);
+//            computeAllButton.setEnabled(false);
+//            computeEdgeButton.setEnabled(false);
+//            resimulateButton.setEnabled(false);
+//            runCvButton.setEnabled(false);
             edgeProgressLabel.setText("Submitting all " + total + " edge(s)…");
             edgeResultLabel.setText(" ");
             status.setText("Computing all edge strengths…");
@@ -479,10 +481,10 @@ public final class NNEstimatorComparePanel extends JPanel {
                         edgeProgressLabel.setText("Failed: " + cause.getMessage());
                         status.setText("Compute All failed: " + cause.getMessage());
                     } finally {
-                        computeAllButton.setEnabled(true);
-                        computeEdgeButton.setEnabled(true);
-                        resimulateButton.setEnabled(true);
-                        runCvButton.setEnabled(true);
+//                        computeAllButton.setEnabled(true);
+//                        computeEdgeButton.setEnabled(true);
+//                        resimulateButton.setEnabled(true);
+//                        runCvButton.setEnabled(true);
                     }
                     firePropertyChange("modelChanged", null, null);
                 }
@@ -525,9 +527,9 @@ public final class NNEstimatorComparePanel extends JPanel {
             int cvK   = ((Number) kSpinner.getValue()).intValue();
             int total = parents.size();
 
-            computeEdgeButton.setEnabled(false);
-            resimulateButton.setEnabled(false);
-            runCvButton.setEnabled(false);
+//            computeEdgeButton.setEnabled(false);
+//            resimulateButton.setEnabled(false);
+//            runCvButton.setEnabled(false);
             edgeProgressLabel.setText("Submitting " + total + " parent(s)…");
             edgeResultLabel.setText(" ");
             status.setText("Computing parent strengths for " + childName + "…");
@@ -622,9 +624,9 @@ public final class NNEstimatorComparePanel extends JPanel {
                         edgeProgressLabel.setText("Failed: " + cause.getMessage());
                         status.setText("Edge strength failed: " + cause.getMessage());
                     } finally {
-                        computeEdgeButton.setEnabled(true);
-                        resimulateButton.setEnabled(true);
-                        runCvButton.setEnabled(true);
+//                        computeEdgeButton.setEnabled(true);
+//                        resimulateButton.setEnabled(true);
+//                        runCvButton.setEnabled(true);
                     }
                     firePropertyChange("modelChanged", null, null);
                 }
