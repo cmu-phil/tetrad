@@ -23,7 +23,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 
 /**
  * Side-by-side visual comparison panel for {@link NNEstimatorModel}.
@@ -65,6 +65,7 @@ public final class NNEstimatorComparePanel extends JPanel {
     private final JSpinner edgeSimNSpinner =
             new JSpinner(new SpinnerNumberModel(5000, 100, 1_000_000, 500));
     private final JButton computeEdgeButton = new JButton("Compute Parent Strengths");
+    private final JButton computeAllButton  = new JButton("Compute All");  // NEW
     private final JLabel edgeProgressLabel = new JLabel(" ");
     private final JLabel edgeResultLabel   = new JLabel(" ");
     private final EdgeStrengthTableModel edgeTableModel = new EdgeStrengthTableModel();
@@ -101,6 +102,7 @@ public final class NNEstimatorComparePanel extends JPanel {
         boolean fitted = model.getEstimator() != null;
         runCvButton.setEnabled(fitted);
         computeEdgeButton.setEnabled(fitted);
+        computeAllButton.setEnabled(fitted && childCombo.getItemCount() > 0);
 
         // Build tabs.
         JTabbedPane tabs = new JTabbedPane();
@@ -139,6 +141,7 @@ public final class NNEstimatorComparePanel extends JPanel {
         wireResimulate();
         wireCv();
         wireEdgeStrength();
+        wireComputeAll();
 
         setPreferredSize(new Dimension(1200, 820));
     }
@@ -200,6 +203,7 @@ public final class NNEstimatorComparePanel extends JPanel {
         controls.add(new JLabel("  CV k:"));
         controls.add(kSpinner);
         controls.add(computeEdgeButton);
+        controls.add(computeAllButton);   // NEW
 
         edgeProgressLabel.setFont(
                 edgeProgressLabel.getFont().deriveFont(Font.PLAIN, 11f));
@@ -295,6 +299,7 @@ public final class NNEstimatorComparePanel extends JPanel {
             resimulateButton.setEnabled(false);
             runCvButton.setEnabled(false);
             computeEdgeButton.setEnabled(false);
+            computeAllButton.setEnabled(false);
             status.setText("Fitting NN estimator and simulating " + n + " rows…");
 
             new SwingWorker<DataSet, Void>() {
@@ -317,6 +322,7 @@ public final class NNEstimatorComparePanel extends JPanel {
                         resimulateButton.setEnabled(true);
                         runCvButton.setEnabled(true);
                         computeEdgeButton.setEnabled(childCombo.getItemCount() > 0);
+                        computeAllButton.setEnabled(childCombo.getItemCount() > 0);
                     }
                     firePropertyChange("modelChanged", null, null);
                 }
@@ -330,6 +336,7 @@ public final class NNEstimatorComparePanel extends JPanel {
             runCvButton.setEnabled(false);
             resimulateButton.setEnabled(false);
             computeEdgeButton.setEnabled(false);
+            computeAllButton.setEnabled(false);
             cvSummaryLabel.setText("Running " + k + "-fold cross-validation…");
             status.setText("Running " + k + "-fold cross-validation…");
 
@@ -356,6 +363,7 @@ public final class NNEstimatorComparePanel extends JPanel {
                         runCvButton.setEnabled(true);
                         resimulateButton.setEnabled(true);
                         computeEdgeButton.setEnabled(childCombo.getItemCount() > 0);
+                        computeAllButton.setEnabled(childCombo.getItemCount() > 0);
                     }
                     firePropertyChange("modelChanged", null, null);
                 }
@@ -363,9 +371,136 @@ public final class NNEstimatorComparePanel extends JPanel {
         });
     }
 
+    private void wireComputeAll() {
+        computeAllButton.addActionListener(e -> {
+
+            // Build the complete list of (parent, child) pairs across the DAG.
+            record ParentChild(Node parent, Node child) {}
+            List<ParentChild> allEdges = new ArrayList<>();
+            for (Node child : dag.getNodes()) {
+                List<Node> parents = new ArrayList<>(dag.getParents(child));
+                parents.sort(Comparator.comparing(Node::getName));
+                for (Node parent : parents)
+                    allEdges.add(new ParentChild(parent, child));
+            }
+
+            if (allEdges.isEmpty()) {
+                edgeResultLabel.setText("No edges in the DAG.");
+                return;
+            }
+
+            int simN  = ((Number) edgeSimNSpinner.getValue()).intValue();
+            int cvK   = ((Number) kSpinner.getValue()).intValue();
+            int total = allEdges.size();
+
+            computeAllButton.setEnabled(false);
+            computeEdgeButton.setEnabled(false);
+            resimulateButton.setEnabled(false);
+            runCvButton.setEnabled(false);
+            edgeProgressLabel.setText("Submitting all " + total + " edge(s)…");
+            edgeResultLabel.setText(" ");
+            status.setText("Computing all edge strengths…");
+
+            // Wipe every existing row and every persisted result so a re-run
+            // gives a clean slate rather than duplicating entries.
+            edgeTableModel.clearAll();
+            model.clearEdgeStrengthResults();
+
+            int threads = Math.max(1,
+                    Math.min(total,
+                            Runtime.getRuntime().availableProcessors() - 1));
+            ExecutorService pool = Executors.newFixedThreadPool(threads);
+            CompletionService<EdgePair> completion =
+                    new ExecutorCompletionService<>(pool);
+
+            for (ParentChild pc : allEdges) {
+                completion.submit(() -> {
+                    EdgeStrengthResult edge = model.getEstimator()
+                            .computeEdgeStrength(
+                                    pc.parent().getName(),
+                                    pc.child().getName(), simN);
+                    PartialEdgeStrengthResult partial = model.getEstimator()
+                            .computePartialEdgeStrength(
+                                    pc.parent().getName(),
+                                    pc.child().getName(), cvK);
+                    return new EdgePair(edge, partial);
+                });
+            }
+            pool.shutdown();
+
+            new SwingWorker<List<EdgePair>, EdgePair>() {
+
+                @Override
+                protected List<EdgePair> doInBackground() throws Exception {
+                    List<EdgePair> results = new ArrayList<>();
+                    int remaining = total;
+                    while (remaining > 0) {
+                        EdgePair pair = completion.take().get();
+                        results.add(pair);
+                        remaining--;
+                        final int rem = remaining;
+                        SwingUtilities.invokeLater(() ->
+                                edgeProgressLabel.setText(
+                                        rem == 0
+                                                ? "All " + total + " edge(s) complete."
+                                                : (total - rem) + " of " + total
+                                                  + " done, " + rem + " remaining…"));
+                        publish(pair);
+                    }
+                    return results;
+                }
+
+                @Override
+                protected void process(List<EdgePair> chunks) {
+                    for (EdgePair pair : chunks) {
+                        edgeTableModel.addResult(pair.edge(), pair.partial());
+                        model.addEdgeStrengthResult(pair.edge(), pair.partial());
+                    }
+                }
+
+                @Override
+                protected void done() {
+                    pool.shutdownNow();
+                    try {
+                        List<EdgePair> results = get();
+                        results.stream()
+                                .max(Comparator.comparingDouble(p -> p.edge().mmd2))
+                                .ifPresent(strongest ->
+                                        edgeResultLabel.setText(
+                                                "Strongest overall: "
+                                                        + strongest.edge().toSummaryLine()));
+                        status.setText("All edge strengths computed.");
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        edgeProgressLabel.setText("Interrupted.");
+                        status.setText("Compute All interrupted.");
+                    } catch (ExecutionException ex) {
+                        Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+                        edgeProgressLabel.setText("Failed: " + cause.getMessage());
+                        status.setText("Compute All failed: " + cause.getMessage());
+                    } finally {
+                        computeAllButton.setEnabled(true);
+                        computeEdgeButton.setEnabled(true);
+                        resimulateButton.setEnabled(true);
+                        runCvButton.setEnabled(true);
+                    }
+                    firePropertyChange("modelChanged", null, null);
+                }
+            }.execute();
+        });
+    }
+
+//    /**
+//     * Pair holder for SwingWorker publish/process — carries both the marginal
+//     * and partial results for one parent edge so they arrive together.
+//     */
+//    private record EdgePair(EdgeStrengthResult edge,
+//                            PartialEdgeStrengthResult partial) {}
+
     /**
-     * Pair holder for SwingWorker publish/process — carries both the marginal
-     * and partial results for one parent edge so they arrive together.
+     * Pair holder — carries both the marginal and partial results for one
+     * parent edge so they arrive together whether computed in sequence or
+     * in parallel.
      */
     private record EdgePair(EdgeStrengthResult edge,
                             PartialEdgeStrengthResult partial) {}
@@ -393,56 +528,81 @@ public final class NNEstimatorComparePanel extends JPanel {
             computeEdgeButton.setEnabled(false);
             resimulateButton.setEnabled(false);
             runCvButton.setEnabled(false);
-            edgeProgressLabel.setText("Computing 1 of " + total + " parents…");
+            edgeProgressLabel.setText("Submitting " + total + " parent(s)…");
             edgeResultLabel.setText(" ");
             status.setText("Computing parent strengths for " + childName + "…");
 
-            // Remove stale rows for this child from both the table and the model
-            // before starting, so a re-run replaces rather than duplicates them.
+            // Remove stale rows for this child before starting so a re-run
+            // replaces rather than duplicates them.
             edgeTableModel.removeResultsForChild(childName);
             model.removeEdgeStrengthResultsForChild(childName);
 
+            // ── thread pool ───────────────────────────────────────────────────
+            // Cap parallelism: no more threads than parents, and no more than
+            // the number of available processors (leave one free for the EDT).
+            int threads = Math.max(1,
+                    Math.min(total,
+                            Runtime.getRuntime().availableProcessors() - 1));
+            ExecutorService pool = Executors.newFixedThreadPool(threads);
+            CompletionService<EdgePair> completion =
+                    new ExecutorCompletionService<>(pool);
+
+            // Submit one task per parent — all run concurrently up to `threads`.
+            for (Node parent : parents) {
+                completion.submit(() -> {
+                    EdgeStrengthResult edge = model.getEstimator()
+                            .computeEdgeStrength(
+                                    parent.getName(), childName, simN);
+                    PartialEdgeStrengthResult partial = model.getEstimator()
+                            .computePartialEdgeStrength(
+                                    parent.getName(), childName, cvK);
+                    return new EdgePair(edge, partial);
+                });
+            }
+            pool.shutdown(); // no new tasks; running tasks continue
+
+            // ── collector SwingWorker ─────────────────────────────────────────
+            // Drains CompletionService in completion order and publishes each
+            // result to the EDT for immediate table insertion.
             new SwingWorker<List<EdgePair>, EdgePair>() {
 
                 @Override
-                protected List<EdgePair> doInBackground() {
+                protected List<EdgePair> doInBackground() throws Exception {
                     List<EdgePair> results = new ArrayList<>();
-                    for (int i = 0; i < parents.size(); i++) {
-                        Node parent = parents.get(i);
-                        final int idx = i;
+                    int remaining = total;
+
+                    while (remaining > 0) {
+                        // Blocks only until the *next* completed future —
+                        // other tasks keep running in the pool meanwhile.
+                        EdgePair pair = completion.take().get();
+                        results.add(pair);
+                        remaining--;
+
+                        final int rem = remaining;
                         SwingUtilities.invokeLater(() ->
                                 edgeProgressLabel.setText(
-                                        "Computing " + (idx + 1) + " of " + total
-                                                + ": " + parent.getName()
-                                                + " \u2192 " + childName + "…"));
+                                        rem == 0
+                                                ? "All " + total + " parent(s) done."
+                                                : rem + " of " + total + " remaining…"));
 
-                        EdgeStrengthResult edge = model.getEstimator()
-                                .computeEdgeStrength(
-                                        parent.getName(), childName, simN);
-
-                        PartialEdgeStrengthResult partial = model.getEstimator()
-                                .computePartialEdgeStrength(
-                                        parent.getName(), childName, cvK);
-
-                        EdgePair pair = new EdgePair(edge, partial);
-                        results.add(pair);
-                        publish(pair);
+                        publish(pair); // triggers process() on the EDT
                     }
                     return results;
                 }
 
                 @Override
                 protected void process(List<EdgePair> chunks) {
+                    // Called on the EDT — safe to update the table directly.
                     for (EdgePair pair : chunks) {
-                        // Update the table immediately (progressive display).
                         edgeTableModel.addResult(pair.edge(), pair.partial());
-                        // Persist to the model so results survive editor close/reopen.
                         model.addEdgeStrengthResult(pair.edge(), pair.partial());
                     }
                 }
 
                 @Override
                 protected void done() {
+                    // Ensure the pool is gone even if we were interrupted.
+                    pool.shutdownNow();
                     try {
                         List<EdgePair> results = get();
                         results.stream()
@@ -451,9 +611,6 @@ public final class NNEstimatorComparePanel extends JPanel {
                                         edgeResultLabel.setText(
                                                 "Strongest: "
                                                         + strongest.edge().toSummaryLine()));
-                        edgeProgressLabel.setText(
-                                "Done — " + results.size()
-                                        + " parent(s) computed for " + childName + ".");
                         status.setText(
                                 "Edge strengths computed for " + childName + ".");
                     } catch (InterruptedException ex) {
@@ -694,6 +851,11 @@ public final class NNEstimatorComparePanel extends JPanel {
 
         void removeResultsForChild(String childName) {
             rows.removeIf(r -> r.edge().childName.equals(childName));
+            fireTableDataChanged();
+        }
+
+        void clearAll() {
+            rows.clear();
             fireTableDataChanged();
         }
     }

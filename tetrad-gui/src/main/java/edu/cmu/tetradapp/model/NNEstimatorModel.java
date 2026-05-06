@@ -49,11 +49,6 @@ import java.util.Objects;
  */
 public final class NNEstimatorModel extends DataWrapper implements SessionModel {
 
-    /**
-     * Bump from 23L → 24L to signal the addition of
-     * {@code persistedEdgeStrengthResults}. Older sessions that lack the field
-     * are handled gracefully in {@link #readObject}.
-     */
     @Serial
     private static final long serialVersionUID = 24L;
 
@@ -74,12 +69,6 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
      */
     private CVReport persistedCvReport;
 
-    /**
-     * Accumulated edge-strength results persisted across session save/reload.
-     * Initialised here so the field is never null in a freshly constructed
-     * instance; {@link #readObject} re-initialises it for old sessions that
-     * were serialised before this field existed.
-     */
     private List<EdgeStrengthPair> persistedEdgeStrengthResults = new ArrayList<>();
 
     // ── constructor ───────────────────────────────────────────────────────────
@@ -176,11 +165,15 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
      * {@code childName}. Call this before re-computing a child's parents so
      * stale rows are not duplicated on reload.
      *
-     * @param childName name of the child node being recomputed
+     * @param childName name of the child node being removeEdgeStrengthResultsForChildrecomputed
      */
     public void removeEdgeStrengthResultsForChild(String childName) {
         persistedEdgeStrengthResults
                 .removeIf(p -> p.edge().childName.equals(childName));
+    }
+
+    public void clearEdgeStrengthResults() {
+        persistedEdgeStrengthResults.clear();
     }
 
     /**
