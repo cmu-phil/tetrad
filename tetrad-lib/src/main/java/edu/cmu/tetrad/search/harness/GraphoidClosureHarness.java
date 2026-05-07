@@ -120,8 +120,8 @@ public class GraphoidClosureHarness {
     }
 
     public static void main(String[] args) {
-//        tryRandomLgModel();
-        trySimpleXorModel();
+        tryRandomLgModel();
+//        trySimpleXorModel();
     }
 
     /**
