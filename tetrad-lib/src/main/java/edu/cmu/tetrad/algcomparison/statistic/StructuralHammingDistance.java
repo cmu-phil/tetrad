@@ -77,7 +77,7 @@ public class StructuralHammingDistance implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Structural Hamming Distance" + (compareToCpdag ? " compared to CDAG of true PDAG" : " compared to true PDAG");
+        return "Structural Hamming Distance" + (compareToCpdag ? " compared to CPDAG of true PDAG" : " compared to true PDAG");
     }
 
     /**
