@@ -319,6 +319,8 @@ public final class RecursiveAdjustment {
             poolSet.retainAll(shellsFromY.reach);
         }
 
+        System.out.println("nearWhichEndpoint = " + nearWhichEndpoint + " maxRadius = " + maxRadius + " poolset = " + poolSet);
+
         if (notFollowed != null) poolSet.removeAll(notFollowed);
 
         List<Node> pool = new ArrayList<>(poolSet);
@@ -331,6 +333,10 @@ public final class RecursiveAdjustment {
                 })
                 .thenComparingInt(v -> graph.getAdjacentNodes(v).size())
                 .thenComparing(Node::getName));
+
+        System.out.println("sorted pool = " + pool);
+        System.out.println("forbidden   = " + forbidden);
+        System.out.println("backbone    = " + amenableBackbone);
 
         Map<Node, Integer> idx = new HashMap<>();
         Map<Node, Integer> order = new HashMap<>();
@@ -374,6 +380,33 @@ public final class RecursiveAdjustment {
         return ("PAG".equalsIgnoreCase(graphType))
                 ? graph.paths().getAmenablePathsPag(source, target, maxLength, forceVisibility)
                 : graph.paths().getAmenablePathsPdagMag(source, target, maxLength);
+    }
+
+//    private Set<List<Node>> getAmenablePaths(Node source, Node target, String graphType,
+//                                             int maxLength, Set<Node> forceVisibility) {
+//        if (source == null || target == null || source == target)
+//            return Collections.emptySet();
+//
+//        // getAmenablePathsPdagMag treats the graph like a PDAG, traversing edges in
+//        // both directions as if undirected edges could go either way. When the graph
+//        // has only directed edges this inflates the amenable set with backwards-traversing
+//        // paths, which poisons amenableBackbone to cover nearly every node, preventing
+//        // any valid blocker from being chosen.
+//        // When all edges are directed, directed paths ARE the amenable paths.
+//        if (allEdgesDirected()) {
+//            return graph.paths().directedPaths(source, target, maxLength);
+//        }
+//
+//        return ("PAG".equalsIgnoreCase(graphType))
+//                ? graph.paths().getAmenablePathsPag(source, target, maxLength, forceVisibility)
+//                : graph.paths().getAmenablePathsPdagMag(source, target, maxLength);
+//    }
+
+    private boolean allEdgesDirected() {
+        for (Edge e : graph.getEdges()) {
+            if (!Edges.isDirectedEdge(e)) return false;
+        }
+        return true;
     }
 
     private @NotNull List<Node> firstBackdoorNeighbors(Node X, Node Y, String graphType) {
@@ -636,6 +669,11 @@ public final class RecursiveAdjustment {
                                                   ColliderPolicy colliderPolicy,
                                                   Set<Node> notFollowed,
                                                   Set<Node> oCandidates) {
+        System.out.println("  chooseBlocker witness=" + witness
+                + " forbidden=" + forbidden
+                + " backbone=" + amenableBackbone
+                + " pool=" + pool);
+
         Set<Node> inWitness = new HashSet<>(witness);
         List<Node> candidates = new ArrayList<>();
 
