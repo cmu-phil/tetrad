@@ -128,7 +128,7 @@ public class GraphoidClosureHarness {
      * @param args Command-line arguments passed to the program execution.
      */
     public static void main(String[] args) {
-//        tryRandomLgModel(20, 20);
+//        tryRandomLgModel(30, 40);
         trySimpleXorModel();
     }
 
