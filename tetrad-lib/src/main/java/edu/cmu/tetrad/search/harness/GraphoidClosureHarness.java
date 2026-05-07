@@ -18,10 +18,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -109,11 +106,11 @@ public class GraphoidClosureHarness {
         DataSet data = im.simulateData(1000, false);
 
         IndependenceTest test = new ChiSquare().getTest(data, new Parameters());
+        test.setVerbose(false);
 
         Graph testGraph;
         try {
             Pc pc = new Pc(test);
-            pc.setVerbose(true);
             testGraph = pc.search();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -123,8 +120,8 @@ public class GraphoidClosureHarness {
     }
 
     public static void main(String[] args) {
-        tryRandomLgModel();
-//        trySimpleXorModel();
+//        tryRandomLgModel();
+        trySimpleXorModel();
     }
 
     /**
@@ -139,7 +136,7 @@ public class GraphoidClosureHarness {
 
         DataSet dataSet = (DataSet) test.getData();
 
-        // Step 2: Extract CI facts from the Markov Checker.
+        // Step 1: Extract CI facts from the Markov Checker.
         List<Node> variables = dataSet.getVariables();
         Set<GraphoidAxioms.GraphoidIndFact> originalFacts =
                 extractMarkovCheckerFacts(graph, conditioningSetType);
@@ -149,7 +146,7 @@ public class GraphoidClosureHarness {
             System.out.println("  " + fact);
         }
 
-        // Step 3: Build the GraphoidAxioms object and compute the closure.
+        // Step 2: Build the GraphoidAxioms object and compute the closure.
         GraphoidAxioms axioms = new GraphoidAxioms(originalFacts, variables);
         axioms.ensureTriviality();
         axioms.ensureSymmetry();
@@ -176,13 +173,13 @@ public class GraphoidClosureHarness {
             System.out.println("  " + fact);
         }
 
-        // Step 4: Extract singleton facts from the closure.
+        // Step 3: Extract singleton facts from the closure.
         Set<GraphoidAxioms.GraphoidIndFact> closureSingletons =
                 GraphoidAxioms.singletonFacts(closure);
         Set<GraphoidAxioms.GraphoidIndFact> originalSingletons =
                 GraphoidAxioms.singletonFacts(originalFacts);
 
-        // Step 5: Report the new singleton facts implied by the closure
+        // Step 4: Report the new singleton facts implied by the closure
         // that were not in the original set.
         Set<GraphoidAxioms.GraphoidIndFact> newSingletons = new LinkedHashSet<>(closureSingletons);
         newSingletons.removeAll(originalSingletons);
@@ -191,12 +188,6 @@ public class GraphoidClosureHarness {
                 + " closure (" + newSingletons.size() + "):");
         for (GraphoidAxioms.GraphoidIndFact fact : newSingletons) {
             System.out.println("  " + fact);
-        }
-
-        // Step 6: Optionally test the new singleton facts against the data.
-        if (!newSingletons.isEmpty()) {
-            System.out.println("\nTesting new singleton facts against data:");
-            testFactsAgainstData(newSingletons, test);
         }
 
         // Step 7: Optionally test the original singleton facts against the data.
@@ -235,7 +226,7 @@ public class GraphoidClosureHarness {
      */
     private void testFactsAgainstData(Set<GraphoidAxioms.GraphoidIndFact> facts, IndependenceTest test) {
         try {
-            List<IndependenceFact> factsToTest = extractSingletonFacts(facts);
+            Set<IndependenceFact> factsToTest = extractSingletonFacts(facts);
 
             for (IndependenceFact fact : factsToTest) {
                 if (test.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).isIndependent()) {
@@ -249,8 +240,8 @@ public class GraphoidClosureHarness {
         }
     }
 
-    private List<IndependenceFact> extractSingletonFacts(Set<GraphoidAxioms.GraphoidIndFact> facts) {
-        List<IndependenceFact> result = new ArrayList<>();
+    private Set<IndependenceFact> extractSingletonFacts(Set<GraphoidAxioms.GraphoidIndFact> facts) {
+        Set<IndependenceFact> result = new LinkedHashSet<>();
         for (GraphoidAxioms.GraphoidIndFact fact : facts) {
             if (fact.getX().size() != 1) {
                 continue;
