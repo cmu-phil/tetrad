@@ -319,8 +319,6 @@ public final class RecursiveAdjustment {
             poolSet.retainAll(shellsFromY.reach);
         }
 
-        System.out.println("nearWhichEndpoint = " + nearWhichEndpoint + " maxRadius = " + maxRadius + " poolset = " + poolSet);
-
         if (notFollowed != null) poolSet.removeAll(notFollowed);
 
         List<Node> pool = new ArrayList<>(poolSet);
@@ -333,10 +331,6 @@ public final class RecursiveAdjustment {
                 })
                 .thenComparingInt(v -> graph.getAdjacentNodes(v).size())
                 .thenComparing(Node::getName));
-
-        System.out.println("sorted pool = " + pool);
-        System.out.println("forbidden   = " + forbidden);
-        System.out.println("backbone    = " + amenableBackbone);
 
         Map<Node, Integer> idx = new HashMap<>();
         Map<Node, Integer> order = new HashMap<>();
@@ -669,11 +663,6 @@ public final class RecursiveAdjustment {
                                                   ColliderPolicy colliderPolicy,
                                                   Set<Node> notFollowed,
                                                   Set<Node> oCandidates) {
-        System.out.println("  chooseBlocker witness=" + witness
-                + " forbidden=" + forbidden
-                + " backbone=" + amenableBackbone
-                + " pool=" + pool);
-
         Set<Node> inWitness = new HashSet<>(witness);
         List<Node> candidates = new ArrayList<>();
 
