@@ -124,6 +124,7 @@ public final class CVReport implements TetradSerializable {
 
     /**
      * Returns a human-readable multi-line summary of the CV results.
+     * @return a human-readable multi-line summary of the CV results
      */
     public String toText() {
         StringBuilder sb = new StringBuilder();

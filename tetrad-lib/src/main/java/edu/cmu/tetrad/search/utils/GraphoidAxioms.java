@@ -579,8 +579,6 @@ public class GraphoidAxioms {
 
     /**
      * Checks if symmetry holds--i.e., X _||_ Y | Z ==> Y _||_ X | Z
-     *
-     * @return a boolean
      */
     public void ensureSymmetry() {
         for (GraphoidIndFact fact : new HashSet<>(facts)) {

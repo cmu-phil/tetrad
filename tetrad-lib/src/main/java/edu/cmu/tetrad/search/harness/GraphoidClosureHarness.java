@@ -18,17 +18,44 @@ import java.util.*;
 public class GraphoidClosureHarness {
 
     /**
+     * Constructor.
+     */
+    public GraphoidClosureHarness() {}
+
+    /**
      * The conditioning set type to use in the Markov Checker.
      */
     public enum ConditioningSetType {
-        PARENTS, MARKOV_BLANKET, LOCAL
+        /**
+         * Recursion-blocking conditioning set.
+         */
+        PARENTS,
+        /**
+         * Markov blanket conditioning set.
+         */
+        MARKOV_BLANKET,
+        /**
+         * Local conditioning set.
+         */
+        LOCAL
     }
 
     /**
      * The graphoid closure type to use.
      */
     public enum ClosureType {
-        SEMIGRAPHOID, GRAPHOID, COMPOSITIONAL_GRAPHOID
+        /**
+         * Semigraphoid closure.
+         */
+        SEMIGRAPHOID,
+        /**
+         * Graphoid closure.
+         */
+        GRAPHOID,
+        /**
+         * Compositional graphoid closure.
+         */
+        COMPOSITIONAL_GRAPHOID
     }
 
     /**
