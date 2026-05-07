@@ -37,9 +37,9 @@ public class GraphoidClosureHarness {
     public GraphoidClosureHarness() {
     }
 
-    private static void tryRandomLgModel() {
+    private static void tryRandomLgModel(int numMeasures, int numEdges) {
         try {
-            Graph graph = RandomGraph.randomGraph(20, 0, 20,
+            Graph graph = RandomGraph.randomGraph(numMeasures, 0, numEdges,
                     100, 100, 100, false);
 
             SemPm pm = new SemPm(graph);
@@ -128,7 +128,7 @@ public class GraphoidClosureHarness {
      * @param args Command-line arguments passed to the program execution.
      */
     public static void main(String[] args) {
-//        tryRandomLgModel();
+//        tryRandomLgModel(20, 20);
         trySimpleXorModel();
     }
 
