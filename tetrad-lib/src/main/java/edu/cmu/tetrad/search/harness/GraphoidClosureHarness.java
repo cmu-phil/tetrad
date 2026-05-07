@@ -1,11 +1,28 @@
 package edu.cmu.tetrad.search.harness;
 
+import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
+import edu.cmu.tetrad.bayes.BayesPm;
+import edu.cmu.tetrad.bayes.MlBayesIm;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.IndTestChiSquare;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphoidAxioms;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.Parameters;
 
-import java.util.*;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A harness for exploring graphoid closure of CI facts implied by a Markov Checker.
@@ -20,63 +37,114 @@ public class GraphoidClosureHarness {
     /**
      * Constructor.
      */
-    public GraphoidClosureHarness() {}
-
-    /**
-     * The conditioning set type to use in the Markov Checker.
-     */
-    public enum ConditioningSetType {
-        /**
-         * Recursion-blocking conditioning set.
-         */
-        PARENTS,
-        /**
-         * Markov blanket conditioning set.
-         */
-        MARKOV_BLANKET,
-        /**
-         * Local conditioning set.
-         */
-        LOCAL
+    public GraphoidClosureHarness() {
     }
 
-    /**
-     * The graphoid closure type to use.
-     */
-    public enum ClosureType {
-        /**
-         * Semigraphoid closure.
-         */
-        SEMIGRAPHOID,
-        /**
-         * Graphoid closure.
-         */
-        GRAPHOID,
-        /**
-         * Compositional graphoid closure.
-         */
-        COMPOSITIONAL_GRAPHOID
+    private static void tryRandomLgModel() {
+        try {
+            Graph graph = RandomGraph.randomGraph(20, 0, 20,
+                    100, 100, 100, false);
+
+            SemPm pm = new SemPm(graph);
+            SemIm im = new SemIm(pm);
+
+            DataSet data = im.simulateData(1000, false);
+
+            SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
+            PermutationSearch search = new PermutationSearch(new Boss(score));
+            try {
+                graph = search.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+            IndependenceTest test = new IndTestFisherZ(data, 0.01);
+
+            new GraphoidClosureHarness().run(graph, test, ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY,
+                    ClosureType.COMPOSITIONAL_GRAPHOID);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void trySimpleXorModel() {
+        Graph graph = new EdgeListGraph();
+
+        Node x = new ContinuousVariable("X");
+        Node y = new ContinuousVariable("Y");
+        Node z = new ContinuousVariable("Z");
+
+        graph.addNode(x);
+        graph.addNode(y);
+        graph.addNode(z);
+
+        graph.addDirectedEdge(x, z);
+        graph.addDirectedEdge(y, z);
+
+        BayesPm pm = new BayesPm(graph, 2, 2);
+        MlBayesIm im = new MlBayesIm(pm);
+
+        // X is marginally uniform: P(X=0) = P(X=1) = 0.5
+        im.setProbability(im.getNodeIndex(x), 0, 0, 0.5);
+        im.setProbability(im.getNodeIndex(x), 0, 1, 0.5);
+
+        // Y is marginally uniform: P(Y=0) = P(Y=1) = 0.5
+        im.setProbability(im.getNodeIndex(y), 0, 0, 0.5);
+        im.setProbability(im.getNodeIndex(y), 0, 1, 0.5);
+
+        // Z = XOR(X, Y): Z=1 iff X != Y
+        // Parent order is X, Y; rows are (X=0,Y=0), (X=0,Y=1), (X=1,Y=0), (X=1,Y=1)
+        int zIndex = im.getNodeIndex(z);
+        im.setProbability(zIndex, 0, 0, 1.0); // X=0, Y=0 => Z=0
+        im.setProbability(zIndex, 0, 1, 0.0);
+        im.setProbability(zIndex, 1, 0, 0.0); // X=0, Y=1 => Z=1
+        im.setProbability(zIndex, 1, 1, 1.0);
+        im.setProbability(zIndex, 2, 0, 0.0); // X=1, Y=0 => Z=1
+        im.setProbability(zIndex, 2, 1, 1.0);
+        im.setProbability(zIndex, 3, 0, 1.0); // X=1, Y=1 => Z=0
+        im.setProbability(zIndex, 3, 1, 0.0);
+
+        System.out.println("IM: " + im);
+
+        DataSet data = im.simulateData(1000, false);
+
+        IndependenceTest test = new ChiSquare().getTest(data, new Parameters());
+
+        Graph testGraph;
+        try {
+            Pc pc = new Pc(test);
+            pc.setVerbose(true);
+            testGraph = pc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        new GraphoidClosureHarness().run(testGraph, test, ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY, ClosureType.COMPOSITIONAL_GRAPHOID);
+    }
+
+    public static void main(String[] args) {
+        tryRandomLgModel();
+//        trySimpleXorModel();
     }
 
     /**
      * Runs the harness.
      *
-     * @param dataSet           The dataset to search over.
+     * @param graph               The graph to search over.
+     * @param test                The independence test to use for Markov Checker.
      * @param conditioningSetType The type of conditioning set to use in the Markov Checker.
-     * @param closureType       The graphoid closure type to apply.
+     * @param closureType         The graphoid closure type to apply.
      */
-    public void run(DataSet dataSet, ConditioningSetType conditioningSetType, ClosureType closureType) {
+    public void run(Graph graph, IndependenceTest test, ConditioningSetType conditioningSetType, ClosureType closureType) {
 
-        // Step 1: Run a search to get a graph.
-        Graph graph = runSearch(dataSet);
-        System.out.println("Search graph: " + graph);
+        DataSet dataSet = (DataSet) test.getData();
 
         // Step 2: Extract CI facts from the Markov Checker.
         List<Node> variables = dataSet.getVariables();
         Set<GraphoidAxioms.GraphoidIndFact> originalFacts =
-                extractMarkovCheckerFacts(graph, dataSet, conditioningSetType);
+                extractMarkovCheckerFacts(graph, conditioningSetType);
 
-        System.out.println("\nOriginal CI facts (" + originalFacts.size() + "):");
+        System.out.println("CI facts (" + originalFacts.size() + ") implied by " + conditioningSetType + ":");
         for (GraphoidAxioms.GraphoidIndFact fact : originalFacts) {
             System.out.println("  " + fact);
         }
@@ -92,7 +160,16 @@ public class GraphoidClosureHarness {
             case COMPOSITIONAL_GRAPHOID -> "compositional graphoid";
         };
 
-        Set<GraphoidAxioms.GraphoidIndFact> closure = axioms.closure(closureTypeStr);
+        Set<GraphoidAxioms.GraphoidIndFact> closure;
+
+        if (closureType == ClosureType.COMPOSITIONAL_GRAPHOID) {
+            // First compute the graphoid closure, then apply composition to its singletons
+            Set<GraphoidAxioms.GraphoidIndFact> graphoidClosure = axioms.closure("graphoid");
+            closure = axioms.singletonClosureWithComposition(graphoidClosure);
+            closure.addAll(graphoidClosure);
+        } else {
+            closure = axioms.closure(closureTypeStr);
+        }
 
         System.out.println("\nClosure under " + closureTypeStr + " (" + closure.size() + " facts):");
         for (GraphoidAxioms.GraphoidIndFact fact : closure) {
@@ -119,19 +196,14 @@ public class GraphoidClosureHarness {
         // Step 6: Optionally test the new singleton facts against the data.
         if (!newSingletons.isEmpty()) {
             System.out.println("\nTesting new singleton facts against data:");
-            testFactsAgainstData(newSingletons, dataSet);
+            testFactsAgainstData(newSingletons, test);
         }
-    }
 
-    /**
-     * Runs a causal search algorithm on the dataset and returns the resulting graph.
-     * Fill this in with whichever search you want to use -- PC, FGES, GRaSP, etc.
-     *
-     * @param dataSet The dataset to search over.
-     * @return The resulting graph.
-     */
-    private Graph runSearch(DataSet dataSet) {
-        throw new UnsupportedOperationException("Implement with your preferred search -- PC, FGES, GRaSP, etc.");
+        // Step 7: Optionally test the original singleton facts against the data.
+        if (!closureSingletons.isEmpty()) {
+            System.out.println("\nTesting closure singleton facts against data:");
+            testFactsAgainstData(closureSingletons, test);
+        }
     }
 
     /**
@@ -140,13 +212,17 @@ public class GraphoidClosureHarness {
      * You'll need to wire this into MarkovChecker's existing fact-listing infrastructure.
      *
      * @param graph               The graph to check.
-     * @param dataSet             The dataset.
      * @param conditioningSetType The conditioning set type.
      * @return The set of GraphoidIndFacts.
      */
     private Set<GraphoidAxioms.GraphoidIndFact> extractMarkovCheckerFacts(
-            Graph graph, DataSet dataSet, ConditioningSetType conditioningSetType) {
-        throw new UnsupportedOperationException("Wire into MarkovChecker's fact-listing for the given conditioning set type.");
+            Graph graph, ConditioningSetType conditioningSetType) {
+        Set<IndependenceFact> facts = MarkovCheck.computeAllImpliedFacts(graph, conditioningSetType);
+
+        return facts.stream()
+                .map(fact -> new GraphoidAxioms.GraphoidIndFact(Set.of(fact.getX()), Set.of(fact.getY()),
+                        fact.getZ()))
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -154,11 +230,57 @@ public class GraphoidClosureHarness {
      * and reports which pass and which fail.
      * Fill in with Fisher's Z, G-squared, etc. as appropriate for your data type.
      *
-     * @param facts   The facts to test.
-     * @param dataSet The dataset.
+     * @param facts The facts to test.
+     * @param test  The independence test to use.
      */
-    private void testFactsAgainstData(
-            Set<GraphoidAxioms.GraphoidIndFact> facts, DataSet dataSet) {
-        throw new UnsupportedOperationException("Implement with your preferred CI test -- FisherZ, G-squared, etc.");
+    private void testFactsAgainstData(Set<GraphoidAxioms.GraphoidIndFact> facts, IndependenceTest test) {
+        try {
+            List<IndependenceFact> factsToTest = extractSingletonFacts(facts);
+
+            for (IndependenceFact fact : factsToTest) {
+                if (test.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).isIndependent()) {
+                    System.out.println("Fact passed: " + fact);
+                } else {
+                    System.out.println("Fact FAILED: " + fact);
+                }
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<IndependenceFact> extractSingletonFacts(Set<GraphoidAxioms.GraphoidIndFact> facts) {
+        List<IndependenceFact> result = new ArrayList<>();
+        for (GraphoidAxioms.GraphoidIndFact fact : facts) {
+            if (fact.getX().size() != 1) {
+                continue;
+            }
+
+            if (fact.getY().size() != 1) {
+                continue;
+            }
+
+            result.add(new IndependenceFact(fact.getX().iterator().next(), fact.getY().iterator().next(), fact.getZ()));
+        }
+
+        return result;
+    }
+
+    /**
+     * The graphoid closure type to use.
+     */
+    public enum ClosureType {
+        /**
+         * Semigraphoid closure.
+         */
+        SEMIGRAPHOID,
+        /**
+         * Graphoid closure.
+         */
+        GRAPHOID,
+        /**
+         * Compositional graphoid closure.
+         */
+        COMPOSITIONAL_GRAPHOID
     }
 }
