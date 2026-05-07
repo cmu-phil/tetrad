@@ -734,6 +734,15 @@ public class GraphoidAxioms {
         return closure;
     }
 
+    /**
+     * Computes the singleton closure of independence facts using the composition rule, starting from an initial set
+     * of singleton independence facts. The composition rule allows the derivation of new independence facts
+     * from existing ones, specifically combining facts with the same X and Z sets but different Y sets.
+     *
+     * @param phase1Closure The initial set of singleton conditional independence facts of the form {x} ⊥⊥ {y} | Z.
+     * @return A set of GraphoidIndFact objects representing the newly derived singleton independence facts
+     *         obtained by applying the composition rule to the input set.
+     */
     public Set<GraphoidIndFact> singletonClosureWithComposition(Set<GraphoidIndFact> phase1Closure) {
         Set<GraphoidIndFact> singletons = singletonFacts(phase1Closure);
         Set<GraphoidIndFact> newFacts = new LinkedHashSet<>();

@@ -119,9 +119,17 @@ public class GraphoidClosureHarness {
         new GraphoidClosureHarness().run(testGraph, test, ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY, ClosureType.COMPOSITIONAL_GRAPHOID);
     }
 
+    /**
+     * The main method serves as the entry point for the program execution.
+     * It invokes the method to test a random linear Gaussian (LG) model by
+     * generating a graph, simulating data, performing a structure search,
+     * and running a graphoid closure analysis.
+     *
+     * @param args Command-line arguments passed to the program execution.
+     */
     public static void main(String[] args) {
-        tryRandomLgModel();
-//        trySimpleXorModel();
+//        tryRandomLgModel();
+        trySimpleXorModel();
     }
 
     /**
