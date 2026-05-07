@@ -66,11 +66,11 @@ import static edu.cmu.tetrad.util.TMath.*;
  */
 public final class Fask {
     private final Score score;
-    private final double[][] data;
+    private double[][] data;
     private final DataSet dataSet;
     private Graph externalGraph = null;
     private int depth = -1;
-    private double alpha = 1e-5;
+    private double alpha = 0.05;
     private Knowledge knowledge = new Knowledge();
     private double cutoff;
     private double extraEdgeThreshold = 0.3;
@@ -161,11 +161,11 @@ public final class Fask {
      * left-right difference based on a specified rule index.
      *
      * @param ruleIndex The index representing the rule to apply in calculating the left-right difference.
-     * @param graph The graph structure containing the nodes and their relationships.
-     * @param xi The first node for which the difference is computed.
-     * @param xj The second node for which the difference is computed.
-     * @param nodes The list of all nodes in the graph, used to find the positions of xi and xj in the data.
-     * @param data The 2D dataset where each row corresponds to a node in the nodes list, representing the observed values.
+     * @param graph     The graph structure containing the nodes and their relationships.
+     * @param xi        The first node for which the difference is computed.
+     * @param xj        The second node for which the difference is computed.
+     * @param nodes     The list of all nodes in the graph, used to find the positions of xi and xj in the data.
+     * @param data      The 2D dataset where each row corresponds to a node in the nodes list, representing the observed values.
      * @return The computed left-right difference residualized on covariates for the provided nodes.
      */
     public static double leftRightDiffResidualized(int ruleIndex, Graph graph, Node xi, Node xj, List<Node> nodes,
@@ -178,8 +178,8 @@ public final class Fask {
         double[] rx = residualize(x, z);
         double[] ry = residualize(y, z);
 
-        standardize(rx);
-        standardize(ry);
+        center(rx);
+        center(ry);
 
         return leftRightDiff(rx, ry, ruleIndex);
     }
@@ -189,27 +189,25 @@ public final class Fask {
      * between two given nodes xi and xj within a graph. The method relies on path-blocking
      * algorithms to determine the set of covariates.
      *
-     * @param graph the graph in which the nodes and edges are defined
-     * @param xi the first node under consideration
-     * @param xj the second node under consideration
+     * @param graph         the graph in which the nodes and edges are defined
+     * @param xi            the first node under consideration
+     * @param xj            the second node under consideration
      * @param maxPathLength the maximum path length to consider while blocking paths
      * @return a set of nodes that represent the orientation covariates for the given nodes xi and xj.
-     *         If the computation is interrupted, an empty set is returned.
+     * If the computation is interrupted, an empty set is returned.
      */
     public static Set<Node> orientationCovariates(Graph graph,
                                                   Node xi,
                                                   Node xj,
                                                   int maxPathLength) {
         try {
-            Set<Node> z = RecursiveBlocking.blockPathsRecursively(
-                    graph, xi, xj, Set.of(), Set.of(), maxPathLength
-            );
+            Set<Node> z = RecursiveBlocking.blockPathsRecursivelyFull(
+                    graph, xi, xj, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true).blockingSet();
 
-            if (z == null) z = new HashSet();
+            if (z == null) z = new HashSet<>();
 
-            Set<Node> z2 = RecursiveBlocking.blockPathsRecursively(
-                    graph, xj, xi, Set.of(), Set.of(), maxPathLength
-            );
+            Set<Node> z2 = RecursiveBlocking.blockPathsRecursivelyFull(
+                    graph, xj, xi, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true).blockingSet();
 
             if (z2 == null) {
                 List<Node> adj = graph.getAdjacentNodes(xi);
@@ -233,16 +231,16 @@ public final class Fask {
      * Computes the covariates for a pair of nodes in a graph based on a set of
      * orientation covariates determined up to a given maximum path length.
      *
-     * @param graph The graph containing the nodes and their relationships.
-     * @param xi The first node for which covariates are being computed.
-     * @param xj The second node for which covariates are being computed.
-     * @param nodes A list of all nodes in the graph, used to map nodes to data indices.
-     * @param data A 2D array where each row corresponds to the data values for a node
-     *             in the `nodes` list.
+     * @param graph         The graph containing the nodes and their relationships.
+     * @param xi            The first node for which covariates are being computed.
+     * @param xj            The second node for which covariates are being computed.
+     * @param nodes         A list of all nodes in the graph, used to map nodes to data indices.
+     * @param data          A 2D array where each row corresponds to the data values for a node
+     *                      in the `nodes` list.
      * @param maxPathLength The maximum path length for considering orientation covariates
      *                      in the graph.
      * @return A 2D array where each row corresponds to the data values of a covariate node
-     *         determined for the given pair of nodes.
+     * determined for the given pair of nodes.
      * @throws IllegalArgumentException If a covariate node is not found in the provided
      *                                  `nodes` list.
      */
@@ -288,7 +286,7 @@ public final class Fask {
         double r = StatUtils.correlation(x, y);
 
         // Use the same default delta as instance (−0.1) for static scoring.
-        if (r < 0.0) lr *= -1;
+        if (r < -0.1) lr *= -1;
         return lr;
     }
 
@@ -300,6 +298,9 @@ public final class Fask {
      * @return signed left-right score
      */
     private static double fask2Score(double[] x, double[] y) {
+        x = correctSkewness(x, skewness(x));
+        y = correctSkewness(y, skewness(y));
+
         double lr = corrExp(x, y, x) - corrExp(x, y, y);
         double r = StatUtils.correlation(x, y);
         if (r < 0.0) lr *= -1;
@@ -358,10 +359,10 @@ public final class Fask {
      * This method performs linear regression to estimate the contribution of the covariates to the
      * dependent variable and returns the residuals.
      *
-     * @param x The dependent variable array of size n, where n is the number of data points.
+     * @param x          The dependent variable array of size n, where n is the number of data points.
      * @param covariates The 2D array of covariates of size p x n, where p is the number of covariates
-     *        and n is the number of data points. Each row in the array represents a covariate, and
-     *        each column represents a data point.
+     *                   and n is the number of data points. Each row in the array represents a covariate, and
+     *                   each column represents a data point.
      * @return An array of residuals of size n, representing the dependent variable with the effects of the covariates removed.
      */
     public static double[] residualize(double[] x, double[][] covariates) {
@@ -549,9 +550,10 @@ public final class Fask {
     public Graph search() throws InterruptedException {
         setCutoff(alpha);
 
-        DataSet dataSet = DataTransforms.center(this.dataSet);
+        DataSet dataSet = DataTransforms.standardizeData(this.dataSet);
         List<Node> variables = dataSet.getVariables();
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
+        this.data = colData;
         Graph G0;
 
         if (externalGraph != null) {
@@ -576,10 +578,11 @@ public final class Fask {
         GraphSearchUtils.pcOrientbk(knowledge, G0, G0.getNodes(), false);
 
         Graph graph = new EdgeListGraph(variables);
-        Graph _graph = new EdgeListGraph();
+        Graph _graph;
 
         do {
             _graph = new EdgeListGraph(graph);
+            graph = new EdgeListGraph(variables);  // reset each iteration
 
             for (int i = 0; i < variables.size(); i++) {
                 for (int j = i + 1; j < variables.size(); j++) {
@@ -598,16 +601,12 @@ public final class Fask {
                             graph.addDirectedEdge(X, Y);
                         } else if (knowledgeOrients(Y, X)) {
                             graph.addDirectedEdge(Y, X);
-                        } else if (isBidirected(x, y, G0, X, Y)) {
+                        } else if (alpha > 0 && isTwoCycle(x, y, G0, X, Y)) {
                             graph.addEdge(Edges.directedEdge(X, Y));
                             graph.addEdge(Edges.directedEdge(Y, X));
                         } else {
                             int ruleIndex = leftRight.ordinal() + 1;
-                            // Raw left-right score on x and y.
-                            // The residualized cyclic version of FASK v2 works best in both cyclic and acyclic
-                            // settings in the harness, edu.cmu.tetrad.search.harness.FaskLeftRightHarness.
-//                        double score = leftRightDiff(x, y, ruleIndex);
-                            double score = leftRightDiffResidualized(ruleIndex, G0, X, Y, variables, data);
+                            double score = leftRightDiff(x, y, ruleIndex);
                             if (score > 0) graph.addDirectedEdge(X, Y);
                             else graph.addDirectedEdge(Y, X);
                         }
@@ -633,7 +632,7 @@ public final class Fask {
      *
      * @param alpha the significance level, must be between 0.0 and 1.0
      */
-    public void setCutoff(double alpha) {
+    private void setCutoff(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) throw new IllegalArgumentException("Significance out of range: " + alpha);
         this.cutoff = StatUtils.getZForAlpha(alpha);
     }
@@ -717,103 +716,87 @@ public final class Fask {
 
     // ------------ Internals ------------
 
-    private boolean isBidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
-        // -------------------- Candidate Z pool: neighbors of X or Y (excluding X,Y) --------------------
+//    private boolean _isBidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
+//        double score = leftRightDiffResidualized(leftRight.ordinal() + 1, G0, X, Y,
+//                dataSet.getVariables(), data);  // was: data
+//        return TMath.abs(score) < alpha;
+//    }
+
+    private boolean isTwoCycle(double[] x, double[] y, Graph G0, Node X, Node Y) {
+        x = correctSkewness(x, skewness(x));
+        y = correctSkewness(y, skewness(y));
+
         Set<Node> pool = new HashSet<>(G0.getAdjacentNodes(X));
         pool.addAll(G0.getAdjacentNodes(Y));
         List<Node> cand = new ArrayList<>(pool);
         cand.remove(X);
         cand.remove(Y);
 
-        // -------------------- Housekeeping / guards --------------------
-        final int n = x.length;
-        final int minPart = (int) TMath.ceil(0.15 * n); // require at least 15% of samples in X>0 and Y>0
-        final double ridge = 1e-6;                      // small ridge in partial-corr inversion
-        final double clampEps = 1e-6;                   // Fisher z clamp
-        final int maxSize = (depth < 0) ? cand.size() : TMath.min(depth, cand.size());
+        if (cand.isEmpty()) return false;
 
-        // -------------------- 1) Baseline: does the unconditioned pattern look cyclic? --------------------
-        if (!showsTwoCyclePattern(x, y, /*Z=*/null, minPart, ridge, clampEps)) {
-            // If even without Z we don't see the cycle opposition pattern, it's not a 2-cycle.
+        final int n = x.length;
+        final int minPart = (int) TMath.ceil(0.15 * n);
+        final double ridge = 1e-6;
+        final double clampEps = 1e-6;
+        final int maxSize = 2;// (depth < 0) ? cand.size() : TMath.min(depth, cand.size());
+
+        // Baseline: must show two-cycle pattern unconditionally
+        if (!showsTwoCyclePattern(x, y, null, minPart, ridge, clampEps)) {
             return false;
         }
 
-        // -------------------- 2) Try to BREAK the cycle by conditioning --------------------
-        // Evaluate Z = ∅ explicitly first (already done; it didn't break it), then scan subsets up to depth.
+        // Must persist under ALL conditioning sets
         SublistGenerator gen = new SublistGenerator(cand.size(), maxSize);
         int[] choice;
         while ((choice = gen.next()) != null) {
             List<Node> zNodes = GraphUtils.asList(choice, cand);
-            if (breaksCyclePattern(x, y, zNodes, minPart, ridge, clampEps)) {
-                // FOUND at least one Z that breaks the cycle opposition/ significance -> NOT a 2-cycle.
+            if (!showsTwoCyclePattern(x, y, zNodes, minPart, ridge, clampEps)) {
                 return false;
             }
         }
 
-        // If NO subset breaks the cycle pattern -> robustly unbreakable -> two-cycle.
         return true;
     }
 
-    /**
-     * Checks if the (X,Y) pair exhibits the "cycle opposition pattern" under conditioning Z.
-     * <p>
-     * The cycle opposition pattern is characterized by significant shifts in partial correlations when conditioning on
-     * X > 0 versus Y > 0, which suggests a feedback loop (X <-> Y).
-     */
     private boolean showsTwoCyclePattern(double[] x, double[] y, List<Node> zNodes,
-                                      int minPart, double ridge, double clampEps) {
+                                         int minPart, double ridge, double clampEps) {
 
         double[][] Z = (zNodes == null) ? new double[0][] : buildZ(zNodes);
 
-        // Partial correlations under three “slices”: all, X>0, Y>0
         final double pc, pc1, pc2;
         try {
             pc = partialCorrelation(x, y, Z, x, Double.NEGATIVE_INFINITY, +1, ridge);
             pc1 = partialCorrelation(x, y, Z, x, 0, +1, ridge);
             pc2 = partialCorrelation(x, y, Z, y, 0, +1, ridge);
         } catch (Exception e) {
-            // Singular/unstable Z; treat as "cannot establish opposition pattern"
             return false;
         }
 
-        // Partition sizes (guard tiny strata)
         int nxPos = StatUtils.getRows(x, x, 0, +1).size();
         int nyPos = StatUtils.getRows(y, y, 0, +1).size();
         if (nxPos < minPart || nyPos < minPart) return false;
 
-        // Clamp correlations for Fisher z
-        double _pc = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc));
+        double _pc  = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc));
         double _pc1 = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc1));
         double _pc2 = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc2));
 
-        // Fisher z
-        double z = 0.5 * (TMath.log(1.0 + _pc) - TMath.log(1.0 - _pc));
+        double z  = 0.5 * (TMath.log(1.0 + _pc)  - TMath.log(1.0 - _pc));
         double z1 = 0.5 * (TMath.log(1.0 + _pc1) - TMath.log(1.0 - _pc1));
         double z2 = 0.5 * (TMath.log(1.0 + _pc2) - TMath.log(1.0 - _pc2));
 
-        // Standardized directional shifts
         int nAll = StatUtils.getRows(x, x, Double.NEGATIVE_INFINITY, +1).size();
         double zv1 = (z - z1) / TMath.sqrt((1.0 / ((double) nAll - 3)) + (1.0 / ((double) nxPos - 3)));
         double zv2 = (z - z2) / TMath.sqrt((1.0 / ((double) nAll - 3)) + (1.0 / ((double) nyPos - 3)));
 
-        boolean rejected1 = TMath.abs(zv1) > cutoff;
-        boolean rejected2 = TMath.abs(zv2) > cutoff;
+        // Both shift significantly, in the SAME direction, by similar amounts
+        boolean sig1 = TMath.abs(zv1) > cutoff;
+        boolean sig2 = TMath.abs(zv2) > cutoff;
+        boolean sameDirection = (zv1 > 0) == (zv2 > 0);
 
-        // "Cycle opposition pattern": opposite signs with at least one significant;
-        // or both significant (even if not cleanly opposite)
-        if (zv1 < 0 && zv2 > 0 && rejected1) return true;
-        if (zv1 > 0 && zv2 < 0 && rejected2) return true;
-        if (rejected1 && rejected2) return true;
-
-        return false;
+        return sig1 && sig2 && sameDirection;
     }
 
     // === Returns true if conditioning on Z BREAKS the cycle opposition pattern (i.e., destroys it) ===
-    private boolean breaksCyclePattern(double[] x, double[] y, List<Node> zNodes,
-                                       int minPart, double ridge, double clampEps) {
-        // We “break” if the cycle pattern is NOT present under Z.
-        return !showsTwoCyclePattern(x, y, zNodes, minPart, ridge, clampEps);
-    }
 
     // === Utility to build Z matrix ===
     private double[][] buildZ(List<Node> zNodes) {

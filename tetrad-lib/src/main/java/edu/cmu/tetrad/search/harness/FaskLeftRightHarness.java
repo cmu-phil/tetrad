@@ -18,7 +18,7 @@ import java.util.List;
  * Harness for tuning and comparing FASK left-right pairwise orientation rules
  * on random residualized linear SEMs with skewed errors.
  *
- * <p>Protocol:
+ * x
  * <ul>
  *   <li>Generate a random residualized graph using RandomGraph.randomCyclicGraph3(...)</li>
  *   <li>Simulate data from a linear SEM with Exp(1) errors</li>
@@ -55,7 +55,7 @@ public final class FaskLeftRightHarness {
     /**
      * Average degree used in the graph generator.
      */
-    private static final int AVG_DEGREE = 3;
+    private static final int AVG_DEGREE = 2;
 
     private static final DecimalFormat DF = new DecimalFormat("0.000");
 
@@ -110,10 +110,11 @@ public final class FaskLeftRightHarness {
      *
      * @param pwRule      pairwise rule number, 1..5
      * @param replicates  number of graph/data replicates
-     * @param standardize
+     * @param residualized  whether to residualize the data
+     * @param standardize   whether to standardize the data
      * @return aggregated summary
      */
-    private static HarnessSummary runHarness(int pwRule, int replicates, boolean cyclic, boolean standardize) {
+    private static HarnessSummary runHarness(int pwRule, int replicates, boolean residualized, boolean standardize) {
         long totalMisoriented = 0L;
         long totalEligible = 0L;
         long totalSkippedTwoCycles = 0L;
@@ -121,7 +122,7 @@ public final class FaskLeftRightHarness {
         List<Double> replicateErrorRates = new ArrayList<>();
 
         for (int r = 0; r < replicates; r++) {
-            Graph graph = generateRandomCyclicGraph();
+            Graph graph = generateRandomAcyclicGraph();
 
             DataSet dataSet = simulateData(graph);
 
@@ -161,7 +162,7 @@ public final class FaskLeftRightHarness {
                 double diff;
 
                 if (pwRule >= 1 && pwRule <= 5) {
-                    if (cyclic) {
+                    if (residualized) {
                         diff = Fask.leftRightDiffResidualized(pwRule, graph, xi, xj, nodes, data);
                     } else {
                         diff = Fask.leftRightDiff(data[i], data[j], pwRule);
@@ -186,7 +187,7 @@ public final class FaskLeftRightHarness {
             replicateErrorRates.add(replicateRate);
         }
 
-        return new HarnessSummary(standardize, cyclic, totalMisoriented, totalEligible, totalSkippedTwoCycles, replicateErrorRates);
+        return new HarnessSummary(standardize, residualized, totalMisoriented, totalEligible, totalSkippedTwoCycles, replicateErrorRates);
     }
 
     /**
@@ -241,7 +242,7 @@ public final class FaskLeftRightHarness {
         Parameters parameters = new Parameters();
 
         parameters.set(Params.CUSTOM_NOISE_OPTION, 2);
-        parameters.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)");
+        parameters.set(Params.CUSTOM_NOISE_EXPRESSION, "Gumbel(0, 1)");
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm, parameters);
@@ -268,7 +269,7 @@ public final class FaskLeftRightHarness {
                         + " | misoriented=" + summary.totalMisoriented
                         + " / eligible=" + summary.totalEligible
                         + " | overallError=" + DF.format(overallErrorRate)
-                        + " | meanRepError=" + DF.format(meanReplicateError)
+//                        + " | meanRepError=" + DF.format(meanReplicateError)
                         + " | sdRepError=" + DF.format(sdReplicateError)
                         + " | skippedTwoCycles=" + summary.totalSkippedTwoCycles
         );

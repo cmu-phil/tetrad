@@ -88,6 +88,11 @@
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
+            <artifactId>commons-rng-sampling</artifactId>
+            <version>1.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
             <artifactId>commons-rng-simple</artifactId>
             <version>1.6</version>
         </dependency>

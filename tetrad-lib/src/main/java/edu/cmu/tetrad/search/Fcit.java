@@ -139,7 +139,8 @@ public final class Fcit implements IGraphSearch {
     private @NotNull Graph pag = new EdgeListGraph();
     private boolean replicatingGraph = false;
     private boolean excludeSelectionBias = false;
-    private int maxBlockingPathLength = -1;
+    private int maxPathLength = 15;
+    private int raRadius = -1;
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -293,6 +294,8 @@ public final class Fcit implements IGraphSearch {
         fciOrient.setVerbose(superVerbose);
         fciOrient.setParallel(true);
         fciOrient.setCompleteRuleSetUsed(true);
+        fciOrient.setMaxBlockingPathLength(maxPathLength);
+        fciOrient.setMaxDiscriminatingPathLength(-1);
         fciOrient.setKnowledge(knowledge);
 
         Graph dag;
@@ -429,7 +432,7 @@ public final class Fcit implements IGraphSearch {
         }
 
         // The main procedure.
-        this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias);
+        this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias, maxPathLength);
 
         if (replicatingGraph) {
             this.pag = new ReplicatingGraph(pag, new LagReplicationPolicy());
@@ -444,6 +447,7 @@ public final class Fcit implements IGraphSearch {
         int round = 0;
 
         do {
+            System.out.println();
             System.out.println("Round: " + (++round));
         } while (removeEdgesRecursively(checks, excludeSelectionBias));
 
@@ -467,11 +471,11 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
 
-    //        if (replicatingGraph) {
-    //            pag = GraphUtils.getReplicatingGraph(pag);
-    //            redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, excludeSelectionBias, superVerbose);
-    ////            fciOrient.finalOrientation(pag);
-    //        }
+        //        if (replicatingGraph) {
+        //            pag = GraphUtils.getReplicatingGraph(pag);
+        //            redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, excludeSelectionBias, superVerbose);
+        ////            fciOrient.finalOrientation(pag);
+        //        }
 
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
@@ -616,10 +620,35 @@ public final class Fcit implements IGraphSearch {
             if (!this.pag.isAdjacentTo(x, y)) break; // edge already removed upstream
 
             Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
+            RecursiveBlocking.BlockingResult result = null;
+//
+            if (this.depth < 0) {
+                result = RecursiveBlocking.blockPathsRecursivelyFull(
+                        pag, x, y, Set.of(), notFollowed, maxPathLength, depth, raRadius, 1, true);
 
-            // Use recursive blocking to propose a blocking set B; null => no sepset under this NF
-//            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1);
-            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, maxBlockingPathLength, this.knowledge);
+            } else {
+//                if (!result.indeterminate()) {
+                result = null;
+                int depth = 0;
+                int maxDepth = this.depth >= 0 ? this.depth : pag.getNumNodes();
+
+                do {
+                    depth++;
+
+                    if (depth > maxDepth) break;
+
+                    result = RecursiveBlocking.blockPathsRecursivelyFull(
+                            pag, x, y, Set.of(), notFollowed, maxPathLength, depth, raRadius, 1, true);
+                } while (result.indeterminate());
+//                }
+            }
+
+            if (result == null || result.indeterminate()) {
+                continue;
+            }
+
+            Set<Node> B = result.blockingSet();
+
             if (B == null) {
                 continue; // No separating set possible for this NF; try another NF
             }
@@ -686,7 +715,7 @@ public final class Fcit implements IGraphSearch {
         if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
             if (verbose) {
                 TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
-                        + " reasons, but it didn't lead to a PAG");
+                        + " reasons, but it didn't lead to a PAG, sepset = " + b);
             }
 
             this.pag = _pag;
@@ -695,7 +724,7 @@ public final class Fcit implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Removing " + _edge + " for " + type + " reasons.");
+            TetradLogger.getInstance().log("Removing " + _edge + " for " + type + " reasons, sepset = " + b);
         }
 
         return true;
@@ -807,13 +836,22 @@ public final class Fcit implements IGraphSearch {
         this.excludeSelectionBias = excludeSelectionBias;
     }
 
+//    /**
+//     * Sets the maximum blocking path length.
+//     *
+//     * @param maxPathLength the maximum length of the blocking path to be set
+//     */
+//    public void setMaxPathLength(int maxPathLength) {
+//        this.maxPathLength = maxPathLength;
+//    }
+
     /**
-     * Sets the maximum blocking path length.
+     * Sets the radius for RA (Recursive Association) algorithm.
      *
-     * @param maxBlockingPathLength the maximum length of the blocking path to be set
+     * @param raRadius the radius for RA algorithm to be set
      */
-    public void setMaxBlockingPathLength(int maxBlockingPathLength) {
-        this.maxBlockingPathLength = maxBlockingPathLength;
+    public void setRaRadius(int raRadius) {
+        this.raRadius = raRadius;
     }
 
     /**

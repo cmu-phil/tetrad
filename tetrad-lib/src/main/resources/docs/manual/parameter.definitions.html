@@ -1131,7 +1131,7 @@ Source:
     === depth ===
     <h3 class="parameter_description" id="depth">depth</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="depth_short_desc">Maximum size of conditioning set ('depth', unlimited =-1)
+        <li>Short Description: <span id="depth_short_desc">Depth (Maximum size of conditioning set, unlimited =-1)
             </span></li>
         <li>Long Description: <span id="depth_long_desc">
         The depth of search for algorithms like the PC adjacency search,
@@ -2729,6 +2729,26 @@ Source:
         <li>Upper
             Bound: <span id="maxBlockingPathLength_upper_bound">2147483647</span></li>
         <li>Value Type: <span id="maxBlockingPathLength_value_type">Integer</span></li>
+    </ul>
+
+
+    === raRadius ===
+    <h3 class="parameter_description" id="raRadius">raRadius</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="raRadius_short_desc">
+                Radius of search for Recursive Adjustment
+                (-1 = no limit)
+            </span></li>
+        <li>Long Description: <span id="raRadius_long_desc">
+                The maximum distance from and endpoint to look for conditioning
+                nodes, for Recursive Adjustment
+        </span></li>
+        <li>Default
+            Value: <span id="raRadius_default_value">-1</span></li>
+        <li>Lower Bound: <span id="raRadius_lower_bound">-1</span></li>
+        <li>Upper
+            Bound: <span id="raRadius_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="raRadius_value_type">Integer</span></li>
     </ul>
 
 

@@ -135,6 +135,7 @@ public final class IndTestChiSquare implements IndependenceTest, EffectiveSample
         this.chiSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.CHI_SQUARE, rows);
         this.chiSquareTest.setMinCountPerCell(minCountPerCell);
         this.rows = getAllRows(dataSet.getNumRows());
+        this.nEff = dataSet.getNumRows();
         this.sampleSize = this.rows.size();
     }
 

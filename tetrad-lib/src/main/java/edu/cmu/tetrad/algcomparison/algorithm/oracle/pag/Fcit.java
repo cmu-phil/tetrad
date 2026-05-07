@@ -35,7 +35,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -163,7 +162,8 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // FCIT
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
+//        search.setMaxPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
+        search.setRaRadius(parameters.getInt(Params.RA_RADIUS));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
@@ -235,7 +235,8 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.FCIT_STARTS_WITH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DEPTH);
-        params.add(Params.MAX_BLOCKING_PATH_LENGTH);
+//        params.add(Params.MAX_BLOCKING_PATH_LENGTH); // Setting this to 15.
+        params.add(Params.RA_RADIUS);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
 
         // General

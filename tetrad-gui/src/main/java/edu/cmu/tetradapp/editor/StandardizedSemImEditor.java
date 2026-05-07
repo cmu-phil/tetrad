@@ -98,7 +98,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
 
         // By default, hide the error terms.
 //        getSemGraph().setShowErrorTerms(false);
-        SemGraph graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
+        SemGraph graph = new SemGraph(graphicalEditor().getWorkbench().getGraph());
         boolean shown = wrapper.isShowErrors();
         graph.setShowErrorTerms(shown);
 

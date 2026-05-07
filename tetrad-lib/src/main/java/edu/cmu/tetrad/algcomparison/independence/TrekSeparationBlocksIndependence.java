@@ -43,7 +43,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "TSBI",
+        name = "TSBI (Trek Separation Blocks Independence)",
         command = "tsbi",
         dataType = {DataType.Continuous, DataType.Covariance}
 )

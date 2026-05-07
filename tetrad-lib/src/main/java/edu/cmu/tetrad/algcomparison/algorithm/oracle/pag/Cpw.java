@@ -106,11 +106,6 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     private static final long serialVersionUID = 23L;
 
     /**
-     * Optional name for pairwise rule param (read if present).
-     */
-    private static final String PARAM_PAIRWISE_RULE = "PAIRWISE_RULE";
-
-    /**
      * Independence test wrapper.
      */
     private IndependenceWrapper test;
@@ -172,7 +167,7 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         }
 
         // Default rule is FASK 2 from harness.
-        int pwRule = 2;
+        int pwRule = parameters.getInt(Params.FASK_LEFT_RIGHT_RULE, 2);
         boolean verbose = parameters.getBoolean(Params.VERBOSE);
 
         // Standardize once; reuse for knowledge + all pairwise decisions
@@ -223,37 +218,13 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
                 pag = IndTestFdrWrapper.doFdrLoop(fci, negativelyCorrelated, alpha, fdrQ, verbose);
             }
 
-            // --- Phase 2a: Orient tail–tail (—) edges using PW left-right on standardized data ---
-            for (Edge e : new ArrayList<>(pag.getEdges())) { // snapshot to allow mutation
-                Node x = e.getNode1();
-                Node y = e.getNode2();
-
-                Integer ix = nameToIdx.get(x.getName());
-                Integer iy = nameToIdx.get(y.getName());
-                if (ix == null || iy == null) continue; // defensive: mismatch
-
-                double diff = Fask.leftRightDiffResidualized(pwRule, pag, x, y, nodes, data);
-
-                if (Edges.isUndirectedEdge(e)) { // x — y
-                    pag.removeEdge(x, y);
-                    if (diff > 0) {
-                        pag.addDirectedEdge(x, y);  // x → y
-                        if (verbose) TetradLogger.getInstance().log("CPW — : " + x + "→" + y + " (diff=" + diff + ")");
-                    } else {
-                        pag.addDirectedEdge(y, x);  // y → x
-                        if (verbose) TetradLogger.getInstance().log("CPW — : " + y + "→" + x + " (diff=" + diff + ")");
-                    }
-                }
-            }
-
-            // --- Phase 2b: Tail–circle (—o) and circle–tail (o—) safe refinements ---
             for (int s = 0; s < 2; s++) {
-                for (Edge e : new ArrayList<>(pag.getEdges())) { // snapshot again; we'll mutate
+                for (Edge e : new ArrayList<>(pag.getEdges())) {
                     Node x = e.getNode1();
                     Node y = e.getNode2();
 
-                    Endpoint exy = pag.getEndpoint(x, y); // endpoint at y from x
-                    Endpoint eyx = pag.getEndpoint(y, x); // endpoint at x from y
+                    Endpoint exy = pag.getEndpoint(x, y); // endpoint at y
+                    Endpoint eyx = pag.getEndpoint(y, x); // endpoint at x
 
                     Integer ix = nameToIdx.get(x.getName());
                     Integer iy = nameToIdx.get(y.getName());
@@ -261,28 +232,53 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
 
                     double diff = Fask.leftRightDiff(data[ix], data[iy], pwRule);
 
-                    // Case: x — o y  (TAIL at x→y; CIRCLE at y→x)
-                    if (exy == Endpoint.TAIL && eyx == Endpoint.CIRCLE) {
-//                    if (diff > 0) { // x → y preferred
+                    // Catch both true undirected edges AND tail-tail edges from FCI
+                    if (exy == Endpoint.TAIL && eyx == Endpoint.TAIL) {
                         pag.removeEdge(x, y);
-                        pag.addDirectedEdge(x, y);
-                        if (verbose) TetradLogger.getInstance().log("CPW —o: " + x + "→" + y + " (diff=" + diff + ")");
-//                    }
-                        continue;
+                        if (diff > 0) {
+                            pag.addDirectedEdge(x, y);
+                            if (verbose) TetradLogger.getInstance().log("CPW — : " + x + "→" + y + " (diff=" + diff + ")");
+                        } else {
+                            pag.addDirectedEdge(y, x);
+                            if (verbose) TetradLogger.getInstance().log("CPW — : " + y + "→" + x + " (diff=" + diff + ")");
+                        }
                     }
 
-                    // Case: x o — y  (CIRCLE at x→y; TAIL at y→x)
+                    // Case: x —o y  (tail at x, circle at y)
+                    // exy = endpoint at y = CIRCLE; eyx = endpoint at x = TAIL
                     if (exy == Endpoint.CIRCLE && eyx == Endpoint.TAIL) {
-                        if (diff < 0) { // y → x preferred
+                        if (diff > 0) {
+                            pag.removeEdge(x, y);
+                            pag.addDirectedEdge(x, y);
+                            if (verbose)
+                                TetradLogger.getInstance().log("CPW —o: " + x + "-->" + y + " (diff=" + diff + ")");
+                        } else {
+                            pag.removeEdge(x, y);
+                            pag.addUndirectedEdge(x, y);
+                            if (verbose)
+                                TetradLogger.getInstance().log("CPW —o: " + x + "---" + y + " (diff=" + diff + ")");
+
+                        }
+                    }
+
+                    // Case: x o— y  (circle at x, tail at y)
+                    // exy = endpoint at y = TAIL; eyx = endpoint at x = CIRCLE
+                    if (exy == Endpoint.TAIL && eyx == Endpoint.CIRCLE) {
+                        if (diff < 0) {
                             pag.removeEdge(x, y);
                             pag.addDirectedEdge(y, x);
                             if (verbose)
                                 TetradLogger.getInstance().log("CPW o—: " + y + "→" + x + " (diff=" + diff + ")");
+                        } else {
+                            pag.removeEdge(y, x);
+                            pag.addUndirectedEdge(y, x);
+                            if (verbose)
+                                TetradLogger.getInstance().log("CPW —o: " + x + "---" + y + " (diff=" + diff + ")");
                         }
                     }
 
-                    // Case x o-o y
-                    if (eyx == Endpoint.CIRCLE && exy == Endpoint.CIRCLE) {
+                    // Case: x o-o y
+                    if (exy == Endpoint.CIRCLE && eyx == Endpoint.CIRCLE) {
                         if (diff > 0) {
                             pag.setEndpoint(x, y, Endpoint.ARROW);
                         } else {
@@ -290,18 +286,20 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
                         }
                     }
 
-                    // Case x o-> y; if causally sufficient orient as x --> y
-                    if (eyx == Endpoint.CIRCLE && exy == Endpoint.ARROW) {
-                        pag.setEndpoint(e.getNode2(), e.getNode1(), Endpoint.TAIL);
+                    // Case: x o-> y; causally sufficient → x --> y
+                    // exy = ARROW (at y), eyx = CIRCLE (at x)
+                    if (exy == Endpoint.ARROW && eyx == Endpoint.CIRCLE) {
+                        pag.setEndpoint(y, x, Endpoint.TAIL);
                     }
 
-                    // Case x <-o y; if causally sufficient orient as x <-- y
-                    if (eyx == Endpoint.ARROW && exy == Endpoint.CIRCLE) {
-                        pag.setEndpoint(e.getNode1(), e.getNode2(), Endpoint.TAIL);
+                    // Case: x <-o y; causally sufficient → x <-- y
+                    // exy = CIRCLE (at y), eyx = ARROW (at x)
+                    if (exy == Endpoint.CIRCLE && eyx == Endpoint.ARROW) {
+                        pag.setEndpoint(x, y, Endpoint.TAIL);
                     }
                 }
             }
-        }  while (!pag.equals(_pag));
+        } while (!pag.equals(_pag));
 
         return pag;
     }
@@ -321,17 +319,18 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
                 Node xi = nodes.get(i);
                 Node xj = nodes.get(j);
 
-//                Fask.setDelta(-0.1);
+                int i_xi = nodes.indexOf(xi);
+                int i_xj = nodes.indexOf(xj);
 
-                double diff = Fask.leftRightDiffResidualized(pwRule, graph, xi, xj, nodes, data);
+                double diff = Fask.leftRightDiff(data[i_xi], data[i_xj], pwRule);
 
                 if (diff > 0) {
-                    // prefer xi -> yj  ⇒ forbid yj -> xi
+                    // prefer i_xi -> i_xj  ⇒ forbid xj -> xi
                     knowledge.setForbidden(xj.getName(), xi.getName());
                     if (verbose)
                         TetradLogger.getInstance().log("CPW-K: forbid " + xj + "→" + xi + " (prefer " + xi + "→" + xj + ", diff=" + diff + ")");
                 } else {
-                    // prefer yj -> xi  ⇒ forbid xi -> yj
+                    // prefer i_xj -> i_xi  ⇒ forbid xi -> yj
                     knowledge.setForbidden(xi.getName(), xj.getName());
                     if (verbose)
                         TetradLogger.getInstance().log("CPW-K: forbid " + xi + "→" + xj + " (prefer " + xj + "→" + xi + ", diff=" + diff + ")");
@@ -399,11 +398,10 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.DO_POSSIBLE_DSEP);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
+        parameters.add(Params.FASK_LEFT_RIGHT_RULE);
         parameters.add(Params.FDR_Q);
         parameters.add(Params.TIME_LAG);
-//        parameters.add(Params.GUARANTEE_PAG);
         parameters.add(Params.VERBOSE);
-        // Note: PAIRWISE_RULE is read if provided; not registered as a Params constant here.
         return parameters;
     }
 

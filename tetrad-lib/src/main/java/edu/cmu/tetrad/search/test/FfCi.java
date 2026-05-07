@@ -25,11 +25,17 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.rng.UniformRandomProvider;
+import org.apache.commons.rng.sampling.distribution.NormalizedGaussianSampler;
+import org.apache.commons.rng.sampling.distribution.ZigguratSampler;
+import org.apache.commons.rng.simple.RandomSource;
 
 /**
  * A kernel-based conditional independence (CI) test for datasets containing any mix of
@@ -99,9 +105,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see RawMarginalIndependenceTest
  */
 public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIndependenceTest {
-
-    // ---------------- feature representation ----------------
-
+    
     // ---------------- core data ----------------
     private final DataSet data;
     private final List<Node> vars;
@@ -168,7 +172,8 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
      */
     public FfCi(DataSet dataSet, Parameters params) {
         DataSet _data = Objects.requireNonNull(dataSet, "data");
-        this.data = DataTransforms.standardizeData(_data);
+//        this.data = DataTransforms.standardizeData(_data);
+        this.data = _data;
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
         this.n = getActiveRowCount();
 
@@ -209,7 +214,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         this.seed = seed;
         this.rng.setSeed(seed);
         invalidateCaches();
-        this.continuousDelegate.setSeed(seed);
+//        this.continuousDelegate.setSeed(seed);
     }
 
     /**
@@ -467,6 +472,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
                 if (r < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
                 if (r >= data.getNumRows()) throw new IllegalArgumentException("Row " + i + " out of bounds: " + r);
             }
+            rows.sort(Comparator.naturalOrder());
             this.rows = new ArrayList<>(rows);
         } else {
             this.rows = null;
@@ -533,10 +539,26 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         Objects.requireNonNull(x, "x");
         Objects.requireNonNull(y, "y");
 
+        // If all variables are discrete, fall back to chi-square
+        if (DiscreteIndependenceUtils.isAllDiscrete(x, y, z)) {
+            return DiscreteIndependenceUtils.conditionalChiSquare(
+                    data, vars, rows,
+                    x, y, z != null ? new ArrayList<>(z) : new ArrayList<>(),
+                    new IndependenceFact(x, y, z != null ? z : new HashSet<>()),
+                    alpha);
+        }
+
         // Hard guarantee: if dataset has no discrete vars, behave exactly like FF-CI (IndTestFfCi).
         if (!dataHasAnyDiscrete) {
             syncDelegateToThis();
             return continuousDelegate.checkIndependence(x, y, z);
+        }
+
+        // If x.getName() is lexically after y.getName(), swap x and y.
+        if (x.getName().compareTo(y.getName()) > 0) {
+            Node temp = x;
+            x = y;
+            y = temp;
         }
 
         this.n = getActiveRowCount();
@@ -644,9 +666,6 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         continuousDelegate.setPermutations(permutations);
         continuousDelegate.setApprox(pValueMethod);
         continuousDelegate.setRows(rows);
-        // Make sure the delegate uses the same RNG seed for reproducibility
-        continuousDelegate.setSeed(this.seed);
-        // NOTE: bandwidthMultiplier/bwMaxRows/featureType/catRho are mixed-only here.
     }
 
     // ---------------- Mixed feature construction ----------------
@@ -885,11 +904,14 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
 
         if (n == 0 || mFeatures <= 0) return new double[n][TMath.max(mFeatures, 0)];
 
+        final UniformRandomProvider localRng = RandomSource.XO_RO_SHI_RO_128_PP.create(seed);
+        final NormalizedGaussianSampler localGaussian = ZigguratSampler.NormalizedGaussian.of(localRng);
+
         if (d == 0) {
             double[][] Phi = new double[n][mFeatures];
             double scale0 = TMath.sqrt(2.0 / mFeatures);
             double[] b0 = new double[mFeatures];
-            for (int j = 0; j < mFeatures; j++) b0[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+            for (int j = 0; j < mFeatures; j++) b0[j] = 2.0 * TMath.PI * localRng.nextDouble();
             for (int i = 0; i < n; i++)
                 for (int j = 0; j < mFeatures; j++)
                     Phi[i][j] = scale0 * TMath.cos(b0[j]);
@@ -907,12 +929,12 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         if (featureType == FfCiContinuous.FeatureType.RFF) {
             W = new double[mFeatures][d];
             for (int j = 0; j < mFeatures; j++) {
-                for (int k = 0; k < d; k++) W[j][k] = wStd * RandomUtil.getInstance().nextGaussian();
-                b[j] = 2.0 * TMath.PI * rng.nextDouble();
+                for (int k = 0; k < d; k++) W[j][k] = wStd * localGaussian.sample();
+                b[j] = 2.0 * TMath.PI * localRng.nextDouble();
             }
         } else {
-            W = sampleOrthogonalW(mFeatures, d, wStd);
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+            W = sampleOrthogonalW(mFeatures, d, wStd, localGaussian);
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * localRng.nextDouble();
         }
 
         double[][] Phi = new double[n][mFeatures];
@@ -928,7 +950,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         return Phi;
     }
 
-    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd) {
+    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd, NormalizedGaussianSampler localGaussian) {
         double[][] W = new double[mFeatures][d];
         if (d <= 0) return W;
 
@@ -939,7 +961,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
             double[][] Q = new double[block][d];
             for (int i = 0; i < block; i++)
                 for (int j = 0; j < d; j++)
-                    Q[i][j] = RandomUtil.getInstance().nextGaussian();
+                    Q[i][j] = localGaussian.sample();
 
             for (int i = 0; i < block; i++) {
                 for (int k = 0; k < i; k++) {
@@ -954,7 +976,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
             }
 
             for (int i = 0; i < block; i++) {
-                double r = chiRadius(d);
+                double r = chiRadius(d, localGaussian);
                 double s = wStd * r;
                 int outRow = filled + i;
                 for (int j = 0; j < d; j++) W[outRow][j] = s * Q[i][j];
@@ -965,10 +987,10 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         return W;
     }
 
-    private static double chiRadius(int d) {
+    private static double chiRadius(int d, NormalizedGaussianSampler localGaussian) {
         double ss = 0.0;
         for (int k = 0; k < d; k++) {
-            double g = RandomUtil.getInstance().nextGaussian();
+            double g = localGaussian.sample();
             ss += g * g;
         }
         return TMath.sqrt(TMath.max(1e-18, ss));
@@ -1103,6 +1125,20 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
      * @param alpha The ridge parameter.
      * @return The residualized matrix.
      */
+//    private static SimpleMatrix ridgeResidual(SimpleMatrix X, SimpleMatrix Z, double alpha) {
+//        if (Z == null || Z.getNumCols() == 0) {
+//            return X;
+//        }
+//        if (!(alpha > 0) || !Double.isFinite(alpha)) {
+//            alpha = 1e-18;
+//        }
+//
+//        SimpleMatrix ZtZ = Z.transpose().mult(Z);
+//        SimpleMatrix A = ZtZ.plus(SimpleMatrix.identity(ZtZ.getNumRows()).scale(alpha));
+//        SimpleMatrix B = A.solve(Z.transpose().mult(X));
+//        return X.minus(Z.mult(B));
+//    }
+
     private static SimpleMatrix ridgeResidual(SimpleMatrix X, SimpleMatrix Z, double alpha) {
         if (Z == null || Z.getNumCols() == 0) {
             return X;
@@ -1112,7 +1148,15 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         }
 
         SimpleMatrix ZtZ = Z.transpose().mult(Z);
-        SimpleMatrix A = ZtZ.plus(SimpleMatrix.identity(ZtZ.getNumRows()).scale(alpha));
+
+        // Scale lambda by the mean diagonal of Z^T Z so it's relative
+        // to the actual signal magnitude rather than absolute
+        double meanDiag = 0.0;
+        for (int i = 0; i < ZtZ.getNumRows(); i++) meanDiag += ZtZ.get(i, i);
+        meanDiag /= TMath.max(1, ZtZ.getNumRows());
+        double effectiveLambda = alpha * TMath.max(1.0, meanDiag);
+
+        SimpleMatrix A = ZtZ.plus(SimpleMatrix.identity(ZtZ.getNumRows()).scale(effectiveLambda));
         SimpleMatrix B = A.solve(Z.transpose().mult(X));
         return X.minus(Z.mult(B));
     }
@@ -1296,24 +1340,24 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         invalidateCaches();
     }
 
-    private long seedForPermutation(IndependenceFact fact) {
-        long h = 1469598103934665603L;          // FNV offset
-        h = 1099511628211L * (h ^ "PERM".hashCode());
-
-        // include dataset identity/version + active rows
-        h = 1099511628211L * (h ^ Long.hashCode(dataVersion));
-        h = 1099511628211L * (h ^ Integer.hashCode(getActiveRowCount()));
-        h = 1099511628211L * (h ^ Integer.hashCode(activeRowsHash()));
-
-        // include the actual CI query: X, Y, and conditioning set Z (sorted)
-        h = 1099511628211L * (h ^ fact.getX().getName().hashCode());
-        h = 1099511628211L * (h ^ fact.getY().getName().hashCode());
-
-        ArrayList<String> zNames = new ArrayList<>();
-        for (Node z : fact.getZ()) zNames.add(z.getName());
-        zNames.sort(NaturalSort.naturalComparator());
-        for (String s : zNames) h = 1099511628211L * (h ^ s.hashCode());
-
-        return h;
-    }
+//    private long seedForPermutation(IndependenceFact fact) {
+//        long h = 1469598103934665603L;          // FNV offset
+//        h = 1099511628211L * (h ^ "PERM".hashCode());
+//
+//        // include dataset identity/version + active rows
+//        h = 1099511628211L * (h ^ Long.hashCode(dataVersion));
+//        h = 1099511628211L * (h ^ Integer.hashCode(getActiveRowCount()));
+//        h = 1099511628211L * (h ^ Integer.hashCode(activeRowsHash()));
+//
+//        // include the actual CI query: X, Y, and conditioning set Z (sorted)
+//        h = 1099511628211L * (h ^ fact.getX().getName().hashCode());
+//        h = 1099511628211L * (h ^ fact.getY().getName().hashCode());
+//
+//        ArrayList<String> zNames = new ArrayList<>();
+//        for (Node z : fact.getZ()) zNames.add(z.getName());
+//        zNames.sort(NaturalSort.naturalComparator());
+//        for (String s : zNames) h = 1099511628211L * (h ^ s.hashCode());
+//
+//        return h;
+//    }
 }

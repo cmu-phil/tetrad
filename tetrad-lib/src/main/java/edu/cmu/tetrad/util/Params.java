@@ -1029,6 +1029,10 @@ public final class Params {
      */
     public static final String MAX_BLOCKING_PATH_LENGTH = "maxBlockingPathLength";
     /**
+     * Constant <code>RA_RADIUS="raRadius"</code>
+     */
+    public static final String RA_RADIUS = "raRadius";
+    /**
      * Constant <code>MAX_SEPSET_SIZE="maxSepsetSize"</code>
      */
     public static final String MAX_SEPSET_SIZE = "maxSepsetSize";

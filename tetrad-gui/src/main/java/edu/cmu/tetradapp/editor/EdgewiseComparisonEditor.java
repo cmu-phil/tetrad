@@ -36,7 +36,7 @@ import java.io.Serial;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class EdgewiseComparisonEditor extends JPanel {
+public class EdgewiseComparisonEditor extends JPanel implements DoNotScroll {
 
     @Serial
     private static final long serialVersionUID = 7921819261142670181L;
@@ -71,7 +71,7 @@ public class EdgewiseComparisonEditor extends JPanel {
     private void setup() {
         setLayout(new BorderLayout());
 
-        JPanel pane = new JPanel();
+//        JPanel pane = new JPanel();
 
         Font font = new Font("Monospaced", Font.PLAIN, 14);
         area = new JTextArea();
@@ -87,11 +87,11 @@ public class EdgewiseComparisonEditor extends JPanel {
         }
 
         JScrollPane scrollTextPane = new JScrollPane(area);
-        scrollTextPane.setPreferredSize(new Dimension(500, 600));
+//        scrollTextPane.setPreferredSize(new Dimension(500, 600));
 
-        pane.add(scrollTextPane, new BorderLayout());
+//        pane.add(scrollTextPane, new BorderLayout());
 
-        add(pane);
+        add(scrollTextPane);
 
         add(menubar(), BorderLayout.NORTH);
     }

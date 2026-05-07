@@ -32,6 +32,7 @@ import org.junit.Test;
 import java.text.ParseException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the IndTestTimeSeries class.
@@ -87,30 +88,32 @@ public class TestIndTestFisherGeneralizedInverse {
         IndTestFisherZ test2 = new IndTestFisherZ(data2, 0.05);
 
         double lambda = 0.0;
-
         test1.setLambda(lambda);
         test2.setLambda(lambda);
 
-        double p1 = 0;
-        double p2 = 0;
-        double p3 = 0;
         try {
-            IndependenceResult result1 = test1.checkIndependence(data1.getVariable(x.getName()), data1.getVariable(y.getName()));
-            p1 = result1.getPValue();
+            // X -> Y -> Z chain: X and Y should be dependent (p ~ 0)
+            IndependenceResult result1 = test1.checkIndependence(
+                    data1.getVariable(x.getName()), data1.getVariable(y.getName()));
+            assertEquals("X _||_ Y should be rejected (dependent)",
+                    0, result1.getPValue(), 0.01);
 
-            IndependenceResult result2 = test2.checkIndependence(data2.getVariable(x.getName()), data2.getVariable(z.getName()),
+            // X -> Y <- Z collider: X _||_ Z | Y should be rejected (dependent given Y)
+            IndependenceResult result2 = test2.checkIndependence(
+                    data2.getVariable(x.getName()), data2.getVariable(z.getName()),
                     data2.getVariable(y.getName()));
-            p2 = result2.getPValue();
+            assertEquals("X _||_ Z | Y should be rejected (dependent given collider Y)",
+                    0, result2.getPValue(), 0.01);
 
-            IndependenceResult result3 = test2.checkIndependence(data2.getVariable(x.getName()), data2.getVariable(z.getName()));
-            p3 = result3.getPValue();
+            // X -> Y <- Z collider: X and Z should be marginally independent (p > 0.05)
+            IndependenceResult result3 = test2.checkIndependence(
+                    data2.getVariable(x.getName()), data2.getVariable(z.getName()));
+            assertTrue("X _||_ Z should not be rejected (marginally independent in collider)",
+                    result3.getPValue() > 0.05);
+
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
-        assertEquals(0, p1, 0.01);
-        assertEquals(0, p2, 0.01);
-        assertEquals(0.86, p3, 0.01);
     }
 }
 

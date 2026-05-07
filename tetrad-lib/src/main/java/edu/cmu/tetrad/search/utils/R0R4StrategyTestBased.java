@@ -185,10 +185,13 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * @return The discriminating path is returned as the first element of the pair, and a boolean indicating whether
      * the orientation was done is returned as the second element of the pair.
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
+     * @throws IllegalStateException    if a blocking set cannot be found.
      * @see DiscriminatingPath
      */
     @Override
-    public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) throws InterruptedException {
+    public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath,
+                                                                             int maxBlockingPathLength, int maxDiscriminatingPathLength,
+                                                                             Graph graph, Set<Node> vNodes) throws InterruptedException {
         Node x = discriminatingPath.getX();
         Node w = discriminatingPath.getW();
         Node v = discriminatingPath.getV();
@@ -207,28 +210,14 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             return Pair.of(discriminatingPath, false);
         }
 
-        Set<Node> blocking = null;
-
-        // If you already have a sepset, use it.
-        if (sepsetMap.get(x, y) != null) {
-            blocking = sepsetMap.get(x, y);
-        }
-
-        if (blocking == null && blockingType == BlockingType.RECURSIVE) {
-            blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
-                    maxLength, maxLength, preserveMarkovHelper, depth);
-        }
-
-        if (blocking == null) {
-            blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
-        }
+        Set<Node> blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y,
+                    maxBlockingPathLength, maxDiscriminatingPathLength, preserveMarkovHelper, depth);
 
         if (blocking != null) {
             sepsetMap.set(x, y, blocking);
         } else {
-            blocking = Set.of();
-//            TetradLogger.getInstance().log("Blocking set is null in R4.");
-//            throw new IllegalArgumentException("Blocking set is null in R4.");
+//            TetradLogger.getInstance().log("Discriminating path could not be determined.");
+            throw new IllegalStateException("Discriminating path could not be determined.");
         }
 
         if (!(blocking.containsAll(path) && blocking.contains(w))) {

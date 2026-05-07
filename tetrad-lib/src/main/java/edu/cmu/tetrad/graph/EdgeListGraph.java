@@ -408,14 +408,16 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public boolean isDefCollider(Node node1, Node node2, Node node3) {
-        if (node1 == null || node2 == null || node3 == null) return false;
-        Edge edge1 = getEdge(node1, node2);
-        Edge edge2 = getEdge(node2, node3);
+        if (node1 == null || node2 == null || node3 == null
+                || node1 == node2 || node2 == node3 || node1 == node3)
+            return false;
+//
+        Endpoint endpoint1 = getEndpoint(node1, node2);
+        Endpoint endpoint2 = getEndpoint(node3, node2);
 
-        if (edge1 == null || edge2 == null) return false;
+        if (endpoint1 == null || endpoint2 == null) return false;
 
-        return edge1.getProximalEndpoint(node2) == Endpoint.ARROW && edge2.getProximalEndpoint(node2) == Endpoint.ARROW;
-
+        return endpoint1 == Endpoint.ARROW && endpoint2 == Endpoint.ARROW;
     }
 
     /**

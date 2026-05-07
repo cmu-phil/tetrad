@@ -581,10 +581,11 @@ public class Paths implements TetradSerializable {
      * Checks if the given Directed Acyclic Graph (DAG) is a Legal Partial Ancestral Graph (PAG).
      *
      * @return true if the graph is a Legal PAG, false otherwise
+     * @throws RuntimeException if the check times out or there is an error in the check
      */
-    public boolean isLegalPag() {
+    public boolean isLegalPag() throws RuntimeException {
         List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-        return PagLegalityCheck.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
+        return PagLegalityCheck.isLegalPag(graph, new HashSet<>(selection), 10 /* second timeout*/).isLegalPag();
     }
 
     /**
@@ -2938,7 +2939,7 @@ public class Paths implements TetradSerializable {
         RecursiveAdjustment.ColliderPolicy _colliderPolicy = RecursiveAdjustment.ColliderPolicy.valueOf(colliderPolicy);
 
         RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph)
-                .setUseHenckelPruning(henckelPruning).setRaMode(RecursiveAdjustment.RaMode.O_COMPATIBLE);
+                .setUseHenckelPruning(henckelPruning);
         return recursiveAdjustment.adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
                 nearWhichEndpoint, maxPathLength, _colliderPolicy, true, Set.of(), Set.of(), Set.of());
     }
@@ -3240,12 +3241,12 @@ public class Paths implements TetradSerializable {
 
         /**
          * Creates a {@code CpdagCheckResult} instance representing a legal CPDAG.
-         *
+         * <p>
          * This method provides a standardized way to indicate the legality of a CPDAG
          * when no violations or additional details exist.
          *
          * @return A {@code CpdagCheckResult} object with {@code isLegal} set to {@code true},
-         *         and both {@code violation} and {@code detail} set to {@code null}.
+         * and both {@code violation} and {@code detail} set to {@code null}.
          */
         public static CpdagCheckResult legal() {
             return new CpdagCheckResult(true, null, null);

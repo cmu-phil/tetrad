@@ -1,11 +1,14 @@
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.*;
 
 /**
  * The GraphLegalityCheck class provides utility methods for validating the legality of specific types of graphs,
@@ -19,12 +22,46 @@ public class PagLegalityCheck {
 
     /**
      * Default private constructor to prevent instantiation of the GraphLegalityCheck class.
-     *
+     * <p>
      * This class provides static utility methods for checking the legality of Partial Ancestral Graphs (PAG)
      * and Mixed Ancestral Graphs (MAG). Since the class is utility-based, it should not be instantiated.
      */
     private PagLegalityCheck() {
 
+    }
+
+    /**
+     * Runs {@link #isLegalPag} with a timeout. Returns {@code false} if the
+     * check does not complete within {@code timeoutSeconds} seconds, treating a
+     * timeout as a failed legality check (i.e. the surgery is reverted).
+     *
+     * @param pag            the PAG to check
+     * @param selection      the selection set
+     * @param timeoutSeconds maximum seconds to wait
+     * @return A LegalPagRet object indicating whether the PAG is legal or not, along with a reason if it is not legal,
+     * if legal and completed within the timeout
+     * @throws RuntimeException if the check fails or times out.
+     */
+    public static LegalPagRet isLegalPag(Graph pag, Set<Node> selection, int timeoutSeconds) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<LegalPagRet> future = executor.submit(
+                () -> isLegalPag(pag, selection));
+        try {
+            return future.get(timeoutSeconds, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            TetradLogger.getInstance().log("Timeout on PAG legality check.");
+            throw new RuntimeException("Timeout");
+        } catch (InterruptedException e) {
+            future.cancel(true);
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted");
+        } catch (ExecutionException e) {
+            future.cancel(true);
+            throw new RuntimeException("Execution failed");
+        } finally {
+            executor.shutdownNow();
+        }
     }
 
     /**
@@ -53,7 +90,14 @@ public class PagLegalityCheck {
             return new LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
         }
 
-        Graph pag2 = GraphTransforms.dagToPag(mag, false);
+        // Checking paths in the discriminiting path check of length up to 20.... TODO... is this restriction OK?
+        Graph pag2 = null;
+        try {
+            pag2 = GraphTransforms.dagToPag(mag, new Knowledge(), false, 15);
+        } catch (IllegalStateException e) {
+            String reason = "Legal PAG status could not be determined";
+            return new LegalPagRet(false, reason);
+        }
 
         if (!pag.equals(pag2)) {
             String edgeMismatch = "";
@@ -78,6 +122,40 @@ public class PagLegalityCheck {
         }
 
         return new LegalPagRet(true, "This is a legal PAG");
+    }
+
+    /**
+     * Runs {@link #isLegalMag} with a timeout. Returns {@code false} if the
+     * check does not complete within {@code timeoutSeconds} seconds, treating a
+     * timeout as a failed legality check (i.e. the surgery is reverted).
+     *
+     * @param mag            the MAG to check
+     * @param selection      the selection set
+     * @param timeoutSeconds maximum seconds to wait
+     * @return A LegalMagRet object indicating whether the MAG is legal or not, along with a reason if it is not legal,
+     * if legal and completed within the timeout
+     * @throws RuntimeException if the check fails or times out.
+     */
+    public static LegalMagRet isLegalMag(Graph mag, Set<Node> selection, int timeoutSeconds) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<LegalMagRet> future = executor.submit(
+                (Callable<LegalMagRet>) () -> isLegalMag(mag, selection));
+        try {
+            return future.get(timeoutSeconds, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            TetradLogger.getInstance().log("Timeout on PAG legality check.");
+            throw new RuntimeException("Timeout");
+        } catch (InterruptedException e) {
+            future.cancel(true);
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted");
+        } catch (ExecutionException e) {
+            future.cancel(true);
+            throw new RuntimeException("Execution failed");
+        } finally {
+            executor.shutdownNow();
+        }
     }
 
     /**
@@ -107,7 +185,7 @@ public class PagLegalityCheck {
             }
 
             if (!(Edges.isDirectedEdge(edge) || Edges.isBidirectedEdge(edge) || Edges.isUndirectedEdge(edge))) {
-                return new LegalMagRet(false, "Edge " + edge + " should be directed, bidirected, or undirected.");
+                return new LegalMagRet(false, "Edge " + edge + " should be directed, bidirected, or undirected");
             }
         }
 
@@ -209,6 +287,38 @@ public class PagLegalityCheck {
         }
 
         return true;
+    }
+
+    /**
+     * Runs {@link #isLegalPagQuiet} with a timeout. Returns {@code false} if the
+     * check does not complete within {@code timeoutSeconds} seconds, treating a
+     * timeout as a failed legality check (i.e. the surgery is reverted).
+     *
+     * @param pag            the PAG to check
+     * @param selection      the selection set
+     * @param timeoutSeconds maximum seconds to wait
+     * @return true if legal and completed within the timeout, false otherwise
+     * @throws RuntimeException if the check fails or times out.
+     */
+    public static boolean isLegalPagQuiet(Graph pag, Set<Node> selection, int timeoutSeconds) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<Boolean> future = executor.submit(
+                (Callable<Boolean>) () -> isLegalPagQuiet(pag, selection));
+        try {
+            return future.get(timeoutSeconds, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            throw new RuntimeException("Timeout");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            future.cancel(true);
+            throw new RuntimeException("Interrupted");
+        } catch (ExecutionException e) {
+            future.cancel(true);
+            throw new RuntimeException("Execution failed");
+        } finally {
+            executor.shutdownNow();
+        }
     }
 
     /**

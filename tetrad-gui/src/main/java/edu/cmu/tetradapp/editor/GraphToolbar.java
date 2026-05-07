@@ -186,7 +186,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         addButton(this.addPartiallyOrientedEdge, "partiallyoriented");
         addButton(this.addBidirectedEdge, "bidirected");
         workbench.addPropertyChangeListener(this);
-        selectArrowTools();
+        enableArrowTools();
 
         this.buttonsPanel.add(Box.createGlue());
 
@@ -216,7 +216,6 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      */
     private void setWorkbenchMode(int mode) {
         this.workbench.setWorkbenchMode(mode);
-
         setCursor(this.workbench.getCursor());
     }
 
@@ -255,21 +254,20 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      */
     public void propertyChange(PropertyChangeEvent e) {
         if ("graph".equals(e.getPropertyName())) {
-            selectArrowTools();
+            enableArrowTools();
         }
     }
 
     /**
      * For each workbench type, enables the arrow tools which that workbench can use and disables all others.
      */
-    private void selectArrowTools() {
+    private void enableArrowTools() {
         this.addDirectedEdge.setEnabled(true);
         this.addNondirectedEdge.setEnabled(true);
         this.addPartiallyOrientedEdge.setEnabled(true);
         this.addBidirectedEdge.setEnabled(true);
         this.addUndirectedEdge.setEnabled(true);
     }
-
 }
 
 

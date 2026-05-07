@@ -211,7 +211,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * By default, this variable is set to {@code true}.
      * Marked as {@code volatile} to ensure visibility of updates across threads.
      */
-    private volatile boolean bwCoupleByTarget = true;     // default true
+    private final boolean bwCoupleByTarget = true;     // default true
     /**
      * Base ridge/noise knob. Used as sigma^2. Must be > 0.
      */
@@ -231,11 +231,11 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     /**
      * Max rows used to estimate median bandwidth (subsample for speed).
      */
-    private volatile int bwMaxRows = 400;
+    private volatile int bwMaxRows = 100;
     /**
      * Number of random features for continuous kernel approximation (m).
      */
-    private volatile int numFeatures = 256;
+    private volatile int numFeatures = 50;
     /**
      * Effective sample size.
      */
@@ -830,7 +830,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         final double[] mult = {0.35, 0.7, 1.4, 2.8};
 
         // Precompute things that do NOT depend on bw2
-        final boolean useNxN = (discParents != null && discParents.length >= 2);
+//        final boolean useNxN = (discParents != null && discParents.length >= 2);
+        final boolean useNxN = useNxNKernel(discParents, n);
 
         final BaseWB base = buildBaseWB(mFeatures, contParents.length, seed);
         final double[] kcatLowerPacked = useNxN ? precomputeKcatLowerPacked(discParents, rows, n) : null;
@@ -877,6 +878,20 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         else bw2OptCache.put(fullKey, bestBw2);
 
         return bestBw2;
+    }
+
+    private boolean useNxNKernel(int[] discParents, int n) {
+        if (discParents == null || discParents.length == 0) return false;
+        long kronDim = numFeatures;
+        for (int dp : discParents) {
+            kronDim *= numLevels(dp);
+            if (kronDim > n || kronDim > MAX_KRONECKER_DIMENSION) return true;
+        }
+        return false;
+    }
+
+    private int numLevels(int varIndex) {
+        return ((DiscreteVariable) variables.get(varIndex)).getNumCategories();
     }
 
     /**
@@ -1198,21 +1213,36 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         if (n < MIN_SAMPLES_FOR_SCORE) return Double.NaN;
         if (!(sigma2 > 0) || !Double.isFinite(sigma2)) return Double.NaN;
 
-        // TODO: I am using the n x n formulation for all discrete variables here
-        // by choosing discParents.length >= 1 instead of >= 2. Might want a class-level
-        // field to allow this to be configured. jdramsey 2026-1-21.
-
-        // Heuristic: Kronecker feature dimension is m * Π L. This explodes quickly.
-        // For >= 2 discrete parents, always use the n×n kernel path.
-        if (discParents.length >= 2) {
+        // Route to one of two kernel implementations depending on the complexity
+        // of the discrete parent set.
+        //
+        // FEATURE-SPACE PATH (gpLogML_mixedFeatureSpace):
+        //   Implements the product kernel via the Kronecker feature map:
+        //     phi_mix(z_c, z_d) = phi_cat(z_d) ⊗ phi_cont(z_c)
+        //   All computation stays in feature space (no n×n matrix), costing
+        //   O(n * m * catDim) where catDim = Π_j L_j over discrete parents.
+        //   Used when the Kronecker feature dimension m * Π L_j is small enough
+        //   to be practical (see useNxNKernel for the threshold).
+        //
+        // N×N KERNEL PATH (gpLogML_mixedKernelNxN):
+        //   Implements the product kernel as a Hadamard product K = Kcont ⊙ Kcat,
+        //   where Kcont = Phi Phi^T (n×n) and Kcat is built entry-wise from the
+        //   categorical kernel. Cholesky-factors C = K + sigma^2 I directly.
+        //   Costs O(n^3) but avoids the combinatorial blowup of the Kronecker
+        //   feature dimension when there are many discrete parents or many levels.
+        //   Used when the Kronecker dimension would exceed n or MAX_KRONECKER_DIMENSION.
+        //
+        // Note: the routing threshold in useNxNKernel is dimensional rather than
+        // a simple count of discrete parents. The paper describes the switch as
+        // occurring at "two or more discrete parents" but the actual criterion is
+        // whether m * Π L_j exceeds min(n, MAX_KRONECKER_DIMENSION).
+        if (useNxNKernel(discParents, n)) {
             return gpLogML_mixedKernelNxN(
                     yCentered, contParents, discParents, rows, n,
                     mFeatures, bw2, sigma2, seed
             );
         }
 
-        // 0–1 discrete parent: keep your original feature-space method (fast),
-        // but remove per-row allocation in the Kronecker step for the 1-discrete case.
         return gpLogML_mixedFeatureSpace(
                 yCentered, contParents, discParents, rows, n,
                 mFeatures, bw2, sigma2, seed
@@ -1512,10 +1542,9 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         for (int j = 0; j < mTotal; j++) vTBInvV += v[j] * u[j];
 
         // Woodbury quadratic form:
-        // y^T C^{-1} y = sigma^{-2} * yTy - sigma^{-2} * v^T B^{-1} v
-        // (both terms carry sigma^{-2}, not sigma^{-4})
+        // y^T C^{-1} y = sigma^{-2} * yTy - sigma^{-4} * v^T B^{-1} v
         double invSig2 = 1.0 / sigma2;
-        double quad = invSig2 * (yTy - vTBInvV);
+        double quad = invSig2 * yTy - invSig2 * invSig2 * vTBInvV;
 
         // log|C| = (n - mTotal) * log(sigma2) + log|B|
         // Derivation: |C| = sigma^{2n} * |I + G/sigma2| = sigma^{2n} * |B|/sigma^{2m}
@@ -1780,12 +1809,6 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         int[] out = Arrays.copyOf(z, z.length + 1);
         out[z.length] = x;
         return out;
-    }
-
-    @Serial
-    private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
-        resetCache();
     }
 
     /**

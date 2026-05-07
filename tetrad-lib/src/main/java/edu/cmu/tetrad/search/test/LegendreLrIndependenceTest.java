@@ -1,13 +1,14 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.LegendreBicScore;
 import edu.cmu.tetrad.util.NaturalSort;
+import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -90,16 +91,19 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
      * and an option to disable interactions during the test.
      * The test checks for statistical independence using Legendre's minimax score.
      *
-     * @param score the scoring mechanism used to evaluate statistical independence.
-     *              Must be an instance of MinimaxLegendreScore. Cannot be null.
+     * @param score                      the scoring mechanism used to evaluate statistical independence.
+     *                                   Must be an instance of MinimaxLegendreScore. Cannot be null.
      * @param disableInteractionsForTest a boolean indicating whether interactions should be
-     *                                    disabled during the test.
+     *                                   disabled during the test.
      */
     public LegendreLrIndependenceTest(LegendreBicScore score, boolean disableInteractionsForTest) {
         if (score == null) throw new NullPointerException("score");
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.disableInteractionsForTest = disableInteractionsForTest;
+        DataModel dm = getData();
+        if (!(dm instanceof DataSet ds))
+            throw new IllegalArgumentException("LegendreLrIndependenceTest requires a DataSet.");
     }
 
     private static boolean getUseInteractions(LegendreBicScore s) throws Exception {
@@ -121,20 +125,31 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
      * The method evaluates the independence based on Legendre's minimax scoring function and computes a
      * p-value using a likelihood ratio test.
      *
-     * @param x the first node whose independence is to be tested. Must be present in the list of variables.
-     * @param y the second node whose independence is to be tested. Must be present in the list of variables.
+     * @param x  the first node whose independence is to be tested. Must be present in the list of variables.
+     * @param y  the second node whose independence is to be tested. Must be present in the list of variables.
      * @param _z the set of nodes to condition on during the test. All nodes in the set must be present in
      *           the list of variables.
      * @return an IndependenceResult object containing the result of the independence test, including
-     *         whether the nodes are independent, the p-value, and additional diagnostic information.
+     * whether the nodes are independent, the p-value, and additional diagnostic information.
      * @throws InterruptedException if the independence test is interrupted during execution.
      */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) throws InterruptedException {
+
         List<Node> z = new ArrayList<>(_z);
-        z.sort(NaturalSort.naturalComparator());;
+        z.sort(NaturalSort.naturalComparator());
+        ;
 
         IndependenceFact fact = new IndependenceFact(x, y, _z);
+
+        // If all variables are discrete, fall back to chi-square
+//        if (DiscreteIndependenceUtils.isAllDiscrete(x, y, new HashSet<>(z))) {
+//            return DiscreteIndependenceUtils.conditionalChiSquare(
+//                    (DataSet) getData(), variables, null,
+//                    x, y, z != null ? new ArrayList<>(z) : new ArrayList<>(),
+//                    new IndependenceFact(x, y, z != null ? _z : new HashSet<>()),
+//                    alpha);
+//        }
 
         int xi = variables.indexOf(x);
         int yi = variables.indexOf(y);
@@ -219,15 +234,11 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
         }
     }
 
-    private boolean isABoolean(double p) {
-        return p > getAlpha();
-    }
-
     /**
      * Retrieves the significance level (alpha) used by the independence test.
      *
      * @return the significance level (alpha) as a double. This value represents
-     *         the threshold for determining statistical independence in the test.
+     * the threshold for determining statistical independence in the test.
      */
     @Override
     public double getAlpha() {
@@ -251,8 +262,8 @@ public final class LegendreLrIndependenceTest implements IndependenceTest {
      * Retrieves the list of variables used in the statistical independence test.
      *
      * @return a List of Node objects representing the variables included in the test.
-     *         The returned list is a copy, ensuring that modifications to the returned
-     *         list do not affect the original data structure.
+     * The returned list is a copy, ensuring that modifications to the returned
+     * list do not affect the original data structure.
      */
     @Override
     public List<Node> getVariables() {

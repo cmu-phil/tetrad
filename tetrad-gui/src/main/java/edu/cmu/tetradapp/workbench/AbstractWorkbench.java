@@ -22,7 +22,6 @@ package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.GraphFileMenu;
 import edu.cmu.tetradapp.editor.GraphPropertiesAction;
@@ -985,7 +984,13 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Not implemented for the workbench.
      */
     public void layoutByKnowledge() {
-        GraphSearchUtils.arrangeByKnowledgeTiers(this.graph, getKnowledge());
+
+        if (getKnowledge() != null) {
+            LayoutUtil.layoutByKnowledgeTiers(this.graph, getKnowledge());
+        } else {
+            LayoutUtil.layoutByKnowledgeIndices(this.graph);
+        }
+
         revalidate();
         repaint();
     }

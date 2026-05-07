@@ -117,7 +117,7 @@ public class Fges implements IGraphSearch, DagScorer {
     /**
      * Whether one-edge faithfulness should be assumed.
      */
-    private boolean faithfulnessAssumed = false;
+    private boolean faithfulnessAssumed = true;
     /**
      * Specification of forbidden and required edges.
      */
@@ -230,7 +230,7 @@ public class Fges implements IGraphSearch, DagScorer {
         long start = MillisecondTimes.timeMillis();
         topGraphs.clear();
 
-        graph = GraphFactoryUtil.newGraph(getVariables(), false);
+        graph = new EdgeListGraph(getVariables());
 
         if (boundGraph != null) {
             boundGraph = GraphUtils.replaceNodes(boundGraph, getVariables());
@@ -420,12 +420,6 @@ public class Fges implements IGraphSearch, DagScorer {
 
         this.variables = score.getVariables();// new ArrayList<>();
 
-//        for (Node node : score.getVariables()) {
-//            if (node.getNodeType() == NodeType.MEASURED) {
-//                this.variables.add(node);
-//            }
-//        }
-
         buildIndexing(score.getVariables());
 
         this.maxDegree = this.score.getMaxDegree();
@@ -454,7 +448,6 @@ public class Fges implements IGraphSearch, DagScorer {
             if (Thread.currentThread().isInterrupted()) {
                 this.pool.shutdownNow();
                 throw new RuntimeException("Interrupted");
-//                break;
             }
 
             NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, min(nodes.size(), i + chunkSize), nodes, emptySet);
@@ -543,20 +536,6 @@ public class Fges implements IGraphSearch, DagScorer {
 
             insert(x, y, arrow.getHOrT(), arrow.getBump());
 
-//            Set<Node> process = revertToCpdag();
-//
-//            process.add(x);
-//            process.add(y);
-//            process.addAll(getCommonAdjacents(x, y));
-//
-//            try {
-//                reevaluateForward(new HashSet<>(process));
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-
-            // Fges.java — inside fes(), after revertToCpdag() (around line 538)
-
             Set<Node> process = revertToCpdag();
 
             process.add(x);
@@ -570,6 +549,14 @@ public class Fges implements IGraphSearch, DagScorer {
                 meekExpansion.addAll(getPotentialForwardAdjacents(m));
             }
             process.addAll(meekExpansion);
+
+            // After building meekExpansion, evict their stale cache entries:
+            for (Node m : meekExpansion) {
+                for (Node adj : getPotentialForwardAdjacents(m)) {
+                    arrowsMap.remove(directedEdge(adj, m));
+                    arrowsMap.remove(directedEdge(m, adj));
+                }
+            }
 
             try {
                 reevaluateForward(new HashSet<>(process));

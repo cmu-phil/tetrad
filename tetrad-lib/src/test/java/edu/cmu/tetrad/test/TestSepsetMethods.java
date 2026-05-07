@@ -16,15 +16,13 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.RecursiveBlocking;
-import edu.cmu.tetrad.search.RecursiveBlockingVerbose;
-import edu.cmu.tetrad.search.SepsetFinder;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.MagToPag;
@@ -41,7 +39,7 @@ import java.util.List;
 import java.util.Set;
 
 import static edu.cmu.tetrad.search.SepsetFinder.blockPathsLocalMarkov;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * The TestSepsetMethods class  is responsible for testing various methods for finding a sepset of two nodes in a DAG.
@@ -327,7 +325,7 @@ public class TestSepsetMethods {
     @Test
     public void test5() {
         System.out.println("Checking to make sure blockPathsRecursively distinguishes adj vs non-adj for dsep(x, y | \n" +
-                           "path_blocking(x)) for a PAG for y not in mb(x).");
+                "path_blocking(x)) for a PAG for y not in mb(x).");
 
         boolean allOK = true;
 
@@ -440,5 +438,275 @@ public class TestSepsetMethods {
         }
 
         return false;
+    }
+
+    @Test
+    public void test7() {
+
+        // Bryan's example.
+        Graph graph = GraphUtils.convert("a-->b,b-->c,c<--d,d-->y,c-->e,e-->f,f-->y");
+        Node a = graph.getNode("a");
+        Node y = graph.getNode("y");
+
+        try {
+            int maxPathLength = -1;
+            int depth = -1;
+            int maxRadius = -1;
+            int nearWhichEndpoint = 1;
+            boolean ignoreDirectEdge = false;
+
+            RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursivelyFull(graph, a, y,
+                    Set.of(), Set.of(),  maxPathLength, depth, maxRadius, nearWhichEndpoint, ignoreDirectEdge);
+
+            if (result.indeterminate()) {
+                System.out.println("Indeterminate");
+                return;
+            }
+
+            Set<Node> z = result.blockingSet();
+
+            System.out.println("z = " + z);
+
+            Node f = graph.getNode("f");
+            Node d = graph.getNode("d");
+            Set<Node> _z = Set.of(f, d);
+
+            assertEquals(_z, z);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testBryanCounterexample_x2_x5() throws InterruptedException {
+        // Graph under test:
+        //   1. x0 --- x2      (undirected)
+        //   2. x0 --> x8
+        //   3. x1 --> x4
+        //   4. x1 --> x5
+        //   5. x1 --> x9
+        //   6. x2 --- x3      (undirected)
+        //   7. x2 --> x4
+        //   8. x3 --> x8
+        //   9. x3 --> x9
+        //  10. x4 --> x5
+        //  11. x4 --> x6
+        //  12. x4 --> x7
+        //  13. x4 --> x8
+        //  14. x5 --> x9
+        //  15. x6 --> x9
+        //
+        // Query: blockPathsRecursively(graph, x2, x5, {}, {}, -1)
+        //
+        // Wrong answer (current bug): {x4}
+        //   - x4 is a non-collider on x2 -> x4 -> x5 (blocks that path),
+        //   - BUT x4 is also a definite collider on x2 -> x4 <- x1,
+        //     and conditioning on x4 activates it, opening
+        //     x2 -> x4 <- x1 -> x5.
+        //
+        // Correct answers (any valid graphical sepset works):
+        //   - {x4, x1} blocks the collider-activated path through x1.
+        //
+        // We assert that {x4} alone is NOT returned; any correct answer
+        // must at least also contain x1 to block the activated collider.
+
+        Graph graph = GraphUtils.convert(
+                "x0---x2,x0-->x8,x1-->x4,x1-->x5,x1-->x9,"
+                        + "x2---x3,x2-->x4,x3-->x8,x3-->x9,"
+                        + "x4-->x5,x4-->x6,x4-->x7,x4-->x8,"
+                        + "x5-->x9,x6-->x9"
+        );
+
+        Node x1 = graph.getNode("x1");
+        Node x2 = graph.getNode("x2");
+        Node x4 = graph.getNode("x4");
+        Node x5 = graph.getNode("x5");
+
+        Set<Node> z = RecursiveBlocking.blockPathsRecursively(
+                graph, x2, x5, Set.of(), Set.of(), -1);
+
+        System.out.println("Returned Z = " + z);
+
+        // Primary assertion: the buggy answer {x4} must NOT be returned.
+        assertNotEquals("Returning {x4} leaves x2 -> x4 <- x1 -> x5 open",
+                Set.of(x4), z);
+
+        // Any valid sepset must block x2 -> x4 <- x1 -> x5. The collider
+        // at x4 is activated (x4 is in Z in every reasonable answer because
+        // it's needed for the direct path x2 -> x4 -> x5), so x1 must also
+        // be conditioned on.
+        assertNotNull("A valid sepset exists ({x1, x4}); algorithm should find one", z);
+        assertTrue("Z must contain x1 to block the collider-activated path through x1",
+                z.contains(x1));
+        assertTrue("Z must contain x4 to block the direct path x2 -> x4 -> x5",
+                z.contains(x4));
+    }
+
+    @Test
+    public void testCounterexample_x0_x5() throws InterruptedException {
+        // Graph under test:
+        //   1. x0 --> x4
+        //   2. x1 --> x3
+        //   3. x1 --> x5
+        //   4. x1 --> x6
+        //   5. x1 --- x9      (undirected)
+        //   6. x2 --> x3
+        //   7. x2 --> x5
+        //   8. x3 --> x4
+        //   9. x3 --> x6
+        //  10. x3 --> x8
+        //  11. x4 --> x5
+        //  12. x4 --> x7
+        //  13. x5 --> x6
+        //  14. x5 --> x7
+        //
+        // Query: blockPathsRecursively(graph, x0, x5, {}, {}, -1)
+        //
+        // Wrong answer (observed bug): {x4}
+        //   - x4 blocks the direct path x0 -> x4 -> x5 (non-collider in Z),
+        //   - BUT x4 is also a definite collider on x0 -> x4 <- x3,
+        //     and conditioning on x4 activates it. The activated paths
+        //       x0 -> x4 <- x3 <- x1 -> x5
+        //       x0 -> x4 <- x3 <- x2 -> x5
+        //     remain open.
+        //
+        // A valid sepset exists: {x4, x3} blocks the direct path via x4 and
+        // blocks the activated-collider paths at x3 (non-collider in Z).
+
+        Graph graph = GraphUtils.convert(
+                "x0-->x4,x1-->x3,x1-->x5,x1-->x6,x1---x9,"
+                        + "x2-->x3,x2-->x5,x3-->x4,x3-->x6,x3-->x8,"
+                        + "x4-->x5,x4-->x7,x5-->x6,x5-->x7"
+        );
+
+        Node x0 = graph.getNode("x0");
+        Node x3 = graph.getNode("x3");
+        Node x4 = graph.getNode("x4");
+        Node x5 = graph.getNode("x5");
+
+        Set<Node> z = RecursiveBlocking.blockPathsRecursively(
+                graph, x0, x5, Set.of(), Set.of(), -1);
+
+        System.out.println("Returned Z = " + z);
+
+        // The buggy answer {x4} must NOT be returned.
+        assertNotEquals("Returning {x4} leaves x0 -> x4 <- x3 <- x1 -> x5 open",
+                Set.of(x4), z);
+
+        // A valid sepset exists, so the algorithm must not give up.
+        assertNotNull("A valid sepset exists (e.g., {x4, x3}); algorithm should find one", z);
+
+        // Validate the returned Z against the graph via MsepTest, to avoid
+        // hard-coding a specific answer (multiple valid sepsets exist).
+        MsepTest msep = new MsepTest(graph);
+        assertTrue("Returned Z = " + z + " must m-separate x0 and x5 in the graph",
+                msep.isMSeparated(x0, x5, z));
+
+        // Weakest necessary conditions for any correct answer on this graph:
+        // x4 must be present (to block x0 -> x4 -> x5), and some node must
+        // block the collider-activated paths through x3. Either x3 itself
+        // (as a non-collider on x4 <- x3 <- {x1,x2}) or both x1 and x2
+        // (to cover both activated paths) must be in Z.
+        assertTrue("Z must contain x4 to block the direct path x0 -> x4 -> x5",
+                z.contains(x4));
+
+        boolean blocksActivatedPaths =
+                z.contains(x3) ||
+                        (z.contains(graph.getNode("x1")) && z.contains(graph.getNode("x2")));
+        assertTrue(
+                "Z must block the x4-collider-activated paths through x3 " +
+                        "(either by containing x3, or by containing both x1 and x2): Z = " + z,
+                blocksActivatedPaths);
+    }
+
+    @Test
+    public void testParanaoid() {
+        long seed = System.nanoTime();
+        RandomUtil.getInstance().setSeed(1374415095000375L);
+
+        Graph graph = RandomGraph.randomDag(8, 0, 12, 10, 10, 10, false);
+
+        for (Node x : graph.getNodes()) {
+            for (Node w : graph.getNodes()) {
+                if (x.equals(w)) continue;
+                if (graph.isAdjacentTo(w, x)) continue;
+
+                try {
+                    Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(
+                            graph, x, w, Set.of(), Set.of(), -1);
+
+                    if (blocking != null && !graph.paths().isMSeparatedFrom(x, w, blocking, false)) {
+                        System.out.println("Seed: " + seed);
+                        System.out.println("x = " + x + ", w = " + w);
+                        System.out.println("Blocking set: " + blocking);
+                        System.out.println("Graph:\n" + graph);
+                        fail("Blocking set not valid for " + x + " and " + w);
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testParanaoid2() {
+        long seed = System.nanoTime();
+        RandomUtil.getInstance().setSeed(seed);
+
+        Graph graph = RandomGraph.randomDag(10, 0, 15, 10, 10, 10, false);
+
+        for (Node x : graph.getNodes()) {
+            for (Node w : graph.getNodes()) {
+                if (x.equals(w)) continue;
+                if (graph.isAdjacentTo(w, x)) continue;
+
+                try {
+                    Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(
+                            graph, x, w, Set.of(), Set.of(), -1);
+
+                    if (blocking != null && !graph.paths().isMSeparatedFrom(x, w, blocking, false)) {
+                        System.out.println("Seed: " + seed);
+                        System.out.println("x = " + x + ", w = " + w);
+                        System.out.println("Blocking set: " + blocking);
+                        System.out.println("Graph:\n" + graph);
+                        fail("Blocking set not valid for " + x + " and " + w);
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testParanaoid3() {
+        long seed = System.nanoTime();
+        RandomUtil.getInstance().setSeed(seed);
+
+        Graph graph = RandomGraph.randomDag(10, 0, 15, 10, 10, 10, false);
+
+        for (Node x : graph.getNodes()) {
+            for (Node w : graph.getNodes()) {
+                if (x.equals(w)) continue;
+                if (graph.isAdjacentTo(w, x)) continue;
+
+                try {
+                    Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(
+                            graph, x, w, Set.of(), Set.of(), -1, -1, -1, 1,
+                            false);
+
+                    if (blocking != null && !graph.paths().isMSeparatedFrom(x, w, blocking, false)) {
+                        System.out.println("Seed: " + seed);
+                        System.out.println("x = " + x + ", w = " + w);
+                        System.out.println("Blocking set: " + blocking);
+                        System.out.println("Graph:\n" + graph);
+                        fail("Blocking set not valid for " + x + " and " + w);
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 }

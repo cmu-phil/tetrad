@@ -21,20 +21,24 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.IndependenceFact;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.RowsSettable;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.session.SessionModel;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
-import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.beans.PropertyChangeListener;
@@ -68,28 +72,38 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     private Graph graph;
     private String name = "";
     private transient IndependenceTest independenceTest;
-    private ConditioningSetType conditioningSetType = ConditioningSetType.MARKOV_BLANKET;
     private Knowledge knowledge = new Knowledge();
     private List<String> vertexNames = new ArrayList<>();
     private boolean verbose = false;
     private ModelSummary modelSummary;
 
-    // This controls whether the Vertex checker pays attention to Anderson-Darling or Kolomogorov-Smirnov uniformity
-    // tests. Please keep this set to false unless you know what you're doing.
-    private boolean useAndersonDarling = false;
-
+    /**
+     * Constructs a new Vertex checer with the given data model, graph, and parameters.
+     *
+     * @param dataModel   the data model.
+     * @param graphSource the graph source.
+     * @param parameters  the parameters.
+     */
     public VertexCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, Parameters parameters) {
         this(dataModel, graphSource, null, parameters);
     }
 
-    public VertexCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, KnowledgeBoxModel knowledgeBox,
+    /**
+     * Constructs a new Vertex checker with the given data model, graph, and parameters.
+     *
+     * @param dataModel   the data model.
+     * @param graphSource the graph source.
+     * @param parameters  the parameters.
+     * @param knowlegeBox a {@link KnowledgeBoxModel} object
+     */
+    public VertexCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, KnowledgeBoxModel knowlegeBox,
                                    Parameters parameters) {
         this.dataModel = dataModel.getSelectedDataModel();
         this.graph = graphSource.getGraph();
         this.parameters = parameters;
 
-        if (knowledgeBox != null) {
-            this.knowledge = knowledgeBox.getKnowledge();
+        if (knowlegeBox != null) {
+            this.knowledge = knowlegeBox.getKnowledge();
         }
     }
 
@@ -109,16 +123,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         }
     }
 
-    public double getUniformityP(List<Double> pvals) {
-        if (pvals == null || pvals.size() < 2) return Double.NaN;
-
-        if (useAndersonDarling) {
-            return getAndersonDarlingP(pvals);
-        } else {
-            return getKolomogorovP(pvals);
-        }
-    }
-
     private static double getKolomogorovP(List<Double> pvals) {
         double[] x = pvals.stream().mapToDouble(Double::doubleValue).toArray();
         KolmogorovSmirnovTest ks = new KolmogorovSmirnovTest();
@@ -134,6 +138,20 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public static double getAndersonDarlingP(List<Double> pValues) {
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
         return generalAndersonDarlingTest.getP();
+    }
+
+    public static List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x, ConditioningSetType conditioningSetType) {
+        return MarkovCheck.computeImpliedFactsForVertex(alignedGraph, x, conditioningSetType);
+    }
+
+    public double getUniformityP(List<Double> pvals) {
+        if (pvals == null || pvals.size() < 2) return Double.NaN;
+
+        if (parameters.getBoolean("useAndersonDarlingParam", false)) {
+            return getAndersonDarlingP(pvals);
+        } else {
+            return getKolomogorovP(pvals);
+        }
     }
 
     public CachedIndependenceQueries getCachedQueries() {
@@ -165,18 +183,51 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     public void setIndependenceTest(IndependenceTest test) {
         this.independenceTest = test;
+
+        if (test instanceof RowsSettable) {
+            ((RowsSettable) test).setRows(getSubsampleRows(1.0));
+        }
+
         cachedQueries.setTest(test);  // clears caches, rebuilds mapping
         clearResults();
     }
 
-    public ConditioningSetType getConditioningSetType() {
-        return conditioningSetType;
+    /**
+     * Returns a list of row indices for a subsample of the data set.
+     *
+     * @param v The fraction of the data set to use.
+     * @return A list of row indices for a subsample of the data set.
+     */
+    private List<Integer> getSubsampleRows(double v) {
+        int sampleSize = ((DataSet) dataModel).getNumRows();
+        int subsampleSize = (int) TMath.floor(sampleSize * v);
+        List<Integer> rows = new ArrayList<>(sampleSize);
+        for (int i = 0; i < sampleSize; i++) {
+            rows.add(i);
+        }
+
+        Collections.shuffle(rows);
+        List<Integer> integers = rows.subList(0, subsampleSize);
+
+        List<Integer> selectedRows = new ArrayList<>(integers.size());
+
+        for (int row : rows) {
+            if (integers.contains(row)) {
+                selectedRows.add(row);
+            }
+        }
+
+        return selectedRows;
     }
 
     // --- Core API used by the editor ------------------------------------------------------------
 
+    public ConditioningSetType getConditioningSetType() {
+        return (ConditioningSetType) this.parameters.get("conditioningSetParam", ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
+    }
+
     public void setConditioningSetType(ConditioningSetType conditioningSetType) {
-        this.conditioningSetType = conditioningSetType;
+        this.parameters.set("conditioningSetParam", conditioningSetType);
     }
 
     public Knowledge getKnowledge() {
@@ -191,11 +242,11 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return verbose;
     }
 
+    // --- Implementation -------------------------------------------------------------------------
+
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
-
-    // --- Implementation -------------------------------------------------------------------------
 
     @Override
     public String getName() {
@@ -214,6 +265,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         summariesByVertex.clear();
         resultsByVertex.clear();
         modelSummary = null;
+        cachedQueries.clearCaches();
     }
 
     /**
@@ -273,7 +325,8 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     private void runVertex(Graph alignedGraph, Node x) {
-        List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x, conditioningSetType);
+        List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x,
+                getConditioningSetType());
 
         List<IndependenceResult> results = new ArrayList<>(impliedFacts.size());
         List<Double> pvals = new ArrayList<>();
@@ -401,10 +454,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return pValue;
     }
 
-    public static List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x, ConditioningSetType conditioningSetType) {
-        return MarkovCheck.computeImpliedFactsForVertex(alignedGraph, x, conditioningSetType);
-    }
-
     @Override
     public Graph getSourceGraph() {
         return null;
@@ -494,7 +543,9 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         Node x = alignedGraph.getNode(vertexName);
         if (x == null) return new ConditioningSetSizeRange(-1, -1);
 
-        List<IndependenceFact> facts = computeImpliedFactsForVertex(alignedGraph, x, conditioningSetType);
+        List<IndependenceFact> facts = computeImpliedFactsForVertex(alignedGraph, x,
+                (ConditioningSetType) parameters.get("conditioningSetType",
+                        ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY));
         if (facts.isEmpty()) return new ConditioningSetSizeRange(0, 0);
 
         int min = Integer.MAX_VALUE;
@@ -509,34 +560,34 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return new ConditioningSetSizeRange(min, max);
     }
 
-    public boolean hasViolationsForVertex(Node x) {
-        if (x == null || graph == null || independenceTest == null) {
-            return false;
-        }
+//    public boolean hasViolationsForVertex(Node x) {
+//        if (x == null || graph == null || independenceTest == null) {
+//            return false;
+//        }
+//
+//        String name = x.getName();
+//
+//        // Only compute if needed
+//        if (!isVertexComputed(name)) {
+//            Graph aligned = alignGraphToTest(graph);
+//
+//            Node ax = aligned.getNode(name);
+//            if (ax == null) {
+//                return false; // should not happen, but safe
+//            }
+//
+//            runVertex(aligned, ax);
+//        }
+//
+//        VertexSummary s = summariesByVertex.get(name);
+//        return s != null && s.numReject > 0;
+//    }
 
-        String name = x.getName();
-
-        // Only compute if needed
-        if (!isVertexComputed(name)) {
-            Graph aligned = alignGraphToTest(graph);
-
-            Node ax = aligned.getNode(name);
-            if (ax == null) {
-                return false; // should not happen, but safe
-            }
-
-            runVertex(aligned, ax);
-        }
-
-        VertexSummary s = summariesByVertex.get(name);
-        return s != null && s.numReject > 0;
-    }
-
-    private Graph alignGraphToTest(Graph g) {
-        IndependenceTest test = this.independenceTest;
-        if (g == null || test == null) return g;
-        return GraphUtils.replaceNodes(g, test.getVariables());
-    }
+//    private Graph alignGraphToTest(Graph g) {
+//        IndependenceTest test = this.independenceTest;
+//        if (g == null || test == null) return g;
+//        return GraphUtils.replaceNodes(g, test.getVariables());
+//    }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
         pcs.addPropertyChangeListener(l);
@@ -545,7 +596,20 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public ModelSummary getModelSummary() {
         if (modelSummary != null) return modelSummary;
 
-        List<Double> pvals = getDedupedPvalues();
+        ConditioningSetType conditioningSetType = getConditioningSetType();
+        Set<IndependenceFact> impliedFacts = MarkovCheck.computeAllImpliedFacts(graph, conditioningSetType);
+
+        List<Double> pvals = new ArrayList<>();
+        for (IndependenceFact fact : impliedFacts) {
+
+            // Cached eval keyed by (X,Y|Z) via name->id maps; rebinding handled internally.
+            CachedIndependenceQueries.Eval e = cachedQueries.eval(fact);
+
+            double p = e.pValue();
+            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
+                pvals.add(p);
+            }
+        }
 
         double modelP = getUniformityP(pvals);
         modelSummary = new ModelSummary(pvals.size(), modelP);
@@ -592,12 +656,20 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return out;
     }
 
-    public boolean getUseAndersonDarling() {
-        return useAndersonDarling;
+    public void setUseAndersonDarling(boolean useAndersonDarling) {
+        parameters.set("useAndersonDarlingParam", useAndersonDarling);
     }
 
-    public void setUseAndersonDarling(boolean useAndersonDarling) {
-        this.useAndersonDarling = useAndersonDarling;
+    public String getSavedClassName() {
+        return this.parameters.getString("independenceTestClassParam", null);
+    }
+
+    public void setSavedClassName(String name) {
+        this.parameters.set("independenceTestClassParam", name);
+    }
+
+    public boolean isUseAndersonDarling() {
+        return parameters.getBoolean("useAndersonDarlingParam", false);
     }
 
     private record ConditioningSetSizeRange(int min, int max) {

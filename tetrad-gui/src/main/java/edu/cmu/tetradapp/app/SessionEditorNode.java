@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -22,7 +22,10 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradLoggerConfig;
 import edu.cmu.tetradapp.editor.EditorWindow;
 import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
 import edu.cmu.tetradapp.editor.ParameterEditor;
@@ -41,7 +44,6 @@ import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
-import java.awt.Point;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
@@ -72,9 +74,6 @@ public final class SessionEditorNode extends DisplayNode {
      * The simulation edu.cmu.tetrad.study (used to edit the repetition values).
      */
     private final SimulationStudy simulationStudy;
-    /**
-     * The configuration for this editor node.
-     */
     private final SessionNodeConfig config;
     /**
      * If an editor has been opened, this is a reference to that editor. Used to close the editor if necessary.
@@ -152,7 +151,7 @@ public final class SessionEditorNode extends DisplayNode {
                 sessionNode.setModelClasses(newModelClasses);
             } else {
                 throw new RuntimeException("Model classes for this session "
-                                           + "node were not set in the configuration.");
+                        + "node were not set in the configuration.");
             }
         }
     }
@@ -269,91 +268,109 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     private void launchEditorVisit() {
-        try {
+        new WatchedProcess() {
 
-            // If there is already an editor open, don't launch another one.
-            if (spawnedEditor() != null) {
-                return;
-            }
+            @Override
+            public void watch() throws InterruptedException {
 
-            boolean created = createModel(false);
 
-            if (!created) {
-                return;
-            }
+                try {
 
-            SessionNode sessionNode = getSessionNode();
-            boolean cloned = sessionNode.useClonedModel();
-
-            SessionModel model = sessionNode.getModel();
-            Class<?> modelClass = model.getClass();
-            SessionNodeModelConfig modelConfig = this.config.getModelConfig(modelClass);
-
-            Object[] arguments = {model};
-            JPanel editor = modelConfig.getEditorInstance(arguments);
-            addEditorListener(editor);
-
-            ModificationRegistery.registerEditor(sessionNode, editor);
-
-            String descrip = modelConfig.name();
-            editor.setName(getName() + " (" + descrip + ")");
-
-            EditorWindow editorWindow = new EditorWindow(editor, editor.getName(), "Done", cloned, this);
-
-            editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
-                @Override
-                public void internalFrameClosing(InternalFrameEvent e) {
-                    if (getChildren().iterator().hasNext()) {
-                        finishedEditingDialog();
+                    // If there is already an editor open, don't launch another one.
+                    if (spawnedEditor() != null) {
+                        return;
                     }
 
-                    ModificationRegistery.unregisterSessionNode(
-                            sessionNode);
-                    SessionEditorNode.this.spawnedEditor = null;
+                    boolean created = createModel(false);
 
-                    EditorWindow window = (EditorWindow) e.getSource();
-                    if (window.isCanceled() && cloned) {
-                        sessionNode.restoreOriginalModel();
+                    if (!created) {
+                        return;
                     }
 
-                    sessionNode.forgetSavedModel();
+                    SessionNode sessionNode = getSessionNode();
+                    boolean cloned = sessionNode.useClonedModel();
+
+                    SessionModel model = sessionNode.getModel();
+                    Class<?> modelClass = model.getClass();
+                    SessionNodeModelConfig modelConfig = getConfig().getModelConfig(modelClass);
+
+                    Object[] arguments = {model};
+                    JPanel editor = modelConfig.getEditorInstance(arguments);
+                    addEditorListener(editor);
+
+                    ModificationRegistery.registerEditor(sessionNode, editor);
+
+                    String descrip = modelConfig.name();
+                    editor.setName(getName() + " (" + descrip + ")");
+
+                    EditorWindow editorWindow = new EditorWindow(editor, editor.getName(), "Done", cloned, getThis());
+    
+                    editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
+                        @Override
+                        public void internalFrameClosing(InternalFrameEvent e) {
+                            if (getChildren().iterator().hasNext()) {
+                                finishedEditingDialog();
+                            }
+
+                            ModificationRegistery.unregisterSessionNode(
+                                    sessionNode);
+                            SessionEditorNode.this.spawnedEditor = null;
+
+                            EditorWindow window = (EditorWindow) e.getSource();
+                            if (window.isCanceled() && cloned) {
+                                sessionNode.restoreOriginalModel();
+                            }
+
+                            sessionNode.forgetSavedModel();
+                        }
+                    });
+
+                    DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+                    editorWindow.pack();
+                    editorWindow.setVisible(true);
+                    setSpawnedEditor(editorWindow);
+
+                    if (getSessionWrapper() != null) {
+                        getSessionWrapper().setSessionChanged(true);
+                    }
+                } catch (CouldNotCreateModelException e) {
+                    SessionUtils.showPermissibleParentsDialog(e.getModelClass(),
+                            getThis(), true, true);
+                    e.printStackTrace();
+
+                } catch (ClassCastException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    Throwable cause = e;
+
+                    while (cause.getCause() != null) {
+                        cause = cause.getCause();
+                    }
+
+                    Component centeringComp = getThis();
+                    String s = cause.getMessage();
+
+                    if (!"".equals(s)) {
+                        JOptionPane.showMessageDialog(centeringComp, s,
+                                null, JOptionPane.WARNING_MESSAGE);
+                    }
+
+                    e.printStackTrace();
                 }
-            });
-
-            DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
-            editorWindow.pack();
-            editorWindow.setVisible(true);
-            this.spawnedEditor = editorWindow;
-
-            if (this.sessionWrapper != null) {
-                this.sessionWrapper.setSessionChanged(true);
             }
+        };
+    }
 
-        } catch (CouldNotCreateModelException e) {
-            SessionUtils.showPermissibleParentsDialog(e.getModelClass(),
-                    this, true, true);
-            e.printStackTrace();
+    private JComponent getThis() {
+        return this;
+    }
 
-        } catch (ClassCastException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            Throwable cause = e;
+    private SessionWrapper getSessionWrapper() {
+        return this.sessionWrapper;
+    }
 
-            while (cause.getCause() != null) {
-                cause = cause.getCause();
-            }
-
-            Component centeringComp = this;
-            String s = cause.getMessage();
-
-            if (!"".equals(s)) {
-                JOptionPane.showMessageDialog(centeringComp, s,
-                        null, JOptionPane.WARNING_MESSAGE);
-            }
-
-            e.printStackTrace();
-        }
-
+    private void setSpawnedEditor(EditorWindow editorWindow) {
+        this.spawnedEditor = editorWindow;
     }
 
     /**
@@ -435,7 +452,7 @@ public final class SessionEditorNode extends DisplayNode {
                     }
                 } catch (Exception e) {
                     String message = "I could not make a model for this box, sorry. Maybe the \n"
-                                     + "parents aren't right or have not been constructed yet.";
+                            + "parents aren't right or have not been constructed yet.";
 
                     e.printStackTrace();
 
@@ -484,10 +501,10 @@ public final class SessionEditorNode extends DisplayNode {
 
         JMenuItem cloneBox = new JMenuItem("Clone Note");
         cloneBox.setToolTipText("<html>"
-                                + "Makes a copy of this session note and its contents. To clone<br>"
-                                + "a whole subgraph, or to paste into a different sessions, select<br>"
-                                + "the subgraph and use the Copy/Paste gadgets in the Edit menu."
-                                + "</html>");
+                + "Makes a copy of this session note and its contents. To clone<br>"
+                + "a whole subgraph, or to paste into a different sessions, select<br>"
+                + "the subgraph and use the Copy/Paste gadgets in the Edit menu."
+                + "</html>");
         cloneBox.addActionListener((e) -> firePropertyChange("cloneMe", null, this));
 
         JMenuItem deleteBox = new JMenuItem("Delete Note");
@@ -507,8 +524,8 @@ public final class SessionEditorNode extends DisplayNode {
                 Component centeringComp = this;
                 int ret = JOptionPane.showConfirmDialog(centeringComp,
                         "<html>"
-                        + "Really delete note? Any information it contains will<br>"
-                        + "be destroyed." + "</html>");
+                                + "Really delete note? Any information it contains will<br>"
+                                + "be destroyed." + "</html>");
 
                 if (ret != JOptionPane.YES_OPTION) {
                     return;
@@ -545,7 +562,7 @@ public final class SessionEditorNode extends DisplayNode {
 
         JMenuItem createModel = new JMenuItem("Create Contents");
         createModel.setToolTipText("<html>Creates new contents for this node"
-                                   + "<br>of the type selected.</html>");
+                + "<br>of the type selected.</html>");
 
         createModel.addActionListener((e) -> {
             try {
@@ -586,8 +603,8 @@ public final class SessionEditorNode extends DisplayNode {
 
         JMenuItem destroyModel = new JMenuItem("Destroy Contents");
         destroyModel.setToolTipText("<html>Destroys the contents of this node, "
-                                    + "<br>if it has one, destroying any "
-                                    + "<br>downstream models as well.</html>");
+                + "<br>if it has one, destroying any "
+                + "<br>downstream models as well.</html>");
 
         destroyModel.addActionListener((e) -> {
             Component centeringComp = this;
@@ -611,7 +628,7 @@ public final class SessionEditorNode extends DisplayNode {
             if (found) {
                 int ret = JOptionPane.showConfirmDialog(centeringComp,
                         "Destroying the model in this box will also destroy models in any boxes\n"
-                        + "downstream. Is that OK?", null,
+                                + "downstream. Is that OK?", null,
                         JOptionPane.OK_CANCEL_OPTION,
                         JOptionPane.WARNING_MESSAGE);
 
@@ -635,8 +652,8 @@ public final class SessionEditorNode extends DisplayNode {
         JMenuItem propagateDownstream
                 = new JMenuItem("Propagate changes downstream");
         propagateDownstream.setToolTipText("<html>"
-                                           + "Fills in this box and downstream boxes with models,"
-                                           + "<br>overwriting any models that already exist.</html>");
+                + "Fills in this box and downstream boxes with models,"
+                + "<br>overwriting any models that already exist.</html>");
 
         propagateDownstream.addActionListener((e) -> {
             Component centeringComp = this;
@@ -676,10 +693,10 @@ public final class SessionEditorNode extends DisplayNode {
 
         JMenuItem cloneBox = new JMenuItem("Clone Box");
         cloneBox.setToolTipText("<html>"
-                                + "Makes a copy of this session box and its contents. To clone<br>"
-                                + "a whole subgraph, or to paste into a different sessions, select<br>"
-                                + "the subgraph and use the Copy/Paste gadgets in the Edit menu."
-                                + "</html>");
+                + "Makes a copy of this session box and its contents. To clone<br>"
+                + "a whole subgraph, or to paste into a different sessions, select<br>"
+                + "the subgraph and use the Copy/Paste gadgets in the Edit menu."
+                + "</html>");
         cloneBox.addActionListener((e) -> firePropertyChange("cloneMe", null, this));
 
         JMenuItem deleteBox = new JMenuItem("Delete Box");
@@ -740,8 +757,12 @@ public final class SessionEditorNode extends DisplayNode {
                                 && getSessionNode().existsParameterizedConstructor(mc)
                                 && getParameterEditor(mc) != null);
             }
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
-            public void popupMenuCanceled(PopupMenuEvent e) {}
+
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+            }
+
+            public void popupMenuCanceled(PopupMenuEvent e) {
+            }
         });
 
         SessionModel model = getSessionNode().getModel();
@@ -763,7 +784,7 @@ public final class SessionEditorNode extends DisplayNode {
                             editParameters(modelClass, param, arguments);
                             int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                                     "Should I overwrite the contents of this box and all delete the contents\n"
-                                    + "of all boxes downstream?",
+                                            + "of all boxes downstream?",
                                     "Double check...", JOptionPane.YES_NO_OPTION);
                             if (ret == JOptionPane.YES_OPTION) {
                                 getSessionNode().destroyModel();
@@ -882,8 +903,8 @@ public final class SessionEditorNode extends DisplayNode {
         Component centeringComp = this;
         int selection = JOptionPane.showOptionDialog(centeringComp,
                 "Changing this node will affect its children.\n"
-                + "Click on \"Execute\" to percolate changes down.\n"
-                + "Click on \"Break Edges\" to leave the children the same.",
+                        + "Click on \"Execute\" to percolate changes down.\n"
+                        + "Click on \"Break Edges\" to leave the children the same.",
                 "Warning", JOptionPane.DEFAULT_OPTION,
                 JOptionPane.WARNING_MESSAGE, null, options, options[0]);
 
@@ -1118,7 +1139,6 @@ public final class SessionEditorNode extends DisplayNode {
 //                                                || ((FinalizingParameterEditor) paramEditor).finalizeEdit());
 //
 //    }
-
     public boolean editParameters(Class<?> modelClass, Parameters params,
                                   Object[] parentModels) {
         if (parentModels == null) {
@@ -1202,6 +1222,13 @@ public final class SessionEditorNode extends DisplayNode {
 
     private SessionDisplayComp getSessionDisplayComp() {
         return (SessionDisplayComp) getDisplayComp();
+    }
+
+    /**
+     * The configuration for this editor node.
+     */
+    public SessionNodeConfig getConfig() {
+        return config;
     }
 }
 

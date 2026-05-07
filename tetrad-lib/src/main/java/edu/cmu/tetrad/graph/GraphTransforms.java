@@ -26,9 +26,11 @@ import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.PagCache;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * Transformations that transform one graph into another.
@@ -340,6 +342,40 @@ public class GraphTransforms {
     }
 
     /**
+     * Runs {@link #dagToPag} with a timeout. Returns {@code false} if the
+     * check does not complete within {@code timeoutSeconds} seconds, treating a
+     * timeout as a failed legality check (i.e. the surgery is reverted).
+     *
+     * @param graph                The input DAG to be converted.
+     * @param excludeSelectionBias True to exclude selection bias, false otherwise.
+     * @param timeoutSeconds       maximum seconds to wait
+     * @return The resulting PAG obtained from the input DAG.
+     * @throws RuntimeException if the check does not complete within {@code timeoutSeconds} seconds, treating
+     * a timeout as a failed legality check (i.e. the surgery is reverted).
+     */
+    public static Graph dagToPag(Graph graph, boolean excludeSelectionBias, int timeoutSeconds) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<Graph> future = executor.submit(
+                () -> dagToPag(graph, new Knowledge(), excludeSelectionBias, 15));
+        try {
+            return future.get(timeoutSeconds, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            TetradLogger.getInstance().log("Timeout on PAG conversion from DAG.");
+            throw new RuntimeException("Timeout waiting for pag to complete");
+        } catch (InterruptedException e) {
+            future.cancel(true);
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted waiting for pag to complete");
+        } catch (Exception e) {
+            future.cancel(true);
+            throw new RuntimeException("Exception waiting for pag to complete", e.getCause());
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    /**
      * Converts a Directed Acyclic Graph (DAG) to a Partial Ancestral Graph (PAG) using the DagToPag algorithm.
      *
      * @param graph                The input DAG to be converted.
@@ -348,19 +384,21 @@ public class GraphTransforms {
      */
     @NotNull
     public static Graph dagToPag(Graph graph, boolean excludeSelectionBias) {
-        return dagToPag(graph, new Knowledge(), excludeSelectionBias);
+        return dagToPag(graph, new Knowledge(), excludeSelectionBias, 15);
     }
 
     /**
      * Converts a Directed Acyclic Graph (DAG) to a Partial Ancestral Graph (PAG) using the provided DAG and knowledge.
      *
-     * @param graph                The input Directed Acyclic Graph (DAG) to be converted.
-     * @param knowledge            Background knowledge used to guide the conversion process.
-     * @param excludeSelectionBias True to exclude selection bias, false otherwise.
+     * @param graph                       The input Directed Acyclic Graph (DAG) to be converted.
+     * @param knowledge                   Background knowledge used to guide the conversion process.
+     * @param excludeSelectionBias        True to exclude selection bias, false otherwise.
+     * @param maxBlockingPathLength Maximum length of discriminating paths allowed in the PAG.
      * @return The resulting Partial Ancestral Graph (PAG) obtained from the input DAG and knowledge.
+     * @throws IllegalStateException if a discriminating path cannot be found.
      */
-    public static Graph dagToPag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias) {
-        return PagCache.getInstance().getPag(graph, knowledge, excludeSelectionBias);
+    public static Graph dagToPag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int maxBlockingPathLength) {
+        return PagCache.getInstance().getPag(graph, knowledge, excludeSelectionBias, maxBlockingPathLength);
     }
 
     /**

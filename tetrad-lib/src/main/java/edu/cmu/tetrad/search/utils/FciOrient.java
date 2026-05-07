@@ -92,6 +92,12 @@ public class FciOrient {
      */
     private boolean completeRuleSetUsed = true;
     /**
+     * The maximum blocking path length variable.
+     * <p>
+     * This variable represents the maximum length of a blocking path, or -1 if no maximum length is set.
+     */
+    private int maxBlockingPathLength = -1;
+    /**
      * The maximum path length variable.
      * <p>
      * This variable represents the maximum length of a discriminating path, or -1 if no maximum length is set.
@@ -194,10 +200,10 @@ public class FciOrient {
      * A discriminating path is a specific type of path in a causal graph, used in graph-based causal inference to
      * identify the causal structure that satisfies certain conditions.
      *
-     * @param graph The graph in which to search for discriminating paths.
-     * @param w The starting node for the path, which must satisfy specific adjacency conditions with the target node y.
-     * @param y The target node for which discriminating paths are being identified.
-     * @param maxLen The maximum allowable length for the paths being considered.
+     * @param graph               The graph in which to search for discriminating paths.
+     * @param w                   The starting node for the path, which must satisfy specific adjacency conditions with the target node y.
+     * @param y                   The target node for which discriminating paths are being identified.
+     * @param maxLen              The maximum allowable length for the paths being considered.
      * @param checkEcNonadjacency A flag indicating whether strict adjacency conditions between the nodes w and y should be enforced
      *                            (true for strict adjacency checks, false for relaxed checks).
      * @return A set of discriminating paths that satisfy the required conditions, or an empty set if no such paths are found.
@@ -248,10 +254,10 @@ public class FciOrient {
     /**
      * Search backward from W to find discriminating paths of the form
      * <X, ..., W, V, Y> for V.
-     *
+     * <p>
      * The interior vertices between X and V must be colliders on the path
      * and parents of Y (or satisfy the relaxed analogue).
-     *
+     * <p>
      * The colliderPath stored in DiscriminatingPath is [W, ..., first-after-X].
      */
     private static void discriminatingPathBfs(Node w,
@@ -335,7 +341,8 @@ public class FciOrient {
                 // Full path is <x> + reverse(newBody) + <v, y>.
                 int edgeCount = 1 + newBody.size(); // edges from x to v through newBody
                 edgeCount += 1;                     // edge v-y
-                if (maxDiscriminatingPathLength != -1 && edgeCount > maxDiscriminatingPathLength) {
+
+                if (maxDiscriminatingPathLength >= 0 && edgeCount > maxDiscriminatingPathLength) {
                     continue;
                 }
 
@@ -510,7 +517,8 @@ public class FciOrient {
      * If selection bias is excluded, rules R5-R7 are not applied; applies only to Zhang final orientation.
      *
      * @param graph                a {@link Graph} object
-     * @param excludeSelectionBias whether to exclude selection bias
+     * @param excludeSelectionBias whether to exclude selection bias.
+     * @throws IllegalStateException if a discriminating path cannot be found.
      */
     public void finalOrientation(Graph graph, boolean excludeSelectionBias) {
         if (this.completeRuleSetUsed) {
@@ -525,6 +533,7 @@ public class FciOrient {
      * complete.
      *
      * @param graph The graph containing the sprites.
+     * @throws IllegalStateException if a discriminating path cannot be found.
      */
     private void spirtesFinalOrientation(Graph graph) {
         this.changeFlag = true;
@@ -557,6 +566,7 @@ public class FciOrient {
      *
      * @param graph                the graph to apply the final orientation algorithm to
      * @param excludeSelectionBias whether to exclude selection bias
+     * @throws IllegalStateException if a discriminating path cannot be found.
      */
     private void zhangFinalOrientation(Graph graph, boolean excludeSelectionBias) {
         this.changeFlag = true;
@@ -777,6 +787,7 @@ public class FciOrient {
      * potential latent confounding.</p>
      *
      * @param graph The {@link edu.cmu.tetrad.graph.Graph} being oriented.
+     * @throws IllegalStateException if a discriminating path cannot be found.
      */
     public void ruleR4(Graph graph) {
 
@@ -875,6 +886,7 @@ public class FciOrient {
      * @param graph            the graph
      * @param allowedColliders the allowed colliders
      * @return the list of tasks
+     * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
      */
     private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph, Set<Triple> allowedColliders) {
         Set<DiscriminatingPath> discriminatingPaths = listDiscriminatingPaths(graph, maxDiscriminatingPathLength, true);
@@ -888,7 +900,7 @@ public class FciOrient {
         List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = new ArrayList<>();
 
         for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
-            tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, graph, vNodes));
+            tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, maxBlockingPathLength, maxDiscriminatingPathLength, graph, vNodes));
         }
 
         return tasks;
@@ -1185,7 +1197,7 @@ public class FciOrient {
 
     /**
      * R10 (Zhang 2008 FCI orientation rule).
-     *
+     * <p>
      * Suppose alpha o-&gt; gamma, beta -&gt; gamma &lt;- theta.
      * Let p1 be an uncovered potentially directed path from alpha to beta,
      * and p2 be an uncovered potentially directed path from alpha to theta.
@@ -1284,14 +1296,14 @@ public class FciOrient {
     /**
      * Checks whether there exists an uncovered potentially directed path
      * from alpha to target whose first step is alpha--hop.
-     *
+     * <p>
      * This method enforces Zhang's notion of path as a sequence of distinct
      * vertices by using a visited-node set.
-     *
+     * <p>
      * Potentially directed from alpha means:
      * along every step curr--next on the path, the edge must not have an
      * arrowhead into curr.
-     *
+     * <p>
      * Uncovered means:
      * for every triple prev, curr, next on the path, prev and next are not adjacent.
      */
@@ -1320,7 +1332,7 @@ public class FciOrient {
     /**
      * DFS for existence of an uncovered potentially directed SIMPLE path
      * from prev-curr onward to target.
-     *
+     * <p>
      * The visited set contains vertices already on the current path, so all
      * candidate paths are simple (no repeated vertices).
      */
@@ -1383,7 +1395,8 @@ public class FciOrient {
      */
     public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
         if (!(maxDiscriminatingPathLength == -1 || maxDiscriminatingPathLength >= 4)) {
-            throw new IllegalArgumentException("maxDiscriminatingPathLength must be -1 (unlimited) or >= 4: " + maxDiscriminatingPathLength);
+            TetradLogger.getInstance().log("WARNING: path length must be -1 (unlimited) or >= 4" +
+                    "in order to find discriminating paths: " + maxDiscriminatingPathLength);
         }
 
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
@@ -1539,6 +1552,15 @@ public class FciOrient {
      */
     public void setUseR4(boolean useR4) {
         this.useR4 = useR4;
+    }
+
+    /**
+     * Sets the maximum allowed blocking path length.
+     *
+     * @param maxBlockingPathLength the maximum length of the blocking path, specified as an integer
+     */
+    public void setMaxBlockingPathLength(int maxBlockingPathLength) {
+        this.maxBlockingPathLength = maxBlockingPathLength;
     }
 
     /**

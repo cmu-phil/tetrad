@@ -730,14 +730,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         methodBox.setSelectedItem(Preferences.userRoot().get("pathMethod", "Directed Paths"));
         method = (String) methodBox.getSelectedItem();
 
-        methodBox.addActionListener(e13 -> {
-            JComboBox<String> box = (JComboBox) e13.getSource();
-            PathsAction.this.method = (String) box.getSelectedItem();
-            Preferences preferences = Preferences.userRoot();
-            preferences.put("pathMethod", PathsAction.this.method);
-            update(graph, textArea, nodes1, nodes2, method);
-        });
-
         methodBox.setSelectedItem(this.method);
         if (methodBox.getSelectedItem() == null) {
             methodBox.setSelectedIndex(0);
@@ -811,7 +803,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             PathsAction.this.method = (String) box.getSelectedItem();
             Preferences.userRoot().put("pathMethod", PathsAction.this.method);
 
-            refreshConditioningUi.run();          // <-- add this
+            refreshConditioningUi.run();
             update(graph, textArea, nodes1, nodes2, method);
         });
 
@@ -1670,7 +1662,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     adjustments = graph.paths().adjustmentSets(
                             node1, node2, graphType, maxNumSet,
                             maxDistanceFromEndpoint, nearWhichEndpoint, maxLengthAdjustment,
-                            henckelPruning, true);
+                            henckelPruning, false);
                 } catch (Exception e) {
                     // Skip on error
                     continue;
@@ -1879,8 +1871,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 try {
 
                     // The type of graph doesn't matter if we're ignoring amenable paths.
-                    RecursiveAdjustment adjustment = new RecursiveAdjustment(graph)
-                            .setRaMode(RecursiveAdjustment.RaMode.O_COMPATIBLE);
+                    RecursiveAdjustment adjustment = new RecursiveAdjustment(graph);
                     adjustments = adjustment.adjustmentSets(node1, node2, "PAG",
                             maxNumSets, maxRadius, nearWhichEndpoint, maxPathLength,
                             RecursiveAdjustment.ColliderPolicy.OFF, avoidAmenable, Set.of(), Set.of(), Set.of());

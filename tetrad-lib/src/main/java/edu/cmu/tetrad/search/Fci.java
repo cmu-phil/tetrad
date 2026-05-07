@@ -22,7 +22,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.CachingIndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
@@ -367,6 +366,7 @@ public final class Fci implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxBlockingPathLength(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setVerbose(verbose);
@@ -374,7 +374,7 @@ public final class Fci implements IGraphSearch {
         orientR0(pag, this.sepsets);
 
         if (this.doPossibleDsep) {
-            TetradLogger.getInstance().log("Doing possible dsep search.");
+            if (verbose) TetradLogger.getInstance().log("Doing possible-dsep.");
 
             for (Edge edge : new ArrayList<>(pag.getEdges())) {
                 Node x = edge.getNode1();
@@ -388,7 +388,7 @@ public final class Fci implements IGraphSearch {
                 d.remove(x);
                 d.remove(y);
                 if (test.checkIndependence(x, y, d).isIndependent()) {
-                    TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
+                    if (verbose) TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
                     pag.removeEdge(x, y);
                 }
 
@@ -397,7 +397,7 @@ public final class Fci implements IGraphSearch {
                     d.remove(x);
                     d.remove(y);
                     if (test.checkIndependence(x, y, d).isIndependent()) {
-                        TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
+                        if (verbose) TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
                         pag.removeEdge(x, y);
                     }
                 }

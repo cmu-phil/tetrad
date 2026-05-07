@@ -306,7 +306,21 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
     /**
      * Tests for the conditional independence of two nodes given a set of conditioning nodes.
      */
+//    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+//        double pValue = getPValue(x, y, z);
+//        boolean independent = pValue > alpha;
+//        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue, alpha - pValue);
+//    }
+
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+//        if (DiscreteIndependenceUtils.isAllDiscrete(x, y, z)) {
+//            return DiscreteIndependenceUtils.conditionalChiSquare(
+//                    dataSet, variables, rows,
+//                    x, y, z != null ? new ArrayList<>(z) : new ArrayList<>(),
+//                    new IndependenceFact(x, y, z != null ? z : new HashSet<>()),
+//                    alpha);
+//        }
+
         double pValue = getPValue(x, y, z);
         boolean independent = pValue > alpha;
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue, alpha - pValue);

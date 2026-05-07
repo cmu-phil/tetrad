@@ -29,7 +29,6 @@ import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.session.SessionModel;
 
@@ -61,7 +60,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     /**
      * The parameters.
      */
-    private final Parameters /**/parameters;
+    private final Parameters parameters;
     /**
      * The name of this model.
      */
@@ -79,10 +78,6 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
      * | Z, X and Y should be in the last tier, and Z should be in previous tiers.
      */
     private Knowledge knowledge;
-    /**
-     * Whether verbose output should be printed.
-     */
-    private boolean verbose = false;
 
     /**
      * Constructs a new Markov checer with the given data model, graph, and parameters.
@@ -131,7 +126,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
      */
     public void setIndependenceTest(IndependenceTest test) {
         if (this.getMarkovCheck() == null) {
-            this.markovCheck = new MarkovCheck(this.graph, test, ConditioningSetType.LOCAL_MARKOV);
+            this.markovCheck = new MarkovCheck(this.graph, test, ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
         } else {
             this.markovCheck.setIndependenceTest(test);
         }
@@ -275,10 +270,45 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
         if (this.markovCheck != null) {
             this.markovCheck.setVerbose(verbose);
         }
+    }
+
+    public double getFractionSample() {
+        return this.parameters.getDouble("fractionSampleParam", 1.0);
+    }
+
+    public void setFractionSample(double value) {
+        if (value < 0.0 || value > 1.0) {
+            throw new IllegalArgumentException("Fraction sample must be between 0 and 1.");
+        }
+
+        this.parameters.set("fractionSampleParam", value);
+    }
+
+    public void setSelectedTab(String selectedTab) {
+        this.parameters.set("selectedTabParam", selectedTab);
+    }
+
+    public String getSelectedTab() {
+        return this.parameters.getString("selectedTabParam", "indep");
+    }
+
+    public void setIndependenceTestClass(String name) {
+        this.parameters.set("independenceTestClassParam", name);
+    }
+
+    public String getIndependenceTestClass() {
+        return this.parameters.getString("independenceTestClassParam", "MarkovCheckIndTest");
+    }
+
+    public ConditioningSetType getConditioningSetType() {
+        return (ConditioningSetType) this.parameters.get("conditioningSetTypeParam", ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
+    }   
+
+    public void setConditioningSetType(ConditioningSetType conditioningSetType) {
+        this.parameters.set("conditioningSetTypeParam", conditioningSetType);
     }
 }
 

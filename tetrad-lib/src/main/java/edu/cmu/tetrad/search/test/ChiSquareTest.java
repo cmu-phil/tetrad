@@ -272,7 +272,7 @@ public class ChiSquareTest {
                 }
 
                 int _df = (numNonZeroRows - 1) * (numNonZeroCols - 1);
-                if (_df == 0) _df = 1;
+                if (_df == 0) continue;
                 xSquare += _xSquare;
                 df += _df;
             }

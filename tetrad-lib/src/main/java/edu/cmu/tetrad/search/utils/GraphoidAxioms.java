@@ -228,7 +228,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * Checks is symmetry holds--i.e., X â¥â¥ Y | Z ==&gt; Y â¥â¥ X | Z
+     * Checks if symmetry holds--i.e., X ⊥⊥ Y | Z ==> Y ⊥⊥ X | Z
      *
      * @return a boolean
      */
@@ -253,7 +253,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * Checks if decomposition holds, e.g., X â¥â¥ (Y âª W) |Z ==&gt; (X â¥â¥ Y |Z) â§ (X â¥â¥ W |Z)
+     * Checks if decomposition holds, e.g., X _||_ (Y ∪ W) | Z ==> (X _||_ Y | Z) ∧ (X _||_ W | Z)
      *
      * @return a boolean
      */
@@ -331,7 +331,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * Checks is weak union holds, e.g., X _||_ Y U W | Z ==&gt; X _||_ Y | Z U W
+     * Checks if weak union holds, e.g., X _||_ Y ∪ W | Z ==> X _||_ Y | Z ∪ W
      *
      * @return a boolean
      */
@@ -388,7 +388,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * Checks if contraction holds--e.g., (X â¥â¥ Y |Z) â§ (X â¥â¥ W |Z âª Y) ==&gt; X â¥â¥ (Y âª W) |Z
+     * Checks if contraction holds--e.g., (X _||_ Y | Z) ∧ (X _||_ W | Z ∪ Y) ==> X _||_ (Y ∪ W) | Z
      *
      * @return a boolean
      */
@@ -447,7 +447,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * Checks if intersection holds--e.g., (X â¥â¥ Y | (Z âª W)) â§ (X â¥â¥ W | (Z âª Y)) ==&gt; X â¥â¥ (Y âª W) |Z
+     * Checks if intersection holds--e.g., (X _||_ Y | (Z ∪ W)) ∧ (X _||_ W | (Z ∪ Y)) ==> X _||_ (Y ∪ W) | Z
      *
      * @return a boolean
      */
@@ -519,7 +519,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * Checks if composition holds--e.g., (X â¥â¥ Y | Z) â§ (X â¥â¥ W |Z) ==&gt; X â¥â¥ (Y âª W) |Z
+     * Checks if composition holds--e.g., (X _||_ Y | Z) ∧ (X _||_ W | Z) ==> X _||_ (Y ∪ W) | Z
      *
      * @return a boolean
      */
@@ -578,7 +578,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * Sets symmetry as assumed--i.e., ensures that X â¥â¥ Y | Z ==&gt; Y â¥â¥ X | Z.
+     * Checks if symmetry holds--i.e., X _||_ Y | Z ==> Y _||_ X | Z
      */
     public void ensureSymmetry() {
         for (GraphoidIndFact fact : new HashSet<>(facts)) {
@@ -591,6 +591,223 @@ public class GraphoidAxioms {
                 textSpecs.put(newFact, textSpecs.get(fact));
             }
         }
+    }
+
+    /**
+     * Returns the closure of the current fact set under the semigraphoid axioms (symmetry,
+     * decomposition, weak union, contraction), the graphoid axioms (semigraphoid + intersection),
+     * or the compositional graphoid axioms (graphoid + composition). Iterates to fixpoint.
+     *
+     * @param type One of "semigraphoid", "graphoid", or "compositional graphoid".
+     * @return The closure set of GraphoidIndFacts.
+     */
+    public Set<GraphoidIndFact> closure(String type) {
+        Set<GraphoidIndFact> closure = new LinkedHashSet<>(facts);
+        Deque<GraphoidIndFact> worklist = new ArrayDeque<>(facts);
+
+        while (!worklist.isEmpty()) {
+            GraphoidIndFact fact = worklist.poll();
+            Set<GraphoidIndFact> toAdd = new LinkedHashSet<>();
+
+            Set<Node> X = fact.getX();
+            Set<Node> Y = fact.getY();
+            Set<Node> Z = fact.getZ();
+
+            // Symmetry: X ⊥⊥ Y | Z ==> Y ⊥⊥ X | Z
+            toAdd.add(new GraphoidIndFact(Y, X, Z));
+
+            // Decomposition: X ⊥⊥ YW | Z ==> X ⊥⊥ Y | Z  and  X ⊥⊥ W | Z
+            List<Node> YList = new ArrayList<>(Y);
+            SublistGenerator gen = new SublistGenerator(YList.size(), YList.size());
+            int[] choice;
+            while ((choice = gen.next()) != null) {
+                Set<Node> Ysub = GraphUtils.asSet(choice, YList);
+                Set<Node> W = new HashSet<>(Y);
+                W.removeAll(Ysub);
+                if (Ysub.isEmpty() || W.isEmpty()) continue;
+                if (!X.equals(Ysub) && disjointSets(X, Ysub, Z))
+                    toAdd.add(new GraphoidIndFact(X, Ysub, Z));
+                if (!X.equals(W) && disjointSets(X, W, Z)) {
+                    GraphoidIndFact fact3 = new GraphoidIndFact(X, W, Z);
+                    toAdd.add(fact3);
+                }
+            }
+
+            // Weak Union: X ⊥⊥ YW | Z ==> X ⊥⊥ Y | ZW
+            gen = new SublistGenerator(YList.size(), YList.size());
+            while ((choice = gen.next()) != null) {
+                Set<Node> Ysub = GraphUtils.asSet(choice, YList);
+                Set<Node> W = new HashSet<>(Y);
+                W.removeAll(Ysub);
+                if (Ysub.isEmpty() || W.isEmpty()) continue;
+                Set<Node> ZW = new HashSet<>(Z);
+                ZW.addAll(W);
+                if (disjointSets(X, Ysub, ZW)) {
+                    GraphoidIndFact fact3 = new GraphoidIndFact(X, Ysub, ZW);
+                    toAdd.add(fact3);
+                }
+            }
+
+            // Contraction: X ⊥⊥ Y | Z  ∧  X ⊥⊥ W | ZY ==> X ⊥⊥ YW | Z
+            Set<Node> ZY = new HashSet<>(Z);
+            ZY.addAll(Y);
+            for (GraphoidIndFact fact2 : closure) {
+                if (fact == fact2) continue;
+                if (fact2.getX().equals(X) && fact2.getZ().equals(ZY)) {
+                    Set<Node> W = fact2.getY();
+                    if (X.equals(W) || X.equals(ZY) || W.equals(ZY)) continue;
+                    Set<Node> YW = new HashSet<>(Y);
+                    YW.addAll(W);
+                    if (disjointSets(X, YW, Z)) {
+                        GraphoidIndFact fact3 = new GraphoidIndFact(X, YW, Z);
+                        toAdd.add(fact3);
+                    }
+                }
+                // Also check the symmetric role: fact2 plays the role of fact1
+                if (fact2.getX().equals(X) && fact.getZ().equals(new HashSet<>(fact2.getZ()) {{
+                    addAll(fact2.getY());
+                }})) {
+                    Set<Node> W = fact2.getY();
+                    Set<Node> Z2 = fact2.getZ();
+                    Set<Node> YW = new HashSet<>(W);
+                    YW.addAll(Y);
+                    if (disjointSets(X, YW, Z2)) {
+                        GraphoidIndFact fact3 = new GraphoidIndFact(X, YW, Z2);
+                        toAdd.add(fact3);
+                    }
+                }
+            }
+
+            if (type.equals("graphoid") || type.equals("compositional graphoid")) {
+
+                // Intersection: X ⊥⊥ Y | ZW  ∧  X ⊥⊥ W | ZY ==> X ⊥⊥ YW | Z
+                List<Node> ZList = new ArrayList<>(Z);
+                gen = new SublistGenerator(ZList.size(), ZList.size());
+                while ((choice = gen.next()) != null) {
+                    Set<Node> Zsub = GraphUtils.asSet(choice, ZList);
+                    Set<Node> W = new HashSet<>(Z);
+                    W.removeAll(Zsub);
+                    if (W.isEmpty()) continue;
+
+                    Set<Node> ZY2 = new HashSet<>(Zsub);
+                    ZY2.addAll(Y);
+
+                    for (GraphoidIndFact fact2 : closure) {
+                        if (fact2.getX().equals(X) && fact2.getY().equals(W) && fact2.getZ().equals(ZY2)) {
+                            Set<Node> YW = new HashSet<>(Y);
+                            YW.addAll(W);
+                            if (disjointSets(X, YW, Zsub)) {
+                                GraphoidIndFact fact3 = new GraphoidIndFact(X, YW, Zsub);
+                                toAdd.add(fact3);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (type.equals("compositional graphoid")) {
+
+                // Composition: X ⊥⊥ Y | Z  ∧  X ⊥⊥ W | Z ==> X ⊥⊥ YW | Z
+                for (GraphoidIndFact fact2 : closure) {
+                    if (fact == fact2) continue;
+                    if (Y.size() > 2 || fact2.getY().size() > 2) continue;
+                    if (fact2.getX().equals(X) && fact2.getZ().equals(Z)) {
+                        Set<Node> W = fact2.getY();
+                        Set<Node> YW = new HashSet<>(Y);
+                        YW.addAll(W);
+                        if (disjointSets(X, YW, Z)) {
+                            GraphoidIndFact fact3 = new GraphoidIndFact(X, YW, Z);
+                            toAdd.add(fact3);
+                        }
+                    }
+                }
+            }
+
+            // Only enqueue genuinely new facts
+            for (GraphoidIndFact newFact : toAdd) {
+                if (closure.add(newFact)) {
+                    worklist.add(newFact);
+                }
+            }
+        }
+
+        return closure;
+    }
+
+    /**
+     * Computes the singleton closure of independence facts using the composition rule, starting from an initial set
+     * of singleton independence facts. The composition rule allows the derivation of new independence facts
+     * from existing ones, specifically combining facts with the same X and Z sets but different Y sets.
+     *
+     * @param phase1Closure The initial set of singleton conditional independence facts of the form {x} ⊥⊥ {y} | Z.
+     * @return A set of GraphoidIndFact objects representing the newly derived singleton independence facts
+     *         obtained by applying the composition rule to the input set.
+     */
+    public Set<GraphoidIndFact> singletonClosureWithComposition(Set<GraphoidIndFact> phase1Closure) {
+        Set<GraphoidIndFact> singletons = singletonFacts(phase1Closure);
+        Set<GraphoidIndFact> newFacts = new LinkedHashSet<>();
+
+        for (GraphoidIndFact fact1 : singletons) {
+            Set<Node> X = fact1.getX();  // singleton
+            Set<Node> Y = fact1.getY();  // singleton {y}
+            Set<Node> Z = fact1.getZ();
+
+            // Find all facts with same X, same Z, different singleton Y
+            for (GraphoidIndFact fact2 : singletons) {
+                if (fact1 == fact2) continue;
+                if (!fact2.getX().equals(X)) continue;
+                if (!fact2.getZ().equals(Z)) continue;
+
+                // fact2 is X ⊥⊥ W | Z — compose to get X ⊥⊥ Y∪W | Z
+                // then weak-union to get X ⊥⊥ Y | Z∪W
+                Set<Node> W = fact2.getY();
+                Set<Node> ZW = new HashSet<>(Z);
+                ZW.addAll(W);
+
+                // X ⊥⊥ Y | Z∪W is the new singleton candidate
+                if (disjointSets(X, Y, ZW)) {
+                    newFacts.add(new GraphoidIndFact(X, Y, ZW));
+                }
+            }
+        }
+
+        return newFacts;
+    }
+
+    /**
+     * Returns the subset of a given set of GraphoidIndFacts where both X and Y are
+     * singleton sets--i.e., facts of the form {x} ⊥⊥ {y} | Z.
+     *
+     * @param facts The set of facts to filter.
+     * @return The filtered set containing only singleton CI facts.
+     */
+    public static Set<GraphoidIndFact> singletonFacts(Set<GraphoidIndFact> facts) {
+        Set<GraphoidIndFact> singletons = new LinkedHashSet<>();
+
+        for (GraphoidIndFact fact : facts) {
+            if (fact.getX().size() == 1 && fact.getY().size() == 1) {
+                singletons.add(fact);
+            }
+        }
+
+        return singletons;
+    }
+
+    /**
+     * Returns true if the three sets are mutually disjoint.
+     */
+    private boolean disjointSets(Set<Node> a, Set<Node> b, Set<Node> c) {
+        Set<Node> ab = new HashSet<>(a);
+        ab.retainAll(b);
+        if (!ab.isEmpty()) return false;
+
+        Set<Node> ac = new HashSet<>(a);
+        ac.retainAll(c);
+        if (!ac.isEmpty()) return false;
+
+        Set<Node> bc = new HashSet<>(b);
+        bc.retainAll(c);
+        return bc.isEmpty();
     }
 
     /**

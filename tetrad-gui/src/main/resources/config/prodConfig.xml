@@ -1054,6 +1054,16 @@
                 <model-class>edu.cmu.tetradapp.model.HybridCgEstimatorWrapper</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.HybridCgEstimatorEditor</editor-class>
             </model>
+            <model name="NN Estimator" acronym="NN Estimator"
+                   help="nn_estimator">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.NNEstimatorModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.NNEstimatorEditor</editor-class>
+            </model>
         </models>
         <display-component image="estimatorIcon.gif"/>
         <model-chooser title="Types of Estimators"/>
@@ -1400,16 +1410,6 @@
                 <model-class>edu.cmu.tetradapp.model.VertexCheckIndTestModel
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.VertexCheckEditor</editor-class>
-            </model>
-            <model name="Dag Factorization Comparison" acronym="DAG Factorization"
-                   help="dag_factorization" category="Independence Facts Comparison">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="comparison" description="Comparison" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.DagFactorizationCompare
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.DagFactorizationCompareEditor</editor-class>
             </model>
             <model name="Dag Model Scores" acronym="DAG Model Scores"
                    help="dag_factorization" category="Independence Facts Comparison">

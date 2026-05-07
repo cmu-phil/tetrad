@@ -20,10 +20,7 @@
 
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.DoubleDataBox;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
@@ -109,8 +106,24 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
     // IndependenceTest
     // -------------------------------------------------------------------------
 
+//    @Override
+//    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+//        double pValue = getPValue(x, y, z);
+//        boolean independent = pValue > alpha;
+//        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue, alpha - pValue);
+//    }
+
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+        // If all variables are discrete, fall back to chi-square
+//        if (DiscreteIndependenceUtils.isAllDiscrete(x, y, new HashSet<>(z))) {
+//            return DiscreteIndependenceUtils.conditionalChiSquare(
+//                    (DataSet) getData(), variables, null,
+//                    x, y, z != null ? new ArrayList<>(z) : new ArrayList<>(),
+//                    new IndependenceFact(x, y, z != null ? z : new HashSet<>()),
+//                    alpha);
+//        }
+
         double pValue = getPValue(x, y, z);
         boolean independent = pValue > alpha;
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue, alpha - pValue);

@@ -80,7 +80,7 @@ public final class LvHeuristic implements IGraphSearch {
      * A value of -1 indicates that no limit is set, meaning the algorithm may consider discriminating paths
      * of any length. Setting this value to a positive integer constrains the maximum length of such paths.
      */
-    private int maxDiscriminatingPathLength = -1;
+    private int maxBlockingPathLength = -1;
     private boolean excludeSelectionBias = false;
 
     /**
@@ -136,21 +136,19 @@ public final class LvHeuristic implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Calculating PAG from CPDAG.");
+            TetradLogger.getInstance().log("Calculating PAG from DAG.");
         }
 
-        Graph mag = GraphTransforms.dagToMag(dag);
-        MagToPag dagToPag = new MagToPag(mag);
-        dagToPag.setVerbose(verbose);
-        dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
-        dagToPag.setKnowledge(knowledge);
-        dagToPag.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        Graph pag = dagToPag.convert(true, excludeSelectionBias);
+        Graph pag = GraphTransforms.dagToPag(dag, knowledge, false, 15);
 
-
-//        Graph pag = new MagToPag(mag).convert(false);
-
-//        Graph pag = GraphTransforms.dagToPag(dag);
+//        Graph mag = GraphTransforms.dagToMag(dag);
+//        MagToPag magToPag = new MagToPag(mag);
+//        magToPag.setVerbose(verbose);
+//        magToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
+//        magToPag.setKnowledge(knowledge);
+//        magToPag.setMaxBlockingPathLength(maxBlockingPathLength);
+//        magToPag.setMaxDiscriminatingPathLength(-1);
+//        Graph pag = magToPag.convert(true, excludeSelectionBias);
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished calculating PAG from CPDAG.");
@@ -221,10 +219,10 @@ public final class LvHeuristic implements IGraphSearch {
     /**
      * Sets the maximum length of discriminating paths to consider during the search.
      *
-     * @param maxDiscriminatingPathLength The maximum length of discriminating paths.
+     * @param maxBlockingPathLength The maximum length of discriminating paths.
      */
-    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
-        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
+    public void setMaxBlockingPathLength(int maxBlockingPathLength) {
+        this.maxBlockingPathLength = maxBlockingPathLength;
     }
 
     /**

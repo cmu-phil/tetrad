@@ -428,7 +428,7 @@ public final class LatentGraphRefinement {
         if (graph == null) {
             throw new NullPointerException("graph must not be null.");
         }
-        
+
         // Override existing directed edges to avoid confusion (and cycles).
         for (Edge edge : new ArrayList<>(graph.getEdges())) {
             if (edge.isDirected()) {
@@ -630,7 +630,8 @@ public final class LatentGraphRefinement {
                 try {
                     if (hsic.computePValue(aData, bData) < alpha) {
                         associated++;
-                    };
+                    }
+                    ;
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -639,7 +640,6 @@ public final class LatentGraphRefinement {
 
         return (double) associated / total >= minProportion;
     }
-
 
 
     /**

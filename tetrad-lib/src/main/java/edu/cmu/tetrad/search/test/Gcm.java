@@ -68,6 +68,8 @@ import static edu.cmu.tetrad.util.TMath.*;
  * when approximate conditional mean models are available, and serves as a
  * computationally efficient alternative to fully nonparametric kernel-based tests.
  * </p>
+ * Reference: Rajen D. Shah and Jonas Peters. "The hardness of conditional independence testing
+ * and the generalised covariance measure." Annals of Statistics, 48(3):1514–1538, 2020.
  */
 public final class Gcm implements IndependenceTest {
 

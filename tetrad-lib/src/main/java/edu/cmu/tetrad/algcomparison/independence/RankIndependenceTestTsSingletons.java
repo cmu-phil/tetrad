@@ -43,13 +43,13 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-@TestOfIndependence(
-        name = "Rank Independence Test TS Simgletons",
-        command = "rank-test-ts-singletons",
-        dataType = {DataType.Continuous, DataType.Covariance}
-)
+//@TestOfIndependence(
+//        name = "Rank Independence Test TS Singletons",
+//        command = "rank-test-ts-singletons",
+//        dataType = {DataType.Continuous, DataType.Covariance}
+//)
 @Deprecated
-@LinearGaussian
+//@LinearGaussian
 public class RankIndependenceTestTsSingletons implements IndependenceWrapper {
 
     @Serial

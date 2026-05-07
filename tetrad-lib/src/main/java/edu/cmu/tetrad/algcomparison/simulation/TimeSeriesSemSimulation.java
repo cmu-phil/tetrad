@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
 import edu.cmu.tetrad.search.utils.TsUtils;
@@ -132,14 +133,16 @@ public class TimeSeriesSemSimulation implements Simulation, AcceptsKnowledge {
         Graph graph = this.randomGraph.createGraph(parameters);
         int numExtraLagged = (int) TMath.floor(graph.getNumEdges() * 1.5);
         graph = TsUtils.graphToLagGraph(graph, parameters.getInt(Params.NUM_LAGS), numExtraLagged);
-        TimeSeriesSemSimulation.topToBottomLayout((TimeLagGraph) graph);
+//        TimeSeriesSemSimulation.topToBottomLayout((TimeLagGraph) graph);
+        LayoutUtil.layoutByKnowledgeIndices(graph);
         this.knowledge = TsUtils.getKnowledge(graph);
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
                 graph = this.randomGraph.createGraph(parameters);
                 graph = TsUtils.graphToLagGraph(graph, 2, numExtraLagged);
-                TimeSeriesSemSimulation.topToBottomLayout((TimeLagGraph) graph);
+//                TimeSeriesSemSimulation.topToBottomLayout((TimeLagGraph) graph);
+                LayoutUtil.layoutByKnowledgeIndices(graph);
             }
 
             this.graphs.add(graph);

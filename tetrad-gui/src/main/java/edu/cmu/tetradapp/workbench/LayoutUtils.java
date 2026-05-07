@@ -20,8 +20,8 @@
 
 package edu.cmu.tetradapp.workbench;
 
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.GraphEditorUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
@@ -538,7 +538,7 @@ public class LayoutUtils {
      *
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
      */
-    public static void knowledgeLayout(LayoutEditable layoutEditable) {
+    public static void layoutByKnowledgeTiers(LayoutEditable layoutEditable, Knowledge knowledge) {
         Graph graph = new EdgeListGraph(layoutEditable.getGraph());
 
         try {
@@ -549,7 +549,32 @@ public class LayoutUtils {
                 }
             }
 
-            GraphSearchUtils.arrangeByKnowledgeTiers(graph);
+            LayoutUtil.layoutByKnowledgeTiers(graph, knowledge);
+            layoutEditable.layoutByGraph(graph);
+        } catch (Exception e1) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    e1.getMessage());
+        }
+        LayoutUtils.layout = Layout.knowledge;
+    }
+
+    /**
+     * <p>knowledgeLayout.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
+    public static void layoutByKnowledgeIndices(LayoutEditable layoutEditable) {
+        Graph graph = new EdgeListGraph(layoutEditable.getGraph());
+
+        try {
+
+            for (Node node : new ArrayList<>(graph.getNodes())) {
+                if (node.getNodeType() == NodeType.ERROR) {
+                    graph.removeNode(node);
+                }
+            }
+
+            LayoutUtil.layoutByKnowledgeIndices(graph);
             layoutEditable.layoutByGraph(graph);
         } catch (Exception e1) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -721,7 +746,7 @@ public class LayoutUtils {
                 LayoutUtils.sourceGraphLayout(layoutEditable);
                 break;
             case knowledge:
-                LayoutUtils.knowledgeLayout(layoutEditable);
+                LayoutUtils.layoutByKnowledgeIndices(layoutEditable);
                 break;
             case circle:
                 LayoutUtils.circleLayout(layoutEditable);

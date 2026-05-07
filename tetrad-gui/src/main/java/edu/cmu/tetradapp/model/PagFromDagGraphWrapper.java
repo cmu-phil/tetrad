@@ -61,7 +61,8 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
             throw new IllegalArgumentException("The source graph is not a DAG.");
         }
 
-        Graph pag = GraphTransforms.dagToPag(graph, parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+        Graph pag = GraphTransforms.dagToPag(graph, parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS),
+                10 /* second timeout*/);
         setGraph(pag);
 
         TetradLogger.getInstance().log("\nGenerating allow_latent_common_causes from DAG.");

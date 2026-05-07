@@ -34,79 +34,47 @@ package edu.cmu.tetrad.search;
  * @see MarkovCheck
  */
 public enum ConditioningSetType {
-
     /**
-     * Testing all possible independence facts implied by the graph.  Some independence facts obtained in this way may
-     * be for implied dependencies.
+     * Full ordered local Markov property  (Richardson)
      */
-    GLOBAL_MARKOV,
-
+    ORDERED_LOCAL_MARKOV_PROPERTY("Ordered Local Markov Property"),
     /**
-     * Testing independence facts implied by the graph, conditioning on the parents of each variable in the graph. Some
-     * independence facts obtained in this way may be for implied dependencies.
+     * Sink elimination ordered local Markov property (Andrews)
      */
-    LOCAL_MARKOV,
-
+    ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION("Ordered Local Markov (Sink Elimination)"),
     /**
-     * Conditioning on the parents and neighbors of each variable in the graph. Some independence facts obtained in this
-     * way may be for implied dependencies.
+     * Pairwise Markov property, conditioing on the anteriority of the endpoints.
      */
-    PARENTS_AND_NEIGHBORS,
-
+    PAIRWISE_MARKOV_PROPERTY("Pairwise Markov Property"),
     /**
-     * Conditioning on the Markov blanket of each variable in the graph. These are all conditional independence facts,
-     * so no conditional dependence facts will be listed if this option is selected.
+     * The Markov blanket of the target variable.
      */
-    MARKOV_BLANKET,
-
+    MARKOV_BLANKET("Markov Blanket"),
     /**
-     * Conditioning on variables in the recursive order of a depth-first M-separation search. Some independence facts
-     * obtained in this way may be for implied dependencies.
+     * Recursive blocking.
      */
-    RECURSIVE_BLOCKING,
-
+    RECURSIVE_BLOCKING("Recursive Blocking"),
     /**
-     * Conditioning on variables in the recursive order of a depth-first M-separation search. Some independence facts
-     * obtained in this way may be for implied dependencies.
+     * Local Markov property, conditioning on the parents of the target variable.
      */
-    RECURSIVE_ADJUSTMENT,
-
+    LOCAL_MARKOV("Local Markov (Parents)"),
     /**
-     * Conditioning on noncolliders only. Some independence facts obtained in this way may be for implied dependencies.
-     * This is equivalent to the "noncolliders only" option in the PC algorithm.
+     * Causal Markov property, conditioning on the parents and neighbors of the target variable.
      */
-    NONCOLLIDERS_ONLY,
-
+    PARENTS_AND_NEIGHBORS("Parents and Neighbors"),
     /**
-     * Testing independence facts implied by the graph, conditioning on the parents of each variable in the graph, in a
-     * causal order of the graph. Some independence facts obtained in this way may be for implied dependencies.
+     * Global Markov property, conditioning on all subsets implied by global Markov. For small models only.
      */
-    ORDERED_LOCAL_MARKOV,
+    GLOBAL_MARKOV("All Subsets (Global Markov)");
 
-    /**
-     * Generates a set of independence facts that implies Global Markov for MAG. Taking a MAG in the given PAG in the
-     * calling method.
-     *
-     * @see OrderedLocalMarkovPropertySinkElimination
-     */
-    ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION,
+    private final String displayName;
 
-    /**
-     * Specifies a conditioning set type that generates a set of independence facts conforming to the
-     * Richardson Ordered Local Markov Property for Markov equivalent models such as MAGs (Maximal Ancestral Graphs).
-     * This method leverages a specific causal ordering in the graph to verify causal and conditional independence
-     * relationships, taking into account the structure of the underlying Markov equivalence class.
-     */
-    ORDERED_LOCAL_MARKOV_PROPERTY,
+    ConditioningSetType(String displayName) {
+        this.displayName = displayName;
+    }
 
-    /**
-     * Represents the assumption or property in probabilistic graphical models that
-     * given any two variables in the model, they are conditionally independent
-     * given a direct connection or edge between them. This property is widely
-     * applicable to pairwise Markov random fields where the edges encode
-     * direct probabilistic relationships between the connected variables.
-     */
-    PAIRWISE_MARKOV_PROPERTY
-
+    @Override
+    public String toString() {
+        return displayName;
+    }
 }
-

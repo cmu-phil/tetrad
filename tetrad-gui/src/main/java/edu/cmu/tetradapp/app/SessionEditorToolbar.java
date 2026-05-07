@@ -30,47 +30,59 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Displays a vertical list of buttons that determine the next action the user can take in the session editor workbench,
- * whether it's selecting and moving a node, adding a node of a particular type, or adding an edge.
+ * Displays a vertical list of buttons that determine the next action the user
+ * can take in the session editor workbench, whether it's selecting and moving
+ * a node, adding a node of a particular type, or adding an edge.
  *
  * @author josephramsey
  * @see SessionEditor
- * @see SessionEditorToolbar
  */
 final class SessionEditorToolbar extends JPanel {
 
     /**
-     * The node type of the button that is used for the Select/Move tool.
+     * Node type token for the select/move tool.
      */
-    private final String selectType = "Select";
-    private final String edgeSelectType = "Edge";
+    private static final String SELECT_TYPE = "Select";
+
     /**
-     * \ The map from JToggleButtons to String node types.
+     * Node type token for the edge-drawing tool.
      */
-    private final Map<JToggleButton, String> nodeTypes = new HashMap<>();
+    private static final String EDGE_TYPE = "Edge";
+
+    /**
+     * Maps each JToggleButton to its node-type string.
+     */
+    private final Map<JToggleButton, String> nodeTypes = new LinkedHashMap<>();
+
+    /**
+     * Maps icon-bearing buttons to their image resource names, for L&F refresh.
+     */
+    private final Map<JToggleButton, String> buttonImageNames = new LinkedHashMap<>();
+
     /**
      * The workbench this toolbar controls.
      */
     private final SessionEditorWorkbench workbench;
+
     /**
-     * True iff the toolbar is responding to events.
+     * Whether the toolbar is currently responding to events.
+     * Can be toggled off temporarily by callers.
      */
     private boolean respondingToEvents = true;
+
     /**
-     * True iff the shift key was down on last click.
+     * Whether the Shift key is currently held down.
      */
     private boolean shiftDown;
-
-    private final Map<JToggleButton, String> buttonImagePaths = new HashMap<>();
 
     /**
      * Constructs a new session toolbar.
      *
-     * @param workbench the workbench this toolbar controls.
+     * @param workbench the workbench this toolbar controls; must not be null
      */
     public SessionEditorToolbar(SessionEditorWorkbench workbench) {
         if (workbench == null) {
@@ -79,152 +91,96 @@ final class SessionEditorToolbar extends JPanel {
 
         this.workbench = workbench;
 
-        // Set up panel.
         Box buttonsPanel = Box.createVerticalBox();
-//        buttonsPanel.setBackground(new Color(198, 232, 252));
         buttonsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // Create buttons.
-        /*
-      Node infos for all of the nodes.
-         */
         ButtonInfo[] buttonInfos = {
-                new ButtonInfo("Select", "Select and Move", "move",
+                new ButtonInfo(SELECT_TYPE, "Select and Move", "move",
                         "<html>Select and move nodes or groups of nodes "
-                        + "<br>on the workbench.</html>"),
-                new ButtonInfo("Edge", "Draw Edge", "flow",
+                                + "<br>on the workbench.</html>"),
+                new ButtonInfo(EDGE_TYPE, "Draw Edge", "flow",
                         "<html>Add an edge from one node to another to declare"
-                        + "<br>that the object in the first node should be used "
-                        + "<br>to construct the object in the second node."
-                        + "<br>As a shortcut, hold down the Control key."
-                        + "</html>"),
-                new ButtonInfo("Graph", "Graph", "graph", "<html>Add a graph node.</html>"),
-                new ButtonInfo("Compare", "Compare", "compare",
-                        "<html>Add a node to compare graphs or SEM IM's.</html>"),
-                new ButtonInfo("GridSearch", "Grid Search", "search",
-                        "<html>Add a node to do a grid search.</html>"),
-                new ButtonInfo("PM", "Parametric Model", "pm",
-                        "<html>Add a node for a parametric model.</html>"),
-                new ButtonInfo("IM", "Instantiated Model", "semIm",
-                        "<html>Add a node for an instantiated model.</html>"),
-                new ButtonInfo("Estimator", "Estimator", "estimator",
-                        "<html>Add a node for an estimator.</html>"),
-                new ButtonInfo("Data", "Data", "data",
-                        "<html>Add a node for a data object.</html>"),
-                new ButtonInfo("Simulation", "Simulation", "simulation",
-                        "<html>Add a node for a simulation object.</html>"),
-                new ButtonInfo("Search", "Search", "search",
-                        "<html>Add a node for a search algorithm.</html>"),
-                new ButtonInfo("Latent_Clusters", "Latent Clusters", "cluster",
-                        "<html>Add a node for an clustering algorithm.</html>"),
-                new ButtonInfo("Latent_Structure", "Latent Structure", "clustersearch",
-                        "<html>Add a node for a block search.</html>"),
-                new ButtonInfo("Knowledge", "Knowledge", "knowledge", "<html>Add a knowledge box node.</html>"),
-                new ButtonInfo("Updater", "Updater", "updater",
-                        "<html>Add a node for an updater.</html>"),
-                //new ButtonInfo("Classify", "Classify", "search",
-                //"<html>Add a node for a classifier.</html>"),
-                new ButtonInfo("Regression", "Regression", "regression",
-                        "<html>Add a node for a regression.</html>"),
-                new ButtonInfo("Note", "Note", "note",
-                        "<html>Add a note to the session.</html>")
+                                + "<br>that the object in the first node should be used "
+                                + "<br>to construct the object in the second node."
+                                + "<br>As a shortcut, hold down the Control key."
+                                + "</html>"),
+                new ButtonInfo("Graph",          "Graph",             "graph",       "<html>Add a graph node.</html>"),
+                new ButtonInfo("Compare",        "Compare",           "compare",     "<html>Add a node to compare graphs or SEM IM's.</html>"),
+                new ButtonInfo("GridSearch",     "Grid Search",       "search",      "<html>Add a node to do a grid search.</html>"),
+                new ButtonInfo("PM",             "Parametric Model",  "pm",          "<html>Add a node for a parametric model.</html>"),
+                new ButtonInfo("IM",             "Instantiated Model","semIm",       "<html>Add a node for an instantiated model.</html>"),
+                new ButtonInfo("Estimator",      "Estimator",         "estimator",   "<html>Add a node for an estimator.</html>"),
+                new ButtonInfo("Data",           "Data",              "data",        "<html>Add a node for a data object.</html>"),
+                new ButtonInfo("Simulation",     "Simulation",        "simulation",  "<html>Add a node for a simulation object.</html>"),
+                new ButtonInfo("Search",         "Search",            "search",      "<html>Add a node for a search algorithm.</html>"),
+                new ButtonInfo("Latent_Clusters","Latent Clusters",   "cluster",     "<html>Add a node for a clustering algorithm.</html>"),
+                new ButtonInfo("Latent_Structure","Latent Structure", "clustersearch","<html>Add a node for a block search.</html>"),
+                new ButtonInfo("Knowledge",      "Knowledge",         "knowledge",   "<html>Add a knowledge box node.</html>"),
+                new ButtonInfo("Updater",        "Updater",           "updater",     "<html>Add a node for an updater.</html>"),
+                new ButtonInfo("Regression",     "Regression",        "regression",  "<html>Add a node for a regression.</html>"),
+                new ButtonInfo("Note",           "Note",              "note",        "<html>Add a note to the session.</html>")
         };
-        JToggleButton[] buttons = new JToggleButton[buttonInfos.length];
 
+        JToggleButton[] buttons = new JToggleButton[buttonInfos.length];
         for (int i = 0; i < buttonInfos.length; i++) {
             buttons[i] = constructButton(buttonInfos[i]);
         }
 
-        // Add all buttons to a button group.
         ButtonGroup buttonGroup = new ButtonGroup();
-
-        for (int i = 0; i < buttonInfos.length; i++) {
-            buttonGroup.add(buttons[i]);
+        for (JToggleButton button : buttons) {
+            buttonGroup.add(button);
         }
 
-        // This seems to be fixed. Now creating weirdness. jdramsey 3/4/2014
-//        // Add a focus listener to help buttons not deselect when the
-//        // mouse slides away from the button.
-//        FocusListener focusListener = new FocusAdapter() {
-//            public void focusGained(FocusEvent e) {
-//                JToggleButton component = (JToggleButton) e.getComponent();
-//                component.getModel().setSelected(true);
-//            }
-//        };
-//
-//        for (int i = 0; i < buttonInfos.length; i++) {
-//            buttons[i].addFocusListener(focusListener);
-//        }
-        // Add an action listener to help send messages to the
-        // workbench.
         ChangeListener changeListener = e -> {
-            JToggleButton _button = (JToggleButton) e.getSource();
-
-            if (_button.getModel().isSelected()) {
-                setWorkbenchMode(_button);
-//                    setCursor(workbench.getCursor());
+            JToggleButton source = (JToggleButton) e.getSource();
+            if (source.getModel().isSelected()) {
+                setWorkbenchMode(source);
             }
         };
 
-        for (int i = 0; i < buttonInfos.length; i++) {
-            buttons[i].addChangeListener(changeListener);
-        }
-
-        // Select the Select button.
-        JToggleButton button = getButtonForType(this.selectType);
-
-        assert button != null;
-        button.getModel().setSelected(true);
-
-        // Add the buttons to the workbench.
-        for (int i = 0; i < buttonInfos.length; i++) {
-            buttonsPanel.add(buttons[i]);
+        for (JToggleButton button : buttons) {
+            button.addChangeListener(changeListener);
+            buttonsPanel.add(button);
             buttonsPanel.add(Box.createVerticalStrut(5));
         }
 
-        // Put the panel in a scrollpane.
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
         JScrollPane scroll = new JScrollPane(buttonsPanel);
         scroll.setPreferredSize(new Dimension(130, 1000));
         add(scroll, BorderLayout.CENTER);
 
-        // Add property change listener so that selection can be moved
-        // back to "SELECT_MOVE" after an action.
+        // After an action, reset selection or keep edge button selected as appropriate.
         workbench.addPropertyChangeListener(e -> {
-            if (!isRespondingToEvents()) {
+            if (!this.respondingToEvents) {
                 return;
             }
-
-            String propertyName = e.getPropertyName();
-            if ("nodeAdded".equals(propertyName)) {
-                if (!isShiftDown()) {
+            String prop = e.getPropertyName();
+            if ("nodeAdded".equals(prop)) {
+                if (!this.shiftDown) {
                     resetSelectMove();
                 }
-            } else if ("edgeAdded".equals(propertyName)) {
-                // keep edge select type selected
-                JToggleButton selectButton = getButtonForType(SessionEditorToolbar.this.edgeSelectType);
-                assert selectButton != null;
-                if (!(selectButton.isSelected())) {
-                    selectButton.doClick();
-                    selectButton.requestFocus();
+            } else if ("edgeAdded".equals(prop)) {
+                JToggleButton edgeButton = getButtonForType(EDGE_TYPE);
+                if (edgeButton != null && !edgeButton.isSelected()) {
+                    edgeButton.doClick();
+                    edgeButton.requestFocus();
                 }
             }
         });
 
+        // Track Shift key state globally.
         KeyboardFocusManager.getCurrentKeyboardFocusManager()
                 .addKeyEventDispatcher(e -> {
                     int keyCode = e.getKeyCode();
                     int id = e.getID();
-
                     if (keyCode == KeyEvent.VK_SHIFT) {
                         if (id == KeyEvent.KEY_PRESSED) {
-                            setShiftDown(true);
+                            this.shiftDown = true;
                         } else if (id == KeyEvent.KEY_RELEASED) {
-                            setShiftDown(false);
+                            this.shiftDown = false;
                             resetSelectMove();
                         }
                     }
-
                     return false;
                 });
 
@@ -232,28 +188,10 @@ final class SessionEditorToolbar extends JPanel {
     }
 
     /**
-     * Sets the selection back to move/select.
-     */
-    private void resetSelectMove() {
-        JToggleButton selectButton = getButtonForType(this.selectType);
-        assert selectButton != null;
-        if (!(selectButton.isSelected())) {
-            selectButton.doClick();
-            selectButton.requestFocus();
-        }
-    }
-
-    /**
-     * True iff the toolbar is responding to events. This may need to be turned off temporarily.
-     */
-    private boolean isRespondingToEvents() {
-        return this.respondingToEvents;
-    }
-
-    /**
-     * Sets whether the toolbar should react to events. This may need to be turned off temporarily.
+     * Sets whether the toolbar should react to workbench events.
+     * Can be toggled off temporarily by callers.
      *
-     * @param respondingToEvents a boolean
+     * @param respondingToEvents true to respond, false to suppress
      */
     public void setRespondingToEvents(boolean respondingToEvents) {
         this.respondingToEvents = respondingToEvents;
@@ -261,27 +199,41 @@ final class SessionEditorToolbar extends JPanel {
 
     /**
      * {@inheritDoc}
+     *
+     * Refreshes button icons when the look-and-feel changes.
      */
-    protected void processKeyEvent(KeyEvent e) {
-        System.out.println("process key event " + e);
-        super.processKeyEvent(e);
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        if (this.buttonImageNames != null) {
+            this.buttonImageNames.forEach((button, imageName) ->
+                    button.setIcon(new ImageIcon(ImageUtils.getImage(this, imageName))));
+        }
+        revalidate();
+        repaint();
+    }
+
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Resets the toolbar to the Select/Move tool.
+     */
+    private void resetSelectMove() {
+        JToggleButton selectButton = getButtonForType(SELECT_TYPE);
+        if (selectButton != null && !selectButton.isSelected()) {
+            selectButton.doClick();
+            selectButton.requestFocus();
+        }
     }
 
     /**
-     * Constructs the button with the given node type and image prefix. If the node type is "Select", constructs a
-     * button that allows nodes to be selected and moved. If the node type is "Edge", constructs a button that allows
-     * edges to be drawn. For other node types, constructs buttons that allow those type of nodes to be added to the
-     * workbench. If a non-null image prefix is provided, images for <prefix>Up.gif, <prefix>Down.gif,
-     * <prefix>Off.gif and <prefix>Roll.gif are loaded from the /images
-     * directory relative to this compiled class and used to provide up, down, off, and rollover images for the
-     * constructed button. On construction, nodes are mapped to their node types in the Map, <code>nodeTypes</code>.
-     * Listeners are added to the node.
-     *
-     * @param buttonInfo contains the info needed to construct the button.
+     * Constructs a toggle button from a {@link ButtonInfo} descriptor,
+     * wires up its mouse listener, and registers it in {@code nodeTypes}.
      */
     private JToggleButton constructButton(ButtonInfo buttonInfo) {
         String imagePrefix = buttonInfo.getImagePrefix();
-
         if (imagePrefix == null) {
             throw new NullPointerException("Image prefix must not be null.");
         }
@@ -289,159 +241,114 @@ final class SessionEditorToolbar extends JPanel {
         JToggleButton button = new JToggleButton();
 
         button.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
                 setShiftDown(e.isShiftDown());
-//                setControlDown(e.isControlDown());
             }
         });
 
-        if ("Select".equals(buttonInfo.getNodeTypeName())) {
-            String imagePath = "move.gif";
-            button.setIcon(new ImageIcon(ImageUtils.getImage(this, imagePath)));
-            this.buttonImagePaths.put(button, imagePath);
-        } else if ("Edge".equals(buttonInfo.getNodeTypeName())) {
-            String imagePath = "flow.gif";
-            button.setIcon(new ImageIcon(ImageUtils.getImage(this, imagePath)));
-            this.buttonImagePaths.put(button, imagePath);
+        String nodeTypeName = buttonInfo.getNodeTypeName();
+        if (SELECT_TYPE.equals(nodeTypeName) || EDGE_TYPE.equals(nodeTypeName)) {
+            String imageName = imagePrefix + ".gif";
+            button.setIcon(new ImageIcon(ImageUtils.getImage(this, imageName)));
+            this.buttonImageNames.put(button, imageName);
         } else {
-            button.setName(buttonInfo.getNodeTypeName());
-            button.setText("<html><center>" + buttonInfo.getDisplayName()
-                           + "</center></html>");
+            button.setName(nodeTypeName);
+            button.setText("<html><center>" + buttonInfo.getDisplayName() + "</center></html>");
         }
 
-        button.setMaximumSize(new Dimension(110, 40)); // For a vertical box.
+        button.setMaximumSize(new Dimension(110, 40));
         button.setToolTipText(buttonInfo.getToolTipText());
-        this.nodeTypes.put(button, buttonInfo.getNodeTypeName());
+        this.nodeTypes.put(button, nodeTypeName);
 
         return button;
     }
 
     /**
-     * Sets the state of the workbench in response to a button press.
-     *
-     * @param button the JToggleButton whose workbench state is to be set.
+     * Updates the workbench mode and cursor in response to the given button being selected.
      */
     private void setWorkbenchMode(JToggleButton button) {
         String nodeType = this.nodeTypes.get(button);
 
-        /*
-      The node type of the button that is used for the edge-drawing tool.
-         */
-        final String edgeType = "Edge";
-        if (this.selectType.equals(nodeType)) {
+        if (SELECT_TYPE.equals(nodeType)) {
             this.workbench.setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
             this.workbench.setNextButtonType(null);
-            setCursor(new Cursor(Cursor.HAND_CURSOR));
-            this.workbench.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        } else if (edgeType.equals(nodeType)) {
+            Cursor hand = new Cursor(Cursor.HAND_CURSOR);
+            setCursor(hand);
+            this.workbench.setCursor(hand);
+        } else if (EDGE_TYPE.equals(nodeType)) {
             this.workbench.setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
             this.workbench.setNextButtonType(null);
-
-            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            this.workbench.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            Cursor def = new Cursor(Cursor.DEFAULT_CURSOR);
+            setCursor(def);
+            this.workbench.setCursor(def);
         } else {
             this.workbench.setWorkbenchMode(AbstractWorkbench.ADD_NODE);
             this.workbench.setNextButtonType(nodeType);
-
-            setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-            this.workbench.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-
+            Cursor cross = new Cursor(Cursor.CROSSHAIR_CURSOR);
+            setCursor(cross);
+            this.workbench.setCursor(cross);
         }
     }
 
     /**
-     * @return the JToggleButton for the given node type, or null if no such button exists.
+     * Returns the toggle button registered for the given node type, or null if none.
      */
     private JToggleButton getButtonForType(String nodeType) {
-        for (JToggleButton o : this.nodeTypes.keySet()) {
-            if (nodeType.equals(this.nodeTypes.get(o))) {
-                return o;
+        for (Map.Entry<JToggleButton, String> entry : this.nodeTypes.entrySet()) {
+            if (nodeType.equals(entry.getValue())) {
+                return entry.getKey();
             }
         }
-
         return null;
-    }
-
-    private boolean isShiftDown() {
-        return this.shiftDown;
     }
 
     private void setShiftDown(boolean shiftDown) {
         this.shiftDown = shiftDown;
     }
 
+    // -------------------------------------------------------------------------
+    // ButtonInfo
+    // -------------------------------------------------------------------------
+
     /**
-     * Holds info for constructing a single button.
+     * Holds the information needed to construct a single toolbar button.
      */
     private static final class ButtonInfo {
 
         /**
-         * This is the name used to construct nodes on the graph of this type. Need to coordinate with session.
+         * The node type name; used to construct nodes of this type on the graph.
+         * Must coordinate with session node type names.
          */
         private final String nodeTypeName;
 
         /**
-         * The name displayed on the button.
+         * The label displayed on the button.
          */
         private final String displayName;
 
         /**
-         * The prefixes for images for this button. It is assumed that files
-         * <prefix>Up.gif, <prefix>Down.gif, <prefix>Off.gif and
-         * <prefix>Roll.gif are located in the /images directory relative to
-         * this compiled class.
+         * The image resource prefix. For Select and Edge buttons, the image
+         * loaded is {@code <prefix>.gif}. Other buttons use text labels instead.
          */
         private final String imagePrefix;
 
         /**
-         * Tool tip text displayed for the button.
+         * Tooltip text shown on hover.
          */
         private final String toolTipText;
 
         public ButtonInfo(String nodeTypeName, String displayName,
                           String imagePrefix, String toolTipText) {
             this.nodeTypeName = nodeTypeName;
-            this.displayName = displayName;
-            this.imagePrefix = imagePrefix;
-            this.toolTipText = toolTipText;
+            this.displayName  = displayName;
+            this.imagePrefix  = imagePrefix;
+            this.toolTipText  = toolTipText;
         }
 
-        public String getNodeTypeName() {
-            return this.nodeTypeName;
-        }
-
-        public String getDisplayName() {
-            return this.displayName;
-        }
-
-        public String getImagePrefix() {
-            return this.imagePrefix;
-        }
-
-        public String getToolTipText() {
-            return this.toolTipText;
-        }
-    }
-
-    private void refreshButtonIcons() {
-        for (Map.Entry<JToggleButton, String> entry : this.buttonImagePaths.entrySet()) {
-            JToggleButton button = entry.getKey();
-            String imagePath = entry.getValue();
-            button.setIcon(new ImageIcon(ImageUtils.getImage(this, imagePath)));
-        }
-    }
-
-    @Override
-    public void updateUI() {
-        super.updateUI();
-
-        if (this.buttonImagePaths != null) {
-            refreshButtonIcons();
-        }
-
-        revalidate();
-        repaint();
+        public String getNodeTypeName()  { return this.nodeTypeName; }
+        public String getDisplayName()   { return this.displayName;  }
+        public String getImagePrefix()   { return this.imagePrefix;  }
+        public String getToolTipText()   { return this.toolTipText;  }
     }
 }
-

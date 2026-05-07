@@ -201,6 +201,7 @@ public final class TsDagToPag {
         FciOrient fciOrient = new FciOrient(
                 R0R4StrategyTestBased.defaultConfiguration(dag, new Knowledge()));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxBlockingPathLength(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.finalOrientation(graph);
 

@@ -361,6 +361,8 @@ public class IndTestProbabilistic implements IndependenceTest {
      */
     @Override
     public double getAlpha() {
+//        return 0.05; // Need to set this for it to show up in the Markov checker, though it gives badly
+                       // non-uniform results there, so we exclude it.
         throw new UnsupportedOperationException("The Probabiistic Test doesn't use an alpha parameter");
     }
 

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -64,7 +64,6 @@ public class RecursiveDiscriminatingPathRule {
      * @param pag                   The graph structure, typically a partial ancestral graph (PAG), being analyzed.
      * @param x                     The first target node in the analysis.
      * @param y                     The second target node in the analysis.
-     * @param fciOrient             An orientation helper object used to apply FCI rules to edges in the graph.
      * @param maxBlockingPathLength The maximum allowable length of a blocking path for the analysis.
      * @param maxDdpPathLength      The maximum allowable discriminating path length considered for the analysis.
      * @param preserveMarkovHelper  A helper object for additional Markov property checks during the independence
@@ -75,7 +74,7 @@ public class RecursiveDiscriminatingPathRule {
      * {@code null} if no such set exists.
      * @throws InterruptedException If any.
      */
-    public static Set<Node> findDdpSepsetRecursive(IndependenceTest test, Graph pag, Node x, Node y, FciOrient fciOrient,
+    public static Set<Node> findDdpSepsetRecursive(IndependenceTest test, Graph pag, Node x, Node y,
                                                    int maxBlockingPathLength, int maxDdpPathLength, PreserveMarkov preserveMarkovHelper, int depth)
             throws InterruptedException {
 
@@ -113,11 +112,35 @@ public class RecursiveDiscriminatingPathRule {
                 // Convert indices -> actual nodes
                 Set<Node> vNodesNotFollowed = GraphUtils.asSet(indices, _perhapsNotFollowed);
 
-                // (A) blockPathsRecursively
-                Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength);
+                RecursiveBlocking.BlockingResult result = null;
+                if (depth < 0) {
+                    result = RecursiveBlocking.blockPathsRecursivelyFull(
+                            pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, depth, -1, 1, false);
+                } else {
+//                    if (!result.indeterminate()) {
+                    result = null;
+                    int _depth = 0;
+                    int maxDepth = depth >= 0 ? depth : pag.getNumNodes();
+
+                    do {
+                        _depth++;
+
+                        if (_depth > maxDepth) break;
+
+                        result = RecursiveBlocking.blockPathsRecursivelyFull(
+                                pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, _depth, -1, 1, false);
+                    } while (result.indeterminate());
+//                    }
+                }
+
+                if (result == null || result.indeterminate()) {
+                    continue;
+                }
+
+                Set<Node> blocking = result.blockingSet();
 
                 if (blocking == null) {
-                    continue;
+                    continue; // No separating set possible for this NF; try another NF
                 }
 
                 for (Node f : vNodes) {

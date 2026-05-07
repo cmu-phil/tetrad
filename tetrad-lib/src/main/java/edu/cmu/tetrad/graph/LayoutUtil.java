@@ -20,11 +20,15 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.*;
 
 import javax.swing.*;
 import java.text.NumberFormat;
 import java.util.*;
+
+import static java.util.Collections.sort;
 
 /**
  * <p>LayoutUtil class.</p>
@@ -43,6 +47,126 @@ public class LayoutUtil {
      * Constructor.
      */
     public LayoutUtil() {
+    }
+
+    /**
+     * Arranges the nodes of the given graph in tiers based on their grouping
+     * as defined in the provided knowledge object. Nodes not assigned to any
+     * tier are arranged first, followed by nodes in each tier, with both groups
+     * laid out in a 2D space with horizontal and vertical spacing. Latent nodes
+     * are repositioned after arranging other nodes.
+     *
+     * @param graph    the graph whose nodes are to be arranged and positioned.
+     * @param knowledge the knowledge object containing tier information and
+     *                  ungrouped variables for the graph nodes.
+     */
+    public static void layoutByKnowledgeTiers(Graph graph, Knowledge knowledge) {
+        if (knowledge.getNumTiers() == 0) {
+            throw new IllegalArgumentException("There are no Tiers to arrange.");
+        }
+        int ySpace = 80;
+        List<String> notInTier = knowledge.getVariablesNotInTiers();
+        sort(notInTier);
+        int x = 60;
+        int y = 60;
+
+        if (!notInTier.isEmpty()) {
+            for (String name : notInTier) {
+                Node node = graph.getNode(name);
+                if (node != null) {
+                    node.setCenterX(x);
+                    node.setCenterY(y);
+                    x += 90;
+                }
+            }
+            y += ySpace;
+        }
+
+        for (int i = 0; i < knowledge.getNumTiers(); i++) {
+            List<String> tier = knowledge.getTier(i);
+            tier.sort(NaturalSort.naturalComparator());
+
+            x = 60;
+            for (String name : tier) {
+                Node node = graph.getNode(name);
+                if (node != null) {
+                    node.setCenterX(x);
+                    node.setCenterY(y);
+                    x += 90;
+                }
+            }
+            y += ySpace;
+        }
+
+        GraphSearchUtils.repositionLatents(graph);
+        repositionLatents(graph);
+    }
+
+    /**
+     * Arranges the nodes of the given graph in tiers based on numerical indices
+     * derived from the node names, and positions them accordingly in a 2D layout.
+     * The method processes the nodes to determine their tier, sorts them, and
+     * spaces them in both horizontal and vertical directions. Latent nodes are
+     * repositioned after arranging all other nodes.
+     *
+     * @param graph the graph whose nodes are to be arranged and positioned.
+     */
+    public static void layoutByKnowledgeIndices(Graph graph) {
+        int maxLag = 0;
+
+        for (Node node : graph.getNodes()) {
+            String name = node.getName();
+
+            String[] tokens1 = name.split(":");
+
+            int index = tokens1.length > 1 ? Integer.parseInt(tokens1[tokens1.length - 1]) : 0;
+
+            if (index >= maxLag) {
+                maxLag = index;
+            }
+        }
+
+        List<List<Node>> tiers = new ArrayList<>();
+
+        for (int i = 0; i <= maxLag; i++) {
+            tiers.add(new ArrayList<>());
+        }
+
+        for (Node node : graph.getNodes()) {
+            String name = node.getName();
+
+            String[] tokens = name.split(":");
+
+            int index = tokens.length > 1 ? Integer.parseInt(tokens[tokens.length - 1]) : 0;
+
+            if (!tiers.get(index).contains(node)) {
+                tiers.get(index).add(node);
+            }
+        }
+
+        for (int i = 0; i <= maxLag; i++) {
+            tiers.get(i).sort(NaturalSort.naturalComparator());
+        }
+
+        int ySpace = 80;
+        int y = 60;
+
+        for (int i = maxLag; i >= 0; i--) {
+            List<Node> tier = tiers.get(i);
+            int x = 60;
+
+            for (Node node : tier) {
+                node.setCenterX(x);
+                node.setCenterY(y);
+                x += 90;
+            }
+
+            y += ySpace;
+
+        }
+
+        GraphSearchUtils.repositionLatents(graph);
+        repositionLatents(graph);
     }
 
     // ========================================================================

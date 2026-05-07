@@ -22,6 +22,7 @@ package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
@@ -143,6 +144,13 @@ public class TrekSeparationBlocksIndependence implements IndependenceTest, Effec
      */
     public TrekSeparationBlocksIndependence(BlockSpec blockSpec) {
         if (blockSpec == null) throw new IllegalArgumentException("blockspec == null");
+
+        for (Node v : blockSpec.dataSet().getVariables()) {
+            if (v instanceof DiscreteVariable) {
+                throw new IllegalArgumentException("TrekSep does not support discrete variables.");
+            }
+        }
+
         this.blockSpec = blockSpec;
         this.dataVars = blockSpec.dataSet().getVariables();
 
