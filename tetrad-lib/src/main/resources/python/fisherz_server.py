@@ -2,11 +2,7 @@
 import sys, json, traceback
 import numpy as np
 
-## TEMP FILE.
-
 # You may need to adjust this import depending on causal-learn version.
-# Typical causal-learn:
-#   from causallearn.utils.cit import CIT
 from causallearn.utils.cit import CIT
 
 X = None
@@ -20,8 +16,6 @@ def send(obj):
 
 def load_csv(path):
     # Assumes numeric CSV with header row.
-    # If your DataSet includes names, keep header and let genfromtxt use names=True;
-    # otherwise load plain numeric.
     data = np.genfromtxt(path, delimiter=",", skip_header=1)
     if data.ndim == 1:
         data = data.reshape(-1, 1)
@@ -39,10 +33,7 @@ def handle_init(msg):
 
     X = load_csv(csv_path)
 
-    # Build CIT object for RCIT.
-    # CIT supports different tests; "rcit" is typical.
-    # Some versions accept kwargs like kernel, width, etc through params.
-    cit = CIT(X, "rcit", **params)
+    cit = CIT(X, "fisherz", **params)
 
     return {"ok": True, "n": int(X.shape[0]), "p": int(X.shape[1])}
 
@@ -52,7 +43,7 @@ def handle_update_params(msg):
     if X is None:
         return {"ok": True, "note": "params stored (no init yet)"}
     # Recreate CIT with new params
-    cit = CIT(X, "rcit", **params)
+    cit = CIT(X, "fisherz", **params)
     return {"ok": True}
 
 def handle_pvalue(msg):
@@ -64,7 +55,6 @@ def handle_pvalue(msg):
     z = msg.get("z", [])
     z = [int(i) for i in z]
 
-    # CIT convention: cit(x, y, z) returns p-value
     p = float(cit(x, y, z))
     return {"ok": True, "p": p}
 
