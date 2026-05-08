@@ -512,62 +512,128 @@ public class Pc implements IGraphSearch {
     // Collider orientation (cycle-safe)
     // ------------------------------------------------------------------------------------
 
-    private void orientUnshieldedTriples(Graph g, SepsetMap fasSepsets) throws InterruptedException {
+//    private void orientUnshieldedTriples(Graph g, SepsetMap fasSepsets) throws InterruptedException {
+//        List<Triple> triples = collectUnshieldedTriples(g);
+//
+//        if (colliderOrientationStyle == ColliderOrientationStyle.MAX_P && maxPGlobalOrder) {
+//            orientMaxPGlobal(g, triples);
+//            return;
+//        }
+//
+//        List<Triple> ambiguousTriples = new ArrayList<>();
+//
+//        for (Triple t : triples) {
+//            checkTimeout();
+//
+//            // Already collider? skip
+//            if (g.isParentOf(t.x, t.z) && g.isParentOf(t.y, t.z)) continue;
+//
+//            ColliderOutcome outcome = switch (colliderOrientationStyle) {
+//                case SEPSETS -> {
+//                    Set<Node> s = fasSepsets.get(t.x, t.y);
+//                    if (s == null) yield ColliderOutcome.NO_SEPSET;
+//                    yield s.contains(t.z) ? ColliderOutcome.DEPENDENT : ColliderOutcome.INDEPENDENT;
+//                }
+//                case CONSERVATIVE -> judgeConservative(t, g);
+//                case MAX_P -> judgeMaxP(t, g);
+//            };
+//
+//            switch (outcome) {
+//                case INDEPENDENT -> {
+//                    if (canOrientCollider(g, t.x, t.z, t.y)) {
+//                        // orientCollider does both x->z and y->z
+//                        GraphUtils.orientCollider(g, t.x, t.z, t.y);
+//                        if (verbose) {
+//                            TetradLogger.getInstance().log(
+//                                    "Collider oriented: " + t.x.getName() + " -> " + t.z.getName() +
+//                                            " <- " + t.y.getName());
+//                        }
+//                    } else if (verbose) {
+//                        TetradLogger.getInstance().log(
+//                                "Skipped collider (cycle/knowledge/bidir guard): " +
+//                                        t.x.getName() + " - " + t.z.getName() + " - " + t.y.getName());
+//                    }
+//                }
+//                case DEPENDENT, NO_SEPSET -> { /* leave unoriented */ }
+//                case AMBIGUOUS -> {
+//                    if (allowBidirected == AllowBidirected.ALLOW) ambiguousTriples.add(t);
+//                    if (verbose) {
+//                        TetradLogger.getInstance().log(
+//                                "Ambiguous triple: " + t.x.getName() + " - " + t.z.getName() + " - " + t.y.getName());
+//                    }
+//                }
+//            }
+//        }
+//
+//        // store ambiguous triple marks
+//        Set<edu.cmu.tetrad.graph.Triple> _ambiguousTriples = new HashSet<>();
+//        for (Triple t : ambiguousTriples) _ambiguousTriples.add(new edu.cmu.tetrad.graph.Triple(t.x, t.z, t.y));
+//        g.setAmbiguousTriples(_ambiguousTriples);
+//    }
+
+    private void orientUnshieldedTriples(Graph g, SepsetMap fasSepsets)
+            throws InterruptedException {
         List<Triple> triples = collectUnshieldedTriples(g);
 
-        if (colliderOrientationStyle == ColliderOrientationStyle.MAX_P && maxPGlobalOrder) {
+        if (colliderOrientationStyle == ColliderOrientationStyle.MAX_P
+                && maxPGlobalOrder) {
             orientMaxPGlobal(g, triples);
             return;
         }
 
         List<Triple> ambiguousTriples = new ArrayList<>();
 
+        // First pass: decide outcomes without mutating the graph
+        List<Triple> toOrient = new ArrayList<>();
+
         for (Triple t : triples) {
             checkTimeout();
-
-            // Already collider? skip
-            if (g.isParentOf(t.x, t.z) && g.isParentOf(t.y, t.z)) continue;
 
             ColliderOutcome outcome = switch (colliderOrientationStyle) {
                 case SEPSETS -> {
                     Set<Node> s = fasSepsets.get(t.x, t.y);
                     if (s == null) yield ColliderOutcome.NO_SEPSET;
-                    yield s.contains(t.z) ? ColliderOutcome.DEPENDENT : ColliderOutcome.INDEPENDENT;
+                    yield s.contains(t.z)
+                            ? ColliderOutcome.DEPENDENT
+                            : ColliderOutcome.INDEPENDENT;
                 }
                 case CONSERVATIVE -> judgeConservative(t, g);
                 case MAX_P -> judgeMaxP(t, g);
             };
 
             switch (outcome) {
-                case INDEPENDENT -> {
-                    if (canOrientCollider(g, t.x, t.z, t.y)) {
-                        // orientCollider does both x->z and y->z
-                        GraphUtils.orientCollider(g, t.x, t.z, t.y);
-                        if (verbose) {
-                            TetradLogger.getInstance().log(
-                                    "Collider oriented: " + t.x.getName() + " -> " + t.z.getName() +
-                                            " <- " + t.y.getName());
-                        }
-                    } else if (verbose) {
-                        TetradLogger.getInstance().log(
-                                "Skipped collider (cycle/knowledge/bidir guard): " +
-                                        t.x.getName() + " - " + t.z.getName() + " - " + t.y.getName());
-                    }
-                }
-                case DEPENDENT, NO_SEPSET -> { /* leave unoriented */ }
+                case INDEPENDENT -> toOrient.add(t);
+                case DEPENDENT, NO_SEPSET -> { }
                 case AMBIGUOUS -> {
-                    if (allowBidirected == AllowBidirected.ALLOW) ambiguousTriples.add(t);
+                    if (allowBidirected == AllowBidirected.ALLOW)
+                        ambiguousTriples.add(t);
                     if (verbose) {
                         TetradLogger.getInstance().log(
-                                "Ambiguous triple: " + t.x.getName() + " - " + t.z.getName() + " - " + t.y.getName());
+                                "Ambiguous triple: " + t.x.getName()
+                                        + " - " + t.z.getName()
+                                        + " - " + t.y.getName());
                     }
                 }
             }
         }
 
-        // store ambiguous triple marks
+        // Second pass: apply all collider orientations
+        for (Triple t : toOrient) {
+            if (canOrientCollider(g, t.x, t.z, t.y)) {
+                GraphUtils.orientCollider(g, t.x, t.z, t.y);
+                if (verbose) {
+                    TetradLogger.getInstance().log(
+                            "Collider oriented: " + t.x.getName()
+                                    + " -> " + t.z.getName()
+                                    + " <- " + t.y.getName());
+                }
+            }
+        }
+
         Set<edu.cmu.tetrad.graph.Triple> _ambiguousTriples = new HashSet<>();
-        for (Triple t : ambiguousTriples) _ambiguousTriples.add(new edu.cmu.tetrad.graph.Triple(t.x, t.z, t.y));
+        for (Triple t : ambiguousTriples)
+            _ambiguousTriples.add(
+                    new edu.cmu.tetrad.graph.Triple(t.x, t.z, t.y));
         g.setAmbiguousTriples(_ambiguousTriples);
     }
 
