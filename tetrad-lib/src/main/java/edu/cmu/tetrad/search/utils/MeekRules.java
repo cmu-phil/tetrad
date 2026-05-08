@@ -208,10 +208,49 @@ public class MeekRules {
      * @param visited The set of nodes visited.
      */
     private void revertToUnshieldedColliders(List<Node> nodes, Graph graph, Set<Node> visited) {
-        for (Node node : nodes) {
-            revertToUnshieldedColliders(node, graph, visited);
+        // First pass: compute all edges to keep across the whole graph
+        Set<Pair<Node, Node>> keep = new HashSet<>();
+
+        for (Node y : nodes) {
+            List<Node> parents = graph.getNodesInTo(y, Endpoint.ARROW);
+            ChoiceGenerator gen = new ChoiceGenerator(parents.size(), 2);
+            int[] choice;
+            while ((choice = gen.next()) != null) {
+                Node x = parents.get(choice[0]);
+                Node z = parents.get(choice[1]);
+                if (!graph.isAdjacentTo(x, z)) {
+                    keep.add(Pair.of(x, y));
+                    keep.add(Pair.of(z, y));
+                }
+            }
+        }
+
+        // Second pass: revert everything not in keep
+        for (Node y : nodes) {
+            List<Node> parents = graph.getNodesInTo(y, Endpoint.ARROW);
+            for (Node z : parents) {
+                if (!keep.contains(Pair.of(z, y))) {
+                    if (this.knowledge.isForbidden(y.getName(), z.getName())
+                            || this.knowledge.isRequired(z.getName(), y.getName()))
+                        continue;
+
+                    Edge before = graph.getEdge(z, y);
+                    graph.removeEdges(z, y);
+                    graph.addUndirectedEdge(z, y);
+                    Edge after = graph.getEdge(z, y);
+                    recordChange(before, after);
+                    visited.add(z);
+                    visited.add(y);
+                }
+            }
         }
     }
+
+//    private void revertToUnshieldedColliders(List<Node> nodes, Graph graph, Set<Node> visited) {
+//        for (Node node : nodes) {
+//            revertToUnshieldedColliders(node, graph, visited);
+//        }
+//    }
 
     /**
      * Meek's rule R1: if a-->b, b---c, and a not adj to c, then b-->c
@@ -296,53 +335,94 @@ public class MeekRules {
         return false;
     }
 
+//    /**
+//     * Meek's rule R4. If a--b, a--c, a--d, c->b, d->b, c not adj to d, then a-->b.
+//     */
+//    private boolean meekR4(Node a, Node b, Graph graph, Set<Node> visited) {
+//        if (!this.useRule4) return false;
+//
+//        Edge ab = graph.getEdge(a, b);
+//        if (ab == null || !Edges.isUndirectedEdge(ab)) return false;   // require a--b
+//
+//        // candidates c: a--c and c->b
+//        List<Node> cand = new ArrayList<>();
+//        for (Node c : graph.getAdjacentNodes(a)) {
+//            if (c == b) continue;
+//
+//            Edge ac = graph.getEdge(a, c);
+//            if (ac == null || !Edges.isUndirectedEdge(ac)) continue;   // require a--c
+//            if (!graph.isParentOf(c, b)) continue;                     // require c->b
+//
+//            cand.add(c);
+//        }
+//
+//        if (cand.size() < 2) return false;
+//
+//        // need two nonadjacent candidates c,d (c not adj d)
+//        for (int i = 0; i < cand.size(); i++) {
+//            Node c = cand.get(i);
+//            for (int j = i + 1; j < cand.size(); j++) {
+//                Node d = cand.get(j);
+//
+//                if (graph.isAdjacentTo(c, d)) continue; // require c not adj d
+//
+//                // Pattern satisfied: try to orient a->b.
+//                // If direct() refuses (knowledge/cycle), keep searching other pairs.
+//                if (direct(a, b, graph, visited)) {
+//                    log(LogUtilsSearch.edgeOrientedMsg(
+//                            "Meek R4 (" + c + "->" + b + ", " + d + "->" + b
+//                                    + ", " + a + "---" + c + ", " + a + "---" + d + ")",
+//                            graph.getEdge(a, b)));
+//                    return true;
+//                }
+//            }
+//        }
+//
+//        // If the pattern never occurred, R4 doesn't apply; if it occurred but direct() refused for all
+//        // witnessing pairs, also return false.
+//        return false;
+//    }
+
     /**
-     * Meek's rule R4. If a--b, a--c, a--d, c->b, d->b, c not adj to d, then a-->b.
+     * Meek's rule R4: if c->b->a, c--d (any edge), d--a (undirected),
+     * and d not adjacent to b, then orient d->a.
+     *
+     * Called as meekR4(d, a, ...) to attempt to orient d->a.
      */
-    private boolean meekR4(Node a, Node b, Graph graph, Set<Node> visited) {
+    private boolean meekR4(Node d, Node a, Graph graph, Set<Node> visited) {
         if (!this.useRule4) return false;
 
-        Edge ab = graph.getEdge(a, b);
-        if (ab == null || !Edges.isUndirectedEdge(ab)) return false;   // require a--b
+        // Require d--a undirected
+        Edge da = graph.getEdge(d, a);
+        if (da == null || !Edges.isUndirectedEdge(da)) return false;
 
-        // candidates c: a--c and c->b
-        List<Node> cand = new ArrayList<>();
-        for (Node c : graph.getAdjacentNodes(a)) {
-            if (c == b) continue;
+        // Find b: b->a (b is a parent of a)
+        for (Node b : graph.getParents(a)) {
 
-            Edge ac = graph.getEdge(a, c);
-            if (ac == null || !Edges.isUndirectedEdge(ac)) continue;   // require a--c
-            if (!graph.isParentOf(c, b)) continue;                     // require c->b
+            // Find c: c->b (c is a parent of b), c not equal to d
+            for (Node c : graph.getParents(b)) {
+                if (c == d) continue;
 
-            cand.add(c);
-        }
+                // Require c adjacent to d (dashed line = any edge type)
+                if (!graph.isAdjacentTo(c, d)) continue;
 
-        if (cand.size() < 2) return false;
+                // Require d not adjacent to b
+                if (graph.isAdjacentTo(d, b)) continue;
 
-        // need two nonadjacent candidates c,d (c not adj d)
-        for (int i = 0; i < cand.size(); i++) {
-            Node c = cand.get(i);
-            for (int j = i + 1; j < cand.size(); j++) {
-                Node d = cand.get(j);
-
-                if (graph.isAdjacentTo(c, d)) continue; // require c not adj d
-
-                // Pattern satisfied: try to orient a->b.
-                // If direct() refuses (knowledge/cycle), keep searching other pairs.
-                if (direct(a, b, graph, visited)) {
+                // Pattern satisfied: orient d->a
+                if (direct(d, a, graph, visited)) {
                     log(LogUtilsSearch.edgeOrientedMsg(
-                            "Meek R4 (" + c + "->" + b + ", " + d + "->" + b
-                                    + ", " + a + "---" + c + ", " + a + "---" + d + ")",
-                            graph.getEdge(a, b)));
+                            "Meek R4 (" + c + "->" + b + "->" + a
+                                    + ", " + c + "---" + d + ", " + d + "---" + a + ")",
+                            graph.getEdge(d, a)));
                     return true;
                 }
             }
         }
 
-        // If the pattern never occurred, R4 doesn't apply; if it occurred but direct() refused for all
-        // witnessing pairs, also return false.
         return false;
     }
+
     /**
      * Directs an edge from a to c in the graph, if the edge is allowed by the knowledge and the edge is undirected.
      *
@@ -380,48 +460,48 @@ public class MeekRules {
     }
 
 
-    /**
-     * Reverts edges not in unshielded colliders to undirected edges.
-     *
-     * @param y       The node to revert.
-     * @param graph   The graph.
-     * @param visited The set of visited nodes.
-     */
-    private void revertToUnshieldedColliders(Node y, Graph graph, Set<Node> visited) {
-        Set<Pair<Node, Node>> keep = new HashSet<>();
-
-        List<Node> parents = graph.getNodesInTo(y, Endpoint.ARROW);
-        ChoiceGenerator gen = new ChoiceGenerator(parents.size(), 2);
-        int[] choice;
-
-        while ((choice = gen.next()) != null) {
-            Node x = parents.get(choice[0]);
-            Node z = parents.get(choice[1]);
-
-            if (!graph.isAdjacentTo(x, z)) {
-                keep.add(Pair.of(x, y));
-                keep.add(Pair.of(z, y));
-            }
-        }
-
-        for (Node z : parents) {
-            if (!keep.contains(Pair.of(z, y))) {
-                if (this.knowledge.isForbidden(y.getName(), z.getName()) || this.knowledge.isRequired(z.getName(), y.getName()))
-                    continue;
-
-                Edge before = graph.getEdge(z, y);
-
-                graph.removeEdges(z, y);
-                graph.addUndirectedEdge(z, y);
-
-                Edge after = graph.getEdge(z, y);
-                recordChange(before, after);
-
-                visited.add(z);
-                visited.add(y);
-            }
-        }
-    }
+//    /**
+//     * Reverts edges not in unshielded colliders to undirected edges.
+//     *
+//     * @param y       The node to revert.
+//     * @param graph   The graph.
+//     * @param visited The set of visited nodes.
+//     */
+//    private void revertToUnshieldedColliders(Node y, Graph graph, Set<Node> visited) {
+//        Set<Pair<Node, Node>> keep = new HashSet<>();
+//
+//        List<Node> parents = graph.getNodesInTo(y, Endpoint.ARROW);
+//        ChoiceGenerator gen = new ChoiceGenerator(parents.size(), 2);
+//        int[] choice;
+//
+//        while ((choice = gen.next()) != null) {
+//            Node x = parents.get(choice[0]);
+//            Node z = parents.get(choice[1]);
+//
+//            if (!graph.isAdjacentTo(x, z)) {
+//                keep.add(Pair.of(x, y));
+//                keep.add(Pair.of(z, y));
+//            }
+//        }
+//
+//        for (Node z : parents) {
+//            if (!keep.contains(Pair.of(z, y))) {
+//                if (this.knowledge.isForbidden(y.getName(), z.getName()) || this.knowledge.isRequired(z.getName(), y.getName()))
+//                    continue;
+//
+//                Edge before = graph.getEdge(z, y);
+//
+//                graph.removeEdges(z, y);
+//                graph.addUndirectedEdge(z, y);
+//
+//                Edge after = graph.getEdge(z, y);
+//                recordChange(before, after);
+//
+//                visited.add(z);
+//                visited.add(y);
+//            }
+//        }
+//    }
 
     /**
      * Logs a message if the verbose flag is set.
