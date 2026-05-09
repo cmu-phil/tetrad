@@ -243,7 +243,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     /**
      * RFF vs ORF for continuous features.
      */
-    private FeatureType featureType = FeatureType.RFF;
+    private FeatureType featureType = FeatureType.ORF;
     /**
      * Categorical kernel off-diagonal similarity rho in [0, 1).
      * k_cat(c,c)=1, k_cat(c,c')=rho for c!=c'.
@@ -828,6 +828,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         }
 
         final double[] mult = {0.35, 0.7, 1.4, 2.8};
+//        final double[] mult = {0.35, 0.7, 1.0, 1.4, 2.0, 2.8};
 
         // Precompute things that do NOT depend on bw2
 //        final boolean useNxN = (discParents != null && discParents.length >= 2);

@@ -127,7 +127,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
     // Mixed-only knobs
     private double bandwidthMultiplier = 1.0;
     private int bwMaxRows = 500;
-    private FfCiContinuous.FeatureType featureType = FfCiContinuous.FeatureType.RFF;
+    private FfCiContinuous.FeatureType featureType = FfCiContinuous.FeatureType.ORF;
     private double catRho = 0.0; // 0 => one-hot
 
     // ---------------- IndependenceTest state ----------------
