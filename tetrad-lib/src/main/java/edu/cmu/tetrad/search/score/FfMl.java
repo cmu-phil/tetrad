@@ -1720,6 +1720,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * For ORF: Wbase is what sampleOrthogonalW would produce with wStd=1 (so it already has chi radii).
      */
     private BaseWB buildBaseWB(int mFeatures, int dc, long seed) {
+        Random r = new Random(seed);
+
         double[][] Wbase;
         double[] b = new double[mFeatures];
 
@@ -1727,17 +1729,17 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             if (featureType == FeatureType.RFF) {
                 Wbase = new double[mFeatures][dc];
                 for (int j = 0; j < mFeatures; j++) {
-                    for (int k = 0; k < dc; k++) Wbase[j][k] = RandomUtil.getInstance().nextGaussian();
-                    b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+                    for (int k = 0; k < dc; k++) Wbase[j][k] = r.nextGaussian();
+                    b[j] = 2.0 * TMath.PI * r.nextDouble();
                 }
             } else {
                 // ORF base: same ORF sampling, but with wStd=1.0 so we can later multiply by wStd
                 Wbase = sampleOrthogonalW(mFeatures, dc, 1.0);
-                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * r.nextDouble();
             }
         } else {
             Wbase = null;
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * r.nextDouble();
         }
 
         return new BaseWB(Wbase, b);
