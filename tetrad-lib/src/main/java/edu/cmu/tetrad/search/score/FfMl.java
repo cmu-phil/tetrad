@@ -18,6 +18,7 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -567,8 +568,17 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         int[] idx = new int[n];
         for (int i = 0; i < n; i++) idx[i] = i;
 
+//        for (int i = 0; i < m; i++) {
+//            int j = i + RandomUtil.getInstance().nextInt(n - i);
+//            int tmp = idx[i];
+//            idx[i] = idx[j];
+//            idx[j] = tmp;
+//        }
+
+        Random r = new Random(seed);
+//        RandomUtil.getInstance().setSeed(seed);
         for (int i = 0; i < m; i++) {
-            int j = i + RandomUtil.getInstance().nextInt(n - i);
+            int j = i + r.nextInt(n - i);
             int tmp = idx[i];
             idx[i] = idx[j];
             idx[j] = tmp;
@@ -837,6 +847,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         final BaseWB base = buildBaseWB(mFeatures, contParents.length, seed);
         final double[] kcatLowerPacked = useNxN ? precomputeKcatLowerPacked(discParents, rows, n) : null;
 
+//        final double[] kcatLowerPacked = useNxN ? precomputeKcatLowerPacked(discParents, rows, n) : null;
+
         double bestBw2;
 
         {
@@ -856,6 +868,9 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                         double ll = useNxN
                                 ? gpLogML_mixedKernelNxN_precomp(yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked)
                                 : gpLogMarginalLikelihoodRFFMixed(yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed);
+//
+//                        double ll = gpLogMarginalLikelihoodRFFMixed(
+//                                yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed);
 
                         return new Cand(idx, bw2, ll);
                     })
