@@ -115,7 +115,6 @@ public class Rcit implements IndependenceWrapper {
         params.add(Params.RCIT_LAMBDA);
         params.add(Params.RCIT_MODE);
         params.add(Params.RCIT_APPROX);
-//        params.add(Params.RCIT_CENTER_FEATURES);
         params.add(Params.RCIT_NUM_FEATURES_XY);
         params.add(Params.RCIT_NUM_FEATURES_Z);
         return params;

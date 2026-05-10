@@ -16,7 +16,9 @@ import java.io.File;
 import java.io.Serial;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * An {@link IndependenceWrapper} that runs the Randomized Conditional Independence Test
@@ -56,6 +58,10 @@ import java.util.List;
  *       (default: {@code 0.01}).</li>
  *   <li>{@link Params#VERBOSE} — if {@code true}, the test logs additional
  *       detail during execution (default: {@code false}).</li>
+ *   <li>{@code rcitNumF} — number of random Fourier features for the conditioning
+ *       set Z (default: {@code 100}, matching causal-learn's default).</li>
+ *   <li>{@code rcitNumF2} — number of random Fourier features for X and Y
+ *       (default: {@code 5}, matching causal-learn's default).</li>
  * </ul>
  *
  * <h2>Data</h2>
@@ -77,44 +83,33 @@ public class ClRcitPython implements IndependenceWrapper {
     @Serial
     private static final long serialVersionUID = 23L;
 
-    // These defaults match what you were using; users can override via parameters.
     private static final String DEFAULT_PYTHON_EXE =
             "/Users/josephramsey/venvs/kci/bin/python";
 
-    // If pythonCiServer is not set, we use the bundled resource "python/kci_server.py".
     private static final String BUNDLED_RESOURCE = "python/rcit_server.py";
-
-    // The cache name
     private static final String BUNDLED_CACHE_NAME = "rcit_server.py";
-
-    // The string to
     private static final String USE_BUNDLED = "Use bundled script";
+
+    // Causal-learn RCIT defaults
+    private static final int DEFAULT_NUM_F = 100;
+    private static final int DEFAULT_NUM_F2 = 5;
 
     /**
      * Default constructor for the ClRcitPython class.
-     *
-     * This constructor initializes an instance of the ClRcitPython class,
-     * which serves as a wrapper and utility for performing independence tests
-     * using Python-based methods. It does not take any parameters or perform
-     * any custom initialization logic.
      */
     public ClRcitPython() {
     }
 
     /**
      * Retrieves an independence test based on the provided data model and parameters.
-     * The method specifically requires a continuous {@code DataSet} and utilizes a
-     * Python-based process to perform the independence test.
      *
-     * @param dataModel the input data model, must be an instance of {@code DataSet}
-     * @param parameters an optional collection of configuration parameters, used to
-     *                   customize the Python executable path, server script location,
-     *                   alpha threshold, and verbosity settings
+     * @param dataModel  the input data model, must be an instance of {@code DataSet}
+     * @param parameters configuration parameters
      * @return an instance of {@code IndependenceTest} configured with the provided
      *         data model and parameters
      * @throws IllegalArgumentException if the provided {@code dataModel} is not a continuous
      *                                  {@code DataSet} or if required parameters are invalid
-     * @throws RuntimeException if the bundled Python server script cannot be extracted
+     * @throws RuntimeException         if the bundled Python server script cannot be extracted
      */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
@@ -128,9 +123,7 @@ public class ClRcitPython implements IndependenceWrapper {
 
         dataSet = dataSet.copy();
 
-        // -----------------------------
         // 1. Resolve python executable
-        // -----------------------------
         String pythonExe = (parameters == null)
                 ? DEFAULT_PYTHON_EXE
                 : parameters.getString(Params.PYTHON_EXE, DEFAULT_PYTHON_EXE);
@@ -147,9 +140,7 @@ public class ClRcitPython implements IndependenceWrapper {
             throw new IllegalArgumentException("pythonExe does not exist: " + pythonExe);
         }
 
-        // -----------------------------
         // 2. Resolve server script path
-        // -----------------------------
         String serverScriptPath = null;
 
         if (parameters != null) {
@@ -162,7 +153,6 @@ public class ClRcitPython implements IndependenceWrapper {
             }
         }
 
-        // If null → use bundled script
         if (serverScriptPath == null) {
             try {
                 Path extracted = PythonResource.extractToUserCache(
@@ -186,11 +176,20 @@ public class ClRcitPython implements IndependenceWrapper {
             );
         }
 
-        // -----------------------------
-        // 3. Create service + test
-        // -----------------------------
+        // 3. Build RCIT params — pin to causal-learn defaults, allow override
+        int numF  = (parameters == null) ? DEFAULT_NUM_F
+                : parameters.getInt("rcitNumF", DEFAULT_NUM_F);
+        int numF2 = (parameters == null) ? DEFAULT_NUM_F2
+                : parameters.getInt("rcitNumF2", DEFAULT_NUM_F2);
+
+        Map<String, Object> rcitParams = new HashMap<>();
+        rcitParams.put("num_f",  numF);
+        rcitParams.put("num_f2", numF2);
+
+        // 4. Create service + test
         ProcessPythonCiService service =
                 new ProcessPythonCiService(pythonExe, serverScriptPath);
+        service.updateParams(rcitParams);
 
         PythonRcitIndependenceTest test =
                 new PythonRcitIndependenceTest(dataSet, service);
@@ -219,10 +218,7 @@ public class ClRcitPython implements IndependenceWrapper {
     /**
      * Retrieves the data type associated with the test.
      *
-     * This method indicates the type of data (e.g., continuous, discrete, mixed)
-     * that the implementation supports or is specialized for.
-     *
-     * @return the data type of the test, which is {@code DataType.Continuous}
+     * @return {@code DataType.Continuous}
      */
     @Override
     public DataType getDataType() {
@@ -230,13 +226,9 @@ public class ClRcitPython implements IndependenceWrapper {
     }
 
     /**
-     * Retrieves a list of parameter names required for the Python-based independence test.
+     * Retrieves the list of parameter names used by this test.
      *
-     * The parameters are used to configure various aspects of the test, such as thresholds,
-     * Python executable paths, and server configurations.
-     *
-     * @return a list of parameter names as strings. The returned list typically includes:
-     *         ALPHA, PYTHON_EXE, PYTHON_CI_SERVER, and VERBOSE.
+     * @return list of parameter name strings
      */
     @Override
     public List<String> getParameters() {
@@ -245,6 +237,8 @@ public class ClRcitPython implements IndependenceWrapper {
         params.add(Params.PYTHON_EXE);
         params.add(Params.PYTHON_CI_SERVER);
         params.add(Params.VERBOSE);
+        params.add("rcitNumF");
+        params.add("rcitNumF2");
         return params;
     }
 }
