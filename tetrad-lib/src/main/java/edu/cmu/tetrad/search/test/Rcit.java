@@ -110,6 +110,7 @@ import static java.lang.Double.NaN;
  * @see IndependenceTest
  * @see RowsSettable
  */
+@Deprecated(since = "7.9", forRemoval = true)
 public final class Rcit implements IndependenceTest, RowsSettable {
 
     // ---------------- core data ----------------

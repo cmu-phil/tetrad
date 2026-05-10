@@ -121,7 +121,7 @@ public final class CiTestHarness {
         tests.add(new FisherZ());
         tests.add(new Kci());
         tests.add(new ClKciPython());
-        tests.add(new Rcit());
+//        tests.add(new Rcit());
         tests.add(new Gcm());
 
         // Taking these test out of the interface. jdramsey 2026-2-16

@@ -33,18 +33,19 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Wrapper for RCIT test.
- *
- * @author josephramsey
- * @version $Id: $Id
- */
-@TestOfIndependence(
-        name = "RCIT (Random Conditional Independence Test)",
-        command = "rcit-test",
-        dataType = DataType.Continuous
-)
-@General
+///**
+// * Wrapper for RCIT test.
+// *
+// * @author josephramsey
+// * @version $Id: $Id
+// */
+//@TestOfIndependence(
+//        name = "RCIT (Random Conditional Independence Test)",
+//        command = "rcit-test",
+//        dataType = DataType.Continuous
+//)
+//@General
+@Deprecated(since = "7.9", forRemoval = true)
 public class Rcit implements IndependenceWrapper {
 
     @Serial
