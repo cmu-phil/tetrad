@@ -36,10 +36,7 @@ import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Contains some utilities for doing autoregression. Should probably be improved by somebody.
@@ -446,6 +443,135 @@ public class TsUtils {
         knowledge.setDefaultToKnowledgeLayout(true);
         laggedData.setKnowledge(knowledge);
         return laggedData;
+    }
+
+    /**
+     * Creates a new time series dataset from the given one, expanding the provided within-lag
+     * Knowledge across all time lags. If the input knowledge has k non-empty tiers, the
+     * expanded knowledge will have k * (numLags + 1) tiers, with the within-lag tier
+     * structure (including forbidden/required edges and tierForbiddenWithin flags) replicated
+     * at each lag. Cross-lag temporal ordering (no edges from later time back to earlier time)
+     * is enforced automatically by the tier structure.
+     *
+     * @param data      the time series dataset
+     * @param numLags   the number of lags
+     * @param knowledge within-lag knowledge over base variable names (no lag suffix)
+     * @return the lagged dataset with expanded knowledge attached
+     */
+    public static DataSet createLagData(DataSet data, int numLags, Knowledge knowledge) {
+
+        if (knowledge == null) {
+            throw new NullPointerException("knowledge must not be null");
+        }
+
+        // Validate that the input knowledge contains no lagged variables (no ":" suffix)
+        for (String var : knowledge.getVariables()) {
+            if (var.contains(":")) {
+                throw new IllegalArgumentException(
+                        "Input knowledge must contain only base variable names (no lag suffix), " +
+                                "but found: \"" + var + "\"");
+            }
+        }
+        
+        // Build the lagged dataset without knowledge first (reuse existing logic)
+        DataSet laggedData = createLagData(data, numLags);
+
+        if (knowledge.isEmpty()) {
+            return laggedData;
+        }
+
+        // Collect non-empty tiers from the input knowledge
+        List<List<String>> nonEmptyTiers = new ArrayList<>();
+        for (int t = 0; t < knowledge.getNumTiers(); t++) {
+            List<String> tier = knowledge.getTier(t);
+            if (!tier.isEmpty()) {
+                nonEmptyTiers.add(tier);
+            }
+        }
+
+        int k = nonEmptyTiers.size();
+        if (k == 0) {
+            return laggedData;
+        }
+
+        Knowledge expandedKnowledge = new Knowledge();
+
+        // For each time lag (from numLags down to 0) and each input tier,
+        // assign variables to the correct expanded tier.
+        // Expanded tier index = (numLags - lag) * k + t
+        // This preserves the convention: earlier time = lower tier index.
+        for (int lag = numLags; lag >= 0; lag--) {
+            int lagBlock = (numLags - lag) * k;
+
+            for (int t = 0; t < k; t++) {
+                int expandedTier = lagBlock + t;
+                List<String> inputTier = nonEmptyTiers.get(t);
+
+                for (String baseVar : inputTier) {
+                    String laggedVar = (lag == 0) ? baseVar : baseVar + ":" + lag;
+                    expandedKnowledge.addToTier(expandedTier, laggedVar);
+                }
+
+                // Replicate tierForbiddenWithin for this tier
+                // Must use the original tier index (t) mapped back to knowledge's tier list,
+                // since nonEmptyTiers may have skipped empty tiers.
+                if (knowledge.isTierForbiddenWithin(originalTierIndex(knowledge, t))) {
+                    expandedKnowledge.setTierForbiddenWithin(expandedTier, true);
+                }
+            }
+        }
+
+        // Replicate explicit forbidden edges within each lag
+        Iterator<KnowledgeEdge> forbiddenIt = knowledge.forbiddenEdgesIterator();
+        while (forbiddenIt.hasNext()) {
+            KnowledgeEdge edge = forbiddenIt.next();
+            String from = edge.getFrom();
+            String to = edge.getTo();
+
+            // Only replicate if both endpoints are base variable names (no lag suffix)
+            // and the edge is explicitly forbidden (not just implied by tier ordering)
+            if (!from.contains(":") && !to.contains(":")) {
+                for (int lag = numLags; lag >= 0; lag--) {
+                    String laggedFrom = (lag == 0) ? from : from + ":" + lag;
+                    String laggedTo   = (lag == 0) ? to   : to   + ":" + lag;
+                    expandedKnowledge.setForbidden(laggedFrom, laggedTo);
+                }
+            }
+        }
+
+        // Replicate explicit required edges within each lag
+        Iterator<KnowledgeEdge> requiredIt = knowledge.requiredEdgesIterator();
+        while (requiredIt.hasNext()) {
+            KnowledgeEdge edge = requiredIt.next();
+            String from = edge.getFrom();
+            String to = edge.getTo();
+
+            if (!from.contains(":") && !to.contains(":")) {
+                for (int lag = numLags; lag >= 0; lag--) {
+                    String laggedFrom = (lag == 0) ? from : from + ":" + lag;
+                    String laggedTo   = (lag == 0) ? to   : to   + ":" + lag;
+                    expandedKnowledge.setRequired(laggedFrom, laggedTo);
+                }
+            }
+        }
+
+        expandedKnowledge.setDefaultToKnowledgeLayout(true);
+        laggedData.setKnowledge(expandedKnowledge);
+        return laggedData;
+    }
+
+    /**
+     * Returns the original tier index in the given knowledge object for the t-th non-empty tier.
+     */
+    private static int originalTierIndex(Knowledge knowledge, int nonEmptyTierIndex) {
+        int count = 0;
+        for (int i = 0; i < knowledge.getNumTiers(); i++) {
+            if (!knowledge.getTier(i).isEmpty()) {
+                if (count == nonEmptyTierIndex) return i;
+                count++;
+            }
+        }
+        throw new IllegalArgumentException("Non-empty tier index out of range: " + nonEmptyTierIndex);
     }
 
     /**
