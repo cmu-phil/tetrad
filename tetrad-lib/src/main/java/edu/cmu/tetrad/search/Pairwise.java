@@ -338,7 +338,7 @@ public class Pairwise {
                 throw new IllegalArgumentException("Dataset is not supplied.");
             }
 
-            DataSet lags = TsUtils.createLagData(dataModel, 1);
+            DataSet lags = TsUtils.createLagData(dataModel, 1, knowledge);
             if (dataModel.getName() != null) {
                 lags.setName(dataModel.getName());
             }

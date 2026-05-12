@@ -102,7 +102,7 @@ public class FgesFci extends AbstractBootstrapAlgorithm implements Algorithm, Ac
                 throw new IllegalArgumentException("Expecting a data set for time lagging.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }

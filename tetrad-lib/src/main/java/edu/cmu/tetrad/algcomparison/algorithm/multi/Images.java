@@ -99,7 +99,7 @@ public class Images implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesSco
 
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             for (DataModel dataSet : dataSets) {
-                DataSet timeSeries = TsUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
+                DataSet timeSeries = TsUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
                 if (dataSet.getName() != null) {
                     timeSeries.setName(dataSet.getName());
                 }
