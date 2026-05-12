@@ -306,7 +306,7 @@ public class ParameterTab extends JPanel {
                         this.simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.TIME_SERIES:
-                        this.simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), this.simulation.getParams());
+                        this.simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph, simulation.getKnowledge()), this.simulation.getParams());
                         break;
                     case SimulationTypes.TRAINED_DAG_SIMULATION:
                         this.simulation.setSimulation(new TrainedDagModel(new SingleGraph(simulation.getInputGraph()),

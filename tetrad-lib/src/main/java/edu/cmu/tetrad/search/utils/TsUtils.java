@@ -461,7 +461,7 @@ public class TsUtils {
     public static DataSet createLagData(DataSet data, int numLags, Knowledge knowledge) {
 
         if (knowledge == null) {
-            throw new NullPointerException("knowledge must not be null");
+            return createLagData(data, numLags);
         }
 
         // Validate that the input knowledge contains no lagged variables (no ":" suffix)
@@ -472,7 +472,7 @@ public class TsUtils {
                                 "but found: \"" + var + "\"");
             }
         }
-        
+
         // Build the lagged dataset without knowledge first (reuse existing logic)
         DataSet laggedData = createLagData(data, numLags);
 

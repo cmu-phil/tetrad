@@ -20,6 +20,7 @@
 
 package edu.cmu.tetradapp.model.datamanip;
 
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -27,6 +28,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
 
+import java.awt.event.ActionListener;
 import java.io.Serial;
 
 /**
@@ -52,6 +54,16 @@ public class TimeSeriesWrapper extends DataWrapper implements KnowledgeTransfera
      * @param params - The parameters.
      */
     public TimeSeriesWrapper(DataWrapper data, Parameters params) {
+        this(data, null, params);
+    }
+
+    /**
+     * Constructs a new time series dataset.
+     *
+     * @param data   - Previous data (from the parent node)
+     * @param params - The parameters.
+     */
+    public TimeSeriesWrapper(DataWrapper data, Knowledge knowledge, Parameters params) {
         DataModelList dataSets = data.getDataModelList();
         DataModelList timeSeriesDataSets = new DataModelList();
 
@@ -60,7 +72,9 @@ public class TimeSeriesWrapper extends DataWrapper implements KnowledgeTransfera
                 throw new IllegalArgumentException("Only tabular data sets can be converted to time lagged form.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, params.getInt("numTimeLags", 1));
+            DataSet timeSeries = knowledge == null ?
+                    TsUtils.createLagData(dataSet, params.getInt("numTimeLags", 1)) :
+                    TsUtils.createLagData(dataSet, params.getInt("numTimeLags", 1), knowledge);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
