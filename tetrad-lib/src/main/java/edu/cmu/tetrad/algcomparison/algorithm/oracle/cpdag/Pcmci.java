@@ -102,6 +102,7 @@ public class Pcmci implements Algorithm, TakesIndependenceWrapper, AcceptsKnowle
 
         // Build lagged dataset (this also constructs consistent Knowledge for the lagged space).
         DataSet lagged = TsUtils.createLagData(raw, maxLag, knowledge);
+        knowledge = lagged.getKnowledge();
 
         // Build the test over the LAGGED variables.
         IndependenceTest indTest = getIndependenceWrapper().getTest(lagged, parameters);

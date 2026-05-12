@@ -104,6 +104,7 @@ public class Images implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesSco
                     timeSeries.setName(dataSet.getName());
                 }
                 _dataSets.add(timeSeries);
+                this.knowledge = timeSeries.getKnowledge();
             }
 
             dataSets = _dataSets;

@@ -110,6 +110,7 @@ public class ImagesFges implements MultiDataSetAlgorithm, AcceptsKnowledge, Take
                     timeSeries.setName(dataSet.getName());
                 }
                 _dataSets.add(timeSeries);
+                this.knowledge = timeSeries.getKnowledge();
             }
 
             dataSets = _dataSets;
