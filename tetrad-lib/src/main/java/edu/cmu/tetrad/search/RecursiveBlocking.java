@@ -93,7 +93,7 @@ public class RecursiveBlocking {
                                                       int maxPathLength)
             throws InterruptedException {
         return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
-                maxPathLength, -1, -1, 1, true).blockingSet();
+                maxPathLength, 5, 3, 1, true).blockingSet();
     }
 
     // -----------------------------------------------------------------------
@@ -206,6 +206,441 @@ public class RecursiveBlocking {
                 graph.paths().getDescendantsMap(),
                 maxPathLength, recursionDepth, depth, pool, ignoreDirectEdge);
     }
+
+    /**
+     * Breadth-first separating-set search between {@code x} and {@code y}.
+     *
+     * <p>Unlike {@link #blockPathsRecursivelyFull}, which commits to a path and
+     * backtracks, this method maintains a queue of candidate blocking sets and
+     * expands them one node at a time, level by level. It finds the
+     * <em>smallest</em> blocking set reachable from the seed before trying
+     * larger ones, so it terminates quickly when x and y are unconditionally
+     * d-separated or separated by a small set.</p>
+     *
+     * <p>Candidates for addition to Z are drawn exclusively from nodes that lie
+     * on <em>active</em> paths between x and y under the current Z — that is,
+     * non-collider nodes that are currently open and therefore need to be
+     * blocked. This keeps the search space small relative to exhaustive
+     * enumeration over adjacency subsets.</p>
+     *
+     * <p>The method respects the same parameter contract as
+     * {@link #blockPathsRecursivelyFull}:</p>
+     * <ul>
+     *   <li>{@code maxPathLength} bounds the length of paths considered when
+     *       collecting candidates; -1 means unlimited.</li>
+     *   <li>{@code depth} caps the size of Z; sets larger than this are never
+     *       enqueued.</li>
+     *   <li>{@code maxRadius} and {@code nearWhichEndpoint} restrict which
+     *       nodes may enter Z to a BFS shell around x and/or y.</li>
+     *   <li>{@code ignoreDirectEdge} controls whether the direct x–y edge is
+     *       skipped when collecting active paths.</li>
+     * </ul>
+     *
+     * <p>Returns a {@link BlockingResult} using the same three-outcome
+     * convention:</p>
+     * <ul>
+     *   <li><b>Found</b>: a blocking set was found and is returned.</li>
+     *   <li><b>Unblockable</b>: the queue was exhausted without finding a
+     *       blocking set within the depth bound — no separator exists within
+     *       the constrained search space.</li>
+     *   <li><b>Indeterminate</b>: the search was interrupted.</li>
+     * </ul>
+     *
+     * @param graph             the graph
+     * @param x                 first endpoint
+     * @param y                 second endpoint
+     * @param containing        nodes forced into Z (the seed set)
+     * @param notFollowed       nodes not to be traversed when collecting
+     *                          active paths
+     * @param maxPathLength     maximum path length when collecting active
+     *                          paths (-1 = unlimited)
+     * @param depth             maximum size of Z (-1 = unlimited)
+     * @param maxRadius         BFS radius for the node pool (-1 = unlimited)
+     * @param nearWhichEndpoint 1 = near x only, 2 = near y only,
+     *                          3 = near both
+     * @param ignoreDirectEdge  whether to ignore the direct x–y edge
+     * @return a {@link BlockingResult} describing the outcome
+     * @throws InterruptedException if the thread is interrupted
+     */
+    public static BlockingResult blockPathsBfs(
+            Graph graph,
+            Node x,
+            Node y,
+            Set<Node> containing,
+            Set<Node> notFollowed,
+            int maxPathLength,
+            int depth,
+            int maxRadius,
+            int nearWhichEndpoint,
+            boolean ignoreDirectEdge)
+            throws InterruptedException {
+
+        // Build the pool of nodes eligible to enter Z, same as the recursive version.
+        Set<Node> pool = buildPool(graph, x, y, maxRadius, nearWhichEndpoint);
+        pool.addAll(containing);
+
+        // Precompute descendants map for the reachability predicate.
+        Map<Node, Set<Node>> descendantsMap = graph.paths().getDescendantsMap();
+
+        // BFS queue: each entry is a candidate blocking set.
+        // We use a LinkedHashSet to preserve insertion order within each level,
+        // which gives deterministic behaviour and avoids re-visiting the same
+        // set reached by different expansion orders.
+        //
+        // visited tracks sets we have already enqueued to avoid duplicates.
+        // Since sets can be large, we use a Set<Set<Node>> with hash equality.
+        Deque<Set<Node>> queue   = new ArrayDeque<>();
+        Set<Set<Node>>   visited = new HashSet<>();
+
+        Set<Node> seed = new HashSet<>(containing);
+        queue.add(seed);
+        visited.add(seed);
+
+        while (!queue.isEmpty()) {
+
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
+            }
+
+            Set<Node> z = queue.poll();
+
+            // Depth guard: never process a set that exceeds the depth cap.
+            if (depth >= 0 && z.size() > depth) {
+                continue;
+            }
+
+            // Check whether z already blocks all active paths from x to y.
+            if (blocksAllPaths(graph, x, y, z, notFollowed, descendantsMap,
+                    maxPathLength, ignoreDirectEdge)) {
+                return new BlockingResult(z, false);
+            }
+
+            // If we are already at the depth cap, do not expand further.
+            if (depth >= 0 && z.size() == depth) {
+                continue;
+            }
+
+            // Collect candidates: nodes on active paths that are non-colliders
+            // (and therefore blockable by conditioning on them).
+            Set<Node> candidates = activeCandidates(
+                    graph, x, y, z, notFollowed, descendantsMap,
+                    maxPathLength, pool, ignoreDirectEdge);
+
+            for (Node candidate : candidates) {
+                Set<Node> zPrime = new HashSet<>(z);
+                zPrime.add(candidate);
+                if (visited.add(zPrime)) {
+                    queue.add(zPrime);
+                }
+            }
+        }
+
+        // Queue exhausted without finding a blocking set within the constraints.
+        return new BlockingResult(null, false);
+    }
+
+    /**
+     * Iterative-deepening separating-set search between {@code x} and {@code y}.
+     *
+     * <p>This method calls {@link #blockPathsRecursivelyFull} repeatedly,
+     * starting with {@code maxPathLength = 0} and incrementing by 1 on each
+     * iteration until either a blocking set is found or the path-length cap
+     * reaches {@code maxPathLength} (the caller-supplied ceiling). This is
+     * iterative deepening applied to path length rather than search depth: it
+     * inherits the memory efficiency of the depth-first version while
+     * guaranteeing that the shortest-path blocking set is found first.</p>
+     *
+     * <p>Because the depth-first version can hang on dense graphs when given
+     * an unconstrained path length (it may explore exponentially many paths
+     * before the recursion cap triggers), bounding each call to a small
+     * {@code maxPathLength} keeps each individual call fast. Short separating
+     * sets — including the empty set, which handles unconditionally d-separated
+     * pairs — are found at the lowest path-length level and return immediately
+     * without exploring longer paths at all.</p>
+     *
+     * <p>The method respects the same parameter contract as
+     * {@link #blockPathsRecursivelyFull}. The {@code maxPathLength} parameter
+     * here serves as the ceiling for the iterative deepening loop; the
+     * per-iteration cap starts at 0 and grows up to this ceiling. Pass -1 to
+     * use {@code graph.getNumNodes()} as the ceiling (a natural upper bound,
+     * since no simple path in the graph is longer than that).</p>
+     *
+     * <p>Returns a {@link BlockingResult} using the same three-outcome
+     * convention:</p>
+     * <ul>
+     *   <li><b>Found</b>: a blocking set was found and is returned, together
+     *       with the path-length level at which it was found (accessible via
+     *       {@link BlockingResult#blockingSet()}).</li>
+     *   <li><b>Unblockable</b>: the depth-first call at some level returned
+     *       UNBLOCKABLE — a path exists that cannot be blocked regardless of
+     *       Z.</li>
+     *   <li><b>Indeterminate</b>: the ceiling was reached without finding a
+     *       blocking set and without a definitive UNBLOCKABLE result.</li>
+     * </ul>
+     *
+     * @param graph             the graph
+     * @param x                 first endpoint
+     * @param y                 second endpoint
+     * @param containing        nodes forced into Z (the seed set)
+     * @param notFollowed       nodes not to be traversed
+     * @param maxPathLength     ceiling for the iterative deepening loop
+     *                          (-1 = use graph.getNumNodes())
+     * @param depth             maximum size of Z (-1 = unlimited)
+     * @param maxRadius         BFS radius for the node pool (-1 = unlimited)
+     * @param nearWhichEndpoint 1 = near x only, 2 = near y only,
+     *                          3 = near both
+     * @param ignoreDirectEdge  whether to ignore the direct x–y edge
+     * @return a {@link BlockingResult} describing the outcome
+     * @throws InterruptedException if the thread is interrupted
+     */
+    public static BlockingResult blockPathsIterativeDeepening(
+            Graph graph,
+            Node x,
+            Node y,
+            Set<Node> containing,
+            Set<Node> notFollowed,
+            int maxPathLength,
+            int depth,
+            int maxRadius,
+            int nearWhichEndpoint,
+            boolean ignoreDirectEdge)
+            throws InterruptedException {
+
+        int ceiling = (maxPathLength < 0) ? graph.getNumNodes() : maxPathLength;
+
+        for (int pathLen = 0; pathLen <= ceiling; pathLen++) {
+
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
+            }
+
+            BlockingResult result = blockPathsRecursivelyFull(
+                    graph, x, y,
+                    containing, notFollowed,
+                    pathLen,        // maxPathLength for this iteration
+                    depth,
+                    maxRadius,
+                    nearWhichEndpoint,
+                    ignoreDirectEdge);
+
+            if (result.found()) {
+                // Blocking set found at this path-length level — return it.
+                return result;
+            }
+
+            if (!result.indeterminate()) {
+                // The depth-first call returned UNBLOCKABLE at this level,
+                // meaning a path exists that cannot be blocked regardless of Z.
+                // There is no point trying longer paths — return UNBLOCKABLE.
+                return result;
+            }
+
+            // result.indeterminate() == true means the depth-first call hit
+            // the path-length cap without finding a set or proving impossibility.
+            // Increment the cap and try again.
+        }
+
+        // Ceiling reached without finding a blocking set or proving UNBLOCKABLE.
+        return new BlockingResult(null, true);
+    }
+
+
+    // -----------------------------------------------------------------------
+    // BFS helpers
+    // -----------------------------------------------------------------------
+
+    /**
+     * Returns true iff {@code z} blocks every active path from {@code x} to
+     * {@code y} in {@code graph}.
+     *
+     * <p>Uses a standard Bayes-Ball reachability pass: a node {@code v}
+     * reachable from {@code x} without passing through {@code y} means an
+     * active path exists. The pass respects collider/non-collider semantics
+     * and the {@code descendantsMap} for collider activation.</p>
+     */
+    private static boolean blocksAllPaths(
+            Graph graph,
+            Node x,
+            Node y,
+            Set<Node> z,
+            Set<Node> notFollowed,
+            Map<Node, Set<Node>> descendantsMap,
+            int maxPathLength,
+            boolean ignoreDirectEdge)
+            throws InterruptedException {
+
+        // Bayes-Ball forward pass from x. Each entry in the queue is
+        // (predecessor, current node, path length so far).
+        // We keep track of visited (predecessor, node) pairs to avoid cycles.
+        Deque<long[]> queue = new ArrayDeque<>();
+        // Encode (predecessor index, node index, length) as a long triple.
+        // Since we need object identity rather than indices, use a wrapper.
+        Deque<PathEntry> bfsQueue = new ArrayDeque<>();
+        Set<String>      seen     = new HashSet<>();
+
+        for (Node neighbor : graph.getAdjacentNodes(x)) {
+            if (ignoreDirectEdge && neighbor == y) continue;
+            if (notFollowed.contains(neighbor))    continue;
+
+            String key = x.getName() + "->" + neighbor.getName();
+            if (seen.add(key)) {
+                bfsQueue.add(new PathEntry(x, neighbor, 1));
+            }
+        }
+
+        while (!bfsQueue.isEmpty()) {
+
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
+            }
+
+            PathEntry entry = bfsQueue.poll();
+            Node a = entry.predecessor;
+            Node b = entry.current;
+            int  len = entry.length;
+
+            // Reached y via an active path — not fully blocked.
+            if (b == y) return false;
+
+            // Path length cap.
+            if (maxPathLength >= 0 && len >= maxPathLength) continue;
+
+            for (Node c : graph.getAdjacentNodes(b)) {
+                if (c == a)                         continue;
+                if (notFollowed.contains(c))        continue;
+
+                if (!reachable(graph, a, b, c, z, descendantsMap)) continue;
+
+                String key = b.getName() + "->" + c.getName();
+                if (seen.add(key)) {
+                    bfsQueue.add(new PathEntry(b, c, len + 1));
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Collects nodes that lie on active paths from {@code x} to {@code y}
+     * and are non-colliders on those paths — i.e. nodes that conditioning
+     * would block.
+     *
+     * <p>Only nodes in {@code pool} are returned as candidates, respecting the
+     * radius constraint. Nodes in {@code notFollowed} are skipped entirely.</p>
+     */
+    private static Set<Node> activeCandidates(
+            Graph graph,
+            Node x,
+            Node y,
+            Set<Node> z,
+            Set<Node> notFollowed,
+            Map<Node, Set<Node>> descendantsMap,
+            int maxPathLength,
+            Set<Node> pool,
+            boolean ignoreDirectEdge)
+            throws InterruptedException {
+
+        Set<Node> candidates = new LinkedHashSet<>();
+
+        // Forward BFS from x, tracking (predecessor, current, length).
+        // When we reach y, walk back along the path and collect non-colliders
+        // not already in z.
+        //
+        // To reconstruct paths we store the predecessor for each (pred, node)
+        // pair. We use a simple visited-pair set to avoid revisiting the same
+        // directed step.
+        Deque<PathEntry> bfsQueue = new ArrayDeque<>();
+        Set<String>      seen     = new HashSet<>();
+
+        for (Node neighbor : graph.getAdjacentNodes(x)) {
+            if (ignoreDirectEdge && neighbor == y) continue;
+            if (notFollowed.contains(neighbor))    continue;
+            String key = x.getName() + "->" + neighbor.getName();
+            if (seen.add(key)) {
+                bfsQueue.add(new PathEntry(x, neighbor, 1));
+            }
+        }
+
+        while (!bfsQueue.isEmpty()) {
+
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
+            }
+
+            PathEntry entry = bfsQueue.poll();
+            Node a = entry.predecessor;
+            Node b = entry.current;
+            int  len = entry.length;
+
+            if (b == y) {
+                // Active path reached y — a is a non-collider (the last
+                // interior node before y). If it is in the pool and not
+                // already in z, it is a candidate.
+                // We do not add y itself.
+                continue;
+            }
+
+            // b is an interior node on an active path.
+            // If b is a non-collider w.r.t. the path so far (i.e. not a
+            // definite collider at the triple (a, b, *)), conditioning on b
+            // would block this path — add it as a candidate.
+            //
+            // We approximate "non-collider" conservatively: b is a candidate
+            // if it is not in z, is in the pool, and is not a definite
+            // collider at (a, b, some_continuation).
+            if (!z.contains(b) && pool.contains(b)) {
+                // Check if b acts as a non-collider on at least one
+                // continuation — if so, conditioning on it could block.
+                boolean isNonColliderOnSomePath = false;
+                for (Node c : graph.getAdjacentNodes(b)) {
+                    if (c == a) continue;
+                    if (!graph.isDefCollider(a, b, c)) {
+                        isNonColliderOnSomePath = true;
+                        break;
+                    }
+                }
+                if (isNonColliderOnSomePath) {
+                    candidates.add(b);
+                }
+            }
+
+            if (maxPathLength >= 0 && len >= maxPathLength) continue;
+
+            for (Node c : graph.getAdjacentNodes(b)) {
+                if (c == a)                         continue;
+                if (notFollowed.contains(c))        continue;
+                if (!reachable(graph, a, b, c, z, descendantsMap)) continue;
+                String key = b.getName() + "->" + c.getName();
+                if (seen.add(key)) {
+                    bfsQueue.add(new PathEntry(b, c, len + 1));
+                }
+            }
+        }
+
+        return candidates;
+    }
+
+    // -----------------------------------------------------------------------
+    // PathEntry helper for BFS
+    // -----------------------------------------------------------------------
+
+    /**
+     * Lightweight triple used in the BFS queues to track (predecessor, current
+     * node, path length so far).
+     */
+    private static final class PathEntry {
+        final Node predecessor;
+        final Node current;
+        final int  length;
+
+        PathEntry(Node predecessor, Node current, int length) {
+            this.predecessor = predecessor;
+            this.current     = current;
+            this.length      = length;
+        }
+    }
+
 
     /**
      * Builds the set of nodes eligible to enter Z. When {@code maxRadius} is
