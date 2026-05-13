@@ -35,8 +35,8 @@ public class SepsetComparisonHarness {
     // Configuration
     // -----------------------------------------------------------------------
 
-    private static final int[]  NODE_COUNTS   = {20};//, 50};
-    private static final int[]  AVG_DEGREES   = {6};
+    private static final int[]  NODE_COUNTS   = {10, 20, 50};
+    private static final int[]  AVG_DEGREES   = {2, 4, 6};
     private static final int    REPS          = 100;
     private static final int    PAIRS_PER_REP = 100;
     private static final String OUTPUT_FILE   = "sepset_comparison.csv";
@@ -47,8 +47,8 @@ public class SepsetComparisonHarness {
     // Parameters for iterative-deepening RB (used in both pure-RB and hybrid).
     private static final int RB_MAX_PATH_LEN  = -1;
     private static final int RB_DEPTH         = -1;
-    private static final int RB_MAX_RADIUS    = -1;
-    private static final int RB_NEAR_ENDPOINT = 1; // near both x and y
+    private static final int RB_MAX_RADIUS    = 3;
+    private static final int RB_NEAR_ENDPOINT = 1; // 1 = near x 2 = near y 3 = near either
 
     // -----------------------------------------------------------------------
     // Main
@@ -136,7 +136,7 @@ public class SepsetComparisonHarness {
                             if (rb.unblockable) {
                                 rbUnblockable++;
                                 System.out.printf(
-                                        "  [rb ] UNEXPECTED UNBLOCKABLE "
+                                        "  [rb ] UNBLOCKABLE "
                                                 + "p=%d deg=%d rep=%d (%s,%s) time=%.3fms%n",
                                         p, avgDeg, rep,
                                         x.getName(), y.getName(), rbNs / 1e6);
@@ -173,7 +173,7 @@ public class SepsetComparisonHarness {
                             if (hyb.unblockable) {
                                 hybUnblockable++;
                                 System.out.printf(
-                                        "  [hyb] UNEXPECTED UNBLOCKABLE "
+                                        "  [hyb] UNBLOCKABLE "
                                                 + "p=%d deg=%d rep=%d (%s,%s) time=%.3fms%n",
                                         p, avgDeg, rep,
                                         x.getName(), y.getName(), hybNs / 1e6);
@@ -286,7 +286,7 @@ public class SepsetComparisonHarness {
                 }
 
                 if (!result.indeterminate()) {
-                    // UNBLOCKABLE — should not happen for non-adjacent pairs
+                    // UNBLOCKABLE — no separator exists within the constrained search space
                     return new RbResult(0, -1, true);
                 }
             }

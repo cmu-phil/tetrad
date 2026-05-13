@@ -193,7 +193,7 @@ public class RecursiveBlocking {
 
         // Fail fast if the seed set already violates the depth bound
         if (depth >= 0 && containing.size() > depth) {
-            return new BlockingResult(null, true); // INDETERMINATE, not UNBLOCKABLE
+            return new BlockingResult(null, false);
         }
 
         Set<Node> pool = buildPool(graph, x, y, maxRadius, nearWhichEndpoint);
@@ -741,7 +741,7 @@ public class RecursiveBlocking {
             }
 
             if (depth >= 0 && z.size() > depth) {
-                return new BlockingResult(null, true);
+                return new BlockingResult(null, false);
             }
 
             int zSizeBefore = z.size();
@@ -1146,13 +1146,13 @@ public class RecursiveBlocking {
                 if (!pool.contains(f.b)) {
                     path.remove(f.b);
                     callStack.pop();
-                    lastResult = Blockable.INDETERMINATE;
+                    lastResult = Blockable.UNBLOCKABLE;
                     continue;
                 }
                 if (f.depth >= 0 && z.size() >= f.depth) {
                     path.remove(f.b);
                     callStack.pop();
-                    lastResult = Blockable.INDETERMINATE;
+                    lastResult = Blockable.UNBLOCKABLE;
                     continue;
                 }
 
@@ -1455,6 +1455,70 @@ public class RecursiveBlocking {
 
         return Blockable.BLOCKED;
     }
+
+//    /**
+//     * Maximum number of reachable continuations allowed at any single node
+//     * before returning INDETERMINATE. If the number of reachable nodes from
+//     * a given intermediate node exceeds this bound, the branch is treated as
+//     * inconclusive rather than explored exhaustively. Tune this to trade off
+//     * completeness against runtime on dense graphs.
+//     */
+//    static final int MAX_PASS_NODES = 200;
+//
+//    // -----------------------------------------------------------------------
+//    // Drop-in replacement for stepContinuationLoop.
+//    // Returns INDETERMINATE immediately if the number of reachable
+//    // continuations at the current node exceeds MAX_PASS_NODES, preventing
+//    // combinatorial explosion on dense graphs without requiring a global
+//    // budget counter.
+//    // -----------------------------------------------------------------------
+//
+//    private static Blockable stepContinuationLoop(
+//            Graph graph,
+//            Frame f,
+//            Node y,
+//            Set<Node> path,
+//            Set<Node> z,
+//            Set<Node> notFollowed,
+//            Map<Node, Set<Node>> descendantsMap,
+//            Set<Node> pool,
+//            Deque<Frame> callStack,
+//            boolean isWithBPass) throws InterruptedException {
+//
+//        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+//
+//        List<Node> passNodes = getReachableNodes(graph, f.a, f.b, z, descendantsMap);
+//        passNodes.removeAll(notFollowed);
+//
+//        // Count unhandled reachable continuations. If there are too many,
+//        // return INDETERMINATE immediately rather than exploring them all.
+//        int unhandledCount = 0;
+//        for (Node c : passNodes) {
+//            if (!f.handled.contains(c)) {
+//                unhandledCount++;
+//            }
+//        }
+//
+//        if (unhandledCount > MAX_PASS_NODES) {
+//            return Blockable.INDETERMINATE;
+//        }
+//
+//        for (Node c : passNodes) {
+//            if (f.handled.contains(c)) continue;
+//
+//            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+//
+//            f.pendingC = c;
+//            callStack.push(new Frame(
+//                    f.b, c, y,
+//                    f.maxPathLength, f.depth, f.recursionDepth,
+//                    f.currentDepth + 1));
+//            return null;
+//        }
+//
+//        return Blockable.BLOCKED;
+//    }
+
 
     private static List<Node> getReachableNodes(Graph graph,
                                                 Node a,
