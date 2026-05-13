@@ -114,8 +114,8 @@ public class RecursiveDiscriminatingPathRule {
 
                 RecursiveBlocking.BlockingResult result = null;
                 if (depth < 0) {
-                    result = RecursiveBlocking.blockPathsRecursivelyFull(
-                            pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, depth, -1, 1, false);
+                    result = RecursiveBlocking.blockPathsIterativeDeepening(
+                            pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, depth, -1, 1, true);
                 } else {
 //                    if (!result.indeterminate()) {
                     result = null;
@@ -127,8 +127,8 @@ public class RecursiveDiscriminatingPathRule {
 
                         if (_depth > maxDepth) break;
 
-                        result = RecursiveBlocking.blockPathsRecursivelyFull(
-                                pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, _depth, -1, 1, false);
+                        result = RecursiveBlocking.blockPathsIterativeDeepening(
+                                pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, _depth, -1, 1, true);
                     } while (result.indeterminate());
 //                    }
                 }

@@ -623,7 +623,7 @@ public final class Fcit implements IGraphSearch {
             RecursiveBlocking.BlockingResult result = null;
 //
             if (this.depth < 0) {
-                result = RecursiveBlocking.blockPathsRecursivelyFull(
+                result = RecursiveBlocking.blockPathsIterativeDeepening(
                         pag, x, y, Set.of(), notFollowed, maxPathLength, depth, raRadius, 1, true);
 
             } else {
@@ -637,7 +637,7 @@ public final class Fcit implements IGraphSearch {
 
                     if (depth > maxDepth) break;
 
-                    result = RecursiveBlocking.blockPathsRecursivelyFull(
+                    result = RecursiveBlocking.blockPathsIterativeDeepening(
                             pag, x, y, Set.of(), notFollowed, maxPathLength, depth, raRadius, 1, true);
                 } while (result.indeterminate());
 //                }
