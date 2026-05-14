@@ -17,11 +17,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -58,7 +53,7 @@ public class SepsetComparisonPagHarness {
     private static final int MAX_EXHAUSTIVE_TESTS = 10_000;
 
     // Parameters for iterative-deepening RB (used in both pure-RB and hybrid).
-    private static final int RB_MAX_PATH_LEN  = 15;
+    private static final int RB_RECURSION_DEPTH = 15;
     private static final int RB_DEPTH         = 9;
     private static final int RB_MAX_RADIUS    = -1;
     private static final int RB_NEAR_ENDPOINT = 3; // 1 = near x 2 = near y 3 = near either
@@ -264,64 +259,14 @@ public class SepsetComparisonPagHarness {
     // Method 2: Iterative-deepening recursive blocking
     // -----------------------------------------------------------------------
 
-//    private static RbResult iterativeDeepeningRb(
-//            Node x, Node y, Graph dag, MsepTest oracle, int p) {
-//
-//        try {
-//            int ceiling = (RB_MAX_PATH_LEN < 0) ? p : RB_MAX_PATH_LEN;
-//
-//            for (int pathLen = 0; pathLen <= ceiling; pathLen++) {
-//
-//                if (Thread.currentThread().isInterrupted()) {
-//                    return new RbResult(0, -1, false);
-//                }
-//
-//                RecursiveBlocking.BlockingResult result =
-//                        RecursiveBlocking.blockPathsRecursivelyFull(
-//                                dag, x, y,
-//                                Set.of(), Set.of(),
-//                                pathLen,
-//                                RB_DEPTH,
-//                                RB_MAX_RADIUS,
-//                                RB_NEAR_ENDPOINT,
-//                                true);
-//
-//                if (result.found()) {
-//                    Set<Node> Z = result.blockingSet();
-//                    int testCount = 0;
-//
-//                    testCount++;
-//                    if (oracle.checkIndependence(x, y, Z).isIndependent()) {
-//                        return new RbResult(testCount, Z.size(), false);
-//                    }
-//
-//                    return new RbResult(testCount, -1, false);
-//                }
-//
-//                if (!result.indeterminate()) {
-//                    // UNBLOCKABLE — no separator exists within the constrained search space
-//                    return new RbResult(0, -1, true);
-//                }
-//            }
-//
-//            // Ceiling reached without resolution
-//            return new RbResult(0, -1, false);
-//
-//        } catch (InterruptedException e) {
-//            Thread.currentThread().interrupt();
-//            return new RbResult(0, -1, false);
-//        }
-//    }
-
-
     private static RbResult iterativeDeepeningRb(
             Node x, Node y, Graph dag, MsepTest oracle, int p) {
 
-        int ceiling = (RB_MAX_PATH_LEN < 0) ? p : RB_MAX_PATH_LEN;
+        int ceiling = (RB_RECURSION_DEPTH < 0) ? p : RB_RECURSION_DEPTH;
         long startMs = System.currentTimeMillis();
 
         try {
-            for (int pathLen = 0; pathLen <= ceiling; pathLen++) {
+            for (int recursionDepth = 0; recursionDepth <= ceiling; recursionDepth++) {
 
                 long deadlineMs = System.currentTimeMillis() + 5_000;
 
@@ -337,7 +282,7 @@ public class SepsetComparisonPagHarness {
                         RecursiveBlocking.blockPathsRecursivelyFull(
                                 dag, x, y,
                                 Set.of(), Set.of(),
-                                pathLen,
+                                recursionDepth,
                                 RB_DEPTH,
                                 RB_MAX_RADIUS,
                                 RB_NEAR_ENDPOINT,

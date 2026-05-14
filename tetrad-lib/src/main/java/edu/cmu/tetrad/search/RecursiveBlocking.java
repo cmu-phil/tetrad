@@ -65,6 +65,21 @@ public class RecursiveBlocking {
     // Result type
     // -----------------------------------------------------------------------
 
+    public static <E> Set<Node> blockPathsRecursively(Graph graph,
+                                                      Node x,
+                                                      Node y,
+                                                      Set<Node> containing,
+                                                      Set<Node> notFollowed,
+                                                      int recursionDepth)
+            throws InterruptedException {
+        try {
+            return blockPathsIterativeDeepening(graph, x, y, containing, notFollowed,
+                    recursionDepth, 8, 4, 1, true, Long.MAX_VALUE).blockingSet();
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * Blocks paths between two specified nodes in a graph by iteratively
      * identifying and selecting nodes to include in a blocking set, subject to
@@ -131,10 +146,14 @@ public class RecursiveBlocking {
                                                   int depth,
                                                   int nearWhichEndpoint,
                                                   boolean ignoreDirectEdge)
-            throws InterruptedException, TimeoutException {
-        return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
-                recursionDepth, depth, maxRadius, nearWhichEndpoint,
-                ignoreDirectEdge).blockingSet();
+            throws InterruptedException {
+        try {
+            return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
+                    recursionDepth, depth, maxRadius, nearWhichEndpoint,
+                    ignoreDirectEdge).blockingSet();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -191,9 +210,13 @@ public class RecursiveBlocking {
                                                            int depth, int maxRadius,
                                                            int nearWhichEndpoint,
                                                            boolean ignoreDirectEdge)
-            throws InterruptedException, TimeoutException {
-        return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed, recursionDepth, depth,
-                maxRadius, nearWhichEndpoint, ignoreDirectEdge, Long.MAX_VALUE);
+            throws InterruptedException {
+        try {
+            return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed, recursionDepth, depth,
+                    maxRadius, nearWhichEndpoint, ignoreDirectEdge, Long.MAX_VALUE);
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -230,7 +253,7 @@ public class RecursiveBlocking {
             return new BlockingResult(null, false);
         }
 
-        Set<Node> pool = buildPool(graph, x, y, maxRadius, nearWhichEndpoint);
+        Set<Node> pool = buildPool(graph, x, y, maxRadius, nearWhichEndpoint, deadlineMs);
         pool.addAll(containing);
 
         int _recursionDepth = recursionDepth < 0 ? graph.getNumNodes() : recursionDepth;
@@ -312,7 +335,7 @@ public class RecursiveBlocking {
             throws InterruptedException, TimeoutException {
 
         // Build the pool of nodes eligible to enter Z, same as the recursive version.
-        Set<Node> pool = buildPool(graph, x, y, maxRadius, nearWhichEndpoint);
+        Set<Node> pool = buildPool(graph, x, y, maxRadius, nearWhichEndpoint, deadlineMs);
         pool.addAll(containing);
 
         // Precompute descendants map for the reachability predicate.
@@ -362,6 +385,8 @@ public class RecursiveBlocking {
                     deadlineMs);
 
             for (Node candidate : candidates) {
+                checkTimeout(deadlineMs);
+
                 Set<Node> zPrime = new HashSet<>(z);
                 zPrime.add(candidate);
                 if (visited.add(zPrime)) {
@@ -528,6 +553,8 @@ public class RecursiveBlocking {
         Set<String> seen = new HashSet<>();
 
         for (Node neighbor : graph.getAdjacentNodes(x)) {
+            checkTimeout(deadlineMs);
+
             if (ignoreDirectEdge && neighbor == y) continue;
             if (notFollowed.contains(neighbor)) continue;
 
@@ -548,6 +575,8 @@ public class RecursiveBlocking {
 //            if (recursionDepth >= 0 && entry.currentRecursionDepth >= recursionDepth) continue;
 
             for (Node c : graph.getAdjacentNodes(b)) {
+                checkTimeout(deadlineMs);
+
                 if (c == a) continue;
                 if (notFollowed.contains(c)) continue;
 
@@ -588,6 +617,8 @@ public class RecursiveBlocking {
         Set<String> seen = new HashSet<>();
 
         for (Node neighbor : graph.getAdjacentNodes(x)) {
+            checkTimeout(deadlineMs);
+
             if (ignoreDirectEdge && neighbor == y) continue;
             if (notFollowed.contains(neighbor)) continue;
             String key = x.getName() + "->" + neighbor.getName();
@@ -625,6 +656,8 @@ public class RecursiveBlocking {
                 // continuation — if so, conditioning on it could block.
                 boolean isNonColliderOnSomePath = false;
                 for (Node c : graph.getAdjacentNodes(b)) {
+                    checkTimeout(deadlineMs);
+
                     if (c == a) continue;
                     if (!graph.isDefCollider(a, b, c)) {
                         isNonColliderOnSomePath = true;
@@ -637,6 +670,8 @@ public class RecursiveBlocking {
             }
 
             for (Node c : graph.getAdjacentNodes(b)) {
+                checkTimeout(deadlineMs);
+
                 if (c == a) continue;
                 if (notFollowed.contains(c)) continue;
                 if (!reachable(graph, a, b, c, z, descendantsMap, deadlineMs)) continue;
@@ -659,7 +694,8 @@ public class RecursiveBlocking {
      * -1, every graph node is returned (no restriction).
      */
     private static Set<Node> buildPool(Graph graph, Node x, Node y,
-                                       int maxRadius, int nearWhichEndpoint) {
+                                       int maxRadius, int nearWhichEndpoint, long deadlineMs)
+            throws InterruptedException, TimeoutException {
         if (maxRadius < 0) {
             return new HashSet<>(graph.getNodes());
         }
@@ -667,10 +703,10 @@ public class RecursiveBlocking {
         Set<Node> pool = new LinkedHashSet<>();
 
         if (nearWhichEndpoint == 1 || nearWhichEndpoint == 3) {
-            pool.addAll(bfsShells(graph, x, maxRadius));
+            pool.addAll(bfsShells(graph, x, maxRadius, deadlineMs));
         }
         if (nearWhichEndpoint == 2 || nearWhichEndpoint == 3) {
-            pool.addAll(bfsShells(graph, y, maxRadius));
+            pool.addAll(bfsShells(graph, y, maxRadius, deadlineMs));
         }
 
         pool.remove(x);
@@ -683,7 +719,8 @@ public class RecursiveBlocking {
      * Standard undirected BFS up to {@code maxRadius} hops from {@code seed}.
      * Returns all nodes reachable within that radius (excluding the seed).
      */
-    private static Set<Node> bfsShells(Graph graph, Node seed, int maxRadius) {
+    private static Set<Node> bfsShells(Graph graph, Node seed, int maxRadius, long deadlineMs)
+            throws InterruptedException, TimeoutException {
         Set<Node> visited = new LinkedHashSet<>();
         Deque<Node> queue = new ArrayDeque<>();
         Map<Node, Integer> dist = new HashMap<>();
@@ -693,10 +730,14 @@ public class RecursiveBlocking {
         dist.put(seed, 0);
 
         while (!queue.isEmpty()) {
+            checkTimeout(deadlineMs);
+
             Node u = queue.removeFirst();
             int du = dist.get(u);
             if (du >= maxRadius) continue;
             for (Node v : graph.getAdjacentNodes(u)) {
+                checkTimeout(deadlineMs);
+
                 if (visited.add(v)) {
                     dist.put(v, du + 1);
                     queue.addLast(v);
@@ -834,7 +875,6 @@ public class RecursiveBlocking {
             // ENTER
             // =================================================================
             if (f.pass == Pass.ENTER) {
-
                 if (f.currentRecursionDepth > f.recursionDepth) {
                     callStack.pop();
                     lastResult = Blockable.INDETERMINATE;
@@ -1059,9 +1099,9 @@ public class RecursiveBlocking {
         passNodes.removeAll(notFollowed);
 
         for (Node c : passNodes) {
-            if (f.handled.contains(c)) continue;
-
             checkTimeout(deadlineMs);
+
+            if (f.handled.contains(c)) continue;
 
             f.pendingC = c;
             callStack.push(new Frame(
@@ -1090,6 +1130,8 @@ public class RecursiveBlocking {
 
         List<Node> passNodes = new ArrayList<>();
         for (Node c : graph.getAdjacentNodes(b)) {
+            checkTimeout(deadlineMs);
+
             if (c == a) continue;
             if (reachable(graph, a, b, c, z, descendantsMap, deadlineMs)) {
                 passNodes.add(c);
@@ -1122,6 +1164,8 @@ public class RecursiveBlocking {
         } else {
             Set<Node> desc = descendantsMap.getOrDefault(b, Collections.emptySet());
             for (Node d : desc) {
+                checkTimeout(deadlineMs);
+
                 if (z.contains(d)) return true;
             }
             return false;

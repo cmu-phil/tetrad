@@ -213,13 +213,8 @@ public final class Fask {
 
             if (z == null) z = new HashSet<>();
 
-            Set<Node> z2 = null;
-            try {
-                z2 = RecursiveBlocking.blockPathsRecursivelyFull(
-                        graph, xj, xi, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true).blockingSet();
-            } catch (TimeoutException e) {
-                throw new RuntimeException(e);
-            }
+            Set<Node> z2 = RecursiveBlocking.blockPathsRecursivelyFull(
+                    graph, xj, xi, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true).blockingSet();
 
             if (z2 == null) {
                 List<Node> adj = graph.getAdjacentNodes(xi);
