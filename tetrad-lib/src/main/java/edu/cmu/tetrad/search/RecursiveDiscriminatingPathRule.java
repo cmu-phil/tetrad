@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Implements the R4 Discriminating Path rule in the final FCI orientation rules (Zhang 2008) using the
@@ -115,13 +114,8 @@ public class RecursiveDiscriminatingPathRule {
 
                 RecursiveBlocking.BlockingResult result = null;
                 if (depth < 0) {
-                    try {
-                        result = RecursiveBlocking.blockPathsIterativeDeepening(
-                                pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, depth, -1, 1, true,
-                                Long.MAX_VALUE);
-                    } catch (TimeoutException e) {
-                        throw new RuntimeException(e);
-                    }
+                    result = RecursiveBlocking.blockPathsIterativeDeepening(
+                            pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, depth, -1, 1, true);
                 } else {
 //                    if (!result.indeterminate()) {
                     result = null;
@@ -133,13 +127,8 @@ public class RecursiveDiscriminatingPathRule {
 
                         if (_depth > maxDepth) break;
 
-                        try {
-                            result = RecursiveBlocking.blockPathsIterativeDeepening(
-                                    pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, _depth, -1, 1, true,
-                                    Long.MAX_VALUE);
-                        } catch (TimeoutException e) {
-                            throw new RuntimeException(e);
-                        }
+                        result = RecursiveBlocking.blockPathsIterativeDeepening(
+                                pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, _depth, -1, 1, true);
                     } while (result.indeterminate());
 //                    }
                 }

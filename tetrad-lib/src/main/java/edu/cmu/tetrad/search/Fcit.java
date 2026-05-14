@@ -33,7 +33,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -624,13 +623,8 @@ public final class Fcit implements IGraphSearch {
             RecursiveBlocking.BlockingResult result = null;
 //
             if (this.depth < 0) {
-                try {
-                    result = RecursiveBlocking.blockPathsIterativeDeepening(
-                            pag, x, y, Set.of(), notFollowed, recursionDepth, depth, raRadius, 1,
-                            true, Long.MAX_VALUE);
-                } catch (TimeoutException e) {
-                    continue;
-                }
+                result = RecursiveBlocking.blockPathsIterativeDeepening(
+                        pag, x, y, Set.of(), notFollowed, recursionDepth, depth, raRadius, 1, true);
 
             } else {
 //                if (!result.indeterminate()) {
@@ -643,13 +637,8 @@ public final class Fcit implements IGraphSearch {
 
                     if (depth > maxDepth) break;
 
-                    try {
-                        result = RecursiveBlocking.blockPathsIterativeDeepening(
-                                pag, x, y, Set.of(), notFollowed, recursionDepth, depth, raRadius, 1,
-                                true, Long.MAX_VALUE);
-                    } catch (TimeoutException e) {
-                        continue;
-                    }
+                    result = RecursiveBlocking.blockPathsIterativeDeepening(
+                            pag, x, y, Set.of(), notFollowed, recursionDepth, depth, raRadius, 1, true);
                 } while (result.indeterminate());
 //                }
             }

@@ -374,6 +374,26 @@ public class RecursiveBlocking {
         return new BlockingResult(null, false);
     }
 
+    public static BlockingResult blockPathsIterativeDeepening(
+            Graph graph,
+            Node x,
+            Node y,
+            Set<Node> containing,
+            Set<Node> notFollowed,
+            int recursionDepth,
+            int depth,
+            int maxRadius,
+            int nearWhichEndpoint,
+            boolean ignoreDirectEdge)
+            throws InterruptedException {
+        try {
+            return blockPathsIterativeDeepening(graph, x, y, containing, notFollowed, recursionDepth, depth, maxRadius,
+                    nearWhichEndpoint, ignoreDirectEdge, Long.MAX_VALUE);
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * Iterative-deepening separating-set search between {@code x} and {@code y}.
      *
