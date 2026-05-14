@@ -33,6 +33,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -139,7 +140,7 @@ public final class Fcit implements IGraphSearch {
     private @NotNull Graph pag = new EdgeListGraph();
     private boolean replicatingGraph = false;
     private boolean excludeSelectionBias = false;
-    private int recursionDepth = -1;
+    private int recursionDepth = 15;
     private int raRadius = -1;
 
     /**
@@ -623,8 +624,13 @@ public final class Fcit implements IGraphSearch {
             RecursiveBlocking.BlockingResult result = null;
 //
             if (this.depth < 0) {
-                result = RecursiveBlocking.blockPathsIterativeDeepening(
-                        pag, x, y, Set.of(), notFollowed, recursionDepth, depth, raRadius, 1, true);
+                try {
+                    result = RecursiveBlocking.blockPathsIterativeDeepening(
+                            pag, x, y, Set.of(), notFollowed, recursionDepth, depth, raRadius, 1,
+                            true, Long.MAX_VALUE);
+                } catch (TimeoutException e) {
+                    continue;
+                }
 
             } else {
 //                if (!result.indeterminate()) {
@@ -637,8 +643,13 @@ public final class Fcit implements IGraphSearch {
 
                     if (depth > maxDepth) break;
 
-                    result = RecursiveBlocking.blockPathsIterativeDeepening(
-                            pag, x, y, Set.of(), notFollowed, recursionDepth, depth, raRadius, 1, true);
+                    try {
+                        result = RecursiveBlocking.blockPathsIterativeDeepening(
+                                pag, x, y, Set.of(), notFollowed, recursionDepth, depth, raRadius, 1,
+                                true, Long.MAX_VALUE);
+                    } catch (TimeoutException e) {
+                        continue;
+                    }
                 } while (result.indeterminate());
 //                }
             }

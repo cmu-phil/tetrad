@@ -47,9 +47,9 @@ public class SepsetComparisonPagHarness {
     // Configuration
     // -----------------------------------------------------------------------
 
-    private static final int[]  NODE_COUNTS   = {20};//10, 20, 50};
-    private static final int[]  AVG_DEGREES   = {6};//2, 4, 6};
-    private static final int    NUM_LATENTS   = 2;
+    private static final int[]  NODE_COUNTS   = {50};//10, 20, 50};
+    private static final int[]  AVG_DEGREES   = {4};//2, 4, 6};
+    private static final int    NUM_LATENTS   = 4;
     private static final int    REPS          = 20;
     private static final int    PAIRS_PER_REP = 20  ;
     private static final String OUTPUT_FILE   = "sepset_comparison.csv";
@@ -318,62 +318,54 @@ public class SepsetComparisonPagHarness {
             Node x, Node y, Graph dag, MsepTest oracle, int p) {
 
         int ceiling = (RB_MAX_PATH_LEN < 0) ? p : RB_MAX_PATH_LEN;
+        long startMs = System.currentTimeMillis();
 
-        for (int pathLen = ceiling; pathLen <= ceiling; pathLen++) {
+        try {
+            for (int pathLen = 0; pathLen <= ceiling; pathLen++) {
 
-            if (Thread.currentThread().isInterrupted()) {
-                return new RbResult(0, -1, false);
-            }
+                long deadlineMs = System.currentTimeMillis() + 5_000;
 
-            final int _pathLen = pathLen;
-
-            // Run blockPathsRecursivelyFull on a separate thread with a 5-second timeout.
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            Future<RecursiveBlocking.BlockingResult> future = executor.submit(() ->
-                    RecursiveBlocking.blockPathsRecursivelyFull(
-                            dag, x, y,
-                            Set.of(), Set.of(),
-                            _pathLen,
-                            RB_DEPTH,
-                            RB_MAX_RADIUS,
-                            RB_NEAR_ENDPOINT,
-                            true));
-            executor.shutdown();
-
-            RecursiveBlocking.BlockingResult result;
-
-            try {
-                result = future.get(5, TimeUnit.SECONDS);
-                System.out.println("result: " + result);
-            } catch (TimeoutException e) {
-                future.cancel(true);
-                return new RbResult(0, -1, false);
-            } catch (InterruptedException e) {
-                future.cancel(true);
-                Thread.currentThread().interrupt();
-                return new RbResult(0, -1, false);
-            } catch (ExecutionException e) {
-                future.cancel(true);
-                return new RbResult(0, -1, false);
-            }
-
-            if (result.found()) {
-                Set<Node> Z = result.blockingSet();
-
-                int testCount = 1;
-                if (oracle.checkIndependence(x, y, Z).isIndependent()) {
-                    return new RbResult(testCount, Z.size(), false);
+                if (Thread.currentThread().isInterrupted()) {
+                    return new RbResult(0, -1, false);
                 }
 
-                return new RbResult(testCount, -1, false);
+                if (System.currentTimeMillis() - startMs >  deadlineMs) {
+                    return new RbResult(0, -1, false);
+                }
+
+                RecursiveBlocking.BlockingResult result =
+                        RecursiveBlocking.blockPathsRecursivelyFull(
+                                dag, x, y,
+                                Set.of(), Set.of(),
+                                pathLen,
+                                RB_DEPTH,
+                                RB_MAX_RADIUS,
+                                RB_NEAR_ENDPOINT,
+                                true,
+                                deadlineMs);
+
+                if (result.found()) {
+                    Set<Node> Z = result.blockingSet();
+                    int testCount = 1;
+                    if (oracle.checkIndependence(x, y, Z).isIndependent()) {
+                        return new RbResult(testCount, Z.size(), false);
+                    }
+                    return new RbResult(testCount, -1, false);
+                }
+
+                if (!result.indeterminate()) {
+                    return new RbResult(0, -1, true);
+                }
             }
 
-            if (!result.indeterminate()) {
-                return new RbResult(0, -1, true);
-            }
+            return new RbResult(0, -1, false);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return new RbResult(0, -1, false);
+        } catch (TimeoutException e) {
+            return new RbResult(0, -1, false);
         }
-
-        return new RbResult(0, -1, false);
     }
 
     // -----------------------------------------------------------------------

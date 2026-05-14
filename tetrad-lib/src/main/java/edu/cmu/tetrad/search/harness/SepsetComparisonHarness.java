@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Harness comparing the number of independence tests (d-separation oracle queries)
@@ -263,15 +264,20 @@ public class SepsetComparisonHarness {
                     return new RbResult(0, -1, false);
                 }
 
-                RecursiveBlocking.BlockingResult result =
-                        RecursiveBlocking.blockPathsRecursivelyFull(
-                                dag, x, y,
-                                Set.of(), Set.of(),
-                                pathLen,
-                                RB_DEPTH,
-                                RB_MAX_RADIUS,
-                                RB_NEAR_ENDPOINT,
-                                true);
+                RecursiveBlocking.BlockingResult result = null;
+                try {
+                    result = RecursiveBlocking.blockPathsRecursivelyFull(
+                            dag, x, y,
+                            Set.of(), Set.of(),
+                            pathLen,
+                            RB_DEPTH,
+                            RB_MAX_RADIUS,
+                            RB_NEAR_ENDPOINT,
+                            true,
+                            Long.MAX_VALUE);
+                } catch (TimeoutException e) {
+                    throw new RuntimeException(e);
+                }
 
                 if (result.found()) {
                     Set<Node> Z = result.blockingSet();

@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Implements the R4 Discriminating Path rule in the final FCI orientation rules (Zhang 2008) using the
@@ -117,8 +118,13 @@ public class RecursiveDiscriminatingPathRule2 {
 
                 RecursiveBlocking.BlockingResult result = null;
                 if (depth < 0) {
-                    result = RecursiveBlocking.blockPathsIterativeDeepening(
-                            pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, depth, -1, 1, true);
+                    try {
+                        result = RecursiveBlocking.blockPathsIterativeDeepening(
+                                pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, depth, -1, 1, true,
+                                System.currentTimeMillis() + 5000L);
+                    } catch (TimeoutException e) {
+                        throw new RuntimeException(e);
+                    }
                 } else {
 //                    if (!result.indeterminate()) {
                     result = null;
@@ -130,8 +136,13 @@ public class RecursiveDiscriminatingPathRule2 {
 
                         if (_depth > maxDepth) break;
 
-                        result = RecursiveBlocking.blockPathsIterativeDeepening(
-                                pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, _depth, -1, 1, true);
+                        try {
+                            result = RecursiveBlocking.blockPathsIterativeDeepening(
+                                    pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, _depth, -1, 1,
+                                    true, System.currentTimeMillis() + 5000L);
+                        } catch (TimeoutException e) {
+                            throw new RuntimeException(e);
+                        }
                     } while (result.indeterminate());
 //                    }
                 }

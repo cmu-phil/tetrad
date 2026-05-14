@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
 import static edu.cmu.tetrad.util.TMath.*;
@@ -66,8 +67,8 @@ import static edu.cmu.tetrad.util.TMath.*;
  */
 public final class Fask {
     private final Score score;
-    private double[][] data;
     private final DataSet dataSet;
+    private double[][] data;
     private Graph externalGraph = null;
     private int depth = -1;
     private double alpha = 0.05;
@@ -201,13 +202,24 @@ public final class Fask {
                                                   Node xj,
                                                   int maxPathLength) {
         try {
-            Set<Node> z = RecursiveBlocking.blockPathsRecursivelyFull(
-                    graph, xi, xj, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true).blockingSet();
+            Set<Node> z = null;
+            try {
+                z = RecursiveBlocking.blockPathsRecursivelyFull(
+                        graph, xi, xj, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true,
+                        Long.MAX_VALUE).blockingSet();
+            } catch (TimeoutException e) {
+                throw new RuntimeException(e);
+            }
 
             if (z == null) z = new HashSet<>();
 
-            Set<Node> z2 = RecursiveBlocking.blockPathsRecursivelyFull(
-                    graph, xj, xi, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true).blockingSet();
+            Set<Node> z2 = null;
+            try {
+                z2 = RecursiveBlocking.blockPathsRecursivelyFull(
+                        graph, xj, xi, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true).blockingSet();
+            } catch (TimeoutException e) {
+                throw new RuntimeException(e);
+            }
 
             if (z2 == null) {
                 List<Node> adj = graph.getAdjacentNodes(xi);
@@ -776,11 +788,11 @@ public final class Fask {
         int nyPos = StatUtils.getRows(y, y, 0, +1).size();
         if (nxPos < minPart || nyPos < minPart) return false;
 
-        double _pc  = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc));
+        double _pc = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc));
         double _pc1 = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc1));
         double _pc2 = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc2));
 
-        double z  = 0.5 * (TMath.log(1.0 + _pc)  - TMath.log(1.0 - _pc));
+        double z = 0.5 * (TMath.log(1.0 + _pc) - TMath.log(1.0 - _pc));
         double z1 = 0.5 * (TMath.log(1.0 + _pc1) - TMath.log(1.0 - _pc1));
         double z2 = 0.5 * (TMath.log(1.0 + _pc2) - TMath.log(1.0 - _pc2));
 

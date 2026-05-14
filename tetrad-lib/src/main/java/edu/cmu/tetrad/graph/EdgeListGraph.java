@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serial;
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
 
@@ -658,6 +659,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             return new Paths(this).getSepsetContaining(x, y, new HashSet<>(), maxLength);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -674,6 +677,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         try {
             return new Paths(this).getSepsetContaining(x, y, containing, maxLength);
         } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (TimeoutException e) {
             throw new RuntimeException(e);
         }
     }
