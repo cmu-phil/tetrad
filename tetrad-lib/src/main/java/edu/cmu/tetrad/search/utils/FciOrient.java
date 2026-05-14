@@ -1559,7 +1559,7 @@ public class FciOrient {
      *
      * @param maxBlockingPathLength the maximum length of the blocking path, specified as an integer
      */
-    public void setMaxBlockingPathLength(int maxBlockingPathLength) {
+    public void setRecursionDepth(int maxBlockingPathLength) {
         this.maxBlockingPathLength = maxBlockingPathLength;
     }
 

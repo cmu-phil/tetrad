@@ -5,7 +5,6 @@ import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.RecursiveBlocking;
-import edu.cmu.tetrad.search.SepsetFinder2;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -17,6 +16,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Harness comparing the number of independence tests (d-separation oracle queries)
@@ -41,21 +47,21 @@ public class SepsetComparisonPagHarness {
     // Configuration
     // -----------------------------------------------------------------------
 
-    private static final int[] NODE_COUNTS = {20};//10, 20, 50};
-    private static final int[] AVG_DEGREES = {4};//2, 4, 6};
-    private static final int NUM_LATENTS = 5;
-    private static final int REPS = 100;
-    private static final int PAIRS_PER_REP = 100;
-    private static final String OUTPUT_FILE = "sepset_comparison.csv";
+    private static final int[]  NODE_COUNTS   = {20};//10, 20, 50};
+    private static final int[]  AVG_DEGREES   = {6};//2, 4, 6};
+    private static final int    NUM_LATENTS   = 2;
+    private static final int    REPS          = 20;
+    private static final int    PAIRS_PER_REP = 20  ;
+    private static final String OUTPUT_FILE   = "sepset_comparison.csv";
 
     // Cap for exhaustive enumeration.
     private static final int MAX_EXHAUSTIVE_TESTS = 10_000;
 
     // Parameters for iterative-deepening RB (used in both pure-RB and hybrid).
-    private static final int RB_MAX_PATH_LEN = 15;
-    private static final int RB_DEPTH = -1;
-    private static final int RB_MAX_RADIUS = 4;
-    private static final int RB_NEAR_ENDPOINT = 1; // 1 = near x 2 = near y 3 = near either
+    private static final int RB_MAX_PATH_LEN  = 15;
+    private static final int RB_DEPTH         = 9;
+    private static final int RB_MAX_RADIUS    = -1;
+    private static final int RB_NEAR_ENDPOINT = 3; // 1 = near x 2 = near y 3 = near either
 
     // -----------------------------------------------------------------------
     // Main
@@ -72,24 +78,24 @@ public class SepsetComparisonPagHarness {
                     int numEdges = (p * avgDeg) / 2;
 
                     // Accumulators for all three methods
-                    long totalExhMs = 0, totalRbMs = 0, totalHybMs = 0;
-                    int exhCount = 0, rbCount = 0, hybCount = 0;
-                    int exhTimedOut = 0;
-                    int rbUnblockable = 0, rbNull = 0;
-                    int hybUnblockable = 0, hybNull = 0;
-                    int hybUsedRb = 0; // how often hybrid fell back to RB
+                    long totalExhMs      = 0, totalRbMs     = 0, totalHybMs    = 0;
+                    int  exhCount        = 0, rbCount       = 0, hybCount      = 0;
+                    int  exhTimedOut     = 0;
+                    int  rbUnblockable   = 0, rbNull        = 0;
+                    int  hybUnblockable  = 0, hybNull       = 0;
+                    int  hybUsedRb       = 0; // how often hybrid fell back to RB
 
                     long conditionStartMs = System.currentTimeMillis();
                     System.out.printf("%n=== p=%d, avgDeg=%d ===%n", p, avgDeg);
 
                     for (int rep = 0; rep < REPS; rep++) {
 
-                        Graph dag = generateRandomForwardDag(p, NUM_LATENTS, numEdges);
-                        MsepTest oracle = new MsepTest(dag);
-                        List<Node> nodes = dag.getNodes();
+                        Graph      dag    = generateRandomForwardDag(p, NUM_LATENTS, numEdges);
+                        MsepTest   oracle = new MsepTest(dag);
+                        List<Node> nodes  = dag.getNodes();
 
                         int pairsFound = 0;
-                        int attempts = 0;
+                        int attempts   = 0;
 
                         while (pairsFound < PAIRS_PER_REP) {
 
@@ -111,7 +117,7 @@ public class SepsetComparisonPagHarness {
 //                            // ---- 1. Exhaustive enumeration ----
 //                            long t0 = System.nanoTime();
 //                            ExhaustiveResult exh = exhaustiveEnumeration(
-//                                    x, y, dag, oracle);
+//                                    x, y, dag, RB_DEPTH, oracle);
 //                            long exhNs = System.nanoTime() - t0;
 //
 //                            totalExhMs += exhNs / 1_000_000;
@@ -134,7 +140,7 @@ public class SepsetComparisonPagHarness {
 
                             // ---- 2. Iterative-deepening RB ----
                             long t1 = System.nanoTime();
-                            RbResult rb = combinationCheck(x, y, dag, oracle);
+                            RbResult rb = iterativeDeepeningRb(x, y, dag, oracle, p);
                             long rbNs = System.nanoTime() - t1;
 
                             totalRbMs += rbNs / 1_000_000;
@@ -168,46 +174,46 @@ public class SepsetComparisonPagHarness {
                                     x.getName(), y.getName(),
                                     rb.testCount, rb.setSize);
 
-//                            // ---- 3. Hybrid: exhaustive first, then RB ----
-//                            long t2 = System.nanoTime();
-//                            HybridResult hyb = hybridRb(x, y, dag, oracle, p);
-//                            long hybNs = System.nanoTime() - t2;
-//
-//                            totalHybMs += hybNs / 1_000_000;
-//                            hybCount++;
-//                            if (hyb.usedRb) hybUsedRb++;
-//
-//                            if (hyb.unblockable) {
-//                                hybUnblockable++;
-//                                System.out.printf(
-//                                        "  [hyb] UNBLOCKABLE "
-//                                                + "p=%d deg=%d rep=%d (%s,%s) time=%.3fms%n",
-//                                        p, avgDeg, rep,
-//                                        x.getName(), y.getName(), hybNs / 1e6);
-//                            } else if (hyb.setSize < 0) {
-//                                hybNull++;
-//                                System.out.printf(
-//                                        "  [hyb] INDETERMINATE "
-//                                                + "p=%d deg=%d rep=%d (%s,%s) "
-//                                                + "usedRb=%b time=%.3fms%n",
-//                                        p, avgDeg, rep,
-//                                        x.getName(), y.getName(),
-//                                        hyb.usedRb, hybNs / 1e6);
-//                            } else {
-//                                System.out.printf(
-//                                        "  [hyb] p=%d deg=%d rep=%d (%s,%s) "
-//                                                + "tests=%d setSize=%d usedRb=%b time=%.3fms%n",
-//                                        p, avgDeg, rep,
-//                                        x.getName(), y.getName(),
-//                                        hyb.testCount, hyb.setSize,
-//                                        hyb.usedRb, hybNs / 1e6);
-//                            }
-//
-//                            out.printf("%d,%d,%d,%s,%s,hybrid,%d,%d%n",
-//                                    p, avgDeg, rep,
-//                                    x.getName(), y.getName(),
-//                                    hyb.testCount, hyb.setSize);
-//
+                            // ---- 3. Hybrid: exhaustive first, then RB ----
+                            long t2 = System.nanoTime();
+                            HybridResult hyb = hybridRb(x, y, dag, oracle, p);
+                            long hybNs = System.nanoTime() - t2;
+
+                            totalHybMs += hybNs / 1_000_000;
+                            hybCount++;
+                            if (hyb.usedRb) hybUsedRb++;
+
+                            if (hyb.unblockable) {
+                                hybUnblockable++;
+                                System.out.printf(
+                                        "  [hyb] UNBLOCKABLE "
+                                                + "p=%d deg=%d rep=%d (%s,%s) time=%.3fms%n",
+                                        p, avgDeg, rep,
+                                        x.getName(), y.getName(), hybNs / 1e6);
+                            } else if (hyb.setSize < 0) {
+                                hybNull++;
+                                System.out.printf(
+                                        "  [hyb] INDETERMINATE "
+                                                + "p=%d deg=%d rep=%d (%s,%s) "
+                                                + "usedRb=%b time=%.3fms%n",
+                                        p, avgDeg, rep,
+                                        x.getName(), y.getName(),
+                                        hyb.usedRb, hybNs / 1e6);
+                            } else {
+                                System.out.printf(
+                                        "  [hyb] p=%d deg=%d rep=%d (%s,%s) "
+                                                + "tests=%d setSize=%d usedRb=%b time=%.3fms%n",
+                                        p, avgDeg, rep,
+                                        x.getName(), y.getName(),
+                                        hyb.testCount, hyb.setSize,
+                                        hyb.usedRb, hybNs / 1e6);
+                            }
+
+                            out.printf("%d,%d,%d,%s,%s,hybrid,%d,%d%n",
+                                    p, avgDeg, rep,
+                                    x.getName(), y.getName(),
+                                    hyb.testCount, hyb.setSize);
+
                             pairsFound++;
                         }
 
@@ -220,8 +226,8 @@ public class SepsetComparisonPagHarness {
                                     rep + 1, REPS,
                                     exhCount > 0
                                             ? (double) totalExhMs / exhCount : 0.0,
-                                    rbCount > 0
-                                            ? (double) totalRbMs / rbCount : 0.0,
+                                    rbCount  > 0
+                                            ? (double) totalRbMs  / rbCount  : 0.0,
                                     hybCount > 0
                                             ? (double) totalHybMs / hybCount : 0.0,
                                     exhTimedOut, rbNull, hybNull, hybUsedRb);
@@ -242,7 +248,7 @@ public class SepsetComparisonPagHarness {
                             exhCount > 0 ? (double) totalExhMs / exhCount : 0.0,
                             exhTimedOut, MAX_EXHAUSTIVE_TESTS,
                             rbCount,
-                            rbCount > 0 ? (double) totalRbMs / rbCount : 0.0,
+                            rbCount  > 0 ? (double) totalRbMs  / rbCount  : 0.0,
                             rbUnblockable, rbNull,
                             hybCount,
                             hybCount > 0 ? (double) totalHybMs / hybCount : 0.0,
@@ -258,35 +264,103 @@ public class SepsetComparisonPagHarness {
     // Method 2: Iterative-deepening recursive blocking
     // -----------------------------------------------------------------------
 
-    private static RbResult combinationCheck(
-            Node x, Node y, Graph dag, MsepTest oracle) {
-
-        try {
-            Set<Node> sepset = SepsetFinder2.findSepset(dag, x, y, Set.of(), RB_DEPTH,
-                    new SepsetFinder2.StandardSepsetTester(dag, false));
-
-            RecursiveBlocking.BlockingResult result;
-
-            if (sepset != null) {
-                result = new RecursiveBlocking.BlockingResult(sepset, false);
-            } else {
-                result = new RecursiveBlocking.BlockingResult(null, true);
-//                result =
-//                        RecursiveBlocking.blockPathsIterativeDeepening(
+//    private static RbResult iterativeDeepeningRb(
+//            Node x, Node y, Graph dag, MsepTest oracle, int p) {
+//
+//        try {
+//            int ceiling = (RB_MAX_PATH_LEN < 0) ? p : RB_MAX_PATH_LEN;
+//
+//            for (int pathLen = 0; pathLen <= ceiling; pathLen++) {
+//
+//                if (Thread.currentThread().isInterrupted()) {
+//                    return new RbResult(0, -1, false);
+//                }
+//
+//                RecursiveBlocking.BlockingResult result =
+//                        RecursiveBlocking.blockPathsRecursivelyFull(
 //                                dag, x, y,
 //                                Set.of(), Set.of(),
-//                                -1,
+//                                pathLen,
 //                                RB_DEPTH,
 //                                RB_MAX_RADIUS,
 //                                RB_NEAR_ENDPOINT,
 //                                true);
+//
+//                if (result.found()) {
+//                    Set<Node> Z = result.blockingSet();
+//                    int testCount = 0;
+//
+//                    testCount++;
+//                    if (oracle.checkIndependence(x, y, Z).isIndependent()) {
+//                        return new RbResult(testCount, Z.size(), false);
+//                    }
+//
+//                    return new RbResult(testCount, -1, false);
+//                }
+//
+//                if (!result.indeterminate()) {
+//                    // UNBLOCKABLE — no separator exists within the constrained search space
+//                    return new RbResult(0, -1, true);
+//                }
+//            }
+//
+//            // Ceiling reached without resolution
+//            return new RbResult(0, -1, false);
+//
+//        } catch (InterruptedException e) {
+//            Thread.currentThread().interrupt();
+//            return new RbResult(0, -1, false);
+//        }
+//    }
+
+
+    private static RbResult iterativeDeepeningRb(
+            Node x, Node y, Graph dag, MsepTest oracle, int p) {
+
+        int ceiling = (RB_MAX_PATH_LEN < 0) ? p : RB_MAX_PATH_LEN;
+
+        for (int pathLen = ceiling; pathLen <= ceiling; pathLen++) {
+
+            if (Thread.currentThread().isInterrupted()) {
+                return new RbResult(0, -1, false);
+            }
+
+            final int _pathLen = pathLen;
+
+            // Run blockPathsRecursivelyFull on a separate thread with a 5-second timeout.
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Future<RecursiveBlocking.BlockingResult> future = executor.submit(() ->
+                    RecursiveBlocking.blockPathsRecursivelyFull(
+                            dag, x, y,
+                            Set.of(), Set.of(),
+                            _pathLen,
+                            RB_DEPTH,
+                            RB_MAX_RADIUS,
+                            RB_NEAR_ENDPOINT,
+                            true));
+            executor.shutdown();
+
+            RecursiveBlocking.BlockingResult result;
+
+            try {
+                result = future.get(5, TimeUnit.SECONDS);
+                System.out.println("result: " + result);
+            } catch (TimeoutException e) {
+                future.cancel(true);
+                return new RbResult(0, -1, false);
+            } catch (InterruptedException e) {
+                future.cancel(true);
+                Thread.currentThread().interrupt();
+                return new RbResult(0, -1, false);
+            } catch (ExecutionException e) {
+                future.cancel(true);
+                return new RbResult(0, -1, false);
             }
 
             if (result.found()) {
                 Set<Node> Z = result.blockingSet();
-                int testCount = 0;
 
-                testCount++;
+                int testCount = 1;
                 if (oracle.checkIndependence(x, y, Z).isIndependent()) {
                     return new RbResult(testCount, Z.size(), false);
                 }
@@ -295,16 +369,11 @@ public class SepsetComparisonPagHarness {
             }
 
             if (!result.indeterminate()) {
-                // UNBLOCKABLE — no separator exists within the constrained search space
                 return new RbResult(0, -1, true);
-            } else {
-                return new RbResult(0, -1, false);
             }
-
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return new RbResult(0, -1, false);
         }
+
+        return new RbResult(0, -1, false);
     }
 
     // -----------------------------------------------------------------------
@@ -315,7 +384,7 @@ public class SepsetComparisonPagHarness {
             Node x, Node y, Graph dag, MsepTest oracle, int p) {
 
         // First try exhaustive enumeration over adjacency sets.
-        ExhaustiveResult exh = exhaustiveEnumeration(x, y, dag, oracle);
+        ExhaustiveResult exh = exhaustiveEnumeration(x, y, dag, RB_DEPTH, oracle);
 
         if (exh.setSize >= 0) {
             // Exhaustive succeeded — return its result, no RB needed.
@@ -324,7 +393,7 @@ public class SepsetComparisonPagHarness {
 
         // Exhaustive failed (timed out or found no separator in adj sets).
         // Fall back to iterative-deepening RB, accumulating the test count.
-        RbResult rb = combinationCheck(x, y, dag, oracle);
+        RbResult rb = iterativeDeepeningRb(x, y, dag, oracle, p);
 
         int totalTests = exh.testCount + rb.testCount;
 
@@ -343,7 +412,7 @@ public class SepsetComparisonPagHarness {
     // -----------------------------------------------------------------------
 
     private static ExhaustiveResult exhaustiveEnumeration(
-            Node x, Node y, Graph dag, MsepTest oracle) {
+            Node x, Node y, Graph dag, int depth, MsepTest oracle) {
 
         int testCount = 0;
 
@@ -353,11 +422,11 @@ public class SepsetComparisonPagHarness {
         List<Node> adjY = new ArrayList<>(dag.getAdjacentNodes(y));
         adjY.remove(x);
 
-        int maxDepth = Math.max(adjX.size(), adjY.size());
+        int maxDepth = depth < 0 ? Math.max(adjX.size(), adjY.size()) : depth;
 
-        for (int depth = 0; depth <= maxDepth; depth++) {
+        for (int _depth = 0; _depth <= maxDepth; _depth++) {
 
-            for (List<Node> subset : subsetsOfSize(adjX, depth)) {
+            for (List<Node> subset : subsetsOfSize(adjX, _depth)) {
                 if (testCount >= MAX_EXHAUSTIVE_TESTS) {
                     return new ExhaustiveResult(testCount, -1, true);
                 }
@@ -368,7 +437,7 @@ public class SepsetComparisonPagHarness {
                 }
             }
 
-            for (List<Node> subset : subsetsOfSize(adjY, depth)) {
+            for (List<Node> subset : subsetsOfSize(adjY, _depth)) {
                 if (testCount >= MAX_EXHAUSTIVE_TESTS) {
                     return new ExhaustiveResult(testCount, -1, true);
                 }
@@ -422,41 +491,41 @@ public class SepsetComparisonPagHarness {
     // -----------------------------------------------------------------------
 
     private static class ExhaustiveResult {
-        final int testCount;
-        final int setSize;   // -1 if no separator found
+        final int     testCount;
+        final int     setSize;   // -1 if no separator found
         final boolean timedOut;
 
         ExhaustiveResult(int testCount, int setSize, boolean timedOut) {
             this.testCount = testCount;
-            this.setSize = setSize;
-            this.timedOut = timedOut;
+            this.setSize   = setSize;
+            this.timedOut  = timedOut;
         }
     }
 
     private static class RbResult {
-        final int testCount;
-        final int setSize;     // -1 if no separator found or indeterminate
+        final int     testCount;
+        final int     setSize;     // -1 if no separator found or indeterminate
         final boolean unblockable; // true iff RB returned definitive UNBLOCKABLE
 
         RbResult(int testCount, int setSize, boolean unblockable) {
-            this.testCount = testCount;
-            this.setSize = setSize;
+            this.testCount   = testCount;
+            this.setSize     = setSize;
             this.unblockable = unblockable;
         }
     }
 
     private static class HybridResult {
-        final int testCount;   // exhaustive tests + RB tests (if fallback used)
-        final int setSize;     // -1 if no separator found
+        final int     testCount;   // exhaustive tests + RB tests (if fallback used)
+        final int     setSize;     // -1 if no separator found
         final boolean unblockable;
         final boolean usedRb;      // true iff RB fallback was invoked
 
         HybridResult(int testCount, int setSize,
                      boolean unblockable, boolean usedRb) {
-            this.testCount = testCount;
-            this.setSize = setSize;
+            this.testCount   = testCount;
+            this.setSize     = setSize;
             this.unblockable = unblockable;
-            this.usedRb = usedRb;
+            this.usedRb      = usedRb;
         }
     }
 }

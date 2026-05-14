@@ -57,6 +57,8 @@ import java.util.*;
  */
 public class RecursiveBlocking {
 
+    private static final int MAX_NODE_VISITS = 3;
+
     private RecursiveBlocking() {
     }
 

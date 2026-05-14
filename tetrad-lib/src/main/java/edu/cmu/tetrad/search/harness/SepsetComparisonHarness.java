@@ -48,7 +48,7 @@ public class SepsetComparisonHarness {
     private static final int RB_MAX_PATH_LEN  = -1;
     private static final int RB_DEPTH         = -1;
     private static final int RB_MAX_RADIUS    = 1;
-    private static final int RB_NEAR_ENDPOINT = 1; // 1 = near x 2 = near y 3 = near either
+    private static final int RB_NEAR_ENDPOINT = 3; // 1 = near x 2 = near y 3 = near either
 
     // -----------------------------------------------------------------------
     // Main

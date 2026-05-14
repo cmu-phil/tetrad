@@ -220,7 +220,7 @@ public final class MagToPag {
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxBlockingPathLength(maxBlockingPathLength);
+        fciOrient.setRecursionDepth(maxBlockingPathLength);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
 
