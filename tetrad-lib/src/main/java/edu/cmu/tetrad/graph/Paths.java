@@ -1823,7 +1823,7 @@ public class Paths implements TetradSerializable {
      */
     public List<Node> possibleDsep(Node x, int maxPossibleDsepPathLength) {
 
-        // Removing the second argument y to bring this in line with CPS 2001 p. 188.
+        // Removing the second argument y to bring this in line with CPS 2000 p. 188.
         Set<Node> msep = new HashSet<>();
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
@@ -1897,10 +1897,7 @@ public class Paths implements TetradSerializable {
         msep.remove(x);
 
         List<Node> _msep = new ArrayList<>(msep);
-
         _msep.sort(NaturalSort.naturalComparator());
-        Collections.reverse(_msep);
-
         return _msep;
 
     }
