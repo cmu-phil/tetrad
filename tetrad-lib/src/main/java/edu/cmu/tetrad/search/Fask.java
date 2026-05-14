@@ -38,7 +38,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeoutException;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
 import static edu.cmu.tetrad.util.TMath.*;
@@ -203,13 +202,8 @@ public final class Fask {
                                                   int maxPathLength) {
         try {
             Set<Node> z = null;
-            try {
-                z = RecursiveBlocking.blockPathsRecursivelyFull(
-                        graph, xi, xj, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true,
-                        Long.MAX_VALUE).blockingSet();
-            } catch (TimeoutException e) {
-                throw new RuntimeException(e);
-            }
+            z = RecursiveBlocking.blockPathsRecursivelyFull(
+                    graph, xi, xj, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true).blockingSet();
 
             if (z == null) z = new HashSet<>();
 
