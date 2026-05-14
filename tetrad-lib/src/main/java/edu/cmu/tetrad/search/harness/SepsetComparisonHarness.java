@@ -35,7 +35,7 @@ public class SepsetComparisonHarness {
     // Configuration
     // -----------------------------------------------------------------------
 
-    private static final int[]  NODE_COUNTS   = {50};//10, 20, 50};
+    private static final int[]  NODE_COUNTS   = {20};//10, 20, 50};
     private static final int[]  AVG_DEGREES   = {6};//2, 4, 6};
     private static final int    REPS          = 100;
     private static final int    PAIRS_PER_REP = 100;
@@ -45,9 +45,9 @@ public class SepsetComparisonHarness {
     private static final int MAX_EXHAUSTIVE_TESTS = 10_000;
 
     // Parameters for iterative-deepening RB (used in both pure-RB and hybrid).
-    private static final int RB_MAX_PATH_LEN  = 15;
+    private static final int RB_MAX_PATH_LEN  = -1;
     private static final int RB_DEPTH         = -1;
-    private static final int RB_MAX_RADIUS    = 4;
+    private static final int RB_MAX_RADIUS    = 1;
     private static final int RB_NEAR_ENDPOINT = 1; // 1 = near x 2 = near y 3 = near either
 
     // -----------------------------------------------------------------------
