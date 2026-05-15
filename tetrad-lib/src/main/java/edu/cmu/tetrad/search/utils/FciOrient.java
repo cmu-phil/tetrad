@@ -834,7 +834,6 @@ public class FciOrient {
                 List<Pair<DiscriminatingPath, Boolean>> results = tasks.stream().map(task -> {
                     try {
                         return task.call();
-//                        return GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS);
                     } catch (Exception e) {
                         return null;
                     }
@@ -860,17 +859,6 @@ public class FciOrient {
 
         for (Pair<DiscriminatingPath, Boolean> result : allResults) {
             if (result != null && result.getRight()) {
-//                if (verbose) {
-//                    DiscriminatingPath left = result.getLeft();
-//                    TetradLogger.getInstance().log("R4: Discriminating path oriented: " + left);
-//
-//                    Node a = left.getA();
-//                    Node b = left.getB();
-//                    Node c = left.getC();
-//
-//                    TetradLogger.getInstance().log("    Oriented as: " + GraphUtils.pathString(graph, a, b, c));
-//                }
-
                 this.changeFlag = true;
             }
         }
