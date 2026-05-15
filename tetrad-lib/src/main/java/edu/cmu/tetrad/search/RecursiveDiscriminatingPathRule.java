@@ -112,25 +112,24 @@ public class RecursiveDiscriminatingPathRule {
                 // Convert indices -> actual nodes
                 Set<Node> vNodesNotFollowed = GraphUtils.asSet(indices, _perhapsNotFollowed);
 
-                RecursiveBlocking.BlockingResult result = null;
+                RecursiveBlocking.BlockingResult result;
+
                 if (depth < 0) {
                     result = RecursiveBlocking.blockPathsRecursivelyFull(
                             pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, depth, -1, 1, false);
                 } else {
-//                    if (!result.indeterminate()) {
                     result = null;
-                    int _depth = 0;
+//                    int _depth = 0;
                     int maxDepth = depth >= 0 ? depth : pag.getNumNodes();
+//
+//                    do {
+//                        _depth++;
 
-                    do {
-                        _depth++;
+//                        if (_depth > maxDepth) break;
 
-                        if (_depth > maxDepth) break;
-
-                        result = RecursiveBlocking.blockPathsRecursivelyFull(
-                                pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, _depth, -1, 1, false);
-                    } while (result.indeterminate());
-//                    }
+                    result = RecursiveBlocking.blockPathsRecursivelyFull(
+                            pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, maxDepth, -1, 1, false);
+//                    } while (result.indeterminate());
                 }
 
                 if (result == null || result.indeterminate()) {

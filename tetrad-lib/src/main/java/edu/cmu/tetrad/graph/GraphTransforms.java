@@ -539,8 +539,10 @@ public class GraphTransforms {
      * @param excludeSelectionBias whether to exclude selection bias
      * @return the resulting partial ancestral graph (PAG)
      */
-    public static Graph magToPag(Graph mag, boolean excludeSelectionBias) {
-        return new MagToPag(mag).convert(true, excludeSelectionBias);
+    public static Graph magToPag(Graph mag, boolean excludeSelectionBias, int recursionDepth) {
+        MagToPag magToPag = new MagToPag(mag);
+        magToPag.setRecursionDepth(recursionDepth);
+        return magToPag.convert(true, excludeSelectionBias);
     }
 }
 

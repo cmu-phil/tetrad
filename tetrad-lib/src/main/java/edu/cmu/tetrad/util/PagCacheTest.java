@@ -67,9 +67,11 @@ public class PagCacheTest {
     }
 
     /** Reference PAG for a DAG, computed without the cache (mirrors PagCache.computePag(DAG)). */
-    private static Graph referencePagFromDag(Graph dag) {
+    private static Graph referencePagFromDag(Graph dag, int referenceDepth) {
         Graph mag = GraphTransforms.dagToMag(dag);
-        return new MagToPag(mag).convert(false, false);
+        MagToPag magToPag = new MagToPag(mag);
+        magToPag.setRecursionDepth(referenceDepth);
+        return magToPag.convert(false, false);
     }
 
     // ----------------------- tests -----------------------
@@ -101,7 +103,7 @@ public class PagCacheTest {
         Graph pag2 = cache.getPag(dag, false);
 
         assertTrue(pag1 == pag2, "PagCache should return the SAME PAG object across calls for the same source graph");
-        assertEquals("PAG structure should match reference conversion", canon(referencePagFromDag(dag)), canon(pag1));
+        assertEquals("PAG structure should match reference conversion", canon(referencePagFromDag(dag, Integer.MAX_VALUE)), canon(pag1));
     }
 
     /**
@@ -128,7 +130,7 @@ public class PagCacheTest {
         cache.clear();
 
         Graph pag1 = cache.getPag(dag, false);
-        String expected = canon(referencePagFromDag(dag));
+        String expected = canon(referencePagFromDag(dag, Integer.MAX_VALUE));
 
         // Mutate the returned PAG (simulate a naughty caller changing endpoints)
         // Flip the endpoints on the first edge we find.

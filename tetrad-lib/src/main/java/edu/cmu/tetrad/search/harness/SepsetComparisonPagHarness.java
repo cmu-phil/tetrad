@@ -85,7 +85,7 @@ public class SepsetComparisonPagHarness {
 
                     for (int rep = 0; rep < REPS; rep++) {
 
-                        Graph      dag    = generateRandomForwardDag(p, NUM_LATENTS, numEdges);
+                        Graph      dag    = generateRandomForwardDag(p, NUM_LATENTS, numEdges, RB_RECURSION_DEPTH);
                         MsepTest   oracle = new MsepTest(dag);
                         List<Node> nodes  = dag.getNodes();
 
@@ -397,9 +397,11 @@ public class SepsetComparisonPagHarness {
     // Graph generation
     // -----------------------------------------------------------------------
 
-    private static Graph generateRandomForwardDag(int numNodes, int numLatents, int numEdges) {
+    private static Graph generateRandomForwardDag(int numNodes, int numLatents, int numEdges, int recursionDepth) {
         Graph graph = RandomGraph.randomGraph(numNodes, numLatents, numEdges, 100, 100, 100, false);
-        return new MagToPag(GraphTransforms.dagToMag(graph)).convert(true, false);
+        MagToPag magToPag = new MagToPag(GraphTransforms.dagToMag(graph));
+        magToPag.setRecursionDepth(recursionDepth);
+        return magToPag.convert(true, false);
     }
 
     // -----------------------------------------------------------------------

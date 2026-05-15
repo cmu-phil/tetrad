@@ -360,7 +360,8 @@ public abstract class StarFci implements IGraphSearch {
         }
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, verbose, new HashSet<>(), excludeSelectionBias);
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, verbose, new HashSet<>(),
+                    excludeSelectionBias, Integer.MAX_VALUE);
 
 //            pag = new DagToPag(pag).convert();
         }

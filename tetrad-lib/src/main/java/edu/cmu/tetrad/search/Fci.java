@@ -420,7 +420,8 @@ public final class Fci implements IGraphSearch {
         if (verbose) TetradLogger.getInstance().log("Finished final FCI orientation.");
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedTriples, verbose, new HashSet<>(), excludeSelectionBias);
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedTriples, verbose, new HashSet<>(),
+                    excludeSelectionBias, Integer.MAX_VALUE);
         }
 
         long stop = MillisecondTimes.timeMillis();

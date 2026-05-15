@@ -2606,7 +2606,8 @@ public final class GraphUtils {
      */
     public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
                                      Set<Triple> knownColliders,
-                                     boolean verbose, Set<Node> selection, boolean excludeSelectionBias) {
+                                     boolean verbose, Set<Node> selection, boolean excludeSelectionBias,
+                                     int recursionDepth) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
@@ -2629,9 +2630,10 @@ public final class GraphUtils {
             reorientWithFci(pag, fciOrient, knowledge, knownColliders, excludeSelectionBias, verbose);
         } while (changed);
 
-        MagToPag dagToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
-        dagToPag.setKnowledge(knowledge);
-        Graph pag2 = dagToPag.convert(true, excludeSelectionBias);
+        MagToPag magToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
+        magToPag.setRecursionDepth(recursionDepth);
+        magToPag.setKnowledge(knowledge);
+        Graph pag2 = magToPag.convert(true, excludeSelectionBias);
 
         if (pag2.equals(orig)) {
             if (verbose) TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");

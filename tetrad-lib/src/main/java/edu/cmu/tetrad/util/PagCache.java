@@ -69,7 +69,7 @@ public final class PagCache {
         return local;
     }
 
-    private static Graph computePag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int maxBlockingPathLength) {
+    private static Graph computePag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int recursionDepth) {
         if (graph.paths().isLegalDag()) {
             if (graph.paths().existsDirectedCycle()) {
                 throw new IllegalArgumentException("Graph contains directed cycle");
@@ -77,14 +77,14 @@ public final class PagCache {
 
             Graph mag = GraphTransforms.dagToMag(graph);
 
-            return computePagFromMag(mag, knowledge, excludeSelectionBias, maxBlockingPathLength);   // no getPag() here, avoiding infinite recursion.
+            return computePagFromMag(mag, knowledge, excludeSelectionBias, recursionDepth);   // no getPag() here, avoiding infinite recursion.
         } else if (graph.paths().isLegalMag()) {
-            return computePagFromMag(graph, knowledge, excludeSelectionBias, maxBlockingPathLength);
+            return computePagFromMag(graph, knowledge, excludeSelectionBias, recursionDepth);
         } else {
             Graph mag = GraphTransforms.zhangMagFromPag(graph);
             MagToPag magToPag = new MagToPag(mag);
             magToPag.setKnowledge(knowledge);
-            magToPag.setMaxBlockingPathLength(maxBlockingPathLength);
+            magToPag.setRecursionDepth(recursionDepth);
             magToPag.setMaxDiscriminatingPathLength(-1);
             return magToPag.convert(true, excludeSelectionBias);
         }
@@ -197,10 +197,10 @@ public final class PagCache {
         return h;
     }
 
-    private static Graph computePagFromMag(Graph mag, Knowledge knowledge, boolean excludeSelectionBias, int maxBlockingPathLength) {
+    private static Graph computePagFromMag(Graph mag, Knowledge knowledge, boolean excludeSelectionBias, int recursionDepth) {
         MagToPag magToPag = new MagToPag(mag);
         magToPag.setKnowledge(knowledge);
-        magToPag.setMaxBlockingPathLength(maxBlockingPathLength);
+        magToPag.setRecursionDepth(recursionDepth);
         magToPag.setMaxDiscriminatingPathLength(-1);
         return magToPag.convert(false, excludeSelectionBias);
     }
