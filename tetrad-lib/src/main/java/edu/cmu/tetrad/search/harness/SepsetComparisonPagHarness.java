@@ -169,45 +169,45 @@ public class SepsetComparisonPagHarness {
                                     x.getName(), y.getName(),
                                     rb.testCount, rb.setSize);
 
-                            // ---- 3. Hybrid: exhaustive first, then RB ----
-                            long t2 = System.nanoTime();
-                            HybridResult hyb = hybridRb(x, y, dag, oracle, p);
-                            long hybNs = System.nanoTime() - t2;
-
-                            totalHybMs += hybNs / 1_000_000;
-                            hybCount++;
-                            if (hyb.usedRb) hybUsedRb++;
-
-                            if (hyb.unblockable) {
-                                hybUnblockable++;
-                                System.out.printf(
-                                        "  [hyb] UNBLOCKABLE "
-                                                + "p=%d deg=%d rep=%d (%s,%s) time=%.3fms%n",
-                                        p, avgDeg, rep,
-                                        x.getName(), y.getName(), hybNs / 1e6);
-                            } else if (hyb.setSize < 0) {
-                                hybNull++;
-                                System.out.printf(
-                                        "  [hyb] INDETERMINATE "
-                                                + "p=%d deg=%d rep=%d (%s,%s) "
-                                                + "usedRb=%b time=%.3fms%n",
-                                        p, avgDeg, rep,
-                                        x.getName(), y.getName(),
-                                        hyb.usedRb, hybNs / 1e6);
-                            } else {
-                                System.out.printf(
-                                        "  [hyb] p=%d deg=%d rep=%d (%s,%s) "
-                                                + "tests=%d setSize=%d usedRb=%b time=%.3fms%n",
-                                        p, avgDeg, rep,
-                                        x.getName(), y.getName(),
-                                        hyb.testCount, hyb.setSize,
-                                        hyb.usedRb, hybNs / 1e6);
-                            }
-
-                            out.printf("%d,%d,%d,%s,%s,hybrid,%d,%d%n",
-                                    p, avgDeg, rep,
-                                    x.getName(), y.getName(),
-                                    hyb.testCount, hyb.setSize);
+//                            // ---- 3. Hybrid: exhaustive first, then RB ----
+//                            long t2 = System.nanoTime();
+//                            HybridResult hyb = hybridRb(x, y, dag, oracle, p);
+//                            long hybNs = System.nanoTime() - t2;
+//
+//                            totalHybMs += hybNs / 1_000_000;
+//                            hybCount++;
+//                            if (hyb.usedRb) hybUsedRb++;
+//
+//                            if (hyb.unblockable) {
+//                                hybUnblockable++;
+//                                System.out.printf(
+//                                        "  [hyb] UNBLOCKABLE "
+//                                                + "p=%d deg=%d rep=%d (%s,%s) time=%.3fms%n",
+//                                        p, avgDeg, rep,
+//                                        x.getName(), y.getName(), hybNs / 1e6);
+//                            } else if (hyb.setSize < 0) {
+//                                hybNull++;
+//                                System.out.printf(
+//                                        "  [hyb] INDETERMINATE "
+//                                                + "p=%d deg=%d rep=%d (%s,%s) "
+//                                                + "usedRb=%b time=%.3fms%n",
+//                                        p, avgDeg, rep,
+//                                        x.getName(), y.getName(),
+//                                        hyb.usedRb, hybNs / 1e6);
+//                            } else {
+//                                System.out.printf(
+//                                        "  [hyb] p=%d deg=%d rep=%d (%s,%s) "
+//                                                + "tests=%d setSize=%d usedRb=%b time=%.3fms%n",
+//                                        p, avgDeg, rep,
+//                                        x.getName(), y.getName(),
+//                                        hyb.testCount, hyb.setSize,
+//                                        hyb.usedRb, hybNs / 1e6);
+//                            }
+//
+//                            out.printf("%d,%d,%d,%s,%s,hybrid,%d,%d%n",
+//                                    p, avgDeg, rep,
+//                                    x.getName(), y.getName(),
+//                                    hyb.testCount, hyb.setSize);
 
                             pairsFound++;
                         }
@@ -266,7 +266,9 @@ public class SepsetComparisonPagHarness {
         long startMs = System.currentTimeMillis();
 
         try {
-            for (int recursionDepth = 0; recursionDepth <= ceiling; recursionDepth++) {
+            for (int recursionDepth = ceiling; recursionDepth <= ceiling; recursionDepth++) {
+
+                System.out.println("RB: recursionDepth=" + recursionDepth);
 
                 long deadlineMs = System.currentTimeMillis() + 5_000;
 
@@ -277,6 +279,8 @@ public class SepsetComparisonPagHarness {
                 if (System.currentTimeMillis() - startMs >  deadlineMs) {
                     return new RbResult(0, -1, false);
                 }
+
+                System.out.println("RB: recursionDepth=" + recursionDepth + ", depth=" + RB_DEPTH + ", maxRadius=" + RB_MAX_RADIUS + ", nearEndpoint=" + RB_NEAR_ENDPOINT);
 
                 RecursiveBlocking.BlockingResult result =
                         RecursiveBlocking.blockPathsRecursivelyFull(

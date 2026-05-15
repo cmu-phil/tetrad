@@ -58,6 +58,8 @@ import java.util.concurrent.TimeoutException;
  */
 public class RecursiveBlocking {
 
+    private static final int MAX_TOTAL_FRAMES = 50_000;
+
     private RecursiveBlocking() {
     }
 
@@ -73,8 +75,8 @@ public class RecursiveBlocking {
                                                       int recursionDepth)
             throws InterruptedException {
         try {
-            return blockPathsIterativeDeepening(graph, x, y, containing, notFollowed,
-                    recursionDepth, 8, 4, 1, true, Long.MAX_VALUE).blockingSet();
+            return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
+                    recursionDepth, 8, 6, 1, true, Long.MAX_VALUE).blockingSet();
         } catch (TimeoutException e) {
             throw new RuntimeException(e);
         }
@@ -491,8 +493,6 @@ public class RecursiveBlocking {
 
         for (int _recusionDepth = 0; _recusionDepth <= ceiling; _recusionDepth++) {
 
-            checkTimeout(deadlineMs);
-
             BlockingResult result = blockPathsRecursivelyFull(
                     graph, x, y,
                     containing, notFollowed,
@@ -787,8 +787,11 @@ public class RecursiveBlocking {
         // Iteration cap: Z can grow by at most one node per outer iteration,
         // and is bounded by pool size, so pool.size() + 1 iterations suffices
         // for convergence. We add a small buffer for safety.
-        int maxIterations = pool.size();
+//        int maxIterations = pool.size();
+        int maxIterations = Math.min(pool.size(), 10);
         int iterations = 0;
+
+        int[] totalFrames = new int[]{0};
 
         while (iterations++ < maxIterations) {
             checkTimeout(deadlineMs);
@@ -803,6 +806,8 @@ public class RecursiveBlocking {
             for (Node b : firstHops) {
                 checkTimeout(deadlineMs);
 
+//                System.out.println("first hop " + b);
+
                 Set<Node> path = new HashSet<>();
                 path.add(x);
 
@@ -811,7 +816,7 @@ public class RecursiveBlocking {
                 Blockable r = findPathToTargetVisit(
                         graph, x, b, y, path, z,
                         depth, notFollowed, descendantsMap, pool,
-                        recursionDepth, currentRecursionDepth, deadlineMs);
+                        recursionDepth, currentRecursionDepth, deadlineMs, totalFrames);
 
                 if (r == Blockable.UNBLOCKABLE) {
                     return new BlockingResult(null, false);
@@ -857,7 +862,7 @@ public class RecursiveBlocking {
                                            Set<Node> pool,
                                            int recursionDepth,
                                            int currentRecursionDepth,
-                                           long deadlineMs)
+                                           long deadlineMs, int[] totalFrames)
             throws InterruptedException, TimeoutException {
 
         Deque<Frame> callStack = new ArrayDeque<>();
@@ -868,6 +873,14 @@ public class RecursiveBlocking {
 
         while (!callStack.isEmpty()) {
             checkTimeout(deadlineMs);
+
+//            if (totalFrames[0] % 1000 == 0 && totalFrames[0] > 0) {
+//                System.out.println("Total frames: " + totalFrames[0]);
+//            }
+
+            if (++totalFrames[0] > MAX_TOTAL_FRAMES) {
+                return Blockable.INDETERMINATE;
+            }
 
             Frame f = callStack.peek();
 

@@ -415,8 +415,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                         }
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
-                    } catch (TimeoutException e) {
-                        throw new RuntimeException(e);
                     }
                 }
 
