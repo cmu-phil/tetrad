@@ -190,7 +190,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     @Override
     public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath,
-                                                                             int maxBlockingPathLength, int maxDiscriminatingPathLength,
+                                                                             int recursiveDepth, int maxDiscriminatingPathLength,
                                                                              Graph graph, Set<Node> vNodes) throws InterruptedException {
         Node x = discriminatingPath.getX();
         Node w = discriminatingPath.getW();
@@ -211,7 +211,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
 
         Set<Node> blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y,
-                    maxBlockingPathLength, maxDiscriminatingPathLength, preserveMarkovHelper, depth);
+                    recursiveDepth, maxDiscriminatingPathLength, preserveMarkovHelper, depth);
 
         if (blocking != null) {
             sepsetMap.set(x, y, blocking);

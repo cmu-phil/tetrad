@@ -58,6 +58,8 @@ import java.util.concurrent.TimeoutException;
  */
 public class RecursiveBlocking {
 
+    private static final int MAX_TOTAL_FRAMES = 50_000;
+
     private RecursiveBlocking() {
     }
 
@@ -447,7 +449,8 @@ public class RecursiveBlocking {
 
         int ceiling = (recursionDepth < 0) ? graph.getNumNodes() : recursionDepth;
 
-        for (int _recusionDepth = 0; _recusionDepth <= ceiling; _recusionDepth++) {
+        for (int _recusionDepth = ceiling; _recusionDepth <= ceiling; _recusionDepth++) {
+            checkTimeout(deadlineMs);
 
             BlockingResult result = blockPathsRecursivelyFull(
                     graph, x, y,
@@ -747,6 +750,8 @@ public class RecursiveBlocking {
         int maxIterations = Math.min(pool.size(), 10);
         int iterations = 0;
 
+        int[] totalFrames = new int[]{0};
+
         while (iterations++ < maxIterations) {
             checkTimeout(deadlineMs);
 
@@ -770,7 +775,7 @@ public class RecursiveBlocking {
                 Blockable r = findPathToTargetVisit(
                         graph, x, b, y, path, z,
                         depth, notFollowed, descendantsMap, pool,
-                        recursionDepth, currentRecursionDepth, deadlineMs);
+                        recursionDepth, currentRecursionDepth, deadlineMs, totalFrames);
 
                 if (r == Blockable.UNBLOCKABLE) {
                     return new BlockingResult(null, false);
@@ -816,7 +821,7 @@ public class RecursiveBlocking {
                                            Set<Node> pool,
                                            int recursionDepth,
                                            int currentRecursionDepth,
-                                           long deadlineMs)
+                                           long deadlineMs, int[] totalFrames)
             throws InterruptedException, TimeoutException {
 
         Deque<Frame> callStack = new ArrayDeque<>();
@@ -827,6 +832,14 @@ public class RecursiveBlocking {
 
         while (!callStack.isEmpty()) {
             checkTimeout(deadlineMs);
+
+//            if (totalFrames[0] % 1000 == 0 && totalFrames[0] > 0) {
+//                System.out.println("Total frames: " + totalFrames[0]);
+//            }
+
+            if (++totalFrames[0] > MAX_TOTAL_FRAMES) {
+                return Blockable.INDETERMINATE;
+            }
 
             Frame f = callStack.peek();
 

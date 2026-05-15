@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 /**
  * Harness comparing the number of independence tests (d-separation oracle queries)
@@ -42,8 +42,8 @@ public class SepsetComparisonPagHarness {
     // Configuration
     // -----------------------------------------------------------------------
 
-    private static final int[]  NODE_COUNTS   = {50};//10, 20, 50};
-    private static final int[]  AVG_DEGREES   = {4};//2, 4, 6};
+    private static final int[]  NODE_COUNTS   = {50};
+    private static final int[]  AVG_DEGREES   = {4};
     private static final int    NUM_LATENTS   = 4;
     private static final int    REPS          = 20;
     private static final int    PAIRS_PER_REP = 20  ;
@@ -53,10 +53,10 @@ public class SepsetComparisonPagHarness {
     private static final int MAX_EXHAUSTIVE_TESTS = 10_000;
 
     // Parameters for iterative-deepening RB (used in both pure-RB and hybrid).
-    private static final int RB_RECURSION_DEPTH = 15;
-    private static final int RB_DEPTH         = 9;
+    private static final int RB_RECURSION_DEPTH = 20;
+    private static final int RB_DEPTH         = -1;
     private static final int RB_MAX_RADIUS    = -1;
-    private static final int RB_NEAR_ENDPOINT = 3; // 1 = near x 2 = near y 3 = near either
+    private static final int RB_NEAR_ENDPOINT = 1; // 1 = near x 2 = near y 3 = near either
 
     // -----------------------------------------------------------------------
     // Main
@@ -83,11 +83,11 @@ public class SepsetComparisonPagHarness {
                     long conditionStartMs = System.currentTimeMillis();
                     System.out.printf("%n=== p=%d, avgDeg=%d ===%n", p, avgDeg);
 
-                    for (int rep = 0; rep < REPS; rep++) {
+                    for (int rep = 1; rep <= REPS; rep++) {
 
-                        Graph      dag    = generateRandomForwardDag(p, NUM_LATENTS, numEdges, RB_RECURSION_DEPTH);
-                        MsepTest   oracle = new MsepTest(dag);
-                        List<Node> nodes  = dag.getNodes();
+                        Graph      pag    = generateRandomPag(p, NUM_LATENTS, numEdges, RB_RECURSION_DEPTH);
+                        MsepTest   oracle = new MsepTest(pag);
+                        List<Node> nodes  = pag.getNodes();
 
                         int pairsFound = 0;
                         int attempts   = 0;
@@ -98,7 +98,7 @@ public class SepsetComparisonPagHarness {
                                 System.out.printf(
                                         "  rep %d: only found %d non-adjacent pairs "
                                                 + "after %d attempts, moving on%n",
-                                        rep, pairsFound, attempts);
+                                        rep, pairsFound, attempts - 1);
                                 break;
                             }
 
@@ -107,12 +107,12 @@ public class SepsetComparisonPagHarness {
                             Node y = nodes.get(
                                     RandomUtil.getInstance().nextInt(nodes.size()));
 
-                            if (x == y || dag.isAdjacentTo(x, y)) continue;
+                            if (x == y || pag.paths().markovBlanket(x).contains(y)) continue;
 
 //                            // ---- 1. Exhaustive enumeration ----
 //                            long t0 = System.nanoTime();
 //                            ExhaustiveResult exh = exhaustiveEnumeration(
-//                                    x, y, dag, RB_DEPTH, oracle);
+//                                    x, y, pag, RB_DEPTH, oracle);
 //                            long exhNs = System.nanoTime() - t0;
 //
 //                            totalExhMs += exhNs / 1_000_000;
@@ -135,7 +135,7 @@ public class SepsetComparisonPagHarness {
 
                             // ---- 2. Iterative-deepening RB ----
                             long t1 = System.nanoTime();
-                            RbResult rb = iterativeDeepeningRb(x, y, dag, oracle, p);
+                            RbResult rb = iterativeDeepeningRb(x, y, pag, oracle, p);
                             long rbNs = System.nanoTime() - t1;
 
                             totalRbMs += rbNs / 1_000_000;
@@ -171,7 +171,7 @@ public class SepsetComparisonPagHarness {
 
 //                            // ---- 3. Hybrid: exhaustive first, then RB ----
 //                            long t2 = System.nanoTime();
-//                            HybridResult hyb = hybridRb(x, y, dag, oracle, p);
+//                            HybridResult hyb = hybridRb(x, y, pag, oracle, p);
 //                            long hybNs = System.nanoTime() - t2;
 //
 //                            totalHybMs += hybNs / 1_000_000;
@@ -232,12 +232,12 @@ public class SepsetComparisonPagHarness {
                     long conditionMs = System.currentTimeMillis() - conditionStartMs;
                     System.out.printf(
                             "%nFinished p=%d avgDeg=%d in %.1fs%n"
-                                    + "  Exhaustive : %d pairs  avg=%.3fms  "
-                                    + "timeouts=%d (limit=%d)%n"
+//                                    + "  Exhaustive : %d pairs  avg=%.3fms  "
+//                                    + "timeouts=%d (limit=%d)%n"
                                     + "  RB         : %d pairs  avg=%.3fms  "
-                                    + "unblockable=%d  indeterminate=%d%n"
-                                    + "  Hybrid     : %d pairs  avg=%.3fms  "
-                                    + "unblockable=%d  indeterminate=%d  usedRb=%d%n",
+                                    + "unblockable=%d  indeterminate=%d%n",
+//                                    + "  Hybrid     : %d pairs  avg=%.3fms  "
+//                                    + "unblockable=%d  indeterminate=%d  usedRb=%d%n",
                             p, avgDeg, conditionMs / 1000.0,
                             exhCount,
                             exhCount > 0 ? (double) totalExhMs / exhCount : 0.0,
@@ -268,8 +268,6 @@ public class SepsetComparisonPagHarness {
         try {
             for (int recursionDepth = ceiling; recursionDepth <= ceiling; recursionDepth++) {
 
-                System.out.println("RB: recursionDepth=" + recursionDepth);
-
                 long deadlineMs = System.currentTimeMillis() + 5_000;
 
                 if (Thread.currentThread().isInterrupted()) {
@@ -280,8 +278,6 @@ public class SepsetComparisonPagHarness {
                     return new RbResult(0, -1, false);
                 }
 
-                System.out.println("RB: recursionDepth=" + recursionDepth + ", depth=" + RB_DEPTH + ", maxRadius=" + RB_MAX_RADIUS + ", nearEndpoint=" + RB_NEAR_ENDPOINT);
-
                 RecursiveBlocking.BlockingResult result =
                         RecursiveBlocking.blockPathsRecursivelyFull(
                                 dag, x, y,
@@ -290,7 +286,7 @@ public class SepsetComparisonPagHarness {
                                 RB_DEPTH,
                                 RB_MAX_RADIUS,
                                 RB_NEAR_ENDPOINT,
-                                true,
+                                false,
                                 deadlineMs);
 
                 if (result.found()) {
@@ -397,11 +393,34 @@ public class SepsetComparisonPagHarness {
     // Graph generation
     // -----------------------------------------------------------------------
 
-    private static Graph generateRandomForwardDag(int numNodes, int numLatents, int numEdges, int recursionDepth) {
-        Graph graph = RandomGraph.randomGraph(numNodes, numLatents, numEdges, 100, 100, 100, false);
-        MagToPag magToPag = new MagToPag(GraphTransforms.dagToMag(graph));
-        magToPag.setRecursionDepth(recursionDepth);
-        return magToPag.convert(true, false);
+    private static Graph generateRandomPag(int numNodes, int numLatents, int numEdges, int recursionDepth) {
+        while (true) {
+            System.out.println("Generating random graph...");
+
+            Graph graph = RandomGraph.randomGraph(numNodes, numLatents, numEdges, 100, 100, 100, false);
+            MagToPag magToPag = new MagToPag(GraphTransforms.dagToMag(graph));
+            magToPag.setRecursionDepth(recursionDepth);
+
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Future<Graph> future = executor.submit(() -> magToPag.convert(false, false));
+
+            try {
+                Graph pag = future.get(5, TimeUnit.SECONDS);
+                executor.shutdownNow();
+                return pag;
+            } catch (TimeoutException e) {
+                future.cancel(true);
+                executor.shutdownNow();
+                // Try again with a new random graph
+            } catch (InterruptedException e) {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            } catch (ExecutionException e) {
+                executor.shutdownNow();
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     // -----------------------------------------------------------------------

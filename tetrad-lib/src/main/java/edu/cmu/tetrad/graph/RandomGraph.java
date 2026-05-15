@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.TMath;
 
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static edu.cmu.tetrad.util.TMath.min;
 
@@ -618,34 +619,64 @@ public class RandomGraph {
      * @param numLatentConfounders a int
      * @param graph                a {@link edu.cmu.tetrad.graph.Graph} object
      */
+//    public static void fixLatents4(int numLatentConfounders, Graph graph) {
+//        if (numLatentConfounders == 0) {
+//            return;
+//        }
+//
+////        List<Node> commonCausesAndEffects = getCommonCausesAndEffects(graph);
+//        List<Node> commonCausesAndEffects = getCommonCauses(graph);
+//        int index = 0;
+//
+//        while (index++ < numLatentConfounders) {
+//            if (commonCausesAndEffects.isEmpty()) {
+//                index--;
+//                break;
+//            }
+//            int i = RandomUtil.getInstance().nextInt(commonCausesAndEffects.size());
+//            Node node = commonCausesAndEffects.get(i);
+//            node.setNodeType(NodeType.LATENT);
+//            commonCausesAndEffects.remove(i);
+//        }
+//
+//        List<Node> nodes = graph.getNodes();
+//        while (index++ < numLatentConfounders) {
+//            int r = RandomUtil.getInstance().nextInt(nodes.size());
+//            if (nodes.get(r).getNodeType() != NodeType.LATENT) {
+//                index--;
+//            } else {
+//                nodes.get(r).setNodeType(NodeType.LATENT);
+//            }
+//        }
+//    }
+
     public static void fixLatents4(int numLatentConfounders, Graph graph) {
         if (numLatentConfounders == 0) {
             return;
         }
 
-//        List<Node> commonCausesAndEffects = getCommonCausesAndEffects(graph);
-        List<Node> commonCausesAndEffects = getCommonCauses(graph);
+        List<Node> commonCauses = getCommonCauses(graph);
         int index = 0;
 
         while (index++ < numLatentConfounders) {
-            if (commonCausesAndEffects.isEmpty()) {
+            if (commonCauses.isEmpty()) {
                 index--;
                 break;
             }
-            int i = RandomUtil.getInstance().nextInt(commonCausesAndEffects.size());
-            Node node = commonCausesAndEffects.get(i);
+            int i = RandomUtil.getInstance().nextInt(commonCauses.size());
+            Node node = commonCauses.get(i);
             node.setNodeType(NodeType.LATENT);
-            commonCausesAndEffects.remove(i);
+            commonCauses.remove(i);
         }
 
-        List<Node> nodes = graph.getNodes();
-        while (index++ < numLatentConfounders) {
-            int r = RandomUtil.getInstance().nextInt(nodes.size());
-            if (nodes.get(r).getNodeType() != NodeType.LATENT) {
-                index--;
-            } else {
-                nodes.get(r).setNodeType(NodeType.LATENT);
-            }
+        List<Node> nonLatent = graph.getNodes().stream()
+                .filter(n -> n.getNodeType() != NodeType.LATENT)
+                .collect(Collectors.toList());
+
+        while (index++ < numLatentConfounders && !nonLatent.isEmpty()) {
+            int r = RandomUtil.getInstance().nextInt(nonLatent.size());
+            nonLatent.get(r).setNodeType(NodeType.LATENT);
+            nonLatent.remove(r);
         }
     }
 
