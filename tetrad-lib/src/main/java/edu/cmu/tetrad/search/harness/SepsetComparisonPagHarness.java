@@ -42,8 +42,8 @@ public class SepsetComparisonPagHarness {
     // Configuration
     // -----------------------------------------------------------------------
 
-    private static final int[]  NODE_COUNTS   = {50};
-    private static final int[]  AVG_DEGREES   = {4};
+    private static final int[]  NODE_COUNTS   = {10, 20, 50};
+    private static final int[]  AVG_DEGREES   = {2, 4, 6};
     private static final int    NUM_LATENTS   = 4;
     private static final int    REPS          = 20;
     private static final int    PAIRS_PER_REP = 20  ;
