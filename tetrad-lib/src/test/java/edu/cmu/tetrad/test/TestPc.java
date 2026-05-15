@@ -42,6 +42,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.ejml.UtilEjml.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -145,6 +146,11 @@ public class TestPc {
         try {
             Graph trueGraph = GraphSaveLoadUtils.readerToGraphTxt(trueString);
             CPDAG = GraphUtils.replaceNodes(CPDAG, trueGraph.getNodes());
+
+            // This we can assert theoretically — knowledge must be respected
+            assertTrue(!knowledge.isViolatedBy(CPDAG));
+
+            // This is just a regression snapshot — we know no better
             assertEquals(trueGraph, CPDAG);
         } catch (IOException e) {
             e.printStackTrace();
