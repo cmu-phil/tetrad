@@ -58,29 +58,12 @@ import java.util.concurrent.TimeoutException;
  */
 public class RecursiveBlocking {
 
-    private static final int MAX_TOTAL_FRAMES = 50_000;
-
     private RecursiveBlocking() {
     }
 
     // -----------------------------------------------------------------------
     // Result type
     // -----------------------------------------------------------------------
-
-    public static <E> Set<Node> blockPathsRecursively(Graph graph,
-                                                      Node x,
-                                                      Node y,
-                                                      Set<Node> containing,
-                                                      Set<Node> notFollowed,
-                                                      int recursionDepth)
-            throws InterruptedException {
-        try {
-            return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
-                    recursionDepth, 8, 6, 1, true, Long.MAX_VALUE).blockingSet();
-        } catch (TimeoutException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     /**
      * Blocks paths between two specified nodes in a graph by iteratively
@@ -764,8 +747,6 @@ public class RecursiveBlocking {
         int maxIterations = Math.min(pool.size(), 10);
         int iterations = 0;
 
-        int[] totalFrames = new int[]{0};
-
         while (iterations++ < maxIterations) {
             checkTimeout(deadlineMs);
 
@@ -789,7 +770,7 @@ public class RecursiveBlocking {
                 Blockable r = findPathToTargetVisit(
                         graph, x, b, y, path, z,
                         depth, notFollowed, descendantsMap, pool,
-                        recursionDepth, currentRecursionDepth, deadlineMs, totalFrames);
+                        recursionDepth, currentRecursionDepth, deadlineMs);
 
                 if (r == Blockable.UNBLOCKABLE) {
                     return new BlockingResult(null, false);
@@ -835,7 +816,7 @@ public class RecursiveBlocking {
                                            Set<Node> pool,
                                            int recursionDepth,
                                            int currentRecursionDepth,
-                                           long deadlineMs, int[] totalFrames)
+                                           long deadlineMs)
             throws InterruptedException, TimeoutException {
 
         Deque<Frame> callStack = new ArrayDeque<>();
@@ -846,14 +827,6 @@ public class RecursiveBlocking {
 
         while (!callStack.isEmpty()) {
             checkTimeout(deadlineMs);
-
-//            if (totalFrames[0] % 1000 == 0 && totalFrames[0] > 0) {
-//                System.out.println("Total frames: " + totalFrames[0]);
-//            }
-
-            if (++totalFrames[0] > MAX_TOTAL_FRAMES) {
-                return Blockable.INDETERMINATE;
-            }
 
             Frame f = callStack.peek();
 

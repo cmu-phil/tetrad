@@ -48,6 +48,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 
 import static edu.cmu.tetrad.graph.GraphTransforms.dagToPag;
 import static org.junit.Assert.*;
@@ -635,7 +636,14 @@ public class TestFci {
 
         Set<Node> B = null;
         try {
-            B = RecursiveBlocking.blockPathsRecursively(mag, x, y, new HashSet<>(), new HashSet<>(), -1);
+            Set<Node> result;
+            try {
+                result = RecursiveBlocking.blockPathsRecursivelyFull(mag, x, y, (Set<Node>) new HashSet<Node>(), (Set<Node>) new HashSet<Node>(),
+                        -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
+            } catch (TimeoutException e) {
+                throw new RuntimeException(e);
+            }
+            B = result;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -671,8 +679,14 @@ public class TestFci {
 
         MsepTest msepTest = new MsepTest(g);
 
-        Set<Node> Z = RecursiveBlocking.blockPathsRecursively(g, x, y, new HashSet<>(),
-                new HashSet<>(), -1);
+        Set<Node> result;
+        try {
+            result = RecursiveBlocking.blockPathsRecursivelyFull(g, x, y, (Set<Node>) new HashSet<Node>(), (Set<Node>) new HashSet<Node>(),
+                    -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+        Set<Node> Z = result;
         assertTrue(msepTest.checkIndependence(x, y, Z).isIndependent());
     }
 
