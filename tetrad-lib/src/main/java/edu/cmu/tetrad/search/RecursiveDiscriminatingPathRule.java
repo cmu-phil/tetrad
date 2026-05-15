@@ -66,17 +66,17 @@ public class RecursiveDiscriminatingPathRule {
      * @param y                    The second target node in the analysis.
      * @param recursiveDepth       The maximum allowable length of a blocking path for the analysis.
      * @param maxDdpPathLength     The maximum allowable discriminating path length considered for the analysis.
-     * @param preserveMarkovHelper A helper object for additional Markov property checks during the independence
-     *                             tests.
      * @param depth                The maximum subset depth allowed during subset evaluations; a value of -1 allows all
      *                             subsets.
+     * @param preserveMarkovHelper A helper object for additional Markov property checks during the independence
+     *                             tests.
      * @return A set of nodes that constitutes the separating set (sepset) between {@code x} and {@code y}, or
      * {@code null} if no such set exists.
      * @throws InterruptedException If any.
      */
     public static Set<Node> findDdpSepsetRecursive(IndependenceTest test, Graph pag, Node x, Node y,
                                                    int recursiveDepth, int maxDdpPathLength,
-                                                   PreserveMarkov preserveMarkovHelper, int depth)
+                                                   int depth, PreserveMarkov preserveMarkovHelper)
             throws InterruptedException {
 
         if (pag.isAdjacentTo(x, y)) {
@@ -94,7 +94,7 @@ public class RecursiveDiscriminatingPathRule {
             Set<Node> vNodesNotFollowed = GraphUtils.asSet(choice, vNodes);
 
             RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsIterativeDeepening(
-                    pag, x, y, Set.of(), vNodesNotFollowed, -1, depth, -1,
+                    pag, x, y, Set.of(), vNodesNotFollowed, recursiveDepth, depth, -1,
                     1, true);
 
             if (result.indeterminate()) {
@@ -129,12 +129,6 @@ public class RecursiveDiscriminatingPathRule {
         return null;
     }
 
-    private static @NotNull List<Node> getCommonNeighbors(Graph pag, Node x, Node y) {
-        List<Node> common = new ArrayList<>(pag.getAdjacentNodes(x));
-        common.retainAll(pag.getAdjacentNodes(y));
-        return common;
-    }
-
     private static @NotNull List<Node> getVNodes(Graph pag, Node x, Node y, int maxDdpPathLength) {
         // 2) List possible DiscriminatingPaths
         Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, true);
@@ -154,8 +148,8 @@ public class RecursiveDiscriminatingPathRule {
             }
 
         }
-        List<Node> _vNodes = new ArrayList<>(vNodes);
-        return _vNodes;
+
+        return new ArrayList<>(vNodes);
     }
 }
 
