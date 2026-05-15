@@ -79,8 +79,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * List of observers to be notified when changes are made to the model.
      */
     private final List<ModelObserver> observers = new ArrayList<>();
-    private final CachedIndependenceQueries cachedQueries =
-            new CachedIndependenceQueries(CachedIndependenceQueries.ErrorPolicy.TREAT_AS_INDEPENDENT);
+    private CachingIndependenceTest cachedQueries = null;
+//    =
+//            new CachingIndependenceTest(CachedIndependenceQueries.ErrorPolicy.TREAT_AS_INDEPENDENT);
     /**
      * The Anderson-Darling p-value for the independent case.
      */
@@ -280,8 +281,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     mag = GraphTransforms.dagToMag(dag);
                 } else if (graph.paths().isLegalMag()) {
                     mag = graph;
-                } else if (graph.paths().isLegalPag()) {
-                    mag = GraphTransforms.zhangMagFromPag(graph);
+//                } else if (graph.paths().isLegalPag()) {
+//                    mag = GraphTransforms.zhangMagFromPag(graph);
                 } else {
                     boolean hasCircle = false;
 
@@ -308,16 +309,18 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             case ORDERED_LOCAL_MARKOV_PROPERTY: {
                 Graph mag;
 
-                if (graph.paths().isLegalDag()) {
+                    if (graph.paths().isLegalDag()) {
                     mag = GraphTransforms.dagToMag(graph);
                 } else if (graph.paths().isLegalCpdag() || graph.paths().isLegalPdag()) {
                     Graph dag = GraphTransforms.dagFromCpdag(graph);
                     mag = GraphTransforms.dagToMag(dag);
                 } else if (graph.paths().isLegalMag()) {
                     mag = graph;
-                } else if (graph.paths().isLegalPag()) {
-                    mag = GraphTransforms.zhangMagFromPag(graph);
-                } else {
+//                }
+//                    else if (graph.paths().isLegalPag()) {
+//                    mag = GraphTransforms.zhangMagFromPag(graph);
+                }
+                    else {
                     boolean hasCircle = false;
 
                     for (Edge e : graph.getEdges()) {
@@ -350,8 +353,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     mag = GraphTransforms.dagToMag(dag);
                 } else if (graph.paths().isLegalMag()) {
                     mag = graph;
-                } else if (graph.paths().isLegalPag()) {
-                    mag = GraphTransforms.zhangMagFromPag(graph);
+//                }
+//                else if (graph.paths().isLegalPag()) {
+//                    mag = GraphTransforms.zhangMagFromPag(graph);
                 } else {
                     boolean hasCircle = false;
 
@@ -382,31 +386,18 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     if (graph.isAdjacentTo(w, x)) continue;
 
                     try {
-                        int maxPathLength = -1;
-//                        int depth = 5;
+                        int depth = -1;
                         int maxRadius = -1;
                         int nearWhichEndpoint = 1;
+                        int recursiveDepth = 15;
+
                         boolean ignoreDirectEdge = false;
 
                         RecursiveBlocking.BlockingResult result;
-                        int depth = 0;
 
-                        do {
-                            depth++;
-                            result = RecursiveBlocking.blockPathsRecursivelyFull(graph, x, w,
-                                    Set.of(), Set.of(), maxPathLength, depth, maxRadius, nearWhichEndpoint, ignoreDirectEdge);
-//                            RecursiveBlocking.BlockingResult result2 = RecursiveBlocking.blockPathsRecursivelyFull(graph, w, x,
-//                                    Set.of(), Set.of(), maxPathLength, depth, maxRadius, nearWhichEndpoint, ignoreDirectEdge);
-//
-//                            if (result1.blockingSet() != null && result2.blockingSet() != null) {
-//                                result = result1.blockingSet().size() <= result2.blockingSet().size() ? result1 : result2;
-//                            } else if (result1.blockingSet() != null) {
-//                                result = result1;
-//                            } else {
-//                                result = result2;
-//                            }
-
-                        } while (result.indeterminate());
+                        result = RecursiveBlocking.blockPathsRecursivelyFull(graph, x, w,
+                                Set.of(), Set.of(), recursiveDepth, depth, maxRadius, nearWhichEndpoint, ignoreDirectEdge,
+                                System.currentTimeMillis() + 5000L);
 
                         Set<Node> blocking = result.blockingSet();
 
@@ -415,6 +406,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                         }
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
+                    } catch (TimeoutException e) {
+                        throw new RuntimeException("Recursive blocking timed out", e);
                     }
                 }
 
@@ -1743,7 +1736,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @return This test.
      */
     public IndependenceTest getIndependenceTest() {
-        return cachedQueries.getTest();
+        return cachedQueries.getBaseTest();
     }
 
     /**
@@ -1758,7 +1751,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         }
 
         this.independenceTest = test;
-        cachedQueries.setTest(test);  // clears caches, rebuilds mapping
+        this.cachedQueries = new CachingIndependenceTest(test);
+//        cachedQueries.setTest(test);  // clears caches, rebuilds mapping
     }
 
     /**
@@ -2141,7 +2135,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         int dependent = 0;
 
         for (IndependenceResult result : results) {
-            if (result.getPValue() <= cachedQueries.getAlpha()) dependent++;
+            if (result.getPValue() <= cachedQueries.getBaseTest().getAlpha()) dependent++;
         }
 
         List<Double> pValues = getPValues(results);
@@ -2248,7 +2242,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     private double getBinomialPValue_(List<Double> pValues) {
         int n = pValues.size();
-        double q = cachedQueries.getAlpha();
+        double q = cachedQueries.getBaseTest().getAlpha();
         int k = (int) pValues.stream().filter(p -> p <= q).count();
 
         BinomialDistribution bd = new BinomialDistribution(n, q);

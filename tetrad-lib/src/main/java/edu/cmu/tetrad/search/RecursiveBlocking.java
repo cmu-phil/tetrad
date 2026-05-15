@@ -112,7 +112,8 @@ public class RecursiveBlocking {
                                                       long deadlineMs)
             throws InterruptedException, TimeoutException {
         return blockPathsIterativeDeepening(graph, x, y, containing, notFollowed,
-                recursionDepth, 8, 4, 1, true, deadlineMs).blockingSet();
+                recursionDepth, 8, 4, 1, true,
+                deadlineMs).blockingSet();
     }
 
     // -----------------------------------------------------------------------
@@ -157,34 +158,6 @@ public class RecursiveBlocking {
             throw new RuntimeException(e);
         }
     }
-
-    /**
-     * Short-parameter entry point returning a full {@link BlockingResult},
-     * distinguishing UNBLOCKABLE from INDETERMINATE on failure.
-     *
-     * @param graph          the graph
-     * @param x              first endpoint
-     * @param y              second endpoint
-     * @param containing     nodes forced into Z
-     * @param notFollowed    nodes not to be traversed
-     * @param recursionDepth maximum recursion depth (-1 = unlimited)
-     * @return a {@link BlockingResult} describing the outcome
-     * @throws InterruptedException if the thread is interrupted
-     */
-    public static BlockingResult blockPathsRecursivelyFull(Graph graph,
-                                                           Node x,
-                                                           Node y,
-                                                           Set<Node> containing,
-                                                           Set<Node> notFollowed,
-                                                           int recursionDepth)
-            throws InterruptedException, TimeoutException {
-        return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
-                recursionDepth, -1, -1, 1, true);
-    }
-
-    // -----------------------------------------------------------------------
-    // Public entry points — full BlockingResult overloads
-    // -----------------------------------------------------------------------
 
     /**
      * Full-parameter entry point returning a full {@link BlockingResult},

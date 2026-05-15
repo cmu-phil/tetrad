@@ -586,7 +586,7 @@ public class Paths implements TetradSerializable {
      */
     public boolean isLegalPag() throws RuntimeException {
         List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-        return PagLegalityCheck.isLegalPag(graph, new HashSet<>(selection), 10 /* second timeout*/).isLegalPag();
+        return PagLegalityCheck.isLegalPag(graph, new HashSet<>(selection), 20 /* second timeout*/).isLegalPag();
     }
 
     /**
