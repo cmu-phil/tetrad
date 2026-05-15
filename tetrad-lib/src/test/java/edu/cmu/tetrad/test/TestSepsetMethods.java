@@ -293,7 +293,9 @@ public class TestSepsetMethods {
         Graph dag = RandomGraph.randomDag(20, 10, 40, 100,
                 100, 100, false);
 
-        Graph pag = new MagToPag(GraphTransforms.dagToMag(dag)).convert(true, false);
+        MagToPag magToPag = new MagToPag(GraphTransforms.dagToMag(dag));
+        magToPag.setRecursionDepth(Integer.MAX_VALUE);
+        Graph pag = magToPag.convert(true, false);
 
         for (Node x : pag.getNodes()) {
             for (Node y : pag.getNodes()) {
@@ -306,9 +308,14 @@ public class TestSepsetMethods {
                 }
 
                 try {
-                    Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(dag, x, y, Set.of(),
-                            Set.of(), -1);
-                    boolean msep = new MsepTest(pag, false).checkIndependence(x, y, blocking).isIndependent();
+                    Set<Node> blocking = RecursiveBlocking.blockPathsRecursivelyFull(dag, x, y, Set.of(),
+                            Set.of(), -1, -1, -1, 1, false).blockingSet();
+                    if (blocking == null) {
+                        continue;
+                    }
+
+                    MsepTest msepTest = new MsepTest(pag, false);
+                    boolean msep = msepTest.checkIndependence(x, y, blocking).isIndependent();
 
                     if (!msep) {
                         System.out.println(LogUtilsSearch.independenceFact(x, y, blocking));
