@@ -449,7 +449,7 @@ public class RecursiveBlocking {
 
         int ceiling = (recursionDepth < 0) ? graph.getNumNodes() : recursionDepth;
 
-        for (int _recusionDepth = ceiling; _recusionDepth <= ceiling; _recusionDepth++) {
+        for (int _recusionDepth = 0; _recusionDepth <= ceiling; _recusionDepth++) {
             checkTimeout(deadlineMs);
 
             BlockingResult result = blockPathsRecursivelyFull(
