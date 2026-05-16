@@ -15,7 +15,7 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * Harness comparing the number of independence tests (d-separation oracle queries)
- * required by three methods to find a separating set for each non-adjacent pair
+ * required by two methods to find a separating set for each non-adjacent pair
  * in a random DAG:
  *
  * <ol>
@@ -23,12 +23,10 @@ import java.util.concurrent.TimeoutException;
  *       greedy depth order.</li>
  *   <li>Iterative-deepening recursive blocking (RB): calls
  *       blockPathsRecursivelyFull with increasing path-length caps.</li>
- *   <li>Hybrid: exhaustive enumeration first; if it fails, falls back to
- *       iterative-deepening RB.</li>
  * </ol>
  *
  * <p>Output is a CSV with one row per (rep, pair, method), suitable for
- * plotting in Python.</p>
+ * plotting in Python, followed by a summary table printed to stdout.</p>
  */
 public class SepsetComparisonHarness {
 
@@ -36,20 +34,23 @@ public class SepsetComparisonHarness {
     // Configuration
     // -----------------------------------------------------------------------
 
-    private static final int[]  NODE_COUNTS   = {20};//10, 20, 50};
-    private static final int[]  AVG_DEGREES   = {6};//2, 4, 6};
-    private static final int    REPS          = 100;
-    private static final int    PAIRS_PER_REP = 100;
+    private static final int[]  NODE_COUNTS   = {10, 20, 50};
+    private static final int[]  AVG_DEGREES   = {2, 4, 6};
+    private static final int    REPS          = 20;
+    private static final int    PAIRS_PER_REP = 20;
     private static final String OUTPUT_FILE   = "sepset_comparison.csv";
 
     // Cap for exhaustive enumeration.
     private static final int MAX_EXHAUSTIVE_TESTS = 10_000;
 
-    // Parameters for iterative-deepening RB (used in both pure-RB and hybrid).
-    private static final int RB_MAX_PATH_LEN  = -1;
-    private static final int RB_DEPTH         = -1;
-    private static final int RB_MAX_RADIUS    = 1;
-    private static final int RB_NEAR_ENDPOINT = 3; // 1 = near x 2 = near y 3 = near either
+    // Parameters for iterative-deepening RB.
+    private static final int MAX_RECURSION_DEPTH = 20;  // ceiling = p when -1
+    private static final int RB_DEPTH         = -1;  // no cap on |Z|
+    private static final int RB_MAX_RADIUS    = -1;
+    private static final int RB_NEAR_ENDPOINT = 1;   // 1=near x, 2=near y, 3=near either
+
+    // Per-pair timeout in milliseconds.
+    private static final long PAIR_TIMEOUT_MS = 5_000;
 
     // -----------------------------------------------------------------------
     // Main
@@ -57,26 +58,37 @@ public class SepsetComparisonHarness {
 
     public static void main(String[] args) throws IOException {
 
+        List<SummaryRow> summaryRows = new ArrayList<>();
+
         try (PrintWriter out = new PrintWriter(new FileWriter(OUTPUT_FILE))) {
 
-            out.println("nodes,avg_degree,rep,x,y,method,test_count,set_size");
+            out.println("nodes,avg_degree,rep,x,y,method,test_count,set_size,outcome");
 
             for (int p : NODE_COUNTS) {
                 for (int avgDeg : AVG_DEGREES) {
                     int numEdges = (p * avgDeg) / 2;
 
-                    // Accumulators for all three methods
-                    long totalExhMs      = 0, totalRbMs     = 0, totalHybMs    = 0;
-                    int  exhCount        = 0, rbCount       = 0, hybCount      = 0;
+                    // Exhaustive accumulators
+                    long totalExhMs      = 0;
+                    int  exhCount        = 0;
                     int  exhTimedOut     = 0;
-                    int  rbUnblockable   = 0, rbNull        = 0;
-                    int  hybUnblockable  = 0, hybNull       = 0;
-                    int  hybUsedRb       = 0; // how often hybrid fell back to RB
+                    int  exhSucceeded    = 0;
+                    long exhTotalTests   = 0;
+                    long exhTotalSetSize = 0;
+
+                    // RB accumulators
+                    long totalRbMs      = 0;
+                    int  rbCount        = 0;
+                    int  rbSucceeded    = 0;
+                    int  rbUnblockable  = 0;
+                    int  rbNull         = 0;
+                    long rbTotalTests   = 0;
+                    long rbTotalSetSize = 0;
 
                     long conditionStartMs = System.currentTimeMillis();
                     System.out.printf("%n=== p=%d, avgDeg=%d ===%n", p, avgDeg);
 
-                    for (int rep = 0; rep < REPS; rep++) {
+                    for (int rep = 1; rep <= REPS; rep++) {
 
                         Graph      dag    = generateRandomForwardDag(p, numEdges);
                         MsepTest   oracle = new MsepTest(dag);
@@ -91,7 +103,7 @@ public class SepsetComparisonHarness {
                                 System.out.printf(
                                         "  rep %d: only found %d non-adjacent pairs "
                                                 + "after %d attempts, moving on%n",
-                                        rep, pairsFound, attempts);
+                                        rep, pairsFound, attempts - 1);
                                 break;
                             }
 
@@ -104,13 +116,21 @@ public class SepsetComparisonHarness {
 
                             // ---- 1. Exhaustive enumeration ----
                             long t0 = System.nanoTime();
-                            ExhaustiveResult exh = exhaustiveEnumeration(
-                                    x, y, dag, oracle);
+                            ExhaustiveResult exh = exhaustiveEnumeration(x, y, dag, oracle);
                             long exhNs = System.nanoTime() - t0;
 
                             totalExhMs += exhNs / 1_000_000;
                             exhCount++;
-                            if (exh.timedOut) exhTimedOut++;
+                            if (exh.timedOut) {
+                                exhTimedOut++;
+                            } else if (exh.setSize >= 0) {
+                                exhSucceeded++;
+                                exhTotalTests   += exh.testCount;
+                                exhTotalSetSize += exh.setSize;
+                            }
+
+                            String exhOutcome = exh.timedOut ? "timed_out"
+                                    : exh.setSize >= 0 ? "success" : "failed";
 
                             System.out.printf(
                                     "  [exh] p=%d deg=%d rep=%d (%s,%s) "
@@ -121,10 +141,11 @@ public class SepsetComparisonHarness {
                                     exhNs / 1e6,
                                     exh.timedOut ? " TIMED_OUT" : "");
 
-                            out.printf("%d,%d,%d,%s,%s,exhaustive,%d,%d%n",
+                            out.printf("%d,%d,%d,%s,%s,exhaustive,%d,%d,%s%n",
                                     p, avgDeg, rep,
                                     x.getName(), y.getName(),
-                                    exh.testCount, exh.setSize);
+                                    exh.testCount, exh.setSize,
+                                    exhOutcome);
 
                             // ---- 2. Iterative-deepening RB ----
                             long t1 = System.nanoTime();
@@ -134,21 +155,28 @@ public class SepsetComparisonHarness {
                             totalRbMs += rbNs / 1_000_000;
                             rbCount++;
 
+                            String rbOutcome;
                             if (rb.unblockable) {
                                 rbUnblockable++;
+                                rbOutcome = "unblockable";
                                 System.out.printf(
-                                        "  [rb ] UNBLOCKABLE "
-                                                + "p=%d deg=%d rep=%d (%s,%s) time=%.3fms%n",
+                                        "  [rb ] UNBLOCKABLE p=%d deg=%d rep=%d (%s,%s) "
+                                                + "time=%.3fms%n",
                                         p, avgDeg, rep,
                                         x.getName(), y.getName(), rbNs / 1e6);
                             } else if (rb.setSize < 0) {
                                 rbNull++;
+                                rbOutcome = "indeterminate";
                                 System.out.printf(
-                                        "  [rb ] INDETERMINATE "
-                                                + "p=%d deg=%d rep=%d (%s,%s) time=%.3fms%n",
+                                        "  [rb ] INDETERMINATE p=%d deg=%d rep=%d (%s,%s) "
+                                                + "time=%.3fms%n",
                                         p, avgDeg, rep,
                                         x.getName(), y.getName(), rbNs / 1e6);
                             } else {
+                                rbSucceeded++;
+                                rbOutcome = "success";
+                                rbTotalTests   += rb.testCount;
+                                rbTotalSetSize += rb.setSize;
                                 System.out.printf(
                                         "  [rb ] p=%d deg=%d rep=%d (%s,%s) "
                                                 + "tests=%d setSize=%d time=%.3fms%n",
@@ -157,188 +185,120 @@ public class SepsetComparisonHarness {
                                         rb.testCount, rb.setSize, rbNs / 1e6);
                             }
 
-                            out.printf("%d,%d,%d,%s,%s,recursive_blocking,%d,%d%n",
+                            out.printf("%d,%d,%d,%s,%s,recursive_blocking,%d,%d,%s%n",
                                     p, avgDeg, rep,
                                     x.getName(), y.getName(),
-                                    rb.testCount, rb.setSize);
-
-                            // ---- 3. Hybrid: exhaustive first, then RB ----
-                            long t2 = System.nanoTime();
-                            HybridResult hyb = hybridRb(x, y, dag, oracle, p);
-                            long hybNs = System.nanoTime() - t2;
-
-                            totalHybMs += hybNs / 1_000_000;
-                            hybCount++;
-                            if (hyb.usedRb) hybUsedRb++;
-
-                            if (hyb.unblockable) {
-                                hybUnblockable++;
-                                System.out.printf(
-                                        "  [hyb] UNBLOCKABLE "
-                                                + "p=%d deg=%d rep=%d (%s,%s) time=%.3fms%n",
-                                        p, avgDeg, rep,
-                                        x.getName(), y.getName(), hybNs / 1e6);
-                            } else if (hyb.setSize < 0) {
-                                hybNull++;
-                                System.out.printf(
-                                        "  [hyb] INDETERMINATE "
-                                                + "p=%d deg=%d rep=%d (%s,%s) "
-                                                + "usedRb=%b time=%.3fms%n",
-                                        p, avgDeg, rep,
-                                        x.getName(), y.getName(),
-                                        hyb.usedRb, hybNs / 1e6);
-                            } else {
-                                System.out.printf(
-                                        "  [hyb] p=%d deg=%d rep=%d (%s,%s) "
-                                                + "tests=%d setSize=%d usedRb=%b time=%.3fms%n",
-                                        p, avgDeg, rep,
-                                        x.getName(), y.getName(),
-                                        hyb.testCount, hyb.setSize,
-                                        hyb.usedRb, hybNs / 1e6);
-                            }
-
-                            out.printf("%d,%d,%d,%s,%s,hybrid,%d,%d%n",
-                                    p, avgDeg, rep,
-                                    x.getName(), y.getName(),
-                                    hyb.testCount, hyb.setSize);
+                                    rb.testCount, rb.setSize,
+                                    rbOutcome);
 
                             pairsFound++;
                         }
 
-                        if ((rep + 1) % 10 == 0) {
+                        if (rep % 10 == 0) {
                             System.out.printf(
-                                    "  -- rep %3d/%d  "
-                                            + "exh=%.3fms  rb=%.3fms  hyb=%.3fms  "
-                                            + "exhTimeouts=%d  rbIndet=%d  hybIndet=%d  "
-                                            + "hybUsedRb=%d%n",
-                                    rep + 1, REPS,
-                                    exhCount > 0
-                                            ? (double) totalExhMs / exhCount : 0.0,
-                                    rbCount  > 0
-                                            ? (double) totalRbMs  / rbCount  : 0.0,
-                                    hybCount > 0
-                                            ? (double) totalHybMs / hybCount : 0.0,
-                                    exhTimedOut, rbNull, hybNull, hybUsedRb);
+                                    "  -- rep %3d/%d  exh=%.3fms  rb=%.3fms  "
+                                            + "exhTimeouts=%d  rbIndet=%d%n",
+                                    rep, REPS,
+                                    exhCount > 0 ? (double) totalExhMs / exhCount : 0.0,
+                                    rbCount  > 0 ? (double) totalRbMs  / rbCount  : 0.0,
+                                    exhTimedOut, rbNull);
                         }
                     }
 
                     long conditionMs = System.currentTimeMillis() - conditionStartMs;
+
                     System.out.printf(
                             "%nFinished p=%d avgDeg=%d in %.1fs%n"
                                     + "  Exhaustive : %d pairs  avg=%.3fms  "
-                                    + "timeouts=%d (limit=%d)%n"
+                                    + "succeeded=%d  timeouts=%d (limit=%d)%n"
                                     + "  RB         : %d pairs  avg=%.3fms  "
-                                    + "unblockable=%d  indeterminate=%d%n"
-                                    + "  Hybrid     : %d pairs  avg=%.3fms  "
-                                    + "unblockable=%d  indeterminate=%d  usedRb=%d%n",
+                                    + "succeeded=%d  unblockable=%d  indeterminate=%d%n",
                             p, avgDeg, conditionMs / 1000.0,
                             exhCount,
                             exhCount > 0 ? (double) totalExhMs / exhCount : 0.0,
-                            exhTimedOut, MAX_EXHAUSTIVE_TESTS,
+                            exhSucceeded, exhTimedOut, MAX_EXHAUSTIVE_TESTS,
                             rbCount,
-                            rbCount  > 0 ? (double) totalRbMs  / rbCount  : 0.0,
-                            rbUnblockable, rbNull,
-                            hybCount,
-                            hybCount > 0 ? (double) totalHybMs / hybCount : 0.0,
-                            hybUnblockable, hybNull, hybUsedRb);
+                            rbCount > 0 ? (double) totalRbMs / rbCount : 0.0,
+                            rbSucceeded, rbUnblockable, rbNull);
+
+                    summaryRows.add(new SummaryRow(
+                            p, avgDeg,
+                            exhCount, exhSucceeded, exhTimedOut,
+                            exhCount     > 0 ? (double) totalExhMs     / exhCount     : 0.0,
+                            exhSucceeded > 0 ? (double) exhTotalTests  / exhSucceeded : 0.0,
+                            exhSucceeded > 0 ? (double) exhTotalSetSize / exhSucceeded : 0.0,
+                            rbCount, rbSucceeded, rbUnblockable, rbNull,
+                            rbCount      > 0 ? (double) totalRbMs      / rbCount      : 0.0,
+                            rbSucceeded  > 0 ? (double) rbTotalTests   / rbSucceeded  : 0.0,
+                            rbSucceeded  > 0 ? (double) rbTotalSetSize / rbSucceeded  : 0.0,
+                            conditionMs / 1000.0));
                 }
             }
         }
 
+        printSummaryTable(summaryRows);
         System.out.println("\nOutput written to " + OUTPUT_FILE);
     }
 
     // -----------------------------------------------------------------------
-    // Method 2: Iterative-deepening recursive blocking
+    // Iterative-deepening recursive blocking
     // -----------------------------------------------------------------------
 
     private static RbResult iterativeDeepeningRb(
             Node x, Node y, Graph dag, MsepTest oracle, int p) {
 
-        try {
-            int ceiling = (RB_MAX_PATH_LEN < 0) ? p : RB_MAX_PATH_LEN;
+        int ceiling = (MAX_RECURSION_DEPTH < 0) ? p : MAX_RECURSION_DEPTH;
 
+        try {
             for (int pathLen = 0; pathLen <= ceiling; pathLen++) {
 
                 if (Thread.currentThread().isInterrupted()) {
                     return new RbResult(0, -1, false);
                 }
 
-                RecursiveBlocking.BlockingResult result = null;
-                try {
-                    result = RecursiveBlocking.blockPathsRecursivelyFull(
-                            dag, x, y,
-                            Set.of(), Set.of(),
-                            pathLen,
-                            RB_DEPTH,
-                            RB_MAX_RADIUS,
-                            RB_NEAR_ENDPOINT,
-                            true,
-                            Long.MAX_VALUE);
-                } catch (TimeoutException e) {
-                    throw new RuntimeException(e);
-                }
+                long deadlineMs = System.currentTimeMillis() + PAIR_TIMEOUT_MS;
+
+                RecursiveBlocking.BlockingResult result =
+                        RecursiveBlocking.blockPathsRecursivelyFull(
+                                dag, x, y,
+                                Set.of(), Set.of(),
+                                pathLen,
+                                RB_DEPTH,
+                                RB_MAX_RADIUS,
+                                RB_NEAR_ENDPOINT,
+                                true,        // ignoreDirectEdge
+                                deadlineMs);
 
                 if (result.found()) {
                     Set<Node> Z = result.blockingSet();
-                    int testCount = 0;
-
-                    testCount++;
                     if (oracle.checkIndependence(x, y, Z).isIndependent()) {
-                        return new RbResult(testCount, Z.size(), false);
+                        return new RbResult(1, Z.size(), false);
                     }
-
-                    return new RbResult(testCount, -1, false);
+                    // RB found a graphical separator but the oracle rejected it.
+                    return new RbResult(1, -1, false);
                 }
 
                 if (!result.indeterminate()) {
-                    // UNBLOCKABLE — no separator exists within the constrained search space
+                    // Definitive UNBLOCKABLE — no separator exists.
                     return new RbResult(0, -1, true);
                 }
+
+                // INDETERMINATE — try next path length.
             }
 
-            // Ceiling reached without resolution
+            // Ceiling reached without resolution.
             return new RbResult(0, -1, false);
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return new RbResult(0, -1, false);
+        } catch (TimeoutException e) {
+            return new RbResult(0, -1, false);
         }
     }
 
     // -----------------------------------------------------------------------
-    // Method 3: Hybrid — exhaustive first, fall back to RB if exhaustive fails
-    // -----------------------------------------------------------------------
-
-    private static HybridResult hybridRb(
-            Node x, Node y, Graph dag, MsepTest oracle, int p) {
-
-        // First try exhaustive enumeration over adjacency sets.
-        ExhaustiveResult exh = exhaustiveEnumeration(x, y, dag, oracle);
-
-        if (exh.setSize >= 0) {
-            // Exhaustive succeeded — return its result, no RB needed.
-            return new HybridResult(exh.testCount, exh.setSize, false, false);
-        }
-
-        // Exhaustive failed (timed out or found no separator in adj sets).
-        // Fall back to iterative-deepening RB, accumulating the test count.
-        RbResult rb = iterativeDeepeningRb(x, y, dag, oracle, p);
-
-        int totalTests = exh.testCount + rb.testCount;
-
-        if (rb.unblockable) {
-            return new HybridResult(totalTests, -1, true, true);
-        }
-        if (rb.setSize < 0) {
-            return new HybridResult(totalTests, -1, false, true);
-        }
-
-        return new HybridResult(totalTests, rb.setSize, false, true);
-    }
-
-    // -----------------------------------------------------------------------
-    // Method 1: Exhaustive enumeration (PC-style)
+    // Exhaustive enumeration (PC-style)
     // -----------------------------------------------------------------------
 
     private static ExhaustiveResult exhaustiveEnumeration(
@@ -416,7 +376,38 @@ public class SepsetComparisonHarness {
     }
 
     // -----------------------------------------------------------------------
-    // Result containers
+    // Summary table
+    // -----------------------------------------------------------------------
+
+    private static void printSummaryTable(List<SummaryRow> rows) {
+        System.out.println();
+        System.out.println("=".repeat(110));
+        System.out.println("SUMMARY TABLE");
+        System.out.println("=".repeat(110));
+        System.out.printf(
+                "%-6s %-8s  %-30s  %-40s%n",
+                "", "", "--- Exhaustive ---", "--- Recursive Blocking ---");
+        System.out.printf(
+                "%-6s %-8s  %-7s %-10s %-9s %-9s  "
+                        + "%-7s %-10s %-12s %-9s %-9s%n",
+                "p", "avgDeg",
+                "pairs", "succeeded", "timeouts", "avg tests",
+                "pairs", "succeeded", "indeterminate", "avg tests", "avg |Z|");
+        System.out.println("-".repeat(110));
+        for (SummaryRow r : rows) {
+            System.out.printf(
+                    "%-6d %-8d  %-7d %-10d %-9d %-9.2f  "
+                            + "%-7d %-10d %-13d %-9.2f %-9.2f%n",
+                    r.p, r.avgDeg,
+                    r.exhPairs, r.exhSucceeded, r.exhTimedOut, r.exhAvgTests,
+                    r.rbPairs, r.rbSucceeded, r.rbIndeterminate,
+                    r.rbAvgTests, r.rbAvgSetSize);
+        }
+        System.out.println("=".repeat(110));
+    }
+
+    // -----------------------------------------------------------------------
+    // Result and summary containers
     // -----------------------------------------------------------------------
 
     private static class ExhaustiveResult {
@@ -443,18 +434,36 @@ public class SepsetComparisonHarness {
         }
     }
 
-    private static class HybridResult {
-        final int     testCount;   // exhaustive tests + RB tests (if fallback used)
-        final int     setSize;     // -1 if no separator found
-        final boolean unblockable;
-        final boolean usedRb;      // true iff RB fallback was invoked
+    private static class SummaryRow {
+        final int    p, avgDeg;
+        final int    exhPairs, exhSucceeded, exhTimedOut;
+        final double exhAvgMs, exhAvgTests, exhAvgSetSize;
+        final int    rbPairs, rbSucceeded, rbUnblockable, rbIndeterminate;
+        final double rbAvgMs, rbAvgTests, rbAvgSetSize;
+        final double totalSecs;
 
-        HybridResult(int testCount, int setSize,
-                     boolean unblockable, boolean usedRb) {
-            this.testCount   = testCount;
-            this.setSize     = setSize;
-            this.unblockable = unblockable;
-            this.usedRb      = usedRb;
+        SummaryRow(int p, int avgDeg,
+                   int exhPairs, int exhSucceeded, int exhTimedOut,
+                   double exhAvgMs, double exhAvgTests, double exhAvgSetSize,
+                   int rbPairs, int rbSucceeded, int rbUnblockable, int rbIndeterminate,
+                   double rbAvgMs, double rbAvgTests, double rbAvgSetSize,
+                   double totalSecs) {
+            this.p               = p;
+            this.avgDeg          = avgDeg;
+            this.exhPairs        = exhPairs;
+            this.exhSucceeded    = exhSucceeded;
+            this.exhTimedOut     = exhTimedOut;
+            this.exhAvgMs        = exhAvgMs;
+            this.exhAvgTests     = exhAvgTests;
+            this.exhAvgSetSize   = exhAvgSetSize;
+            this.rbPairs         = rbPairs;
+            this.rbSucceeded     = rbSucceeded;
+            this.rbUnblockable   = rbUnblockable;
+            this.rbIndeterminate = rbIndeterminate;
+            this.rbAvgMs         = rbAvgMs;
+            this.rbAvgTests      = rbAvgTests;
+            this.rbAvgSetSize    = rbAvgSetSize;
+            this.totalSecs       = totalSecs;
         }
     }
 }
