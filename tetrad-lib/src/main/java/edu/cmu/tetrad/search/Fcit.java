@@ -140,7 +140,7 @@ public final class Fcit implements IGraphSearch {
     private boolean replicatingGraph = false;
     private boolean excludeSelectionBias = false;
     private int recursionDepth = 15;
-    private int raRadius = -1;
+    private int rbRadius = -1;
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -624,7 +624,7 @@ public final class Fcit implements IGraphSearch {
 //
             if (this.depth < 0) {
                 result = RecursiveBlocking.blockPathsIterativeDeepening(
-                        pag, x, y, Set.of(), notFollowed, recursionDepth, depth, raRadius, 1, true);
+                        pag, x, y, Set.of(), notFollowed, recursionDepth, depth, rbRadius, 1, true);
 
             } else {
 //                if (!result.indeterminate()) {
@@ -638,7 +638,7 @@ public final class Fcit implements IGraphSearch {
                     if (depth > maxDepth) break;
 
                     result = RecursiveBlocking.blockPathsIterativeDeepening(
-                            pag, x, y, Set.of(), notFollowed, recursionDepth, depth, raRadius, 1, true);
+                            pag, x, y, Set.of(), notFollowed, recursionDepth, depth, rbRadius, 1, true);
                 } while (result.indeterminate());
 //                }
             }
@@ -839,10 +839,10 @@ public final class Fcit implements IGraphSearch {
     /**
      * Sets the radius for RA (Recursive Association) algorithm.
      *
-     * @param raRadius the radius for RA algorithm to be set
+     * @param rbRadius the radius for RA algorithm to be set
      */
-    public void setRaRadius(int raRadius) {
-        this.raRadius = raRadius;
+    public void setRbRadius(int rbRadius) {
+        this.rbRadius = rbRadius;
     }
 
     /**
