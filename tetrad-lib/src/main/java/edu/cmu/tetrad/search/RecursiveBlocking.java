@@ -84,9 +84,11 @@ public class RecursiveBlocking {
      * @param notFollowed    a set of nodes that must not be traversed during path search
      * @param recursionDepth the maximum allowable recursion depth of the paths to block (-1 for no limit)
      * @param <E>            the type of the graph nodes
+     * @param deadlineMs     the deadline for the operation (in milliseconds)
      * @return a set of nodes constituting a blocking set for paths between x and y,
      * or {@code null} if no such set is found within the given constraints
      * @throws InterruptedException if the thread executing the method is interrupted
+     * @throws TimeoutException if the operation times out
      */
     public static <E> Set<Node> blockPathsRecursively(Graph graph,
                                                       Node x,
@@ -193,8 +195,10 @@ public class RecursiveBlocking {
      * @param maxRadius         BFS radius (-1 = unlimited)
      * @param nearWhichEndpoint 1 = near x, 2 = near y, 3 = near both
      * @param ignoreDirectEdge  whether to ignore direct edges between x and y
+     * @param deadlineMs        the deadline for the operation (in milliseconds)
      * @return a {@link BlockingResult} describing the outcome
      * @throws InterruptedException if the thread is interrupted
+     * @throws TimeoutException if the search was interrupted
      */
     public static BlockingResult blockPathsRecursivelyFull(Graph graph,
                                                            Node x,
@@ -277,8 +281,10 @@ public class RecursiveBlocking {
      * @param nearWhichEndpoint 1 = near x only, 2 = near y only,
      *                          3 = near both
      * @param ignoreDirectEdge  whether to ignore the direct x–y edge
+     * @param deadlineMs        the deadline for the operation (in milliseconds)
      * @return a {@link BlockingResult} describing the outcome
      * @throws InterruptedException if the thread is interrupted
+     * @throws TimeoutException if the search was interrupted
      */
     public static BlockingResult blockPathsBfs(
             Graph graph,
@@ -359,6 +365,22 @@ public class RecursiveBlocking {
         return new BlockingResult(null, false);
     }
 
+    /**
+     * Blocks paths between two nodes in a graph using an iterative deepening approach.
+     *
+     * @param graph             The graph in which the operation is performed.
+     * @param x                 The starting node of the path to be blocked.
+     * @param y                 The ending node of the path to be blocked.
+     * @param containing        A set of nodes that must be present on the blocked path.
+     * @param notFollowed       A set of nodes that must not be followed during the operation.
+     * @param recursionDepth    The current recursion depth.
+     * @param depth             The maximum depth to search for paths.
+     * @param maxRadius         The maximum allowable radius for searching paths.
+     * @param nearWhichEndpoint Specifies the endpoint near which the block operation is focused.
+     * @param ignoreDirectEdge  Whether to ignore direct edges between the start and end nodes.
+     * @return A {@link BlockingResult} object containing the result of the path blocking operation.
+     * @throws InterruptedException If the thread executing this operation is interrupted.
+     */
     public static BlockingResult blockPathsIterativeDeepening(
             Graph graph,
             Node x,
@@ -430,8 +452,10 @@ public class RecursiveBlocking {
      * @param nearWhichEndpoint 1 = near x only, 2 = near y only,
      *                          3 = near both
      * @param ignoreDirectEdge  whether to ignore the direct x–y edge
+     * @param deadlineMs        the deadline for the operation (in milliseconds)
      * @return a {@link BlockingResult} describing the outcome
      * @throws InterruptedException if the thread is interrupted
+     * @throws TimeoutException if the ceiling is reached without finding
      */
     public static BlockingResult blockPathsIterativeDeepening(
             Graph graph,

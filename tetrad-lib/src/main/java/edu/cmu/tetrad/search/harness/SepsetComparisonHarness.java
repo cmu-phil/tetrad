@@ -30,6 +30,17 @@ import java.util.concurrent.TimeoutException;
  */
 public class SepsetComparisonHarness {
 
+    /**
+     * Default constructor for the SepsetComparisonHarness class.
+     *
+     * This constructor initializes an instance of the SepsetComparisonHarness
+     * without any parameters. The class serves as a framework to perform
+     * comparative studies between different strategies for separating
+     * sets in directed acyclic graphs (DAGs), including exhaustive
+     * enumeration and iterative-deepening methods.
+     */
+    public SepsetComparisonHarness() {}
+
     // -----------------------------------------------------------------------
     // Configuration
     // -----------------------------------------------------------------------
@@ -56,6 +67,15 @@ public class SepsetComparisonHarness {
     // Main
     // -----------------------------------------------------------------------
 
+    /**
+     * The entry point of the program. Executes a series of experiments using both
+     * exhaustive enumeration and iterative-deepening recursive blocking methods for
+     * testing specific graph conditions. Outputs the results to a file and provides
+     * a summary of performance metrics for each set of parameters.
+     *
+     * @param args Command-line arguments passed to the program.
+     * @throws IOException If an input or output exception occurs during file operations.
+     */
     public static void main(String[] args) throws IOException {
 
         List<SummaryRow> summaryRows = new ArrayList<>();

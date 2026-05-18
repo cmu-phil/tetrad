@@ -30,6 +30,15 @@ import java.util.concurrent.*;
  */
 public class SepsetComparisonPagHarness {
 
+    /**
+     * Default constructor for the SepsetComparisonPagHarness class.
+     *
+     * This constructor initializes an instance of the SepsetComparisonPagHarness. It is primarily
+     * used to facilitate execution of the application's core functionality, including the
+     * generation of random PAGs (Partial Ancestral Graphs) and evaluation of separability tests.
+     */
+    public SepsetComparisonPagHarness() {}
+
     // -----------------------------------------------------------------------
     // Configuration
     // -----------------------------------------------------------------------
@@ -54,6 +63,16 @@ public class SepsetComparisonPagHarness {
     // Main
     // -----------------------------------------------------------------------
 
+    /**
+     * Entry point for the SepsetComparisonPagHarness application. This method performs
+     * an experimental evaluation by generating random PAGs (Partial Ancestral Graphs),
+     * executing separability tests on pairs of nodes, and recording results for analysis.
+     * The results are output to a CSV file and summarized in the console.
+     *
+     * @param args Command-line arguments. Currently, no arguments are used within the application.
+     *             This parameter is left available for future extensions.
+     * @throws IOException If an I/O error occurs while writing to the output file.
+     */
     public static void main(String[] args) throws IOException {
 
         // Summary accumulators: one row per (p, avgDeg) condition.

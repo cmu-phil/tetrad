@@ -351,7 +351,7 @@ public class GraphTransforms {
      * @param timeoutSeconds       maximum seconds to wait
      * @return The resulting PAG obtained from the input DAG.
      * @throws RuntimeException if the check does not complete within {@code timeoutSeconds} seconds, treating
-     * a timeout as a failed legality check (i.e. the surgery is reverted).
+     *                          a timeout as a failed legality check (i.e. the surgery is reverted).
      */
     public static Graph dagToPag(Graph graph, boolean excludeSelectionBias, int timeoutSeconds) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -390,15 +390,15 @@ public class GraphTransforms {
     /**
      * Converts a Directed Acyclic Graph (DAG) to a Partial Ancestral Graph (PAG) using the provided DAG and knowledge.
      *
-     * @param graph                       The input Directed Acyclic Graph (DAG) to be converted.
-     * @param knowledge                   Background knowledge used to guide the conversion process.
-     * @param excludeSelectionBias        True to exclude selection bias, false otherwise.
-     * @param maxBlockingPathLength Maximum length of discriminating paths allowed in the PAG.
+     * @param graph                The input Directed Acyclic Graph (DAG) to be converted.
+     * @param knowledge            Background knowledge used to guide the conversion process.
+     * @param excludeSelectionBias True to exclude selection bias, false otherwise.
+     * @param recursionDepth       Recursion depth to consider during PAG computation.
      * @return The resulting Partial Ancestral Graph (PAG) obtained from the input DAG and knowledge.
      * @throws IllegalStateException if a discriminating path cannot be found.
      */
-    public static Graph dagToPag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int maxBlockingPathLength) {
-        return PagCache.getInstance().getPag(graph, knowledge, excludeSelectionBias, maxBlockingPathLength);
+    public static Graph dagToPag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int recursionDepth) {
+        return PagCache.getInstance().getPag(graph, knowledge, excludeSelectionBias, recursionDepth);
     }
 
     /**
@@ -537,6 +537,7 @@ public class GraphTransforms {
      *
      * @param mag                  the maximal ancestral graph (MAG) to be converted
      * @param excludeSelectionBias whether to exclude selection bias
+     * @param recursionDepth       the maximum current depth of recursion in the conversion process
      * @return the resulting partial ancestral graph (PAG)
      */
     public static Graph magToPag(Graph mag, boolean excludeSelectionBias, int recursionDepth) {

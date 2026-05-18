@@ -1895,61 +1895,15 @@ public final class GraphUtils {
         return (ex1 == Endpoint.CIRCLE || (ex1 == ex2 || ex2 == Endpoint.CIRCLE)) && (ey1 == Endpoint.CIRCLE || (ey1 == ey2 || ey2 == Endpoint.CIRCLE));
     }
 
-//    /**
-//     * Returns a Markov blanket of a node for a DAG, CPDAG, MAG, or PAG. This is not necessarily minimal (i.e. not
-//     * necessarily a Markov Boundary).
-//     *
-//     * @param x The target node.
-//     * @param G The PAG.
-//     * @return A Markov blanket of the target node.
-//     */
-//    public static Set<Node> markovBlanket(Node x, Graph G) {
-//        Set<Node> mb = new HashSet<>();
-//
-//        LinkedList<Node> path = new LinkedList<>();
-//
-//        // Follow all the colliders.
-//        markovBlanketFollowColliders(null, x, path, G, mb);
-//        mb.addAll(G.getAdjacentNodes(x));
-//        mb.remove(x);
-//        return mb;
-//    }
-//
-//    /**
-//     * This method calculates the Markov Blanket by following colliders in a given graph.
-//     *
-//     * @param d    The node representing the direct cause (can be null).
-//     * @param a    The node for which the Markov Blanket is calculated.
-//     * @param path A linked list of nodes in the current path.
-//     * @param G    The graph in which the Markov Blanket is calculated.
-//     * @param mb   A set to store the nodes in the Markov Blanket.
-//     */
-//    private static void markovBlanketFollowColliders(Node d, Node a, LinkedList<Node> path, Graph G, Set<Node> mb) {
-//        if (path.contains(a)) return;
-//        path.add(a);
-//
-//        for (Node b : G.getNodesOutTo(a, Endpoint.ARROW)) {
-//            if (path.contains(b)) continue;
-//
-//            // Make sure that d*->a<-* b is a collider.
-//            if (d != null && !G.isDefCollider(d, a, b)) continue;
-//
-//            for (Node c : G.getNodesInTo(b, Endpoint.ARROW)) {
-//                if (path.contains(c)) continue;
-//
-//                if (!G.isDefCollider(a, b, c)) continue;
-//
-//                // a *-> b <-* c
-//                mb.add(b);
-//                mb.add(c);
-//
-//                markovBlanketFollowColliders(a, b, path, G, mb);
-//            }
-//        }
-//
-//        path.remove(a);
-//    }
-
+    /**
+     * Computes the Markov blanket for a given node in a graph. The Markov blanket
+     * of a node x is the set of nodes that include the parents of x, the children
+     * of x, and all other parents of x's children (i.e., colliders involving x).
+     *
+     * @param x the target node for which the Markov blanket is computed
+     * @param G the graph containing the nodes and edges
+     * @return a set of nodes representing the Markov blanket of x
+     */
     public static Set<Node> markovBlanket(Node x, Graph G) {
         Set<Node> mb = new HashSet<>(G.getAdjacentNodes(x));
         mb.remove(x);
@@ -2647,6 +2601,7 @@ public final class GraphUtils {
      * @param verbose              whether to provide detailed logging of the repair process
      * @param selection            a set of nodes to be considered during the maximality repair
      * @param excludeSelectionBias whether to exclude the selection bias during the repair process
+     * @param recursionDepth       the maximum current depth of recursion in the repair process
      * @return the repaired PAG that satisfies required constraints and is free of faults
      */
     public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,

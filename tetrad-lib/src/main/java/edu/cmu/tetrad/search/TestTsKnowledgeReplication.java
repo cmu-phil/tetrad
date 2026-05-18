@@ -21,6 +21,11 @@ import static org.junit.Assert.*;
 public class TestTsKnowledgeReplication {
 
     /**
+     * Default constructor.
+     */
+    public TestTsKnowledgeReplication() {}
+
+    /**
      * Constructs a small 3-variable time series dataset, defines within-lag knowledge
      * over two tiers, expands it across lags, verifies the expansion, then runs BOSS
      * with the expanded knowledge and a replicating graph.

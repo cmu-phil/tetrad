@@ -493,7 +493,7 @@ public final class Fcit implements IGraphSearch {
         subAlg.setUseBes(useBes);
         subAlg.setNumStarts(numStarts);
         subAlg.setNumThreads(Runtime.getRuntime().availableProcessors());
-        subAlg.setVerbose(superVerbose);
+        subAlg.setVerbose(verbose);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(knowledge);
         return alg;

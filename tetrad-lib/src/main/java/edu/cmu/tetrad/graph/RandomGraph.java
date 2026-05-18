@@ -614,42 +614,13 @@ public class RandomGraph {
     // JMO's method for fixing latents
 
     /**
-     * <p>fixLatents4.</p>
+     * Adjusts the latent nodes in the given graph based on the specified number of latent confounders.
+     * This method modifies the graph by transforming certain nodes into latent nodes.
      *
-     * @param numLatentConfounders a int
-     * @param graph                a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param numLatentConfounders The number of latent confounders to be fixed in the graph. If this is 0, no changes are made.
+     * @param graph The graph to be modified. Nodes in the graph will be analyzed to determine which can be
+     *              converted into latent nodes based on their type or whether they are common causes.
      */
-//    public static void fixLatents4(int numLatentConfounders, Graph graph) {
-//        if (numLatentConfounders == 0) {
-//            return;
-//        }
-//
-////        List<Node> commonCausesAndEffects = getCommonCausesAndEffects(graph);
-//        List<Node> commonCausesAndEffects = getCommonCauses(graph);
-//        int index = 0;
-//
-//        while (index++ < numLatentConfounders) {
-//            if (commonCausesAndEffects.isEmpty()) {
-//                index--;
-//                break;
-//            }
-//            int i = RandomUtil.getInstance().nextInt(commonCausesAndEffects.size());
-//            Node node = commonCausesAndEffects.get(i);
-//            node.setNodeType(NodeType.LATENT);
-//            commonCausesAndEffects.remove(i);
-//        }
-//
-//        List<Node> nodes = graph.getNodes();
-//        while (index++ < numLatentConfounders) {
-//            int r = RandomUtil.getInstance().nextInt(nodes.size());
-//            if (nodes.get(r).getNodeType() != NodeType.LATENT) {
-//                index--;
-//            } else {
-//                nodes.get(r).setNodeType(NodeType.LATENT);
-//            }
-//        }
-//    }
-
     public static void fixLatents4(int numLatentConfounders, Graph graph) {
         if (numLatentConfounders == 0) {
             return;
