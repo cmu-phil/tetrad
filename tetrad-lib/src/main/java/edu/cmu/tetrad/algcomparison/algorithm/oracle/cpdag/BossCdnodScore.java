@@ -91,7 +91,7 @@ public class BossCdnodScore extends AbstractBootstrapAlgorithm implements Algori
             if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
             }
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
             if (dataModel.getName() != null) timeSeries.setName(dataModel.getName());
             dataModel = timeSeries;
             knowledge = timeSeries.getKnowledge();

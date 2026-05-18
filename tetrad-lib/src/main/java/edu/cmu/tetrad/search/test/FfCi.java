@@ -127,7 +127,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
     // Mixed-only knobs
     private double bandwidthMultiplier = 1.0;
     private int bwMaxRows = 500;
-    private FfCiContinuous.FeatureType featureType = FfCiContinuous.FeatureType.RFF;
+    private FfCiContinuous.FeatureType featureType = FfCiContinuous.FeatureType.ORF;
     private double catRho = 0.0; // 0 => one-hot
 
     // ---------------- IndependenceTest state ----------------
@@ -810,7 +810,8 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
             if (n <= 2 || (n > 0 && Zcont[0].length == 0)) return 1.0;
 
             int maxRows = TMath.min(n, bwMaxRows);
-            double bw2 = medianDistanceSquaredND(Zcont, maxRows);
+            long bwSeed = seedForBlock("BW", varsForKey);
+            double bw2 = medianDistanceSquaredND(Zcont, maxRows, bwSeed);
             if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
 
             bw2 *= (bandwidthMultiplier * bandwidthMultiplier);
@@ -876,6 +877,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
 
     private long seedForX(Node x) {
         long h = 1469598103934665603L;
+        h = 1099511628211L * (h ^ this.seed);
         h = 1099511628211L * (h ^ x.getName().hashCode());
         h = 1099511628211L * (h ^ getActiveRowCount());
         h = 1099511628211L * (h ^ activeRowsHash());
@@ -884,6 +886,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
 
     private long seedForBlock(String tag, List<Node> block) {
         long h = 1469598103934665603L;
+        h = 1099511628211L * (h ^ this.seed);
         h = 1099511628211L * (h ^ tag.hashCode());
 
         ArrayList<String> names = new ArrayList<>(block.size());
@@ -996,7 +999,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         return TMath.sqrt(TMath.max(1e-18, ss));
     }
 
-    private static double medianDistanceSquaredND(double[][] Z, int maxRows) {
+    private static double medianDistanceSquaredND(double[][] Z, int maxRows, long seed) {
         int n = Z.length;
         int d = (n == 0) ? 0 : Z[0].length;
         if (n < 3 || d == 0) return 1.0;
@@ -1167,8 +1170,9 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
                                     SimpleMatrix rX, SimpleMatrix rY) {
         if (pValueMethod == FfCiContinuous.Approx.PERMUTATION && permutations > 0) {
             int greater = 0;
+            Random r = new Random(this.seed);
             for (int b = 0; b < permutations; b++) {
-                int[] perm = randomPermutation(rY.getNumRows());
+                int[] perm = randomPermutation(rY.getNumRows(), r);
                 SimpleMatrix rYp = permuteRows(rY, perm);
                 SimpleMatrix C = covCentered(rX, rYp);
                 double s = rY.getNumRows() * frob2(C);
@@ -1307,11 +1311,11 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         return e;
     }
 
-    private static int[] randomPermutation(int n) {
+    private static int[] randomPermutation(int n, Random r) {
         int[] p = new int[n];
         for (int i = 0; i < n; i++) p[i] = i;
         for (int i = n - 1; i > 0; i--) {
-            int j = RandomUtil.getInstance().nextInt(i + 1);
+            int j = r.nextInt(i + 1);
             int t = p[i];
             p[i] = p[j];
             p[j] = t;

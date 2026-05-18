@@ -38,6 +38,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.TimeoutException;
 
 /**
  * <p>Paths class.</p>
@@ -585,7 +586,7 @@ public class Paths implements TetradSerializable {
      */
     public boolean isLegalPag() throws RuntimeException {
         List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-        return PagLegalityCheck.isLegalPag(graph, new HashSet<>(selection), 10 /* second timeout*/).isLegalPag();
+        return PagLegalityCheck.isLegalPag(graph, new HashSet<>(selection), 20 /* second timeout*/).isLegalPag();
     }
 
     /**
@@ -1823,7 +1824,7 @@ public class Paths implements TetradSerializable {
      */
     public List<Node> possibleDsep(Node x, int maxPossibleDsepPathLength) {
 
-        // Removing the second argument y to bring this in line with CPS 2001 p. 188.
+        // Removing the second argument y to bring this in line with CPS 2000 p. 188.
         Set<Node> msep = new HashSet<>();
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
@@ -1897,10 +1898,7 @@ public class Paths implements TetradSerializable {
         msep.remove(x);
 
         List<Node> _msep = new ArrayList<>(msep);
-
         _msep.sort(NaturalSort.naturalComparator());
-        Collections.reverse(_msep);
-
         return _msep;
 
     }
@@ -2065,9 +2063,12 @@ public class Paths implements TetradSerializable {
      * @param maxPathLength the maximum length of the path to search for the blocking set
      * @return the sepset between the two nodes
      * @throws InterruptedException if any.
+     * @throws TimeoutException     if the operation times out
      */
-    public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, int maxPathLength) throws InterruptedException {
-        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, Set.of(), maxPathLength);
+    public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, int maxPathLength)
+            throws InterruptedException, TimeoutException {
+        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, Set.of(), maxPathLength,
+                System.currentTimeMillis() + 5000L);
 
         // TODO - should allow the user to determine whether this is a PAG.
         if (isMSeparatedFrom(x, y, blocking, false)) {

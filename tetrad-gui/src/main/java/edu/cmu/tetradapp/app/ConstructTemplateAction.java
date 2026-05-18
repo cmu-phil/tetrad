@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.model.SessionNodeWrapper;
 import edu.cmu.tetradapp.model.SessionWrapper;
+import edu.cmu.tetradapp.session.SessionEvent;
 import edu.cmu.tetradapp.session.SessionNode;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
@@ -115,6 +116,7 @@ final class ConstructTemplateAction extends AbstractAction {
         }
 
         sessionWorkbench.scrollNodesToVisible(nodes);
+        sessionWorkbench.firePropertyChange("selectMove", false, true);
     }
 
     /**

@@ -18,6 +18,7 @@ import edu.cmu.tetrad.util.StatUtils;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Shared post-processing refinements applied to the latent-variable graph
@@ -282,7 +283,13 @@ public final class LatentGraphRefinement {
                 n.setNodeType(NodeType.MEASURED);
             }
 
-            Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, x, L, Set.of(), Set.of(), -1);
+            Set<Node> blocking = null;
+            try {
+                blocking = RecursiveBlocking.blockPathsRecursively(graph, x, L, Set.of(), Set.of(), -1,
+                        Long.MAX_VALUE);
+            } catch (TimeoutException e) {
+                throw new RuntimeException(e);
+            }
 
             for (Node n : allLatents) {
                 n.setNodeType(NodeType.LATENT);

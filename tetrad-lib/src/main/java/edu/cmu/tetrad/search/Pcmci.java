@@ -165,7 +165,7 @@ public final class Pcmci implements IGraphSearch {
     @Override
     public Graph search() throws InterruptedException {
         // 1) Create lagged data up to maxLag. Naming: e.g., "X:t-2" (TsUtils default).
-        DataSet lagged = TsUtils.createLagData(raw, maxLag);
+        DataSet lagged = TsUtils.createLagData(raw, maxLag, knowledge);
         knowledge = lagged.getKnowledge();
 
         // Tie test to lagged variables:

@@ -139,8 +139,8 @@ public final class Fcit implements IGraphSearch {
     private @NotNull Graph pag = new EdgeListGraph();
     private boolean replicatingGraph = false;
     private boolean excludeSelectionBias = false;
-    private int maxPathLength = 15;
-    private int raRadius = -1;
+    private int recursionDepth = 15;
+    private int rbRadius = -1;
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -294,7 +294,7 @@ public final class Fcit implements IGraphSearch {
         fciOrient.setVerbose(superVerbose);
         fciOrient.setParallel(true);
         fciOrient.setCompleteRuleSetUsed(true);
-        fciOrient.setMaxBlockingPathLength(maxPathLength);
+        fciOrient.setRecursionDepth(recursionDepth);
         fciOrient.setMaxDiscriminatingPathLength(-1);
         fciOrient.setKnowledge(knowledge);
 
@@ -432,7 +432,7 @@ public final class Fcit implements IGraphSearch {
         }
 
         // The main procedure.
-        this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias, maxPathLength);
+        this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias, recursionDepth);
 
         if (replicatingGraph) {
             this.pag = new ReplicatingGraph(pag, new LagReplicationPolicy());
@@ -493,7 +493,7 @@ public final class Fcit implements IGraphSearch {
         subAlg.setUseBes(useBes);
         subAlg.setNumStarts(numStarts);
         subAlg.setNumThreads(Runtime.getRuntime().availableProcessors());
-        subAlg.setVerbose(superVerbose);
+        subAlg.setVerbose(verbose);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(knowledge);
         return alg;
@@ -623,8 +623,8 @@ public final class Fcit implements IGraphSearch {
             RecursiveBlocking.BlockingResult result = null;
 //
             if (this.depth < 0) {
-                result = RecursiveBlocking.blockPathsRecursivelyFull(
-                        pag, x, y, Set.of(), notFollowed, maxPathLength, depth, raRadius, 1, true);
+                result = RecursiveBlocking.blockPathsIterativeDeepening(
+                        pag, x, y, Set.of(), notFollowed, recursionDepth, depth, rbRadius, 1, true);
 
             } else {
 //                if (!result.indeterminate()) {
@@ -637,8 +637,8 @@ public final class Fcit implements IGraphSearch {
 
                     if (depth > maxDepth) break;
 
-                    result = RecursiveBlocking.blockPathsRecursivelyFull(
-                            pag, x, y, Set.of(), notFollowed, maxPathLength, depth, raRadius, 1, true);
+                    result = RecursiveBlocking.blockPathsIterativeDeepening(
+                            pag, x, y, Set.of(), notFollowed, recursionDepth, depth, rbRadius, 1, true);
                 } while (result.indeterminate());
 //                }
             }
@@ -836,22 +836,13 @@ public final class Fcit implements IGraphSearch {
         this.excludeSelectionBias = excludeSelectionBias;
     }
 
-//    /**
-//     * Sets the maximum blocking path length.
-//     *
-//     * @param maxPathLength the maximum length of the blocking path to be set
-//     */
-//    public void setMaxPathLength(int maxPathLength) {
-//        this.maxPathLength = maxPathLength;
-//    }
-
     /**
      * Sets the radius for RA (Recursive Association) algorithm.
      *
-     * @param raRadius the radius for RA algorithm to be set
+     * @param rbRadius the radius for RA algorithm to be set
      */
-    public void setRaRadius(int raRadius) {
-        this.raRadius = raRadius;
+    public void setRbRadius(int rbRadius) {
+        this.rbRadius = rbRadius;
     }
 
     /**

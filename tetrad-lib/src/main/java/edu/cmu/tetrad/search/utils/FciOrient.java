@@ -96,7 +96,7 @@ public class FciOrient {
      * <p>
      * This variable represents the maximum length of a blocking path, or -1 if no maximum length is set.
      */
-    private int maxBlockingPathLength = -1;
+    private int recursionDepth = -1;
     /**
      * The maximum path length variable.
      * <p>
@@ -900,7 +900,7 @@ public class FciOrient {
         List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = new ArrayList<>();
 
         for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
-            tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, maxBlockingPathLength, maxDiscriminatingPathLength, graph, vNodes));
+            tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, recursionDepth, maxDiscriminatingPathLength, graph, vNodes));
         }
 
         return tasks;
@@ -1557,10 +1557,10 @@ public class FciOrient {
     /**
      * Sets the maximum allowed blocking path length.
      *
-     * @param maxBlockingPathLength the maximum length of the blocking path, specified as an integer
+     * @param recursionDepth the maximum length of the blocking path, specified as an integer
      */
-    public void setMaxBlockingPathLength(int maxBlockingPathLength) {
-        this.maxBlockingPathLength = maxBlockingPathLength;
+    public void setRecursionDepth(int recursionDepth) {
+        this.recursionDepth = recursionDepth;
     }
 
     /**

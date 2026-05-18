@@ -48,6 +48,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 
 import static edu.cmu.tetrad.graph.GraphTransforms.dagToPag;
 import static org.junit.Assert.*;
@@ -58,27 +59,21 @@ import static org.junit.Assert.*;
  */
 public class TestFci {
 
-    private static final Logger log = LoggerFactory.getLogger(TestFci.class);
-
     private static void runLvSearch(String outputGraph, IGraphSearch fci, Graph graph) {
-        // Run search
-        Graph resultGraph = null;
         try {
-            resultGraph = fci.search();
+            Graph resultGraph = fci.search();
+
+            Graph pag = GraphUtils.convert(outputGraph);
+            resultGraph = GraphUtils.replaceNodes(resultGraph, pag.getNodes());
+
+            System.out.println(resultGraph.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
+            System.out.println(unshieldedCollidersIdenticalPagMag(resultGraph)
+                    ? "Unshielded colliders the same." : "Unshielded colliders different.");
+
+            assertEquals(pag, resultGraph);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
-        Graph pag = GraphUtils.convert(outputGraph);
-        resultGraph = GraphUtils.replaceNodes(resultGraph, pag.getNodes());
-
-        System.out.println(resultGraph.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
-        System.out.println(unshieldedCollidersIdenticalPagMag(resultGraph)
-                ? "Unshielded colliders the same." : "Unshielded colliders different.");
-
-        assertEquals(pag, resultGraph);
-//        System.out.println("DAG to PAG: " + dagToPag(graph));
-//        assertEquals(pag, dagToPag(graph));
     }
 
     private static boolean isUnshieldedCollider(Node x, Node y, Node z, Graph g) {
@@ -269,43 +264,6 @@ public class TestFci {
                 "Ao->D,Ao-oB,Bo->D,Co->D,D-->E", new Knowledge());
     }
 
-    // This fails for FCIT from Oracle, understandably. (GSTs from Oracle can't use knowledge.)
-    // For FCI etc. can turn it on.
-//    @Test
-    public void testSearch11() {
-        checkSearch("Latent(L1),Latent(L2),L1-->X1,L1-->X2,L2-->X2,L2-->X3",
-                "X1o->X2,X3o->X2", new Knowledge());
-
-        List<String> varNames = new ArrayList<>();
-        varNames.add("X1");
-        varNames.add("X2");
-        varNames.add("X3");
-
-        Knowledge knowledge = new Knowledge(varNames);
-        knowledge.addToTier(1, "X1");
-        knowledge.addToTier(1, "X2");
-        knowledge.addToTier(2, "X3");
-
-        checkSearch("Latent(L1),Latent(L2),L1-->X1,L1-->X2,L2-->X2,L2-->X3",
-                "X1o->X2,X2<->X3", knowledge);
-    }
-
-    // This fails for FCIT from Oracle, understandably. (GSTs from Oracle can't use knowledge.)
-    // For FCI, etc., can turn it on.
-//    @Test
-    public void testSearch12() {
-        checkSearch("Latent(L1),X1-->X2,X3-->X4,L1-->X2,L1-->X4",
-                "X1o->X2,X3o->X4,X2<->X4", new Knowledge());
-
-        Knowledge knowledge = new Knowledge();
-        knowledge.setRequired("X2", "X4");
-
-        assertTrue(knowledge.isRequired("X2", "X4"));
-
-        checkSearch("Latent(L1),X1-->X2,X3-->X4,L1-->X2,L1-->X4",
-                "X1o-oX2,X3o->X4,X2-->X4", knowledge);
-    }
-
     @Test
     public void testSearch13() {
         final int numVars = 10;
@@ -330,9 +288,6 @@ public class TestFci {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
-//        DagToPag dagToPag = new DagToPag(trueGraph);
-//        Graph truePag = dagToPag.convert();
 
         Graph truePag = dagToPag(trueGraph, false);
 
@@ -413,9 +368,7 @@ public class TestFci {
         {
             Fcit fci = new Fcit(independence, score);
             fci.setStartWith(Fcit.START_WITH.GRASP);
-//            fci.setDepth(-1);
             fci.setKnowledge(knowledge);
-//            fci.setPreserveMarkov(false);
             fci.setVerbose(verbose);
 
             runLvSearch(outputGraph, fci, graph);
@@ -635,7 +588,14 @@ public class TestFci {
 
         Set<Node> B = null;
         try {
-            B = RecursiveBlocking.blockPathsRecursively(mag, x, y, new HashSet<>(), new HashSet<>(), -1);
+            Set<Node> result;
+            try {
+                result = RecursiveBlocking.blockPathsRecursivelyFull(mag, x, y, (Set<Node>) new HashSet<Node>(), (Set<Node>) new HashSet<Node>(),
+                        -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
+            } catch (TimeoutException e) {
+                throw new RuntimeException(e);
+            }
+            B = result;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -671,8 +631,14 @@ public class TestFci {
 
         MsepTest msepTest = new MsepTest(g);
 
-        Set<Node> Z = RecursiveBlocking.blockPathsRecursively(g, x, y, new HashSet<>(),
-                new HashSet<>(), -1);
+        Set<Node> result;
+        try {
+            result = RecursiveBlocking.blockPathsRecursivelyFull(g, x, y, (Set<Node>) new HashSet<Node>(), (Set<Node>) new HashSet<Node>(),
+                    -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+        Set<Node> Z = result;
         assertTrue(msepTest.checkIndependence(x, y, Z).isIndependent());
     }
 

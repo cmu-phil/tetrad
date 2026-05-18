@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.data.Knowledge;
 
 /**
  * Jun 4, 2019 5:21:45 PM
@@ -34,30 +35,52 @@ public final class SimulationUtils {
     }
 
     /**
-     * <p>create.</p>
+     * Creates a simulation instance based on the specified simulation type and random graph. This method
+     * serves as a shorthand for calling the full create method with a null knowledge parameter.
      *
-     * @param simulationType a {@link java.lang.String} object
-     * @param randomGraph    a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
-     * @return a {@link edu.cmu.tetrad.algcomparison.simulation.Simulation} object
+     * @param simulationType the type of simulation to create, which must correspond to a valid simulation type
+     *                       such as SimulationTypes.BAYS_NET, SimulationTypes.STRUCTURAL_EQUATION_MODEL, etc.
+     * @param randomGraph    the random graph to base the simulation on, representing the structure required
+     *                       for the simulation.
+     * @return the created simulation instance corresponding to the specified simulation type and random graph.
+     * @throws IllegalArgumentException if the provided simulation type is unknown or unsupported.
      */
     public static Simulation create(String simulationType, RandomGraph randomGraph) {
+        return create(simulationType, randomGraph, null);
+    }
+
+    /**
+     * Creates a simulation instance based on the specified simulation type, random graph, and knowledge.
+     *
+     * @param simulationType the type of simulation to create. Must be one of:
+     *                       SimulationTypes.BAYS_NET,
+     *                       SimulationTypes.STRUCTURAL_EQUATION_MODEL,
+     *                       SimulationTypes.GENERAL_ADDITIVE_MODEL,
+     *                       SimulationTypes.GENERAL_NOISE_SEM,
+     *                       SimulationTypes.ADDITIVE_NOISE_SEM,
+     *                       SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL,
+     *                       SimulationTypes.LEE_AND_HASTIE,
+     *                       SimulationTypes.CONDITIONAL_GAUSSIAN,
+     *                       or SimulationTypes.TIME_SERIES.
+     * @param randomGraph    the random graph to base the simulation on.
+     * @param knowledge      additional knowledge that may be used by certain simulation types, such as
+     *                       SimulationTypes.TIME_SERIES. Can be null for types that do not require it.
+     * @return the created simulation instance corresponding to the specified simulation type.
+     * @throws IllegalArgumentException if the specified simulation type is unknown or unsupported.
+     */
+    public static Simulation create(String simulationType, RandomGraph randomGraph, Knowledge knowledge) {
         return switch (simulationType) {
             case SimulationTypes.BAYS_NET -> new BayesNetSimulation(randomGraph);
             case SimulationTypes.STRUCTURAL_EQUATION_MODEL -> new SemSimulation(randomGraph);
-//            case SimulationTypes.LINEAR_FISHER_MODEL -> new LinearFisherModel(randomGraph);
-//            case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL -> new GpSemSimulation(randomGraph);
             case SimulationTypes.GENERAL_ADDITIVE_MODEL -> new GeneralAdditiveModel(randomGraph);
-//            case SimulationTypes.POST_NONLINEAR_MODEL -> new PostnonlinearSem(randomGraph);
             case SimulationTypes.GENERAL_NOISE_SEM -> new GeneralNoiseSimulation(randomGraph);
             case SimulationTypes.ADDITIVE_NOISE_SEM -> new AdditiveNoiseSimulation(randomGraph);
             case SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL -> new GeneralSemSimulationSpecial1(randomGraph);
             case SimulationTypes.LEE_AND_HASTIE -> new LeeHastieSimulation(randomGraph);
             case SimulationTypes.CONDITIONAL_GAUSSIAN -> new ConditionalGaussianSimulation(randomGraph);
-            case SimulationTypes.TIME_SERIES -> new TimeSeriesSemSimulation(randomGraph);
+            case SimulationTypes.TIME_SERIES -> new TimeSeriesSemSimulation(randomGraph, knowledge);
             default -> throw new IllegalArgumentException(
                     String.format("Unknown simulation type %s.", simulationType));
-
-
         };
     }
 

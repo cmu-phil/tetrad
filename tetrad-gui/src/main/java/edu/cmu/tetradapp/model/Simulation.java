@@ -50,6 +50,7 @@ public class Simulation extends DataWrapper implements
 
     @Serial
     private static final long serialVersionUID = 23L;
+    private Knowledge knowledge;
     private Graph inputGraph = null;
     private DataSet inputData = null;
 
@@ -110,7 +111,22 @@ public class Simulation extends DataWrapper implements
      * @param parameters  the parameters to be used in the simulation
      */
     public Simulation(GraphSource graphSource, Parameters parameters) throws ParseException {
+        this(graphSource, null, parameters);
+    }
+
+    /**
+     * Creates a new Simulation object based on the provided GraphSource and Parameters.
+     *
+     * @param graphSource the source of the graph to be used in the simulation
+     * @param knowledge   the knowledge to be used in the simulation. For time series simulations, this will be
+     *                    replicated across lags.
+     * @param parameters  the parameters to be used in the simulation
+     */
+    public Simulation(GraphSource graphSource, KnowledgeBoxModel knowledge, Parameters parameters) throws ParseException {
         this.fixedGraph = true;
+        if (knowledge != null && knowledge.getKnowledge() != null) {
+            this.knowledge = knowledge.getKnowledge();
+        }
 
         this.parameters = parameters;
         this.fixedSimulation = false;
@@ -119,7 +135,7 @@ public class Simulation extends DataWrapper implements
         String simulationType = String.valueOf(parameters.getValues("simulationsDropdownPreference")[0]);
 
         try {
-            this.simulation = SimulationUtils.create(simulationType, new SingleGraph(graphSource.getGraph()));
+            this.simulation = SimulationUtils.create(simulationType, new SingleGraph(graphSource.getGraph()), knowledge.getKnowledge());
         } catch (Exception e) {
             this.simulation = SimulationUtils.create(SimulationTypes.STRUCTURAL_EQUATION_MODEL, new SingleGraph(graphSource.getGraph()));
         }
@@ -566,7 +582,7 @@ public class Simulation extends DataWrapper implements
         if (this.simulation instanceof AcceptsKnowledge) {
             return ((AcceptsKnowledge) this.simulation).getKnowledge();
         } else {
-            return new Knowledge();
+            return this.knowledge;
         }
     }
 

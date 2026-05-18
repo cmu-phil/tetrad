@@ -16,6 +16,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Implements a variant of the CD-NOD (Causal Discovery from Non-stationary/
@@ -130,7 +131,13 @@ public final class CdnodBoss implements IGraphSearch {
 
         // RB hint (bounded; skip if adjacent)
         if (!g.isAdjacentTo(x,y)) {
-            Set<Node> rb = RecursiveBlocking.blockPathsRecursively(g, x, y, Set.of(), Set.of(), /*L*/ 8);
+            Set<Node> rb = null;
+            try {
+                rb = RecursiveBlocking.blockPathsRecursively(g, x, y, Set.of(), Set.of(), /*L*/ 8,
+                        Long.MAX_VALUE);
+            } catch (TimeoutException e) {
+                throw new RuntimeException(e);
+            }
             if (rb != null) {
                 IndependenceResult r = test.checkIndependence(x, y, rb);
                 if (r.isIndependent()) { sepsets.set(x, y, rb); return rb; }

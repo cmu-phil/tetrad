@@ -97,7 +97,7 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, Accepts
                 throw new IllegalArgumentException("Expecting a data set for time lagging.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
@@ -216,8 +216,10 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, Accepts
      */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
+        if (test == null) {
+            throw new NullPointerException("Independence test must not be null.");
+        }
         this.test = test;
     }
-
 }
 

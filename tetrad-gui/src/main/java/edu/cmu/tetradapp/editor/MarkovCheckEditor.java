@@ -21,7 +21,6 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -893,14 +892,11 @@ public class MarkovCheckEditor extends JPanel {
             }
 
             public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex == 0) {
-                    return Number.class;
-                }
-                if (columnIndex == 1) {
-                    return String.class;
-                } else {
-                    return Number.class;
-                }
+                if (columnIndex == 0) return Integer.class;
+                if (columnIndex == 1) return String.class;
+                if (columnIndex == 2) return String.class;
+                if (columnIndex == 3) return Double.class;
+                return Object.class;
             }
         };
 
@@ -1244,7 +1240,7 @@ public class MarkovCheckEditor extends JPanel {
                 }
 
                 if (columnIndex == 3) {
-                    return nf.format(result.getPValue());
+                    return result.getPValue();   // raw double, not nf.format(...)
                 }
 
                 return null;
@@ -1602,11 +1598,15 @@ public class MarkovCheckEditor extends JPanel {
                 setForeground(table.getSelectionForeground());
                 setBackground(table.getSelectionBackground());
             } else {
-                this.setForeground(table.getForeground());
-                this.setBackground(table.getBackground());
+                setForeground(table.getForeground());
+                setBackground(table.getBackground());
             }
 
-            this.setText(value.toString());
+            if (value instanceof Double d) {
+                setText(NumberFormatUtil.getInstance().getNumberFormat().format(d));
+            } else {
+                setText(value.toString());
+            }
         }
 
         @Override

@@ -344,7 +344,7 @@ public class Gfci implements IGraphSearch {
         strategy.setMaxLength(-1);
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxBlockingPathLength(-1);
+        fciOrient.setRecursionDepth(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setVerbose(verbose);
 
@@ -490,7 +490,8 @@ public class Gfci implements IGraphSearch {
         }
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, verbose, new HashSet<>(), excludeSelectionBias);
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, verbose, new HashSet<>(), excludeSelectionBias,
+                    Integer.MAX_VALUE);
         }
 
         if (verbose) {

@@ -34,19 +34,19 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Wrapper for linear, Gaussian SEM BIC score.
- *
- * @author josephramsey
- * @version $Id: $Id
- */
-@edu.cmu.tetrad.annotation.Score(
-        name = "HT SEM BIC Score",
-        command = "ht-sem-bic-score",
-        dataType = {DataType.Continuous}
-)
-@Experimental
-@LinearGaussian
+///**
+// * Wrapper for linear, Gaussian SEM BIC score.
+// *
+// * @author josephramsey
+// * @version $Id: $Id
+// */
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "HT SEM BIC Score",
+//        command = "ht-sem-bic-score",
+//        dataType = {DataType.Continuous}
+//)
+//@Experimental
+//@LinearGaussian
 public class HeavyTailSemBicScore implements ScoreWrapper {
 
     @Serial

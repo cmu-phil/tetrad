@@ -223,12 +223,6 @@ public class Pc implements IGraphSearch {
     private boolean forbidDirectedCycles = true;
 
     /**
-     * If true, Meek closure is applied in a cycle-safe incremental fashion:
-     * attempt one implied orientation at a time; rollback if it creates a cycle.
-     */
-    private boolean meekCycleSafe = true;
-
-    /**
      * Constructs a new instance of the Pc algorithm with the specified independence test.
      *
      * @param test the independence test to be used by the Pc algorithm
@@ -243,41 +237,6 @@ public class Pc implements IGraphSearch {
         String t = to.getName();
         return !knowledge.isRequired(t, f)   // disallow f->t if t->f is required
                 && !knowledge.isForbidden(f, t); // disallow f->t if f->t is forbidden
-    }
-
-    private static void orientEdgesFromKnowledge(Graph g, Knowledge knowledge) {
-        if (knowledge == null || knowledge.isEmpty()) return;
-
-        List<Edge> edges = new ArrayList<>(g.getEdges());
-        for (Edge e : edges) {
-            Node a = e.getNode1();
-            Node b = e.getNode2();
-            String A = a.getName();
-            String B = b.getName();
-
-            // If A->B required OR B->A forbidden, force A->B (if possible)
-            boolean forceAToB = knowledge.isRequired(A, B) || knowledge.isForbidden(B, A);
-            boolean forceBToA = knowledge.isRequired(B, A) || knowledge.isForbidden(A, B);
-
-            // If both force in opposite directions, it's inconsistent knowledge; skip or log.
-            if (forceAToB && forceBToA) {
-                // optional: log inconsistency
-                continue;
-            }
-
-            if (forceAToB) {
-                // only if edge exists and is not already oriented the other way
-                if (g.isAdjacentTo(a, b) && !g.isParentOf(b, a)) {
-                    g.removeEdge(g.getEdge(a, b));
-                    g.addDirectedEdge(a, b);
-                }
-            } else if (forceBToA) {
-                if (g.isAdjacentTo(a, b) && !g.isParentOf(a, b)) {
-                    g.removeEdge(g.getEdge(a, b));
-                    g.addDirectedEdge(b, a);
-                }
-            }
-        }
     }
 
     // ----- Configuration setters -----
@@ -403,16 +362,7 @@ public class Pc implements IGraphSearch {
      *                If true, directed cycles are not allowed. If false, directed
      *                cycles are permitted.
      */
-    // NEW knobs (optional)
     public void setForbidDirectedCycles(boolean enabled) { this.forbidDirectedCycles = enabled; }
-
-    /**
-     * Sets the Meek Cycle safety flag.
-     *
-     * @param enabled a boolean indicating whether the Meek Cycle safety feature
-     *                should be enabled (true) or disabled (false)
-     */
-    public void setMeekCycleSafe(boolean enabled) { this.meekCycleSafe = enabled; }
 
     // ----- Entry points -----
 
@@ -453,11 +403,6 @@ public class Pc implements IGraphSearch {
 
         // Phase 2: orient v-structures
         orientUnshieldedTriples(g, sepsets);
-
-        // Pre-Meek reversion: enforce Chickering compelledness.
-        // Reverts any directed edge that is not the tail of a genuine
-        // v-structure back to undirected, giving Meek a clean input.
-        revertNonCompelledEdges(g);
 
         // Phase 3: Meek R1-R4 to closure
         applyMeekRules(g);
@@ -566,62 +511,69 @@ public class Pc implements IGraphSearch {
     // Collider orientation (cycle-safe)
     // ------------------------------------------------------------------------------------
 
-    private void orientUnshieldedTriples(Graph g, SepsetMap fasSepsets) throws InterruptedException {
+    private void orientUnshieldedTriples(Graph g, SepsetMap fasSepsets)
+            throws InterruptedException {
         List<Triple> triples = collectUnshieldedTriples(g);
 
-        if (colliderOrientationStyle == ColliderOrientationStyle.MAX_P && maxPGlobalOrder) {
+        if (colliderOrientationStyle == ColliderOrientationStyle.MAX_P
+                && maxPGlobalOrder) {
             orientMaxPGlobal(g, triples);
             return;
         }
 
         List<Triple> ambiguousTriples = new ArrayList<>();
 
+        // First pass: decide outcomes without mutating the graph
+        List<Triple> toOrient = new ArrayList<>();
+
         for (Triple t : triples) {
             checkTimeout();
-
-            // Already collider? skip
-            if (g.isParentOf(t.x, t.z) && g.isParentOf(t.y, t.z)) continue;
 
             ColliderOutcome outcome = switch (colliderOrientationStyle) {
                 case SEPSETS -> {
                     Set<Node> s = fasSepsets.get(t.x, t.y);
                     if (s == null) yield ColliderOutcome.NO_SEPSET;
-                    yield s.contains(t.z) ? ColliderOutcome.DEPENDENT : ColliderOutcome.INDEPENDENT;
+                    yield s.contains(t.z)
+                            ? ColliderOutcome.DEPENDENT
+                            : ColliderOutcome.INDEPENDENT;
                 }
                 case CONSERVATIVE -> judgeConservative(t, g);
                 case MAX_P -> judgeMaxP(t, g);
             };
 
             switch (outcome) {
-                case INDEPENDENT -> {
-                    if (canOrientCollider(g, t.x, t.z, t.y)) {
-                        // orientCollider does both x->z and y->z
-                        GraphUtils.orientCollider(g, t.x, t.z, t.y);
-                        if (verbose) {
-                            TetradLogger.getInstance().log(
-                                    "Collider oriented: " + t.x.getName() + " -> " + t.z.getName() +
-                                            " <- " + t.y.getName());
-                        }
-                    } else if (verbose) {
-                        TetradLogger.getInstance().log(
-                                "Skipped collider (cycle/knowledge/bidir guard): " +
-                                        t.x.getName() + " - " + t.z.getName() + " - " + t.y.getName());
-                    }
-                }
-                case DEPENDENT, NO_SEPSET -> { /* leave unoriented */ }
+                case INDEPENDENT -> toOrient.add(t);
+                case DEPENDENT, NO_SEPSET -> { }
                 case AMBIGUOUS -> {
-                    if (allowBidirected == AllowBidirected.ALLOW) ambiguousTriples.add(t);
+                    if (allowBidirected == AllowBidirected.ALLOW)
+                        ambiguousTriples.add(t);
                     if (verbose) {
                         TetradLogger.getInstance().log(
-                                "Ambiguous triple: " + t.x.getName() + " - " + t.z.getName() + " - " + t.y.getName());
+                                "Ambiguous triple: " + t.x.getName()
+                                        + " - " + t.z.getName()
+                                        + " - " + t.y.getName());
                     }
                 }
             }
         }
 
-        // store ambiguous triple marks
+        // Second pass: apply all collider orientations
+        for (Triple t : toOrient) {
+            if (canOrientCollider(g, t.x, t.z, t.y)) {
+                GraphUtils.orientCollider(g, t.x, t.z, t.y);
+                if (verbose) {
+                    TetradLogger.getInstance().log(
+                            "Collider oriented: " + t.x.getName()
+                                    + " -> " + t.z.getName()
+                                    + " <- " + t.y.getName());
+                }
+            }
+        }
+
         Set<edu.cmu.tetrad.graph.Triple> _ambiguousTriples = new HashSet<>();
-        for (Triple t : ambiguousTriples) _ambiguousTriples.add(new edu.cmu.tetrad.graph.Triple(t.x, t.z, t.y));
+        for (Triple t : ambiguousTriples)
+            _ambiguousTriples.add(
+                    new edu.cmu.tetrad.graph.Triple(t.x, t.z, t.y));
         g.setAmbiguousTriples(_ambiguousTriples);
     }
 
@@ -828,16 +780,11 @@ public class Pc implements IGraphSearch {
         return String.join("\u0001", names);
     }
 
-    // ------------------------------------------------------------------------------------
-    // Meek closure (cycle-safe)
-    // ------------------------------------------------------------------------------------
-
-
     private void applyMeekRules(Graph g) {
         MeekRules meekRules = new MeekRules();
         meekRules.setKnowledge(knowledge);
-        meekRules.setMeekPreventCycles(true);       // defensive, should not fire
-        meekRules.setRevertToUnshieldedColliders(false); // reversion already done
+        meekRules.setMeekPreventCycles(forbidDirectedCycles);
+        meekRules.setRevertToUnshieldedColliders(false);
         meekRules.orientImplied(g);
     }
 
@@ -1007,93 +954,5 @@ public class Pc implements IGraphSearch {
             this.bestP = bestP;
             this.bestS = bestS;
         }
-    }
-
-    /**
-     * Pre-Meek reversion: enforce Chickering (2002) compelledness.
-     *
-     * After Phase 2 has oriented unshielded colliders, some directed edges
-     * may exist that are not individually "compelled" in the sense of
-     * Chickering Definition 3 — i.e. they were implicitly fixed by the
-     * collider orientations but are not themselves v-structure tails.
-     * Meek's rules (R1-R4) are the correct mechanism for deciding those.
-     * Leaving them pre-oriented corrupts Meek's starting state and can
-     * produce output that is not a valid CPDAG.
-     *
-     * A directed edge X→Z is compelled iff there exists at least one node W
-     * such that:
-     *   (a) W is adjacent to Z,
-     *   (b) W is NOT adjacent to X, and
-     *   (c) W→Z is directed (so X→Z is the non-collider tail of the
-     *       unshielded triple W→Z←X, which is an actual v-structure).
-     *
-     * Every directed edge that fails this test is reverted to undirected.
-     * Knowledge-required edges are exempt from reversion.
-     *
-     * This must be called AFTER orientUnshieldedTriples() and BEFORE
-     * applyMeekRules().
-     */
-    private void revertNonCompelledEdges(Graph g) {
-        // Collect directed edges that fail the compelledness test.
-        // We collect first to avoid ConcurrentModificationException.
-        List<Edge> toRevert = new ArrayList<>();
-
-        for (Edge e : g.getEdges()) {
-            if (!Edges.isDirectedEdge(e)) continue;
-
-            // Canonicalise: x is the tail (parent), z is the head (child).
-            Node x = e.getNode1();
-            Node z = e.getNode2();
-            if (!g.isParentOf(x, z)) {
-                // Edge is directed z→x; swap so x→z is our convention.
-                Node tmp = x; x = z; z = tmp;
-            }
-
-            // Exempt edges required by background knowledge — those are
-            // compelled by the user, not by the graph structure.
-            if (!knowledge.isEmpty()) {
-                if (knowledge.isRequired(x.getName(), z.getName())) continue;
-                if (knowledge.isForbidden(z.getName(), x.getName())) continue;
-            }
-
-            // Test compelledness: does any W exist satisfying (a), (b), (c)?
-            if (!isCompelled(g, x, z)) {
-                toRevert.add(e);
-            }
-        }
-
-        // Revert: replace each non-compelled directed edge with undirected.
-        for (Edge e : toRevert) {
-            Node n1 = e.getNode1();
-            Node n2 = e.getNode2();
-            g.removeEdge(e);
-            g.addUndirectedEdge(n1, n2);
-
-            if (verbose) {
-                // Report in canonical x→z form.
-                Node x = g.isParentOf(n1, n2) ? n1 : n2;
-                Node z = (x == n1) ? n2 : n1;
-                TetradLogger.getInstance().log(
-                        "Reverted non-compelled edge to undirected: "
-                                + x.getName() + " -- " + z.getName());
-            }
-        }
-    }
-
-    /**
-     * Returns true iff X→Z is a compelled edge in the sense of
-     * Chickering (2002): there exists W adjacent to Z, not adjacent
-     * to X, with W→Z directed.
-     *
-     * This is equivalent to asking: is X the non-collider tail of
-     * at least one genuine unshielded v-structure involving Z?
-     */
-    private boolean isCompelled(Graph g, Node x, Node z) {
-        for (Node w : g.getAdjacentNodes(z)) {
-            if (w.equals(x)) continue;                   // W must differ from X
-            if (g.isAdjacentTo(w, x)) continue;          // (b): W not adjacent to X
-            if (g.isParentOf(w, z)) return true;          // (c): W→Z directed
-        }
-        return false;
     }
 }

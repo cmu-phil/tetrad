@@ -366,7 +366,7 @@ public final class Fci implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxBlockingPathLength(-1);
+        fciOrient.setRecursionDepth(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setVerbose(verbose);
@@ -420,7 +420,8 @@ public final class Fci implements IGraphSearch {
         if (verbose) TetradLogger.getInstance().log("Finished final FCI orientation.");
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedTriples, verbose, new HashSet<>(), excludeSelectionBias);
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedTriples, verbose, new HashSet<>(),
+                    excludeSelectionBias, Integer.MAX_VALUE);
         }
 
         long stop = MillisecondTimes.timeMillis();

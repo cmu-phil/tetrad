@@ -37,9 +37,22 @@ public class GraphoidClosureHarness {
     public GraphoidClosureHarness() {
     }
 
-    private static void tryRandomLgModel() {
+    /**
+     * The main method serves as the entry point for the program execution.
+     * It invokes the method to test a random linear Gaussian (LG) model by
+     * generating a graph, simulating data, performing a structure search,
+     * and running a graphoid closure analysis.
+     *
+     * @param args Command-line arguments passed to the program execution.
+     */
+    public static void main(String[] args) {
+//        tryRandomLgModel(30, 40);
+        trySimpleXorModel();
+    }
+
+    private static void tryRandomLgModel(int numMeasures, int numEdges) {
         try {
-            Graph graph = RandomGraph.randomGraph(20, 0, 20,
+            Graph graph = RandomGraph.randomGraph(numMeasures, 0, numEdges,
                     100, 100, 100, false);
 
             SemPm pm = new SemPm(graph);
@@ -120,16 +133,54 @@ public class GraphoidClosureHarness {
     }
 
     /**
-     * The main method serves as the entry point for the program execution.
-     * It invokes the method to test a random linear Gaussian (LG) model by
-     * generating a graph, simulating data, performing a structure search,
-     * and running a graphoid closure analysis.
+     * Computes the closure of a set of {@link IndependenceFact}s under the given graphoid
+     * assumption type, using the variables in the provided list as the full variable universe.
      *
-     * @param args Command-line arguments passed to the program execution.
+     * <p>The closure is returned as a {@link Set} of {@link IndependenceFact}s. Each fact
+     * in the returned set has singleton X and Y sets (i.e., the result contains only
+     * standard pairwise CI statements), reflecting the convention used elsewhere in this
+     * harness.
+     *
+     * <p>The three closure types are:
+     * <ul>
+     *   <li>{@link ClosureType#SEMIGRAPHOID} – applies the semigraphoid axioms
+     *       (symmetry, decomposition, weak union, contraction).</li>
+     *   <li>{@link ClosureType#GRAPHOID} – additionally applies the intersection axiom.</li>
+     *   <li>{@link ClosureType#COMPOSITIONAL_GRAPHOID} – computes the graphoid closure first,
+     *       then applies composition to its singleton facts.</li>
+     * </ul>
+     *
+     * @param facts     the seed set of independence facts; each fact must have a singleton X and Y
+     * @param variables the full variable universe used by {@link GraphoidAxioms}
+     * @param closure   which closure type to apply
+     * @return the closed set of {@link IndependenceFact}s (singleton X and Y only)
      */
-    public static void main(String[] args) {
-//        tryRandomLgModel();
-        trySimpleXorModel();
+    public static Set<IndependenceFact> computeClosure(Set<IndependenceFact> facts,
+                                                List<Node> variables,
+                                                ClosureType closure) {
+        Set<GraphoidAxioms.GraphoidIndFact> graphoidFacts = toGraphoidFacts(facts);
+
+        GraphoidAxioms axioms = new GraphoidAxioms(graphoidFacts, variables);
+        axioms.ensureTriviality();
+        axioms.ensureSymmetry();
+
+        String closureTypeStr = switch (closure) {
+            case SEMIGRAPHOID -> "semigraphoid";
+            case GRAPHOID -> "graphoid";
+            case COMPOSITIONAL_GRAPHOID -> "compositional graphoid";
+        };
+
+        Set<GraphoidAxioms.GraphoidIndFact> closedGraphoidFacts;
+
+        if (closure == ClosureType.COMPOSITIONAL_GRAPHOID) {
+            Set<GraphoidAxioms.GraphoidIndFact> graphoidClosure = axioms.closure("graphoid");
+            closedGraphoidFacts = axioms.singletonClosureWithComposition(graphoidClosure);
+            closedGraphoidFacts.addAll(graphoidClosure);
+        } else {
+            closedGraphoidFacts = axioms.closure(closureTypeStr);
+        }
+
+        return toIndependenceFacts(GraphoidAxioms.singletonFacts(closedGraphoidFacts));
     }
 
     /**
@@ -143,21 +194,19 @@ public class GraphoidClosureHarness {
     public void run(Graph graph, IndependenceTest test, ConditioningSetType conditioningSetType, ClosureType closureType) {
 
         DataSet dataSet = (DataSet) test.getData();
+        List<Node> variables = dataSet.getVariables();
 
         // Step 1: Extract CI facts from the Markov Checker.
-        List<Node> variables = dataSet.getVariables();
-        Set<GraphoidAxioms.GraphoidIndFact> originalFacts =
-                extractMarkovCheckerFacts(graph, conditioningSetType);
+        Set<IndependenceFact> originalFacts = MarkovCheck.computeAllImpliedFacts(graph, conditioningSetType);
+        Set<IndependenceFact> originalSingletons = singletonIndependenceFacts(originalFacts);
 
         System.out.println("CI facts (" + originalFacts.size() + ") implied by " + conditioningSetType + ":");
-        for (GraphoidAxioms.GraphoidIndFact fact : originalFacts) {
+        for (IndependenceFact fact : originalFacts) {
             System.out.println("  " + fact);
         }
 
-        // Step 2: Build the GraphoidAxioms object and compute the closure.
-        GraphoidAxioms axioms = new GraphoidAxioms(originalFacts, variables);
-        axioms.ensureTriviality();
-        axioms.ensureSymmetry();
+        // Step 2: Compute the closure.
+        Set<IndependenceFact> closureSingletons = computeClosure(originalFacts, variables, closureType);
 
         String closureTypeStr = switch (closureType) {
             case SEMIGRAPHOID -> "semigraphoid";
@@ -165,40 +214,22 @@ public class GraphoidClosureHarness {
             case COMPOSITIONAL_GRAPHOID -> "compositional graphoid";
         };
 
-        Set<GraphoidAxioms.GraphoidIndFact> closure;
-
-        if (closureType == ClosureType.COMPOSITIONAL_GRAPHOID) {
-            // First compute the graphoid closure, then apply composition to its singletons
-            Set<GraphoidAxioms.GraphoidIndFact> graphoidClosure = axioms.closure("graphoid");
-            closure = axioms.singletonClosureWithComposition(graphoidClosure);
-            closure.addAll(graphoidClosure);
-        } else {
-            closure = axioms.closure(closureTypeStr);
-        }
-
-        System.out.println("\nClosure under " + closureTypeStr + " (" + closure.size() + " facts):");
-        for (GraphoidAxioms.GraphoidIndFact fact : closure) {
+        System.out.println("\nClosure singletons under " + closureTypeStr + " (" + closureSingletons.size() + " facts):");
+        for (IndependenceFact fact : closureSingletons) {
             System.out.println("  " + fact);
         }
 
-        // Step 3: Extract singleton facts from the closure.
-        Set<GraphoidAxioms.GraphoidIndFact> closureSingletons =
-                GraphoidAxioms.singletonFacts(closure);
-        Set<GraphoidAxioms.GraphoidIndFact> originalSingletons =
-                GraphoidAxioms.singletonFacts(originalFacts);
-
-        // Step 4: Report the new singleton facts implied by the closure
-        // that were not in the original set.
-        Set<GraphoidAxioms.GraphoidIndFact> newSingletons = new LinkedHashSet<>(closureSingletons);
+        // Step 3: Report new singleton facts implied by the closure that were not in the original set.
+        Set<IndependenceFact> newSingletons = new LinkedHashSet<>(closureSingletons);
         newSingletons.removeAll(originalSingletons);
 
         System.out.println("\nNew singleton CI facts implied by " + closureTypeStr
                 + " closure (" + newSingletons.size() + "):");
-        for (GraphoidAxioms.GraphoidIndFact fact : newSingletons) {
+        for (IndependenceFact fact : newSingletons) {
             System.out.println("  " + fact);
         }
 
-        // Step 7: Optionally test the original singleton facts against the data.
+        // Step 4: Optionally test the closure singleton facts against the data.
         if (!closureSingletons.isEmpty()) {
             System.out.println("\nTesting closure singleton facts against data:");
             testFactsAgainstData(closureSingletons, test);
@@ -206,37 +237,54 @@ public class GraphoidClosureHarness {
     }
 
     /**
-     * Extracts the CI facts from the Markov Checker for the given graph, dataset,
-     * and conditioning set type, and converts them into GraphoidIndFact format.
-     * You'll need to wire this into MarkovChecker's existing fact-listing infrastructure.
-     *
-     * @param graph               The graph to check.
-     * @param conditioningSetType The conditioning set type.
-     * @return The set of GraphoidIndFacts.
+     * Converts a set of {@link IndependenceFact}s (with singleton X and Y) into
+     * the internal {@link GraphoidAxioms.GraphoidIndFact} representation.
      */
-    private Set<GraphoidAxioms.GraphoidIndFact> extractMarkovCheckerFacts(
-            Graph graph, ConditioningSetType conditioningSetType) {
-        Set<IndependenceFact> facts = MarkovCheck.computeAllImpliedFacts(graph, conditioningSetType);
-
+    private static Set<GraphoidAxioms.GraphoidIndFact> toGraphoidFacts(Set<IndependenceFact> facts) {
         return facts.stream()
-                .map(fact -> new GraphoidAxioms.GraphoidIndFact(Set.of(fact.getX()), Set.of(fact.getY()),
+                .map(fact -> new GraphoidAxioms.GraphoidIndFact(
+                        Set.of(fact.getX()),
+                        Set.of(fact.getY()),
                         fact.getZ()))
                 .collect(Collectors.toSet());
     }
 
     /**
+     * Converts a set of {@link GraphoidAxioms.GraphoidIndFact}s with singleton X and Y sets
+     * into standard {@link IndependenceFact}s. Facts with non-singleton X or Y are silently
+     * skipped, matching the convention used in extractSingletonFacts.
+     */
+    private static Set<IndependenceFact> toIndependenceFacts(Set<GraphoidAxioms.GraphoidIndFact> graphoidFacts) {
+        Set<IndependenceFact> result = new LinkedHashSet<>();
+        for (GraphoidAxioms.GraphoidIndFact fact : graphoidFacts) {
+            if (fact.getX().size() != 1 || fact.getY().size() != 1) continue;
+            result.add(new IndependenceFact(
+                    fact.getX().iterator().next(),
+                    fact.getY().iterator().next(),
+                    fact.getZ()));
+        }
+        return result;
+    }
+
+    /**
+     * Filters a set of {@link IndependenceFact}s to those with singleton X and Y.
+     */
+    private Set<IndependenceFact> singletonIndependenceFacts(Set<IndependenceFact> facts) {
+        // IndependenceFact always has singleton X and Y by construction, but
+        // this mirrors the graphoid-side filtering for symmetry.
+        return new LinkedHashSet<>(facts);
+    }
+
+    /**
      * Tests each of the given CI facts against the data using your preferred CI test,
      * and reports which pass and which fail.
-     * Fill in with Fisher's Z, G-squared, etc. as appropriate for your data type.
      *
      * @param facts The facts to test.
      * @param test  The independence test to use.
      */
-    private void testFactsAgainstData(Set<GraphoidAxioms.GraphoidIndFact> facts, IndependenceTest test) {
+    private void testFactsAgainstData(Set<IndependenceFact> facts, IndependenceTest test) {
         try {
-            Set<IndependenceFact> factsToTest = extractSingletonFacts(facts);
-
-            for (IndependenceFact fact : factsToTest) {
+            for (IndependenceFact fact : facts) {
                 if (test.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).isIndependent()) {
                     System.out.println("Fact passed: " + fact);
                 } else {
@@ -246,23 +294,6 @@ public class GraphoidClosureHarness {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private Set<IndependenceFact> extractSingletonFacts(Set<GraphoidAxioms.GraphoidIndFact> facts) {
-        Set<IndependenceFact> result = new LinkedHashSet<>();
-        for (GraphoidAxioms.GraphoidIndFact fact : facts) {
-            if (fact.getX().size() != 1) {
-                continue;
-            }
-
-            if (fact.getY().size() != 1) {
-                continue;
-            }
-
-            result.add(new IndependenceFact(fact.getX().iterator().next(), fact.getY().iterator().next(), fact.getZ()));
-        }
-
-        return result;
     }
 
     /**

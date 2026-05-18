@@ -5,6 +5,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Implements a procedure for constructing candidate separating sets between two
@@ -45,7 +46,7 @@ import java.util.*;
  *   <li>Respects PAG semantics for colliders, non-colliders, and latent nodes.</li>
  *   <li>Uses an outer fixed-point loop to handle colliders activated by Z growth
  *       across branches.</li>
- *   <li>Supports path length limits, depth limits, radius limits, and
+ *   <li>Supports recursion depth limits, depth limits, radius limits, and
  *       "do not follow" constraints.</li>
  *   <li>Background knowledge parameter is reserved for future extension.</li>
  *   <li>The presence of a direct edge x–y does not preempt construction, but
@@ -57,6 +58,8 @@ import java.util.*;
  */
 public class RecursiveBlocking {
 
+    private static final int MAX_TOTAL_FRAMES = 50_000;
+
     private RecursiveBlocking() {
     }
 
@@ -67,33 +70,37 @@ public class RecursiveBlocking {
     /**
      * Blocks paths between two specified nodes in a graph by iteratively
      * identifying and selecting nodes to include in a blocking set, subject to
-     * constraints on path length and traversal rules. Assumes a direct edge
+     * constraints on recursion depth and traversal rules. Assumes a direct edge
      * between x and y is to be ignored.
      *
      * <p>This overload collapses UNBLOCKABLE and INDETERMINATE both to
      * {@code null} for backward compatibility. Use
      * {@link #blockPathsRecursivelyFull} when the distinction matters.</p>
      *
-     * @param graph         the graph in which the nodes and paths are analyzed
-     * @param x             the starting node of the path
-     * @param y             the target node of the path
-     * @param containing    a set of nodes that must be included in the blocking set
-     * @param notFollowed   a set of nodes that must not be traversed during path search
-     * @param maxPathLength the maximum allowable length of the paths to block (-1 for no limit)
-     * @param <E>           the type of the graph nodes
+     * @param graph          the graph in which the nodes and paths are analyzed
+     * @param x              the starting node of the path
+     * @param y              the target node of the path
+     * @param containing     a set of nodes that must be included in the blocking set
+     * @param notFollowed    a set of nodes that must not be traversed during path search
+     * @param recursionDepth the maximum allowable recursion depth of the paths to block (-1 for no limit)
+     * @param <E>            the type of the graph nodes
+     * @param deadlineMs     the deadline for the operation (in milliseconds)
      * @return a set of nodes constituting a blocking set for paths between x and y,
      * or {@code null} if no such set is found within the given constraints
      * @throws InterruptedException if the thread executing the method is interrupted
+     * @throws TimeoutException if the operation times out
      */
     public static <E> Set<Node> blockPathsRecursively(Graph graph,
                                                       Node x,
                                                       Node y,
                                                       Set<Node> containing,
                                                       Set<Node> notFollowed,
-                                                      int maxPathLength)
-            throws InterruptedException {
-        return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
-                maxPathLength, -1, -1, 1, true).blockingSet();
+                                                      int recursionDepth,
+                                                      long deadlineMs)
+            throws InterruptedException, TimeoutException {
+        return blockPathsIterativeDeepening(graph, x, y, containing, notFollowed,
+                recursionDepth, 8, 4, 1, true,
+                deadlineMs).blockingSet();
     }
 
     // -----------------------------------------------------------------------
@@ -111,7 +118,7 @@ public class RecursiveBlocking {
      * @param y                 second endpoint
      * @param containing        nodes forced into Z
      * @param notFollowed       nodes not to be traversed
-     * @param maxPathLength     maximum path length (-1 = unlimited)
+     * @param recursionDepth    maximum recursion depth (-1 = unlimited)
      * @param maxRadius         BFS radius (-1 = unlimited)
      * @param depth             maximum size of Z (-1 = unlimited)
      * @param nearWhichEndpoint 1 = near x, 2 = near y, 3 = near both
@@ -124,44 +131,20 @@ public class RecursiveBlocking {
                                                   Node y,
                                                   Set<Node> containing,
                                                   Set<Node> notFollowed,
-                                                  int maxPathLength,
+                                                  int recursionDepth,
                                                   int maxRadius,
                                                   int depth,
                                                   int nearWhichEndpoint,
                                                   boolean ignoreDirectEdge)
             throws InterruptedException {
-        return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
-                maxPathLength, depth, maxRadius, nearWhichEndpoint,
-                ignoreDirectEdge).blockingSet();
+        try {
+            return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
+                    recursionDepth, depth, maxRadius, nearWhichEndpoint,
+                    ignoreDirectEdge).blockingSet();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
-
-    /**
-     * Short-parameter entry point returning a full {@link BlockingResult},
-     * distinguishing UNBLOCKABLE from INDETERMINATE on failure.
-     *
-     * @param graph         the graph
-     * @param x             first endpoint
-     * @param y             second endpoint
-     * @param containing    nodes forced into Z
-     * @param notFollowed   nodes not to be traversed
-     * @param maxPathLength maximum path length (-1 = unlimited)
-     * @return a {@link BlockingResult} describing the outcome
-     * @throws InterruptedException if the thread is interrupted
-     */
-    public static BlockingResult blockPathsRecursivelyFull(Graph graph,
-                                                           Node x,
-                                                           Node y,
-                                                           Set<Node> containing,
-                                                           Set<Node> notFollowed,
-                                                           int maxPathLength)
-            throws InterruptedException {
-        return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
-                maxPathLength, -1, -1, 1, true);
-    }
-
-    // -----------------------------------------------------------------------
-    // Public entry points — full BlockingResult overloads
-    // -----------------------------------------------------------------------
 
     /**
      * Full-parameter entry point returning a full {@link BlockingResult},
@@ -172,7 +155,7 @@ public class RecursiveBlocking {
      * @param y                 second endpoint
      * @param containing        nodes forced into Z
      * @param notFollowed       nodes not to be traversed
-     * @param maxPathLength     maximum path length (-1 = unlimited)
+     * @param recursionDepth    maximum recursion depth (-1 = unlimited)
      * @param depth             maximum size of Z (-1 = unlimited)
      * @param maxRadius         BFS radius (-1 = unlimited)
      * @param nearWhichEndpoint 1 = near x, 2 = near y, 3 = near both
@@ -185,34 +168,517 @@ public class RecursiveBlocking {
                                                            Node y,
                                                            Set<Node> containing,
                                                            Set<Node> notFollowed,
-                                                           int maxPathLength,
+                                                           int recursionDepth,
                                                            int depth, int maxRadius,
                                                            int nearWhichEndpoint,
                                                            boolean ignoreDirectEdge)
             throws InterruptedException {
+        try {
+            return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed, recursionDepth, depth,
+                    maxRadius, nearWhichEndpoint, ignoreDirectEdge, Long.MAX_VALUE);
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Full-parameter entry point returning a full {@link BlockingResult},
+     * distinguishing UNBLOCKABLE from INDETERMINATE on failure.
+     *
+     * @param graph             the graph
+     * @param x                 first endpoint
+     * @param y                 second endpoint
+     * @param containing        nodes forced into Z
+     * @param notFollowed       nodes not to be traversed
+     * @param recursionDepth    maximum recursion depth (-1 = unlimited)
+     * @param depth             maximum size of Z (-1 = unlimited)
+     * @param maxRadius         BFS radius (-1 = unlimited)
+     * @param nearWhichEndpoint 1 = near x, 2 = near y, 3 = near both
+     * @param ignoreDirectEdge  whether to ignore direct edges between x and y
+     * @param deadlineMs        the deadline for the operation (in milliseconds)
+     * @return a {@link BlockingResult} describing the outcome
+     * @throws InterruptedException if the thread is interrupted
+     * @throws TimeoutException if the search was interrupted
+     */
+    public static BlockingResult blockPathsRecursivelyFull(Graph graph,
+                                                           Node x,
+                                                           Node y,
+                                                           Set<Node> containing,
+                                                           Set<Node> notFollowed,
+                                                           int recursionDepth,
+                                                           int depth, int maxRadius,
+                                                           int nearWhichEndpoint,
+                                                           boolean ignoreDirectEdge,
+                                                           long deadlineMs)
+            throws InterruptedException, TimeoutException {
 
         // Fail fast if the seed set already violates the depth bound
         if (depth >= 0 && containing.size() > depth) {
-            return new BlockingResult(null, true); // INDETERMINATE, not UNBLOCKABLE
+            return new BlockingResult(null, false);
         }
 
-        Set<Node> pool = buildPool(graph, x, y, maxRadius, nearWhichEndpoint);
+        Set<Node> pool = buildPool(graph, x, y, maxRadius, nearWhichEndpoint, deadlineMs);
         pool.addAll(containing);
 
-        int recursionDepth = maxPathLength < 0 ? graph.getNumNodes() : maxPathLength;
+        int _recursionDepth = recursionDepth < 0 ? graph.getNumNodes() : recursionDepth;
+        int currentRecursionDepth = 0;
 
         return blockPathsRecursivelyAdj(
                 graph, x, y, containing, notFollowed,
                 graph.paths().getDescendantsMap(),
-                maxPathLength, recursionDepth, depth, pool, ignoreDirectEdge);
+                _recursionDepth, currentRecursionDepth, depth, pool, ignoreDirectEdge, deadlineMs);
     }
+
+    /**
+     * Breadth-first separating-set search between {@code x} and {@code y}.
+     *
+     * <p>Unlike {@link #blockPathsRecursivelyFull}, which commits to a path and
+     * backtracks, this method maintains a queue of candidate blocking sets and
+     * expands them one node at a time, level by level. It finds the
+     * <em>smallest</em> blocking set reachable from the seed before trying
+     * larger ones, so it terminates quickly when x and y are unconditionally
+     * d-separated or separated by a small set.</p>
+     *
+     * <p>Candidates for addition to Z are drawn exclusively from nodes that lie
+     * on <em>active</em> paths between x and y under the current Z — that is,
+     * non-collider nodes that are currently open and therefore need to be
+     * blocked. This keeps the search space small relative to exhaustive
+     * enumeration over adjacency subsets.</p>
+     *
+     * <p>The method respects the same parameter contract as
+     * {@link #blockPathsRecursivelyFull}:</p>
+     * <ul>
+     *   <li>{@code recursionDepth} bounds the recursion depth considered when
+     *       collecting candidates; -1 means unlimited.</li>
+     *   <li>{@code depth} caps the size of Z; sets larger than this are never
+     *       enqueued.</li>
+     *   <li>{@code maxRadius} and {@code nearWhichEndpoint} restrict which
+     *       nodes may enter Z to a BFS shell around x and/or y.</li>
+     *   <li>{@code ignoreDirectEdge} controls whether the direct x–y edge is
+     *       skipped when collecting active paths.</li>
+     * </ul>
+     *
+     * <p>Returns a {@link BlockingResult} using the same three-outcome
+     * convention:</p>
+     * <ul>
+     *   <li><b>Found</b>: a blocking set was found and is returned.</li>
+     *   <li><b>Unblockable</b>: the queue was exhausted without finding a
+     *       blocking set within the depth bound — no separator exists within
+     *       the constrained search space.</li>
+     *   <li><b>Indeterminate</b>: the search was interrupted.</li>
+     * </ul>
+     *
+     * @param graph             the graph
+     * @param x                 first endpoint
+     * @param y                 second endpoint
+     * @param containing        nodes forced into Z (the seed set)
+     * @param notFollowed       nodes not to be traversed when collecting
+     *                          active paths
+     * @param recursionDepth    maximum recursion depth when collecting active
+     *                          paths (-1 = unlimited)
+     * @param depth             maximum size of Z (-1 = unlimited)
+     * @param maxRadius         BFS radius for the node pool (-1 = unlimited)
+     * @param nearWhichEndpoint 1 = near x only, 2 = near y only,
+     *                          3 = near both
+     * @param ignoreDirectEdge  whether to ignore the direct x–y edge
+     * @param deadlineMs        the deadline for the operation (in milliseconds)
+     * @return a {@link BlockingResult} describing the outcome
+     * @throws InterruptedException if the thread is interrupted
+     * @throws TimeoutException if the search was interrupted
+     */
+    public static BlockingResult blockPathsBfs(
+            Graph graph,
+            Node x,
+            Node y,
+            Set<Node> containing,
+            Set<Node> notFollowed,
+            int recursionDepth,
+            int depth,
+            int maxRadius,
+            int nearWhichEndpoint,
+            boolean ignoreDirectEdge,
+            long deadlineMs)
+            throws InterruptedException, TimeoutException {
+
+        // Build the pool of nodes eligible to enter Z, same as the recursive version.
+        Set<Node> pool = buildPool(graph, x, y, maxRadius, nearWhichEndpoint, deadlineMs);
+        pool.addAll(containing);
+
+        // Precompute descendants map for the reachability predicate.
+        Map<Node, Set<Node>> descendantsMap = graph.paths().getDescendantsMap();
+
+        // BFS queue: each entry is a candidate blocking set.
+        // We use a LinkedHashSet to preserve insertion order within each level,
+        // which gives deterministic behaviour and avoids re-visiting the same
+        // set reached by different expansion orders.
+        //
+        // visited tracks sets we have already enqueued to avoid duplicates.
+        // Since sets can be large, we use a Set<Set<Node>> with hash equality.
+        Deque<Set<Node>> queue = new ArrayDeque<>();
+        Set<Set<Node>> visited = new HashSet<>();
+
+        Set<Node> seed = new HashSet<>(containing);
+        queue.add(seed);
+        visited.add(seed);
+
+        while (!queue.isEmpty()) {
+
+            checkTimeout(deadlineMs);
+
+            Set<Node> z = queue.poll();
+
+            // Depth guard: never process a set that exceeds the depth cap.
+            if (depth >= 0 && z.size() > depth) {
+                continue;
+            }
+
+            // Check whether z already blocks all active paths from x to y.
+            if (blocksAllPaths(graph, x, y, z, notFollowed, descendantsMap,
+                    recursionDepth, ignoreDirectEdge, deadlineMs)) {
+                return new BlockingResult(z, false);
+            }
+
+            // If we are already at the depth cap, do not expand further.
+            if (depth >= 0 && z.size() == depth) {
+                continue;
+            }
+
+            // Collect candidates: nodes on active paths that are non-colliders
+            // (and therefore blockable by conditioning on them).
+            Set<Node> candidates = activeCandidates(
+                    graph, x, y, z, notFollowed, descendantsMap,
+                    pool, ignoreDirectEdge,
+                    deadlineMs);
+
+            for (Node candidate : candidates) {
+                checkTimeout(deadlineMs);
+
+                Set<Node> zPrime = new HashSet<>(z);
+                zPrime.add(candidate);
+                if (visited.add(zPrime)) {
+                    queue.add(zPrime);
+                }
+            }
+        }
+
+        // Queue exhausted without finding a blocking set within the constraints.
+        return new BlockingResult(null, false);
+    }
+
+    /**
+     * Blocks paths between two nodes in a graph using an iterative deepening approach.
+     *
+     * @param graph             The graph in which the operation is performed.
+     * @param x                 The starting node of the path to be blocked.
+     * @param y                 The ending node of the path to be blocked.
+     * @param containing        A set of nodes that must be present on the blocked path.
+     * @param notFollowed       A set of nodes that must not be followed during the operation.
+     * @param recursionDepth    The current recursion depth.
+     * @param depth             The maximum depth to search for paths.
+     * @param maxRadius         The maximum allowable radius for searching paths.
+     * @param nearWhichEndpoint Specifies the endpoint near which the block operation is focused.
+     * @param ignoreDirectEdge  Whether to ignore direct edges between the start and end nodes.
+     * @return A {@link BlockingResult} object containing the result of the path blocking operation.
+     * @throws InterruptedException If the thread executing this operation is interrupted.
+     */
+    public static BlockingResult blockPathsIterativeDeepening(
+            Graph graph,
+            Node x,
+            Node y,
+            Set<Node> containing,
+            Set<Node> notFollowed,
+            int recursionDepth,
+            int depth,
+            int maxRadius,
+            int nearWhichEndpoint,
+            boolean ignoreDirectEdge)
+            throws InterruptedException {
+        try {
+            return blockPathsIterativeDeepening(graph, x, y, containing, notFollowed, recursionDepth, depth, maxRadius,
+                    nearWhichEndpoint, ignoreDirectEdge, Long.MAX_VALUE);
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Iterative-deepening separating-set search between {@code x} and {@code y}.
+     *
+     * <p>This method calls {@link #blockPathsRecursivelyFull} repeatedly,
+     * starting with {@code recursionDepth = 0} and incrementing by 1 on each
+     * iteration until either a blocking set is found or the recursion depth cap
+     * reaches {@code recursionDepth} (the caller-supplied ceiling). This is
+     * iterative deepening applied to recursion depth rather than search depth: it
+     * inherits the memory efficiency of the depth-first version while
+     * guaranteeing that the shortest-path blocking set is found first.</p>
+     *
+     * <p>Because the depth-first version can hang on dense graphs when given
+     * an unconstrained recursion depth (it may explore exponentially many paths
+     * before the recursion cap triggers), bounding each call to a small
+     * {@code recursionDepth} keeps each individual call fast. Short separating
+     * sets — including the empty set, which handles unconditionally d-separated
+     * pairs — are found at the lowest recursion depth level and return immediately
+     * without exploring longer paths at all.</p>
+     *
+     * <p>The method respects the same parameter contract as
+     * {@link #blockPathsRecursivelyFull}. The {@code recursionDepth} parameter
+     * here serves as the ceiling for the iterative deepening loop; the
+     * per-iteration cap starts at 0 and grows up to this ceiling. Pass -1 to
+     * use {@code graph.getNumNodes()} as the ceiling (a natural upper bound,
+     * since no simple path in the graph is longer than that).</p>
+     *
+     * <p>Returns a {@link BlockingResult} using the same three-outcome
+     * convention:</p>
+     * <ul>
+     *   <li><b>Found</b>: a blocking set was found and is returned, together
+     *       with the recursion depth level at which it was found (accessible via
+     *       {@link BlockingResult#blockingSet()}).</li>
+     *   <li><b>Unblockable</b>: the depth-first call at some level returned
+     *       UNBLOCKABLE — a path exists that cannot be blocked regardless of
+     *       Z.</li>
+     *   <li><b>Indeterminate</b>: the ceiling was reached without finding a
+     *       blocking set and without a definitive UNBLOCKABLE result.</li>
+     * </ul>
+     *
+     * @param graph             the graph
+     * @param x                 first endpoint
+     * @param y                 second endpoint
+     * @param containing        nodes forced into Z (the seed set)
+     * @param notFollowed       nodes not to be traversed
+     * @param recursionDepth    ceiling for the iterative deepening loop
+     *                          (-1 = use graph.getNumNodes())
+     * @param depth             maximum size of Z (-1 = unlimited)
+     * @param maxRadius         BFS radius for the node pool (-1 = unlimited)
+     * @param nearWhichEndpoint 1 = near x only, 2 = near y only,
+     *                          3 = near both
+     * @param ignoreDirectEdge  whether to ignore the direct x–y edge
+     * @param deadlineMs        the deadline for the operation (in milliseconds)
+     * @return a {@link BlockingResult} describing the outcome
+     * @throws InterruptedException if the thread is interrupted
+     * @throws TimeoutException if the ceiling is reached without finding
+     */
+    public static BlockingResult blockPathsIterativeDeepening(
+            Graph graph,
+            Node x,
+            Node y,
+            Set<Node> containing,
+            Set<Node> notFollowed,
+            int recursionDepth,
+            int depth,
+            int maxRadius,
+            int nearWhichEndpoint,
+            boolean ignoreDirectEdge,
+            long deadlineMs)
+            throws InterruptedException, TimeoutException {
+
+        int ceiling = (recursionDepth < 0) ? graph.getNumNodes() : recursionDepth;
+
+        for (int _recusionDepth = 0; _recusionDepth <= ceiling; _recusionDepth++) {
+            checkTimeout(deadlineMs);
+
+            BlockingResult result = blockPathsRecursivelyFull(
+                    graph, x, y,
+                    containing, notFollowed,
+                    _recusionDepth,        // recursionDepth for this iteration
+                    depth,
+                    maxRadius,
+                    nearWhichEndpoint,
+                    ignoreDirectEdge,
+                    deadlineMs);
+
+            if (result.found()) {
+                // Blocking set found at this recursion depth level — return it.
+                return result;
+            }
+
+            if (!result.indeterminate()) {
+                // The depth-first call returned UNBLOCKABLE at this level,
+                // meaning a path exists that cannot be blocked regardless of Z.
+                // There is no point trying longer paths — return UNBLOCKABLE.
+                return result;
+            }
+
+            // result.indeterminate() == true means the depth-first call hit
+            // the recursion depth cap without finding a set or proving impossibility.
+            // Increment the cap and try again.
+        }
+
+        // Ceiling reached without finding a blocking set or proving UNBLOCKABLE.
+        return new BlockingResult(null, true);
+    }
+
+    // -----------------------------------------------------------------------
+    // BFS helpers
+    // -----------------------------------------------------------------------
+
+    /**
+     * Returns true iff {@code z} blocks every active path from {@code x} to
+     * {@code y} in {@code graph}.
+     *
+     * <p>Uses a standard Bayes-Ball reachability pass: a node {@code v}
+     * reachable from {@code x} without passing through {@code y} means an
+     * active path exists. The pass respects collider/non-collider semantics
+     * and the {@code descendantsMap} for collider activation.</p>
+     */
+    private static boolean blocksAllPaths(
+            Graph graph,
+            Node x,
+            Node y,
+            Set<Node> z,
+            Set<Node> notFollowed,
+            Map<Node, Set<Node>> descendantsMap,
+            int recursionDepth,
+            boolean ignoreDirectEdge,
+            long deadlineMs)
+            throws InterruptedException, TimeoutException {
+
+        Deque<PathEntry> bfsQueue = new ArrayDeque<>();
+        Set<String> seen = new HashSet<>();
+
+        for (Node neighbor : graph.getAdjacentNodes(x)) {
+            checkTimeout(deadlineMs);
+
+            if (ignoreDirectEdge && neighbor == y) continue;
+            if (notFollowed.contains(neighbor)) continue;
+
+            String key = x.getName() + "->" + neighbor.getName();
+            if (seen.add(key)) {
+                bfsQueue.add(new PathEntry(x, neighbor));
+            }
+        }
+
+        while (!bfsQueue.isEmpty()) {
+
+            checkTimeout(deadlineMs);
+
+            PathEntry entry = bfsQueue.poll();
+            Node a = entry.predecessor;
+            Node b = entry.current;
+            if (b == y) return false;
+//            if (recursionDepth >= 0 && entry.currentRecursionDepth >= recursionDepth) continue;
+
+            for (Node c : graph.getAdjacentNodes(b)) {
+                checkTimeout(deadlineMs);
+
+                if (c == a) continue;
+                if (notFollowed.contains(c)) continue;
+
+                if (!reachable(graph, a, b, c, z, descendantsMap, deadlineMs)) continue;
+
+                String key = b.getName() + "->" + c.getName();
+                if (seen.add(key)) {
+                    bfsQueue.add(new PathEntry(b, c));
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Collects nodes that lie on active paths from {@code x} to {@code y}
+     * and are non-colliders on those paths — i.e. nodes that conditioning
+     * would block.
+     *
+     * <p>Only nodes in {@code pool} are returned as candidates, respecting the
+     * radius constraint. Nodes in {@code notFollowed} are skipped entirely.</p>
+     */
+    private static Set<Node> activeCandidates(
+            Graph graph,
+            Node x,
+            Node y,
+            Set<Node> z,
+            Set<Node> notFollowed,
+            Map<Node, Set<Node>> descendantsMap,
+            Set<Node> pool,
+            boolean ignoreDirectEdge,
+            long deadlineMs)
+            throws InterruptedException, TimeoutException {
+
+        Set<Node> candidates = new LinkedHashSet<>();
+        Deque<PathEntry> bfsQueue = new ArrayDeque<>();
+        Set<String> seen = new HashSet<>();
+
+        for (Node neighbor : graph.getAdjacentNodes(x)) {
+            checkTimeout(deadlineMs);
+
+            if (ignoreDirectEdge && neighbor == y) continue;
+            if (notFollowed.contains(neighbor)) continue;
+            String key = x.getName() + "->" + neighbor.getName();
+            if (seen.add(key)) {
+                bfsQueue.add(new PathEntry(x, neighbor));
+            }
+        }
+
+        while (!bfsQueue.isEmpty()) {
+
+            checkTimeout(deadlineMs);
+
+            PathEntry entry = bfsQueue.poll();
+            Node a = entry.predecessor;
+            Node b = entry.current;
+
+            if (b == y) {
+                // Active path reached y — a is a non-collider (the last
+                // interior node before y). If it is in the pool and not
+                // already in z, it is a candidate.
+                // We do not add y itself.
+                continue;
+            }
+
+            // b is an interior node on an active path.
+            // If b is a non-collider w.r.t. the path so far (i.e. not a
+            // definite collider at the triple (a, b, *)), conditioning on b
+            // would block this path — add it as a candidate.
+            //
+            // We approximate "non-collider" conservatively: b is a candidate
+            // if it is not in z, is in the pool, and is not a definite
+            // collider at (a, b, some_continuation).
+            if (!z.contains(b) && pool.contains(b)) {
+                // Check if b acts as a non-collider on at least one
+                // continuation — if so, conditioning on it could block.
+                boolean isNonColliderOnSomePath = false;
+                for (Node c : graph.getAdjacentNodes(b)) {
+                    checkTimeout(deadlineMs);
+
+                    if (c == a) continue;
+                    if (!graph.isDefCollider(a, b, c)) {
+                        isNonColliderOnSomePath = true;
+                        break;
+                    }
+                }
+                if (isNonColliderOnSomePath) {
+                    candidates.add(b);
+                }
+            }
+
+            for (Node c : graph.getAdjacentNodes(b)) {
+                checkTimeout(deadlineMs);
+
+                if (c == a) continue;
+                if (notFollowed.contains(c)) continue;
+                if (!reachable(graph, a, b, c, z, descendantsMap, deadlineMs)) continue;
+                String key = b.getName() + "->" + c.getName();
+                if (seen.add(key)) {
+                    bfsQueue.add(new PathEntry(b, c));
+                }
+            }
+        }
+
+        return candidates;
+    }
+
+    // -----------------------------------------------------------------------
+    // PathEntry helper for BFS
+    // -----------------------------------------------------------------------
 
     /**
      * Builds the set of nodes eligible to enter Z. When {@code maxRadius} is
      * -1, every graph node is returned (no restriction).
      */
     private static Set<Node> buildPool(Graph graph, Node x, Node y,
-                                       int maxRadius, int nearWhichEndpoint) {
+                                       int maxRadius, int nearWhichEndpoint, long deadlineMs)
+            throws InterruptedException, TimeoutException {
         if (maxRadius < 0) {
             return new HashSet<>(graph.getNodes());
         }
@@ -220,10 +686,10 @@ public class RecursiveBlocking {
         Set<Node> pool = new LinkedHashSet<>();
 
         if (nearWhichEndpoint == 1 || nearWhichEndpoint == 3) {
-            pool.addAll(bfsShells(graph, x, maxRadius));
+            pool.addAll(bfsShells(graph, x, maxRadius, deadlineMs));
         }
         if (nearWhichEndpoint == 2 || nearWhichEndpoint == 3) {
-            pool.addAll(bfsShells(graph, y, maxRadius));
+            pool.addAll(bfsShells(graph, y, maxRadius, deadlineMs));
         }
 
         pool.remove(x);
@@ -232,15 +698,12 @@ public class RecursiveBlocking {
         return pool;
     }
 
-    // -----------------------------------------------------------------------
-    // Pool construction (BFS shells)
-    // -----------------------------------------------------------------------
-
     /**
      * Standard undirected BFS up to {@code maxRadius} hops from {@code seed}.
      * Returns all nodes reachable within that radius (excluding the seed).
      */
-    private static Set<Node> bfsShells(Graph graph, Node seed, int maxRadius) {
+    private static Set<Node> bfsShells(Graph graph, Node seed, int maxRadius, long deadlineMs)
+            throws InterruptedException, TimeoutException {
         Set<Node> visited = new LinkedHashSet<>();
         Deque<Node> queue = new ArrayDeque<>();
         Map<Node, Integer> dist = new HashMap<>();
@@ -250,10 +713,14 @@ public class RecursiveBlocking {
         dist.put(seed, 0);
 
         while (!queue.isEmpty()) {
+            checkTimeout(deadlineMs);
+
             Node u = queue.removeFirst();
             int du = dist.get(u);
             if (du >= maxRadius) continue;
             for (Node v : graph.getAdjacentNodes(u)) {
+                checkTimeout(deadlineMs);
+
                 if (visited.add(v)) {
                     dist.put(v, du + 1);
                     queue.addLast(v);
@@ -264,6 +731,10 @@ public class RecursiveBlocking {
         visited.remove(seed);
         return visited;
     }
+
+    // -----------------------------------------------------------------------
+    // Pool construction (BFS shells)
+    // -----------------------------------------------------------------------
 
     /**
      * Core fixed-point loop. Now returns a {@link BlockingResult} so callers
@@ -277,11 +748,12 @@ public class RecursiveBlocking {
             Set<Node> containing,
             Set<Node> notFollowed,
             Map<Node, Set<Node>> descendantsMap,
-            int maxPathLength,
             int recursionDepth,
+            int currentRecursionDepth,
             int depth,
             Set<Node> pool,
-            boolean ignoreDirectEdge) throws InterruptedException {
+            boolean ignoreDirectEdge,
+            long deadlineMs) throws InterruptedException, TimeoutException {
 
         if (x == y) {
             throw new IllegalArgumentException("x and y must be distinct");
@@ -295,27 +767,29 @@ public class RecursiveBlocking {
             firstHops.remove(y);
         }
 
-        // Track nodes that have been rolled back due to depth cap.
-        // A node rolled back more than once signals oscillation — the depth
-        // cap is the binding constraint and further looping won't converge.
-        Map<Node, Integer> rollbackCount = new HashMap<>();
+        // Iteration cap: Z can grow by at most one node per outer iteration,
+        // and is bounded by pool size, so pool.size() + 1 iterations suffices
+        // for convergence. We add a small buffer for safety.
+//        int maxIterations = pool.size();
+        int maxIterations = Math.min(pool.size(), 10);
+        int iterations = 0;
 
-        while (true) {
-            if (Thread.currentThread().isInterrupted()) {
-                throw new InterruptedException();
-            }
+        int[] totalFrames = new int[]{0};
+
+        while (iterations++ < maxIterations) {
+            checkTimeout(deadlineMs);
 
             if (depth >= 0 && z.size() > depth) {
-                return new BlockingResult(null, true);
+                return new BlockingResult(null, false);
             }
 
             int zSizeBefore = z.size();
             boolean anyIndeterminate = false;
 
             for (Node b : firstHops) {
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new InterruptedException();
-                }
+                checkTimeout(deadlineMs);
+
+//                System.out.println("first hop " + b);
 
                 Set<Node> path = new HashSet<>();
                 path.add(x);
@@ -324,68 +798,72 @@ public class RecursiveBlocking {
 
                 Blockable r = findPathToTargetVisit(
                         graph, x, b, y, path, z,
-                        maxPathLength, depth, notFollowed, descendantsMap, pool,
-                        recursionDepth, 0);
+                        depth, notFollowed, descendantsMap, pool,
+                        recursionDepth, currentRecursionDepth, deadlineMs, totalFrames);
 
                 if (r == Blockable.UNBLOCKABLE) {
                     return new BlockingResult(null, false);
                 }
 
                 if (r == Blockable.INDETERMINATE) {
-                    // Find which nodes were tentatively added then rolled back.
-                    Set<Node> rolledBack = new HashSet<>(z);
-                    rolledBack.removeAll(zBefore); // nodes added during this branch
+                    // Roll back any Z additions from this branch and note
+                    // that this pass was inconclusive. Do not count rollbacks
+                    // or declare oscillation — the fixed-point loop may still
+                    // converge once other branches have grown Z further.
                     z.clear();
                     z.addAll(zBefore);
-
-                    // Also catch nodes that were in z before but got mutated out
-                    // (shouldn't happen but be safe), and nodes newly attempted.
-                    // The key set to track is what the branch tried to add.
-                    for (Node n : rolledBack) {
-                        int count = rollbackCount.merge(n, 1, Integer::sum);
-                        if (count > 1) {
-                            // This node has been rolled back more than once —
-                            // we're oscillating. The depth cap is binding.
-                            return new BlockingResult(null, true);
-                        }
-                    }
-
                     anyIndeterminate = true;
                 }
+                // If BLOCKED, Z growth from this branch is valid — keep it.
             }
 
             if (z.size() == zSizeBefore) {
+                // Z did not grow this pass.
                 if (anyIndeterminate) {
+                    // Some branch was inconclusive and Z didn't grow to help it —
+                    // further iterations won't help either.
                     return new BlockingResult(null, true);
                 }
+                // Every branch was BLOCKED and Z is stable — done.
                 return new BlockingResult(z, false);
             }
-        }
-    }
 
-    // -----------------------------------------------------------------------
-    // Core algorithm
-    // -----------------------------------------------------------------------
+            // Z grew this pass — loop again. A branch that was INDETERMINATE
+            // before may now be BLOCKED under the larger Z.
+        }
+
+        // Iteration cap reached without convergence.
+        return new BlockingResult(null, true);
+    }
 
     static Blockable findPathToTargetVisit(Graph graph,
                                            Node aInit, Node bInit, Node y,
                                            Set<Node> path, Set<Node> z,
-                                           int maxPathLength, int depth,
+                                           int depth,
                                            Set<Node> notFollowed,
                                            Map<Node, Set<Node>> descendantsMap,
                                            Set<Node> pool,
                                            int recursionDepth,
-                                           int currentDepthInit)
-            throws InterruptedException {
+                                           int currentRecursionDepth,
+                                           long deadlineMs, int[] totalFrames)
+            throws InterruptedException, TimeoutException {
 
         Deque<Frame> callStack = new ArrayDeque<>();
         callStack.push(new Frame(aInit, bInit, y,
-                maxPathLength, depth, recursionDepth, currentDepthInit));
+                depth, recursionDepth, currentRecursionDepth));
 
         Blockable lastResult = null;
 
         while (!callStack.isEmpty()) {
-            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+            checkTimeout(deadlineMs);
+
+//            if (totalFrames[0] % 1000 == 0 && totalFrames[0] > 0) {
+//                System.out.println("Total frames: " + totalFrames[0]);
+//            }
+
+            if (++totalFrames[0] > MAX_TOTAL_FRAMES) {
+                return Blockable.INDETERMINATE;
+            }
 
             Frame f = callStack.peek();
 
@@ -393,8 +871,7 @@ public class RecursiveBlocking {
             // ENTER
             // =================================================================
             if (f.pass == Pass.ENTER) {
-
-                if (f.currentDepth > f.recursionDepth) {
+                if (f.currentRecursionDepth > f.recursionDepth) {
                     callStack.pop();
                     lastResult = Blockable.INDETERMINATE;
                     continue;
@@ -423,13 +900,6 @@ public class RecursiveBlocking {
 
                 path.add(f.b);
 
-                if (f.maxPathLength >= 0 && path.size() > f.maxPathLength) {
-                    path.remove(f.b);
-                    callStack.pop();
-                    lastResult = Blockable.INDETERMINATE;
-                    continue;
-                }
-
                 f.zSnapshot = new HashSet<>(z);
                 f.pass = Pass.CONTINUATIONS_WITHOUT_B;
             }
@@ -440,30 +910,56 @@ public class RecursiveBlocking {
             if (f.pass == Pass.CONTINUATIONS_WITHOUT_B) {
 
                 Blockable contResult;
+
                 if (lastResult != null) {
-                    if (lastResult == Blockable.UNBLOCKABLE
-                            || lastResult == Blockable.INDETERMINATE) {
-                        contResult = lastResult;
+                    if (lastResult == Blockable.INDETERMINATE) {
+                        // INDETERMINATE from a child short-circuits the whole
+                        // continuation loop — we cannot conclude anything.
                         lastResult = null;
-                    } else {
+                        z.clear();
+                        z.addAll(f.zSnapshot);
+                        path.remove(f.b);
+                        callStack.pop();
+                        lastResult = Blockable.INDETERMINATE;
+                        continue;
+                    } else if (lastResult == Blockable.UNBLOCKABLE) {
+                        // Record that this continuation was unblockable, but
+                        // keep iterating — there may be more continuations to
+                        // process, and we need to know whether ALL of them are
+                        // handled before deciding the overall loop result.
+                        f.hadUnblockableWithout = true;
                         f.handled.add(f.pendingC);
                         f.pendingC = null;
                         lastResult = null;
-
-                        contResult = stepContinuationLoop(
-                                graph, f, y, path, z, notFollowed, descendantsMap, pool,
-                                callStack, false);
-
-                        if (contResult == null) continue;
+                    } else {
+                        // BLOCKED — this continuation is handled, move on.
+                        f.handled.add(f.pendingC);
+                        f.pendingC = null;
+                        lastResult = null;
                     }
+
+                    contResult = stepContinuationLoop(
+                            graph, f, y, z, notFollowed, descendantsMap,
+                            callStack, deadlineMs);
+
+                    if (contResult == null) continue; // child pushed, wait for result
                 } else {
                     contResult = stepContinuationLoop(
-                            graph, f, y, path, z, notFollowed, descendantsMap, pool,
-                            callStack, false);
+                            graph, f, y, z, notFollowed, descendantsMap,
+                            callStack, deadlineMs);
 
                     if (contResult == null) continue;
                 }
 
+                // stepContinuationLoop returned BLOCKED meaning no more
+                // reachable continuations remain. Combine with accumulated flag.
+                if (contResult == Blockable.BLOCKED) {
+                    contResult = f.hadUnblockableWithout
+                            ? Blockable.UNBLOCKABLE
+                            : Blockable.BLOCKED;
+                }
+
+                // Now handle the overall Branch A result.
                 if (f.b.getNodeType() == NodeType.LATENT) {
                     path.remove(f.b);
                     callStack.pop();
@@ -472,12 +968,15 @@ public class RecursiveBlocking {
                 }
 
                 if (contResult == Blockable.BLOCKED) {
+                    // Branch A succeeded without adding b — done.
                     path.remove(f.b);
                     callStack.pop();
                     lastResult = Blockable.BLOCKED;
                     continue;
                 }
 
+                // Branch A did not fully block (UNBLOCKABLE or INDETERMINATE).
+                // Try Branch B: add b to Z and retry.
                 f.withoutBResult = contResult;
                 z.clear();
                 z.addAll(f.zSnapshot);
@@ -485,18 +984,19 @@ public class RecursiveBlocking {
                 if (!pool.contains(f.b)) {
                     path.remove(f.b);
                     callStack.pop();
-                    lastResult = Blockable.INDETERMINATE;
+                    lastResult = Blockable.UNBLOCKABLE;
                     continue;
                 }
                 if (f.depth >= 0 && z.size() >= f.depth) {
                     path.remove(f.b);
                     callStack.pop();
-                    lastResult = Blockable.INDETERMINATE;
+                    lastResult = Blockable.UNBLOCKABLE;
                     continue;
                 }
 
                 z.add(f.b);
                 f.handled = new HashSet<>();
+                f.hadUnblockableWith = false;
                 f.pendingC = null;
                 f.pass = Pass.CONTINUATIONS_WITH_B;
                 lastResult = null;
@@ -508,41 +1008,62 @@ public class RecursiveBlocking {
             if (f.pass == Pass.CONTINUATIONS_WITH_B) {
 
                 Blockable contResult;
+
                 if (lastResult != null) {
-                    if (lastResult == Blockable.UNBLOCKABLE
-                            || lastResult == Blockable.INDETERMINATE) {
-                        contResult = lastResult;
+                    if (lastResult == Blockable.INDETERMINATE) {
+                        // INDETERMINATE short-circuits.
                         lastResult = null;
-                    } else {
+                        z.clear();
+                        z.addAll(f.zSnapshot);
+                        path.remove(f.b);
+                        callStack.pop();
+                        lastResult = Blockable.INDETERMINATE;
+                        continue;
+                    } else if (lastResult == Blockable.UNBLOCKABLE) {
+                        // Record unblockable but keep iterating.
+                        f.hadUnblockableWith = true;
                         f.handled.add(f.pendingC);
                         f.pendingC = null;
                         lastResult = null;
-
-                        contResult = stepContinuationLoop(
-                                graph, f, y, path, z, notFollowed, descendantsMap, pool,
-                                callStack, true);
-
-                        if (contResult == null) continue;
+                    } else {
+                        // BLOCKED.
+                        f.handled.add(f.pendingC);
+                        f.pendingC = null;
+                        lastResult = null;
                     }
+
+                    contResult = stepContinuationLoop(
+                            graph, f, y, z, notFollowed, descendantsMap,
+                            callStack, deadlineMs);
+
+                    if (contResult == null) continue;
                 } else {
                     contResult = stepContinuationLoop(
-                            graph, f, y, path, z, notFollowed, descendantsMap, pool,
-                            callStack, true);
+                            graph, f, y, z, notFollowed, descendantsMap,
+                            callStack, deadlineMs);
 
                     if (contResult == null) continue;
                 }
 
-                Blockable withB = contResult;
-                if (withB == Blockable.BLOCKED) {
+                // Combine with accumulated flag.
+                if (contResult == Blockable.BLOCKED) {
+                    contResult = f.hadUnblockableWith
+                            ? Blockable.UNBLOCKABLE
+                            : Blockable.BLOCKED;
+                }
+
+                if (contResult == Blockable.BLOCKED) {
+                    // Branch B succeeded.
                     path.remove(f.b);
                     callStack.pop();
                     lastResult = Blockable.BLOCKED;
                 } else {
+                    // Both branches failed. Restore Z snapshot.
                     z.clear();
                     z.addAll(f.zSnapshot);
                     path.remove(f.b);
                     callStack.pop();
-                    lastResult = (withB == Blockable.INDETERMINATE
+                    lastResult = (contResult == Blockable.INDETERMINATE
                             || f.withoutBResult == Blockable.INDETERMINATE)
                             ? Blockable.INDETERMINATE
                             : Blockable.UNBLOCKABLE;
@@ -552,257 +1073,78 @@ public class RecursiveBlocking {
 
         return lastResult;
     }
-        
-    //    private static BlockingResult blockPathsRecursivelyAdj(
-//            Graph graph,
-//            Node x,
-//            Node y,
-//            Set<Node> containing,
-//            Set<Node> notFollowed,
-//            Map<Node, Set<Node>> descendantsMap,
-//            int maxPathLength,
-//            int recursionDepth,
-//            int depth,
-//            Set<Node> pool,
-//            boolean ignoreDirectEdge) throws InterruptedException {
-//
-//        if (x == y) {
-//            throw new IllegalArgumentException("x and y must be distinct");
-//        }
-//
-//        Set<Node> z = new HashSet<>(containing);
-//
-//        List<Node> firstHops = new ArrayList<>(graph.getAdjacentNodes(x));
-//
-//        if (ignoreDirectEdge) {
-//            firstHops.remove(y);
-//        }
-//
-//        while (true) {
-//            if (Thread.currentThread().isInterrupted()) {
-//                throw new InterruptedException();
-//            }
-//
-//            // Guard: if Z has somehow grown past depth, bail out
-//            if (depth >= 0 && z.size() > depth) {
-//                return new BlockingResult(null, true);
-//            }
-//
-//            int zSizeBefore = z.size();
-//
-//            // Track whether any branch was indeterminate this pass. We only report
-//            // INDETERMINATE if we complete the full pass without finding a solution —
-//            // a later branch might succeed within the depth bound even if an earlier
-//            // one hit the limit.
-//            boolean anyIndeterminate = false;
-//
-////            for (Node b : firstHops) {
-////                if (Thread.currentThread().isInterrupted()) {
-////                    throw new InterruptedException();
-////                }
-////
-////                Set<Node> path = new HashSet<>();
-////                path.add(x);
-////
-////                Blockable r = findPathToTargetVisit(
-////                        graph, x, b, y, path, z,
-////                        maxPathLength, depth, notFollowed, descendantsMap, pool,
-////                        recursionDepth, 0);
-////
-////                // UNBLOCKABLE: proven no separator exists — definitive failure regardless
-////                // of what other branches say.
-////                if (r == Blockable.UNBLOCKABLE) {
-////                    return new BlockingResult(null, false);
-//////                    return BlockingResult.unblockable();
-////                }
-////
-////                // INDETERMINATE: this branch hit a limit, but don't give up yet —
-////                // another branch may still find a valid blocking set within the bounds.
-////                if (r == Blockable.INDETERMINATE) {
-////                    anyIndeterminate = true;
-////                }
-////            }
-//
-//            for (Node b : firstHops) {
-//                if (Thread.currentThread().isInterrupted()) {
-//                    throw new InterruptedException();
-//                }
-//
-//                Set<Node> path = new HashSet<>();
-//                path.add(x);
-//
-//                // Snapshot Z before this branch so we can roll back if it hits
-//                // a limit, allowing a shallower branch to succeed instead.
-//                Set<Node> zBefore = new HashSet<>(z);
-//
-//                Blockable r = findPathToTargetVisit(
-//                        graph, x, b, y, path, z,
-//                        maxPathLength, depth, notFollowed, descendantsMap, pool,
-//                        recursionDepth, 0);
-//
-//                if (r == Blockable.UNBLOCKABLE) {
-//                    return new BlockingResult(null, false);
-//                }
-//
-//                if (r == Blockable.INDETERMINATE) {
-//                    // Roll back Z mutations from this branch — they exceeded our
-//                    // constraints. Another branch may find a shallower solution.
-//                    z.clear();
-//                    z.addAll(zBefore);
-//                    anyIndeterminate = true;
-//                }
-//                // If BLOCKED, Z growth from this branch is valid — keep it.
-//            }
-//
-//            if (z.size() == zSizeBefore) {
-//                // No Z growth this pass. If every branch was BLOCKED, we're done.
-//                // If any branch was indeterminate, we can't claim success — report
-//                // inconclusive so the caller knows the result may be incomplete.
-//                if (anyIndeterminate) {
-//                    return new BlockingResult(null, true);
-////                    return BlockingResult.indeterminate();
-//                }
-//                return new BlockingResult(z, false);
-////                return BlockingResult.found(z);
-//            }
-//
-//            // Z grew — loop again. Note that anyIndeterminate resets each pass,
-//            // so a branch that was indeterminate before Z growth may now be
-//            // BLOCKED under the larger Z.
-//        }
-//    }
 
-//    private static BlockingResult blockPathsRecursivelyAdj(
-//            Graph graph,
-//            Node x,
-//            Node y,
-//            Set<Node> containing,
-//            Set<Node> notFollowed,
-//            Map<Node, Set<Node>> descendantsMap,
-//            int maxPathLength,
-//            int recursionDepth,
-//            int depth,
-//            Set<Node> pool,
-//            boolean ignoreDirectEdge) throws InterruptedException {
-//
-//        if (x == y) {
-//            throw new IllegalArgumentException("x and y must be distinct");
-//        }
-//
-//        Set<Node> z = new HashSet<>(containing);
-//
-//        List<Node> firstHops = new ArrayList<>(graph.getAdjacentNodes(x));
-//
-//        if (ignoreDirectEdge) {
-//            firstHops.remove(y);
-//        }
-//
-//        // Outer fixed-point loop: re-examine every first hop after any Z growth,
-//        // because a node added to Z during one branch may activate a collider
-//        // on a different branch.
-//        while (true) {
-//            if (Thread.currentThread().isInterrupted()) {
-//                throw new InterruptedException();
-//            }
-//
-//            int zSizeBefore = z.size();
-//
-//            for (Node b : firstHops) {
-//                if (Thread.currentThread().isInterrupted()) {
-//                    throw new InterruptedException();
-//                }
-//
-//                Set<Node> path = new HashSet<>();
-//                path.add(x);
-//
-//                Blockable r = findPathToTargetVisit(
-//                        graph, x, b, y, path, z,
-//                        maxPathLength, depth, notFollowed, descendantsMap, pool,
-//                        recursionDepth, 0);
-//
-//                // UNBLOCKABLE: a path exists that cannot be blocked — definitive failure.
-//                if (r == Blockable.UNBLOCKABLE) {
-//                    return new BlockingResult(null, false);
-//                }
-//                // INDETERMINATE: search limit hit — we cannot confirm or deny a separator.
-//                if (r == Blockable.INDETERMINATE) {
-//                    return new BlockingResult(null, true);
-//                }
-//            }
-//
-//            if (z.size() == zSizeBefore) {
-//                return new BlockingResult(z, false);
-//            }
-//        }
-//    }
 
     // -----------------------------------------------------------------------
-    // Frame definition for the explicit stack
+    // Core algorithm
     // -----------------------------------------------------------------------
 
     private static Blockable stepContinuationLoop(
             Graph graph,
             Frame f,
             Node y,
-            Set<Node> path,
             Set<Node> z,
             Set<Node> notFollowed,
             Map<Node, Set<Node>> descendantsMap,
-            Set<Node> pool,
             Deque<Frame> callStack,
-            boolean isWithBPass) throws InterruptedException {
+            long deadlineMs) throws InterruptedException, TimeoutException {
 
-        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+        checkTimeout(deadlineMs);
 
-        List<Node> passNodes = getReachableNodes(graph, f.a, f.b, z, descendantsMap);
+        List<Node> passNodes = getReachableNodes(graph, f.a, f.b, z, descendantsMap, deadlineMs);
         passNodes.removeAll(notFollowed);
 
         for (Node c : passNodes) {
-            if (f.handled.contains(c)) continue;
+            checkTimeout(deadlineMs);
 
-            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+            if (f.handled.contains(c)) continue;
 
             f.pendingC = c;
             callStack.push(new Frame(
                     f.b, c, y,
-                    f.maxPathLength, f.depth, f.recursionDepth,
-                    f.currentDepth + 1));
+                    f.depth, f.recursionDepth,
+                    f.currentRecursionDepth + 1));
             return null;
         }
 
         return Blockable.BLOCKED;
     }
 
+    // -----------------------------------------------------------------------
+    // Frame definition for the explicit stack
+    // -----------------------------------------------------------------------
+
     private static List<Node> getReachableNodes(Graph graph,
                                                 Node a,
                                                 Node b,
                                                 Set<Node> z,
-                                                Map<Node, Set<Node>> descendantsMap)
-            throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) {
-            throw new InterruptedException();
-        }
+                                                Map<Node, Set<Node>> descendantsMap,
+                                                long deadlineMs
+    )
+            throws InterruptedException, TimeoutException {
+        checkTimeout(deadlineMs);
 
         List<Node> passNodes = new ArrayList<>();
         for (Node c : graph.getAdjacentNodes(b)) {
+            checkTimeout(deadlineMs);
+
             if (c == a) continue;
-            if (reachable(graph, a, b, c, z, descendantsMap)) {
+            if (reachable(graph, a, b, c, z, descendantsMap, deadlineMs)) {
                 passNodes.add(c);
             }
         }
         return passNodes;
     }
 
-    // -----------------------------------------------------------------------
-    // Iterative driver
-    // -----------------------------------------------------------------------
-
     private static boolean reachable(Graph graph,
                                      Node a,
                                      Node b,
                                      Node c,
                                      Set<Node> z,
-                                     Map<Node, Set<Node>> descendantsMap) {
+                                     Map<Node, Set<Node>> descendantsMap, long deadlineMs)
+            throws InterruptedException, TimeoutException {
+        checkTimeout(deadlineMs);
+
         boolean collider = graph.isDefCollider(a, b, c);
 
         if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
@@ -818,9 +1160,25 @@ public class RecursiveBlocking {
         } else {
             Set<Node> desc = descendantsMap.getOrDefault(b, Collections.emptySet());
             for (Node d : desc) {
+                checkTimeout(deadlineMs);
+
                 if (z.contains(d)) return true;
             }
             return false;
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Iterative driver
+    // -----------------------------------------------------------------------
+
+    private static void checkTimeout(long deadlineMs) throws InterruptedException, TimeoutException {
+        if (deadlineMs > 0 && System.currentTimeMillis() > deadlineMs) {
+            throw new TimeoutException("timed out");
+        }
+
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException("timeout");
         }
     }
 
@@ -869,10 +1227,28 @@ public class RecursiveBlocking {
          */
         UNBLOCKABLE,
         /**
-         * Analysis was inconclusive (interrupted, path-length cap, or radius limit hit).
+         * Analysis was inconclusive (interrupted, recursion depth cap, or radius limit hit).
          */
         INDETERMINATE
     }
+
+    /**
+     * Lightweight triple used in the BFS queues to track (predecessor, current
+     * node, recursion depth so far).
+     */
+    private static final class PathEntry {
+        final Node predecessor;
+        final Node current;
+
+        PathEntry(Node predecessor, Node current) {
+            this.predecessor = predecessor;
+            this.current = current;
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Corrected Frame — adds hadUnblockableWithout and hadUnblockableWith flags
+    // -----------------------------------------------------------------------
 
     /**
      * The result of a blocking-set search.
@@ -886,7 +1262,7 @@ public class RecursiveBlocking {
      *       blocked regardless of Z — no separator exists within the graph
      *       structure.</li>
      *   <li><b>Indeterminate</b>: {@code blockingSet} is null and
-     *       {@code indeterminate} is true. The search hit a path-length or
+     *       {@code indeterminate} is true. The search hit a recursion depth or
      *       depth limit before it could confirm or rule out a separator. A
      *       legal-PAG verdict of INCONCLUSIVE should be reported upstream
      *       rather than ILLEGAL.</li>
@@ -908,23 +1284,14 @@ public class RecursiveBlocking {
         }
     }
 
-    // -----------------------------------------------------------------------
-    // Result enum
-    // -----------------------------------------------------------------------
-
-    /**
-     * One stack frame — the explicit equivalent of a single activation record
-     * for {@code findPathToTargetVisit}.
-     */
     private static final class Frame {
 
         final Node a;
         final Node b;
         final Node y;
-        final int maxPathLength;
         final int depth;
         final int recursionDepth;
-        final int currentDepth;
+        final int currentRecursionDepth;
 
         Pass pass = Pass.ENTER;
         Set<Node> zSnapshot = null;
@@ -932,15 +1299,20 @@ public class RecursiveBlocking {
         Set<Node> handled = new HashSet<>();
         Node pendingC = null;
 
+        // Fix: track whether any continuation in each branch was UNBLOCKABLE.
+        // These replace the old behaviour of short-circuiting on the first
+        // UNBLOCKABLE child result.
+        boolean hadUnblockableWithout = false;
+        boolean hadUnblockableWith = false;
+
         Frame(Node a, Node b, Node y,
-              int maxPathLength, int depth, int recursionDepth, int currentDepth) {
+              int depth, int recursionDepth, int currentRecursionDepth) {
             this.a = a;
             this.b = b;
             this.y = y;
-            this.maxPathLength = maxPathLength;
             this.depth = depth;
             this.recursionDepth = recursionDepth;
-            this.currentDepth = currentDepth;
+            this.currentRecursionDepth = currentRecursionDepth;
         }
     }
 }

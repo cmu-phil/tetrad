@@ -1507,7 +1507,7 @@ public final class VertexRepairSearch implements IGraphSearch {
             Graph h2 = new EdgeListGraph(h);
             Graph mag = GraphTransforms.zhangMagFromPag(h2);
             if (!mag.paths().isLegalMag()) return null;
-            return GraphTransforms.magToPag(mag, false);
+            return GraphTransforms.magToPag(mag, false, 15);
         } catch (Throwable t) {
             return null;
         }

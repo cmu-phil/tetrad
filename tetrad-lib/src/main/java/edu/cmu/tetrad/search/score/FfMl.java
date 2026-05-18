@@ -18,6 +18,7 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -243,7 +244,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     /**
      * RFF vs ORF for continuous features.
      */
-    private FeatureType featureType = FeatureType.RFF;
+    private FeatureType featureType = FeatureType.ORF;
     /**
      * Categorical kernel off-diagonal similarity rho in [0, 1).
      * k_cat(c,c)=1, k_cat(c,c')=rho for c!=c'.
@@ -567,8 +568,17 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         int[] idx = new int[n];
         for (int i = 0; i < n; i++) idx[i] = i;
 
+//        for (int i = 0; i < m; i++) {
+//            int j = i + RandomUtil.getInstance().nextInt(n - i);
+//            int tmp = idx[i];
+//            idx[i] = idx[j];
+//            idx[j] = tmp;
+//        }
+
+        Random r = new Random(seed);
+//        RandomUtil.getInstance().setSeed(seed);
         for (int i = 0; i < m; i++) {
-            int j = i + RandomUtil.getInstance().nextInt(n - i);
+            int j = i + r.nextInt(n - i);
             int tmp = idx[i];
             idx[i] = idx[j];
             idx[j] = tmp;
@@ -828,6 +838,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         }
 
         final double[] mult = {0.35, 0.7, 1.4, 2.8};
+//        final double[] mult = {0.35, 0.7, 1.0, 1.4, 2.0, 2.8};
 
         // Precompute things that do NOT depend on bw2
 //        final boolean useNxN = (discParents != null && discParents.length >= 2);
@@ -835,6 +846,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
         final BaseWB base = buildBaseWB(mFeatures, contParents.length, seed);
         final double[] kcatLowerPacked = useNxN ? precomputeKcatLowerPacked(discParents, rows, n) : null;
+
+//        final double[] kcatLowerPacked = useNxN ? precomputeKcatLowerPacked(discParents, rows, n) : null;
 
         double bestBw2;
 
@@ -855,6 +868,9 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                         double ll = useNxN
                                 ? gpLogML_mixedKernelNxN_precomp(yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked)
                                 : gpLogMarginalLikelihoodRFFMixed(yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed);
+//
+//                        double ll = gpLogMarginalLikelihoodRFFMixed(
+//                                yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed);
 
                         return new Cand(idx, bw2, ll);
                     })
@@ -1704,6 +1720,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * For ORF: Wbase is what sampleOrthogonalW would produce with wStd=1 (so it already has chi radii).
      */
     private BaseWB buildBaseWB(int mFeatures, int dc, long seed) {
+        Random r = new Random(seed);
+
         double[][] Wbase;
         double[] b = new double[mFeatures];
 
@@ -1711,17 +1729,17 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             if (featureType == FeatureType.RFF) {
                 Wbase = new double[mFeatures][dc];
                 for (int j = 0; j < mFeatures; j++) {
-                    for (int k = 0; k < dc; k++) Wbase[j][k] = RandomUtil.getInstance().nextGaussian();
-                    b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+                    for (int k = 0; k < dc; k++) Wbase[j][k] = r.nextGaussian();
+                    b[j] = 2.0 * TMath.PI * r.nextDouble();
                 }
             } else {
                 // ORF base: same ORF sampling, but with wStd=1.0 so we can later multiply by wStd
                 Wbase = sampleOrthogonalW(mFeatures, dc, 1.0);
-                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * r.nextDouble();
             }
         } else {
             Wbase = null;
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * r.nextDouble();
         }
 
         return new BaseWB(Wbase, b);

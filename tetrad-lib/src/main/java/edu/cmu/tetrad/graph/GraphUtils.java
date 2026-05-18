@@ -1896,60 +1896,59 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns a Markov blanket of a node for a DAG, CPDAG, MAG, or PAG. This is not necessarily minimal (i.e. not
-     * necessarily a Markov Boundary).
+     * Computes the Markov blanket for a given node in a graph. The Markov blanket
+     * of a node x is the set of nodes that include the parents of x, the children
+     * of x, and all other parents of x's children (i.e., colliders involving x).
      *
-     * @param x The target node.
-     * @param G The PAG.
-     * @return A Markov blanket of the target node.
+     * @param x the target node for which the Markov blanket is computed
+     * @param G the graph containing the nodes and edges
+     * @return a set of nodes representing the Markov blanket of x
      */
     public static Set<Node> markovBlanket(Node x, Graph G) {
-        Set<Node> mb = new HashSet<>();
-
-        LinkedList<Node> path = new LinkedList<>();
-
-        // Follow all the colliders.
-        markovBlanketFollowColliders(null, x, path, G, mb);
-        mb.addAll(G.getAdjacentNodes(x));
+        Set<Node> mb = new HashSet<>(G.getAdjacentNodes(x));
         mb.remove(x);
-        return mb;
-    }
 
-    /**
-     * This method calculates the Markov Blanket by following colliders in a given graph.
-     *
-     * @param d    The node representing the direct cause (can be null).
-     * @param a    The node for which the Markov Blanket is calculated.
-     * @param path A linked list of nodes in the current path.
-     * @param G    The graph in which the Markov Blanket is calculated.
-     * @param mb   A set to store the nodes in the Markov Blanket.
-     */
-    private static void markovBlanketFollowColliders(Node d, Node a, LinkedList<Node> path, Graph G, Set<Node> mb) {
-        if (path.contains(a)) return;
-        path.add(a);
+        // BFS queue entries are (predecessor, current) pairs, mirroring the
+        // collider-following logic of the original recursive version.
+        record Entry(Node pred, Node curr) {}
 
-        for (Node b : G.getNodesOutTo(a, Endpoint.ARROW)) {
-            if (path.contains(b)) continue;
+        Deque<Entry> queue = new ArrayDeque<>();
+        Set<String> visited = new HashSet<>();
 
-            // Make sure that d*->a<-* b is a collider.
-            if (d != null && !G.isDefCollider(d, a, b)) continue;
-
-            for (Node c : G.getNodesInTo(b, Endpoint.ARROW)) {
-                if (path.contains(c)) continue;
-
-                if (!G.isDefCollider(a, b, c)) continue;
-
-                // a *-> b <-* c
-                mb.add(b);
-                mb.add(c);
-
-                markovBlanketFollowColliders(a, b, path, G, mb);
+        // Seed from x: follow arrows out of x to find colliders x *-> b <-* c.
+        for (Node b : G.getNodesOutTo(x, Endpoint.ARROW)) {
+            String key = x.getName() + "->" + b.getName();
+            if (visited.add(key)) {
+                queue.add(new Entry(x, b));
             }
         }
 
-        path.remove(a);
-    }
+        while (!queue.isEmpty()) {
+            Entry e = queue.poll();
+            Node a = e.pred();
+            Node b = e.curr();
 
+            for (Node c : G.getNodesInTo(b, Endpoint.ARROW)) {
+                if (c == a) continue;
+                if (!G.isDefCollider(a, b, c)) continue;
+
+                // a *-> b <-* c confirmed.
+                mb.add(b);
+                mb.add(c);
+
+                // Now follow colliders out of b, with b as the new predecessor.
+                for (Node next : G.getNodesOutTo(b, Endpoint.ARROW)) {
+                    String key = b.getName() + "->" + next.getName();
+                    if (visited.add(key)) {
+                        queue.add(new Entry(b, next));
+                    }
+                }
+            }
+        }
+
+        return mb;
+    }
+    
     /**
      * Calculates the district of a given node in a graph.
      *
@@ -2602,11 +2601,13 @@ public final class GraphUtils {
      * @param verbose              whether to provide detailed logging of the repair process
      * @param selection            a set of nodes to be considered during the maximality repair
      * @param excludeSelectionBias whether to exclude the selection bias during the repair process
+     * @param recursionDepth       the maximum current depth of recursion in the repair process
      * @return the repaired PAG that satisfies required constraints and is free of faults
      */
     public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
                                      Set<Triple> knownColliders,
-                                     boolean verbose, Set<Node> selection, boolean excludeSelectionBias) {
+                                     boolean verbose, Set<Node> selection, boolean excludeSelectionBias,
+                                     int recursionDepth) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
@@ -2629,9 +2630,10 @@ public final class GraphUtils {
             reorientWithFci(pag, fciOrient, knowledge, knownColliders, excludeSelectionBias, verbose);
         } while (changed);
 
-        MagToPag dagToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
-        dagToPag.setKnowledge(knowledge);
-        Graph pag2 = dagToPag.convert(true, excludeSelectionBias);
+        MagToPag magToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
+        magToPag.setRecursionDepth(recursionDepth);
+        magToPag.setKnowledge(knowledge);
+        Graph pag2 = magToPag.convert(true, excludeSelectionBias);
 
         if (pag2.equals(orig)) {
             if (verbose) TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");

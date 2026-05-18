@@ -103,7 +103,7 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
             if (dataModel.getName() != null) {
                 timeSeries.setName(dataModel.getName());
             }

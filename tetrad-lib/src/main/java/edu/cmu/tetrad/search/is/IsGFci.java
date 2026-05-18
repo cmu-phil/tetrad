@@ -122,7 +122,7 @@ public final class IsGFci implements IGraphSearch {
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxBlockingPathLength(-1);
+        fciOrient.setRecursionDepth(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxPathLength);
         fciOrient.finalOrientation(graph);
 

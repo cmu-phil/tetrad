@@ -59,121 +59,74 @@ public class RecursiveDiscriminatingPathRule {
      * recursive approach to evaluate possible discriminating paths between two nodes {@code x} and {@code y} in the
      * provided graph {@code pag}.
      *
-     * @param test                  The independence test object used to check for conditional independence between
-     *                              nodes.
-     * @param pag                   The graph structure, typically a partial ancestral graph (PAG), being analyzed.
-     * @param x                     The first target node in the analysis.
-     * @param y                     The second target node in the analysis.
-     * @param maxBlockingPathLength The maximum allowable length of a blocking path for the analysis.
-     * @param maxDdpPathLength      The maximum allowable discriminating path length considered for the analysis.
-     * @param preserveMarkovHelper  A helper object for additional Markov property checks during the independence
-     *                              tests.
-     * @param depth                 The maximum subset depth allowed during subset evaluations; a value of -1 allows all
-     *                              subsets.
+     * @param test                 The independence test object used to check for conditional independence between
+     *                             nodes.
+     * @param pag                  The graph structure, typically a partial ancestral graph (PAG), being analyzed.
+     * @param x                    The first target node in the analysis.
+     * @param y                    The second target node in the analysis.
+     * @param recursiveDepth       The maximum allowable length of a blocking path for the analysis.
+     * @param maxDdpPathLength     The maximum allowable discriminating path length considered for the analysis.
+     * @param depth                The maximum subset depth allowed during subset evaluations; a value of -1 allows all
+     *                             subsets.
+     * @param preserveMarkovHelper A helper object for additional Markov property checks during the independence
+     *                             tests.
      * @return A set of nodes that constitutes the separating set (sepset) between {@code x} and {@code y}, or
      * {@code null} if no such set exists.
      * @throws InterruptedException If any.
      */
     public static Set<Node> findDdpSepsetRecursive(IndependenceTest test, Graph pag, Node x, Node y,
-                                                   int maxBlockingPathLength, int maxDdpPathLength, PreserveMarkov preserveMarkovHelper, int depth)
+                                                   int recursiveDepth, int maxDdpPathLength,
+                                                   int depth, PreserveMarkov preserveMarkovHelper)
             throws InterruptedException {
 
-        // Get the V nodes--these need to be blocked in every combination, as we don't know which of these are colliders
-        // on their respective discriminating paths.
+        if (pag.isAdjacentTo(x, y)) {
+            throw new IllegalArgumentException("Nodes must be non-adjacent to each other.");
+        }
+
         List<Node> vNodes = getVNodes(pag, x, y, maxDdpPathLength);
 
-        // Get the common neighbors, some subset of which are common childeren (hence length-2 collider paths that
-        // must not be conditioned on in order to block them.
-        List<Node> common = getCommonNeighbors(pag, x, y);
+        // Try all subsets of vNodes as the not-followed set, since we don't know
+        // which are colliders on their discriminating paths.
+        SublistGenerator gen = new SublistGenerator(vNodes.size(), vNodes.size());
+        int[] choice;
 
-        // (B) For each subset of "common," check independence
-        SublistGenerator gen1 = new SublistGenerator(common.size(), common.size());
-        int[] choice2;
+        while ((choice = gen.next()) != null) {
+            Set<Node> vNodesNotFollowed = GraphUtils.asSet(choice, vNodes);
 
-        while ((choice2 = gen1.next()) != null) {
-            Set<Node> c = GraphUtils.asSet(choice2, common);
-            Set<Node> perhapsNotFollowed = new HashSet<>(vNodes);
-            perhapsNotFollowed.addAll(c);
+            RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsIterativeDeepening(
+                    pag, x, y, Set.of(), vNodesNotFollowed, recursiveDepth, depth, -1,
+                    1, true);
 
-            // Generate all subsets from vNodes
-            SublistGenerator gen = new SublistGenerator(perhapsNotFollowed.size(), perhapsNotFollowed.size());
-            List<int[]> allChoices = new ArrayList<>();
-
-            int[] choice;
-            while ((choice = gen.next()) != null) {
-                allChoices.add(choice.clone());
+            if (result.indeterminate()) {
+                continue;
             }
 
-            List<Node> _perhapsNotFollowed = new ArrayList<>(perhapsNotFollowed);
+            if (!result.found()) {
+                continue;
+            }
 
-            // 6) Build a Callable for each subset. We throw an exception if no solution is found.
-            for (int[] indices : allChoices) {
-
-                // Convert indices -> actual nodes
-                Set<Node> vNodesNotFollowed = GraphUtils.asSet(indices, _perhapsNotFollowed);
-
-                RecursiveBlocking.BlockingResult result = null;
-                if (depth < 0) {
-                    result = RecursiveBlocking.blockPathsRecursivelyFull(
-                            pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, depth, -1, 1, false);
-                } else {
-//                    if (!result.indeterminate()) {
-                    result = null;
-                    int _depth = 0;
-                    int maxDepth = depth >= 0 ? depth : pag.getNumNodes();
-
-                    do {
-                        _depth++;
-
-                        if (_depth > maxDepth) break;
-
-                        result = RecursiveBlocking.blockPathsRecursivelyFull(
-                                pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength, _depth, -1, 1, false);
-                    } while (result.indeterminate());
-//                    }
+            // Add back the vNodes that were followed (i.e. not in vNodesNotFollowed),
+            // since those are non-colliders on their paths and belong in the sepset.
+            Set<Node> testSet = new HashSet<>(result.blockingSet());
+            for (Node f : vNodes) {
+                if (!vNodesNotFollowed.contains(f)) {
+                    testSet.add(f);
                 }
+            }
 
-                if (result == null || result.indeterminate()) {
-                    continue;
-                }
+            boolean independent;
+            if (preserveMarkovHelper != null) {
+                independent = preserveMarkovHelper.markovIndependence(x, y, testSet);
+            } else {
+                independent = test.checkIndependence(x, y, testSet).isIndependent();
+            }
 
-                Set<Node> blocking = result.blockingSet();
-
-                if (blocking == null) {
-                    continue; // No separating set possible for this NF; try another NF
-                }
-
-                for (Node f : vNodes) {
-                    if (!vNodesNotFollowed.contains(f)) {
-                        blocking.add(f);
-                    }
-                }
-
-                // b minus c
-                Set<Node> testSet = new HashSet<>(blocking);
-                testSet.removeAll(c);
-
-                // Check independence
-                boolean independent;
-                if (preserveMarkovHelper != null) {
-                    independent = preserveMarkovHelper.markovIndependence(x, y, testSet);
-                } else {
-                    independent = test.checkIndependence(x, y, testSet).isIndependent();
-                }
-
-                if (independent) {
-                    return testSet;
-                }
+            if (independent) {
+                return testSet;
             }
         }
 
         return null;
-    }
-
-    private static @NotNull List<Node> getCommonNeighbors(Graph pag, Node x, Node y) {
-        List<Node> common = new ArrayList<>(pag.getAdjacentNodes(x));
-        common.retainAll(pag.getAdjacentNodes(y));
-        return common;
     }
 
     private static @NotNull List<Node> getVNodes(Graph pag, Node x, Node y, int maxDdpPathLength) {
@@ -195,8 +148,8 @@ public class RecursiveDiscriminatingPathRule {
             }
 
         }
-        List<Node> _vNodes = new ArrayList<>(vNodes);
-        return _vNodes;
+
+        return new ArrayList<>(vNodes);
     }
 }
 

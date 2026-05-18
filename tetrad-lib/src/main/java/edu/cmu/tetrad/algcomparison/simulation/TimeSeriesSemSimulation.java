@@ -69,12 +69,24 @@ public class TimeSeriesSemSimulation implements Simulation, AcceptsKnowledge {
     private List<DataSet> dataSets = new ArrayList<>();
 
     /**
-     * The knowledge.
+     * The expanded knowledge derived from the lagged graph structure, and optionally
+     * augmented with the expanded within-lag knowledge. This is what gets stamped onto
+     * each dataset and passed to the search algorithm.
      */
     private Knowledge knowledge;
 
     /**
-     * <p>Constructor for TimeSeriesSemSimulation.</p>
+     * Within-lag knowledge supplied by the user over base variable names (no lag suffix).
+     * May be null. If non-null, this is expanded across all lags in createData and merged
+     * into the structural knowledge.
+     */
+    private Knowledge withinLagKnowledge = null;
+
+    /* -------------------- Constructors -------------------- */
+
+    /**
+     * Creates a new TimeSeriesSemSimulation with the given random graph and no
+     * within-lag knowledge.
      *
      * @param randomGraph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
      */
@@ -86,12 +98,29 @@ public class TimeSeriesSemSimulation implements Simulation, AcceptsKnowledge {
     }
 
     /**
+     * Creates a new TimeSeriesSemSimulation with the given random graph and within-lag
+     * knowledge over base variable names (no lag suffix). The knowledge will be expanded
+     * across all time lags when createData is called.
+     *
+     * @param randomGraph      a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     * @param knowledge        within-lag knowledge over base variable names; may be null
+     */
+    public TimeSeriesSemSimulation(RandomGraph randomGraph, Knowledge knowledge) {
+        if (randomGraph == null) {
+            throw new NullPointerException();
+        }
+        this.randomGraph = randomGraph;
+        this.withinLagKnowledge = (knowledge != null) ? knowledge.copy() : null;
+    }
+
+    /* -------------------- Static utilities -------------------- */
+
+    /**
      * <p>topToBottomLayout.</p>
      *
      * @param graph a {@link edu.cmu.tetrad.graph.TimeLagGraph} object
      */
     public static void topToBottomLayout(TimeLagGraph graph) {
-
         final int xStart = 65;
         final int yStart = 50;
         final int xSpace = 100;
@@ -122,6 +151,8 @@ public class TimeSeriesSemSimulation implements Simulation, AcceptsKnowledge {
         }
     }
 
+    /* -------------------- Simulation -------------------- */
+
     /**
      * {@inheritDoc}
      */
@@ -131,17 +162,18 @@ public class TimeSeriesSemSimulation implements Simulation, AcceptsKnowledge {
         this.graphs = new ArrayList<>();
 
         Graph graph = this.randomGraph.createGraph(parameters);
+        int numLags = parameters.getInt(Params.NUM_LAGS);
         int numExtraLagged = (int) TMath.floor(graph.getNumEdges() * 1.5);
-        graph = TsUtils.graphToLagGraph(graph, parameters.getInt(Params.NUM_LAGS), numExtraLagged);
-//        TimeSeriesSemSimulation.topToBottomLayout((TimeLagGraph) graph);
+        graph = TsUtils.graphToLagGraph(graph, numLags, numExtraLagged);
         LayoutUtil.layoutByKnowledgeIndices(graph);
+
+        // Derive structural knowledge from the lagged graph
         this.knowledge = TsUtils.getKnowledge(graph);
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
                 graph = this.randomGraph.createGraph(parameters);
-                graph = TsUtils.graphToLagGraph(graph, 2, numExtraLagged);
-//                TimeSeriesSemSimulation.topToBottomLayout((TimeLagGraph) graph);
+                graph = TsUtils.graphToLagGraph(graph, numLags, numExtraLagged);
                 LayoutUtil.layoutByKnowledgeIndices(graph);
             }
 
@@ -151,9 +183,9 @@ public class TimeSeriesSemSimulation implements Simulation, AcceptsKnowledge {
             SemIm im = new SemIm(pm, parameters);
 
             int sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
-
             boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
-            DataSet dataSet = null;
+
+            DataSet dataSet;
             try {
                 dataSet = im.simulateData(sampleSize, saveLatentVars);
             } catch (ParseException e) {
@@ -165,10 +197,16 @@ public class TimeSeriesSemSimulation implements Simulation, AcceptsKnowledge {
                 dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
             }
 
+            // If within-lag knowledge was supplied, expand it across lags and
+            // use the resulting knowledge in place of the purely structural one.
+            if (withinLagKnowledge != null) {
+                DataSet laggedData = TsUtils.createLagData(dataSet, numLags, withinLagKnowledge);
+                this.knowledge = laggedData.getKnowledge();
+            }
+
             dataSet.setName("Run " + (i + 1));
             dataSet.setKnowledge(this.knowledge.copy());
             this.dataSets.add(dataSet);
-
         }
     }
 
@@ -226,17 +264,21 @@ public class TimeSeriesSemSimulation implements Simulation, AcceptsKnowledge {
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
-//        parameters.add(Params.SEED);
 
         return parameters;
-
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Class<? extends RandomGraph> getRandomGraphClass() {
         return randomGraph.getClass();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Class<? extends Simulation> getSimulationClass() {
         return getClass();
@@ -268,11 +310,13 @@ public class TimeSeriesSemSimulation implements Simulation, AcceptsKnowledge {
 
     /**
      * {@inheritDoc}
+     * <p>
+     * Sets the within-lag knowledge. This knowledge should be over base variable
+     * names only (no lag suffix); it will be expanded across all time lags the
+     * next time createData is called.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge(knowledge);
+        this.withinLagKnowledge = (knowledge != null) ? new Knowledge(knowledge) : null;
     }
-
 }
-

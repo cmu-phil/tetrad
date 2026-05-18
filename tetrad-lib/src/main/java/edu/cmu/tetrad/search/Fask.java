@@ -66,8 +66,8 @@ import static edu.cmu.tetrad.util.TMath.*;
  */
 public final class Fask {
     private final Score score;
-    private double[][] data;
     private final DataSet dataSet;
+    private double[][] data;
     private Graph externalGraph = null;
     private int depth = -1;
     private double alpha = 0.05;
@@ -201,7 +201,8 @@ public final class Fask {
                                                   Node xj,
                                                   int maxPathLength) {
         try {
-            Set<Node> z = RecursiveBlocking.blockPathsRecursivelyFull(
+            Set<Node> z = null;
+            z = RecursiveBlocking.blockPathsRecursivelyFull(
                     graph, xi, xj, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true).blockingSet();
 
             if (z == null) z = new HashSet<>();
@@ -776,11 +777,11 @@ public final class Fask {
         int nyPos = StatUtils.getRows(y, y, 0, +1).size();
         if (nxPos < minPart || nyPos < minPart) return false;
 
-        double _pc  = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc));
+        double _pc = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc));
         double _pc1 = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc1));
         double _pc2 = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc2));
 
-        double z  = 0.5 * (TMath.log(1.0 + _pc)  - TMath.log(1.0 - _pc));
+        double z = 0.5 * (TMath.log(1.0 + _pc) - TMath.log(1.0 - _pc));
         double z1 = 0.5 * (TMath.log(1.0 + _pc1) - TMath.log(1.0 - _pc1));
         double z2 = 0.5 * (TMath.log(1.0 + _pc2) - TMath.log(1.0 - _pc2));
 

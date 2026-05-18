@@ -347,7 +347,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             if (this.workbenchMode != AbstractWorkbench.SELECT_MOVE) {
                 this.workbenchMode = AbstractWorkbench.SELECT_MOVE;
                 setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                deselectAll();
+//                deselectAll();
             } else {
                 setCursor(new Cursor(Cursor.HAND_CURSOR));
             }

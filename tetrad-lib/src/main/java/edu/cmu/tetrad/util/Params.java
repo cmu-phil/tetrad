@@ -1033,6 +1033,10 @@ public final class Params {
      */
     public static final String RA_RADIUS = "raRadius";
     /**
+     * Constant <code>RA_RADIUS="rbRadius"</code>
+     */
+    public static final String RB_RADIUS = "rbRadius";
+    /**
      * Constant <code>MAX_SEPSET_SIZE="maxSepsetSize"</code>
      */
     public static final String MAX_SEPSET_SIZE = "maxSepsetSize";

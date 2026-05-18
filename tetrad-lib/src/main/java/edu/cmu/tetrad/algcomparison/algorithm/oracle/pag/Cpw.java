@@ -154,7 +154,7 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
             if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Expecting a data set for time lagging.");
             }
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), new Knowledge());
             if (dataSet.getName() != null) timeSeries.setName(dataSet.getName());
             dataModel = timeSeries;
         }
