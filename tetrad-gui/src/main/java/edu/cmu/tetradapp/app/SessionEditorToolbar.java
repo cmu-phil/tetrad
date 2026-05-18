@@ -165,6 +165,8 @@ final class SessionEditorToolbar extends JPanel {
                     edgeButton.doClick();
                     edgeButton.requestFocus();
                 }
+            } else if ("selectMove".equals(prop)) {
+                resetSelectMove();
             }
         });
 
