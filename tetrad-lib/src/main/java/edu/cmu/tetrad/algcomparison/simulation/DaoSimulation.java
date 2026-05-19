@@ -536,7 +536,7 @@ public class DaoSimulation implements Simulation {
      * @param dag the DAG
      * @return nodes in source-first topological order
      */
-    static List<Node> soficOrder(Graph dag) {
+    public static List<Node> soficOrder(Graph dag) {
         Map<Node, Integer> inDegree = new HashMap<>();
         for (Node n : dag.getNodes()) inDegree.put(n, 0);
         for (Edge e : dag.getEdges()) {
