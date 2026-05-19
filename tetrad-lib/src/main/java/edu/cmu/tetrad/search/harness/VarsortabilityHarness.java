@@ -91,7 +91,7 @@ public class VarsortabilityHarness {
 //    private static final double COEF_LO = 0.3;
 //    private static final double COEF_HI = 0.9;
 
-    private static final double COEF_LO = -.9;
+    private static final double COEF_LO = -0.9;
     private static final double COEF_HI = 0.9;
 
     /**
