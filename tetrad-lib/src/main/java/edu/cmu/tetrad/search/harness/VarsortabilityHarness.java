@@ -382,11 +382,10 @@ public class VarsortabilityHarness {
     // -----------------------------------------------------------------------
 
     private static Graph runBoss(DataSet dataSet) {
-        Score score = new edu.cmu.tetrad.search.score.SemBicScore(new CovarianceMatrix(dataSet));
-        ((SemBicScore) score).setPenaltyDiscount(PENALTY_DISCOUNT);
+//        Score score = new edu.cmu.tetrad.search.score.SemBicScore(new CovarianceMatrix(dataSet));
+//        ((SemBicScore) score).setPenaltyDiscount(PENALTY_DISCOUNT);
 //
-//        Score score = new edu.cmu.tetrad.search.score.EbicScore(new CovarianceMatrix(dataSet));
-//
+        Score score = new edu.cmu.tetrad.search.score.EbicScore(new CovarianceMatrix(dataSet));
 //        Score score = new LegendreBicScore(dataSet);
 
         edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(score);
