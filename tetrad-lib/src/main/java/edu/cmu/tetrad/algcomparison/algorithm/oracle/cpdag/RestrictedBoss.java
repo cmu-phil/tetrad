@@ -20,18 +20,12 @@
 
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
-import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.LatentStructureAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -76,7 +70,8 @@ import java.util.*;
 )
 @Bootstrapping
 public class RestrictedBoss extends AbstractBootstrapAlgorithm
-        implements Algorithm, TakesScoreWrapper, ReturnsBootstrapGraphs, LatentStructureAlgorithm {
+        implements Algorithm, TakesScoreWrapper, ReturnsBootstrapGraphs, LatentStructureAlgorithm,
+        TakesCovarianceMatrix {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -102,9 +97,9 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm
 
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) {
-        if (!(dataModel instanceof DataSet dataSet)) {
-            throw new IllegalArgumentException("Expecting a dataset.");
-        }
+//        if (!(dataModel instanceof DataSet dataSet)) {
+//            throw new IllegalArgumentException("Expecting a dataset.");
+//        }
 
         String string = parameters.getString(Params.TARGETS);
         String[] _targets;
@@ -118,7 +113,7 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm
         List<Node> targets = new ArrayList<>();
 
         for (String _target : _targets) {
-            Node variable = dataSet.getVariable(_target);
+            Node variable = dataModel.getVariable(_target);
 
             if (variable == null) {
                 continue;
@@ -145,7 +140,7 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm
         for (Node node : targets) {
             knowledge.addToTier(2, node.getName());
         }
-        for (Node node : dataSet.getVariables()) {
+        for (Node node : dataModel.getVariables()) {
             if (!targets.contains(node)) {
                 knowledge.addToTier(1, node.getName());
             }
@@ -153,7 +148,7 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm
         knowledge.setTierForbiddenWithin(1, true);
 //            knowledge.setTierForbiddenWithin(2, true);
 
-        Score myScore = this.score.getScore(dataSet, parameters);
+        Score myScore = this.score.getScore(dataModel, parameters);
         edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(myScore);
         boss.setUseBes(parameters.getBoolean(Params.USE_BES));
         boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
@@ -175,7 +170,21 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm
         List<Node> restrictedList = new ArrayList<>(restrictedSet);
         restrictedList.sort(NaturalSort.    naturalComparator());
 
-        DataSet restrictedData = dataSet.subsetColumns(restrictedList);
+        DataModel restrictedData;
+
+        if (dataModel instanceof DataSet dataSet) {
+            restrictedData = dataSet.subsetColumns(restrictedList);
+        } else if (dataModel instanceof CovarianceMatrix covarianceMatrix) {
+            List<String> _restrictedList = new ArrayList<>();
+
+            for (Node node : restrictedList) {
+                _restrictedList.add(node.getName());
+            }
+
+            restrictedData = covarianceMatrix.getSubmatrix(_restrictedList);
+        } else {
+            throw new IllegalArgumentException("Unsupported data model type: " + dataModel.getClass().getName());
+        }
 
         System.out.println("Restricted data # vars: " + restrictedData.getVariables().size());
 
