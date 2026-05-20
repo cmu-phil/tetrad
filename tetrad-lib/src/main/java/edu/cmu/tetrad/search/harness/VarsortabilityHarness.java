@@ -65,6 +65,11 @@ import java.util.*;
  */
 public class VarsortabilityHarness {
 
+    /**
+     * Constructs a new VarsortabilityHarness.
+     */
+    public VarsortabilityHarness() {}
+
     // -----------------------------------------------------------------------
     // Experiment parameters — adjust freely
     // -----------------------------------------------------------------------
@@ -74,7 +79,7 @@ public class VarsortabilityHarness {
 
     /** Number of variables per DAG. */
     private static final int NUM_NODES = 20;
-
+˚
     /** Average number of edges per node (expected edges ≈ NUM_NODES * AVG_DEGREE / 2). */
     private static final double AVG_DEGREE = 4.0;
 
@@ -110,6 +115,16 @@ public class VarsortabilityHarness {
     // Entry point
     // -----------------------------------------------------------------------
 
+    /**
+     * Executes the main simulation and evaluation routine to assess
+     * the sensitivity of the BOSS algorithm to varsortability (VS).
+     * The program generates random directed acyclic graphs (DAGs), simulates
+     * data for different levels of varsortability, and evaluates the BOSS
+     * algorithm's performance via various metrics such as Structural Hamming
+     * Distance (SHD) and F1 scores for adjacency and arrowhead structures.
+     *
+     * @param args Command-line arguments (not used in this program).
+     */
     public static void main(String[] args) {
         RandomUtil.getInstance().setSeed(42L);
 
