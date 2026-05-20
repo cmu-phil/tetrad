@@ -79,7 +79,7 @@ public class VarsortabilityHarness {
 
     /** Number of variables per DAG. */
     private static final int NUM_NODES = 20;
-˚
+
     /** Average number of edges per node (expected edges ≈ NUM_NODES * AVG_DEGREE / 2). */
     private static final double AVG_DEGREE = 4.0;
 
