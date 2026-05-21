@@ -707,8 +707,6 @@ public class TestFci {
         // final orientation using the given oracle graph for oracle m-separation facts. The result
         // should be the oracle graph.
 
-        // Wish me luck.
-
         final String oracleGraph = "Graph Nodes:\n" +
                 "X1;X2;X3;X4;X5;X6\n" +
                 "\n" +
@@ -763,40 +761,14 @@ public class TestFci {
             _currentState = GraphUtils.replaceNodes(_currentState, _oracleGraph.getNodes());
             _currentStateWithout15 = GraphUtils.replaceNodes(_currentStateWithout15, _oracleGraph.getNodes());
 
-            System.out.println("Oracle PAG");
-            System.out.println(_oracleGraph);
-
-            System.out.println("Current State");
-            System.out.println(_currentState);
-
             // Remove the X1o->X5 edge
             Node x1 = _currentState.getNode("X1");
-            Node x2 = _currentState.getNode("X2");
-            Node x3 = _currentState.getNode("X3");
-            Node x4 = _currentState.getNode("X4");
             Node x5 = _currentState.getNode("X5");
             _currentState.removeEdge(x1, x5);
-//            _currentState.setEndpoint(x5, x2, Endpoint.TAIL);
-
             assertEquals(_currentStateWithout15, _currentState);
-
-            System.out.println(_currentState);
-
-            // Apply FCI final orientation
             FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(new MsepTest(_oracleGraph)));
-            fciOrient.setVerbose(true);
             fciOrient.finalOrientation(_currentState);
-
-            System.out.println("Discriminating Paths");
-            Set<DiscriminatingPath> paths = FciOrient.listDiscriminatingPaths(_currentState, -1, true);
-            System.out.println(paths);
-
-//            System.out.println(FciOrient.listDiscriminatingPaths(_currentState, x1, x5, -1, true));
-//
-//            System.out.println("FCI Final Orientation");
-//
-            System.out.println(_currentState);
-
+            assertEquals(_oracleGraph, _currentState);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -61,7 +61,7 @@ public class EbicScore implements Score, EffectiveSampleSizeSettable {
     // True if verbose output should be sent to out.
     private boolean calculateRowSubsets;
     // The gamma parameter.
-    private double gamma = 1;
+    private double gamma = 0.8;
     // True if the pseudo-inverse should be used.
     private double lambda = 0.0;
     private int nEff;

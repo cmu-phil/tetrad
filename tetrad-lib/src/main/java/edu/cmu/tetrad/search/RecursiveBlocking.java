@@ -88,7 +88,7 @@ public class RecursiveBlocking {
      * @return a set of nodes constituting a blocking set for paths between x and y,
      * or {@code null} if no such set is found within the given constraints
      * @throws InterruptedException if the thread executing the method is interrupted
-     * @throws TimeoutException if the operation times out
+     * @throws TimeoutException     if the operation times out
      */
     public static <E> Set<Node> blockPathsRecursively(Graph graph,
                                                       Node x,
@@ -198,7 +198,7 @@ public class RecursiveBlocking {
      * @param deadlineMs        the deadline for the operation (in milliseconds)
      * @return a {@link BlockingResult} describing the outcome
      * @throws InterruptedException if the thread is interrupted
-     * @throws TimeoutException if the search was interrupted
+     * @throws TimeoutException     if the search was interrupted
      */
     public static BlockingResult blockPathsRecursivelyFull(Graph graph,
                                                            Node x,
@@ -284,7 +284,7 @@ public class RecursiveBlocking {
      * @param deadlineMs        the deadline for the operation (in milliseconds)
      * @return a {@link BlockingResult} describing the outcome
      * @throws InterruptedException if the thread is interrupted
-     * @throws TimeoutException if the search was interrupted
+     * @throws TimeoutException     if the search was interrupted
      */
     public static BlockingResult blockPathsBfs(
             Graph graph,
@@ -455,7 +455,7 @@ public class RecursiveBlocking {
      * @param deadlineMs        the deadline for the operation (in milliseconds)
      * @return a {@link BlockingResult} describing the outcome
      * @throws InterruptedException if the thread is interrupted
-     * @throws TimeoutException if the ceiling is reached without finding
+     * @throws TimeoutException     if the ceiling is reached without finding
      */
     public static BlockingResult blockPathsIterativeDeepening(
             Graph graph,
@@ -540,9 +540,7 @@ public class RecursiveBlocking {
 
             if (ignoreDirectEdge && neighbor == y) continue;
 
-            if (!graph.isDefNoncollider(x, y, neighbor)) {
-                if (notFollowed.contains(neighbor)) continue;
-            }
+            if (notFollowed.contains(neighbor)) continue;
 
             String key = x.getName() + "->" + neighbor.getName();
             if (seen.add(key)) {

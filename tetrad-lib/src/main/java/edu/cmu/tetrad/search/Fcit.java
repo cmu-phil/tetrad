@@ -210,36 +210,7 @@ public final class Fcit implements IGraphSearch {
     private static Graph redoGfciOrientation(Graph pag, FciOrient fciOrient, Knowledge knowledge,
                                              Set<Triple> initialColliders, boolean completeRuleSetUsed,
                                              SepsetMap sepsets, boolean excludeSelectionBias, boolean verbose, boolean superVerbose) {
-        // GFCI reorientation...
         GraphUtils.reorientWithCircles(pag, superVerbose);
-
-//        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
-//        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-
-//        GraphUtils.recallInitialColliders(pag, initialColliders, knowledge);
-//        adjustForExtraSepsets(sepsets, pag, verbose);
-//        fciOrient.finalOrientation(pag, excludeSelectionBias);
-
-
-//        for (Node y : pag.getNodes()) {
-//            List<Node> adj = pag.getAdjacentNodes(y);
-//
-//            for (int i = 0; i < adj.size(); i++) {
-//                for (int j = i + 1; j < adj.size(); j++) {
-//                    Node x = adj.get(i);
-//                    Node z = adj.get(j);
-//
-//                    if (!pag.isDefCollider(x, y, z)
-////                            && !(pag.getEndpoint(y, x) == Endpoint.ARROW
-////                            && pag.getEndpoint(y, z) == Endpoint.ARROW)
-//                    ) {
-//                        pag.setEndpoint(x, y, Endpoint.CIRCLE);
-//                        pag.setEndpoint(z, y, Endpoint.CIRCLE);
-//                    }
-//                }
-//            }
-//        }
-
         GraphUtils.recallInitialColliders(pag, initialColliders, knowledge);
         adjustForExtraSepsets(sepsets, pag, verbose);
         fciOrient.finalOrientation(pag, excludeSelectionBias);

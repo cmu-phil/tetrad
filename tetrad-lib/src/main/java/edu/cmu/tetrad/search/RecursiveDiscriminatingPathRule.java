@@ -89,7 +89,17 @@ public class RecursiveDiscriminatingPathRule {
                 pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, -1,
                 1, true);
 
-        List<Node> notFollowedSuperset = new ArrayList<>(result0.blockingSet());
+        Set<Node> noFollowsBlocking = result0.blockingSet();
+        List<Node> notFollowedSuperset = new ArrayList<>();
+
+        for (Node f : noFollowsBlocking) {
+            for (Node s : pag.getAdjacentNodes(f)) {
+                if (pag.getEndpoint(s, f) == Endpoint.CIRCLE) {
+                    notFollowedSuperset.add(f);
+                    break;
+                }
+            }
+        }
 
         // Try all subsets of notFollowedSuperset as the not-followed set, since we don't know
         // which are colliders on their discriminating paths.
