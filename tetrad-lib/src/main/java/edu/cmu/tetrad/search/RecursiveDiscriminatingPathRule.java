@@ -92,6 +92,8 @@ public class RecursiveDiscriminatingPathRule {
         Set<Node> noFollowsBlocking = result0.blockingSet();
         List<Node> notFollowedSuperset = new ArrayList<>();
 
+        // Remove any node from the notFollowedSuperset whose orientations are already completely
+        // determined. We don't need to consider both possibilies for these.
         for (Node f : noFollowsBlocking) {
             for (Node s : pag.getAdjacentNodes(f)) {
                 if (pag.getEndpoint(s, f) == Endpoint.CIRCLE) {
