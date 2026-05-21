@@ -97,7 +97,8 @@ public final class PagCache {
         long h = 0xcbf29ce484222325L; // FNV-1a
         List<String> names = new ArrayList<>();
         for (Node n : g.getNodes()) names.add(n.getName());
-        names.sort(NaturalSort.naturalComparator());;
+        names.sort(NaturalSort.naturalComparator());
+        ;
         for (String s : names) h = fnv1a(h, s);
 
         List<String> es = new ArrayList<>();
@@ -110,8 +111,8 @@ public final class PagCache {
             Endpoint xy = g.getEndpoint(x, y);
             Endpoint yx = g.getEndpoint(y, x);
             es.add(x.getName() + "|" + y.getName() + "|" +
-                   (xy == null ? "N" : xy.name().charAt(0)) + "|" +
-                   (yx == null ? "N" : yx.name().charAt(0)));
+                    (xy == null ? "N" : xy.name().charAt(0)) + "|" +
+                    (yx == null ? "N" : yx.name().charAt(0)));
         }
         Collections.sort(es);
         for (String s : es) h = fnv1a(h, s);
@@ -134,8 +135,8 @@ public final class PagCache {
             Endpoint xy = pag.getEndpoint(x, y);
             Endpoint yx = pag.getEndpoint(y, x);
             es.add(x.getName() + "|" + y.getName() + "|" +
-                   (xy == null ? "N" : xy.name().charAt(0)) + "|" +
-                   (yx == null ? "N" : yx.name().charAt(0)));
+                    (xy == null ? "N" : xy.name().charAt(0)) + "|" +
+                    (yx == null ? "N" : yx.name().charAt(0)));
         }
         Collections.sort(es);
         for (String s : es) h = fnv1a(h, s);
@@ -223,7 +224,7 @@ public final class PagCache {
      * @param excludeSelectionBias True to exclude selection bias, false otherwise.
      * @return the corresponding PAG for the provided graph
      * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
-     * @throws IllegalStateException if a discriminating path cannot be found.
+     * @throws IllegalStateException    if a discriminating path cannot be found.
      */
     public @NotNull Graph getPag(Graph g, boolean excludeSelectionBias) {
         return getPag(g, new Knowledge(), excludeSelectionBias, -1);
@@ -234,16 +235,23 @@ public final class PagCache {
      * cache and hasn't been externally modified, the cached version is returned. Otherwise, a new PAG is computed,
      * stored in the cache, and returned. The input graph must be either a DAG (Directed Acyclic Graph) or a MAG
      * (Maximal Ancestral Graph).
+     * <p>
+     * Note that the input graph must either be a legal DAG, possibly with latents, or a legal MAG. (Legal
+     * MAGs cannot have latents; we treat DAGs, therefore, as a special case. A legal DAG without latents
+     * would be a legal MAG.)
      *
-     * @param g                           the input graph, which must be either a DAG or a MAG
-     * @param knowledge                   the knowledge object containing additional information for PAG computation
-     * @param excludeSelectionBias        whether to exclude selection bias during PAG computation
+     * @param g                    the input graph, which must be either a DAG or a MAG
+     * @param knowledge            the knowledge object containing additional information for PAG computation
+     * @param excludeSelectionBias whether to exclude selection bias during PAG computation
      * @param recursionDepth       the depth of recursion to consider during PAG computation
      * @return the corresponding PAG for the provided graph
      * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
-     * @throws IllegalStateException if a discriminating path cannot be found.
+     * @throws IllegalStateException    if a discriminating path cannot be found.
      */
     public @NotNull Graph getPag(Graph g, Knowledge knowledge, boolean excludeSelectionBias, int recursionDepth) {
+
+        // We need to check legal DAG separately here because it may be a DAG with latents, which
+        // would not be a legal MAG.
         if (!(g.paths().isLegalDag() || g.paths().isLegalMag())) {
             throw new IllegalArgumentException("Graph must be a DAG (possibly with latents) or a MAG.");
         }
