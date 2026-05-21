@@ -26,11 +26,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -123,6 +119,8 @@ public final class MagToPag {
                 return !mag1.isAdjacentTo(i, k) && mag1.isDefCollider(i, j, k);
             }
 
+
+
             /**
              * Does a discriminating path orientation.
              *
@@ -134,7 +132,10 @@ public final class MagToPag {
              * @throws IllegalArgumentException if x is adjacent to y
              * @see DiscriminatingPath
              */
-            public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) {
+            public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath,
+                                                                                     int recursiveDepth, int maxDiscriminatingPathLength,
+                                                                                     Graph graph, Set<Node> vNodes) throws InterruptedException {
+//            public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) {
                 Node x = discriminatingPath.getX();
                 Node w = discriminatingPath.getW();
                 Node v = discriminatingPath.getV();
@@ -264,6 +265,8 @@ public final class MagToPag {
             pag.setEndpoint(t.z, t.y, Endpoint.ARROW);
         }
 
+        System.out.println("Done with collider orientations, graph = " + pag);
+
         fciOrient.finalOrientation(pag, excludeSelectionBias);
 
         return pag;
@@ -276,13 +279,6 @@ public final class MagToPag {
      */
     public void setRecursionDepth(int recursionDepth) {
         this.recursionDepth = recursionDepth;
-    }
-
-    /**
-     * Lightweight value type for a triple of nodes (x, y, z) used to collect
-     * collider orientations from the parallel scan before applying them.
-     */
-    private record Triple(Node x, Node y, Node z) {
     }
 
     /**
@@ -343,5 +339,12 @@ public final class MagToPag {
      */
     public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
+    }
+
+    /**
+     * Lightweight value type for a triple of nodes (x, y, z) used to collect
+     * collider orientations from the parallel scan before applying them.
+     */
+    private record Triple(Node x, Node y, Node z) {
     }
 }

@@ -261,6 +261,10 @@ public final class Fcit implements IGraphSearch {
                     if (!pag.isDefCollider(x, node, y)) {
                         pag.setEndpoint(x, node, Endpoint.ARROW);
                         pag.setEndpoint(y, node, Endpoint.ARROW);
+
+                        System.out.println("Removed adjacency " + x + " *-* " + y + " from PAG.");
+                        System.out.println("Oriented " + pag.getEdge(x, node) + " in PAG.");
+                        System.out.println("Oriented " + pag.getEdge(y, node) + " in PAG.");
                     }
                 }
             }
@@ -707,11 +711,14 @@ public final class Fcit implements IGraphSearch {
         Edge _edge = pag.getEdge(x, y);
         Graph _pag = new EdgeListGraph(pag);
 
+        if ((x.getName().equals("X2") && y.getName().equals("X4")) || (x.getName().equals("X4") && y.getName().equals("X2"))) {
+            System.out.println("X2, X4");
+        }
+
         this.pag.removeEdge(_edge);
         Set<Node> sepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, excludeSelectionBias, superVerbose);
-
         if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
             if (verbose) {
                 TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type

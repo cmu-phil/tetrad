@@ -93,7 +93,8 @@ public class PagLegalityCheck {
         // Checking paths in the discriminiting path check of length up to 20.... TODO... is this restriction OK?
         Graph pag2 = null;
         try {
-            pag2 = GraphTransforms.dagToPag(mag, new Knowledge(), false, 15);
+            MagToPag magToPag = new MagToPag(mag);
+            pag2 = magToPag.convert(false, false);
         } catch (IllegalStateException e) {
             String reason = "Legal PAG status could not be determined";
             return new LegalPagRet(false, reason);
@@ -270,7 +271,8 @@ public class PagLegalityCheck {
         if (!isLegalMagQuiet(mag, selection)) return false;
 
         // 3) Reconstitute PAG from the implied MAG.
-        Graph pag2 = GraphTransforms.dagToPag(mag, false);
+        MagToPag magToPag = new MagToPag(mag);
+        Graph pag2 = magToPag.convert(false, false);
 
         // Mirror verbose logic:
         // If graphs differ, only fail if there exists an original edge that doesn't match.

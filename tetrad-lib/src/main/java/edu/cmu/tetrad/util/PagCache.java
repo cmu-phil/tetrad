@@ -70,23 +70,16 @@ public final class PagCache {
     }
 
     private static Graph computePag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int recursionDepth) {
-        if (graph.paths().isLegalDag()) {
-            if (graph.paths().existsDirectedCycle()) {
-                throw new IllegalArgumentException("Graph contains directed cycle");
-            }
-
-            Graph mag = GraphTransforms.dagToMag(graph);
-
-            return computePagFromMag(mag, knowledge, excludeSelectionBias, recursionDepth);   // no getPag() here, avoiding infinite recursion.
-        } else if (graph.paths().isLegalMag()) {
+        if (graph.paths().isLegalMag()) {
             return computePagFromMag(graph, knowledge, excludeSelectionBias, recursionDepth);
         } else {
             Graph mag = GraphTransforms.zhangMagFromPag(graph);
-            MagToPag magToPag = new MagToPag(mag);
-            magToPag.setKnowledge(knowledge);
-            magToPag.setRecursionDepth(recursionDepth);
-            magToPag.setMaxDiscriminatingPathLength(-1);
-            return magToPag.convert(true, excludeSelectionBias);
+            return computePagFromMag(mag, knowledge, excludeSelectionBias, recursionDepth);
+//            MagToPag magToPag = new MagToPag(mag);
+//            magToPag.setKnowledge(knowledge);
+//            magToPag.setRecursionDepth(recursionDepth);
+//            magToPag.setMaxDiscriminatingPathLength(-1);
+//            return magToPag.convert(true, excludeSelectionBias);
         }
     }
 
@@ -226,7 +219,7 @@ public final class PagCache {
      * @throws IllegalStateException if a discriminating path cannot be found.
      */
     public @NotNull Graph getPag(Graph g, boolean excludeSelectionBias) {
-        return getPag(g, new Knowledge(), excludeSelectionBias, 15);
+        return getPag(g, new Knowledge(), excludeSelectionBias, -1);
     }
 
     /**
@@ -244,8 +237,8 @@ public final class PagCache {
      * @throws IllegalStateException if a discriminating path cannot be found.
      */
     public @NotNull Graph getPag(Graph g, Knowledge knowledge, boolean excludeSelectionBias, int recursionDepth) {
-        if (!(g.paths().isLegalDag() || g.paths().isLegalMag())) {
-            throw new IllegalArgumentException("Graph must be a DAG or a MAG.");
+        if (!(g.paths().isLegalMag())) {
+            throw new IllegalArgumentException("Graph must be a MAG. (A DAG is a MAG.)");
         }
         final long srcSig = signatureOfSource(g);
 

@@ -179,6 +179,55 @@ public class GraphTransforms {
         }
     }
 
+//    /**
+//     * Transforms a partial ancestral graph (PAG) into a maximal ancestral graph (MAG) using Zhang's 2008 Theorem 2.
+//     *
+//     * @param pag The partially ancestral graph to transform.
+//     * @return The maximally ancestral graph obtained from the PAG.
+//     */
+//    public static Graph zhangMagFromPag(Graph pag) {
+//        Graph pafci = new EdgeListGraph(pag);
+//
+//        for (Edge e : pafci.getEdges()) {
+//            Node x = e.getNode1();
+//            Node y = e.getNode2();
+//            Endpoint endx = e.getEndpoint1();
+//            Endpoint endy = e.getEndpoint2();
+//
+//            if (endx == Endpoint.CIRCLE && endy == Endpoint.ARROW) {
+//                pafci.removeEdge(e);
+//                pafci.addDirectedEdge(x, y);
+//            } else if (endx == Endpoint.ARROW && endy == Endpoint.CIRCLE) {
+//                pafci.removeEdge(e);
+//                pafci.addDirectedEdge(y, x);
+//            } else if (endx == Endpoint.TAIL && endy == Endpoint.CIRCLE) {
+//                pafci.removeEdge(e);
+//                pafci.addDirectedEdge(x, y);
+//            } else if (endx == Endpoint.CIRCLE && endy == Endpoint.TAIL) {
+//                pafci.removeEdge(e);
+//                pafci.addDirectedEdge(y, x);
+//            }
+//        }
+//
+//        // pcafci is the graph with only the circle-circle edges
+//        Graph pcafci = new EdgeListGraph(pafci.getNodes());
+//
+//        for (Edge e : pafci.getEdges()) {
+//            if (Edges.isNondirectedEdge(e)) {
+//                pcafci.addUndirectedEdge(e.getNode1(), e.getNode2());
+//            }
+//        }
+//
+//        pcafci = GraphTransforms.dagFromCpdag(pcafci, new Knowledge(), false);
+//
+//        for (Edge e : pcafci.getEdges()) {
+//            pafci.removeEdges(e.getNode1(), e.getNode2());
+//            pafci.addEdge(e);
+//        }
+//
+//        return pafci;
+//    }
+
     /**
      * Transforms a partial ancestral graph (PAG) into a maximal ancestral graph (MAG) using Zhang's 2008 Theorem 2.
      *
@@ -194,22 +243,29 @@ public class GraphTransforms {
             Endpoint endx = e.getEndpoint1();
             Endpoint endy = e.getEndpoint2();
 
+            // o-> : circle becomes tail, so x --> y
             if (endx == Endpoint.CIRCLE && endy == Endpoint.ARROW) {
                 pafci.removeEdge(e);
                 pafci.addDirectedEdge(x, y);
+                // <-o : circle becomes tail, so y --> x
             } else if (endx == Endpoint.ARROW && endy == Endpoint.CIRCLE) {
                 pafci.removeEdge(e);
                 pafci.addDirectedEdge(y, x);
+                // --o : circle becomes tail, so x --- y (undirected)
             } else if (endx == Endpoint.TAIL && endy == Endpoint.CIRCLE) {
                 pafci.removeEdge(e);
-                pafci.addDirectedEdge(x, y);
+                pafci.addUndirectedEdge(x, y);
+                // o-- : circle becomes tail, so x --- y (undirected)
             } else if (endx == Endpoint.CIRCLE && endy == Endpoint.TAIL) {
                 pafci.removeEdge(e);
-                pafci.addDirectedEdge(y, x);
+                pafci.addUndirectedEdge(x, y);
             }
+            // o-o, -->, <--, <-> : left as-is
         }
 
-        // pcafci is the graph with only the circle-circle edges
+        // Collect all o-o edges (now undirected after circle replacement above,
+        // but original o-o edges are still nondirected) into a CPDAG-like graph
+        // and orient them via dagFromCpdag.
         Graph pcafci = new EdgeListGraph(pafci.getNodes());
 
         for (Edge e : pafci.getEdges()) {
@@ -227,7 +283,7 @@ public class GraphTransforms {
 
         return pafci;
     }
-
+    
     /**
      * Generates the list of DAGs in the given cpdag.
      *
