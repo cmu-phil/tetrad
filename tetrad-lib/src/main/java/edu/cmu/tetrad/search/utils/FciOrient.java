@@ -795,9 +795,6 @@ public class FciOrient {
             return;
         }
 
-        System.out.println("Graph where R4 is used:");
-        System.out.println(graph);
-
         if (verbose) {
             TetradLogger.getInstance().log("R4: Discriminating path orientation started.");
         }

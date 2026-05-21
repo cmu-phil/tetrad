@@ -795,7 +795,7 @@ public class TestFci {
 //
 //            System.out.println("FCI Final Orientation");
 //
-//            System.out.println(_currentState);
+            System.out.println(_currentState);
 
         } catch (Exception e) {
             e.printStackTrace();

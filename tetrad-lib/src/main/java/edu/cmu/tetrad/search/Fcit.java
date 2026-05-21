@@ -244,11 +244,6 @@ public final class Fcit implements IGraphSearch {
         adjustForExtraSepsets(sepsets, pag, verbose);
         fciOrient.finalOrientation(pag, excludeSelectionBias);
 
-        if (!pag.paths().isLegalPag()) {
-            System.out.println("Not legal pag!");
-            System.out.println(pag);
-        }
-
         return pag;
     }
 
@@ -290,10 +285,10 @@ public final class Fcit implements IGraphSearch {
                     if (!pag.isDefCollider(x, node, y)) {
                         pag.setEndpoint(x, node, Endpoint.ARROW);
                         pag.setEndpoint(y, node, Endpoint.ARROW);
-
-                        if (verbose) {
-                            TetradLogger.getInstance().log("Oriented " + x + "*->" + node + "<-*" + y + " in PAG.");
-                        }
+//
+//                        if (verbose) {
+//                            TetradLogger.getInstance().log("Oriented " + x + "*->" + node + "<-*" + y + " in PAG.");
+//                        }
                     }
                 }
             }

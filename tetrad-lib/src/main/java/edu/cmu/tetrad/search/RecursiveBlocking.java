@@ -539,7 +539,10 @@ public class RecursiveBlocking {
             checkTimeout(deadlineMs);
 
             if (ignoreDirectEdge && neighbor == y) continue;
-            if (notFollowed.contains(neighbor)) continue;
+
+            if (!graph.isDefNoncollider(x, y, neighbor)) {
+                if (notFollowed.contains(neighbor)) continue;
+            }
 
             String key = x.getName() + "->" + neighbor.getName();
             if (seen.add(key)) {

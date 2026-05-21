@@ -83,15 +83,22 @@ public class RecursiveDiscriminatingPathRule {
             throw new IllegalArgumentException("Nodes must be non-adjacent to each other.");
         }
 
-        List<Node> vNodes = getVNodes(pag, x, y, maxDdpPathLength);
+//        List<Node> notFollowedSuperset = getVNodes(pag, x, y, maxDdpPathLength);
 
-        // Try all subsets of vNodes as the not-followed set, since we don't know
+        RecursiveBlocking.BlockingResult result0 = RecursiveBlocking.blockPathsRecursivelyFull(
+                pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, -1,
+                1, true);
+
+        List<Node> notFollowedSuperset = new ArrayList<>(result0.blockingSet());
+
+        // Try all subsets of notFollowedSuperset as the not-followed set, since we don't know
         // which are colliders on their discriminating paths.
-        SublistGenerator gen = new SublistGenerator(vNodes.size(), vNodes.size());
+        SublistGenerator gen = new SublistGenerator(notFollowedSuperset.size(), notFollowedSuperset.size());
         int[] choice;
+        Set<Set<Node>> testSets = new HashSet<>();
 
         while ((choice = gen.next()) != null) {
-            Set<Node> vNodesNotFollowed = GraphUtils.asSet(choice, vNodes);
+            Set<Node> vNodesNotFollowed = GraphUtils.asSet(choice, notFollowedSuperset);
 
             RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursivelyFull(
                     pag, x, y, Set.of(), vNodesNotFollowed, recursiveDepth, depth, -1,
@@ -105,10 +112,17 @@ public class RecursiveDiscriminatingPathRule {
                 continue;
             }
 
-            // Add back the vNodes that were followed (i.e. not in vNodesNotFollowed),
+            // Add back the notFollowedSuperset that were followed (i.e. not in vNodesNotFollowed),
             // since those are non-colliders on their paths and belong in the sepset.
             Set<Node> testSet = new HashSet<>(result.blockingSet());
-            for (Node f : vNodes) {
+
+            if (testSets.contains(testSet)) {
+                continue;
+            }
+
+            testSets.add(testSet);
+
+            for (Node f : notFollowedSuperset) {
                 if (!vNodesNotFollowed.contains(f)) {
                     testSet.add(f);
                 }
@@ -129,27 +143,27 @@ public class RecursiveDiscriminatingPathRule {
         return null;
     }
 
-    private static @NotNull List<Node> getVNodes(Graph pag, Node x, Node y, int maxDdpPathLength) {
-        // 2) List possible DiscriminatingPaths
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, true);
-
-        // 3) Figure out which nodes might be "notFollowed"
-        Set<DiscriminatingPath> relevantPaths = new HashSet<>();
-        for (DiscriminatingPath path : discriminatingPaths) {
-            if ((path.getX() == x && path.getY() == y) || (path.getX() == y && path.getY() == x)) {
-                relevantPaths.add(path);
-            }
-        }
-
-        Set<Node> vNodes = new HashSet<>();
-        for (DiscriminatingPath path : relevantPaths) {
-            if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
-                vNodes.add(path.getV());
-            }
-
-        }
-
-        return new ArrayList<>(vNodes);
-    }
+//    private static @NotNull List<Node> getVNodes(Graph pag, Node x, Node y, int maxDdpPathLength) {
+//        // 2) List possible DiscriminatingPaths
+//        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, true);
+//
+//        // 3) Figure out which nodes might be "notFollowed"
+//        Set<DiscriminatingPath> relevantPaths = new HashSet<>();
+//        for (DiscriminatingPath path : discriminatingPaths) {
+//            if ((path.getX() == x && path.getY() == y) || (path.getX() == y && path.getY() == x)) {
+//                relevantPaths.add(path);
+//            }
+//        }
+//
+//        Set<Node> vNodes = new HashSet<>();
+//        for (DiscriminatingPath path : relevantPaths) {
+//            if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
+//                vNodes.add(path.getV());
+//            }
+//
+//        }
+//
+//        return new ArrayList<>(vNodes);
+//    }
 }
 
