@@ -24,12 +24,11 @@ import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.DiscriminatingPath;
-import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.PreserveMarkov;
 import edu.cmu.tetrad.util.SublistGenerator;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -93,7 +92,7 @@ public class RecursiveDiscriminatingPathRule {
         List<Node> notFollowedSuperset = new ArrayList<>();
 
         // Remove any node from the notFollowedSuperset whose orientations are already completely
-        // determined. We don't need to consider both possibilies for these.
+        // determined. We don't need to consider both possibilities for these.
         for (Node f : noFollowsBlocking) {
             for (Node s : pag.getAdjacentNodes(f)) {
                 if (pag.getEndpoint(s, f) == Endpoint.CIRCLE) {
@@ -108,6 +107,8 @@ public class RecursiveDiscriminatingPathRule {
         SublistGenerator gen = new SublistGenerator(notFollowedSuperset.size(), notFollowedSuperset.size());
         int[] choice;
         Set<Set<Node>> testSets = new HashSet<>();
+        Set<Node> highestPSet = null;
+        double maxPValue = 0.0;
 
         while ((choice = gen.next()) != null) {
             Set<Node> vNodesNotFollowed = GraphUtils.asSet(choice, notFollowedSuperset);
@@ -144,15 +145,25 @@ public class RecursiveDiscriminatingPathRule {
             if (preserveMarkovHelper != null) {
                 independent = preserveMarkovHelper.markovIndependence(x, y, testSet);
             } else {
-                independent = test.checkIndependence(x, y, testSet).isIndependent();
+                IndependenceResult independenceResult = test.checkIndependence(x, y, testSet);
+                independent = independenceResult.isIndependent();
+
+                if (!Double.isNaN(independenceResult.getPValue()) && independenceResult.getPValue() > maxPValue) {
+                    maxPValue = Math.max(maxPValue, independenceResult.getPValue());
+                    highestPSet = testSet;
+                }
             }
 
-            if (independent) {
+            if ((test instanceof MsepTest) &&  independent) {
                 return testSet;
             }
         }
 
-        return null;
+        if (highestPSet == null) {
+            System.out.println("No sepset found for " + x + " and " + y);
+        }
+
+        return highestPSet;
     }
 
 //    private static @NotNull List<Node> getVNodes(Graph pag, Node x, Node y, int maxDdpPathLength) {

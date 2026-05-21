@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -210,13 +210,12 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             return Pair.of(discriminatingPath, false);
         }
 
-            Set<Node> blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y,
-                    recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper);
+        Set<Node> blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y,
+                recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper);
 
         if (blocking != null) {
             sepsetMap.set(x, y, blocking);
         } else {
-//            TetradLogger.getInstance().log("Discriminating path could not be determined.");
             throw new IllegalStateException("Discriminating path could not be determined.");
         }
 
