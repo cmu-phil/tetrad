@@ -201,7 +201,7 @@ public final class TsDagToPag {
         FciOrient fciOrient = new FciOrient(
                 R0R4StrategyTestBased.defaultConfiguration(dag, new Knowledge()));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setRecursionDepth(-1);
+        fciOrient.setRecursiveDepth(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.finalOrientation(graph);
 

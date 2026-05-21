@@ -2601,13 +2601,13 @@ public final class GraphUtils {
      * @param verbose              whether to provide detailed logging of the repair process
      * @param selection            a set of nodes to be considered during the maximality repair
      * @param excludeSelectionBias whether to exclude the selection bias during the repair process
-     * @param recursionDepth       the maximum current depth of recursion in the repair process
+     * @param recursiveDepth       the maximum current depth of recursion in the repair process
      * @return the repaired PAG that satisfies required constraints and is free of faults
      */
     public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
                                      Set<Triple> knownColliders,
                                      boolean verbose, Set<Node> selection, boolean excludeSelectionBias,
-                                     int recursionDepth) {
+                                     int recursiveDepth) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
@@ -2631,7 +2631,7 @@ public final class GraphUtils {
         } while (changed);
 
         MagToPag magToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
-        magToPag.setRecursionDepth(recursionDepth);
+        magToPag.setRecursiveDepth(recursiveDepth);
         magToPag.setKnowledge(knowledge);
         Graph pag2 = magToPag.convert(true, excludeSelectionBias);
 

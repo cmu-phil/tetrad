@@ -320,7 +320,7 @@ public class TestSepsetMethods {
                 100, 100, false);
 
         MagToPag magToPag = new MagToPag(GraphTransforms.dagToMag(dag));
-        magToPag.setRecursionDepth(Integer.MAX_VALUE);
+        magToPag.setRecursiveDepth(Integer.MAX_VALUE);
         Graph pag = magToPag.convert(true, false);
 
         for (Node x : pag.getNodes()) {

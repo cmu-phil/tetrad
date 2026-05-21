@@ -366,7 +366,7 @@ public final class Fci implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setRecursionDepth(-1);
+        fciOrient.setRecursiveDepth(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setVerbose(verbose);

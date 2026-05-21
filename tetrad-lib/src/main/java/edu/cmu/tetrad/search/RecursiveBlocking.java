@@ -82,7 +82,7 @@ public class RecursiveBlocking {
      * @param y              the target node of the path
      * @param containing     a set of nodes that must be included in the blocking set
      * @param notFollowed    a set of nodes that must not be traversed during path search
-     * @param recursionDepth the maximum allowable recursion depth of the paths to block (-1 for no limit)
+     * @param recursiveDepth the maximum allowable recursion depth of the paths to block (-1 for no limit)
      * @param <E>            the type of the graph nodes
      * @param deadlineMs     the deadline for the operation (in milliseconds)
      * @return a set of nodes constituting a blocking set for paths between x and y,
@@ -95,11 +95,11 @@ public class RecursiveBlocking {
                                                       Node y,
                                                       Set<Node> containing,
                                                       Set<Node> notFollowed,
-                                                      int recursionDepth,
+                                                      int recursiveDepth,
                                                       long deadlineMs)
             throws InterruptedException, TimeoutException {
         return blockPathsIterativeDeepening(graph, x, y, containing, notFollowed,
-                recursionDepth, 8, 4, 1, true,
+                recursiveDepth, 8, 4, 1, true,
                 deadlineMs).blockingSet();
     }
 
@@ -118,7 +118,7 @@ public class RecursiveBlocking {
      * @param y                 second endpoint
      * @param containing        nodes forced into Z
      * @param notFollowed       nodes not to be traversed
-     * @param recursionDepth    maximum recursion depth (-1 = unlimited)
+     * @param recursiveDepth    maximum recursion depth (-1 = unlimited)
      * @param maxRadius         BFS radius (-1 = unlimited)
      * @param depth             maximum size of Z (-1 = unlimited)
      * @param nearWhichEndpoint 1 = near x, 2 = near y, 3 = near both
@@ -131,7 +131,7 @@ public class RecursiveBlocking {
                                                   Node y,
                                                   Set<Node> containing,
                                                   Set<Node> notFollowed,
-                                                  int recursionDepth,
+                                                  int recursiveDepth,
                                                   int maxRadius,
                                                   int depth,
                                                   int nearWhichEndpoint,
@@ -139,7 +139,7 @@ public class RecursiveBlocking {
             throws InterruptedException {
         try {
             return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
-                    recursionDepth, depth, maxRadius, nearWhichEndpoint,
+                    recursiveDepth, depth, maxRadius, nearWhichEndpoint,
                     ignoreDirectEdge).blockingSet();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -155,7 +155,7 @@ public class RecursiveBlocking {
      * @param y                 second endpoint
      * @param containing        nodes forced into Z
      * @param notFollowed       nodes not to be traversed
-     * @param recursionDepth    maximum recursion depth (-1 = unlimited)
+     * @param recursiveDepth    maximum recursion depth (-1 = unlimited)
      * @param depth             maximum size of Z (-1 = unlimited)
      * @param maxRadius         BFS radius (-1 = unlimited)
      * @param nearWhichEndpoint 1 = near x, 2 = near y, 3 = near both
@@ -168,13 +168,13 @@ public class RecursiveBlocking {
                                                            Node y,
                                                            Set<Node> containing,
                                                            Set<Node> notFollowed,
-                                                           int recursionDepth,
+                                                           int recursiveDepth,
                                                            int depth, int maxRadius,
                                                            int nearWhichEndpoint,
                                                            boolean ignoreDirectEdge)
             throws InterruptedException {
         try {
-            return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed, recursionDepth, depth,
+            return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed, recursiveDepth, depth,
                     maxRadius, nearWhichEndpoint, ignoreDirectEdge, Long.MAX_VALUE);
         } catch (TimeoutException e) {
             throw new RuntimeException(e);
@@ -190,7 +190,7 @@ public class RecursiveBlocking {
      * @param y                 second endpoint
      * @param containing        nodes forced into Z
      * @param notFollowed       nodes not to be traversed
-     * @param recursionDepth    maximum recursion depth (-1 = unlimited)
+     * @param recursiveDepth    maximum recursion depth (-1 = unlimited)
      * @param depth             maximum size of Z (-1 = unlimited)
      * @param maxRadius         BFS radius (-1 = unlimited)
      * @param nearWhichEndpoint 1 = near x, 2 = near y, 3 = near both
@@ -205,7 +205,7 @@ public class RecursiveBlocking {
                                                            Node y,
                                                            Set<Node> containing,
                                                            Set<Node> notFollowed,
-                                                           int recursionDepth,
+                                                           int recursiveDepth,
                                                            int depth, int maxRadius,
                                                            int nearWhichEndpoint,
                                                            boolean ignoreDirectEdge,
@@ -220,13 +220,13 @@ public class RecursiveBlocking {
         Set<Node> pool = buildPool(graph, x, y, maxRadius, nearWhichEndpoint, deadlineMs);
         pool.addAll(containing);
 
-        int _recursionDepth = recursionDepth < 0 ? graph.getNumNodes() : recursionDepth;
-        int currentRecursionDepth = 0;
+        int _recursiveDepth = recursiveDepth < 0 ? graph.getNumNodes() : recursiveDepth;
+        int currentRecursiveDepth = 0;
 
         return blockPathsRecursivelyAdj(
                 graph, x, y, containing, notFollowed,
                 graph.paths().getDescendantsMap(),
-                _recursionDepth, currentRecursionDepth, depth, pool, ignoreDirectEdge, deadlineMs);
+                _recursiveDepth, currentRecursiveDepth, depth, pool, ignoreDirectEdge, deadlineMs);
     }
 
     /**
@@ -248,7 +248,7 @@ public class RecursiveBlocking {
      * <p>The method respects the same parameter contract as
      * {@link #blockPathsRecursivelyFull}:</p>
      * <ul>
-     *   <li>{@code recursionDepth} bounds the recursion depth considered when
+     *   <li>{@code recursiveDepth} bounds the recursion depth considered when
      *       collecting candidates; -1 means unlimited.</li>
      *   <li>{@code depth} caps the size of Z; sets larger than this are never
      *       enqueued.</li>
@@ -274,7 +274,7 @@ public class RecursiveBlocking {
      * @param containing        nodes forced into Z (the seed set)
      * @param notFollowed       nodes not to be traversed when collecting
      *                          active paths
-     * @param recursionDepth    maximum recursion depth when collecting active
+     * @param recursiveDepth    maximum recursion depth when collecting active
      *                          paths (-1 = unlimited)
      * @param depth             maximum size of Z (-1 = unlimited)
      * @param maxRadius         BFS radius for the node pool (-1 = unlimited)
@@ -292,7 +292,7 @@ public class RecursiveBlocking {
             Node y,
             Set<Node> containing,
             Set<Node> notFollowed,
-            int recursionDepth,
+            int recursiveDepth,
             int depth,
             int maxRadius,
             int nearWhichEndpoint,
@@ -334,7 +334,7 @@ public class RecursiveBlocking {
 
             // Check whether z already blocks all active paths from x to y.
             if (blocksAllPaths(graph, x, y, z, notFollowed, descendantsMap,
-                    recursionDepth, ignoreDirectEdge, deadlineMs)) {
+                    recursiveDepth, ignoreDirectEdge, deadlineMs)) {
                 return new BlockingResult(z, false);
             }
 
@@ -373,7 +373,7 @@ public class RecursiveBlocking {
      * @param y                 The ending node of the path to be blocked.
      * @param containing        A set of nodes that must be present on the blocked path.
      * @param notFollowed       A set of nodes that must not be followed during the operation.
-     * @param recursionDepth    The current recursion depth.
+     * @param recursiveDepth    The current recursion depth.
      * @param depth             The maximum depth to search for paths.
      * @param maxRadius         The maximum allowable radius for searching paths.
      * @param nearWhichEndpoint Specifies the endpoint near which the block operation is focused.
@@ -387,14 +387,14 @@ public class RecursiveBlocking {
             Node y,
             Set<Node> containing,
             Set<Node> notFollowed,
-            int recursionDepth,
+            int recursiveDepth,
             int depth,
             int maxRadius,
             int nearWhichEndpoint,
             boolean ignoreDirectEdge)
             throws InterruptedException {
         try {
-            return blockPathsIterativeDeepening(graph, x, y, containing, notFollowed, recursionDepth, depth, maxRadius,
+            return blockPathsIterativeDeepening(graph, x, y, containing, notFollowed, recursiveDepth, depth, maxRadius,
                     nearWhichEndpoint, ignoreDirectEdge, Long.MAX_VALUE);
         } catch (TimeoutException e) {
             throw new RuntimeException(e);
@@ -405,9 +405,9 @@ public class RecursiveBlocking {
      * Iterative-deepening separating-set search between {@code x} and {@code y}.
      *
      * <p>This method calls {@link #blockPathsRecursivelyFull} repeatedly,
-     * starting with {@code recursionDepth = 0} and incrementing by 1 on each
+     * starting with {@code recursiveDepth = 0} and incrementing by 1 on each
      * iteration until either a blocking set is found or the recursion depth cap
-     * reaches {@code recursionDepth} (the caller-supplied ceiling). This is
+     * reaches {@code recursiveDepth} (the caller-supplied ceiling). This is
      * iterative deepening applied to recursion depth rather than search depth: it
      * inherits the memory efficiency of the depth-first version while
      * guaranteeing that the shortest-path blocking set is found first.</p>
@@ -415,13 +415,13 @@ public class RecursiveBlocking {
      * <p>Because the depth-first version can hang on dense graphs when given
      * an unconstrained recursion depth (it may explore exponentially many paths
      * before the recursion cap triggers), bounding each call to a small
-     * {@code recursionDepth} keeps each individual call fast. Short separating
+     * {@code recursiveDepth} keeps each individual call fast. Short separating
      * sets — including the empty set, which handles unconditionally d-separated
      * pairs — are found at the lowest recursion depth level and return immediately
      * without exploring longer paths at all.</p>
      *
      * <p>The method respects the same parameter contract as
-     * {@link #blockPathsRecursivelyFull}. The {@code recursionDepth} parameter
+     * {@link #blockPathsRecursivelyFull}. The {@code recursiveDepth} parameter
      * here serves as the ceiling for the iterative deepening loop; the
      * per-iteration cap starts at 0 and grows up to this ceiling. Pass -1 to
      * use {@code graph.getNumNodes()} as the ceiling (a natural upper bound,
@@ -445,7 +445,7 @@ public class RecursiveBlocking {
      * @param y                 second endpoint
      * @param containing        nodes forced into Z (the seed set)
      * @param notFollowed       nodes not to be traversed
-     * @param recursionDepth    ceiling for the iterative deepening loop
+     * @param recursiveDepth    ceiling for the iterative deepening loop
      *                          (-1 = use graph.getNumNodes())
      * @param depth             maximum size of Z (-1 = unlimited)
      * @param maxRadius         BFS radius for the node pool (-1 = unlimited)
@@ -463,7 +463,7 @@ public class RecursiveBlocking {
             Node y,
             Set<Node> containing,
             Set<Node> notFollowed,
-            int recursionDepth,
+            int recursiveDepth,
             int depth,
             int maxRadius,
             int nearWhichEndpoint,
@@ -471,7 +471,7 @@ public class RecursiveBlocking {
             long deadlineMs)
             throws InterruptedException, TimeoutException {
 
-        int ceiling = (recursionDepth < 0) ? graph.getNumNodes() : recursionDepth;
+        int ceiling = (recursiveDepth < 0) ? graph.getNumNodes() : recursiveDepth;
 
         for (int _recusionDepth = 0; _recusionDepth <= ceiling; _recusionDepth++) {
             checkTimeout(deadlineMs);
@@ -479,7 +479,7 @@ public class RecursiveBlocking {
             BlockingResult result = blockPathsRecursivelyFull(
                     graph, x, y,
                     containing, notFollowed,
-                    _recusionDepth,        // recursionDepth for this iteration
+                    _recusionDepth,        // recursiveDepth for this iteration
                     depth,
                     maxRadius,
                     nearWhichEndpoint,
@@ -527,7 +527,7 @@ public class RecursiveBlocking {
             Set<Node> z,
             Set<Node> notFollowed,
             Map<Node, Set<Node>> descendantsMap,
-            int recursionDepth,
+            int recursiveDepth,
             boolean ignoreDirectEdge,
             long deadlineMs)
             throws InterruptedException, TimeoutException {
@@ -556,7 +556,6 @@ public class RecursiveBlocking {
             Node a = entry.predecessor;
             Node b = entry.current;
             if (b == y) return false;
-//            if (recursionDepth >= 0 && entry.currentRecursionDepth >= recursionDepth) continue;
 
             for (Node c : graph.getAdjacentNodes(b)) {
                 checkTimeout(deadlineMs);
@@ -749,8 +748,8 @@ public class RecursiveBlocking {
             Set<Node> containing,
             Set<Node> notFollowed,
             Map<Node, Set<Node>> descendantsMap,
-            int recursionDepth,
-            int currentRecursionDepth,
+            int recursiveDepth,
+            int currentRecursiveDepth,
             int depth,
             Set<Node> pool,
             boolean ignoreDirectEdge,
@@ -800,7 +799,7 @@ public class RecursiveBlocking {
                 Blockable r = findPathToTargetVisit(
                         graph, x, b, y, path, z,
                         depth, notFollowed, descendantsMap, pool,
-                        recursionDepth, currentRecursionDepth, deadlineMs, totalFrames);
+                        recursiveDepth, currentRecursiveDepth, deadlineMs, totalFrames);
 
                 if (r == Blockable.UNBLOCKABLE) {
                     return new BlockingResult(null, false);
@@ -844,14 +843,14 @@ public class RecursiveBlocking {
                                            Set<Node> notFollowed,
                                            Map<Node, Set<Node>> descendantsMap,
                                            Set<Node> pool,
-                                           int recursionDepth,
-                                           int currentRecursionDepth,
+                                           int recursiveDepth,
+                                           int currentRecursiveDepth,
                                            long deadlineMs, int[] totalFrames)
             throws InterruptedException, TimeoutException {
 
         Deque<Frame> callStack = new ArrayDeque<>();
         callStack.push(new Frame(aInit, bInit, y,
-                depth, recursionDepth, currentRecursionDepth));
+                depth, recursiveDepth, currentRecursiveDepth));
 
         Blockable lastResult = null;
 
@@ -872,7 +871,7 @@ public class RecursiveBlocking {
             // ENTER
             // =================================================================
             if (f.pass == Pass.ENTER) {
-                if (f.currentRecursionDepth > f.recursionDepth) {
+                if (f.currentRecursiveDepth > f.recursiveDepth) {
                     callStack.pop();
                     lastResult = Blockable.INDETERMINATE;
                     continue;
@@ -1103,8 +1102,8 @@ public class RecursiveBlocking {
             f.pendingC = c;
             callStack.push(new Frame(
                     f.b, c, y,
-                    f.depth, f.recursionDepth,
-                    f.currentRecursionDepth + 1));
+                    f.depth, f.recursiveDepth,
+                    f.currentRecursiveDepth + 1));
             return null;
         }
 
@@ -1291,8 +1290,8 @@ public class RecursiveBlocking {
         final Node b;
         final Node y;
         final int depth;
-        final int recursionDepth;
-        final int currentRecursionDepth;
+        final int recursiveDepth;
+        final int currentRecursiveDepth;
 
         Pass pass = Pass.ENTER;
         Set<Node> zSnapshot = null;
@@ -1307,13 +1306,13 @@ public class RecursiveBlocking {
         boolean hadUnblockableWith = false;
 
         Frame(Node a, Node b, Node y,
-              int depth, int recursionDepth, int currentRecursionDepth) {
+              int depth, int recursiveDepth, int currentRecursiveDepth) {
             this.a = a;
             this.b = b;
             this.y = y;
             this.depth = depth;
-            this.recursionDepth = recursionDepth;
-            this.currentRecursionDepth = currentRecursionDepth;
+            this.recursiveDepth = recursiveDepth;
+            this.currentRecursiveDepth = currentRecursiveDepth;
         }
     }
 }

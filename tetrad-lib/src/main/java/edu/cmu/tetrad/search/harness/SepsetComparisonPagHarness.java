@@ -216,7 +216,7 @@ public class SepsetComparisonPagHarness {
         int ceiling = RB_RECURSION_DEPTH;
 
         try {
-            for (int recursionDepth = 0; recursionDepth <= ceiling; recursionDepth++) {
+            for (int recursiveDepth = 0; recursiveDepth <= ceiling; recursiveDepth++) {
 
                 if (Thread.currentThread().isInterrupted()) {
                     return new RbResult(0, -1, false);
@@ -228,7 +228,7 @@ public class SepsetComparisonPagHarness {
                         RecursiveBlocking.blockPathsRecursivelyFull(
                                 pag, x, y,
                                 Set.of(), Set.of(),
-                                recursionDepth,
+                                recursiveDepth,
                                 RB_DEPTH,
                                 RB_MAX_RADIUS,
                                 RB_NEAR_ENDPOINT,
@@ -270,14 +270,14 @@ public class SepsetComparisonPagHarness {
     // -----------------------------------------------------------------------
 
     private static Graph generateRandomPag(int numNodes, int numLatents,
-                                           int numEdges, int recursionDepth) {
+                                           int numEdges, int recursiveDepth) {
         while (true) {
             System.out.println("Generating random graph...");
 
             Graph graph = RandomGraph.randomGraph(
                     numNodes, numLatents, numEdges, 100, 100, 100, false);
             MagToPag magToPag = new MagToPag(GraphTransforms.dagToMag(graph));
-            magToPag.setRecursionDepth(recursionDepth);
+            magToPag.setRecursiveDepth(recursiveDepth);
 
             ExecutorService executor = Executors.newSingleThreadExecutor();
             Future<Graph> future = executor.submit(() -> magToPag.convert(false, false));

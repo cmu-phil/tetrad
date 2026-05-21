@@ -139,7 +139,7 @@ public final class Fcit implements IGraphSearch {
     private @NotNull Graph pag = new EdgeListGraph();
     private boolean replicatingGraph = false;
     private boolean excludeSelectionBias = false;
-    private int recursionDepth = 15;
+    private int recursiveDepth = 15;
     private int rbRadius = -1;
 
     /**
@@ -291,9 +291,9 @@ public final class Fcit implements IGraphSearch {
 
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
-        fciOrient.setParallel(false);
+        fciOrient.setParallel(true);
         fciOrient.setCompleteRuleSetUsed(true);
-        fciOrient.setRecursionDepth(recursionDepth);
+        fciOrient.setRecursiveDepth(recursiveDepth);
         fciOrient.setMaxDiscriminatingPathLength(-1);
         fciOrient.setKnowledge(knowledge);
 
@@ -431,7 +431,7 @@ public final class Fcit implements IGraphSearch {
         }
 
         // The main procedure.
-        this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias, recursionDepth);
+        this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias, recursiveDepth);
 
         if (replicatingGraph) {
             this.pag = new ReplicatingGraph(pag, new LagReplicationPolicy());
@@ -576,7 +576,7 @@ public final class Fcit implements IGraphSearch {
     }
 
     private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) {
-        return new HashSet<>(edges).stream().
+        return new HashSet<>(edges).parallelStream().
                 filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null).filter(
                         edge -> knowledge == null || !Edges.isDirectedEdge(edge)
                                 || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())
@@ -623,7 +623,7 @@ public final class Fcit implements IGraphSearch {
 //
             if (this.depth < 0) {
                 result = RecursiveBlocking.blockPathsIterativeDeepening(
-                        pag, x, y, Set.of(), notFollowed, recursionDepth, depth, rbRadius, 1, true);
+                        pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true);
 
             } else {
 //                if (!result.indeterminate()) {
@@ -637,7 +637,7 @@ public final class Fcit implements IGraphSearch {
                     if (depth > maxDepth) break;
 
                     result = RecursiveBlocking.blockPathsIterativeDeepening(
-                            pag, x, y, Set.of(), notFollowed, recursionDepth, depth, rbRadius, 1, true);
+                            pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true);
                 } while (result.indeterminate());
 //                }
             }

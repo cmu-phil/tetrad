@@ -283,7 +283,7 @@ public class GraphTransforms {
 
         return pafci;
     }
-    
+
     /**
      * Generates the list of DAGs in the given cpdag.
      *
@@ -449,12 +449,12 @@ public class GraphTransforms {
      * @param graph                The input Directed Acyclic Graph (DAG) to be converted.
      * @param knowledge            Background knowledge used to guide the conversion process.
      * @param excludeSelectionBias True to exclude selection bias, false otherwise.
-     * @param recursionDepth       Recursion depth to consider during PAG computation.
+     * @param recursiveDepth       Recursion depth to consider during PAG computation.
      * @return The resulting Partial Ancestral Graph (PAG) obtained from the input DAG and knowledge.
      * @throws IllegalStateException if a discriminating path cannot be found.
      */
-    public static Graph dagToPag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int recursionDepth) {
-        return PagCache.getInstance().getPag(graph, knowledge, excludeSelectionBias, recursionDepth);
+    public static Graph dagToPag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int recursiveDepth) {
+        return PagCache.getInstance().getPag(graph, knowledge, excludeSelectionBias, recursiveDepth);
     }
 
     /**
@@ -593,12 +593,12 @@ public class GraphTransforms {
      *
      * @param mag                  the maximal ancestral graph (MAG) to be converted
      * @param excludeSelectionBias whether to exclude selection bias
-     * @param recursionDepth       the maximum current depth of recursion in the conversion process
+     * @param recursiveDepth       the maximum current depth of recursion in the conversion process
      * @return the resulting partial ancestral graph (PAG)
      */
-    public static Graph magToPag(Graph mag, boolean excludeSelectionBias, int recursionDepth) {
+    public static Graph magToPag(Graph mag, boolean excludeSelectionBias, int recursiveDepth) {
         MagToPag magToPag = new MagToPag(mag);
-        magToPag.setRecursionDepth(recursionDepth);
+        magToPag.setRecursiveDepth(recursiveDepth);
         return magToPag.convert(true, excludeSelectionBias);
     }
 }

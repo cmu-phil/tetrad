@@ -60,7 +60,7 @@ public final class MagToPag {
      * indicates that all possible blocking paths should be considered without any specific length constraint.
      * This value can be adjusted to limit the depth of analysis based on the specific use case.
      */
-    private int recursionDepth = -1;
+    private int recursiveDepth = -1;
     /**
      * Represents the maximum length of discriminating paths to be considered during MAG to PAG conversion. A value of
      * -1 indicates that all possible discriminating paths should be considered without any specific length constraint.
@@ -221,7 +221,7 @@ public final class MagToPag {
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setRecursionDepth(recursionDepth);
+        fciOrient.setRecursiveDepth(recursiveDepth);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
 
@@ -273,10 +273,10 @@ public final class MagToPag {
     /**
      * Sets the maximum length of blocking paths to be considered during processing.
      *
-     * @param recursionDepth the maximum length of blocking paths
+     * @param recursiveDepth the maximum length of blocking paths
      */
-    public void setRecursionDepth(int recursionDepth) {
-        this.recursionDepth = recursionDepth;
+    public void setRecursiveDepth(int recursiveDepth) {
+        this.recursiveDepth = recursiveDepth;
     }
 
     /**
