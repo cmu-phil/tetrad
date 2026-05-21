@@ -207,16 +207,49 @@ public final class Fcit implements IGraphSearch {
         return initialColliders;
     }
 
-    private static void redoGfciOrientation(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                            Set<Triple> initialColliders, boolean completeRuleSetUsed,
-                                            SepsetMap sepsets, boolean excludeSelectionBias, boolean superVerbose) {
+    private static Graph redoGfciOrientation(Graph pag, FciOrient fciOrient, Knowledge knowledge,
+                                             Set<Triple> initialColliders, boolean completeRuleSetUsed,
+                                             SepsetMap sepsets, boolean excludeSelectionBias, boolean verbose, boolean superVerbose) {
         // GFCI reorientation...
         GraphUtils.reorientWithCircles(pag, superVerbose);
-        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+
+//        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
+//        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+
+//        GraphUtils.recallInitialColliders(pag, initialColliders, knowledge);
+//        adjustForExtraSepsets(sepsets, pag, verbose);
+//        fciOrient.finalOrientation(pag, excludeSelectionBias);
+
+
+//        for (Node y : pag.getNodes()) {
+//            List<Node> adj = pag.getAdjacentNodes(y);
+//
+//            for (int i = 0; i < adj.size(); i++) {
+//                for (int j = i + 1; j < adj.size(); j++) {
+//                    Node x = adj.get(i);
+//                    Node z = adj.get(j);
+//
+//                    if (!pag.isDefCollider(x, y, z)
+////                            && !(pag.getEndpoint(y, x) == Endpoint.ARROW
+////                            && pag.getEndpoint(y, z) == Endpoint.ARROW)
+//                    ) {
+//                        pag.setEndpoint(x, y, Endpoint.CIRCLE);
+//                        pag.setEndpoint(z, y, Endpoint.CIRCLE);
+//                    }
+//                }
+//            }
+//        }
+
         GraphUtils.recallInitialColliders(pag, initialColliders, knowledge);
-        adjustForExtraSepsets(sepsets, pag, superVerbose);
+        adjustForExtraSepsets(sepsets, pag, verbose);
         fciOrient.finalOrientation(pag, excludeSelectionBias);
+
+        if (!pag.paths().isLegalPag()) {
+            System.out.println("Not legal pag!");
+            System.out.println(pag);
+        }
+
+        return pag;
     }
 
     /**
@@ -234,7 +267,7 @@ public final class Fcit implements IGraphSearch {
      * This adjustment ensures proper handling of induced dependencies and maintains the correctness of the causal
      * structure represented by the PAG. The orientation of edges follows the rules
      */
-    private static void adjustForExtraSepsets(SepsetMap sepsets, Graph pag, boolean superVerbose) {
+    private static void adjustForExtraSepsets(SepsetMap sepsets, Graph pag, boolean verbose) {
         for (Set<Node> edge : sepsets.keySet()) {
             List<Node> arr = new ArrayList<>(edge);
 
@@ -248,10 +281,6 @@ public final class Fcit implements IGraphSearch {
             List<Node> common = pag.getAdjacentNodes(x);
             common.retainAll(pag.getAdjacentNodes(y));
 
-            if (superVerbose) {
-                TetradLogger.getInstance().log("Removed adjacency " + x + " *-* " + y + " from PAG.");
-            }
-
             for (Node node : common) {
                 if (pag.isDefCollider(x, node, y)) {
                     continue;
@@ -262,9 +291,9 @@ public final class Fcit implements IGraphSearch {
                         pag.setEndpoint(x, node, Endpoint.ARROW);
                         pag.setEndpoint(y, node, Endpoint.ARROW);
 
-                        System.out.println("Removed adjacency " + x + " *-* " + y + " from PAG.");
-                        System.out.println("Oriented " + pag.getEdge(x, node) + " in PAG.");
-                        System.out.println("Oriented " + pag.getEdge(y, node) + " in PAG.");
+                        if (verbose) {
+                            TetradLogger.getInstance().log("Oriented " + x + "*->" + node + "<-*" + y + " in PAG.");
+                        }
                     }
                 }
             }
@@ -296,7 +325,7 @@ public final class Fcit implements IGraphSearch {
 
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
-        fciOrient.setParallel(true);
+        fciOrient.setParallel(false);
         fciOrient.setCompleteRuleSetUsed(true);
         fciOrient.setRecursionDepth(recursionDepth);
         fciOrient.setMaxDiscriminatingPathLength(-1);
@@ -581,7 +610,7 @@ public final class Fcit implements IGraphSearch {
     }
 
     private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) {
-        return new HashSet<>(edges).parallelStream().
+        return new HashSet<>(edges).stream().
                 filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null).filter(
                         edge -> knowledge == null || !Edges.isDirectedEdge(edge)
                                 || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())
@@ -711,14 +740,10 @@ public final class Fcit implements IGraphSearch {
         Edge _edge = pag.getEdge(x, y);
         Graph _pag = new EdgeListGraph(pag);
 
-        if ((x.getName().equals("X2") && y.getName().equals("X4")) || (x.getName().equals("X4") && y.getName().equals("X2"))) {
-            System.out.println("X2, X4");
-        }
-
         this.pag.removeEdge(_edge);
         Set<Node> sepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
-        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, excludeSelectionBias, superVerbose);
+        this.pag = redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, excludeSelectionBias, verbose, superVerbose);
         if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
             if (verbose) {
                 TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type

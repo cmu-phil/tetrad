@@ -210,7 +210,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             return Pair.of(discriminatingPath, false);
         }
 
-        Set<Node> blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y,
+            Set<Node> blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y,
                     recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper);
 
         if (blocking != null) {
@@ -220,7 +220,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             throw new IllegalStateException("Discriminating path could not be determined.");
         }
 
-        if (!(blocking.containsAll(path) && blocking.contains(w))) {
+        if (!(blocking.containsAll(path)) && blocking.contains(w)) {
             throw new IllegalArgumentException("Blocking set is not correct; it should contain the path (including W) and V.");
         }
 

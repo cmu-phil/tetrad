@@ -93,7 +93,7 @@ public class RecursiveDiscriminatingPathRule {
         while ((choice = gen.next()) != null) {
             Set<Node> vNodesNotFollowed = GraphUtils.asSet(choice, vNodes);
 
-            RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsIterativeDeepening(
+            RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursivelyFull(
                     pag, x, y, Set.of(), vNodesNotFollowed, recursiveDepth, depth, -1,
                     1, true);
 

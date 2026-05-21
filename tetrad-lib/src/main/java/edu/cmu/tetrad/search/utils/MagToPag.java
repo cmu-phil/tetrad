@@ -265,8 +265,6 @@ public final class MagToPag {
             pag.setEndpoint(t.z, t.y, Endpoint.ARROW);
         }
 
-        System.out.println("Done with collider orientations, graph = " + pag);
-
         fciOrient.finalOrientation(pag, excludeSelectionBias);
 
         return pag;

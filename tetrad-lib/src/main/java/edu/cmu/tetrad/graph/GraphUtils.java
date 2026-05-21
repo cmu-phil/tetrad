@@ -3188,6 +3188,7 @@ public final class GraphUtils {
         if (verbose) {
             TetradLogger.getInstance().log("Orient all edges in PAG as o-o:");
         }
+
         pag.reorientAllWith(Endpoint.CIRCLE);
     }
 

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.test;
 
@@ -32,8 +32,7 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.PagLegalityCheck;
-import edu.cmu.tetrad.search.utils.MagToPag;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -41,8 +40,6 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -148,7 +145,7 @@ public class TestFci {
 
         IndependenceTest independence = new MsepTest(trueGraph);
 
-        Fas fas  = new Fas(independence);
+        Fas fas = new Fas(independence);
         fas.setVerbose(true);
 
         try {
@@ -289,7 +286,7 @@ public class TestFci {
             throw new RuntimeException(e);
         }
 
-        Graph truePag =  dagToPag(trueGraph, false);
+        Graph truePag = dagToPag(trueGraph, false);
 
         assertEquals(graph, truePag);
     }
@@ -696,6 +693,110 @@ public class TestFci {
                     ? "Unshielded colliders the same " : "Unshielded colliders different.");
 
             assertEquals(truePag_, estPag3);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testSearch22() {
+
+        // There was a problem with the discriminating path rule not firing enough times in this
+        // example, so we're loading up the state of the graph at the start, removing the X1o->X5
+        // edge using sepset [X2,X3] (correct sepset from Recursive Blocking), and running FCI
+        // final orientation using the given oracle graph for oracle m-separation facts. The result
+        // should be the oracle graph.
+
+        // Wish me luck.
+
+        final String oracleGraph = "Graph Nodes:\n" +
+                "X1;X2;X3;X4;X5;X6\n" +
+                "\n" +
+                "Graph Edges:\n" +
+                "1. X1 o-> X2\n" +
+                "2. X2 <-> X3\n" +
+                "3. X2 --> X5\n" +
+                "4. X2 --> X6\n" +
+                "5. X3 <-> X4\n" +
+                "6. X3 --> X5\n" +
+                "7. X4 --> X6\n" +
+                "8. X5 <-> X4\n" +
+                "9. X5 <-> X6\n" +
+                "\n";
+
+        final String currentState = "Graph Nodes:\n" +
+                "X1;X2;X3;X4;X5;X6\n" +
+                "\n" +
+                "Graph Edges:\n" +
+                "1. X1 o-> X2\n" +
+                "2. X1 o-> X5\n" +
+                "3. X2 <-> X3\n" +
+                "4. X2 o-> X5\n" +
+                "5. X2 --> X6\n" +
+                "6. X3 o-> X5\n" +
+                "7. X4 o-> X3\n" +
+                "8. X4 o-> X5\n" +
+                "9. X4 o-> X6\n" +
+                "10. X6 o-> X5\n" +
+                "\n";
+
+        final String currentStateWithout15 = "Graph Nodes:\n" +
+                "X1;X2;X3;X4;X5;X6\n" +
+                "\n" +
+                "Graph Edges:\n" +
+                "1. X1 o-> X2\n" +
+                "2. X2 <-> X3\n" +
+                "3. X2 o-> X5\n" +
+                "4. X2 --> X6\n" +
+                "5. X3 o-> X5\n" +
+                "6. X4 o-> X3\n" +
+                "7. X4 o-> X5\n" +
+                "8. X4 o-> X6\n" +
+                "9. X6 o-> X5\n" +
+                "\n";
+
+        try {
+            Graph _oracleGraph = GraphSaveLoadUtils.readerToGraphTxt(oracleGraph);
+            Graph _currentState = GraphSaveLoadUtils.readerToGraphTxt(currentState);
+            Graph _currentStateWithout15 = GraphSaveLoadUtils.readerToGraphTxt(currentStateWithout15);
+
+            _currentState = GraphUtils.replaceNodes(_currentState, _oracleGraph.getNodes());
+            _currentStateWithout15 = GraphUtils.replaceNodes(_currentStateWithout15, _oracleGraph.getNodes());
+
+            System.out.println("Oracle PAG");
+            System.out.println(_oracleGraph);
+
+            System.out.println("Current State");
+            System.out.println(_currentState);
+
+            // Remove the X1o->X5 edge
+            Node x1 = _currentState.getNode("X1");
+            Node x2 = _currentState.getNode("X2");
+            Node x3 = _currentState.getNode("X3");
+            Node x4 = _currentState.getNode("X4");
+            Node x5 = _currentState.getNode("X5");
+            _currentState.removeEdge(x1, x5);
+//            _currentState.setEndpoint(x5, x2, Endpoint.TAIL);
+
+            assertEquals(_currentStateWithout15, _currentState);
+
+            System.out.println(_currentState);
+
+            // Apply FCI final orientation
+            FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(new MsepTest(_oracleGraph)));
+            fciOrient.setVerbose(true);
+            fciOrient.finalOrientation(_currentState);
+
+            System.out.println("Discriminating Paths");
+            Set<DiscriminatingPath> paths = FciOrient.listDiscriminatingPaths(_currentState, -1, true);
+            System.out.println(paths);
+
+//            System.out.println(FciOrient.listDiscriminatingPaths(_currentState, x1, x5, -1, true));
+//
+//            System.out.println("FCI Final Orientation");
+//
+//            System.out.println(_currentState);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
