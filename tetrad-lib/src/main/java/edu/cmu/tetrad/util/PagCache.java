@@ -69,17 +69,24 @@ public final class PagCache {
         return local;
     }
 
-    private static Graph computePag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int recursionDepth) {
-        if (graph.paths().isLegalMag()) {
-            return computePagFromMag(graph, knowledge, excludeSelectionBias, recursionDepth);
+    private static Graph computePag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int maxBlockingPathLength) {
+        if (graph.paths().isLegalDag()) {
+            if (graph.paths().existsDirectedCycle()) {
+                throw new IllegalArgumentException("Graph contains directed cycle");
+            }
+
+            Graph mag = GraphTransforms.dagToMag(graph);
+
+            return computePagFromMag(mag, knowledge, excludeSelectionBias, maxBlockingPathLength);   // no getPag() here, avoiding infinite recursion.
+        } else if (graph.paths().isLegalMag()) {
+            return computePagFromMag(graph, knowledge, excludeSelectionBias, maxBlockingPathLength);
         } else {
             Graph mag = GraphTransforms.zhangMagFromPag(graph);
-            return computePagFromMag(mag, knowledge, excludeSelectionBias, recursionDepth);
-//            MagToPag magToPag = new MagToPag(mag);
-//            magToPag.setKnowledge(knowledge);
-//            magToPag.setRecursionDepth(recursionDepth);
-//            magToPag.setMaxDiscriminatingPathLength(-1);
-//            return magToPag.convert(true, excludeSelectionBias);
+            MagToPag magToPag = new MagToPag(mag);
+            magToPag.setKnowledge(knowledge);
+            magToPag.setRecursionDepth(maxBlockingPathLength);
+            magToPag.setMaxDiscriminatingPathLength(-1);
+            return magToPag.convert(true, excludeSelectionBias);
         }
     }
 
@@ -237,8 +244,8 @@ public final class PagCache {
      * @throws IllegalStateException if a discriminating path cannot be found.
      */
     public @NotNull Graph getPag(Graph g, Knowledge knowledge, boolean excludeSelectionBias, int recursionDepth) {
-        if (!(g.paths().isLegalMag())) {
-            throw new IllegalArgumentException("Graph must be a MAG. (A DAG is a MAG.)");
+        if (!(g.paths().isLegalDag() || g.paths().isLegalMag())) {
+            throw new IllegalArgumentException("Graph must be a DAG (possibly with latents) or a MAG.");
         }
         final long srcSig = signatureOfSource(g);
 

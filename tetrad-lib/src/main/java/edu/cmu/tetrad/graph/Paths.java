@@ -574,7 +574,13 @@ public class Paths implements TetradSerializable {
      */
     public boolean isLegalMag() {
         List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-        return PagLegalityCheck.isLegalMag(graph, new HashSet<>(selection)).isLegalMag();
+        PagLegalityCheck.LegalMagRet legalMag = PagLegalityCheck.isLegalMag(graph, new HashSet<>(selection));
+
+        if (!legalMag.isLegalMag()) {
+            System.out.println("Illegal mag: " + legalMag.getReason());
+        }
+
+        return legalMag.isLegalMag();
     }
 
     /**

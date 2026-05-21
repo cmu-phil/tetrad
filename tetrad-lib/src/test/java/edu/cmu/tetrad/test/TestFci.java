@@ -275,8 +275,8 @@ public class TestFci {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Dag trueGraph = new Dag(RandomGraph.randomGraph(nodes, 10, numEdges,
-                7, 5, 5, false));
+        Graph trueGraph = RandomGraph.randomGraph(nodes, 10, numEdges,
+                7, 5, 5, false);
 
         IndependenceTest test = new MsepTest(trueGraph);
 
@@ -289,7 +289,7 @@ public class TestFci {
             throw new RuntimeException(e);
         }
 
-        Graph truePag = dagToPag(trueGraph, false);
+        Graph truePag =  dagToPag(trueGraph, false);
 
         assertEquals(graph, truePag);
     }
