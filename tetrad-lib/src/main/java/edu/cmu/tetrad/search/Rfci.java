@@ -208,7 +208,7 @@ public final class Rfci implements IGraphSearch {
         orient.fciOrientbk(getKnowledge(), this.graph, this.variables, excludeSelectionBias);
         ruleR0_RFCI(getRTuples());  // RFCI Algorithm 4.4
 
-        orient.finalOrientation(this.graph, excludeSelectionBias, new HashSet<>());
+        orient.finalOrientation(this.graph, excludeSelectionBias);
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;

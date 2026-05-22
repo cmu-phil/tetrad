@@ -392,7 +392,7 @@ public class FciOrient {
         }
 
         // Step CI D. (Zhang's step R4.)
-        finalOrientation(graph, excludeSelectionBias, unshieldedTriples);
+        finalOrientation(graph, excludeSelectionBias);
     }
 
     /**
@@ -507,9 +507,9 @@ public class FciOrient {
 
     public void finalOrientation(Graph graph, Set<Triple> unshieldedTriples) {
         if (this.completeRuleSetUsed) {
-            zhangFinalOrientation(graph, false, unshieldedTriples);
+            zhangFinalOrientation(graph, false);
         } else {
-            spirtesFinalOrientation(graph, unshieldedTriples);
+            spirtesFinalOrientation(graph);
         }
     }
 
@@ -522,14 +522,13 @@ public class FciOrient {
      *
      * @param graph                a {@link Graph} object
      * @param excludeSelectionBias whether to exclude selection bias.
-     * @param unshieldedTriples
      * @throws IllegalStateException if a discriminating path cannot be found.
      */
-    public void finalOrientation(Graph graph, boolean excludeSelectionBias, Set<Triple> initialColliders) {
+    public void finalOrientation(Graph graph, boolean excludeSelectionBias) {
         if (this.completeRuleSetUsed) {
-            zhangFinalOrientation(graph, excludeSelectionBias, initialColliders);
+            zhangFinalOrientation(graph, excludeSelectionBias);
         } else {
-            spirtesFinalOrientation(graph, initialColliders);
+            spirtesFinalOrientation(graph);
         }
     }
 
@@ -538,10 +537,9 @@ public class FciOrient {
      * complete.
      *
      * @param graph             The graph containing the sprites.
-     * @param unshieldedTriples The set of unshielded triples oriented by R0. This set is updated with new triples.
      * @throws IllegalStateException if a discriminating path cannot be found.
      */
-    private void spirtesFinalOrientation(Graph graph, Set<Triple> initialColliders) {
+    private void spirtesFinalOrientation(Graph graph) {
         this.changeFlag = true;
         boolean firstTime = true;
 
@@ -556,7 +554,7 @@ public class FciOrient {
 
             // R4 requires an arrow orientation.
             if (this.changeFlag || (firstTime && !this.knowledge.isEmpty())) {
-                ruleR4(graph, initialColliders);
+                ruleR4(graph);
                 firstTime = false;
             }
 
@@ -572,10 +570,9 @@ public class FciOrient {
      *
      * @param graph                the graph to apply the final orientation algorithm to
      * @param excludeSelectionBias whether to exclude selection bias
-     * @param unshieldedTriples
      * @throws IllegalStateException if a discriminating path cannot be found.
      */
-    private void zhangFinalOrientation(Graph graph, boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
+    private void zhangFinalOrientation(Graph graph, boolean excludeSelectionBias) {
         this.changeFlag = true;
         boolean firstTime = true;
 
@@ -586,7 +583,7 @@ public class FciOrient {
 
             // R4 requires an arrow orientation.
             if (this.changeFlag || (firstTime && !this.knowledge.isEmpty())) {
-                ruleR4(graph, unshieldedTriples);
+                ruleR4(graph);
                 firstTime = false;
             }
 
@@ -793,11 +790,10 @@ public class FciOrient {
      * or non-collider on the triple ⟨α, β, γ⟩, refining orientations in the presence of
      * potential latent confounding.</p>
      *
-     * @param graph             The {@link Graph} being oriented.
-     * @param initialColliders
+     * @param graph The {@link Graph} being oriented.
      * @throws IllegalStateException if a discriminating path cannot be found.
      */
-    public void ruleR4(Graph graph, Set<Triple> initialColliders) {
+    public void ruleR4(Graph graph) {
 
         if (!useR4) {
             return;
@@ -814,7 +810,7 @@ public class FciOrient {
         // Not parallel is the default.
         if (parallel) {
             while (true) {
-                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, null, initialColliders);
+                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph);
 
                 List<Pair<DiscriminatingPath, Boolean>> results = tasks.parallelStream().map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS)).toList();
 
@@ -836,7 +832,7 @@ public class FciOrient {
 
         } else {
             while (true) {
-                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, null, initialColliders);
+                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph);
                 if (tasks.isEmpty()) break;
 
                 List<Pair<DiscriminatingPath, Boolean>> results = tasks.stream().map(task -> {
@@ -891,13 +887,11 @@ public class FciOrient {
     /**
      * Makes a list of tasks for the discriminating path orientation step based on the current graph.
      *
-     * @param graph             the graph
-     * @param allowedColliders  the allowed colliders
-     * @param unshieldedTriples
+     * @param graph the graph
      * @return the list of tasks
      * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
      */
-    private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph, Set<Triple> allowedColliders, Set<Triple> initialColliders) {
+    private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph) {
         Set<DiscriminatingPath> discriminatingPaths = listDiscriminatingPaths(graph, maxDiscriminatingPathLength, true);
 
         Set<Node> vNodes = new HashSet<>();
@@ -909,7 +903,7 @@ public class FciOrient {
         List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = new ArrayList<>();
 
         for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
-            tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, recursiveDepth, maxDiscriminatingPathLength, graph, vNodes, initialColliders));
+            tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, recursiveDepth, maxDiscriminatingPathLength, graph, vNodes));
         }
 
         return tasks;

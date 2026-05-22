@@ -179,7 +179,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * @param discriminatingPath the discriminating path
      * @param graph              the graph representation
      * @param vNodes             the set of v-nodes
-     * @param unshieldedTriples
      * @return The discriminating path is returned as the first element of the pair, and a boolean indicating whether
      * the orientation was done is returned as the second element of the pair.
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
@@ -189,7 +188,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     @Override
     public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath,
                                                                              int recursiveDepth, int maxDiscriminatingPathLength,
-                                                                             Graph graph, Set<Node> vNodes, Set<Triple> initialColliders) throws InterruptedException {
+                                                                             Graph graph, Set<Node> vNodes) throws InterruptedException {
         Node x = discriminatingPath.getX();
         Node w = discriminatingPath.getW();
         Node v = discriminatingPath.getV();
@@ -257,8 +256,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
             graph.setEndpoint(w, v, Endpoint.ARROW);
             graph.setEndpoint(y, v, Endpoint.ARROW);
-
-            initialColliders.add(new edu.cmu.tetrad.graph.Triple(w, v, y));
 
             if (verbose) {
                 TetradLogger.getInstance().log("R4: Discriminating path ORIENTED: " + discriminatingPath);

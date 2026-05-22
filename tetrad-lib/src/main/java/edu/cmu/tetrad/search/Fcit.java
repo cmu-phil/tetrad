@@ -208,12 +208,12 @@ public final class Fcit implements IGraphSearch {
     }
 
     private static Graph redoGfciOrientation(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                             Set<Triple> initialColliders, boolean completeRuleSetUsed,
-                                             SepsetMap sepsets, boolean excludeSelectionBias, boolean verbose, boolean superVerbose) {
+                                             Set<Triple> initialColliders, SepsetMap sepsets, boolean excludeSelectionBias,
+                                             boolean superVerbose) {
         GraphUtils.reorientWithCircles(pag, superVerbose);
         GraphUtils.recallInitialColliders(pag, initialColliders, knowledge);
-        adjustForExtraSepsets(sepsets, pag, verbose);
-        fciOrient.finalOrientation(pag, excludeSelectionBias, initialColliders);
+        adjustForExtraSepsets(sepsets, pag);
+        fciOrient.finalOrientation(pag, excludeSelectionBias);
 
         return pag;
     }
@@ -233,7 +233,7 @@ public final class Fcit implements IGraphSearch {
      * This adjustment ensures proper handling of induced dependencies and maintains the correctness of the causal
      * structure represented by the PAG. The orientation of edges follows the rules
      */
-    private static void adjustForExtraSepsets(SepsetMap sepsets, Graph pag, boolean verbose) {
+    private static void adjustForExtraSepsets(SepsetMap sepsets, Graph pag) {
         for (Set<Node> edge : sepsets.keySet()) {
             List<Node> arr = new ArrayList<>(edge);
 
@@ -256,10 +256,6 @@ public final class Fcit implements IGraphSearch {
                     if (!pag.isDefCollider(x, node, y)) {
                         pag.setEndpoint(x, node, Endpoint.ARROW);
                         pag.setEndpoint(y, node, Endpoint.ARROW);
-//
-//                        if (verbose) {
-//                            TetradLogger.getInstance().log("Oriented " + x + "*->" + node + "<-*" + y + " in PAG.");
-//                        }
                     }
                 }
             }
@@ -492,7 +488,7 @@ public final class Fcit implements IGraphSearch {
         subAlg.setUseBes(useBes);
         subAlg.setNumStarts(numStarts);
         subAlg.setNumThreads(Runtime.getRuntime().availableProcessors());
-        subAlg.setVerbose(verbose);
+        subAlg.setVerbose(false);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(knowledge);
         return alg;
@@ -709,7 +705,7 @@ public final class Fcit implements IGraphSearch {
         this.pag.removeEdge(_edge);
         Set<Node> sepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
-        this.pag = redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets,excludeSelectionBias, verbose, superVerbose);
+        this.pag = redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets,excludeSelectionBias, superVerbose);
         if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
             if (verbose) {
                 TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type

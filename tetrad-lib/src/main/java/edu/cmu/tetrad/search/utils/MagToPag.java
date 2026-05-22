@@ -125,7 +125,6 @@ public final class MagToPag {
              * @param discriminatingPath the discriminating path
              * @param graph              the graph representation
              * @param vNodes             the set of nodes that are V-nodes
-             * @param initialColliders
              * @return a pair of the discriminating path construct and a boolean indicating whether the
              * orientation was determined.
              * @throws IllegalArgumentException if x is adjacent to y
@@ -133,7 +132,7 @@ public final class MagToPag {
              */
             public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath,
                                                                                      int recursiveDepth, int maxDiscriminatingPathLength,
-                                                                                     Graph graph, Set<Node> vNodes, Set<edu.cmu.tetrad.graph.Triple> initialColliders) throws InterruptedException {
+                                                                                     Graph graph, Set<Node> vNodes) throws InterruptedException {
 //            public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) {
                 Node x = discriminatingPath.getX();
                 Node w = discriminatingPath.getW();
@@ -181,8 +180,6 @@ public final class MagToPag {
 
                     graph.setEndpoint(w, v, Endpoint.ARROW);
                     graph.setEndpoint(y, v, Endpoint.ARROW);
-
-                    initialColliders.add(new edu.cmu.tetrad.graph.Triple(w, v, y));
 
                     if (verbose) {
                         TetradLogger.getInstance().log("R4: Definite discriminating path collider rule x = " + x + " " + GraphUtils.pathString(graph, w, v, y));
@@ -266,7 +263,7 @@ public final class MagToPag {
             pag.setEndpoint(t.z, t.y, Endpoint.ARROW);
         }
 
-        fciOrient.finalOrientation(pag, excludeSelectionBias,  new HashSet<>());
+        fciOrient.finalOrientation(pag, excludeSelectionBias);
 
         return pag;
     }

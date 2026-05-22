@@ -2769,7 +2769,7 @@ public final class GraphUtils {
         reorientWithCircles(pag, verbose);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
         recallInitialColliders(pag, unshieldedColliders, knowledge);
-        fciOrient.finalOrientation(pag, excludeSelectionBias, new HashSet<>());
+        fciOrient.finalOrientation(pag, excludeSelectionBias);
     }
 
     private static Map<Node, Set<Node>> buildDescendantsMap(Graph graph) {

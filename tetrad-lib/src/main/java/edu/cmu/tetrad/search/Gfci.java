@@ -483,7 +483,7 @@ public class Gfci implements IGraphSearch {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        fciOrient.finalOrientation(pag, excludeSelectionBias, new HashSet<>());
+        fciOrient.finalOrientation(pag, excludeSelectionBias);
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished implied orientation.");
