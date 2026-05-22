@@ -240,9 +240,9 @@ public final class Fcit implements IGraphSearch {
             Node x = arr.get(0);
             Node y = arr.get(1);
 
-//            if (pag.isAdjacentTo(x, y)) {
-//                continue;
-//            }
+            if (pag.isAdjacentTo(x, y)) {
+                continue;
+            }
 
             List<Node> common = pag.getAdjacentNodes(x);
             common.retainAll(pag.getAdjacentNodes(y));
