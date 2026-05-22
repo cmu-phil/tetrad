@@ -219,7 +219,7 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Refines the structure of the Partial Ancestral Graph (PAG) by adjusting separation sets based on additional
+     * Refines the structure of the Partial Ancestral Graph (PAG) by adjusting separa   tion sets based on additional
      * independence evidence and ensuring consistency with known independence and causality constraints. This method
      * identifies and orients specific edges in the PAG to maintain its validity.
      * <p>
