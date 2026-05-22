@@ -769,6 +769,14 @@ public class TestFci {
             FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(new MsepTest(_oracleGraph)));
             fciOrient.finalOrientation(_currentState);
             assertEquals(_oracleGraph, _currentState);
+
+            // Finally, make sure FCIT is recovering this oracle graph, which is should if all of the
+            // discriminating path rules fire correctly.
+            Fcit fcit = new Fcit(new MsepTest(_oracleGraph), new GraphScore(_oracleGraph));
+            fcit.setDepth(-1);
+            fcit.setCompleteRuleSetUsed(true);
+            Graph pag = fcit.search();
+            assertEquals(_oracleGraph, pag);
         } catch (Exception e) {
             e.printStackTrace();
         }
