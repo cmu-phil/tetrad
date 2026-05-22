@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
@@ -207,15 +208,13 @@ public final class Fcit implements IGraphSearch {
         return initialColliders;
     }
 
-    private static Graph redoGfciOrientation(Graph pag, FciOrient fciOrient, Knowledge knowledge,
+    private static void redoGfciOrientation(Graph pag, FciOrient fciOrient, Knowledge knowledge,
                                              Set<Triple> initialColliders, SepsetMap sepsets, boolean excludeSelectionBias,
                                              boolean superVerbose) {
         GraphUtils.reorientWithCircles(pag, superVerbose);
         GraphUtils.recallInitialColliders(pag, initialColliders, knowledge);
         adjustForExtraSepsets(sepsets, pag);
         fciOrient.finalOrientation(pag, excludeSelectionBias);
-
-        return pag;
     }
 
     /**
@@ -572,22 +571,24 @@ public final class Fcit implements IGraphSearch {
     }
 
     private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) {
-        return new HashSet<>(edges).parallelStream().
-                filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null).filter(
-                        edge -> knowledge == null || !Edges.isDirectedEdge(edge)
-                                || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())
-                ).map(edge -> {
+        return new HashSet<>(edges).parallelStream()
+                .filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null)
+                .filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge)
+                        || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()))
+                .map(edge -> {
                     try {
                         IndependenceCheck checkResult = findIndependenceCheckRecursive(edge, pathsByEdge, checks);
                         if (checkResult != null) {
-                            checks.add(checkResult); // guard against null
+                            checks.add(checkResult);
                             return new Result(checkResult.edge(), checkResult.cond());
                         }
                         return null;
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
-                }).filter(Objects::nonNull).collect(Collectors.toList());
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     private IndependenceCheck findIndependenceCheckRecursive(Edge edge, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) throws InterruptedException {
@@ -599,14 +600,32 @@ public final class Fcit implements IGraphSearch {
         if (paths == null) paths = Set.of();
 
         // NF candidates: V nodes on DDPs with circle at (y,V)
-        final List<Node> nfCand = new ArrayList<>();
-        for (DiscriminatingPath p : paths) {
-            // We consider the canonical direction with y as the far endpoint in the DDP record.
-            // Guard: we only add V if endpoint(y,V) is a circle in current PAG.
-            if (this.pag.getEndpoint(p.getY(), p.getV()) == Endpoint.CIRCLE) {
-                nfCand.add(p.getV());
+//        final List<Node> nfCand = new ArrayList<>();
+//        for (DiscriminatingPath p : paths) {
+//            // We consider the canonical direction with y as the far endpoint in the DDP record.
+//            // Guard: we only add V if endpoint(y,V) is a circle in current PAG.
+//            if (this.pag.getEndpoint(p.getY(), p.getV()) == Endpoint.CIRCLE) {
+//                nfCand.add(p.getV());
+//            }
+//        }
+
+        // Get full blocking set with no forbidden nodes
+        RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsIterativeDeepening(
+                pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true);
+
+        Set<Node> nfCandSet = new HashSet<>();
+        if (b0result != null && !b0result.indeterminate() && b0result.blockingSet() != null) {
+            for (Node v : b0result.blockingSet()) {
+                // Only ambiguous nodes — those with at least one circle endpoint
+                if (pag.getAdjacentNodes(v).stream().anyMatch(
+                        w -> pag.getEndpoint(v, w) == Endpoint.CIRCLE
+                                || pag.getEndpoint(w, v) == Endpoint.CIRCLE)) {
+                    nfCandSet.add(v);
+                }
             }
         }
+            
+        List<Node> nfCand = new ArrayList<>(nfCandSet);
 
         // Enumerate subsets of the "not-followed" set NF ⊆ nfCand
         SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
@@ -682,14 +701,14 @@ public final class Fcit implements IGraphSearch {
                 // Depth cap
                 if (this.depth != -1 && S.size() > this.depth) continue;
 
-                // Avoid retesting identical (edge, S)
+                IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
+
                 IndependenceCheck probe = new IndependenceCheck(edge, S);
                 if (checks.contains(probe)) {
                     return probe;
                 }
 
-                // Statistical (or oracle) test
-                if (this.test.checkIndependence(x, y, S).isIndependent()) {
+                if (independenceResult.isIndependent()) {
                     return probe;
                 }
             }
@@ -705,8 +724,8 @@ public final class Fcit implements IGraphSearch {
         this.pag.removeEdge(_edge);
         Set<Node> sepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
-        this.pag = redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets,excludeSelectionBias, superVerbose);
-        if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
+        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets,excludeSelectionBias, superVerbose);
+        if (!(test instanceof MsepTest) && !PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
             if (verbose) {
                 TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
                         + " reasons, but it didn't lead to a PAG, sepset = " + b);
