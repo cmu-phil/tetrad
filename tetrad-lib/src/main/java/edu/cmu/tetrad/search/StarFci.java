@@ -353,7 +353,7 @@ public abstract class StarFci implements IGraphSearch {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        fciOrient.finalOrientation(pag, excludeSelectionBias);
+        fciOrient.finalOrientation(pag, excludeSelectionBias, new HashSet<>());
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished implied orientation.");

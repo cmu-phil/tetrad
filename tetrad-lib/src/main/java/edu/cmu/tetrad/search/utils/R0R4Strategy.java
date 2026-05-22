@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.Triple;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Set;
@@ -57,11 +58,12 @@ public interface R0R4Strategy {
     /**
      * Does a discriminating path orientation based on an examination of the data.
      *
-     * @param discriminatingPath the discriminating path construct
-     * @param maxBlockingPathLength the maximum length of a blocking path
+     * @param discriminatingPath          the discriminating path construct
+     * @param maxBlockingPathLength       the maximum length of a blocking path
      * @param maxDiscriminatingPathLength the maximum length of a discriminating path
-     * @param graph              the graph to be oriented.
-     * @param vNodes             the set of nodes that are v-structures in the graph.
+     * @param graph                       the graph to be oriented.
+     * @param vNodes                      the set of nodes that are v-structures in the graph.
+     * @param unshieldedTriples
      * @return a pair of the discriminating path construct and a boolean indicating whether the orientation was
      * determined.
      * @throws InterruptedException if the operation is interrupted
@@ -69,7 +71,7 @@ public interface R0R4Strategy {
      */
     Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath,
                                                                       int maxBlockingPathLength, int maxDiscriminatingPathLength,
-                                                                      Graph graph, Set<Node> vNodes) throws InterruptedException;
+                                                                      Graph graph, Set<Node> vNodes, Set<Triple> unshieldedTriples) throws InterruptedException;
 
     /**
      * Sets the knowledge object to be used by the strategy.

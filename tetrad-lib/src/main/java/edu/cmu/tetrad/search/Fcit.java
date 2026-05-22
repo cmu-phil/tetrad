@@ -213,7 +213,7 @@ public final class Fcit implements IGraphSearch {
         GraphUtils.reorientWithCircles(pag, superVerbose);
         GraphUtils.recallInitialColliders(pag, initialColliders, knowledge);
         adjustForExtraSepsets(sepsets, pag, verbose);
-        fciOrient.finalOrientation(pag, excludeSelectionBias);
+        fciOrient.finalOrientation(pag, excludeSelectionBias, initialColliders);
 
         return pag;
     }
@@ -240,9 +240,9 @@ public final class Fcit implements IGraphSearch {
             Node x = arr.get(0);
             Node y = arr.get(1);
 
-            if (pag.isAdjacentTo(x, y)) {
-                continue;
-            }
+//            if (pag.isAdjacentTo(x, y)) {
+//                continue;
+//            }
 
             List<Node> common = pag.getAdjacentNodes(x);
             common.retainAll(pag.getAdjacentNodes(y));
@@ -448,7 +448,7 @@ public final class Fcit implements IGraphSearch {
         do {
             System.out.println();
             System.out.println("Round: " + (++round));
-        } while (removeEdgesRecursively(checks, excludeSelectionBias));
+        } while (removeEdgesRecursively(checks, excludeSelectionBias, initialColliders));
 
         if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -535,7 +535,7 @@ public final class Fcit implements IGraphSearch {
      *
      * @return true if at least one edge was removed, false otherwise
      */
-    private boolean removeEdgesRecursively(Set<IndependenceCheck> checks, boolean excludeSelectionBias) {
+    private boolean removeEdgesRecursively(Set<IndependenceCheck> checks, boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
@@ -568,7 +568,7 @@ public final class Fcit implements IGraphSearch {
         for (Result result : results) {
             Edge edge = result.edge();
             Set<Node> b = result.cond();
-            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "recursive", excludeSelectionBias);
+            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "recursive", excludeSelectionBias, unshieldedTriples);
             changed |= didChange;
         }
 
@@ -702,14 +702,14 @@ public final class Fcit implements IGraphSearch {
         return null;
     }
 
-    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type, boolean excludeSelectionBias) {
+    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type, boolean excludeSelectionBias, Set<Triple> initialColliders) {
         Edge _edge = pag.getEdge(x, y);
         Graph _pag = new EdgeListGraph(pag);
 
         this.pag.removeEdge(_edge);
         Set<Node> sepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
-        this.pag = redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, excludeSelectionBias, verbose, superVerbose);
+        this.pag = redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets,excludeSelectionBias, verbose, superVerbose);
         if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
             if (verbose) {
                 TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type

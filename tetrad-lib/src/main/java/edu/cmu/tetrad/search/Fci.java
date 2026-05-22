@@ -408,7 +408,7 @@ public final class Fci implements IGraphSearch {
             if (verbose) TetradLogger.getInstance().log("Re-applying R0 after possible-dsep (" + r0ColliderRule + ").");
             fciOrient.fciOrientbk(this.knowledge, pag, pag.getNodes(), excludeSelectionBias);
             orientR0(pag, this.sepsets);
-            fciOrient.finalOrientation(pag, excludeSelectionBias);
+            fciOrient.finalOrientation(pag, excludeSelectionBias, unshieldedTriples);
 
             // Refresh unshielded triples after structural changes
             unshieldedTriples = collectUnshieldedTriplesAsGraphTriples(pag);

@@ -2769,7 +2769,7 @@ public final class GraphUtils {
         reorientWithCircles(pag, verbose);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
         recallInitialColliders(pag, unshieldedColliders, knowledge);
-        fciOrient.finalOrientation(pag, excludeSelectionBias);
+        fciOrient.finalOrientation(pag, excludeSelectionBias, new HashSet<>());
     }
 
     private static Map<Node, Set<Node>> buildDescendantsMap(Graph graph) {
@@ -3209,7 +3209,9 @@ public final class GraphUtils {
                 throw new IllegalArgumentException("Nodes not distinct.");
             }
 
-            if (triple(pag, x, b, y) && !pag.isAdjacentTo(x, y) && colliderAllowed(pag, x, b, y, knowledge)) {
+            // Any collider triple in the BOSS data, regardless of whether it is unshielded, cam be copied over
+            // into the PAG so long as the adjacencies still exist.
+            if (triple(pag, x, b, y) && /*!pag.isAdjacentTo(x, y) &&*/ colliderAllowed(pag, x, b, y, knowledge)) {
                 pag.setEndpoint(x, b, Endpoint.ARROW);
                 pag.setEndpoint(y, b, Endpoint.ARROW);
             }

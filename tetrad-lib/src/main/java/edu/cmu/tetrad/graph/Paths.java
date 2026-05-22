@@ -555,7 +555,7 @@ public class Paths implements TetradSerializable {
             if (pag.paths().isLegalPag()) {
                 Graph _g = new EdgeListGraph(g);
                 FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(pag, new Knowledge()));
-                fciOrient.finalOrientation(pag, excludeSelectionBias);
+                fciOrient.finalOrientation(pag, excludeSelectionBias, new HashSet<>());
                 return g.equals(_g);
             }
 
