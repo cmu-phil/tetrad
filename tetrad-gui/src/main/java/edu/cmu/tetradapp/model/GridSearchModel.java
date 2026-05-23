@@ -541,6 +541,74 @@ public class GridSearchModel implements SessionModel, GraphSource {
 
     }
 
+    /**
+     * Re-runs statistics against saved graphs from a previous run, without
+     * re-running any algorithms. The savedResultsPath should be a prior
+     * comparison-N directory (containing results/, elapsed/, simulation1/save/).
+     */
+    public void recomputeFromSavedRun(String savedResultsPath, PrintStream ps1, PrintStream ps2) throws ParseException {
+        initializeIfNull();
+
+        Simulations simulations = new Simulations();
+        if (suppliedData != null) {
+            simulations.add(new SingleDatasetSimulation(suppliedData));
+        } else {
+            for (SimulationSpec simulation : getSelectedSimulationsSpecs())
+                simulations.add(simulation.getSimulationImpl());
+        }
+
+        Algorithms algorithms = new Algorithms();
+        for (AlgorithmSpec algorithm : getSelectedAlgorithmSpecs())
+            algorithms.add(algorithm.getAlgorithmImpl());
+
+        Comparison comparison = new Comparison();
+        // Same settings as runComparison -- no graphs to save since we're loading them
+        comparison.setSaveGraphs(false);
+        comparison.setSaveData(false);
+        comparison.setSaveCPDAGs(false);
+        comparison.setSavePags(false);
+        comparison.setSortByUtility(parameters.getBoolean("algcomparisonSortByUtility"));
+        comparison.setShowUtilities(parameters.getBoolean("algcomparisonShowUtilities"));
+        comparison.setSetAlgorithmKnowledge(parameters.getBoolean("algcomparisonSetAlgorithmKnowledge"));
+        comparison.setParallelism(parameters.getInt("algcomparisonParallelism"));
+        comparison.setKnowledge(knowledge);
+
+        String graphTypeString = parameters.getString("algcomparisonGraphType", "DAG");
+        ComparisonGraphType type = ComparisonGraphType.valueOf(graphTypeString);
+        switch (type) {
+            case DAG   -> comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+            case CPDAG -> comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
+            case PAG   -> comparison.setComparisonGraph(Comparison.ComparisonGraph.PAG_of_the_true_DAG);
+            default    -> throw new IllegalArgumentException("Invalid comparison graph type: " + type);
+        }
+
+        // New results go in the next numbered directory, same as runComparison
+        String newResultsPath;
+        for (int i = 1; ; i++) {
+            String pathname = System.getProperty("user.home") + "/comparison-results/comparison-" + i;
+            File resultsDir = new File(pathname);
+            if (!resultsDir.exists()) {
+                if (!resultsDir.mkdirs())
+                    throw new IllegalStateException("Could not create directory: " + resultsDir);
+                newResultsPath = pathname;
+                break;
+            }
+        }
+
+        comparison.compareFromSavedResults(
+                savedResultsPath,
+                newResultsPath,
+                simulations,
+                algorithms,
+                getSelectedStatistics(),
+                new Parameters(parameters),
+                ps1,
+                ps2
+        );
+
+        this.resultsPath = newResultsPath;
+    }
+
     private LinkedList<AlgorithmSpec> getSelectedAlgorithmSpecs() {
         if (!(parameters.get("algcomparison.selectedAlgorithms") instanceof LinkedList<?>)) {
             parameters.set("algcomparison.selectedAlgorithms", new LinkedList<AlgorithmSpec>());
