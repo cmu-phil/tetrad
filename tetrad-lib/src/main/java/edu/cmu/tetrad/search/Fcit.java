@@ -286,7 +286,7 @@ public final class Fcit implements IGraphSearch {
 
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
-        fciOrient.setParallel(true);
+        fciOrient.setParallel(false);
         fciOrient.setCompleteRuleSetUsed(true);
         fciOrient.setRecursiveDepth(recursiveDepth);
         fciOrient.setMaxDiscriminatingPathLength(-1);
@@ -624,7 +624,7 @@ public final class Fcit implements IGraphSearch {
                 }
             }
         }
-            
+
         List<Node> nfCand = new ArrayList<>(nfCandSet);
 
         // Enumerate subsets of the "not-followed" set NF ⊆ nfCand

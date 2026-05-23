@@ -107,8 +107,8 @@ public class RecursiveDiscriminatingPathRule {
         SublistGenerator gen = new SublistGenerator(notFollowedSuperset.size(), notFollowedSuperset.size());
         int[] choice;
         Set<Set<Node>> testSets = new HashSet<>();
-        Set<Node> highestPSet = null;
-        double maxPValue = 0.0;
+//        Set<Node> highestPSet = null;
+//        double maxPValue = 0.0;
 
         while ((choice = gen.next()) != null) {
             Set<Node> vNodesNotFollowed = GraphUtils.asSet(choice, notFollowedSuperset);
@@ -148,22 +148,26 @@ public class RecursiveDiscriminatingPathRule {
                 IndependenceResult independenceResult = test.checkIndependence(x, y, testSet);
                 independent = independenceResult.isIndependent();
 
-                if (!Double.isNaN(independenceResult.getPValue()) && independenceResult.getPValue() > maxPValue) {
-                    maxPValue = Math.max(maxPValue, independenceResult.getPValue());
-                    highestPSet = testSet;
-                }
+//                if (!Double.isNaN(independenceResult.getPValue()) && independenceResult.getPValue() > maxPValue) {
+////                    maxPValue = Math.max(maxPValue, independenceResult.getPValue());
+//                    highestPSet = testSet;
+//                }
             }
 
-            if ((test instanceof MsepTest) &&  independent) {
+//            if ((test instanceof MsepTest) &&  independent) {
+//                return testSet;
+//            }
+
+            if (independent) {
                 return testSet;
             }
         }
 
-        if (highestPSet == null) {
-            System.out.println("No sepset found for " + x + " and " + y);
-        }
+//        if (highestPSet == null) {
+//            System.out.println("No sepset found for " + x + " and " + y);
+//        }
 
-        return highestPSet;
+        return null;
     }
 
 //    private static @NotNull List<Node> getVNodes(Graph pag, Node x, Node y, int maxDdpPathLength) {
