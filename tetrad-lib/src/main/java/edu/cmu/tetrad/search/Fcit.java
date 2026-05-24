@@ -62,6 +62,9 @@ public final class Fcit implements IGraphSearch {
      * sets - specifically to check conditional independencies between pairs of variables given a separating set.
      */
     private final SepsetMap sepsets = new SepsetMap();
+    /**
+     * The list of selection nodes in the graph.
+     */
     private final List<Node> selection;
     /**
      * The background knowledge.
@@ -138,9 +141,33 @@ public final class Fcit implements IGraphSearch {
      * instantiated to an empty graph structure.
      */
     private @NotNull Graph pag = new EdgeListGraph();
+    /**
+     * A flag indicating whether the graph replication process is active.
+     * When set to {@code true}, the graph is being replicated.
+     * When set to {@code false}, the graph replication process is inactive.
+     */
     private boolean replicatingGraph = false;
+    /**
+     * Indicates whether selection bias should be excluded during processing.
+     *
+     * When set to {@code true}, mechanisms or algorithms that might introduce
+     * or rely on selection bias will be disregarded, aiming to ensure neutrality
+     * and fairness in the operation or computation. When {@code false}, selection
+     * bias is not specifically excluded.
+     */
     private boolean excludeSelectionBias = false;
-    private int recursiveDepth = 15;
+    /**
+     * Represents the maximum depth allowed for a recursive operation.
+     * This variable is used to prevent excessive recursion,
+     * which can lead to stack overflow errors.
+     * TODO: Make this a parameter.
+     */
+    private int recursiveDepth = -1;
+    /**
+     * Represents the radius for the RB (Recursive Backtracking) algorithm.
+     * This variable is used to control the scope of the RB algorithm,
+     * which can affect the performance and accuracy of the search.
+     */
     private int rbRadius = -1;
 
     /**
@@ -209,8 +236,8 @@ public final class Fcit implements IGraphSearch {
     }
 
     private static void redoGfciOrientation(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                             Set<Triple> initialColliders, SepsetMap sepsets, boolean excludeSelectionBias,
-                                             boolean superVerbose) {
+                                            Set<Triple> initialColliders, SepsetMap sepsets, boolean excludeSelectionBias,
+                                            boolean superVerbose) {
         GraphUtils.reorientWithCircles(pag, superVerbose);
         GraphUtils.recallInitialColliders(pag, initialColliders, knowledge);
         adjustForExtraSepsets(sepsets, pag);
@@ -286,7 +313,7 @@ public final class Fcit implements IGraphSearch {
 
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
-        fciOrient.setParallel(false);
+        fciOrient.setParallel(true);
         fciOrient.setCompleteRuleSetUsed(true);
         fciOrient.setRecursiveDepth(recursiveDepth);
         fciOrient.setMaxDiscriminatingPathLength(-1);
@@ -465,12 +492,6 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
 
-        //        if (replicatingGraph) {
-        //            pag = GraphUtils.getReplicatingGraph(pag);
-        //            redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, excludeSelectionBias, superVerbose);
-        ////            fciOrient.finalOrientation(pag);
-        //        }
-
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
 
@@ -530,45 +551,6 @@ public final class Fcit implements IGraphSearch {
      *
      * @return true if at least one edge was removed, false otherwise
      */
-//    private boolean removeEdgesRecursively(Set<IndependenceCheck> checks, boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
-//        if (superVerbose) {
-//            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
-//        }
-//
-//        boolean changed = false;
-//
-//        // The final orientation rules were applied just before this step, so this should list only
-//        // discriminating paths that could not be oriented by them...
-//        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(this.pag,
-//                -1, false);
-//        Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
-//        for (DiscriminatingPath path : discriminatingPaths) {
-//            Node x = path.getX();
-//            Node y = path.getY();
-//
-//            pathsByEdge.computeIfAbsent(Set.of(x, y), k -> new HashSet<>());
-//            pathsByEdge.get(Set.of(x, y)).add(path);
-//        }
-//
-//        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
-//        // there in this graph.
-//        Set<Edge> edgePool = new HashSet<>(this.pag.getEdges());
-//
-//        List<Result> results = findIndependenceChecksRecursive(edgePool, pathsByEdge, checks);
-//
-//        if (verbose) {
-//            System.out.println();
-//        }
-//
-//        for (Result result : results) {
-//            Edge edge = result.edge();
-//            Set<Node> b = result.cond();
-//            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "recursive", excludeSelectionBias, unshieldedTriples);
-//            changed |= didChange;
-//        }
-//
-//        return changed;
-//    }
     private boolean removeEdgesRecursively(Set<IndependenceCheck> checks, boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
@@ -576,99 +558,57 @@ public final class Fcit implements IGraphSearch {
 
         boolean changed = false;
 
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(this.pag,
-                -1, false);
-        Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
-        for (DiscriminatingPath path : discriminatingPaths) {
-            Node x = path.getX();
-            Node y = path.getY();
-
-            pathsByEdge.computeIfAbsent(Set.of(x, y), k -> new HashSet<>());
-            pathsByEdge.get(Set.of(x, y)).add(path);
-        }
-
-        // Snapshot the edge pool once; tryToModifyGraph may mutate this.pag as we go.
+        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
+        // there in this graph.
         Set<Edge> edgePool = new HashSet<>(this.pag.getEdges());
 
-        for (Edge edge : edgePool) {
-            // Skip if a prior mutation already removed this edge.
-            if (!this.pag.containsEdge(edge)) continue;
-
-            if (sepsets.get(edge.getNode1(), edge.getNode2()) != null) continue;
-
-            if (knowledge != null && Edges.isDirectedEdge(edge)
-                    && knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())) continue;
-
-            try {
-                IndependenceCheck checkResult = findIndependenceCheckRecursive(edge, pathsByEdge, checks);
-                if (checkResult != null) {
-                    checks.add(checkResult);
-                    boolean didChange = tryToModifyGraph(
-                            checkResult.edge().getNode1(),
-                            checkResult.edge().getNode2(),
-                            checkResult.cond(),
-                            "recursive",
-                            excludeSelectionBias,
-                            unshieldedTriples);
-                    changed |= didChange;
-                }
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        List<Result> results = findIndependenceChecksRecursive(edgePool, checks);
 
         if (verbose) {
             System.out.println();
         }
 
+        for (Result result : results) {
+            Edge edge = result.edge();
+            Set<Node> b = result.cond();
+            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "recursive", excludeSelectionBias, unshieldedTriples);
+            changed |= didChange;
+        }
+
         return changed;
     }
 
-//    private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) {
-//        return new HashSet<>(edges).parallelStream()
-//                .filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null)
-//                .filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge)
-//                        || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()))
-//                .map(edge -> {
-//                    try {
-//                        IndependenceCheck checkResult = findIndependenceCheckRecursive(edge, pathsByEdge, checks);
-//                        if (checkResult != null) {
-//                            checks.add(checkResult);
-//                            return new Result(checkResult.edge(), checkResult.cond());
-//                        }
-//                        return null;
-//                    } catch (InterruptedException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                })
-//                .filter(Objects::nonNull)
-//                .collect(Collectors.toList());
-//    }
+    private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Set<IndependenceCheck> checks) {
+        return new HashSet<>(edges).stream()
+                .filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null)
+                .filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge)
+                        || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()))
+                .map(edge -> {
+                    try {
+                        IndependenceCheck checkResult = findIndependenceCheckRecursive(edge, checks);
+                        if (checkResult != null) {
+                            checks.add(checkResult);
+                            return new Result(checkResult.edge(), checkResult.cond());
+                        }
+                        return null;
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
 
-    private IndependenceCheck findIndependenceCheckRecursive(Edge edge, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) throws InterruptedException {
+    private IndependenceCheck findIndependenceCheckRecursive(Edge edge, Set<IndependenceCheck> checks) throws InterruptedException {
         final Node x = edge.getNode1();
         final Node y = edge.getNode2();
-
-        // Gather unresolved DDPs for this pair {x,y}
-        Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
-        if (paths == null) paths = Set.of();
-
-        // NF candidates: V nodes on DDPs with circle at (y,V)
-//        final List<Node> nfCand = new ArrayList<>();
-//        for (DiscriminatingPath p : paths) {
-//            // We consider the canonical direction with y as the far endpoint in the DDP record.
-//            // Guard: we only add V if endpoint(y,V) is a circle in current PAG.
-//            if (this.pag.getEndpoint(p.getY(), p.getV()) == Endpoint.CIRCLE) {
-//                nfCand.add(p.getV());
-//            }
-//        }
 
         // Get full blocking set with no forbidden nodes
         RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsIterativeDeepening(
                 pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true);
 
         Set<Node> nfCandSet = new HashSet<>();
-        if (b0result != null && !b0result.indeterminate() && b0result.blockingSet() != null) {
+        if (!b0result.indeterminate() && b0result.blockingSet() != null) {
             for (Node v : b0result.blockingSet()) {
                 // Only ambiguous nodes — those with at least one circle endpoint
                 if (pag.getAdjacentNodes(v).stream().anyMatch(
@@ -689,16 +629,14 @@ public final class Fcit implements IGraphSearch {
 
             Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
             RecursiveBlocking.BlockingResult result = null;
-//
+
             if (this.depth < 0) {
                 result = RecursiveBlocking.blockPathsIterativeDeepening(
                         pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true);
 
             } else {
-//                if (!result.indeterminate()) {
-                result = null;
                 int depth = 0;
-                int maxDepth = this.depth >= 0 ? this.depth : pag.getNumNodes();
+                int maxDepth = this.depth;
 
                 do {
                     depth++;
@@ -708,7 +646,6 @@ public final class Fcit implements IGraphSearch {
                     result = RecursiveBlocking.blockPathsIterativeDeepening(
                             pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true);
                 } while (result.indeterminate());
-//                }
             }
 
             if (result == null || result.indeterminate()) {
