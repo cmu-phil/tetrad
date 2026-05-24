@@ -579,7 +579,7 @@ public final class Fcit implements IGraphSearch {
     }
 
     private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Set<IndependenceCheck> checks) {
-        return new HashSet<>(edges).stream()
+        return new HashSet<>(edges).parallelStream()
                 .filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null)
                 .filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge)
                         || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()))
