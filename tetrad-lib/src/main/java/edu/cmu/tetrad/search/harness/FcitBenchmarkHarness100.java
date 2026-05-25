@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 // FcitBenchmarkHarness100.java                                              //
 //                                                                           //
-// Benchmark harness for Table 3: 100-node graphs.                          //
-//   avg. degree 6, 10 latents, N=1000, 20 runs                             //
+// Benchmark harness for Table 3: 100-node graphs.                           //
+//   avg. degree 6, 10 latents, N=1000, 20 runs                              //
 //                                                                           //
-// Only DAG-based statistics are computed (no dagToMag / true PAG needed):  //
+// Only DAG-based statistics are computed (no dagToMag / true PAG needed):   //
 //   *->-Prec   TrueDagPrecisionArrow                                        //
 //   -->-Prec   TrueDagPrecisionTails                                        //
 //   <->-Lat    BidirectedLatentPrecision                                    //
@@ -14,7 +14,7 @@
 // Output: LaTeX table printed to stdout (redirect to a .tex file if needed) //
 //                                                                           //
 // Usage:                                                                    //
-//   java -Xmx16g -cp tetrad-current.jar                                    //
+//   java -Xmx16g -cp tetrad-current.jar                                     //
 //        edu.cmu.tetrad.search.harness.FcitBenchmarkHarness100              //
 //        [--numRuns 20] [--seed 42]                                         //
 ///////////////////////////////////////////////////////////////////////////////
