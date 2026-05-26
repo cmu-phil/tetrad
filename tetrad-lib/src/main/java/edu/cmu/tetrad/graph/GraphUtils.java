@@ -470,6 +470,7 @@ public final class GraphUtils {
         for (Edge edge : originalGraph.getEdges()) {
             Node a = nameToConverted.getOrDefault(edge.getNode1().getName(), edge.getNode1());
             Node b = nameToConverted.getOrDefault(edge.getNode2().getName(), edge.getNode2());
+
             Edge newEdge = new Edge(a, b, edge.getEndpoint1(), edge.getEndpoint2());
 
             for (Property property : edge.getProperties()) {
@@ -3530,6 +3531,29 @@ public final class GraphUtils {
         }
 
         return replicating;
+    }
+
+    public static boolean applyForbiddenCircleResolution(Graph pag, Knowledge knowledge) {
+        boolean anyChanged = false;
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            for (Edge edge : new ArrayList<>(pag.getEdges())) {
+                Node a = edge.getNode1();
+                Node b = edge.getNode2();
+                // Check A end: if circle at A and A->B is forbidden, resolve to arrowhead
+                if (edge.getEndpoint1() == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), b.getName())) {
+                    edge.setEndpoint1(Endpoint.ARROW);
+                    changed = true; anyChanged = true;
+                }
+                // Check B end symmetrically
+                if (edge.getEndpoint2() == Endpoint.CIRCLE && knowledge.isForbidden(b.getName(), a.getName())) {
+                    edge.setEndpoint2(Endpoint.ARROW);
+                    changed = true; anyChanged = true;
+                }
+            }
+        }
+        return anyChanged;
     }
 
     /**

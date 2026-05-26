@@ -424,6 +424,8 @@ public final class Fci implements IGraphSearch {
                     excludeSelectionBias, Integer.MAX_VALUE);
         }
 
+        GraphUtils.applyForbiddenCircleResolution(pag, knowledge);
+
         long stop = MillisecondTimes.timeMillis();
         this.elapsedTime = stop - start;
         return pag;

@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.workbench;
 
@@ -381,7 +381,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      *
      * @param graph Ibid.
      */
-    public final void setGraph(Graph graph) {
+    public void setGraph(Graph graph) {
         if (!(graph instanceof SessionWrapper)) {
             graph = graph.copy();
         }
@@ -1111,7 +1111,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Sets the display workbench model to the indicated model. (Called when the workbench is first constructed as well
      * as whenever the workbench model is changed.)
      */
-    private void setGraphWithoutNotify(Graph graph) {
+    protected void setGraphWithoutNotify(Graph graph) {
         if (graph == null) {
             throw new IllegalArgumentException("Graph model cannot be null.");
         }
@@ -1603,7 +1603,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     /**
      * Registers the remove and backspace keys to remove selected objects.
      */
-    private void registerKeys() {
+    protected void registerKeys() {
         getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), "DELETE");
         getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "DELETE");
 

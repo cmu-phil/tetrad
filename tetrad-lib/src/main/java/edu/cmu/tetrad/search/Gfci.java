@@ -494,6 +494,8 @@ public class Gfci implements IGraphSearch {
                     Integer.MAX_VALUE);
         }
 
+        GraphUtils.applyForbiddenCircleResolution(pag, knowledge);
+
         if (verbose) {
             TetradLogger.getInstance().log("GFCI finished.");
         }
