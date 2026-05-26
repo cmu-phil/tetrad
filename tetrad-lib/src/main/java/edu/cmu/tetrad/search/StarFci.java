@@ -366,7 +366,7 @@ public abstract class StarFci implements IGraphSearch {
 //            pag = new DagToPag(pag).convert();
         }
 
-        GraphUtils.applyForbiddenCircleResolution(pag, knowledge);
+//        GraphUtils.applyForbiddenCircleResolution(pag, knowledge);
 
         if (verbose) {
             TetradLogger.getInstance().log("*-FCI finished.");
