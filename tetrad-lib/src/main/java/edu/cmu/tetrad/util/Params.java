@@ -1037,9 +1037,9 @@ public final class Params {
      */
     public static final String RB_RADIUS = "rbRadius";
     /**
-     * Constant <code>MAX_SEPSET_SIZE="maxSepsetSize"</code>
+     * Constant <code>RECURSIVE_DEPTH="recursiveDepth"</code>
      */
-    public static final String MAX_SEPSET_SIZE = "maxSepsetSize";
+    public static final String RECURSIVE_DEPTH = "recursiveDepth";
     /**
      * Constant <code>MNAR_NUM_EXTRA_INFLUENCES="mnarNumExtraInfluences"</code>
      */

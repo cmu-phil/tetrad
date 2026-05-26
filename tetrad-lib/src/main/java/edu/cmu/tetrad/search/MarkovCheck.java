@@ -279,25 +279,27 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 } else if (graph.paths().isLegalCpdag() || graph.paths().isLegalPdag()) {
                     Graph dag = GraphTransforms.dagFromCpdag(graph);
                     mag = GraphTransforms.dagToMag(dag);
-                } else if (graph.paths().isLegalMag()) {
-                    mag = graph;
-//                } else if (graph.paths().isLegalPag()) {
-//                    mag = GraphTransforms.zhangMagFromPag(graph);
                 } else {
-                    boolean hasCircle = false;
-
-                    for (Edge e : graph.getEdges()) {
-                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
-                            hasCircle = true;
-                            break;
-                        }
-                    }
-
-                    if (hasCircle) {
-                        mag = GraphTransforms.zhangMagFromPag(graph);
-                    } else {
-                        mag = graph;
-                    }
+//                else if (graph.paths().isLegalMag()) {
+//                    mag = graph;
+////                } else if (graph.paths().isLegalPag()) {
+////                    mag = GraphTransforms.zhangMagFromPag(graph);
+//                }
+//                else {
+//                    boolean hasCircle = false;
+//
+//                    for (Edge e : graph.getEdges()) {     j                   
+//                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
+//                            hasCircle = true;
+//                            break;
+//                        }
+//                    }
+//
+//                    if (hasCircle) {
+                    mag = GraphTransforms.zhangMagFromPag(graph);
+//                    } else {
+//                        mag = graph;
+//                    }
                 }
 
                 Node _x = mag.getNode(x.getName());
@@ -309,32 +311,31 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             case ORDERED_LOCAL_MARKOV_PROPERTY: {
                 Graph mag;
 
-                    if (graph.paths().isLegalDag()) {
+                if (graph.paths().isLegalDag()) {
                     mag = GraphTransforms.dagToMag(graph);
                 } else if (graph.paths().isLegalCpdag() || graph.paths().isLegalPdag()) {
                     Graph dag = GraphTransforms.dagFromCpdag(graph);
                     mag = GraphTransforms.dagToMag(dag);
-                } else if (graph.paths().isLegalMag()) {
-                    mag = graph;
-//                }
-//                    else if (graph.paths().isLegalPag()) {
-//                    mag = GraphTransforms.zhangMagFromPag(graph);
-                }
-                    else {
-                    boolean hasCircle = false;
-
-                    for (Edge e : graph.getEdges()) {
-                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
-                            hasCircle = true;
-                            break;
-                        }
-                    }
-
-                    if (hasCircle) {
-                        mag = GraphTransforms.zhangMagFromPag(graph);
-                    } else {
-                        mag = graph;
-                    }
+//                } else if (graph.paths().isLegalMag()) {
+//                    mag = graph;
+////                }
+////                    else if (graph.paths().isLegalPag()) {
+////                    mag = GraphTransforms.zhangMagFromPag(graph);
+                } else {
+//                    boolean hasCircle = false;
+//
+//                    for (Edge e : graph.getEdges()) {
+//                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
+//                            hasCircle = true;
+//                            break;
+//                        }
+//                    }
+//
+//                    if (hasCircle) {
+                    mag = GraphTransforms.zhangMagFromPag(graph);
+//                    } else {
+//                        mag = graph;
+//                    }
                 }
 
                 Node _x = mag.getNode(x.getName());

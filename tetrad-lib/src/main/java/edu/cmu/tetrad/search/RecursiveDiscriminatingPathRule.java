@@ -84,7 +84,7 @@ public class RecursiveDiscriminatingPathRule {
 
 //        List<Node> notFollowedSuperset = getVNodes(pag, x, y, maxDdpPathLength);
 
-        RecursiveBlocking.BlockingResult result0 = RecursiveBlocking.blockPathsRecursivelyFull(
+        RecursiveBlocking.BlockingResult result0 = RecursiveBlocking.blockPathsRecursivelySmallerDirection(
                 pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, -1,
                 1, true);
 
@@ -113,7 +113,7 @@ public class RecursiveDiscriminatingPathRule {
         while ((choice = gen.next()) != null) {
             Set<Node> vNodesNotFollowed = GraphUtils.asSet(choice, notFollowedSuperset);
 
-            RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursivelyFull(
+            RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursivelySmallerDirection(
                     pag, x, y, Set.of(), vNodesNotFollowed, recursiveDepth, depth, -1,
                     1, true);
 
@@ -127,7 +127,26 @@ public class RecursiveDiscriminatingPathRule {
 
             // Add back the notFollowedSuperset that were followed (i.e. not in vNodesNotFollowed),
             // since those are non-colliders on their paths and belong in the sepset.
-            Set<Node> testSet = new HashSet<>(result.blockingSet());
+//            Set<Node> testSet = new HashSet<>(result.blockingSet());
+//
+//            if (testSets.contains(testSet)) {
+//                continue;
+//            }
+//
+//            testSets.add(testSet);
+//
+//            for (Node f : notFollowedSuperset) {
+//                if (!vNodesNotFollowed.contains(f)) {
+//                    testSet.add(f);
+//                }
+//            }
+
+            // Only add back followed vNodes if the path analysis itself
+            // determined they were needed (i.e., they appear in the blocking set).
+            // Unconditionally adding them can condition on colliders, opening
+            // paths and causing the Markov check to fail.
+            Set<Node> blockingSet = result.blockingSet();
+            Set<Node> testSet = new HashSet<>(blockingSet);
 
             if (testSets.contains(testSet)) {
                 continue;
@@ -136,7 +155,7 @@ public class RecursiveDiscriminatingPathRule {
             testSets.add(testSet);
 
             for (Node f : notFollowedSuperset) {
-                if (!vNodesNotFollowed.contains(f)) {
+                if (!vNodesNotFollowed.contains(f) && blockingSet.contains(f)) {
                     testSet.add(f);
                 }
             }

@@ -78,8 +78,8 @@ public final class PagCache {
             Graph mag = GraphTransforms.dagToMag(graph);
 
             return computePagFromMag(mag, knowledge, excludeSelectionBias, maxBlockingPathLength);   // no getPag() here, avoiding infinite recursion.
-        } else if (graph.paths().isLegalMag()) {
-            return computePagFromMag(graph, knowledge, excludeSelectionBias, maxBlockingPathLength);
+//        } else if (graph.paths().isLegalMag()) {
+//            return computePagFromMag(graph, knowledge, excludeSelectionBias, maxBlockingPathLength);
         } else {
             Graph mag = GraphTransforms.zhangMagFromPag(graph);
             MagToPag magToPag = new MagToPag(mag);
@@ -250,11 +250,11 @@ public final class PagCache {
      */
     public @NotNull Graph getPag(Graph g, Knowledge knowledge, boolean excludeSelectionBias, int recursiveDepth) {
 
-        // We need to check legal DAG separately here because it may be a DAG with latents, which
-        // would not be a legal MAG.
-        if (!(g.paths().isLegalDag() || g.paths().isLegalMag())) {
-            throw new IllegalArgumentException("Graph must be a DAG (possibly with latents) or a MAG.");
-        }
+//        // We need to check legal DAG separately here because it may be a DAG with latents, which
+//        // would not be a legal MAG.
+//        if (!(g.paths().isLegalDag() || g.paths().isLegalMag())) {
+//            throw new IllegalArgumentException("Graph must be a DAG (possibly with latents) or a MAG.");
+//        }
         final long srcSig = signatureOfSource(g);
 
         synchronized (cache) {

@@ -216,6 +216,7 @@ public final class MagToPag {
         pag.reorientAllWith(Endpoint.CIRCLE);
 
         FciOrient fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose, ancestorCache));
+//        FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(new MsepTest(mag)));
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
