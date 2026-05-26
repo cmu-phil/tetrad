@@ -591,19 +591,7 @@ public class FciOrient {
         if (isCompleteRuleSetUsed()) {
 
             if (!excludeSelectionBias) {
-                // Now, by a remark on page 100 of Zhang's dissertation, we apply rule
-                // R5 once.
-                ruleR5(graph);
-
-                // Now, by a further remark on page 102, we apply R6,R7 as many times
-                // as possible.
-                this.changeFlag = true;
-
-                while (this.changeFlag && !Thread.currentThread().isInterrupted()) {
-                    this.changeFlag = false;
-                    ruleR6(graph);
-                    ruleR7(graph);
-                }
+                rulesR5R6R7(graph);
             }
 
             // Finally, we apply R8-R10 as many times as possible.
@@ -613,6 +601,22 @@ public class FciOrient {
                 this.changeFlag = false;
                 rulesR8R9R10(graph);
             }
+        }
+    }
+
+    public void rulesR5R6R7(Graph graph) {
+        // Now, by a remark on page 100 of Zhang's dissertation, we apply rule
+        // R5 once.
+        ruleR5(graph);
+
+        // Now, by a further remark on page 102, we apply R6,R7 as many times
+        // as possible.
+        this.changeFlag = true;
+
+        while (this.changeFlag && !Thread.currentThread().isInterrupted()) {
+            this.changeFlag = false;
+            ruleR6(graph);
+            ruleR7(graph);
         }
     }
 
