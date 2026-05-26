@@ -182,55 +182,6 @@ public class RecursiveBlocking {
     }
 
     /**
-     * Blocks paths in a graph recursively, starting from two specified nodes, and identifies
-     * the direction that yields a smaller blocking set.
-     *
-     * @param graph The graph to operate on.
-     * @param x One of the starting nodes for the path blocking.
-     * @param y The other starting node for the path blocking.
-     * @param containing A set of nodes that the blocking paths should contain.
-     * @param notFollowed A set of nodes that should not be followed during blocking.
-     * @param recursiveDepth The maximum depth of the recursive blocking process.
-     * @param depth The current depth level in the recursion.
-     * @param maxRadius The maximum radius within which paths should be evaluated.
-     * @param nearWhichEndpoint Specifies which endpoint (x or y) should influence blocking priority.
-     * @param ignoreDirectEdge A flag indicating whether direct edges between x and y should be ignored.
-     * @return The {@code BlockingResult} that corresponds to the direction (x to y or y to x)
-     *         yielding the smaller blocking set.
-     * @throws InterruptedException If the operation is interrupted while processing.
-     */
-    public static BlockingResult blockPathsRecursivelySmallerDirection(Graph graph,
-                                                           Node x,
-                                                           Node y,
-                                                           Set<Node> containing,
-                                                           Set<Node> notFollowed,
-                                                           int recursiveDepth,
-                                                           int depth, int maxRadius,
-                                                           int nearWhichEndpoint,
-                                                           boolean ignoreDirectEdge)
-            throws InterruptedException {
-        try {
-            BlockingResult blockingResult1 = blockPathsRecursivelyFull(graph, x, y, containing, notFollowed, recursiveDepth, depth,
-                    maxRadius, nearWhichEndpoint, ignoreDirectEdge, Long.MAX_VALUE);
-            return blockingResult1;
-
-//            BlockingResult blockingResult2 = blockPathsRecursivelyFull(graph, y, x, containing, notFollowed, recursiveDepth, depth,
-//                    maxRadius, nearWhichEndpoint, ignoreDirectEdge, Long.MAX_VALUE);
-//            if (blockingResult1.blockingSet() == null && blockingResult2.blockingSet() == null) {
-//                return blockingResult1;
-//            } else if (blockingResult1.blockingSet() == null) {
-//                return blockingResult2;
-//            } else if (blockingResult2.blockingSet() == null) {
-//                return blockingResult1;
-//            } else {
-//                return blockingResult1.blockingSet().size() < blockingResult2.blockingSet().size() ? blockingResult1 : blockingResult2;
-//            }
-        } catch (TimeoutException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
      * Full-parameter entry point returning a full {@link BlockingResult},
      * distinguishing UNBLOCKABLE from INDETERMINATE on failure.
      *

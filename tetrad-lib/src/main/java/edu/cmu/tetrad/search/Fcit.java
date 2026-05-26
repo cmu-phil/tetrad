@@ -160,15 +160,15 @@ public final class Fcit implements IGraphSearch {
      * Represents the maximum depth allowed for a recursive operation.
      * This variable is used to prevent excessive recursion,
      * which can lead to stack overflow errors.
+     * TODO: Make this a parameter.
      */
-    private int recursiveDepth = 15;
+    private int recursiveDepth = -1;
     /**
      * Represents the radius for the RB (Recursive Backtracking) algorithm.
      * This variable is used to control the scope of the RB algorithm,
      * which can affect the performance and accuracy of the search.
      */
     private int rbRadius = -1;
-    private int maxDiscriminatingPathLength;
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -314,9 +314,9 @@ public final class Fcit implements IGraphSearch {
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
         fciOrient.setParallel(true);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setCompleteRuleSetUsed(true);
         fciOrient.setRecursiveDepth(recursiveDepth);
-        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.setMaxDiscriminatingPathLength(-1);
         fciOrient.setKnowledge(knowledge);
 
         Graph dag;
@@ -604,7 +604,7 @@ public final class Fcit implements IGraphSearch {
         final Node y = edge.getNode2();
 
         // Get full blocking set with no forbidden nodes
-        RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsRecursivelySmallerDirection(
+        RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsRecursivelyFull(
                 pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true);
 
         Set<Node> nfCandSet = new HashSet<>();
@@ -631,7 +631,7 @@ public final class Fcit implements IGraphSearch {
             RecursiveBlocking.BlockingResult result = null;
 
             if (this.depth < 0) {
-                result = RecursiveBlocking.blockPathsRecursivelySmallerDirection(
+                result = RecursiveBlocking.blockPathsRecursivelyFull(
                         pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true);
 
             } else {
@@ -643,7 +643,7 @@ public final class Fcit implements IGraphSearch {
 
                     if (depth > maxDepth) break;
 
-                    result = RecursiveBlocking.blockPathsRecursivelySmallerDirection(
+                    result = RecursiveBlocking.blockPathsRecursivelyFull(
                             pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true);
                 } while (result.indeterminate());
             }
@@ -849,22 +849,12 @@ public final class Fcit implements IGraphSearch {
         this.rbRadius = rbRadius;
     }
 
-    /**
-     * Sets the maximum depth allowed for recursive operations.
-     * This is used to prevent excessive recursion and stack overflow errors.
-     *
-     * @param recursiveDepth the maximum depth for recursive operations
-     */
     public void setRecursiveDepth(int recursiveDepth) {
         this.recursiveDepth = recursiveDepth;
     }
 
-    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
-        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
-    }
-
-    public int getMaxDiscriminatingPathLength() {
-        return maxDiscriminatingPathLength;
+    public int getRecursiveDepth() {
+        return recursiveDepth;
     }
 
     /**
