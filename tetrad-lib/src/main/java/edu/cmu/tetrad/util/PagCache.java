@@ -250,6 +250,7 @@ public final class PagCache {
      */
     public @NotNull Graph getPag(Graph g, Knowledge knowledge, boolean excludeSelectionBias, int recursiveDepth) {
 
+        // This checking broke the Markov checker... jdramsey 2026-5-25
 //        // We need to check legal DAG separately here because it may be a DAG with latents, which
 //        // would not be a legal MAG.
 //        if (!(g.paths().isLegalDag() || g.paths().isLegalMag())) {
