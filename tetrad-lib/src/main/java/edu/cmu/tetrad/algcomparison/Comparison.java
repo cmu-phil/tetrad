@@ -663,6 +663,8 @@ public class Comparison implements TetradSerializable {
      * @param simulations       The same Simulations object used in the original run.
      * @param algorithms        The same Algorithms object used in the original run.
      * @param statistics        The statistics to compute (may differ from original run).
+     * @param ps1               PrintStream for detailed output, or null for no output.
+     * @param ps2               PrintStream for summary output, or null for no output.
      * @param parameters        The parameters object (numRuns etc. must match original).
      */
     public void compareFromSavedResults(String savedResultsPath,
@@ -672,7 +674,7 @@ public class Comparison implements TetradSerializable {
                                         Statistics statistics,
                                         Parameters parameters,
                                         PrintStream ps1,
-                                        PrintStream ps2) throws ParseException {
+                                        PrintStream ps2){
 
         this.resultsPath = newResultsPath;
 

@@ -54,6 +54,12 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The FcitBenchmarkHarness class serves as a benchmarking tool for evaluating various causal
+ * inference algorithms. It includes methods for generating random directed acyclic graphs
+ * (DAGs), simulating data from those DAGs, running different algorithms, and computing
+ * performance metrics based on the estimated graphs.
+ */
 public class FcitBenchmarkHarness {
 
     // ────────────────────────────────────────────────────────────────────────
@@ -72,6 +78,11 @@ public class FcitBenchmarkHarness {
             "AP", "AR",
             "E-Wall", "PAG"
     );
+
+    /**
+     * Default constructor for the FcitBenchmarkHarness class.
+     */
+    public FcitBenchmarkHarness() {}
 
     // ────────────────────────────────────────────────────────────────────────
     // Simulation grid
@@ -94,6 +105,18 @@ public class FcitBenchmarkHarness {
     // main
     // ────────────────────────────────────────────────────────────────────────
 
+    /**
+     * Executes the main benchmark logic for evaluating graph structure learning algorithms
+     * under various conditions with controlled parameters. Outputs results to a file in TSV format.
+     *
+     * @param args Command-line arguments. Supported options:
+     *             --out &lt;path&gt;: Specifies the output file path. Default is "fcit_benchmark_results.tsv".
+     *             --numRuns &lt;int&gt;: Number of benchmark runs per condition. Default is 20.
+     *             --seed &lt;long&gt;: Initial random seed for reproducibility. Default is 42.
+     *             Any unrecognized arguments will be ignored.
+     *
+     * @throws Exception If an error occurs during file I/O, parsing, or algorithm execution.
+     */
     public static void main(String[] args) throws Exception {
 
         String outPath = "fcit_benchmark_results.tsv";

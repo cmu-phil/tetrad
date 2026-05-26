@@ -35,6 +35,52 @@ import edu.cmu.tetrad.util.RandomUtil;
 
 import java.text.ParseException;
 
+/**
+ * The FcitBenchmarkHarness100 class serves as a benchmarking tool for evaluating
+ * various causal discovery algorithms on synthetic data. It is specifically designed
+ * to assess their performance on 100-node graphs under fixed experimental conditions.
+ *
+ * This class generates random Directed Acyclic Graphs (DAGs), simulates data from these
+ * graphs, and evaluates different algorithms using predefined statistical metrics. The
+ * results are summarized and exported in LaTeX table format for further analysis.
+ *
+ * Core Features:
+ * - Generates random 100-node DAGs with a configurable number of latent variables, average degree, and seed.
+ * - Simulates data from these DAGs with a fixed sample size.
+ * - Benchmarks a set of predefined causal discovery algorithms, computing various metrics such as
+ *   precision for directed, bidirected edges, and PAG structure validity.
+ * - Evaluates the time complexity (wall-clock time) of each algorithm.
+ * - Outputs results formatted as a LaTeX table for external reporting.
+ *
+ * Experimental Configuration:
+ * - Number of measures: 100
+ * - Number of latent variables: 6
+ * - Average degree of the graph: 4
+ * - Sample size for data simulation: 1000
+ * - Default significance level for independence tests: 0.01
+ * - Penalization discount used in scoring-based methods: 2.0
+ * - Fixed algorithm depth setting: 7
+ *
+ * Algorithms Evaluated:
+ * - LV-Heuristic
+ * - FCIT
+ * - BOSS-FCI
+ * - GRaSP-FCI
+ * - GFCI
+ * - FCI
+ *
+ * Key Methods:
+ * - main: Parses arguments, sets up experimental configurations, runs benchmarks,
+ *         collects statistics, and generates a LaTeX report.
+ * - buildRandomDag: Generates a random DAG with the specified properties.
+ * - simulateData: Simulates observational data from the generated DAG.
+ * - runAlgorithm: Dispatches the execution of an algorithm based on its index.
+ * - safeTrueDag: Wraps metrics computation to ensure robustness to runtime errors.
+ * - printLatexTable: Formats and prints evaluation results as a LaTeX table for reporting.
+ *
+ * This class is primarily used in research and performance evaluation contexts where
+ * reproducibility and automation of experiments are critical.
+ */
 public class FcitBenchmarkHarness100 {
 
     // ────────────────────────────────────────────────────────────────────────
@@ -55,10 +101,30 @@ public class FcitBenchmarkHarness100 {
             "LV-Heuristic", "FCIT", "BOSS-FCI", "GRaSP-FCI", "GFCI", "FCI"
     };
 
+    /**
+     * Constructs an instance of the {@code FcitBenchmarkHarness100} class.
+     */
+    public FcitBenchmarkHarness100() { }
+
     // ────────────────────────────────────────────────────────────────────────
     // main
     // ────────────────────────────────────────────────────────────────────────
 
+    /**
+     * Entry point of the application. This method executes a benchmarking harness
+     * for evaluating various graph-based algorithms on randomly generated data.
+     * The benchmarking process involves generating random graphs, simulating data
+     * based on those graphs, running algorithms on the data, and accumulating
+     * statistical metrics for result evaluation.
+     *
+     * Command-line arguments allow customization of run parameters.
+     *
+     * @param args Command-line arguments. Accepted options are:
+     *             --numRuns &lt;int&gt;  Specifies the number of benchmark runs (default: 20).
+     *             --seed &lt;long&gt;    Controls the random seed for reproducibility (default: 42L).
+     * @throws Exception If an error occurs during graph generation, data simulation,
+     *                   algorithm execution, or statistical evaluation.
+     */
     public static void main(String[] args) throws Exception {
         int  numRuns = 20;
         long seed    = 42L;

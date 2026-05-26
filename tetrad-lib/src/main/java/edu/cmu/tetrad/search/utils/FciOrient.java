@@ -502,10 +502,6 @@ public class FciOrient {
      * @param graph the graph object whose edges are to be oriented
      */
     public void finalOrientation(Graph graph) {
-        finalOrientation(graph, new HashSet<>());
-    }
-
-    public void finalOrientation(Graph graph, Set<Triple> unshieldedTriples) {
         if (this.completeRuleSetUsed) {
             zhangFinalOrientation(graph, false);
         } else {

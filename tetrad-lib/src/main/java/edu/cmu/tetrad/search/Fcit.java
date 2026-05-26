@@ -851,10 +851,20 @@ public final class Fcit implements IGraphSearch {
         this.rbRadius = rbRadius;
     }
 
+    /**
+     * Sets the depth level for recursive operations.
+     *
+     * @param recursiveDepth the maximum depth to which the recursion is allowed
+     */
     public void setRecursiveDepth(int recursiveDepth) {
         this.recursiveDepth = recursiveDepth;
     }
 
+    /**
+     * Retrieves the current depth of recursion.
+     *
+     * @return the depth of recursion as an integer
+     */
     public int getRecursiveDepth() {
         return recursiveDepth;
     }

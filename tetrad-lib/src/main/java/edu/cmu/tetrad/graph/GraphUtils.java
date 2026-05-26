@@ -3533,6 +3533,16 @@ public final class GraphUtils {
         return replicating;
     }
 
+    /**
+     * Resolves forbidden circles in the given partially oriented graph (PAG) based on the provided knowledge.
+     * Updates edge endpoints to arrowheads where forbidden relationships are detected.
+     *
+     * Temp method to try to fix a putative knowledge issue in FCI.
+     *
+     * @param pag the partially oriented graph to be processed
+     * @param knowledge the knowledge object containing forbidden relationships between nodes
+     * @return {@code true} if any changes were made to the graph; {@code false} otherwise
+     */
     public static boolean applyForbiddenCircleResolution(Graph pag, Knowledge knowledge) {
         boolean anyChanged = false;
         boolean changed = true;
