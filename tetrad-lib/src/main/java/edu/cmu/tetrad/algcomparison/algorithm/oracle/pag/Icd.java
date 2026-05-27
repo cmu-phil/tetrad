@@ -55,13 +55,13 @@ import java.util.List;
  *
  * @author josephramsey (wrapper)
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "ICD",
-        command = "icd",
-        algoType = AlgType.allow_latent_common_causes,
-        dataType = DataType.All
-)
-@Bootstrapping
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "ICD",
+//        command = "icd",
+//        algoType = AlgType.allow_latent_common_causes,
+//        dataType = DataType.All
+//)
+//@Bootstrapping
 public class Icd extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix,
         LatentStructureAlgorithm {
