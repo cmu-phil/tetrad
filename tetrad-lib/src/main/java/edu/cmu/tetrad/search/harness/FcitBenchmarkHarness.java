@@ -1,23 +1,31 @@
 ///////////////////////////////////////////////////////////////////////////////
 // FcitBenchmarkHarness.java                                                 //
 //                                                                           //
-// Serial benchmark harness for comparing six causal-discovery algorithms:   //
+// Serial benchmark harness for comparing seven causal-discovery algorithms: //
 //   1 LV-Heuristic   2 FCIT   3 BOSS-FCI                                   //
-//   4 GRaSP-FCI      5 GFCI   6 FCI                                        //
+//   4 GRaSP-FCI      5 GFCI   6 ICD   7 FCI                                //
 //                                                                           //
 // Runs every (condition × algorithm × run) sequentially in a single JVM.   //
 // Wall-clock time is measured per algorithm run via System.nanoTime().      //
 // CovarianceMatrix is constructed once per run (outside timing) and shared  //
-// across all 6 algorithms for that run.                                     //
+// across all 7 algorithms for that run.                                     //
+//                                                                           //
+// ICD (algorithm 6) is run on a separate thread with a 30-second timeout.  //
+// If any single run of ICD exceeds the timeout, ALL stats for that run are  //
+// recorded as NaN (written as "", which pandas reads as NaN). Furthermore,  //
+// once ICD times out on any run within a condition, ALL subsequent runs     //
+// within that condition are also skipped and recorded as missing — ICD is   //
+// considered permanently too slow for that condition.                       //
 //                                                                           //
 // Usage:                                                                    //
 //   java -Xmx8g -cp tetrad-current.jar                                      //
 //        edu.cmu.tetrad.search.harness.FcitBenchmarkHarness                 //
-//        [--out results.tsv] [--numRuns 20] [--seed 42]                    //
+//        [--out results.tsv] [--numRuns 20] [--seed 42]                     //
+//        [--timeout 30]                                                      //
 //                                                                           //
-// Stat semantics                                                            //
-// ──────────────                                                            //
-// DAG-based  (true reference = true DAG, latent nodes tagged LATENT):      //
+// Stat semantics                                                             //
+// ──────────────                                                             //
+// DAG-based  (true reference = true DAG, latent nodes tagged LATENT):       //
 //   *->-Prec   TrueDagPrecisionArrow                                        //
 //   -->-Prec   TrueDagPrecisionTails                                        //
 //   <->-Lat    BidirectedLatentPrecision  (* when numLatents == 0)          //
@@ -53,6 +61,8 @@ import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The FcitBenchmarkHarness class serves as a benchmarking tool for evaluating various causal
@@ -66,10 +76,16 @@ public class FcitBenchmarkHarness {
     // Constants
     // ────────────────────────────────────────────────────────────────────────
 
-    private static final int    NUM_ALGS         = 6;
+    private static final int    NUM_ALGS         = 7;
     private static final double DEFAULT_ALPHA    = 0.01;
     private static final double PENALTY_DISCOUNT = 2.0;
     private static final int    FCIT_DEPTH       = 3;
+
+    /** Algorithm index for ICD — the only one subject to the timeout. */
+    private static final int    ICD_ALG_INDEX    = 5; // 0-based; alg #6 in 1-based output
+
+    /** Missing-value token that pandas reads as NaN when passed to read_csv. */
+    private static final String MISSING          = "";
 
     private static final String HEADER = String.join("\t",
             "Alg", "avgDegree", "numLatents", "numMeasures", "numRuns", "sampleSize",
@@ -78,6 +94,12 @@ public class FcitBenchmarkHarness {
             "AP", "AR",
             "E-Wall", "PAG"
     );
+
+    // ────────────────────────────────────────────────────────────────────────
+    // Timeout (seconds) — overridable via --timeout on the command line
+    // ────────────────────────────────────────────────────────────────────────
+
+    private static int timeoutSeconds = 30;
 
     /**
      * Default constructor for the FcitBenchmarkHarness class.
@@ -113,7 +135,7 @@ public class FcitBenchmarkHarness {
      *             --out &lt;path&gt;: Specifies the output file path. Default is "fcit_benchmark_results.tsv".
      *             --numRuns &lt;int&gt;: Number of benchmark runs per condition. Default is 20.
      *             --seed &lt;long&gt;: Initial random seed for reproducibility. Default is 42.
-     *             Any unrecognized arguments will be ignored.
+     *             --timeout &lt;int&gt;: Per-run timeout in seconds for ICD. Default is 30.
      *
      * @throws Exception If an error occurs during file I/O, parsing, or algorithm execution.
      */
@@ -125,11 +147,14 @@ public class FcitBenchmarkHarness {
 
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
-                case "--out"     -> outPath = args[++i];
-                case "--numRuns" -> numRuns = Integer.parseInt(args[++i]);
-                case "--seed"    -> seed    = Long.parseLong(args[++i]);
+                case "--out"     -> outPath        = args[++i];
+                case "--numRuns" -> numRuns        = Integer.parseInt(args[++i]);
+                case "--seed"    -> seed           = Long.parseLong(args[++i]);
+                case "--timeout" -> timeoutSeconds = Integer.parseInt(args[++i]);
             }
         }
+
+        System.out.printf("ICD timeout per run: %d seconds%n", timeoutSeconds);
 
         // Stat objects — stateless, reused across all runs
         Statistic dagArrowPrec = new TrueDagPrecisionArrow();
@@ -145,29 +170,36 @@ public class FcitBenchmarkHarness {
 
         List<int[]> conditions = buildConditions();
 
+        // Single-thread executor reused for all ICD timeout calls
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
         try (PrintWriter out = new PrintWriter(
                 Files.newBufferedWriter(Path.of(outPath)))) {
 
             out.println(HEADER);
 
             for (int ci = 0; ci < conditions.size(); ci++) {
-                int[] c          = conditions.get(ci);
-                int   avgDeg     = c[0];
-                int   numLatents = c[1];
+                int[] c           = conditions.get(ci);
+                int   avgDeg      = c[0];
+                int   numLatents  = c[1];
                 int   numMeasures = c[2];
-                int   sampleSize = c[3];
-                int   totalNodes = numMeasures + numLatents;
+                int   sampleSize  = c[3];
+                int   totalNodes  = numMeasures + numLatents;
 
                 System.out.printf("[%d/%d]  avgDeg=%d  latents=%d  measures=%d  n=%d%n",
                         ci + 1, conditions.size(), avgDeg, numLatents, numMeasures, sampleSize);
 
-                // Accumulators: [alg 0-5][stat 0-10]
+                // Accumulators: [alg 0-6][stat 0-10]
                 // Slots: 0 *->-Prec  1 -->-Prec  2 <->-Lat
                 //        3 AHP  4 AHPC  5 AHR  6 AHRC  7 AP  8 AR
                 //        9 E-Wall  10 PAG
                 final int NS = 11;
                 double[][] sums = new double[NUM_ALGS][NS];
                 int[][]    cnts = new int[NUM_ALGS][NS];
+
+                // Once ICD times out on any run within this condition, all subsequent
+                // runs are skipped for ICD and recorded as missing.
+                boolean icdAbandoned = false;
 
                 for (int run = 0; run < numRuns; run++) {
                     long runSeed = seed + (long) run * 100_003L;
@@ -177,29 +209,82 @@ public class FcitBenchmarkHarness {
                     Graph   truePag = computeTruePag(trueDag);
                     DataSet data    = simulateData(trueDag, sampleSize, runSeed);
 
-                    // Build covariance matrix once per run, shared across all algorithms.
-                    // This is intentionally outside the per-algorithm timing block.
                     CovarianceMatrix cov = new CovarianceMatrix(data);
 
                     for (int ai = 0; ai < NUM_ALGS; ai++) {
+
                         Graph  est;
                         double wallSec;
-                        try {
-                            // Fresh score and test per algorithm using the shared cov matrix
-                            SemBicScore    score = new SemBicScore(cov);
-                            score.setPenaltyDiscount(PENALTY_DISCOUNT);
-                            IndTestFisherZ test  = new IndTestFisherZ(cov, DEFAULT_ALPHA);
 
-                            long t0 = System.nanoTime();
-                            est     = runAlgorithm(ai, score, test);
-                            wallSec = (System.nanoTime() - t0) / 1e9;
-                        } catch (Exception e) {
-                            System.err.printf("  run=%d alg=%d failed: %s%n",
-                                    run + 1, ai + 1, e.getMessage());
-                            continue;
+                        if (ai == ICD_ALG_INDEX) {
+                            // ── ICD: skip entirely if already abandoned this condition ──
+                            if (icdAbandoned) {
+                                System.err.printf("  run=%d alg=%d (ICD) skipped (previously timed out)%n",
+                                        run + 1, ai + 1);
+                                continue; // leave accumulators empty → missing in output
+                            }
+
+                            // ── ICD: run on a separate thread with timeout ──────────────
+                            final CovarianceMatrix covFinal = cov;
+                            AtomicReference<Graph>     resultRef = new AtomicReference<>(null);
+                            AtomicReference<Double>    wallRef   = new AtomicReference<>(Double.NaN);
+                            AtomicReference<Throwable> errRef    = new AtomicReference<>(null);
+
+                            Future<?> future = executor.submit(() -> {
+                                try {
+                                    IndTestFisherZ icdTest = new IndTestFisherZ(covFinal, DEFAULT_ALPHA);
+                                    long t0 = System.nanoTime();
+                                    Graph g = runIcd(icdTest);
+                                    wallRef.set((System.nanoTime() - t0) / 1e9);
+                                    resultRef.set(g);
+                                } catch (Throwable t) {
+                                    errRef.set(t);
+                                }
+                            });
+
+                            boolean timedOut = false;
+                            try {
+                                future.get(timeoutSeconds, TimeUnit.SECONDS);
+                            } catch (TimeoutException e) {
+                                future.cancel(true);
+                                timedOut = true;
+                                System.err.printf(
+                                        "  run=%d alg=%d (ICD) TIMED OUT after %ds — "
+                                                + "abandoning ICD for this condition%n",
+                                        run + 1, ai + 1, timeoutSeconds);
+                            } catch (ExecutionException e) {
+                                System.err.printf("  run=%d alg=%d (ICD) failed: %s%n",
+                                        run + 1, ai + 1, e.getCause().getMessage());
+                                timedOut = true;
+                            }
+
+                            if (timedOut || resultRef.get() == null) {
+                                // Mark ICD as abandoned for all remaining runs in this condition
+                                icdAbandoned = true;
+                                continue; // skip accumulation for this run
+                            }
+
+                            est     = resultRef.get();
+                            wallSec = wallRef.get();
+
+                        } else {
+                            // ── All other algorithms: run on the main thread ────────────
+                            try {
+                                SemBicScore    score = new SemBicScore(cov);
+                                score.setPenaltyDiscount(PENALTY_DISCOUNT);
+                                IndTestFisherZ test  = new IndTestFisherZ(cov, DEFAULT_ALPHA);
+
+                                long t0 = System.nanoTime();
+                                est     = runAlgorithm(ai, score, test);
+                                wallSec = (System.nanoTime() - t0) / 1e9;
+                            } catch (Exception e) {
+                                System.err.printf("  run=%d alg=%d failed: %s%n",
+                                        run + 1, ai + 1, e.getMessage());
+                                continue;
+                            }
                         }
 
-                        est    = GraphUtils.replaceNodes(est,    trueDag.getNodes());
+                        est     = GraphUtils.replaceNodes(est,     trueDag.getNodes());
                         truePag = GraphUtils.replaceNodes(truePag, trueDag.getNodes());
 
                         accum(sums, cnts, ai, 9,  wallSec);
@@ -221,10 +306,14 @@ public class FcitBenchmarkHarness {
                     System.err.printf("  run %d/%d done%n", run + 1, numRuns);
                 }
 
+                if (icdAbandoned) {
+                    System.out.printf("  ICD abandoned for this condition (timed out).%n");
+                }
+
                 // Write one row per algorithm for this condition
                 for (int ai = 0; ai < NUM_ALGS; ai++) {
                     String biDirStr = (numLatents == 0)
-                            ? "*" : fmt(avg(sums, cnts, ai, 2));
+                            ? "*" : fmtAvg(sums, cnts, ai, 2);
 
                     out.println(String.join("\t",
                             String.valueOf(ai + 1),
@@ -233,21 +322,23 @@ public class FcitBenchmarkHarness {
                             String.valueOf(numMeasures),
                             String.valueOf(numRuns),
                             String.valueOf(sampleSize),
-                            fmt(avg(sums, cnts, ai, 0)),   // *->-Prec
-                            fmt(avg(sums, cnts, ai, 1)),   // -->-Prec
-                            biDirStr,                       // <->-Lat-Prec
-                            fmt(avg(sums, cnts, ai, 3)),   // AHP
-                            fmt(avg(sums, cnts, ai, 4)),   // AHPC
-                            fmt(avg(sums, cnts, ai, 5)),   // AHR
-                            fmt(avg(sums, cnts, ai, 6)),   // AHRC
-                            fmt(avg(sums, cnts, ai, 7)),   // AP
-                            fmt(avg(sums, cnts, ai, 8)),   // AR
-                            fmt(avg(sums, cnts, ai, 9)),   // E-Wall
-                            fmt(avg(sums, cnts, ai, 10))   // PAG
+                            fmtAvg(sums, cnts, ai, 0),   // *->-Prec
+                            fmtAvg(sums, cnts, ai, 1),   // -->-Prec
+                            biDirStr,                      // <->-Lat-Prec
+                            fmtAvg(sums, cnts, ai, 3),   // AHP
+                            fmtAvg(sums, cnts, ai, 4),   // AHPC
+                            fmtAvg(sums, cnts, ai, 5),   // AHR
+                            fmtAvg(sums, cnts, ai, 6),   // AHRC
+                            fmtAvg(sums, cnts, ai, 7),   // AP
+                            fmtAvg(sums, cnts, ai, 8),   // AR
+                            fmtAvg(sums, cnts, ai, 9),   // E-Wall
+                            fmtAvg(sums, cnts, ai, 10)   // PAG
                     ));
                 }
                 out.flush();
             }
+        } finally {
+            executor.shutdownNow();
         }
 
         System.out.println("Done.  Results written to " + outPath);
@@ -257,6 +348,11 @@ public class FcitBenchmarkHarness {
     // Algorithm dispatch
     // ────────────────────────────────────────────────────────────────────────
 
+    /**
+     * Dispatch for algorithms 0-4 and 6 (all except ICD which is handled inline).
+     * Index mapping (0-based):
+     *   0 LV-Heuristic  1 FCIT  2 BOSS-FCI  3 GRaSP-FCI  4 GFCI  5 ICD(unused here)  6 FCI
+     */
     private static Graph runAlgorithm(int ai, SemBicScore score, IndTestFisherZ test) {
         return switch (ai) {
             case 0 -> runLvHeuristic(score);
@@ -264,7 +360,8 @@ public class FcitBenchmarkHarness {
             case 2 -> runBossFci(score, test);
             case 3 -> runGraspFci(score, test);
             case 4 -> runGfci(score, test);
-            case 5 -> runFci(test);
+            // case 5 is ICD — handled separately in main with timeout logic
+            case 6 -> runFci(test);
             default -> throw new IllegalStateException("Unknown alg index: " + ai);
         };
     }
@@ -305,6 +402,16 @@ public class FcitBenchmarkHarness {
         try {
             return new Fci(test).search();
         } catch (InterruptedException e) { throw new RuntimeException(e); }
+    }
+
+    private static Graph runIcd(IndTestFisherZ test) {
+        try {
+            return new Icd(test).search();
+        } catch (InterruptedException e) {
+            // Thread was interrupted by the timeout cancellation — propagate cleanly
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("ICD interrupted", e);
+        }
     }
 
     // ────────────────────────────────────────────────────────────────────────
@@ -357,7 +464,13 @@ public class FcitBenchmarkHarness {
         return cnts[ai][si] == 0 ? Double.NaN : sums[ai][si] / cnts[ai][si];
     }
 
-    private static String fmt(double v) {
-        return Double.isNaN(v) ? "*" : String.format("%.4f", v);
+    /**
+     * Formats an averaged statistic for TSV output. NaN (either from no finite
+     * observations or from all runs timing out) is written as an empty string,
+     * which pandas.read_csv() interprets as NaN by default.
+     */
+    private static String fmtAvg(double[][] sums, int[][] cnts, int ai, int si) {
+        double v = avg(sums, cnts, ai, si);
+        return Double.isNaN(v) ? MISSING : String.format("%.4f", v);
     }
 }
