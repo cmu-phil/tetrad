@@ -323,7 +323,7 @@ public final class Fcit implements IGraphSearch {
         List<Node> best;
         long start1 = System.currentTimeMillis();
 
-        startWith = START_WITH.COMPLETE_GRAPH;
+//        startWith = START_WITH.COMPLETE_GRAPH;
 
         if (startWith != START_WITH.COMPLETE_GRAPH) {
             if (startWith == START_WITH.BOSS) {
@@ -462,9 +462,6 @@ public final class Fcit implements IGraphSearch {
 
         // The main procedure.
         this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias, recursiveDepth);
-
-        this.pag = GraphUtils.completeGraph(this.pag);
-        GraphUtils.reorientWithCircles(pag, false);
 
         if (replicatingGraph) {
             this.pag = new ReplicatingGraph(pag, new LagReplicationPolicy());

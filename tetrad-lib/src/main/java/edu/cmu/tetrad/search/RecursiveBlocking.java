@@ -58,7 +58,6 @@ import java.util.concurrent.TimeoutException;
  */
 public class RecursiveBlocking {
     private static final int MAX_TOTAL_FRAMES = 100_000;
-    private static final int MAX_POOL_SIZE = 20;
 
     private RecursiveBlocking() {
     }
@@ -770,14 +769,7 @@ public class RecursiveBlocking {
         // Iteration cap: Z can grow by at most one node per outer iteration,
         // and is bounded by pool size, so pool.size() + 1 iterations suffices
         // for convergence. We add a small buffer for safety.
-//        int maxIterations = pool.size();
-
-        if (pool.size() + 1 > MAX_POOL_SIZE) {
-            System.err.println("Recursive blocking: Pool size too large: " + pool.size() + " (max " + MAX_POOL_SIZE + ")");
-            return new BlockingResult(null, true);
-        }
-
-        int maxIterations = Math.min(pool.size(), 20);
+        int maxIterations = pool.size();
         int iterations = 0;
 
         int[] totalFrames = new int[]{0};
