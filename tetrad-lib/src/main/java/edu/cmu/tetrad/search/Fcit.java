@@ -323,91 +323,99 @@ public final class Fcit implements IGraphSearch {
         List<Node> best;
         long start1 = System.currentTimeMillis();
 
-        if (startWith == START_WITH.BOSS) {
+        startWith = START_WITH.COMPLETE_GRAPH;
 
-            if (superVerbose) {
-                TetradLogger.getInstance().log("Running BOSS...");
-            }
+        if (startWith != START_WITH.COMPLETE_GRAPH) {
+            if (startWith == START_WITH.BOSS) {
 
-            if (this.score == null) {
-                throw new IllegalArgumentException("For BOSS a non-null score is expected.");
-            }
+                if (superVerbose) {
+                    TetradLogger.getInstance().log("Running BOSS...");
+                }
 
-            long start = MillisecondTimes.wallTimeMillis();
+                if (this.score == null) {
+                    throw new IllegalArgumentException("For BOSS a non-null score is expected.");
+                }
 
-            PermutationSearch alg = getBossSearch();
-            alg.setKnowledge(knowledge);
-            alg.setReplicatingGraph(this.replicatingGraph);
+                long start = MillisecondTimes.wallTimeMillis();
 
-            dag = alg.search(false);
-            best = dag.paths().getValidOrder(dag.getNodes(), true);
+                PermutationSearch alg = getBossSearch();
+                alg.setKnowledge(knowledge);
+                alg.setReplicatingGraph(this.replicatingGraph);
 
-            long stop = MillisecondTimes.wallTimeMillis();
+                dag = alg.search(false);
+                best = dag.paths().getValidOrder(dag.getNodes(), true);
 
-            if (superVerbose) {
-                TetradLogger.getInstance().log("BOSS took " + (stop - start) + " ms.");
-            }
+                long stop = MillisecondTimes.wallTimeMillis();
 
-            if (superVerbose) {
-                TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
-                TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
-            }
-        } else if (startWith == START_WITH.GRASP) {
-            // We need to include the GRaSP option here so that we can run FCIT from Oracle.
+                if (superVerbose) {
+                    TetradLogger.getInstance().log("BOSS took " + (stop - start) + " ms.");
+                }
 
-            if (superVerbose) {
-                TetradLogger.getInstance().log("Running GRaSP...");
-            }
+                if (superVerbose) {
+                    TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
+                    TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
+                }
+            } else if (startWith == START_WITH.GRASP) {
+                // We need to include the GRaSP option here so that we can run FCIT from Oracle.
 
-            long start = MillisecondTimes.wallTimeMillis();
+                if (superVerbose) {
+                    TetradLogger.getInstance().log("Running GRaSP...");
+                }
 
-            Grasp grasp = getGraspSearch();
-            grasp.setReplicatingGraph(this.replicatingGraph);
-            best = grasp.bestOrder(nodes);
-            dag = grasp.getGraph(false);
+                long start = MillisecondTimes.wallTimeMillis();
 
-            long stop = MillisecondTimes.wallTimeMillis();
+                Grasp grasp = getGraspSearch();
+                grasp.setReplicatingGraph(this.replicatingGraph);
+                best = grasp.bestOrder(nodes);
+                dag = grasp.getGraph(false);
 
-            if (superVerbose) {
-                TetradLogger.getInstance().log("GRaSP took " + (stop - start) + " ms.");
-            }
+                long stop = MillisecondTimes.wallTimeMillis();
 
-            if (superVerbose) {
-                TetradLogger.getInstance().log("Initializing PAG to GRaSP CPDAG.");
-                TetradLogger.getInstance().log("Initializing scorer with GRaSP best order.");
-            }
-        } else if (startWith == START_WITH.SP) {
+                if (superVerbose) {
+                    TetradLogger.getInstance().log("GRaSP took " + (stop - start) + " ms.");
+                }
 
-            if (superVerbose) {
-                TetradLogger.getInstance().log("Running SP...");
-            }
+                if (superVerbose) {
+                    TetradLogger.getInstance().log("Initializing PAG to GRaSP CPDAG.");
+                    TetradLogger.getInstance().log("Initializing scorer with GRaSP best order.");
+                }
+            } else if (startWith == START_WITH.SP) {
 
-            long start = MillisecondTimes.wallTimeMillis();
+                if (superVerbose) {
+                    TetradLogger.getInstance().log("Running SP...");
+                }
 
-            if (this.score == null) {
-                throw new IllegalArgumentException("For SP a non-null score is expected.");
-            }
+                long start = MillisecondTimes.wallTimeMillis();
 
-            Sp subAlg = new Sp(this.score);
-            PermutationSearch alg = new PermutationSearch(subAlg);
-            alg.setKnowledge(this.knowledge);
-            alg.setReplicatingGraph(this.replicatingGraph);
+                if (this.score == null) {
+                    throw new IllegalArgumentException("For SP a non-null score is expected.");
+                }
 
-            dag = alg.search(false);
-            best = dag.paths().getValidOrder(dag.getNodes(), true);
+                Sp subAlg = new Sp(this.score);
+                PermutationSearch alg = new PermutationSearch(subAlg);
+                alg.setKnowledge(this.knowledge);
+                alg.setReplicatingGraph(this.replicatingGraph);
 
-            long stop = MillisecondTimes.wallTimeMillis();
+                dag = alg.search(false);
+                best = dag.paths().getValidOrder(dag.getNodes(), true);
 
-            if (superVerbose) {
-                TetradLogger.getInstance().log("SP took " + (stop - start) + " ms.");
-            }
+                long stop = MillisecondTimes.wallTimeMillis();
 
-            if (superVerbose) {
-                TetradLogger.getInstance().log("Initializing PAG to SP CPDAG.");
-                TetradLogger.getInstance().log("Initializing scorer with SP best order.");
+                if (superVerbose) {
+                    TetradLogger.getInstance().log("SP took " + (stop - start) + " ms.");
+                }
+
+                if (superVerbose) {
+                    TetradLogger.getInstance().log("Initializing PAG to SP CPDAG.");
+                    TetradLogger.getInstance().log("Initializing scorer with SP best order.");
+                }
+            } else {
+                throw new IllegalArgumentException("That startWith option has not been configured: " + startWith);
             }
         } else {
-            throw new IllegalArgumentException("That startWith option has not been configured: " + startWith);
+            dag = GraphUtils.completeGraph( new EdgeListGraph(nodes));
+            GraphUtils.reorientWithCircles(dag, superVerbose);
+            best = dag.getNodes();
         }
 
         if (superVerbose) {
@@ -454,6 +462,9 @@ public final class Fcit implements IGraphSearch {
 
         // The main procedure.
         this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias, recursiveDepth);
+
+        this.pag = GraphUtils.completeGraph(this.pag);
+        GraphUtils.reorientWithCircles(pag, false);
 
         if (replicatingGraph) {
             this.pag = new ReplicatingGraph(pag, new LagReplicationPolicy());
@@ -664,9 +675,9 @@ public final class Fcit implements IGraphSearch {
             List<Node> common = this.pag.getAdjacentNodes(x);
             common.retainAll(this.pag.getAdjacentNodes(y));
 
-            if (common.isEmpty()) {
-                continue;
-            }
+    //            if (common.isEmpty()) {
+    //                continue;
+    //            }
 
             common.retainAll(B); // only nodes that actually are in B can be trimmed out
 
@@ -889,7 +900,11 @@ public final class Fcit implements IGraphSearch {
         /**
          * Starts with an initial CPDAG over the variables of the independence test that is given in the constructor.
          */
-        INITIAL_GRAPH
+        INITIAL_GRAPH,
+        /**
+         * Starts with a complete o-o graph.
+         */
+        COMPLETE_GRAPH
     }
 
     private record Result(Edge edge, Set<Node> cond) {
