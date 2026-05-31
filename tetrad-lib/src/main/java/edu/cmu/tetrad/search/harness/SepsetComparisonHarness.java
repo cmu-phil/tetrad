@@ -58,7 +58,7 @@ public class SepsetComparisonHarness {
     private static final int MAX_RECURSION_DEPTH = 20;  // ceiling = p when -1
     private static final int RB_DEPTH         = -1;  // no cap on |Z|
     private static final int RB_MAX_RADIUS    = -1;
-    private static final int RB_NEAR_ENDPOINT = 1;   // 1=near x, 2=near y, 3=near either
+    private static final int RB_NEAR_ENDPOINT = 3;   // 1=near x, 2=near y, 3=near either
 
     // Per-pair timeout in milliseconds.
     private static final long PAIR_TIMEOUT_MS = 5_000;
@@ -169,7 +169,7 @@ public class SepsetComparisonHarness {
 
                             // ---- 2. Iterative-deepening RB ----
                             long t1 = System.nanoTime();
-                            RbResult rb = iterativeDeepeningRb(x, y, dag, oracle, p);
+                            RbResult rb = reResult(x, y, dag, oracle, p);
                             long rbNs = System.nanoTime() - t1;
 
                             totalRbMs += rbNs / 1_000_000;
@@ -264,13 +264,13 @@ public class SepsetComparisonHarness {
     // Iterative-deepening recursive blocking
     // -----------------------------------------------------------------------
 
-    private static RbResult iterativeDeepeningRb(
+    private static RbResult reResult(
             Node x, Node y, Graph dag, MsepTest oracle, int p) {
 
         int ceiling = (MAX_RECURSION_DEPTH < 0) ? p : MAX_RECURSION_DEPTH;
 
         try {
-            for (int pathLen = 0; pathLen <= ceiling; pathLen++) {
+//            for (int pathLen = 0; pathLen <= ceiling; pathLen++) {
 
                 if (Thread.currentThread().isInterrupted()) {
                     return new RbResult(0, -1, false);
@@ -282,7 +282,7 @@ public class SepsetComparisonHarness {
                         RecursiveBlocking.blockPathsRecursivelyFull(
                                 dag, x, y,
                                 Set.of(), Set.of(),
-                                pathLen,
+                                MAX_RECURSION_DEPTH,
                                 RB_DEPTH,
                                 RB_MAX_RADIUS,
                                 RB_NEAR_ENDPOINT,
@@ -304,7 +304,7 @@ public class SepsetComparisonHarness {
                 }
 
                 // INDETERMINATE — try next path length.
-            }
+//            }
 
             // Ceiling reached without resolution.
             return new RbResult(0, -1, false);

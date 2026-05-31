@@ -125,7 +125,7 @@ public class SepsetComparisonPagHarness {
                             if (x == y || pag.paths().markovBlanket(x).contains(y)) continue;
 
                             long t1 = System.nanoTime();
-                            RbResult rb = iterativeDeepeningRb(x, y, pag, oracle);
+                            RbResult rb = rbResult(x, y, pag, oracle);
                             long rbNs = System.nanoTime() - t1;
 
                             totalRbMs += rbNs / 1_000_000;
@@ -210,13 +210,13 @@ public class SepsetComparisonPagHarness {
     // Iterative-deepening recursive blocking
     // -----------------------------------------------------------------------
 
-    private static RbResult iterativeDeepeningRb(
+    private static RbResult rbResult(
             Node x, Node y, Graph pag, MsepTest oracle) {
 
         int ceiling = RB_RECURSION_DEPTH;
 
         try {
-            for (int recursiveDepth = 0; recursiveDepth <= ceiling; recursiveDepth++) {
+//            for (int recursiveDepth = 0; recursiveDepth <= ceiling; recursiveDepth++) {
 
                 if (Thread.currentThread().isInterrupted()) {
                     return new RbResult(0, -1, false);
@@ -228,7 +228,7 @@ public class SepsetComparisonPagHarness {
                         RecursiveBlocking.blockPathsRecursivelyFull(
                                 pag, x, y,
                                 Set.of(), Set.of(),
-                                recursiveDepth,
+                                RB_RECURSION_DEPTH,
                                 RB_DEPTH,
                                 RB_MAX_RADIUS,
                                 RB_NEAR_ENDPOINT,
@@ -252,7 +252,7 @@ public class SepsetComparisonPagHarness {
                 }
 
                 // INDETERMINATE — recursion depth cap was hit; try next depth.
-            }
+//            }
 
             // Ceiling reached without finding a separator or proving impossibility.
             return new RbResult(0, -1, false);

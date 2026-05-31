@@ -57,7 +57,7 @@ import java.util.concurrent.TimeoutException;
  * </ul>
  */
 public class RecursiveBlocking {
-    private static final int MAX_TOTAL_FRAMES = 100_000;
+    private static final int MAX_TOTAL_FRAMES = 1_000_000;
 
     private RecursiveBlocking() {
     }
@@ -97,7 +97,7 @@ public class RecursiveBlocking {
                                                       int recursiveDepth,
                                                       long deadlineMs)
             throws InterruptedException, TimeoutException {
-        return blockPathsIterativeDeepening(graph, x, y, containing, notFollowed,
+        return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
                 recursiveDepth, 8, 4, 1, true,
                 deadlineMs).blockingSet();
     }
