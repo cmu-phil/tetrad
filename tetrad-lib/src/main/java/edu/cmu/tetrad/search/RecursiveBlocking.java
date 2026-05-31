@@ -57,7 +57,7 @@ import java.util.concurrent.TimeoutException;
  * </ul>
  */
 public class RecursiveBlocking {
-    private static final int MAX_TOTAL_FRAMES = 1_000_000;
+    private static final int MAX_TOTAL_FRAMES = 50_000;
 
     private RecursiveBlocking() {
     }
@@ -860,7 +860,7 @@ public class RecursiveBlocking {
 //            }
 
             if (++totalFrames[0] > MAX_TOTAL_FRAMES) {
-                System.err.println("Recursive blocking: Too many frames: " + totalFrames[0] + " (max " + MAX_TOTAL_FRAMES + ")");
+//                System.err.println("Recursive blocking: Too many frames: " + totalFrames[0] + " (max " + MAX_TOTAL_FRAMES + ")");
                 return Blockable.INDETERMINATE;
             }
 

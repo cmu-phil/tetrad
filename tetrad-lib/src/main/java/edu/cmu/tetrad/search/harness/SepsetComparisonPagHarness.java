@@ -224,7 +224,7 @@ public class SepsetComparisonPagHarness {
 
                 long deadlineMs = System.currentTimeMillis() + PAIR_TIMEOUT_MS;
 
-                RecursiveBlocking.BlockingResult result =
+                RecursiveBlocking.BlockingResult result =   
                         RecursiveBlocking.blockPathsRecursivelyFull(
                                 pag, x, y,
                                 Set.of(), Set.of(),
