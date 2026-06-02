@@ -175,6 +175,8 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
             search.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.GRASP);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 3) {
             search.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.SP);
+        } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 4) {
+            search.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.COMPLETE_GRAPH);
         } else {
             throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCIT_STARTS_WITH));
         }

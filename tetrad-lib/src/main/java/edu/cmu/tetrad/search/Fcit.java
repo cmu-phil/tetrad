@@ -323,8 +323,6 @@ public final class Fcit implements IGraphSearch {
         List<Node> best;
         long start1 = System.currentTimeMillis();
 
-//        startWith = START_WITH.COMPLETE_GRAPH;
-
         if (startWith != START_WITH.COMPLETE_GRAPH) {
             if (startWith == START_WITH.BOSS) {
 
@@ -561,6 +559,33 @@ public final class Fcit implements IGraphSearch {
      *
      * @return true if at least one edge was removed, false otherwise
      */
+//    private boolean removeEdgesRecursively(Set<IndependenceCheck> checks, boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
+//        if (superVerbose) {
+//            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
+//        }
+//
+//        boolean changed = false;
+//
+//        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
+//        // there in this graph.
+//        Set<Edge> edgePool = new HashSet<>(this.pag.getEdges());
+//
+//        List<Result> results = findIndependenceChecksRecursive(edgePool, checks);
+//
+//        if (verbose) {
+//            System.out.println();
+//        }
+//
+//        for (Result result : results) {
+//            Edge edge = result.edge();
+//            Set<Node> b = result.cond();
+//            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "recursive", excludeSelectionBias, unshieldedTriples);
+//            changed |= didChange;
+//        }
+//
+//        return changed;
+//    }
+
     private boolean removeEdgesRecursively(Set<IndependenceCheck> checks, boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
@@ -580,8 +605,33 @@ public final class Fcit implements IGraphSearch {
 
         for (Result result : results) {
             Edge edge = result.edge();
-            Set<Node> b = result.cond();
-            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "recursive", excludeSelectionBias, unshieldedTriples);
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            // The checks in `results` were computed against the PAG as it stood at the start of this round.
+            // Earlier removals/reorientations in this same loop can change the paths between x and y, and hence
+            // the conditioning sets recursive blocking proposes. So recalculate the independence check against
+            // the *current* graph before committing the removal. If the edge is already gone, or no separating
+            // set can be found given the current structure, skip it.
+            if (!this.pag.isAdjacentTo(x, y)) {
+                continue;
+            }
+
+            Set<Node> b;
+
+            try {
+                IndependenceCheck recheck = findIndependenceCheckRecursive(edge, checks);
+
+                if (recheck == null) {
+                    continue;
+                }
+
+                b = recheck.cond();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+            boolean didChange = tryToModifyGraph(x, y, b, "recursive", excludeSelectionBias, unshieldedTriples);
             changed |= didChange;
         }
 
@@ -723,6 +773,7 @@ public final class Fcit implements IGraphSearch {
         Graph _pag = new EdgeListGraph(pag);
 
         this.pag.removeEdge(_edge);
+
         Set<Node> sepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets,excludeSelectionBias, superVerbose);
