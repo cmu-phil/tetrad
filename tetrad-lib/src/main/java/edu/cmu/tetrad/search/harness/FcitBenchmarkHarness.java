@@ -405,13 +405,15 @@ public class FcitBenchmarkHarness {
     }
 
     private static Graph runIcd(IndTestFisherZ test) {
-        try {
-            return new Icd(test).search();
-        } catch (InterruptedException e) {
-            // Thread was interrupted by the timeout cancellation — propagate cleanly
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("ICD interrupted", e);
-        }
+//        try {
+//            return new Icd(test).search();
+
+            return new EdgeListGraph(test.getVariables());
+//        } catch (InterruptedException e) {
+//            // Thread was interrupted by the timeout cancellation — propagate cleanly
+//            Thread.currentThread().interrupt();
+//            throw new RuntimeException("ICD interrupted", e);
+//        }
     }
 
     // ────────────────────────────────────────────────────────────────────────

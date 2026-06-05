@@ -41,6 +41,38 @@ import java.util.concurrent.TimeoutException;
  * are eligible. A {@code depth} parameter additionally caps the total size of
  * Z; attempts to exceed it are likewise treated as {@code INDETERMINATE}.</p>
  *
+ * <p><b>Continuation memoization (clique optimization).</b> Within a single
+ * {@code findPathToTargetVisit} call, the verdict for a frame is, in the
+ * common case, a pure function of the incoming pair {@code (a, b)} and the
+ * conditioning set {@code z} in effect at frame entry: {@code reachable}
+ * inspects only the triple {@code (a, b, c)} and {@code z}, so two frames that
+ * arrive at the same {@code b} from the same {@code a} under the same entry
+ * {@code z} explore identical continuations and reach the same verdict. This
+ * recurs heavily inside cliques, where many distinct path prefixes converge on
+ * the same node. We cache such verdicts keyed on {@code (a, b, z)} and reuse
+ * them on later arrivals.</p>
+ *
+ * <p>The cache is <em>not</em> a pure function of {@code (a, b, z)} in one
+ * situation: a frame can return {@code BLOCKED} early because its node already
+ * lies on the current {@code path} (a cycle hit). That verdict is an artifact
+ * of <em>where we came from</em>, not an intrinsic property of {@code (a, b, z)},
+ * so it must never be cached, and any ancestor frame whose verdict was computed
+ * using such a child verdict must also not be cached. We track this with a
+ * {@code pathTainted} flag that propagates from child to parent. Only untainted,
+ * non-{@code INDETERMINATE} verdicts are stored. {@code INDETERMINATE} verdicts
+ * are never cached because they reflect a search-limit (recursion depth, frame
+ * cap) rather than a graph fact, and could resolve differently in another
+ * context.</p>
+ *
+ * <p>The cache lives for the duration of one {@code findPathToTargetVisit}
+ * call. It is deliberately <em>not</em> shared across the outer fixed-point
+ * iterations in {@code blockPathsRecursivelyAdj}, nor across first hops,
+ * because {@code z} grows between those calls and a per-call cache keeps every
+ * key consistent with the {@code z} actually in effect when the frame was
+ * entered. The clique redundancy Bryan identified occurs entirely within a
+ * single DFS call, so this scoping captures the win while keeping the
+ * correctness argument simple.</p>
+ *
  * <p>Key features:</p>
  * <ul>
  *   <li>Respects PAG semantics for colliders, non-colliders, and latent nodes.</li>
@@ -850,6 +882,12 @@ public class RecursiveBlocking {
         callStack.push(new Frame(aInit, bInit, y,
                 depth, recursiveDepth, currentRecursiveDepth));
 
+        // Continuation memoization cache, scoped to this single DFS call.
+        // Key: (a, b, entry-z). Value: the untainted verdict for that frame.
+        // See class doc for the correctness argument (taint propagation,
+        // INDETERMINATE never cached, per-call scope to keep z consistent).
+        Map<MemoKey, Blockable> memo = new HashMap<>();
+
         Blockable lastResult = null;
 
         while (!callStack.isEmpty()) {
@@ -871,31 +909,51 @@ public class RecursiveBlocking {
             // =================================================================
             if (f.pass == Pass.ENTER) {
                 if (f.currentRecursiveDepth > f.recursiveDepth) {
+                    // INDETERMINATE: search-limit, not a graph fact. Never cached.
                     callStack.pop();
-                    lastResult = Blockable.INDETERMINATE;
+                    lastResult = finishFrame(f, Blockable.INDETERMINATE, callStack, memo);
                     continue;
                 }
 
                 if (f.b == y) {
                     callStack.pop();
-                    lastResult = Blockable.UNBLOCKABLE;
+                    lastResult = finishFrame(f, Blockable.UNBLOCKABLE, callStack, memo);
                     continue;
                 }
                 if (path.contains(f.b)) {
+                    // Cycle hit: this BLOCKED verdict is path-dependent, so it
+                    // must never be cached, and any ancestor that consumes it
+                    // must be tainted. Mark the parent tainted directly here.
                     callStack.pop();
+                    Frame parent = callStack.peek();
+                    if (parent != null) parent.pathTainted = true;
                     lastResult = Blockable.BLOCKED;
                     continue;
                 }
                 if (notFollowed.contains(f.b)) {
                     callStack.pop();
-                    lastResult = Blockable.INDETERMINATE;
+                    lastResult = finishFrame(f, Blockable.INDETERMINATE, callStack, memo);
                     continue;
                 }
                 if (notFollowed.contains(y)) {
                     callStack.pop();
-                    lastResult = Blockable.BLOCKED;
+                    lastResult = finishFrame(f, Blockable.BLOCKED, callStack, memo);
                     continue;
                 }
+
+                // ---- MEMO LOOKUP ----
+                // z here is the entry z for this frame. If we have already
+                // computed an untainted verdict for (a, b, z), reuse it.
+                MemoKey key = new MemoKey(f.a, f.b, z);
+                Blockable cached = memo.get(key);
+                if (cached != null) {
+                    callStack.pop();
+                    // A cached verdict is by construction untainted, so we do
+                    // not taint the parent and do not re-store. Just return it.
+                    lastResult = cached;
+                    continue;
+                }
+                f.cacheKey = key;   // store on a successful, untainted pop
 
                 path.add(f.b);
 
@@ -919,7 +977,7 @@ public class RecursiveBlocking {
                         z.addAll(f.zSnapshot);
                         path.remove(f.b);
                         callStack.pop();
-                        lastResult = Blockable.INDETERMINATE;
+                        lastResult = finishFrame(f, Blockable.INDETERMINATE, callStack, memo);
                         continue;
                     } else if (lastResult == Blockable.UNBLOCKABLE) {
                         // Record that this continuation was unblockable, but
@@ -962,7 +1020,7 @@ public class RecursiveBlocking {
                 if (f.b.getNodeType() == NodeType.LATENT) {
                     path.remove(f.b);
                     callStack.pop();
-                    lastResult = contResult;
+                    lastResult = finishFrame(f, contResult, callStack, memo);
                     continue;
                 }
 
@@ -970,7 +1028,7 @@ public class RecursiveBlocking {
                     // Branch A succeeded without adding b — done.
                     path.remove(f.b);
                     callStack.pop();
-                    lastResult = Blockable.BLOCKED;
+                    lastResult = finishFrame(f, Blockable.BLOCKED, callStack, memo);
                     continue;
                 }
 
@@ -983,13 +1041,13 @@ public class RecursiveBlocking {
                 if (!pool.contains(f.b)) {
                     path.remove(f.b);
                     callStack.pop();
-                    lastResult = Blockable.UNBLOCKABLE;
+                    lastResult = finishFrame(f, Blockable.UNBLOCKABLE, callStack, memo);
                     continue;
                 }
                 if (f.depth >= 0 && z.size() >= f.depth) {
                     path.remove(f.b);
                     callStack.pop();
-                    lastResult = Blockable.UNBLOCKABLE;
+                    lastResult = finishFrame(f, Blockable.UNBLOCKABLE, callStack, memo);
                     continue;
                 }
 
@@ -1016,7 +1074,7 @@ public class RecursiveBlocking {
                         z.addAll(f.zSnapshot);
                         path.remove(f.b);
                         callStack.pop();
-                        lastResult = Blockable.INDETERMINATE;
+                        lastResult = finishFrame(f, Blockable.INDETERMINATE, callStack, memo);
                         continue;
                     } else if (lastResult == Blockable.UNBLOCKABLE) {
                         // Record unblockable but keep iterating.
@@ -1055,22 +1113,66 @@ public class RecursiveBlocking {
                     // Branch B succeeded.
                     path.remove(f.b);
                     callStack.pop();
-                    lastResult = Blockable.BLOCKED;
+                    lastResult = finishFrame(f, Blockable.BLOCKED, callStack, memo);
                 } else {
                     // Both branches failed. Restore Z snapshot.
                     z.clear();
                     z.addAll(f.zSnapshot);
                     path.remove(f.b);
                     callStack.pop();
-                    lastResult = (contResult == Blockable.INDETERMINATE
+                    Blockable combined = (contResult == Blockable.INDETERMINATE
                             || f.withoutBResult == Blockable.INDETERMINATE)
                             ? Blockable.INDETERMINATE
                             : Blockable.UNBLOCKABLE;
+                    lastResult = finishFrame(f, combined, callStack, memo);
                 }
             }
         }
 
         return lastResult;
+    }
+
+    /**
+     * Finalizes a frame that has just been popped: propagates path-taint to the
+     * parent (now on top of the stack) and stores the verdict in {@code memo}
+     * when it is safe to do so.
+     *
+     * <p>Caching rules:</p>
+     * <ul>
+     *   <li>If the frame is {@code pathTainted}, its verdict was computed using
+     *       a path-dependent ({@code path.contains}) child result, so it must
+     *       not be cached, and its parent must inherit the taint.</li>
+     *   <li>{@code INDETERMINATE} verdicts are never cached — they reflect a
+     *       search-limit (recursion-depth or frame cap), not a graph fact, and
+     *       a different context could resolve them differently.</li>
+     *   <li>Otherwise the verdict is a pure function of {@code (a, b, entry-z)}
+     *       and is stored under {@code f.cacheKey} (set at lookup time).</li>
+     * </ul>
+     *
+     * <p>This must be called <em>after</em> {@code callStack.pop()} so that
+     * {@code callStack.peek()} returns the parent frame.</p>
+     *
+     * @param f         the just-popped frame
+     * @param result    the verdict this frame is returning
+     * @param callStack the stack, with the parent (if any) now on top
+     * @param memo      the per-call memoization cache
+     * @return {@code result}, for convenient assignment to {@code lastResult}
+     */
+    private static Blockable finishFrame(Frame f,
+                                         Blockable result,
+                                         Deque<Frame> callStack,
+                                         Map<MemoKey, Blockable> memo) {
+        if (f.pathTainted) {
+            Frame parent = callStack.peek();
+            if (parent != null) parent.pathTainted = true;
+            return result;
+        }
+
+        if (result != Blockable.INDETERMINATE && f.cacheKey != null) {
+            memo.put(f.cacheKey, result);
+        }
+
+        return result;
     }
 
 
@@ -1246,6 +1348,52 @@ public class RecursiveBlocking {
     }
 
     // -----------------------------------------------------------------------
+    // Memoization key
+    // -----------------------------------------------------------------------
+
+    /**
+     * Memoization key for {@link #findPathToTargetVisit}: the verdict for a
+     * frame is, when untainted, a pure function of the incoming pair
+     * {@code (a, b)} and the conditioning set {@code z} in effect at frame
+     * entry.
+     *
+     * <p>The {@code z} component is defensively copied into an immutable set at
+     * construction so that subsequent mutation of the live {@code z} (Branch B
+     * adds {@code b}) does not corrupt keys already stored in the map.</p>
+     */
+    private static final class MemoKey {
+        private final Node a;
+        private final Node b;
+        private final Set<Node> z;
+        private final int hash;
+
+        MemoKey(Node a, Node b, Set<Node> z) {
+            this.a = a;
+            this.b = b;
+            // Immutable snapshot; HashSet copy gives O(1) contains/equals and
+            // decouples the key from later mutation of the live z.
+            this.z = new HashSet<>(z);
+            this.hash = Objects.hash(a, b, this.z);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof MemoKey)) return false;
+            MemoKey other = (MemoKey) o;
+            return hash == other.hash
+                    && a == other.a
+                    && b == other.b
+                    && z.equals(other.z);
+        }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
+    }
+
+    // -----------------------------------------------------------------------
     // Corrected Frame — adds hadUnblockableWithout and hadUnblockableWith flags
     // -----------------------------------------------------------------------
 
@@ -1303,6 +1451,16 @@ public class RecursiveBlocking {
         // UNBLOCKABLE child result.
         boolean hadUnblockableWithout = false;
         boolean hadUnblockableWith = false;
+
+        // Memoization support.
+        // pathTainted: true iff this frame's verdict was computed using a
+        //   path-dependent (cycle-hit) child verdict. Tainted verdicts are
+        //   never cached and propagate taint to the parent.
+        // cacheKey: the (a, b, entry-z) key under which to store this frame's
+        //   verdict on an untainted pop. null means "do not store" (either no
+        //   lookup was performed, or the frame exited before lookup).
+        boolean pathTainted = false;
+        MemoKey cacheKey = null;
 
         Frame(Node a, Node b, Node y,
               int depth, int recursiveDepth, int currentRecursiveDepth) {
