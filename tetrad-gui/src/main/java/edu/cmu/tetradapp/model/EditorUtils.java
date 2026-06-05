@@ -136,6 +136,7 @@ public class EditorUtils {
         } else {
             fileSaveLocation = saveLocation;
         }
+
         File dir = new File(fileSaveLocation);
         chooser.setCurrentDirectory(dir);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -175,18 +176,6 @@ public class EditorUtils {
 
                 continue;
             }
-
-//            outfile = chooser.getSelectedFile();
-//
-//            if (outfile.exists()) {
-//                int ret2 = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-//                        "Overwrite existing file?", "", JOptionPane.YES_NO_OPTION);
-//                if (ret2 == JOptionPane.YES_OPTION) {
-//                    break;
-//                }
-//
-//                continue;
-//            }
 
             int ret3 = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                     "Save to directory " + outfile.getParent() + "?",

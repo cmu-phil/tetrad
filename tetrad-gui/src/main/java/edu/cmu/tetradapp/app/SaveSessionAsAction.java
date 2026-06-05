@@ -59,50 +59,6 @@ public final class SaveSessionAsAction extends AbstractAction {
         super("Save Session As...");
     }
 
-//    /**
-//     * Given a desired file path, returns the first unused filename in the sequence.
-//     * For example, if "untitled1.tet" exists, tries "untitled2.tet", "untitled3.tet", etc.
-//     * If the given file does not exist, it is returned as-is.
-//     *
-//     * @param file the initially desired file
-//     * @return the first file in the sequence that does not yet exist on disk
-//     */
-//    public static File nextAvailableFile(File file) {
-//        if (!file.exists()) {
-//            return file;
-//        }
-//
-//        String name = file.getName();
-//        String parent = file.getParent();
-//        String ext = "";
-//        String base = name;
-//
-//        int dotIndex = name.lastIndexOf('.');
-//        if (dotIndex >= 0) {
-//            ext = name.substring(dotIndex);       // e.g. ".tet"
-//            base = name.substring(0, dotIndex);   // e.g. "untitled1"
-//        }
-//
-//        // Strip any trailing digits from base to get the stem, e.g. "untitled"
-//        String stem = base.replaceAll("\\d+$", "");
-//
-//        // Find the starting index -- if base had digits, start after the highest used
-//        int index = 1;
-//        String digitsStr = base.substring(stem.length());
-//        if (!digitsStr.isEmpty()) {
-//            index = Integer.parseInt(digitsStr) + 1;
-//        }
-//
-//        // Walk forward until we find an unused filename
-//        while (true) {
-//            File candidate = new File(parent, stem + index + ext);
-//            if (!candidate.exists()) {
-//                return candidate;
-//            }
-//            index++;
-//        }
-//    }
-
     /**
      * {@inheritDoc}
      * <p>
@@ -121,10 +77,6 @@ public final class SaveSessionAsAction extends AbstractAction {
         String sessionSaveLocation =
                 Preferences.userRoot().get("sessionSaveLocation", "");
 
-        // Get the next available filename before presenting the save dialog,
-        // so the user is never defaulted into overwriting an existing session.
-//        String defaultName = "untitled";
-
         // If the session already has a name, default the dialog to it (and request
         // overwrite so the suggestion is exactly that name, not name{n}); otherwise
         // fall back to a fresh "untitled".
@@ -136,11 +88,6 @@ public final class SaveSessionAsAction extends AbstractAction {
                 defaultName, "tet",
                 JOptionUtils.centeringComp(), haveName, "Save Session As...",
                 sessionSaveLocation);
-
-//        File file = EditorUtils.getSaveFileWithPath(
-//                defaultName, "tet",
-//                JOptionUtils.centeringComp(), false, "Save Session As...",
-//                sessionSaveLocation);
 
         if (file == null) {
             saved = false;
