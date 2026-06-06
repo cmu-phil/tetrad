@@ -777,7 +777,7 @@ public final class Fcit implements IGraphSearch {
         Set<Node> sepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets,excludeSelectionBias, superVerbose);
-        if (/*!(test instanceof MsepTest) &&*/ !PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
+        if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
             if (verbose) {
                 TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
                         + " reasons, but it didn't lead to a PAG, sepset = " + b);
