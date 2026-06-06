@@ -131,13 +131,9 @@ public final class CdnodBoss implements IGraphSearch {
 
         // RB hint (bounded; skip if adjacent)
         if (!g.isAdjacentTo(x,y)) {
-            Set<Node> rb = null;
-            try {
-                rb = RecursiveBlocking.blockPathsRecursively(g, x, y, Set.of(), Set.of(), /*L*/ 8,
-                        Long.MAX_VALUE);
-            } catch (TimeoutException e) {
-                throw new RuntimeException(e);
-            }
+            Set<Node> rb = RecursiveBlocking.blockPathsRecursively(
+                        g, x, y, Set.of(), Set.of(), -1, -1, -1, 1, true).blockingSet();
+
             if (rb != null) {
                 IndependenceResult r = test.checkIndependence(x, y, rb);
                 if (r.isIndependent()) { sepsets.set(x, y, rb); return rb; }

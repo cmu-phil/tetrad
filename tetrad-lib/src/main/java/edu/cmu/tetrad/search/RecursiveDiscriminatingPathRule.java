@@ -84,7 +84,7 @@ public class RecursiveDiscriminatingPathRule {
 
 //        List<Node> notFollowedSuperset = getVNodes(pag, x, y, maxDdpPathLength);
 
-        RecursiveBlocking.BlockingResult result0 = RecursiveBlocking.blockPathsRecursivelyFull(
+        RecursiveBlocking.BlockingResult result0 = RecursiveBlocking.blockPathsRecursively(
                 pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, -1,
                 1, true);
 
@@ -113,7 +113,7 @@ public class RecursiveDiscriminatingPathRule {
         while ((choice = gen.next()) != null) {
             Set<Node> vNodesNotFollowed = GraphUtils.asSet(choice, notFollowedSuperset);
 
-            RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursivelyFull(
+            RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(
                     pag, x, y, Set.of(), vNodesNotFollowed, recursiveDepth, depth, -1,
                     1, true);
 

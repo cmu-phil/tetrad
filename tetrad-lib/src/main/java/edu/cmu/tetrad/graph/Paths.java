@@ -2072,8 +2072,11 @@ public class Paths implements TetradSerializable {
      */
     public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, int maxPathLength)
             throws InterruptedException, TimeoutException {
-        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, Set.of(), maxPathLength,
-                System.currentTimeMillis() + 5000L);
+//        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, Set.of(), maxPathLength,
+//                );System.currentTimeMillis() + 5000L
+        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(
+                graph, x, y, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true, System.currentTimeMillis() + 5000L).blockingSet();
+
 
         // TODO - should allow the user to determine whether this is a PAG.
         if (isMSeparatedFrom(x, y, blocking, false)) {

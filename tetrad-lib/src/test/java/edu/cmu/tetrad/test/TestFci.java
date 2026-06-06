@@ -587,7 +587,7 @@ public class TestFci {
         try {
             Set<Node> result;
             try {
-                result = RecursiveBlocking.blockPathsRecursivelyFull(mag, x, y, (Set<Node>) new HashSet<Node>(), (Set<Node>) new HashSet<Node>(),
+                result = RecursiveBlocking.blockPathsRecursively(mag, x, y, (Set<Node>) new HashSet<Node>(), (Set<Node>) new HashSet<Node>(),
                         -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
             } catch (TimeoutException e) {
                 throw new RuntimeException(e);
@@ -630,7 +630,7 @@ public class TestFci {
 
         Set<Node> result;
         try {
-            result = RecursiveBlocking.blockPathsRecursivelyFull(g, x, y, (Set<Node>) new HashSet<Node>(), (Set<Node>) new HashSet<Node>(),
+            result = RecursiveBlocking.blockPathsRecursively(g, x, y, (Set<Node>) new HashSet<Node>(), (Set<Node>) new HashSet<Node>(),
                     -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
         } catch (TimeoutException e) {
             throw new RuntimeException(e);

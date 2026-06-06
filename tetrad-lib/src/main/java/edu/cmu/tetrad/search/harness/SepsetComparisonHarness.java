@@ -279,7 +279,7 @@ public class SepsetComparisonHarness {
                 long deadlineMs = System.currentTimeMillis() + PAIR_TIMEOUT_MS;
 
                 RecursiveBlocking.BlockingResult result =
-                        RecursiveBlocking.blockPathsRecursivelyFull(
+                        RecursiveBlocking.blockPathsRecursively(
                                 dag, x, y,
                                 Set.of(), Set.of(),
                                 MAX_RECURSION_DEPTH,

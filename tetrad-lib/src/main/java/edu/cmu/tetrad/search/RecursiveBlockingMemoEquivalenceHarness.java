@@ -101,7 +101,7 @@ public final class RecursiveBlockingMemoEquivalenceHarness {
 
                     RecursiveBlocking.BlockingResult result;
                     try {
-                        result = RecursiveBlocking.blockPathsRecursivelyFull(
+                        result = RecursiveBlocking.blockPathsRecursively(
                                 pag, x, y,
                                 new HashSet<>(),   // containing
                                 new HashSet<>(),   // notFollowed

@@ -94,88 +94,123 @@ public class RecursiveBlocking {
     private RecursiveBlocking() {
     }
 
+//    /**
+//     * Blocks paths between two specified nodes in a graph by iteratively
+//     * identifying and selecting nodes to include in a blocking set, subject to
+//     * constraints on recursion depth and traversal rules. Assumes a direct edge
+//     * between x and y is to be ignored.
+//     *
+//     * <p>This overload collapses UNBLOCKABLE and INDETERMINATE both to
+//     * {@code null} for backward compatibility. Use
+//     * {@link #blockPathsRecursivelyFull} when the distinction matters.</p>
+//     *
+//     * @param graph          the graph in which the nodes and paths are analyzed
+//     * @param x              the starting node of the path
+//     * @param y              the target node of the path
+//     * @param containing     a set of nodes that must be included in the blocking set
+//     * @param notFollowed    a set of nodes that must not be traversed during path search
+//     * @param recursiveDepth the maximum allowable recursion depth of the paths to block (-1 for no limit)
+//     * @param <E>            the type of the graph nodes
+//     * @param deadlineMs     the deadline for the operation (in milliseconds)
+//     * @return a set of nodes constituting a blocking set for paths between x and y,
+//     * or {@code null} if no such set is found within the given constraints
+//     * @throws InterruptedException if the thread executing the method is interrupted
+//     * @throws TimeoutException     if the operation times out
+//     */
+//    public static <E> Set<Node> blockPathsRecursively(Graph graph,
+//                                                      Node x,
+//                                                      Node y,
+//                                                      Set<Node> containing,
+//                                                      Set<Node> notFollowed,
+//                                                      int recursiveDepth,
+//                                                      long deadlineMs)
+//            throws InterruptedException, TimeoutException {
+//        return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
+//                recursiveDepth, 8, 4, 1, true,
+//                deadlineMs).blockingSet();
+//    }
+
     // -----------------------------------------------------------------------
     // Result type
     // -----------------------------------------------------------------------
 
     /**
-     * Blocks paths between two specified nodes in a graph by iteratively
-     * identifying and selecting nodes to include in a blocking set, subject to
-     * constraints on recursion depth and traversal rules. Assumes a direct edge
-     * between x and y is to be ignored.
+     * Convenience overload of {@link #blockPathsRecursively} with no deadline.
+     */
+    public static BlockingResult blockPathsRecursively(Graph graph,
+                                                       Node x,
+                                                       Node y,
+                                                       Set<Node> containing,
+                                                       Set<Node> notFollowed,
+                                                       int recursiveDepth,
+                                                       int depth,
+                                                       int maxRadius,
+                                                       int nearWhichEndpoint,
+                                                       boolean ignoreDirectEdge)
+            throws InterruptedException {
+        try {
+            return blockPathsRecursively(graph, x, y, containing, notFollowed,
+                    recursiveDepth, depth, maxRadius, nearWhichEndpoint,
+                    ignoreDirectEdge, Long.MAX_VALUE);
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Single canonical entry point for separating-set search.
      *
-     * <p>This overload collapses UNBLOCKABLE and INDETERMINATE both to
-     * {@code null} for backward compatibility. Use
-     * {@link #blockPathsRecursivelyFull} when the distinction matters.</p>
+     * <p>Dispatches to {@link #blockPathsRecursivelyFull} (depth-first with
+     * backtracking) or {@link #blockPathsIterativeDeepening} (iterative
+     * deepening on recursion depth) based on {@code strategy}, and returns a
+     * full {@link BlockingResult} distinguishing UNBLOCKABLE from
+     * INDETERMINATE.</p>
      *
-     * @param graph          the graph in which the nodes and paths are analyzed
-     * @param x              the starting node of the path
-     * @param y              the target node of the path
-     * @param containing     a set of nodes that must be included in the blocking set
-     * @param notFollowed    a set of nodes that must not be traversed during path search
-     * @param recursiveDepth the maximum allowable recursion depth of the paths to block (-1 for no limit)
-     * @param <E>            the type of the graph nodes
-     * @param deadlineMs     the deadline for the operation (in milliseconds)
-     * @return a set of nodes constituting a blocking set for paths between x and y,
-     * or {@code null} if no such set is found within the given constraints
-     * @throws InterruptedException if the thread executing the method is interrupted
+     * @param graph             the graph
+     * @param x                 first endpoint
+     * @param y                 second endpoint
+     * @param containing        nodes forced into Z (the seed set)
+     * @param notFollowed       nodes not to be traversed
+     * @param recursiveDepth    max recursion depth for RECURSIVE; ceiling for
+     *                          ITERATIVE_DEEPENING (-1 = graph.getNumNodes())
+     * @param depth             maximum size of Z (-1 = unlimited)
+     * @param maxRadius         BFS radius for the node pool (-1 = unlimited)
+     * @param nearWhichEndpoint 1 = near x, 2 = near y, 3 = near both
+     * @param ignoreDirectEdge  whether to ignore the direct x–y edge
+     * @param deadlineMs        deadline for the operation (in ms)
+     * @return a {@link BlockingResult} describing the outcome
+     * @throws InterruptedException if the thread is interrupted
      * @throws TimeoutException     if the operation times out
      */
-    public static <E> Set<Node> blockPathsRecursively(Graph graph,
-                                                      Node x,
-                                                      Node y,
-                                                      Set<Node> containing,
-                                                      Set<Node> notFollowed,
-                                                      int recursiveDepth,
-                                                      long deadlineMs)
+    public static BlockingResult blockPathsRecursively(Graph graph,
+                                                       Node x,
+                                                       Node y,
+                                                       Set<Node> containing,
+                                                       Set<Node> notFollowed,
+                                                       int recursiveDepth,
+                                                       int depth,
+                                                       int maxRadius,
+                                                       int nearWhichEndpoint,
+                                                       boolean ignoreDirectEdge,
+                                                       long deadlineMs)
             throws InterruptedException, TimeoutException {
-        return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
-                recursiveDepth, 8, 4, 1, true,
-                deadlineMs).blockingSet();
+
+        switch (DEFAULT_STRATEGY) {
+            case Strategy.ITERATIVE_DEEPENING:
+                return blockPathsIterativeDeepening(graph, x, y, containing, notFollowed,
+                        recursiveDepth, depth, maxRadius, nearWhichEndpoint,
+                        ignoreDirectEdge, deadlineMs);
+            case Strategy.RECURSIVE:
+            default:
+                return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
+                        recursiveDepth, depth, maxRadius, nearWhichEndpoint,
+                        ignoreDirectEdge, deadlineMs);
+        }
     }
 
     // -----------------------------------------------------------------------
     // Public entry points — Set<Node> convenience overloads (existing callers)
     // -----------------------------------------------------------------------
-
-    /**
-     * Full-parameter entry point, collapsing UNBLOCKABLE and INDETERMINATE to
-     * {@code null} for backward compatibility.
-     *
-     * <p>Use {@link #blockPathsRecursivelyFull} when the distinction matters.</p>
-     *
-     * @param graph             the graph
-     * @param x                 first endpoint
-     * @param y                 second endpoint
-     * @param containing        nodes forced into Z
-     * @param notFollowed       nodes not to be traversed
-     * @param recursiveDepth    maximum recursion depth (-1 = unlimited)
-     * @param maxRadius         BFS radius (-1 = unlimited)
-     * @param depth             maximum size of Z (-1 = unlimited)
-     * @param nearWhichEndpoint 1 = near x, 2 = near y, 3 = near both
-     * @param ignoreDirectEdge  whether to ignore direct edges between x and y
-     * @return a candidate blocking set, or {@code null}
-     * @throws InterruptedException if the thread is interrupted
-     */
-    public static Set<Node> blockPathsRecursively(Graph graph,
-                                                  Node x,
-                                                  Node y,
-                                                  Set<Node> containing,
-                                                  Set<Node> notFollowed,
-                                                  int recursiveDepth,
-                                                  int maxRadius,
-                                                  int depth,
-                                                  int nearWhichEndpoint,
-                                                  boolean ignoreDirectEdge)
-            throws InterruptedException {
-        try {
-            return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
-                    recursiveDepth, depth, maxRadius, nearWhichEndpoint,
-                    ignoreDirectEdge).blockingSet();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     /**
      * Full-parameter entry point returning a full {@link BlockingResult},
@@ -194,7 +229,7 @@ public class RecursiveBlocking {
      * @return a {@link BlockingResult} describing the outcome
      * @throws InterruptedException if the thread is interrupted
      */
-    public static BlockingResult blockPathsRecursivelyFull(Graph graph,
+    private static BlockingResult blockPathsRecursivelyFull(Graph graph,
                                                            Node x,
                                                            Node y,
                                                            Set<Node> containing,
@@ -231,7 +266,7 @@ public class RecursiveBlocking {
      * @throws InterruptedException if the thread is interrupted
      * @throws TimeoutException     if the search was interrupted
      */
-    public static BlockingResult blockPathsRecursivelyFull(Graph graph,
+    private static BlockingResult blockPathsRecursivelyFull(Graph graph,
                                                            Node x,
                                                            Node y,
                                                            Set<Node> containing,
@@ -317,7 +352,7 @@ public class RecursiveBlocking {
      * @throws InterruptedException if the thread is interrupted
      * @throws TimeoutException     if the search was interrupted
      */
-    public static BlockingResult blockPathsBfs(
+    private static BlockingResult blockPathsBfs(
             Graph graph,
             Node x,
             Node y,
@@ -412,7 +447,7 @@ public class RecursiveBlocking {
      * @return A {@link BlockingResult} object containing the result of the path blocking operation.
      * @throws InterruptedException If the thread executing this operation is interrupted.
      */
-    public static BlockingResult blockPathsIterativeDeepening(
+    private static BlockingResult blockPathsIterativeDeepening(
             Graph graph,
             Node x,
             Node y,
@@ -488,7 +523,7 @@ public class RecursiveBlocking {
      * @throws InterruptedException if the thread is interrupted
      * @throws TimeoutException     if the ceiling is reached without finding
      */
-    public static BlockingResult blockPathsIterativeDeepening(
+    private static BlockingResult blockPathsIterativeDeepening(
             Graph graph,
             Node x,
             Node y,
@@ -537,10 +572,6 @@ public class RecursiveBlocking {
         // Ceiling reached without finding a blocking set or proving UNBLOCKABLE.
         return new BlockingResult(null, true);
     }
-
-    // -----------------------------------------------------------------------
-    // BFS helpers
-    // -----------------------------------------------------------------------
 
     /**
      * Returns true iff {@code z} blocks every active path from {@code x} to
@@ -605,6 +636,10 @@ public class RecursiveBlocking {
 
         return true;
     }
+
+    // -----------------------------------------------------------------------
+    // BFS helpers
+    // -----------------------------------------------------------------------
 
     /**
      * Collects nodes that lie on active paths from {@code x} to {@code y}
@@ -699,10 +734,6 @@ public class RecursiveBlocking {
         return candidates;
     }
 
-    // -----------------------------------------------------------------------
-    // PathEntry helper for BFS
-    // -----------------------------------------------------------------------
-
     /**
      * Builds the set of nodes eligible to enter Z. When {@code maxRadius} is
      * -1, every graph node is returned (no restriction).
@@ -728,6 +759,10 @@ public class RecursiveBlocking {
 
         return pool;
     }
+
+    // -----------------------------------------------------------------------
+    // PathEntry helper for BFS
+    // -----------------------------------------------------------------------
 
     /**
      * Standard undirected BFS up to {@code maxRadius} hops from {@code seed}.
@@ -762,10 +797,6 @@ public class RecursiveBlocking {
         visited.remove(seed);
         return visited;
     }
-
-    // -----------------------------------------------------------------------
-    // Pool construction (BFS shells)
-    // -----------------------------------------------------------------------
 
     /**
      * Core fixed-point loop. Now returns a {@link BlockingResult} so callers
@@ -865,6 +896,10 @@ public class RecursiveBlocking {
         // Iteration cap reached without convergence.
         return new BlockingResult(null, true);
     }
+
+    // -----------------------------------------------------------------------
+    // Pool construction (BFS shells)
+    // -----------------------------------------------------------------------
 
     static Blockable findPathToTargetVisit(Graph graph,
                                            Node aInit, Node bInit, Node y,
@@ -1175,11 +1210,6 @@ public class RecursiveBlocking {
         return result;
     }
 
-
-    // -----------------------------------------------------------------------
-    // Core algorithm
-    // -----------------------------------------------------------------------
-
     private static Blockable stepContinuationLoop(
             Graph graph,
             Frame f,
@@ -1211,8 +1241,9 @@ public class RecursiveBlocking {
         return Blockable.BLOCKED;
     }
 
+
     // -----------------------------------------------------------------------
-    // Frame definition for the explicit stack
+    // Core algorithm
     // -----------------------------------------------------------------------
 
     private static List<Node> getReachableNodes(Graph graph,
@@ -1236,6 +1267,10 @@ public class RecursiveBlocking {
         }
         return passNodes;
     }
+
+    // -----------------------------------------------------------------------
+    // Frame definition for the explicit stack
+    // -----------------------------------------------------------------------
 
     private static boolean reachable(Graph graph,
                                      Node a,
@@ -1269,10 +1304,6 @@ public class RecursiveBlocking {
         }
     }
 
-    // -----------------------------------------------------------------------
-    // Iterative driver
-    // -----------------------------------------------------------------------
-
     private static void checkTimeout(long deadlineMs) throws InterruptedException, TimeoutException {
         if (deadlineMs > 0 && System.currentTimeMillis() > deadlineMs) {
             throw new TimeoutException("timed out");
@@ -1282,6 +1313,26 @@ public class RecursiveBlocking {
             throw new InterruptedException("interrupted");
         }
     }
+
+    // -----------------------------------------------------------------------
+    // Iterative driver
+    // -----------------------------------------------------------------------
+
+    /**
+     * Selects the search strategy used by {@link #blockPathsRecursively}.
+     */
+    public enum Strategy {
+        /**
+         * Depth-first with backtracking ({@link #blockPathsRecursivelyFull}).
+         */
+        RECURSIVE,
+        /**
+         * Iterative deepening on recursion depth ({@link #blockPathsIterativeDeepening}).
+         */
+        ITERATIVE_DEEPENING
+    }
+
+    public static Strategy DEFAULT_STRATEGY = Strategy.RECURSIVE;
 
     // -----------------------------------------------------------------------
     // Continuation-loop stepper

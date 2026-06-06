@@ -664,7 +664,7 @@ public final class Fcit implements IGraphSearch {
         final Node y = edge.getNode2();
 
         // Get full blocking set with no forbidden nodes
-        RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsRecursivelyFull(
+        RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsRecursively(
                 pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true);
 
         Set<Node> nfCandSet = new HashSet<>();
@@ -691,7 +691,7 @@ public final class Fcit implements IGraphSearch {
             RecursiveBlocking.BlockingResult result = null;
 
             if (this.depth < 0) {
-                result = RecursiveBlocking.blockPathsRecursivelyFull(
+                result = RecursiveBlocking.blockPathsRecursively(
                         pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true);
 
             } else {
@@ -703,7 +703,7 @@ public final class Fcit implements IGraphSearch {
 
                     if (depth > maxDepth) break;
 
-                    result = RecursiveBlocking.blockPathsRecursivelyFull(
+                    result = RecursiveBlocking.blockPathsRecursively(
                             pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true);
                 } while (result.indeterminate());
             }
