@@ -722,10 +722,6 @@ public final class Fcit implements IGraphSearch {
             List<Node> common = this.pag.getAdjacentNodes(x);
             common.retainAll(this.pag.getAdjacentNodes(y));
 
-    //            if (common.isEmpty()) {
-    //                continue;
-    //            }
-
             common.retainAll(B); // only nodes that actually are in B can be trimmed out
 
             SublistGenerator cGen = new SublistGenerator(common.size(), common.size());
