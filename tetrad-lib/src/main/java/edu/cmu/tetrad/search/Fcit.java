@@ -474,16 +474,12 @@ public final class Fcit implements IGraphSearch {
 
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
-        // In what follows, we look for sepsets to remove edges. After every removal we rebuild the PAG and
-        // optionally check to see if the Zhang MAG in the PAG is a legal MAG, and if not, reset the PAG
-        // and any changed sepsets) to the previous state. Repeat until no more edges are removed.
-        Set<IndependenceCheck> checks = new HashSet<>();
         int round = 0;
 
         do {
             System.out.println();
             System.out.println("Round: " + (++round));
-        } while (removeEdgesRecursively(checks, excludeSelectionBias, initialColliders));
+        } while (removeEdgesRecursively(excludeSelectionBias, initialColliders));
 
         if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -499,8 +495,6 @@ public final class Fcit implements IGraphSearch {
         for (Node node : latents) {
             node.setNodeType(NodeType.LATENT);
         }
-
-//        GraphUtils.applyForbiddenCircleResolution(pag, knowledge);
 
         TetradLogger.getInstance().log("FCIT finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
@@ -572,34 +566,7 @@ public final class Fcit implements IGraphSearch {
      *
      * @return true if at least one edge was removed, false otherwise
      */
-//    private boolean removeEdgesRecursively(Set<IndependenceCheck> checks, boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
-//        if (superVerbose) {
-//            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
-//        }
-//
-//        boolean changed = false;
-//
-//        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
-//        // there in this graph.
-//        Set<Edge> edgePool = new HashSet<>(this.pag.getEdges());
-//
-//        List<Result> results = findIndependenceChecksRecursive(edgePool, checks);
-//
-//        if (verbose) {
-//            System.out.println();
-//        }
-//
-//        for (Result result : results) {
-//            Edge edge = result.edge();
-//            Set<Node> b = result.cond();
-//            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "recursive", excludeSelectionBias, unshieldedTriples);
-//            changed |= didChange;
-//        }
-//
-//        return changed;
-//    }
-
-    private boolean removeEdgesRecursively(Set<IndependenceCheck> checks, boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
+    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
@@ -610,7 +577,7 @@ public final class Fcit implements IGraphSearch {
         // there in this graph.
         Set<Edge> edgePool = new HashSet<>(this.pag.getEdges());
 
-        List<Result> results = findIndependenceChecksRecursive(edgePool, checks);
+        List<Result> results = findIndependenceChecksRecursive(edgePool);
 
         if (verbose) {
             System.out.println();
@@ -633,7 +600,7 @@ public final class Fcit implements IGraphSearch {
             Set<Node> b;
 
             try {
-                IndependenceCheck recheck = findIndependenceCheckRecursive(edge, checks);
+                IndependenceCheck recheck = findIndependenceCheckRecursive(edge);
 
                 if (recheck == null) {
                     continue;
@@ -651,16 +618,15 @@ public final class Fcit implements IGraphSearch {
         return changed;
     }
 
-    private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Set<IndependenceCheck> checks) {
+    private List<Result> findIndependenceChecksRecursive(Set<Edge> edges) {
         return new HashSet<>(edges).parallelStream()
                 .filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null)
                 .filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge)
                         || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()))
                 .map(edge -> {
                     try {
-                        IndependenceCheck checkResult = findIndependenceCheckRecursive(edge, checks);
+                        IndependenceCheck checkResult = findIndependenceCheckRecursive(edge);
                         if (checkResult != null) {
-                            checks.add(checkResult);
                             return new Result(checkResult.edge(), checkResult.cond());
                         }
                         return null;
@@ -672,7 +638,7 @@ public final class Fcit implements IGraphSearch {
                 .collect(Collectors.toList());
     }
 
-    private IndependenceCheck findIndependenceCheckRecursive(Edge edge, Set<IndependenceCheck> checks) throws InterruptedException {
+    private IndependenceCheck findIndependenceCheckRecursive(Edge edge) throws InterruptedException {
         final Node x = edge.getNode1();
         final Node y = edge.getNode2();
 
@@ -731,71 +697,34 @@ public final class Fcit implements IGraphSearch {
                 continue; // No separating set possible for this NF; try another NF
             }
 
-            // Trim B by removing a subset C of common neighbors of x and y (only those present in B)
             List<Node> common = this.pag.getAdjacentNodes(x);
             common.retainAll(this.pag.getAdjacentNodes(y));
 
-            common.retainAll(B); // only nodes that actually are in B can be trimmed out
+            List<Node> definitelyRemove = new ArrayList<>();
+            for (Node c : common) {
+                if (this.pag.isDefCollider(x, c, y)) {
+                    definitelyRemove.add(c);
+                }
+            }
 
-            SublistGenerator cGen = new SublistGenerator(common.size(), common.size());
+            List<Node> removalCandidates = new ArrayList<>(common);
+            removalCandidates.removeAll(definitelyRemove);
+
+            SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
             int[] cChoice;
             while ((cChoice = cGen.next()) != null) {
                 if (!this.pag.isAdjacentTo(x, y)) break;
 
-                // Start from B, remove C
                 Set<Node> S = new HashSet<>(B);
-                Set<Node> C = GraphUtils.asSet(cChoice, common);
-
-//                // We don't want to condition on a known collider.
-//                boolean skip = false;
-//                for (Node c : C) {
-//                    if (this.pag.isDefCollider(x, c, y)) {
-//                        skip = true;
-//                        break;
-//                    }
-//                }
-//                if (skip) continue;
-//
-//                S.removeAll(C);
-//
-//                // Depth cap
-//                if (this.depth != -1 && S.size() > this.depth) continue;
-//
-//                IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
-//
-//                IndependenceCheck probe = new IndependenceCheck(edge, S);
-//                if (checks.contains(probe)) {
-//                    return probe;
-//                }
-//
-//                if (independenceResult.isIndependent()) {
-//                    return probe;
-//                }
-
-                // We don't want to condition on a known collider.
-                boolean skip = false;
-                for (Node c : C) {
-                    if (this.pag.isDefCollider(x, c, y)) {
-                        skip = true;
-                        break;
-                    }
-                }
-                if (skip) continue;
+                Set<Node> C = GraphUtils.asSet(cChoice, removalCandidates);
 
                 S.removeAll(C);
 
-                // Depth cap
                 if (this.depth != -1 && S.size() > this.depth) continue;
 
                 IndependenceCheck probe = new IndependenceCheck(edge, S);
-                if (checks.contains(probe)) {
-                    checkCounter.increment("findIndependenceCheckRecursive (cache hit, test skipped)");
-                    return probe;
-                }
-
                 checkCounter.increment("findIndependenceCheckRecursive (test executed)");
                 IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
-
                 if (independenceResult.isIndependent()) {
                     return probe;
                 }
