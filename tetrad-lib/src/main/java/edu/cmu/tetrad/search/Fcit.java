@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -169,6 +170,12 @@ public final class Fcit implements IGraphSearch {
      * which can affect the performance and accuracy of the search.
      */
     private int rbRadius = -1;
+
+    /**
+     * Counts conditional independence checks, broken down by call site, so we
+     * can measure how many tests the recursive-blocking optimization saves.
+     */
+    private final IndependenceCheckCounter checkCounter = new IndependenceCheckCounter();
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -499,6 +506,12 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
         TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
+        TetradLogger.getInstance().log(checkCounter.report());
+
+        CachedIndependenceQueries cache = findCache();
+        if (cache != null) {
+            TetradLogger.getInstance().log(cache.cacheReport());
+        }
 
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
@@ -733,6 +746,32 @@ public final class Fcit implements IGraphSearch {
                 Set<Node> S = new HashSet<>(B);
                 Set<Node> C = GraphUtils.asSet(cChoice, common);
 
+//                // We don't want to condition on a known collider.
+//                boolean skip = false;
+//                for (Node c : C) {
+//                    if (this.pag.isDefCollider(x, c, y)) {
+//                        skip = true;
+//                        break;
+//                    }
+//                }
+//                if (skip) continue;
+//
+//                S.removeAll(C);
+//
+//                // Depth cap
+//                if (this.depth != -1 && S.size() > this.depth) continue;
+//
+//                IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
+//
+//                IndependenceCheck probe = new IndependenceCheck(edge, S);
+//                if (checks.contains(probe)) {
+//                    return probe;
+//                }
+//
+//                if (independenceResult.isIndependent()) {
+//                    return probe;
+//                }
+
                 // We don't want to condition on a known collider.
                 boolean skip = false;
                 for (Node c : C) {
@@ -748,12 +787,14 @@ public final class Fcit implements IGraphSearch {
                 // Depth cap
                 if (this.depth != -1 && S.size() > this.depth) continue;
 
-                IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
-
                 IndependenceCheck probe = new IndependenceCheck(edge, S);
                 if (checks.contains(probe)) {
+                    checkCounter.increment("findIndependenceCheckRecursive (cache hit, test skipped)");
                     return probe;
                 }
+
+                checkCounter.increment("findIndependenceCheckRecursive (test executed)");
+                IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
 
                 if (independenceResult.isIndependent()) {
                     return probe;
@@ -926,6 +967,15 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
+     * Returns the independence-check counter for this run.
+     *
+     * @return the counter, with a per-site breakdown
+     */
+    public IndependenceCheckCounter getCheckCounter() {
+        return checkCounter;
+    }
+
+    /**
      * Enumeration representing different start options.
      */
     public enum START_WITH {
@@ -957,5 +1007,15 @@ public final class Fcit implements IGraphSearch {
     private record IndependenceCheck(Edge edge, Set<Node> cond) {
     }
 
+    /**
+     * Returns the CachedIndependenceQueries wrapping this run's test, if any,
+     * for cache-statistics reporting. Returns null if the test is not cached.
+     */
+    private CachedIndependenceQueries findCache() {
+        if (test instanceof CachedIndependenceQueries c) {
+            return c;
+        }
+        return null;
+    }
 }
 

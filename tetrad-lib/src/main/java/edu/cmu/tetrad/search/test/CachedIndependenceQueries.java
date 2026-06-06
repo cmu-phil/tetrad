@@ -10,6 +10,7 @@ import java.io.Serial;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * Shared cache + utilities for independence testing keyed by (X,Y|Z) using variable NAMES
@@ -61,6 +62,14 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
      * multiple threads.
      */
     private volatile ErrorPolicy errorPolicy = ErrorPolicy.TREAT_AS_INDEPENDENT;
+
+    /**
+     * Counts cache hits and misses so callers can see how many *distinct*
+     * queries actually reached the underlying test versus were served from
+     * cache. distinctQueries == misses == size of evalCache at steady state.
+     */
+    private final LongAdder cacheHits = new LongAdder();
+    private final LongAdder cacheMisses = new LongAdder();
 
     /**
      * Default constructor for the CachedIndependenceQueries class.
@@ -348,10 +357,23 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
             return new Eval(true, Double.NaN);
         }
 
+//        // IMPORTANT: avoid computeIfAbsent (can throw "Recursive update" under re-entrancy).
+//        Eval cached = evalCache.get(key);
+//        if (cached != null) return cached;
+//
+//        Eval computed = computeEval(local, fact);
+//
+//        Eval raced = evalCache.putIfAbsent(key, computed);
+//        return raced != null ? raced : computed;
+
         // IMPORTANT: avoid computeIfAbsent (can throw "Recursive update" under re-entrancy).
         Eval cached = evalCache.get(key);
-        if (cached != null) return cached;
+        if (cached != null) {
+            cacheHits.increment();
+            return cached;
+        }
 
+        cacheMisses.increment();
         Eval computed = computeEval(local, fact);
 
         Eval raced = evalCache.putIfAbsent(key, computed);
@@ -811,5 +833,36 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
             if (a != other.a || b != other.b) return false;
             return Arrays.equals(z, other.z);
         }
+    }
+
+    /** Number of eval() calls served from cache. */
+    public long getCacheHits() {
+        return cacheHits.sum();
+    }
+
+    /** Number of eval() calls that reached the underlying test (cache misses). */
+    public long getCacheMisses() {
+        return cacheMisses.sum();
+    }
+
+    /** Distinct cached queries currently held (authoritative distinct-key count). */
+    public long getDistinctQueries() {
+        return evalCache.size();
+    }
+
+    /** Human-readable cache statistics. */
+    public String cacheReport() {
+        long hits = cacheHits.sum();
+        long misses = cacheMisses.sum();
+        long total = hits + misses;
+        double hitRate = total == 0 ? 0.0 : (double) hits / total;
+        return String.format(
+                "Cached independence queries:%n" +
+                        "  eval() calls (total)      %,d%n" +
+                        "  cache hits                %,d%n" +
+                        "  cache misses (test calls) %,d%n" +
+                        "  distinct keys cached      %,d%n" +
+                        "  hit rate                  %.1f%%%n",
+                total, hits, misses, evalCache.size(), hitRate * 100.0);
     }
 }

@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.IndependenceCheckCounter;
 import edu.cmu.tetrad.search.utils.PreserveMarkov;
 import edu.cmu.tetrad.util.SublistGenerator;
 
@@ -54,28 +55,52 @@ public class RecursiveDiscriminatingPathRule {
     }
 
     /**
-     * Finds the set of nodes (separator set) for the Recursive Discriminating Path rule in a graph. This method uses a
-     * recursive approach to evaluate possible discriminating paths between two nodes {@code x} and {@code y} in the
-     * provided graph {@code pag}.
+     * Finds the separating set (sepset) recursively using discriminating paths in a partially oriented graph (PAG).
+     * This method evaluates conditional independence relationships and identifies separating sets
+     * based on the Recursive Discriminating Path algorithm.
      *
-     * @param test                 The independence test object used to check for conditional independence between
-     *                             nodes.
-     * @param pag                  The graph structure, typically a partial ancestral graph (PAG), being analyzed.
-     * @param x                    The first target node in the analysis.
-     * @param y                    The second target node in the analysis.
-     * @param recursiveDepth       The maximum allowable length of a blocking path for the analysis.
-     * @param maxDdpPathLength     The maximum allowable discriminating path length considered for the analysis.
-     * @param depth                The maximum subset depth allowed during subset evaluations; a value of -1 allows all
-     *                             subsets.
-     * @param preserveMarkovHelper A helper object for additional Markov property checks during the independence
-     *                             tests.
-     * @return A set of nodes that constitutes the separating set (sepset) between {@code x} and {@code y}, or
-     * {@code null} if no such set exists.
-     * @throws InterruptedException If any.
+     * @param test               The independence test used to evaluate conditional independence relationships.
+     * @param pag                The partially oriented graph (PAG) being analyzed.
+     * @param x                  The first node for which the sepset is determined.
+     * @param y                  The second node for which the sepset is determined.
+     * @param recursiveDepth     The maximum allowed depth for recursive search in discriminating paths.
+     * @param maxDdpPathLength   The maximum length of discriminating paths to consider.
+     * @param depth              The current recursion depth of the algorithm.
+     * @param preserveMarkovHelper A helper object to ensure the Markov property is preserved during execution.
+     * @return                   A set of nodes representing the separating set (sepset) identified between nodes x and y.
+     * @throws InterruptedException If the thread is interrupted while executing the method.
      */
     public static Set<Node> findDdpSepsetRecursive(IndependenceTest test, Graph pag, Node x, Node y,
                                                    int recursiveDepth, int maxDdpPathLength,
                                                    int depth, PreserveMarkov preserveMarkovHelper)
+            throws InterruptedException {
+        return findDdpSepsetRecursive(test, pag, x, y, recursiveDepth, maxDdpPathLength,
+                depth, preserveMarkovHelper, null);
+    }
+
+    /**
+     * Recursively finds the separating set (sepset) between two non-adjacent nodes in a partially oriented
+     * graph (PAG) using the Recursive Discriminating Path algorithm. This method evaluates conditional
+     * independence relationships and considers subsets of possible nodes on discriminating paths to identify
+     * the sepset.
+     *
+     * @param test                The independence test used for evaluating conditional independence.
+     * @param pag                 The partially oriented graph (PAG) being analyzed.
+     * @param x                   The first node for which the sepset is determined.
+     * @param y                   The second node for which the sepset is determined.
+     * @param recursiveDepth      The maximum depth for recursive search in discriminating paths.
+     * @param maxDdpPathLength    The maximum length of discriminating paths to consider.
+     * @param depth               The current recursion depth of the algorithm.
+     * @param preserveMarkovHelper A helper object to ensure the Markov property is preserved during execution.
+     * @param counter             A counter to track the number of independence checks performed.
+     * @return                    A set of nodes representing the separating set (sepset) identified
+     *                            between nodes x and y, or {@code null} if no sepset is found.
+     * @throws InterruptedException If the thread is interrupted during execution.
+     */
+    public static Set<Node> findDdpSepsetRecursive(IndependenceTest test, Graph pag, Node x, Node y,
+                                                   int recursiveDepth, int maxDdpPathLength,
+                                                   int depth, PreserveMarkov preserveMarkovHelper,
+                                                   IndependenceCheckCounter counter)
             throws InterruptedException {
 
         if (pag.isAdjacentTo(x, y)) {
@@ -160,17 +185,27 @@ public class RecursiveDiscriminatingPathRule {
                 }
             }
 
+//            boolean independent;
+//            if (preserveMarkovHelper != null) {
+//                independent = preserveMarkovHelper.markovIndependence(x, y, testSet);
+//            } else {
+//                IndependenceResult independenceResult = test.checkIndependence(x, y, testSet);
+//                independent = independenceResult.isIndependent();
+//
+////                if (!Double.isNaN(independenceResult.getPValue()) && independenceResult.getPValue() > maxPValue) {
+//////                    maxPValue = Math.max(maxPValue, independenceResult.getPValue());
+////                    highestPSet = testSet;
+////                }
+//            }
+
             boolean independent;
             if (preserveMarkovHelper != null) {
+                if (counter != null) counter.increment("findDdpSepsetRecursive (markov)");
                 independent = preserveMarkovHelper.markovIndependence(x, y, testSet);
             } else {
+                if (counter != null) counter.increment("findDdpSepsetRecursive (test)");
                 IndependenceResult independenceResult = test.checkIndependence(x, y, testSet);
                 independent = independenceResult.isIndependent();
-
-//                if (!Double.isNaN(independenceResult.getPValue()) && independenceResult.getPValue() > maxPValue) {
-////                    maxPValue = Math.max(maxPValue, independenceResult.getPValue());
-//                    highestPSet = testSet;
-//                }
             }
 
 //            if ((test instanceof MsepTest) &&  independent) {
