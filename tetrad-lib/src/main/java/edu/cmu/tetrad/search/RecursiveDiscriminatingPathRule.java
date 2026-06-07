@@ -182,6 +182,7 @@ public class RecursiveDiscriminatingPathRule {
             }
         }
 
+        System.out.println("Recursive DDP: No sepset found for " + x + " and " + y);
         return null;
     }
 }

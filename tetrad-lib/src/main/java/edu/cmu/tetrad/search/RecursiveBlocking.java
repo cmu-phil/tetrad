@@ -400,7 +400,7 @@ public class RecursiveBlocking {
 
             // Check whether z already blocks all active paths from x to y.
             if (blocksAllPaths(graph, x, y, z, notFollowed, descendantsMap,
-                    recursiveDepth, ignoreDirectEdge, deadlineMs)) {
+                    ignoreDirectEdge, deadlineMs)) {
                 return new BlockingResult(z, false);
             }
 
@@ -589,7 +589,6 @@ public class RecursiveBlocking {
             Set<Node> z,
             Set<Node> notFollowed,
             Map<Node, Set<Node>> descendantsMap,
-            int recursiveDepth,
             boolean ignoreDirectEdge,
             long deadlineMs)
             throws InterruptedException, TimeoutException {

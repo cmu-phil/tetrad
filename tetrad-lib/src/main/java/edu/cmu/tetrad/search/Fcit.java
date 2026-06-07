@@ -613,6 +613,10 @@ public final class Fcit implements IGraphSearch {
 
             boolean didChange = tryToModifyGraph(x, y, b, "recursive", excludeSelectionBias, unshieldedTriples);
             changed |= didChange;
+
+//            if (didChange) {
+//                return true;
+//            }
         }
 
         return changed;
@@ -760,6 +764,81 @@ public final class Fcit implements IGraphSearch {
 
         return true;
     }
+
+//    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type, boolean excludeSelectionBias, Set<Triple> initialColliders) {
+//        Edge _edge = pag.getEdge(x, y);
+//        Graph _pag = new EdgeListGraph(pag);     // snapshot of the PAG before any removal
+//        Set<Node> oldSepset = sepsets.get(x, y); // restore target if every candidate fails
+//
+//        // Candidates for the sepset to record, in order: b first, then proper subsets of b by
+//        // decreasing size (as close to b as possible first). A proper subset is only considered
+//        // if it STILL separates x and y, so that whatever we finally record is a genuine
+//        // separating set and the collider classifications it drives in the GFCI-style
+//        // reorientation stay justified.
+//        List<Node> bList = new ArrayList<>(b);
+//        SublistGenerator removeGen = new SublistGenerator(bList.size(), bList.size());
+//        int[] removeChoice;
+//
+//        while ((removeChoice = removeGen.next()) != null) {
+//            boolean isOriginal = removeChoice.length == 0;
+//
+//            Set<Node> candidate = new HashSet<>(b);
+//            candidate.removeAll(GraphUtils.asSet(removeChoice, bList));
+//
+//            // b was already verified independent upstream; only re-test the proper subsets.
+//            if (!isOriginal) {
+//                checkCounter.increment("tryToModifyGraph (subset re-test executed)");
+//                IndependenceResult ir = null;
+//                try {
+//                    ir = this.test.checkIndependence(x, y, candidate);
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
+//                if (!ir.isIndependent()) {
+//                    continue;
+//                }
+//            }
+//
+//            // Trial on a scratch copy so this.pag is only mutated once we actually commit.
+//            Graph trial = new EdgeListGraph(_pag);
+//            trial.removeEdge(trial.getEdge(x, y));
+//            sepsets.set(x, y, candidate);
+//            redoGfciOrientation(trial, fciOrient, knowledge, initialColliders, sepsets, excludeSelectionBias, superVerbose);
+//
+//            if (PagLegalityCheck.isLegalPagQuiet(trial, new HashSet<>(selection))) {
+//                // Commit. Preserve the runtime type of this.pag (e.g. ReplicatingGraph) by
+//                // mutating in place; otherwise just adopt the trial graph.
+//                if (this.replicatingGraph) {
+//                    this.pag.removeEdge(_edge);
+//                    redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, excludeSelectionBias, superVerbose);
+//                } else {
+//                    this.pag = trial;
+//                }
+//
+//                if (verbose) {
+//                    if (isOriginal) {
+//                        TetradLogger.getInstance().log("Removing " + _edge + " for " + type
+//                                + " reasons, sepset = " + candidate);
+//                    } else {
+//                        TetradLogger.getInstance().log("Removing " + _edge + " for " + type
+//                                + " reasons; b = " + b + " gave an illegal PAG, recorded subset sepset = " + candidate);
+//                    }
+//                }
+//
+//                return true;
+//            }
+//        }
+//
+//        // Nothing produced a legal PAG. this.pag was never mutated, so just restore the sepset.
+//        sepsets.set(x, y, oldSepset);
+//
+//        if (verbose) {
+//            TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
+//                    + " reasons, but no subset of b = " + b + " led to a legal PAG; left the edge in place.");
+//        }
+//
+//        return false;
+//    }
 
     /**
      * Sets the algorithm to use to get the initial CPDAG.
