@@ -582,7 +582,7 @@ public class RecursiveBlocking {
      * active path exists. The pass respects collider/non-collider semantics
      * and the {@code descendantsMap} for collider activation.</p>
      */
-    private static boolean blocksAllPaths(
+    static boolean blocksAllPaths(
             Graph graph,
             Node x,
             Node y,
@@ -1202,7 +1202,11 @@ public class RecursiveBlocking {
             return result;
         }
 
-        if (result != Blockable.INDETERMINATE && f.cacheKey != null) {
+//        if (result != Blockable.INDETERMINATE && f.cacheKey != null) {
+//            memo.put(f.cacheKey, result);
+//        }
+
+        if (result == Blockable.BLOCKED && f.cacheKey != null) {
             memo.put(f.cacheKey, result);
         }
 

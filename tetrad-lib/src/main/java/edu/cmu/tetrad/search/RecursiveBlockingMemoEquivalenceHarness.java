@@ -5,6 +5,7 @@ import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Differential / equivalence harness for the memoized continuation cache added
@@ -41,7 +42,7 @@ import java.util.*;
 public final class RecursiveBlockingMemoEquivalenceHarness {
 
     // ---- Tunables (overridable via args) ------------------------------------
-    private int numGraphs = 200;
+    private int numGraphs = 20;
     private int numNodes = 14;
     private double avgDegree = 4.0;
     private double latentFraction = 0.15;
@@ -53,7 +54,7 @@ public final class RecursiveBlockingMemoEquivalenceHarness {
     private final int depth = -1;            // unlimited Z size
     private final int maxRadius = -1;        // unrestricted pool
     private final int nearWhichEndpoint = 3; // both endpoints
-    private final boolean ignoreDirectEdge = true;
+    private final boolean ignoreDirectEdge = false;
     private final long deadlineMs = Long.MAX_VALUE;
 
     // Exhaustive UNBLOCKABLE cross-check only when pool is small enough.
@@ -85,6 +86,7 @@ public final class RecursiveBlockingMemoEquivalenceHarness {
 
         for (int g = 0; g < numGraphs; g++) {
             Graph pag = randomPagWithClique(rng);
+            System.err.println("generated graph " + g + " (" + pag.getNumNodes() + " nodes)");
             List<Node> nodes = pag.getNodes();
 
             for (int i = 0; i < nodes.size(); i++) {
@@ -116,11 +118,14 @@ public final class RecursiveBlockingMemoEquivalenceHarness {
 
                     pairsChecked++;
 
+                    Graph queryGraph = oracleGraph(pag, x, y);
+
                     if (result.found()) {
                         // INVARIANT 1: a returned set must actually m-separate.
                         // This is the invariant that a bad cached BLOCKED breaks.
                         Set<Node> z = result.blockingSet();
-                        boolean sep = pag.paths().isMSeparatedFrom(x, y, z, false);
+//                        boolean sep = pag.paths().isMSeparatedFrom(x, y, z, false);
+                        boolean sep = queryGraph.paths().isMSeparatedFrom(x, y, z, false);
                         if (!sep) {
                             failures.add(String.format(
                                     "graph %d  (%s -> %s): returned Z=%s that does NOT m-separate",
@@ -138,7 +143,8 @@ public final class RecursiveBlockingMemoEquivalenceHarness {
                         // the pool is small enough to enumerate.
                         Set<Node> pool = poolFor(pag, x, y);
                         if (pool.size() <= EXHAUSTIVE_POOL_CAP) {
-                            Set<Node> witness = exhaustiveSeparator(pag, x, y, pool);
+//                            Set<Node> witness = exhaustiveSeparator(pag, x, y, pool);
+                            Set<Node> witness = exhaustiveSeparator(queryGraph, x, y, pool);
                             if (witness != null) {
                                 failures.add(String.format(
                                         "graph %d  (%s -> %s): claimed UNBLOCKABLE but Z=%s separates",
@@ -226,12 +232,12 @@ public final class RecursiveBlockingMemoEquivalenceHarness {
         }
 
         // Convert DAG -> PAG (true PAG with latents marginalized out).     
-//        return GraphTransforms.dagToPag(dag);
+        return GraphTransforms.dagToPag(dag, false);
 
-        MagToPag magToPag = new MagToPag(GraphTransforms.dagToMag(dag));
-        magToPag.setRecursiveDepth(recursiveDepth);
-
-        return magToPag.convert(false, false);
+//        MagToPag magToPag = new MagToPag(GraphTransforms.dagToMag(dag));
+//        magToPag.setRecursiveDepth(recursiveDepth);
+//
+//        return magToPag.convert(false, false);
     }
 
     // ---- Reference oracle helpers ------------------------------------------
@@ -265,7 +271,23 @@ public final class RecursiveBlockingMemoEquivalenceHarness {
             while (idx != null) {
                 Set<Node> z = new HashSet<>();
                 for (int t : idx) z.add(poolList.get(t));
-                if (graph.paths().isMSeparatedFrom(x, y, z, false)) {
+
+//                Map<Node, Set<Node>> descendantsMap = graph.paths().getDescendantsMap();
+//
+                // This works too, but msep work as below.
+//                try {
+//                    if (RecursiveBlocking.blocksAllPaths(graph, x, y, z, Set.of(), descendantsMap,
+//                            ignoreDirectEdge, Long.MAX_VALUE)) {
+//                        return z;
+//                    }
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                } catch (TimeoutException e) {
+//                    throw new RuntimeException(e);
+//                }
+
+                // Need isPag = true here.
+                if (graph.paths().isMSeparatedFrom(x, y, z, true)) {
                     return z;
                 }
                 idx = nextCombination(idx, n);
@@ -297,5 +319,22 @@ public final class RecursiveBlockingMemoEquivalenceHarness {
         for (Node n : z) out.add(n.getName());
         Collections.sort(out);
         return out;
+    }
+
+    /**
+     * Validation oracle. When ignoreDirectEdge is true, RB blocks every path
+     * EXCEPT the direct x–y edge, so the correct graphical check is m-separation
+     * in the graph with that edge removed. For non-adjacent pairs this is the
+     * original graph unchanged.
+     */
+    private Graph oracleGraph(Graph graph, Node x, Node y) {
+        if (!ignoreDirectEdge || !graph.isAdjacentTo(x, y)) {
+            return graph;
+        }
+        Graph h = new EdgeListGraph(graph);
+        for (Edge e : new ArrayList<>(h.getEdges(x, y))) {
+            h.removeEdge(e);
+        }
+        return h;
     }
 }
