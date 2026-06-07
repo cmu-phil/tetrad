@@ -272,9 +272,10 @@ public final class RecursiveBlockingMemoEquivalenceHarness {
                 Set<Node> z = new HashSet<>();
                 for (int t : idx) z.add(poolList.get(t));
 
+
+                // This works too, but msep work as below.
 //                Map<Node, Set<Node>> descendantsMap = graph.paths().getDescendantsMap();
 //
-                // This works too, but msep work as below.
 //                try {
 //                    if (RecursiveBlocking.blocksAllPaths(graph, x, y, z, Set.of(), descendantsMap,
 //                            ignoreDirectEdge, Long.MAX_VALUE)) {
