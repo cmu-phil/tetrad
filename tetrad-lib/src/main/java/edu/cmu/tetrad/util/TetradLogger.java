@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -22,6 +22,7 @@ package edu.cmu.tetrad.util;
 
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -255,24 +256,46 @@ public class TetradLogger {
      * @param message a {@link java.lang.String} object
      */
     public void log(String message) {
-        if (this.logging) {
-            if (!this.writers.containsKey(System.out)) {
-                System.out.println(message);
-            }
+        SwingUtilities.invokeLater(() -> {
+            if (this.logging) {
 
-            if (this.config == null) {
-                this.fireActivated(new EmptyConfig(true));
-            }
-            try {
-                for (Writer writer : this.writers.values()) {
-                    writer.write(message);
-                    writer.write("\n");
-                    writer.flush();
+                if (!this.writers.containsKey(System.out)) {
+                    System.out.println(message);
                 }
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
+
+                if (this.config == null) {
+                    this.fireActivated(new EmptyConfig(true));
+                }
+
+                try {
+                    for (Writer writer : this.writers.values()) {
+                        writer.write(message);
+                        writer.write("\n");
+                    }
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                }
             }
-        }
+        });
+
+//        if (this.logging) {
+//            if (!this.writers.containsKey(System.out)) {
+//                System.out.println(message);
+//            }
+//
+//            if (this.config == null) {
+//                this.fireActivated(new EmptyConfig(true));
+//            }
+//            try {
+//                for (Writer writer : this.writers.values()) {
+//                    writer.write(message);
+//                    writer.write("\n");
+//                    writer.flush();
+//                }
+//            } catch (IOException e) {
+//                System.out.println(e.getMessage());
+//            }
+//        }
     }
 
     /**
@@ -330,7 +353,7 @@ public class TetradLogger {
             } catch (FileNotFoundException e) {
                 this.stream = old;
                 throw new IllegalStateException("Could not create file in output directory ("
-                                                + dir.getAbsolutePath() + ").");
+                        + dir.getAbsolutePath() + ").");
             }
             if (old != null) {
                 removeOutputStream(old);
@@ -347,12 +370,12 @@ public class TetradLogger {
         if (!dir.exists()) {
             if (!dir.mkdir()) {
                 throw new IllegalStateException("Could not create the output directory "
-                                                + dir.getAbsolutePath() + ".");
+                        + dir.getAbsolutePath() + ".");
             }
         }
         if (!dir.canWrite()) {
             throw new IllegalStateException("Cannot write to the directory chosen for saving output " +
-                                            " logs (" + dir.getAbsolutePath() + "). Please pick another directory.");
+                    " logs (" + dir.getAbsolutePath() + "). Please pick another directory.");
         }
         // get the next file name to use.
         String prefix = getLoggingFilePrefix();
@@ -493,7 +516,7 @@ public class TetradLogger {
 
             if (!selectedFile.canWrite()) {
                 throw new IllegalStateException("That output directory cannot be written to. " +
-                                                "Keeping the old one.");
+                        "Keeping the old one.");
             }
 
             if (!selectedFile.delete()) {

@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.IndependenceCheckCounter;
 import edu.cmu.tetrad.search.utils.PreserveMarkov;
 import edu.cmu.tetrad.util.SublistGenerator;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -182,7 +183,7 @@ public class RecursiveDiscriminatingPathRule {
             }
         }
 
-        System.out.println("Recursive DDP: No sepset found for " + x + " and " + y);
+        TetradLogger.getInstance().log("Recursive DDP: No sepset found for " + x + " and " + y);
         return null;
     }
 }

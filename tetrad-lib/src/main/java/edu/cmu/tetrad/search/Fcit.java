@@ -477,8 +477,8 @@ public final class Fcit implements IGraphSearch {
         int round = 0;
 
         do {
-            System.out.println();
-            System.out.println("Round: " + (++round));
+            TetradLogger.getInstance().log("\nRound: " + (++round));
+//            System.out.println("Round: " + (++round));
         } while (removeEdgesRecursively(excludeSelectionBias, initialColliders));
 
         if (superVerbose) {
@@ -487,16 +487,57 @@ public final class Fcit implements IGraphSearch {
 
         long stop2 = System.currentTimeMillis();
 
-        if (verbose) {
-            System.out.println();
-        }
+//        if (verbose) {
+//            System.out.println();
+//        }
 
         // Revert nodes made latent to latent.
         for (Node node : latents) {
             node.setNodeType(NodeType.LATENT);
         }
 
-        TetradLogger.getInstance().log("FCIT finished.");
+        boolean nonGenuineDetected = false;
+
+        Set<DiscriminatingPath> ddps = FciOrient.listDiscriminatingPaths(pag, -1, true);
+
+        for (DiscriminatingPath dd : ddps) {
+            List<Node> colliderPath = dd.getColliderPath();
+
+            List<Node> spine = new ArrayList<>(colliderPath);
+            spine.addLast(dd.getY());
+            spine.addFirst(dd.getX());
+
+            for (int i = 0; i < spine.size(); i++) {
+                Node m = spine.get(i);
+                Node n = spine.get((i + 1) % spine.size());
+
+                RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(pag, m, n, Set.of(), Set.of(),
+                        recursiveDepth, depth, rbRadius, 1, false);
+
+                if (result.blockingSet() != null) {
+                    nonGenuineDetected = true;
+                }
+            }
+
+            Node y = dd.getY();
+
+            for (Node x : colliderPath) {
+                RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), Set.of(),
+                        recursiveDepth, depth, rbRadius, 1, false);
+
+                if (result.blockingSet() != null) {
+                    nonGenuineDetected = true;
+                }
+            }
+        }
+
+        if (nonGenuineDetected) {
+            TetradLogger.getInstance().log("\nNon-genuine DDPs detected.");
+        } else {
+            TetradLogger.getInstance().log("\nNo non-genuine DDPs detected.");
+        }
+
+        TetradLogger.getInstance().log("\nFCIT finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
         TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
@@ -579,9 +620,9 @@ public final class Fcit implements IGraphSearch {
 
         List<Result> results = findIndependenceChecksRecursive(edgePool);
 
-        if (verbose) {
-            System.out.println();
-        }
+//        if (verbose) {
+//            System.out.println();
+//        }
 
         for (Result result : results) {
             Edge edge = result.edge();
@@ -613,10 +654,6 @@ public final class Fcit implements IGraphSearch {
 
             boolean didChange = tryToModifyGraph(x, y, b, "recursive", excludeSelectionBias, unshieldedTriples);
             changed |= didChange;
-
-//            if (didChange) {
-//                return true;
-//            }
         }
 
         return changed;
