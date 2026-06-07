@@ -1202,13 +1202,13 @@ public class RecursiveBlocking {
             return result;
         }
 
-//        if (result != Blockable.INDETERMINATE && f.cacheKey != null) {
-//            memo.put(f.cacheKey, result);
-//        }
-
-        if (result == Blockable.BLOCKED && f.cacheKey != null) {
+        if (result != Blockable.INDETERMINATE && f.cacheKey != null) {
             memo.put(f.cacheKey, result);
         }
+
+//        if (result == Blockable.BLOCKED && f.cacheKey != null) {
+//            memo.put(f.cacheKey, result);
+//        }
 
         return result;
     }
