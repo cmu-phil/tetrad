@@ -331,7 +331,7 @@ public final class Fcit implements IGraphSearch {
 
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
-        fciOrient.setParallel(true);
+        fciOrient.setParallel(false);
         fciOrient.setCompleteRuleSetUsed(true);
         fciOrient.setRecursiveDepth(recursiveDepth);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
@@ -489,7 +489,6 @@ public final class Fcit implements IGraphSearch {
 
         do {
             TetradLogger.getInstance().log("\nRound: " + (++round));
-//            System.out.println("Round: " + (++round));
         } while (removeEdgesRecursively(excludeSelectionBias, initialColliders));
 
         if (superVerbose) {
@@ -497,10 +496,6 @@ public final class Fcit implements IGraphSearch {
         }
 
         long stop2 = System.currentTimeMillis();
-
-//        if (verbose) {
-//            System.out.println();
-//        }
 
         // Revert nodes made latent to latent.
         for (Node node : latents) {
@@ -622,222 +617,82 @@ public final class Fcit implements IGraphSearch {
      *
      * @return true if at least one edge was removed, false otherwise
      */
-//    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
-//        if (superVerbose) {
-//            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
-//        }
-//
-//        boolean changed = false;
-//
-//        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
-//        // there in this graph.
-//        Set<Edge> edgePool = new HashSet<>(this.pag.getEdges());
-//
-//        List<Result> results = findIndependenceChecksRecursive(edgePool);
-//
-////        if (verbose) {
-////            System.out.println();
-////        }
-//
-//        for (Result result : results) {
-//            Edge edge = result.edge();
-//            Node x = edge.getNode1();
-//            Node y = edge.getNode2();
-//
-//            // The checks in `results` were computed against the PAG as it stood at the start of this round.
-//            // Earlier removals/reorientations in this same loop can change the paths between x and y, and hence
-//            // the conditioning sets recursive blocking proposes. So recalculate the independence check against
-//            // the *current* graph before committing the removal. If the edge is already gone, or no separating
-//            // set can be found given the current structure, skip it.
-//            if (!this.pag.isAdjacentTo(x, y)) {
-//                continue;
-//            }
-//
-//            Set<Node> b;
-//
-//            try {
-//                IndependenceCheck recheck = findIndependenceCheckRecursive(edge);
-//
-//                if (recheck == null) {
-//                    continue;
-//                }
-//
-//                b = recheck.cond();
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//
-//            boolean didChange = tryToModifyGraph(x, y, b, "recursive", excludeSelectionBias, unshieldedTriples);
-//            changed |= didChange;
-//        }
-//
-//        return changed;
-//    }
-    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples) throws InterruptedException {
+    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
 
         boolean changedThisSweep = false;
 
-        // Serial sweep over the current edges. Snapshot the edge set so we can
-        // iterate while mutating this.pag underneath us.
-        List<Edge> edgePool = new ArrayList<>(this.pag.getEdges());
+        // Ordered snapshot of the edges for this sweep. `from` is the scan position;
+        // we never go back before it, so each edge is searched at most once per sweep.
+        List<Edge> edgeList = new ArrayList<>(this.pag.getEdges());
+        int from = 0;
 
-        for (Edge edge : edgePool) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+        while (from < edgeList.size()) {
+            final int start = from;
 
-            // The edge may have been removed by an earlier deletion in this same sweep.
-            if (!this.pag.isAdjacentTo(x, y)) {
-                continue;
+            // Parallel search over the tail [start, end). findFirst on an ordered
+            // parallel stream returns the LOWEST-index removable edge deterministically,
+            // independent of which thread finishes first. Each search reads the live
+            // PAG; nothing mutates it during this phase, so concurrent reads are safe.
+            java.util.Optional<RemovalHit> hit =
+                    java.util.stream.IntStream.range(start, edgeList.size())
+                            .parallel()
+                            .mapToObj(i -> {
+                                Edge e = edgeList.get(i);
+                                Node x = e.getNode1();
+                                Node y = e.getNode2();
+
+                                // Eligibility filters (read-only).
+                                if (!this.pag.isAdjacentTo(x, y)) return null;
+                                if (sepsets.get(x, y) != null) return null;
+                                if (!(knowledge == null || !Edges.isDirectedEdge(e)
+                                        || !knowledge.isForbidden(x.getName(), y.getName()))) return null;
+
+                                try {
+                                    IndependenceCheck check = findIndependenceCheckRecursive(e);
+                                    if (check == null) return null;
+                                    return new RemovalHit(i, e, check.cond());
+                                } catch (InterruptedException ie) {
+                                    Thread.currentThread().interrupt();
+                                    throw new RuntimeException(ie);
+                                }
+                            })
+                            .filter(Objects::nonNull)
+                            .findFirst();
+
+            if (hit.isEmpty()) {
+                break;  // no removable edge in the tail — sweep complete
             }
 
-            // Skip edges that already have a recorded sepset or are knowledge-forbidden
-            // directed edges — mirrors the filters in the old parallel collector.
-            if (sepsets.get(x, y) != null) {
-                continue;
-            }
-            if (!(knowledge == null || !Edges.isDirectedEdge(edge)
-                    || !knowledge.isForbidden(x.getName(), y.getName()))) {
-                continue;
-            }
+            RemovalHit h = hit.get();
+            Node x = h.edge.getNode1();
+            Node y = h.edge.getNode2();
 
-            // Find a separating set against the CURRENT graph.
-            Set<Node> b;
-            IndependenceCheck check = findIndependenceCheckRecursive(edge);
-            if (check == null) {
-                continue;
-            }
-            b = check.cond();
+            // Commit against the live PAG using the sepset found during the search —
+            // no re-search needed, since the winner was searched against the current PAG.
+            boolean didChange = tryToModifyGraph(x, y, h.cond, "recursive",
+                    excludeSelectionBias, unshieldedTriples);
 
-            // Attempt the deletion + legality check immediately. tryToModifyGraph
-            // already reverts this.pag and the sepset if the result isn't a legal PAG.
-            boolean didChange = tryToModifyGraph(x, y, b, "recursive", excludeSelectionBias, unshieldedTriples);
-            changedThisSweep |= didChange;
+            if (didChange) {
+                changedThisSweep = true;
+                // PAG changed; resume scanning AFTER the removed edge against the new graph.
+                from = h.index + 1;
+            } else {
+                // Reverted: PAG is unchanged. Speculative results for later edges would
+                // still be valid, but findFirst already discarded them; cheapest correct
+                // thing is to advance past this edge and re-search the tail. The tail
+                // search is against the same (unchanged) PAG, so results are consistent.
+                from = h.index + 1;
+            }
         }
 
         return changedThisSweep;
     }
 
-//    private List<Result> findIndependenceChecksRecursive(Set<Edge> edges) {
-//        return new HashSet<>(edges).parallelStream()
-//                .filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null)
-//                .filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge)
-//                        || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()))
-//                .map(edge -> {
-//                    try {
-//                        IndependenceCheck checkResult = findIndependenceCheckRecursive(edge);
-//                        if (checkResult != null) {
-//                            return new Result(checkResult.edge(), checkResult.cond());
-//                        }
-//                        return null;
-//                    } catch (InterruptedException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                })
-//                .filter(Objects::nonNull)
-//                .collect(Collectors.toList());
-//    }
-
-//    private IndependenceCheck findIndependenceCheckRecursive(Edge edge) throws InterruptedException {
-//        final Node x = edge.getNode1();
-//        final Node y = edge.getNode2();
-//
-//        // Get full blocking set with no forbidden nodes
-//        RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsRecursively(
-//                pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
-//                System.currentTimeMillis() + timeout);
-//
-//        Set<Node> nfCandSet = new HashSet<>();
-//        if (!b0result.indeterminate() && b0result.blockingSet() != null) {
-//            for (Node v : b0result.blockingSet()) {
-//                // Only ambiguous nodes — those with at least one circle endpoint
-//                if (pag.getAdjacentNodes(v).stream().anyMatch(
-//                        w -> pag.getEndpoint(v, w) == Endpoint.CIRCLE
-//                                || pag.getEndpoint(w, v) == Endpoint.CIRCLE)) {
-//                    nfCandSet.add(v);
-//                }
-//            }
-//        }
-//
-//        List<Node> nfCand = new ArrayList<>(nfCandSet);
-//
-//        // Enumerate subsets of the "not-followed" set NF ⊆ nfCand
-//        SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
-//        int[] nfChoice;
-//        while ((nfChoice = nfGen.next()) != null) {
-//            if (!this.pag.isAdjacentTo(x, y)) break; // edge already removed upstream
-//
-//            Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
-//            RecursiveBlocking.BlockingResult result = null;
-//
-//            if (this.depth < 0) {
-//                result = RecursiveBlocking.blockPathsRecursively(
-//                        pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
-//                        System.currentTimeMillis() + timeout);
-//
-//            } else {
-//                int depth = 0;
-//                int maxDepth = this.depth;
-//
-//                do {
-//                    depth++;
-//
-//                    if (depth > maxDepth) break;
-//
-//                    result = RecursiveBlocking.blockPathsRecursively(
-//                            pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
-//                            System.currentTimeMillis() + timeout);
-//                } while (result.indeterminate());
-//            }
-//
-//            if (result == null || result.indeterminate()) {
-//                continue;
-//            }
-//
-//            Set<Node> B = result.blockingSet();
-//
-//            if (B == null) {
-//                continue; // No separating set possible for this NF; try another NF
-//            }
-//
-//            List<Node> common = this.pag.getAdjacentNodes(x);
-//            common.retainAll(this.pag.getAdjacentNodes(y));
-//
-//            List<Node> definitelyRemove = new ArrayList<>();
-//            for (Node c : common) {
-//                if (this.pag.isDefCollider(x, c, y)) {
-//                    definitelyRemove.add(c);
-//                }
-//            }
-//
-//            List<Node> removalCandidates = new ArrayList<>(common);
-//            removalCandidates.removeAll(definitelyRemove);
-//
-//            SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
-//            int[] cChoice;
-//            while ((cChoice = cGen.next()) != null) {
-//                if (!this.pag.isAdjacentTo(x, y)) break;
-//
-//                Set<Node> S = new HashSet<>(B);
-//                Set<Node> C = GraphUtils.asSet(cChoice, removalCandidates);
-//
-//                S.removeAll(C);
-//
-//                if (this.depth != -1 && S.size() > this.depth) continue;
-//
-//                IndependenceCheck probe = new IndependenceCheck(edge, S);
-//                checkCounter.increment("findIndependenceCheckRecursive (test executed)");
-//                IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
-//                if (independenceResult.isIndependent()) {
-//                    return probe;
-//                }
-//            }
-//        }
-//
-//        return null;
-//    }
+    private record RemovalHit(int index, Edge edge, Set<Node> cond) {
+    }
 
     private IndependenceCheck findIndependenceCheckRecursive(Edge edge) throws InterruptedException {
         final Node x = edge.getNode1();
@@ -973,81 +828,6 @@ public final class Fcit implements IGraphSearch {
 
         return true;
     }
-
-//    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type, boolean excludeSelectionBias, Set<Triple> initialColliders) {
-//        Edge _edge = pag.getEdge(x, y);
-//        Graph _pag = new EdgeListGraph(pag);     // snapshot of the PAG before any removal
-//        Set<Node> oldSepset = sepsets.get(x, y); // restore target if every candidate fails
-//
-//        // Candidates for the sepset to record, in order: b first, then proper subsets of b by
-//        // decreasing size (as close to b as possible first). A proper subset is only considered
-//        // if it STILL separates x and y, so that whatever we finally record is a genuine
-//        // separating set and the collider classifications it drives in the GFCI-style
-//        // reorientation stay justified.
-//        List<Node> bList = new ArrayList<>(b);
-//        SublistGenerator removeGen = new SublistGenerator(bList.size(), bList.size());
-//        int[] removeChoice;
-//
-//        while ((removeChoice = removeGen.next()) != null) {
-//            boolean isOriginal = removeChoice.length == 0;
-//
-//            Set<Node> candidate = new HashSet<>(b);
-//            candidate.removeAll(GraphUtils.asSet(removeChoice, bList));
-//
-//            // b was already verified independent upstream; only re-test the proper subsets.
-//            if (!isOriginal) {
-//                checkCounter.increment("tryToModifyGraph (subset re-test executed)");
-//                IndependenceResult ir = null;
-//                try {
-//                    ir = this.test.checkIndependence(x, y, candidate);
-//                } catch (InterruptedException e) {
-//                    throw new RuntimeException(e);
-//                }
-//                if (!ir.isIndependent()) {
-//                    continue;
-//                }
-//            }
-//
-//            // Trial on a scratch copy so this.pag is only mutated once we actually commit.
-//            Graph trial = new EdgeListGraph(_pag);
-//            trial.removeEdge(trial.getEdge(x, y));
-//            sepsets.set(x, y, candidate);
-//            redoGfciOrientation(trial, fciOrient, knowledge, initialColliders, sepsets, excludeSelectionBias, superVerbose);
-//
-//            if (PagLegalityCheck.isLegalPagQuiet(trial, new HashSet<>(selection))) {
-//                // Commit. Preserve the runtime type of this.pag (e.g. ReplicatingGraph) by
-//                // mutating in place; otherwise just adopt the trial graph.
-//                if (this.replicatingGraph) {
-//                    this.pag.removeEdge(_edge);
-//                    redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, excludeSelectionBias, superVerbose);
-//                } else {
-//                    this.pag = trial;
-//                }
-//
-//                if (verbose) {
-//                    if (isOriginal) {
-//                        TetradLogger.getInstance().log("Removing " + _edge + " for " + type
-//                                + " reasons, sepset = " + candidate);
-//                    } else {
-//                        TetradLogger.getInstance().log("Removing " + _edge + " for " + type
-//                                + " reasons; b = " + b + " gave an illegal PAG, recorded subset sepset = " + candidate);
-//                    }
-//                }
-//
-//                return true;
-//            }
-//        }
-//
-//        // Nothing produced a legal PAG. this.pag was never mutated, so just restore the sepset.
-//        sepsets.set(x, y, oldSepset);
-//
-//        if (verbose) {
-//            TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
-//                    + " reasons, but no subset of b = " + b + " led to a legal PAG; left the edge in place.");
-//        }
-//
-//        return false;
-//    }
 
     /**
      * Sets the algorithm to use to get the initial CPDAG.
