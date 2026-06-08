@@ -331,7 +331,7 @@ public final class Fcit implements IGraphSearch {
 
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
-        fciOrient.setParallel(false);
+        fciOrient.setParallel(false); // We're doing parallel lookahead.
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setRecursiveDepth(recursiveDepth);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
@@ -621,6 +621,9 @@ public final class Fcit implements IGraphSearch {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
+
+        // This version does parallel lookahead, so that the only time graph rebuilding is done is when
+        // edge removals are attempted.
 
         boolean changedThisSweep = false;
 
