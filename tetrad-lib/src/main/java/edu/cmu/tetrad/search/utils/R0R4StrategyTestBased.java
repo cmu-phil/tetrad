@@ -213,8 +213,12 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             return Pair.of(discriminatingPath, false);
         }
 
-        Set<Node> blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y,
-                recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper, timeout);
+        Set<Node> blocking = sepsetMap.get(x, y);
+
+        if (blocking != null) {
+            blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y,
+                    recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper, timeout);
+        }
 
         if (blocking != null) {
             sepsetMap.set(x, y, blocking);
