@@ -35,7 +35,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * The FCI Targeted Testing (FCIT) algorithm implements a search algorithm for learning the structure of a graphical
@@ -68,6 +67,11 @@ public final class Fcit implements IGraphSearch {
      */
     private final List<Node> selection;
     /**
+     * Counts conditional independence checks, broken down by call site, so we
+     * can measure how many tests the recursive-blocking optimization saves.
+     */
+    private final IndependenceCheckCounter checkCounter = new IndependenceCheckCounter();
+    /**
      * The background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
@@ -95,7 +99,6 @@ public final class Fcit implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean superVerbose = false;
-
     /**
      * Specifies the orientation rules or procedures used in the FCIT algorithm for orienting edges in a PAG (Partial
      * Ancestral Graph). This variable determines how unshielded colliders, discriminating paths, and other structural
@@ -150,7 +153,7 @@ public final class Fcit implements IGraphSearch {
     private boolean replicatingGraph = false;
     /**
      * Indicates whether selection bias should be excluded during processing.
-     *
+     * <p>
      * When set to {@code true}, mechanisms or algorithms that might introduce
      * or rely on selection bias will be disregarded, aiming to ensure neutrality
      * and fairness in the operation or computation. When {@code false}, selection
@@ -170,12 +173,15 @@ public final class Fcit implements IGraphSearch {
      * which can affect the performance and accuracy of the search.
      */
     private int rbRadius = -1;
-
     /**
-     * Counts conditional independence checks, broken down by call site, so we
-     * can measure how many tests the recursive-blocking optimization saves.
+     * Represents the maximum length of a discriminating path used in a specific algorithm or process.
+     * A discriminating path can refer to a unique sequence of decisions or nodes evaluated during
+     * execution. This value serves as a constraint or threshold and is initialized to -1, indicating
+     * that no specific limit is set by default.
      */
-    private final IndependenceCheckCounter checkCounter = new IndependenceCheckCounter();
+    private int maxDiscriminatingPathLength = -1;
+
+    private long timeout = -1L;
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -295,6 +301,11 @@ public final class Fcit implements IGraphSearch {
         }
     }
 
+    @Override
+    public IndependenceTest getTest() {
+        return IGraphSearch.super.getTest();
+    }
+
     /**
      * Run the search and return a PAG.
      *
@@ -312,7 +323,7 @@ public final class Fcit implements IGraphSearch {
 
         TetradLogger.getInstance().log("===Starting FCIT===");
 
-        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
+        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test, timeout);
         strategy.setSepsetMap(sepsets);
         strategy.setVerbose(superVerbose);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
@@ -323,7 +334,7 @@ public final class Fcit implements IGraphSearch {
         fciOrient.setParallel(true);
         fciOrient.setCompleteRuleSetUsed(true);
         fciOrient.setRecursiveDepth(recursiveDepth);
-        fciOrient.setMaxDiscriminatingPathLength(-1);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setKnowledge(knowledge);
 
         Graph dag;
@@ -418,7 +429,7 @@ public final class Fcit implements IGraphSearch {
                 throw new IllegalArgumentException("That startWith option has not been configured: " + startWith);
             }
         } else {
-            dag = GraphUtils.completeGraph( new EdgeListGraph(nodes));
+            dag = GraphUtils.completeGraph(new EdgeListGraph(nodes));
             GraphUtils.reorientWithCircles(dag, superVerbose);
             best = dag.getNodes();
         }
@@ -507,12 +518,15 @@ public final class Fcit implements IGraphSearch {
             spine.addLast(dd.getY());
             spine.addFirst(dd.getX());
 
+            long deadlineMs = Long.MAX_VALUE;
+
             for (int i = 0; i < spine.size(); i++) {
                 Node m = spine.get(i);
                 Node n = spine.get((i + 1) % spine.size());
 
                 RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(pag, m, n, Set.of(), Set.of(),
-                        recursiveDepth, depth, rbRadius, 1, false);
+                        recursiveDepth, depth, rbRadius, 1, false,
+                        deadlineMs);
 
                 if (result.blockingSet() != null) {
                     nonGenuineDetected = true;
@@ -523,7 +537,8 @@ public final class Fcit implements IGraphSearch {
 
             for (Node x : colliderPath) {
                 RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), Set.of(),
-                        recursiveDepth, depth, rbRadius, 1, false);
+                        recursiveDepth, depth, rbRadius, 1, false,
+                        deadlineMs);
 
                 if (result.blockingSet() != null) {
                     nonGenuineDetected = true;
@@ -607,85 +622,238 @@ public final class Fcit implements IGraphSearch {
      *
      * @return true if at least one edge was removed, false otherwise
      */
-    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
+//    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
+//        if (superVerbose) {
+//            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
+//        }
+//
+//        boolean changed = false;
+//
+//        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
+//        // there in this graph.
+//        Set<Edge> edgePool = new HashSet<>(this.pag.getEdges());
+//
+//        List<Result> results = findIndependenceChecksRecursive(edgePool);
+//
+////        if (verbose) {
+////            System.out.println();
+////        }
+//
+//        for (Result result : results) {
+//            Edge edge = result.edge();
+//            Node x = edge.getNode1();
+//            Node y = edge.getNode2();
+//
+//            // The checks in `results` were computed against the PAG as it stood at the start of this round.
+//            // Earlier removals/reorientations in this same loop can change the paths between x and y, and hence
+//            // the conditioning sets recursive blocking proposes. So recalculate the independence check against
+//            // the *current* graph before committing the removal. If the edge is already gone, or no separating
+//            // set can be found given the current structure, skip it.
+//            if (!this.pag.isAdjacentTo(x, y)) {
+//                continue;
+//            }
+//
+//            Set<Node> b;
+//
+//            try {
+//                IndependenceCheck recheck = findIndependenceCheckRecursive(edge);
+//
+//                if (recheck == null) {
+//                    continue;
+//                }
+//
+//                b = recheck.cond();
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//            boolean didChange = tryToModifyGraph(x, y, b, "recursive", excludeSelectionBias, unshieldedTriples);
+//            changed |= didChange;
+//        }
+//
+//        return changed;
+//    }
+    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples) throws InterruptedException {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
 
-        boolean changed = false;
+        boolean changedThisSweep = false;
 
-        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
-        // there in this graph.
-        Set<Edge> edgePool = new HashSet<>(this.pag.getEdges());
+        // Serial sweep over the current edges. Snapshot the edge set so we can
+        // iterate while mutating this.pag underneath us.
+        List<Edge> edgePool = new ArrayList<>(this.pag.getEdges());
 
-        List<Result> results = findIndependenceChecksRecursive(edgePool);
-
-//        if (verbose) {
-//            System.out.println();
-//        }
-
-        for (Result result : results) {
-            Edge edge = result.edge();
+        for (Edge edge : edgePool) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            // The checks in `results` were computed against the PAG as it stood at the start of this round.
-            // Earlier removals/reorientations in this same loop can change the paths between x and y, and hence
-            // the conditioning sets recursive blocking proposes. So recalculate the independence check against
-            // the *current* graph before committing the removal. If the edge is already gone, or no separating
-            // set can be found given the current structure, skip it.
+            // The edge may have been removed by an earlier deletion in this same sweep.
             if (!this.pag.isAdjacentTo(x, y)) {
                 continue;
             }
 
-            Set<Node> b;
-
-            try {
-                IndependenceCheck recheck = findIndependenceCheckRecursive(edge);
-
-                if (recheck == null) {
-                    continue;
-                }
-
-                b = recheck.cond();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+            // Skip edges that already have a recorded sepset or are knowledge-forbidden
+            // directed edges — mirrors the filters in the old parallel collector.
+            if (sepsets.get(x, y) != null) {
+                continue;
+            }
+            if (!(knowledge == null || !Edges.isDirectedEdge(edge)
+                    || !knowledge.isForbidden(x.getName(), y.getName()))) {
+                continue;
             }
 
+            // Find a separating set against the CURRENT graph.
+            Set<Node> b;
+            IndependenceCheck check = findIndependenceCheckRecursive(edge);
+            if (check == null) {
+                continue;
+            }
+            b = check.cond();
+
+            // Attempt the deletion + legality check immediately. tryToModifyGraph
+            // already reverts this.pag and the sepset if the result isn't a legal PAG.
             boolean didChange = tryToModifyGraph(x, y, b, "recursive", excludeSelectionBias, unshieldedTriples);
-            changed |= didChange;
+            changedThisSweep |= didChange;
         }
 
-        return changed;
+        return changedThisSweep;
     }
 
-    private List<Result> findIndependenceChecksRecursive(Set<Edge> edges) {
-        return new HashSet<>(edges).parallelStream()
-                .filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null)
-                .filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge)
-                        || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()))
-                .map(edge -> {
-                    try {
-                        IndependenceCheck checkResult = findIndependenceCheckRecursive(edge);
-                        if (checkResult != null) {
-                            return new Result(checkResult.edge(), checkResult.cond());
-                        }
-                        return null;
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
+//    private List<Result> findIndependenceChecksRecursive(Set<Edge> edges) {
+//        return new HashSet<>(edges).parallelStream()
+//                .filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null)
+//                .filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge)
+//                        || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()))
+//                .map(edge -> {
+//                    try {
+//                        IndependenceCheck checkResult = findIndependenceCheckRecursive(edge);
+//                        if (checkResult != null) {
+//                            return new Result(checkResult.edge(), checkResult.cond());
+//                        }
+//                        return null;
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                })
+//                .filter(Objects::nonNull)
+//                .collect(Collectors.toList());
+//    }
+
+//    private IndependenceCheck findIndependenceCheckRecursive(Edge edge) throws InterruptedException {
+//        final Node x = edge.getNode1();
+//        final Node y = edge.getNode2();
+//
+//        // Get full blocking set with no forbidden nodes
+//        RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsRecursively(
+//                pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
+//                System.currentTimeMillis() + timeout);
+//
+//        Set<Node> nfCandSet = new HashSet<>();
+//        if (!b0result.indeterminate() && b0result.blockingSet() != null) {
+//            for (Node v : b0result.blockingSet()) {
+//                // Only ambiguous nodes — those with at least one circle endpoint
+//                if (pag.getAdjacentNodes(v).stream().anyMatch(
+//                        w -> pag.getEndpoint(v, w) == Endpoint.CIRCLE
+//                                || pag.getEndpoint(w, v) == Endpoint.CIRCLE)) {
+//                    nfCandSet.add(v);
+//                }
+//            }
+//        }
+//
+//        List<Node> nfCand = new ArrayList<>(nfCandSet);
+//
+//        // Enumerate subsets of the "not-followed" set NF ⊆ nfCand
+//        SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
+//        int[] nfChoice;
+//        while ((nfChoice = nfGen.next()) != null) {
+//            if (!this.pag.isAdjacentTo(x, y)) break; // edge already removed upstream
+//
+//            Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
+//            RecursiveBlocking.BlockingResult result = null;
+//
+//            if (this.depth < 0) {
+//                result = RecursiveBlocking.blockPathsRecursively(
+//                        pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
+//                        System.currentTimeMillis() + timeout);
+//
+//            } else {
+//                int depth = 0;
+//                int maxDepth = this.depth;
+//
+//                do {
+//                    depth++;
+//
+//                    if (depth > maxDepth) break;
+//
+//                    result = RecursiveBlocking.blockPathsRecursively(
+//                            pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
+//                            System.currentTimeMillis() + timeout);
+//                } while (result.indeterminate());
+//            }
+//
+//            if (result == null || result.indeterminate()) {
+//                continue;
+//            }
+//
+//            Set<Node> B = result.blockingSet();
+//
+//            if (B == null) {
+//                continue; // No separating set possible for this NF; try another NF
+//            }
+//
+//            List<Node> common = this.pag.getAdjacentNodes(x);
+//            common.retainAll(this.pag.getAdjacentNodes(y));
+//
+//            List<Node> definitelyRemove = new ArrayList<>();
+//            for (Node c : common) {
+//                if (this.pag.isDefCollider(x, c, y)) {
+//                    definitelyRemove.add(c);
+//                }
+//            }
+//
+//            List<Node> removalCandidates = new ArrayList<>(common);
+//            removalCandidates.removeAll(definitelyRemove);
+//
+//            SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
+//            int[] cChoice;
+//            while ((cChoice = cGen.next()) != null) {
+//                if (!this.pag.isAdjacentTo(x, y)) break;
+//
+//                Set<Node> S = new HashSet<>(B);
+//                Set<Node> C = GraphUtils.asSet(cChoice, removalCandidates);
+//
+//                S.removeAll(C);
+//
+//                if (this.depth != -1 && S.size() > this.depth) continue;
+//
+//                IndependenceCheck probe = new IndependenceCheck(edge, S);
+//                checkCounter.increment("findIndependenceCheckRecursive (test executed)");
+//                IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
+//                if (independenceResult.isIndependent()) {
+//                    return probe;
+//                }
+//            }
+//        }
+//
+//        return null;
+//    }
 
     private IndependenceCheck findIndependenceCheckRecursive(Edge edge) throws InterruptedException {
         final Node x = edge.getNode1();
         final Node y = edge.getNode2();
 
+        // Per-edge deadline: at most `timeout` ms spent separating THIS edge,
+        // shared across every RB call below. Unlimited stays unlimited without
+        // relying on Long.MAX_VALUE + now overflowing to a negative.
+        final long deadline = (timeout < 0L)
+                ? Long.MAX_VALUE
+                : System.currentTimeMillis() + timeout;
+
         // Get full blocking set with no forbidden nodes
         RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsRecursively(
-                pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true);
+                pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
+                deadline);
 
         Set<Node> nfCandSet = new HashSet<>();
         if (!b0result.indeterminate() && b0result.blockingSet() != null) {
@@ -705,6 +873,7 @@ public final class Fcit implements IGraphSearch {
         SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
         int[] nfChoice;
         while ((nfChoice = nfGen.next()) != null) {
+            if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
             if (!this.pag.isAdjacentTo(x, y)) break; // edge already removed upstream
 
             Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
@@ -712,7 +881,8 @@ public final class Fcit implements IGraphSearch {
 
             if (this.depth < 0) {
                 result = RecursiveBlocking.blockPathsRecursively(
-                        pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true);
+                        pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
+                        deadline);
 
             } else {
                 int depth = 0;
@@ -724,7 +894,8 @@ public final class Fcit implements IGraphSearch {
                     if (depth > maxDepth) break;
 
                     result = RecursiveBlocking.blockPathsRecursively(
-                            pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true);
+                            pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
+                            deadline);
                 } while (result.indeterminate());
             }
 
@@ -754,6 +925,7 @@ public final class Fcit implements IGraphSearch {
             SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
             int[] cChoice;
             while ((cChoice = cGen.next()) != null) {
+                if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
                 if (!this.pag.isAdjacentTo(x, y)) break;
 
                 Set<Node> S = new HashSet<>(B);
@@ -783,10 +955,10 @@ public final class Fcit implements IGraphSearch {
 
         Set<Node> sepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
-        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets,excludeSelectionBias, superVerbose);
+        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, excludeSelectionBias, superVerbose);
         if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
             if (verbose) {
-                TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
+                TetradLogger.getInstance().log("\tTried removing " + _edge + " for " + type
                         + " reasons, but it didn't lead to a PAG, sepset = " + b);
             }
 
@@ -994,15 +1166,6 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Sets the depth level for recursive operations.
-     *
-     * @param recursiveDepth the maximum depth to which the recursion is allowed
-     */
-    public void setRecursiveDepth(int recursiveDepth) {
-        this.recursiveDepth = recursiveDepth;
-    }
-
-    /**
      * Retrieves the current depth of recursion.
      *
      * @return the depth of recursion as an integer
@@ -1012,12 +1175,51 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
+     * Sets the depth level for recursive operations.
+     *
+     * @param recursiveDepth the maximum depth to which the recursion is allowed
+     */
+    public void setRecursiveDepth(int recursiveDepth) {
+        this.recursiveDepth = recursiveDepth;
+    }
+
+    /**
      * Returns the independence-check counter for this run.
      *
      * @return the counter, with a per-site breakdown
      */
     public IndependenceCheckCounter getCheckCounter() {
         return checkCounter;
+    }
+
+    /**
+     * Returns the CachedIndependenceQueries wrapping this run's test, if any,
+     * for cache-statistics reporting. Returns null if the test is not cached.
+     */
+    private CachedIndependenceQueries findCache() {
+        if (test instanceof CachedIndependenceQueries c) {
+            return c;
+        }
+        return null;
+    }
+
+    /**
+     * Sets the maximum length of the discriminating path.
+     *
+     * @param maxDiscriminatingPathLength the maximum number of steps or nodes
+     *                                    allowed in the discriminating path.
+     */
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
+    }
+
+    /**
+     * Sets the timeout for the search algorithm, or -1 for unlimited.
+     *
+     * @param timeout the maximum time in milliseconds to allow the search to run.
+     */
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
     }
 
     /**
@@ -1050,17 +1252,6 @@ public final class Fcit implements IGraphSearch {
     }
 
     private record IndependenceCheck(Edge edge, Set<Node> cond) {
-    }
-
-    /**
-     * Returns the CachedIndependenceQueries wrapping this run's test, if any,
-     * for cache-statistics reporting. Returns null if the test is not cached.
-     */
-    private CachedIndependenceQueries findCache() {
-        if (test instanceof CachedIndependenceQueries c) {
-            return c;
-        }
-        return null;
     }
 }
 

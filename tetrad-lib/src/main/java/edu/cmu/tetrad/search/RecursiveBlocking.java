@@ -148,13 +148,14 @@ public class RecursiveBlocking {
                                                        int nearWhichEndpoint,
                                                        boolean ignoreDirectEdge)
             throws InterruptedException {
-        try {
+//        try {
             return blockPathsRecursively(graph, x, y, containing, notFollowed,
                     recursiveDepth, depth, maxRadius, nearWhichEndpoint,
                     ignoreDirectEdge, Long.MAX_VALUE);
-        } catch (TimeoutException e) {
-            throw new RuntimeException(e);
-        }
+//        }
+//        catch (TimeoutException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     /**
@@ -193,18 +194,25 @@ public class RecursiveBlocking {
                                                        int nearWhichEndpoint,
                                                        boolean ignoreDirectEdge,
                                                        long deadlineMs)
-            throws InterruptedException, TimeoutException {
+            throws InterruptedException {// TimeoutException {
 
-        switch (DEFAULT_STRATEGY) {
-            case Strategy.ITERATIVE_DEEPENING:
-                return blockPathsIterativeDeepening(graph, x, y, containing, notFollowed,
-                        recursiveDepth, depth, maxRadius, nearWhichEndpoint,
-                        ignoreDirectEdge, deadlineMs);
-            case Strategy.RECURSIVE:
-            default:
-                return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
-                        recursiveDepth, depth, maxRadius, nearWhichEndpoint,
-                        ignoreDirectEdge, deadlineMs);
+        try {
+            switch (DEFAULT_STRATEGY) {
+                case Strategy.ITERATIVE_DEEPENING:
+                    return blockPathsIterativeDeepening(graph, x, y, containing, notFollowed,
+                            recursiveDepth, depth, maxRadius, nearWhichEndpoint,
+                            ignoreDirectEdge, deadlineMs);
+                case Strategy.RECURSIVE:
+                default:
+                    return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
+                            recursiveDepth, depth, maxRadius, nearWhichEndpoint,
+                            ignoreDirectEdge, deadlineMs);
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        catch (TimeoutException e) {
+            return new BlockingResult(null, true);
         }
     }
 
@@ -230,14 +238,14 @@ public class RecursiveBlocking {
      * @throws InterruptedException if the thread is interrupted
      */
     private static BlockingResult blockPathsRecursivelyFull(Graph graph,
-                                                           Node x,
-                                                           Node y,
-                                                           Set<Node> containing,
-                                                           Set<Node> notFollowed,
-                                                           int recursiveDepth,
-                                                           int depth, int maxRadius,
-                                                           int nearWhichEndpoint,
-                                                           boolean ignoreDirectEdge)
+                                                            Node x,
+                                                            Node y,
+                                                            Set<Node> containing,
+                                                            Set<Node> notFollowed,
+                                                            int recursiveDepth,
+                                                            int depth, int maxRadius,
+                                                            int nearWhichEndpoint,
+                                                            boolean ignoreDirectEdge)
             throws InterruptedException {
         try {
             return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed, recursiveDepth, depth,
@@ -267,15 +275,15 @@ public class RecursiveBlocking {
      * @throws TimeoutException     if the search was interrupted
      */
     private static BlockingResult blockPathsRecursivelyFull(Graph graph,
-                                                           Node x,
-                                                           Node y,
-                                                           Set<Node> containing,
-                                                           Set<Node> notFollowed,
-                                                           int recursiveDepth,
-                                                           int depth, int maxRadius,
-                                                           int nearWhichEndpoint,
-                                                           boolean ignoreDirectEdge,
-                                                           long deadlineMs)
+                                                            Node x,
+                                                            Node y,
+                                                            Set<Node> containing,
+                                                            Set<Node> notFollowed,
+                                                            int recursiveDepth,
+                                                            int depth, int maxRadius,
+                                                            int nearWhichEndpoint,
+                                                            boolean ignoreDirectEdge,
+                                                            long deadlineMs)
             throws InterruptedException, TimeoutException {
 
         // Fail fast if the seed set already violates the depth bound
@@ -927,37 +935,89 @@ public class RecursiveBlocking {
         while (!callStack.isEmpty()) {
             checkTimeout(deadlineMs);
 
-//            if (totalFrames[0] % 1000 == 0 && totalFrames[0] > 0) {
+//            if (totalFrames[0] % 10000 == 0 && totalFrames[0] > 0) {
 //                System.out.println("Total frames: " + totalFrames[0]);
 //            }
 
-            if (++totalFrames[0] > MAX_TOTAL_FRAMES) {
-//                System.err.println("Recursive blocking: Too many frames: " + totalFrames[0] + " (max " + MAX_TOTAL_FRAMES + ")");
-                return Blockable.INDETERMINATE;
-            }
+//            if (++totalFrames[0] > MAX_TOTAL_FRAMES) {
+////                System.err.println("Recursive blocking: Too many frames: " + totalFrames[0] + " (max " + MAX_TOTAL_FRAMES + ")");
+//                return Blockable.INDETERMINATE;
+//            }
 
-            Frame f = callStack.peek();
+//            Frame f = callStack.peek();
 
             // =================================================================
             // ENTER
             // =================================================================
+//            if (f.pass == Pass.ENTER) {
+//                if (f.currentRecursiveDepth > f.recursiveDepth) {
+//                    // INDETERMINATE: search-limit, not a graph fact. Never cached.
+//                    callStack.pop();
+//                    lastResult = finishFrame(f, Blockable.INDETERMINATE, callStack, memo);
+//                    continue;
+//                }
+//
+//                if (f.b == y) {
+//                    callStack.pop();
+//                    lastResult = finishFrame(f, Blockable.UNBLOCKABLE, callStack, memo);
+//                    continue;
+//                }
+//                if (path.contains(f.b)) {
+//                    // Cycle hit: this BLOCKED verdict is path-dependent, so it
+//                    // must never be cached, and any ancestor that consumes it
+//                    // must be tainted. Mark the parent tainted directly here.
+//                    callStack.pop();
+//                    Frame parent = callStack.peek();
+//                    if (parent != null) parent.pathTainted = true;
+//                    lastResult = Blockable.BLOCKED;
+//                    continue;
+//                }
+//                if (notFollowed.contains(f.b)) {
+//                    callStack.pop();
+//                    lastResult = finishFrame(f, Blockable.INDETERMINATE, callStack, memo);
+//                    continue;
+//                }
+//                if (notFollowed.contains(y)) {
+//                    callStack.pop();
+//                    lastResult = finishFrame(f, Blockable.BLOCKED, callStack, memo);
+//                    continue;
+//                }
+//
+//                // ---- MEMO LOOKUP ----
+//                // z here is the entry z for this frame. If we have already
+//                // computed an untainted verdict for (a, b, z), reuse it.
+//                MemoKey key = new MemoKey(f.a, f.b, z);
+//                Blockable cached = memo.get(key);
+//                if (cached != null) {
+//                    callStack.pop();
+//                    // A cached verdict is by construction untainted, so we do
+//                    // not taint the parent and do not re-store. Just return it.
+//                    lastResult = cached;
+//                    continue;
+//                }
+//                f.cacheKey = key;   // store on a successful, untainted pop
+//
+//                path.add(f.b);
+//
+//                f.zSnapshot = new HashSet<>(z);
+//                f.pass = Pass.CONTINUATIONS_WITHOUT_B;
+//            }
+
+            Frame f = callStack.peek();
+
             if (f.pass == Pass.ENTER) {
+                // Cheap terminal checks first — these don't explore anything.
                 if (f.currentRecursiveDepth > f.recursiveDepth) {
-                    // INDETERMINATE: search-limit, not a graph fact. Never cached.
                     callStack.pop();
                     lastResult = finishFrame(f, Blockable.INDETERMINATE, callStack, memo);
                     continue;
                 }
-
                 if (f.b == y) {
                     callStack.pop();
                     lastResult = finishFrame(f, Blockable.UNBLOCKABLE, callStack, memo);
                     continue;
                 }
                 if (path.contains(f.b)) {
-                    // Cycle hit: this BLOCKED verdict is path-dependent, so it
-                    // must never be cached, and any ancestor that consumes it
-                    // must be tainted. Mark the parent tainted directly here.
                     callStack.pop();
                     Frame parent = callStack.peek();
                     if (parent != null) parent.pathTainted = true;
@@ -974,23 +1034,24 @@ public class RecursiveBlocking {
                     lastResult = finishFrame(f, Blockable.BLOCKED, callStack, memo);
                     continue;
                 }
+//                if (notFollowed.contains(f.b)) { /* INDETERMINATE, pop */ ... continue; }
+//                if (notFollowed.contains(y))   { /* BLOCKED, pop */ ... continue; }
 
-                // ---- MEMO LOOKUP ----
-                // z here is the entry z for this frame. If we have already
-                // computed an untainted verdict for (a, b, z), reuse it.
+                // Memo lookup — a hit means zero new exploration.
                 MemoKey key = new MemoKey(f.a, f.b, z);
                 Blockable cached = memo.get(key);
                 if (cached != null) {
                     callStack.pop();
-                    // A cached verdict is by construction untainted, so we do
-                    // not taint the parent and do not re-store. Just return it.
                     lastResult = cached;
                     continue;
                 }
-                f.cacheKey = key;   // store on a successful, untainted pop
 
+                // ONLY NOW are we about to do real work. Charge a frame.
+//                if (++totalFrames[0] > MAX_TOTAL_FRAMES) {
+//                    return Blockable.INDETERMINATE;
+//                }
+                f.cacheKey = key;
                 path.add(f.b);
-
                 f.zSnapshot = new HashSet<>(z);
                 f.pass = Pass.CONTINUATIONS_WITHOUT_B;
             }

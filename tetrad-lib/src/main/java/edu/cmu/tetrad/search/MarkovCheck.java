@@ -407,9 +407,10 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                         }
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
-                    } catch (TimeoutException e) {
-                        throw new RuntimeException("Recursive blocking timed out", e);
                     }
+//                    catch (TimeoutException e) {
+//                        throw new RuntimeException("Recursive blocking timed out", e);
+//                    }
                 }
 
                 return new ArrayList<>(facts);

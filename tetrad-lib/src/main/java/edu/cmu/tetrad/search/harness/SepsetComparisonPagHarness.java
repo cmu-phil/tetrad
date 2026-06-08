@@ -260,9 +260,10 @@ public class SepsetComparisonPagHarness {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return new RbResult(0, -1, false);
-        } catch (TimeoutException e) {
-            return new RbResult(0, -1, false);
         }
+//        catch (TimeoutException e) {
+//            return new RbResult(0, -1, false);
+//        }
     }
 
     // -----------------------------------------------------------------------

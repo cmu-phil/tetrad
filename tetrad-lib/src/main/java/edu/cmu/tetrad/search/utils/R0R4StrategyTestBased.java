@@ -52,6 +52,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * class FciOrientDataExaminationStrategyTestBased.
      */
     private final IndependenceTest test;
+    private long timeout = -1;
     /**
      * The type of blocking strategy used in the R0R4StrategyTestBased class. This variable determines whether the
      * strategy will be recursive or greedy.
@@ -99,6 +100,11 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     public R0R4StrategyTestBased(IndependenceTest test) {
         this.test = test;
+    }
+
+    public R0R4StrategyTestBased(IndependenceTest test, long timeout) {
+        this.test = test;
+        this.timeout = timeout;
     }
 
     /**
@@ -208,7 +214,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
 
         Set<Node> blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y,
-                recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper);
+                recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper, timeout);
 
         if (blocking != null) {
             sepsetMap.set(x, y, blocking);
