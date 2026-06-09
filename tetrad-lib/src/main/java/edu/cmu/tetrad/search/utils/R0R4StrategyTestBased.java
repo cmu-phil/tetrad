@@ -91,7 +91,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * FciOrientDataExaminationStrategy. The separating sets are used to capture conditional independencies in a graph.
      * This map preserves that proper independence relationships are maintained during the execution of the strategy.
      */
-    private SepsetMap sepsetMap = new SepsetMap();
+    private SepsetMap sepsets = new SepsetMap();
 
     /**
      * Creates a new instance of FciOrientDataExaminationStrategyTestBased.
@@ -213,17 +213,17 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             return Pair.of(discriminatingPath, false);
         }
 
-        Set<Node> blocking = sepsetMap.get(x, y);
+        Set<Node> blocking = sepsets.get(x, y);
 
-        if (blocking != null) {
+        if (blocking == null) {
             blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y,
                     recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper, timeout);
-        }
 
-        if (blocking != null) {
-            sepsetMap.set(x, y, blocking);
-        } else {
-            throw new IllegalStateException("Discriminating path could not be determined.");
+            if (blocking != null) {
+                sepsets.set(x, y, blocking);
+            } else {
+                throw new IllegalStateException("Discriminating path could not be determined.");
+            }
         }
 
         if (!(blocking.containsAll(path)) && blocking.contains(w)) {
@@ -359,10 +359,10 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     /**
      * Sets the SepsetMap used by the R0R4StrategyTestBased.
      *
-     * @param sepsetMap the SepsetMap object to be set
+     * @param sepsets the SepsetMap object to be set
      */
-    public void setSepsetMap(SepsetMap sepsetMap) {
-        this.sepsetMap = sepsetMap;
+    public void setSepsets(SepsetMap sepsets) {
+        this.sepsets = sepsets;
     }
 
     /**

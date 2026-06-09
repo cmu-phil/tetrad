@@ -324,7 +324,7 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("===Starting FCIT===");
 
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test, timeout);
-        strategy.setSepsetMap(sepsets);
+        strategy.setSepsets(sepsets);
         strategy.setVerbose(superVerbose);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
         strategy.setDepth(depth);

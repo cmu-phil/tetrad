@@ -73,8 +73,8 @@ public final class SepsetMap implements TetradSerializable {
      * @param map A given sepset map.
      */
     public SepsetMap(SepsetMap map) {
-        this.sepsets = new HashMap<>(map.sepsets);
-        this.pValues = new HashMap<>(map.pValues);
+        this.sepsets = new ConcurrentHashMap<>(map.sepsets);
+        this.pValues = new ConcurrentHashMap<>(map.pValues);
     }
 
     /**

@@ -79,7 +79,7 @@ public class FcitBenchmarkHarness {
     private static final int    NUM_ALGS         = 7;
     private static final double DEFAULT_ALPHA    = 0.01;
     private static final double PENALTY_DISCOUNT = 2.0;
-    private static final int    FCIT_DEPTH       = 3;
+    private static final int    DEPTH       = 7;
 
     /** Algorithm index for ICD — the only one subject to the timeout. */
     private static final int    ICD_ALG_INDEX    = 5; // 0-based; alg #6 in 1-based output
@@ -375,7 +375,9 @@ public class FcitBenchmarkHarness {
     private static Graph runFcit(SemBicScore score, IndTestFisherZ test) {
         try {
             Fcit fcit = new Fcit(test, score);
-            fcit.setDepth(FCIT_DEPTH);
+//            fcit.setDepth(DEPTH);
+            fcit.setRecursiveDepth(15);
+            fcit.setTimeout(500);
             return fcit.search();
         } catch (InterruptedException e) { throw new RuntimeException(e); }
     }
