@@ -2537,6 +2537,112 @@ public final class GraphUtils {
         return allLatent;
     }
 
+
+    /**
+     * Checks if the souce L of the given trek in a graph (not equal to x or y) is a latent.
+     * This is a trek from measured node x to measured node y with a latent source. Other nodes
+     * on the path may be measured or latent.
+     *
+     * @param trueGraph the true graph representing the causal relationships between nodes
+     * @param trek      the trek to be checked
+     * @param x         the first node in the trek
+     * @param y         the last node in the trek
+     * @return true if the source of the trek (not equal to x or y) is latent, false otherwise.
+     */
+    public static boolean trekSourceLatent(Graph trueGraph, List<Node> trek, Node x, Node y) {
+        if (x.getNodeType() != NodeType.MEASURED || y.getNodeType() != NodeType.MEASURED) {
+            return false;
+        }
+
+        Node source = getTrekSource(trueGraph, trek);
+
+        if (source == x || source == y) {
+            return false;
+        }
+
+        return source.getNodeType() == NodeType.LATENT;
+    }
+
+    /**
+     * Determines whether the given bidirected edge has a latent common cause in the true graph via a trek
+     * x &lt;~~ L ~~&gt; y whose source L is latent, but where at least one consecutive pair of nodes (w, r) along
+     * the trek is NOT adjacent in the estimated graph. Other nodes on the trek may be measured or latent; only
+     * the source L is required to be latent.
+     * <p>
+     * This is a variation of {@link #bidirectedExistsLatentCommonCause(Edge, Graph)} that additionally requires
+     * the trek to contain an edge (w, r) for which {@code !estGraph.isAdjacentTo(w, r)} -- i.e., the trek is not
+     * fully "covered" by adjacencies in the estimated graph.
+     *
+     * @param edge      The edge to check.
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph against which consecutive-pair adjacency is checked.
+     * @return true if such a trek exists, false otherwise.
+     * @throws IllegalArgumentException if the edge is not bidirected.
+     */
+    public static boolean bidirectedExistsLatentCommonCauseUncovered(Edge edge, Graph trueGraph, Graph estGraph) {
+        if (!Edges.isBidirectedEdge(edge)) {
+            throw new IllegalArgumentException("The edge is not bidirected: " + edge);
+        }
+
+        Node x = edge.getNode1();
+        Node y = edge.getNode2();
+
+        Set<List<Node>> treks = trueGraph.paths().treks(x, y, -1);
+
+        for (List<Node> trek : treks) {
+            if (trekSourceLatent(trueGraph, trek, x, y) && trekIsUncovered(trueGraph, estGraph, trek)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks whether the given trek is "uncovered" relative to the estimated graph in the following sense:
+     * every consecutive pair along the trek is adjacent in the true graph, and among the consecutive pairs whose
+     * BOTH endpoints are measured, at least one is non-adjacent in the estimated graph. If the trek has no
+     * measured-to-measured consecutive pair, the condition is vacuously satisfied.
+     * <p>
+     * Nodes are matched into the estimated graph by name, so the trek (from the true graph) and the estimated
+     * graph need not share node objects.
+     *
+     * @param trueGraph the true graph, used to confirm consecutive-pair adjacency along the trek
+     * @param estGraph  the estimated graph in which measured-to-measured adjacency is checked
+     * @param trek      the trek whose consecutive pairs are examined
+     * @return true if the trek is uncovered as defined above, false otherwise
+     */
+    public static boolean trekIsUncovered(Graph trueGraph, Graph estGraph, List<Node> trek) {
+        boolean sawMeasuredPair = false;
+        boolean sawUncoveredMeasuredPair = false;
+
+        for (int i = 0; i < trek.size() - 1; i++) {
+            Node w = trek.get(i);
+            Node r = trek.get(i + 1);
+
+            // Every consecutive pair must be a true-graph adjacency.
+            if (!trueGraph.isAdjacentTo(w, r)) {
+                return false;
+            }
+
+            // Only measured-to-measured pairs are candidates for the estimated-graph check.
+            if (w.getNodeType() != NodeType.MEASURED || r.getNodeType() != NodeType.MEASURED) {
+                continue;
+            }
+
+            sawMeasuredPair = true;
+
+            Node ew = estGraph.getNode(w.getName());
+            Node er = estGraph.getNode(r.getName());
+
+            if (ew == null || er == null || !estGraph.isAdjacentTo(ew, er)) {
+                sawUncoveredMeasuredPair = true;
+            }
+        }
+
+        return !sawMeasuredPair || sawUncoveredMeasuredPair;
+    }
+
     /**
      * This method returns the source node of a given trek in a graph.
      *
@@ -2570,7 +2676,7 @@ public final class GraphUtils {
      * @return true if the given bidirected has a latent confounder in the true graph, false otherwise.
      * @throws IllegalArgumentException if the edge is not bidirected.
      */
-    public static boolean isCorrectBidirectedEdge(Edge edge, Graph trueGraph) {
+    public static boolean bidirectedExistsLatentConfounder(Edge edge, Graph trueGraph) {
         if (!Edges.isBidirectedEdge(edge)) {
             throw new IllegalArgumentException("The edge is not bidirected: " + edge);
         }
@@ -2584,10 +2690,32 @@ public final class GraphUtils {
         for (List<Node> trek : treks) {
             if (isConfoundingTrek(trueGraph, trek, x, y)) {
                 existsLatentConfounder = true;
+                break;
             }
         }
 
         return existsLatentConfounder;
+    }
+
+    public static boolean bidirectedExistsLatentCommonCause(Edge edge, Graph trueGraph) {
+        if (!Edges.isBidirectedEdge(edge)) {
+            throw new IllegalArgumentException("The edge is not bidirected: " + edge);
+        }
+
+        Node x = edge.getNode1();
+        Node y = edge.getNode2();
+
+        Set<List<Node>> treks = trueGraph.paths().treks(x, y, -1);
+        boolean trekSourceLatent = false;
+
+        for (List<Node> trek : treks) {
+            if (trekSourceLatent(trueGraph, trek, x, y)) {
+                trekSourceLatent = true;
+                break;
+            }
+        }
+
+        return trekSourceLatent;
     }
 
     /**

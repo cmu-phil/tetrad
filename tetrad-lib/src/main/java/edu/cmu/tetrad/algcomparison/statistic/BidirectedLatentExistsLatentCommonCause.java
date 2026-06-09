@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -30,73 +30,78 @@ import edu.cmu.tetrad.util.Parameters;
 import java.io.Serial;
 
 /**
- * Counts the number of X&lt;-&gt;Y edges for which a latent confounder of X and Y exists.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * The BidirectedLatentPrecision class implements the Statistic interface and represents a statistic that calculates the
+ * percentage of bidirected edges in an estimated graph for which a latent confounder exists in the true graph.
  */
-public class NumCorrectBidirected implements Statistic {
+public class BidirectedLatentExistsLatentCommonCause implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * Counts the number of bidirectional edges for which a latent confounder of X and Y exists.
+     * The BidirectedLatentPrecision class implements the Statistic interface and represents a statistic that calculates
+     * the percentage of bidirected edges in an estimated graph for which a latent common cause exists in the true graph.
      */
-    public NumCorrectBidirected() {
+    public BidirectedLatentExistsLatentCommonCause() {
     }
 
     /**
-     * Retrieves the abbreviation for the statistic.
+     * Returns the abbreviation for the statistic. The abbreviation is a short string that represents the statistic. For
+     * this statistic, the abbreviation is "&lt;-&gt;-Lat-Prec".
      *
      * @return The abbreviation for the statistic.
      */
     @Override
     public String getAbbreviation() {
-        return "<-> Correct";
+        return "<->-LatCommonCause";
     }
 
     /**
-     * Returns a short one-line description of this statistic. This will be printed at the beginning of the report.
+     * Returns a short description of the statistic, which is the percentage of bidirected edges for which a latent
+     * confounder exists.
      *
-     * @return The description of the statistics as a String.
+     * @return The description of the statistic.
      */
     @Override
     public String getDescription() {
-        return "Number of bidirected edges for which a latent confounder exists";
+        return "Percent of bidirected edges for which a latent confounder exists (an latent L such that X <~~ (L) ~~> Y).";
     }
 
     /**
-     * Returns the number of bidirected edges for which a latent confounder exists.
+     * Calculates the percentage of correctly identified bidirected edges in an estimated graph for which a latent
+     * confounder exists in the true graph.
      *
-     * @param trueDag The true DAG.
+     * @param trueDag The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
      * @param parameters The parameters
-     * @return The number of bidirected edges with a latent confounder.
+     * @return The percentage of correctly identified bidirected edges.
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
+        int pos = 0;
 
-        estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
+        estGraph = GraphUtils.replaceNodes(estGraph, trueDag.getNodes());
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                if (GraphUtils.bidirectedExistsLatentConfounder(edge, trueGraph)) {
+                if (GraphUtils.bidirectedExistsLatentCommonCause(edge, trueDag)) {
                     tp++;
                 }
+
+                pos++;
             }
         }
 
-        return tp;
+        return tp / (double) pos;
     }
 
     /**
-     * Returns the normalized value of the given statistic.
+     * Calculates the normalized value of a given statistic value.
      *
      * @param value The value of the statistic.
-     * @return The normalized value.
+     * @return The normalized value of the statistic.
      */
     @Override
     public double getNormValue(double value) {
