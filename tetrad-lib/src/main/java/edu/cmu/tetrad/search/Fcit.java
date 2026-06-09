@@ -701,6 +701,11 @@ public final class Fcit implements IGraphSearch {
         final Node x = edge.getNode1();
         final Node y = edge.getNode2();
 
+        Set<Node> known = sepsets.get(x, y);
+        if (known != null) {
+            return new IndependenceCheck(edge, known);
+        }
+
         // Per-edge deadline: at most `timeout` ms spent separating THIS edge,
         // shared across every RB call below. Unlimited stays unlimited without
         // relying on Long.MAX_VALUE + now overflowing to a negative.
