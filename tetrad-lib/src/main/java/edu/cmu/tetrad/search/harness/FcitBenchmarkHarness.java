@@ -85,14 +85,22 @@ public class FcitBenchmarkHarness {
     private static final int    ICD_ALG_INDEX    = 5; // 0-based; alg #6 in 1-based output
 
     /** Missing-value token that pandas reads as NaN when passed to read_csv. */
-    private static final String MISSING          = "";
+    private static final String MISSING          = "*";
+
+//    private static final String HEADER = String.join("\t",
+//            "Alg", "avgDegree", "numLatents", "numMeasures", "numRuns", "sampleSize",
+//            "*->-Prec", "-->-Prec", "<->-Lat-Prec",
+//            "AHP", "AHPC", "AHR", "AHRC",
+//            "AP", "AR",
+//            "E-Wall", "PAG"
+//    );
 
     private static final String HEADER = String.join("\t",
             "Alg", "avgDegree", "numLatents", "numMeasures", "numRuns", "sampleSize",
             "*->-Prec", "-->-Prec", "<->-Lat-Prec",
             "AHP", "AHPC", "AHR", "AHRC",
             "AP", "AR",
-            "E-Wall", "PAG"
+            "E-Wall", "PAG", "NumBidirected"
     );
 
     // ────────────────────────────────────────────────────────────────────────
@@ -167,6 +175,7 @@ public class FcitBenchmarkHarness {
         Statistic pagAP        = new AdjacencyPrecision();
         Statistic pagAR        = new AdjacencyRecall();
         Statistic pagExact     = new LegalPag();
+        Statistic numBidirected    = new NumBidirectedEdgesEst();
 
         List<int[]> conditions = buildConditions();
 
@@ -193,7 +202,7 @@ public class FcitBenchmarkHarness {
                 // Slots: 0 *->-Prec  1 -->-Prec  2 <->-Lat
                 //        3 AHP  4 AHPC  5 AHR  6 AHRC  7 AP  8 AR
                 //        9 E-Wall  10 PAG
-                final int NS = 11;
+                final int NS = 12;
                 double[][] sums = new double[NUM_ALGS][NS];
                 int[][]    cnts = new int[NUM_ALGS][NS];
 
@@ -298,6 +307,7 @@ public class FcitBenchmarkHarness {
                         accum(sums, cnts, ai, 7,  safe(pagAP,    est, truePag, data));
                         accum(sums, cnts, ai, 8,  safe(pagAR,    est, truePag, data));
                         accum(sums, cnts, ai, 10, safe(pagExact, est, truePag, data));
+                        accum(sums, cnts, ai, 11, safe(numBidirected, est, truePag, data));
 
                         System.err.printf("  run=%d alg=%d  wall=%.2fs%n",
                                 run + 1, ai + 1, wallSec);
@@ -312,9 +322,6 @@ public class FcitBenchmarkHarness {
 
                 // Write one row per algorithm for this condition
                 for (int ai = 0; ai < NUM_ALGS; ai++) {
-                    String biDirStr = (numLatents == 0)
-                            ? "*" : fmtAvg(sums, cnts, ai, 2);
-
                     out.println(String.join("\t",
                             String.valueOf(ai + 1),
                             String.valueOf(avgDeg),
@@ -324,7 +331,7 @@ public class FcitBenchmarkHarness {
                             String.valueOf(sampleSize),
                             fmtAvg(sums, cnts, ai, 0),   // *->-Prec
                             fmtAvg(sums, cnts, ai, 1),   // -->-Prec
-                            biDirStr,                      // <->-Lat-Prec
+                            fmtAvg(sums, cnts, ai, 2),   // <->-Lat-Prec
                             fmtAvg(sums, cnts, ai, 3),   // AHP
                             fmtAvg(sums, cnts, ai, 4),   // AHPC
                             fmtAvg(sums, cnts, ai, 5),   // AHR
@@ -332,7 +339,8 @@ public class FcitBenchmarkHarness {
                             fmtAvg(sums, cnts, ai, 7),   // AP
                             fmtAvg(sums, cnts, ai, 8),   // AR
                             fmtAvg(sums, cnts, ai, 9),   // E-Wall
-                            fmtAvg(sums, cnts, ai, 10)   // PAG
+                            fmtAvg(sums, cnts, ai, 10),   // PAG
+                            fmtAvg(sums, cnts, ai, 11)  // num bidirected
                     ));
                 }
                 out.flush();

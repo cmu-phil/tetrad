@@ -485,6 +485,26 @@ public final class Fcit implements IGraphSearch {
 
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
+
+        Edge edge;
+        Set<Edge> nongenuineEdges = new HashSet<>();
+
+        do {
+            edge = findNongenuineEdge();
+            if (edge != null && !nongenuineEdges.contains(edge)) {
+                nongenuineEdges.add(edge);
+                IndependenceCheck check = findIndependenceCheckRecursive(edge);
+
+                if (check != null) {
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    tryToModifyGraph(x, y, check.cond, "recursive",
+                            excludeSelectionBias, initialColliders);
+                }
+            }
+        } while (edge != null);
+
         int round = 0;
 
         do {
@@ -502,49 +522,12 @@ public final class Fcit implements IGraphSearch {
             node.setNodeType(NodeType.LATENT);
         }
 
-        boolean nonGenuineDetected = false;
+        Edge nongenuineEdge = findNongenuineEdge();
 
-        Set<DiscriminatingPath> ddps = FciOrient.listDiscriminatingPaths(pag, -1, true);
-
-        for (DiscriminatingPath dd : ddps) {
-            List<Node> colliderPath = dd.getColliderPath();
-
-            List<Node> spine = new ArrayList<>(colliderPath);
-            spine.addLast(dd.getY());
-            spine.addFirst(dd.getX());
-
-            long deadlineMs = Long.MAX_VALUE;
-
-            for (int i = 0; i < spine.size(); i++) {
-                Node m = spine.get(i);
-                Node n = spine.get((i + 1) % spine.size());
-
-                RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(pag, m, n, Set.of(), Set.of(),
-                        recursiveDepth, depth, rbRadius, 1, false,
-                        deadlineMs);
-
-                if (result.blockingSet() != null) {
-                    nonGenuineDetected = true;
-                }
-            }
-
-            Node y = dd.getY();
-
-            for (Node x : colliderPath) {
-                RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), Set.of(),
-                        recursiveDepth, depth, rbRadius, 1, false,
-                        deadlineMs);
-
-                if (result.blockingSet() != null) {
-                    nonGenuineDetected = true;
-                }
-            }
-        }
-
-        if (nonGenuineDetected) {
+        if (nongenuineEdge != null) {
             TetradLogger.getInstance().log("\nNon-genuine DDPs detected.");
         } else {
-            TetradLogger.getInstance().log("\nNo non-genuine DDPs detected.");
+            TetradLogger.getInstance().log("\nNo non-genuine DDPs detected in the final graph.");
         }
 
         TetradLogger.getInstance().log("\nFCIT finished.");
@@ -559,6 +542,70 @@ public final class Fcit implements IGraphSearch {
         }
 
         return GraphUtils.replaceNodes(this.pag, nodes);
+    }
+
+    private Edge findNongenuineEdge() throws InterruptedException {
+        Set<DiscriminatingPath> ddps = FciOrient.listDiscriminatingPaths(pag, -1, true);
+
+        // Within one pass, the same pair can appear as a leg/chord of several
+        // discriminating paths. blockPathsRecursively is the expensive call, so
+        // memoize its verdict per unordered pair for the duration of this pass.
+        // (The PAG is not mutated during findNongenuineEdge, so the verdict is stable.)
+        Map<Set<Node>, Boolean> blockedCache = new HashMap<>();
+        long deadlineMs = System.currentTimeMillis() + 500;
+
+        for (DiscriminatingPath dd : ddps) {
+            List<Node> colliderPath = dd.getColliderPath();
+
+            List<Node> spine = new ArrayList<>(colliderPath);
+            spine.addFirst(dd.getX());
+            spine.addLast(dd.getY());
+
+            for (int i = 0; i < spine.size() - 1; i++) {
+                Edge edge = spuriousLeg(spine.get(i), spine.get(i + 1), deadlineMs, blockedCache);
+                if (edge != null) {
+                    return edge;
+                }
+            }
+
+            Node y = dd.getY();
+            for (Node v : colliderPath) {
+                Edge edge = spuriousLeg(v, y, deadlineMs, blockedCache);
+                if (edge != null) {
+                    return edge;
+                }
+            }
+        }
+        return null;
+    }
+
+    private Edge spuriousLeg(Node m, Node n, long deadlineMs, Map<Set<Node>, Boolean> blockedCache)
+            throws InterruptedException {
+        Edge edge = pag.getEdge(m, n);
+        if (edge == null) {
+            return null;
+        }
+
+        // Cheapest signal first: a recorded separator means the pair is already
+        // known independent, so the adjacency is spurious. No blocking needed.
+        if (sepsets.get(m, n) != null) {
+            return edge;
+        }
+
+        // Expensive path: recursive blocking. Memoize per unordered pair.
+        Set<Node> key = Set.of(m, n);
+        Boolean cached = blockedCache.get(key);
+        if (cached != null) {
+            return cached ? edge : null;
+        }
+
+        RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(
+                pag, m, n, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
+                deadlineMs);
+
+        boolean blocked = result.blockingSet() != null;
+        blockedCache.put(key, blocked);
+        return blocked ? edge : null;
     }
 
     /**
@@ -617,7 +664,8 @@ public final class Fcit implements IGraphSearch {
      *
      * @return true if at least one edge was removed, false otherwise
      */
-    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
+    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples)
+            throws InterruptedException {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
@@ -692,9 +740,6 @@ public final class Fcit implements IGraphSearch {
         }
 
         return changedThisSweep;
-    }
-
-    private record RemovalHit(int index, Edge edge, Set<Node> cond) {
     }
 
     private IndependenceCheck findIndependenceCheckRecursive(Edge edge) throws InterruptedException {
@@ -1034,6 +1079,9 @@ public final class Fcit implements IGraphSearch {
          * Starts with a complete o-o graph.
          */
         COMPLETE_GRAPH
+    }
+
+    private record RemovalHit(int index, Edge edge, Set<Node> cond) {
     }
 
     private record Result(Edge edge, Set<Node> cond) {

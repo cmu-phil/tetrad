@@ -256,46 +256,25 @@ public class TetradLogger {
      * @param message a {@link java.lang.String} object
      */
     public void log(String message) {
-        SwingUtilities.invokeLater(() -> {
-            if (this.logging) {
-
-                if (!this.writers.containsKey(System.out)) {
-                    System.out.println(message);
-                }
-
-                if (this.config == null) {
-                    this.fireActivated(new EmptyConfig(true));
-                }
-
-                try {
-                    for (Writer writer : this.writers.values()) {
-                        writer.write(message);
-                        writer.write("\n");
-                    }
-                } catch (IOException e) {
-                    System.out.println(e.getMessage());
-                }
+        if (this.logging) {
+            if (!this.writers.containsKey(System.out)) {
+                System.out.println(message);
             }
-        });
 
-//        if (this.logging) {
-//            if (!this.writers.containsKey(System.out)) {
-//                System.out.println(message);
-//            }
-//
-//            if (this.config == null) {
-//                this.fireActivated(new EmptyConfig(true));
-//            }
-//            try {
-//                for (Writer writer : this.writers.values()) {
-//                    writer.write(message);
-//                    writer.write("\n");
-//                    writer.flush();
-//                }
-//            } catch (IOException e) {
-//                System.out.println(e.getMessage());
-//            }
-//        }
+            if (this.config == null) {
+                this.fireActivated(new EmptyConfig(true));
+            }
+
+            try {
+                for (Writer writer : this.writers.values()) {
+                    writer.write(message);
+                    writer.write("\n");
+                    writer.flush();
+                }
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+            }
+        }
     }
 
     /**
