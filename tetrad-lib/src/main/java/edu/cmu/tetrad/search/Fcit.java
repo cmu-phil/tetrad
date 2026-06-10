@@ -486,24 +486,54 @@ public final class Fcit implements IGraphSearch {
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
 
-        Edge edge;
-        Set<Edge> nongenuineEdges = new HashSet<>();
+//        Edge edge;
+//        Set<Edge> nongenuineEdges = new HashSet<>();
+//
+//        do {
+//            edge = findNongenuineEdge();
+//            if (edge != null && !nongenuineEdges.contains(edge)) {
+//                nongenuineEdges.add(edge);
+//                IndependenceCheck check = findIndependenceCheckRecursive(edge);
+//
+//                if (check != null) {
+//                    Node x = edge.getNode1();
+//                    Node y = edge.getNode2();
+//
+//                    tryToModifyGraph(x, y, check.cond, "recursive",
+//                            excludeSelectionBias, initialColliders);
+//                }
+//            }
+//        } while (edge != null);
 
-        do {
-            edge = findNongenuineEdge();
-            if (edge != null && !nongenuineEdges.contains(edge)) {
-                nongenuineEdges.add(edge);
-                IndependenceCheck check = findIndependenceCheckRecursive(edge);
+        // Strong-form discharge: delete a spurious leg of a phantom-bearing
+        // discriminating path each step (thm:strong's policy). We loop until
+        // either no phantom-bearing leg remains, or the leg we are handed is one
+        // we have already attempted and could not discharge (no independence
+        // found, or the removal reverted as illegal). The `attempted` set makes
+        // the loop terminate: findNongenuineEdge will keep returning the same
+        // undischargeable edge, so re-seeing an attempted edge means no progress
+        // is possible and we stop.
+        Set<Edge> attempted = new HashSet<>();
 
-                if (check != null) {
-                    Node x = edge.getNode1();
-                    Node y = edge.getNode2();
-
-                    tryToModifyGraph(x, y, check.cond, "recursive",
-                            excludeSelectionBias, initialColliders);
-                }
+        while (true) {
+            Edge edge = findNongenuineEdge().edge();
+            if (edge == null) {
+                break; // no phantom-bearing leg remains
             }
-        } while (edge != null);
+            if (!attempted.add(edge)) {
+                break; // cycled back to an edge we already failed to discharge
+            }
+
+            IndependenceCheck check = findIndependenceCheckRecursive(edge);
+            if (check == null) {
+                continue; // could not separate this leg; will re-see it and break
+            }
+
+            tryToModifyGraph(edge.getNode1(), edge.getNode2(), check.cond,
+                    "recursive", excludeSelectionBias, initialColliders);
+            // If the removal reverted (illegal PAG), the edge survives and will be
+            // re-returned; `attempted` already contains it, so the next pass breaks.
+        }
 
         int round = 0;
 
@@ -522,10 +552,14 @@ public final class Fcit implements IGraphSearch {
             node.setNodeType(NodeType.LATENT);
         }
 
-        Edge nongenuineEdge = findNongenuineEdge();
+        NongenuineScan finalScan = findNongenuineEdge();
 
-        if (nongenuineEdge != null) {
+        if (finalScan.edge() != null) {
             TetradLogger.getInstance().log("\nNon-genuine DDPs detected.");
+        } else if (finalScan.indeterminate()) {
+            TetradLogger.getInstance().log(
+                    "\nDetection inconclusive: a blocking search timed out before a verdict. "
+                            + "No non-genuine DDP was confirmed, but the graph cannot be certified phantom-free.");
         } else {
             TetradLogger.getInstance().log("\nNo non-genuine DDPs detected in the final graph.");
         }
@@ -544,15 +578,70 @@ public final class Fcit implements IGraphSearch {
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
 
-    private Edge findNongenuineEdge() throws InterruptedException {
+//    private Edge findNongenuineEdge() throws InterruptedException {
+//        Set<DiscriminatingPath> ddps = FciOrient.listDiscriminatingPaths(pag, -1, true);
+//
+//        // Within one pass, the same pair can appear as a leg/chord of several
+//        // discriminating paths. blockPathsRecursively is the expensive call, so
+//        // memoize its verdict per unordered pair for the duration of this pass.
+//        // (The PAG is not mutated during findNongenuineEdge, so the verdict is stable.)
+//        Map<Set<Node>, Boolean> blockedCache = new HashMap<>();
+////        long deadlineMs = System.currentTimeMillis() + 500;
+//
+//        // Match findIndependenceCheckRecursive's convention: unlimited stays
+//        // unlimited (no Long.MAX_VALUE + now overflow), otherwise a per-pass
+//        // budget of `timeout` ms. A hardcoded budget here would make a slow scan
+//        // return null — reported as "no non-genuine DDPs" — when it merely ran
+//        // out of time, silently weakening both the discharge loop and the final
+//        // detection log line.
+//        final long deadlineMs = (timeout < 0L)
+//                ? Long.MAX_VALUE
+//                : System.currentTimeMillis() + timeout;
+//
+//        for (DiscriminatingPath dd : ddps) {
+//            List<Node> colliderPath = dd.getColliderPath();
+//
+//            List<Node> spine = new ArrayList<>(colliderPath);
+//            spine.addFirst(dd.getX());
+//            spine.addLast(dd.getY());
+//
+//            for (int i = 0; i < spine.size() - 1; i++) {
+//                Edge edge = spuriousLeg(spine.get(i), spine.get(i + 1), deadlineMs, blockedCache);
+//                if (edge != null) {
+//                    return edge;
+//                }
+//            }
+//
+//            Node y = dd.getY();
+//            for (Node v : colliderPath) {
+//                Edge edge = spuriousLeg(v, y, deadlineMs, blockedCache);
+//                if (edge != null) {
+//                    return edge;
+//                }
+//            }
+//        }
+//        return null;
+//    }
+
+private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}
+
+    private NongenuineScan findNongenuineEdge() throws InterruptedException {
         Set<DiscriminatingPath> ddps = FciOrient.listDiscriminatingPaths(pag, -1, true);
 
         // Within one pass, the same pair can appear as a leg/chord of several
         // discriminating paths. blockPathsRecursively is the expensive call, so
         // memoize its verdict per unordered pair for the duration of this pass.
         // (The PAG is not mutated during findNongenuineEdge, so the verdict is stable.)
-        Map<Set<Node>, Boolean> blockedCache = new HashMap<>();
-        long deadlineMs = System.currentTimeMillis() + 500;
+        Map<Set<Node>, LegVerdict> verdictCache = new HashMap<>();
+
+        // Match findIndependenceCheckRecursive's convention: unlimited stays
+        // unlimited (no Long.MAX_VALUE + now overflow), otherwise a per-pass
+        // budget of `timeout` ms.
+        final long deadlineMs = (timeout < 0L)
+                ? Long.MAX_VALUE
+                : System.currentTimeMillis() + timeout;
+
+        boolean sawIndeterminate = false;
 
         for (DiscriminatingPath dd : ddps) {
             List<Node> colliderPath = dd.getColliderPath();
@@ -561,22 +650,70 @@ public final class Fcit implements IGraphSearch {
             spine.addFirst(dd.getX());
             spine.addLast(dd.getY());
 
+            // Path edges: consecutive spine vertices.
             for (int i = 0; i < spine.size() - 1; i++) {
-                Edge edge = spuriousLeg(spine.get(i), spine.get(i + 1), deadlineMs, blockedCache);
-                if (edge != null) {
-                    return edge;
+                Node m = spine.get(i);
+                Node n = spine.get(i + 1);
+                LegVerdict v = legVerdict(m, n, deadlineMs, verdictCache);
+                if (v == LegVerdict.SPURIOUS) {
+                    return new NongenuineScan(pag.getEdge(m, n), sawIndeterminate);
+                }
+                if (v == LegVerdict.INDETERMINATE) {
+                    sawIndeterminate = true;
                 }
             }
 
+            // Chords v_i *-> c: each interior collider to the far endpoint y.
             Node y = dd.getY();
-            for (Node v : colliderPath) {
-                Edge edge = spuriousLeg(v, y, deadlineMs, blockedCache);
-                if (edge != null) {
-                    return edge;
+            for (Node v0 : colliderPath) {
+                LegVerdict v = legVerdict(v0, y, deadlineMs, verdictCache);
+                if (v == LegVerdict.SPURIOUS) {
+                    return new NongenuineScan(pag.getEdge(v0, y), sawIndeterminate);
+                }
+                if (v == LegVerdict.INDETERMINATE) {
+                    sawIndeterminate = true;
                 }
             }
         }
-        return null;
+
+        // No confirmed-spurious leg. If any pair was indeterminate, we cannot
+        // claim the graph is phantom-free; report it.
+        return new NongenuineScan(null, sawIndeterminate);
+    }
+
+    private LegVerdict legVerdict(Node m, Node n, long deadlineMs, Map<Set<Node>, LegVerdict> cache)
+            throws InterruptedException {
+        Edge edge = pag.getEdge(m, n);
+        if (edge == null) {
+            return LegVerdict.NOT_SPURIOUS;
+        }
+
+        // Cheapest signal first: a recorded separator means the pair is already
+        // known independent, so the adjacency is spurious. No blocking needed.
+        if (sepsets.get(m, n) != null) {
+            return LegVerdict.SPURIOUS;
+        }
+
+        Set<Node> key = Set.of(m, n);
+        LegVerdict cached = cache.get(key);
+        if (cached != null) {
+            return cached;
+        }
+
+        RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(
+                pag, m, n, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
+                deadlineMs);
+
+        LegVerdict v;
+        if (result.indeterminate()) {
+            v = LegVerdict.INDETERMINATE;
+        } else if (result.blockingSet() != null) {
+            v = LegVerdict.SPURIOUS;
+        } else {
+            v = LegVerdict.NOT_SPURIOUS;
+        }
+        cache.put(key, v);
+        return v;
     }
 
     private Edge spuriousLeg(Node m, Node n, long deadlineMs, Map<Set<Node>, Boolean> blockedCache)
@@ -1088,6 +1225,15 @@ public final class Fcit implements IGraphSearch {
     }
 
     private record IndependenceCheck(Edge edge, Set<Node> cond) {
+    }
+
+    /**
+     * Outcome of a phantom scan. `edge` is a confirmed-spurious discriminating-path
+     * leg to discharge, or null if none was confirmed. `indeterminate` is true if
+     * any pair's blocking search timed out before a verdict, so a null `edge` means
+     * "no phantom confirmed within budget" rather than "no phantom exists."
+     */
+    private record NongenuineScan(Edge edge, boolean indeterminate) {
     }
 }
 
