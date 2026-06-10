@@ -52,7 +52,7 @@ public class BidirectedLatentPrecision implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "<->-LatConfounder";
+        return "<->-LatPrec";
     }
 
     /**
