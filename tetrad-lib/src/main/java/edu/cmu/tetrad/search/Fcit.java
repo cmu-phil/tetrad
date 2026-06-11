@@ -288,9 +288,9 @@ public final class Fcit implements IGraphSearch {
             common.retainAll(pag.getAdjacentNodes(y));
 
             for (Node node : common) {
-                if (pag.isDefCollider(x, node, y)) {
-                    continue;
-                }
+//                if (pag.isDefCollider(x, node, y)) {
+//                    continue;
+//                }
 
                 if (!sepsets.get(x, y).contains(node)) {
                     if (!pag.isDefCollider(x, node, y)) {
@@ -959,6 +959,7 @@ public final class Fcit implements IGraphSearch {
 
     private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type, boolean excludeSelectionBias, Set<Triple> initialColliders) {
         Edge _edge = pag.getEdge(x, y);
+
         Graph _pag = new EdgeListGraph(pag);
 
         this.pag.removeEdge(_edge);
@@ -981,6 +982,7 @@ public final class Fcit implements IGraphSearch {
 
         if (verbose) {
             TetradLogger.getInstance().log("Removing " + _edge + " for " + type + " reasons, sepset = " + b);
+//            TetradLogger.getInstance().log("PAG = " + this.pag);
         }
 
         return true;
