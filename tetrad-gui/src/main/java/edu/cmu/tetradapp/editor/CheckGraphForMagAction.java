@@ -79,7 +79,7 @@ public class CheckGraphForMagAction extends AbstractAction {
             @Override
             public void watch() {
                 CompletableFuture<PagLegalityCheck.LegalMagRet> future = CompletableFuture
-                        .supplyAsync(() -> PagLegalityCheck.isLegalMag(_graph, new HashSet<>(), 15));
+                        .supplyAsync(() -> PagLegalityCheck.isLegalMag(_graph, new HashSet<>(), -1));
 
                 PagLegalityCheck.LegalMagRet result;
                 try {

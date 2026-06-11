@@ -69,7 +69,7 @@ public class BidirectedLatentPrecision implements Statistic {
     /**
      * Calculates the percentage of correctly identified bidirected edges in an estimated graph for which a latent
      * confounder exists in the true graph. This includes bidirected edges that are uncovered by the estimated graph.
-     * That is, this finds latent L for x<~~L~~>Y where the paths to x or y may include measures, but
+     * That is, this finds latent L for x&lt;~~L~~&gt;Y where the paths to x or y may include measures, but
      * not all measure-to-measure edges exist in the estimated graph.
      *
      * @param trueDag The true graph (DAG, CPDAG, PAG_of_the_true_DAG).

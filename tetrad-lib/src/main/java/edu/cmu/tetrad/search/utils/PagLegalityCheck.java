@@ -90,8 +90,7 @@ public class PagLegalityCheck {
             return new LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
         }
 
-        // Checking paths in the discriminiting path check of length up to 20.... TODO... is this restriction OK?
-        Graph pag2 = null;
+        Graph pag2;
         try {
             MagToPag magToPag = new MagToPag(mag);
             pag2 = magToPag.convert(false, false);

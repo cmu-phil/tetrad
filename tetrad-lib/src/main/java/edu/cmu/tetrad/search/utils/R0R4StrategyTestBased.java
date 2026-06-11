@@ -94,6 +94,14 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     private SepsetMap sepsets = new SepsetMap();
 
     /**
+     * Frozen reference graph (the initial Markov PAG, G_0) against which an
+     * unrecorded discriminating-path separator is computed, enforcing P1's
+     * "recorded, not live" discipline. When null, R4 falls back to computing on
+     * the live graph (the prior behavior).
+     */
+    private Graph sepsetGraph = null;
+
+    /**
      * Creates a new instance of FciOrientDataExaminationStrategyTestBased.
      *
      * @param test the IndependenceTest object used by the strategy
@@ -213,10 +221,32 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             return Pair.of(discriminatingPath, false);
         }
 
+//        Set<Node> blocking = sepsets.get(x, y);
+//
+//        if (blocking == null) {
+//            blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y,
+//                    recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper, timeout);
+//
+//            if (blocking != null) {
+//                sepsets.set(x, y, blocking);
+//            } else {
+//                throw new IllegalStateException("Discriminating path could not be determined.");
+//            }
+//        }
+
         Set<Node> blocking = sepsets.get(x, y);
 
         if (blocking == null) {
-            blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y,
+            // P1 ("recorded, not live"): compute an unrecorded endpoint separator
+            // against the frozen initial Markov PAG (G_0) rather than the live,
+            // mid-reorientation graph. This branch is reached only for pairs
+            // non-adjacent in G_0 -- deleted pairs always carry a recorded sepset --
+            // so sepsetGraph has x,y non-adjacent and the call is well-posed. A null
+            // sepsetGraph falls back to the live graph (prior behavior).
+            Graph refGraph = (sepsetGraph != null && !sepsetGraph.isAdjacentTo(x, y))
+                    ? sepsetGraph : graph;
+
+            blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, refGraph, x, y,
                     recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper, timeout);
 
             if (blocking != null) {
@@ -361,8 +391,19 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      *
      * @param sepsets the SepsetMap object to be set
      */
-    public void setSepsets(SepsetMap sepsets) {
+    public void setSepsetMap(SepsetMap sepsets) {
         this.sepsets = sepsets;
+    }
+
+    /**
+     * Sets the frozen reference graph (G_0) used to compute separators for
+     * endpoint pairs that have no recorded separator. Pass the initial PAG; pass
+     * null to recompute on the live graph (prior behavior).
+     *
+     * @param sepsetGraph the frozen initial PAG, or null
+     */
+    public void setSepsetGraph(Graph sepsetGraph) {
+        this.sepsetGraph = sepsetGraph;
     }
 
     /**

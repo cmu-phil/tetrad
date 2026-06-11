@@ -165,7 +165,6 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setRbRadius(parameters.getInt(Params.RB_RADIUS));
         search.setRecursiveDepth(parameters.getInt(Params.RECURSIVE_DEPTH));
-        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setTimeout(parameters.getLong(Params.TEST_TIMEOUT));
 
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
@@ -242,7 +241,6 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.RB_RADIUS);
         params.add(Params.RECURSIVE_DEPTH);
-        params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.TEST_TIMEOUT);
 
         // General

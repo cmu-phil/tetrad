@@ -182,6 +182,7 @@ public final class Fcit implements IGraphSearch {
     private int maxDiscriminatingPathLength = -1;
 
     private long timeout = -1L;
+    private Graph dag;
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -324,7 +325,7 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("===Starting FCIT===");
 
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test, timeout);
-        strategy.setSepsets(sepsets);
+        strategy.setSepsetMap(sepsets);
         strategy.setVerbose(superVerbose);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
         strategy.setDepth(depth);
@@ -434,6 +435,8 @@ public final class Fcit implements IGraphSearch {
             best = dag.getNodes();
         }
 
+        this.dag = dag.copy();
+
         if (superVerbose) {
             TetradLogger.getInstance().log("Best order: " + best);
         }
@@ -486,24 +489,24 @@ public final class Fcit implements IGraphSearch {
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
 
-//        Edge edge;
-//        Set<Edge> nongenuineEdges = new HashSet<>();
-//
-//        do {
-//            edge = findNongenuineEdge();
-//            if (edge != null && !nongenuineEdges.contains(edge)) {
-//                nongenuineEdges.add(edge);
-//                IndependenceCheck check = findIndependenceCheckRecursive(edge);
-//
-//                if (check != null) {
-//                    Node x = edge.getNode1();
-//                    Node y = edge.getNode2();
-//
-//                    tryToModifyGraph(x, y, check.cond, "recursive",
-//                            excludeSelectionBias, initialColliders);
-//                }
-//            }
-//        } while (edge != null);
+        Edge _edge;
+        Set<Edge> nongenuineEdges = new HashSet<>();
+
+        do {
+            _edge = findNongenuineEdge().edge();
+            if (_edge != null && !nongenuineEdges.contains(_edge)) {
+                nongenuineEdges.add(_edge);
+                IndependenceCheck check = findIndependenceCheckRecursive(_edge);
+
+                if (check != null) {
+                    Node x = _edge.getNode1();
+                    Node y = _edge.getNode2();
+
+                    tryToModifyGraph(x, y, check.cond, "phantom",
+                            excludeSelectionBias, initialColliders);
+                }
+            }
+        } while (_edge != null);
 
         // Strong-form discharge: delete a spurious leg of a phantom-bearing
         // discriminating path each step (thm:strong's policy). We loop until
@@ -511,7 +514,7 @@ public final class Fcit implements IGraphSearch {
         // we have already attempted and could not discharge (no independence
         // found, or the removal reverted as illegal). The `attempted` set makes
         // the loop terminate: findNongenuineEdge will keep returning the same
-        // undischargeable edge, so re-seeing an attempted edge means no progress
+        // undischargeable _edge, so re-seeing an attempted _edge means no progress
         // is possible and we stop.
         Set<Edge> attempted = new HashSet<>();
 
@@ -521,7 +524,7 @@ public final class Fcit implements IGraphSearch {
                 break; // no phantom-bearing leg remains
             }
             if (!attempted.add(edge)) {
-                break; // cycled back to an edge we already failed to discharge
+                break; // cycled back to an _edge we already failed to discharge
             }
 
             IndependenceCheck check = findIndependenceCheckRecursive(edge);
@@ -530,8 +533,8 @@ public final class Fcit implements IGraphSearch {
             }
 
             tryToModifyGraph(edge.getNode1(), edge.getNode2(), check.cond,
-                    "recursive", excludeSelectionBias, initialColliders);
-            // If the removal reverted (illegal PAG), the edge survives and will be
+                    "phantom", excludeSelectionBias, initialColliders);
+            // If the removal reverted (illegal PAG), the _edge survives and will be
             // re-returned; `attempted` already contains it, so the next pass breaks.
         }
 
@@ -566,7 +569,7 @@ public final class Fcit implements IGraphSearch {
 
         TetradLogger.getInstance().log("\nFCIT finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
-        TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
+        TetradLogger.getInstance().log("Collider orientation and _edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
         TetradLogger.getInstance().log(checkCounter.report());
 
@@ -586,44 +589,6 @@ public final class Fcit implements IGraphSearch {
 //        // memoize its verdict per unordered pair for the duration of this pass.
 //        // (The PAG is not mutated during findNongenuineEdge, so the verdict is stable.)
 //        Map<Set<Node>, Boolean> blockedCache = new HashMap<>();
-////        long deadlineMs = System.currentTimeMillis() + 500;
-//
-//        // Match findIndependenceCheckRecursive's convention: unlimited stays
-//        // unlimited (no Long.MAX_VALUE + now overflow), otherwise a per-pass
-//        // budget of `timeout` ms. A hardcoded budget here would make a slow scan
-//        // return null — reported as "no non-genuine DDPs" — when it merely ran
-//        // out of time, silently weakening both the discharge loop and the final
-//        // detection log line.
-//        final long deadlineMs = (timeout < 0L)
-//                ? Long.MAX_VALUE
-//                : System.currentTimeMillis() + timeout;
-//
-//        for (DiscriminatingPath dd : ddps) {
-//            List<Node> colliderPath = dd.getColliderPath();
-//
-//            List<Node> spine = new ArrayList<>(colliderPath);
-//            spine.addFirst(dd.getX());
-//            spine.addLast(dd.getY());
-//
-//            for (int i = 0; i < spine.size() - 1; i++) {
-//                Edge edge = spuriousLeg(spine.get(i), spine.get(i + 1), deadlineMs, blockedCache);
-//                if (edge != null) {
-//                    return edge;
-//                }
-//            }
-//
-//            Node y = dd.getY();
-//            for (Node v : colliderPath) {
-//                Edge edge = spuriousLeg(v, y, deadlineMs, blockedCache);
-//                if (edge != null) {
-//                    return edge;
-//                }
-//            }
-//        }
-//        return null;
-//    }
-
-private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}
 
     private NongenuineScan findNongenuineEdge() throws InterruptedException {
         Set<DiscriminatingPath> ddps = FciOrient.listDiscriminatingPaths(pag, -1, true);
@@ -1001,10 +966,12 @@ private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}
         Set<Node> sepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, excludeSelectionBias, superVerbose);
-        if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
+        PagLegalityCheck.LegalPagRet legalPagQuiet = PagLegalityCheck.isLegalPag(this.pag, new HashSet<>(selection));
+        if (!legalPagQuiet.isLegalPag()) {
             if (verbose) {
                 TetradLogger.getInstance().log("\tTried removing " + _edge + " for " + type
                         + " reasons, but it didn't lead to a PAG, sepset = " + b);
+                System.out.println("\tReason = " + legalPagQuiet.getReason());
             }
 
             this.pag = _pag;
@@ -1191,6 +1158,45 @@ private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}
     public void setTimeout(long timeout) {
         this.timeout = timeout;
     }
+
+    /// /        long deadlineMs = System.currentTimeMillis() + 500;
+//
+//        // Match findIndependenceCheckRecursive's convention: unlimited stays
+//        // unlimited (no Long.MAX_VALUE + now overflow), otherwise a per-pass
+//        // budget of `timeout` ms. A hardcoded budget here would make a slow scan
+//        // return null — reported as "no non-genuine DDPs" — when it merely ran
+//        // out of time, silently weakening both the discharge loop and the final
+//        // detection log line.
+//        final long deadlineMs = (timeout < 0L)
+//                ? Long.MAX_VALUE
+//                : System.currentTimeMillis() + timeout;
+//
+//        for (DiscriminatingPath dd : ddps) {
+//            List<Node> colliderPath = dd.getColliderPath();
+//
+//            List<Node> spine = new ArrayList<>(colliderPath);
+//            spine.addFirst(dd.getX());
+//            spine.addLast(dd.getY());
+//
+//            for (int i = 0; i < spine.size() - 1; i++) {
+//                Edge edge = spuriousLeg(spine.get(i), spine.get(i + 1), deadlineMs, blockedCache);
+//                if (edge != null) {
+//                    return edge;
+//                }
+//            }
+//
+//            Node y = dd.getY();
+//            for (Node v : colliderPath) {
+//                Edge edge = spuriousLeg(v, y, deadlineMs, blockedCache);
+//                if (edge != null) {
+//                    return edge;
+//                }
+//            }
+//        }
+//        return null;
+//    }
+
+    private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}
 
     /**
      * Enumeration representing different start options.

@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeoutException;
 
 import static edu.cmu.tetrad.search.SepsetFinder.blockPathsLocalMarkov;
 import static org.junit.Assert.*;
@@ -145,12 +144,8 @@ public class TestSepsetMethods {
                     case BLOCK_PATHS_RECURSIVELY -> {
                         try {
                             Set<Node> result;
-                            try {
-                                result = RecursiveBlocking.blockPathsRecursively(graph, x, y, (Set<Node>) new HashSet<Node>(), Set.of(),
-                                        -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
-                            } catch (TimeoutException e1) {
-                                throw new RuntimeException(e1);
-                            }
+                            result = RecursiveBlocking.blockPathsRecursively(graph, x, y, (Set<Node>) new HashSet<Node>(), Set.of(),
+                                    -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
                             blockingSet = result;
 
                             if (blockingSet == null) {
@@ -287,12 +282,8 @@ public class TestSepsetMethods {
                 Set<Node> blocking = null;
                 try {
                     Set<Node> result;
-                    try {
-                        result = RecursiveBlocking.blockPathsRecursively(graph, x, y, parents, Set.of(),
-                                -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
-                    } catch (TimeoutException e) {
-                        throw new RuntimeException(e);
-                    }
+                    result = RecursiveBlocking.blockPathsRecursively(graph, x, y, parents, Set.of(),
+                            -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
                     blocking = result;
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
@@ -383,12 +374,8 @@ public class TestSepsetMethods {
 
                     try {
                         Set<Node> result;
-                        try {
-                            result = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), Set.of(),
-                                    -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
-                        } catch (TimeoutException e) {
-                            throw new RuntimeException(e);
-                        }
+                        result = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), Set.of(),
+                                -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
                         Set<Node> blocking = result;
 
                         if (blocking == null) {
@@ -471,12 +458,8 @@ public class TestSepsetMethods {
 
             try {
                 Set<Node> result;
-                try {
-                    result = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), Set.of(),
-                            -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
-                } catch (TimeoutException e) {
-                    throw new RuntimeException(e);
-                }
+                result = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), Set.of(),
+                        -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
                 Set<Node> b = result;
 
                 b.removeAll(c);
@@ -575,12 +558,8 @@ public class TestSepsetMethods {
         Node x5 = graph.getNode("x5");
 
         Set<Node> result;
-        try {
-            result = RecursiveBlocking.blockPathsRecursively(graph, x2, x5, Set.of(), Set.of(),
-                    -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
-        } catch (TimeoutException e) {
-            throw new RuntimeException(e);
-        }
+        result = RecursiveBlocking.blockPathsRecursively(graph, x2, x5, Set.of(), Set.of(),
+                -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
         Set<Node> z = result;
 
         System.out.println("Returned Z = " + z);
@@ -643,12 +622,8 @@ public class TestSepsetMethods {
         Node x5 = graph.getNode("x5");
 
         Set<Node> result;
-        try {
-            result = RecursiveBlocking.blockPathsRecursively(graph, x0, x5, Set.of(), Set.of(),
-                    -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
-        } catch (TimeoutException e) {
-            throw new RuntimeException(e);
-        }
+        result = RecursiveBlocking.blockPathsRecursively(graph, x0, x5, Set.of(), Set.of(),
+                -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
         Set<Node> z = result;
 
         System.out.println("Returned Z = " + z);
@@ -697,12 +672,8 @@ public class TestSepsetMethods {
 
                 try {
                     Set<Node> result;
-                    try {
-                        result = RecursiveBlocking.blockPathsRecursively(graph, x, w, Set.of(), Set.of(),
-                                -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
-                    } catch (TimeoutException e) {
-                        throw new RuntimeException(e);
-                    }
+                    result = RecursiveBlocking.blockPathsRecursively(graph, x, w, Set.of(), Set.of(),
+                            -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
                     Set<Node> blocking = result;
 
                     if (blocking != null && !graph.paths().isMSeparatedFrom(x, w, blocking, false)) {
@@ -733,12 +704,8 @@ public class TestSepsetMethods {
 
                 try {
                     Set<Node> result;
-                    try {
-                        result = RecursiveBlocking.blockPathsRecursively(graph, x, w, Set.of(), Set.of(),
-                                -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
-                    } catch (TimeoutException e) {
-                        throw new RuntimeException(e);
-                    }
+                    result = RecursiveBlocking.blockPathsRecursively(graph, x, w, Set.of(), Set.of(),
+                            -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
                     Set<Node> blocking = result;
 
                     if (blocking != null && !graph.paths().isMSeparatedFrom(x, w, blocking, false)) {

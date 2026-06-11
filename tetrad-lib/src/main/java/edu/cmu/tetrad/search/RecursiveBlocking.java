@@ -181,7 +181,6 @@ public class RecursiveBlocking {
      * @param deadlineMs        deadline for the operation (in ms)
      * @return a {@link BlockingResult} describing the outcome
      * @throws InterruptedException if the thread is interrupted
-     * @throws TimeoutException     if the operation times out
      */
     public static BlockingResult blockPathsRecursively(Graph graph,
                                                        Node x,
