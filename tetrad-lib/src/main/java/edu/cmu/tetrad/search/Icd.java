@@ -494,16 +494,58 @@ public final class Icd implements IGraphSearch {
     // Getters / setters
     // -----------------------------------------------------------------------
 
+    /**
+     * Retrieves the graph associated with the current instance.
+     * The graph represents the causal structure inferred from the data.
+     *
+     * @return the Graph associated with this instance.
+     */
     public Graph getGraph() { return graph; }
+
+    /**
+     * Retrieves the SepsetMap associated with the current instance.
+     * The SepsetMap contains stored separation sets used in causal discovery
+     * to determine conditional independence relationships between variables.
+     *
+     * @return the SepsetMap associated with this instance.
+     */
     public SepsetMap getSepsets() { return sepsets; }
+
+    /**
+     * Retrieves the elapsed time recorded for the current operation or process.
+     *
+     * @return the elapsed time in milliseconds as a long value.
+     */
     public long getElapsedTime() { return elapsedTime; }
+
+    /**
+     * Retrieves the knowledge object associated with this instance.
+     * The knowledge object contains constraints or background
+     * information that can guide the algorithm's execution.
+     *
+     * @return the Knowledge object associated with this instance.
+     */
     public Knowledge getKnowledge() { return knowledge; }
 
+    /**
+     * Sets the knowledge object for the algorithm execution.
+     * The knowledge object specifies additional constraints or background
+     * information to guide the search process.
+     *
+     * @param knowledge the Knowledge instance to be set; must not be null
+     * @throws NullPointerException if the provided knowledge is null
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) throw new NullPointerException();
         this.knowledge = knowledge;
     }
 
+    /**
+     * Sets whether the complete rule set for orientation is used during the algorithm execution.
+     * When enabled, all orientation rules are applied in the inference process.
+     *
+     * @param completeRuleSetUsed true to enable the complete rule set, false to disable it.
+     */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
@@ -511,6 +553,8 @@ public final class Icd implements IGraphSearch {
     /**
      * If true (default), orientation rules R5/R6/R7 for possible selection bias are applied.
      * Set to false when selection bias is known to be absent.
+     *
+     * @param selectionBias true to enable selection bias rules, false to disable them.
      */
     public void setSelectionBias(boolean selectionBias) {
         this.isSelectionBias = selectionBias;
@@ -518,11 +562,20 @@ public final class Icd implements IGraphSearch {
 
     /**
      * If true (default), orientation rules R8/R9/R10 for tail-completeness are applied.
+     *
+     * @param tailCompleteness true to enable tail-completeness rules, false to disable them.
      */
     public void setTailCompleteness(boolean tailCompleteness) {
         this.isTailCompleteness = tailCompleteness;
     }
 
+    /**
+     * Sets whether verbose output is enabled for this instance. When enabled,
+     * additional diagnostic or debug information may be printed during execution.
+     * This setting is propagated to the associated test instance.
+     *
+     * @param verbose true to enable verbose output, false to disable it.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
         test.setVerbose(verbose);

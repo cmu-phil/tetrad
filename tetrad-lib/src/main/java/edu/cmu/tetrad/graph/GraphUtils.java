@@ -2697,6 +2697,20 @@ public final class GraphUtils {
         return existsLatentConfounder;
     }
 
+    /**
+     * Determines whether a bidirected edge exists due to a latent common cause in the given graph.
+     * A latent common cause refers to an unobserved variable responsible for the relationship
+     * between the two nodes connected by the bidirected edge.
+     *
+     * @param edge the bidirected edge to be checked. Must be bidirected, otherwise an
+     *             IllegalArgumentException will be thrown.
+     * @param trueGraph the graph in which the check for a latent common cause is performed.
+     *                  This graph is assumed to contain the necessary structure and properties
+     *                  for validating the existence of a latent common cause.
+     * @return {@code true} if the bidirected edge exists due to a latent common cause in the
+     *         provided graph; {@code false} otherwise.
+     * @throws IllegalArgumentException if the input edge is not a bidirected edge.
+     */
     public static boolean bidirectedExistsLatentCommonCause(Edge edge, Graph trueGraph) {
         if (!Edges.isBidirectedEdge(edge)) {
             throw new IllegalArgumentException("The edge is not bidirected: " + edge);

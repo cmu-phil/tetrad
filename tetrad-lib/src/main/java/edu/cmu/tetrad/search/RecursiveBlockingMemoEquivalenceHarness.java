@@ -60,6 +60,30 @@ public final class RecursiveBlockingMemoEquivalenceHarness {
     // Exhaustive UNBLOCKABLE cross-check only when pool is small enough.
     private static final int EXHAUSTIVE_POOL_CAP = 16;
 
+    /**
+     * Default constructor for the RecursiveBlockingMemoEquivalenceHarness class.
+     */
+    public RecursiveBlockingMemoEquivalenceHarness() {
+
+    }
+
+    /**
+     * The entry point of the application. This method initializes the parameters for the
+     * RecursiveBlockingMemoEquivalenceHarness, which performs equivalence testing for
+     * the RecursiveBlocking algorithm, and executes the harness.
+     *
+     * Depending on the provided command-line arguments, this method configures various graph
+     * generation and testing parameters such as the number of graphs, number of nodes per graph,
+     * average degree, latent variable fraction, clique size, and random seed.
+     *
+     * @param args an array of command-line arguments where:
+     *             args[0] (optional) sets the number of graphs to generate and test.
+     *             args[1] (optional) specifies the number of nodes in each graph.
+     *             args[2] (optional) determines the average degree of graph nodes.
+     *             args[3] (optional) defines the fraction of nodes marked as latent.
+     *             args[4] (optional) sets the size of the fully connected clique in the graph.
+     *             args[5] (optional) provides the seed for random number generation to ensure reproducibility.
+     */
     public static void main(String[] args) {
         RecursiveBlockingMemoEquivalenceHarness h = new RecursiveBlockingMemoEquivalenceHarness();
         if (args.length >= 1) h.numGraphs = Integer.parseInt(args[0]);
@@ -71,6 +95,34 @@ public final class RecursiveBlockingMemoEquivalenceHarness {
         h.run();
     }
 
+    /**
+     * Executes the equivalence testing harness for the RecursiveBlocking algorithm. This method validates
+     * the consistency and correctness of the RecursiveBlocking implementation by performing various
+     * operations, including graph generation, path blocking, separation verification, and invariant
+     * cross-checking.
+     *
+     * The method iterates through a specified number of randomly generated graphs, performing pair-wise
+     * node operations to test the validity of RecursiveBlocking's blocking results. It verifies separations,
+     * identifies indeterminate cases, and cross-checks claims of unblockable paths, ensuring all results
+     * conform to fundamental invariants of the algorithm.
+     *
+     * Metrics such as the number of pairs checked, successful separation verifications, and cross-checked
+     * unblockable claims are tracked and summarized at the end. Any invariant violations are logged and
+     * reported. If any violations are found, the method throws an AssertionError, making it suitable for
+     * use in CI pipelines.
+     *
+     * Preconditions:
+     * - All field parameters (e.g., numGraphs, numNodes, avgDegree, latentFraction, cliqueSize, etc.) must
+     *   be properly initialized before invoking this method.
+     * - RecursiveBlocking's external dependencies must be functioning as expected to avoid invalid test
+     *   results.
+     *
+     * Postconditions:
+     * - Prints a summary of the execution, including statistics of the test runs and the results.
+     * - If no invariant violations are detected, the method exits normally.
+     * - If invariant violations are detected, the method throws an AssertionError with detailed failure
+     *   information.
+     */
     public void run() {
         RandomUtil.getInstance().setSeed(seed);
         Random rng = new Random(seed);

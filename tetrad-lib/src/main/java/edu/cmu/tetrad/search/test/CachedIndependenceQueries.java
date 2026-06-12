@@ -3,8 +3,8 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.Serial;
 import java.util.*;
@@ -37,6 +37,18 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
      * Cache keyed by structured QueryKey.
      */
     private final ConcurrentMap<QueryKey, Eval> evalCache = new ConcurrentHashMap<>();
+    /**
+     * Counts cache hits and misses so callers can see how many *distinct*
+     * queries actually reached the underlying test versus were served from
+     * cache. distinctQueries == misses == size of evalCache at steady state.
+     */
+    private final LongAdder cacheHits = new LongAdder();
+    /**
+     * Counts cache misses so callers can see how many *distinct*
+     * queries actually reached the underlying test versus were served from
+     * cache. distinctQueries == misses == size of evalCache at steady state.
+     */
+    private final LongAdder cacheMisses = new LongAdder();
     private transient volatile IndependenceTest test;
     /**
      * Map name -> Node instance used by the test (rebuilt on setTest()).
@@ -62,14 +74,6 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
      * multiple threads.
      */
     private volatile ErrorPolicy errorPolicy = ErrorPolicy.TREAT_AS_INDEPENDENT;
-
-    /**
-     * Counts cache hits and misses so callers can see how many *distinct*
-     * queries actually reached the underlying test versus were served from
-     * cache. distinctQueries == misses == size of evalCache at steady state.
-     */
-    private final LongAdder cacheHits = new LongAdder();
-    private final LongAdder cacheMisses = new LongAdder();
 
     /**
      * Default constructor for the CachedIndependenceQueries class.
@@ -690,6 +694,57 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
     }
 
     /**
+     * Number of eval() calls served from cache.
+     *
+     * @return Number of eval() calls served from cache.
+     */
+    public long getCacheHits() {
+        return cacheHits.sum();
+    }
+
+    /**
+     * Number of eval() calls that reached the underlying test (cache misses).
+     *
+     * @return Number of eval() calls that reached the underlying test (cache misses).
+     */
+    public long getCacheMisses() {
+        return cacheMisses.sum();
+    }
+
+    // ------------------------ evaluation ------------------------
+
+    /**
+     * Distinct cached queries currently held (authoritative distinct-key count).
+     *
+     * @return Distinct cached queries currently held (authoritative distinct-key count).
+     */
+    public long getDistinctQueries() {
+        return evalCache.size();
+    }
+
+    /**
+     * Human-readable cache statistics.
+     *
+     * @return Human-readable cache statistics.
+     */
+    public String cacheReport() {
+        long hits = cacheHits.sum();
+        long misses = cacheMisses.sum();
+        long total = hits + misses;
+        double hitRate = total == 0 ? 0.0 : (double) hits / total;
+        return String.format(
+                "Cached independence queries:%n" +
+                        "  eval() calls (total)      %,d%n" +
+                        "  cache hits                %,d%n" +
+                        "  cache misses (test calls) %,d%n" +
+                        "  distinct keys cached      %,d%n" +
+                        "  hit rate                  %.1f%%%n",
+                total, hits, misses, evalCache.size(), hitRate * 100.0);
+    }
+
+    // ------------------------ map rebuild ------------------------
+
+    /**
      * ErrorPolicy represents the policies that can be applied to handle errors
      * encountered during the execution of a process or task. This enum defines
      * various strategies, allowing for flexible management of errors based on
@@ -753,8 +808,6 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
         BY_CACHE_KEY
     }
 
-    // ------------------------ evaluation ------------------------
-
     /**
      * Functional interface representing a provider responsible for generating implied facts
      * associated with a given vertex in a graph-like data structure.
@@ -789,8 +842,6 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
         private static final long serialVersionUID = 23L;
     }
 
-    // ------------------------ map rebuild ------------------------
-
     /**
      * Structured key for (X,Y|Z) with X,Y unordered and Z sorted.
      * Immutable and safe for use as a CHM key. Hash is precomputed.
@@ -805,6 +856,13 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
         final int[] z;      // sorted
         final int hash;     // precomputed
 
+        /**
+         * Constructs a new QueryKey instance with the specified parameters.
+         *
+         * @param a the first integer value, representing the minimum of xId and yId
+         * @param b the second integer value, representing the maximum of xId and yId
+         * @param z the array of integers, representing a sorted set of values; if null or empty, it will be replaced with an empty array
+         */
         QueryKey(int a, int b, int[] z) {
             this.a = a;
             this.b = b;
@@ -821,11 +879,29 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
             return h;
         }
 
+        /**
+         * Returns the precomputed hash code value for this QueryKey instance.
+         * The hash code is calculated during the construction of the object
+         * and is based on the values of the fields in the QueryKey.
+         *
+         * @return the hash code value for this QueryKey instance
+         */
         @Override
         public int hashCode() {
             return hash;
         }
 
+        /**
+         * Compares this QueryKey instance with the specified object for equality.
+         * Two QueryKey instances are considered equal if:
+         * - They are the same object reference.
+         * - The other object is also a QueryKey instance.
+         * - The values of {@code a} and {@code b} are equal in both instances.
+         * - The arrays {@code z} in both instances are equal.
+         *
+         * @param o the object to be compared for equality with this QueryKey
+         * @return {@code true} if the specified object is equal to this QueryKey; {@code false} otherwise
+         */
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -833,36 +909,5 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
             if (a != other.a || b != other.b) return false;
             return Arrays.equals(z, other.z);
         }
-    }
-
-    /** Number of eval() calls served from cache. */
-    public long getCacheHits() {
-        return cacheHits.sum();
-    }
-
-    /** Number of eval() calls that reached the underlying test (cache misses). */
-    public long getCacheMisses() {
-        return cacheMisses.sum();
-    }
-
-    /** Distinct cached queries currently held (authoritative distinct-key count). */
-    public long getDistinctQueries() {
-        return evalCache.size();
-    }
-
-    /** Human-readable cache statistics. */
-    public String cacheReport() {
-        long hits = cacheHits.sum();
-        long misses = cacheMisses.sum();
-        long total = hits + misses;
-        double hitRate = total == 0 ? 0.0 : (double) hits / total;
-        return String.format(
-                "Cached independence queries:%n" +
-                        "  eval() calls (total)      %,d%n" +
-                        "  cache hits                %,d%n" +
-                        "  cache misses (test calls) %,d%n" +
-                        "  distinct keys cached      %,d%n" +
-                        "  hit rate                  %.1f%%%n",
-                total, hits, misses, evalCache.size(), hitRate * 100.0);
     }
 }

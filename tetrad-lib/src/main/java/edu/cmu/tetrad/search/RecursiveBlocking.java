@@ -135,7 +135,20 @@ public class RecursiveBlocking {
     // -----------------------------------------------------------------------
 
     /**
-     * Convenience overload of {@link #blockPathsRecursively} with no deadline.
+     * Recursively blocks paths in a graph between two nodes based on specified parameters and constraints.
+     *
+     * @param graph           The graph in which the paths are to be blocked.
+     * @param x               The starting node of the path.
+     * @param y               The ending node of the path.
+     * @param containing      A set of nodes that must be included in the path.
+     * @param notFollowed     A set of nodes that must not be followed in the path.
+     * @param recursiveDepth  The maximum depth for recursion during the path blocking process.
+     * @param depth           The current depth of the recursive call.
+     * @param maxRadius       The maximum radius from the starting node to consider for path blocking.
+     * @param nearWhichEndpoint Determines near which endpoint of the path the restriction is to be enforced.
+     * @param ignoreDirectEdge A flag indicating whether to ignore direct edges between the starting node and ending node.
+     * @return A BlockingResult object containing the results of the path blocking operation.
+     * @throws InterruptedException If the operation is interrupted during execution.
      */
     public static BlockingResult blockPathsRecursively(Graph graph,
                                                        Node x,
@@ -1395,6 +1408,12 @@ public class RecursiveBlocking {
         ITERATIVE_DEEPENING
     }
 
+    /**
+     * The default strategy used for processing or executing tasks in the system.
+     * This is a globally accessible constant that indicates the
+     * predefined approach, which is set to a recursive strategy.
+     * It can be utilized wherever a default execution policy is required.
+     */
     public static Strategy DEFAULT_STRATEGY = Strategy.RECURSIVE;
 
     // -----------------------------------------------------------------------

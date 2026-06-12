@@ -110,6 +110,13 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         this.test = test;
     }
 
+    /**
+     * Constructs an instance of R0R4StrategyTestBased with the specified
+     * IndependenceTest and timeout.
+     *
+     * @param test   the IndependenceTest object used by the strategy
+     * @param timeout the timeout value in milliseconds for the strategy
+     */
     public R0R4StrategyTestBased(IndependenceTest test, long timeout) {
         this.test = test;
         this.timeout = timeout;

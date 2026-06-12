@@ -52,7 +52,21 @@ public final class SeedMarkovCheck {
     private SeedMarkovCheck() {
     }
 
+    /**
+     * Encapsulates the results of evaluating the consistency of a seed graph with
+     * the true graph in terms of Markov properties and related graph discrepancies.
+     * This class provides methods to assess whether the seed graph qualifies as a
+     * Markov structure and to generate a report summarizing the discrepancies and
+     * properties of the seed graph.
+     */
     public static final class Result {
+
+        /**
+         * Constructs a new instance of the Result class.
+         */
+        public Result() {
+        }
+
         /** True edges of G* absent from the seed AND confirmed m-inseparable in truth. */
         public final List<String> missingTrueEdges = new ArrayList<>();
         /** Absent from the seed but separable in truth — points at dagToPag/G*, not the seed. */
@@ -62,10 +76,30 @@ public final class SeedMarkovCheck {
         /** Names present in G* but missing from the seed graph entirely. */
         public final List<String> missingNodes = new ArrayList<>();
 
+        /**
+         * Determines whether the seed graph satisfies the properties of a Markov structure.
+         * The method checks for the absence of missing true edges, unsound colliders,
+         * and missing nodes in the seed graph.
+         *
+         * @return true if the seed graph qualifies as a Markov structure, false otherwise.
+         */
         public boolean seedIsMarkov() {
             return missingTrueEdges.isEmpty() && unsoundColliders.isEmpty() && missingNodes.isEmpty();
         }
 
+        /**
+         * Generates a detailed report summarizing the consistency of a seed graph
+         * with respect to its Markov and I-map properties.
+         *
+         * The report includes the following checks:
+         * - Whether the seed graph qualifies as a Markov PAG for the true model.
+         * - Details on missing true edges, unsound colliders, and missing nodes in the seed.
+         * - Observations on artifact edges, which are not seed defects but suggest potential
+         *   issues with the dagToPag or G* construction.
+         *
+         * @return A string containing the formatted report on the seed graph's properties
+         *         and discrepancies relative to the true model.
+         */
         public String report() {
             StringBuilder sb = new StringBuilder();
             sb.append("=== Seed Markov / I-map check ===\n");
@@ -97,6 +131,8 @@ public final class SeedMarkovCheck {
     }
 
     /**
+     * Does the check.
+     *
      * @param seedPag        FCIT's starting PAG (G_0), before any removals.
      * @param trueDag        the simulated true DAG, latents typed NodeType.LATENT.
      * @param knowledge      knowledge used for dagToPag (pass FCIT's, or new Knowledge()).
@@ -104,6 +140,7 @@ public final class SeedMarkovCheck {
      * @param sepsetMaxDepth cap on conditioning-set size in the true-model sepset search
      *                       (-1 = unbounded; keep modest, e.g. 6-8, for 20-node runs).
      * @param checkColliders run the optional sound-collider (I-map) half.
+     * @return The check result.
      */
     public static Result check(Graph seedPag, Graph trueDag, Knowledge knowledge,
                                int recursiveDepth, int sepsetMaxDepth, boolean checkColliders) {

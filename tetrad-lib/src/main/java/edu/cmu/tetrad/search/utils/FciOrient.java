@@ -604,6 +604,14 @@ public class FciOrient {
         }
     }
 
+    /**
+     * Applies transformation rules R5, R6, and R7 to the provided graph.
+     * Rule R5 is applied once, followed by iterative applications of
+     * rules R6 and R7 until no further changes are detected or the thread
+     * is interrupted.
+     *
+     * @param graph the graph to which the transformation rules are applied
+     */
     public void rulesR5R6R7(Graph graph) {
         // Now, by a remark on page 100 of Zhang's dissertation, we apply rule
         // R5 once.

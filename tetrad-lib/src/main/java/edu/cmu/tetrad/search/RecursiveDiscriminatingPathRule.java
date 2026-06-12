@@ -67,6 +67,7 @@ public class RecursiveDiscriminatingPathRule {
      * @param maxDdpPathLength     The maximum length of discriminating paths to consider.
      * @param depth                The current recursion depth of the algorithm.
      * @param preserveMarkovHelper A helper object to ensure the Markov property is preserved during execution.
+     * @param timeout              The maximum time allowed for the method to execute in ms.
      * @return A set of nodes representing the separating set (sepset) identified between nodes x and y.
      * @throws InterruptedException If the thread is interrupted while executing the method.
      */
@@ -105,6 +106,33 @@ public class RecursiveDiscriminatingPathRule {
         return findDdpSepsetRecursive(test, pag, x, y, recursiveDepth, maxDdpPathLength, depth, preserveMarkovHelper, counter, Long.MAX_VALUE);
     }
 
+    /**
+     * Finds a separating set (sepset) between two non-adjacent nodes in a given graph using
+     * recursive blocking strategies for discriminating paths. This method is primarily used
+     * in causal discovery algorithms to identify sets of nodes that render the two input
+     * nodes conditionally independent under certain assumptions.
+     *
+     * @param test The independence test used to evaluate conditional independence
+     *             between nodes given a conditioning set.
+     * @param pag The partially oriented acyclic graph (PAG) that represents the causal
+     *            structure being analyzed.
+     * @param x The first node involved in the conditional independence relationship.
+     * @param y The second node involved in the conditional independence relationship.
+     * @param recursiveDepth The maximum depth for recursive blocking during the path analysis.
+     * @param maxDdpPathLength The maximum length of discriminating paths to consider.
+     * @param depth The current depth of recursion.
+     * @param preserveMarkovHelper A helper object used to verify Markov equivalence properties
+     *                             and ensure consistent conditional independence checks (optional).
+     * @param counter A counter object used to track the number of independence tests or operations
+     *                performed (optional).
+     * @param timeout The maximum amount of time (in milliseconds) allowed for the method to execute
+     *                before terminating. A value of -1 indicates no timeout.
+     * @return A set of nodes representing the separating set (sepset) that renders {@code x} and
+     *         {@code y} conditionally independent, or {@code null} if no such set is found.
+     * @throws InterruptedException If the execution is interrupted while running.
+     * @throws IllegalArgumentException If the provided nodes {@code x} and {@code y} are adjacent
+     *                                  in the graph.
+     */
     public static Set<Node> findDdpSepsetRecursive(IndependenceTest test, Graph pag, Node x, Node y,
                                                    int recursiveDepth, int maxDdpPathLength,
                                                    int depth, PreserveMarkov preserveMarkovHelper,
