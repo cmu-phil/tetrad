@@ -874,8 +874,8 @@ public final class Fcit implements IGraphSearch {
         PagLegalityCheck.LegalPagRet legalPagQuiet = PagLegalityCheck.isLegalPag(this.pag, new HashSet<>(selection));
         if (!legalPagQuiet.isLegalPag()) {
             if (verbose) {
-                TetradLogger.getInstance().log("\tTried removing " + _edge + " for " + type
-                        + " reasons, but it didn't lead to a PAG, sepset = " + b);
+                TetradLogger.getInstance().log("\tTried removing " + _edge
+                        + ", but it didn't lead to a PAG, sepset = " + b);
                 System.out.println("\tReason = " + legalPagQuiet.getReason());
             }
 
@@ -885,8 +885,7 @@ public final class Fcit implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Removing " + _edge + " for " + type + " reasons, sepset = " + b);
-//            TetradLogger.getInstance().log("PAG = " + this.pag);
+            TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b);
         }
 
         return true;
