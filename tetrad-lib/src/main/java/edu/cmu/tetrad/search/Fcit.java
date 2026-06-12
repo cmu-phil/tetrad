@@ -182,7 +182,6 @@ public final class Fcit implements IGraphSearch {
     private int maxDiscriminatingPathLength = -1;
 
     private long timeout = -1L;
-    private Graph dag;
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -259,7 +258,7 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Refines the structure of the Partial Ancestral Graph (PAG) by adjusting separa   tion sets based on additional
+     * Refines the structure of the Partial Ancestral Graph (PAG) by adjusting separation sets based on additional
      * independence evidence and ensuring consistency with known independence and causality constraints. This method
      * identifies and orients specific edges in the PAG to maintain its validity.
      * <p>
@@ -288,10 +287,6 @@ public final class Fcit implements IGraphSearch {
             common.retainAll(pag.getAdjacentNodes(y));
 
             for (Node node : common) {
-//                if (pag.isDefCollider(x, node, y)) {
-//                    continue;
-//                }
-
                 if (!sepsets.get(x, y).contains(node)) {
                     if (!pag.isDefCollider(x, node, y)) {
                         pag.setEndpoint(x, node, Endpoint.ARROW);
@@ -304,7 +299,7 @@ public final class Fcit implements IGraphSearch {
 
     @Override
     public IndependenceTest getTest() {
-        return IGraphSearch.super.getTest();
+        return test;
     }
 
     /**
@@ -435,8 +430,6 @@ public final class Fcit implements IGraphSearch {
             best = dag.getNodes();
         }
 
-        this.dag = dag.copy();
-
         if (superVerbose) {
             TetradLogger.getInstance().log("Best order: " + best);
         }
@@ -488,56 +481,6 @@ public final class Fcit implements IGraphSearch {
 
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
-
-        Edge _edge;
-        Set<Edge> nongenuineEdges = new HashSet<>();
-
-        do {
-            _edge = findNongenuineEdge().edge();
-            if (_edge != null && !nongenuineEdges.contains(_edge)) {
-                nongenuineEdges.add(_edge);
-                IndependenceCheck check = findIndependenceCheckRecursive(_edge);
-
-                if (check != null) {
-                    Node x = _edge.getNode1();
-                    Node y = _edge.getNode2();
-
-                    tryToModifyGraph(x, y, check.cond, "phantom",
-                            excludeSelectionBias, initialColliders);
-                }
-            }
-        } while (_edge != null);
-
-        // Strong-form discharge: delete a spurious leg of a phantom-bearing
-        // discriminating path each step (thm:strong's policy). We loop until
-        // either no phantom-bearing leg remains, or the leg we are handed is one
-        // we have already attempted and could not discharge (no independence
-        // found, or the removal reverted as illegal). The `attempted` set makes
-        // the loop terminate: findNongenuineEdge will keep returning the same
-        // undischargeable _edge, so re-seeing an attempted _edge means no progress
-        // is possible and we stop.
-        Set<Edge> attempted = new HashSet<>();
-
-        while (true) {
-            Edge edge = findNongenuineEdge().edge();
-            if (edge == null) {
-                break; // no phantom-bearing leg remains
-            }
-            if (!attempted.add(edge)) {
-                break; // cycled back to an _edge we already failed to discharge
-            }
-
-            IndependenceCheck check = findIndependenceCheckRecursive(edge);
-            if (check == null) {
-                continue; // could not separate this leg; will re-see it and break
-            }
-
-            tryToModifyGraph(edge.getNode1(), edge.getNode2(), check.cond,
-                    "phantom", excludeSelectionBias, initialColliders);
-            // If the removal reverted (illegal PAG), the _edge survives and will be
-            // re-returned; `attempted` already contains it, so the next pass breaks.
-        }
-
         int round = 0;
 
         do {
@@ -580,15 +523,6 @@ public final class Fcit implements IGraphSearch {
 
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
-
-//    private Edge findNongenuineEdge() throws InterruptedException {
-//        Set<DiscriminatingPath> ddps = FciOrient.listDiscriminatingPaths(pag, -1, true);
-//
-//        // Within one pass, the same pair can appear as a leg/chord of several
-//        // discriminating paths. blockPathsRecursively is the expensive call, so
-//        // memoize its verdict per unordered pair for the duration of this pass.
-//        // (The PAG is not mutated during findNongenuineEdge, so the verdict is stable.)
-//        Map<Set<Node>, Boolean> blockedCache = new HashMap<>();
 
     private NongenuineScan findNongenuineEdge() throws InterruptedException {
         Set<DiscriminatingPath> ddps = FciOrient.listDiscriminatingPaths(pag, -1, true);
@@ -681,35 +615,6 @@ public final class Fcit implements IGraphSearch {
         return v;
     }
 
-    private Edge spuriousLeg(Node m, Node n, long deadlineMs, Map<Set<Node>, Boolean> blockedCache)
-            throws InterruptedException {
-        Edge edge = pag.getEdge(m, n);
-        if (edge == null) {
-            return null;
-        }
-
-        // Cheapest signal first: a recorded separator means the pair is already
-        // known independent, so the adjacency is spurious. No blocking needed.
-        if (sepsets.get(m, n) != null) {
-            return edge;
-        }
-
-        // Expensive path: recursive blocking. Memoize per unordered pair.
-        Set<Node> key = Set.of(m, n);
-        Boolean cached = blockedCache.get(key);
-        if (cached != null) {
-            return cached ? edge : null;
-        }
-
-        RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(
-                pag, m, n, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
-                deadlineMs);
-
-        boolean blocked = result.blockingSet() != null;
-        blockedCache.put(key, blocked);
-        return blocked ? edge : null;
-    }
-
     /**
      * Configures and returns a new instance of PermutationSearch using the BOSS algorithm. The method initializes the
      * BOSS algorithm with parameters such as the score function, verbosity, number of starts, number of threads, and
@@ -766,8 +671,7 @@ public final class Fcit implements IGraphSearch {
      *
      * @return true if at least one edge was removed, false otherwise
      */
-    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples)
-            throws InterruptedException {
+    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
@@ -1123,15 +1027,6 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Returns the independence-check counter for this run.
-     *
-     * @return the counter, with a per-site breakdown
-     */
-    public IndependenceCheckCounter getCheckCounter() {
-        return checkCounter;
-    }
-
-    /**
      * Returns the CachedIndependenceQueries wrapping this run's test, if any,
      * for cache-statistics reporting. Returns null if the test is not cached.
      */
@@ -1227,9 +1122,6 @@ public final class Fcit implements IGraphSearch {
     }
 
     private record RemovalHit(int index, Edge edge, Set<Node> cond) {
-    }
-
-    private record Result(Edge edge, Set<Node> cond) {
     }
 
     private record IndependenceCheck(Edge edge, Set<Node> cond) {
