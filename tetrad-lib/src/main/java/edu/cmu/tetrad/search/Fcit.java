@@ -181,6 +181,17 @@ public final class Fcit implements IGraphSearch {
      */
     private int maxDiscriminatingPathLength = -1;
 
+    /**
+     * Separators discovered for a pair during any sweep, kept across rounds.
+     * Distinct from {@link #sepsets}, which records only committed (legal-PAG)
+     * separations and is rolled back on a reverted removal. Because X _||_ Y | S
+     * is a property of the data, not the current PAG, a set that separated a pair
+     * once still separates it; reusing it keeps a pair's recorded sepset stable
+     * across rounds instead of being re-derived (and possibly differing) each time
+     * the edge is reconsidered after a reverted removal.
+     */
+    private final Map<Set<Node>, Set<Node>> foundSepsets = new HashMap<>();
+
     private long timeout = -1L;
 
     /**
@@ -752,9 +763,24 @@ public final class Fcit implements IGraphSearch {
         final Node x = edge.getNode1();
         final Node y = edge.getNode2();
 
+//        Set<Node> known = sepsets.get(x, y);
+//        if (known != null) {
+//            return new IndependenceCheck(edge, known);
+//        }
+
         Set<Node> known = sepsets.get(x, y);
         if (known != null) {
             return new IndependenceCheck(edge, known);
+        }
+
+        // Reuse a separator already found for this pair in an earlier sweep. The
+        // independence is a data fact, invariant across rounds, so re-searching the
+        // (evolved) PAG would only risk returning a *different* valid set — which is
+        // exactly the cross-round inconsistency. tryToModifyGraph still judges PAG
+        // legality; if it reverts, the edge is retried next round with the same set.
+        Set<Node> cached = foundSepsets.get(Set.of(x, y));
+        if (cached != null) {
+            return new IndependenceCheck(edge, cached);
         }
 
         // Per-edge deadline: at most `timeout` ms spent separating THIS edge,
@@ -851,8 +877,14 @@ public final class Fcit implements IGraphSearch {
 
                 IndependenceCheck probe = new IndependenceCheck(edge, S);
                 checkCounter.increment("findIndependenceCheckRecursive (test executed)");
+//                IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
+//                if (independenceResult.isIndependent()) {
+//                    return probe;
+//                }
+
                 IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
                 if (independenceResult.isIndependent()) {
+                    foundSepsets.put(Set.of(x, y), S);   // remember the fact, survives revert
                     return probe;
                 }
             }

@@ -124,6 +124,10 @@ public class FciOrient {
      * Indicates whether to run R4 or not.
      */
     private boolean useR4 = true;
+    /**
+     * The number of R4 abstentions that have occurred during the FCI orientation process.
+     */
+    private int r4AbstentionCount = 0;
 
     /**
      * Initializes a new instance of the FciOrient class with the specified R4Strategy.
@@ -539,6 +543,8 @@ public class FciOrient {
         this.changeFlag = true;
         boolean firstTime = true;
 
+        r4AbstentionCount = 0;
+
         while (this.changeFlag) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
@@ -550,8 +556,12 @@ public class FciOrient {
 
             // R4 requires an arrow orientation.
             if (this.changeFlag || (firstTime && !this.knowledge.isEmpty())) {
-                ruleR4(graph);
-                firstTime = false;
+                try {
+                    ruleR4(graph);
+                    firstTime = false;
+                } catch (IllegalStateException e) {
+                    r4AbstentionCount++;
+                }
             }
 
             if (this.verbose) {
@@ -571,6 +581,7 @@ public class FciOrient {
     private void zhangFinalOrientation(Graph graph, boolean excludeSelectionBias) {
         this.changeFlag = true;
         boolean firstTime = true;
+        r4AbstentionCount = 0;
 
         while (this.changeFlag && !Thread.currentThread().isInterrupted()) {
             this.changeFlag = false;
@@ -579,8 +590,12 @@ public class FciOrient {
 
             // R4 requires an arrow orientation.
             if (this.changeFlag || (firstTime && !this.knowledge.isEmpty())) {
-                ruleR4(graph);
-                firstTime = false;
+                try {
+                    ruleR4(graph);
+                    firstTime = false;
+                } catch (IllegalStateException e) {
+                    r4AbstentionCount++;
+                }
             }
 
             if (this.verbose) {
@@ -1572,6 +1587,13 @@ public class FciOrient {
      */
     public void setRecursiveDepth(int recursiveDepth) {
         this.recursiveDepth = recursiveDepth;
+    }
+
+    /**
+     * The number of abstentions that have occurred during the FCI orientation process.
+     */
+    public int getR4AbstentionCount() {
+        return r4AbstentionCount;
     }
 
     /**

@@ -225,7 +225,7 @@ public class RecursiveDiscriminatingPathRule {
             }
         }
 
-        TetradLogger.getInstance().log("\tRecursive DDP: No sepset found for " + x + " and " + y);
+//        TetradLogger.getInstance().log("\tRecursive DDP: No sepset found for " + x + " and " + y);
         return null;
     }
 }
