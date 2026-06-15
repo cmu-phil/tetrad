@@ -483,7 +483,7 @@ public class GraphTransforms {
 
         List<Node> allNodes = dag.getNodes();
 
-        Set<Node> selection = new HashSet<>(allNodes.stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList());
+        Set<Node> selection = new LinkedHashSet<>(allNodes.stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList());
 
         graph.reorientAllWith(Endpoint.TAIL);
 
@@ -528,7 +528,7 @@ public class GraphTransforms {
                 Node n1 = measured.get(i);
                 Node n2 = measured.get(j);
 
-                if (dag.paths().existsInducingPath(n1, n2, new HashSet<>(selection))) {
+                if (dag.paths().existsInducingPath(n1, n2, new LinkedHashSet<>(selection))) {
                     graph.addEdge(Edges.nondirectedEdge(n1, n2));
                 }
             }

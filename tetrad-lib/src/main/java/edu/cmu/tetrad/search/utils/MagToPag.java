@@ -94,7 +94,7 @@ public final class MagToPag {
      * @return the anteriority set for (x, y)
      */
     private static Set<Node> anteriorityFromCache(Node x, Node y, Map<Node, Set<Node>> ancestorCache) {
-        Set<Node> result = new HashSet<>(ancestorCache.get(x));
+        Set<Node> result = new LinkedHashSet<>(ancestorCache.get(x));
         result.addAll(ancestorCache.get(y));
         result.remove(x);
         result.remove(y);
@@ -207,9 +207,9 @@ public final class MagToPag {
         // Precompute ancestor sets for all nodes once. Each call to anteriority()
         // in the original code was O(n * pathSearch); now it's a single O(n * pathSearch)
         // pass here, and each subsequent anteriority lookup is just a set union — O(n).
-        ancestorCache = new HashMap<>();
+        ancestorCache = new LinkedHashMap<>();
         for (Node n : mag.getNodes()) {
-            ancestorCache.put(n, new HashSet<>(mag.paths().getAncestors(n)));
+            ancestorCache.put(n, new LinkedHashSet<>(mag.paths().getAncestors(n)));
         }
 
         Graph pag = new EdgeListGraph(mag);

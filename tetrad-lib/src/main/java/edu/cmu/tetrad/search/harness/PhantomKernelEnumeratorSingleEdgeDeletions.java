@@ -38,7 +38,6 @@ package edu.cmu.tetrad.search.harness;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
@@ -59,7 +58,7 @@ import java.util.stream.LongStream;
  *
  * @author josephramsey (harness scaffolding by Claude)
  */
-public final class PhantomKernelEnumerator {
+public final class PhantomKernelEnumeratorSingleEdgeDeletions {
 
     private static int N            = 6;
     private static int NUM_LATENT   = 1;
@@ -115,7 +114,7 @@ public final class PhantomKernelEnumerator {
         // Parallel reduction: each worker accumulates into its own Result, merged at the end.
         Result total = LongStream.range(0, TOTAL_DAGS)
                 .parallel()
-                .collect(Result::new, PhantomKernelEnumerator::accumulate, Result::merge);
+                .collect(Result::new, PhantomKernelEnumeratorSingleEdgeDeletions::accumulate, Result::merge);
 
         // Write witnesses (rare; collected, written serially at the end).
         PrintWriter dump = openDump(dumpPath);
@@ -132,14 +131,11 @@ public final class PhantomKernelEnumerator {
         // Write generalized-Meek single-edge counterexamples to their own log.
         PrintWriter meekDump = openDump(meekPath);
         try {
-            meekDump.println("# Generalized-Meek (Bryan full form) counterexamples: legal PAGs, I-maps of the");
-            meekDump.println("# true PAG, from which the true PAG is NOT reachable by ANY sequence of legal");
-            meekDump.println("# single-edge removals and reorientations over I-map PAGs (removals + reorientations).");
+            meekDump.println("# Generalized-Meek (single-edge form) counterexamples: legal PAGs, denser than");
+            meekDump.println("# the true PAG, from which the true PAG is NOT reachable by legal single-edge moves.");
             meekDump.println("# Exhaustive over N=" + N + " latent=" + NUM_LATENT + " maxSpurious=" + MAX_SPURIOUS
                     + " (reorient mode " + (SEEDED_REORIENT ? "WARM" : "COLD") + ").");
-            meekDump.println("# single-edge-form deadlocks: " + total.meekCounterexamples
-                    + " | Bryan-form survivors: " + total.bryanCounterexamples
-                    + " | unchecked: " + total.bryanUnchecked + "\n");
+            meekDump.println("# total counterexamples: " + total.meekCounterexamples + "\n");
             for (String w : total.meekWitnesses) meekDump.println(w);
             if (total.meekSuppressed > 0) {
                 meekDump.println("==== (" + total.meekSuppressed + " further counterexamples suppressed; raise WITNESS_CAP) ====");
@@ -360,7 +356,7 @@ public final class PhantomKernelEnumerator {
                             if (dlNg == 0 && dlGen > 0)      r.dlAllGenuine++;
                             else if (dlGen == 0 && dlNg > 0) r.dlAllNonGenuine++;
                             else if (dlGen > 0 && dlNg > 0)  r.dlMixed++;
-                            r.addWitness(formatDeadlock(mask, latSet, spurious, dlLog.toString(), dag, truePag, h0));
+                            r.addWitness(formatDeadlock(mask, latSet, spurious, dlLog.toString(), h0));
 
                             // Generalized-Meek (single-edge form) reachability: a deadlock is a
                             // legal PAG denser than truth with no legal single-edge move toward it,
@@ -374,18 +370,7 @@ public final class PhantomKernelEnumerator {
                                 if (mi.minEscapeArity >= 0 && mi.minEscapeArity < r.meekArityHist.length) {
                                     r.meekArityHist[mi.minEscapeArity]++;
                                 }
-                            }
-
-                            // Bryan full form: re-test this deadlock against the richer move set
-                            // (any legal I-map PAG on a reduced/reoriented skeleton, not just the
-                            // canonical cold reorient). Only survivors here are genuine
-                            // generalized-Meek counterexamples; they alone go to the meek log.
-                            BryanInfo bi = bryanReachable(truePag, h0, spurious);
-                            if (!bi.checked) {
-                                r.bryanUnchecked++;
-                            } else if (!bi.reachable) {
-                                r.bryanCounterexamples++;
-                                r.addMeekWitness(formatBryan(mask, latSet, spurious, dag, truePag, h0, mi, bi));
+                                r.addMeekWitness(formatMeekCounterexample(mask, latSet, spurious, h0, mi));
                             }
                         } else {
                             r.h0WithEscape++;
@@ -537,26 +522,10 @@ public final class PhantomKernelEnumerator {
         }
         if (!anyArity) System.out.println("    (none)");
         System.out.println("  arity>=2 means the true PAG can only be reached by removing >=2 edges at once,");
-        System.out.println("  so the single-edge reachability claim fails on these legal PAGs (this is the");
-        System.out.println("  operational/NOSTALL form: it tests only the canonical cold reorient of each");
-        System.out.println("  reduced skeleton).");
-
-        System.out.println("\n==== GENERALIZED-MEEK (Bryan full form: removals + reorientations) ====");
-        System.out.printf("deadlocks re-tested against the richer move set (any legal I-map PAG on a%n");
-        System.out.printf("reduced/reoriented skeleton, not just the canonical cold reorient):%n");
-        System.out.printf("  GENUINE counterexamples (truePag still unreachable) : %d%n", t.bryanCounterexamples);
-        System.out.printf("  rescued (a legal I-map removal/reorientation exists) : %d%n",
-                Math.max(0, t.meekCounterexamples - t.bryanCounterexamples - t.bryanUnchecked));
-        System.out.printf("  unchecked (skeleton over %d edges, enumeration skipped) : %d%n",
-                BRYAN_MAX_SKELETON_EDGES, t.bryanUnchecked);
-        if (t.bryanCounterexamples == 0 && t.bryanUnchecked == 0) {
-            System.out.println("  => every single-edge counterexample is rescued by the richer move set;");
-            System.out.println("     Bryan's conjecture is NOT refuted at this size (the refutation is only of");
-            System.out.println("     the operational single-edge/canonical form, i.e. why FCIT needs the seed).");
-        } else if (t.bryanCounterexamples > 0) {
-            System.out.println("  => genuine counterexamples to Bryan's full conjecture exist; see the meek log.");
-        }
-        System.out.println("  Bryan survivors (only) written to: " + meekPath);
+        System.out.println("  so the single-edge reachability claim fails on these legal PAGs. Whether this");
+        System.out.println("  refutes the paper's conjecture depends on its move set (single-edge vs richer)");
+        System.out.println("  and scope (all legal PAGs vs FCIT's score-seeded trajectory).");
+        System.out.println("  counterexamples written to: " + meekPath);
 
         System.out.println("\nwitnesses / anomalies written to: " + dumpPath);
     }
@@ -584,8 +553,6 @@ public final class PhantomKernelEnumerator {
         // Generalized-Meek single-edge counterexamples (each deadlock is one) + escape-arity census.
         long meekCounterexamples;
         long[] meekArityHist = new long[Math.max(3, OBS + 1)];
-        long bryanCounterexamples;
-        long bryanUnchecked;
         List<String> meekWitnesses = new ArrayList<>();
         long meekSuppressed;
         List<String> witnesses = new ArrayList<>();
@@ -629,8 +596,6 @@ public final class PhantomKernelEnumerator {
             for (int i = 0; i < 4; i++) { a.dlGenProng[i] += b.dlGenProng[i]; a.dlNgProng[i] += b.dlNgProng[i]; }
             a.dlAllGenuine += b.dlAllGenuine; a.dlAllNonGenuine += b.dlAllNonGenuine; a.dlMixed += b.dlMixed;
             a.meekCounterexamples += b.meekCounterexamples;
-            a.bryanCounterexamples += b.bryanCounterexamples;
-            a.bryanUnchecked += b.bryanUnchecked;
             int km = Math.min(a.meekArityHist.length, b.meekArityHist.length);
             for (int i = 0; i < km; i++) a.meekArityHist[i] += b.meekArityHist[i];
             for (String s : b.meekWitnesses) a.addMeekWitness(s);
@@ -730,26 +695,16 @@ public final class PhantomKernelEnumerator {
     // deletion lands illegal. The per-edge log is captured on the first pass so it
     // is exactly consistent with the escape count (no order-divergent recompute).
     private static String formatDeadlock(long mask, Set<Integer> latSet, List<Edge> spurious,
-                                         String perEdgeLog, Graph dag, Graph truePag, Graph h0) {
+                                         String perEdgeLog, Graph h0) {
         StringBuilder sb = new StringBuilder();
         sb.append("==== NOSTALL DEADLOCK: gated genuine-legal H0, NO legal single-edge deletion ====\n");
         sb.append("  dag mask        : ").append(mask).append('\n');
-        sb.append("  latent set      : ").append(latSet).append("  (latent nodes: ").append(latentNames(dag)).append(")\n");
+        sb.append("  latent set      : ").append(latSet).append('\n');
         sb.append("  spurious edges  : ").append(spurious).append("  (k=").append(spurious.size()).append(")\n");
         sb.append("  outcome of deleting each spurious edge from H0:\n");
         sb.append(perEdgeLog);
-        sb.append("  true DAG (all variables, latents included):\n").append(dag).append('\n');
-        sb.append("  true PAG G* (over observed):\n").append(truePag).append('\n');
-        sb.append("  H0 (the counterexample PAG = G* + spurious, cold-reoriented):\n").append(h0).append('\n');
+        sb.append("  H0:\n").append(h0).append('\n');
         return sb.toString();
-    }
-
-    // Latent node names, for readability alongside the (index-based) latent set.
-    private static String latentNames(Graph dag) {
-        List<String> names = new ArrayList<>();
-        List<Node> nodes = dag.getNodes();
-        for (Node nd : nodes) if (nd.getNodeType() == NodeType.LATENT) names.add(nd.getName());
-        return names.toString();
     }
 
     // ── Generalized-Meek single-edge reachability over the spurious-subset lattice ──
@@ -828,194 +783,6 @@ public final class PhantomKernelEnumerator {
         sb.append("  min escape arity (edges per legal move)      : ").append(mi.minEscapeArity).append('\n');
         sb.append("  subset lattice (truePag + subset, cold-reoriented):\n").append(mi.lattice);
         sb.append("  H0 (the counterexample PAG):\n").append(h0).append('\n');
-        return sb.toString();
-    }
-
-    // ── Bryan's generalized-Meek check ────────────────────────────────────────────
-    // Among legal PAGs that are I-maps of truePag, is truePag reachable from H0 by single-edge
-    // REMOVALS and REORIENTATIONS (the |Hi|-|Hi+1| in {0,1} move set), under the I(Hi) subset
-    // I(Hi+1) order? Only deadlocks unreachable here are genuine counterexamples to Bryan's
-    // conjecture; the single-edge canonical form (subsetReachability) is strictly weaker.
-    //
-    // A "state" is (skeleton = truePag.skel + subset of spurious, independence model). The model is
-    // the set of m-separations realised by SOME legal MAG on that skeleton; the state is admissible
-    // iff its model is a subset of truePag's model (I-map). Two flagged Tetrad calls below
-    // (isLegalMag, magOfPag) must be checked against your API.
-    private static final int BRYAN_MAX_SKELETON_EDGES = 12;   // guard on 3^edges MAG enumeration
-
-    private static final class BryanInfo {
-        boolean reachable;     // truePag reachable from H0 via Bryan moves
-        boolean checked;       // false if skipped (skeleton too large)
-        int k;
-        int statesExplored;
-    }
-
-    private static BryanInfo bryanReachable(Graph truePag, Graph h0, List<Edge> spurious) throws InterruptedException {
-        BryanInfo bi = new BryanInfo();
-        int k = spurious.size();
-        bi.k = k;
-        if (truePag.getNumEdges() + k > BRYAN_MAX_SKELETON_EDGES) { bi.checked = false; return bi; }
-        bi.checked = true;
-
-        List<Node> obs = truePag.getNodes();
-        int n = obs.size();
-
-        // Canonical (pair, conditioning-set) enumeration -> independence-model bitvectors.
-        List<int[]> trPairs = new ArrayList<>();
-        List<Set<Node>> trZ = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            for (int j = i + 1; j < n; j++) {
-                List<Integer> others = new ArrayList<>();
-                for (int t = 0; t < n; t++) if (t != i && t != j) others.add(t);
-                int mm = others.size();
-                for (int z = 0; z < (1 << mm); z++) {
-                    Set<Node> Z = new HashSet<>();
-                    for (int b = 0; b < mm; b++) if ((z & (1 << b)) != 0) Z.add(obs.get(others.get(b)));
-                    trPairs.add(new int[]{i, j});
-                    trZ.add(Z);
-                }
-            }
-        }
-        int T = trPairs.size();
-        // truth model from the true MAG, so it is commensurable with every enumerated state
-        // (all models computed via MsepTest on a MAG; do NOT mix in the DAG oracle here).
-        boolean[] truth = modelOf(new MsepTest(magOfPag(truePag)), obs, trPairs, trZ, T);
-        String targetKey = key(truth, T);
-
-        // truePag.skel as node-pair list (orientation ignored; we re-orient freely).
-        List<Node[]> baseSkel = new ArrayList<>();
-        for (Edge e : truePag.getEdges()) baseSkel.add(new Node[]{e.getNode1(), e.getNode2()});
-
-        // For each spurious subset: distinct legal I-map MAG models on that skeleton.
-        Map<Integer, Set<String>> statesBySubset = new HashMap<>();
-        Map<String, boolean[]> modelByKey = new HashMap<>();
-        for (int sub = 0; sub < (1 << k); sub++) {
-            List<Node[]> skel = new ArrayList<>(baseSkel);
-            for (int i = 0; i < k; i++) {
-                if ((sub & (1 << i)) != 0) {
-                    Edge e = spurious.get(i);
-                    skel.add(new Node[]{e.getNode1(), e.getNode2()});
-                }
-            }
-            Set<String> models = new HashSet<>();
-            enumRec(0, new int[skel.size()], skel, obs, trPairs, trZ, T, truth, models, modelByKey);
-            statesBySubset.put(sub, models);
-        }
-
-        // Start = H0's model on the full subset; target = truth on the empty subset.
-        boolean[] h0model = modelOf(new MsepTest(magOfPag(h0)), obs, trPairs, trZ, T);
-        String h0key = key(h0model, T);
-        modelByKey.put(h0key, h0model);
-        int full = (1 << k) - 1;
-
-        Set<String> visited = new HashSet<>();
-        Deque<String> q = new ArrayDeque<>();
-        String start = full + "|" + h0key;
-        visited.add(start); q.add(start);
-        boolean reached = false;
-        int explored = 0;
-        while (!q.isEmpty()) {
-            String cur = q.poll(); explored++;
-            int bar = cur.indexOf('|');
-            int sub = Integer.parseInt(cur.substring(0, bar));
-            boolean[] curModel = modelByKey.get(cur.substring(bar + 1));
-            if (sub == 0 && cur.substring(bar + 1).equals(targetKey)) { reached = true; break; }
-            // reorientation: same subset, to any enumerated I-map state with curModel subset of it
-            for (String bk : statesBySubset.getOrDefault(sub, Collections.emptySet())) {
-                if (subsetModel(curModel, modelByKey.get(bk))) {
-                    String s = sub + "|" + bk;
-                    if (visited.add(s)) q.add(s);
-                }
-            }
-            // removal: clear one spurious bit, to any enumerated I-map state on the reduced subset
-            for (int i = 0; i < k; i++) {
-                if ((sub & (1 << i)) != 0) {
-                    int nsub = sub & ~(1 << i);
-                    for (String bk : statesBySubset.getOrDefault(nsub, Collections.emptySet())) {
-                        if (subsetModel(curModel, modelByKey.get(bk))) {
-                            String s = nsub + "|" + bk;
-                            if (visited.add(s)) q.add(s);
-                        }
-                    }
-                }
-            }
-        }
-        bi.reachable = reached;
-        bi.statesExplored = explored;
-        return bi;
-    }
-
-    private static void enumRec(int idx, int[] orient, List<Node[]> skel, List<Node> obs,
-                                List<int[]> trPairs, List<Set<Node>> trZ, int T, boolean[] truth,
-                                Set<String> out, Map<String, boolean[]> modelByKey) throws InterruptedException {
-        if (idx == skel.size()) {
-            Graph mag = new EdgeListGraph(obs);
-            for (int e = 0; e < skel.size(); e++) {
-                Node a = skel.get(e)[0], b = skel.get(e)[1];
-                switch (orient[e]) {
-                    case 0:  mag.addDirectedEdge(a, b); break;
-                    case 1:  mag.addDirectedEdge(b, a); break;
-                    default: mag.addBidirectedEdge(a, b); break;
-                }
-            }
-            if (!isLegalMag(mag)) return;
-            boolean[] model = modelOf(new MsepTest(mag), obs, trPairs, trZ, T);
-            if (!subsetModel(model, truth)) return;          // must be an I-map of truePag
-            String mk = key(model, T);
-            if (out.add(mk)) modelByKey.put(mk, model);
-            return;
-        }
-        for (int o = 0; o < 3; o++) {
-            orient[idx] = o;
-            enumRec(idx + 1, orient, skel, obs, trPairs, trZ, T, truth, out, modelByKey);
-        }
-    }
-
-    private static boolean[] modelOf(IndependenceTest test, List<Node> obs, List<int[]> trPairs,
-                                     List<Set<Node>> trZ, int T) throws InterruptedException {
-        boolean[] m = new boolean[T];
-        for (int t = 0; t < T; t++) {
-            Node x = obs.get(trPairs.get(t)[0]), y = obs.get(trPairs.get(t)[1]);
-            m[t] = test.checkIndependence(x, y, trZ.get(t)).isIndependent();
-        }
-        return m;
-    }
-
-    private static boolean subsetModel(boolean[] a, boolean[] b) {
-        for (int i = 0; i < a.length; i++) if (a[i] && !b[i]) return false;
-        return true;
-    }
-
-    private static String key(boolean[] m, int T) {
-        StringBuilder sb = new StringBuilder(T);
-        for (int i = 0; i < T; i++) sb.append(m[i] ? '1' : '0');
-        return sb.toString();
-    }
-
-    // FLAGGED: verify against your API. A legal MAG is ancestral + maximal.
-    private static boolean isLegalMag(Graph g) {
-        return g.paths().isLegalMag();
-    }
-
-    // FLAGGED: verify against your API (the PAG->MAG used by the round-trip / legality check).
-    private static Graph magOfPag(Graph pag) {
-        return GraphTransforms.zhangMagFromPag(pag);
-    }
-
-    private static String formatBryan(long mask, Set<Integer> latSet, List<Edge> spurious,
-                                      Graph dag, Graph truePag, Graph h0, MeekInfo mi, BryanInfo bi) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("==== GENERALIZED-MEEK COUNTEREXAMPLE (Bryan full form: removals + reorientations) ====\n");
-        sb.append("  A legal PAG, I-map of the true PAG, from which the true PAG is NOT reachable by any\n");
-        sb.append("  sequence of legal single-edge removals and reorientations over I-map PAGs.\n");
-        sb.append("  dag mask              : ").append(mask).append('\n');
-        sb.append("  latent set            : ").append(latSet).append("  (latent nodes: ").append(latentNames(dag)).append(")\n");
-        sb.append("  extra (spurious) edges: ").append(spurious).append("  (k=").append(bi.k).append(")\n");
-        sb.append("  single-edge min escape arity : ").append(mi.minEscapeArity).append('\n');
-        sb.append("  I-map states explored        : ").append(bi.statesExplored).append('\n');
-        sb.append("  true DAG (all variables, latents included):\n").append(dag).append('\n');
-        sb.append("  true PAG G* (over observed):\n").append(truePag).append('\n');
-        sb.append("  H0 (the counterexample PAG = G* + spurious, cold-reoriented):\n").append(h0).append('\n');
         return sb.toString();
     }
 

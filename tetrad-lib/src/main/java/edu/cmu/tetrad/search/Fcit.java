@@ -54,13 +54,6 @@ public final class Fcit implements IGraphSearch {
      * The score.
      */
     private final Score score;
-    /**
-     * Represents a map for storing and managing separation sets (sepsets) used in the context of algorithms involving
-     * conditional independence or causal discovery.
-     * <p>
-     * This variable is an instance of {@link SepsetMap}, which provides methods to access and manipulate separation
-     * sets - specifically to check conditional independencies between pairs of variables given a separating set.
-     */
     private final SepsetMap sepsets = new SepsetMap();
     /**
      * The list of selection nodes in the graph.
@@ -190,7 +183,7 @@ public final class Fcit implements IGraphSearch {
      * across rounds instead of being re-derived (and possibly differing) each time
      * the edge is reconsidered after a reverted removal.
      */
-    private final Map<Set<Node>, Set<Node>> foundSepsets = new HashMap<>();
+    private final Map<Set<Node>, Set<Node>> foundSepsets = new LinkedHashMap<>();
 
     private long timeout = -1L;
 
@@ -239,7 +232,7 @@ public final class Fcit implements IGraphSearch {
      * @return A set of triples representing the known colliders identified in the provided CPDAG.
      */
     private static Set<Triple> noteInitialColliders(List<Node> best, Graph graph) {
-        Set<Triple> initialColliders = new HashSet<>();
+        Set<Triple> initialColliders = new LinkedHashSet<>();
 
         for (Node b : best) {
             var adj = graph.getAdjacentNodes(b);
@@ -542,7 +535,7 @@ public final class Fcit implements IGraphSearch {
         // discriminating paths. blockPathsRecursively is the expensive call, so
         // memoize its verdict per unordered pair for the duration of this pass.
         // (The PAG is not mutated during findNongenuineEdge, so the verdict is stable.)
-        Map<Set<Node>, LegVerdict> verdictCache = new HashMap<>();
+        Map<Set<Node>, LegVerdict> verdictCache = new LinkedHashMap<>();
 
         // Match findIndependenceCheckRecursive's convention: unlimited stays
         // unlimited (no Long.MAX_VALUE + now overflow), otherwise a per-pass
@@ -795,7 +788,7 @@ public final class Fcit implements IGraphSearch {
                 pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
                 deadline);
 
-        Set<Node> nfCandSet = new HashSet<>();
+        Set<Node> nfCandSet = new LinkedHashSet<>();
         if (!b0result.indeterminate() && b0result.blockingSet() != null) {
             for (Node v : b0result.blockingSet()) {
                 // Only ambiguous nodes — those with at least one circle endpoint
@@ -868,7 +861,7 @@ public final class Fcit implements IGraphSearch {
                 if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
                 if (!this.pag.isAdjacentTo(x, y)) break;
 
-                Set<Node> S = new HashSet<>(B);
+                Set<Node> S = new LinkedHashSet<>(B);
                 Set<Node> C = GraphUtils.asSet(cChoice, removalCandidates);
 
                 S.removeAll(C);
@@ -903,7 +896,7 @@ public final class Fcit implements IGraphSearch {
         Set<Node> sepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, excludeSelectionBias, superVerbose);
-        PagLegalityCheck.LegalPagRet legalPagQuiet = PagLegalityCheck.isLegalPag(this.pag, new HashSet<>(selection));
+        PagLegalityCheck.LegalPagRet legalPagQuiet = PagLegalityCheck.isLegalPag(this.pag, new LinkedHashSet<>(selection));
         if (!legalPagQuiet.isLegalPag()) {
             if (verbose) {
                 TetradLogger.getInstance().log("\tTried removing " + _edge
@@ -1086,6 +1079,17 @@ public final class Fcit implements IGraphSearch {
     public void setTimeout(long timeout) {
         this.timeout = timeout;
     }
+
+    /**
+     * Represents a map for storing and managing separation sets (sepsets) used in the context of algorithms involving
+     * conditional independence or causal discovery.
+     * <p>
+     * This variable is an instance of {@link SepsetMap}, which provides methods to access and manipulate separation
+     * sets - specifically to check conditional independencies between pairs of variables given a separating set.
+     */
+    public SepsetMap getSepsetMap() {
+        return sepsets;
+    }   
 
     /// /        long deadlineMs = System.currentTimeMillis() + 500;
 //
