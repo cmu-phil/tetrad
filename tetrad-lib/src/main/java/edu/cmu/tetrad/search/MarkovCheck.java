@@ -24,7 +24,9 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.harness.GraphoidClosureHarness;
 import edu.cmu.tetrad.search.test.*;
+import edu.cmu.tetrad.search.utils.GraphoidAxioms;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
@@ -412,6 +414,83 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 //                        throw new RuntimeException("Recursive blocking timed out", e);
 //                    }
                 }
+
+                return new ArrayList<>(facts);
+            }
+
+            case RECURSIVE_BLOCKING_WITH_GRAPHOID_CLOSURE: {
+                Set<IndependenceFact> facts = new HashSet<>();
+                for (Node w : graph.getNodes()) {
+                    if (x.equals(w)) continue;
+                    if (graph.isAdjacentTo(w, x)) continue;
+
+                    try {
+                        int depth = -1;
+                        int maxRadius = -1;
+                        int nearWhichEndpoint = 1;
+                        int recursiveDepth = 15;
+
+                        boolean ignoreDirectEdge = false;
+
+                        RecursiveBlocking.BlockingResult result;
+
+                        result = RecursiveBlocking.blockPathsRecursively(graph, x, w,
+                                Set.of(), Set.of(), recursiveDepth, depth, maxRadius, nearWhichEndpoint, ignoreDirectEdge,
+                                System.currentTimeMillis() + 5000L);
+
+                        Set<Node> blocking = result.blockingSet();
+
+                        if (blocking != null) {
+                            facts.add(new IndependenceFact(x, w, blocking));
+                        }
+
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+//                    catch (TimeoutException e) {
+//                        throw new RuntimeException("Recursive blocking timed out", e);
+//                    }
+
+                    facts = GraphoidClosureHarness.computeClosure(facts, graph.getNodes(), GraphoidClosureHarness.ClosureType.GRAPHOID);
+                }
+
+                return new ArrayList<>(facts);
+            }
+
+            case RECURSIVE_BLOCKING_WITH_COMPOSITIONAL_GRAPHOID_CLOSURE: {
+                Set<IndependenceFact> facts = new HashSet<>();
+                for (Node w : graph.getNodes()) {
+                    if (x.equals(w)) continue;
+                    if (graph.isAdjacentTo(w, x)) continue;
+
+                    try {
+                        int depth = -1;
+                        int maxRadius = -1;
+                        int nearWhichEndpoint = 1;
+                        int recursiveDepth = 15;
+
+                        boolean ignoreDirectEdge = false;
+
+                        RecursiveBlocking.BlockingResult result;
+
+                        result = RecursiveBlocking.blockPathsRecursively(graph, x, w,
+                                Set.of(), Set.of(), recursiveDepth, depth, maxRadius, nearWhichEndpoint, ignoreDirectEdge,
+                                System.currentTimeMillis() + 5000L);
+
+                        Set<Node> blocking = result.blockingSet();
+
+                        if (blocking != null) {
+                            facts.add(new IndependenceFact(x, w, blocking));
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+//                    catch (TimeoutException e) {
+//                        throw new RuntimeException("Recursive blocking timed out", e);
+//                    }
+                }
+
+                facts = GraphoidClosureHarness.computeClosure(facts, graph.getNodes(), GraphoidClosureHarness.ClosureType.COMPOSITIONAL_GRAPHOID);
 
                 return new ArrayList<>(facts);
             }
