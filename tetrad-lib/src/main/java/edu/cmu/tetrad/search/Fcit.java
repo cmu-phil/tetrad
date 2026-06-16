@@ -35,6 +35,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The FCI Targeted Testing (FCIT) algorithm implements a search algorithm for learning the structure of a graphical
@@ -183,7 +184,7 @@ public final class Fcit implements IGraphSearch {
      * across rounds instead of being re-derived (and possibly differing) each time
      * the edge is reconsidered after a reverted removal.
      */
-    private final Map<Set<Node>, Set<Node>> foundSepsets = new LinkedHashMap<>();
+    private final Map<Set<Node>, Set<Node>> foundSepsets = new ConcurrentHashMap<>();
 
     private long timeout = -1L;
 
@@ -514,6 +515,15 @@ public final class Fcit implements IGraphSearch {
             TetradLogger.getInstance().log("\nNo non-genuine DDPs detected in the final graph.");
         }
 
+        List<Edge> spurious = findSpuriousEdges();
+        TetradLogger.getInstance().log(spurious.isEmpty()
+                ? "No spurious edges remain."
+                : spurious.size() + " spurious edge(s) remain: " + spurious);
+
+        if (spurious.size() >= 2) {
+            tryToModifyGraph(spurious, "multi-edge", excludeSelectionBias, initialColliders);
+        }
+
         TetradLogger.getInstance().log("\nFCIT finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
         TetradLogger.getInstance().log("Collider orientation and _edge removal time: " + (stop2 - start2) + " ms.");
@@ -584,6 +594,43 @@ public final class Fcit implements IGraphSearch {
         return new NongenuineScan(null, sawIndeterminate);
     }
 
+    private List<Edge> findSpuriousEdges() throws InterruptedException {
+        List<Edge> spuriousEdges = new ArrayList<>();
+
+        for (Edge edge : pag.getEdges()) {
+            Node m = edge.getNode1();
+            Node n = edge.getNode2();
+
+//            long deadlineMs = (timeout < 0L)
+//                    ? Long.MAX_VALUE
+//                    : System.currentTimeMillis() + timeout;
+
+//            RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(
+//                    pag, m, n, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, false,
+//                    Long.MAX_VALUE);
+//
+//            // !found() => blockingSet() closes every path: a candidate sepset.
+//            if (!result.found()) {
+//                if (test.checkIndependence(m, n, result.blockingSet()).isIndependent()) {
+//                    spuriousEdges.add(edge);
+//                }
+//            }
+
+            Set<Node> sepset = sepsets.get(m, n);  // your stored structure
+            if (sepset != null && test.checkIndependence(m, n, sepset).isIndependent()) {
+                spuriousEdges.add(edge);
+            } else {
+                sepset = foundSepsets.get(Set.of(m, n));
+
+                if (sepset != null && test.checkIndependence(m, n, sepset).isIndependent()) {
+                    spuriousEdges.add(edge);
+                }
+            }
+        }
+
+        return spuriousEdges;
+    }
+
     private LegVerdict legVerdict(Node m, Node n, long deadlineMs, Map<Set<Node>, LegVerdict> cache)
             throws InterruptedException {
         Edge edge = pag.getEdge(m, n);
@@ -593,28 +640,35 @@ public final class Fcit implements IGraphSearch {
 
         // Cheapest signal first: a recorded separator means the pair is already
         // known independent, so the adjacency is spurious. No blocking needed.
+// Sound positive verdicts only. A committed separator means the pair was
+        // already separated.
         if (sepsets.get(m, n) != null) {
             return LegVerdict.SPURIOUS;
         }
 
         Set<Node> key = Set.of(m, n);
+
+        // foundSepsets is never rolled back on a reverted removal, so a still-present
+        // edge with an entry is a test-confirmed separable-but-stuck adjacency (a
+        // deadlock survivor). RB's blocking set, by contrast, is only a *candidate*
+        // in skip-direct mode, so it is never promoted to a positive verdict here.
+        if (foundSepsets.get(key) != null) {
+            return LegVerdict.SPURIOUS;
+        }
+
         LegVerdict cached = cache.get(key);
         if (cached != null) {
             return cached;
         }
 
+        // RB is consulted only to flag a timed-out search as inconclusive.
         RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(
                 pag, m, n, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
                 deadlineMs);
 
-        LegVerdict v;
-        if (result.indeterminate()) {
-            v = LegVerdict.INDETERMINATE;
-        } else if (result.blockingSet() != null) {
-            v = LegVerdict.SPURIOUS;
-        } else {
-            v = LegVerdict.NOT_SPURIOUS;
-        }
+        LegVerdict v = result.indeterminate()
+                ? LegVerdict.INDETERMINATE
+                : LegVerdict.NOT_SPURIOUS;
         cache.put(key, v);
         return v;
     }
@@ -911,6 +965,44 @@ public final class Fcit implements IGraphSearch {
 
         if (verbose) {
             TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b);
+        }
+
+        return true;
+    }
+
+    private boolean tryToModifyGraph(List<Edge> edges, String type, boolean excludeSelectionBias, Set<Triple> initialColliders) {
+        Graph _pag = new EdgeListGraph(pag);
+
+        for (Edge edge : edges) {
+            pag.removeEdge(edge);
+
+            Node m = edge.getNode1();
+            Node n = edge.getNode2();
+
+            Set<Node> z = foundSepsets.get(Set.of(m, n));
+            sepsets.set(m, n, z);
+        }
+
+        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, excludeSelectionBias, superVerbose);
+        PagLegalityCheck.LegalPagRet legalPagQuiet = PagLegalityCheck.isLegalPag(this.pag, new LinkedHashSet<>(selection));
+        if (!legalPagQuiet.isLegalPag()) {
+            if (verbose) {
+                TetradLogger.getInstance().log("\tTried removing " + edges
+                        + ", but it didn't lead to a PAG");
+                System.out.println("\tReason = " + legalPagQuiet.getReason());
+            }
+
+            this.pag = _pag;
+
+            for (Edge edge : edges) {
+                sepsets.set(edge.getNode1(), edge.getNode2(), foundSepsets.get(Set.of(edge.getNode1(), edge.getNode2())));
+            }
+
+            return false;
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Removing " + edges + "(multi-edge), reached a PAG");
         }
 
         return true;
