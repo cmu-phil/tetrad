@@ -2,14 +2,10 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Joint, dependence-aware Markov check for a DAG or CPDAG.
@@ -145,7 +141,7 @@ public final class WildBootstrapMarkovCheck {
      * @param mult          multiplier distribution.
      */
     public static Result runEngine(double[][] product, String[] labels,
-                                   int numBootstraps, long seed, Multiplier mult) {
+                                   int numBootstraps, long seed, Multiplier mult) throws InterruptedException {
         final int n = product.length;
         final int K = (n == 0) ? 0 : product[0].length;
         if (K == 0) {
@@ -160,6 +156,10 @@ public final class WildBootstrapMarkovCheck {
         double[] t = new double[K];
 
         for (int j = 0; j < K; j++) {
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
+            }
+
             double s = 0.0;
             for (int i = 0; i < n; i++) s += product[i][j];
             double m = s / n;
@@ -197,6 +197,10 @@ public final class WildBootstrapMarkovCheck {
 
             double mB = 0.0, qB = 0.0;
             for (int j = 0; j < K; j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                }
+
                 if (!valid[j]) continue;
                 double num = 0.0;
                 double mj = mean[j];
@@ -220,15 +224,13 @@ public final class WildBootstrapMarkovCheck {
     // ----------------------------------------------------------------------------------------
 
     private final DataSet data;
-    private final Graph graph;
     private Residualizer residualizer = new OlsResidualizer();
     private int numBootstraps = 1000;
     private long seed = 0L;
     private Multiplier multiplier = Multiplier.RADEMACHER;
 
-    public WildBootstrapMarkovCheck(DataSet data, Graph graph) {
+    public WildBootstrapMarkovCheck(DataSet data) {
         this.data = data;
-        this.graph = graph;
     }
 
     public WildBootstrapMarkovCheck setResidualizer(Residualizer r) { this.residualizer = r; return this; }
@@ -237,7 +239,7 @@ public final class WildBootstrapMarkovCheck {
     public WildBootstrapMarkovCheck setMultiplier(Multiplier m)     { this.multiplier = m; return this; }
 
     /** Build the stacked product matrix from the data and graph, then run the joint check. */
-    public Result check() {
+    public Result checkMarkovBlanket(Graph graph) throws InterruptedException {
         final int n = data.getNumRows();
         final List<Node> vars = data.getVariables();
         final int p = vars.size();
@@ -256,7 +258,7 @@ public final class WildBootstrapMarkovCheck {
             if (xi < 0) continue;                       // graph node not in data
 
             // Markov blanket of x, restricted to variables present in the data.
-            List<Node> mb = markovBlanket(x);
+            Set<Node> mb = graph.paths().markovBlanket(x);
             List<Integer> mbIdx = new ArrayList<>();
             for (Node z : mb) {
                 int zi = indexByName(vars, z.getName());
@@ -290,14 +292,73 @@ public final class WildBootstrapMarkovCheck {
         return runEngine(product, labels.toArray(new String[0]), numBootstraps, seed, multiplier);
     }
 
-    /** MB(x) = adjacents(x) U {parents of children of x}, minus x. Valid for DAGs and CPDAGs. */
-    private List<Node> markovBlanket(Node x) {
-        Set<Node> mb = new LinkedHashSet<>(graph.getAdjacentNodes(x));
-        for (Node child : graph.getChildren(x)) {
-            mb.addAll(graph.getParents(child));
+    /**
+     * Run the joint wild-bootstrap check against an explicit list of independence facts.
+     *
+     * <p>Each fact X _||_ Y | Z contributes one product column: residualize X and Y on Z
+     * (via the configured {@link Residualizer}) and take the per-observation product rX_i*rY_i.
+     * The facts need not come from a Markov blanket; any constraint set works, e.g. the
+     * m-separation implications of a DAG / MAG / PAG. Calibration is the same joint wild
+     * bootstrap, so dependence among the T_j (including redundancy among implied facts) is handled.
+     *
+     * @throws IllegalArgumentException if a fact references an unknown variable or has X == Y.
+     */
+    public Result checkFacts(List<IndependenceFact> facts) throws InterruptedException {
+        final int n = data.getNumRows();
+        final List<Node> vars = data.getVariables();
+        final int p = vars.size();
+
+        double[][] col = new double[p][n];
+        for (int c = 0; c < p; c++)
+            for (int i = 0; i < n; i++) col[c][i] = data.getDouble(i, c);
+
+        Map<String, double[]> residualCache = new HashMap<>();   // key: varName + "|" + sorted-Z
+        List<double[]> columns = new ArrayList<>();
+        List<String> labels = new ArrayList<>();
+
+        for (IndependenceFact fact : facts) {
+            Node x = fact.getX(), y = fact.getY();
+            final int xi = indexByName(vars, x.getName());
+            final int yi = indexByName(vars, y.getName());
+            if (xi < 0) throw new IllegalArgumentException("X not in data: " + x.getName());
+            if (yi < 0) throw new IllegalArgumentException("Y not in data: " + y.getName());
+            if (xi == yi) throw new IllegalArgumentException("Degenerate fact X == Y: " + x.getName());
+
+            List<Integer> zIdx = new ArrayList<>();
+            List<String> zNames = new ArrayList<>();
+            for (Node z : fact.getZ()) {
+                int zi = indexByName(vars, z.getName());
+                if (zi < 0) throw new IllegalArgumentException("Z member not in data: " + z.getName());
+                if (zi == xi || zi == yi) continue;              // ill-formed Z: X/Y can't be in Z
+                zIdx.add(zi);
+                zNames.add(z.getName());
+            }
+            Collections.sort(zNames);
+            final String zKey = String.join(",", zNames);
+
+            final double[][] preds = new double[zIdx.size()][];
+            for (int k = 0; k < zIdx.size(); k++) preds[k] = col[zIdx.get(k)];
+
+            double[] rX = residualCache.computeIfAbsent(
+                    x.getName() + "|" + zKey, k -> residualizer.residuals(col[xi], preds));
+            double[] rY = residualCache.computeIfAbsent(
+                    y.getName() + "|" + zKey, k -> residualizer.residuals(col[yi], preds));
+
+            double[] prod = new double[n];
+            for (int i = 0; i < n; i++) prod[i] = rX[i] * rY[i];
+
+            columns.add(prod);
+            labels.add(x.getName() + " _||_ " + y.getName()
+                    + (zNames.isEmpty() ? "" : " | " + String.join(",", zNames)));
         }
-        mb.remove(x);
-        return new ArrayList<>(mb);
+
+        int K = columns.size();
+        double[][] product = new double[n][K];
+        for (int j = 0; j < K; j++) {
+            double[] cj = columns.get(j);
+            for (int i = 0; i < n; i++) product[i][j] = cj[i];
+        }
+        return runEngine(product, labels.toArray(new String[0]), numBootstraps, seed, multiplier);
     }
 
     private static int indexByName(List<Node> vars, String name) {
@@ -387,32 +448,36 @@ public final class WildBootstrapMarkovCheck {
     // ----------------------------------------------------------------------------------------
 
     public static void main(String[] args) {
-        int n = 200, K = 12, B = 300, reps = 300;
-        double alpha = 0.05;
-        Random rng = new Random(7L);
+        try {
+            int n = 200, K = 12, B = 300, reps = 300;
+            double alpha = 0.05;
+            Random rng = new Random(7L);
 
-        System.out.println("Null-model rejection rate at alpha = " + alpha
-                + "  (n=" + n + ", constraints=" + K + ", bootstraps=" + B + ", reps=" + reps + ")");
-        System.out.println("rho  | per-row max | per-row sumSq | per-COORD sum (broken)");
+            System.out.println("Null-model rejection rate at alpha = " + alpha
+                    + "  (n=" + n + ", constraints=" + K + ", bootstraps=" + B + ", reps=" + reps + ")");
+            System.out.println("rho  | per-row max | per-row sumSq | per-COORD sum (broken)");
 
-        for (double rho : new double[]{0.0, 0.5, 0.8}) {
-            int rejMax = 0, rejSq = 0, rejCoord = 0;
-            for (int rep = 0; rep < reps; rep++) {
-                double[][] product = nullProducts(n, K, rho, rng);  // all constraints truly hold
-                String[] labels = new String[K];
-                for (int j = 0; j < K; j++) labels[j] = "c" + j;
+            for (double rho : new double[]{0.0, 0.5, 0.8}) {
+                int rejMax = 0, rejSq = 0, rejCoord = 0;
+                for (int rep = 0; rep < reps; rep++) {
+                    double[][] product = nullProducts(n, K, rho, rng);  // all constraints truly hold
+                    String[] labels = new String[K];
+                    for (int j = 0; j < K; j++) labels[j] = "c" + j;
 
-                Result r = runEngine(product, labels, B, rng.nextLong(), Multiplier.RADEMACHER);
-                if (r.pMax < alpha) rejMax++;
-                if (r.pSumSquares < alpha) rejSq++;
+                    Result r = runEngine(product, labels, B, rng.nextLong(), Multiplier.RADEMACHER);
+                    if (r.pMax < alpha) rejMax++;
+                    if (r.pSumSquares < alpha) rejSq++;
 
-                if (perCoordinateLinearSumP(product, B, rng) < alpha) rejCoord++;
+                    if (perCoordinateLinearSumP(product, B, rng) < alpha) rejCoord++;
+                }
+                System.out.printf("%.1f  |    %.3f    |     %.3f     |     %.3f%n",
+                        rho, rejMax / (double) reps, rejSq / (double) reps, rejCoord / (double) reps);
             }
-            System.out.printf("%.1f  |    %.3f    |     %.3f     |     %.3f%n",
-                    rho, rejMax / (double) reps, rejSq / (double) reps, rejCoord / (double) reps);
+            System.out.println("(per-row columns should sit near " + alpha
+                    + " at every rho; per-COORD inflates as rho grows)");
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-        System.out.println("(per-row columns should sit near " + alpha
-                + " at every rho; per-COORD inflates as rho grows)");
     }
 
     /** Null products: shared X-residual 'a'; Y-residuals share a factor so columns correlate (Cov ~ rho). */

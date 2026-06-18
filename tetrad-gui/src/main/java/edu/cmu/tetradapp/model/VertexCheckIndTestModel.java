@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.MarkovCheck;
+import edu.cmu.tetrad.search.WildBootstrapMarkovCheck;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -45,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serial;
 import java.util.*;
+import java.util.function.BooleanSupplier;
 
 /**
  * Model for a per-vertex ("local") Markov check, a.k.a. "Vertex Checker".
@@ -60,6 +62,10 @@ import java.util.*;
 public class VertexCheckIndTestModel implements SessionModel, GraphSource, KnowledgeBoxInput {
 
     public static final String PROP_GRAPH = "graph";
+    public static final String UNIFORMITY_TEST_PARAM = "uniformityTestParam";
+    public static final String KOLMOGOROV_SMIRNOFF = "kolmogorovSmirnoff";
+    public static final String ANDERSON_DARLING = "andersonDarling";
+    public static final String WILD_BOOTSTRAP = "wildBootstrap";
     @Serial
     private static final long serialVersionUID = 1L;
     private final DataModel dataModel;
@@ -147,11 +153,26 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public double getUniformityP(List<Double> pvals) {
         if (pvals == null || pvals.size() < 2) return Double.NaN;
 
-        if (parameters.getBoolean("useAndersonDarlingParam", false)) {
-            return getAndersonDarlingP(pvals);
-        } else {
-            return getKolomogorovP(pvals);
-        }
+        return switch (getUniformityTest()) {
+            case ANDERSON_DARLING -> getAndersonDarlingP(pvals);
+            // Wild bootstrap consumes facts + data, not a p-value list; it is computed at the
+            // fact-bearing call sites (see getModelSummary). NaN here is a defensive guard.
+            case WILD_BOOTSTRAP -> Double.NaN;
+            default -> getKolomogorovP(pvals);
+        };
+    }
+
+    /**
+     * Runs the joint wild-bootstrap Markov check over an explicit fact list (requires row data).
+     * Returns null if the data model is not a DataSet or there are no facts.
+     */
+    private WildBootstrapMarkovCheck.Result runWildBootstrap(List<IndependenceFact> facts) throws InterruptedException {
+        if (!(dataModel instanceof DataSet ds)) return null;
+        if (facts == null || facts.isEmpty()) return null;
+        return new WildBootstrapMarkovCheck(ds)
+                .setNumBootstraps(parameters.getInt("wbNumBootstrapsParam", 1000))
+                .setSeed(parameters.getInt("wbSeedParam", 0))
+                .checkFacts(facts);
     }
 
     public CachedIndependenceQueries getCachedQueries() {
@@ -272,12 +293,16 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
      * Runs the vertex checker for all vertices in the graph.
      * Requires an IndependenceTest to have been set.
      */
-    public void runAllVertices(boolean clearFirst) {
+    public void runAllVertices(boolean clear) {
+        runAllVertices(clear, () -> false);
+    }
+
+    public void runAllVertices(boolean clear, BooleanSupplier cancelled) {
         if (independenceTest == null) {
             throw new IllegalStateException("IndependenceTest has not been set.");
         }
 
-        if (clearFirst) {
+        if (clear) {
             clearResults();
         }
 
@@ -289,10 +314,20 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         vars.sort(Comparator.comparing(Node::getName));
 
         for (Node x : vars) {
-            runVertex(alignedGraph, x);
+            if (cancelled.getAsBoolean()) return;     // skip vertices not yet started
+            runVertex(alignedGraph, x, cancelled);
+        }
+
+        // Compute the model-level summary HERE, on the worker thread, so the
+        // (potentially expensive) wild bootstrap never runs on the EDT. done()
+        // then just reads the cached value.
+        if (cancelled.getAsBoolean()) return;
+        try {
+            getModelSummary(cancelled);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();       // cancelled: leave modelSummary null
         }
     }
-
     /**
      * Runs the vertex checker for one vertex name (if present).
      */
@@ -325,6 +360,10 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     private void runVertex(Graph alignedGraph, Node x) {
+        runVertex(alignedGraph, x, () -> false);
+    }
+
+    private void runVertex(Graph alignedGraph, Node x, BooleanSupplier cancelled) {
         List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x,
                 getConditioningSetType());
 
@@ -337,6 +376,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         int ok = 0;
 
         for (IndependenceFact fact : impliedFacts) {
+            if (cancelled.getAsBoolean()) return;     // bail; store nothing partial for x
             tried++;
 
             // Cached eval keyed by (X,Y|Z) via name->id maps; rebinding handled internally.
@@ -370,9 +410,9 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
         summariesByVertex.put(x.getName(), summary);
         resultsByVertex.put(x.getName(), results);
-
-        // model-level cached summary is now stale
-        modelSummary = null;
+        // NB: do NOT null modelSummary here — it depends on the graph, not on which
+        // vertices are computed. clearResults() invalidates it when the graph/test/
+        // conditioning/uniformity actually changes.
     }
 
     private VertexSummary summarizeVertex(String vertexName, int csSize,
@@ -593,7 +633,16 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         pcs.addPropertyChangeListener(l);
     }
 
-    public ModelSummary getModelSummary() {
+    /** Cached value or null; never triggers (re)computation. Safe to call on the EDT. */
+    public ModelSummary peekModelSummary() {
+        return modelSummary;
+    }
+
+    public ModelSummary getModelSummary() throws InterruptedException {
+        return getModelSummary(() -> false);
+    }
+
+    public ModelSummary getModelSummary(BooleanSupplier cancelled) throws InterruptedException {
         if (modelSummary != null) return modelSummary;
 
         ConditioningSetType conditioningSetType = getConditioningSetType();
@@ -601,6 +650,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
         List<Double> pvals = new ArrayList<>();
         for (IndependenceFact fact : impliedFacts) {
+            if (cancelled.getAsBoolean()) throw new InterruptedException("Cancelled.");
 
             // Cached eval keyed by (X,Y|Z) via name->id maps; rebinding handled internally.
             CachedIndependenceQueries.Eval e = cachedQueries.eval(fact);
@@ -611,8 +661,17 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
             }
         }
 
-        double modelP = getUniformityP(pvals);
-        modelSummary = new ModelSummary(pvals.size(), modelP);
+        double modelP;
+        int numUsed;
+        if (WILD_BOOTSTRAP.equals(getUniformityTest())) {
+            WildBootstrapMarkovCheck.Result wb = runWildBootstrap(new ArrayList<>(impliedFacts));
+            modelP = (wb == null) ? Double.NaN : wb.pSumSquares;   // wb.pMax also available
+            numUsed = (wb == null) ? 0 : wb.numConstraints;
+        } else {
+            modelP = getUniformityP(pvals);
+            numUsed = pvals.size();
+        }
+        modelSummary = new ModelSummary(numUsed, modelP);
         return modelSummary;
     }
 
@@ -656,8 +715,18 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return out;
     }
 
+    public String getUniformityTest() {
+        return parameters.getString(UNIFORMITY_TEST_PARAM, KOLMOGOROV_SMIRNOFF);
+    }
+
+    public void setUniformityTest(String mode) {
+        parameters.set(UNIFORMITY_TEST_PARAM, mode);
+    }
+
+    /** @deprecated use {@link #setUniformityTest(String)}. */
+    @Deprecated
     public void setUseAndersonDarling(boolean useAndersonDarling) {
-        parameters.set("useAndersonDarlingParam", useAndersonDarling);
+        setUniformityTest(useAndersonDarling ? ANDERSON_DARLING : KOLMOGOROV_SMIRNOFF);
     }
 
     public String getSavedClassName() {
@@ -668,8 +737,10 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         this.parameters.set("independenceTestClassParam", name);
     }
 
+    /** @deprecated use {@link #getUniformityTest()}. */
+    @Deprecated
     public boolean isUseAndersonDarling() {
-        return parameters.getBoolean("useAndersonDarlingParam", false);
+        return ANDERSON_DARLING.equals(getUniformityTest());
     }
 
     private record ConditioningSetSizeRange(int min, int max) {
