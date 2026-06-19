@@ -190,7 +190,7 @@ public class FciOrient {
     public static Set<DiscriminatingPath> listDiscriminatingPaths(
             Graph graph, int maxLen, boolean checkXyNonadjacency) {
 
-        Set<DiscriminatingPath> out = new HashSet<>();
+        Set<DiscriminatingPath> out = new LinkedHashSet<>();
         for (Node w : graph.getNodes()) {
             for (Node y : graph.getAdjacentNodes(w)) {
                 out.addAll(listDiscriminatingPaths(graph, w, y, maxLen, checkXyNonadjacency));
@@ -215,7 +215,7 @@ public class FciOrient {
     public static Set<DiscriminatingPath> listDiscriminatingPaths(
             Graph graph, Node w, Node y, int maxLen, boolean checkEcNonadjacency) {
 
-        Set<DiscriminatingPath> out = new HashSet<>();
+        Set<DiscriminatingPath> out = new LinkedHashSet<>();
 
         // In the strict/original setting, W must be a parent of Y,
         // since W is one of the vertices between X and V.
@@ -234,7 +234,7 @@ public class FciOrient {
         }
 
         // Candidate V must be adjacent to both W and Y.
-        Set<Node> vset = new HashSet<>(graph.getAdjacentNodes(w));
+        Set<Node> vset = new LinkedHashSet<>(graph.getAdjacentNodes(w));
         vset.retainAll(graph.getAdjacentNodes(y));
 
         for (Node v : vset) {
@@ -917,7 +917,7 @@ public class FciOrient {
     private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph) {
         Set<DiscriminatingPath> discriminatingPaths = listDiscriminatingPaths(graph, maxDiscriminatingPathLength, true);
 
-        Set<Node> vNodes = new HashSet<>();
+        Set<Node> vNodes = new LinkedHashSet<>();
 
         for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
             vNodes.add(discriminatingPath.getV());

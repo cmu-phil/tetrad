@@ -387,6 +387,15 @@ public final class PhantomKernelEnumerator {
                                 r.bryanCounterexamples++;
                                 r.addMeekWitness(formatBryan(mask, latSet, spurious, dag, truePag, h0, mi, bi));
                             }
+
+                            // MAG-sweep escape: the concrete closed fallback. For each spurious
+                            // edge in turn, take the Zhang MAG of the current PAG, delete that
+                            // adjacency, require a legal MAG, project MAG->PAG, re-canonicalize.
+                            // Reaches G* iff the sequence lands exactly on truePag.
+                            MagSweepInfo ms = magSweep(truePag, h0, spurious);
+                            if (ms.stuck)            r.magSweepStuck++;
+                            else if (ms.reachesTrue) r.magSweepReachesTrue++;
+                            else                     r.magSweepWrongPag++;
                         } else {
                             r.h0WithEscape++;
                         }
@@ -558,6 +567,23 @@ public final class PhantomKernelEnumerator {
         }
         System.out.println("  Bryan survivors (only) written to: " + meekPath);
 
+        System.out.println("\n==== MAG-SWEEP ESCAPE (closed per-edge fallback FCIT could run) ====");
+        System.out.println("  At each deadlock, for each spurious edge in turn: Zhang MAG of the current");
+        System.out.println("  PAG, delete that adjacency, require a legal MAG, project MAG->PAG. List order.");
+        long magTotal = t.magSweepReachesTrue + t.magSweepStuck + t.magSweepWrongPag;
+        System.out.printf("    deadlocks swept                          : %d%n", magTotal);
+        System.out.printf("    sweep reconstructs G* exactly            : %d / %d%n", t.magSweepReachesTrue, magTotal);
+        System.out.printf("    sweep stuck (a deletion -> illegal MAG)  : %d%n", t.magSweepStuck);
+        System.out.printf("    sweep legal but != G*                    : %d%n", t.magSweepWrongPag);
+        if (magTotal > 0 && t.magSweepStuck == 0 && t.magSweepWrongPag == 0) {
+            System.out.println("  => the concrete per-edge MAG sweep clears every deadlock to G* in list order:");
+            System.out.println("     a deterministic closed operator with no stall at this size (stronger than the");
+            System.out.println("     existence-only Bryan result).");
+        } else if (t.magSweepStuck > 0 || t.magSweepWrongPag > 0) {
+            System.out.println("  => some deadlocks are NOT cleared by the canonical/greedy single-edge sweep in");
+            System.out.println("     spurious-list order; those need a reorder or a non-canonical MAG (the search).");
+        }
+
         System.out.println("\nwitnesses / anomalies written to: " + dumpPath);
     }
 
@@ -586,6 +612,11 @@ public final class PhantomKernelEnumerator {
         long[] meekArityHist = new long[Math.max(3, OBS + 1)];
         long bryanCounterexamples;
         long bryanUnchecked;
+        // MAG-sweep escape: the closed per-edge fallback (Zhang MAG, delete the adjacency,
+        // MAG->PAG, re-canonicalize each step) run over a stall's spurious set, in list order.
+        long magSweepReachesTrue;   // sweep lands exactly on truePag
+        long magSweepStuck;         // a deletion left an illegal MAG (no clean projection)
+        long magSweepWrongPag;      // sweep finished legal but not on truePag
         List<String> meekWitnesses = new ArrayList<>();
         long meekSuppressed;
         List<String> witnesses = new ArrayList<>();
@@ -631,6 +662,9 @@ public final class PhantomKernelEnumerator {
             a.meekCounterexamples += b.meekCounterexamples;
             a.bryanCounterexamples += b.bryanCounterexamples;
             a.bryanUnchecked += b.bryanUnchecked;
+            a.magSweepReachesTrue += b.magSweepReachesTrue;
+            a.magSweepStuck += b.magSweepStuck;
+            a.magSweepWrongPag += b.magSweepWrongPag;
             int km = Math.min(a.meekArityHist.length, b.meekArityHist.length);
             for (int i = 0; i < km; i++) a.meekArityHist[i] += b.meekArityHist[i];
             for (String s : b.meekWitnesses) a.addMeekWitness(s);
@@ -1002,6 +1036,70 @@ public final class PhantomKernelEnumerator {
         return GraphTransforms.zhangMagFromPag(pag);
     }
 
+    // FLAGGED: MAG -> PAG. This SHOULD be the same map PagLegalityCheck uses for its
+    // round-trip prong (the "PAG of an implied MAG" in its failure message). If that is
+    // exposed, call it here so this check is consistent with the legality test that
+    // defines the deadlocks. The fallback below builds it via the FCI pipeline: circles
+    // + the MAG's own unshielded colliders + final rules, m-separation read from the MAG.
+    private static Graph pagOfMag(Graph mag) throws InterruptedException {
+        Graph pag = new EdgeListGraph(mag);
+        Set<Triple> magColliders = noteInitialColliders(mag.getNodes(), mag);
+        GraphUtils.reorientWithCircles(pag, false);
+        GraphUtils.recallInitialColliders(pag, magColliders, new Knowledge());
+        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(new MsepTest(mag), TIMEOUT);
+        strategy.setSepsetMap(new SepsetMap());
+        strategy.setVerbose(false);
+        strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
+        strategy.setDepth(DEPTH);
+        FciOrient fciOrient = new FciOrient(strategy);
+        fciOrient.setVerbose(false);
+        fciOrient.setParallel(false);
+        fciOrient.setCompleteRuleSetUsed(true);
+        fciOrient.setRecursiveDepth(RECURSIVE_DEPTH);
+        fciOrient.setMaxDiscriminatingPathLength(MAX_LEN);
+        fciOrient.setKnowledge(new Knowledge());
+        fciOrient.finalOrientation(pag, EXCLUDE_SELECTION_BIAS);
+        return pag;
+    }
+
+    private static final class MagSweepInfo {
+        boolean reachesTrue;   // sweep lands exactly on truePag
+        boolean stuck;         // a deletion left an illegal/non-maximal MAG (no clean projection)
+    }
+
+    // Per-edge MAG sweep over the spurious list, re-canonicalizing (fresh Zhang MAG) each
+    // step. Order is spurious-list order; a different order could clear a case this one
+    // gets stuck on -- magSweepStuck surfaces exactly those.
+    private static MagSweepInfo magSweep(Graph truePag, Graph h0, List<Edge> spurious)
+            throws InterruptedException {
+        MagSweepInfo info = new MagSweepInfo();
+        Graph pag = new EdgeListGraph(h0);
+        for (Edge e : spurious) {
+            Graph mag = magOfPag(pag);
+            Edge inMag = mag.getEdge(e.getNode1(), e.getNode2());
+            if (inMag == null) { info.stuck = true; return info; }
+            mag.removeEdge(inMag);
+            if (!isLegalMag(mag)) { info.stuck = true; return info; }
+            pag = pagOfMag(mag);
+            if (!PagLegalityCheck.isLegalPag(pag, new HashSet<>()).isLegalPag()) {
+                info.stuck = true; return info;
+            }
+        }
+        info.reachesTrue = sameOrientedGraph(pag, truePag);
+        return info;
+    }
+
+    // Exact oriented-graph equality: same edge set with identical endpoints both ways.
+    private static boolean sameOrientedGraph(Graph a, Graph b) {
+        if (a.getNumEdges() != b.getNumEdges()) return false;
+        for (Edge e : a.getEdges()) {
+            Node x = e.getNode1(), y = e.getNode2();
+            if (b.getEdge(x, y) == null) return false;
+            if (a.getEndpoint(x, y) != b.getEndpoint(x, y)) return false;
+            if (a.getEndpoint(y, x) != b.getEndpoint(y, x)) return false;
+        }
+        return true;
+    }
     private static String formatBryan(long mask, Set<Integer> latSet, List<Edge> spurious,
                                       Graph dag, Graph truePag, Graph h0, MeekInfo mi, BryanInfo bi) {
         StringBuilder sb = new StringBuilder();
