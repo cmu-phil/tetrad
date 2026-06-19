@@ -837,11 +837,11 @@ public final class FcitMag implements IGraphSearch {
                 ? Long.MAX_VALUE
                 : System.currentTimeMillis() + timeout;
 
-        Graph mag = GraphTransforms.zhangMagFromPag(pag);
-
-        // Get full blocking set with no forbidden nodes
+        // Candidate generation stays on the PAG so the NF/ambiguity search keeps its
+        // full toggle set; MAG-awareness lives only at the commit step. (This also drops
+        // the per-edge MAG rebuild, which was identical for every edge in the sweep.)
         RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsRecursively(
-                mag, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
+                pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
                 deadline);
 
         Set<Node> nfCandSet = new LinkedHashSet<>();
@@ -942,41 +942,6 @@ public final class FcitMag implements IGraphSearch {
         return null;
     }
 
-//    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type, boolean excludeSelectionBias, Set<Triple> initialColliders) {
-//        Edge _edge = pag.getEdge(x, y);
-//
-//        Graph _pag = new EdgeListGraph(pag);
-//
-//        Graph _mag = GraphTransforms.zhangMagFromPag(_pag);
-//        _mag.removeEdge(x, y);
-//
-//        _mag.removeEdge(_edge);
-//
-//        Set<Node> sepset = sepsets.get(x, y);
-//        sepsets.set(x, y, b);
-//        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, excludeSelectionBias, superVerbose);
-//        PagLegalityCheck.LegalMagRet legalPagQuiet = PagLegalityCheck.isLegalMag(_mag, new LinkedHashSet<>(selection));
-//        if (!legalPagQuiet.isLegalMag()) {
-//            if (verbose) {
-//                TetradLogger.getInstance().log("\tTried removing " + _edge
-//                        + ", but it didn't lead to a MAG, sepset = " + b);
-//                System.out.println("\tReason = " + legalPagQuiet.getReason());
-//            }
-//
-//            this.pag = _pag;
-//            sepsets.set(x, y, sepset);
-//            return false;
-//        }
-//
-//        if (verbose) {
-//            TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b);
-//        }
-//
-//        pag = new MagToPag(_mag).convert(false, false);
-//
-//        return true;
-//    }
-
     private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type,
                                      boolean excludeSelectionBias, Set<Triple> initialColliders) {
         Edge _edge = pag.getEdge(x, y);
@@ -990,11 +955,9 @@ public final class FcitMag implements IGraphSearch {
         Set<Node> prevSepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
 
-        // The piece that was missing: stamp this pair's sepset-implied colliders onto
-        // the MAG we keep. initialColliders + earlier removals' colliders are already
-        // in _mag (they survive in `pag` now that we keep the enriched PAG and
-        // zhangMagFromPag leaves arrowheads untouched), so only the current pair is new.
-        orientSepsetCollidersInMag(_mag, x, y, b);
+        // Stamp every recorded sepset's colliders onto the MAG we keep (idempotent),
+        // so the PAG we carry forward retains those arrowheads and RB sees fewer circles.
+        orientSepsetCollidersInMag(_mag, sepsets);
 
         PagLegalityCheck.LegalMagRet legal =
                 PagLegalityCheck.isLegalMag(_mag, new LinkedHashSet<>(selection));
@@ -1020,56 +983,77 @@ public final class FcitMag implements IGraphSearch {
         return true;
     }
 
-    /** MAG-side analog of adjustForExtraSepsets, for one separated pair. */
-    private static void orientSepsetCollidersInMag(Graph mag, Node x, Node y, Set<Node> sepsetXY) {
-        if (mag.isAdjacentTo(x, y)) return;            // only meaningful once x–y is gone
+    /**
+     * MAG-side analog of adjustForExtraSepsets over every recorded sepset. Idempotent:
+     * re-stamping an existing collider is a no-op (the isDefCollider guard), so calling
+     * this each commit removes any reliance on prior colliders persisting through the
+     * PAG<->MAG round trip. Null sepsets and still-adjacent pairs are skipped.
+     */
+    private static void orientSepsetCollidersInMag(Graph mag, SepsetMap sepsets) {
+        for (Set<Node> pair : sepsets.keySet()) {
+            List<Node> arr = new ArrayList<>(pair);
+            Node x = arr.get(0);
+            Node y = arr.get(1);
 
-        List<Node> common = mag.getAdjacentNodes(x);
-        common.retainAll(mag.getAdjacentNodes(y));
+            Set<Node> s = sepsets.get(x, y);
+            if (s == null) continue;
+            if (mag.isAdjacentTo(x, y)) continue;      // only meaningful once x–y is gone
 
-        for (Node c : common) {
-            if (sepsetXY.contains(c)) continue;        // not a collider; leave it
-            if (mag.isDefCollider(x, c, y)) continue;  // already x*->c<-*y
-            mag.setEndpoint(x, c, Endpoint.ARROW);     // arrowheads into c
-            mag.setEndpoint(y, c, Endpoint.ARROW);
+            List<Node> common = mag.getAdjacentNodes(x);
+            common.retainAll(mag.getAdjacentNodes(y));
+
+            for (Node c : common) {
+                if (s.contains(c)) continue;               // not a collider; leave it
+                if (mag.isDefCollider(x, c, y)) continue;  // already x*->c<-*y
+                mag.setEndpoint(x, c, Endpoint.ARROW);     // arrowheads into c
+                mag.setEndpoint(y, c, Endpoint.ARROW);
+            }
         }
     }
 
-    private boolean tryToModifyGraph(List<Edge> edges, String type, boolean excludeSelectionBias, Set<Triple> initialColliders) {
+    private boolean tryToModifyGraph(List<Edge> edges, String type,
+                                     boolean excludeSelectionBias, Set<Triple> initialColliders) {
         Graph _pag = new EdgeListGraph(pag);
+        Graph _mag = GraphTransforms.zhangMagFromPag(_pag);   // one MAG of the current legal PAG
+
+        Map<Edge, Set<Node>> prev = new LinkedHashMap<>();    // for clean rollback
 
         for (Edge edge : edges) {
-            pag.removeEdge(edge);
-
             Node m = edge.getNode1();
             Node n = edge.getNode2();
 
-            Set<Node> z = foundSepsets.get(Set.of(m, n));
+            // Prefer a committed separator; fall back to the deadlock-survivor one.
+            Set<Node> z = sepsets.get(m, n);
+            if (z == null) z = foundSepsets.get(Set.of(m, n));
+
+            prev.put(edge, sepsets.get(m, n));
             sepsets.set(m, n, z);
+
+            _mag.removeEdge(m, n);
         }
 
-        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, excludeSelectionBias, superVerbose);
-        PagLegalityCheck.LegalPagRet legalPagQuiet = PagLegalityCheck.isLegalPag(this.pag, new LinkedHashSet<>(selection));
-        if (!legalPagQuiet.isLegalPag()) {
+        // Stamp all sepset-implied colliders, then judge MAG legality once.
+        orientSepsetCollidersInMag(_mag, sepsets);
+
+        PagLegalityCheck.LegalMagRet legal =
+                PagLegalityCheck.isLegalMag(_mag, new LinkedHashSet<>(selection));
+
+        if (!legal.isLegalMag()) {
             if (verbose) {
                 TetradLogger.getInstance().log("\tTried removing " + edges
-                        + ", but it didn't lead to a PAG");
-                System.out.println("\tReason = " + legalPagQuiet.getReason());
+                        + " (multi-edge), but it didn't lead to a MAG");
+                System.out.println("\tReason = " + legal.getReason());
             }
-
             this.pag = _pag;
-
-            for (Edge edge : edges) {
-                sepsets.set(edge.getNode1(), edge.getNode2(), foundSepsets.get(Set.of(edge.getNode1(), edge.getNode2())));
-            }
-
+            prev.forEach((e, s) -> sepsets.set(e.getNode1(), e.getNode2(), s));
             return false;
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Removing " + edges + "(multi-edge), reached a PAG");
+            TetradLogger.getInstance().log("Removing " + edges + " (multi-edge), reached a MAG");
         }
 
+        this.pag = new MagToPag(_mag).convert(false, excludeSelectionBias);
         return true;
     }
 
