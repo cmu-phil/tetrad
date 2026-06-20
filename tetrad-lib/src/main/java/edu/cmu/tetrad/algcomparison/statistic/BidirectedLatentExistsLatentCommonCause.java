@@ -31,7 +31,7 @@ import java.io.Serial;
 
 /**
  * The BidirectedLatentPrecision class implements the Statistic interface and represents a statistic that calculates the
- * percentage of bidirected edges in an estimated graph for which a latent confounder exists in the true graph.
+ * percentage of bidirected edges in an estimated graph for which a latent common cause exists in the true graph.
  */
 public class BidirectedLatentExistsLatentCommonCause implements Statistic {
     @Serial
@@ -52,7 +52,7 @@ public class BidirectedLatentExistsLatentCommonCause implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "<->-LatCommonCause";
+        return "<->-LatCCPrec";
     }
 
     /**
@@ -63,7 +63,7 @@ public class BidirectedLatentExistsLatentCommonCause implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Percent of bidirected edges for which a latent confounder exists (an latent L such that X <~~ (L) ~~> Y).";
+        return "Percent of bidirected edges for which a latent common cause exists (an latent L such that X <~~ (L) ~~> Y).";
     }
 
     /**
