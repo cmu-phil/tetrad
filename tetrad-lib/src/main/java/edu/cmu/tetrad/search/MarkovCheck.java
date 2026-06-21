@@ -2077,7 +2077,13 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             IndCheckTask(int index, List<IndependenceFact> facts, IndependenceTest test) {
                 this.index = index;
                 this.facts = facts;
-                this.independenceTest = test;
+//                this.independenceTest = test;
+
+                if (test instanceof CachingIndependenceTest) {
+                    this.independenceTest = ((CachingIndependenceTest) test).getBaseTest();
+                } else {
+                    this.independenceTest = test;
+                }
             }
 
             @Override
