@@ -517,8 +517,8 @@ public final class FcitMag implements IGraphSearch {
 
         List<Edge> spurious = findSpuriousEdges();
         TetradLogger.getInstance().log(spurious.isEmpty()
-                ? "No spurious edges remain."
-                : spurious.size() + " spurious edge(s) remain: " + spurious);
+                ? "\nNo spurious edges remain."
+                : "\n" + spurious.size() + " spurious edge(s) remain: " + spurious);
 
         if (spurious.size() >= 2) {
             tryToModifyGraph(spurious, "multi-edge", excludeSelectionBias, initialColliders);
